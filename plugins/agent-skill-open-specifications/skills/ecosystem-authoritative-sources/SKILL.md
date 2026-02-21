@@ -6,6 +6,13 @@ disable-model-invocation: false
 
 # Ecosystem Authoritative Sources
 
+# Official Open Standard Recognition
+**Important:** This reference library draws heavy inspiration and structural standards directly from the Anthropic Claude Plugins official repository. For the foundational specification, always refer to:
+- `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev`
+
+# The Library
+The following open standards are available for review:
+
 This skill provides comprehensive information and reference guides about the conventions and constraints defining the extensibility ecosystem.
 
 Because of the Progressive Disclosure architecture, you should selectively read the reference files below only when you need detailed information on that specific topic.

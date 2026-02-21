@@ -38,3 +38,12 @@ If you are an AI Agent:
 1. Familiarize yourself with the `ecosystem-standards` skill.
 2. When asked to build a new feature, ALWAYS utilize the `agent-scaffolders` to generate the foundational files.
 3. Review your generated output against the specifications located in the `agent-skill-open-specifications` reference library.
+## Features
+- **Progressive Disclosure**: Skills map complex logic into isolated folders loaded on-demand.
+- **Cross-Platform Output**: Generates pure Python scripts, never Bash, solving execution bugs.
+- **Deterministic**: The framework uses programmatic validation instead of relying entirely on LLM logic guessing. 
+
+## Acknowledgments
+We would like to give special recognition to the official Anthropic plugin repository as an important source of inspiration and foundational standards for this project:
+- [Anthropic Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
+- [Official Plugin-Dev Toolkit](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)

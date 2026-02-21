@@ -15,15 +15,16 @@ def create_plugin(name, path):
     os.makedirs(os.path.join(full_path, "agents"), exist_ok=True)
     os.makedirs(os.path.join(full_path, "commands"), exist_ok=True)
     
-    # Initialize empty hooks schema
-    with open(os.path.join(full_path, "hooks.json"), "w") as f:
-        f.write("[\n  // Add plugin hook definitions here\n]\n")
+    # Initialize empty hooks schema in a nested hooks/ dir
+    os.makedirs(os.path.join(full_path, "hooks", "scripts"), exist_ok=True)
+    with open(os.path.join(full_path, "hooks", "hooks.json"), "w") as f:
+        f.write("{\\n}")
 
     # Initialize empty MCP and LSP schemas
-    with open(os.path.join(full_path, "mcp.json"), "w") as f:
-        f.write("{\n  \"mcpServers\": {}\n}\n")
+    with open(os.path.join(full_path, ".mcp.json"), "w") as f:
+        f.write("{\\n  \"mcpServers\": {}\\n}\\n")
     with open(os.path.join(full_path, "lsp.json"), "w") as f:
-        f.write("{\n  \"languageServers\": {}\n}\n")
+        f.write("{\\n  \"languageServers\": {}\\n}\\n")
     
     # Helper function to read a template
     def get_template(filename):
@@ -82,9 +83,13 @@ def create_skill(name, path, description):
     
     skill_dir = os.path.join(path, name)
     scripts_dir = os.path.join(skill_dir, "scripts")
+    references_dir = os.path.join(skill_dir, "references")
+    examples_dir = os.path.join(skill_dir, "examples")
     
     os.makedirs(skill_dir, exist_ok=True)
     os.makedirs(scripts_dir, exist_ok=True)
+    os.makedirs(references_dir, exist_ok=True)
+    os.makedirs(examples_dir, exist_ok=True)
     
     def get_template(filename):
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
@@ -110,9 +115,9 @@ def create_skill(name, path, description):
     with open(os.path.join(skill_dir, "SKILL.md"), "w") as f:
         f.write(skill_content)
         
-    # 2. Recommended Best Practice: README/Reference documentation
-    with open(os.path.join(skill_dir, "reference.md"), "w") as f:
-        f.write(f"# {name} Reference Library\n\nPut deep context, logs, and documentation here so it is not loaded into context implicitly.")
+    # 2. Add sample reference file
+    with open(os.path.join(references_dir, "architecture.md"), "w") as f:
+        f.write(f"# {name} Protocol Reference\\n\\nPut deep context here so it is not loaded into context implicitly.")
         
     # 3. Recommended Best Practice: Mermaid Diagram for workflows
     mmd_content = f"""stateDiagram-v2
@@ -179,29 +184,56 @@ def create_hook(event, path, action_type):
     print(f"Success: Hook appended to {hooks_file}")
 
 def create_sub_agent(name, path, desc):
-    if not name.endswith(".md"):
-        name += ".md"
-        
-    agent_path = os.path.join(path, name)
-    os.makedirs(os.path.dirname(agent_path), exist_ok=True)
+    full_path = os.path.join(path, f"{name}.md")
     
-    content = f"""---
-name: {name.replace('.md', '')}
-description: {desc}
-tools: [Bash, Glob, Grep, Read, Replace, Write]
----
+    def get_template(filename):
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
+        if os.path.exists(template_path):
+            with open(template_path, "r") as f:
+                return f.read()
+        return None
 
-# Sub-Agent Instructions
-You are a highly capable sub-agent. Focus purely on testing or background computation based on the user's task.
-"""
-    with open(agent_path, "w") as f:
+    agent_template = get_template("agent.md.jinja")
+    if agent_template:
+        content = agent_template.format(
+            name=name,
+            description=desc
+        )
+    else:
+        content = f"---snip---"
+
+    with open(full_path, "w") as f:
         f.write(content)
         
-    print(f"Success: Sub-Agent scaffolded at {agent_path}")
+    print(f"Success: Sub-agent saved to {full_path}")
+
+def create_command(name, path, desc):
+    full_path = os.path.join(path, f"{name}.md")
+    
+    def get_template(filename):
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
+        if os.path.exists(template_path):
+            with open(template_path, "r") as f:
+                return f.read()
+        return None
+
+    cmd_template = get_template("command.md.jinja")
+    if cmd_template:
+        content = cmd_template.format(
+            name=name,
+            description=desc
+        )
+    else:
+        content = f"---snip---"
+
+    with open(full_path, "w") as f:
+        f.write(content)
+        
+    print(f"Success: Command saved to {full_path}")
 
 def main():
     parser = argparse.ArgumentParser(description="Agent Ecosystem Scaffolder CLI")
-    parser.add_argument("--type", choices=["plugin", "skill", "hook", "sub-agent", "mcp"], required=True, help="Type of resource to scaffold")
+    parser.add_argument("--type", choices=["plugin", "skill", "hook", "sub-agent", "command", "mcp"], required=True, help="Type of resource to scaffold")
     parser.add_argument("--name", required=True, help="Name of the resource")
     parser.add_argument("--path", required=True, help="Destination directory path")
     parser.add_argument("--desc", default="A generated resource.", help="Description for skills or agents")
@@ -218,6 +250,8 @@ def main():
         create_hook(args.event, args.path, args.action)
     elif args.type == "sub-agent":
         create_sub_agent(args.name, args.path, args.desc)
+    elif args.type == "command":
+        create_command(args.name, args.path, args.desc)
     elif args.type == "mcp":
         print("MCP generation requires modifying claude.json. This CLI feature is a stub.")
 

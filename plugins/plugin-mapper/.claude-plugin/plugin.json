@@ -1,0 +1,18 @@
+{
+    "name": "plugin-bridge",
+    "description": "Universal Installer for Agent Plugins. Maps generic .claude-plugin structures to target environments (Antigravity, GitHub Copilot, Gemini, Claude Desktop).",
+    "version": "1.0.0",
+    "author": {
+        "name": "Project Sanctuary"
+    },
+    "license": "MIT",
+    "keywords": [
+        "installer",
+        "bridge",
+        "deployment",
+        "mapping"
+    ],
+    "commands_dir": "commands",
+    "skills_dir": "skills",
+    "dependencies": []
+}
