@@ -66,6 +66,16 @@ The bridge intelligently maps plugin source components to the correct file exten
 ### Gemini TOML Format
 Command `.md` files are wrapped in TOML. Frontmatter is parsed — the `description` field is extracted and used as the TOML `description`. The frontmatter block is stripped from the prompt body.
 
+---
+
+## Skills vs Workflows (Commands) Caution
+
+> **CRITICAL**: The bridge processes `skills/` and `commands/` (or `workflows/` in older plugins) as distinct directories. **Algorithms/Logic can be deployed to either, but be careful of duplicating them!** 
+> - `skills/` are typically for passive knowledge, tools, and persistent behavior.
+> - `commands/` are for active, slash-command execution workflows.
+> 
+> Do not place identical markdown files in both directories within the same plugin, or the bridge will blindly duplicate the logic into the target environments (e.g. into `.agent/workflows/` and `.agent/skills/` simultaneously, causing contextual bloat).
+
 ```toml
 command = "plugin-name:command-name"
 description = "Description from frontmatter"
