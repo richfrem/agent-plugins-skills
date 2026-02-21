@@ -49,37 +49,11 @@ Run this to deploy all tools and commands to the agents.
 ```bash
 python plugins/plugin-mapper/skills/plugin-mapper/scripts/install_all_plugins.py
 ```
-> **Outcome**: Deploys `plugins/*` to `.agent/workflows`, `.github/prompts`, etc.
+> **Outcome**: Deploys `plugins/*` to `.agent/workflows`, `.github/prompts`, `.[target]/commands`, etc.
 
 ---
 
 ## Architecture Diagram
 
-![Process Diagram](./process_diagram.mmd)
+![Process Diagram](./agent_bridge_diagram.mmd)
 
-```mermaid
-flowchart TD
-    subgraph Source_Truth [Source of Truth]
-        Plugins["plugins/ (Extensions/Tools)"]
-    end
-
-    subgraph Bridges [Bridge System]
-        SB[System Bridge (Kernel)]
-        PM[Plugin Bridge (Extensions)]
-    end
-
-    subgraph Target Environments
-        Antigravity[".agent/"]
-        Copilot[".github/"]
-        Claude[".claude/"]
-        Gemini[".gemini/"]
-    end
-
-    %% Flows
-    Plugins -->|Install Capabilities| PM
-    
-    PM -->|Deploy Skills & Commands| Antigravity
-    PM -->|Deploy Prompts| Copilot
-    PM -->|Deploy Commands| Claude
-    PM -->|Deploy Commands| Gemini
-```

@@ -11,6 +11,7 @@ graph TD
     end
 
     subgraph Agents [Target Environments]
+        Universal[".[target]/ (Generic)"]
         Antigravity[".agent/"]
         Copilot[".github/"]
         Claude[".claude/"]
@@ -25,6 +26,7 @@ graph TD
     SB -->|Sync Rules & Context| Copilot
     SB -->|Sync Rules & Context| Claude
     SB -->|Sync Rules & Context| Gemini
+    SB -->|Sync Rules & Context| Universal
 
     Plugins --> PM
     
@@ -32,6 +34,7 @@ graph TD
     PM -->|Deploy Prompts| Copilot
     PM -->|Deploy Commands| Claude
     PM -->|Deploy Commands| Gemini
+    PM -->|Deploy Commands| Universal
 
     %% Sequence Label
     Note[Sequence: 1. System Bridge Kernel -> 2. Plugin Bridge Extensions]
