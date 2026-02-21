@@ -1,0 +1,21 @@
+---
+name: {name}
+description: {description}
+disable-model-invocation: false
+---
+
+# {title_name}
+
+## Overview
+This skill implements the requested functionality. 
+
+## Instructions
+When invoked, you MUST execute the provided Python determinism script instead of attempting to solve the task using raw bash or javascript logic.
+
+**Usage:**
+```bash
+python3 ${{CLAUDE_PLUGIN_ROOT}}/skills/{name}/scripts/execute.py --help
+```
+
+## Reference Links
+Place any supplemental context or heavy documentation inside `reference.md` and link it here using relative paths.

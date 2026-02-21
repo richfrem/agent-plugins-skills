@@ -25,6 +25,14 @@ def create_plugin(name, path):
     with open(os.path.join(full_path, "lsp.json"), "w") as f:
         f.write("{\n  \"languageServers\": {}\n}\n")
     
+    # Helper function to read a template
+    def get_template(filename):
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
+        if os.path.exists(template_path):
+            with open(template_path, "r") as f:
+                return f.read()
+        return None
+
     # 1. Standard Plugin Manifest
     manifest = {
         "version": "1.0",
@@ -35,9 +43,18 @@ def create_plugin(name, path):
     with open(os.path.join(claude_plugin_dir, "plugin.json"), "w") as f:
         json.dump(manifest, f, indent=4)
         
-    # 2. Recommended Best Practice: README.md
+    # 2. Recommended Best Practice: README.md with File Tree
+    readme_template = get_template("README.md.jinja")
+    if readme_template:
+        readme_content = readme_template.format(
+            name=name,
+            description="Define the purpose of this package here."
+        )
+    else:
+        readme_content = f"# {name} Plugin\\n\\nGenerated via Agent Scaffolder.\\n\\n## Purpose\\nDefine the purpose of this package here."
+
     with open(os.path.join(full_path, "README.md"), "w") as f:
-        f.write(f"# {name} Plugin\n\nGenerated via Agent Scaffolder.\n\n## Purpose\nDefine the purpose of this package here.\n")
+        f.write(readme_content)
 
     # 3. Recommended Best Practice: Mermaid Architecture Diagram
     mmd_content = f"""graph TD
@@ -69,29 +86,27 @@ def create_skill(name, path, description):
     os.makedirs(skill_dir, exist_ok=True)
     os.makedirs(scripts_dir, exist_ok=True)
     
+    def get_template(filename):
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
+        if os.path.exists(template_path):
+            with open(template_path, "r") as f:
+                return f.read()
+        return None
+
     # 1. Standard Skill Frontend
-    skill_content = f"""---
-name: {name}
-description: {description}
-disable-model-invocation: false
----
-
-# {name.replace('-', ' ').title()}
-
-## Overview
-This skill implements the requested functionality. 
-
-## Instructions
-When invoked, you MUST execute the provided Python determinism script instead of attempting to solve the task using raw bash or javascript logic.
-
-**Usage:**
-```bash
-python3 ${{CLAUDE_PLUGIN_ROOT}}/skills/{name}/scripts/execute.py --help
-```
-
-## Reference Links
-Place any supplemental context or heavy documentation inside `reference.md` and link it here using relative paths.
-"""
+    skill_template = get_template("SKILL.md.jinja")
+    if skill_template:
+        # Avoid format() errors with the literal ${{CLAUDE_PLUGIN_ROOT}} by replacing it temporarily
+        template_safe = skill_template.replace("${{", "{").replace("}}", "}")
+        skill_content = template_safe.format(
+            name=name,
+            description=description,
+            title_name=name.replace("-", " ").title(),
+            CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}"
+        )
+    else:
+        skill_content = f"---snip---"
+        
     with open(os.path.join(skill_dir, "SKILL.md"), "w") as f:
         f.write(skill_content)
         
@@ -109,23 +124,15 @@ Place any supplemental context or heavy documentation inside `reference.md` and 
         f.write(mmd_content)
 
     # 4. Mandatory Specification: Python Scripts over Bash/PS1
-    script_content = f"""#!/usr/bin/env python3
-import argparse
-import sys
-
-def main():
-    parser = argparse.ArgumentParser(description="{description}")
-    # Add your arguments here
-    parser.add_argument("--example", help="Example argument")
-    
-    args = parser.parse_args()
-    
-    print("Executing {name} logic...")
-    # Add your logic here
-
-if __name__ == "__main__":
-    main()
-"""
+    execute_template = get_template("execute.py.jinja")
+    if execute_template:
+        script_content = execute_template.format(
+            description=description,
+            name=name
+        )
+    else:
+        script_content = "# Template failed to load"
+        
     script_path = os.path.join(scripts_dir, "execute.py")
     with open(script_path, "w") as f:
         f.write(script_content)

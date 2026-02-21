@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+
+def main():
+    parser = argparse.ArgumentParser(description="{description}")
+    # Add your arguments here
+    parser.add_argument("--example", help="Example argument")
+    
+    args = parser.parse_args()
+    
+    print("Executing {name} logic...")
+    # Add your logic here
+
+if __name__ == "__main__":
+    main()

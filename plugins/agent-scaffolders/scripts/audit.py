@@ -18,10 +18,15 @@ def audit_plugin(plugin_path):
         if not os.path.isfile(manifest_path):
             errors.append("Missing `plugin.json` inside `.claude-plugin/`.")
 
-    REQUIRED_DIRS = ["skills", "agents", "commands", "scripts"]
-    for rd in REQUIRED_DIRS:
-        if not os.path.isdir(os.path.join(plugin_path, rd)):
-            warnings.append(f"Missing recommended directory: `{rd}/`")
+    # 1.5. Check for README
+    readme_path = os.path.join(plugin_path, "README.md")
+    if not os.path.isfile(readme_path):
+        warnings.append("Missing root `README.md`.")
+    else:
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            if "├──" not in content and "└──" not in content:
+                warnings.append("The `README.md` is missing a file tree structure. It is highly recommended to include one.")
 
     # 2. Check Skills
     skills_dir = os.path.join(plugin_path, "skills")

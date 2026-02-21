@@ -10,6 +10,7 @@ Plugins let you extend Claude Code with custom functionality (skills, agents, ho
 ## Directory Structure
 Plugins must follow a strict root-level structure:
 - `.claude-plugin/plugin.json`: The manifest (must only contain `plugin.json`).
+- `README.md`: Included as a best practice. It is highly recommended to contain a text-based file tree structure (using `├──` and `└──`) detailing the components inside the plugin and their purpose.
 
 *See visual representation in [plugin-architecture.mmd](./plugin-architecture.mmd)*
 
