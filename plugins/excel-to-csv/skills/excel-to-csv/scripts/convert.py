@@ -124,17 +124,28 @@ def convert_excel_to_csv(excel_path: Path, out_dir: Path, sheets=None, write_emp
             # Pandas is 0-indexed, openpyxl is 1-indexed
             extracted_df = df.iloc[min_row-1:max_row, min_col-1:max_col]
         
-        # Drop rows & columns that are completely empty first so we get true bounding box of data
+        # Drop rows & columns that are completely empty first
         extracted_df = extracted_df.dropna(axis=0, how="all").dropna(axis=1, how="all")
 
         # Determine headers for the slice
         if not extracted_df.empty and len(extracted_df) > 0:
             extracted_df = extracted_df.copy()
-            # The first non-empty row of the bounds is now at index 0 of the cleaned slice
+            
+            # If extracting a sheet, try to find the actual header row (first row with multiple distinct values)
+            # to handle cases where a title string extends into empty leading columns
             first_row_idx = extracted_df.index[0]
+            if info['type'] == 'sheet' and len(extracted_df) > 1:
+                for idx, row in extracted_df.iterrows():
+                    # If a row has more than 1 non-null value, consider it the real header
+                    if row.notna().sum() > 1:
+                        first_row_idx = idx
+                        # Drop columns that are entirely empty AFTER this header row
+                        extracted_df = extracted_df.loc[first_row_idx:].dropna(axis=1, how="all")
+                        break
+
             extracted_df.columns = extracted_df.loc[first_row_idx].fillna(f"Unnamed")
-            # Drop that first row from the data body
-            extracted_df = extracted_df.drop(first_row_idx)
+            # Drop that header row (and any preceding junk rows) from the data body
+            extracted_df = extracted_df.loc[first_row_idx + 1:]
 
         df2 = extracted_df
 
