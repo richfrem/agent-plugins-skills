@@ -57,6 +57,15 @@ def audit_plugin(plugin_path):
                 for script_file in os.listdir(scripts_dir):
                     if script_file.endswith(".sh") or script_file.endswith(".ps1"):
                         errors.append(f"Skill '{skill_name}' contains illegal script '{script_file}'. Only Python (.py) is allowed.")
+                        
+            # Check for Microsoft Progressive Disclosure & Testing standard
+            references_dir = os.path.join(skill_path, "references")
+            if not os.path.isdir(references_dir):
+                warnings.append(f"Skill '{skill_name}' is missing a `references/` directory. Progressive Disclosure is highly recommended.")
+            else:
+                acceptance_file = os.path.join(references_dir, "acceptance-criteria.md")
+                if not os.path.isfile(acceptance_file):
+                    errors.append(f"Skill '{skill_name}' is missing `references/acceptance-criteria.md`. All skills must have test criteria.")
 
     if errors:
         print("\n❌ AUDIT FAILED ❌")

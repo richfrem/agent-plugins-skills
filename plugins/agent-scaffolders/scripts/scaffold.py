@@ -115,9 +115,12 @@ def create_skill(name, path, description):
     with open(os.path.join(skill_dir, "SKILL.md"), "w") as f:
         f.write(skill_content)
         
-    # 2. Add sample reference file
+    # 2. Add sample reference and testing files
     with open(os.path.join(references_dir, "architecture.md"), "w") as f:
         f.write(f"# {name} Protocol Reference\\n\\nPut deep context here so it is not loaded into context implicitly.")
+        
+    with open(os.path.join(references_dir, "acceptance-criteria.md"), "w") as f:
+        f.write(f"# Acceptance Criteria: {name}\\n\\nDefine at least two testable criteria or correct/incorrect operational patterns here to ensure the skill functions correctly.")
         
     # 3. Recommended Best Practice: Mermaid Diagram for workflows
     mmd_content = f"""stateDiagram-v2

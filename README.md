@@ -44,6 +44,8 @@ If you are an AI Agent:
 - **Deterministic**: The framework uses programmatic validation instead of relying entirely on LLM logic guessing. 
 
 ## Acknowledgments
-We would like to give special recognition to the official Anthropic plugin repository as an important source of inspiration and foundational standards for this project:
+We would like to give special recognition to two foundational sources of inspiration and architectural standards for this project:
+
 - [Anthropic Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
 - [Official Plugin-Dev Toolkit](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)
+- [Microsoft Skills Repository](https://github.com/microsoft/skills) (Architectural patterns for Progressive Disclosure and skill testing)
