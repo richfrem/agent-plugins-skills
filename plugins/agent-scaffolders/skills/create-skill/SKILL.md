@@ -6,7 +6,7 @@ disable-model-invocation: false
 
 # Agent Skill Scaffold Generator
 
-You are tasked with generating a new Agent Skill resource using our deterministic backend scaffolding pipeline, while adhering to the official **Microsoft Skills Architectural Principles**.
+You are tasked with generating a new Agent Skill resource using our deterministic backend scaffolding pipeline, while adhering to the official **Agent Skills Open Standard** (`agentskills.io`).
 
 ## Core Educational Principles (Enforce These on the User)
 Before generating any code, you must review the user's request and ensure the designed skill aligns with the following tenets:
@@ -34,7 +34,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold.py --type skill --name <requested
 ```
 
 ### 3. Generate Acceptance Criteria
-Microsoft explicitly demands that **every skill MUST have acceptance criteria and test scenarios.**
+The Open Standard testing best practices explicitly recommend that **every skill MUST have acceptance criteria and test scenarios.**
 Using file writing tools, create a new file at `references/acceptance-criteria.md` inside the newly scaffolded skill folder. 
 Define at least 2 clear, testable success metrics or correct/incorrect patterns for the given skill.
 
