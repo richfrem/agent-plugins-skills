@@ -75,6 +75,7 @@ To keep `SKILL.md` under the recommended 500 max lines without overloading Conte
 
 ### Anti-Patterns to Avoid
 - **Windows Paths:** Always use Unix-style forward slashes (`/`), even on Windows.
+- **Bash/PowerShell Scripts:** Avoid `.sh` or `.ps1` files for complex logic. **Python (`.py`) is the required standard** for skill scripts to guarantee true cross-platform execution (Windows, Mac, Linux) regardless of the host environment.
 - **Punting Errors:** Utility scripts should handle exceptions and edge cases themselves (e.g., creating a missing file with default content) rather than failing and forcing Claude to figure it out. Provide explicit error messages in `stdout/stderr` back to Claude.
 - **Voodoo Constants:** Document *why* magical numbers or timeouts are set to what they are in your scripts so Claude understands the parameters.
 - **Unqualified MCP Tools:** When referencing an MCP tool, always explicitly provide the namespace: `ServerName:tool_name` (e.g., `GitHub:create_issue`).
@@ -89,6 +90,8 @@ The filesystem-based architecture of Skills naturally forces a 3-level "Progress
 1. **Level 1 (Metadata) - Discovery:** Loaded at startup. The YAML frontmatter (`name`, `description`). Only ~100 tokens. Claude uses this to determine *if* the skill is useful.
 2. **Level 2 (Instructions) - Activation:** Loaded when triggered. The `SKILL.md` body. Usually < 5k tokens. Loaded via a background bash command (`read pdf-skill/SKILL.md`).
 3. **Level 3+ (Resources & Code) - Execution:** Loaded as-needed. Arbitrary scripts or reference files (`REFERENCE.md`) referenced by Level 2. Executing scripts uses tokens only for the *output*, not the script content itself.This makes skills self-documenting, extensible, and highly portable.
+
+*See visual representation of this lifecycle in [skill-execution-flow.mmd](./skill-execution-flow.mmd)*
 
 ## Cross-Surface Constraints
 Skills run in different environments depending on the host surface. Always plan the execution requirements correctly:

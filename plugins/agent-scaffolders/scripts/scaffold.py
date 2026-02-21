@@ -14,7 +14,6 @@ def create_plugin(name, path):
     os.makedirs(os.path.join(full_path, "skills"), exist_ok=True)
     os.makedirs(os.path.join(full_path, "agents"), exist_ok=True)
     os.makedirs(os.path.join(full_path, "commands"), exist_ok=True)
-    os.makedirs(os.path.join(full_path, "scripts"), exist_ok=True)
     
     # Initialize empty hooks schema
     with open(os.path.join(full_path, "hooks.json"), "w") as f:
@@ -49,8 +48,7 @@ def create_plugin(name, path):
     A --> F[hooks.json]
     A --> G[mcp.json]
     A --> H[lsp.json]
-    A --> I[scripts/]
-    A --> J[README.md]
+    A --> I[README.md]
     """
     with open(os.path.join(full_path, f"{name}-architecture.mmd"), "w") as f:
         f.write(mmd_content)
@@ -84,7 +82,12 @@ disable-model-invocation: false
 This skill implements the requested functionality. 
 
 ## Instructions
-(Add your prompt logic here. Remember to keep this file under 500 lines.)
+When invoked, you MUST execute the provided Python determinism script instead of attempting to solve the task using raw bash or javascript logic.
+
+**Usage:**
+```bash
+python3 ${{CLAUDE_PLUGIN_ROOT}}/skills/{name}/scripts/execute.py --help
+```
 
 ## Reference Links
 Place any supplemental context or heavy documentation inside `reference.md` and link it here using relative paths.
@@ -104,6 +107,31 @@ Place any supplemental context or heavy documentation inside `reference.md` and 
     """
     with open(os.path.join(skill_dir, f"{name}-flow.mmd"), "w") as f:
         f.write(mmd_content)
+
+    # 4. Mandatory Specification: Python Scripts over Bash/PS1
+    script_content = f"""#!/usr/bin/env python3
+import argparse
+import sys
+
+def main():
+    parser = argparse.ArgumentParser(description="{description}")
+    # Add your arguments here
+    parser.add_argument("--example", help="Example argument")
+    
+    args = parser.parse_args()
+    
+    print("Executing {name} logic...")
+    # Add your logic here
+
+if __name__ == "__main__":
+    main()
+"""
+    script_path = os.path.join(scripts_dir, "execute.py")
+    with open(script_path, "w") as f:
+        f.write(script_content)
+        
+    # Make script executable
+    os.chmod(script_path, 0o755)
 
     print(f"Success: Skill '{name}' scaffolded at {skill_dir}")
 

@@ -13,10 +13,12 @@ Because of the Progressive Disclosure architecture, you should selectively read 
 ## Table of Contents
 To read any of the reference guides, use your file system tools to `cat` or `view` the relevant file.
 
-*   **Agent Skills**: Detailed specs for the Open Standard (agentskills.io), including Claude and Antigravity implementations.
+*   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills`.
     *   [reference/skills.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/skills.md)
+    *   [reference/skill-execution-flow.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/skill-execution-flow.mmd)
 *   **Claude Plugins**: Specification for the `.claude-plugin` architecture, manifest setup, and distribution.
     *   [reference/plugins.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/plugins.md)
+    *   [reference/plugin-architecture.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/plugin-architecture.mmd)
 *   **Antigravity Workflows & Rules (and Legacy Commands)**: Specifications for global/workspace Rules, deterministic trajectory Workflows, and the critical distinction between deploying **Skills** vs. Legacy **Commands**.
     *   [reference/workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/workflows.md)
 *   **Sub-Agents**: Definition, setup, and orchestration of nested contextual LLM boundaries.

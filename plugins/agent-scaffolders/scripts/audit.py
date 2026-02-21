@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import json
+import glob
+
+def audit_plugin(plugin_path):
+    print(f"Auditing Plugin at: {plugin_path}")
+    errors = []
+    warnings = []
+
+    # 1. Check Root Structure
+    claude_plugin_dir = os.path.join(plugin_path, ".claude-plugin")
+    if not os.path.isdir(claude_plugin_dir):
+        errors.append("Missing `.claude-plugin/` directory.")
+    else:
+        manifest_path = os.path.join(claude_plugin_dir, "plugin.json")
+        if not os.path.isfile(manifest_path):
+            errors.append("Missing `plugin.json` inside `.claude-plugin/`.")
+
+    REQUIRED_DIRS = ["skills", "agents", "commands", "scripts"]
+    for rd in REQUIRED_DIRS:
+        if not os.path.isdir(os.path.join(plugin_path, rd)):
+            warnings.append(f"Missing recommended directory: `{rd}/`")
+
+    # 2. Check Skills
+    skills_dir = os.path.join(plugin_path, "skills")
+    if os.path.isdir(skills_dir):
+        for skill_name in os.listdir(skills_dir):
+            skill_path = os.path.join(skills_dir, skill_name)
+            if not os.path.isdir(skill_path):
+                continue
+            
+            skill_md = os.path.join(skill_path, "SKILL.md")
+            if not os.path.isfile(skill_md):
+                errors.append(f"Skill '{skill_name}' is missing `SKILL.md`.")
+            else:
+                with open(skill_md, "r") as f:
+                    lines = f.readlines()
+                    if len(lines) > 500:
+                        warnings.append(f"Skill '{skill_name}' SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")
+            
+            # Check for illegal bash/powershell scripts
+            scripts_dir = os.path.join(skill_path, "scripts")
+            if os.path.isdir(scripts_dir):
+                for script_file in os.listdir(scripts_dir):
+                    if script_file.endswith(".sh") or script_file.endswith(".ps1"):
+                        errors.append(f"Skill '{skill_name}' contains illegal script '{script_file}'. Only Python (.py) is allowed.")
+
+    if errors:
+        print("\n❌ AUDIT FAILED ❌")
+        for e in errors:
+            print(f"  - {e}")
+    else:
+        print("\n✅ AUDIT PASSED - Fully Open Standard Compliant ✅")
+
+    if warnings:
+        print("\nWarnings:")
+        for w in warnings:
+            print(f"  - {w}")
+
+    return len(errors) == 0
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Audit a plugin for agent ecosystem standard compliance.")
+    parser.add_argument("--path", required=True, help="Path to the plugin directory to audit")
+    
+    args = parser.parse_args()
+    
+    if not os.path.isdir(args.path):
+        print(f"Error: Path '{args.path}' does not exist or is not a directory.")
+        exit(1)
+        
+    success = audit_plugin(args.path)
+    if not success:
+        exit(1)

@@ -10,6 +10,9 @@ Plugins let you extend Claude Code with custom functionality (skills, agents, ho
 ## Directory Structure
 Plugins must follow a strict root-level structure:
 - `.claude-plugin/plugin.json`: The manifest (must only contain `plugin.json`).
+
+*See visual representation in [plugin-architecture.mmd](./plugin-architecture.mmd)*
+
 ## Component Details
 - **Skills (`skills/` prefix):** Directories containing a `SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).
 - **Agents (`agents/` prefix):** Markdown files outlining capabilities and defining specialized subagent behaviors.
