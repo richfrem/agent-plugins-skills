@@ -1,0 +1,18 @@
+{
+    "name": "excel-to-csv",
+    "description": "Convert Excel files (entire workbooks or specific worksheets/tables) into CSV format.",
+    "version": "1.0.0",
+    "author": {
+        "name": "Open Source Maintainer",
+        "url": "https://github.com/username/my-agent-plugins"
+    },
+    "repository": "https://github.com/username/my-agent-plugins",
+    "license": "MIT",
+    "keywords": [
+        "excel",
+        "csv",
+        "conversion",
+        "data"
+    ],
+    "skills_dir": "skills"
+}

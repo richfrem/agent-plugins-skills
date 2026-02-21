@@ -117,6 +117,10 @@ def create_plugin(name, path):
     """
     with open(os.path.join(full_path, f"{name}-architecture.mmd"), "w") as f:
         f.write(mmd_content)
+
+    # 4. Mandatory Specification: Requirements tracking
+    with open(os.path.join(full_path, "requirements.in"), "w") as f:
+        f.write("# No external dependencies required. Standard library only.\\n")
         
     print(f"Success: Plugin '{name}' scaffolded at {full_path}")
 
