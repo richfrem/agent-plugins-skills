@@ -1,0 +1,6 @@
+{
+    "version": "1.0",
+    "name": "agent-skill-open-specifications",
+    "author": "Antigravity",
+    "description": "Meta-plugin containing authoritative reference documentation and execution skills for the Agent Skills and Claude Plugin ecosystem."
+}
