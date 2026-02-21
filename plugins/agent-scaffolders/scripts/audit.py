@@ -1,4 +1,42 @@
 #!/usr/bin/env python3
+"""
+audit.py (CLI)
+=====================================
+
+Purpose:
+    Audit plugins against the Agent Skills Open Standard to ensure architectural and resource compliance.
+
+Layer: Meta-Execution
+
+Usage Examples:
+    python3 audit.py --path <plugin-directory>
+
+Supported Object Types:
+    - .claude-plugin formatted directories
+    - Agent Skills
+
+CLI Arguments:
+    --path: The absolute or relative path to the plugin directory to audit.
+
+Input Files:
+    - plugin.json
+    - SKILL.md files
+    - .mcp.json and hooks.json structures
+
+Output:
+    - Terminal stdout (Success/Fail metrics)
+    - Warnings for minor structural deviations
+
+Key Functions:
+    - audit_plugin(): Recursively checks directory presence and constraints.
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - User (CLI)
+    - ecosystem-standards (Agent Skill)
+"""
 import argparse
 import os
 import json

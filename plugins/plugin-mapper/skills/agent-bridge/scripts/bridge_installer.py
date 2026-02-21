@@ -1,17 +1,43 @@
 #!/usr/bin/env python3
 """
-Plugin Bridge Installer
-=======================
+bridge_installer.py (CLI)
+=====================================
 
-Installs Agent Plugins (.claude-plugin structure) into target environments.
+Purpose:
+    Installs Agent Plugins (.claude-plugin structure) into target environments dynamically (e.g., .claude, .gemini, .agent, .github).
 
-Supported Targets:
-- Antigravity (.agent/)
-- GitHub Copilot (.github/)
-- Gemini (.gemini/)
+Layer: System Integration Layer
 
-Usage:
-  python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin <path> [--target <auto|antigravity|github|gemini>]
+Usage Examples:
+    python3 bridge_installer.py --plugin <path> [--target <auto|antigravity|github|gemini>]
+
+Supported Object Types:
+    - .claude-plugin directory structures
+    - Markdown commands, skills, and agents
+    - .mcp.json and hooks.json manifests
+
+CLI Arguments:
+    --plugin: Absolute or relative path to the plugin folder to install.
+    --target: (Optional) Specific agent environment subset to install into. Defaults to "auto".
+
+Input Files:
+    - Target `plugin.json` for validation and namespace.
+
+Output:
+    - Copies formatted skills, rules, and commands directly into the active Agent IDE configuration folders.
+
+Key Functions:
+    - parse_frontmatter(): Isolates YAML from execution strings.
+    - command_output_stem(): Builds flattened names.
+    - install_{target}(): Specialized mapping strategies per ecosystem.
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - User (CLI)
+    - install_all_plugins.py
+    - agent-bridge (Agent Skill)
 """
 
 import os

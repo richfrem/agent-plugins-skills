@@ -1,0 +1,10 @@
+{
+    "title": "Agent Scaffolders Bundle Test",
+    "description": "A recursive test of the agent-scaffolders directory.",
+    "files": [
+        {
+            "path": "plugins/agent-scaffolders/scripts",
+            "note": "Testing recursive directory generation"
+        }
+    ]
+}

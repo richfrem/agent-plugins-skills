@@ -1,0 +1,19 @@
+{
+    "name": "context-bundler",
+    "description": "Bundle source files and documentation into single-file LLM context packages for portable AI agent distribution",
+    "version": "1.1.0",
+    "author": {
+        "name": "Open Source Maintainer",
+        "url": "https://github.com/username/my-agent-plugins"
+    },
+    "repository": "https://github.com/username/my-agent-plugins",
+    "license": "MIT",
+    "keywords": [
+        "bundler",
+        "context",
+        "llm",
+        "packaging",
+        "agent-tools"
+    ],
+    "skills_dir": "skills"
+}

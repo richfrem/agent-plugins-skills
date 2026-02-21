@@ -1,16 +1,37 @@
 #!/usr/bin/env python3
 """
-Bulk Plugin Installer
-=====================
+install_all_plugins.py (CLI)
+=====================================
 
-Iterates through all directories in `plugins/` and runs the `bridge_installer.py`
-for each one. This ensures a clean, full installation of all available plugins.
+Purpose:
+    Iterates through all directories in `plugins/` and runs the `bridge_installer.py` for each one to orchestrate a bulk repository update.
 
-Usage:
-Usage:
-    python3 plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py --target <auto|antigravity|github|gemini|claude>
+Layer: System Integration
+
+Usage Examples:
+    python3 install_all_plugins.py --target <auto|antigravity|github|gemini|claude>
+
+Supported Object Types:
+    - Local directory structure iteration
+
+CLI Arguments:
+    --target: Target environment (defaults to auto).
+
+Input Files:
+    - Looks at all subfolders in the `plugins/` namespace.
+
+Output:
+    - Stdout metrics of successful/failed bulk deployments.
+
+Key Functions:
+    - None (Sequential loop)
+
+Script Dependencies:
+    - bridge_installer.py
+
+Consumed by:
+    - User (CLI)
 """
-
 import os
 import sys
 import argparse

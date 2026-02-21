@@ -2,8 +2,27 @@
 
 This document traces the historical evolution of custom slash commands into the current open standard for Agent Skills, and specifically calls out how different agent ecosystems refer to specific task-runner routines (like *Workflows* in Antigravity or Roo Code).
 
-## The Evolution of 
-`/commands`
+## The Triad of Constraints: When to use What?
+When extending an agent, you must choose the right architectural layer to avoid redundant commands or ignored instructions.
+
+### 1. Passive Rules (`rules/*.mdc`)
+**Use when**: You need the agent to follow strict, always-on stylistic or structural constraints without the user ever asking.
+- **Example**: Coding conventions, syntax preferences, strictly forbidden legacy API usages. 
+- **Why**: You shouldn't need a `/apply-conventions` command. The IDE should automatically apply your conventions on every single file it generates via global prompt injection.
+
+### 2. Autonomous Skills (`skills/*/SKILL.md`)
+**Use when**: The agent needs procedural knowledge or sub-routines that it can decide to trigger on its own contextually.
+- **Example**: Querying a database, running a test suite, generating a mermaid diagram, scaffolding a directory.
+- **Why**: The LLM reads the frontmatter `description` and seamlessly chooses to use the skill *only* when the current phase of work demands it, preventing prompt bloat.
+
+### 3. Explicit User Commands (`commands/*.md` or `workflows/*.md`)
+**Use when**: The user explicitly demands full control over the initiation of a massive operation or workflow.
+- **Example**: `/deploy-production`, `/onboard-new-epic`, `/sync-rlm-cache`.
+- **Why**: These are for operations you *never* want the agent to trigger autonomously. The user deliberately forces execution via a `/` slash command in the chat UI.
+
+---
+
+## The Evolution of `/commands` into Skills
 
 In early versions of Agentic environments (such as older versions of Claude Code), users extended capability using a simple directory approach (e.g. `.claude/commands/`).
 - Putting a file at `.claude/commands/review.md` would automatically create the `/review` slash command for the user to invoke.
@@ -14,12 +33,6 @@ Custom slash commands have since been merged into the [Agent Skills standard](ht
 - **Location Nuance:** Skills can actually be deployed in both the `skills/` and `commands/` directories. 
   - If a skill is placed in `commands/`, it explicitly allows you to invoke it manually via a `/` slash-command in the agent UI as a shortcut.
   - If placed in `skills/`, it relies more on autonomous discovery via the LLM reading the `description` frontmatter.
-
-### Why Skills Replace Legacy Commands
-While legacy commands are just flat Markdown files, turning a command into a **Skill** adds powerful features:
-- **A Dedicated Directory**: You can store supporting files (`scripts/`, `references/`) instead of cramming everything into one markdown file.
-- **Trigger Control via Frontmatter**: Frontmatter allows you to toggle `user-invocable: true` or `disable-model-invocation: true`. 
-- **Autonomous Discovery**: Skills contain a `description` field that allows Claude to discover and "run" the command automatically when a relevant context arises, whereas legacy `/commands` require the user to manually trigger them.
 
 ## Antigravity Rules and Workflows
 For platforms like **Antigravity** (Google Deepmind's agent framework), these repeatable systems are officially documented as **Rules** and **Workflows**.

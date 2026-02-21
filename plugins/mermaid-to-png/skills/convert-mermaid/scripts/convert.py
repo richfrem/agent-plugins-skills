@@ -4,6 +4,45 @@ import subprocess
 import sys
 import os
 
+"""
+convert.py (CLI)
+=====================================
+
+Purpose:
+    Converts a mermaid (.mmd/.mermaid) file to a PNG utilizing standard headless integration.
+
+Layer: Tools & Generation
+
+Usage Examples:
+    python3 convert.py -i input.mmd -o output.png -s 2 -t dark
+
+Supported Object Types:
+    - Mermaid standard (.mmd)
+    - PNG binary export
+
+CLI Arguments:
+    -i, --input: Input .mmd file
+    -o, --output: Output .png file
+    -s, --scale: Resolution scale factor (default: 1)
+    -t, --theme: Theme variant (default, forest, dark, neutral)
+
+Input Files:
+    - Raw text file containing Mermaid syntax.
+
+Output:
+    - PNG file.
+
+Key Functions:
+    - convert_mermaid(): The subprocess caller wrapping headless execution.
+
+Script Dependencies:
+    - npx @mermaid-js/mermaid-cli
+
+Consumed by:
+    - User (CLI)
+    - convert-mermaid (Agent Skill)
+"""
+
 def convert_mermaid(input_file, output_file, scale=1, theme="default"):
     """
     Converts a mermaid (.mmd/.mermaid) file to a PNG using mmdc.
