@@ -4,55 +4,40 @@ debug_rlm.py (CLI)
 =====================================
 
 Purpose:
-    Debug utility to inspect the RLMConfiguration state.
-    Verifies path resolution, manifest loading, and environment variable overrides.
-    Useful for troubleshooting cache path conflicts.
-
-Usage Examples:
-    python plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py
-
-Input Files:
-    - plugins/rlm-factory/resources/manifest-index.json
-    - .env
-
-Output:
-    - Console output (State inspection)
-
-Key Functions:
-    - main(): Prints configuration details for 'tool' and 'sanctuary' modes.
-
-Script Dependencies:
-    - plugins/rlm-factory/scripts/rlm_config.py
+    Debug utility to inspect RLMConfig state for a given profile.
+    Verifies path resolution, manifest loading, and file discovery.
 """
-import os
+
 import sys
 from pathlib import Path
 
-# Setup path
-SCRIPT_DIR = Path(__file__).parent.resolve()
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent
-sys.path.append(str(PROJECT_ROOT))
+# Paths standardization
+PROJECT_ROOT = Path(__file__).resolve().parents[5]
+SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Debug Env
-# Debug Env
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
-    from rlm_config import RLMConfig
-    
-    print("\n--- Testing RLMConfig(type='project') ---")
-    config = RLMConfig(run_type="project")
-    print(f"Config Type: {config.type}")
-    print(f"Manifest Path: {config.manifest_path}")
-    print(f"Cache Path: {config.cache_path}")
-    print(f"Prompt Template Length: {len(config.prompt_template)}")
+    from rlm_config import RLMConfig, collect_files
 
-    print("\n--- Testing RLMConfig.from_profile('plugins') ---")
-    config = RLMConfig.from_profile("plugins")
-    print(f"Config Type: {config.type}")
-    print(f"Manifest Path: {config.manifest_path}")
-    print(f"Cache Path: {config.cache_path}")
-    
+    for profile_name in ["plugins", "tools"]:
+        print(f"\n{'='*50}")
+        print(f"--- Profile: '{profile_name}' ---")
+        try:
+            config = RLMConfig(profile_name=profile_name)
+            print(f"  Manifest Path: {config.manifest_path}")
+            print(f"  Manifest Exists: {config.manifest_path.exists()}")
+            print(f"  Cache Path: {config.cache_path}")
+            print(f"  Include Patterns: {config.include_patterns}")
+            print(f"  Allowed Suffixes: {config.allowed_suffixes}")
+            print(f"  LLM Model: {config.llm_model}")
+            files = collect_files(config)
+            print(f"  Files Found: {len(files)}")
+            if files:
+                print(f"  Sample: {files[0].relative_to(PROJECT_ROOT)}")
+        except Exception as e:
+            print(f"  ❌ Error: {e}")
+
 except ImportError as e:
-    print(f"Import Error: {e}")
-except Exception as e:
-    print(f"Error: {e}")
+    print(f"❌ Import Error: {e}")

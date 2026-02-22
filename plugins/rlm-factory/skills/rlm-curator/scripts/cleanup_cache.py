@@ -4,212 +4,119 @@ cleanup_cache.py (CLI)
 =====================================
 
 Purpose:
-    RLM Cleanup: Removes stale and orphan entries from the Recursive Language Model ledger.
+    RLM Cleanup: Removes stale and orphan entries from the RLM ledger.
 
-Layer: Curate / Rlm
-
-Usage Examples:
-    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --help
-    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile plugins --apply --prune-orphans
-
-Supported Object Types:
-    - Generic
-
-CLI Arguments:
-    --apply         : Perform the deletion
-    --prune-orphans : Remove entries not matching manifest
-    --v             : Verbose mode
-
-Input Files:
-    - (See code)
-
-Output:
-    - (See code)
-
-Key Functions:
-    - load_manifest_globs(): Load include/exclude patterns from manifest.
-    - matches_any(): Check if path matches any glob pattern or is inside a listed directory.
-    - main(): No description.
-
-Script Dependencies:
-    (None detected)
-
-Consumed by:
-    (Unknown)
+Usage:
+    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile plugins --apply
+    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile plugins --prune-orphans
+    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile tools --prune-failed --apply
 """
-import os
+
 import sys
 import argparse
 from pathlib import Path
 
-# Add SCRIPT_DIR to sys.path to find rlm_config
-SCRIPT_DIR = Path(__file__).parent.resolve()
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.resolve()
+# Paths standardization
+PROJECT_ROOT = Path(__file__).resolve().parents[5]
+SCRIPT_DIR = Path(__file__).resolve().parent
+
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
-    from rlm_config import RLMConfig, load_cache, save_cache, should_skip
+    from rlm_config import RLMConfig, load_cache, save_cache, collect_files
 except ImportError as e:
-    print(f"❌ Could not import rlm_config from {SCRIPT_DIR}: {e}")
-    print(f"   Ensure rlm_config.py is in the same directory as this script.")
+    print(f"❌ Could not import rlm_config: {e}")
     sys.exit(1)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Clean up RLM cache.")
-    parser.add_argument("--type", choices=["project", "tool"], help="[Legacy] RLM Configuration Profile")
-    parser.add_argument("--profile", help="[New] RLM Profile name (from rlm_profiles.json)")
-    parser.add_argument("--apply", action="store_true", help="Perform the deletion")
-    parser.add_argument("--prune-orphans", action="store_true", help="Remove entries not matching manifest")
+    parser.add_argument("--profile", required=True, help="RLM Profile name (from rlm_profiles.json)")
+    parser.add_argument("--apply", action="store_true", help="Perform the deletion (default is dry run)")
+    parser.add_argument("--prune-orphans", action="store_true", help="Remove entries not in manifest")
     parser.add_argument("--prune-failed", action="store_true", help="Remove entries with [DISTILLATION FAILED]")
     parser.add_argument("--v", action="store_true", help="Verbose mode")
     args = parser.parse_args()
-    
-    if not args.type and not args.profile:
-        print("⚠️  No profile specified, defaulting to legacy 'project' type.")
-        args.type = "project"
-        
-    # Load Config based on Type or Profile
-    if args.profile:
-        config = RLMConfig.from_profile(args.profile)
-    else:
-        config = RLMConfig(run_type=args.type)
 
-    print(f"Checking cache at: {config.cache_path}")
+    config = RLMConfig(profile_name=args.profile)
+
+    print(f"🧹 Checking cache [{config.profile_name.upper()}]: {config.cache_path.name}")
     
     if not config.cache_path.exists():
-        print("Cache file not found.")
+        print("   Cache file not found. Nothing to clean.")
         return
 
     cache = load_cache(config.cache_path)
+    print(f"   Entries in cache: {len(cache)}")
 
-    if args.prune_orphans:
-        print(f"Loaded configuration for [{config.type.upper()}] with parser: {config.parser_type}")
-
-    initial_count = len(cache)
-    print(f"Total entries in cache: {initial_count}")
-
-    # The Logic
     entries_to_remove = []
     authorized_files = None
-    
-    for relative_path, entry in list(cache.items()):
-        full_path = PROJECT_ROOT / relative_path
-        
-        # 1. Check Distillation Failure (Explicit request)
-        if args.prune_failed:
-            summary = entry.get("summary", "")
-            if summary == "[DISTILLATION FAILED]":
-                entries_to_remove.append(relative_path)
-                if args.v:
-                    print(f"  [FAILED] {relative_path}")
-                continue
 
-        # 2. Check existence (Stale)
-        if not full_path.exists():
-            entries_to_remove.append(relative_path)
-            if args.v:
-                print(f"  [MISSING] {relative_path}")
+    for rel_path, entry in list(cache.items()):
+        full_path = PROJECT_ROOT / rel_path
+
+        # 1. Prune failed distillations
+        if args.prune_failed and entry.get("summary") == "[DISTILLATION FAILED]":
+            entries_to_remove.append(rel_path)
+            if args.v: print(f"   [FAILED] {rel_path}")
             continue
 
-        # 3. Check manifest (Orphan)
-        if args.prune_orphans:
-            # STRICT ORPHAN CHECK:
-            # If the file is not in the list of files matched by the configuration (Manifest/Inventory),
-            # it is an orphan.
-            
-            # Lazy load authorized set on first use
-            if authorized_files is None:
-                print("Building authorized file list from manifest...")
-                from rlm_config import collect_files
-                files = collect_files(config)
-                # Store as set of resolved strings for fast lookup
-                authorized_files = set(str(f.resolve()) for f in files)
-                print(f"Authorized files count: {len(authorized_files)}")
+        # 2. Prune missing files (stale)
+        if not full_path.exists():
+            entries_to_remove.append(rel_path)
+            if args.v: print(f"   [MISSING] {rel_path}")
+            continue
 
-            try:
-                # Resolve cache path to absolute for comparison
-                full_path_str = str(full_path.resolve())
-                
-                if full_path_str not in authorized_files:
-                    entries_to_remove.append(relative_path)
-                    if args.v:
-                        print(f"  [ORPHAN] {relative_path} (Not in manifest)")
-                    continue
-            except Exception as e:
-                # If we can't resolve, it might be a bad path, safety remove? 
-                # Or keep safe. Let's log.
-                if args.v: print(f"  [ERROR] resolving {relative_path}: {e}")
+        # 3. Prune orphans (not in manifest)
+        if args.prune_orphans:
+            if authorized_files is None:
+                print("   Building authorized file list from manifest...")
+                authorized_files = set(str(f.resolve()) for f in collect_files(config))
+                print(f"   Authorized files: {len(authorized_files)}")
+            
+            if str(full_path.resolve()) not in authorized_files:
+                entries_to_remove.append(rel_path)
+                if args.v: print(f"   [ORPHAN] {rel_path}")
                 continue
 
-        if args.v:
-           print(f"  [OK] {relative_path}")
+        if args.v: print(f"   [OK] {rel_path}")
 
-    remove_count = len(entries_to_remove)
-    print(f"Entries to remove: {remove_count}")
+    print(f"   Entries to remove: {len(entries_to_remove)}")
 
-    if remove_count == 0:
-        print("Cache is clean. No action needed.")
+    if not entries_to_remove:
+        print("   ✅ Cache is clean.")
         return
 
     if args.apply:
-        print(f"Removing {remove_count} entries...")
         for key in entries_to_remove:
-            if key in cache:
-                del cache[key]
-        
+            del cache[key]
         save_cache(cache, config.cache_path)
-        print("Cache updated successfully.")
+        print(f"   ✅ Removed {len(entries_to_remove)} entries.")
     else:
-        print("\nDRY RUN COMPLETE.")
-        print(f"Found {remove_count} entries to remove (Stale + Orphans).")
-        print("To actually remove these entries, run:")
-        if args.prune_orphans:
-            print(f"  python plugins/rlm-factory/scripts/cleanup_cache.py --apply --prune-orphans")
-        else:
-            print(f"  python plugins/rlm-factory/scripts/cleanup_cache.py --apply")
+        print(f"\n   DRY RUN: Would remove {len(entries_to_remove)} entries.")
+        print(f"   Re-run with --apply to commit changes.")
 
-def remove_entry(run_type: str, file_path: str) -> bool:
-    """
-    Programmatic API to remove a single entry from the cache.
-    Args:
-        run_type: 'legacy' or 'tool'
-        file_path: Relative path to the file (e.g. tools/cli.py)
-    Returns:
-        True if removed, False if not found or error.
-    """
+
+def remove_entry(profile_name: str, file_path: str) -> bool:
+    """Programmatic API to remove a single entry from a profile's cache."""
     try:
-        config = RLMConfig(run_type=run_type)
+        config = RLMConfig(profile_name=profile_name)
         if not config.cache_path.exists():
             return False
-            
         cache = load_cache(config.cache_path)
-        
-        # Normalize keys
-        target_keys = [
-            file_path, 
-            file_path.replace('\\', '/'),
-            str(Path(file_path)) 
-        ]
-        
-        found_key = None
-        for k in cache.keys():
-            if k in target_keys:
-                found_key = k
-                break
-        
-        if found_key:
-            del cache[found_key]
+        norm_path = file_path.replace('\\', '/')
+        if norm_path in cache:
+            del cache[norm_path]
             save_cache(cache, config.cache_path)
-            print(f"🗑️  [RLM] Removed {found_key} from {run_type} cache.")
+            print(f"🗑️  [RLM] Removed {norm_path} from '{profile_name}' cache.")
             return True
-        else:
-             print(f"⚠️  [RLM] Entry not found in cache: {file_path}")
-             return False
-
-    except Exception as e:
-        print(f"❌ [RLM] Error removing {file_path}: {e}")
+        print(f"⚠️  [RLM] Entry not found: {file_path}")
         return False
+    except Exception as e:
+        print(f"❌ [RLM] Error: {e}")
+        return False
+
 
 if __name__ == "__main__":
     main()
