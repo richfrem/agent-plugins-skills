@@ -37,7 +37,9 @@ except ImportError:
 
 # --- Configuration ---
 
-VENDOR_REPO_DIR = Path(".vendor/agent-plugins-skills")
+VENDOR_ROOT = Path(".vendor")
+# Fallback for simple setups or legacy references
+DEFAULT_VENDOR_DIR = VENDOR_ROOT / "agent-plugins-skills"
 LOCAL_ROOT = Path(".")
 # Bridge installer is provided by plugin-mapper (canonical, supports 30+ targets)
 # plugin-manager/scripts/bridge_installer.py has been removed — use this path instead.
@@ -115,34 +117,47 @@ def main():
     # 1. Get Vendor Inventory (What we COULD have)
     print("--- 1. Scanning Vendor Inventory ---")
     
-    # Priority: Check for pre-generated inventory file in vendor repo
-    # This is the "official" list from the source.
-    vendor_inventory_path = VENDOR_REPO_DIR / "vendor-plugins-inventory.json"
-    
     vendor_set = set()
     
-    if vendor_inventory_path.exists():
-        print(f"Reading pre-generated inventory from {vendor_inventory_path}...")
-        try:
-            data = json.loads(vendor_inventory_path.read_text(encoding='utf-8'))
-            # Data is list of dicts {name, description, ...}
-            vendor_set = {item["name"] for item in data}
-            print(f"Loaded {len(vendor_set)} plugins from vendor inventory file.")
-        except Exception as e:
-            print(f"Error reading vendor inventory: {e}")
+    if VENDOR_ROOT.exists():
+        # Iterate all subdirectories in .vendor/ to support multiple sources (Repo 1, Repo 2, etc.)
+        for vendor_repo in VENDOR_ROOT.iterdir():
+            if not vendor_repo.is_dir() or vendor_repo.name.startswith("."):
+                continue
             
-    elif VENDOR_REPO_DIR.exists():
-        # Fallback: Scan the directory if no inventory file
-        print(f"Inventory file not found. Scanning directory {VENDOR_REPO_DIR}...")
-        vendor_set = get_inventory_names(VENDOR_REPO_DIR.parent / "plugins") # Adjust path to point to plugins dir
-        print(f"Found {len(vendor_set)} plugins in Vendor directory.")
+            print(f"  Scanning vendor: {vendor_repo.name}...")
+            
+            # 1a. Check for official inventory file
+            inventory_file = vendor_repo / "vendor-plugins-inventory.json"
+            if inventory_file.exists():
+                try:
+                    data = json.loads(inventory_file.read_text(encoding='utf-8'))
+                    names = {str(item["name"]) for item in data}
+                    vendor_set.update(names)
+                    print(f"    - Loaded {len(names)} plugins from inventory file.")
+                except Exception as e:
+                    print(f"    - Error reading inventory file: {e}")
+            
+            # 1b. Check for flat plugins directory (fallback or alongside)
+            vendor_plugins_dir = vendor_repo / "plugins"
+            if vendor_plugins_dir.exists():
+                results = get_inventory_names(vendor_plugins_dir)
+                if results:
+                    vendor_set.update({str(name) for name in results})
+                    print(f"    - Found {len(results)} plugins in directory.")
     else:
-        print(f"Warning: Vendor directory {VENDOR_REPO_DIR} not found. Skipping cleanup logic.")
+        print(f"Warning: Vendor root {VENDOR_ROOT} not found. Skipping cleanup logic.")
+    
+    print(f"Total Vendor Plugins discovered for sync: {len(vendor_set)}")
     
     # 2. Get Local Inventory (What we DO have)
     print("\n--- 2. Scanning Local Inventory ---")
-    local_inventory = plugin_inventory.scan_plugins(root)
-    local_set = {item["name"] for item in local_inventory}
+    if plugin_inventory:
+        local_inventory = plugin_inventory.scan_plugins(root)
+        local_set = {str(item["name"]) for item in local_inventory}
+    else:
+        print("❌ Error: plugin_inventory module not found. Sync aborted.")
+        sys.exit(1)
     
     # Save Local Inventory (Rich) for the user to reference
     local_inventory_path = root / "local-plugins-inventory.json"
