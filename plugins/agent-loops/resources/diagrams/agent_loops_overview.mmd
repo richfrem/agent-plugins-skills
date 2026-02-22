@@ -1,0 +1,82 @@
+---
+config:
+  layout: dagre
+  theme: base
+---
+
+%% Agent Loops: Overview
+%% The orchestrator assesses the trigger and routes to the appropriate loop pattern.
+%% Location: resources/diagrams/agent_loops_overview.mmd
+
+flowchart TB
+    Trigger(["Trigger<br>(Question / Issue / Research /<br>Work Assignment / Review Request)"])
+
+    Trigger --> Assess{"Orchestrator:<br>Assess Need"}
+
+    %% ─── PATTERN 1: SIMPLE LEARNING LOOP ───
+    Assess -- "Self-Directed" --> SimpleLoop
+    subgraph SimpleLoop ["1. Simple Learning Loop"]
+        direction TB
+        SL_Research["Research & Document"] --> SL_Iterate{"More to Learn?"}
+        SL_Iterate -- Yes --> SL_Research
+        SL_Iterate -- No --> SL_Seal["Seal<br>(Bundle Session Artifacts)"]
+    end
+
+    %% ─── PATTERN 2: RED TEAM REVIEW LOOP ───
+    Assess -- "Needs Review" --> RedTeam
+    subgraph RedTeam ["2. Red Team Review Loop"]
+        direction TB
+        RT_Research["Research & Analyze"] --> RT_Bundle["Bundle Context<br>(context-bundler)"]
+        RT_Bundle --> RT_Review{"Red Team Verdict?"}
+        RT_Review -- "More Research" --> RT_Research
+        RT_Review -- "Approved" --> RT_Seal["Seal<br>(Bundle Session Artifacts)"]
+    end
+
+    %% ─── PATTERN 3: AGENT ORCHESTRATION ───
+    Assess -- "Needs Delegation" --> AgentOrch
+    subgraph AgentOrch ["3. Agent Orchestration"]
+        direction TB
+        AO_Plan["Plan & Define Tasks"] --> AO_Packet["Generate Strategy Packet"]
+        AO_Packet --> AO_Inner["Inner Agent Executes<br>(Claude / Gemini / Copilot CLI)"]
+        AO_Inner --> AO_Verify{"Verify Result"}
+        AO_Verify -- Fail --> AO_Correct["Correction Packet"] --> AO_Inner
+        AO_Verify -- Pass --> AO_Seal["Seal<br>(Bundle Session Artifacts)"]
+    end
+
+    %% ─── PATTERN 4: AGENT SWARM ───
+    Assess -- "Parallelizable" --> Swarm
+    subgraph Swarm ["4. Agent Swarm"]
+        direction TB
+        SW_Plan["Plan & Partition Work"] --> SW_Dispatch["Dispatch to N Agents"]
+        SW_Dispatch --> SW_A["Agent A<br>(Worktree 1)"]
+        SW_Dispatch --> SW_B["Agent B<br>(Worktree 2)"]
+        SW_Dispatch --> SW_N["Agent N<br>(Worktree N)"]
+        SW_A --> SW_Merge["Verify & Merge All"]
+        SW_B --> SW_Merge
+        SW_N --> SW_Merge
+        SW_Merge --> SW_Seal["Seal<br>(Bundle Session Artifacts)"]
+    end
+
+    %% ─── CLOSURE (SHARED) ───
+    subgraph Closure ["Closure"]
+        direction TB
+        Persist["Persist Session<br>(Files + Traces)"] --> Retro["Retrospective"]
+        Retro --> Improve["Improve Loop Infrastructure<br>(Skills / Scripts / Templates)"]
+    end
+
+    SL_Seal --> Persist
+    RT_Seal --> Persist
+    AO_Seal --> Persist
+    SW_Seal --> Persist
+
+    %% Recursive: learnings feed the next trigger
+    Retro -.->|"Feeds Next Loop<br>(RLM Cache)"| Trigger
+
+    %% Styles
+    style Trigger fill:#dfd,stroke:#333,stroke-width:2px
+    style Assess fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style SimpleLoop fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style RedTeam fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    style AgentOrch fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style Swarm fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style Closure fill:#d4edda,stroke:#155724,stroke-width:2px

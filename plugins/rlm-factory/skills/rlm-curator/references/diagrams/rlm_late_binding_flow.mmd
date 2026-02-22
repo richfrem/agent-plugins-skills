@@ -1,0 +1,27 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant Agent as Antigravity Agent
+    participant Skill as Tool Discovery Skill
+    participant Search as query_cache.py
+    participant Cache as rlm_tool_cache.json
+    participant FileSystem as Tool Source Code
+
+    note over Agent, FileSystem: Phase 1: Intent & Discovery (Late Binding)
+    User->>Agent: "Code a new Business Rule for FORM0000"
+    Agent->>Agent: Check Context (Tool Missing?)
+    Agent->>Skill: activate(intent="create business rule")
+    
+    Skill->>Search: search("business rule", store="tool")
+    Search->>Cache: Query Index (Fuzzy/Vector)
+    Cache-->>Search: Match: tools/codify/business_rule.py
+    Search-->>Skill: Return List [Tool ID, Path, Purpose]
+
+    note over Agent, FileSystem: Phase 2: Just-In-Time Context Loading
+    Skill->>FileSystem: Read Tool Instructions (Detailed)
+    FileSystem-->>Skill: Full Docstring/Usage
+    Skill-->>Agent: Inject Context: [business_rule.py Usage]
+
+    note over Agent, FileSystem: Phase 3: Execution
+    Agent->>FileSystem: Execute: python tools/codify/business_rule.py ...
+    FileSystem-->>Agent: Success / Output

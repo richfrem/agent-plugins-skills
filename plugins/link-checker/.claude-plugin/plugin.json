@@ -1,0 +1,20 @@
+{
+    "name": "link-checker",
+    "description": "Validate and auto-repair broken documentation links across your repository using file inventory mapping and fuzzy matching",
+    "version": "1.0.0",
+    "author": {
+        "name": "Project Sanctuary",
+        "url": "https://github.com/richfrem/Project_Sanctuary"
+    },
+    "repository": "https://github.com/richfrem/Project_Sanctuary",
+    "license": "MIT",
+    "keywords": [
+        "links",
+        "documentation",
+        "validation",
+        "auto-repair",
+        "markdown"
+    ],
+    "commands_dir": "commands",
+    "skills_dir": "skills"
+}

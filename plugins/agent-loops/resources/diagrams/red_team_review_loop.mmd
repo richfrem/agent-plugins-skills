@@ -1,0 +1,30 @@
+---
+config:
+  theme: base
+---
+
+%% Pattern 2: Red Team Review Loop
+%% Orchestrated research with iterative adversarial review rounds.
+%% Location: resources/diagrams/red_team_review_loop.mmd
+
+flowchart TB
+    Start(["Trigger:<br>Architecture / Design / Problem to Review"])
+    Start --> Orient["Load Prior Context"]
+    Orient --> Research["Deep-Dive Research & Analysis"]
+    Research --> Bundle["Bundle Context for Review<br>(context-bundler)"]
+    Bundle --> Dispatch["Dispatch to Red Team<br>(Browser Agents / CLI Agents / Human)"]
+
+    Dispatch --> Review{"Red Team Verdict"}
+    Review -- "More Research Needed" --> Feedback["Capture Feedback"]
+    Feedback --> Research
+    Review -- "Approved" --> Synthesize["Synthesize Findings"]
+
+    Synthesize --> Seal["Seal Session State"]
+    Seal --> Persist["Persist to Long-Term Memory"]
+    Persist --> Retro["Retrospective"]
+    Retro -.->|"Next Round / Session"| Start
+
+    style Start fill:#dfd,stroke:#333,stroke-width:2px
+    style Review fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    style Dispatch fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    style Retro fill:#d4edda,stroke:#155724,stroke-width:2px

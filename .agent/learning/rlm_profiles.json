@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "default_profile": "plugins",
+    "profiles": {
+        "plugins": {
+            "description": "Plugin README and SKILL.md summaries",
+            "manifest": ".agent/learning/plugins_manifest.json",
+            "cache": ".agent/learning/rlm_plugins_cache.json",
+            "extensions": [
+                ".md"
+            ]
+        }
+    }
+}

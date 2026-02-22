@@ -1,0 +1,24 @@
+{
+    "name": "spec-kitty",
+    "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
+    "version": "1.0.0",
+    "author": {
+        "name": "Project Sanctuary",
+        "url": "https://github.com/richfrem/Project_Sanctuary"
+    },
+    "license": "MIT",
+    "keywords": [
+        "spec-kitty",
+        "sdd",
+        "workflow",
+        "bridge",
+        "worktree",
+        "kanban"
+    ],
+    "prerequisites": {
+        "spec-kitty-cli": "pip install spec-kitty-cli OR uv tool install spec-kitty-cli",
+        "init": "spec-kitty init . --ai windsurf"
+    },
+    "commands_dir": "commands",
+    "skills_dir": "skills"
+}

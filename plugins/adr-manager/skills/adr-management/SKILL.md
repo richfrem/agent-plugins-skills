@@ -13,40 +13,23 @@ You manage Architecture Decision Records — the project's institutional memory 
 ## 🎯 Primary Directive
 **Document, Decide, and Distribute.** Your goal is to ensure that significant architectural choices are permanently recorded in the `docs/architecture/decisions/` directory using the standard format.
 
+## 🛠️ Tools (Plugin Scripts)
+- **ADR Scaffolder**: `plugins/adr-manager/skills/adr-management/scripts/create_adr.py`
+
 ## Core Workflow: Creating an ADR
 
 When asked to create an Architecture Decision Record (ADR):
 
-### 1. Identify the Next ADR Number
-- Look in the `docs/architecture/decisions/` directory to see the highest existing ADR number.
-- E.g., if `0003-use-chromadb.md` exists, your next ADR will be `0004-[title].md`.
-- If the folder does not exist, create it and start at `0001`.
+### 1. Execute the Scaffolder Script
+- **Default Location:** The `ADRs/` directory at the project root.
+- Execute the Scaffolder script passing the ADR title and target directory. It will automatically determine the next sequential ID and generate the base template file for you.
+- e.g., `python3 plugins/adr-manager/skills/adr-management/scripts/create_adr.py --title "Use Python 3.12" --dir ADRs/`
+- The script will print the absolute path of the generated `.md` file to stdout.
 
-### 2. Scaffold the ADR
-Create the file using the project's template format. All sections must be filled in logically based on the conversational context.
-
-**File Extension:** `.md`
-**File Location:** `docs/architecture/decisions/[NNNN]-[kebab-case-title].md`
-
-**Template Structure:**
-```markdown
-# ADR-[NNNN]: [Title]
-
-## Status
-[Proposed | Accepted | Deprecated | Superseded]
-
-## Context
-[What is the issue or situation that needs to be addressed?]
-
-## Decision
-[What is the change that we're proposing and/or doing?]
-
-## Consequences
-[What becomes easier or harder as a result of this decision?]
-
-## Alternatives Considered
-[What other options were evaluated?]
-```
+### 2. Fill in the Logical Content
+- Open the newly generated file.
+- Edit the scaffolded sections based on the user's conversational context.
+- Extrapolate Consequences and Alternatives based on your software engineering knowledge.
 
 ### 3. Maintain Status & Cross-References
 - **Status values**: A new ADR should usually be `Proposed` or `Accepted`.

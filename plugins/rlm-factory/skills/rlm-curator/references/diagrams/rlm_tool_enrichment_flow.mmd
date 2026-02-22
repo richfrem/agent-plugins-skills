@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant CLI as manage_tool_inventory.py
+    participant JSON as tool_inventory.json
+    participant Distiller as distiller.py
+    participant LLM as Granite Model
+    participant Cache as rlm_tool_cache.json
+
+    note over CLI, Cache: 1. Forward Flow (Trigger)
+    User->>CLI: add tool (path)
+    CLI->>JSON: Create entry
+    CLI->>Distiller: _distill_tool(path)
+    
+    note over Distiller, Cache: 2. Analysis & Caching
+    Distiller->>LLM: Summarize(code)
+    LLM-->>Distiller: JSON { purpose, ... }
+    Distiller->>Cache: Save RLM Entry
+    
+    note over Distiller, CLI: 3. Feedback Loop (Enrichment)
+    Distiller->>CLI: update_tool(path, purpose, suppress=True)
+    
+    note over CLI, JSON: 4. Final Updates (Suppressed)
+    CLI->>JSON: Update Description
+

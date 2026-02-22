@@ -1,0 +1,46 @@
+---
+config:
+  theme: base
+---
+
+%% Pattern 4: Agent Swarm
+%% Parallel execution across multiple agents/worktrees with merge verification.
+%% Location: resources/diagrams/agent_swarm.mmd
+
+flowchart TB
+    Start(["Trigger:<br>Large / Parallelizable Work"])
+    Start --> Plan["Plan & Partition Work"]
+    Plan --> Route{"Route by Complexity"}
+
+    Route -- "Sequential" --> Seq["Worktree A → B → C<br>(Ordered Pipeline)"]
+    Route -- "Parallel" --> Par["Dispatch All Simultaneously"]
+
+    Par --> W1["Agent 1<br>(Worktree 1)"]
+    Par --> W2["Agent 2<br>(Worktree 2)"]
+    Par --> WN["Agent N<br>(Worktree N)"]
+
+    subgraph Workers ["Worker Selection per Worktree"]
+        direction LR
+        Human["Human"] --- Script["Deterministic Script"] --- Agent["CLI Agent"]
+    end
+
+    W1 --> Verify
+    W2 --> Verify
+    WN --> Verify
+    Seq --> Verify
+
+    Verify{"Verification Gate"}
+    Verify -- Fail --> Correction["Correction Packet"] --> Route
+    Verify -- Pass --> Merge["Merge All Worktrees"]
+
+    Merge --> Seal["Seal & Persist"]
+    Seal --> Retro["Retrospective"]
+    Retro -.->|"Next Phase"| Start
+
+    style Start fill:#dfd,stroke:#333,stroke-width:2px
+    style Route fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Verify fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Workers fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,stroke-dasharray: 5 5
+    style Retro fill:#d4edda,stroke:#155724,stroke-width:2px
+    style Correction fill:#ffebee,stroke:#c62828
+    style Merge fill:#e8f5e9,stroke:#2e7d32

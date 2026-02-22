@@ -1,0 +1,10 @@
+{
+  "name": "agent-loops",
+  "version": "2.0.0",
+  "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
+  "author": "Richard Fremmerlid",
+  "dependencies": [
+    "context-bundler",
+    "rlm-factory"
+  ]
+}

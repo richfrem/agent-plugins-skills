@@ -1,0 +1,25 @@
+---
+config:
+  theme: base
+---
+
+%% Pattern 1: Simple Learning Loop
+%% Self-directed research, document, iterate. No agents, no reviews.
+%% Location: resources/diagrams/learning_loop.mmd
+
+flowchart TB
+    Start(["Trigger:<br>Question / Research Need"])
+    Start --> Orient["Load Prior Context<br>(RLM Cache)"]
+    Orient --> Research["Research & Synthesize"]
+    Research --> Document["Document Findings"]
+    Document --> Iterate{"More to Learn?"}
+    Iterate -- Yes --> Deepen["Deepen / Refine<br>(Recursive Bundling)"]
+    Deepen --> Research
+    Iterate -- No --> Seal["Seal Session State"]
+    Seal --> Persist["Persist to Long-Term Memory"]
+    Persist --> Retro["Retrospective"]
+    Retro -.->|"Next Session"| Start
+
+    style Start fill:#dfd,stroke:#333,stroke-width:2px
+    style Iterate fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Retro fill:#d4edda,stroke:#155724,stroke-width:2px

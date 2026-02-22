@@ -1,0 +1,18 @@
+{
+    "name": "task-manager",
+    "description": "Lightweight kanban task board \u2014 JSON-backed lanes (backlog, todo, in-progress, done) with zero dependencies",
+    "version": "1.0.0",
+    "author": {
+        "name": "Project Sanctuary",
+        "url": "https://github.com/richfrem/Project_Sanctuary"
+    },
+    "license": "MIT",
+    "keywords": [
+        "tasks",
+        "kanban",
+        "todo",
+        "project-management"
+    ],
+    "commands_dir": "commands",
+    "skills_dir": "skills"
+}

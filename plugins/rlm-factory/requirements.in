@@ -1,0 +1,11 @@
+# RLM Factory Dependencies (Intent File)
+# Workflow:
+#   1. Edit this file
+#   2. pip-compile scripts/rlm_factory/requirements.in
+#   3. pip install -r scripts/rlm_factory/requirements.txt
+
+# HTTP client for Ollama API
+requests
+
+# Environment configuration
+python-dotenv
