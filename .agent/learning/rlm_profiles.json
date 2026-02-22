@@ -9,6 +9,17 @@
             "extensions": [
                 ".md"
             ]
+        },
+        "tools": {
+            "description": "Semantic Registry of Project Tools and Executable Code logic.",
+            "manifest": ".agent/learning/rlm_tools_manifest.json",
+            "cache": ".agent/learning/rlm_tool_cache.json",
+            "extensions": [
+                ".py",
+                ".js",
+                ".ts",
+                ".sh"
+            ]
         }
     }
 }

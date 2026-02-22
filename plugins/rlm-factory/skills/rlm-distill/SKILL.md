@@ -13,27 +13,39 @@ Should leverage frontier model ability to produce a superior summary for a file 
 
 ## 🎯 Agent Execution Protocol (The "Brain Upgrade")
 
-**Context**: You (the Agent) are faster and smarter than the local `distiller.py` script.
-**Directive**: When asked to "update RLM" or "summarize x", **DO NOT** run `python distiller.py` immediately.
+**Context**: You (the Agent) are faster and smarter than the local `distiller.py` script. The local Ollama model (e.g., granite or qwen2) is often too slow on user hardware.
+**Directive**: When asked to "update RLM" or "summarize x", **DO NOT** run `python distiller.py` immediately. 
+
+Instead, you must **act as the distiller yourself**.
 
 ### Protocol
 1.  **Check**: Is the request for < 10 files?
-2.  **Action**: If YES -> **Read & Write Manually**.
-    *   Read the target file (`view_file`).
-    *   Generate the summary (Mental Step).
-    *   Edit `rlm_summary_cache.json` or `rlm_tool_cache.json` directly (`replace_file_content` or `ed`).
+2.  **Action**: If YES -> **Read & Write Manually (Agent Distillation)**.
+    *   Call the `rlm-distill` pseudo-command for *each* file.
+    *   Read the **entire target file deeply** (`view_file`).
+    *   Create a high-quality summary of the content yourself.
+    *   Edit `rlm_summary_cache.json` or `rlm_tool_cache.json` and manually inject your JSON/Text summary string into the structure.
     *   Log: "Updated cache for [file] via Agent Distill."
 3.  **Fallback**: If NO (Batch > 10 files) -> Run `python distiller.py` (The script is better for bulk/boring work).
 
-## Why This Exists
+## Why This Exists (The RLM Philosophy)
+
+The fundamental purpose of the Recursive Learning Model (RLM) cache is **"Read Once, Cache Forever."** 
+
+You should perform a deep, comprehensive read and summarize the file with an exceptionally good summary **once**. The goal is to entirely **remove the need for you to read those complex files many times** just to figure out what they do. 
+
+The workflow is:
+1. You read the RLM cache summary (which you created once).
+2. You immediately understand what the plugin/tool/document does without opening it.
+3. If, and only if, the task requires deep code-level modification of that specific file, you trigger the "recursion" and read the full source file again.
 
 The existing `plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py` calls Ollama locally, which:
-- Takes 3-5 minutes per file on M1 Mac
-- Produces lower-quality summaries than a frontier model
-- Frequently fails (`[DISTILLATION FAILED]` — currently 31 entries)
-- Requires Ollama to be running
+- Takes 3-5 minutes per file on M1 Mac hardware.
+- Produces lower-quality summaries than a frontier model.
+- Frequently fails (`[DISTILLATION FAILED]`).
+- Requires Ollama to be running.
 
-The agent (Claude, Gemini, Antigravity) is already a better summarizer. This skill cuts the middleman.
+The agent (Claude, Gemini, Antigravity) is already a drastically better summarizer. This skill explicitly makes **you** the distillation engine.
 
 ## The Two Caches
 
@@ -98,24 +110,19 @@ find . -name "*.md" -mmin -120
 
 Read the file content using `view_file` or equivalent.
 
-### 3. Write the Summary
+### 3. Apply the Distillation Prompts
 
-**For docs/markdown (summary cache):** Write a concise, information-dense paragraph that captures:
-- What the document is (purpose)
-- Key architectural components or decisions
-- Status and relationships to other documents
-- NO filler phrases like "This document..." — go straight to substance
+Before writing the summary, you **MUST** align your output exactly with the rigorous standards defined in the official RLM prompts. 
 
-**For code/scripts (tool cache):** Write a JSON string with these fields:
-- `purpose`: One-sentence description
-- `layer`: Where it fits (e.g., "Curate / RLM", "Orchestrator")
-- `usage`: Array of example commands
-- `args`: Array of CLI arguments
-- `inputs`: Array of input files/sources
-- `outputs`: Array of output files/artifacts
-- `dependencies`: Array of script dependencies
-- `key_functions`: Array of important functions
-- `consumed_by`: Array of consumers
+**For code/scripts (Tool Cache):**
+Read and strictly adhere to the JSON schema demanded in:
+> `plugins/tool-inventory/resources/prompts/rlm/rlm_summarize_tool.md`
+Your output must be the raw, stringified JSON object matching that exact schema.
+
+**For docs/markdown (Summary Cache):**
+Read and strictly adhere to the high-fidelity architectural criteria demanded in:
+> `plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_legacy.md`
+Your output must be a dense, signal-heavy text summary.
 
 ### 4. Update the Cache JSON
 

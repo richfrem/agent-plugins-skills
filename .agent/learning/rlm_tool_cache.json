@@ -1,0 +1,203 @@
+{
+    "plugins/adr-manager/skills/adr-management/scripts/create_adr.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"create_adr.py (CLI) ===================================== Purpose:     Determines the next sequential Architecture Decision Record (ADR) number,     reads the standard ADR template, applies the title, and scaffolds the new file.\", \"layer\": \"Unknown\", \"usage\": [\"python3 create_adr.py --title \\\"Use ChromaDB for Vector Storage\\\" --dir \\\"ADRs\\\"\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.428005Z",
+        "file_mtime": 1771715599.94166
+    },
+    "plugins/agent-loops/hooks/closure-guard.sh": {
+        "hash": "948d3da551655c41",
+        "summarized_at": "2026-02-21T19:05:29.052345",
+        "summary": "[DISTILLATION FAILED]"
+    },
+    "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Agent Orchestrator (Core Script) ================================\", \"layer\": \"Unknown\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.433196Z",
+        "file_mtime": 1771717150.2745867
+    },
+    "plugins/agent-loops/skills/orchestrator/scripts/proof_check.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Proof Check (CLI) =====================================\", \"layer\": \"Orchestrator / Verification\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.431925Z",
+        "file_mtime": 1771716548.5909898
+    },
+    "plugins/agent-scaffolders/scripts/audit.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Parses plugin directories to verify Agent Skills Open Standard compliance, checking structured layouts, MCP schemas, hook definitions, and documentation constraints.\", \"layer\": \"Meta-Execution\", \"supported_object_types\": [\".claude-plugin formatted directories\", \"Agent Skills\"], \"usage\": [\"python3 audit.py --path <plugin-directory>\"], \"args\": [\"--path\"], \"inputs\": [\"plugin.json\", \"SKILL.md\", \".mcp.json\", \"hooks.json\", \"README.md\"], \"outputs\": [\"Terminal stdout with success/fail metrics and warnings\"], \"dependencies\": [], \"consumed_by\": [\"User (CLI)\", \"ecosystem-standards (Agent Skill)\"], \"key_functions\": [\"audit_plugin\"]}",
+        "summarized_at": "2026-02-22T03:16:59.516538Z",
+        "file_mtime": 1771704129.5851536
+    },
+    "plugins/agent-scaffolders/scripts/scaffold.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Deterministically generates compliant directory architectures and boilerplate logic for Agent Skills, Plugins, Hooks, Commands, and Sub-Agents using Jinja templates.\", \"layer\": \"Meta-Execution\", \"supported_object_types\": [\"Plugins\", \"Skills\", \"Hooks\", \"Sub-Agents\", \"Commands\"], \"usage\": [\"python3 scaffold.py --type skill --name <skill-name> --path <output-dir> --desc <description>\"], \"args\": [\"--type\", \"--name\", \"--path\", \"--desc\", \"--event\", \"--action\"], \"inputs\": [\"Jinja templates (../templates/)\"], \"outputs\": [\"Generated directory tree and markdown/json files\"], \"dependencies\": [], \"consumed_by\": [\"Agent Scaffolders logic (create-plugin, create-skill, etc.)\"], \"key_functions\": [\"create_plugin\", \"create_skill\", \"create_hook\", \"create_sub_agent\", \"create_command\"]}",
+        "summarized_at": "2026-02-22T03:16:59.517007Z",
+        "file_mtime": 1771715195.0499976
+    },
+    "plugins/coding-conventions/templates/js-tool-header-template.js": {
+        "hash": "4aa418ad2523e5d2",
+        "summarized_at": "2026-02-21T19:05:29.017886",
+        "summary": "[DISTILLATION FAILED]"
+    },
+    "plugins/coding-conventions/templates/python-tool-header-template.py": {
+        "hash": "6b69298304e24c25",
+        "summarized_at": "2026-02-21T19:05:27.797322",
+        "summary": "[DISTILLATION FAILED]"
+    },
+    "plugins/context-bundler/scripts/bundle.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Reads a JSON manifest containing file paths and notes to concatenate technical project artifacts into a single LLM-digestible Markdown bundle while preserving folder hierarchies and context.\", \"layer\": \"Data Processing Utilities / Context Generation\", \"supported_object_types\": [\"JSON\", \"Markdown\", \"Python\", \"TypeScript\", \"JavaScript\", \"Misc Text\"], \"usage\": [\"python3 bundle.py --manifest <path> --bundle <output>\"], \"args\": [\"--manifest\", \"--bundle\"], \"inputs\": [\"JSON manifest file\", \"Source files referenced in manifest\"], \"outputs\": [\"Single concatenated Markdown artifact\"], \"dependencies\": [], \"consumed_by\": [\"User (CLI)\", \"Context Bundler Workflows\"], \"key_functions\": [\"generate_bundle\"]}",
+        "summarized_at": "2026-02-22T03:16:59.517030Z",
+        "file_mtime": 1771713602.52892
+    },
+    "plugins/excel-to-csv/skills/excel-to-csv/scripts/convert.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Extracts data from Excel workbooks, converting entire sheets or explicit tables into individual CSV files while robustly handling dynamic headers and empty structures.\", \"layer\": \"Data Processing Utilities\", \"supported_object_types\": [\".xlsx\", \".xls\"], \"usage\": [\"python3 scripts/convert.py --excel data.xlsx --sheets 'Sheet1' --outdir ./output\"], \"args\": [\"--excel\", \"--outdir\", \"--sheets\", \"--write-empty\"], \"inputs\": [\".xlsx\", \".xls\"], \"outputs\": [\"Generated .csv files\"], \"dependencies\": [\"pandas\", \"openpyxl\"], \"consumed_by\": [\"User (CLI)\"], \"key_functions\": [\"sanitize_sheet_name\", \"convert_excel_to_csv\"]}",
+        "summarized_at": "2026-02-22T03:16:59.517045Z",
+        "file_mtime": 1771715362.3361557
+    },
+    "plugins/link-checker/skills/link-checker-agent/scripts/check_broken_paths.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"check_broken_paths.py (CLI) =====================================\", \"layer\": \"Curate / Cli_Entry_Points\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.437151Z",
+        "file_mtime": 1771716005.900507
+    },
+    "plugins/link-checker/skills/link-checker-agent/scripts/enrich_links_v2.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"enrich_links_v2.py (CLI) =====================================\", \"layer\": \"Curate / Utilities\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.435095Z",
+        "file_mtime": 1771716005.9009337
+    },
+    "plugins/link-checker/skills/link-checker-agent/scripts/find_source_links.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"find_source_links.py (CLI) =====================================\", \"layer\": \"Curate / Utilities\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.437913Z",
+        "file_mtime": 1771716005.90151
+    },
+    "plugins/link-checker/skills/link-checker-agent/scripts/map_repository_files.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"map_repository_files.py (CLI) =====================================\", \"layer\": \"Curate / Cli_Entry_Points\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.436368Z",
+        "file_mtime": 1771716005.9018726
+    },
+    "plugins/link-checker/skills/link-checker-agent/scripts/smart_fix_links.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"smart_fix_links.py (CLI) =====================================\", \"layer\": \"Curate / Cli_Entry_Points\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.435901Z",
+        "file_mtime": 1771716005.9023378
+    },
+    "plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Wraps the npx @mermaid-js/mermaid-cli utility to deterministically render raw Mermaid syntax into PNG graphics, handling scalable resolution and themes via headless Puppeteer.\", \"layer\": \"Tools & Generation\", \"supported_object_types\": [\"Mermaid standard (.mmd)\", \"PNG binary export\"], \"usage\": [\"python3 convert.py -i input.mmd -o output.png -s 2 -t dark\"], \"args\": [\"-i\", \"-o\", \"-s\", \"-t\"], \"inputs\": [\".mmd or .mermaid raw text files\"], \"outputs\": [\".png graphic files\"], \"dependencies\": [\"npx @mermaid-js/mermaid-cli\"], \"consumed_by\": [\"User (CLI)\", \"convert-mermaid (Agent Skill)\"], \"key_functions\": [\"convert_mermaid\"]}",
+        "summarized_at": "2026-02-22T03:16:59.517058Z",
+        "file_mtime": 1771704157.8859637
+    },
+    "plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"bridge_installer.py (CLI) =====================================\", \"layer\": \"System Integration Layer\", \"usage\": [\"python3 bridge_installer.py --plugin <path> [--target <auto|antigravity|github|gemini>]\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.450575Z",
+        "file_mtime": 1771726963.8323243
+    },
+    "plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"install_all_plugins.py (CLI) =====================================\", \"layer\": \"System Integration\", \"usage\": [\"python3 install_all_plugins.py --target <auto|antigravity|github|gemini|claude>\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.447965Z",
+        "file_mtime": 1771704157.0920599
+    },
+    "plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"cleanup_cache.py (CLI) =====================================\", \"layer\": \"Curate / Rlm\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.445594Z",
+        "file_mtime": 1771723605.2901053
+    },
+    "plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"debug_rlm.py (CLI) =====================================\", \"layer\": \"Unknown\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.444374Z",
+        "file_mtime": 1771723826.3458712
+    },
+    "plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"distiller.py (CLI) =====================================\", \"layer\": \"Curate / Rlm\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.443958Z",
+        "file_mtime": 1771723594.0443482
+    },
+    "plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"inventory.py (CLI) =====================================\", \"layer\": \"Curate / Rlm\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.446287Z",
+        "file_mtime": 1771723593.1413488
+    },
+    "plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"query_cache.py (CLI) =====================================\", \"layer\": \"Curate / Rlm\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.438888Z",
+        "file_mtime": 1771723602.998834
+    },
+    "plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"rlm_config.py (Shared Module) =====================================\", \"layer\": \"Curate / Rlm\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.441973Z",
+        "file_mtime": 1771723796.1170356
+    },
+    "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Spec Kitty Configuration Sync =============================\", \"layer\": \"Unknown\", \"usage\": [\"python3 plugins/spec-kitty/skills/spec-kitty-agent/scripts/sync_configuration.py\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.430923Z",
+        "file_mtime": 1771726291.2842336
+    },
+    "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/verify_workflow_state.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"verify_workflow_state.py ========================\", \"layer\": \"Plugin / Spec-Kitty / Verification\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.430125Z",
+        "file_mtime": 1771718714.0040822
+    },
+    "plugins/task-manager/skills/task-agent/scripts/board.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"board.py (CLI) ===================================== Purpose:     Prints an ASCII Kanban board by reading the markdown files from     the various lane directories.\", \"layer\": \"Unknown\", \"usage\": [\"python3 board.py --dir tasks/\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.447475Z",
+        "file_mtime": 1771715850.1837127
+    },
+    "plugins/task-manager/skills/task-agent/scripts/create_task.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"create_task.py (CLI) ===================================== Purpose:     Determines the next sequential Kanban task number by scanning all     lanes (backlog, todo, in-progress, done), reads the generic task     template, and scaffolds the new task in the specified target lane.\", \"layer\": \"Unknown\", \"usage\": [\"python3 create_task.py --title \\\"Fix login bug\\\" --dir tasks/ --lane todo\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.446939Z",
+        "file_mtime": 1771715849.2446115
+    },
+    "plugins/tool-inventory/skills/tool-inventory-init/scripts/tool_inventory_init.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Tool Inventory Setup (Librarian Bootstrapper) =============================================\", \"layer\": \"Curate / Inventories\", \"usage\": [\"python3 plugins/tool-inventory/skills/tool-inventory-init/scripts/tool_inventory_init.py\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.451267Z",
+        "file_mtime": 1771729331.9977393
+    },
+    "plugins/tool-inventory/skills/tool-inventory/scripts/audit_plugins.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Audit Plugin Inventory ======================\", \"layer\": \"Unknown\", \"usage\": [\"python3 plugins/tool-inventory/scripts/audit_plugins.py\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.461531Z",
+        "file_mtime": 1771728135.9483652
+    },
+    "plugins/tool-inventory/skills/tool-inventory/scripts/fix_inventory_paths.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"Fix Inventory Paths ===================\", \"layer\": \"Unknown\", \"usage\": [\"python3 plugins/plugin-manager/skills/plugin-manager/scripts/fix_inventory_paths.py [--apply]\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.460362Z",
+        "file_mtime": 1771728135.9495838
+    },
+    "plugins/tool-inventory/skills/tool-inventory/scripts/manage_tool_inventory.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"manage_tool_inventory.py (CLI) =====================================\", \"layer\": \"Curate / Curate\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.459485Z",
+        "file_mtime": 1771729057.8279257
+    },
+    "plugins/tool-inventory/skills/tool-inventory/scripts/rebuild_inventory.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"rebuild_inventory.py ==================== Scans the plugins directory and rebuilds tool_inventory.json from scratch.\", \"layer\": \"Unknown\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.461964Z",
+        "file_mtime": 1771728135.9517422
+    },
+    "plugins/tool-inventory/skills/tool-inventory/scripts/sync_inventory_descriptions.py": {
+        "hash": "agent_distilled_2026_02_22",
+        "summary": "{\"purpose\": \"sync_inventory_descriptions.py ==============================\", \"layer\": \"Unknown\", \"usage\": [], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}",
+        "summarized_at": "2026-02-22T03:06:59.460858Z",
+        "file_mtime": 1771728135.952612
+    }
+}
