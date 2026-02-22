@@ -5,11 +5,6 @@
     "summarized_at": "2026-02-22T03:06:59.428005Z",
     "summary": "{\"purpose\": \"create_adr.py (CLI) ===================================== Purpose:     Determines the next sequential Architecture Decision Record (ADR) number,     reads the standard ADR template, applies the title, and scaffolds the new file.\", \"layer\": \"Unknown\", \"usage\": [\"python3 create_adr.py --title \\\"Use ChromaDB for Vector Storage\\\" --dir \\\"ADRs\\\"\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"key_functions\": [], \"consumed_by\": []}"
   },
-  "plugins/agent-loops/hooks/closure-guard.sh": {
-    "hash": "948d3da551655c41",
-    "summarized_at": "2026-02-21T19:05:29.052345",
-    "summary": "[DISTILLATION FAILED]"
-  },
   "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py": {
     "file_mtime": 1771717150.2745867,
     "hash": "agent_distilled_2026_02_22",
@@ -33,16 +28,6 @@
     "hash": "agent_distilled_2026_02_22",
     "summarized_at": "2026-02-22T03:16:59.517007Z",
     "summary": "{\"purpose\": \"Deterministically generates compliant directory architectures and boilerplate logic for Agent Skills, Plugins, Hooks, Commands, and Sub-Agents using Jinja templates.\", \"layer\": \"Meta-Execution\", \"supported_object_types\": [\"Plugins\", \"Skills\", \"Hooks\", \"Sub-Agents\", \"Commands\"], \"usage\": [\"python3 scaffold.py --type skill --name <skill-name> --path <output-dir> --desc <description>\"], \"args\": [\"--type\", \"--name\", \"--path\", \"--desc\", \"--event\", \"--action\"], \"inputs\": [\"Jinja templates (../templates/)\"], \"outputs\": [\"Generated directory tree and markdown/json files\"], \"dependencies\": [], \"consumed_by\": [\"Agent Scaffolders logic (create-plugin, create-skill, etc.)\"], \"key_functions\": [\"create_plugin\", \"create_skill\", \"create_hook\", \"create_sub_agent\", \"create_command\"]}"
-  },
-  "plugins/coding-conventions/templates/js-tool-header-template.js": {
-    "hash": "4aa418ad2523e5d2",
-    "summarized_at": "2026-02-21T19:05:29.017886",
-    "summary": "[DISTILLATION FAILED]"
-  },
-  "plugins/coding-conventions/templates/python-tool-header-template.py": {
-    "hash": "6b69298304e24c25",
-    "summarized_at": "2026-02-21T19:05:27.797322",
-    "summary": "[DISTILLATION FAILED]"
   },
   "plugins/context-bundler/scripts/bundle.py": {
     "file_mtime": 1771713602.52892,
