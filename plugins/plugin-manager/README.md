@@ -8,9 +8,8 @@ The **Plugin Manager** is the core toolkit for maintaining a healthy plugin ecos
 
 ### 1. Initial Setup
 New to this repo? Run these commands to get started:
-1.  **Clone Vendor Repo**: `git clone ... .vendor/agent-plugins-skills`
-2.  **Install Plugins**: Copy what you need to `plugins/`
-3.  **Sync**: `python plugins/plugin-manager/scripts/sync_with_inventory.py`
+1.  **Clone Vendor Repo**: `git clone https://github.com/richfrem/agent-plugins-skills.git .vendor/agent-plugins-skills`
+2.  **Bootstrap**: `python3 plugins/plugin-manager/scripts/plugin_bootstrap.py`
 
 👉 **[Read the Full Setup Guide](../../INIT_SETUP.md)**
 
@@ -22,6 +21,16 @@ Use these Agent Commands to manage your plugins:
 | `/plugin-manager_update` | **Update Everything**. Pulls latest code from vendor and syncs agents. |
 | `/plugin-manager_install` | **Install New**. Adds a specific plugin (e.g., `agency-swarm`) from vendor. |
 | `/plugin-manager_cleanup` | **Housekeeping**. Removes orphaned artifacts from deleted vendor plugins. |
+
+## 🛠 Available Skills
+
+| Skill | Purpose | Key Script |
+| :--- | :--- | :--- |
+| **[plugin-bootstrap](skills/plugin-bootstrap/SKILL.md)** | Initializes/updates local ecosystem from vendor. | `plugin_bootstrap.py` |
+| **[inventory-sync](skills/inventory-sync/SKILL.md)** | Deep sync between plugins folder and agent configs. | `sync_with_inventory.py` |
+| **[plugin-replicator](skills/plugin-replicator/SKILL.md)** | Copies or links plugins to other repositories. | `plugin_replicator.py` |
+| **[agent-bridge](skills/agent-bridge/SKILL.md)** | Adapts standard plugins to specific agent runtimes. | `bridge_installer.py` |
+| **[plugin-maintenance](skills/plugin-maintenance/SKILL.md)** | Audits structure, generates READMEs, health checks. | `audit_structure.py` |
 
 ---
 
