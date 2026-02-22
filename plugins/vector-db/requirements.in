@@ -13,7 +13,6 @@ chromadb
 
 # LangChain Base
 langchain
-langchain-classic
 
 # LangChain Integration
 langchain-chroma
