@@ -1,12 +1,12 @@
 
 # Plugin Architecture & Bridge Process
 
-**Author**: Antigravity Architect
+**Author**: Spec Kitty Architect
 **Version**: 2.0 (Dual Bridge)
 
 ## Overview
 
-The agent bridge Architecture uses a **Dual Bridge** system to manage configuration. This ensures that the core system rules (Kernel) remain stable while allowing for flexible extension (Plugins).
+The Project Sanctuary Agent Architecture uses a **Dual Bridge** system to manage configuration. This ensures that the core system rules (Kernel) remain stable while allowing for flexible extension (Plugins).
 
 ### 1. The Kernel (System Bridge)
 **Source**: `.kittify/memory` (Rules), `.windsurf/workflows` (Core Workflows)
@@ -47,13 +47,49 @@ python plugins/spec-kitty/skills/spec-kitty-agent/scripts/sync_workflows.py
 ### Step 3: Install Capabilities (Plugin Manager)
 Run this to deploy all tools and commands to the agents.
 ```bash
-python plugins/plugin-mapper/skills/plugin-mapper/scripts/install_all_plugins.py
+python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 ```
-> **Outcome**: Deploys `plugins/*` to `.agent/workflows`, `.github/prompts`, `.[target]/commands`, etc.
+> **Outcome**: Deploys `plugins/*` to `.agent/workflows`, `.github/prompts`, etc.
 
 ---
 
 ## Architecture Diagram
 
-![Process Diagram](./agent_bridge_diagram.mmd)
+![Process Diagram](./process_diagram.mmd)
 
+```mermaid
+flowchart TD
+    subgraph Source_Truth [Source of Truth]
+        Windsurf[".windsurf/workflows (Core Workflows)"]
+        Kittify[".kittify/memory (Rules/Context)"]
+        Plugins["plugins/ (Extensions/Tools)"]
+    end
+
+    subgraph Bridges [Bridge System]
+        SB[System Bridge (Kernel)]
+        PM[Plugin Bridge (Extensions)]
+    end
+
+    subgraph Agents [Target Environments]
+        Antigravity[".agent/"]
+        Copilot[".github/"]
+        Claude[".claude/"]
+        Gemini[".gemini/"]
+    end
+
+    %% Flows
+    Windsurf -->|Ingest Core| SB
+    Kittify -->|Ingest Rules| SB
+    
+    SB -->|Sync Rules & Context| Antigravity
+    SB -->|Sync Rules & Context| Copilot
+    SB -->|Sync Rules & Context| Claude
+    SB -->|Sync Rules & Context| Gemini
+
+    Plugins -->|Install Capabilities| PM
+    
+    PM -->|Deploy Skills & Commands| Antigravity
+    PM -->|Deploy Prompts| Copilot
+    PM -->|Deploy Commands| Claude
+    PM -->|Deploy Commands| Gemini
+```

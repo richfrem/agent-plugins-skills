@@ -1,0 +1,72 @@
+flowchart TD
+    %% Flowchart for Plugin Manager Sync & Cleanup Process
+    
+    %% --- Node Definitions ---
+    Start([Start Sync Process])
+    CheckVendor{Vendor Inventory<br/>Exists?}
+    
+    subgraph Inputs
+        VendorFile[/.vendor/.../vendor-plugins-inventory.json/]
+        LocalDir[/./plugins/ Directory/]
+    end
+    
+    LoadVendor[Load Vendor List<br/>Source of Truth]
+    ScanVendor[Scan .vendor Directory<br/>Fallback]
+    
+    ScanLocal[Scan Local ./plugins]
+    
+    Compare{Compare Sets}
+    
+    subgraph Logic [Logic: Vendor vs Local]
+        Deleted[User Deleted Plugin]
+        Private[Project Specific Plugin]
+        Active[Active Vendor Plugin]
+    end
+    
+    subgraph Actions
+        Cleanup[CLEANUP ARTIFACTS<br/>Remove from .agent, .github, etc.]
+        Protect[PROTECT<br/>Do Not Delete]
+        Update[UPDATE<br/>Run Bridge Installer]
+    end
+    
+    Report[Generate local-plugins-inventory.json]
+    EndNode([End Sync])
+
+    %% --- Connections ---
+    Start --> CheckVendor
+    
+    CheckVendor -->|Yes| LoadVendor
+    CheckVendor -->|No| ScanVendor
+    
+    LoadVendor --> ScanLocal
+    ScanVendor --> ScanLocal
+    
+    ScanLocal --> Compare
+    
+    Compare -->|In Vendor AND Not in Local| Deleted
+    Compare -->|Not in Vendor AND In Local| Private
+    Compare -->|In Both| Active
+    
+    Deleted --> Cleanup
+    Private --> Protect
+    Active --> Update
+    Protect --> Update
+    
+    Cleanup --> Report
+    Update --> Report
+    
+    Report --> EndNode
+    
+    VendorFile -.-> CheckVendor
+    LocalDir -.-> ScanLocal
+    
+    %% --- Styles ---
+    classDef file fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    classDef action fill:#bbf,stroke:#333,stroke-width:2px
+    classDef danger fill:#fbb,stroke:#333,stroke-width:2px
+    classDef safe fill:#bfb,stroke:#333,stroke-width:2px
+    
+    class VendorFile,LocalDir file
+    class Cleanup danger
+    class Protect safe
+    class Update action

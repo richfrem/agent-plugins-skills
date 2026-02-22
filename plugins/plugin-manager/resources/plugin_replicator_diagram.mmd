@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph Central_Repo [Central Repo: central-repo]
+        Plugins["plugins/"]
+        Manifests["manifests/"]
+    end
+
+    subgraph Replicator [Plugin Replicator Skill]
+        PR[plugin_replicator.py]
+        BR[bulk_replicator.py]
+    end
+
+    subgraph Target_Project_1 [Project Sanctuary]
+        Config1[".agent/plugins/"]
+    end
+
+    subgraph Target_Project_2 [Investment Bot]
+        Config2[".agent/plugins/"]
+    end
+
+    %% Flows
+    Plugins -->|Select Plugin| PR
+    Plugins -->|Index All| BR
+
+    PR -->|Copy Code| Config1
+    PR -->|Link Code| Config2
+
+    BR -->|Sync All| Config1
