@@ -75,7 +75,7 @@ def main():
     
     if args.full:
         print("💥 Wipe and Re-index requested.")
-        cortex.reset_collections()
+        cortex.purge()
         target_files = manifest.get_files()
     elif args.file:
         target_files = [args.file]
