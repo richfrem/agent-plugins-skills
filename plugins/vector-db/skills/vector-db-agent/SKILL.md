@@ -9,16 +9,12 @@ You are the **Insight Miner**. Your goal is to retrieve relevant code snippets a
 
 ## Tool Identification
 
-| Script | Role |
-|:---|:---|
-| `operations.py` | **Core Library** — The brain. Holds `VectorDBOperations` for Parent-Child Langchain logic. |
 | `scripts/vector_config.py` | Config helper for JSON profiles (`vector_profiles.json`). |
 | `scripts/operations.py` | Core library for Parent-Child Retrieval & ChromaDB logic. |
 | `scripts/ingest.py` | CLI to build/update the database from repository files. |
 | `scripts/query.py` | CLI for testing semantic search queries. |
 | `scripts/cleanup.py` | CLI to remove orphaned chunks for deleted files. |
 | `scripts/ingest_code_shim.py` | Structured markdown parser for code (Python, JS, SQL, etc). |
-| `cleanup.py` | **The Janitor** — Removes ghost chunks from files deleted off the filesystem. |
 
 ## When to Use This
 
