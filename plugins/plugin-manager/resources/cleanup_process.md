@@ -7,7 +7,7 @@ This document explains the logic used by `sync_with_inventory.py` to manage plug
 ## Key Concepts
 
 ### 1. Vendor Inventory (The Source of Truth)
-*   **Definition**: The complete list of plugins available from the upstream repository (`.vendor/plugin-collection`).
+*   **Definition**: The complete list of plugins available from the upstream repository (`.vendor/agent-plugins-skills`).
 *   **File**: `vendor-plugins-inventory.json`
 *   **Analogy**: The "Menu" at a restaurant. It lists everything that *could* be installed.
 

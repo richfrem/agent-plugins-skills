@@ -19,7 +19,7 @@ This command installs a plugin into your project (if not present) and bridges it
 PLUGIN_NAME="${plugin_name}"
 TARGET_ENV="${target_env}"
 LOCAL_PATH="plugins/$PLUGIN_NAME"
-VENDOR_PATH=".vendor/plugin-collection/plugins/$PLUGIN_NAME"
+VENDOR_PATH=".vendor/agent-plugins-skills/plugins/$PLUGIN_NAME"
 
 # 1. Check Local (Priority: User Created/Modified)
 if [ -d "$LOCAL_PATH" ]; then

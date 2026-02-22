@@ -8,7 +8,7 @@ The **Plugin Manager** is the core toolkit for maintaining a healthy plugin ecos
 
 ### 1. Initial Setup
 New to this repo? Run these commands to get started:
-1.  **Clone Vendor Repo**: `git clone ... .vendor/plugin-collection`
+1.  **Clone Vendor Repo**: `git clone ... .vendor/agent-plugins-skills`
 2.  **Install Plugins**: Copy what you need to `plugins/`
 3.  **Sync**: `python plugins/plugin-manager/scripts/sync_with_inventory.py`
 

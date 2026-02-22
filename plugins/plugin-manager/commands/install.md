@@ -13,14 +13,14 @@ This command installs a specific plugin from the vendor collection into your pro
 
 ```bash
 PLUGIN_NAME="${plugin_name}"
-VENDOR_PATH=".vendor/plugin-collection/plugins/$PLUGIN_NAME"
+VENDOR_PATH=".vendor/agent-plugins-skills/plugins/$PLUGIN_NAME"
 TARGET_PATH="plugins/$PLUGIN_NAME"
 
 # 1. Validation
 if [ ! -d "$VENDOR_PATH" ]; then
     echo "Error: Plugin '$PLUGIN_NAME' not found in vendor collection."
     echo "Available plugins:"
-    ls .vendor/plugin-collection/plugins
+    ls .vendor/agent-plugins-skills/plugins
     exit 1
 fi
 

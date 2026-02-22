@@ -7,7 +7,7 @@ Synchronizes the agent environments with the local `plugins/` directory.
 Implements a "Dual Inventory" approach to safely identify and clean up deleted plugins.
 
 Process:
-1.  **Scan Vendor**: Generates/Reads inventory from `.vendor/plugin-collection`.
+1.  **Scan Vendor**: Generates/Reads inventory from `.vendor/agent-plugins-skills`.
 2.  **Scan Local**: Generates local inventory from `plugins/`.
 3.  **Cleanup**: Identifies plugins present in Vendor but missing from Local (User Deleted).
     -   Removes their artifacts from .agent, .github, .gemini, .claude.
@@ -37,7 +37,7 @@ except ImportError:
 
 # --- Configuration ---
 
-VENDOR_REPO_DIR = Path(".vendor/plugin-collection")
+VENDOR_REPO_DIR = Path(".vendor/agent-plugins-skills")
 LOCAL_ROOT = Path(".")
 # Bridge installer is provided by plugin-mapper (canonical, supports 30+ targets)
 # plugin-manager/scripts/bridge_installer.py has been removed — use this path instead.

@@ -43,7 +43,7 @@ After syncing:
 
 ## Troubleshooting
 
-**"Vendor directory not found"** — Clone the vendor repo into `.vendor/plugin-collection`. Without it, the script runs in Safety Mode (no cleanup).
+**"Vendor directory not found"** — Clone the vendor repo into `.vendor/agent-plugins-skills`. Without it, the script runs in Safety Mode (no cleanup).
 
 **"I want to delete a vendor plugin"** — Delete the plugin folder from `plugins/`, then run `sync_with_inventory.py`. The script detects it as deleted and cleans up its artifacts.
 

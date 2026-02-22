@@ -12,13 +12,13 @@ This command updates all installed plugins with the latest code from the vendor 
 
 ```bash
 # 1. Update Vendor Source (Source of Truth)
-if [ -d ".vendor/plugin-collection" ]; then
+if [ -d ".vendor/agent-plugins-skills" ]; then
     echo "Updating vendor repository..."
-    cd .vendor/plugin-collection
+    cd .vendor/agent-plugins-skills
     git pull
     cd ../..
 else
-    echo "Error: Vendor repository not found at .vendor/plugin-collection"
+    echo "Error: Vendor repository not found at .vendor/agent-plugins-skills"
     exit 1
 fi
 

@@ -3,7 +3,7 @@
 Update From Vendor Script
 =========================
 
-This script synchronizes the local `plugins/` directory with the `.vendor/plugin-collection` source.
+This script synchronizes the local `plugins/` directory with the `.vendor/agent-plugins-skills` source.
 It only updates plugins that are ALREADY installed locally. It does NOT install new plugins automatically.
 
 Usage:
@@ -22,7 +22,7 @@ def main():
     project_root = script_dir.parents[2] 
     
     local_plugins_dir = project_root / "plugins"
-    vendor_plugins_dir = project_root / ".vendor" / "plugin-collection" / "plugins"
+    vendor_plugins_dir = project_root / ".vendor" / "agent-plugins-skills" / "plugins"
 
     # print(f"Project Root: {project_root}")
     # print(f"Local Plugins: {local_plugins_dir}")
@@ -30,7 +30,7 @@ def main():
 
     if not vendor_plugins_dir.exists():
         print(f"Error: Vendor plugins directory not found at {vendor_plugins_dir}")
-        print("Please ensure the vendor repo is cloned: git clone ... .vendor/plugin-collection")
+        print("Please ensure the vendor repo is cloned: git clone ... .vendor/agent-plugins-skills")
         sys.exit(1)
 
     if not local_plugins_dir.exists():
