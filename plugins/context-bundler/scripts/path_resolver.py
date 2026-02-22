@@ -85,7 +85,7 @@ class PathResolver:
         Converts a project-relative path to an absolute system path.
         
         Args:
-            relative_path (str): Path relative to repo root (e.g., 'tools/cli.py').
+            relative_path (str): Path relative to repo root (e.g., 'plugins/cli.py').
             
         Returns:
             str: Absolute system path (using OS-specific separators).
