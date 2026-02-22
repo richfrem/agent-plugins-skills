@@ -5,7 +5,7 @@ description: Start the Native Python ChromaDB background server. Use when semant
 
 # Vector DB Launch (Python Native Server)
 
-ChromaDB provides the vector database backend for semantic search. If configured for Option C (Native Server) in the `.env` file, the database must be running as a background HTTP service to be accessed by `operations.py`.
+ChromaDB provides the vector database backend for semantic search. If configured for Option C (Native Server) in `vector_profiles.json`, the database must be running as a background HTTP service to be accessed by `operations.py`.
 
 ## When You Need This
 
@@ -24,7 +24,7 @@ If it prints "✅ ChromaDB running", you're done. If not, proceed.
 
 ## Launching the Server
 
-The server must be launched using the `chroma run` command, bound to the paths defined in the project `.env`.
+The server must be launched using the `chroma run` command, bound to the data path defined in the profile's `chroma_data_path` field.
 
 **CRITICAL INSTRUCTION FOR AGENT:**
 The `chroma run` command blocks the terminal. You **must** instruct the user to run this command in a NEW, SEPARATE terminal window, or use `nohup` / `&` to background the process. 
@@ -35,7 +35,7 @@ Do not try to run a blocking `chroma run` loop inside your own execution context
 Instruct the user to execute the following command in their terminal (from the project root):
 
 ```bash
-chroma run --host 127.0.0.1 --port 8110 --path .vector_data
+chroma run --host 127.0.0.1 --port 8110 --path .knowledge_vector_data
 ```
 
 ### Step 2: Verify Connection
@@ -55,9 +55,9 @@ It should return a JSON response containing a timestamp `{"nanosecond heartbeat"
 |---------|-----|
 | `chroma: command not found` | The user hasn't run the `vector-db-init` skill yet. Run it to `pip install chromadb`. |
 | Port 8110 already in use | Another process (or zombie chroma process) is using the port. `lsof -i :8110` to find and kill it. |
-| Permission Denied for `.vector_data` | Ensure the user has write access to the `.vector_data` directory. |
+| Permission Denied for data directory | Ensure the user has write access to the `.knowledge_vector_data` directory. |
 
 ## Alternative: In-Process Mode
-If the user decides they do not want to run a background server, you can instruct them to remove the `CHROMA_HOST` and `CHROMA_PORT` variables from their `.env`. 
+If the user decides they do not want to run a background server, you can instruct them to set `chroma_host` to an empty string `""` in their profile in `.agent/learning/vector_profiles.json`. 
 
 The `operations.py` library will automatically fallback to "Option A" (`PersistentClient`) and initialize the database locally inside the python process without needing this skill.

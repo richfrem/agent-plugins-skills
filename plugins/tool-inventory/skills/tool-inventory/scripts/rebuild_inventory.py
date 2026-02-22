@@ -40,7 +40,7 @@ def rebuild():
     manager.root_dir = PROJECT_ROOT
     
     # FIX: Disable RLM distillation for speed
-    manager._trigger_distillation = lambda x: print(f"   (Skipping distillation for {x})")
+    manager._trigger_distillation = lambda tool_path: print(f"   (Skipping distillation for {tool_path})")
     
     # Scan plugins directory
     plugins_dir = PROJECT_ROOT / "plugins"

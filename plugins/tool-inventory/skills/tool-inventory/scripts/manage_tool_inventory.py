@@ -418,10 +418,11 @@ class InventoryManager:
 
         # Trigger RLM Distillation (Unless suppressed)
         if not suppress_distillation:
-             # Use the NEW path if updated, else original
-             # Note: if path changed, we should use new path.
              target_path = new_path if new_path else tool_path
-             self._distill_tool(target_path)
+             if hasattr(self, '_trigger_distillation') and callable(self._trigger_distillation):
+                 self._trigger_distillation(target_path)
+             else:
+                 print(f"ℹ️  Skipped distillation (no handler registered).")
         else:
              print(f"ℹ️  Skipped distillation (suppressed).")
         

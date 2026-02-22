@@ -1,6 +1,6 @@
 ---
 name: vector-db-init
-description: Interactively initializes the Vector DB plugin. Installs the required pip dependencies (chromadb, langchain wrappers) and configures the user's .env file for Native Python Server connections. Run this before attempting to use the vector-db-agent or vector-db-launch skills.
+description: Interactively initializes the Vector DB plugin. Installs the required pip dependencies (chromadb, langchain wrappers) and configures the vector_profiles.json for Native Python Server connections. Run this before attempting to use the vector-db-agent or vector-db-launch skills.
 ---
 
 # Vector DB Initialization
@@ -10,7 +10,7 @@ The `vector-db-init` skill is an automated setup routine that prepares the envir
 ## When to Use This
 - When a user first installs the `vector-db` plugin.
 - If the user complains that `chromadb` is not installed or `ModuleNotFoundError` is thrown.
-- If the Vector DB configuration is missing from `.env`.
+- If the Vector DB profile is missing from `.agent/learning/vector_profiles.json`.
 
 ## Instructions for Agent
 
@@ -21,7 +21,7 @@ The `vector-db-init` skill is an automated setup routine that prepares the envir
    ```
 
 2. **Wait for Completion:** 
-   The script will automatically run `pip install`, scan the `.env` file, and append the necessary `CHROMA_HOST` and `CHROMA_PORT` variables if they do not exist.
+   The script will automatically run `pip install`, then prompt the user to select their deployment architecture (In-Process or Native Server). All settings are written to `.agent/learning/vector_profiles.json`.
 
 3. **Verify:**
-   After the script completes successfully, inform the user that their environment is ready, and they can now run the `vector-db-launch` skill to start the background server.
+   After the script completes successfully, inform the user that their environment is ready, and they can now run the `vector-db-launch` skill to start the background server (if they chose Option 2).

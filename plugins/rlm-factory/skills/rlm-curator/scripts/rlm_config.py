@@ -278,8 +278,8 @@ class RLMConfig:
         # Load the manifest
         config.load_manifest_content()
         
-        return config
-            
+        return config  # was missing — from_profile() always returned None without this
+
     def load_manifest_content(self):
         if not self.manifest_path.exists():
             print(f"⚠️  Manifest not found: {self.manifest_path}")
@@ -293,18 +293,15 @@ class RLMConfig:
                 self.targets = data.get("include", [])
                 self.exclude_patterns = data.get("exclude", [])
             elif self.parser_type == "inventory_dict":
-                 # For inventory, we treat the keys or specific fields as targets
-                 # Assuming tool_inventory.json structure: {"category": {"tool_name": { "path": "..." }}}
-                 # We will extract valid paths from it in collect_files
-                 self.manifest_data = data
-                 self.targets = ["INVENTORY_ROOT"] # Dummy target to trigger collection
-                 self.exclude_patterns = data.get("exclude", []) # Should be empty or relevant
+                self.manifest_data = data
+                self.targets = ["INVENTORY_ROOT"]
+                self.exclude_patterns = data.get("exclude", [])
                  
         except Exception as e:
             print(f"⚠️  Error reading manifest {self.manifest_path}: {e}")
 
 # ============================================================
-# SHARED UTILITIES
+# SHARED UTILITIES  (module-level, not inside RLMConfig class)
 # ============================================================
 
 import hashlib
@@ -391,6 +388,85 @@ def collect_files(config: RLMConfig) -> List[Path]:
                     recursive_search(v)
             
             elif isinstance(data, list):
+    return hashlib.sha256(content.encode()).hexdigest()[:16]
+
+def load_cache(cache_path: Path) -> Dict:
+    """Load existing cache or return empty dict."""
+    if cache_path.exists():
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️  Error loading cache: {e}")
+    return {}
+
+def save_cache(cache: Dict, cache_path: Path):
+    """Persist cache to disk immediately (crash-resilient)."""
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(cache_path, "w", encoding="utf-8") as f:
+        json.dump(cache, f, indent=2, sort_keys=True)
+
+def should_skip(file_path: Path, config: "RLMConfig", debug_fn=None) -> bool:
+    """Check if file should be excluded from processing."""
+    
+    def log(msg):
+        if debug_fn:
+            debug_fn(msg)
+            
+    try:
+        # Canonicalize path for consistent matching
+        path_obj = file_path.resolve()
+        path_str = str(path_obj)
+    except Exception as e:
+        print(f"⚠️  SKIP CHECK FAILED (path resolution): {file_path} — {e}")
+        return False  # fail-open (do not skip if we can't check)
+
+    # Check exclude patterns
+    for pattern in config.exclude_patterns:
+        if pattern in path_str:
+            log(f"Skipping {path_str} (exclude pattern: {pattern})")
+            return True
+    
+    # Allowed Suffixes Check
+    if config.allowed_suffixes:
+        if file_path.suffix.lower() not in config.allowed_suffixes:
+            log(f"Skipping due to unsupported suffix: {file_path.suffix}")
+            return True
+    
+    return False
+
+def collect_files(config: "RLMConfig") -> List[Path]:
+    """Collect all eligible files based on parser type."""
+    all_files = []
+    
+    if config.parser_type == "inventory_dict":
+        # Recursively search for "path" keys in the JSON inventory
+        def recursive_search(data):
+            if isinstance(data, dict):
+                # Check if this node looks like a tool definition
+                if "path" in data and isinstance(data["path"], str):
+                    path_str = data["path"]
+                    # If relative, resolve from project root
+                    if not os.path.isabs(path_str):
+                        full_path = (PROJECT_ROOT / path_str).resolve()
+                    else:
+                        full_path = Path(path_str)
+                    
+                    if full_path.exists():
+                        if full_path.is_file():
+                            if not should_skip(full_path, config):
+                                all_files.append(full_path)
+                        elif full_path.is_dir():
+                            for ext in config.allowed_suffixes:
+                                for f in full_path.glob(f"**/*{ext}"):
+                                    if f.is_file() and not should_skip(f, config):
+                                        all_files.append(f)
+                
+                # Recurse into values
+                for v in data.values():
+                    recursive_search(v)
+            
+            elif isinstance(data, list):
                 # Recurse into list items
                 for item in data:
                     recursive_search(item)
@@ -412,7 +488,7 @@ def collect_files(config: RLMConfig) -> List[Path]:
                            if f == t_path or t_path in f.parents:
                                filtered_files.append(f)
                                break
-                       except:
+                       except Exception:
                            pass
              all_files = filtered_files
                     

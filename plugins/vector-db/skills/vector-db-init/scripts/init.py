@@ -4,8 +4,8 @@ init.py (CLI)
 =====================================
 
 Purpose:
-    Installs required Python dependencies for the Vector DB plugin and 
-    interactively configures the user's .env file based on their deployment choice.
+    Installs required Python dependencies for the Vector DB plugin and
+    interactively configures the user's vector_profiles.json.
 """
 
 import os
@@ -15,130 +15,121 @@ import subprocess
 from pathlib import Path
 
 # Project paths
+# File is at: plugins/vector-db/skills/vector-db-init/scripts/init.py
+PROJECT_ROOT = Path(__file__).resolve().parents[5]
 SCRIPT_DIR = Path(__file__).parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent
+
 
 def install_dependencies():
-    print("📦 Installing Vector DB Dependencies...")
-    packages = [
-        "chromadb",
-        "langchain-chroma",
-        "langchain-huggingface",
-        "sentence-transformers"
-    ]
+    print("📦 Installing Vector DB Dependencies from lockfile...")
+    req_txt = PROJECT_ROOT / "plugins" / "vector-db" / "requirements.txt"
+        
+    if not req_txt.exists():
+        print(f"❌ Error: Lockfile not found at {req_txt}")
+        sys.exit(1)
+        
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
-        print("✅ Dependencies installed successfully.\\n")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(req_txt)])
+        print("✅ Dependencies installed successfully from requirements.txt.\n")
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to install dependencies: {e}")
         sys.exit(1)
 
-def configure_env():
-    env_path = PROJECT_ROOT / ".env"
-    print(f"⚙️ Configuring {env_path}...")
-    
-    existing_content = ""
-    if env_path.exists():
-        with open(env_path, "r", encoding="utf-8") as f:
-            existing_content = str(f.read())
 
-    print("\\n🚀 Deployment Architecture Selection")
-    print("1) In-Process PersistentClient (Easiest, No background server required, blocks concurrent agents)")
-    print("2) Python Native Server (Recommended, requires running `vector-db-launch` in background, allows concurrency)")
-    print("3) Skip .env configuration\\n")
+def configure_profile():
+    """
+    Interactive profile configuration.
+    Writes all settings to .agent/learning/vector_profiles.json — no .env needed.
+    """
+    learning_dir = PROJECT_ROOT / ".agent" / "learning"
+    profiles_path = learning_dir / "vector_profiles.json"
+    manifest_path = learning_dir / "vector_knowledge_manifest.json"
     
-    choice = input("Enter your choice (1, 2, or 3): ").strip()
+    print(f"\n📋 Configuring Vector DB Profile in {profiles_path}...")
+    learning_dir.mkdir(parents=True, exist_ok=True)
     
-    lines_to_append = []
-    
-    # Base Collections (Always needed for Parent-Child)
-    base_vars = {
-        "CHROMA_DATA_PATH": ".vector_data",
-        "CHROMA_CHILD_COLLECTION": "child_chunks_v5",
-        "CHROMA_PARENT_STORE": "parent_documents_v5"
-    }
-
-    if choice == "3":
-        print("⏭️ Skipping .env configuration.")
-        return
-
-    # Add the base variables
-    for key, val in base_vars.items():
-        if f"{key}=" not in existing_content:
-            lines_to_append.append(f"{key}={val}")
-
-    if choice == "2":
-        # Native Server configuration
-        if "# --- CHROMA CONNECTION ---" not in existing_content:
-            lines_to_append.append("\\n# --- CHROMA CONNECTION ---")
-            lines_to_append.append("# Used to connect to the Python `chroma run` background server")
-        
-        server_vars = {"CHROMA_HOST": "127.0.0.1", "CHROMA_PORT": "8110"}
-        for key, val in server_vars.items():
-            if f"{key}=" not in existing_content:
-                lines_to_append.append(f"{key}={val}")
-                print(f"   [+] Added {key}={val}")
-            else:
-                print(f"   [-] Skipped {key} (Already exists)")
-    elif choice == "1":
-        # In-Process configuration
-        print("   [+] Selected In-Process mode (No CHROMA_HOST required).")
-    else:
-        print("❌ Invalid choice. Skipping .env configuration.")
-        return
-
-    if lines_to_append:
-        with open(env_path, "a") as f:
-            f.write("\\n".join(lines_to_append) + "\\n")
-        print("✅ Environment configuration updated.")
-    else:
-        print("✅ Environment already configured perfectly.")
-
-def configure_manifest():
-    manifest_path = PROJECT_ROOT / "plugins" / "vector-db" / "ingest_manifest.json"
-    print(f"\\n📋 Configuring Ingestion Manifest ({manifest_path})")
-    
-    # Ensure directory exists
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    existing_dirs = ["src", "docs"]
-    if manifest_path.exists():
+    # 1. Load existing profiles (or start fresh)
+    profiles_data = {}
+    if profiles_path.exists():
         try:
-            with open(manifest_path, "r") as f:
-                data = json.load(f)
-                existing_dirs = data.get("include", existing_dirs)
+            with open(profiles_path, "r", encoding="utf-8") as f:
+                profiles_data = json.load(f)
         except Exception:
             pass
             
-    print(f"Current target directories: {', '.join(existing_dirs)}")
-    print("Enter the top-level directories you want the Vector DB to ingest (comma-separated).")
-    print("Press Enter to keep current targets, or type 'none' to clear.")
+    if "version" not in profiles_data:
+        profiles_data["version"] = 2
+    if "profiles" not in profiles_data:
+        profiles_data["profiles"] = {}
     
-    choice = input("Directories: ").strip()
+    KNOWLEDGE_PROFILE = "knowledge"
     
-    if choice.lower() == "none":
-        new_dirs = []
-    elif choice:
-        new_dirs = [d.strip() for d in choice.split(",") if d.strip()]
+    # 2. Select deployment architecture
+    print("\n🚀 Deployment Architecture Selection")
+    print("1) In-Process PersistentClient (Easiest, no background server, blocks concurrent agents)")
+    print("2) Python Native Server (Recommended, requires `chroma run` in background, allows concurrency)")
+    print("3) Skip configuration\n")
+    
+    choice = input("Enter your choice (1, 2, or 3): ").strip()
+    
+    if choice == "3":
+        print("⏭️ Skipping profile configuration.")
+    elif choice in ("1", "2"):
+        profile = profiles_data["profiles"].get(KNOWLEDGE_PROFILE, {})
+        
+        # Base settings
+        profile["description"] = profile.get("description", "General documentation and project knowledge.")
+        profile["manifest"] = ".agent/learning/vector_knowledge_manifest.json"
+        profile["child_collection"] = profile.get("child_collection", "knowledge_child_v5")
+        profile["parent_collection"] = profile.get("parent_collection", "knowledge_parent_v5")
+        profile["chroma_data_path"] = ".knowledge_vector_data"
+        
+        if choice == "2":
+            # Native Server configuration
+            profile["chroma_host"] = profile.get("chroma_host", "127.0.0.1")
+            profile["chroma_port"] = profile.get("chroma_port", 8110)
+            print(f"   [+] Set chroma_host={profile['chroma_host']}")
+            print(f"   [+] Set chroma_port={profile['chroma_port']}")
+            print("   ℹ️  Remember to start the server: chroma run --host 127.0.0.1 --port 8110 --path .knowledge_vector_data")
+        elif choice == "1":
+            # In-Process — no host needed (empty string triggers PersistentClient)
+            profile["chroma_host"] = ""
+            profile.pop("chroma_port", None)
+            print("   [+] Selected In-Process mode (no background server required).")
+        
+        profiles_data["profiles"][KNOWLEDGE_PROFILE] = profile
     else:
-        new_dirs = existing_dirs
+        print("❌ Invalid choice. Skipping profile configuration.")
         
-    manifest = {
-        "include": new_dirs,
-        "exclude": ["/archive/", "/.git/", "/node_modules/", "/.venv/", "/__pycache__/"]
-    }
+    if "default_profile" not in profiles_data:
+        profiles_data["default_profile"] = KNOWLEDGE_PROFILE
+        
+    with open(profiles_path, "w", encoding="utf-8") as f:
+        json.dump(profiles_data, f, indent=4)
+        f.write("\n")
+        
+    print(f"✅ Configured profile '{KNOWLEDGE_PROFILE}'.")
     
-    with open(manifest_path, "w") as f:
-        json.dump(manifest, f, indent=4)
-        
-    print(f"✅ Manifest saved with {len(new_dirs)} target directories.")
+    # 3. Scaffold Manifest
+    if not manifest_path.exists():
+        manifest_data = {
+            "description": "Globs tracking project documentation and knowledge records.",
+            "include": ["plugins/"],
+            "exclude": ["/archive/", "/.git/", "/node_modules/", "/.venv/", "/__pycache__/", "/tests/"]
+        }
+        with open(manifest_path, "w", encoding="utf-8") as f:
+            json.dump(manifest_data, f, indent=4)
+            f.write("\n")
+        print(f"✅ Created knowledge manifest at {manifest_path}.")
+    else:
+        print(f"ℹ️  Manifest already exists at {manifest_path}. Skipping.")
+
 
 def main():
-    print("🚀 Initializing Vector DB Environment\\n")
+    print("🚀 Initializing Vector DB Environment\n")
     install_dependencies()
-    configure_env()
-    configure_manifest()
-    print("\\n🎉 Initialization Complete!")
+    configure_profile()
+    print("\n🎉 Initialization Complete!")
 
 if __name__ == "__main__":
     main()

@@ -118,7 +118,7 @@ def parse_xml_to_markdown(file_path: Path) -> str:
                 markdown_output += f"### Block: `{blk_name}`\n"
                 items = blk.findall(".//Item")
                 if items:
-                    item_names = [i.attrib.get('Name') for i in items if i.attrib.get('Name')]
+                    item_names = [i.attrib.get('Name') for i in items if i.attrib is not None and i.attrib.get('Name')]
                     markdown_output += f"**Items:** {', '.join(item_names)}\n\n"
 
         return markdown_output

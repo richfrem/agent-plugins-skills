@@ -11,8 +11,8 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain.storage import LocalFileStore
-from langchain.storage.encoder_backed import EncoderBackedStore
+from langchain_classic.storage.file_system import LocalFileStore
+from langchain_classic.storage.encoder_backed import EncoderBackedStore
 
 def _doc_to_bytes(doc: Document) -> bytes:
     # Serialize Document to JSON bytes
@@ -27,33 +27,36 @@ def _bytes_to_doc(b: bytes) -> Document:
 class VectorDBOperations:
     """
     Core domain logic for Vector DB operations.
-    Ports the legacy Project Sanctuary 'Mnemonic Cortex' over to the Open Standard.
     Implements Network-bound ChromaDB connections and Parent-Child MultiVector retrieval.
+    
+    All configuration is received via constructor parameters — no .env dependency.
+    Use VectorConfig to load settings from vector_profiles.json and pass them here.
     """
-    def __init__(self, project_root: str):
-        from dotenv import load_dotenv
-        load_dotenv()
-        
+    def __init__(
+        self,
+        project_root: str,
+        child_collection: str = "knowledge_child_v5",
+        parent_collection: str = "knowledge_parent_v5",
+        chroma_host: str = "",
+        chroma_port: int = 8110,
+        chroma_data_path: str = ".vector_data"
+    ):
         self.project_root = Path(project_root)
         
-        # 1. Environment Configurations
-        self.chroma_host = os.getenv("CHROMA_HOST", "")
-        self.chroma_port = os.getenv("CHROMA_PORT", "8110")
-        self.chroma_data_path = os.getenv("CHROMA_DATA_PATH", ".vector_data")
-        self.child_collection_name = os.getenv("CHROMA_CHILD_COLLECTION", "child_chunks_v5")
-        self.parent_collection_name = os.getenv("CHROMA_PARENT_STORE", "parent_documents_v5")
+        # 1. Store configuration (received from VectorConfig / caller)
+        self.chroma_host = chroma_host
+        self.chroma_port = chroma_port
+        self.chroma_data_path = chroma_data_path
+        self.child_collection_name = child_collection
+        self.parent_collection_name = parent_collection
         
         # 2. ChromaDB Client Initialization
-        if self.chroma_host and self.chroma_host.lower() != "localhost":
-            print(f"🔗 Connecting to external ChromaDB host at {self.chroma_host}:{self.chroma_port}...")
+        if self.chroma_host:
+            print(f"🔗 Connecting to ChromaDB at {self.chroma_host}:{self.chroma_port}...")
             self.chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
         else:
-            # Fallback to persistent local storage if no external host defined
-            env_path = os.getenv("VECTOR_DB_PATH")
-            if env_path:
-                db_path = Path(os.path.expanduser(env_path)).resolve()
-            else:
-                db_path = Path(os.path.expanduser("~")) / ".agent" / "learning" / "chroma_db"
+            # Fallback to persistent local storage if no host defined
+            db_path = (self.project_root / self.chroma_data_path).resolve()
             print(f"📁 Connecting to local persistent ChromaDB at {db_path}...")
             db_path.mkdir(parents=True, exist_ok=True)
             self.chroma_client = chromadb.PersistentClient(
@@ -61,7 +64,7 @@ class VectorDBOperations:
                 settings=Settings(anonymized_telemetry=False)
             )
 
-        # 3. Embeddings (Migrated from MiniLM to Nomic-v1.5 per legacy spec)
+        # 3. Embeddings (Nomic-v1.5 per architecture spec)
         print("🔄 Loading Nomic embeddings model...")
         self.embedding_model = HuggingFaceEmbeddings(
             model_name="nomic-ai/nomic-embed-text-v1.5",

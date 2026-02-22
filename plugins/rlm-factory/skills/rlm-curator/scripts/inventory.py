@@ -33,16 +33,17 @@ import argparse
 from pathlib import Path
 from collections import defaultdict
 
-# Add project root to sys.path to find tools package
+# Add SCRIPT_DIR to sys.path to find local rlm_config
 SCRIPT_DIR = Path(__file__).parent.resolve()
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.append(str(PROJECT_ROOT))
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.resolve()
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
     from rlm_config import RLMConfig, load_cache, collect_files
-except ImportError:
-    from tools.rlm_factory.rlm_config import RLMConfig, load_cache, collect_files
+except ImportError as e:
+    print(f"❌ Could not import local RLMConfig from {SCRIPT_DIR}: {e}")
+    sys.exit(1)
 
 def audit_inventory(config: RLMConfig):
     """Compare RLM cache against actual file system."""

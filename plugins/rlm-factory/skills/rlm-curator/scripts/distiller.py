@@ -98,29 +98,18 @@ except ImportError:
 
 
 
-try:
-    from tools.codify.rlm.rlm_config import (
-        RLMConfig, 
-        PROJECT_ROOT, 
-        load_cache, 
-        save_cache, 
-        compute_hash, 
-        should_skip, 
-        collect_files
-    )
-except ImportError:
-    # Fallback to local import
-    import sys
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    from rlm_config import (
-        RLMConfig, 
-        PROJECT_ROOT, 
-        load_cache, 
-        save_cache, 
-        compute_hash, 
-        should_skip, 
-        collect_files
-    )
+# Always use local rlm_config — this plugin is self-contained
+import sys as _sys
+_sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from rlm_config import (
+    RLMConfig,
+    PROJECT_ROOT,
+    load_cache,
+    save_cache,
+    compute_hash,
+    should_skip,
+    collect_files
+)
 
 OLLAMA_URL = os.getenv("OLLAMA_HOST", "http://localhost:11434") + "/api/generate"
 
@@ -275,10 +264,19 @@ def distill(config: RLMConfig, target_files: List[Path] = None, force: bool = Fa
                         if purpose:
                             # Import locally to avoid circular top-level imports
                             # (Though headers say cyclic, we defer import to runtime)
-                            sys.path.append(str(PROJECT_ROOT)) # ensure path
-                            from tools.tool_inventory.manage_tool_inventory import InventoryManager
-                            
-                            mgr = InventoryManager(PROJECT_ROOT / "tools/tool_inventory.json")
+                            # Resolve InventoryManager from the tool-inventory plugin
+                            _inv_script = PROJECT_ROOT / "plugins/tool-inventory/skills/tool-inventory/scripts/manage_tool_inventory.py"
+                            import importlib.util as _ilu
+                            _spec = _ilu.spec_from_file_location("manage_tool_inventory", str(_inv_script))
+                            _mod = _ilu.module_from_spec(_spec)
+                            _spec.loader.exec_module(_mod)
+                            InventoryManager = _mod.InventoryManager
+
+                            # Locate tool_inventory.json (prefer plugins root, fallback to tools/)
+                            _inv_json = PROJECT_ROOT / "plugins" / "tool-inventory" / "tool_inventory.json"
+                            if not _inv_json.exists():
+                                _inv_json = PROJECT_ROOT / "tools" / "tool_inventory.json"
+                            mgr = InventoryManager(_inv_json)
                             mgr.update_tool(
                                 tool_path=rel_path, 
                                 new_desc=purpose, 

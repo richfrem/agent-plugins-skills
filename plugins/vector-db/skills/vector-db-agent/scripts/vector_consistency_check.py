@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-Vector Consistency Stabilizer - Protocol 126 Implementation
+Vector Consistency Stabilizer 
 
 This module implements the Vector DB Consistency Stabilizer from Protocol 126:
 QEC-Inspired AI Robustness (Virtual Stabilizer Architecture).
 
 The stabilizer detects semantic drift by re-querying the vector database to verify
 that fact atoms are still supported by the knowledge base.
-
-Mission: LEARN-CLAUDE-003
-Author: Antigravity AI
-Date: 2025-12-14
 """
 
 import json

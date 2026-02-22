@@ -1,0 +1,1 @@
+{"page_content": "\\n\\\\n\", \"\\\\n\", \" \", \"\"]\n        )\n        self.parent_splitter = RecursiveCharacterTextSplitter(\n            chunk_size=2000,\n            chunk_overlap=200,\n            separators=[\"\\\\n\\\\n\", \"\\", "metadata": {"source": "plugins/vector-db/skills/vector-db-agent/scripts/operations.py", "type": "py", "last_modified": 1771739109.5424135}}

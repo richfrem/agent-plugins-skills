@@ -12,8 +12,12 @@ You are the **Insight Miner**. Your goal is to retrieve relevant code snippets a
 | Script | Role |
 |:---|:---|
 | `operations.py` | **Core Library** — The brain. Holds `VectorDBOperations` for Parent-Child Langchain logic. |
-| `ingest.py` | **The Builder** — CLI wrapper that reads `ingest_manifest.json` and feeds files to `operations.py`. |
-| `query.py` | **The Searcher** — CLI wrapper that finds matching Parent files based on Child chunks. |
+| `scripts/vector_config.py` | Config helper for JSON profiles (`vector_profiles.json`). |
+| `scripts/operations.py` | Core library for Parent-Child Retrieval & ChromaDB logic. |
+| `scripts/ingest.py` | CLI to build/update the database from repository files. |
+| `scripts/query.py` | CLI for testing semantic search queries. |
+| `scripts/cleanup.py` | CLI to remove orphaned chunks for deleted files. |
+| `scripts/ingest_code_shim.py` | Structured markdown parser for code (Python, JS, SQL, etc). |
 | `cleanup.py` | **The Janitor** — Removes ghost chunks from files deleted off the filesystem. |
 
 ## When to Use This
@@ -30,6 +34,8 @@ When you run `query.py`, the system embeds your question and searches against ti
 
 It uses `nomic-ai/nomic-embed-text-v1.5` for local embeddings.
 
+All configuration is loaded from `.agent/learning/vector_profiles.json` via the `--profile` flag.
+
 ## Execution Protocol
 
 ### 1. Verify Server Health
@@ -41,21 +47,21 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 
 ### 2. Search
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py "your natural language question"
+python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py "your natural language question" --profile knowledge
 ```
 
 ### 3. Maintenance
-Before indexing, verify `plugins/vector-db/ingest_manifest.json` exists and covers the needed directories.
+Before indexing, verify the manifest file referenced by your profile exists (e.g., `.agent/learning/vector_knowledge_manifest.json`).
 
 ```bash
 # Add new/modified files from manifest
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py
+python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --since 24 --profile knowledge
 
 # Complete wipe and re-index
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --full
+python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --full --profile knowledge
 ```
 
 ## Critical Rules
-1. **Manifest Only:** `ingest.py` only reads what is specified in `ingest_manifest.json`. Do not try to pass specific paths to it via argv.
+1. **Manifest Only:** `ingest.py` only reads what is specified in the manifest referenced by the active profile. Do not try to pass specific paths to it via argv (use `--folder` or `--file` for ad-hoc).
 2. **Concurrency:** Chroma HTTP server supports concurrent writers.
 3. **Paths:** All plugin scripts utilize the `plugins/vector-db/...` path structure.

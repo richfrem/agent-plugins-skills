@@ -42,20 +42,18 @@ import sys
 import argparse
 from pathlib import Path
 
-# Add project root to sys.path to find tools package
+# Add SCRIPT_DIR to sys.path to find rlm_config
 SCRIPT_DIR = Path(__file__).parent.resolve()
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.append(str(PROJECT_ROOT))
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.resolve()
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
     from rlm_config import RLMConfig, load_cache, save_cache, should_skip
-except ImportError:
-    try:
-        from tools.tool_inventory.rlm_config import RLMConfig, load_cache, save_cache, should_skip
-    except ImportError:
-        print("❌ Could not import RLMConfig (tried local and tools.tool_inventory)")
-        sys.exit(1)
+except ImportError as e:
+    print(f"❌ Could not import rlm_config from {SCRIPT_DIR}: {e}")
+    print(f"   Ensure rlm_config.py is in the same directory as this script.")
+    sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(description="Clean up RLM cache.")
@@ -123,11 +121,7 @@ def main():
             # Lazy load authorized set on first use
             if authorized_files is None:
                 print("Building authorized file list from manifest...")
-                # We need to import collect_files from rlm_config
-                try:
-                    from rlm_config import collect_files
-                except ImportError:
-                    from tools.tool_inventory.rlm_config import collect_files
+                from rlm_config import collect_files
                 files = collect_files(config)
                 # Store as set of resolved strings for fast lookup
                 authorized_files = set(str(f.resolve()) for f in files)
