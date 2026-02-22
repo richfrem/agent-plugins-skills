@@ -1,0 +1,32 @@
+{
+    "name": "tool-inventory",
+    "description": "Manage tool registries with embedded ChromaDB for semantic tool discovery \u2014 self-contained with vendored RLM scripts",
+    "version": "1.0.0",
+    "author": {
+        "name": "Project Sanctuary",
+        "url": "https://github.com/richfrem/Project_Sanctuary"
+    },
+    "repository": "https://github.com/richfrem/Project_Sanctuary",
+    "license": "MIT",
+    "keywords": [
+        "tools",
+        "inventory",
+        "chromadb",
+        "semantic-search",
+        "registry"
+    ],
+    "runtime": {
+        "python_deps": [
+            "chromadb",
+            "requests"
+        ],
+        "optional_deps": [
+            "ollama (for LLM-powered distillation)"
+        ]
+    },
+    "integrates": {
+        "note": "Vendors RLM scripts (distiller, query_cache, cleanup_cache, rlm_config, inventory) for tool-scoped operations. The rlm-factory plugin handles docs-only cache separately."
+    },
+    "commands_dir": "commands",
+    "skills_dir": "skills"
+}

@@ -3,8 +3,8 @@
 # DO NOT EDIT MANUALLY
 
 spec_kitty:
-  version: 0.15.3
-  initialized_at: '2026-02-21T17:38:53.371336'
+  version: 0.16.2
+  initialized_at: '2026-02-21T17:56:52.612779'
   last_upgraded_at: null
 environment:
   python_version: 3.13.4

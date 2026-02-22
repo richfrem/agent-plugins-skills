@@ -4,6 +4,5 @@ agents:
   available:
   - windsurf
   selection:
-    strategy: preferred
     preferred_implementer: windsurf
     preferred_reviewer: windsurf

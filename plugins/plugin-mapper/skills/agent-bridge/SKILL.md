@@ -52,11 +52,11 @@ The bridge intelligently maps plugin source components to the correct file exten
 
 | Target Environment | `commands/*.md` | `skills/` | `agents/*.md` | `rules/` | `hooks/hooks.json` | `.mcp.json` |
 |-------------------|----------------|-----------|---------------|----------|-------------------|-------------|
-| **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `rules/` | `hooks/<plugin>-hooks.json` | Merged (`./.mcp.json`) |
-| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | `rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
-| **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | `rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
-| **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
-| **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
+| **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `./CLAUDE.md` | `hooks/<plugin>-hooks.json` | Merged (`./.mcp.json`) |
+| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `.github/copilot-instructions.md` | *(Ignored)* | Merged (`./.mcp.json`) |
+| **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* | Merged (`./.mcp.json`) |
+| **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agent/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
+| **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
 
 ---
 

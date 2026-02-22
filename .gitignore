@@ -52,3 +52,4 @@ plugins/**/temp/
 .amazonq/
 .github/copilot/
 .kittify/.dashboard
+.kittify/missions/__pycache__/

@@ -174,12 +174,70 @@ def transform_content(content: str, target_agent: str) -> str:
 
     return content
 
+def transform_rule(content: str) -> str:
+    """Strips Cursor-specific <rule> XML frontmatter from MDC files."""
+    # Look for a <rule>...</rule> block at the very start of the file
+    match = re.search(r"^<rule>\s*.*?</rule>\s*", content, re.DOTALL | re.IGNORECASE)
+    if match:
+        content = content[match.end():]
+    return content
+
 def detect_targets(root: Path):
     targets = []
     for name, config in TARGET_MAPPINGS.items():
         if (root / config["check"]).exists():
             targets.append(name)
     return targets
+
+def build_rule_block(rules_dir: Path, plugin_name: str) -> str:
+    """Compiles rules from MDC files into a monolithic block."""
+    if not rules_dir.exists():
+        return ""
+        
+    other_rules = []
+    constitution = ""
+    
+    for f in rules_dir.glob("*"):
+        if f.is_file():
+            content = f.read_text(encoding='utf-8')
+            content = transform_rule(content)
+            
+            # Special case for constitution as the primary project driver
+            if f.stem.lower() == "constitution":
+                constitution = f"## Constitution ({plugin_name})\n\n{content}\n\n---\n\n"
+            else:
+                other_rules.append(f"\n\n--- RULE: {f.stem} ({plugin_name}) ---\n\n{content}")
+                
+    rules_body = "".join(other_rules)
+    if not constitution and not rules_body:
+        return ""
+        
+    marker_start = f"<!-- BEGIN RULES FROM PLUGIN: {plugin_name} -->"
+    marker_end = f"<!-- END RULES FROM PLUGIN: {plugin_name} -->"
+    
+    block = f"\n\n{marker_start}\n# SHARED RULES FROM {plugin_name}\n"
+    block += constitution
+    block += rules_body
+    block += f"\n{marker_end}\n"
+    
+    return block
+
+def append_monolithic_rules(target_file: Path, block: str, header: str):
+    """Safely appends a rule block to a monolithic instructions file."""
+    if not block:
+        return
+        
+    if target_file.exists():
+        content = target_file.read_text(encoding='utf-8')
+    else:
+        content = header
+        
+    # Overwrite if block block from the same plugin exists
+    # Simple strategy: just append for now, but a robust version would Regex replace between markers.
+    content += block
+    target_file.write_text(content, encoding='utf-8')
+
+# --- Installers ---
 
 def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
     print("  [Antigravity] Installing...")
@@ -224,29 +282,19 @@ def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
             shutil.copy2(f, agent_skills_dir / f.name)
         print(f"    -> Agents: {agent_skills_dir.relative_to(root)}")
 
-    # 4. Rules (Antigravity)
+    # 4. Rules (Antigravity natively supports .agent/rules/ directories)
     rules_dir = plugin_path / "rules"
     if rules_dir.exists():
         target_rules = root / TARGET_MAPPINGS["antigravity"]["rules"]
         target_rules.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(rules_dir, target_rules, dirs_exist_ok=True)
+        for f in rules_dir.glob("*"):
+            if f.is_file():
+                content = f.read_text(encoding='utf-8')
+                content = transform_rule(content)
+                # Ensure it saves as .md
+                dest = target_rules / (f.stem + ".md")
+                dest.write_text(content, encoding='utf-8')
         print(f"    -> Rules: {target_rules.relative_to(root)}")
-
-    # 3. Tools / Scripts (DEPRECATED: Direct execution from plugins/ preferred)
-    # scripts_dir = plugin_path / "scripts"
-    # if scripts_dir.exists():
-    #     # Copy to tools/{plugin_name}/
-    #     dest_tools = target_tools / plugin_name
-    #     if dest_tools.exists(): shutil.rmtree(dest_tools) 
-    #     # shutil.copytree(scripts_dir, dest_tools)
-    #     # print(f"    -> Tools: {dest_tools.relative_to(root)} (DEPRECATED MIRROR)")
-
-    # 4. Resources (Manifests, Prompts, Configs)
-    # DEPRECATED: Resources now live in plugins/<plugin>/resources and are accessed directly.
-    # No copy to tools/ needed.
-    # resources_dir = plugin_path / "resources"
-    # if resources_dir.exists():
-    #    print(f"    -> Resources: {resources_dir.relative_to(root)} (Referenced in-place)")
 
 def install_github(plugin_path: Path, root: Path, metadata: dict):
     print("  [GitHub] Installing...")
@@ -287,13 +335,14 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
             shutil.copy2(f, agent_skills_dir / f.name)
         print(f"    -> Agents: {agent_skills_dir.relative_to(root)}")
 
-    # 4. Rules
+    # 4. Monolithic Rules (copilot-instructions.md)
     rules_dir = plugin_path / "rules"
     if rules_dir.exists():
-        target_rules = root / TARGET_MAPPINGS["github"]["rules"]
-        target_rules.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(rules_dir, target_rules, dirs_exist_ok=True)
-        print(f"    -> Rules: {target_rules.relative_to(root)}")
+        target_rules_file = root / TARGET_MAPPINGS["github"]["instructions"]
+        target_rules_file.parent.mkdir(parents=True, exist_ok=True)
+        block = build_rule_block(rules_dir, plugin_name)
+        append_monolithic_rules(target_rules_file, block, "# Copilot Instructions\n> Auto-generated by Agent Bridge Plugin Mapper.\n\n")
+        print(f"    -> Rules: Appended to {target_rules_file.relative_to(root)}")
 
 def install_gemini(plugin_path: Path, root: Path, metadata: dict):
     print("  [Gemini] Installing...")
@@ -338,14 +387,13 @@ def install_gemini(plugin_path: Path, root: Path, metadata: dict):
             shutil.copy2(f, agent_skills_dir / f.name)
         print(f"    -> Agents: {agent_skills_dir.relative_to(root)}")
 
-    # 4. Rules
+    # 4. Monolithic Rules (GEMINI.md)
     rules_dir = plugin_path / "rules"
     if rules_dir.exists():
-        target_rules = root / TARGET_MAPPINGS["gemini"]["rules"]
-        target_rules.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(rules_dir, target_rules, dirs_exist_ok=True)
-        print(f"    -> Rules: {target_rules.relative_to(root)}")
-
+        target_rules_file = root / "GEMINI.md"
+        block = build_rule_block(rules_dir, plugin_name)
+        append_monolithic_rules(target_rules_file, block, "# Gemini CLI Instructions\n> Auto-generated by Agent Bridge Plugin Mapper.\n\n")
+        print(f"    -> Rules: Appended to {target_rules_file.relative_to(root)}")
 
 def install_claude(plugin_path: Path, root: Path, metadata: dict):
     print("  [Claude] Installing...")
@@ -386,13 +434,13 @@ def install_claude(plugin_path: Path, root: Path, metadata: dict):
             shutil.copy2(f, agent_skills_dir / f.name)
         print(f"    -> Agents: {agent_skills_dir.relative_to(root)}")
 
-    # 4. Rules
+    # 4. Monolithic Rules (CLAUDE.md)
     rules_dir = plugin_path / "rules"
     if rules_dir.exists():
-        target_rules = root / TARGET_MAPPINGS["claude"]["rules"]
-        target_rules.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(rules_dir, target_rules, dirs_exist_ok=True)
-        print(f"    -> Rules: {target_rules.relative_to(root)}")
+        target_rules_file = root / "CLAUDE.md"
+        block = build_rule_block(rules_dir, plugin_name)
+        append_monolithic_rules(target_rules_file, block, "# Claude Assistant Instructions\n> Auto-generated by Agent Bridge Plugin Mapper.\n\n")
+        print(f"    -> Rules: Appended to {target_rules_file.relative_to(root)}")
 
     # 5. Hooks (Claude-specific)
     install_hooks(plugin_path, root, plugin_name)
@@ -444,7 +492,12 @@ def install_generic(plugin_path: Path, root: Path, metadata: dict, target_name: 
     # 4. Rules
     rules_dir = plugin_path / "rules"
     if rules_dir.exists():
-        shutil.copytree(rules_dir, target_rules, dirs_exist_ok=True)
+        for f in rules_dir.glob("*"):
+            if f.is_file():
+                content = f.read_text(encoding='utf-8')
+                content = transform_rule(content)
+                dest = target_rules / (f.stem + ".md")
+                dest.write_text(content, encoding='utf-8')
         print(f"    -> Rules: {target_rules.relative_to(root)}")
 
 def main():

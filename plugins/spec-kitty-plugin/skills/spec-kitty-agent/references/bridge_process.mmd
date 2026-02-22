@@ -1,0 +1,25 @@
+flowchart TD
+    subgraph Sources [1. Sources of Truth]
+        A[.agent/rules] -->|Project Rules| B{speckit_system_bridge.py}
+        W[.windsurf/workflows] -->|Master SDD| B
+        P[plugins/*] -->|Capabilities| C{bridge_installer.py}
+    end
+
+    subgraph Sync [2. Bridge Sync & Install]
+        B -->|Universal Sync| D[Agent Config Headers]
+        B -->|Workflow Sync| E[.agent/workflows/spec-kitty/]
+        
+        C -->|Command Projection| F[Agent Command Dirs]
+        C -->|Skill/Resource Sync| G[.agent/skills/ & tools/]
+    end
+
+    subgraph Targets [3. Agent Environments]
+        D & E & F & G --> H[.agent/ Antigravity]
+        D & F --> I[.claude/ Claude]
+        D & F --> J[.gemini/ Gemini]
+        D & F --> K[.github/ Copilot]
+    end
+
+    subgraph Registry [4. Kittify Registry]
+        B & C --> L[.kittify/config.yaml]
+    end
