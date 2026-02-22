@@ -1,0 +1,55 @@
+sequenceDiagram
+    participant User/Agent
+    participant Init as init.py (vector-db-init)
+    participant Ingest as ingest.py (vector-db-agent)
+    participant Ops as VectorDBOperations (operations.py)
+    participant Embed as nomic-embed-text-v1.5
+    participant Chroma as ChromaDB Server (chroma run)
+    
+    %% Setup Phase
+    rect rgb(20, 40, 60)
+    Note over User/Agent, Chroma: Phase 1: Environment Setup
+    User/Agent->>Init: Runs script
+    Init->>Init: Installs dependencies via pip
+    Init-->>User/Agent: Prompts for Target Directories
+    User/Agent->>Init: Enters directories (e.g., 'src, docs')
+    Init->>Init: Writes ingest_manifest.json
+    Init->>Init: Selects Native Server (Option C)
+    Init->>Init: Appends CHROMA_HOST/PORT to .env
+    end
+    
+    %% Launch Server
+    rect rgb(40, 20, 60)
+    Note over User/Agent, Chroma: Phase 2: Launch Background Server (Option C)
+    User/Agent->>Chroma: chroma run --host 127.0.0.1 --port 8110 --path .vector_data
+    Chroma-->>User/Agent: Server Active
+    end
+
+    %% Ingestion Phase
+    rect rgb(20, 60, 40)
+    Note over User/Agent, Chroma: Phase 3: Parent-Child Ingestion
+    User/Agent->>Ingest: Ingest codebase (--full)
+    Ingest->>Ingest: Reads ingest_manifest.json
+    Ingest->>Ops: Pass documents to index
+    Ops->>Ops: Create large Parent Documents (Full files)
+    Ops->>Ops: Split into small Child Chunks (400 chars, overlap 100)
+    Ops->>Embed: Request embeddings for Child Chunks
+    Embed-->>Ops: Return 768-dim Vectors
+    Ops->>Chroma: Store Parent Documents in ByteStore (parent_documents_v5)
+    Ops->>Chroma: Store Child Chunks & Vectors (child_chunks_v5) with Parent ID link
+    Chroma-->>Ingest: Ingestion Complete
+    end
+
+    %% Query Phase
+    rect rgb(60, 40, 20)
+    Note over User/Agent, Chroma: Phase 4: Semantic Query
+    User/Agent->>Ops: query.py "how does auth work?"
+    Ops->>Embed: Embed query
+    Embed-->>Ops: Return 768-dim Vector
+    Ops->>Chroma: Search child_chunks_v5 for closest vectors
+    Chroma-->>Ops: Match Found! Return Child ID and Parent ID metadata
+    Note over Ops, Chroma: The magic of Parent-Child Retrieval:
+    Ops->>Chroma: Fetch full document from parent_documents_v5 using Parent ID
+    Chroma-->>Ops: Returns the massive, full-context file
+    Ops-->>User/Agent: Return full file context to LLM
+    end

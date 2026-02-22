@@ -1,0 +1,58 @@
+stateDiagram-v2
+    classDef config fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#fff
+    classDef process fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff
+    classDef storage fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff
+    classDef optional fill:#c53030,stroke:#e53e3e,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+
+    %% Application / User Space 
+    state "User Scripts (CLI Wrappers)" as UserScripts {
+        ingest_script: plugins/vector-db/skills/vector-db-agent/scripts/ingest.py
+        query_script: plugins/vector-db/skills/vector-db-agent/scripts/query.py
+        cleanup_script: plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py
+    }
+    
+    %% Config Space
+    state "Configuration Layer" as ConfigLayer {
+        state ".env File" as EnvFile <<config>>
+        state "ingest_manifest.json" as Manifest <<config>>
+        
+        EnvFile : CHROMA_HOST=127.0.0.1
+        EnvFile : CHROMA_PORT=8110
+        EnvFile : VECTOR_DB_PATH=.vector_data (Fallback)
+        Manifest : Ingest Targets
+    }
+    
+    %% Business Logic
+    state "operations.py (Core Logic)" as Operations <<process>> {
+        VectorDBOperations: Initializes HuggingFace embeddings
+        VectorDBOperations: Connects to Chroma (Native or HTTP)
+        VectorDBOperations: Splits Parent/Child chunks
+    }
+    
+    %% Storage Backends
+    state "ChromaDB Deployment Arch" as VectorDB {
+        
+        state "Option C: Python Native Server (Recommended)" as PythonServer <<process>> {
+            chroma_run: `chroma run --host 127.0.0.1 --port 8110 --path .vector_data`
+            HTTP_API: Port 8110
+        }
+        
+        state "Option A: In-Process (Fallback)" as InProcess <<optional>> {
+            PersistentClient: Locks SQLite thread
+            NoServer: No background process needed
+        }
+    }
+    
+    state "Disk Storage" as Disk <<storage>> {
+        vector_data: .vector_data/ (Chroma SQLite & Parquet files)
+    }
+
+    UserScripts --> ConfigLayer : Reads
+    UserScripts --> Operations : Calls (Passes Manifest Targets)
+    Operations --> ConfigLayer : Loads .env
+    
+    Operations --> PythonServer : Connects via HTTP (If CHROMA_HOST is set)
+    Operations --> InProcess : Binds directly (If CHROMA_HOST is empty)
+    
+    PythonServer --> Disk : Reads/Writes Vectors
+    InProcess --> Disk : Reads/Writes Vectors (Locked)

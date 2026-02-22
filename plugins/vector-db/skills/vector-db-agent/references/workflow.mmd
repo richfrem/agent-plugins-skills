@@ -1,0 +1,15 @@
+flowchart TD
+    Start([User Needs Logic]) --> Check{Is DB Built?}
+    
+    Check -- No --> Build[Run Ingest]
+    Build --> CmdBuild[/"python tools/codify/vector/ingest.py --full"/]
+    CmdBuild -- "Chunk & Embed" --> DB[(Vector DB)]
+    
+    Check -- Yes --> Search[Run Query]
+    Search --> CmdSearch[/"python tools/retrieve/vector/query.py 'term'"/]
+    CmdSearch -- "Semantic Match" --> Result([Code Snippets])
+    
+    Result --> Refine{Good Enough?}
+    Refine -- No --> Rebuild[Update Data]
+    Rebuild --> CmdUpdate[/"python tools/codify/vector/ingest.py --since 24"/]
+    CmdUpdate --> DB

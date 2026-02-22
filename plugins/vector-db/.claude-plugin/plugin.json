@@ -1,0 +1,34 @@
+{
+    "name": "vector-db",
+    "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
+    "version": "1.0.0",
+    "author": {
+        "name": "Project Sanctuary",
+        "url": "https://github.com/richfrem/Project_Sanctuary"
+    },
+    "license": "MIT",
+    "keywords": [
+        "vector-db",
+        "chromadb",
+        "semantic-search",
+        "rag",
+        "embeddings",
+        "ingest"
+    ],
+    "commands_dir": "commands",
+    "skills_dir": "skills",
+    "dependencies": [],
+    "runtime": {
+        "python_deps": [
+            "chromadb",
+            "sentence-transformers",
+            "python-dotenv"
+        ],
+        "models": [
+            "all-MiniLM-L6-v2 (HuggingFace, auto-downloaded)"
+        ]
+    },
+    "prerequisites": {
+        "rlm-factory": "Optional but recommended — provides Super-RAG context injection"
+    }
+}
