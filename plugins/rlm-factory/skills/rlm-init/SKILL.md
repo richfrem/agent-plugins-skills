@@ -25,30 +25,45 @@ Before creating anything, gather requirements:
 4. **"Where should the cache live?"** — Default: `.agent/learning/`
 5. **"What should we name this cache?"** — (e.g., `plugins`, `project`, `tools`)
 
-### Step 2: Configure `.env`
+### Step 2: Configure `rlm_profiles.json`
 
-Each cache is defined by 3 `.env` entries. Append to the project's `.env` file:
-
-```bash
-# ── RLM Cache: <NAME> ────────────────────────────
-RLM_<NAME>_MANIFEST=.agent/learning/<name>_manifest.json
-RLM_<NAME>_CACHE=.agent/learning/rlm_<name>_cache.json
-RLM_<NAME>_EXTENSIONS=.md,.py,.ts
-```
-
-| Variable | Purpose |
-|----------|---------|
-| `RLM_<NAME>_MANIFEST` | Path to the manifest JSON (what folders/files to index) |
-| `RLM_<NAME>_CACHE` | Path to the cache JSON (where summaries are stored) |
-| `RLM_<NAME>_EXTENSIONS` | Comma-separated file extensions to include |
+Each cache is defined as a profile in `rlm_profiles.json`. If the file doesn't exist, create it:
 
 ```bash
 mkdir -p .agent/learning
 ```
 
+Create or append to `.agent/learning/rlm_profiles.json`:
+
+```json
+{
+    "version": 1,
+    "default_profile": "<NAME>",
+    "profiles": {
+        "<NAME>": {
+            "description": "<What this cache contains>",
+            "manifest": ".agent/learning/<name>_manifest.json",
+            "cache": ".agent/learning/rlm_<name>_cache.json",
+            "extensions": [
+                ".md",
+                ".py",
+                ".ts"
+            ]
+        }
+    }
+}
+```
+
+| Key | Purpose |
+|----------|---------|
+| `description` | Human-readable explanation of the profile's purpose |
+| `manifest` | Path to the manifest JSON (what folders/files to index) |
+| `cache` | Path to the cache JSON (where summaries are stored) |
+| `extensions` | List of string file extensions to include |
+
 ### Step 3: Create the Manifest
 
-The manifest defines **which folders and files** to index. Extensions come from `.env`.
+The manifest defines **which folders, files, and globs** to index. Extensions come from the profile config.
 
 Create `<manifest_path>`:
 ```json
@@ -78,7 +93,7 @@ echo "{}" > <cache_path>
 
 Scan the manifest against the cache to find uncached files:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py --profile <NAME>
 ```
 
 Report: "N files in manifest, M already cached, K remaining."
@@ -107,7 +122,7 @@ For each uncached file:
 
 Run audit again:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py --profile <NAME>
 ```
 
 Target: 100% coverage. If gaps remain, repeat Step 6 for missing files.

@@ -9,12 +9,12 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    # 1. Distill general documentation (Default)
-    python plugins/rlm-factory/scripts/distiller.py --file plugins/rlm-factory/skills/rlm-curator/SKILL.md
-    python plugins/rlm-factory/scripts/distiller.py --since 24
+    # 1. Distill a specific profile (Default)
+    python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile plugins
+    python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile plugins --since 24
 
     # 2. Force update
-    python plugins/rlm-factory/scripts/distiller.py --target plugins/rlm-factory/ --force
+    python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile plugins --target plugins/rlm-factory/ --force
 
     IMPORTANT: Check tools/standalone/rlm_factory/manifest-index.json for defined profiles.
     - project: Documentation only (rlm_summary_cache.json)

@@ -61,7 +61,7 @@ def find_project_root(start_path: Path) -> Path:
     """Heuristic to find the project root containing .git or .agent."""
     curr = start_path
     for _ in range(8):  # Max depth to search
-        if (curr / ".git").exists() or (curr / ".agent" / "learning").exists():
+        if (curr / ".git").exists() or (curr.joinpath(".agent", "learning")).exists():
             return curr
         if curr.parent == curr:
             break
@@ -144,6 +144,14 @@ def find_factory_index(script_dir: Path) -> Path:
     opt2 = script_dir.parent / "resources" / "manifest-index.json"
     if opt2.exists():
         return opt2
+    # Option 3: script_dir/../../resources/ (Skill structure like plugins/name/skills/skill-name/scripts/)
+    opt3 = script_dir.parent.parent / "resources" / "manifest-index.json"
+    if opt3.exists():
+        return opt3
+    # Option 4: script_dir/../../../resources/ (Deep Skill structure like plugins/name/skills/skill-name/scripts/)
+    opt4 = script_dir.parent.parent.parent / "resources" / "manifest-index.json"
+    if opt4.exists():
+        return opt4
     # Default to current_dir / resources (will error gracefully if not found)
     return opt1
 
@@ -258,8 +266,7 @@ class RLMConfig:
         config.targets = []
         config.exclude_patterns = []
         config.allowed_suffixes = profile["extensions"]
-        config.llm_model = "agent"  # Agent-driven, not Ollama
-        
+        config.llm_model = os.getenv("OLLAMA_MODEL") or profile.get("llm_model") or "granite3.2:8b"
         # Resolve manifest path
         manifest_raw = profile["manifest"]
         config.manifest_path = Path(manifest_raw) if Path(manifest_raw).is_absolute() else root / manifest_raw

@@ -9,8 +9,8 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python plugins/rlm-factory/scripts/query_cache.py --help
-    python plugins/rlm-factory/scripts/query_cache.py "plugins"
+    python plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py --help
+    python plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py --profile plugins "plugins"
 
 Supported Object Types:
     - Generic

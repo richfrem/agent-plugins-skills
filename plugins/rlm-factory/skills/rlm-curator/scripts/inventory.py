@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python plugins/rlm-factory/scripts/inventory.py
+    python plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile plugins
 
 Supported Object Types:
     - RLM Cache (Sanctuary)

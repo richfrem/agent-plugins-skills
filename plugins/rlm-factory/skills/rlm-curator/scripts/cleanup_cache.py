@@ -9,8 +9,8 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python plugins/rlm-factory/scripts/cleanup_cache.py --help
-    python plugins/rlm-factory/scripts/cleanup_cache.py --apply --prune-orphans
+    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --help
+    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile plugins --apply --prune-orphans
 
 Supported Object Types:
     - Generic

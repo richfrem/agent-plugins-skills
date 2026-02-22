@@ -1,72 +1,7 @@
 {
-    "plugins/adr-manager/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Architecture Decision Record (ADR) manager — auto-numbers, scaffolds, and maintains design logs as markdown files. Agent executes create_adr.py to generate sequentially numbered ADR files using a standard 5-part template (Context, Decision, Alternatives, Consequences, Status). Default output directory is ADRs/ at project root, overridable via prompt.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/agent-loops/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Composable agent loop architectures providing 5 skills: orchestrator (routes to patterns via decision tree), learning-loop (structured cognitive continuity across sessions), red-team-review (adversarial audit), dual-loop (outer/inner agent delegation with verification gates), and agent-swarm (parallel multi-agent execution). Framework-agnostic — works with any CLI agent. Worktrees owned by spec-kitty, bundling by context-bundler, caching by rlm-factory.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/agent-scaffolders/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Code-generation toolkit for building Claude-compliant plugins using Anthropic's plugin-dev official open standards. Provides scaffolders for plugins, skills, sub-agents, hooks, MCP integrations, and legacy commands. Based on the official Anthropic Claude Plugins repository structure.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/agent-skill-open-specifications/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Central meta-plugin housing authoritative ecosystem standards and execution instructions. Contains two skills: ecosystem-authoritative-sources (progressive-disclosure documentation library) and ecosystem-standards (structural audit skill). Designed for cross-IDE portability (Antigravity, Claude, Copilot, Cursor, Gemini) via agentskills.io open standard. Enforces Scaffolder V2 paradigm harmonizing Anthropic, Microsoft, and Google standards.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/coding-conventions/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Coding standards enforcement plugin for Python, TypeScript/JavaScript, and C#/.NET. Includes passive MDC rule (coding-conventions.mdc) that auto-injects header, docstring, and typehint requirements when modifying source files. Ships with Python and JS header templates.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/context-bundler/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Bundles source files and documentation into single-file Markdown context packages for portable AI agent distribution. Agent compiles a JSON file-manifest defining targets, then produces a compressed, annotated .md artifact structured for LLM ingestion. Enforces standard ordering: identity → manifest → docs → code.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/dependency-management/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Python dependency management enforcing pip-compile locked-file workflow. Core rules: no manual pip install, use .in → pip-compile → .txt, commit both together, tiered hierarchy (core → service-specific → dev-only), Dockerfiles only COPY + pip install -r. Passive MDC rule auto-injects constraints.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/excel-to-csv/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Converts Excel files (entire workbooks or specific worksheets/tables) into CSV format using pandas and openpyxl. Agent invokes scripts/convert.py to flatten .xlsx data into accessible tabular CSV for text processing.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/link-checker/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Validates and auto-repairs broken documentation links across a repository using a strict 3-step protocol: Map (build file_inventory.json) → Fix (fuzzy-match broken paths to correct locations) → Check (verify repairs). Uses basename lookup with ambiguity handling — unique matches are auto-fixed, ambiguous ones skipped. Python stdlib only, no pip dependencies.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/mermaid-to-png/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Converts Mermaid Markdown diagrams into high-resolution PNG images. Scaffolded via Agent Scaffolder with standard plugin structure.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/plugin-mapper/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Universal bridge that adapts Claude Code plugins for deployment across 30+ agent environments (Claude, Copilot, Gemini, Antigravity, Cursor, Roo, etc.). Runs bridge_installer.py with --target flag to translate commands, skills, agents, rules, hooks, and MCP configs into target-specific directory formats. Supports --target auto for multi-IDE detection. Component mapping matrix handles format translation (e.g., .md commands → .toml for Gemini, .prompt.md for Copilot).",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/rlm-factory/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Recursive Language Model factory — distills repository files into semantic JSON caches for instant context retrieval. Four skills: rlm-curator (knowledge management), rlm-distill (agent-powered summarization), rlm-init (cache bootstrap), ollama-launch (local LLM server). Five commands: distill (Ollama batch), distill-agent (agent-powered), query (search cache), audit (coverage report), cleanup (stale removal). Supports multiple cache profiles with .env-configurable paths and per-cache manifests.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/spec-kitty/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Flagship workflow plugin implementing Spec-Driven Development lifecycle with 13 commands spanning two domains: Bridge (universal sync engine propagating rules/workflows/skills to Claude, Antigravity, Gemini, Copilot via speckit_system_bridge.py) and Workflow (specify → plan → tasks → implement → review → accept → merge lifecycle with kanban status tracking). Owns worktree creation/cleanup and kanban lane management.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    },
-    "plugins/task-manager/README.md": {
-        "hash": "agent_distilled_2026_02_21",
-        "summary": "Lightweight directory-backed kanban task board with zero dependencies. Tasks are human-readable Markdown files ([NNNN]-[title].md) moved between lane folders: backlog → todo → in-progress → done. Agent manages tasks via create_task.py and board.py scripts based on conversational intent.",
-        "summarized_at": "2026-02-21T17:12:00Z"
-    }
+  "plugins/rlm-factory/skills/rlm-init/SKILL.md": {
+    "hash": "4ce53d88b6d3a020",
+    "summarized_at": "2026-02-21T17:28:15.450215",
+    "summary": "[DISTILLATION FAILED]"
+  }
 }

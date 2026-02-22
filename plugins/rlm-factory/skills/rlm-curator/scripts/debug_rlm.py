@@ -9,8 +9,7 @@ Purpose:
     Useful for troubleshooting cache path conflicts.
 
 Usage Examples:
-    python plugins/rlm-factory/scripts/query_cache.py --help
-    python plugins/rlm-factory/scripts/query_cache.py "plugins"
+    python plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py
 
 Input Files:
     - plugins/rlm-factory/resources/manifest-index.json
@@ -40,18 +39,12 @@ sys.path.append(str(PROJECT_ROOT))
 try:
     from rlm_config import RLMConfig
     
-    print("\n--- Testing RLMConfig(type='tool') ---")
-    config = RLMConfig(run_type="tool")
+    print("\n--- Testing RLMConfig(type='project') ---")
+    config = RLMConfig(run_type="project")
     print(f"Config Type: {config.type}")
     print(f"Manifest Path: {config.manifest_path}")
     print(f"Cache Path: {config.cache_path}")
     print(f"Prompt Template Length: {len(config.prompt_template)}")
-    
-    print("\n--- Testing RLMConfig(type='sanctuary') ---")
-    config = RLMConfig(run_type="sanctuary")
-    print(f"Config Type: {config.type}")
-    print(f"Manifest Path: {config.manifest_path}")
-    print(f"Cache Path: {config.cache_path}")
 
     print("\n--- Testing RLMConfig.from_profile('plugins') ---")
     config = RLMConfig.from_profile("plugins")
