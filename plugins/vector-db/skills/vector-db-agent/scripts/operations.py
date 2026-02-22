@@ -11,7 +11,14 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain.storage import LocalFileStore, EncoderBackedStore
+try:
+    from langchain.storage import LocalFileStore, EncoderBackedStore
+except ImportError:
+    try:
+        from langchain_classic.storage.file_system import LocalFileStore
+        from langchain_classic.storage.encoder_backed import EncoderBackedStore
+    except ImportError:
+        from langchain_community.storage import LocalFileStore, EncoderBackedStore
 
 def _doc_to_bytes(doc: Document) -> bytes:
     # Serialize Document to JSON bytes
