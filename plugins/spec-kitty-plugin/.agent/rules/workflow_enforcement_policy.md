@@ -16,8 +16,8 @@ All agent interactions MUST be mediated by **Slash Commands** (`.agent/workflows
 |:------|:---------|:--------|
 | **Slash Commands** | `.agent/workflows/*.md` | User-facing interface |
 | **Thin Shims** | `scripts/bash/*.sh` | Dumb wrappers that `exec` Python |
-| **CLI Router** | `tools/cli.py` | Dispatches to orchestrator/tools |
-| **Orchestrator** | `tools/orchestrator/` | Logic, enforcement, Git checks |
+| **CLI Router** | `plugins/cli.py` | Dispatches to orchestrator/tools |
+| **Orchestrator** | `plugins/orchestrator/` | Logic, enforcement, Git checks |
 
 ## Command Domains
 - 🗄️ **Retrieve** — Fetching data (RLM, RAG)
@@ -29,7 +29,7 @@ All agent interactions MUST be mediated by **Slash Commands** (`.agent/workflows
 
 ## Registration (MANDATORY after creating/modifying workflows or tools)
 ```bash
-python tools/curate/documentation/workflow_inventory_manager.py --scan
+python plugins/curate/documentation/workflow_inventory_manager.py --scan
 python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path <path>
 ```
 

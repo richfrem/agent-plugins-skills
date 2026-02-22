@@ -9,7 +9,7 @@ Contains all legacy Oracle Forms and database artifacts that serve as our source
 - [oracle-forms-markdown/](../../legacy-system/oracle-forms-markdown/) - Human-readable Markdown conversions of Oracle Forms.
 
 
-##  [tools/](../../tools/)
+##  [plugins/](../../plugins/)
 Command-line utilities and scripts used for analysis and conversion (tooling only, no outputs).
 - [xml-to-markdown/] (Reference Missing: ) - The core tool for converting legacy XML into documented Markdown.
 - [form-relationships/] (Reference Missing: ) - Python scripts for mapping parent-child form dependencies.
@@ -17,7 +17,7 @@ Command-line utilities and scripts used for analysis and conversion (tooling onl
 
 ##  [analysis-outputs/] (Reference Missing: )
 Generated reports and data derived from the legacy system using our analysis tools.
-- **Form Relationships:** See [tools/form-relationships/scripts/] (Reference Missing: ) for dependency analysis outputs:
+- **Form Relationships:** See [plugins/form-relationships/scripts/] (Reference Missing: ) for dependency analysis outputs:
   - [form_relationships.csv](../../legacy-system/reference-data/collections/code-detected/form_relationships.csv) - Detected parent-child form references
   - [form_relationships.csv](../../legacy-system/reference-data/collections/combined-relationships/form_relationships.csv) - Combined analysis
 - [business-rules/] (Reference Missing: ) - Detailed reports on access control and functional rules (by-form and topic-based).

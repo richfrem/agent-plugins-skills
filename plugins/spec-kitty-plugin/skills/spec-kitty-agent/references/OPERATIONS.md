@@ -40,7 +40,7 @@ python plugins/spec-kitty/scripts/speckit_system_bridge.py --outbound
 
 **Option B: Antigravity / Workflow**
 ```bash
-python tools/cli.py workflow start system-sync
+python plugins/cli.py workflow start system-sync
 ```
 
 **Option C: Manual Python**
@@ -90,7 +90,7 @@ To ingest new capabilities into the system:
 3.  **Register Tools**:
     *   If you added new python scripts, register them:
         ```bash
-        python tools/cli.py tools add --path tools/new_script.py
+        python plugins/cli.py tools add --path plugins/new_script.py
         ```
 4.  **Run System Sync**:
     *   Execute `gemini run system-sync` to broadcast these new capabilities to Copilot and Gemini CLI.

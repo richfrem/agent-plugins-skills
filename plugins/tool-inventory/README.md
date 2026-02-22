@@ -64,7 +64,7 @@ After loading, `/help` should show:
 | Store | Location | Purpose |
 |:---|:---|:---|
 | **ChromaDB** | `plugins/tool-inventory/data/chroma/` | Semantic search (primary) |
-| **JSON Inventory** | `tools/tool_inventory.json` | Project-level structured registry |
+| **JSON Inventory** | `plugins/tool_inventory.json` | Project-level structured registry |
 | **JSON Cache** | `.agent/learning/rlm_tool_cache.json` | Backward compat |
 
 ChromaDB is the primary truth store. JSON cache is kept for backward compatibility.

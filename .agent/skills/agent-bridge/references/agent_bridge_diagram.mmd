@@ -1,0 +1,38 @@
+
+flowchart TD
+    subgraph Source_Truth [Source of Truth]
+        Windsurf[".windsurf/workflows (Core Workflows)"]
+        Kittify[".kittify/memory (Rules/Context)"]
+        Plugins["plugins/ (Extensions/Tools)"]
+    end
+
+    subgraph Bridges [Bridge System]
+        SB[System Bridge (Kernel)]
+        PM[Plugin Bridge (Extensions)]
+    end
+
+    subgraph Agents [Target Environments]
+        Antigravity[".agent/"]
+        Copilot[".github/"]
+        Claude[".claude/"]
+        Gemini[".gemini/"]
+    end
+
+    %% Flows
+    Windsurf -->|Ingest Core| SB
+    Kittify -->|Ingest Rules| SB
+    
+    SB -->|Sync Rules & Context| Antigravity
+    SB -->|Sync Rules & Context| Copilot
+    SB -->|Sync Rules & Context| Claude
+    SB -->|Sync Rules & Context| Gemini
+
+    Plugins -->|Install Capabilities| PM
+    
+    PM -->|Deploy Skills & Commands| Antigravity
+    PM -->|Deploy Prompts| Copilot
+    PM -->|Deploy Commands| Claude
+    PM -->|Deploy Commands| Gemini
+
+    %% Relationships
+    note[Sequence: 1. System Bridge (Kernel) -> 2. Plugin Bridge (Extensions)]

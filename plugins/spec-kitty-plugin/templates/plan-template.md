@@ -106,7 +106,7 @@ ios/ or android/
 └── [platform-specific structure: feature modules, UI flows, platform tests]
 
 # [REMOVE IF UNUSED] Option 4: Automation/Scripting (when "task analysis" or "tool" detected)
-tools/
+plugins/
 └── [tool_name]/
     ├── [script].py
     └── requirements.txt

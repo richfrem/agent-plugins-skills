@@ -42,7 +42,7 @@ Related:
 """
 ```
 
-For CLI tools in `tools/`, use the extended format with Usage Examples, CLI Arguments,
+For CLI tools in `plugins/`, use the extended format with Usage Examples, CLI Arguments,
 Key Functions, and Script Dependencies sections. See `references/header_templates.md`
 for the full gold-standard template.
 
@@ -146,11 +146,11 @@ module/
 
 ## Tool Inventory Integration
 
-All Python scripts in `tools/` **must** be registered in `tools/tool_inventory.json`.
+All Python scripts in `plugins/` **must** be registered in `plugins/tool_inventory.json`.
 
 After creating or modifying a tool:
 ```bash
-python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path "tools/path/to/script.py"
+python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path "plugins/path/to/script.py"
 python plugins/tool-inventory/scripts/manage_tool_inventory.py audit
 ```
 

@@ -16,7 +16,7 @@ Our implementation combines three layers of memory and a "REPL" toolchain:
 1.  **RLM Cache (Fast Context):** A 'holographic' cache of every file's purpose (see `rlm_summary_cache.json`). Allows the agent to "know" the purpose of thousands of files instantly without reading them.
 2.  **Vector DB (Semantic Search):** Enables finding logic by concept rather than just keyword.
 3.  **Dependency Graph:** Relationships between components and modules.
-4.  **CLI Toolchain:** The Unified Discovery CLI (`tools/cli.py`) that orchestrates specialized tools to extract logic on demand.
+4.  **CLI Toolchain:** The Unified Discovery CLI (`plugins/cli.py`) that orchestrates specialized tools to extract logic on demand.
 
 ## 3. The Progressive Elaboration Workflow
 
@@ -56,5 +56,5 @@ This allows us to document a massive codebase with standard context windows, ach
 
 ## 5. Tooling Reference
 *   **Distiller:** `plugins/rlm-factory/scripts/distiller.py` (Maintains the RLM Cache)
-*   **Discovery CLI:** `tools/cli.py` (Recursive Scanner)
+*   **Discovery CLI:** `plugins/cli.py` (Recursive Scanner)
 *   **Query Cache:** `plugins/rlm-factory/scripts/query_cache.py` (Tool Discovery)

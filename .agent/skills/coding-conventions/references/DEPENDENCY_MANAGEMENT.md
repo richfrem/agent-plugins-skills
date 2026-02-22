@@ -1,12 +1,12 @@
 # Dependency Management Guide
-**JUSTIN Modernization Project**
+**Agent Plugins & Skills Project**
 
 ## Overview
 
 This project uses multiple technology stacks that each require dependency management:
-- **Python** - Analysis tools, migration scripts, form relationship analysis
-- **Node.js** - XML-to-markdown conversion, Next.js frontends
-- **.NET** - Backend APIs and services
+- **Python** - Agent plugins, AI skills, and tool integrations (primary focus)
+- **Node.js** - UI components, dashboard tools (if applicable)
+- **.NET** - Backend services and extensions (if applicable)
 
 ## Python Dependency Management
 
@@ -21,44 +21,44 @@ This project uses multiple technology stacks that each require dependency manage
 
 | Tool | Location | Purpose |
 |------|----------|---------|
-| **XML-to-Markdown** | `tools/xml-to-markdown/` | Converts Oracle Forms XML to markdown |
-| **Form Relationships** | `tools/form-relationships/` | Analyzes form dependencies |
-| **Migration Scripts** | `scripts/` | Path migration and form stub generation |
+| **Vector DB Plugin** | `plugins/vector-db/` | Vector database management and retrieval operations |
+| **RLM Factory Plugin** | `plugins/rlm-factory/` | Generates RLM configurations and manages AI model tasks |
+| **Context Bundler** | `plugins/context-bundler/` | Bundles context for LLMs |
 
 ### Adding a Python Dependency
 
 **Step 1: Identify the correct scope**
 
-For XML-to-markdown tool:
+For Vector DB project:
 ```bash
 # Edit the intent file
-vim tools/xml-to-markdown/requirements.in
+vim plugins/vector-db/requirements.in
 ```
 
-For analysis scripts:
+For RLM Factory project:
 ```bash
 # Edit the intent file
-vim tools/form-relationships/requirements.in
+vim plugins/rlm-factory/requirements.in
 ```
 
 **Step 2: Add the package**
 ```text
 # Example: requirements.in
-lxml>=4.9.0
-pandas>=2.0.0
+chromadb>=0.4.0
+pydantic>=2.0.0
 ```
 
 **Step 3: Generate lockfile**
 ```bash
 # Generate the locked requirements.txt
-pip-compile tools/xml-to-markdown/requirements.in \
-  --output-file tools/xml-to-markdown/requirements.txt
+pip-compile plugins/vector-db/requirements.in \
+  --output-file plugins/vector-db/requirements.txt
 ```
 
 **Step 4: Install locally**
 ```bash
 # Install from lockfile
-pip install -r tools/xml-to-markdown/requirements.txt
+pip install -r plugins/vector-db/requirements.txt
 ```
 
 ### Updating Python Dependencies
@@ -67,12 +67,12 @@ pip install -r tools/xml-to-markdown/requirements.txt
 
 Update a specific package:
 ```bash
-pip-compile --upgrade-package pandas tools/xml-to-markdown/requirements.in
+pip-compile --upgrade-package chromadb plugins/vector-db/requirements.in
 ```
 
 Update all packages:
 ```bash
-pip-compile --upgrade tools/xml-to-markdown/requirements.in
+pip-compile --upgrade plugins/vector-db/requirements.in
 ```
 
 ## Node.js Dependency Management
@@ -88,12 +88,8 @@ pip-compile --upgrade tools/xml-to-markdown/requirements.in
 
 | Tool | Location | Purpose |
 |------|----------|---------|
-| **XML-to-Markdown** | `tools/xml-to-markdown/` | Form conversion (uses Jest, Babel) |
-| **RCC Frontend** | `modernization/apps/RCC/next-js/` | React + Next.js application |
-| **JAS Frontend** | `modernization/apps/JAS/next-js/` | React + Next.js application |
-| **JCS Frontend** | `modernization/apps/JCS/next-js/` | React + Next.js application |
-| **JRS Frontend** | `modernization/apps/JRS/next-js/` | React + Next.js application |
-| **LEA Frontend** | `modernization/apps/LEA/next-js/` | React + Next.js application |
+| **Spec-Kitty Dashboard** | `plugins/spec-kitty-dashboard/` | Next.js frontend for spec-kitty data |
+| **Example UI** | `plugins/example-ui/` | Web interfaces for specific agent tools |
 
 ### Managing Node.js Dependencies
 
@@ -107,7 +103,7 @@ npm ci
 
 **2. Adding a Dependency (Modifying Intent)**
 ```bash
-cd modernization/apps/RCC/next-js
+cd plugins/spec-kitty-dashboard
 npm install <package-name>
 # This updates package.json (Intent) AND regenerates package-lock.json (Truth)
 ```
@@ -136,18 +132,14 @@ git diff package-lock.json
 
 | Project | Location | Purpose |
 |---------|----------|---------|
-| **Common Services** | `modernization/apps/common/dotnet/` | Shared business logic |
-| **RCC.Api** | `modernization/apps/RCC/dotnet/` | RCC backend API |
-| **JAS.Api** | `modernization/apps/JAS/dotnet/` | JAS backend API |
-| **JCS.Api** | `modernization/apps/JCS/dotnet/` | JCS backend API |
-| **JRS.Api** | `modernization/apps/JRS/dotnet/` | JRS backend API |
-| **LEA.Api** | `modernization/apps/LEA/dotnet/` | LEA backend API |
+| **Example Plugin API** | `plugins/example-api/dotnet/` | Backend extensions for agent APIs |
+| **Shared Services** | `plugins/shared-services/dotnet/` | Shared enterprise logic |
 
 ### Managing .NET Dependencies
 
 **Adding a NuGet package:**
 ```bash
-cd modernization/apps/RCC/dotnet
+cd plugins/example-api/dotnet
 dotnet add package EntityFrameworkCore
 ```
 

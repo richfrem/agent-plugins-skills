@@ -1,0 +1,54 @@
+sequenceDiagram
+    participant User as User / Agent
+    participant Mapper as map_repository_files.py
+    participant Inventory as file_inventory.json
+    participant Fixer as smart_fix_links.py
+    participant Docs as Markdown Files
+    participant Inspector as check_broken_paths.py
+    participant Log as broken_links.log
+
+    Note over User, Log: Phase 1: Map (Index Repository)
+
+    User->>Mapper: /link-checker:map
+    Mapper->>Mapper: os.walk() entire repo
+    Mapper->>Mapper: Exclude .git, node_modules, .venv
+    Mapper->>Inventory: Write {filename: [paths...]}
+    Mapper-->>User: ✅ Mapped N unique filenames
+
+    Note over User, Log: Phase 2: Fix (Auto-Repair)
+
+    User->>Fixer: /link-checker:fix
+    Fixer->>Inventory: Load file map
+    loop For each .md file
+        Fixer->>Docs: Read content
+        Fixer->>Fixer: Find [text](broken/path) links
+        alt Link target exists
+            Fixer->>Fixer: Skip (valid)
+        else Link broken
+            Fixer->>Fixer: Extract basename
+            Fixer->>Inventory: Lookup basename
+            alt Unique match
+                Fixer->>Docs: Rewrite link with correct path
+                Fixer-->>User: Fixed: file → new/path
+            else Ambiguous (multiple matches)
+                Fixer-->>User: ⚠️ Ambiguous: skip for manual review
+            else Not found
+                Fixer->>Docs: Mark as (Reference Missing)
+            end
+        end
+    end
+    Fixer-->>User: ✅ Modified N files
+
+    Note over User, Log: Phase 3: Verify (Final Audit)
+
+    User->>Inspector: /link-checker:check
+    loop For each doc file
+        Inspector->>Docs: Read content
+        Inspector->>Inspector: Check all [text](path) links
+        Inspector->>Inspector: Check src/href attributes
+        alt Link broken
+            Inspector->>Log: FILE: path → [MISSING] link
+        end
+    end
+    Inspector->>Log: Write full report
+    Inspector-->>User: ✅ Scanned N files, found M broken refs

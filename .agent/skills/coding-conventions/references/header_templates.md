@@ -2,7 +2,7 @@
 
 ## Extended Python CLI/Tool Header (Gold Standard)
 
-For CLI tools and complex scripts (especially in `tools/` and `scripts/`):
+For CLI tools and complex scripts (especially in `plugins/` and `scripts/`):
 
 ```python
 #!/usr/bin/env python3
@@ -19,8 +19,8 @@ Purpose:
 Layer: Investigate / Codify / Curate / Retrieve  (Pick one)
 
 Usage Examples:
-    python tools/path/to/script.py --target JCSE0004 --deep
-    python tools/path/to/script.py --target MY_PKG --direction upstream --json
+    python plugins/path/to/script.py --target JCSE0004 --deep
+    python plugins/path/to/script.py --target MY_PKG --direction upstream --json
 
 Supported Object Types:
     - Type 1: Description

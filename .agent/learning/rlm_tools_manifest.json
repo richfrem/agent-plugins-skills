@@ -1,7 +1,6 @@
 {
     "description": "Globs tracking tool and plugin behavior scripts across the repository.",
     "include": [
-        "tools/",
         "plugins/"
     ],
     "exclude": [
