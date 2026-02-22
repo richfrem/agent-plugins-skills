@@ -4,9 +4,9 @@
 > **Related Standards:** 
 > *   [Business Rule Strategy](.agent/tasks/done/0030-business-rule-extraction-strategy.md)
 > *   [Business Rule Template](.agent/.agent/templates/outputs/business-rule-template.md)
-> *   [Expert Persona](.agent/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
+> *   [Expert Persona](.agent/plugins/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
 > *   [Architecture Diagram](.agent/docs/diagrams/architecture/legacy-oracle-architecture.mmd) - Reference for system structure
-> *   **Subtask Prompts:** [Logic Extraction](.agent/tools/ai-resources/prompts/analysis/subtasks/Logic_Extraction_Prompt.md)
+> *   **Subtask Prompts:** [Logic Extraction](.agent/plugins/ai-resources/prompts/analysis/subtasks/Logic_Extraction_Prompt.md)
 
 ## 0. Human Overrides
 **Rule File:** [std_human_overrides.md](.agent/rules/standards/std_human_overrides.md)
@@ -15,7 +15,7 @@
 **Mandatory Protocol:**
 1.  **Search Existing Rules (Multiple Variants)**: 
     ```bash
-    python tools/cli.py rules search "keyword"
+    python plugins/cli.py rules search "keyword"
     ```
     *   **Requirement**: Run multiple searches using different keywords (e.g., synonyms, technical terms, error codes) to ensure no existing rule is missed (e.g., search 'unique', then 'duplicate', then 'key'). Do NOT rely on a single search.
 2.  **Review RLM Cache**: 
@@ -23,7 +23,7 @@
     - Check for descriptions matching your logic.
 3.  **Search RAG Database**: 
     ```bash
-    python tools/cli.py query "keyword context"
+    python plugins/cli.py query "keyword context"
     ```
     - This searches the vector database for semantically similar rules or documentation.
 
@@ -51,8 +51,8 @@ A **Business Rule** is a logic statement that defines or constrains some aspect 
 | | | | |
 | **Note**: IDs must be generated sequentially using the tool. Never guess an ID. |
 | **Mandatory Protocol (ZERO TOLERANCE)**: |
-| 1. **Search**: `python tools/cli.py rules search "term"` to find existing. |
-| 2. **Register**: `python tools/cli.py rules register ...` to get the next ID. |
+| 1. **Search**: `python plugins/cli.py rules search "term"` to find existing. |
+| 2. **Register**: `python plugins/cli.py rules register ...` to get the next ID. |
 | 3. **Verify**: Ensure the file was created with the tool-assigned ID. |
 | **PROHIBITED**: Never manually create a file (e.g., `write_to_file "BR-0099..."`). This bypasses the registry and causes duplicates.
 
@@ -68,7 +68,7 @@ All business rules must be stored in:
 *   **Title:** Kebab-case, lowercase description.
 
 ## 5. Extraction Process
-1.  **Analyze**: Use `Form_Complete_Analysis_Prompt.md` and `tools/cli.py bundle`.
+1.  **Analyze**: Use `Form_Complete_Analysis_Prompt.md` and `plugins/cli.py bundle`.
 2.  **Filter**: Separate Business Logic from UI Logic.
 3.  **Cross-Reference**: Check for existing BRs.
 4.  **Create/Link**: Create distinct BR document and link from Overview.
@@ -115,9 +115,9 @@ After registering, update the overview's Business Rules table to reference the n
 ## 7. Tooling Reference
 
 The following tools **MUST** be used during the enrichment process:
-*   **Unified Discovery**: `tools/cli.py bundle` - Runs miners & gathering
-*   **Logic Density:** `tools/investigate/search/lds_scorer.py` - Prioritize work
-*   **Reachability:** `tools/investigate/search/reachability.py` - Filter dead code
+*   **Unified Discovery**: `plugins/cli.py bundle` - Runs miners & gathering
+*   **Logic Density:** `plugins/investigate/search/lds_scorer.py` - Prioritize work
+*   **Reachability:** `plugins/investigate/search/reachability.py` - Filter dead code
 *   **Link Enrichment:** `scripts/documentation/enrich_links.py` - Run after updates
 *   **Code Search:** `findPLSQLTermAttributeKeyword.py` - Verify logic across multiple files
 

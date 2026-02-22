@@ -8,9 +8,9 @@ trigger: always_on
 > **Related Standards:** 
 > *   [Application Overview Strategy](.agent/tasks/done/0032-application-overview-strategy.md)
 > *   [Application Template](.agent/.agent/templates/outputs/application-overview-template.md)
-> *   [Expert Persona](.agent/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
+> *   [Expert Persona](.agent/plugins/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
 > *   [Architecture Diagram](.agent/docs/diagrams/architecture/legacy-oracle-architecture.mmd) - Reference for system structure
-> *   **Subtask Prompts:** [Menu Analysis](.agent/tools/ai-resources/prompts/analysis/subtasks/Menu_Analysis_Prompt.md) | [Dependency Analysis](.agent/tools/ai-resources/prompts/analysis/subtasks/Dependency_Analysis_Prompt.md) | [Role Identification](.agent/tools/ai-resources/prompts/analysis/subtasks/Role_Identification_Prompt.md)
+> *   **Subtask Prompts:** [Menu Analysis](.agent/plugins/ai-resources/prompts/analysis/subtasks/Menu_Analysis_Prompt.md) | [Dependency Analysis](.agent/plugins/ai-resources/prompts/analysis/subtasks/Dependency_Analysis_Prompt.md) | [Role Identification](.agent/plugins/ai-resources/prompts/analysis/subtasks/Role_Identification_Prompt.md)
 
 ## 0. Human Overrides
 **Rule File:** [std_human_overrides.md](.agent/rules/legacy-system-analysis/standards/std_human_overrides.md)
@@ -138,10 +138,10 @@ If application analysis reveals business rules or workflows:
 
 ```bash
 # Add BR candidate (Application-Level Rule)
-python3 tools/investigate/search/priority_candidates.py --add-br --form APP_ID --desc "App-level rule" --priority P2
+python3 plugins/investigate/search/priority_candidates.py --add-br --form APP_ID --desc "App-level rule" --priority P2
 
 # Add Workflow
-python3 tools/investigate/search/priority_candidates.py --add-bw --form APP_ID --desc "End-to-end workflow" --priority P2
+python3 plugins/investigate/search/priority_candidates.py --add-bw --form APP_ID --desc "End-to-end workflow" --priority P2
 ```
 
 ## Post-Processing (Single File Operations)

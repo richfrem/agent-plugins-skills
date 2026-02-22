@@ -4,24 +4,24 @@
 > **Related Standards:** 
 > *   [Business Workflow Strategy](.agent/tasks/done/0031-business-workflow-strategy.md)
 > *   [Workflow Template](.agent/.agent/templates/meta/workflow-definition-template.md)
-> *   [Expert Persona](.agent/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
+> *   [Expert Persona](.agent/plugins/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
 > *   [Architecture Diagram](.agent/docs/diagrams/architecture/legacy-oracle-architecture.mmd) - Reference for system structure
-> *   **Subtask Prompts:** [State Transition](.agent/tools/ai-resources/prompts/analysis/subtasks/State_Transition_Prompt.md) | [Workflow Tracing](.agent/tools/ai-resources/prompts/analysis/subtasks/Workflow_Tracing_Prompt.md)
+> *   **Subtask Prompts:** [State Transition](.agent/plugins/ai-resources/prompts/analysis/subtasks/State_Transition_Prompt.md) | [Workflow Tracing](.agent/plugins/ai-resources/prompts/analysis/subtasks/Workflow_Tracing_Prompt.md)
 
 ## CLI Quick Reference
 ```bash
 # Get next available BW number
-python tools/business-rule-extraction/plugins/adr-manager/scripts/next_number.py --type bw
+python plugins/business-rule-extraction/plugins/adr-manager/scripts/next_number.py --type bw
 # Output: BW-0003
 
 # Create workflow document from template
-python tools/codify/documentation/overview_manager.py --id BW-0003-workflow-name --type workflow --create
+python plugins/codify/documentation/overview_manager.py --id BW-0003-workflow-name --type workflow --create
 
 # Create and sync to RLM + Vector DB
-python tools/codify/documentation/overview_manager.py --id BW-0003-workflow-name --type workflow --create --sync
+python plugins/codify/documentation/overview_manager.py --id BW-0003-workflow-name --type workflow --create --sync
 
 # View all next available numbers
-python tools/business-rule-extraction/plugins/adr-manager/scripts/next_number.py --type all
+python plugins/business-rule-extraction/plugins/adr-manager/scripts/next_number.py --type all
 ```
 
 

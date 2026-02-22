@@ -21,7 +21,7 @@ python plugins/vector-db/scripts/ingest.py --file docs/ADRs/014-ai-assisted-prot
 Run sync when you have created or modified files in:
 - `docs/` - ADRs, guides, analysis documents
 - `legacy-system/` - Form overviews, business rules
-- `tools/` - Tool documentation (READMEs)
+- `plugins/` - Tool documentation (READMEs)
 - `.agent/` - Rules, workflows, prompts
 
 ---
@@ -55,7 +55,7 @@ source .venv/bin/activate
 # Update specific folders
 python plugins/rlm-factory/scripts/distiller.py --target docs/ADRs
 python plugins/rlm-factory/scripts/distiller.py --target docs/oracle-forms-visualizer
-python plugins/rlm-factory/scripts/distiller.py --target tools/context-bundler
+python plugins/rlm-factory/scripts/distiller.py --target plugins/context-bundler
 python plugins/rlm-factory/scripts/distiller.py --target .agent/rules
 ```
 
@@ -83,7 +83,7 @@ python plugins/rlm-factory/scripts/inventory.py
 # Ingest specific folders incrementally (no purge)
 python plugins/vector-db/scripts/ingest.py --folder docs/ADRs
 python plugins/vector-db/scripts/ingest.py --folder docs/oracle-forms-visualizer
-python plugins/vector-db/scripts/ingest.py --folder tools/context-bundler
+python plugins/vector-db/scripts/ingest.py --folder plugins/context-bundler
 python plugins/vector-db/scripts/ingest.py --folder .agent/rules
 ```
 
@@ -117,12 +117,12 @@ After creating documentation files:
 After adding multiple ADRs and docs:
 ```bash
 # RLM updates
-python plugins/rlm-factory/scripts/distiller.py --target docs/ADRs --target docs/oracle-forms-visualizer --target tools/context-bundler --target .agent/rules
+python plugins/rlm-factory/scripts/distiller.py --target docs/ADRs --target docs/oracle-forms-visualizer --target plugins/context-bundler --target .agent/rules
 
 # Vector DB updates (incremental)
 python plugins/vector-db/scripts/ingest.py --folder docs/ADRs
 python plugins/vector-db/scripts/ingest.py --folder docs/oracle-forms-visualizer
-python plugins/vector-db/scripts/ingest.py --folder tools/context-bundler
+python plugins/vector-db/scripts/ingest.py --folder plugins/context-bundler
 python plugins/vector-db/scripts/ingest.py --folder .agent/rules
 ```
 

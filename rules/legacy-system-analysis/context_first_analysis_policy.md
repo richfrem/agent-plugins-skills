@@ -15,7 +15,7 @@ Actions performed by CLI:
 2. Query RLM Cache for summaries
 3. Query `dependency_map.json` for dependencies
 4. Auto-add source & dependency files
-5. Write `tools/context-bundler/file-manifest.json`
+5. Write `plugins/context-bundler/file-manifest.json`
 6. Generate `temp/context-bundles/[ID]_context.md`
 
 ### Phase 2: Review Context

@@ -19,7 +19,7 @@ Standardize the documentation of Oracle Reports (RDF/XML). Reports are data-cent
 **Mandatory Sequence:**
 1.  **Initialize Context**:
     ```bash
-    python tools/cli.py context --target [REPORT_ID] --type report
+    python plugins/cli.py context --target [REPORT_ID] --type report
     ```
 2.  **Review Bundle**:
     - Open `temp/context-bundles/[ID]_context.md`.
@@ -61,5 +61,5 @@ Document PL/SQL logic embedded in the report.
 *   **Database Objects**: List tables/views/packages used in queries. Wrap in brackets (e.g., `[JUSTIN_AGENCIES]`).
 
 ## 3. Tooling
-*   **Mining**: Use `python tools/investigate/miners/report_miner.py [XML_FILE]` to extract structured metadata.
+*   **Mining**: Use `python plugins/investigate/miners/report_miner.py [XML_FILE]` to extract structured metadata.
 *   **Enrichment**: Run `python scripts/documentation/enrich_links_v2.py` to resolve links.

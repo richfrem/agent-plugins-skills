@@ -44,7 +44,7 @@ This policy governs the documentation of **ALL** Oracle Database objects:
 python scripts/documentation/batch_process_db_objects.py --type all
 
 # Single Object
-python tools/codify/documentation/overview_manager.py --id OBJECT_NAME --type db_table --create
+python plugins/codify/documentation/overview_manager.py --id OBJECT_NAME --type db_table --create
 
 # Enrichment
 python scripts/documentation/enrich_links_v2.py
@@ -201,7 +201,7 @@ When BR/BW discovered, create placeholder file immediately.
 
 1.  **Initialize Smart Context**:
     ```bash
-    python tools/cli.py context --target [OBJECT_NAME] --type [TYPE]
+    python plugins/cli.py context --target [OBJECT_NAME] --type [TYPE]
     ```
     *(where TYPE is table, view, package, procedure, trigger)*
 

@@ -7,7 +7,7 @@ trigger: always_on
 > **Effective Date:** 2026-01-18
 > **Related Standards:**
 > *   [Form Documentation Policy](.agent/rules/legacy-system-analysis/form_documentation_policy.md)
-> *   [Expert Persona](.agent/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
+> *   [Expert Persona](.agent/plugins/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
 
 ## 0. Objective
 Establish a rigorous standard for documenting Oracle PL/SQL Libraries (PLLs). Unlike Forms (UI-centric), Libraries are **Logic-centric**. Documentation must focus on **API Contracts**, **Shared Logic**, and **Dependencies**.
@@ -18,7 +18,7 @@ Before documenting a library, you must gather structured context using the CLI a
 **Mandatory Sequence:**
 1.  **Run Context Initialization**: 
     ```bash
-    python tools/cli.py context --target [LIB_NAME] --type lib
+    python plugins/cli.py context --target [LIB_NAME] --type lib
     ```
     *This resets the manifest and builds the initial bundle.*
 
@@ -79,7 +79,7 @@ Rate the library complexity:
 *   [ ] **Linkage**: Are links to Overview files compliant with `enrich_links.py`?
 
 ## 5. Tooling
-*   **Discovery**: `python tools/cli.py bundle --target [LIB_NAME]` (Runs pll_miner)
+*   **Discovery**: `python plugins/cli.py bundle --target [LIB_NAME]` (Runs pll_miner)
 *   **Enrichment**: `python scripts/documentation/enrich_links_v2.py`
 
 ## 6. Execution & Verification (MANDATORY)

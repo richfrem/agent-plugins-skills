@@ -13,7 +13,7 @@ To document who can access the form, what roles they use, and what specific rest
     - Map technical application roles
 - [ ] **Verify Against Inventory (CRITICAL)**:
     - You **MUST** verify every role against `legacy-system/reference-data/inventories/roles_inventory.json`.
-    - **Use the CLI**: `python tools/cli.py roles verify [ROLE_NAME]`
+    - **Use the CLI**: `python plugins/cli.py roles verify [ROLE_NAME]`
     - **Active**: If the CLI returns `✅ ACTIVE`.
     - **Legacy**: If the CLI returns `⚠️ LEGACY`.
 - [ ] **Document Roles**:

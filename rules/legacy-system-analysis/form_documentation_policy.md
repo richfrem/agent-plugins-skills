@@ -8,7 +8,7 @@ trigger: always_on
 > **Related Standards:**
 > *   [Process Standard](.agent/ORACLE_FORMS_AI_ENRICHMENT_PROCESS.md)
 > *   [Overview Template](.agent/.agent/templates/outputs/form-overview-template.md)
-> *   [Expert Persona](.agent/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
+> *   [Expert Persona](.agent/plugins/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
 
 ## 0. Human Overrides: The Single Source of Truth
 **Rule File:** [std_human_overrides.md](.agent/rules/legacy-system-analysis/standards/std_human_overrides.md)
@@ -48,7 +48,7 @@ This single command initializes your context:
 - Check: `legacy-system/oracle-forms-overviews/forms/[ID]-Overview.md` (if exists)
 
 **Context Validity Loop**:
-- If `[ID]_context.md` is missing critical files (e.g., a specific config file), you MUST **Augment** the manifest (`tools/context-bundler/file-manifest.json`) and re-run `cli.py bundle` manually.
+- If `[ID]_context.md` is missing critical files (e.g., a specific config file), you MUST **Augment** the manifest (`plugins/context-bundler/file-manifest.json`) and re-run `cli.py bundle` manually.
 - Only proceed when you have a **Complete Context**.
 
 ### Step 3: Deep Source Review (Only If Needed)
@@ -59,7 +59,7 @@ Only proceed to view raw source files if:
 
 **Deep Dive Tools** (when RLM is insufficient):
 *   **Vector Search**: `plugins/vector-db/scripts/query.py "concept"`
-*   **Deep Code Search**: `python tools/investigate/search/search_plsql.py --file [PATH] --term "TERM"`
+*   **Deep Code Search**: `python plugins/investigate/search/search_plsql.py --file [PATH] --term "TERM"`
 *   **Reachability**: `reachability.py --target [ID]`
 
 ## 2. Documentation Standards (Mandatory Deep Dives)
@@ -84,7 +84,7 @@ Before creating ANY new business rule, follow the **Mandatory 3-Step Protocol**:
 
 **Step 1: Search Existing Rules (CLI)**
 ```bash
-python tools/cli.py rules search "keyword"
+python plugins/cli.py rules search "keyword"
 ```
 
 **Step 2: Review RLM Cache (CLI Bundle)**
@@ -92,14 +92,14 @@ Run `cli.py bundle --target [ID]` and check the RLM Summary. Does it already des
 
 **Step 3: Semantic Search (RAG)**
 ```bash
-python tools/cli.py query "keyword context"
+python plugins/cli.py query "keyword context"
 ```
 
 **Outcome:**
 - **Match Found**: Use the existing `BR-XXXX` ID.
 - **No Match**: Register a new rule via CLI.
   ```bash
-  python tools/cli.py rules register --source [ID] --description "..." --priority P2
+  python plugins/cli.py rules register --source [ID] --description "..." --priority P2
   ```
 This creates a new file in `legacy-system/business-rules/BR-XXXX-slug.md`.
 
@@ -109,7 +109,7 @@ This creates a new file in `legacy-system/business-rules/BR-XXXX-slug.md`.
 *   **Mine**: Extract logic from triggers/PLSQL (use XML-MD source).
 *   **Classify**: Decide if it's a Business Rule (BR) or Workflow (BW).
 *   **Register**: YOU MUST USE `cli.py rules register`. Do not manually create files.
-    *   Command: `python tools/cli.py rules register --source [ID] --description "..."`
+    *   Command: `python plugins/cli.py rules register --source [ID] --description "..."`
 
 ### 3. Assign Priorities
 | Priority | Criteria | Examples |
@@ -166,7 +166,7 @@ This creates a new file in `legacy-system/business-rules/BR-XXXX-slug.md`.
     ```bash
     python scripts/documentation/enrich_links_v2.py --file [PATH]
     ```
-*   **Discovery (Recommended)**: `tools/cli.py bundle --target [ID]`
+*   **Discovery (Recommended)**: `plugins/cli.py bundle --target [ID]`
 *   **RLM Distill**: `plugins/rlm-factory/scripts/distiller.py --file [PATH]`
 *   **Vector Ingest**: `plugins/vector-db/scripts/ingest.py --file [PATH]` (WSL only)
 
@@ -185,9 +185,9 @@ If you identify gaps in tools, templates, or prompts during analysis:
 1.  **Reflect**: Is this a one-off or a systemic issue?
 2.  **Improve**:
     *   **Templates**: Update `.agent/templates/` if sections are consistently missing or redundant.
-    *   **Prompts**: Refine `tools/ai-resources/prompts/` if the agent (you) consistently misses instructions.
+    *   **Prompts**: Refine `plugins/ai-resources/prompts/` if the agent (you) consistently misses instructions.
     *   **Policies**: Update `.agent/rules/` if the standard is unclear.
-    *   **Checklists**: Update `tools/ai-resources/checklists/` if steps are missing.
+    *   **Checklists**: Update `plugins/ai-resources/checklists/` if steps are missing.
 
 ---
 

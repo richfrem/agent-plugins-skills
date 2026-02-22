@@ -7,7 +7,7 @@ trigger: always_on
 > **Effective Date:** 2026-01-18
 > **Related Standards:**
 > *   [Form Documentation Policy](.agent/rules/legacy-system-analysis/form_documentation_policy.md)
-> *   [Expert Persona](.agent/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
+> *   [Expert Persona](.agent/plugins/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
 
 ## 0. Objective
 Standardize the documentation of Oracle Menus (`.mmb`/`.mmx`). Menus define the navigation structure and security access points of the application. Unlike simple navigation, Oracle Menus often contain significant routing logic and state management.
@@ -53,6 +53,6 @@ Provide specific guidance for migrating this menu to a modern web stack (React/N
 *   **RBAC Strategy**: How map Oracle Roles to Identity Provider scopes.
 
 ## 3. Tooling
-*   **Mining**: Use `tools/cli.py bundle` (Runs menu_miner).
+*   **Mining**: Use `plugins/cli.py bundle` (Runs menu_miner).
 *   **Batch Processing**: `batch_process_menus.py` applies heuristics to extract targets from obscure commands.
 *   **Enrichment**: `enrich_links_v2.py` ensures Smart Links resolve.
