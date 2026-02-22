@@ -8,4 +8,4 @@
 requests
 
 # Environment configuration
-python-dotenv
+# python-dotenv removed - now using JSON profiles

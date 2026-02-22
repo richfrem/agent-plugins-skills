@@ -8,7 +8,8 @@
             "cache": ".agent/learning/rlm_plugins_cache.json",
             "extensions": [
                 ".md"
-            ]
+            ],
+            "llm_model": "granite3.2:8b"
         },
         "tools": {
             "description": "Semantic Registry of Project Tools and Executable Code logic.",
@@ -19,7 +20,8 @@
                 ".js",
                 ".ts",
                 ".sh"
-            ]
+            ],
+            "llm_model": "granite3.2:8b"
         }
     }
 }
