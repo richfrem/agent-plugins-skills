@@ -37,13 +37,30 @@ When asked to create an Architecture Decision Record (ADR):
 - If a new ADR invalidates an older one, edit the older ADR's status to `Superseded` and add a note linking to the new ADR.
 - **Reference ADRs by number** — e.g., "This builds upon the database choice outlined in ADR-0003."
 
-## Auxiliary Tools: Sequence Resolution
+## Auxiliary Workflows
 
-### 1. Identify Next Sequence Number
+### Listing ADRs
+```bash
+python3 plugins/adr-manager/skills/adr-management/scripts/adr_manager.py list
+python3 plugins/adr-manager/skills/adr-management/scripts/adr_manager.py list --limit 10
+```
+
+### Viewing a Specific ADR
+```bash
+python3 plugins/adr-manager/skills/adr-management/scripts/adr_manager.py get 42
+```
+
+### Searching ADRs by Keyword
+```bash
+python3 plugins/adr-manager/skills/adr-management/scripts/adr_manager.py search "ChromaDB"
+```
+
+### Sequence Resolution
 Use `next_number.py` to identify the next sequential ID across various artifact domains.
 - **Scans**: Specs, Tasks, ADRs, Business Rules/Workflows.
 - **Example**: `python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type adr`
 
 ## Best Practices
 1. **Always fill all sections**: Never leave an ADR blank. Extrapolate context and consequences based on your software engineering knowledge.
-2. **Kebab-Case Names**: Always format the filename as `NNNN-short-descriptive-title.md`.
+2. **Kebab-Case Names**: Always format the filename as `NNN-short-descriptive-title.md`.
+3. **Reference ADRs by number** — e.g., "This builds upon the database choice outlined in ADR-003."
