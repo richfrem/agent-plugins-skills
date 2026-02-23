@@ -14,18 +14,18 @@ You manage Architecture Decision Records — the project's institutional memory 
 **Document, Decide, and Distribute.** Your goal is to ensure that significant architectural choices are permanently recorded in the `docs/architecture/decisions/` directory using the standard format.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **ADR Scaffolder**: `plugins/adr-manager/skills/adr-management/scripts/create_adr.py`
+- **ADR Manager**: `plugins/adr-manager/skills/adr-management/scripts/adr_manager.py` (create, list, get, search)
 - **ID Generator**: `plugins/adr-manager/skills/adr-management/scripts/next_number.py`
 
 ## Core Workflow: Creating an ADR
 
 When asked to create an Architecture Decision Record (ADR):
 
-### 1. Execute the Scaffolder Script
+### 1. Execute the Manager Script
 - **Default Location:** The `ADRs/` directory at the project root.
-- Execute the Scaffolder script passing the ADR title and target directory. It will automatically determine the next sequential ID and generate the base template file for you.
-- e.g., `python3 plugins/adr-manager/skills/adr-management/scripts/create_adr.py --title "Use Python 3.12" --dir ADRs/`
-- The script will print the absolute path of the generated `.md` file to stdout.
+- Execute the Manager script with the `create` subcommand. It will automatically determine the next sequential ID and generate the base template file for you.
+- e.g., `python3 plugins/adr-manager/skills/adr-management/scripts/adr_manager.py create "Use Python 3.12" --context "..." --decision "..." --consequences "..."`
+- The script will print the path of the generated `.md` file to stdout.
 
 ### 2. Fill in the Logical Content
 - Open the newly generated file.

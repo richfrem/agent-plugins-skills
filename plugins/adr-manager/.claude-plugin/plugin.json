@@ -1,9 +1,9 @@
 {
     "name": "adr-manager",
-    "description": "Manage Architecture Decision Records \u2014 create, list, search ADRs with auto-numbering",
+    "description": "Manage Architecture Decision Records - create, list, search ADRs with auto-numbering",
     "version": "1.1.0",
     "author": {
-        "name": "Open Source Maintainer"
+        "name": "Richard Fremmerlid"
     },
     "license": "MIT",
     "keywords": [
