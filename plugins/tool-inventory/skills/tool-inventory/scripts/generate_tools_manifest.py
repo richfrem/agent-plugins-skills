@@ -21,8 +21,10 @@ import ast
 from pathlib import Path
 from datetime import datetime
 
-ROOT = Path(__file__).resolve().parent.parent
-PLUGINS_DIR = ROOT / "plugins"
+# Script lives at: plugins/<plugin>/skills/<skill>/scripts/
+# parents[4] = plugins/   parents[5] = project root
+PLUGINS_DIR = Path(__file__).resolve().parents[4]  # → .../plugins/
+ROOT = PLUGINS_DIR.parent                           # → project root
 
 SCRIPT_EXTENSIONS = {".py", ".js", ".sh"}
 
