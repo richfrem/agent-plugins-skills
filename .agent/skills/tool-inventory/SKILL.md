@@ -57,9 +57,9 @@ This skill combines **Tool Discovery** (finding tools) and **Inventory Managemen
    python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/tool_chroma.py search "dependency graph"
    ```
 2. **Legacy JSON Search** (backward compat):
-   ```bash
-   python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/query_cache.py --type tool "dependency graph"
-   ```
+    ```bash
+    python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py --profile tools --type tool "dependency graph"
+    ```
 3. **If empty**, broaden query: `"dependency"` instead of `"dependency graph"`
 
 ### 2. Retrieve & Bind (Auto-Binding)

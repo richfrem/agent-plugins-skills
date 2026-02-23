@@ -40,7 +40,7 @@ from pathlib import Path
 
 # Setup paths
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent # c:/.../claude-plugins
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent  # scripts → agent-bridge → skills → plugin-mapper → plugins → root
 PLUGINS_ROOT = PROJECT_ROOT / "plugins"
 
 INSTALLER_SCRIPT = SCRIPT_DIR / "bridge_installer.py"
@@ -82,7 +82,7 @@ def main():
                 "--target", args.target
             ]
             
-            result = subprocess.run(cmd, check=True, text=True)
+            result = subprocess.run(cmd, check=True, text=True, cwd=PROJECT_ROOT)
             plugins_processed += 1
             
         except subprocess.CalledProcessError as e:
