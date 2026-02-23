@@ -15,6 +15,7 @@ You manage Architecture Decision Records — the project's institutional memory 
 
 ## 🛠️ Tools (Plugin Scripts)
 - **ADR Scaffolder**: `plugins/adr-manager/skills/adr-management/scripts/create_adr.py`
+- **ID Generator**: `plugins/adr-manager/skills/adr-management/scripts/next_number.py`
 
 ## Core Workflow: Creating an ADR
 
@@ -35,6 +36,13 @@ When asked to create an Architecture Decision Record (ADR):
 - **Status values**: A new ADR should usually be `Proposed` or `Accepted`.
 - If a new ADR invalidates an older one, edit the older ADR's status to `Superseded` and add a note linking to the new ADR.
 - **Reference ADRs by number** — e.g., "This builds upon the database choice outlined in ADR-0003."
+
+## Auxiliary Tools: Sequence Resolution
+
+### 1. Identify Next Sequence Number
+Use `next_number.py` to identify the next sequential ID across various artifact domains.
+- **Scans**: Specs, Tasks, ADRs, Business Rules/Workflows.
+- **Example**: `python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type adr`
 
 ## Best Practices
 1. **Always fill all sections**: Never leave an ADR blank. Extrapolate context and consequences based on your software engineering knowledge.

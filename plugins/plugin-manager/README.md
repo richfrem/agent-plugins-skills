@@ -13,20 +13,15 @@ New to this repo? Run these commands to get started:
 
 👉 **[Read the Full Setup Guide](../../INIT_SETUP.md)**
 
-### 2. Daily Commands
-Use these Agent Commands to manage your plugins:
+This is the **Master Source Repository** for agent plugins. 
 
-| Command | Description |
-| :--- | :--- |
-| `/plugin-manager_update` | **Update Everything**. Pulls latest code from vendor and syncs agents. |
-| `/plugin-manager_install` | **Install New**. Adds a specific plugin (e.g., `agency-swarm`) from vendor. |
-| `/plugin-manager_cleanup` | **Housekeeping**. Removes orphaned artifacts from deleted vendor plugins. |
+To refresh your local agent environment (Antigravity, etc.) with the current plugin code:
+1.  **Sync**: `python plugins/plugin-manager/scripts/sync_with_inventory.py`
 
 ## 🛠 Available Skills
 
 | Skill | Purpose | Key Script |
 | :--- | :--- | :--- |
-| **[plugin-bootstrap](skills/plugin-bootstrap/SKILL.md)** | Initializes/updates local ecosystem from vendor. | `plugin_bootstrap.py` |
 | **[inventory-sync](skills/inventory-sync/SKILL.md)** | Deep sync between plugins folder and agent configs. | `sync_with_inventory.py` |
 | **[plugin-replicator](skills/plugin-replicator/SKILL.md)** | Copies or links plugins to other repositories. | `plugin_replicator.py` |
 | **[agent-bridge](skills/agent-bridge/SKILL.md)** | Adapts standard plugins to specific agent runtimes. | `bridge_installer.py` |
