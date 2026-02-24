@@ -2,7 +2,7 @@ vcs:
   type: git
 agents:
   available:
-  - windsurf
+  - copilot
   selection:
-    preferred_implementer: windsurf
-    preferred_reviewer: windsurf
+    preferred_implementer: copilot
+    preferred_reviewer: copilot

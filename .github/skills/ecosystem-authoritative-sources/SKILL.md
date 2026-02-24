@@ -30,6 +30,10 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
     *   [reference/workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/workflows.md)
 *   **Sub-Agents**: Definition, setup, and orchestration of nested contextual LLM boundaries.
     *   [reference/sub-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/sub-agents.md)
+*   **GitHub Copilot Prompts (Models)**: Documentation on the exact YAML schema, dynamic variables, and exclusion logic (`exclude-targets`) used by GitHub Copilot chat environments.
+    *   [reference/github-prompts.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/github-prompts.md)
+*   **GitHub Agentic Workflows**: Documentation on the "Continuous AI" autonomous agents responding to CI/CD events.
+    *   [reference/github-agentic-workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/github-agentic-workflows.md)
 *   **Hooks**: Lifecycle event integrations (e.g., `pre-commit`, `on-startup`).
     *   [reference/hooks.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/hooks.md)
 *   **Marketplace**: Registering registries and interacting with the `marketplace.json` distribution format.

@@ -53,12 +53,16 @@ The bridge intelligently maps plugin source components to the correct file exten
 | Target Environment | `commands/*.md` | `skills/` | `agents/*.md` | `rules/` | `hooks/hooks.json` | `.mcp.json` |
 |-------------------|----------------|-----------|---------------|----------|-------------------|-------------|
 | **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `./CLAUDE.md` | `hooks/<plugin>-hooks.json` | Merged (`./.mcp.json`) |
-| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `.github/copilot-instructions.md` | *(Ignored)* | Merged (`./.mcp.json`) |
+| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `agents/*.agent.md` | Appended to `.github/copilot-instructions.md` | *(Ignored)* | Merged (`./.mcp.json`) |
 | **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* | Merged (`./.mcp.json`) |
 | **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agent/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
 | **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
 
----
+> **GitHub Copilot — Two Agent Types:** The `agents/*.agent.md` column for GitHub Copilot covers two distinct use cases:
+> - **IDE / UI Agents**: `.github/agents/name.agent.md` + `.github/prompts/name.prompt.md` — invokable by human via Copilot Chat slash command or agent dropdown in VS Code / GitHub.com.
+> - **CI/CD Autonomous Agents**: `.github/agents/name.agent.md` + `.github/workflows/name-agent.yml` — triggered automatically by GitHub Actions on PR/push/schedule with a Kill Switch quality gate.
+>
+> The `commands/*.md` → `prompts/*.prompt.md` mapping handles the slash-command pointer only. The full rich instruction body should live in the `.agent.md` file, not the `.prompt.md`. Use the `create-agentic-workflow` skill to scaffold either or both agent types from an existing Skill.
 
 ## Supported Environments (In-Depth)
 
