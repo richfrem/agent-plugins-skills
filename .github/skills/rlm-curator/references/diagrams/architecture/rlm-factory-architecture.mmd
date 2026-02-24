@@ -1,0 +1,14 @@
+    Q[/"AI Agent Query"/] --> D{Route Query}
+    
+    D --> RLM[(/rlm-factory_query)]
+    D --> VDB[(/vector-db_query)]
+    
+    RLM -->|"O(1) lookups"| R1[File Summary]
+    VDB -->|"Semantic similarity"| R2[Ranked Chunks]
+    
+    R1 --> OUT[/"Agent Response"/]
+    R2 --> OUT
+    
+    style RLM fill:#4CAF50,color:#fff
+    style VDB fill:#2196F3,color:#fff
+    style OUT fill:#9C27B0,color:#fff

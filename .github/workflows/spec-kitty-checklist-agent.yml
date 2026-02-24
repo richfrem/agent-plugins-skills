@@ -1,0 +1,54 @@
+name: Spec Kitty Checklist Agent Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/**"
+      - "src/**"
+  pull_request:
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Intelligence (Copilot CLI)
+        run: npm i -g @github/copilot
+
+      - name: Run spec-kitty-checklist
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # 1. Load Persona
+          AGENT_PROMPT=$(cat .github/agents/spec-kitty-checklist.agent.md)
+
+          # 2. Add Context
+          PROMPT="$AGENT_PROMPT"
+          PROMPT+=$'\n\nContext:\n'
+          PROMPT+="- Repository: $GITHUB_REPOSITORY"
+          PROMPT+=$'\n\nTask: Execute instructions against the current repository state and generate report strictly to /report.md'
+
+          # 3. Execute Headless
+          copilot --prompt "$PROMPT" --allow-all-tools --allow-all-paths < /dev/null
+
+      - name: The Logic Check (Smart Fail)
+        if: always()
+        run: |
+          # 4. Grep for the Kill Switch
+          if grep -q "CRITICAL FAILURE: SPEC-KITTY-CHECKLIST" report.md; then
+            echo "❌ QUALITY GATE FAILED: CRITICAL FAILURE: SPEC-KITTY-CHECKLIST"
+            exit 1
+          else
+            echo "✅ Agent review passed."
+          fi

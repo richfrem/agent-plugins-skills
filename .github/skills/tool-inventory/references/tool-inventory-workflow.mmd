@@ -1,0 +1,53 @@
+sequenceDiagram
+    participant User as User / Agent
+    participant CLI as manage_tool_inventory.py
+    participant JSON as tool_inventory.json
+    participant Chroma as ChromaDB (tool_summaries)
+    participant FS as File System
+    participant Distiller as distiller.py (optional)
+    participant Ollama as Ollama (optional)
+
+    Note over User, Ollama: Add Tool Flow
+
+    User->>CLI: /tool-inventory:add --path plugins/new.py
+    CLI->>FS: Check file exists
+    CLI->>FS: Extract docstring
+    CLI->>CLI: Detect header compliance style
+    CLI->>JSON: Write entry (name, path, desc, status)
+    CLI->>Chroma: Upsert (path, summary, metadata)
+    CLI-->>User: ✅ Added + indexed
+
+    Note over User, Ollama: Semantic Search Flow
+
+    User->>Chroma: /tool-inventory:search "cache cleanup"
+    Chroma->>Chroma: Embed query → vector similarity
+    Chroma-->>User: 🔍 Top N matches with distances
+
+    Note over User, Ollama: Discovery Flow
+
+    User->>CLI: /tool-inventory:discover --auto-stub
+    CLI->>FS: Scan plugins/ for *.py, *.js
+    CLI->>JSON: Compare against tracked paths
+    loop For each untracked script
+        CLI->>FS: Extract docstring
+        CLI->>JSON: Create stub entry
+    end
+    CLI-->>User: 📝 Created N stubs
+
+    Note over User, Ollama: Migration Flow (one-time)
+
+    User->>Chroma: import-json .agent/learning/rlm_tool_cache.json
+    Chroma->>FS: Load JSON cache
+    loop For each cache entry
+        Chroma->>Chroma: Parse summary → upsert
+    end
+    Chroma-->>User: ✅ Imported N entries
+
+    Note over User, Ollama: Optional: LLM Distillation
+
+    User->>CLI: summarize-missing
+    CLI->>Distiller: Trigger per-file distillation
+    Distiller->>Ollama: POST /api/generate
+    Ollama-->>Distiller: Summary text
+    Distiller->>JSON: Update rlm_tool_cache.json
+    Distiller->>Chroma: Upsert summary

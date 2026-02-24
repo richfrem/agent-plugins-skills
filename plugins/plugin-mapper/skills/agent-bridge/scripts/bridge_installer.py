@@ -138,7 +138,15 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
         for line in fm_block.splitlines():
             if ':' in line:
                 key, _, value = line.partition(':')
-                metadata[key.strip()] = value.strip().strip('"')
+                key = key.strip()
+                value = value.strip().strip('"')
+                
+                # Check if it's an array syntax like ["github", "gemini"]
+                if value.startswith('[') and value.endswith(']'):
+                    items = value[1:-1].split(',')
+                    metadata[key] = [item.strip().strip('"').strip("'") for item in items]
+                else:
+                    metadata[key] = value
         return metadata, body
     return metadata, content
 
@@ -309,12 +317,40 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
         commands_dir = plugin_path / "workflows"
         
     if commands_dir.exists():
+        import yaml
         for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
-            content = f.read_text(encoding='utf-8')
-            content = transform_content(content, "github")
+            raw_content = f.read_text(encoding='utf-8')
+            fm, body = parse_frontmatter(raw_content)
+            
+            # STRICT OPT-IN FOR GITHUB MODELS
+            # Most IDE commands are useless in GitHub CI/CD, so we drop them by default.
+            export_flag = fm.get('github-model-export', 'false')
+            if str(export_flag).lower() not in ['true', 'yes', '1']:
+                print(f"    -> Prompt: Skipped {f.relative_to(root)} (Missing 'github-model-export: true' in frontmatter)")
+                continue
+
+            content = transform_content(body, "github")
             stem = command_output_stem(commands_dir, f, plugin_name)
-            dest = target_prompts / f"{stem}.prompt.md"
-            dest.write_text(content, encoding='utf-8')
+            
+            # Construct GitHub Models Prompt Structure (.prompt.yml)
+            prompt_data = {
+                "name": fm.get("name", stem).replace('_', ' ').title(),
+                "description": fm.get("description", f"Command generated from {plugin_name}"),
+                "model": fm.get("model", "openai/gpt-4o"),
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a specialized AI agent executing a workflow. Follow the instructions precisely."
+                    },
+                    {
+                        "role": "user",
+                        "content": content.strip()
+                    }
+                ]
+            }
+            
+            dest = target_prompts / f"{stem}.prompt.yml"
+            dest.write_text(yaml.dump(prompt_data, sort_keys=False), encoding='utf-8')
             print(f"    -> Prompt: {dest.relative_to(root)}")
 
     # 2. Skills
