@@ -135,8 +135,24 @@ At startup, the custom agent parses the YAML frontmatter of every discovered ski
 ```
 *Note: The `location` parameter is crucial for Filesystem-based agents so they know exactly what path to `cat` or `read`.*
 
-### Ecosystem Tooling
-Anthropic maintains an official reference library at [agentskills.io/skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) that provides Python validation tools (e.g., `skills-ref validate ./my-skill` and `skills-ref to-prompt <path>`) for custom agent deployment.
+## GitHub Ecosystem Integration
+The GitHub ecosystem leverages the Agent Skills open standard across multiple distinct surfaces. Because GitHub fully embraces the open format, the `agent-bridge` (`bridge_installer.py`) maps your standard plugin `skills/` directly into `.github/skills/` without requiring any translation or schema changes.
+
+### 1. Copilot Native Support (IDE & Chat)
+GitHub Copilot natively loads skills to improve its performance in specialized tasks during interactive conversational development (for Copilot coding agent, GitHub Copilot CLI, and VS Code Insiders).
+
+- **Project Skills:** `.github/skills/<skill-folder>/` or `.claude/skills/<skill-folder>/`
+- **Personal Skills:** `~/.copilot/skills/<skill-folder>/`
+
+### 2. Copilot in CI/CD (GitHub Actions)
+Agent Skills stored in the repository (`.github/skills`) can also be invoked autonomously during Continuous Integration and Deployment workflows. 
+
+To use an Agent Skill within a GitHub Action:
+1. Ensure the skill is exported to `.github/skills/<skill-id>/SKILL.md`.
+2. Ensure the frontmatter defines the `name` (unique identifier), `description`, and any required `argument-hint` text.
+3. Configure the GitHub Agentic Workflow or Actions pipeline to trigger the skill by its identifier. The AI Agent will read the `SKILL.md` file, adhere to its guidelines, and execute any referenced scripts contextually during the CI run.
+
+*Note: This differs from **GitHub Models Prompts** (`.github/prompts/*.prompt.yml`), which are static templates exported via `github-model-export: true`, whereas `.github/skills` are fully dynamic agent behaviors.*
 
 ## Antigravity Implementation
 For platforms like **Antigravity** (Google Deepmind's agent framework), the open standard for Agent Skills is natively supported with a few platform-specific nuances:

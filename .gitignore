@@ -53,3 +53,5 @@ plugins/**/temp/
 .github/copilot/
 .kittify/.dashboard
 .kittify/missions/__pycache__/
+
+.knowledge_vector_data/

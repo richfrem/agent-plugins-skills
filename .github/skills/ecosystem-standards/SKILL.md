@@ -16,7 +16,7 @@ When invoked to review a codebase component or a planned extension:
     *   *Path:* `plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/*.md`
 3.  **Perform Rigorous Audit**:
     *   **Structure**: Does the directory schema match the standard? (e.g., `.claude-plugin/plugin.json`, `my-skill/SKILL.md`).
-    *   **Content**: Does the YAML frontmatter adhere precisely to rules (e.g. `description` length limits, lower-case hyphenated names).
+    *   **Content**: Does the YAML frontmatter adhere precisely to rules (e.g. `description` length limits, lower-case hyphenated names). If generating commands intended for explicit exclusion from GitHub, use the `exclude-targets: ["github"]` flag as defined in the `github-prompts.md` standard.
     *   **Progressive Disclosure**: For Skills, is the `SKILL.md` file appropriately constrained (< 500 lines) with extraneous detail pushed to one-level deep reference files?
     *   **Anti-Patterns**: Check for hardcoded credentials, Windows style paths (`\`), silent error punting, and missing namespaces on MCP tool calls.
 4.  **Produce Feedback**: Provide explicit, granular feedback outlining exactly which ecosystem constraints were violated and concrete suggestions for fixing them. Ensure your feedback is actionable.

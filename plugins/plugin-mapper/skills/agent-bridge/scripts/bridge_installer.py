@@ -61,6 +61,8 @@ TARGET_MAPPINGS = {
     "github": {
         "check": ".github",
         "workflows": ".github/prompts",
+        "agents": ".github/agents",
+        "github_workflows": ".github/workflows",
         "skills": ".github/skills",
         "instructions": ".github/copilot-instructions.md",
         "rules": ".github/rules"
@@ -127,12 +129,12 @@ def install_hooks(plugin_path: Path, root: Path, plugin_name: str):
     shutil.copy2(hooks_file, dest)
     print(f"    -> Hooks: {dest.relative_to(root)} (Claude only — review before activating)")
 
-def parse_frontmatter(content: str) -> tuple[dict, str]:
+def parse_frontmatter(content: str) -> tuple[dict[str, str | list[str]], str]:
     """Parse YAML frontmatter block from markdown. Returns (metadata_dict, body_without_frontmatter)."""
-    metadata = {}
+    metadata: dict[str, str | list[str]] = {}
     match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
     if match:
-        fm_block = match.group(1)
+        fm_block = str(match.group(1))
         body = content[match.end():]
         # Simple key: value parse (no full YAML needed)
         for line in fm_block.splitlines():
@@ -140,10 +142,11 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
                 key, _, value = line.partition(':')
                 key = key.strip()
                 value = value.strip().strip('"')
-                
+
                 # Check if it's an array syntax like ["github", "gemini"]
                 if value.startswith('[') and value.endswith(']'):
-                    items = value[1:-1].split(',')
+                    inner = value[1:len(value) - 1]
+                    items = inner.split(',')
                     metadata[key] = [item.strip().strip('"').strip("'") for item in items]
                 else:
                     metadata[key] = value
@@ -361,17 +364,25 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
         shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
         print(f"    -> Skills: {target_skills.relative_to(root)}")
 
-    # 3. Agents (bridge as sub-agent skills)
+    # 3. Agents -> .github/agents/ (IDE agents for Copilot Chat)
     agents_dir = plugin_path / "agents"
     if agents_dir.exists():
-        target_skills_dir = root / TARGET_MAPPINGS["github"]["skills"]
-        agent_skills_dir = target_skills_dir / plugin_name / "agents"
-        agent_skills_dir.mkdir(parents=True, exist_ok=True)
+        target_agents_dir = root / TARGET_MAPPINGS["github"]["agents"]
+        target_agents_dir.mkdir(parents=True, exist_ok=True)
         for f in agents_dir.glob("*.md"):
-            shutil.copy2(f, agent_skills_dir / f.name)
-        print(f"    -> Agents: {agent_skills_dir.relative_to(root)}")
+            shutil.copy2(f, target_agents_dir / f.name)
+        print(f"    -> Agents: {target_agents_dir.relative_to(root)}")
 
-    # 4. Monolithic Rules (copilot-instructions.md)
+    # 4. GitHub Workflows -> .github/workflows/ (CI/CD YAML runners)
+    github_wf_dir = plugin_path / "github_workflows"
+    if github_wf_dir.exists():
+        target_wf_dir = root / TARGET_MAPPINGS["github"]["github_workflows"]
+        target_wf_dir.mkdir(parents=True, exist_ok=True)
+        for f in github_wf_dir.glob("*.yml"):
+            shutil.copy2(f, target_wf_dir / f.name)
+            print(f"    -> Workflow: {(target_wf_dir / f.name).relative_to(root)}")
+
+    # 5. Monolithic Rules (copilot-instructions.md)
     rules_dir = plugin_path / "rules"
     if rules_dir.exists():
         target_rules_file = root / TARGET_MAPPINGS["github"]["instructions"]
