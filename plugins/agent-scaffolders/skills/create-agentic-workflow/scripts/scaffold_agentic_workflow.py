@@ -148,7 +148,7 @@ def generate_agentic_workflow(skill_file: Path, target_repo_root: Path, auto_tri
               PROMPT+=$'\\n\\nTask: Execute instructions against the current repository state and generate report strictly to /report.md'
               
               # 3. Execute Headless
-              copilot --prompt "$PROMPT" --allow-all-tools < /dev/null
+              copilot --prompt "$PROMPT" --allow-all-tools --model claude-sonnet-4.5 < /dev/null
 
           - name: The Logic Check (Smart Fail)
             if: always()
