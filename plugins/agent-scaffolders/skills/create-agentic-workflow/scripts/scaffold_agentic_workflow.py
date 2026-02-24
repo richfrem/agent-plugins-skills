@@ -11,7 +11,7 @@ Purpose:
 Layer: Codify
 
 Usage:
-    python scaffold_agentic_workflow.py --skill-dir <path/to/skill>
+    python scaffold_agentic_workflow.py --skill-dir <path/to/skill> [--auto-trigger]
 
 Related:
     - create-agentic-workflow/SKILL.md
@@ -48,7 +48,7 @@ def parse_frontmatter(content: str) -> Tuple[Dict[str, str], str]:
         return metadata, body
     return metadata, content
 
-def generate_agentic_workflow(skill_file: Path, target_repo_root: Path) -> None:
+def generate_agentic_workflow(skill_file: Path, target_repo_root: Path, auto_trigger: bool = False) -> None:
     """
     Generates the Persona (.agent.md) and Runner (.yml) files for a GitHub Action.
 
@@ -56,6 +56,7 @@ def generate_agentic_workflow(skill_file: Path, target_repo_root: Path) -> None:
         skill_file: Path object pointing to the source SKILL.md file.
         target_repo_root: Path object pointing to the root of the repository where 
                           the .github folder resides.
+        auto_trigger: Boolean indicating if the Action should automatically trigger on PRs/Pushes.
     """
     agents_dir = target_repo_root / ".github" / "agents"
     workflows_dir = target_repo_root / ".github" / "workflows"
@@ -98,12 +99,23 @@ def generate_agentic_workflow(skill_file: Path, target_repo_root: Path) -> None:
     agent_file = agents_dir / f"{name}.agent.md"
     agent_file.write_text(agent_content, encoding='utf-8')
     
+    trigger_block = "  workflow_dispatch:"
+    if auto_trigger:
+        trigger_block = textwrap.dedent("""\
+          workflow_dispatch:
+          push:
+            branches: ["main"]
+            paths:
+              - "docs/**"
+              - "src/**"
+          pull_request:""")
+        
     # 2. Generate YAML Runner
     yaml_content = textwrap.dedent(f"""\
     name: {name.replace('-', ' ').title()} Agent Workflow
 
     on:
-      workflow_dispatch:
+    {trigger_block}
 
     jobs:
       run-agent:
@@ -160,6 +172,7 @@ def generate_agentic_workflow(skill_file: Path, target_repo_root: Path) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold a GitHub Agentic Workflow from an existing Skill.")
     parser.add_argument("--skill-dir", required=True, help="Path to the directory containing the SKILL.md file")
+    parser.add_argument("--auto-trigger", action="store_true", help="Automatically trigger this workflow on PRs and Pushes.")
     
     args = parser.parse_args()
     
@@ -167,4 +180,4 @@ if __name__ == "__main__":
     skill_file = skill_path / "SKILL.md"
     repo_path = Path.cwd() # Assume running from project root
     
-    generate_agentic_workflow(skill_file, repo_path)
+    generate_agentic_workflow(skill_file, repo_path, args.auto_trigger)
