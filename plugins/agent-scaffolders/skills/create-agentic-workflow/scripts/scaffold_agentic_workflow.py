@@ -104,12 +104,6 @@ def generate_agentic_workflow(skill_file: Path, target_repo_root: Path) -> None:
 
     on:
       workflow_dispatch:
-      push:
-        branches: ["main"]
-        paths:
-          - "docs/**"
-          - "src/**"
-      pull_request:
 
     jobs:
       run-agent:
