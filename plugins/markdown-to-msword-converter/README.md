@@ -22,18 +22,18 @@ The per-file converter resolves internal markdown links to `.docx` targets direc
 Compile lockfile:
 
 ```powershell
-& "c:/Users/RICHFREM/OneDrive - Government of BC/Projects/SFP-Storage Cost Reduction/.venv/Scripts/python.exe" -m piptools compile "plugins/markdown-to-msword-converter/requirements.in" --output-file "plugins/markdown-to-msword-converter/requirements.txt"
+python -m piptools compile "plugins/markdown-to-msword-converter/requirements.in" --output-file "plugins/markdown-to-msword-converter/requirements.txt"
 ```
 
 Install from lockfile:
 
 ```powershell
-& "c:/Users/RICHFREM/OneDrive - Government of BC/Projects/SFP-Storage Cost Reduction/.venv/Scripts/python.exe" -m pip install -r "plugins/markdown-to-msword-converter/requirements.txt"
+python -m pip install -r "plugins/markdown-to-msword-converter/requirements.txt"
 ```
 
 ## Typical usage
 
 ```powershell
-c:/Users/RICHFREM/OneDrive - Government of BC/Projects/SFP-Storage Cost Reduction/.venv/Scripts/python.exe plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --dry-run
-c:/Users/RICHFREM/OneDrive - Government of BC/Projects/SFP-Storage Cost Reduction/.venv/Scripts/python.exe plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --overwrite
+python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --dry-run
+python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --overwrite
 ```

@@ -13,8 +13,8 @@ Use this skill when the user wants `.md` files converted into `.docx` across the
 Run the plugin wrapper script:
 
 ```powershell
-c:/python314/python.exe plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --dry-run
-c:/python314/python.exe plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --overwrite
+python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --dry-run
+python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --overwrite
 ```
 
 ## Behavior
