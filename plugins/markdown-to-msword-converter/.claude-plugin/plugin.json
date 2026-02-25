@@ -1,0 +1,6 @@
+{
+  "version": "1.0",
+  "name": "markdown-to-msword-converter",
+  "author": "Project Sanctuary",
+  "description": "Plugin packaging for Markdown-to-MS Word conversion with one nested skill supporting single-file and bulk modes."
+}
