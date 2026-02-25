@@ -36,6 +36,8 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
     *   [reference/github-agentic-workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/github-agentic-workflows.md)
 *   **Hooks**: Lifecycle event integrations (e.g., `pre-commit`, `on-startup`).
     *   [reference/hooks.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/hooks.md)
+*   **Azure AI Foundry Agents**: Documentation on how to map Open Agent-Skills to Azure Foundry Agent Service, including API payloads, constraints (e.g., 128-tool limits), and standard setups.
+    *   [reference/azure-foundry-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/azure-foundry-agents.md)
 *   **Marketplace**: Registering registries and interacting with the `marketplace.json` distribution format.
     *   [reference/marketplace.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/marketplace.md)
 

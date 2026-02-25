@@ -56,6 +56,7 @@ The bridge intelligently maps plugin source components to the correct file exten
 | **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `agents/*.agent.md` | Appended to `.github/copilot-instructions.md` | *(Ignored)* | Merged (`./.mcp.json`) |
 | **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* | Merged (`./.mcp.json`) |
 | **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agent/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
+| **Azure AI Foundry** (`.azure/`) | *(Ignored)* | `skills/` | `agents/` | *(Ignored)* | *(Ignored)* | `.vscode/mcp.json` (Capability Hosts) |
 | **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
 
 > **GitHub Copilot — Two Agent Types:** The `agents/*.agent.md` column for GitHub Copilot covers two distinct use cases:
