@@ -16,19 +16,14 @@ You are an active administrator for the **Spec-Driven Development** framework. Y
    ```bash
    spec-kitty init . --ai windsurf
    ```
-   *Note: This generates the core `.windsurf/workflows` files.*
+   *Note: This generates the core `.windsurf/workflows` files AND populates the templates in `.kittify/missions/` as well as `plugins/spec-kitty-plugin/templates`.*
 
-2. **Synchronize Local Configurations**
-   Convert the generated local workflows into distributable plugin components:
+2. **Run Master Synchronization**
+   The `plugin-manager` orchestrates the replication of workflows and templates from `.kittify/missions` and `.windsurf/workflows` out to the individual agents. Run the master sync script:
    ```bash
-   python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+   python3 plugins/plugin-manager/scripts/update_agent_system.py
    ```
-
-3. **Deploy to IDE**
-   Deploy the modernized workflows directly into the user's Antigravity instance so they appear as active slash commands:
-   ```bash
-   python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target antigravity
-   ```
+   *Note: This 4-step process handles Kernel Sync, Core Workflow replication to `plugins/spec-kitty-plugin/templates`, Plugin Installation via plugin-mapper, and final Skill Distribution.*
 
 4. **Confirmation**
    Inform the user that initialization is complete. Mention that they must **Reload their Window** (or restart the agent session) to see the new `/spec-kitty` slash commands.
