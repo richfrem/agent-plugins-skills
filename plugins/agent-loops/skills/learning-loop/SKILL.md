@@ -23,7 +23,7 @@ The Learning Loop is a structured cognitive continuity protocol ensuring that kn
 > **Prerequisite**: You must establish a valid session context upon Wakeup before modifying any code.
 
 ```
-Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] → Seal → Persist → Retrospective → Closure
+Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] → Loop Complete (Return to Orchestrator)
 ```
 
 ---
@@ -33,8 +33,8 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 > **Goal**: Establish Identity & Context.
 > **Trigger**: First action upon environment initialization.
 
-1.  **Identity Check**: Read any local `cognitive_primer.md` or orientation documents provided by the user's environment.
-2.  **Context Loading**: Retrieve the historical session state (the "Cognitive Hologram" or `learning_package_snapshot.md`) to understand what the previous agent accomplished.
+1.  **Identity Check**: Read any local orientation documents or primers provided by the user's environment.
+2.  **Context Loading**: Retrieve the historical session state (the "Context Snapshot" or equivalent state file) to understand what the previous agent accomplished.
 3.  **Report Readiness**: Output: "Orientation complete. Context loaded. Ready."
 
 **STOP**: Do NOT proceed to work until you have completed Phase I.
@@ -75,34 +75,14 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 ## Session Close (MANDATORY — DO NOT SKIP)
 
-> **This sequence is non-negotiable.** If the user says "done", "wrap up",
-> "end session", or similar — you MUST perform these steps IN ORDER.
+> **This loop is now complete.** You must formally exit the loop and return control to the Orchestrator.
 
-### Phase V: Sovereign Context Synthesis
+### Phase V: Completion & Handoff
 
-> **Automated Summarization**.
-1. Synthesize all completed work, modified files, and new protocols into a dense summary.
-2. Update the system's "Cognitive Hologram" (`learning_package_snapshot.md` or equivalent state file).
-
-### Phase VI: The Technical Seal
-
-1.  **Action**: Snapshot the state. Verify that the project compiles/tests pass.
-2.  **Gate**: The seal must mathematically or logically "PASS" (e.g., zero regression failures).
-
-### Phase VII: Persistence
-
-1.  **Action**: Append your session traces (what you did, why you did it, what failed) into a structured long-term memory log (e.g., `traces.jsonl`).
-2.  **Sync**: If applicable, push these memory traces to a remote vector database or registry.
-
-### Phase VIII: Self-Correction (Retrospective)
-
-1.  **Action**: Analyze what went well/poorly during this specific session.
-2.  **Document**: Write a short retrospective markdown file so the next agent learns from your mistakes.
-
-### Phase IX: Closure
-
-1.  **Version Control**: Sync to remote (e.g., `git add . && git commit && git push`).
-2.  **End**: Declare the session complete.
+1.  **Verify Exit Condition**: Confirm that the research/synthesis acceptance criteria have been met.
+2.  **Return Data**: Pass the synthesized documents and context back up to the Orchestrator.
+3.  **Terminate Loop**: Explicitly state "Learning Loop Complete. Passing control to Orchestrator for Retrospective and Closure."
+4.  **STOP**: Do not attempt to seal the session, persist to long-term memory, or commit to Git. The global ecosystem layers will handle that.
 
 ---
 
@@ -114,11 +94,7 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 | II | Synthesis | Create/modify research artifacts |
 | III | Strategic Gate | Obtain "Proceed" from User |
 | IV | Red Team Audit | Compile packet for adversary review |
-| V | Context Synthesis | Generate macro-summary of session |
-| VI | Seal | Verify compilation/tests pass |
-| VII | Persist | Append session logic to memory traces |
-| VIII | Self-Correction | Document failures and lessons learned |
-| IX | Closure | Commit and sync to remote |
+| V | Handoff | Return control to Orchestrator to begin global Closure |
 
 ---
 
@@ -143,8 +119,7 @@ When a Learning Loop runs inside a Dual-Loop session:
 | IV (Audit) | Outer Loop snapshots before delegation | Pre-execution checkpoint |
 | *(Execution)* | **Inner Loop** performs tactical work | Code-only, isolated |
 | *Verification* | Outer Loop inspects Inner Loop output | Validates against criteria |
-| V (Context Synthesis) | Outer Loop | Cognitive Hologram generation |
-| VI-IX (Seal→Closure) | Outer Loop closure | Standard seal/persist/retro/end |
+| V (Handoff) | Outer Loop receives results | Triggers global retrospective |
 
 **Key rule**: The Inner Loop does NOT run Learning Loop phases. All cognitive continuity is the Outer Loop's responsibility.
 

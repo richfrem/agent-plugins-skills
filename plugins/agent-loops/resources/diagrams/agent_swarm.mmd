@@ -31,16 +31,19 @@ flowchart TB
 
     Verify{"Verification Gate"}
     Verify -- Fail --> Correction["Correction Packet"] --> Route
-    Verify -- Pass --> Merge["Merge All Worktrees"]
-
-    Merge --> Seal["Seal & Persist"]
-    Seal --> Retro["Retrospective"]
-    Retro -.->|"Next Phase"| Start
+    Verify -- Pass --> VerifyGlobal{"Global Verification Passes?"}
+    VerifyGlobal -- No --> Correction
+    
+    VerifyGlobal -- Yes --> Handoff["Completion & Handoff<br>to Orchestrator"]
+    Handoff -.->|Orchestrator| Next["Retrospective & Closure"]
 
     style Start fill:#dfd,stroke:#333,stroke-width:2px
     style Route fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Verify fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Workers fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,stroke-dasharray: 5 5
-    style Retro fill:#d4edda,stroke:#155724,stroke-width:2px
     style Correction fill:#ffebee,stroke:#c62828
-    style Merge fill:#e8f5e9,stroke:#2e7d32
+    style Distribute fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Merge fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style VerifyGlobal fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    style Handoff fill:#d4edda,stroke:#155724,stroke-width:2px
+    style Next fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,stroke-dasharray: 5 5
