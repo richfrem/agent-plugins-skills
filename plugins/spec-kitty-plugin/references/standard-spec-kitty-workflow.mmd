@@ -1,6 +1,6 @@
 graph TD
     %% Nodes - Feature Level (Start)
-    Start(("Start Feature<br><b style='color:#FF8C00'>/agent-orchestrator_plan</b>"))
+    Start(("Start Feature<br><b style='color:#FF8C00'>spec-kitty specify</b>"))
     Specify["fa:fa-file-alt Specify Feature<br><b>/spec-kitty.specify</b>"]
     VerifySpec["fa:fa-shield-alt Verify Specify<br>(verify_workflow_state.py --phase specify)"]
     Plan["fa:fa-map Plan Implementation<br><b>/spec-kitty.plan</b>"]
@@ -23,18 +23,8 @@ graph TD
     subgraph Completion["Feature Completion"]
         VersionCheck["fa:fa-code-branch Version Check<br>(CLI: spec-kitty upgrade --dry-run)"]
         Accept["fa:fa-check-double Accept Feature<br><b>/spec-kitty.accept</b>"]
-        StateBackup["fa:fa-save State Preservation<br>(Manual: Backup untracked state/caches)"]
         Merge["fa:fa-magic Spec-Kitty Merge<br><b>/spec-kitty.merge</b>"]
         End(("Feature Done<br>(Clean Repo)"))
-    end
-
-    %% Learning Loop (Protocol 128)
-    subgraph LearningLoop["Learning Loop (Protocol 128)"]
-        LL_Start["Outer Loop: Identify Knowledge Gap"]
-        LL_Handoff["Bridge: Switch to Learning Mode"]
-        LL_Execute["Inner Loop: Research & Codify"]
-        LL_Return["Bridge: Return to Execution Mode"]
-        LL_Start --> LL_Handoff --> LL_Execute --> LL_Return
     end
 
     %% Flow - Planning Phase
@@ -49,8 +39,6 @@ graph TD
     %% Loop Logic
     Implement --> VerifyImpl
     VerifyImpl -->|cd .worktrees/WP-xx| Code
-    VerifyImpl -.->|Knowledge Gap?| LL_Start
-    LL_Return -.-> Commit
     Code --> Commit
     Commit --> VerifyReview
     VerifyReview --> MoveReview
@@ -62,8 +50,7 @@ graph TD
 
     %% Finalization
     Accept --> VersionCheck
-    VersionCheck --> StateBackup
-    StateBackup --> Merge
+    VersionCheck --> Merge
     Merge --> End
 
     %% Styles
@@ -71,10 +58,8 @@ graph TD
     classDef wp fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
     classDef done fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
     classDef verify fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px;
-    classDef learning fill:#cc99ff,stroke:#333,stroke-width:2px;
 
     class Specify,Plan,Tasks feature;
     class Implement,Code,Commit,MoveReview,Review wp;
-    class Accept,Merge,End,VersionCheck,StateBackup done;
+    class Accept,Merge,End,VersionCheck done;
     class VerifySpec,VerifyPlan,VerifyTasks,VerifyImpl,VerifyReview verify;
-    class LL_Start,LL_Handoff,LL_Execute,LL_Return learning;
