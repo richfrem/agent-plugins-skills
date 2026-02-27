@@ -9,8 +9,7 @@ Purpose:
   Zero external dependencies (uses only stdlib).
 
 Commands:
-  scan      -> Check artifacts (spec/plan/tasks)
-  packet    -> Generate strategy packet from WP
+  packet    -> Generate strategy packet from inputs
   verify    -> Check worktree diff against criteria
   correct   -> Generate correction packet (delta)
   bundle    -> Bundle files for review (red team context)
@@ -28,14 +27,13 @@ from typing import List, Optional
 
 # --- Constants & Templates ---
 
-STRATEGY_TEMPLATE = """# Strategy Packet: {wp_id}
+STRATEGY_TEMPLATE = """# Strategy Packet: {id}
 
 ## Objective
 {objective}
 
 ## Context
-- **Spec**: {spec_path}
-- **Plan**: {plan_path}
+{context}
 
 ## Implementation Tasks
 {tasks}
@@ -56,7 +54,7 @@ You are the Inner Loop Agent.
 4. Signal completion when done.
 """
 
-CORRECTION_TEMPLATE = """# Correction Packet: {wp_id} (Iteration {iteration})
+CORRECTION_TEMPLATE = """# Correction Packet: {id} (Iteration {iteration})
 
 ## Context
 This is a feedback loop from the Outer Loop verification.
@@ -124,61 +122,40 @@ def read_file(path: Path) -> str:
 
 # --- Commands ---
 
-def cmd_scan(args):
-    """Scan for spec artifacts."""
-    root = Path.cwd()
-    if args.spec_dir:
-        spec_dir = root / args.spec_dir
-    else:
-        # Try to find a spec dir or assume current is root
-        spec_dir = root
-    
-    required = ["spec.md", "plan.md", "tasks.md"]
-    missing = []
-    
-    print(f"Scanning {spec_dir}...")
-    for f in required:
-        p = spec_dir / f
-        if p.exists():
-            print(f"  [OK] {f}")
-        else:
-            print(f"  [MISSING] {f}")
-            missing.append(f)
-            
-    if missing:
-        sys.exit(1)
-    else:
-        print("All artifacts present. Ready to delegate.")
-
 def cmd_packet(args):
     """Generate strategy packet."""
-    wp_id = args.wp
-    # In a real implementation, we'd parse tasks.md to get the specific WP details.
-    # For this standalone script, we'll placeholder reading tasks.md or specific prompt files.
-    # Assuming spec-kitty: tasks/WP-NN.md exists.
+    packet_id = args.id
     
-    task_file = Path(args.spec_dir) / "tasks" / f"{wp_id}.md"
-    if not task_file.exists():
-        print(f"Error: Prompt file {task_file} not found. Run 'spec-kitty tasks' first.", file=sys.stderr)
-        sys.exit(1)
+    # Read context files
+    context_str = ""
+    if args.context:
+        for c in args.context:
+            cp = Path(c)
+            if cp.exists():
+                context_str += f"- **{cp.name}**:\n```\n{cp.read_text()}\n```\n"
+            else:
+                context_str += f"- **{cp.name}**: [MISSING]\n"
+                
+    if not context_str:
+        context_str = "No additional context provided."
         
-    content = task_file.read_text()
-    
-    # Simple extraction (naive)
-    objective = "Execute requirements from prompt file."
-    criteria = "See prompt file."
+    # Read instruction files or string
+    tasks_str = args.instructions
+    ip = Path(args.instructions)
+    if ip.exists():
+        tasks_str = ip.read_text()
     
     packet = STRATEGY_TEMPLATE.format(
-        wp_id=wp_id,
-        objective=objective,
-        spec_path=f"{args.spec_dir}/spec.md",
-        plan_path=f"{args.spec_dir}/plan.md",
-        tasks=content, # Embed the full prompt content
-        acceptance_criteria=criteria
+        id=packet_id,
+        objective="Execute the provided instructions.",
+        context=context_str,
+        tasks=tasks_str,
+        acceptance_criteria="See detailed instructions above."
     )
+    
     out_dir = Path("handoffs")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / f"task_packet_{wp_id}.md"
+    out_file = out_dir / f"task_packet_{packet_id}.md"
     out_file.write_text(packet)
     print(f"Packet generated: {out_file}")
 
@@ -209,7 +186,7 @@ def cmd_correct(args):
     iteration = args.iteration or "1"
     
     content = CORRECTION_TEMPLATE.format(
-        wp_id=args.packet, # Simplified
+        id=args.packet, # Simplified
         iteration=iteration,
         original_packet_path=args.packet,
         feedback=args.feedback,
@@ -273,14 +250,11 @@ def main():
     parser = argparse.ArgumentParser(description="Agent Orchestrator CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
     
-    # Scan
-    p_scan = subparsers.add_parser("scan")
-    p_scan.add_argument("--spec-dir", help="Path to spec directory")
-    
     # Packet
     p_packet = subparsers.add_parser("packet")
-    p_packet.add_argument("--wp", required=True, help="Work Package ID (WP-NN)")
-    p_packet.add_argument("--spec-dir", required=True, help="Path to spec directory")
+    p_packet.add_argument("--id", required=True, help="Strategy Packet ID")
+    p_packet.add_argument("--context", nargs="+", help="Paths to context files")
+    p_packet.add_argument("--instructions", required=True, help="Task instructions string or path to markdown file")
     
     # Verify
     p_verify = subparsers.add_parser("verify")
@@ -301,13 +275,11 @@ def main():
     
     # Retro
     p_retro = subparsers.add_parser("retro")
-    p_retro.add_argument("--spec-dir", help="Associated spec directory")
     p_retro.add_argument("--output", help="Output file (optional)")
     
     args = parser.parse_args()
     
-    if args.command == "scan": cmd_scan(args)
-    elif args.command == "packet": cmd_packet(args)
+    if args.command == "packet": cmd_packet(args)
     elif args.command == "verify": cmd_verify(args)
     elif args.command == "correct": cmd_correct(args)
     elif args.command == "bundle": cmd_bundle(args)
