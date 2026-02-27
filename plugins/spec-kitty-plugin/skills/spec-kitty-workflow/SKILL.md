@@ -19,7 +19,8 @@ Standard lifecycle for implementing features using Spec Kitty.
 1. **Checkbox theater**: Marking `[x]` without running the command or verification tool
 2. **Manual file creation**: Writing spec.md/plan.md/tasks.md by hand instead of using CLI
 3. **Kanban neglect**: Not updating task lanes, so dashboard shows stale state
-4. **Closure amnesia**: Finishing code but skipping review/merge/closure steps
+4. **Verification skip**: Marking a phase complete without running `verify_workflow_state.py`
+5. **Closure amnesia**: Finishing code but skipping review/merge/closure steps
 
 ---
 
@@ -29,25 +30,43 @@ Before implementing any code, you MUST generate artifacts using the CLI.
 **Manual creation of `spec.md`, `plan.md`, or `tasks/` files is STRICTLY FORBIDDEN.**
 
 ### Step 0a: Specify
-To specify a feature, read the workflow instructions in `.windsurf/workflows/spec-kitty.specify.md` or use the CLI:
 ```bash
-spec-kitty agent feature create-feature "<slug>"
+/spec-kitty.specify
 ```
 **PROOF**: Paste output confirming spec.md was generated.
 
-### Step 0b: Plan
-To plan a feature, read the workflow instructions in `.windsurf/workflows/spec-kitty.plan.md` or use the CLI:
+Then verify:
 ```bash
-spec-kitty agent feature setup-plan --feature <SLUG>
+python3 plugins/spec-kitty/scripts/verify_workflow_state.py --feature <SLUG> --phase specify
+```
+**PROOF**: Paste the verification output showing the checkmark.
+**STOP**: Do NOT proceed to Plan until verification passes.
+
+### Step 0b: Plan
+```bash
+/spec-kitty.plan
 ```
 **PROOF**: Paste output confirming plan.md was generated.
 
+Then verify:
+```bash
+python3 plugins/spec-kitty/scripts/verify_workflow_state.py --feature <SLUG> --phase plan
+```
+**PROOF**: Paste the verification output.
+**STOP**: Do NOT proceed to Tasks until verification passes.
+
 ### Step 0c: Tasks
-To generate tasks, read the workflow instructions in `.windsurf/workflows/spec-kitty.tasks.md`.
 ```bash
 /spec-kitty.tasks
 ```
 **PROOF**: Paste output confirming tasks.md and WP files were generated.
+
+Then verify:
+```bash
+python3 plugins/spec-kitty/scripts/verify_workflow_state.py --feature <SLUG> --phase tasks
+```
+**PROOF**: Paste the verification output.
+**STOP**: Do NOT proceed to Implementation until verification passes.
 
 ---
 
@@ -100,8 +119,10 @@ Then verify the board:
 - [ ] No untracked files that should be committed
 
 ### Step 3a: Verify clean state
-Run `git status` to ensure all files are committed.
-**PROOF**: Paste the output. Must show "nothing to commit, working tree clean".
+```bash
+python3 plugins/spec-kitty/scripts/verify_workflow_state.py --wp <WP-ID> --phase review
+```
+**PROOF**: Paste the output. Must show "Worktree is clean".
 **STOP**: Do NOT proceed if there are uncommitted changes.
 
 ### Step 3b: Update kanban to for_review
