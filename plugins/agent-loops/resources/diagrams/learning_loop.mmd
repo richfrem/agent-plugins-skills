@@ -10,16 +10,25 @@ config:
 flowchart TB
     Start(["Trigger:<br>Question / Research Need"])
     Start --> Orient["Load Prior Context<br>(RLM Cache)"]
-    Orient --> Research["Research & Synthesize"]
-    Research --> Document["Document Findings"]
-    Document --> Iterate{"More to Learn?"}
-    Iterate -- Yes --> Deepen["Deepen / Refine<br>(Recursive Bundling)"]
-    Deepen --> Research
-    Iterate -- No --> Seal["Seal Session State"]
-    Seal --> Persist["Persist to Long-Term Memory"]
-    Persist --> Retro["Retrospective"]
-    Retro -.->|"Next Session"| Start
+    
+    subgraph Execution["Cognitive Synthesis"]
+        Research["Research & Synthesize"]
+        Document["Document Findings"]
+        
+        Research --> Document
+        Document --> Iterate{"More to Learn?"}
+        
+        Iterate -- Yes --> Deepen["Deepen / Refine"]
+        Deepen --> Research
+    end
+    
+    Orient --> Execution
+    
+    Iterate -- No --> Handoff["Completion & Handoff<br>to Orchestrator"]
+    Handoff -.->|Orchestrator| Next["Retrospective & Closure"]
+    Next -.->|"Next Session"| Start
 
     style Start fill:#dfd,stroke:#333,stroke-width:2px
     style Iterate fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style Retro fill:#d4edda,stroke:#155724,stroke-width:2px
+    style Handoff fill:#d4edda,stroke:#155724,stroke-width:2px
+    style Next fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,stroke-dasharray: 5 5

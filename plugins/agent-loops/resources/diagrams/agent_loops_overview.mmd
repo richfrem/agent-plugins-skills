@@ -58,16 +58,22 @@ flowchart TB
     end
 
     %% ─── CLOSURE (SHARED) ───
-    subgraph Closure ["Closure"]
+    subgraph Orchestrator [The Orchestrator]
         direction TB
-        Persist["Persist Session<br>(Files + Traces)"] --> Retro["Retrospective"]
-        Retro --> Improve["Improve Loop Infrastructure<br>(Skills / Scripts / Templates)"]
+        Plan --> Route{Task Router}
+        Route --> Pat1[Pattern 1:<br>Learning Loop]
+        Route --> Pat2[Pattern 2:<br>Red Team]
+        Route --> Pat3[Pattern 3:<br>Dual-Loop]
+        Route --> Pat4[Pattern 4:<br>Swarm]
+        
+        Pat1 & Pat2 & Pat3 & Pat4 --> Handoff[Loop Complete:<br>Return to Orchestrator]
+        Handoff --> Retro[Retrospective & Global Closure Handoff]
     end
 
-    SL_Seal --> Persist
-    RT_Seal --> Persist
-    AO_Seal --> Persist
-    SW_Seal --> Persist
+    SL_Seal --> Handoff
+    RT_Seal --> Handoff
+    AO_Seal --> Handoff
+    SW_Seal --> Handoff
 
     %% Recursive: learnings feed the next trigger
     Retro -.->|"Feeds Next Loop<br>(RLM Cache)"| Trigger

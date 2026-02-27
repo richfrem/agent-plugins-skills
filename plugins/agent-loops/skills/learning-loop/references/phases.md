@@ -55,60 +55,18 @@ Every loop instance should track:
    - "More Research" → Capture feedback, loop back to step 3.
    - "Ready" → Proceed to Phase V.
 
-## Phase V: Sovereign Context Synthesis
+## Phase V: Completion & Handoff
 
-> **Generate the cognitive hologram summarizing the session.**
+> **The specific learning cycle is finished. You must now return control.**
 
-1. **Trigger Synthesis**: Call the configured RLM (Representation Learning Model) or summarizing agent.
-2. **Map Phase**: Read all protocols, ADRs, and code modified during the session.
-3. **Reduce Phase**: Generate a concise, holistic summary of the newly created knowledge.
-4. **Write Hologram**: Output this synthesized truth to `learning_package_snapshot.md`.
-
-## Phase VI: Seal
-
-1. **Completion Promise Gate**: Before sealing, explicitly verify acceptance criteria are met.
-   - If a completion promise was set → Is the statement genuinely true? If NO → loop back.
-   - If max iterations reached → Document what's blocking and what was attempted. Seal as incomplete.
-2. **Bundle Session Artifacts**: Gather all files produced during the loop into a coherent session package using the `context-bundler`.
-3. **Verify Completeness**: Ensure all expected outputs are accounted for.
-4. **Increment Counter**: Update iteration count. Log: `"Sealed at iteration N"`.
-5. **Tag**: Mark the session bundle with a timestamp and summary.
-
-## Phase VII: Persistence
-
-1. **Dual-Path Broadcast**: Transport the short-term session memory into long-term persistence storage.
-2. **Persistence Modes**:
-   - **Incremental**: Append recent traces to a structured log (e.g., `jsonl`).
-   - **Full Sync**: Regenerate all known records for massive architectural shifts.
-3. **Remote Sync**: If configured, push traces to an external store (e.g., vector database, model registry, or remote repository).
-
-## Phase VIII: Self-Correction
-
-> **Mandatory retrospective cycle.**
-
-1. **Deploy & Policy Update**: If code changed, verify testing and container states.
-2. **Loop Retrospective**: Analyze what went right and wrong during the session. Generate a retro document.
-3. **Share Knowledge**: Ensure the retro is visible for the next orientation cycle.
-4. **Backtrack Target**: Failed gates from earlier phases loop back here for correction.
-
-## Phase IX: Relational Ingestion & Closure
-
-1. **Knowledge Ingest**: Execute commands to update the local RAG / Vector Database with the finalized texts.
-2. **Version Control**: Run standard git add, commit, and push protocols to sync to remote.
-3. **Closure**: Formally declare the loop terminated and wait for next wakeup.
-
-## Phase X: Model Forge (Optional)
-
-> **Long-running: Fine-tuning from accumulated session traces.**
-
-1. **HITL Gate**: Human decides if enough traces exist to fine-tune a specialized model.
-2. **Forge Dataset**: Convert accumulated `jsonl` traces into training data.
-3. **Execution**: Run localized parameter-efficient fine-tuning (e.g., QLoRA).
-4. **Deployment**: Export model (e.g., GGUF) and deploy it back into the agent ecosystem.
-5. **Loop Back**: Return to Phase VIII for final retrospective of the tuning session.
+1. **Verify Completion**: Ensure the research or analysis goal you set out to achieve has been genuinely met.
+2. **Hand off**: Stop generating new actions and explicitly pass your findings back to the Orchestrator.
+3. **DO NOT**:
+   - Do not generate `learning_package_snapshot.md` (the Guardian's RLM Synthesizer does this).
+   - Do not run `context-bundler` to seal the session (the Guardian does this).
+   - Do not push traces to HuggingFace or update Vector DBs (the Guardian does this).
+   - Do not commit to Git (the Guardian does this).
 
 ## Next Session: The Bridge
 
-1. **Boot**: The next agent session loads the environment Wakeup tool.
-2. **Retrieve**: It receives the most recently sealed `learning_package_snapshot.md`.
-3. **Resume**: The agent continues seamlessly from its predecessor's preserved state.
+The global repository environment (the Guardian) handles sealing your work and waking up the next agent. Your responsibility ends at Phase V.
