@@ -352,6 +352,7 @@ After a successful merge, you're back on the main branch with:
 - ✅ Feature code integrated
 - ✅ Worktree removed (if it existed)
 - ✅ Feature branch deleted (unless `--keep-branch`)
+- ✅ Workspace tracking files removed (`rm -f .kittify/workspaces/<feature-slug>-WP*.json`)
 - ✅ Ready to start your next feature!
 
 ## Integration with Accept
