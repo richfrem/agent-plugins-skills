@@ -1,0 +1,5 @@
+# HuggingFace Utils - Python Dependencies
+# Compile: pip-compile requirements.in -o requirements.txt
+# Install: pip install -r requirements.txt
+
+huggingface_hub>=0.20.0

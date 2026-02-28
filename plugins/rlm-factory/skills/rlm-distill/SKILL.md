@@ -47,12 +47,14 @@ The existing `plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py` calls
 
 The agent (Claude, Gemini, Antigravity) is already a drastically better summarizer. This skill explicitly makes **you** the distillation engine.
 
-## The Two Caches
+## The Two Caches (Example Configuration)
 
-| Cache | Path | Content Type | Summary Format |
-|:------|:-----|:-------------|:---------------|
-| **Summary Cache** | `.agent/learning/rlm_summary_cache.json` | Docs, protocols, ADRs, workflows, rules | Plain text paragraph |
-| **Tool Cache** | `.agent/learning/rlm_tool_cache.json` | Python/JS scripts, CLI tools | JSON object with structured fields |
+Projects configure their own caches in `rlm_profiles.json`. A common setup is:
+
+| Cache | Content Type | Summary Format |
+|:------|:-------------|:---------------|
+| **Summary Cache** | Docs, protocols, ADRs, workflows, rules | Plain text paragraph |
+| **Tool Cache** | Python/JS scripts, CLI tools | JSON object with structured fields |
 
 ### First Run?
 
@@ -94,8 +96,9 @@ Choose one of:
 
 **A. Fix failed entries:**
 ```bash
-# Find all DISTILLATION FAILED entries
-grep -n "DISTILLATION FAILED" .agent/learning/rlm_summary_cache.json
+# Find all DISTILLATION FAILED entries in the target cache file
+# (Check rlm_profiles.json for the exact path to the target cache)
+grep -n "DISTILLATION FAILED" <path_to_cache.json>
 ```
 
 **B. Distill new/changed files:**
@@ -136,7 +139,7 @@ Edit the cache file directly using file editing tools. Set:
 
 After editing, spot-check that the JSON is still valid:
 ```bash
-python3 -c "import json; json.load(open('.agent/learning/rlm_summary_cache.json')); print('✅ Valid JSON')"
+python3 -c "import json; json.load(open('<path_to_cache.json>')); print('✅ Valid JSON')"
 ```
 
 ## Quality Guidelines

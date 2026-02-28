@@ -1,0 +1,12 @@
+{
+    "name": "json-hygiene",
+    "version": "1.0.0",
+    "description": "JSON hygiene agent that detects duplicate keys in JSON configuration files that might be silently ignored by standard parsers.",
+    "author": "Sanctuary Guardian",
+    "skills": [
+        "json-hygiene-agent"
+    ],
+    "scripts": [
+        "skills/json-hygiene-agent/scripts/find_json_duplicates.py"
+    ]
+}

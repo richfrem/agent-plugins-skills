@@ -1,0 +1,17 @@
+{
+    "name": "obsidian-integration",
+    "version": "1.0.0",
+    "description": "Obsidian Agent Integration Suite - vault operations, markdown parsing, canvas creation, graph traversal, and bases management for AI-assisted Obsidian workflows.",
+    "author": "Sanctuary Guardian",
+    "skills": [
+        "obsidian-init",
+        "obsidian-vault-crud",
+        "obsidian-markdown-mastery",
+        "obsidian-canvas-architect",
+        "obsidian-graph-traversal",
+        "obsidian-bases-manager"
+    ],
+    "scripts": [
+        "obsidian-parser/parser.py"
+    ]
+}

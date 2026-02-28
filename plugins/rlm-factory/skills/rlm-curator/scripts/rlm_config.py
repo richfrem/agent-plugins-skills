@@ -5,7 +5,8 @@ rlm_config.py
 
 Purpose:
     Centralized configuration and utility logic for the RLM Toolchain.
-    Loads profile settings exclusively from `.agent/learning/rlm_profiles.json`,
+    Loads profile settings exclusively from a profiles JSON file (configured via 
+    RLM_PROFILES_PATH env var, defaulting to `.agent/learning/rlm_profiles.json`),
     making this module the Single Source of Truth for all RLM operations.
 
 Layer: Curate / Rlm
@@ -33,8 +34,18 @@ from typing import List, Dict, Optional
 # File is at: plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
+# ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
-DEFAULT_PROFILES_PATH = PROJECT_ROOT / ".agent" / "learning" / "rlm_profiles.json"
+
+def _get_profiles_path() -> Path:
+    """Get the path to rlm_profiles.json from env var or default."""
+    env_path = os.getenv("RLM_PROFILES_PATH")
+    if env_path:
+        path = Path(env_path)
+        return path if path.is_absolute() else (PROJECT_ROOT / path).resolve()
+    return PROJECT_ROOT / ".agent" / "learning" / "rlm_profiles.json"
+
+DEFAULT_PROFILES_PATH = _get_profiles_path()
 
 
 class RLMConfig:

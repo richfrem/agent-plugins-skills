@@ -22,18 +22,18 @@ Before creating anything, gather requirements:
 1. **"What do you want cached?"** — What kind of files? (docs, scripts, configs, etc.)
 2. **"Which folders should be included?"** — (e.g., `docs/`, `src/`, `plugins/`)
 3. **"Which file extensions?"** — (e.g., `.md`, `.py`, `.ts`)
-4. **"Where should the cache live?"** — Default: `.agent/learning/`
+4. **"Where should the cache live?"** — Default: `.agent/learning/` or `config/rlm/`
 5. **"What should we name this cache?"** — (e.g., `plugins`, `project`, `tools`)
 
 ### Step 2: Configure `rlm_profiles.json`
 
-Each cache is defined as a profile in `rlm_profiles.json`. If the file doesn't exist, create it:
+Each cache is defined as a profile in `rlm_profiles.json`. This file is located at `RLM_PROFILES_PATH` or defaults to `.agent/learning/rlm_profiles.json`. If it doesn't exist, create it:
 
 ```bash
-mkdir -p .agent/learning
+mkdir -p <profiles_dir>
 ```
 
-Create or append to `.agent/learning/rlm_profiles.json`:
+Create or append to `<profiles_dir>/rlm_profiles.json`:
 
 ```json
 {
@@ -42,8 +42,8 @@ Create or append to `.agent/learning/rlm_profiles.json`:
     "profiles": {
         "<NAME>": {
             "description": "<What this cache contains>",
-            "manifest": ".agent/learning/<name>_manifest.json",
-            "cache": ".agent/learning/rlm_<name>_cache.json",
+            "manifest": "<profiles_dir>/<name>_manifest.json",
+            "cache": "<profiles_dir>/rlm_<name>_cache.json",
             "extensions": [
                 ".md",
                 ".py",
