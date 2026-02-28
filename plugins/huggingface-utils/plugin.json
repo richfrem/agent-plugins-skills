@@ -1,0 +1,13 @@
+{
+    "name": "huggingface-utils",
+    "version": "1.0.0",
+    "description": "HuggingFace integration utilities for Soul persistence - validates credentials, manages dataset structure, and provides upload primitives with exponential backoff.",
+    "author": "Sanctuary Guardian",
+    "skills": [
+        "hf-init",
+        "hf-upload"
+    ],
+    "scripts": [
+        "scripts/hf_config.py"
+    ]
+}

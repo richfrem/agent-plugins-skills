@@ -1,0 +1,9 @@
+{
+    "name": "migration-utils",
+    "version": "1.0.0",
+    "description": "Utilities for migrating and restructuring plugin ecosystems. Provides standardized patterns for moving files, updating references, and validating migrations.",
+    "author": "Sanctuary Guardian",
+    "skills": [
+        "migration-utils"
+    ]
+}
