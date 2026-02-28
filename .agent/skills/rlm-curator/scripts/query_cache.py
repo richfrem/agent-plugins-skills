@@ -71,7 +71,8 @@ def search_cache(
 
     matches: List[Dict[str, Any]] = []
     for rel_path, entry in data.items():
-        if term_lower in rel_path.lower() or term_lower in entry.get("summary", "").lower():
+        summary_str = str(entry.get("summary", ""))
+        if term_lower in rel_path.lower() or term_lower in summary_str.lower():
             matches.append({"path": rel_path, "entry": entry})
 
     matches.sort(key=lambda x: x["path"])
@@ -91,8 +92,8 @@ def search_cache(
         print(f"📄 {path}")
         print(f"   🕒 Indexed: {entry.get('summarized_at', 'Unknown')}")
         if show_summary:
-            summary = entry.get("summary", "No summary.")
-            preview = (summary[:300] + "...") if len(summary) > 300 else summary
+            summary_str = str(entry.get("summary", "No summary."))
+            preview = (summary_str[:300] + "...") if len(summary_str) > 300 else summary_str
             print(f"   📝 {preview}")
         print("-" * 50)
 

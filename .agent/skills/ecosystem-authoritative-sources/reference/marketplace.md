@@ -22,7 +22,7 @@ Each entry in the `plugins` array defines how a specific plugin is fetched. You 
     - Relative Path: `"./plugins/my-plugin"` (Note: only works if the marketplace itself was installed via a Git repository clone or local path, not a direct URL).
     - GitHub Source: `{"source": "github", "repo": "owner/repo", "ref": "branch", "sha": "commit-hash"}`.
 - `strict`: Boolean controlling whether the plugin's internal `plugin.json` is the authority (`true`, default), or if the marketplace entry is the entire definition (`false`), overriding the plugin's native manifest.
-- Custom component paths: The marketplace entry can also specify paths to `commands`, `agents`, `hooks`, etc., relative to the plugin's root. For paths referencing files after the plugin is cached, the `${CLAUDE_PLUGIN_ROOT}` variable can be used.
+- Custom component paths: The marketplace entry can also specify paths to `commands`, `agents`, `hooks`, etc., relative to the plugin's root. For paths referencing files after the plugin is cached, the `plugins` variable can be used.
 
 ## Discovery and Installation
 

@@ -20,7 +20,7 @@ Because of the Progressive Disclosure architecture, you should selectively read 
 ## Table of Contents
 To read any of the reference guides, use your file system tools to `cat` or `view` the relevant file.
 
-*   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills`.
+*   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills/` (and equivalents like `.agent/skills/` and `.github/skills/`). Custom agents deployed as Skills are stored here as `<plugin>-<agent>/SKILL.md`.
     *   [reference/skills.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/skills.md)
     *   [reference/skill-execution-flow.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/skill-execution-flow.mmd)
 *   **Claude Plugins**: Specification for the `.claude-plugin` architecture, manifest setup, and distribution.
@@ -28,7 +28,7 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
     *   [reference/plugin-architecture.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/plugin-architecture.mmd)
 *   **Antigravity Workflows & Rules (and Legacy Commands)**: Specifications for global/workspace Rules, deterministic trajectory Workflows, and the critical distinction between deploying **Skills** vs. Legacy **Commands**.
     *   [reference/workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/workflows.md)
-*   **Sub-Agents**: Definition, setup, and orchestration of nested contextual LLM boundaries.
+*   **Sub-Agents**: Definition, setup, and orchestration of nested contextual LLM boundaries. Sub-Agents are deployed structurally as pure Skills (mapped to `skills/<agent-name>/SKILL.md`).
     *   [reference/sub-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/sub-agents.md)
 *   **GitHub Copilot Prompts (Models)**: Documentation on the exact YAML schema, dynamic variables, and exclusion logic (`exclude-targets`) used by GitHub Copilot chat environments.
     *   [reference/github-prompts.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/github-prompts.md)

@@ -1,0 +1,78 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant Agent
+    participant pip as pip / PyPI
+    participant CLI as spec-kitty CLI
+    participant Repo as Project Repository
+    participant Kittify as .kittify/
+    participant Windsurf as .windsurf/
+    participant Git as Git Hooks
+    participant SyncScript as sync_configuration.py
+    participant Plugin as plugins/spec-kitty-plugin/
+    participant Bridge as install_all_plugins.py
+    participant Agents as Agent Environments
+
+    User->>Agent: /spec-kitty.sync-plugin (first time)
+
+    rect rgb(230, 220, 240)
+        Note over Agent,pip: Step 0 - Detect Mode
+        Agent->>Repo: test -d .kittify
+        Repo-->>Agent: NOT FOUND - INIT mode
+    end
+
+    rect rgb(200, 210, 240)
+        Note over Agent,pip: Step 1 - Install CLI
+        Agent->>pip: pip install spec-kitty-cli
+        pip-->>Agent: spec-kitty v1.x.x installed
+        Agent->>CLI: spec-kitty --version
+        CLI-->>Agent: Version confirmed
+    end
+
+    rect rgb(200, 235, 200)
+        Note over Agent,Git: Step 2 - Initialize Project
+        Agent->>CLI: spec-kitty init . --ai windsurf
+        CLI->>Repo: Detect git repo
+        CLI->>Kittify: Create .kittify/ directory
+        CLI->>Kittify: Write config.yaml
+        CLI->>Kittify: Write metadata.yaml
+        CLI->>Kittify: Create missions/software-dev/
+        CLI->>Kittify: Write 12 command templates
+        CLI->>Kittify: Create memory/ directory
+        CLI->>Kittify: Create scripts/ directory
+        CLI->>Windsurf: Generate .windsurf/workflows/
+        CLI->>Git: Install 3 git hooks (pre-commit, etc.)
+        CLI->>Repo: Update .gitignore (agent dirs)
+        CLI-->>Agent: Project initialized
+    end
+
+    rect rgb(245, 215, 200)
+        Note over Agent,Plugin: Step 3 - Sync to Plugin
+        Agent->>SyncScript: python3 sync_configuration.py
+        SyncScript->>Kittify: Read missions/software-dev/command-templates/
+        SyncScript->>Kittify: Read memory/constitution.md
+        SyncScript->>Kittify: Read missions/software-dev/templates/
+        SyncScript->>Plugin: Generate 14 skill SKILL.md files
+        SyncScript->>Plugin: Copy 2 rules files
+        SyncScript->>Plugin: Copy 6 templates
+        SyncScript-->>Agent: Initial sync complete
+    end
+
+    rect rgb(240, 235, 200)
+        Note over Agent,Agents: Step 4 - Bridge to All Agents
+        Agent->>User: Which agents to set up?
+        User-->>Agent: antigravity, claude, github
+
+        loop For each selected agent
+            Agent->>Bridge: install_all_plugins.py --target agent
+            Bridge->>Plugin: Read all plugin skills/rules
+            Bridge->>Agents: Write agent-specific formats
+            Bridge-->>Agent: N plugins bridged
+        end
+    end
+
+    rect rgb(210, 235, 240)
+        Note over Agent,User: Step 5 - Post-Init Guidance
+        Agent->>User: Initialization complete!
+        Note right of Agent: Available commands:<br/>/spec-kitty.specify<br/>/spec-kitty.plan<br/>/spec-kitty.tasks<br/>/spec-kitty.implement<br/>/spec-kitty.review<br/>/spec-kitty.merge<br/>/spec-kitty.sync-plugin
+    end

@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-This architecture implements a **Recursive Learning Model (RLM)** to minimize cognitive load and token overhead. Instead of statically loading hundreds of tool definitions, the agent utilizes a **Late-Binding / Discovery** pattern via a single "Meta-Skill" (The Librarian).
+This architecture implements a **recursive language model (RLM)** to minimize cognitive load and token overhead. Instead of statically loading hundreds of tool definitions, the agent utilizes a **Late-Binding / Discovery** pattern via a single "Meta-Skill" (The Librarian).
 
 Furthermore, the system implements a **Self-Healing Feedback Loop**, where the Distiller (LLM) not only caches summaries but actively updates the "human-readable" inventory descriptions, keeping documentation synchronized with code.
 

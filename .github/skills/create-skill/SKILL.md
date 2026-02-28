@@ -30,7 +30,7 @@ Engage the user to clarify the design based on the principles above. Do not jump
 ### 2. Scaffold the Infrastructure
 Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 plugins/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Acceptance Criteria

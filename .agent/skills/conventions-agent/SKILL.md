@@ -20,8 +20,8 @@ You enforce coding conventions and documentation standards for all code in the p
 7. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
 
 ## 📂 Header Templates
-- **Python**: `${CLAUDE_PLUGIN_ROOT}/templates/python-tool-header-template.py`
-- **JS/TS**: `${CLAUDE_PLUGIN_ROOT}/templates/js-tool-header-template.js`
+- **Python**: `plugins/templates/python-tool-header-template.py`
+- **JS/TS**: `plugins/templates/js-tool-header-template.js`
 
 ## 📝 File Headers
 

@@ -23,7 +23,7 @@ Plugins must follow a strict root-level structure:
 
 ## Environment Variables & Caching
 - **Plugin Cache:** Installed marketplace plugins are copied to a cache (`~/.claude/plugins/cache`).
-- **`${CLAUDE_PLUGIN_ROOT}`:** Always use this environment variable inside `hooks.json`, `.mcp.json`, and scripts to reference the absolute path of your plugin (e.g. `"${CLAUDE_PLUGIN_ROOT}/scripts/execute.sh"`).
+- **`plugins`:** Always use this environment variable inside `hooks.json`, `.mcp.json`, and scripts to reference the absolute path of your plugin (e.g. `"plugins/scripts/execute.sh"`).
 
 ## Installation Scopes
 `user` (global), `project` (team, `.claude/settings.json`), `local` (git-ignored), `managed` (read-only).

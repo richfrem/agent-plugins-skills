@@ -16,7 +16,7 @@ Do not attempt to write your own javascript or bash script to do this.
 
 **Usage:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/convert-mermaid/scripts/convert.py -i <input-file.mmd> -o <output-file.png> -s <scale-number>
+python3 plugins/skills/convert-mermaid/scripts/convert.py -i <input-file.mmd> -o <output-file.png> -s <scale-number>
 ```
 
 **Parameters:**
@@ -28,7 +28,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/convert-mermaid/scripts/convert.py -i <inpu
 **Example:**
 If the user says: *"Convert architecture.mmd to a high res PNG"*
 You run:
-`python3 ${CLAUDE_PLUGIN_ROOT}/skills/convert-mermaid/scripts/convert.py -i architecture.mmd -o architecture.png -s 3`
+`python3 plugins/skills/convert-mermaid/scripts/convert.py -i architecture.mmd -o architecture.png -s 3`
 
 ## Reference Links
 Place any supplemental context or heavy documentation inside `reference.md` and link it here using relative paths.

@@ -7,6 +7,11 @@ description: Standard operating procedures for the Spec Kitty agentic workflow (
 
 Standard lifecycle for implementing features using Spec Kitty.
 
+**Command-specific guidance**: For detailed best practices on individual commands, see the `AUGMENTED.md` files co-located with each auto-synced command:
+- `commands/spec-kitty-merge/AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
+- `commands/spec-kitty-implement/AUGMENTED.md` — worktree discipline, commit hygiene
+- `commands/spec-kitty-review/AUGMENTED.md` — review standards, batch review protocol
+
 ## CRITICAL: Anti-Simulation Rules
 
 > **YOU MUST ACTUALLY RUN EVERY COMMAND LISTED BELOW.**
@@ -67,8 +72,7 @@ git worktree list
 
 ### Step 1b: Update kanban
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE> <WP-ID> doing \
-  --agent "<AGENT-NAME>" --note "Starting implementation"
+spec-kitty agent tasks move-task <WP-ID> --to doing --note "Starting implementation"
 ```
 **PROOF**: Paste the CLI output confirming lane change.
 
@@ -106,8 +110,7 @@ Run `git status` to ensure all files are committed.
 
 ### Step 3b: Update kanban to for_review
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE> <WP-ID> for_review \
-  --agent "<AGENT-NAME>" --note "Implementation complete, ready for review"
+spec-kitty agent tasks move-task <WP-ID> --to for_review --note "Implementation complete, ready for review"
 ```
 **PROOF**: Paste the CLI output.
 
@@ -146,8 +149,13 @@ Repeat for each WP. Verify all WPs are in `done` lane:
 ### Step 4b: Accept feature
 ```bash
 cd <PROJECT_ROOT>
-spec-kitty accept --mode local --feature <SLUG>
+spec-kitty accept --feature <SLUG>
 ```
+The agent will ask for acceptance mode:
+- **`--mode local`**: Merge locally (no branch protection on target)
+- **`--mode pr`**: Push to feature branch and create PR (for protected branches)
+- **`--mode checklist`**: Readiness check only, no merge
+
 **PROOF**: Paste the JSON output showing `summary.ok: true`.
 
 > **Known Issue**: Accept may fail with "missing shell_pid in WP frontmatter".
@@ -167,23 +175,64 @@ spec-kitty accept --mode local --feature <SLUG>
 > **This step is NOT optional.** Every feature closure MUST include a retrospective.
 > The retrospective file MUST exist in `kitty-specs/<SPEC-ID>/` before merge.
 
-### Step 4d: Pre-merge safety check
+### Step 4d: Pre-merge remote backup (MANDATORY)
+
+> ⚠️ **DATA SAFETY**: Before ANY merge or worktree cleanup, ALL WP branches
+> MUST be pushed to GitHub origin and verified. This prevents data loss if
+> the merge fails or worktrees are deleted before content is preserved.
+
+**Push each WP branch to origin:**
+```bash
+cd <PROJECT_ROOT>
+for wt in .worktrees/<FEATURE>-WP*/; do
+  branch=$(basename "$wt")
+  echo "Pushing $branch..."
+  git -C "$wt" push origin "$branch"
+done
+```
+**PROOF**: Paste push output for each branch.
+
+**Verify remote state:**
+```bash
+for wt in .worktrees/<FEATURE>-WP*/; do
+  branch=$(basename "$wt")
+  local_sha=$(git -C "$wt" rev-parse HEAD)
+  remote_sha=$(git ls-remote origin "$branch" | cut -f1)
+  if [ "$local_sha" = "$remote_sha" ]; then
+    echo "✅ $branch: verified on origin ($local_sha)"
+  else
+    echo "❌ $branch: MISMATCH (local=$local_sha remote=$remote_sha)"
+  fi
+done
+```
+**PROOF**: Paste verification output. ALL branches must show ✅.
+**STOP**: Do NOT proceed to merge if any branch shows ❌.
+
+### Step 4e: Pre-merge safety check (deterministic forecasting)
 ```bash
 cd <PROJECT_ROOT>
 git status
 git worktree list
-spec-kitty merge --feature <SLUG> --dry-run
+spec-kitty merge --feature <SLUG> --dry-run --json
 ```
-**PROOF**: Paste all three outputs. Verify:
+**PROOF**: Paste all outputs. From the JSON, verify:
 - [ ] You are in the **main repo root** (NOT inside a worktree)
 - [ ] `git status` shows clean working tree
-- [ ] Dry-run shows no conflicts
+- [ ] `effective_wp_branches` lists only the branches that need merging
+- [ ] `all_wp_branches` may be larger than `effective_wp_branches` (expected)
+- [ ] No conflict warnings in the output
 
-### Step 4e: Merge from main repo
+> **v1.0.1 Feature**: The `--dry-run --json` flag outputs a deterministic merge plan
+> showing exactly which branches will be merged. Confirm the effective tips before proceeding.
+
+### Step 4f: Merge from main repo
 ```bash
 cd <PROJECT_ROOT>
-spec-kitty merge --feature <SLUG>
+spec-kitty merge --feature <SLUG> --push
 ```
+
+> **ALWAYS use `--push`** to ensure merged main is immediately backed up to origin.
+> Without `--push`, worktree cleanup can destroy the only copies of feature branches.
 
 > **LOCATION RULE**: ALWAYS run merge from the **main repository root**.
 > NEVER `cd` into a worktree to merge. The `@require_main_repo` decorator
@@ -201,12 +250,14 @@ git log --oneline -5
 git worktree list
 git branch
 git status
+rm -f .kittify/workspaces/<SLUG>-WP*.json
 ```
 **PROOF**: Paste all outputs. Verify:
 - [ ] Merge commit(s) visible in log
 - [ ] No orphaned worktrees remain for this feature
 - [ ] WP branches have been deleted
 - [ ] Working tree is clean
+- [ ] Workspace tracking JSONs removed from `.kittify/workspaces/`
 
 ### Step 4g: Intelligence sync
 ```bash
@@ -221,8 +272,7 @@ python3 plugins/rlm-factory/scripts/distill.py --path kitty-specs/<SPEC-ID>/
 
 ### Step 4h: Update kanban to done
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE> <WP-ID> done \
-  --agent "<AGENT-NAME>" --note "Merged and cleaned up"
+spec-kitty agent tasks move-task <WP-ID> --to done --note "Merged and cleaned up"
 ```
 **PROOF**: Paste CLI output + final `/spec-kitty.status` board.
 
@@ -265,22 +315,21 @@ When Spec Kitty runs inside a Dual-Loop session, roles are split:
 The tasks CLI manages WP lane transitions. **Always use this instead of manually editing frontmatter or checkboxes.**
 
 ```bash
-# List WPs and their lanes
-python3 .kittify/scripts/tasks/tasks_cli.py list <FEATURE-SLUG>
+# Move a WP between lanes (planned -> doing -> for_review -> done)
+spec-kitty agent tasks move-task <WP-ID> --to <LANE> --note "reason"
 
-# Move a WP between lanes (planned → doing → for_review → done)
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> \
-  --agent "<AGENT-NAME>" --note "reason"
+# Force-move (when kitty-specs artifacts leak from serial implementation)
+spec-kitty agent tasks move-task <WP-ID> --to done --force --note "reason"
 
-# Append activity log entry without changing lane
-python3 .kittify/scripts/tasks/tasks_cli.py history <FEATURE-SLUG> <WP-ID> \
-  --note "what happened" --agent "<AGENT-NAME>"
+# View kanban board
+/spec-kitty.status
 
-# Roll back to previous lane
-python3 .kittify/scripts/tasks/tasks_cli.py rollback <FEATURE-SLUG> <WP-ID>
+# Accept feature readiness
+spec-kitty accept --feature <FEATURE-SLUG>
 
-# Check feature acceptance readiness
-python3 .kittify/scripts/tasks/tasks_cli.py status --feature <FEATURE-SLUG>
+# Validate encoding (prevents dashboard blank pages)
+spec-kitty validate-encoding --feature <FEATURE-SLUG>
+spec-kitty validate-encoding --feature <FEATURE-SLUG> --fix
 ```
 
 **Valid lanes**: `planned`, `doing`, `for_review`, `done`

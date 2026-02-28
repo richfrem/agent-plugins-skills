@@ -22,7 +22,7 @@ Initialize the semantic Tool Inventory for a new project. This is the **first-ru
 Run the automated bootstrapping script. This script will ensure `.agent/learning/rlm_profiles.json` exists and will inject a `tools` profile if it doesn't. 
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory-init/scripts/tool_inventory_init.py
+python3 plugins/skills/tool-inventory-init/scripts/tool_inventory_init.py
 ```
 
 ### Step 2: Serial Agent Distillation
@@ -31,7 +31,7 @@ The script above creates the target manifest, but **YOU** (the Agent) will execu
 
 Check what needs to be cached using the auditor:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/../rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+python3 plugins/../rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
 ```
 
 *If there are uncached tools:*
@@ -40,18 +40,18 @@ python3 ${CLAUDE_PLUGIN_ROOT}/../rlm-factory/skills/rlm-curator/scripts/inventor
 For each file identified as missing:
 1. Read the tool script.
 2. Summarize its purpose, layer, and CLI usage.
-3. Write the summary into `.agent/learning/rlm_tools_cache.json`.
+3. Write the summary using `python plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile tools --file "..." --summary "..."`
 
 **Option B (Batch Distillation) - Recommended for > 20 tools:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/../rlm-factory/skills/rlm-curator/scripts/distiller.py --type tool
+python3 plugins/../rlm-factory/skills/rlm-curator/scripts/distiller.py --type tool
 ```
 
 ### Step 3: Verify
 
 Run the audit again to confirm 100% coverage:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/../rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+python3 plugins/../rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
 ```
 
 ## After Init
