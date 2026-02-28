@@ -28,8 +28,8 @@ The frontmatter defines the metadata and bounds of the subagent:
 ## Scope & Precedence
 When multiple subagents share the same name, they resolve in an ordered priority:
 1. **CLI Flag** (`--agents '{...json...}'`)
-2. **Project** (`.claude/agents/`)
-3. **User Local** (`~/.claude/agents/`)
+2. **Project** (`.claude/skills/`)
+3. **User Local** (`~/.claude/skills/`)
 4. **Plugin** (located in the enabled plugin's `agents/` root).
 
 ## Foreground vs. Background execution

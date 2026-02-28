@@ -93,7 +93,7 @@ echo "{}" > <cache_path>
 
 Scan the manifest against the cache to find uncached files:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py --profile <NAME>
+python3 plugins/skills/rlm-curator/scripts/inventory.py --profile <NAME>
 ```
 
 Report: "N files in manifest, M already cached, K remaining."
@@ -122,7 +122,7 @@ For each uncached file:
 
 Run audit again:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py --profile <NAME>
+python3 plugins/skills/rlm-curator/scripts/inventory.py --profile <NAME>
 ```
 
 Target: 100% coverage. If gaps remain, repeat Step 6 for missing files.

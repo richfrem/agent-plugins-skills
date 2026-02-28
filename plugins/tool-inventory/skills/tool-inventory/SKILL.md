@@ -54,7 +54,7 @@ This skill combines **Tool Discovery** (finding tools) and **Inventory Managemen
 **Strategy** (in priority order):
 1. **Semantic Search** (ChromaDB — preferred):
    ```bash
-   python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/tool_chroma.py search "dependency graph"
+   python3 plugins/skills/tool-inventory/scripts/tool_chroma.py search "dependency graph"
    ```
 2. **Legacy JSON Search** (backward compat):
     ```bash
@@ -79,18 +79,18 @@ view_file(AbsolutePath="/path/to/found/script.py", StartLine=1, EndLine=200)
 
 ### 4. Register New Tools
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/manage_tool_inventory.py add --path plugins/new_script.py
+python3 plugins/skills/tool-inventory/scripts/manage_tool_inventory.py add --path plugins/new_script.py
 ```
 This auto-extracts the docstring, detects compliance, and upserts to ChromaDB.
 
 ### 5. Discover Gaps
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/manage_tool_inventory.py discover --auto-stub
+python3 plugins/skills/tool-inventory/scripts/manage_tool_inventory.py discover --auto-stub
 ```
 
 ### 6. Generate Docs
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/manage_tool_inventory.py generate
+python3 plugins/skills/tool-inventory/scripts/manage_tool_inventory.py generate
 ```
 
 ---
@@ -107,5 +107,5 @@ When registering a **new or modified** tool, follow all steps:
 ## 🔄 Migration from RLM Cache
 To seed ChromaDB from an existing `rlm_tool_cache.json`:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
+python3 plugins/skills/tool-inventory/scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
 ```
