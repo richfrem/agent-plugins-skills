@@ -99,7 +99,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/tool-inventory/scripts/manage_tool_inventor
 When registering a **new or modified** tool, follow all steps:
 
 1. **Register** → `add --path [ToolPath]` (auto-triggers ChromaDB upsert)
-2. **Distill** (optional) → `distiller.py --file [ToolPath] --type tool`
+2. **Distill** (optional) → `/rlm-factory_gap-fill --profile tools` (Agent injection) OR `distiller.py --file [ToolPath] --profile tools` (Batch offline)
 3. **Generate Docs** → `generate --output plugins/TOOL_INVENTORY.md`
 4. **Audit** → `audit` (verify no gaps)
 5. **Verify Search** → `tool_chroma.py search "[keyword]"`

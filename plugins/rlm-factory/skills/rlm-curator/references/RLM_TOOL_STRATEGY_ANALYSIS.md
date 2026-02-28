@@ -1,7 +1,7 @@
 # Analysis: RLM Tool Discovery Strategy
 
 ## 1. Executive Summary
-This document analyzes the current Recursive Learning Model (RLM) architecture and evaluates options for integrating "Late Binding" Tool Discovery. The goal is to allow the Agent to index and learn from the executable tool inventory (`tool_inventory.json`) without polluting the existing legacy documentation index (`distiller_manifest.json`).
+This document analyzes the current recursive language model (RLM) architecture and evaluates options for integrating "Late Binding" Tool Discovery. The goal is to allow the Agent to index and learn from the executable tool inventory (`tool_inventory.json`) without polluting the existing legacy documentation index (`distiller_manifest.json`).
 
 ## 2. Current Architecture State
 

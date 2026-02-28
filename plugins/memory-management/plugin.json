@@ -1,0 +1,9 @@
+{
+    "name": "memory-management",
+    "version": "1.0.0",
+    "description": "Tiered memory system for cognitive continuity across agent sessions. Manages hot cache (loaded at boot) and deep storage (loaded on demand) with configurable promotion/demotion rules.",
+    "author": "Sanctuary Guardian",
+    "skills": [
+        "memory-management"
+    ]
+}

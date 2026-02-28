@@ -1,0 +1,9 @@
+{
+    "name": "doc-coauthoring",
+    "version": "1.0.0",
+    "description": "Structured workflow for co-authoring documentation through Context Gathering, Refinement & Structure, and Reader Testing stages. Helps users efficiently transfer context and verify docs work for readers.",
+    "author": "Anthropic",
+    "skills": [
+        "doc-coauthoring"
+    ]
+}

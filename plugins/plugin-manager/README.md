@@ -22,7 +22,7 @@ To refresh your local agent environment (Antigravity, etc.) with the current plu
 
 | Skill | Purpose | Key Script |
 | :--- | :--- | :--- |
-| **[inventory-sync](skills/inventory-sync/SKILL.md)** | Deep sync between plugins folder and agent configs. | `sync_with_inventory.py` |
+| **[ecosystem-cleanup-sync](skills/ecosystem-cleanup-sync/SKILL.md)** | Deep sync (Install + Cleanup orphans) between plugins folder and agent configs. | `sync_with_inventory.py` |
 | **[plugin-replicator](skills/plugin-replicator/SKILL.md)** | Copies or links plugins to other repositories. | `plugin_replicator.py` |
 | **[agent-bridge](skills/agent-bridge/SKILL.md)** | Adapts standard plugins to specific agent runtimes. | `bridge_installer.py` |
 | **[plugin-maintenance](skills/plugin-maintenance/SKILL.md)** | Audits structure, generates READMEs, health checks. | `audit_structure.py` |
@@ -31,8 +31,8 @@ To refresh your local agent environment (Antigravity, etc.) with the current plu
 
 ## core Capabilities
 
-### 1. Inventory Sync (The Brain)
-**"Keep my agents in sync with my plugins folder."**
+### 1. Ecosystem Cleanup & Sync (The Brain)
+**"Keep my agents in sync with my plugins folder, and clean up the trash."**
 
 The `sync_with_inventory.py` script is the heart of the system. It:
 *   **Generates Inventory**: Creates `local-plugins-inventory.json` (your Bill of Materials).

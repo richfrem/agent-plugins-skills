@@ -112,7 +112,7 @@ Store your customized LLM summarization prompts here.
 | Command | Script | Ollama? | Description |
 |:---|:---|:---|:---|
 | `/rlm-factory:distill` | `distiller.py` | ✅ | LLM-powered file summarization |
-| `/rlm-factory:distill-agent` | Agent intelligence | ❌ | Agent-powered summarization (faster, higher quality) |
+| `/rlm-factory:gap-fill` | Sub-Agent | ❌ | Agent-powered summarization (faster, higher quality) |
 | `/rlm-factory:query` | `query_cache.py` | ❌ | Search the semantic ledger |
 | `/rlm-factory:audit` | `inventory.py` | ❌ | Coverage report (fs vs cache) |
 | `/rlm-factory:cleanup` | `cleanup_cache.py` | ❌ | Remove stale/orphan entries |
@@ -123,7 +123,7 @@ For small batches (< 10 files), the agent can distill directly without Ollama by
 reading the file and writing the summary into the cache JSON. This is 3-5x faster
 and produces higher-quality summaries using frontier model intelligence.
 
-See `skills/rlm-curator/SKILL.md` for the full Agent Distill protocol.
+See `agents/rlm-gap-fill.md` for the full Agent Distill protocol.
 
 ---
 
@@ -161,7 +161,7 @@ rlm-factory/
 │   └── plugin.json              # Plugin identity + runtime deps
 ├── commands/
 │   ├── distill.md               # /rlm-factory:distill
-│   ├── distill-agent.md         # /rlm-factory:distill-agent
+│   ├── rlm-factory_gap-fill.md  # /rlm-factory:gap-fill
 │   ├── query.md                 # /rlm-factory:query
 │   ├── audit.md                 # /rlm-factory:audit
 │   └── cleanup.md               # /rlm-factory:cleanup
@@ -170,10 +170,10 @@ rlm-factory/
 │   │   ├── SKILL.md             # Auto-invoked curator skill
 │   │   ├── references/          # Architecture docs, diagrams, research
 │   │   └── scripts/             # distiller.py, query_cache.py, etc.
-│   ├── rlm-distill/
-│   │   └── SKILL.md             # Agent-powered distillation protocol
 │   └── ollama-launch/
 │       └── SKILL.md             # Ollama server management
+├── agents/
+│   └── rlm-gap-fill.md          # Primary Gap-Fill Sub-Agent configuration
 ├── resources/
 │   ├── manifest-index.json      # Profile registry
 │   ├── distiller_manifest.json  # Default scope config

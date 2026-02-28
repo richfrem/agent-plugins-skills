@@ -1,0 +1,12 @@
+{
+    "name": "env-helper",
+    "version": "1.0.0",
+    "description": "Minimal environment variable utility for resolving shared ecosystem constants (HF tokens, repo IDs, project root) without circular dependencies on mcp_servers.",
+    "author": "Antigravity",
+    "skills": [
+        "env-helper"
+    ],
+    "scripts": [
+        "scripts/env_helper.py"
+    ]
+}

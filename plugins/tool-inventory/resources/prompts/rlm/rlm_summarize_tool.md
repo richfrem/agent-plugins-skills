@@ -1,5 +1,9 @@
-Analyze this CLI tool source code and extract a high-fidelity JSON summary.
-The summary must map to the project's "Gold Standard" header format.
+Analyze this CLI tool source code and extract a high-fidelity JSON summary perfectly aligned with the Recursive Language Model (RLM) philosophy.
+
+# RLM Core Philosophy: Summarize Once, Reuse Many
+Your summary will be cached and read by other AI agents during future tasks. It must be dense and accurate enough to **entirely replace the need for an AI agent to read this source file again**, unless they are making direct, code-level modifications to it.
+
+The summary is the agent's map: if the summary is good, the agent understands the terrain and doesn't have to scan the file. Only recurse to read the full file when strictly applicable.
 
 PRIORITY: If the file contains a top-level docstring header (Gold Standard), extract details DIRECTLY from there.
 
