@@ -45,7 +45,7 @@ except ImportError as e:
 # ----------------------------------------------------------
 # audit_inventory — coverage report for a single profile
 # ----------------------------------------------------------
-def audit_inventory(config: RLMConfig) -> None:
+def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bool = False) -> None:
     """
     Compare the RLM cache against the live filesystem and print a coverage report.
 
@@ -55,6 +55,8 @@ def audit_inventory(config: RLMConfig) -> None:
 
     Args:
         config: Active RLMConfig defining the cache and manifest to audit.
+        show_full: If True, prints the complete list of missing/stale files without truncation.
+        export_tasks: If True, writes a Markdown checklist of missing files to disk.
     """
     print(f"📊 Auditing RLM Inventory [{config.profile_name.upper()}]...")
     print(f"   Cache: {config.cache_path.name}")
@@ -86,17 +88,39 @@ def audit_inventory(config: RLMConfig) -> None:
 
     if missing_in_cache:
         print(f"\n❌ Missing from Cache ({len(missing_in_cache)}):")
-        for p in sorted(missing_in_cache)[:10]:
-            print(f"   - {p}")
-        if len(missing_in_cache) > 10:
-            print(f"   ... and {len(missing_in_cache) - 10} more.")
+        sorted_missing = sorted(missing_in_cache)
+        if show_full:
+            for p in sorted_missing:
+                print(f"   - {p}")
+        else:
+            for p in sorted_missing[:10]:
+                print(f"   - {p}")
+            if len(missing_in_cache) > 10:
+                print(f"   ... and {len(missing_in_cache) - 10} more (use --full to see all).")
+
+        # Export tasks if requested
+        if export_tasks:
+            task_file = PROJECT_ROOT / f"rlm_distill_tasks_{config.profile_name}.md"
+            with open(task_file, "w", encoding="utf-8") as f:
+                f.write(f"# RLM Distillation Tasks: {config.profile_name.upper()}\n\n")
+                f.write(f"Generated: {len(missing_in_cache)} missing files to distill into `{config.cache_path.name}`.\n\n")
+                for p in sorted_missing:
+                    # Provide an actionable command for the agent/user
+                    f.write(f"- [ ] `{p}`\n")
+                    f.write(f"  - Command: `python plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile {config.profile_name} --file \"{p}\" --summary \"YOUR_SUMMARY_HERE\"`\n")
+            print(f"\n📝 Exported task list to: {task_file.relative_to(PROJECT_ROOT)}")
 
     if stale_in_cache:
         print(f"\n⚠️  Stale in Cache ({len(stale_in_cache)}):")
-        for p in sorted(stale_in_cache)[:10]:
-            print(f"   - {p}")
-        if len(stale_in_cache) > 10:
-            print(f"   ... and {len(stale_in_cache) - 10} more.")
+        sorted_stale = sorted(stale_in_cache)
+        if show_full:
+            for p in sorted_stale:
+                print(f"   - {p}")
+        else:
+            for p in sorted_stale[:10]:
+                print(f"   - {p}")
+            if len(stale_in_cache) > 10:
+                print(f"   ... and {len(stale_in_cache) - 10} more (use --full to see all).")
 
     if not missing_in_cache and not stale_in_cache:
         print("\n✅ RLM Inventory is perfectly synchronized.")
@@ -109,12 +133,14 @@ def main() -> None:
     """Parse CLI arguments and run the audit for the specified profile."""
     parser = argparse.ArgumentParser(description="RLM Inventory — cache coverage audit")
     parser.add_argument("--profile", required=True, help="RLM profile name (from rlm_profiles.json)")
+    parser.add_argument("--full", action="store_true", help="Print the full list of missing/stale files without truncation")
+    parser.add_argument("--tasks", action="store_true", help="Generate a markdown task compilation checklist of missing files")
 
     args = parser.parse_args()
 
     try:
         config = RLMConfig(profile_name=args.profile)
-        audit_inventory(config)
+        audit_inventory(config, show_full=args.full, export_tasks=args.tasks)
     except Exception as e:
         print(f"❌ Error: {e}")
 

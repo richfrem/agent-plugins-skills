@@ -147,8 +147,7 @@ def call_ollama(
 def distill(
     config: RLMConfig,
     target_files: Optional[List[Path]] = None,
-    force: bool = False,
-    injected_summary: Optional[str] = None
+    force: bool = False
 ) -> None:
     """
     Iterate over target files, generate summaries via Ollama, and persist the cache.
@@ -161,7 +160,6 @@ def distill(
         config: Active RLMConfig providing manifest, cache path, and model.
         target_files: Explicit file list; if None, uses collect_files(config).
         force: If True, ignores existing cache entries and re-distills everything.
-        injected_summary: Pre-generated summary to use instead of calling Ollama.
     """
     print(f"RLM Distiller [{config.profile_name.upper()}] — {config.description}")
     print(f"   Cache: {config.cache_path.name}")
@@ -194,7 +192,7 @@ def distill(
 
             print(f"   [{i}/{total}] Distilling {rel_path}...")
 
-            summary = injected_summary or call_ollama(
+            summary = call_ollama(
                 content, rel_path, config.prompt_template, config.llm_model
             )
 
@@ -261,7 +259,6 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Re-distill even if hash matches cache")
     parser.add_argument("--cleanup", action="store_true", help="Remove stale entries before distilling")
     parser.add_argument("--since", type=int, metavar="HOURS", help="Only process files changed in last N hours")
-    parser.add_argument("--summary", help="Inject a pre-generated summary (skips Ollama)")
     parser.add_argument("--debug", action="store_true", help="Enable verbose debug logging")
 
     args = parser.parse_args()
@@ -288,7 +285,7 @@ def main() -> None:
             cutoff = datetime.now().timestamp() - (args.since * 3600)
             target_files = [f for f in collect_files(config) if f.stat().st_mtime >= cutoff]
 
-        distill(config, target_files=target_files, force=args.force, injected_summary=args.summary)
+        distill(config, target_files=target_files, force=args.force)
 
     except Exception as e:
         print(f"❌ Fatal error: {e}")

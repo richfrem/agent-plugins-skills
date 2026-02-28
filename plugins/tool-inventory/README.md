@@ -1,7 +1,7 @@
 # Tool Inventory Plugin 📊
 
 Manage tool registries with embedded ChromaDB for semantic tool discovery.
-Self-contained with vendored RLM scripts — no external plugin dependencies.
+Semantic tool discovery powered by ChromaDB. Integrates directly with the `rlm-factory` plugin for gap-filling and cache generation.
 
 ## Installation
 
@@ -82,15 +82,14 @@ ChromaDB is the primary truth store. JSON cache is kept for backward compatibili
 | `/tool-inventory:generate` | `manage_tool_inventory.py generate` | Render markdown docs |
 | `/tool-inventory:sync` | `tool_chroma.py import-json` | Migrate from JSON cache |
 
-### Vendored RLM Scripts
+### RLM Factory Integration
 
-| Script | Purpose | Ollama? |
+| RLM Command/Script | Purpose | Executable Type |
 |:---|:---|:---|
-| `distiller.py` | LLM-powered file summarization | ✅ Required |
-| `query_cache.py` | Legacy JSON cache search | ❌ |
-| `cleanup_cache.py` | Stale entry cleanup | ❌ |
-| `inventory.py` | Coverage reporting | ❌ |
-| `rlm_config.py` | Shared configuration | ❌ |
+| `/rlm-factory_gap-fill` | Agent-powered file summarization | ✅ Sub-Agent |
+| `distiller.py` | Batch LLM summarization | ✅ Local Ollama |
+| `query_cache.py` | Legacy JSON cache search | ❌ Command Line |
+| `inventory.py` | Coverage reporting | ❌ Command Line |
 
 ---
 
@@ -128,11 +127,6 @@ tool-inventory/
 │   ├── manage_tool_inventory.py   # Core registry manager
 │   ├── tool_chroma.py             # ChromaDB wrapper (NEW)
 │   ├── audit_plugins.py           # Inventory auditor (filesystem check)
-│   ├── distiller.py               # Vendored from RLM
-│   ├── query_cache.py             # Vendored from RLM
-│   ├── cleanup_cache.py           # Vendored from RLM
-│   ├── inventory.py               # Vendored from RLM
-│   └── rlm_config.py              # Vendored from RLM
 ├── data/
 │   └── chroma/                    # ChromaDB persistent storage
 ├── docs/

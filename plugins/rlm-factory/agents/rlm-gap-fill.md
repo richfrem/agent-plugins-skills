@@ -1,13 +1,15 @@
 ---
-name: rlm-distill
-description: Agent-powered RLM cache distillation. Replaces the slow local Ollama distiller with the agent's own summarization capability for both rlm_summary_cache.json and rlm_tool_cache.json.
+name: rlm-gap-fill
+description: Agent-powered RLM cache gap-fill orchestration. Audits the cache, generates a Markdown task list, and spawns a Sub-Agent to read missing files, write summaries, and inject them directly into the JSON.
+context: fork
+agent: Plan
 ---
 
 # RLM Distill Skill
 
 ## Purpose
 
-Distill (summarize) files directly into the RLM caches **using the agent's own intelligence** instead of the slow local Ollama model (qwen2:7b on M1 Mac). The agent reads the file, writes a summary, and updates the cache JSON in-place.
+Distill (summarize) files directly into the RLM caches **using the agent's own intelligence** instead of a slow local Ollama model (like ibm granite or qwen2:7b on an M1 mac or windows machine). The agent reads the file, writes a summary, and updates the cache JSON in-place.
 
 Should leverage frontier model ability to produce a superior summary for a file faster than can be done with a slow local CPU.
 
@@ -30,7 +32,7 @@ Instead, you must **act as the distiller yourself**.
 
 ## Why This Exists (The RLM Philosophy)
 
-The fundamental purpose of the Recursive Learning Model (RLM) cache is **"Read Once, Cache Forever."** 
+The fundamental purpose of the recursive language model (RLM) cache is **"Read Once, Cache Forever."** 
 
 You should perform a deep, comprehensive read and summarize the file with an exceptionally good summary **once**. The goal is to entirely **remove the need for you to read those complex files many times** just to figure out what they do. 
 
@@ -88,58 +90,59 @@ If no cache exists yet, use the [`rlm-init`](../rlm-init/SKILL.md) skill to inte
 
 **Note:** The tool cache `summary` field is a JSON **string** (not a nested object), matching the existing distiller's output format.
 
-## Procedure
+## The Agent Gap-Fill Workflow (Procedure)
 
-### 1. Identify Files to Distill
+When the user asks you to "audit and update the RLM cache" or "distill missing files", follow this exact cyclical workflow.
 
-Choose one of:
+### 1. Identify Gaps & Generate Task List
 
-**A. Fix failed entries:**
+First, run the RLM Auditor to generate an actionable checklist of all files missing from the cache.
+
 ```bash
-# Find all DISTILLATION FAILED entries in the target cache file
-# (Check rlm_profiles.json for the exact path to the target cache)
-grep -n "DISTILLATION FAILED" <path_to_cache.json>
+# Generate the full checklist of missing files for the target profile
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile <profile_name> --tasks
 ```
 
-**B. Distill new/changed files:**
-```bash
-# Find files modified in last N hours not yet in cache
-find . -name "*.md" -mmin -120
-```
+This generates `rlm_distill_tasks_<profile_name>.md` in the project root, containing checkboxes and pre-written `inject_summary.py` commands for every missing file.
 
-**C. Distill specific files the user requests.**
+### 2. Deep File Analysis
 
-### 2. Read the Source File
+Open the `rlm_distill_tasks_*.md` file and begin working through the checklist. For each file:
 
-Read the file content using `view_file` or equivalent.
+1. Open and thoroughly read the source file (e.g. using `view_file` or `cat`).
+2. Do not skip or skim. You must understand the file's purpose, architecture, inputs, and outputs.
 
-### 3. Apply the Distillation Prompts
+### 3. Generate Summary & Exact Prompt Alignment
 
 Before writing the summary, you **MUST** align your output exactly with the rigorous standards defined in the official RLM prompts. 
 
-**For code/scripts (Tool Cache):**
+**For code/scripts (Tool Cache / tools profile):**
 Read and strictly adhere to the JSON schema demanded in:
 > `plugins/tool-inventory/resources/prompts/rlm/rlm_summarize_tool.md`
 Your output must be the raw, stringified JSON object matching that exact schema.
 
-**For docs/markdown (Summary Cache):**
+**For docs/markdown (Summary Cache / project profile):**
 Read and strictly adhere to the high-fidelity architectural criteria demanded in:
-> `plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_legacy.md`
+> `plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_general.md`
 Your output must be a dense, signal-heavy text summary.
 
-### 4. Update the Cache JSON
+### 4. Inject Summary & Track Progress
 
-Edit the cache file directly using file editing tools. Set:
-- `hash`: Use `"agent_distilled_<date>"` as the hash marker (e.g., `"agent_distilled_2026_02_11"`)
-- `summary`: Your summary text
-- `summarized_at`: Current ISO timestamp
-- `file_mtime`: (optional) File modification time if available
+Execute the pre-written `inject_summary.py` command found in your task list for that file, replacing the placeholder with your generated string:
 
-### 5. Verify
-
-After editing, spot-check that the JSON is still valid:
 ```bash
-python3 -c "import json; json.load(open('<path_to_cache.json>')); print('✅ Valid JSON')"
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile <profile_name> --file "path/to/file.py" --summary "YOUR COMPLETE SUMMARY TEXT OR JSON"
+```
+
+1. After the injection succeeds, **update the checkbox** (`[x]`) in the `rlm_distill_tasks_*.md` file to track your progress.
+2. Proceed to the next missing file on the list.
+
+### 5. Verify & Re-Audit
+
+Once you have completed the checklist (or if you are ending your session), run the auditor again without the `--tasks` flag to prove the gap has been closed:
+
+```bash
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile <profile_name>
 ```
 
 ## Quality Guidelines

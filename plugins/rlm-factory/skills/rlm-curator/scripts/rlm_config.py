@@ -113,7 +113,7 @@ class RLMConfig:
         self.parser_type = profile.get("parser", "directory_glob")
         prompt_path_rel = profile.get(
             "prompt_path",
-            "plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_legacy.md"
+            "plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_general.md"
         )
         self.prompt_full_path = (self.root / prompt_path_rel).resolve()
         self.prompt_template = self._load_prompt()
@@ -157,7 +157,7 @@ class RLMConfig:
         # Fallback: check relative to the skill's resources directory
         internal_fallback = (
             Path(__file__).resolve().parents[2]
-            / "resources" / "prompts" / "rlm" / "rlm_summarize_legacy.md"
+            / "resources" / "prompts" / "rlm" / "rlm_summarize_general.md"
         )
         if internal_fallback.exists():
             return internal_fallback.read_text(encoding="utf-8")

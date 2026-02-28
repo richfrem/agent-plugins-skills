@@ -40,7 +40,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/../rlm-factory/skills/rlm-curator/scripts/inventor
 For each file identified as missing:
 1. Read the tool script.
 2. Summarize its purpose, layer, and CLI usage.
-3. Write the summary into `.agent/learning/rlm_tools_cache.json`.
+3. Write the summary using `python plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile tools --file "..." --summary "..."`
 
 **Option B (Batch Distillation) - Recommended for > 20 tools:**
 ```bash
