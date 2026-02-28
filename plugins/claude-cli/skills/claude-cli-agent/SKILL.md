@@ -56,7 +56,7 @@ Always redirect output to a file (`> output.md`), then review with `view_file`.
 | Business | product-manager | Product strategy |
 | Specialization | api-documenter, documentation-expert | Technical writing |
 
-All personas in: `${CLAUDE_PLUGIN_ROOT}/personas/`
+All personas in: `plugins/personas/`
 
 ## 🔄 Recommended Audit Loop
 1. **Red Team** (Security Auditor) → find exploits

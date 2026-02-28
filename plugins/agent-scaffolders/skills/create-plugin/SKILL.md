@@ -18,7 +18,7 @@ You are tasked with generating a new Agent Plugin boundary. Because we demand ab
    
    Run the following bash command:
    ```bash
-   python3 ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
+   python3 plugins/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
    ```
    *(Note: Usually `<destination-directory>` will be inside the `plugins/` root).*
 

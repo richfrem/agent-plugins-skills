@@ -10,12 +10,13 @@ Use this workflow to bypass slow local Ollama models when summarizing **document
 
 1.  **Identify the document** (e.g., `docs/architecture_overview.md`).
 2.  **Read the document** using `view_file`.
-3.  **Read the summarization prompt** from [rlm_summarize_legacy.md](${CLAUDE_PLUGIN_ROOT}/resources/prompts/rlm/rlm_summarize_legacy.md).
+3.  **Read the summarization prompt** from [rlm_summarize_tool.md](plugins/tool-inventory/resources/prompts/rlm/rlm_summarize_tool.md)
+or [rlm_summarize_general.md](plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_general.md).
 4.  **Generate a high-quality summary** following the prompt's guidelines.
 5.  **Execute the injector** to write your summary instantly into the cache:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inject_summary.py --file <path_to_doc> --profile project --summary '<summary_text>'
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile project --file <path_to_doc> --summary "Your summary here"
 ```
 
 6.  **Verify** that `rlm_summary_cache.json` is updated.

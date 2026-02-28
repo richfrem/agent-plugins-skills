@@ -75,7 +75,7 @@ When returning Exit 0 with a JSON object, hooks can return:
 
 ## Environment Variables
 - `$CLAUDE_PROJECT_DIR`: Points to the current project's root.
-- `${CLAUDE_PLUGIN_ROOT}`: Points to the root directory of the plugin executing the hook. (Extremely important for referencing internal plugin scripts).
+- `plugins`: Points to the root directory of the plugin executing the hook. (Extremely important for referencing internal plugin scripts).
 - `$CLAUDE_ENV_FILE`: Specific to `SessionStart` hooks to persist environment variables across future Bash commands in the session.
 
 ## Async Execution

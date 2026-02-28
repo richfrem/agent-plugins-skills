@@ -27,26 +27,23 @@ OLLAMA_HOST=http://localhost:11434
 ## Usage
 ```bash
 # Distill all files in default scope (legacy docs)
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project
 
 # Distill tool scripts
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --type tool
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile tools
 
 # Distill a single file
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --file path/to/new_file.py
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project --file path/to/new_file.py
 
 # Only files changed in the last 2 hours
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --since 2
-
-# Use a different model
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --model qwen2.5:7b
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project --since 2
 ```
 
 ## Memory Banks
 | Type | Flag | Cache File |
 |:---|:---|:---|
-| Legacy Docs | `--type legacy` | `rlm_summary_cache.json` |
-| Tool Scripts | `--type tool` | `rlm_tool_cache.json` |
+| Project Docs | `--profile project` | `rlm_summary_cache.json` |
+| Tool Scripts | `--profile tools` | `rlm_tool_cache.json` |
 
 ## ⚠️ This is the WRITE operation — it calls Ollama and is expensive/slow.
 For READ operations, use `/rlm-factory:query` instead.
