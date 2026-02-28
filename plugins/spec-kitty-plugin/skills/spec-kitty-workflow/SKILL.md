@@ -250,12 +250,14 @@ git log --oneline -5
 git worktree list
 git branch
 git status
+rm -f .kittify/workspaces/<SLUG>-WP*.json
 ```
 **PROOF**: Paste all outputs. Verify:
 - [ ] Merge commit(s) visible in log
 - [ ] No orphaned worktrees remain for this feature
 - [ ] WP branches have been deleted
 - [ ] Working tree is clean
+- [ ] Workspace tracking JSONs removed from `.kittify/workspaces/`
 
 ### Step 4g: Intelligence sync
 ```bash
