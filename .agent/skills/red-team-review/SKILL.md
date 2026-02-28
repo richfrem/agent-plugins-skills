@@ -17,16 +17,20 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 ## Process Flow
 
 1. **Research & Analyze** — Deep-dive into the problem domain. Create analysis docs, capture sources.
-2. **Bundle Context** — Use `context-bundler` to compile all relevant files into a review packet.
+2. **Review Packet Generation** — Prepare the context for the reviewer:
+   - **Create Prompt**: Write or update a `red-team-prompt.md` explaining exactly what is being reviewed and what the reviewer should focus on.
+   - **Define Manifest**: Update a `manifest.json` or equivalent list dictating which source files and research artifacts to include.
+   - **Bundle Context**: Execute the `context-bundler` plugin, feeding it the manifest and prompt, to compile a single cohesive review packet.
 3. **Dispatch to Reviewers** — Send the bundle to:
    - Human reviewers (paste-to-chat or browser)
    - CLI agents with adversarial personas (security auditor, devil's advocate)
    - Browser-based agents for interactive review
 4. **Receive Feedback** — Capture the red team's verdict:
    - **"More Research Needed"** → Loop back to step 1 with targeted questions
-   - **"Approved"** → Proceed to Seal
-5. **Seal** — Bundle all session artifacts (research + feedback + final analysis)
-6. **Retrospective** — What did the review process reveal? Improve loop infrastructure.
+5. **Completion & Handoff** — Once the Red Team verdicts "Approved":
+   - Terminate the review loop.
+   - Pass the final, approved research and feedback documents back to the Orchestrator.
+   - **DO NOT** attempt to seal the session or run a retrospective. The Orchestrator handles that.
 
 ## Dependencies
 

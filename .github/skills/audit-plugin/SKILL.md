@@ -14,7 +14,7 @@ When instructed to audit or validate a plugin, or to verify if a skill is compli
 
 **Usage:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit.py --path <path-to-plugin>
+python3 plugins/scripts/audit.py --path <path-to-plugin>
 ```
 
 **Parameters:**

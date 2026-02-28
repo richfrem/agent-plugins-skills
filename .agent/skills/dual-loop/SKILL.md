@@ -51,9 +51,7 @@ flowchart LR
 
 ### Step 2: Prepare Execution Environment
 
-1. **Isolation**: Create a safe workspace for the Inner Loop.
-   - *Preferred*: Create a new git worktree or feature branch.
-   - *Fallback*: Isolate the working directory manually.
+1. **Isolation**: Ensure a safe workspace exists for the Inner Loop. Workspace creation (e.g., worktrees, branching, ephemeral containers) is strictly a delegated responsibility of the Orchestrator or external tooling. The Dual-Loop just receives the environment.
 2. **Update State**: Mark the current Work Package as "In Progress" in whatever task-tracking system the project uses.
 
 ### Step 3: Generate Strategy Packet (Outer Loop)
@@ -83,21 +81,21 @@ The Inner Loop agent:
 ### Step 6: Verify (Outer Loop)
 
 Once the Inner Loop signals completion, the Outer Loop must verify the results:
-1. **Diff Check**: Run `git diff` to see what the Inner Loop actually changed.
+1. **Delta Check**: Inspect the changes (e.g., via diff tools or system state checks) to see what the Inner Loop actually altered.
 2. **Test Check**: Run the test suite mechanically to ensure nothing broke.
 3. **Lint Check**: Validate the syntax.
 
 #### On Verification PASS:
-1. The Outer Loop commits the changes (`git commit -m "feat: [topic] [Inner Loop implementation]"`).
+1. The Outer Loop accepts the changes.
 2. The task tracker is updated to "Done".
 
 #### On Verification FAIL:
 1. The Outer Loop generates a **Correction Packet** explaining exactly what failed (test logs, lint errors).
 2. The Outer Loop loops back to Step 4, handing the Correction Packet to the Inner Loop.
 
-### Step 7: Closure
+### Step 7: Completion & Handoff
 
-Once all Work Packages are verified and committed, the Outer Loop executes standard session validation, updates global tracking documents, and gracefully terminates the loop.
+Once all Work Packages are verified, the Dual-Loop pattern is complete. The Outer Loop terminates and returns control to the global lifecycle manager (Orchestrator) for Retrospectives and ecosystem sealing.
 
 ---
 
@@ -114,15 +112,14 @@ Throughout the process, the Outer Loop must maintain discipline over task states
 
 ## Workspace Isolation
 
-> **Agent-loops does not create workspaces.** It receives an isolated directory (worktree, branch, or folder) and runs the loop inside it. Workspace creation is the responsibility of the upstream tool (e.g., `spec-kitty`, manual `git worktree add`, or any other mechanism).
+> **Dual-Loop (Agent-Loops) does not manage workspaces.** It receives an isolated directory or execution context from the Orchestrator and runs the loop inside it. Workspace creation (e.g., git worktrees, branches) is a delegated responsibility of the Orchestrator or Guardian level tools.
 
-### Fallback: Branch-Direct Mode
+### Fallback: In-Place Execution
 
-If a worktree cannot be created (tooling unavailable, permissions issue, etc.), the Inner Loop may work directly on a feature branch:
-
-1. The Inner Loop codes on the feature branch directly (no worktree isolation).
-2. The Outer Loop must log this fallback in a friction log for the retrospective.
-3. All other constraints (no git from Inner Loop, verification gate, correction packets) still apply.
+If an isolated workspace cannot be provided:
+1. The Inner Loop codes directly in the main directory.
+2. The Outer Loop must log this lack of isolation in a friction log for the handoff to the Orchestrator.
+3. All other constraints (no system manipulation from Inner Loop out of scope, verification gate, correction packets) still apply.
 
 ---
 

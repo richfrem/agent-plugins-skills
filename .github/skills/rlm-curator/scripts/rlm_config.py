@@ -5,7 +5,8 @@ rlm_config.py
 
 Purpose:
     Centralized configuration and utility logic for the RLM Toolchain.
-    Loads profile settings exclusively from `.agent/learning/rlm_profiles.json`,
+    Loads profile settings exclusively from a profiles JSON file (configured via 
+    RLM_PROFILES_PATH env var, defaulting to `.agent/learning/rlm_profiles.json`),
     making this module the Single Source of Truth for all RLM operations.
 
 Layer: Curate / Rlm
@@ -33,8 +34,18 @@ from typing import List, Dict, Optional
 # File is at: plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
+# ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
-DEFAULT_PROFILES_PATH = PROJECT_ROOT / ".agent" / "learning" / "rlm_profiles.json"
+
+def _get_profiles_path() -> Path:
+    """Get the path to rlm_profiles.json from env var or default."""
+    env_path = os.getenv("RLM_PROFILES_PATH")
+    if env_path:
+        path = Path(env_path)
+        return path if path.is_absolute() else (PROJECT_ROOT / path).resolve()
+    return PROJECT_ROOT / ".agent" / "learning" / "rlm_profiles.json"
+
+DEFAULT_PROFILES_PATH = _get_profiles_path()
 
 
 class RLMConfig:
@@ -102,7 +113,7 @@ class RLMConfig:
         self.parser_type = profile.get("parser", "directory_glob")
         prompt_path_rel = profile.get(
             "prompt_path",
-            "plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_legacy.md"
+            "plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_general.md"
         )
         self.prompt_full_path = (self.root / prompt_path_rel).resolve()
         self.prompt_template = self._load_prompt()
@@ -146,7 +157,7 @@ class RLMConfig:
         # Fallback: check relative to the skill's resources directory
         internal_fallback = (
             Path(__file__).resolve().parents[2]
-            / "resources" / "prompts" / "rlm" / "rlm_summarize_legacy.md"
+            / "resources" / "prompts" / "rlm" / "rlm_summarize_general.md"
         )
         if internal_fallback.exists():
             return internal_fallback.read_text(encoding="utf-8")

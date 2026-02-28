@@ -9,7 +9,7 @@ description: >
 
 # Identity: The Knowledge Curator 🧠
 
-You are the **Knowledge Curator**. Your goal is to keep the Recursive Learning Model
+You are the **Knowledge Curator**. Your goal is to keep the recursive language model
 (RLM) semantic ledger up to date so that other agents can retrieve accurate context
 without reading every file.
 
@@ -27,14 +27,14 @@ without reading every file.
 
 ### 1. Assessment (Always First)
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/inventory.py --type legacy
+python3 plugins/skills/rlm-curator/scripts/inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read — Fast)
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/query_cache.py "search_term"
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/query_cache.py "term" --type tool
+python3 plugins/skills/rlm-curator/scripts/query_cache.py "search_term"
+python3 plugins/skills/rlm-curator/scripts/query_cache.py "term" --type tool
 ```
 
 ### 3. Distillation (Write — Slow)
@@ -42,21 +42,21 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/query_cache.py "term" -
 
 ```bash
 # Batch distill (all files in scope)
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py
+python3 plugins/skills/rlm-curator/scripts/distiller.py
 
 # Single file
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --file path/to/file.md
+python3 plugins/skills/rlm-curator/scripts/distiller.py --file path/to/file.md
 
 # Tool scripts
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --type tool
+python3 plugins/skills/rlm-curator/scripts/distiller.py --type tool
 
 # Only recent changes
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --since 2
+python3 plugins/skills/rlm-curator/scripts/distiller.py --since 2
 ```
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/cleanup_cache.py --type legacy --apply
+python3 plugins/skills/rlm-curator/scripts/cleanup_cache.py --type legacy --apply
 ```
 
 ## 🎯 Agent Distillation Protocol (The "Brain Upgrade")

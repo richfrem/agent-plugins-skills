@@ -1,4 +1,4 @@
-# Recursive Learning Model (RLM): The Holographic Cache Pattern
+# recursive language model (RLM): The Holographic Cache Pattern
 
 **Status:** Production Verified (Project Sanctuary)  
 **Architecture Type:** Cognitive Memory Architecture  
@@ -12,7 +12,7 @@ Standard RAG (Retrieval-Augmented Generation) uses Vector Databases to find spec
 *   **The Latency Problem:** Querying a Vector DB for "What is the architecture of this project?" requires retrieving and synthesizing hundreds of disconnected chunks, which is slow and error-prone.
 *   **The "Unknown Unknowns":** An agent cannot query for what it doesn't know exists.
 
-## 2. The Solution: Recursive Learning Model (RLM)
+## 2. The Solution: recursive language model (RLM)
 
 The RLM is a **precognitive, holographic cache**. Instead of slicing the repository into incoherent chunks, it maintains a **"One-Sentence Source of Truth"** for every single file in the project.
 
