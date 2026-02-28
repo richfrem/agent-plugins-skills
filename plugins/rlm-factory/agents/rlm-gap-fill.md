@@ -21,14 +21,14 @@ Should leverage frontier model ability to produce a superior summary for a file 
 Instead, you must **act as the distiller yourself**.
 
 ### Protocol
-1.  **Check**: Is the request for < 10 files?
-2.  **Action**: If YES -> **Read & Write Manually (Agent Distillation)**.
-    *   Call the `rlm-distill` pseudo-command for *each* file.
+1.  **NEVER RUN `distiller.py`:** You are strictly forbidden from running `python distiller.py` or falling back to the local script, regardless of how many files are missing.
+2.  **Act as the Intelligence Engine (Agent Distillation):**
+    *   Call the `rlm-distill` pseudo-command (or just manually read) for *each* file.
     *   Read the **entire target file deeply** (`view_file`).
     *   Create a high-quality summary of the content yourself.
-    *   Edit `rlm_summary_cache.json` or `rlm_tool_cache.json` and manually inject your JSON/Text summary string into the structure.
+    *   Execute `inject_summary.py` to manually inject your JSON/Text summary string into the cache structure.
     *   Log: "Updated cache for [file] via Agent Distill."
-3.  **Fallback**: If NO (Batch > 10 files) -> Run `python distiller.py` (The script is better for bulk/boring work).
+3.  **Batching:** If there are hundreds of files, simply do them in batches of 5-10 at a time and ask the user if they want you to continue. DO NOT attempt to offload the work to the script.
 
 ## Why This Exists (The RLM Philosophy)
 
