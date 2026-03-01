@@ -48,6 +48,39 @@ import re
 import argparse
 from pathlib import Path
 
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    tomllib = None  # type: ignore
+
+def validate_yaml_frontmatter(filepath: Path) -> list[str]:
+    """Check YAML frontmatter for common errors. Returns list of warnings."""
+    warnings = []
+    content = filepath.read_text(encoding='utf-8')
+    if not content.startswith('---'):
+        return warnings
+    parts = content.split('---', 2)
+    if len(parts) < 3:
+        return warnings
+    try:
+        import yaml
+        yaml.safe_load(parts[1])
+    except Exception as e:
+        warnings.append(f"  ⚠️  YAML error in {filepath.name}: {e}")
+    return warnings
+
+def validate_toml_content(filepath: Path) -> list[str]:
+    """Validate a generated TOML file parses correctly. Returns list of warnings."""
+    if tomllib is None:
+        return []
+    warnings = []
+    try:
+        with open(filepath, 'rb') as f:
+            tomllib.load(f)
+    except Exception as e:
+        warnings.append(f"  ⚠️  TOML error in {filepath.name}: {e}")
+    return warnings
+
 # --- Constants ---
 
 TARGET_MAPPINGS = {
@@ -442,9 +475,11 @@ def install_gemini(plugin_path: Path, root: Path, metadata: dict):
             body = transform_content(body, "gemini")
             stem = command_output_stem(commands_dir, f, plugin_name)
             cmd_name = stem.replace(plugin_name + '_', '', 1).replace('_', ':')
-            toml_content = f'command = "{plugin_name}:{cmd_name}"\ndescription = "{description}"\nprompt = """\n{body}\n"""'
+            toml_content = f'command = "{plugin_name}:{cmd_name}"\ndescription = "{description}"\nprompt = \'\'\'\n{body}\n\'\'\''
             dest = target_cmds / f"{stem}.toml"
             dest.write_text(toml_content, encoding='utf-8')
+            for w in validate_toml_content(dest):
+                print(w)
             print(f"    -> Command: {dest.relative_to(root)}")
 
     # 2. Skills
