@@ -67,7 +67,7 @@ FEATURES:
 FILE DISCOVERY (checked in this order):
     1. --files file1.md file2.md    Explicit file list
     2. --bundle manifest.json       Context-bundler manifest (JSON/YAML with "files" key)
-    3. --files-from checklist.md    Markdown checklist (extracts `- [ ] \`path\``)
+    3. --files-from checklist.md    Markdown checklist (extracts `- [ ] \\`path\``)
     4. --dir some/directory         Recursive crawl filtered by ext
 
 USAGE EXAMPLES:
@@ -226,6 +226,7 @@ def execute_worker(
     engine: str,
     job_config: dict,
     user_vars: dict,
+    env_vars: dict,
     dry_run: bool
 ) -> dict:
     """Processes a single file. Handles retry, skip, and post-cmd."""
@@ -248,7 +249,7 @@ def execute_worker(
     check_cmd_tmpl = job_config.get("check_cmd")
     if check_cmd_tmpl:
         check_cmd = check_cmd_tmpl.format(file=file_path, **user_vars)
-        if subprocess.run(check_cmd, shell=True, capture_output=True).returncode == 0:
+        if subprocess.run(check_cmd, shell=True, capture_output=True, env=env_vars).returncode == 0:
             logger.info(f"  ⏩ {file_path} (already cached)")
             result["success"] = True
             result["skipped"] = True
@@ -288,18 +289,31 @@ def execute_worker(
                 "--model", effective_model,
                 "-p", prompt
             ])
-        elif engine.lower() == "copilot":
-            cmd_args.extend([
-                "--model", effective_model,
-                "-p", prompt
-            ])
+        elif engine == "copilot":
+            cmd_args = [
+                "copilot", "--model", effective_model
+            ]
+            # Copilot CLI ignores stdin if -p is present. We must prepend the prompt.
+            content = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
 
-        proc = subprocess.run(
-            cmd_args,
-            input=content, text=True, capture_output=True, timeout=job_config.get("timeout", 120)
-        )
-        
-        combined_out = (proc.stdout or "") + (proc.stderr or "")
+        try:
+            cmd_str = " ".join([shell_quote(p) for p in cmd_args])
+            proc = subprocess.run(
+                cmd_str, 
+                shell=True, 
+                input=content,
+                capture_output=True, 
+                text=True, 
+                timeout=job_config.get("timeout", 60),
+                env=env_vars
+            )
+            combined_out = (proc.stderr + "\n" + proc.stdout).strip()
+        except subprocess.TimeoutExpired:
+            proc = subprocess.CompletedProcess(args=cmd_str, returncode=1, stdout="", stderr="TimeoutExpired")
+            combined_out = "TimeoutExpired"
+        except Exception as e:
+            proc = subprocess.CompletedProcess(args=cmd_str, returncode=1, stdout="", stderr=str(e))
+            combined_out = str(e)
         
         if proc.returncode == 0 and proc.stdout.strip():
             # SUCCESS
@@ -338,7 +352,7 @@ def execute_worker(
             **user_vars
         }
         cmd = post_cmd_tmpl.format_map(subs)
-        pr = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+        pr = subprocess.run(cmd, shell=True, text=True, capture_output=True, env=env_vars)
         if pr.returncode != 0:
             result["success"] = False
             result["error"] = (pr.stderr or pr.stdout or "post-cmd failed").strip()[:300]
@@ -409,7 +423,7 @@ def main():
       with suppress_monolithic_md(args.engine):
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
             futures = {
-                pool.submit(execute_worker, f, prompt, model, args.engine, job_config, user_vars, args.dry_run): f 
+                pool.submit(execute_worker, f, prompt, model, args.engine, job_config, user_vars, os.environ.copy(), args.dry_run): f 
                 for f in pending
             }
             for future in concurrent.futures.as_completed(futures):
