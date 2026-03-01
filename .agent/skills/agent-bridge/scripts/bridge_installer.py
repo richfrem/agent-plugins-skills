@@ -14,7 +14,7 @@ Usage Examples:
 Supported Object Types:
     - .claude-plugin directory structures
     - Markdown commands, skills, and agents
-    - .mcp.json and hooks.json manifests
+    - hooks.json manifests
 
 CLI Arguments:
     --plugin: Absolute or relative path to the plugin folder to install.
@@ -47,6 +47,39 @@ import json
 import re
 import argparse
 from pathlib import Path
+
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    tomllib = None  # type: ignore
+
+def validate_yaml_frontmatter(filepath: Path) -> list[str]:
+    """Check YAML frontmatter for common errors. Returns list of warnings."""
+    warnings = []
+    content = filepath.read_text(encoding='utf-8')
+    if not content.startswith('---'):
+        return warnings
+    parts = content.split('---', 2)
+    if len(parts) < 3:
+        return warnings
+    try:
+        import yaml
+        yaml.safe_load(parts[1])
+    except Exception as e:
+        warnings.append(f"  ⚠️  YAML error in {filepath.name}: {e}")
+    return warnings
+
+def validate_toml_content(filepath: Path) -> list[str]:
+    """Validate a generated TOML file parses correctly. Returns list of warnings."""
+    if tomllib is None:
+        return []
+    warnings = []
+    try:
+        with open(filepath, 'rb') as f:
+            tomllib.load(f)
+    except Exception as e:
+        warnings.append(f"  ⚠️  TOML error in {filepath.name}: {e}")
+    return warnings
 
 # --- Constants ---
 
@@ -85,41 +118,6 @@ TARGET_MAPPINGS = {
         "agents": ".azure/agents"
     }
 }
-
-# --- Core Logic ---
-
-def merge_mcp_config(plugin_path: Path, root: Path, plugin_name: str):
-    """Merge plugin .mcp.json servers into the root .mcp.json.
-    Creates root .mcp.json if it doesn't exist."""
-    plugin_mcp = plugin_path / ".mcp.json"
-    if not plugin_mcp.exists():
-        return
-    try:
-        plugin_data = json.loads(plugin_mcp.read_text(encoding='utf-8'))
-        plugin_servers = plugin_data.get('mcpServers', {})
-        if not plugin_servers:
-            return
-
-        root_mcp = root / ".mcp.json"
-        if root_mcp.exists():
-            root_data = json.loads(root_mcp.read_text(encoding='utf-8'))
-        else:
-            root_data = {'mcpServers': {}}
-
-        existing_servers = root_data.setdefault('mcpServers', {})
-        added = []
-        for server_name, config in plugin_servers.items():
-            if server_name not in existing_servers:
-                existing_servers[server_name] = config
-                added.append(server_name)
-
-        root_mcp.write_text(json.dumps(root_data, indent=2), encoding='utf-8')
-        if added:
-            print(f"    -> MCP: Merged servers {added} into {root_mcp.name}")
-        else:
-            print(f"    -> MCP: All servers already registered in {root_mcp.name}")
-    except Exception as e:
-        print(f"    -> MCP: Warning — could not merge .mcp.json: {e}")
 
 def install_hooks(plugin_path: Path, root: Path, plugin_name: str):
     """Copy hooks/hooks.json to .claude/hooks/{plugin-name}-hooks.json.
@@ -239,7 +237,10 @@ def build_rule_block(rules_dir: Path, plugin_name: str) -> str:
     return block
 
 def append_monolithic_rules(target_file: Path, block: str, header: str):
-    """Safely appends a rule block to a monolithic instructions file."""
+    """Safely upserts a rule block into a monolithic instructions file.
+    Uses <!-- BEGIN/END RULES FROM PLUGIN: name --> markers for idempotent
+    replacement. If the plugin's markers already exist, the block is replaced
+    in-place. Otherwise it is appended."""
     if not block:
         return
         
@@ -247,10 +248,27 @@ def append_monolithic_rules(target_file: Path, block: str, header: str):
         content = target_file.read_text(encoding='utf-8')
     else:
         content = header
-        
-    # Overwrite if block block from the same plugin exists
-    # Simple strategy: just append for now, but a robust version would Regex replace between markers.
-    content += block
+
+    # Extract the plugin name from the block's marker
+    marker_match = re.search(r'<!-- BEGIN RULES FROM PLUGIN: (.+?) -->', block)
+    if marker_match:
+        plugin_name = marker_match.group(1)
+        # Build a pattern that matches the entire existing block for this plugin
+        pattern = re.compile(
+            rf'\n*<!-- BEGIN RULES FROM PLUGIN: {re.escape(plugin_name)} -->.*?'
+            rf'<!-- END RULES FROM PLUGIN: {re.escape(plugin_name)} -->\n*',
+            re.DOTALL
+        )
+        if pattern.search(content):
+            # Replace existing block in-place
+            content = pattern.sub(block, content)
+        else:
+            # First time — append
+            content += block
+    else:
+        # No markers — legacy append
+        content += block
+    
     target_file.write_text(content, encoding='utf-8')
 
 # --- Installers ---
@@ -422,9 +440,11 @@ def install_gemini(plugin_path: Path, root: Path, metadata: dict):
             body = transform_content(body, "gemini")
             stem = command_output_stem(commands_dir, f, plugin_name)
             cmd_name = stem.replace(plugin_name + '_', '', 1).replace('_', ':')
-            toml_content = f'command = "{plugin_name}:{cmd_name}"\ndescription = "{description}"\nprompt = """\n{body}\n"""'
+            toml_content = f'command = "{plugin_name}:{cmd_name}"\ndescription = "{description}"\nprompt = \'\'\'\n{body}\n\'\'\''
             dest = target_cmds / f"{stem}.toml"
             dest.write_text(toml_content, encoding='utf-8')
+            for w in validate_toml_content(dest):
+                print(w)
             print(f"    -> Command: {dest.relative_to(root)}")
 
     # 2. Skills
@@ -633,11 +653,6 @@ def main():
         else:
             # Universal Generic fallback block
             install_generic(plugin_path, root, metadata, t.lower())
-
-    # MCP config merge (always, affects all targets)
-    merge_mcp_config(plugin_path, root, metadata.get('name', plugin_path.name))
-
-    print("Installation complete.")
 
 if __name__ == "__main__":
     main()

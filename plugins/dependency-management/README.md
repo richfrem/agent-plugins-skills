@@ -1,6 +1,6 @@
 # Dependency Management Plugin 💊
 
-Python dependency management with pip-compile locked-file workflow for the MCP server fleet.
+Python dependency management with pip-compile locked-file workflow for multi-service or monorepo python backends.
 
 ## Installation
 ```bash

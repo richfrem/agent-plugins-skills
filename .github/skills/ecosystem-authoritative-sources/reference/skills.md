@@ -78,7 +78,7 @@ To keep `SKILL.md` under the recommended 500 max lines without overloading Conte
 - **Bash/PowerShell Scripts:** Avoid `.sh` or `.ps1` files for complex logic. **Python (`.py`) is the required standard** for skill scripts to guarantee true cross-platform execution (Windows, Mac, Linux) regardless of the host environment.
 - **Punting Errors:** Utility scripts should handle exceptions and edge cases themselves (e.g., creating a missing file with default content) rather than failing and forcing Claude to figure it out. Provide explicit error messages in `stdout/stderr` back to Claude.
 - **Voodoo Constants:** Document *why* magical numbers or timeouts are set to what they are in your scripts so Claude understands the parameters.
-- **Unqualified MCP Tools:** When referencing an MCP tool, always explicitly provide the namespace: `ServerName:tool_name` (e.g., `GitHub:create_issue`).
+- **Unqualified Tools:** When referencing a tool, always explicitly provide the namespace: `ServerName:tool_name` (e.g., `GitHub:create_issue`).
 
 ## Example Repositories
 Official open-source repositories containing exemplary and foundational Agent Skills configurations:
@@ -105,7 +105,7 @@ When deploying skills at scale, establish strict evaluations and security review
 Since skills provide instructions and execute code, review third-party or internal skills for:
 1. **Script Execution:** Scripts run with full environment access based on the host surface. Sandboxed execution is advised.
 2. **Instruction Manipulation:** Check for directives asking Claude to ignore safety rules or hide operations.
-3. **MCP Server Calls:** Ensure referenced tools (`ServerName:tool_name`) are expected and authorized.
+3. **Agent Tool Calls:** Ensure referenced tools (`ServerName:tool_name`) are expected and authorized.
 4. **Network Access / Exfiltration:** Review scripts/prompts for unauthorized `curl`, `requests.get`, or other network calls. Ensure there are no patterns reading sensitive data and encoding/transmitting it externally.
 5. **Hardcoded Credentials:** Reject any skill storing API keys or passwords directly in `.md` or scripts. Use environment variables.
 6. **Tool Invocations:** Audit which bash/file tools are explicitly allowed or directed to run.
@@ -120,7 +120,7 @@ Since skills provide instructions and execute code, review third-party or intern
 ## Integrating Skills into Custom Agents (`agentskills.io`)
 If building a custom agent or product, skills can be integrated in two ways:
 1. **Filesystem-based Agents:** The model operates fully within a sandboxed Unix environment, activating skills by issuing native `cat /path/to/SKILL.md` shell commands, identical to Claude Code.
-2. **Tool-based Agents:** The model lacks native filesystem tools, and instead relies on custom-built MCP tools to read the `SKILL.md` file and execute its references.
+2. **Tool-based Agents:** The model lacks native filesystem tools, and instead relies on custom-built agent tools to read the `SKILL.md` file and execute its references.
 
 ### Metadata Injection (Level 1)
 At startup, the custom agent parses the YAML frontmatter of every discovered skill and injects it into the system prompt as an XML block. For example:

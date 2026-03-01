@@ -3,7 +3,7 @@ name: env-helper
 description: |
   Resolves shared ecosystem environment constants (HuggingFace credentials,
   dataset repo IDs, project root path) for any plugin without depending on
-  `mcp_servers.lib` or other internal shared libraries.
+  internal shared libraries.
 trigger: on_demand
 ---
 

@@ -1,7 +1,7 @@
 """
 # Purpose: Shared ecosystem environment variable helper for Project Sanctuary plugins.
 # Provides safe resolution of HuggingFace credentials, project root, and dataset config
-# without any dependency on `mcp_servers.lib` or other internal libraries.
+# without any dependency on internal shared libraries.
 #
 # Usage:
 #   python3 plugins/env-helper/scripts/env_helper.py --key HF_TOKEN

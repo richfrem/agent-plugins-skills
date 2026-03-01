@@ -67,7 +67,7 @@ Advise them not to worry about organizing it - just get it all out. Offer multip
 - Point to team channels or threads to read
 - Link to shared documents
 
-**If integrations are available** (e.g., Slack, Teams, Google Drive, SharePoint, or other MCP servers), mention that these can be used to pull in context directly.
+**If integrations are available** (e.g., Slack, Teams, Google Drive, SharePoint, or other external services), mention that these can be used to pull in context directly.
 
 **If no integrations are detected and in Claude.ai or Claude app:** Suggest they can enable connectors in their Claude settings to allow pulling context from messaging apps and document storage directly.
 

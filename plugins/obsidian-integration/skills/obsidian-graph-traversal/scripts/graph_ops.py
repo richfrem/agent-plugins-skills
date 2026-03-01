@@ -86,7 +86,7 @@ class VaultGraph:
             exclusions = [
                 '.git', '.obsidian', '.worktrees', 'node_modules',
                 '.vector_data', '.venv', '__pycache__', 'ARCHIVE',
-                'archive_mcp_servers', 'archive-tests', 'dataset_package'
+                'archive-tests', 'dataset_package'
             ]
 
         start = time.time()
