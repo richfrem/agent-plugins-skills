@@ -144,6 +144,28 @@ def get_relative_path(path: Path) -> str:
     except ValueError:
         return str(path)
 
+
+class suppress_claude_md:
+    """Context manager: temporarily hides CLAUDE.md to prevent the Claude CLI
+    from loading 121k+ chars of project context per worker call.
+    Restores on exit, even after crash or Ctrl+C."""
+    FILENAME = "CLAUDE.md"
+    BACKUP   = ".CLAUDE.md.swarm_bak"
+
+    def __enter__(self):
+        self.src = Path.cwd() / self.FILENAME
+        self.bak = Path.cwd() / self.BACKUP
+        if self.src.exists():
+            self.src.rename(self.bak)
+            logger.info(f"🔒 Temporarily hid {self.FILENAME} (restored on exit)")
+        return self
+
+    def __exit__(self, *exc):
+        if self.bak.exists():
+            self.bak.rename(self.src)
+            logger.info(f"🔓 Restored {self.FILENAME}")
+        return False
+
 # ─── FILE DISCOVERY ─────────────────────────────────────────────────────────
 
 def resolve_files(args, config) -> list[str]:
@@ -243,7 +265,14 @@ def execute_worker(
     for attempt in range(max_retries + 1):
         result["retries"] = attempt
         proc = subprocess.run(
-            ["claude", "--model", model, "-p", prompt],
+            [
+                "claude",
+                "--model", model,
+                "-p", prompt,
+                "--system-prompt", prompt,
+                "--tools", "",
+                "--no-session-persistence",
+            ],
             input=content, text=True, capture_output=True, timeout=job_config.get("timeout", 120)
         )
         
@@ -353,6 +382,7 @@ def main():
 
     results = []
     try:
+      with suppress_claude_md():
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
             futures = {
                 pool.submit(execute_worker, f, prompt, model, job_config, user_vars, args.dry_run): f 

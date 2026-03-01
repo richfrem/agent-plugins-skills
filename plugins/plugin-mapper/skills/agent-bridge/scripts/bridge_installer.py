@@ -239,7 +239,10 @@ def build_rule_block(rules_dir: Path, plugin_name: str) -> str:
     return block
 
 def append_monolithic_rules(target_file: Path, block: str, header: str):
-    """Safely appends a rule block to a monolithic instructions file."""
+    """Safely upserts a rule block into a monolithic instructions file.
+    Uses <!-- BEGIN/END RULES FROM PLUGIN: name --> markers for idempotent
+    replacement. If the plugin's markers already exist, the block is replaced
+    in-place. Otherwise it is appended."""
     if not block:
         return
         
@@ -247,10 +250,27 @@ def append_monolithic_rules(target_file: Path, block: str, header: str):
         content = target_file.read_text(encoding='utf-8')
     else:
         content = header
-        
-    # Overwrite if block block from the same plugin exists
-    # Simple strategy: just append for now, but a robust version would Regex replace between markers.
-    content += block
+
+    # Extract the plugin name from the block's marker
+    marker_match = re.search(r'<!-- BEGIN RULES FROM PLUGIN: (.+?) -->', block)
+    if marker_match:
+        plugin_name = marker_match.group(1)
+        # Build a pattern that matches the entire existing block for this plugin
+        pattern = re.compile(
+            rf'\n*<!-- BEGIN RULES FROM PLUGIN: {re.escape(plugin_name)} -->.*?'
+            rf'<!-- END RULES FROM PLUGIN: {re.escape(plugin_name)} -->\n*',
+            re.DOTALL
+        )
+        if pattern.search(content):
+            # Replace existing block in-place
+            content = pattern.sub(block, content)
+        else:
+            # First time — append
+            content += block
+    else:
+        # No markers — legacy append
+        content += block
+    
     target_file.write_text(content, encoding='utf-8')
 
 # --- Installers ---
