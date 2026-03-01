@@ -294,14 +294,15 @@ def execute_worker(
                 "copilot", "--model", effective_model
             ]
             # Copilot CLI ignores stdin if -p is present. We must prepend the prompt.
-            content = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
+            payload = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
+        else:
+            payload = content
 
+        cmd_str = " ".join([shell_quote(p) for p in cmd_args])
         try:
-            cmd_str = " ".join([shell_quote(p) for p in cmd_args])
             proc = subprocess.run(
-                cmd_str, 
-                shell=True, 
-                input=content,
+                cmd_args, 
+                input=payload,
                 capture_output=True, 
                 text=True, 
                 timeout=job_config.get("timeout", 60),
@@ -309,10 +310,10 @@ def execute_worker(
             )
             combined_out = (proc.stderr + "\n" + proc.stdout).strip()
         except subprocess.TimeoutExpired:
-            proc = subprocess.CompletedProcess(args=cmd_str, returncode=1, stdout="", stderr="TimeoutExpired")
+            proc = subprocess.CompletedProcess(args=cmd_args, returncode=1, stdout="", stderr="TimeoutExpired")
             combined_out = "TimeoutExpired"
         except Exception as e:
-            proc = subprocess.CompletedProcess(args=cmd_str, returncode=1, stdout="", stderr=str(e))
+            proc = subprocess.CompletedProcess(args=cmd_args, returncode=1, stdout="", stderr=str(e))
             combined_out = str(e)
         
         if proc.returncode == 0 and proc.stdout.strip():
