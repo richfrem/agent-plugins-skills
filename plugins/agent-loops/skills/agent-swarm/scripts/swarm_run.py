@@ -346,7 +346,7 @@ def execute_worker(
     post_cmd_tmpl = job_config.get("post_cmd")
     if post_cmd_tmpl and not result["skipped"]:
         subs = {
-            "file": file_path,
+            "file": shell_quote(file_path),
             "output": shell_quote(result["output"]),
             "output_raw": result["output"],
             "basename": Path(file_path).stem,
