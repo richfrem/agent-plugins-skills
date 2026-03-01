@@ -145,25 +145,27 @@ def get_relative_path(path: Path) -> str:
         return str(path)
 
 
-class suppress_claude_md:
-    """Context manager: temporarily hides CLAUDE.md to prevent the Claude CLI
-    from loading 121k+ chars of project context per worker call.
+class suppress_monolithic_md:
+    """Context manager: temporarily hides the monolithic instruction file (CLAUDE.md, GEMINI.md, etc.)
+    to prevent the CLI from loading massive project context per worker call.
     Restores on exit, even after crash or Ctrl+C."""
-    FILENAME = "CLAUDE.md"
-    BACKUP   = ".CLAUDE.md.swarm_bak"
+    def __init__(self, engine: str):
+        self.filename = f"{engine.upper()}.md"
+        if engine.lower() == "copilot":
+            self.filename = ".github/copilot-instructions.md"
+        self.src = Path.cwd() / self.filename
+        self.bak = Path.cwd() / f".{Path(self.filename).name}.swarm_bak"
 
     def __enter__(self):
-        self.src = Path.cwd() / self.FILENAME
-        self.bak = Path.cwd() / self.BACKUP
         if self.src.exists():
             self.src.rename(self.bak)
-            logger.info(f"🔒 Temporarily hid {self.FILENAME} (restored on exit)")
+            logger.info(f"🔒 Temporarily hid {self.filename} (restored on exit)")
         return self
 
     def __exit__(self, *exc):
         if self.bak.exists():
             self.bak.rename(self.src)
-            logger.info(f"🔓 Restored {self.FILENAME}")
+            logger.info(f"🔓 Restored {self.filename}")
         return False
 
 # ─── FILE DISCOVERY ─────────────────────────────────────────────────────────
@@ -221,6 +223,7 @@ def execute_worker(
     file_path: str,
     prompt: str,
     model: str,
+    engine: str,
     job_config: dict,
     user_vars: dict,
     dry_run: bool
@@ -264,15 +267,32 @@ def execute_worker(
     
     for attempt in range(max_retries + 1):
         result["retries"] = attempt
-        proc = subprocess.run(
-            [
-                "claude",
+        # Engine-specific CLI arguments
+        cmd_args = [engine.lower()]
+        if engine.lower() == "claude":
+            cmd_args.extend([
                 "--model", model,
                 "-p", prompt,
                 "--system-prompt", prompt,
                 "--tools", "",
-                "--no-session-persistence",
-            ],
+                "--no-session-persistence"
+            ])
+        elif engine.lower() == "gemini":
+            cmd_args.extend([
+                "--model", model,
+                "-p", prompt,
+                "--prompt-interactive", prompt, # Gemini has interactive prompt parsing differently sometimes, but -p alone usually means headless
+            ])
+            # For Gemini headless, typically we just pass -p prompt and stdin.
+            cmd_args = [engine.lower(), "--model", model, "-p", prompt]
+        elif engine.lower() == "copilot":
+            # Copilot CLI headless execution
+            cmd_args.extend([
+                "-p", prompt
+            ])
+
+        proc = subprocess.run(
+            cmd_args,
             input=content, text=True, capture_output=True, timeout=job_config.get("timeout", 120)
         )
         
@@ -340,6 +360,7 @@ def main():
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--workers", type=int)
     parser.add_argument("--model", type=str)
+    parser.add_argument("--engine", type=str, default="claude", choices=["claude", "gemini", "copilot"], help="The CLI engine to run workers through")
     parser.add_argument("--var", action="append", default=[])
     args = parser.parse_args()
 
@@ -377,15 +398,15 @@ def main():
         return
 
     logger.info(f"🚀 Starting Swarm: {len(pending)} pending items ({len(all_files)} total)")
-    logger.info(f"   Model: {model} | Workers: {workers} | Dry-run: {args.dry_run}")
+    logger.info(f"   Engine: {args.engine} | Model: {model} | Workers: {workers} | Dry-run: {args.dry_run}")
     print("-" * 70)
 
     results = []
     try:
-      with suppress_claude_md():
+      with suppress_monolithic_md(args.engine):
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
             futures = {
-                pool.submit(execute_worker, f, prompt, model, job_config, user_vars, args.dry_run): f 
+                pool.submit(execute_worker, f, prompt, model, args.engine, job_config, user_vars, args.dry_run): f 
                 for f in pending
             }
             for future in concurrent.futures.as_completed(futures):
