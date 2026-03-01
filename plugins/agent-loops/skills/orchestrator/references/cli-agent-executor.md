@@ -1,8 +1,8 @@
 ---
 name: cli-agent-executor
 description: >
-  Claude CLI sub-agent system for persona-based analysis. Use when piping
-  large contexts to Anthropic models for security audits, architecture reviews,
+  CLI Sub-Agent System (Claude, Gemini, Copilot) for persona-based analysis. Use when piping
+  large contexts to LLM CLI models for security audits, architecture reviews,
   QA analysis, or any specialized analysis requiring a fresh model context.
 ---
 
@@ -16,11 +16,11 @@ This reference describes specialized **Inner Loop Execution** patterns for the [
 
 ## Identity: The Sub-Agent Dispatcher 🎭
 
-You, the Antigravity agent, dispatch specialized analysis tasks to Claude CLI sub-agents.
+You, the Antigravity agent, dispatch specialized analysis tasks to the CLI sub-agents natively supported by this ecosystem (claude-cli, gemini-cli, copilot-cli).
 
 ## 🛠️ Core Pattern
 ```bash
-cat <PERSONA_PROMPT> | claude -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
+cat <PERSONA_PROMPT> | <CLI_ENGINE> -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
 ```
 
 ## ⚠️ CLI Best Practices
@@ -29,11 +29,11 @@ cat <PERSONA_PROMPT> | claude -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
 **Bad** — loads file into agent memory just to pass it:
 ```python
 content = read_file("large.log")
-run_command(f"claude -p 'Analyze: {content}'")
+run_command(f"<cli_engine> -p 'Analyze: {content}'")
 ```
 **Good** — direct shell piping:
 ```bash
-claude -p "Analyze this log" < large.log > analysis.md
+<cli_engine> -p "Analyze this log" < large.log > analysis.md
 ```
 
 ### 2. Self-Contained Prompts
@@ -56,7 +56,7 @@ Always redirect output to a file (`> output.md`), then review with `view_file`.
 | Business | product-manager | Product strategy |
 | Specialization | api-documenter, documentation-expert | Technical writing |
 
-All personas are physically located inside the `plugins/claude-cli/personas/` directory. Use the `map` command to list them natively, or use standard `/ls` equivalents to find the exact markdown file needed for your pipeline.
+All personas are physically located inside their respective CLI plugin directories (e.g., `plugins/claude-cli/personas/`, `plugins/gemini-cli/personas/`). Use standard `/ls` equivalents to find the exact markdown file needed for your pipeline.
 
 ## 🔄 Recommended Audit Loop
 When asked to perform a comprehensive "Audit Loop", you should construct a sequence of CLI dispatches passing the SAME `bundle.md` or context code block to three consecutive personas.

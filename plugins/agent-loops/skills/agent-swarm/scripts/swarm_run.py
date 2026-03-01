@@ -67,7 +67,7 @@ FEATURES:
 FILE DISCOVERY (checked in this order):
     1. --files file1.md file2.md    Explicit file list
     2. --bundle manifest.json       Context-bundler manifest (JSON/YAML with "files" key)
-    3. --files-from checklist.md    Markdown checklist (extracts `- [ ] \`path\``)
+    3. --files-from checklist.md    Markdown checklist (extracts `- [ ] \\`path\``)
     4. --dir some/directory         Recursive crawl filtered by ext
 
 USAGE EXAMPLES:
@@ -144,6 +144,30 @@ def get_relative_path(path: Path) -> str:
     except ValueError:
         return str(path)
 
+
+class suppress_monolithic_md:
+    """Context manager: temporarily hides the monolithic instruction file (CLAUDE.md, GEMINI.md, etc.)
+    to prevent the CLI from loading massive project context per worker call.
+    Restores on exit, even after crash or Ctrl+C."""
+    def __init__(self, engine: str):
+        self.filename = f"{engine.upper()}.md"
+        if engine.lower() == "copilot":
+            self.filename = ".github/copilot-instructions.md"
+        self.src = Path.cwd() / self.filename
+        self.bak = Path.cwd() / f".{Path(self.filename).name}.swarm_bak"
+
+    def __enter__(self):
+        if self.src.exists():
+            self.src.rename(self.bak)
+            logger.info(f"🔒 Temporarily hid {self.filename} (restored on exit)")
+        return self
+
+    def __exit__(self, *exc):
+        if self.bak.exists():
+            self.bak.rename(self.src)
+            logger.info(f"🔓 Restored {self.filename}")
+        return False
+
 # ─── FILE DISCOVERY ─────────────────────────────────────────────────────────
 
 def resolve_files(args, config) -> list[str]:
@@ -199,8 +223,10 @@ def execute_worker(
     file_path: str,
     prompt: str,
     model: str,
+    engine: str,
     job_config: dict,
     user_vars: dict,
+    env_vars: dict,
     dry_run: bool
 ) -> dict:
     """Processes a single file. Handles retry, skip, and post-cmd."""
@@ -223,7 +249,7 @@ def execute_worker(
     check_cmd_tmpl = job_config.get("check_cmd")
     if check_cmd_tmpl:
         check_cmd = check_cmd_tmpl.format(file=file_path, **user_vars)
-        if subprocess.run(check_cmd, shell=True, capture_output=True).returncode == 0:
+        if subprocess.run(check_cmd, shell=True, capture_output=True, env=env_vars).returncode == 0:
             logger.info(f"  ⏩ {file_path} (already cached)")
             result["success"] = True
             result["skipped"] = True
@@ -242,12 +268,52 @@ def execute_worker(
     
     for attempt in range(max_retries + 1):
         result["retries"] = attempt
-        proc = subprocess.run(
-            ["claude", "--model", model, "-p", prompt],
-            input=content, text=True, capture_output=True, timeout=job_config.get("timeout", 120)
-        )
+        # Engine-specific CLI arguments
+        cmd_args = [engine.lower()]
         
-        combined_out = (proc.stdout or "") + (proc.stderr or "")
+        # Apply intelligent default models if the 'haiku' placeholder or no model is provided
+        effective_model = model
+        if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
+            effective_model = "gemini-3-pro-preview"
+        elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
+            effective_model = "gpt-5-mini"
+
+        if engine.lower() == "claude":
+            cmd_args.extend([
+                "--model", effective_model,
+                "-p", prompt,
+                "--no-session-persistence"
+            ])
+        elif engine.lower() == "gemini":
+            cmd_args.extend([
+                "--model", effective_model,
+                "-p", prompt
+            ])
+        elif engine == "copilot":
+            cmd_args = [
+                "copilot", "--model", effective_model
+            ]
+            # Copilot CLI ignores stdin if -p is present. We must prepend the prompt.
+            content = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
+
+        try:
+            cmd_str = " ".join([shell_quote(p) for p in cmd_args])
+            proc = subprocess.run(
+                cmd_str, 
+                shell=True, 
+                input=content,
+                capture_output=True, 
+                text=True, 
+                timeout=job_config.get("timeout", 60),
+                env=env_vars
+            )
+            combined_out = (proc.stderr + "\n" + proc.stdout).strip()
+        except subprocess.TimeoutExpired:
+            proc = subprocess.CompletedProcess(args=cmd_str, returncode=1, stdout="", stderr="TimeoutExpired")
+            combined_out = "TimeoutExpired"
+        except Exception as e:
+            proc = subprocess.CompletedProcess(args=cmd_str, returncode=1, stdout="", stderr=str(e))
+            combined_out = str(e)
         
         if proc.returncode == 0 and proc.stdout.strip():
             # SUCCESS
@@ -286,7 +352,7 @@ def execute_worker(
             **user_vars
         }
         cmd = post_cmd_tmpl.format_map(subs)
-        pr = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+        pr = subprocess.run(cmd, shell=True, text=True, capture_output=True, env=env_vars)
         if pr.returncode != 0:
             result["success"] = False
             result["error"] = (pr.stderr or pr.stdout or "post-cmd failed").strip()[:300]
@@ -311,6 +377,7 @@ def main():
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--workers", type=int)
     parser.add_argument("--model", type=str)
+    parser.add_argument("--engine", type=str, default="claude", choices=["claude", "gemini", "copilot"], help="The CLI engine to run workers through")
     parser.add_argument("--var", action="append", default=[])
     args = parser.parse_args()
 
@@ -348,14 +415,15 @@ def main():
         return
 
     logger.info(f"🚀 Starting Swarm: {len(pending)} pending items ({len(all_files)} total)")
-    logger.info(f"   Model: {model} | Workers: {workers} | Dry-run: {args.dry_run}")
+    logger.info(f"   Engine: {args.engine} | Model: {model} | Workers: {workers} | Dry-run: {args.dry_run}")
     print("-" * 70)
 
     results = []
     try:
+      with suppress_monolithic_md(args.engine):
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
             futures = {
-                pool.submit(execute_worker, f, prompt, model, job_config, user_vars, args.dry_run): f 
+                pool.submit(execute_worker, f, prompt, model, args.engine, job_config, user_vars, os.environ.copy(), args.dry_run): f 
                 for f in pending
             }
             for future in concurrent.futures.as_completed(futures):

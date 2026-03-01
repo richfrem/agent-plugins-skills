@@ -34,10 +34,8 @@ def run_step(name, script_path, args=[]):
     print(f"\n📦 [STEP] {name}")
     
     if not script_path.exists():
-        print(f"❌ Error: Script not found: {script_path}")
-        # Try to find it relative to current file if ROOT is wrong
-        # But for now, assume rigorous path structure
-        sys.exit(1)
+        print(f"⚠️  Skipped: Script not found: {script_path}")
+        return
 
     print(f"   Executing: {script_path.name}...")
     try:

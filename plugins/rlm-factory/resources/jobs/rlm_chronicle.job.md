@@ -33,3 +33,4 @@ Rules:
 5. If the entry is a Mnemonic Fracture or test stub with no real content, output: "Chronicle Entry [N]: Mnemonic Fracture / placeholder — no doctrine recorded."
 6. Be dense. No filler phrases. No repetition of the filename.
 7. Output ONLY the paragraph. Nothing else.
+8. PREREQUISITE: Do NOT use tools. Do NOT search the filesystem. Rely ONLY on the piped stdin text.
