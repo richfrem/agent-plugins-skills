@@ -269,25 +269,28 @@ def execute_worker(
         result["retries"] = attempt
         # Engine-specific CLI arguments
         cmd_args = [engine.lower()]
+        
+        # Apply intelligent default models if the 'haiku' placeholder or no model is provided
+        effective_model = model
+        if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
+            effective_model = "gemini-3-pro-preview"
+        elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
+            effective_model = "gpt-5-mini"
+
         if engine.lower() == "claude":
             cmd_args.extend([
-                "--model", model,
+                "--model", effective_model,
                 "-p", prompt,
-                "--system-prompt", prompt,
-                "--tools", "",
                 "--no-session-persistence"
             ])
         elif engine.lower() == "gemini":
             cmd_args.extend([
-                "--model", model,
-                "-p", prompt,
-                "--prompt-interactive", prompt, # Gemini has interactive prompt parsing differently sometimes, but -p alone usually means headless
+                "--model", effective_model,
+                "-p", prompt
             ])
-            # For Gemini headless, typically we just pass -p prompt and stdin.
-            cmd_args = [engine.lower(), "--model", model, "-p", prompt]
         elif engine.lower() == "copilot":
-            # Copilot CLI headless execution
             cmd_args.extend([
+                "--model", effective_model,
                 "-p", prompt
             ])
 
