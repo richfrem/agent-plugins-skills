@@ -36,7 +36,7 @@ The database runs entirely within the context of the script executing the query 
 * **Pros:** Zero setup required. The user just runs the script. No ports to configure, no background services to manage.
 * **Cons:** The database file is locked by the Python process. You cannot have two different agents (or an agent and an API server) querying or ingesting at the exact same time without SQLite lock errors.
 
-### Option B: Podman / Docker Container (Project Sanctuary Legacy)
+### Option B: Podman / Docker Container (Deprecated Legacy)
 Chroma runs as an isolated containerized service, accessed via `chromadb.HttpClient`.
 * **Pros:** Enterprise-grade isolation. Can be deployed consistently across fleets. Safely handles massive concurrent requests from dozens of different agents simultaneously.
 * **Cons:** High friction for local users. Requires installing Podman/Docker Desktop, managing container lifecycles (`make up`), and debugging complex volume mount permissions (e.g. SELinux `:Z` flags). 

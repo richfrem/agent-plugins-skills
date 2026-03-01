@@ -1,7 +1,7 @@
 ---
-name: copilot-cli-agent
+name: gemini-cli-agent
 description: >
-  Copilot CLI sub-agent system for persona-based analysis. Use when piping
+  Gemini CLI sub-agent system for persona-based analysis. Use when piping
   large contexts to Anthropic models for security audits, architecture reviews,
   QA analysis, or any specialized analysis requiring a fresh model context.
 ---
@@ -16,13 +16,13 @@ This skill provides specialized **Inner Loop Execution** for the [`dual-loop-sup
 
 ## Identity: The Sub-Agent Dispatcher 🎭
 
-You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents.
+You, the Antigravity agent, dispatch specialized analysis tasks to Gemini CLI sub-agents.
 
 ## 🛠️ Core Pattern
 ```bash
-cat <PERSONA_PROMPT> | copilot -p "<INSTRUCTION>" <INPUT> > <OUTPUT>
+cat <PERSONA_PROMPT> | gemini -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
 ```
-*Note: Copilot uses `-p` or `--prompt` for non-interactive scripting runs.*
+*Note: Gemini uses `-p` or `--prompt` for headless execution where output is desired without interactive prompts.*
 
 ## ⚠️ CLI Best Practices
 
@@ -30,37 +30,21 @@ cat <PERSONA_PROMPT> | copilot -p "<INSTRUCTION>" <INPUT> > <OUTPUT>
 **Bad** — loads file into agent memory just to pass it:
 ```python
 content = read_file("large.log")
-run_command(f"copilot -p 'Analyze: {content}'")
+run_command(f"gemini -p 'Analyze: {content}'")
 ```
 **Good** — direct shell piping:
 ```bash
-copilot -p "Analyze this log" < large.log > analysis.md
+gemini -p "Analyze this log" < large.log > analysis.md
 ```
 
 ### 2. Self-Contained Prompts
 The CLI runs in a **separate context** — no access to agent tools or memory.
 - **Add**: "Do NOT use tools. Do NOT search filesystem."
 - Ensure prompt + piped input contain 100% of necessary context.
-- **Security Check**: Copilot CLI has explicit permission flags (e.g. `--allow-all-tools`, `--allow-all-paths`). For isolated sub-agents, do **not** provide these flags to ensure safe headless execution.
+- **Model Selection**: Gemini supports the `-m <model>` flag (e.g., `-m gemini-2.5-pro` or `-m gemini-2.5-flash`).
 
 ### 3. Output to File
 Always redirect output to a file (`> output.md`), then review with `view_file`.
-
-## ✅ Smoke Test (Copilot CLI)
-
-Use this minimal command to verify the CLI is callable and returns output:
-
-```bash
-copilot -p "Reply with exactly: COPILOT_CLI_OK"
-```
-
-Expected result:
-- CLI prints `COPILOT_CLI_OK` (or very close equivalent) and exits successfully.
-
-If the test fails:
-- Confirm `copilot` is on `PATH`.
-- Ensure you are authenticated in the Copilot CLI session.
-- Retry without any permission flags; keep the test minimal and isolated.
 
 ## 🎭 Persona Categories
 

@@ -1,0 +1,426 @@
+{
+  "metadata": {
+    "generated_at": "2026-02-22T16:42:59.083522",
+    "source": "plugins/",
+    "description": "Auto-discovered scripts from the plugins/ hierarchy"
+  },
+  "plugins": {
+    "adr-manager": {
+      "count": 2,
+      "scripts": [
+        {
+          "name": "create_adr.py",
+          "path": "plugins/adr-manager/skills/adr-management/scripts/create_adr.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "next_number.py",
+          "path": "plugins/adr-manager/skills/adr-management/scripts/next_number.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "agent-loops": {
+      "count": 3,
+      "scripts": [
+        {
+          "name": "closure-guard.sh",
+          "path": "plugins/agent-loops/hooks/closure-guard.sh",
+          "purpose": "",
+          "type": "bash"
+        },
+        {
+          "name": "agent_orchestrator.py",
+          "path": "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "proof_check.py",
+          "path": "plugins/agent-loops/skills/orchestrator/scripts/proof_check.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "agent-scaffolders": {
+      "count": 2,
+      "scripts": [
+        {
+          "name": "audit.py",
+          "path": "plugins/agent-scaffolders/scripts/audit.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "scaffold.py",
+          "path": "plugins/agent-scaffolders/scripts/scaffold.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "coding-conventions": {
+      "count": 2,
+      "scripts": [
+        {
+          "name": "js-tool-header-template.js",
+          "path": "plugins/coding-conventions/templates/js-tool-header-template.js",
+          "purpose": "",
+          "type": "javascript"
+        },
+        {
+          "name": "python-tool-header-template.py",
+          "path": "plugins/coding-conventions/templates/python-tool-header-template.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "context-bundler": {
+      "count": 3,
+      "scripts": [
+        {
+          "name": "bundle.py",
+          "path": "plugins/context-bundler/scripts/bundle.py",
+          "purpose": "Context Bundler Engine",
+          "type": "python"
+        },
+        {
+          "name": "manifest_manager.py",
+          "path": "plugins/context-bundler/scripts/manifest_manager.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "path_resolver.py",
+          "path": "plugins/context-bundler/scripts/path_resolver.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "excel-to-csv": {
+      "count": 1,
+      "scripts": [
+        {
+          "name": "convert.py",
+          "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/convert.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "link-checker": {
+      "count": 5,
+      "scripts": [
+        {
+          "name": "check_broken_paths.py",
+          "path": "plugins/link-checker/skills/link-checker-agent/scripts/check_broken_paths.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "enrich_links_v2.py",
+          "path": "plugins/link-checker/skills/link-checker-agent/scripts/enrich_links_v2.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "find_source_links.py",
+          "path": "plugins/link-checker/skills/link-checker-agent/scripts/find_source_links.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "map_repository_files.py",
+          "path": "plugins/link-checker/skills/link-checker-agent/scripts/map_repository_files.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "smart_fix_links.py",
+          "path": "plugins/link-checker/skills/link-checker-agent/scripts/smart_fix_links.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "mermaid-to-png": {
+      "count": 1,
+      "scripts": [
+        {
+          "name": "convert.py",
+          "path": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "plugin-manager": {
+      "count": 10,
+      "scripts": [
+        {
+          "name": "audit_structure.py",
+          "path": "plugins/plugin-manager/scripts/audit_structure.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "bulk_replicator.py",
+          "path": "plugins/plugin-manager/scripts/bulk_replicator.py",
+          "purpose": "Update All Plugins",
+          "type": "python"
+        },
+        {
+          "name": "clean_orphans.py",
+          "path": "plugins/plugin-manager/scripts/clean_orphans.py",
+          "purpose": "Plugin Orphan Cleaner",
+          "type": "python"
+        },
+        {
+          "name": "cleanup_targets.py",
+          "path": "plugins/plugin-manager/scripts/cleanup_targets.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "generate_readmes.py",
+          "path": "plugins/plugin-manager/scripts/generate_readmes.py",
+          "purpose": "Generate Plugin READMEs",
+          "type": "python"
+        },
+        {
+          "name": "plugin_bootstrap.py",
+          "path": "plugins/plugin-manager/scripts/plugin_bootstrap.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "plugin_inventory.py",
+          "path": "plugins/plugin-manager/scripts/plugin_inventory.py",
+          "purpose": "Plugin Inventory Generator",
+          "type": "python"
+        },
+        {
+          "name": "plugin_replicator.py",
+          "path": "plugins/plugin-manager/scripts/plugin_replicator.py",
+          "purpose": "Plugin Replicator",
+          "type": "python"
+        },
+        {
+          "name": "sync_with_inventory.py",
+          "path": "plugins/plugin-manager/scripts/sync_with_inventory.py",
+          "purpose": "Sync Plugins with Inventory",
+          "type": "python"
+        },
+        {
+          "name": "update_agent_system.py",
+          "path": "plugins/plugin-manager/scripts/update_agent_system.py",
+          "purpose": "Update Agent System (Master Sync)",
+          "type": "python"
+        }
+      ]
+    },
+    "plugin-mapper": {
+      "count": 2,
+      "scripts": [
+        {
+          "name": "bridge_installer.py",
+          "path": "plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "install_all_plugins.py",
+          "path": "plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "rlm-factory": {
+      "count": 6,
+      "scripts": [
+        {
+          "name": "cleanup_cache.py",
+          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "debug_rlm.py",
+          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "distiller.py",
+          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "inventory.py",
+          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "query_cache.py",
+          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "rlm_config.py",
+          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "spec-kitty-plugin": {
+      "count": 2,
+      "scripts": [
+        {
+          "name": "sync_configuration.py",
+          "path": "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py",
+          "purpose": "Spec Kitty Configuration Sync",
+          "type": "python"
+        },
+        {
+          "name": "verify_workflow_state.py",
+          "path": "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/verify_workflow_state.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "task-manager": {
+      "count": 2,
+      "scripts": [
+        {
+          "name": "board.py",
+          "path": "plugins/task-manager/skills/task-agent/scripts/board.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "create_task.py",
+          "path": "plugins/task-manager/skills/task-agent/scripts/create_task.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "tool-inventory": {
+      "count": 8,
+      "scripts": [
+        {
+          "name": "audit_plugins.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/audit_plugins.py",
+          "purpose": "Audit Plugin Inventory",
+          "type": "python"
+        },
+        {
+          "name": "fix_inventory_paths.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/fix_inventory_paths.py",
+          "purpose": "Fix Inventory Paths",
+          "type": "python"
+        },
+        {
+          "name": "generate_tools_manifest.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/generate_tools_manifest.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "manage_tool_inventory.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/manage_tool_inventory.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "rebuild_inventory.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/rebuild_inventory.py",
+          "purpose": "rebuild_inventory.py",
+          "type": "python"
+        },
+        {
+          "name": "sync_inventory_descriptions.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/sync_inventory_descriptions.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "tool_chroma.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/tool_chroma.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "tool_inventory_init.py",
+          "path": "plugins/tool-inventory/skills/tool-inventory-init/scripts/tool_inventory_init.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    },
+    "vector-db": {
+      "count": 8,
+      "scripts": [
+        {
+          "name": "cleanup.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "ingest.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/ingest.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "ingest_code_shim.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/ingest_code_shim.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "operations.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/operations.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "query.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/query.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "vector_config.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/vector_config.py",
+          "purpose": "",
+          "type": "python"
+        },
+        {
+          "name": "vector_consistency_check.py",
+          "path": "plugins/vector-db/skills/vector-db-agent/scripts/vector_consistency_check.py",
+          "purpose": "Vector Consistency Stabilizer",
+          "type": "python"
+        },
+        {
+          "name": "init.py",
+          "path": "plugins/vector-db/skills/vector-db-init/scripts/init.py",
+          "purpose": "",
+          "type": "python"
+        }
+      ]
+    }
+  }
+}

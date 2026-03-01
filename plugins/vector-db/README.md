@@ -24,7 +24,7 @@ Search your repository by *meaning*, not just keywords. Uses a highly-accurate *
 | Command | Description |
 |:---|:---|
 | `plugins/vector-db/skills/vector-db-init/scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
-| `chroma run --host 127.0.0.1 --port 8110 --path .knowledge_vector_data` | Background server launch (Option C, Recommended). |
+| `chroma run --host 127.0.0.1 --port 8110 --path .vector_data` | Background server launch (Option C, Recommended). |
 | `python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py` | CLI to build/update the database. |
 | `python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py` | CLI for testing semantic searches. |
 | `python3 plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py` | Scans for and removes deleted files from the DB. |
@@ -35,7 +35,7 @@ Search your repository by *meaning*, not just keywords. Uses a highly-accurate *
 python3 plugins/vector-db/skills/vector-db-init/scripts/init.py
 
 # 2. Start the Server (In a background terminal / new tab)
-chroma run --host 127.0.0.1 --port 8110 --path .knowledge_vector_data
+chroma run --host 127.0.0.1 --port 8110 --path .vector_data
 
 # 3. Ingest Repository
 python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --full --profile knowledge

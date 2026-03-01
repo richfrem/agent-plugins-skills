@@ -14,7 +14,7 @@ Usage Examples:
 Supported Object Types:
     - .claude-plugin directory structures
     - Markdown commands, skills, and agents
-    - .mcp.json and hooks.json manifests
+    - hooks.json manifests
 
 CLI Arguments:
     --plugin: Absolute or relative path to the plugin folder to install.
@@ -118,41 +118,6 @@ TARGET_MAPPINGS = {
         "agents": ".azure/agents"
     }
 }
-
-# --- Core Logic ---
-
-def merge_mcp_config(plugin_path: Path, root: Path, plugin_name: str):
-    """Merge plugin .mcp.json servers into the root .mcp.json.
-    Creates root .mcp.json if it doesn't exist."""
-    plugin_mcp = plugin_path / ".mcp.json"
-    if not plugin_mcp.exists():
-        return
-    try:
-        plugin_data = json.loads(plugin_mcp.read_text(encoding='utf-8'))
-        plugin_servers = plugin_data.get('mcpServers', {})
-        if not plugin_servers:
-            return
-
-        root_mcp = root / ".mcp.json"
-        if root_mcp.exists():
-            root_data = json.loads(root_mcp.read_text(encoding='utf-8'))
-        else:
-            root_data = {'mcpServers': {}}
-
-        existing_servers = root_data.setdefault('mcpServers', {})
-        added = []
-        for server_name, config in plugin_servers.items():
-            if server_name not in existing_servers:
-                existing_servers[server_name] = config
-                added.append(server_name)
-
-        root_mcp.write_text(json.dumps(root_data, indent=2), encoding='utf-8')
-        if added:
-            print(f"    -> MCP: Merged servers {added} into {root_mcp.name}")
-        else:
-            print(f"    -> MCP: All servers already registered in {root_mcp.name}")
-    except Exception as e:
-        print(f"    -> MCP: Warning — could not merge .mcp.json: {e}")
 
 def install_hooks(plugin_path: Path, root: Path, plugin_name: str):
     """Copy hooks/hooks.json to .claude/hooks/{plugin-name}-hooks.json.
@@ -688,11 +653,6 @@ def main():
         else:
             # Universal Generic fallback block
             install_generic(plugin_path, root, metadata, t.lower())
-
-    # MCP config merge (always, affects all targets)
-    merge_mcp_config(plugin_path, root, metadata.get('name', plugin_path.name))
-
-    print("Installation complete.")
 
 if __name__ == "__main__":
     main()

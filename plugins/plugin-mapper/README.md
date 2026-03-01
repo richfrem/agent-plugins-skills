@@ -20,7 +20,7 @@ The Plugin Mapper is designed as a **Universal Translator**. Provide the name of
 > *A user or agent can extend this to any target IDE or CLI (e.g., `roo`, `openhands`, `cline`, `trae`).*
 
 **Additional Prominent IDEs/Agents (Dynamically Supported):**
-Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, Command Code, Continue, Cortex Code, Crush, Droid, Goose, Junie, iFlow CLI, Kiko Code, Kiro CLI, Kode, MCPJam, Mistral Vibe, Mux, Pi, Qoder, Qwen Code, Roo Code, Trae CN, ZenCoder, Neovate, Pochi, Adal.
+Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, Command Code, Continue, Cortex Code, Crush, Droid, Goose, Junie, iFlow CLI, Kiko Code, Kiro CLI, Kode, Mistral Vibe, Mux, Pi, Qoder, Qwen Code, Roo Code, Trae CN, ZenCoder, Neovate, Pochi, Adal.
 
 **How to Extend for a New Target:**
 If your environment is not explicitly documented but relies on standard markdown prompts, slash commands, or tools, simply run the bridge installer with the name of your environment:
@@ -78,13 +78,13 @@ python plugins/plugin-mapper/scripts/bridge_installer.py --plugin plugins/my-plu
 
 The installer intelligently translates plugin components into the specific directories and formats expected by the target IDE.
 
-| Target Environment | `commands/*.md` | `skills/` | `agents/*.md` | `rules/` | `hooks/hooks.json` | `.mcp.json` |
-|-------------------|----------------|-----------|---------------|----------|-------------------|-------------|
-| **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `./CLAUDE.md` | `hooks/<plugin>-hooks.json` | Merged (`./.mcp.json`) |
-| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `.github/copilot-instructions.md` | *(Ignored)* | Merged (`./.mcp.json`) |
-| **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* | Merged (`./.mcp.json`) |
-| **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agent/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
-| **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* | Merged (`./.mcp.json`) |
+| Target Environment | `commands/*.md` | `skills/` | `agents/*.md` | `rules/` | `hooks/hooks.json` |
+|-------------------|----------------|-----------|---------------|----------|-------------------|
+| **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `./CLAUDE.md` | `hooks/<plugin>-hooks.json` |
+| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `.github/copilot-instructions.md` | *(Ignored)* |
+| **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* |
+| **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agent/rules/` | *(Ignored)* |
+| **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* |
 
 > **Note on Commands:** When writing command logic, you can use nested folders (`commands/ops/restart.md`). The bridge automatically flattens these into a snake_case format (`ops_restart.md`) to remain compatible with IDEs that don't support deeply nested slash-commands. Gemini targets are wrapped in TOML automatically.
 
@@ -104,7 +104,6 @@ my-plugin/
 ├── rules/               ← Behavioral rules
 ├── hooks/
 │   └── hooks.json       ← Claude Code lifecycle hooks
-└── .mcp.json            ← MCP server declarations
 ```
 
 All components are optional — the bridge gracefully skips missing directories.

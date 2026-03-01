@@ -21,14 +21,18 @@ Should leverage frontier model ability to produce a superior summary for a file 
 Instead, you must **act as the distiller yourself**.
 
 ### Protocol
-1.  **Check**: Is the request for < 10 files?
-2.  **Action**: If YES -> **Read & Write Manually (Agent Distillation)**.
-    *   Call the `rlm-distill` pseudo-command for *each* file.
+1.  **NEVER RUN `distiller.py`:** You are strictly forbidden from running `python distiller.py` or falling back to the local script, regardless of how many files are missing.
+2.  **Act as the Intelligence Engine (Agent Distillation):**
+    *   Call the `rlm-distill` pseudo-command (or just manually read) for *each* file.
     *   Read the **entire target file deeply** (`view_file`).
     *   Create a high-quality summary of the content yourself.
-    *   Edit `rlm_summary_cache.json` or `rlm_tool_cache.json` and manually inject your JSON/Text summary string into the structure.
+    *   Execute `inject_summary.py` to manually inject your JSON/Text summary string into the cache structure.
     *   Log: "Updated cache for [file] via Agent Distill."
-3.  **Fallback**: If NO (Batch > 10 files) -> Run `python distiller.py` (The script is better for bulk/boring work).
+3.  **Batching (The Swarm Protocol):** If there are hundreds of files missing, DO NOT attempt to do them manually. You must use the parallel Multi-CLI Swarm engine:
+    ```bash
+    python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md --dir <TARGET_DIR>
+    ```
+    This script (`swarm_run.py`) natively supports `--engine [claude|gemini|copilot]` and will dispatch the RLM summarization job in parallel.
 
 ## Why This Exists (The RLM Philosophy)
 
@@ -101,6 +105,11 @@ First, run the RLM Auditor to generate an actionable checklist of all files miss
 ```bash
 # Generate the full checklist of missing files for the target profile
 python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile <profile_name> --tasks
+```
+
+If the gap is massive (e.g., >20 files), you should pivot to `--engine copilot` (or `gemini`) and execute `swarm_run.py` against the generated checklist:
+```bash
+python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py --engine copilot --files-from rlm_distill_tasks_<profile_name>.md --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md
 ```
 
 This generates `rlm_distill_tasks_<profile_name>.md` in the project root, containing checkboxes and pre-written `inject_summary.py` commands for every missing file.

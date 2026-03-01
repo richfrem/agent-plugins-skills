@@ -1,6 +1,6 @@
 {
     "name": "dependency-management",
-    "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for MCP server fleet",
+    "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends",
     "version": "1.0.0",
     "author": {
         "name": "Project Sanctuary"
