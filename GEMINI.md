@@ -54,7 +54,6 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 
 <!-- END RULES FROM PLUGIN: dependency-management -->
 
-
 <!-- BEGIN RULES FROM PLUGIN: spec-kitty -->
 # SHARED RULES FROM spec-kitty
 ## Constitution (spec-kitty)

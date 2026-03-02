@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-plan
-description: Execute the implementation planning workflow using the plan template
+description: Execute the implementation planning workflow using the plan template to generate design artifacts.
 ---
 
 # /spec-kitty.plan - Create Implementation Plan
