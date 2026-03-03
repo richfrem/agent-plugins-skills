@@ -1,0 +1,9 @@
+{
+    "version": "1.0",
+    "name": "agent-plugin-analyzer",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "email": ""
+    },
+    "description": "Meta-plugin for analyzing agent plugins, skill folders, sub-agents, and any agent capability directory — extracting design patterns and generating improvement recommendations. Works with any structure: full plugins (.claude-plugin), standalone skill folders (SKILL.md), or mixed collections. Feeds a virtuous cycle: analyze → learn → improve scaffolders/specs → build better capabilities → analyze again."
+}
