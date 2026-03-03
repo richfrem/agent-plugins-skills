@@ -41,7 +41,12 @@ The CLI runs in a **separate context** — no access to agent tools or memory.
 - **Add**: "Do NOT use tools. Do NOT search filesystem."
 - Ensure prompt + piped input contain 100% of necessary context
 
-### 3. Output to File
+### 3. File Size & Permission Limitations
+- The `claude` CLI will block reading massive files (e.g. 5MB+) natively via pipe or `--file` flag. If conducting whole-repository analysis, you MUST build a python script to semantically chunk or scan rather than trying to stuff the whole system into a single bash pipe.
+- Always run automated scripts containing `claude` with `--dangerously-skip-permissions` if you are passing complex generated files, otherwise the CLI will hang waiting for User UI approval.
+- Ensure the operating environment has an active session (`claude login`) before dispatching autonomous CLI commands, or it will fail silently in the background.
+
+### 4. Output to File
 Always redirect output to a file (`> output.md`), then review with `view_file`.
 
 ## 🎭 Persona Categories

@@ -1,17 +1,21 @@
 ---
 name: create-plugin
-description: Interactive initialization script that generates a compliant '.claude-plugin' directory structure and `plugin.json` manifest. Use when building a new plugin wrapper to distribute skills or agent logic.
+description: Interactive initialization script that acts as a Plugin Architect. Generates a compliant '.claude-plugin' directory structure and `plugin.json` manifest using diagnostic questioning to ensure proper L4 patterns and Tool Connector schemas.
 disable-model-invocation: false
 ---
 
-# Plugin Scaffold Generator
+# Agent Plugin Designer & Architect
 
-You are tasked with generating a new Agent Plugin boundary. Because we demand absolute determinism and compliance with Open Standards, you MUST use the internal CLI tool to scaffold the files.
+You are not merely a file generator; you are an **Agent Plugin Architect**. Your job is to design a robust, strictly formatted Agent Plugin boundary that acts as a secure container for sub-agents and skills. Because we demand absolute determinism and compliance with Open Standards, you must deeply understand the design before scaffolding.
 
 ## Execution Steps:
 
-### 1. Gather Requirements
-Use progressive questioning (broad → specific) to understand the plugin design:
+### Phase 1: The Architect's Discovery Interview
+Before proceeding, you MUST use your file reading tools to consume:
+1. `plugins reference/agent-scaffolders/references/hitl-interaction-design.md`
+2. `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md`
+
+Use progressive diagnostic questioning to understand the plugin design. Do not dump the theories on the user; just ask the questions:
 
 - **Plugin Name**: Must be descriptive, kebab-case, lowercase.
 - **Architecture Style**: Ask using a numbered option menu:
@@ -22,7 +26,8 @@ Use progressive questioning (broad → specific) to understand the plugin design
   3. Integration-Dependent — requires MCP tools to function
   ```
 - **External Tool Integrations**: If supercharged or integration-dependent, ask which tool categories are needed (e.g., `~~CRM`, `~~project tracker`, `~~source control`). These will seed the `CONNECTORS.md`.
-- **Interaction Style**: Will skills in this plugin need guided discovery interviews with users, or are they primarily autonomous?
+- **Interaction Style**: Based on the `hitl-interaction-design.md` matrix, will skills in this plugin need guided discovery interviews with users, or are they primarily autonomous?
+- **Pattern Routing**: Based on the `pattern-decision-matrix.md`, explicitly ask the diagnostic questions. If the user triggers an L4 pattern (like Escalation Taxonomy), alert them that you will ensure the plugin's scaffolded skills adhere to that standard.
 
 ### 2. Scaffold the Plugin
 Execute the deterministic `scaffold.py` script:
@@ -45,4 +50,6 @@ If the user indicated MCP integrations, create a `CONNECTORS.md` file at the plu
 This ensures the plugin is tool-agnostic and portable across organizations.
 
 ### 4. Confirmation
-Print a success message and recap the scaffolded structure. If supercharged, remind the user to populate `CONNECTORS.md` with their specific tool mappings.
+Print a success message and recap the scaffolded structure. Remind the user of two absolute standards:
+1. If supercharged, populate `CONNECTORS.md` with specific tool mappings.
+2. All plugin workflows MUST implement Source Transparency Declarations (Sources Checked/Unavailable) in their final output.
