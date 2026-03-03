@@ -1,6 +1,6 @@
 # Context Bundler Plugin 📦
 
-Bundle source files and documentation into single-file Markdown context packages
+Bundle source files and documentation into single-file Markdown or compressed ZIP context packages
 for portable AI agent distribution.
 
 ## Installation
@@ -39,10 +39,11 @@ The Context Bundler operates purely through autonomous skills.
 
 When you need to bundle technical context for export to another agent, simply tell Claude:
 >"Bundle the backend services and their documentation into a single markdown file using the context-bundler specification."
+> "Package this entire module into a ZIP file using the context bundler so I can share it with another agent."
 
 Claude will:
 1. Generate an internal `file-manifest.json` describing the targets.
-2. Compile exactly those files into a highly compressed, annotated `.md` artifact perfectly structured for LLM ingestion.
+2. Compile exactly those files into a highly compressed, annotated `.md` or `.zip` artifact perfectly structured for LLM ingestion.
 
 ### The JSON Manifest Schema
 
@@ -70,8 +71,10 @@ Claude will:
 ### Skills (Auto-Invoked)
 
 - **`context-bundling`** — Claude automatically uses this skill when tasks involve
-  bundling, packaging, or distributing files. It enforces standard ordering
+  bundling, packaging, or distributing files into a single `.md` file. It enforces standard ordering
   (identity → manifest → docs → code) and dependency checking.
+
+- **`zip-bundling`** — Explicitly archives the targeted files into their native formats wrapped in a portable `.zip` container. It automatically injects a `_manifest_notes.md` file root index so LLM context annotations are preserved.
 
 ---
 
@@ -81,8 +84,13 @@ context-bundler/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin identity & metadata
 ├── skills/
-│   └── context-bundling/
-│       └── SKILL.md             # The bundling protocol definitions
+│   ├── context-bundling/
+│   │   └── SKILL.md             # The markdown bundling protocol
+│   └── zip-bundling/
+│       └── SKILL.md             # The ZIP archiving protocol
+├── scripts/
+│   ├── bundle.py                # Markdown concatenator
+│   └── bundle_zip.py            # ZIP archiver
 ├── file-manifest.json           # Example schematic
 └── README.md
 ```
