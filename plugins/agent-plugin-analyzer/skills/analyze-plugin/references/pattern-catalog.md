@@ -77,6 +77,16 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **When to Use**: High-variability computational pipelines where a standard CLI covers 80% of use cases but fails on 20% edge cases that require power-user composability.
 - **Example**: Supplying `scripts/qc_analysis.py` for default executions and `scripts/qc_core.py` for custom Python chains in the environment.
 
+### Multi-Mode Commands with Mode Dispatch
+- **Category**: Architectural
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `brief`
+- **Description**: A single command implements completely distinct workflows dispatched by a simple argument (`daily | topic | incident`). Each mode changes not just the template, but the agent's temporal execution posture (speed vs thoroughness).
+- **When to Use**: When a skill covers distinct but highly related use cases that differ in urgency or scope.
+- **Example**: `/brief incident` values speed and available data; `/brief topic` defaults to thorough research and external counsel recommendation.
+
 ---
 
 ## Execution Patterns
@@ -122,6 +132,47 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **Example**: Try `~~CRM` to pull contact data → fall back to asking user to paste it
 
 ---
+
+
+### Graduated Autonomy Routing
+- **Category**: Execution / Autonomy
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `contract-review`
+- **Description**: Defines different behavioral bounds (auto-approve vs flag vs escalate) based on the classification severity, rather than just classifying and stopping. Shrinks the agent's autonomy as risk increases.
+- **When to Use**: When dealing with variable risk-levels that define whether the agent can act independently.
+- **Example**: GREEN = execute; YELLOW = ask for permission; RED = halt and inform user.
+
+### Escalation Trigger Taxonomy
+- **Category**: Execution / Safety
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `canned-responses`
+- **Description**: A two-level trigger system (universal + category-specific) that interrupts a workflow with a 5-step response protocol (Stop, Alert, Explain, Recommend, Offer Draft).
+- **When to Use**: Workflows that generate external-facing outputs.
+- **Example**: Before generating a response, check if matter involves litigation; if so, Stop, Alert user, Explain risk, Recommend counsel, Offer draft.
+
+### Conditional Step Inclusion
+- **Category**: Execution / Flow
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `vendor-check`
+- **Description**: Workflow steps explicitly state "If Connected" in their headers to gracefully degrade when tools (like CLMs or MCP servers) are missing, instead of using buried if/else conditionals or fallback chains.
+- **When to Use**: Workflows dependent on multiple external tools.
+- **Example**: `### Step 2: CLM Routing (If Connected)`
+
+### Self-Improving Workflow Loop
+- **Category**: Execution / Evolution
+- **Lifecycle**: `canonical`
+- **Confidence**: High
+- **Frequency**: 2+ plugins
+- **First Seen In**: Oracle Legacy `curate-inventories`, Anthropic legal `canned-responses`
+- **Description**: Every execution of the workflow ends with a mandatory step requiring the agent to either fix a bug in a target script, clarify a confusing step in the workflow documentation, or create a ticket for a larger issue.
+- **When to Use**: All complex orchestrations.
+- **Example**: `You MUST strictly choose one action: Fix Code, Fix Docs, New Task, No Issues.`
 
 ## Content Patterns
 
@@ -193,6 +244,16 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **When to Use**: Any knowledge retrieval or analysis with varying certainty
 - **Example**: "The team decided to use REST" (high) vs "Based on last month's discussion, the team was leaning toward REST" (moderate)
 
+### Privilege / Confidentiality Marking Protocol
+- **Category**: Content
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `legal-risk-assessment`
+- **Description**: The agent automatically appends and evaluates metadata about how the output should be treated regarding sensitivity, distribution restrictions, and temporal validity.
+- **When to Use**: Workflows handling PII, legal documentation, or infosec analysis.
+- **Example**: `**Privileged**: [Yes/No - mark as attorney-client privileged if applicable]`
+
 ---
 
 ## Knowledge Patterns
@@ -226,6 +287,16 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **Description**: Review methodology based on a configurable playbook defining standard positions, acceptable ranges, and escalation triggers. Without a playbook, falls back to industry standards with clear labeling.
 - **When to Use**: Any review/audit process where organizational standards vary
 - **Example**: Contract review checks each clause against the org's negotiation playbook, classifying deviations as GREEN/YELLOW/RED
+
+### Statutory Temporal Anchoring
+- **Category**: Knowledge
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `compliance`
+- **Description**: Explicitly pinning regulatory knowledge to specific versions, dates, and rule numbers (e.g. EU SCCs June 2021) directly within the SKILL instructions to prevent hallucination drift and make knowledge freshness auditable over time.
+- **When to Use**: Skills making programmatic decisions based on versioned human laws, policies, or SLAs.
+- **Example**: `Using current EU SCCs (**June 2021 version**) if applicable.`
 
 ---
 
@@ -367,6 +438,16 @@ The changelog at the bottom of this file tracks when patterns were added, promot
   Does this look right? (yes / adjust)
   ```
 
+### Document-as-Input with Format Agnosticism
+- **Category**: Interaction
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `review-contract`
+- **Description**: Input blocks explicitly support fallback format modalities (File upload, URL link to cloud storage, or pasted text) and include a behavioral advisory for handling "long documents" (chunking) to protect context limits.
+- **When to Use**: Skills that process large user-supplied documents.
+- **Example**: `Accept the contract in: - File upload - URL - Pasted text. For very long contracts (50+ pages), offer to focus on material sections first.`
+
 ---
 
 ## Integration Patterns
@@ -402,6 +483,27 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **Example**: Inline: "Sarah confirmed REST (~~email, Jan 15)" + Source list at bottom
 
 ---
+
+
+### Priority-Ordered Source Scanning
+- **Category**: Integration
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `vendor-check`
+- **Description**: Defining an explicit authority hierarchy (priority order) for multi-source queries, preventing the agent from treating informal signal sources identically to canonical system-of-record sources.
+- **When to Use**: Multi-system data enrichment workflows.
+- **Example**: `Search for the vendor across all available systems, in priority order: CLM -> CRM -> Email -> Documents -> Chat.`
+
+### Source Transparency Declaration
+- **Category**: Integration / Trust
+- **Lifecycle**: `proposed`
+- **Confidence**: Medium
+- **Frequency**: 1 plugin
+- **First Seen In**: Anthropic legal `brief`
+- **Description**: Every workflow output explicitly lists what was successfully searched versus what was unavailable or skipped. Guarantees the user knows the limits of the generated output.
+- **When to Use**: Any agent synthesizing data from multiple sources.
+- **Example**: `**Sources Checked**: [list] | **Sources Unavailable**: [list]`
 
 ## Changelog
 

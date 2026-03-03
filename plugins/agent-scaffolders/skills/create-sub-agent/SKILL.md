@@ -11,9 +11,15 @@ You are tasked with generating a new Sub-Agent context boundary using our determ
 ## Execution Steps:
 
 1. **Gather Requirements:**
-   Ask the user for:
+   Before proceeding, you MUST read:
+   - `plugins reference/agent-scaffolders/references/hitl-interaction-design.md`
+   - `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md`
+   
+   Use these guides to ask the user for:
    - The name of the sub-agent.
    - The core purpose (to form the `description` and system prompt).
+   - The escalation risk: does this agent need an Escalation Trigger Taxonomy explicitly defined in its prompt?
+   - The trust posture: warn the user that all sub-agent return boundaries MUST end in a Source Transparency Declaration (Sources Checked/Unavailable).
    - Where the agent should be placed (`.claude/skills/` or within a plugin's `/agents/` folder).
 
 2. **Scaffold the Sub-Agent:**

@@ -2,5 +2,8 @@
     "version": "1.0",
     "name": "agent-scaffolders",
     "author": "Antigravity",
-    "description": "A suite of generative agent skills designed to dynamically scaffold new extensions (Plugins, Skills, Hooks, etc.) in strict compliance with Open Standard specifications."
+    "description": "A suite of generative agent skills designed to dynamically scaffold new extensions (Plugins, Skills, Hooks, etc.) in strict compliance with Open Standard specifications.",
+    "dependencies": [
+        "agent-skill-open-specifications"
+    ]
 }

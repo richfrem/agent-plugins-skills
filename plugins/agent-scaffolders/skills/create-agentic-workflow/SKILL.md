@@ -93,7 +93,7 @@ After generation, remind the user:
 
 - **IDE agents**: The `.agent.md` body is a starting skeleton. For rich workflows (like spec-kitty's chained agents), the full instruction set from the source SKILL.md should be manually ported into the `.agent.md` body, and `handoffs:` frontmatter added for chaining to other agents.
 
-- **CI/CD Smart Failure agents**: The `.github/workflows/*.yml` requires a `COPILOT_GITHUB_TOKEN` secret in the repository settings. The Kill Switch phrase must appear verbatim in the `.agent.md` body instructions for the quality gate to work.
+- **CI/CD Smart Failure agents**: The `.github/workflows/*.yml` requires a `COPILOT_GITHUB_TOKEN` secret in the repository settings. The Kill Switch phrase must appear verbatim in the `.agent.md` body instructions for the quality gate to work. Furthermore, you MUST explicitly define an **Escalation Trigger Taxonomy** in the `.agent.md` so the agent knows precisely when to halt and trigger the Kill Switch vs when to auto-approve.
 
 - **CI/CD Official format agents**: After generation, run `gh aw compile` to generate the `.lock.yml` file. Commit **both** the `.md` and the `.lock.yml`. Requires the `gh-aw` extension: `gh extension install github/gh-aw`. Technical preview — may require preview access.
 

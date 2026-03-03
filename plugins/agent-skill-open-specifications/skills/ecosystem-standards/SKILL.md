@@ -27,6 +27,9 @@ When invoked to review a codebase component or a planned extension:
         - Expensive operations have confirmation gates
         - Multi-step workflows include inline progress indicators
         - Skills end with next-action menus, not dead ends
+        - Workflows taking long documents gracefully degrade using Document Format Agnosticism.
     *   **Dual-Mode Architecture**: If the skill both creates new artifacts AND improves existing ones, verify it implements the Bootstrap + Iteration dual-mode pattern with separate sections and trigger phrases.
     *   **Output Templates**: If the skill generates reports or artifacts, verify it either defines an output template or negotiates the format with the user.
+    *   **Escalation and Safety**: Workflows with external risk must explicitly implement Graduated Autonomy Routing and Escalation Trigger Taxonomies rather than blanket-stopping on all issues.
+    *   **Source Transparency**: Data synthesis output MUST conclude with explicit `Sources Checked` and `Sources Unavailable` blocks.
 4.  **Produce Feedback**: Provide explicit, granular feedback outlining exactly which ecosystem constraints were violated and concrete suggestions for fixing them. Ensure your feedback is actionable.

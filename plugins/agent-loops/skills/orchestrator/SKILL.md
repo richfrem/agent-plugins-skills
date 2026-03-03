@@ -80,11 +80,19 @@ python scripts/agent_orchestrator.py packet --wp <WP-ID> --spec-dir <PATH>
 This generates a markdown file in the `handoffs/` directory. You must then instruct the user/system to launch the Inner Loop with this file.
 
 ### 3. Verification & Correction
+
 Check the Inner Loop's work against the packet using the `verify` command.
 ```bash
 python scripts/agent_orchestrator.py verify --packet handoffs/task_packet_NNN.md --worktree <PATH>
 ```
-If the work fails criteria, generate a correction packet to send back to the Inner Loop.
+
+If the work fails criteria, use the **Severity-Stratified Output** schema to generate a structured correction packet:
+
+- 🔴 **CRITICAL**: The code fails to compile, tests fail, or the requested feature is entirely missing. (Action: Hard reject, return to Inner Loop with exact error logs).
+- 🟡 **MODERATE**: The feature works, but violates project architecture, ADRs, or performance standards. (Action: Flag for revision, return to Inner Loop with the specific ADR reference).
+- 🟢 **MINOR**: The feature works and follows architecture, but has minor naming or stylistic issues. (Action: Do not return to Inner Loop. The Orchestrator fixes it directly and proceeds).
+
+Generate the correction packet to send back to the Inner Loop:
 ```bash
 python scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN.md --feedback "Specific failure reason"
 ```
@@ -138,9 +146,27 @@ Once the loop is complete and learning has been extracted, the Orchestrator MUST
 - Execute Vector DB ingestion scripts.
 - Execute Git commands (`git commit`, `git push`).
 
-These are environment-specific actions owned entirely by the **Primary Agent**. The Orchestrator's job is done.
+These are environment-specific actions owned entirely by the **Primary Agent**.
+
+#### Chained Command Handoff
+
+When the Orchestrator loop is complete, it must use **Chained Command Invocation** to offer the user the explicit next steps to seal the ecosystem. Output this block:
+
+```markdown
+## Orchestration Complete. Offer Next Steps:
+
+The Inner Loop has successfully executed and verified the task. Please trigger the closure sequence:
+- **"/sanctuary-seal"**: To capture the learning snapshot and update RLMs.
+- **"/sanctuary-persist"**: To backup the soul to HuggingFace.
+- **"Run Retrospective"**: If you wish to review the friction log.
+```
 
 ---
+
+
+### 8. Sub-Agent Limitations
+- Be aware that `claude-cli-agent` has a hard stop on passing massive context bundles (~5MB+) either natively via stdin or `--file`. If your payload exceeds context windows, you must write a semantic chunking script instead of blindly dumping a `context-bundler` package into a prompt!
+- Automated sub-agent invocations will *silently fail* or throw an interactive block if you do not use `--dangerously-skip-permissions` or if the user is not authenticated natively using `claude login`.
 
 ## Lifecycle State Tracking
 

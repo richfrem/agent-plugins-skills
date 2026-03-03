@@ -10,7 +10,12 @@ We would like to give special recognition to the official Anthropic plugin repos
 - [Anthropic Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
 - [Official Plugin-Dev Toolkit](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)
 
+## Core Dependencies
+This plugin relies heavily on the **Separation of Concerns** principle. It acts as the "Tool/Router" but relies on the `agent-skill-open-specifications` plugin as the "Source of Truth" for canonical standards. Therefore, to scaffold L4 skills, this plugin dynamically fetches constraints from:
+- `plugins reference/agent-skill-open-specifications/L4-pattern-definitions/`
+
 ## Directory Structure
+
 
 ```text
 agent-scaffolders/

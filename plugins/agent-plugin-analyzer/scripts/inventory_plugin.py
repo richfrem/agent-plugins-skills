@@ -142,7 +142,7 @@ def detect_issues(filepath, relpath, file_type, line_count):
 # ── Security Scanning ─────────────────────────────────────────────────
 
 CREDENTIAL_PATTERNS = [
-    (r"sk-[a-zA-Z0-9\-_]{10,}", "OpenAI/Anthropic API key"),
+    (r"\b(sk-ant-[a-zA-Z0-9\-_]{40,}|sk-proj-[a-zA-Z0-9\-_]{40,}|sk-[a-zA-Z0-9]{40,})\b", "OpenAI/Anthropic API key"),
     (r"ghp_[a-zA-Z0-9]{20,}", "GitHub personal access token"),
     (r"gho_[a-zA-Z0-9]{20,}", "GitHub OAuth token"),
     (r"AKIA[0-9A-Z]{16}", "AWS access key ID"),

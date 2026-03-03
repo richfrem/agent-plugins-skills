@@ -136,11 +136,13 @@ def create_skill(name, path, description):
     scripts_dir = os.path.join(skill_dir, "scripts")
     references_dir = os.path.join(skill_dir, "references")
     examples_dir = os.path.join(skill_dir, "examples")
+    templates_dir = os.path.join(skill_dir, "templates")
     
     os.makedirs(skill_dir, exist_ok=True)
     os.makedirs(scripts_dir, exist_ok=True)
     os.makedirs(references_dir, exist_ok=True)
     os.makedirs(examples_dir, exist_ok=True)
+    os.makedirs(templates_dir, exist_ok=True)
     
     def get_template(filename):
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
@@ -167,6 +169,9 @@ def create_skill(name, path, description):
         f.write(skill_content)
         
     # 2. Add sample reference and testing files
+    with open(os.path.join(skill_dir, "CONNECTORS.md"), "w") as f:
+        f.write(f"# {name} Connectors Map\\n\\nMap abstract `~~category` tool requirements to exact system dependencies here to keep the plugin portable.")
+        
     with open(os.path.join(references_dir, "architecture.md"), "w") as f:
         f.write(f"# {name} Protocol Reference\\n\\nPut deep context here so it is not loaded into context implicitly.")
         

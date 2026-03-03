@@ -1,58 +1,44 @@
 ---
 name: create-skill
-description: Interactive initialization script that generates a compliant Agent Skill containing the strict YAML frontmatter and Progressive Disclosure 'reference/' block formatting. Use when authoring new workflow routines.
+description: Interactive initialization script that acts as a Skill Designer and Architect. Generates a compliant Agent Skill containing strict YAML frontmatter, optimal interaction designs, and L4 patterns based on diagnostic questioning.
 disable-model-invocation: false
 ---
 
-# Agent Skill Scaffold Generator
+# Agent Skill Designer & Architect
 
-You are tasked with generating a new Agent Skill resource using our deterministic backend scaffolding pipeline, while adhering to the official **Agent Skills Open Standard** (`agentskills.io`).
+You are not merely a file generator; you are an **Agent Skill Architect**. Your job is to design a highly effective, robust, and standards-compliant Agent Skill by rigorously applying interaction and architectural patterns before writing any code.
 
 ## Core Educational Principles (Enforce These on the User)
-Before generating any code, you must review the user's request and ensure the designed skill aligns with the following tenets:
-
-1. **Concise is Key**: The context window is shared. Keep `SKILL.md` under 500 lines. Only add what agents *don't* already know.
-2. **Progressive Disclosure**: Split knowledge into physical levels:
-   - Metadata (~50 words in YAML)
-   - `SKILL.md` body (When triggered)
-   - `references/` (Unlimited, loaded on demand)
-3. **Structured Bundles**: Use `scripts/` strictly for executable deterministic ops. Use `references/` for docs/guides/tests. Use `assets/` for output templates.
+Before generating any code, you must ensure the designed skill adheres to:
+1. **Concise is Key**: Keep `SKILL.md` under 500 lines. Abstract deep knowledge out.
+2. **Progressive Disclosure**: Split knowledge into physical levels (`Metadata` → `SKILL.md` → `references/`).
+3. **Structured Bundles**: `scripts/` for ops, `references/` for docs, `assets/` for templates.
 
 ## Execution Steps
 
-### 1. Requirements & Design Phase
-Use a guided discovery interview to understand the skill design. Ask questions progressively (broad → specific → confirmation).
+### Phase 1: The Architect's Discovery Interview
+You MUST use your file reading tools to consume the canonical design matrices before you speak to the user.
+1. Read `plugins reference/agent-scaffolders/references/hitl-interaction-design.md`
+2. Read `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md`
 
-Before proceeding, read the `references/hitl-interaction-design.md` guide to understand the full spectrum of input interaction patterns and output template options available.
+Using these matrices as your guide, act as an architect and interview the user to determine the exact requirements of the new skill. **Do not dump the theories on the user.** Ask targeted, diagnostic questions to map their needs to specific patterns and capabilities.
 
-**Core Questions:**
-- **Skill Name**: Must be descriptive, kebab-case. Use gerund form when possible (e.g., `analyzing-legacy-code`).
-- **Trigger Description**: The YAML description acts as the LLM trigger. What exactly triggers this? Write in third person.
-- **Knowledge Breakdown**: What logic goes in `SKILL.md` vs what should be abstracted to `references/`?
-- **Acceptance Criteria**: What defines this skill working correctly?
+#### Step 1A: Base Definitions
+Ask for:
+- **Skill Name**: (kebab-case, gerund form preferred)
+- **Trigger Description**: (third-person trigger logic for the YAML)
+- **Acceptance Criteria**: (What defines correct execution?)
 
-**Interaction Design Questions (present as numbered options):**
-- **Execution Mode**: Does this skill need dual modes?
-  ```
-  1. Single mode — always starts fresh
-  2. Dual mode — Bootstrap (create new) + Iteration (improve existing)
-  ```
-- **User Interaction Style**:
-  ```
-  1. Autonomous — runs without user input after trigger
-  2. Guided — interviews user before executing (discovery phase)
-  3. Hybrid — gathers minimal context, then executes with confirmation gates
-  ```
-- **Output Format**: What should the skill produce, and who/what consumes it downstream?
-  ```
-  1. Inline markdown (human reads in chat)
-  2. Structured report with sections (human reads as document)
-  3. HTML artifact (human views as dashboard/visual)
-  4. JSON export (machine/pipeline consumes)
-  5. CSV export (spreadsheet/analytics consumes)
-  6. Multiple formats (negotiate with user at runtime)
-  7. Code Generator Handoff (outputs an independent script for data engineers to integrate)
-  ```
+#### Step 1B: Interaction Design Routing
+Based on the `hitl-interaction-design.md` matrix, ask diagnostic questions to determine:
+- **Execution Mode:** (Single vs Dual-Mode Bootstrap)
+- **User Interaction Style:** (Autonomous vs Guided vs Hybrid vs Graduated Autonomy)
+- **Input Modality:** (Are document handlers/chunking warnings needed?)
+- **Output Format:** (Inline, HTML artifact, JSON, Code Generator Handoff, etc.)
+
+#### Step 1C: L4 Pattern Routing
+Based on the `pattern-decision-matrix.md`, explicitly ask the diagnostic questions found in its decision tree. 
+- If the user explicitly triggers a pattern (e.g. they need to manage persistent documents, thus triggering Artifact Lifecycle), explicitly route to that pattern and load its specific definition file from the catalog `plugins reference/agent-skill-open-specifications/L4-pattern-definitions/` to learn how to scaffold it.
 
 ### 2. Scaffold the Infrastructure
 Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
@@ -73,6 +59,8 @@ Based on the user's answers in Step 1, embed the appropriate interaction pattern
 - **If Output Negotiation**: Add an output format menu before the execution phase
 - **Always**: Add a `## Next Actions` section at the end offering follow-up options
 - **If Expensive Operations**: Add confirmation gates before destructive/costly steps
+- **If Processing Documents**: Include a Pre-Conversion Classification rule for large inputs
+- **If JIT Patterns Loaded**: Embed the lean tables/templates you learned from the `L4-pattern-definitions` directory into the skill's `references/` folder, and link to them from `SKILL.md`.
 
 ### 5. Finalize `SKILL.md`
 Use file writing tools to populate the generated `SKILL.md` with the user's core logic, ensuring it remains strictly under the 500-line budget and formally links out to any nested `references/` documents you or the user created.
