@@ -57,6 +57,16 @@ python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --since 24 --
 python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --full --profile knowledge
 ```
 
+### 4. Source Transparency Declaration
+When Semantic Search returns empty results ("Not Found"), you MUST explicitly state the boundaries of what was searched using this standard format in your response:
+```markdown
+> 🚫 **Not Found in Vector Store**
+> I searched the `[profile_name]` profile for `"[query]"`.
+> • This profile covers: [Describe scope of profile, e.g. "Core platform infrastructure"]
+> • I did not search: [Describe what is NOT in this profile, e.g. "Legacy system plugins"]
+```
+This ensures the user knows *where* the vector search failed, rather than assuming the code genuinely doesn't exist.
+
 ## Critical Rules
 1. **Manifest Only:** `ingest.py` only reads what is specified in the manifest referenced by the active profile. Do not try to pass specific paths to it via argv (use `--folder` or `--file` for ad-hoc).
 2. **Concurrency:** Chroma HTTP server supports concurrent writers.

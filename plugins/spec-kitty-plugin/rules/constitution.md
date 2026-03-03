@@ -25,7 +25,7 @@ All work MUST follow the **Universal Hybrid Workflow**.
 
 - **Track A (Factory)**: Deterministic tasks (Codify, Curate).
 - **Track B (Discovery)**: Spec-Driven Development (Spec → Plan → Tasks).
-- **Reference**: [ADR 035](../../ADRs/035_hybrid_spec_driven_development_workflow.md) | [Diagram](../../docs/diagrams/analysis/sdd-workflow-comparison/hybrid-spec-workflow.mmd)
+- **Pre-Execution Mindset**: Agents MUST map their execution using `spec-kitty-workflow`'s visual constraint diagram.
 
 ## II. The Learning Loop (Cognitive Continuity)
 For all cognitive sessions, you are bound by **Protocol 128**.
@@ -33,14 +33,14 @@ For all cognitive sessions, you are bound by **Protocol 128**.
 
 - **Boot**: Read `cognitive_primer.md` + `learning_package_snapshot.md`
 - **Close**: Audit → Seal → Persist (SAVE YOUR MEMORY)
-- **Reference**: [ADR 071](../../ADRs/071_protocol_128_cognitive_continuity.md) | [Diagram](../../plugins/primary-agent/resources/protocols/protocol_128_learning_loop.mmd)
+- **Constraint**: The Learning Loop implements Protocol 128 (Cognitive Continuity) natively via RLM Cache.
 
 ### Identity Layers (Boot Files)
 | Layer | File | Purpose |
 |:------|:-----|:--------|
-| **1. Contract** | [boot_contract.md](../learning/ecosystem_boot_contract.md) | Immutable constraints |
-| **2. Primer** | [cognitive_primer.md](../learning/cognitive_primer.md) | Role Orientation |
-| **3. Snapshot** | [snapshot.md](../learning/learning_package_snapshot.md) | Session Context |
+| **1. Contract** | `ecosystem_boot_contract.md` (Local Context) | Immutable constraints |
+| **2. Primer** | `cognitive_primer.md` (Local Context) | Role Orientation |
+| **3. Snapshot** | `learning_package_snapshot.md` (Local Context) | Session Context |
 
 ## III. Zero Trust (Git & Execution)
 - **NEVER** commit directly to `main`. **ALWAYS** use a feature branch.

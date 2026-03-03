@@ -46,6 +46,10 @@ The CLI runs in a **separate context** — no access to agent tools or memory.
 ### 3. Output to File
 Always redirect output to a file (`> output.md`), then review with `view_file`.
 
+### 4. Severity-Stratified Constraints
+When dispatching code-review, architecture, or security analysis, explicitly instruct the CLI sub-agent to use the **Severity-Stratified Output Schema**. This ensures the Outer Loop can parse the results deterministically:
+> "Format all findings using the strict Severity taxonomy: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
+
 ## ✅ Smoke Test (Copilot CLI)
 
 Use this minimal command to verify the CLI is callable and returns output:

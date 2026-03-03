@@ -12,11 +12,32 @@ allowed-tools: Bash, Write, Read
 ## Overview
 This skill manages the synchronization of plugin source code between the central repository and other projects, ensuring tools are consistent across all workspaces.
 
-## Usage
+## Execution Protocol
 
-### 1. Replicate a Single Plugin
-Install or update a specific plugin in another project.
+Do not immediately generate bash commands. Instead, operate as an interactive assistant using the following human-in-the-loop phases:
 
+### Phase 1: Guided Discovery Interview
+When the user invokes this skill without specific arguments, begin by asking scoping questions:
+1. **Plugin Target:** "Which plugin do you want to replicate, or do you want to bulk sync all of them?"
+2. **Destination Path:** "What is the absolute path to the target project repository?" (Suggest their current working directory as a smart default unless specified otherwise).
+3. **Replication Mode:** "Do you want to perform a stable **Copy** (for independent deployment) or a dynamic **Link** (for central development)?"
+
+### Phase 2: Recap-Before-Execute
+Once variables are gathered, explicitly state what you are about to do and ask for confirmation. Use this format:
+
+```markdown
+### Proposed Replication Task
+- **Plugin(s)**: [Name or ALL]
+- **Target Project**: `[Path]`
+- **Mode**: [Copy / Link]
+
+> Does this look correct? I will generate the exact replication commands once you confirm.
+```
+
+### Phase 3: Command Generation
+Wait for the user's explicit confirmation (`yes`, `looks good`, `ok`). Once confirmed, generate the exact bash command according to their choices:
+
+#### For Single Plugins
 ```bash
 # Copy mode (Default — for stable deployment)
 python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin <plugin-name> --target <project-root>
@@ -25,20 +46,13 @@ python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin <plugin-nam
 python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin <plugin-name> --target <project-root> --link
 ```
 
-**Example:**
-```bash
-python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin example-plugin --target ../project-consumer --link
-```
-
-### 2. Bulk Replication
-Replicate ALL plugins (or a subset) to a target project.
-
+#### For Bulk Replication
 ```bash
 # Sync all plugins
 python3 plugins/plugin-manager/scripts/bulk_replicator.py --target <project-root>
 
 # Sync only specific plugins (glob filter)
-python3 plugins/plugin-manager/scripts/bulk_replicator.py --target <project-root> --filter "investment-*"
+python3 plugins/plugin-manager/scripts/bulk_replicator.py --target <project-root> --filter "<pattern>"
 ```
 
 ## When to use

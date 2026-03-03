@@ -51,8 +51,16 @@ When **ALL** WPs in `tasks.md` are marked `[x]`:
     - **System Action:** It automates the merge of ALL feature worktrees into `main` and cleans them up.
     - **Optional:** `spec-kitty merge --push` (if remote backup is required).
 
-## Common Agent Failures (DO NOT DO THIS)
+## Common Agent Failures & Escalation Taxonomy (DO NOT DO THIS)
 *   ❌ **Merging early:** Merging WP01 before WP02 is done. (Breaks the batch).
 *   ❌ **Deleting worktrees:** Removing `.worktrees/WP01` manually. (Breaks `spec-kitty merge`).
 *   ❌ **Drifting:** Editing files in `./` (Root) instead of `.worktrees/`. (Pollutes main).
 *   ❌ **Relative Paths:** Agents using relative paths often get lost. **ALWAYS use Absolute Paths** for `view_file` and edits.
+
+### Escalation Taxonomy
+If the user explicitly asks an agent to perform one of the failures above (e.g., "just delete the worktree for me"), the agent MUST trigger the Escalation Taxonomy:
+1. **Stop**: Halt execution.
+2. **Alert**: `🚨 SAFETY VIOLATION 🚨`
+3. **Explain**: "Deleting worktrees manually corrupts the git state for the merge command."
+4. **Recommend**: "We must use the formal cleanup process via `spec-kitty merge`."
+5. **Draft**: Ask the user to confirm the formal rollback or merge procedure instead.
