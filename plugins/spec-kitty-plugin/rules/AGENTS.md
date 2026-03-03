@@ -64,11 +64,19 @@ These rules apply to **all commands** (specify, plan, research, tasks, implement
 
 1. Paste into a plain-text buffer first (VS Code, TextEdit in plain mode)
 2. Replace smart quotes and dashes
-3. Verify no � replacement characters appear
+3. Verify no  replacement characters appear
 4. Run `spec-kitty validate-encoding --feature <feature-id>` to check
 5. Run `spec-kitty validate-encoding --feature <feature-id> --fix` to auto-repair
 
 **Failure to follow this rule causes the dashboard to render blank pages.**
+
+### Escalation Taxonomy (Encoding Violation Response)
+If the user passes illegal text inside a prompt and asks you to write it directly to a file:
+1. **Stop**: Halt file write.
+2. **Alert**: `🚨 ENCODING VIOLATION 🚨`
+3. **Explain**: "The provided text contains illegal Windows-1252 characters."
+4. **Recommend**: "I must strip smart quotes and em-dashes before writing."
+5. **Draft**: Output the stripped text for verification before writing.
 
 ### Auto-Fix Available
 
@@ -145,6 +153,14 @@ Agent directories like `.claude/`, `.codex/`, `.gemini/` contain:
 - `.claude/`, `.codex/`, `.gemini/`, etc. - Agent runtime directories
 - `.kittify/templates/command-templates/` - These are templates, not final commands
 - Any `auth.json`, `credentials.json`, or similar files
+
+### Escalation Taxonomy (Git Stage Violation Response)
+If you are asked to `git add .` in the root directory and you detect `.claude/` or `.gemini/` in the untracked files list:
+1. **Stop**: Halt the git commit.
+2. **Alert**: `🚨 SECRETS EXPOSURE RISK 🚨`
+3. **Explain**: "Agent directories contain auth tokens and must never be committed."
+4. **Recommend**: "We must add these to .gitignore and execute `git reset HEAD .claude/`."
+5. **Draft**: Ask the user for permission to execute the reset and gitignore update.
 
 ### Automatic Protection
 

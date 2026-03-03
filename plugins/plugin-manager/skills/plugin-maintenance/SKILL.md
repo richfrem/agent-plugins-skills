@@ -12,42 +12,48 @@ allowed-tools: Bash, Write, Read
 ## Overview
 This skill provides tools for keeping plugins clean and compliant with official structural standards. It catches drift, legacy artifacts, and structural issues before they cause problems.
 
-## Usage
+## Execution Protocol
 
-### 1. Audit Structure
-Check all plugins in the repository against the plugin structure guidelines.
+Do not immediately generate bash commands. Instead, operate as an interactive assistant using the following human-in-the-loop phases:
 
+### Phase 1: Guided Discovery
+When the user invokes this skill, ask what type of maintenance they want to perform:
+1. **[Audit]**: Check all plugins against structural standards (catches drift, legacy files, and missing SKILL files).
+2. **[Sync]**: Synchronize the local `plugins/` directory with the upstream `.vendor` collection (identifies removed plugins and re-installs current ones).
+3. **[README]**: Scaffold missing `README.md` files for plugins based on metadata.
+
+### Phase 2: Recap-Before-Execute
+Once the user selects an operation, summarize what you are about to do and ask for confirmation. Example:
+
+```markdown
+### Proposed Maintenance Task
+- **Operation**: Structural Audit
+- **Target**: Entire local ecosystem
+- **Impact**: Read-only check
+
+> Does this look correct? I will generate the exact commands once you confirm.
+```
+
+### Phase 3: Command Execution
+Wait for the user's explicit confirmation (`yes`, `looks good`). Once confirmed, generate the exact bash command according to their choice:
+
+#### For Structural Audit
+**Checks Performed:** Presence of `skills/` directory, `SKILL.md` in every folder, absence of deprecated top-level `scripts/`.
 ```bash
 python3 plugins/plugin-manager/scripts/audit_structure.py
 ```
+> *For deeper content-level checks, remind the user to invoke `ecosystem-standards`.*
 
-**Checks Performed:**
-- Presence of `skills/` directory.
-- Presence of `SKILL.md` in every skill folder.
-- Absence of deprecated top-level `scripts/` (for standard plugins).
-- Compliance with file naming conventions.
-
-> For a deeper content-level audit (YAML frontmatter, anti-patterns, line limits), invoke the `ecosystem-standards` skill from `agent-skill-open-specifications`.
-
-### 2. Sync Plugins (Inventory-Based)
-Synchronize the local `plugins/` directory with the upstream `.vendor` collection.
-
+#### For Inventory Sync
+**Checks Performed:** Compares vendor to local, cleans artifacts, reinstalls upstream code.
 ```bash
+# First show what will change
 python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run
+# Then execute
 python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 ```
 
-**Process:**
-1. Generates vendor and local inventory comparison.
-2. Identifies removed plugins (present in Vendor but not Local).
-3. Cleans artifacts from `.agent`, `.github`, `.gemini`, `.claude`.
-4. Re-installs/updates all currently installed plugins.
-
-> **Note**: Project-specific plugins (not in Vendor) are always preserved.
-
-### 3. Generate READMEs
-Scaffold missing README.md files from plugin metadata.
-
+#### For README Generation
 ```bash
 python3 plugins/plugin-manager/scripts/generate_readmes.py --apply
 ```

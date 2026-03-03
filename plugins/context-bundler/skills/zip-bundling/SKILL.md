@@ -51,6 +51,19 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/bundle_zip.py" --manifest "file-manifest.
 
 The script will automatically parse your JSON notes and generate a `_manifest_notes.md` root document explaining the archive contents to whoever unzips it.
 
-## Best Practices
+## Conditional Step Inclusion & Error Handling
+If a file requested in the manifest does not exist or raises a permissions error:
+1. Do **not** abort the entire archive generation.
+2. Ensure the bundler script injects an explicit failure warning into the `_manifest_notes.md` root document:
+   ```markdown
+   > 🔴 **NOT INCLUDED**: `missing/file.py` could not be read.
+   ```
+3. Proceed archiving the remaining valid files.
+
+## Best Practices & Anti-Patterns
 1. **Always Provide Notes:** The `note` field in the manifest JSON is crucial for ZIP files because it becomes the only context passing through to the recipient's `_manifest_notes.md` index.
 2. **Directory Handling:** If you pass a directory path like `"path": "src/"` in the manifest schema, the Python script will recursively expand it and include all valid, readable contents.
+
+### Common Bundling Mistakes
+- **Binary/Media Bloat**: Including image assets without explicitly verifying if the downstream recipient can parse them.
+- **Silent Exclusion**: Filtering out an unreadable file without explicitly declaring it missing in the manifest notes.

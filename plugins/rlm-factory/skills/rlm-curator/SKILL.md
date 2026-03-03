@@ -24,6 +24,25 @@ without reading every file.
 | `cleanup_cache.py` | **The Janitor** -- stale entry removal | None |
 | `rlm_config.py` | **Shared Config** -- manifest & profile mgmt | None |
 
+## 🗺️ Pre-Execution Workflow Commitment
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    RLM DISTILLATION LOOP                        │
+├─────────────────────────────────────────────────────────────────┤
+│  Step 1: ASSESS                                                 │
+│  ✓ Run inventory check for missing semantic coverage            │
+│  Step 2: RETRIEVE                                               │
+│  ✓ Query cache to prevent redundant writes                      │
+│  Step 3: DISTILL (Choose Tier)                                  │
+│  ✓ Agent Injection (1-5 files)                                  │
+│  ✓ Swarm Batching (5+ files)                                    │
+│  ✓ Ollama Local Batch (if available)                            │
+│  Step 4: CURATE                                                 │
+│  ✓ Clean up stale orphaned cache entries                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## 📂 Execution Protocol
 
 ### 1. Assessment (Always First)

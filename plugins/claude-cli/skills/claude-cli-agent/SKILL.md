@@ -49,6 +49,10 @@ The CLI runs in a **separate context** — no access to agent tools or memory.
 ### 4. Output to File
 Always redirect output to a file (`> output.md`), then review with `view_file`.
 
+### 5. Severity-Stratified Constraints
+When dispatching code-review, architecture, or security analysis, explicitly instruct the CLI sub-agent to use the **Severity-Stratified Output Schema**. This ensures the Outer Loop can parse the results deterministically:
+> "Format all findings using the strict Severity taxonomy: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
+
 ## 🎭 Persona Categories
 
 | Category | Personas | Use For |

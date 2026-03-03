@@ -75,6 +75,20 @@ The final bundle format must follow this structure:
 \`\`\`
 ```
 
-## Best Practices
+## Conditional Step Inclusion & Error Handling
+If a file requested in the manifest does not exist or raises a permissions error:
+1. Do **not** abort the entire bundle.
+2. In the final `output.md`, insert a placeholder explicitly declaring the failure:
+   ```markdown
+   ## File: `missing/file.py`
+   > 🔴 **NOT INCLUDED**: The file was not found or could not be read.
+   ```
+3. Proceed bundling the remaining valid files.
+
+## Best Practices & Anti-Patterns
 1. **Self-Contained Functionality:** The output file must contain 100% of the context required for a secondary agent to operate without needing to run terminal commands.
 2. **Specialized Prompts:** If bundling for an external review (e.g., a "Red Team" security check), suggest including a specialized prompt file as the very first file in the bundle to guide the receiving LLM.
+
+### Common Bundling Mistakes
+- **Bloat**: Including `node_modules/` or massive `.json` dumps instead of targeted files.
+- **Silent Exclusion**: Filtering out an unreadable file without explicitly declaring it missing (violates transparency).

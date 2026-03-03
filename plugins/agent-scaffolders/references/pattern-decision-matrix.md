@@ -18,6 +18,7 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the skill take complex text, URLs, or files as input context? | **Multi-Modal Routing** | `multi-modal-routing.md` |
 | Does the user report surface symptoms that need root-cause diagnosis? | **Anti-Symptom Triage** | `anti-symptom-triage.md` |
 | Does the command group several sub-operations that have different outputs? | **Sub-Action Multiplexing** | `sub-action-multiplexing.md` |
+| Does the command require user input upstream where asking questions mid-flight hurts UX? | **Pre-Execution Input Manifest** | `pre-execution-input-manifest.md` |
 
 ### Category 2: Execution and Safety
 | Diagnostic Question | Required Pattern | File |
@@ -28,6 +29,11 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the agent query multiple systems of differing truthfulness? | **Priority-Ordered Scanning** | `priority-ordered-scanning.md` |
 | Does the command analyze or synthesize data across multiple systems? | **Multi-Source Synthesis** | `multi-source-synthesis.md` |
 | Is this a meta-skill designed to bootstrap or append to other skills? | **Dual-Mode Meta-Skill** | `dual-mode-meta-skill.md` |
+| Are we executing an irreversible workflow where failure under stress is fatal? | **Pre-Committed Rollback Contract** | `pre-committed-rollback-contract.md` |
+| Is the sequence of execution critical, but prone to human error? | [Pre-Execution Workflow Commitment Diagram](pre-execution-workflow-commitment-diagram.md) |
+| Does the resulting artifact govern an ongoing workflow spanning multiple organizational roles? | [Multi-Actor Operational Coordination Manifest](multi-actor-operational-coordination-manifest.md) |
+| Will the agent's natural sycophancy (agreeableness) ruin the analysis? | **Adversarial Objectivity Constraint** | `adversarial-objectivity-constraint.md` |
+| Is the command modifying constrained additive resources (dashboards, capacity)? | **Zero-Sum Addition Gate** | `zero-sum-addition-gate.md` |
 
 ### Category 3: Output and Contracts
 | Diagnostic Question | Required Pattern | File |
@@ -39,6 +45,12 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the agent need to express exactly where it looked vs where it didn't? | **Source Transparency** | `source-transparency.md` |
 | Does the output need special handling (e.g., privileged, confidential)?| **Output Classification** | `output-classification.md` |
 | Does the command produce written communications (emails, chat)? | **Multi-Dimensional Tone** | `multi-dimensional-tone.md` |
+| Is the output a priority ranking that requires mathematical determinism? | **Embedded Deterministic Scoring Formula** | `embedded-deterministic-scoring-formula.md` |
+| Will different audiences downstream need different facts omitted entirely? | **Audience-Segmented Information Filtering** | `audience-segmented-information-filtering.md` |
+| Are there known failure modes (anti-patterns) practitioners make in this domain? | **Anti-Pattern Vaccination** | `anti-pattern-vaccination.md` |
+| Does the tool produce a strategic analysis that requires the user to decide? | **Mandatory Counterfactual Scenario Templating** | `mandatory-counterfactual-scenario-templating.md` |
+| Does the primary stakeholder lack context needed to understand raw metrics? | [Impact-Translated Status](impact-translated-status.md) |
+| Does the organization have an expected statistical distribution or budget curve for these entities? | [Population-Normative Distribution Constraint](population-normative-distribution-constraint.md) |
 
 ### Category 4: State and Knowledge
 | Diagnostic Question | Required Pattern | File |
@@ -50,6 +62,9 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the skill create artifact files? | **Artifact Lifecycle** | `artifact-lifecycle.md` |
 | Does the skill synthesize an answer based on multiple competing sources?| **Tiered Source Authority**| `tiered-source-authority.md` |
 | Should the command point the user to the next logical step in a workflow?| **Chained Command Invocation**| `chained-command-invocation.md` |
+| Do the commands require configuration that is tedious to supply on every run? | [Persistent Plugin Configuration](persistent-plugin-configuration.md) |
+| Does the workflow happen in recurring, time-bounded periods where the previous output is the next input? | [Cyclical State Propagation Contract](cyclical-state-propagation-contract.md) |
+| Should the generated artifact structurally record its own procedural history? | **Artifact-Embedded Execution Audit Trail** | `artifact-embedded-execution-audit-trail.md` |
 
 ---
 
@@ -200,6 +215,79 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Tiered Source Authority with Propagated Confidence
 - **File:** `tiered-source-authority.md`
 - **Use Case:** Research, analysis, or synthesis skills where the agent must evaluate the trustworthiness of evidence before presenting an answer.
-- **Core Mechanic:** This is an evolution of Priority-Ordered Source Scanning. It doesn't just dictate search order; it mathematically links the **quality of the source** ...
+- **Core Mechanic:** This is an evolution of Priority-Ordered Source Scanning. It doesn't just dictate search order; it mathematically links the **quality of the source** to the **confidence of the claim**.
 
+### Action-Forcing Output with Deadline Attribution
+- **File:** `action-forcing-output-with-deadline-attribution.md`
+- **Use Case:** Status reports, cross-functional readouts, or technical reviews delivered to stakeholders who possess unblocking authority.
+- **Core Mechanic:** The output template includes a mandatory `### Decisions Needed` table, separated from Risks, enforcing deadlines and pre-loaded agent recommendations.
 
+### Adversarial Objectivity Constraint
+- **File:** `adversarial-objectivity-constraint.md`
+- **Use Case:** Competitive analysis, risk assessment, performance reviews, or code review where an overly positive/agreeable response destroys analytical utility.
+- **Core Mechanic:** Explicitly instructing the agent to counteract its natural bias toward sycophancy (e.g., forcing it to seek disconfirming evidence or acknowledge competitor strengths).
+
+### Anti-Pattern Vaccination
+- **File:** `anti-pattern-vaccination.md`
+- **Use Case:** Any generation domain with well-documented, recurring practitioner mistakes (e.g., writing requirements, API schemas).
+- **Core Mechanic:** Embedding an explicit list of known failure modes directly into the prompt logic, forcing the agent to screen its draft against those specific errors before outputting.
+
+### Artifact-Embedded Execution Audit Trail
+- **File:** `artifact-embedded-execution-audit-trail.md`
+- **Use Case:** Recurring procedures or operational processes (runbooks, playbooks, SOPs) where capturing operational intelligence across multiple runs is as important as the procedure itself.
+- **Core Mechanic:** Generating an empty `### Execution Log` table at the bottom of the artifact designed to be appended to by operators on future runs.
+
+### Audience-Segmented Information Filtering
+- **File:** `audience-segmented-information-filtering.md`
+- **Use Case:** Stakeholder updates, release notes, and status reports distributed to varied audiences.
+- **Core Mechanic:** An `Audience Policy Matrix` establishing what facts are explicitly disclosed or withheld per audience type, acting as an information checkpoint rather than a stylistic formatter.
+
+### Cyclical State Propagation Contract
+- **File:** `cyclical-state-propagation-contract.md`
+- **Use Case:** Workflows occurring in recurring, time-bounded periods (performance reviews, OKRs, multi-stage audits).
+- **Core Mechanic:** The final output of computing cycle N is geometrically structured to be the precise, required input for computing cycle N+1, explicitly linking asynchronous workflows over time.
+
+### Embedded Deterministic Scoring Formula
+- **File:** `embedded-deterministic-scoring-formula.md`
+- **Use Case:** Backlog grooming, tech debt prioritization, lead qualification, or any output where independent runs must produce the exact same relative ranking.
+- **Core Mechanic:** Hardcoding a strict mathematical formula (e.g., `Priority = (Impact + Risk) x (6 - Effort)`) directly into the skill to eliminate subjective priority sorting.
+
+### Mandatory Counterfactual Scenario Templating
+- **File:** `mandatory-counterfactual-scenario-templating.md`
+- **Use Case:** Planning, triage, and strategic analysis commands where the user expects to make a decision based on the output.
+- **Core Mechanic:** Mandating a `### Scenarios` tabular section as a top-level requirement that defines exactly which futures must be calculated (forcing a "Do nothing" vs additive/subtractive options).
+
+### Multi-Actor Operational Coordination Manifest
+- **File:** `multi-actor-operational-coordination-manifest.md`
+- **Use Case:** Cross-functional workflows where different teams must execute distinct actions in sequence (e.g., onboarding, go-to-market string, deployments).
+- **Core Mechanic:** A single document structurally labelled with distinct organizational action roles so that the artifact itself acts as the localized distribution pipeline downstream.
+
+### Persistent Plugin Configuration
+- **File:** `persistent-plugin-configuration.md`
+- **Use Case:** Plugins whose commands require stable, personalized context (org structure, tech stack) that is tedious to supply on every run.
+- **Core Mechanic:** Commands depend on a local JSON settings file. Rather than a purely stateless HITL tax via questions, the missing config triggers a one-time onboarding interview that saves to disk for future sessions.
+
+### Population-Normative Distribution Constraint
+- **File:** `population-normative-distribution-constraint.md`
+- **Use Case:** Tasks collecting evaluations, ratings, or resource requests over large population scales where human optimization biases deviate from aggregate organizational capacities.
+- **Core Mechanic:** Embedding statistical top-down expected distributions alongside user-provided values in the actual generated template to create a macro-calibration check.
+
+### Pre-Committed Rollback Contract
+- **File:** `pre-committed-rollback-contract.md`
+- **Use Case:** Any command where failure carries high consequences and real-time human judgment under stress is dangerous (deployments, migrations).
+- **Core Mechanic:** Generating a mandatory `### Rollback Triggers` block with placeholder thresholds that the user must fill in, pre-defining explicit abort criteria *before* the action begins.
+
+### Pre-Execution Input Manifest
+- **File:** `pre-execution-input-manifest.md`
+- **Use Case:** Data-heavy commands where interactive piecemeal generation of missing data hurts UX for power users.
+- **Core Mechanic:** A declarative checklist presented *before* the output template that explicitly tells the user what data is required, shifting cognitive load upstream so users can prep in one shot.
+
+### Pre-Execution Workflow Commitment Diagram
+- **File:** `pre-execution-workflow-commitment-diagram.md`
+- **Use Case:** Multi-phase commands where users benefit from understanding the whole process upfront or where the agent proves prone to skipping steps.
+- **Core Mechanic:** Every command opens with an ASCII flowchart visual diagram mapping the process steps before any logic evaluates, committing the agent structurally to that process.
+
+### Zero-Sum Addition Gate
+- **File:** `zero-sum-addition-gate.md`
+- **Use Case:** Sprint planning, roadmap management, staffing changes, or any system where resources are finite.
+- **Core Mechanic:** A pre-action capacity constraint that evaluates resource limits and forbids the agent from blindly executing an additive operation without forcing a subtractive trade-off decision from the user...
