@@ -113,7 +113,7 @@ Throughout the process, the Outer Loop must maintain discipline over task states
 
 ## Workspace Isolation
 
-> **Dual-Loop (Agent-Loops) does not manage workspaces.** It receives an isolated directory or execution context from the Orchestrator and runs the loop inside it. Workspace creation (e.g., git worktrees, branches) is a delegated responsibility of the Orchestrator or Guardian level tools.
+> **Dual-Loop (Agent-Loops) does not manage workspaces.** It receives an isolated directory or execution context from the Orchestrator and runs the loop inside it. Workspace creation (e.g., git worktrees, branches) is a delegated responsibility of the Orchestrator or the global system environment.
 
 ### Fallback: In-Place Execution
 

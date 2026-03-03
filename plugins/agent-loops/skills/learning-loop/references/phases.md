@@ -62,11 +62,11 @@ Every loop instance should track:
 1. **Verify Completion**: Ensure the research or analysis goal you set out to achieve has been genuinely met.
 2. **Hand off**: Stop generating new actions and explicitly pass your findings back to the Orchestrator.
 3. **DO NOT**:
-   - Do not generate `learning_package_snapshot.md` (the Guardian's RLM Synthesizer does this).
-   - Do not run `context-bundler` to seal the session (the Guardian does this).
-   - Do not push traces to HuggingFace or update Vector DBs (the Guardian does this).
-   - Do not commit to Git (the Guardian does this).
+   - Do not generate `learning_package_snapshot.md` (the primary agent's RLM Synthesizer does this).
+   - Do not run `context-bundler` to seal the session (the primary agent does this).
+   - Do not push traces to HuggingFace or update Vector DBs (the primary agent does this).
+   - Do not commit to Git (the primary agent does this).
 
 ## Next Session: The Bridge
 
-The global repository environment (the Guardian) handles sealing your work and waking up the next agent. Your responsibility ends at Phase V.
+The global repository environment (the primary agent) handles sealing your work and waking up the next agent. Your responsibility ends at Phase V.

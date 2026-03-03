@@ -3,8 +3,8 @@
     "description": "Lightweight kanban task board \u2014 JSON-backed lanes (backlog, todo, in-progress, done) with zero dependencies",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary",
-        "url": "https://github.com/richfrem/Project_Sanctuary"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/<your repo path>"
     },
     "license": "MIT",
     "keywords": [

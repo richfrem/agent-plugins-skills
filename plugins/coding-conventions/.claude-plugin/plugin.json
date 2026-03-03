@@ -3,7 +3,7 @@
     "description": "Coding standards, documentation conventions, and header templates for Python, TypeScript/JavaScript, and C#/.NET",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary"
+        "name": "Richard Fremmerlid"
     },
     "license": "MIT",
     "keywords": [

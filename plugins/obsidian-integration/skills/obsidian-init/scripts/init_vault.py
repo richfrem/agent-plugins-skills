@@ -115,9 +115,9 @@ def init_vault(vault_root: Path, extra_exclusions: list = None, validate_only: b
         "All non-excluded .md files will be indexed automatically"
     ]
 
-    # Hint about SANCTUARY_VAULT_PATH
-    if not os.environ.get("SANCTUARY_VAULT_PATH"):
-        result["env_hint"] = f"Consider setting: export SANCTUARY_VAULT_PATH={vault_root}"
+    # Hint about VAULT_PATH
+    if not os.environ.get("VAULT_PATH"):
+        result["env_hint"] = f"Consider setting: export VAULT_PATH={vault_root}"
 
     return result
 

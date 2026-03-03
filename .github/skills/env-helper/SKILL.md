@@ -38,13 +38,13 @@ hf_config = resolve_hf_config()
 ## Resolution Order
 1. `os.environ` (process environment)
 2. `.env` file at project root (walked up from script location)
-3. Built-in defaults (e.g. `HF_DATASET_REPO=SanctuaryDB`)
+3. Built-in defaults (e.g. `HF_DATASET_REPO=YouRepoDataSetName`)
 
 ## Known Constants
 | Key | Description | Default |
 |:---|:---|:---|
 | `HF_TOKEN` | HuggingFace API token | *(required)* |
 | `HF_USERNAME` | HuggingFace username | *(required)* |
-| `HF_DATASET_REPO` | Dataset repo name | `SanctuaryDB` |
+| `HF_DATASET_REPO` | Dataset repo name | `YouRepoDataSetName` |
 | `HF_LINEAGE_FOLDER` | Remote lineage folder name | `lineage` |
 | `HF_SOUL_TRACES_FILE` | Remote JSONL traces path | `data/soul_traces.jsonl` |

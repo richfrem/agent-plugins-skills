@@ -1,7 +1,7 @@
 # Acceptance Criteria: Tool Inventory
 
 ## Objective
-Ensure the Agent can correctly interact with the `tool_inventory.json` registry.
+Ensure the Agent can correctly interact with the `plugins/tool_inventory.json` registry.
 
 ## Scenario 1: Search the Registry
 - **Setup**: Agent uses the semantic search prompt.
@@ -9,7 +9,7 @@ Ensure the Agent can correctly interact with the `tool_inventory.json` registry.
 - **Validation**: The Agent successfully retrieves a list of relevant scripts from the semantic index.
 
 ## Scenario 2: Register a New Tool
-- **Setup**: Agent identifies a script that is missing from `tool_inventory.json`.
+- **Setup**: Agent identifies a script that is missing from `plugins/tool_inventory.json`.
 - **Action**: The Agent runs `manage_tool_inventory.py add --path [path]`.
 - **Validation**: The tool is successfully added to the registry JSON file.
 

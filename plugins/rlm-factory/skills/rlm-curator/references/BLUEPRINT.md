@@ -1,6 +1,6 @@
 # recursive language model (RLM): The Holographic Cache Pattern
 
-**Status:** Production Verified (Project Sanctuary)  
+**Status:** Production Verified (Project Ecosystem)  
 **Architecture Type:** Cognitive Memory Architecture  
 **Primary Use Case:** Large-Scale Codebase & Documentation Understanding for AI Agents
 
@@ -29,7 +29,7 @@ This pattern is the memory core of the [Infinite Context Ecosystem](../../../doc
 
 ## 3. Technical Implementation Blueprint
 
-This pattern can be implemented in any language (Python/TS/Go). Below is the reference implementation logic used in Project Sanctuary.
+This pattern can be implemented in any language (Python/TS/Go). Below is the reference implementation logic used in Project Ecosystem.
 
 ### 3.1 The Schema (`ledger.json`)
 

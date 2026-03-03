@@ -3,7 +3,7 @@
 Audit Plugin Inventory
 ======================
 
-Audits the `tool_inventory.json` against the actual file system to ensure all
+Audits the `plugins/tool_inventory.json` against the actual file system to ensure all
 scripts in `plugins/` are registered.
 
 Checks for:
@@ -23,7 +23,7 @@ from pathlib import Path
 # Setup paths
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent
-INVENTORY_PATH = PROJECT_ROOT / "tools" / "tool_inventory.json"
+INVENTORY_PATH = PROJECT_ROOT / "tools" / "plugins/tool_inventory.json"
 RLM_CACHE_PATH = PROJECT_ROOT / ".agent" / "learning" / "rlm_tool_cache.json"
 
 def load_json(path):

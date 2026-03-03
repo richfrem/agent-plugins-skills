@@ -5,7 +5,7 @@ trigger: always_on
 # Workflow Artifacts Integrity Policy
 
 **Effective Date**: 2026-02-12
-**Related Constitution Articles**: I (Hybrid Workflow), III (Zero Trust)
+**Related Constitution Articles**: I (Spec Kitty Workflow), III (Zero Trust)
 
 ## Core Mandate: Tool-Generated Truth
 The Agent MUST NOT simulate work or manually create process artifacts that are controlled by CLI tools.
@@ -20,7 +20,7 @@ The following files are **READ-ONLY** for manual editing by the Agent. They MUST
 | `plan.md` | `/spec-kitty.plan` | Manually scaffolding a plan |
 | `tasks.md` | `/spec-kitty.tasks` | Manually typing a task list |
 | `tasks/WP-*.md` | `/spec-kitty.tasks` | Manually creating prompt files |
-| Task lane changes | `.kittify/scripts/tasks/tasks_cli.py update` | Manually editing frontmatter or `[x]` |
+| Task lane changes | `python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py update` | Manually editing frontmatter or `[x]` |
 
 **Violation**: Creating these files via `write_to_file` is a critical process failure.
 
@@ -33,21 +33,21 @@ The Agent MUST NOT mark a checklist item as complete (`[x]`) unless:
 **Simulation is Lying**: Marking a task `[x]` based on "intent", "mental model", or narrating "I would now run..." is prohibited. The ONLY acceptable proof is real command output.
 
 **Known agent failure modes**:
-- Writing "Seal complete" without running `/sanctuary-seal`
+- Writing "Seal complete" without running `/spec-kitty-seal`
 - Narrating "I would now run the verification" instead of running it
 - Skipping closure phases (seal/persist/retrospective) to "save time"
 - Marking kanban tasks as done without using the tasks CLI
 
 ### 3. Kanban Sovereignty
 - **NEVER** manually edit WP frontmatter (lane, agent, shell_pid fields)
-- **ALWAYS** use `.kittify/scripts/tasks/tasks_cli.py` for lane transitions
+- **ALWAYS** use `python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py` for lane transitions
 - **ALWAYS** run `/spec-kitty.status` after a lane change and paste the board as proof
 - **NEVER** mark a WP as `done` without first running verification tools
 
 ### 4. Closure Is Mandatory
 When a session ends, the agent MUST execute the full closure sequence:
 ```
-/sanctuary-seal → /sanctuary-persist → /sanctuary-retrospective → /sanctuary-end
+/spec-kitty-seal → /spec-kitty-persist → /spec-kitty-retrospective → /spec-kitty-end
 ```
 Each step requires pasted output as proof. Skipping any step is a protocol violation.
 

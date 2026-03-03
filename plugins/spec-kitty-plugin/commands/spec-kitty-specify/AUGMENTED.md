@@ -1,11 +1,11 @@
-# Project Sanctuary: Specify Augmentation
+# Project Ecosystem: Specify Augmentation
 
 > This file contains project-specific best practices for the specify workflow.
 > It is NOT overwritten by `sync_configuration.py` — only `SKILL.md` is auto-synced.
 
 ## Leverage Doc Co-Authoring for Specifications
 
-The `doc-coauthoring` skill (from Anthropic/Claude) provides a structured 3-stage workflow that significantly improves specification quality. **Use it when writing spec.md content.**
+The `doc-coauthoring` skill (from your LLM provider) provides a structured 3-stage workflow that significantly improves specification quality. **Use it when writing spec.md content.**
 
 **Cross-reference**: `plugins/doc-coauthoring/skills/doc-coauthoring/SKILL.md`
 

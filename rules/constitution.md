@@ -54,7 +54,7 @@ Any operation that:
 - **fallback IS PROHIBITED**: If `query_cache.py` fails, you MUST STOP and ask user to refresh cache.
 - **ALWAYS** use **Tool Discovery**: `python plugins/tool-inventory/scripts/query_cache.py`. It's your `.agent/skills/SKILL.md`
 - **ALWAYS** use defined **Slash Commands** (e.g., `/legacy-system-oracle-forms_*`, `/spec-kitty.*`, `/tool-inventory_*`) over raw scripts.
-- **ALWAYS** use underlying `.py` scripts in `plugins/` via the `plugins/cli.py` boundary where applicable.
+- **ALWAYS** use underlying `.py` scripts in `plugins/` through their respective skill pathways where applicable.
 - **NEVER** substitute manual analysis for a defined Slash Command. Reading source files and writing outputs directly when a skill exists for that task = **workflow simulation**. The Slash Command exists to produce standardized artifacts with traceability. Invoke it via the Skill tool.
 
 ## V. Definition of Done

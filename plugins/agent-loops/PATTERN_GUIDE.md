@@ -1,6 +1,6 @@
 # Agent Loops: Pattern Guide
 
-This guide maps the Sanctuary Agent-Loops skills to standard industry terminology (e.g., Google ADK patterns) and provides a comparative reference for when and how to use them.
+This guide maps the Agent-Loops skills to standard industry terminology (e.g., Google ADK patterns) and provides a comparative reference for when and how to use them.
 
 ## Overview of Patterns
 

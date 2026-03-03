@@ -6,7 +6,7 @@ description: "Safe Create/Read/Update/Delete operations for Obsidian Vault notes
 # Obsidian Vault CRUD
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** Obsidian Integration
 **Depends On:** `obsidian-markdown-mastery` (WP05)
 

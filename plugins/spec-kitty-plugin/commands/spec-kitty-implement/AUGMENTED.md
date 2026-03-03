@@ -1,4 +1,4 @@
-# Project Sanctuary: Implement Augmentation
+# Project Ecosystem: Implement Augmentation
 
 > This file contains project-specific best practices for the implement workflow.
 > It is NOT overwritten by `sync_configuration.py` — only `SKILL.md` is auto-synced.
@@ -9,7 +9,7 @@
 
 When editing files in a worktree, ALWAYS use absolute paths:
 ```
-/Users/.../Project_Sanctuary/.worktrees/<FEATURE>-WP01/path/to/file.py
+/Users/.../Project_Ecosystem/.worktrees/<FEATURE>-WP01/path/to/file.py
 ```
 
 NEVER use relative paths — agents frequently drift into the wrong directory.

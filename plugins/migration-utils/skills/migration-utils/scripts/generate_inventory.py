@@ -377,8 +377,6 @@ def generate_inventory():
                 content = f.read()
                 matches = ref_pattern.findall(content)
                 for m in matches:
-                    # Filter out tools/cli.py valid usages
-                    if m == "tools/cli.py": continue
                     found_refs.add(m)
         except Exception:
             continue

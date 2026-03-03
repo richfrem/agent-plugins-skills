@@ -51,4 +51,4 @@ could add `pgrep`-based detection of the Obsidian process as a "warm vault" warn
 2. **Fail loudly** — Abort and alert rather than silently overwrite
 3. **Preserve formatting** — Never use libraries that reorder or normalize YAML/JSON
 4. **Separate concerns** — Parser ≠ I/O ≠ Init. Each skill has exactly one job
-5. **Project-agnostic** — Skills know nothing about Sanctuary; only about Obsidian syntax
+5. **Project-agnostic** — Skills know nothing about any specific project that consumes these plugins; only about Obsidian syntax

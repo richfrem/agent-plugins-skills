@@ -5,7 +5,7 @@
 **Embeddings:** `nomic-embed-text-v1.5`
 **Database:** ChromaDB (Network Hosted / Podman)
 
-This document outlines the finalized architectural integration for the `vector-db` plugin, synthesizing the requirements extracted from the legacy Project Sanctuary deployment environment.
+This document outlines the finalized architectural integration for the `vector-db` plugin, synthesizing the requirements extracted from the legacy Project Ecosystem deployment environment.
 
 ---
 

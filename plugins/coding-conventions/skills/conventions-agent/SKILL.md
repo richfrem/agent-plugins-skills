@@ -16,7 +16,7 @@ You enforce coding conventions and documentation standards for all code in the p
 3. **Type hints** — all Python function signatures use type annotations
 4. **Naming** — `snake_case` (Python), `camelCase` (JS/TS), `PascalCase` (C# public)
 5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers
-6. **Tool registration** — all `plugins/` scripts registered in `tool_inventory.json`
+6. **Tool registration** — all `plugins/` scripts registered in `plugins/tool_inventory.json`
 7. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
 
 ## 📂 Header Templates

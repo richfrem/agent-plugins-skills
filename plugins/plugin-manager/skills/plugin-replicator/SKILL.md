@@ -27,7 +27,7 @@ python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin <plugin-nam
 
 **Example:**
 ```bash
-python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin guardian-onboarding --target ../project-sanctuary --link
+python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin example-plugin --target ../project-consumer --link
 ```
 
 ### 2. Bulk Replication

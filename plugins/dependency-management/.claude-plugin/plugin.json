@@ -3,7 +3,7 @@
     "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary"
+        "name": "Richard Fremmerlid"
     },
     "license": "MIT",
     "keywords": [

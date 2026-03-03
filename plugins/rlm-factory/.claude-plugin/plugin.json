@@ -3,10 +3,10 @@
     "description": "Recursive Language Model factory \u2014 distill repository files into semantic summaries using Ollama for instant context retrieval",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary",
-        "url": "https://github.com/richfrem/Project_Sanctuary"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/<your repo path>"
     },
-    "repository": "https://github.com/richfrem/Project_Sanctuary",
+    "repository": "https://github.com/<your repo path>",
     "license": "MIT",
     "keywords": [
         "rlm",

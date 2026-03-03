@@ -21,7 +21,7 @@ that captures local project workflows and broadcasts them across all AI agents.
 ### Known Agent Failure Modes (DO NOT DO THESE)
 1. **Checkbox theater**: Marking `[x]` without running the command
 2. **Manual file creation**: Writing spec.md/plan.md/tasks.md by hand instead of using CLI
-3. **Kanban neglect**: Not updating task lanes via tasks_cli.py
+3. **Kanban neglect**: Not updating task lanes via task_manager.py
 4. **Verification skip**: Marking a phase complete without running `verify_workflow_state.py`
 5. **Closure amnesia**: Finishing code but skipping review/merge/closure
 6. **Premature cleanup**: Manually deleting worktrees before `spec-kitty merge`
@@ -85,7 +85,7 @@ spec-kitty tasks    →  verify --phase tasks
 2. cd .worktrees/WP-xx            → Isolate in worktree
 3. Code & Test                    → Implement feature
 4. git add . && git commit        → Commit locally
-5. tasks_cli.py update → for_review → Submit for review
+5. python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py move <ID> for_review → Submit for review
 6. spec-kitty review WP-xx        → Review & move to done
 ```
 
@@ -175,17 +175,17 @@ Each state transition requires proof (pasted command output). No state may be sk
 ## 📂 Kanban CLI
 ```bash
 # List WPs
-python3 .kittify/scripts/tasks/tasks_cli.py list <FEATURE>
+python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py list
 
 # Move lane (planned → doing → for_review → done)
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE> <WP-ID> <LANE> \
-  --agent "<NAME>" --note "reason"
+python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py move <WP-ID> <LANE> \
+  --note "reason"
 
 # Activity log
-python3 .kittify/scripts/tasks/tasks_cli.py history <FEATURE> <WP-ID> --note "..."
+python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py history <WP-ID> --note "..."
 
 # Rollback
-python3 .kittify/scripts/tasks/tasks_cli.py rollback <FEATURE> <WP-ID>
+python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py rollback <WP-ID>
 ```
 
 ## 🔧 Troubleshooting

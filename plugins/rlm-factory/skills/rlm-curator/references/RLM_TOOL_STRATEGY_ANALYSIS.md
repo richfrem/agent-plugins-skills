@@ -1,7 +1,7 @@
 # Analysis: RLM Tool Discovery Strategy
 
 ## 1. Executive Summary
-This document analyzes the current recursive language model (RLM) architecture and evaluates options for integrating "Late Binding" Tool Discovery. The goal is to allow the Agent to index and learn from the executable tool inventory (`tool_inventory.json`) without polluting the existing legacy documentation index (`distiller_manifest.json`).
+This document analyzes the current recursive language model (RLM) architecture and evaluates options for integrating "Late Binding" Tool Discovery. The goal is to allow the Agent to index and learn from the executable tool inventory (`plugins/tool_inventory.json`) without polluting the existing legacy documentation index (`distiller_manifest.json`).
 
 ## 2. Current Architecture State
 
@@ -19,7 +19,7 @@ This document analyzes the current recursive language model (RLM) architecture a
     *   **Metadata**: Manually curated descriptions + status.
 
 ### Identified Gaps
-1.  **Incompatible Source of Truth**: `distiller.py` expects directory limits, whereas Tools are best defined by the **explicit list** in `tool_inventory.json`.
+1.  **Incompatible Source of Truth**: `distiller.py` expects directory limits, whereas Tools are best defined by the **explicit list** in `plugins/tool_inventory.json`.
 2.  **Incompatible Prompts**: The current prompt asks "What business function does this serve?". For tools, we need "How do I use this CLI?".
 3.  **Cache Contamination**: Mixing "How to run script X" with "How Business Rule Y works" in a single `rlm_summary_cache.json` risks semantic confusion and context poisoning.
 
@@ -39,7 +39,7 @@ Create a dedicated `tool_distiller.py` specifically for the Tool Inventory.
 Refactor `distiller.py` to support distinct **Modes** via CLI arguments.
 *   **Mechanism**:
     *   `--mode doc` (Default): Uses `distiller_manifest.json`, Legacy Prompt, `rlm_summary_cache.json`.
-    *   `--mode tool`: Uses `tool_inventory.json` (via `--inventory`), Tool Prompt, `rlm_tool_cache.json`.
+    *   `--mode tool`: Uses `plugins/tool_inventory.json` (via `--inventory`), Tool Prompt, `rlm_tool_cache.json`.
 *   **Pros**:
     *   Single codebase for hashing/caching/API logic.
     *   Centralized configuration.

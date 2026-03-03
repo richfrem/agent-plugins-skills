@@ -1,5 +1,5 @@
 {
-    "description": "Minimal configuration for RLM Sanctuary Distillation",
+    "description": "Minimal configuration for RLM Distillation",
     "include": [
         "README.md"
     ],

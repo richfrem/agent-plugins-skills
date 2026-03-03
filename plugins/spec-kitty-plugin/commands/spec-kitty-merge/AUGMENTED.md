@@ -1,4 +1,4 @@
-# Project Sanctuary: Merge Augmentation
+# Project Ecosystem: Merge Augmentation
 
 > This file contains project-specific best practices and safety guidance for the merge workflow.
 > It is NOT overwritten by `sync_configuration.py` — only `SKILL.md` is auto-synced.
