@@ -12,9 +12,12 @@ Composable agent loop architectures for **learning loops**, **agent orchestratio
 | **`dual-loop`** | 3. Inner/Outer Agent (Sequential Agent / Agent as a Tool) | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies output. |
 | **`agent-swarm`** | 4. Parallel Execution (Parallel Agent) | Partition work → dispatch to N agents across isolated workspaces → verify and merge all. |
 
+> [!TIP]
+> 📖 Read the comprehensive **[Agent Loops Pattern Guide](PATTERN_GUIDE.md)** for a deep dive into the pros, cons, and when to use each of these industry-standard architectures.
+
 ## How It Works
 
-The orchestrator assesses the trigger (question, issue, research need, work assignment, review request) and routes to the appropriate pattern:
+This repository bridges the gap between abstract agent theories and concrete implementation. The orchestrator assesses the trigger (question, issue, research need, work assignment, review request) and routes to the appropriate pattern:
 
 ```
 Trigger → Orchestrator → Which pattern?
