@@ -48,7 +48,6 @@ def main() -> None:
     parser.add_argument("--profile", required=True, help="RLM profile name (from rlm_profiles.json)")
     parser.add_argument("--file", "-f", required=True, help="Single file to process (relative to project root)")
     parser.add_argument("--summary", required=True, help="The summary string to inject")
-    parser.add_argument("--execution-pattern", required=False, default="UNKNOWN", help="The agent execution pattern used")
 
     args = parser.parse_args()
 
@@ -76,7 +75,6 @@ def main() -> None:
                 cache[rel_path] = {
                     "hash": content_hash,
                     "summary": args.summary,
-                    "execution_pattern_used": args.execution_pattern,
                     "summarized_at": datetime.now().isoformat()
                 }
                 save_cache(cache, config.cache_path)
