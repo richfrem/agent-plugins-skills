@@ -6,7 +6,7 @@ description: "Programmatically create and manipulate Obsidian Canvas (.canvas) f
 # Obsidian Canvas Architect
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** Obsidian Integration
 **Depends On:** `obsidian-vault-crud` (WP06)
 

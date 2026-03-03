@@ -27,7 +27,7 @@ To unpackage and install this capability:
     ```
 
 4.  **Register Tools**:
-    Access `plugins/bridge/tool_inventory.json` (included in this bundle) to see the list of tools available for registration in your agent's configuration.
+    Access `plugins/bridge/plugins/tool_inventory.json` (included in this bundle) to see the list of tools available for registration in your agent's configuration.
 
 5.  **Restart IDE**:
     If this is a fresh install, restart the IDE to load the new slash commands (e.g., `/spec-kitty.bridge`).

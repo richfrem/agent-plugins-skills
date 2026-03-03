@@ -6,13 +6,13 @@ description: "Upload primitives for HuggingFace Soul persistence - file, folder,
 # HuggingFace Upload Primitives
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** HuggingFace Integration
 **Depends on:** `hf-init` (credentials must be configured first)
 
 ## Purpose
 
-Provides consolidated upload operations for all HF-consuming plugins (Guardian, Forge Soul, etc.). All uploads include exponential backoff for rate-limit handling.
+Provides consolidated upload operations for all HF-consuming plugins (Primary Agent, Orchestrator, etc.). All uploads include exponential backoff for rate-limit handling.
 
 ## Available Operations
 

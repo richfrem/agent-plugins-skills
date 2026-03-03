@@ -35,7 +35,7 @@ curl -sf http://127.0.0.1:11434/api/tags > /dev/null && echo "✅ Ollama ready" 
 
 ## Verify Model Available
 
-For RLM distillation, the project uses Sanctuary-Qwen2-7B:
+For RLM distillation, the project uses model you define in .env
 
 ```bash
 # List available models

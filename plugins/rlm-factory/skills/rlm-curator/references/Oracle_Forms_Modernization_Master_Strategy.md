@@ -26,7 +26,7 @@ The current system uses a "Bridge" architecture where Python tools mediate betwe
 ## 4. Key Architectural Components
 
 ### A. The "Bridge" Tools (Existing)
-*   **CLI (`plugins/cli.py`)**: The orchestrator.
+*   **Toolchain Orchestrator**: The dedicated workflow runner script for the process.
 *   **Miners**: Specialized scripts that extract logic (e.g., `find_xml_file` logic, `RG_PAAS_AGENCIES` extraction).
 *   **Analysis Artifacts**: `task.md`, `implementation_plan.md`, `walkthrough.md`.
 *   **Ref**: [Code Conversion Tool Development Approach](../../development/code-conversiontool-development-approach.md)

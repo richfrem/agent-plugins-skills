@@ -9,8 +9,8 @@ Usage:
     plugin_replicator.py --plugin <plugin_name> --target <project_root> [--link]
 
 Arguments:
-    --plugin    Name of the plugin directory in 'plugins/' (e.g., 'guardian-onboarding')
-    --target    Root directory of the target project (e.g., '../project-sanctuary')
+    --plugin    Name of the plugin directory in 'plugins/' (e.g., 'obsidian-integration')
+    --target    Root directory of the target project (e.g., '../project-consumer')
     --link      (Optional) Create a symbolic link instead of copying (Best for dev)
 """
 
@@ -98,7 +98,7 @@ def main():
     
     args = parser.parse_args()
     
-    print(f"🚀 Bridge Installer: {args.plugin} -> {args.target}")
+    print(f"🚀 Plugin Replicator: {args.plugin} -> {args.target}")
     success = install_plugin(args.plugin, args.target, args.link)
     
     if success:

@@ -1,6 +1,7 @@
 ---
 name: orchestrator
-description: "Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
+aliases: ["Routing Agent", "Orchestrator Pattern"]
+description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations. Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
 ---
 
 # Orchestrator: Loop Router & Lifecycle Manager
@@ -45,7 +46,7 @@ Use this to select the correct loop pattern:
 4.  **Verify (Review)**: You verify the output against acceptance criteria.
 5.  **Correct (Feedback)**: If verification fails, you generate a **Correction Packet** and loop back to step 3.
 6.  **Retrospective (Learning)**: You assess the loop's success and document learnings.
-7.  **Guardian Handoff (Closure)**: You signal the repository environment to seal the session, update databases, and commit to Git.
+7.  **Primary Agent Handoff (Closure)**: You signal the repository environment to seal the session, update databases, and commit to Git.
 
 ## Roles
 
@@ -128,8 +129,8 @@ This creates a template in the `retros/` directory.
 
 This makes each loop iteration smoother than the last.
 
-### 7. Handoff to Guardian (Ecosystem Sealing)
-Once the loop is complete and learning has been extracted, the Orchestrator MUST pass control to the environment's global sovereign (e.g., the `guardian-onboarding` plugin). 
+### 7. Handoff to Primary Agent (Ecosystem Sealing)
+Once the loop is complete and learning has been extracted, the Orchestrator MUST pass control to the environment's global sovereign (e.g., the primary agent plugin). 
 
 **The Orchestrator explicitly DOES NOT:**
 - Execute `capture_snapshot.py` or update semantic ledgers (RLMs).
@@ -137,7 +138,7 @@ Once the loop is complete and learning has been extracted, the Orchestrator MUST
 - Execute Vector DB ingestion scripts.
 - Execute Git commands (`git commit`, `git push`).
 
-These are environment-specific actions owned entirely by the **Guardian**. The Orchestrator's job is done.
+These are environment-specific actions owned entirely by the **Primary Agent**. The Orchestrator's job is done.
 
 ---
 
@@ -151,7 +152,7 @@ The orchestrator must verify these gates at each phase:
 | **Execution** | Packets are generated and handed off. |
 | **Review** | Output passes verification criteria. |
 | **Retrospective** | Post-loop learnings extracted and infrastructure improved. |
-| **Guardian Handoff** | Signal the global ecosystem to run Seal, Persist, and Git closure. |
+| **Primary Agent Handoff** | Signal the global ecosystem to run Seal, Persist, and Git closure. |
 
 **No phase may be skipped.** If a gate fails, the orchestrator must resolve it before proceeding.
 

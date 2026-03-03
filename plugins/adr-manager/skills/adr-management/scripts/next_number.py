@@ -11,10 +11,10 @@ Purpose:
 Layer: Investigate / Utils
 
 Usage Examples:
-    python plugins/adr-manager/scripts/next_number.py --type spec
-    python plugins/adr-manager/scripts/next_number.py --type task
-    python plugins/adr-manager/scripts/next_number.py --type br
-    python plugins/adr-manager/scripts/next_number.py --type all
+    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type spec
+    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type task
+    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type br
+    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type all
 
 CLI Arguments:
     --type          : Artifact type (spec, task, adr, chronicle, br, bw, all)
@@ -33,7 +33,6 @@ Key Functions:
     - main(): Scans directories using regex patterns defined in ARTIFACT_TYPES.
 
 Consumed by:
-    - scripts/domain_cli.py (indirectly logic reference)
     - Manual workflow execution
 """
 import os

@@ -13,7 +13,7 @@ Usage:
     # As a library (imported by manage_tool_inventory.py)
     from tool_chroma import ToolChroma
     tc = ToolChroma()
-    tc.upsert("tools/cli.py", "CLI router for all sanctuary commands", {"category": "orchestrator"})
+    tc.upsert("plugins/example_script.py", "CLI router for all ecosystem commands", {"category": "orchestrator"})
     results = tc.search("distiller", n=5)
 
     # As a CLI

@@ -23,7 +23,7 @@ post_cmd: >-
 vars:
   profile: project
 ---
-Summarize the provided Project Sanctuary Chronicle entry as a single dense plain-text paragraph for the RLM cache. An AI agent will read only this summary—not the original file—so every word must count.
+Summarize the provided entry as a single dense plain-text paragraph for the RLM cache. An AI agent will read only this summary—not the original file—so every word must count.
 
 Rules:
 1. Start with: Chronicle Entry [N] ([date]):  — extract N from the heading number and date from the Date field.

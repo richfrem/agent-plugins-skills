@@ -25,7 +25,7 @@ read/write approach was chosen over Obsidian's Local REST API and custom TypeScr
 The Obsidian skills know NOTHING about any specific project's domain logic.
 They only know how to parse/write Obsidian-flavored markdown. Project-specific
 context (like which folders map to what) is injected by the project's own
-configuration (e.g., `SANCTUARY_VAULT_PATH`).
+configuration (e.g., `VAULT_PATH`).
 
 ### 2. Separation of Concerns
 ```

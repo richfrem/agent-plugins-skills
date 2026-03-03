@@ -2,7 +2,7 @@
 """
 rebuild_inventory.py
 ====================
-Scans the plugins directory and rebuilds tool_inventory.json from scratch.
+Scans the plugins directory and rebuilds plugins/tool_inventory.json from scratch.
 """
 import sys
 import os
@@ -23,7 +23,7 @@ except ImportError:
     from manage_tool_inventory import InventoryManager
 
 def rebuild():
-    inventory_path = PROJECT_ROOT / "tools" / "tool_inventory.json"
+    inventory_path = PROJECT_ROOT / "tools" / "plugins/tool_inventory.json"
     
     # Backup existing if it exists
     if inventory_path.exists():

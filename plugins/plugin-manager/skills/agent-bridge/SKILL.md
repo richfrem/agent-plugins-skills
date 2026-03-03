@@ -27,7 +27,7 @@ python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --
 
 **Example:**
 ```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/guardian-onboarding --target github
+python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/obsidian-integration --target github
 ```
 
 > **Note**: The bridge installer is provided by the `plugin-mapper` plugin, which supports 30+ target environments including Cursor, Roo, Codex, and more.

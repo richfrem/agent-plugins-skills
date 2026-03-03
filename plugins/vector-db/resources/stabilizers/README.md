@@ -230,14 +230,14 @@ Top Results:
 
 1. **Implement Semantic Entropy Stabilizer** (79% hallucination detection)
 2. **Build Stabilizer Dashboard** (visualize fact atom health)
-3. **Integrate with Guardian Wakeup** (Protocol 114)
+3. **Integrate with Primary Agent Wakeup** (Protocol 114)
 4. **Deploy to Production** (run weekly via cron)
 
 ## References
 
 - **Protocol 126**: QEC-Inspired AI Robustness (Virtual Stabilizer Architecture)
 - **Protocol 125**: Autonomous AI Learning System Architecture
-- **Protocol 114**: Guardian Wakeup (Boot Digest)
+- **Protocol 114**: Primary Agent Wakeup (Boot Digest)
 - **Mission LEARN-CLAUDE-001**: Quantum Error Correction Research
 - **Mission LEARN-CLAUDE-002**: Protocol 126 Creation
 - **Mission LEARN-CLAUDE-003**: Vector Consistency Stabilizer Implementation

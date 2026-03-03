@@ -4,7 +4,7 @@ Guide users through a structured workflow for co-authoring documentation. Use wh
 
 ## Overview
 This plugin provides capabilities for the **doc-coauthoring** domain.
-It follows the standard Project Sanctuary plugin architecture.
+It follows the standard Project Ecosystem plugin architecture.
 
 ## Structure
 - `skills/`: Contains the agent skills instructions (`SKILL.md`) and executable scripts.

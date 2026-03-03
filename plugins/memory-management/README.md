@@ -1,6 +1,6 @@
 # Memory Management Plugin 🧠
 
-Tiered memory system for cognitive continuity in Project Sanctuary. Manages hot cache (`cognitive_primer.md`, `guardian_boot_digest.md`) and deep storage (`LEARNING/`, `ADRs/`, protocols). 
+Tiered memory system for cognitive continuity in consumer frameworks. Manages hot cache (`cognitive_primer.md`, `agent_boot_digest.md`) and deep storage (`LEARNING/`, `ADRs/`, protocols). 
 
 ## Use Cases
 Use this plugin when:

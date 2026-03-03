@@ -19,7 +19,7 @@ This skill combines **Tool Discovery** (finding tools) and **Inventory Managemen
 1. **DO NOT** search the filesystem manually (`grep`, `find`). Use the search tools.
 2. **ALWAYS** use `tool_chroma.py search` for semantic queries.
 3. **ALWAYS** use `manage_tool_inventory.py` for registry CRUD.
-4. **NEVER** manually edit `tool_inventory.json` — use the CLI.
+4. **NEVER** manually edit `plugins/tool_inventory.json` — use the CLI.
 
 ## ⚡ Triggers (When to invoke)
 - "Search the library for..."
@@ -33,7 +33,7 @@ This skill combines **Tool Discovery** (finding tools) and **Inventory Managemen
 
 | Script | Role | Dependencies |
 |:---|:---|:---|
-| `manage_tool_inventory.py` | **The Registry** — CRUD on tool_inventory.json | Triggers RLM distllation |
+| `manage_tool_inventory.py` | **The Registry** — CRUD on plugins/tool_inventory.json | Triggers RLM distllation |
 | `audit_plugins.py` | **The Auditor** — Verify inventory consistency | ❌ Filesystem check |
 
 > **Note**: For Semantic Search, Distillation, Cache Querying, and Cleanup, you **MUST** use the respective scripts inside the `rlm-curator` skill provided by the `rlm-factory` plugin.

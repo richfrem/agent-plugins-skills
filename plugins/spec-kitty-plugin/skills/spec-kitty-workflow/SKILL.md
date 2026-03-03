@@ -298,7 +298,7 @@ When Spec Kitty runs inside a Dual-Loop session, roles are split:
 | Step | Who | Action |
 |------|-----|--------|
 | Specify/Plan/Tasks | **Outer Loop** (Antigravity) | Generates all artifacts |
-| Implement | **Outer Loop** creates worktree, then **Inner Loop** (Claude) codes | Inner Loop receives Strategy Packet |
+| Implement | **Outer Loop** creates worktree, then **Inner Loop** codes | Inner Loop receives Strategy Packet |
 | Review/Merge | **Outer Loop** | Verifies output, commits, merges |
 
 **Inner Loop constraints**:
@@ -306,7 +306,7 @@ When Spec Kitty runs inside a Dual-Loop session, roles are split:
 - Scope limited to the Strategy Packet — no exploratory changes
 - If worktree is inaccessible, may implement on feature branch (fallback — log in friction log)
 
-**Cross-reference**: [dual-loop-supervisor SKILL](../dual-loop-supervisor/SKILL.md) | [Protocol 133 workflow](../../workflows/sanctuary_protocols/dual-loop-learning.md)
+**Cross-reference**: [dual-loop SKILL](../../../agent-loops/skills/dual-loop/SKILL.md) 
 
 ---
 

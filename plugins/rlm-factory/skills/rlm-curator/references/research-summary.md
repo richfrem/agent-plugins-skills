@@ -4,7 +4,7 @@
 ## 1. The Core Paradigm: Environment as Memory
 The paper proposes treating "Context" not as text stuffed into a prompt window, but as an **external environment** that an LLM interacts with programmatically. 
 
-For Project Sanctuary, we have implemented this as an **Infinite Context Ecosystem**. The LLM does not "read" the codebase; it **explores** it using a robust toolchain, maintaining state in external artifacts (Markdown & JSON).
+For Project Ecosystem, we have implemented this as an **Infinite Context Ecosystem**. The LLM does not "read" the codebase; it **explores** it using a robust toolchain, maintaining state in external artifacts (Markdown & JSON).
 
 ## 2. The Ecosystem Architecture (See [BLUEPRINT.md](../BLUEPRINT.md))
 
@@ -16,7 +16,7 @@ Our implementation combines three layers of memory and a "REPL" toolchain:
 1.  **RLM Cache (Fast Context):** A 'holographic' cache of every file's purpose (see `rlm_summary_cache.json`). Allows the agent to "know" the purpose of thousands of files instantly without reading them.
 2.  **Vector DB (Semantic Search):** Enables finding logic by concept rather than just keyword.
 3.  **Dependency Graph:** Relationships between components and modules.
-4.  **CLI Toolchain:** The Unified Discovery CLI (`plugins/cli.py`) that orchestrates specialized tools to extract logic on demand.
+4.  **CLI Toolchain:** Orchestrated specialized tools to extract logic on demand. Plugins and skills contain their own `scripts` folders with `.py` scripts used by that skill self-contained. They might consume other plugins and skills, but not scripts outside those.
 
 ## 3. The Progressive Elaboration Workflow
 
@@ -56,5 +56,5 @@ This allows us to document a massive codebase with standard context windows, ach
 
 ## 5. Tooling Reference
 *   **Distiller:** `plugins/rlm-factory/scripts/distiller.py` (Maintains the RLM Cache)
-*   **Discovery CLI:** `plugins/cli.py` (Recursive Scanner)
+*   **Discovery CLI:** Scripts within self-contained plugins/skills architecture (Recursive Scanner)
 *   **Query Cache:** `plugins/rlm-factory/scripts/query_cache.py` (Tool Discovery)

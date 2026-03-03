@@ -6,7 +6,7 @@ description: "Initialize HuggingFace integration — validates .env variables, t
 # HuggingFace Init (Onboarding)
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** HuggingFace Integration
 
 ## Purpose

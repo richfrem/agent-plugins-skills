@@ -3,7 +3,7 @@
     "description": "Universal Installer for Agent Plugins. Maps generic .claude-plugin structures to target environments (Antigravity, GitHub Copilot, Gemini, Claude Desktop).",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary"
+        "name": "Richard Fremmerlid"
     },
     "license": "MIT",
     "keywords": [

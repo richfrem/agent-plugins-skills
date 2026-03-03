@@ -40,7 +40,7 @@ A Context Bundle is strictly **INCOMPLETE** until:
 - [ ] **Menus**: If a Form has a specific menu, that Menu's structure is included.
 
 ## 4. Automation Contract
-Tools (`cli.py`, `investigate-*.py`) must:
+Tools (internal `scripts/` modules, `investigate-*.py`) must:
 1.  **Detect Gaps**: Automatically flag missing dependencies.
 2.  **Auto-Expand**: Attempt to resolve paths using `master_object_collection.json`.
 3.  **Halt on Error**: Do not produce final documentation if the Spiral is broken (missing core dependencies).

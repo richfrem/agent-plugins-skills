@@ -3,8 +3,8 @@
     "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary",
-        "url": "https://github.com/richfrem/Project_Sanctuary"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/<your repo path>"
     },
     "license": "MIT",
     "keywords": [

@@ -6,7 +6,7 @@ description: "Initialize and onboard a new project repository as an Obsidian Vau
 # Obsidian Init (Vault Onboarding)
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** Obsidian Integration
 
 ## Purpose
@@ -140,7 +140,7 @@ backlinks pointing into machine-generated text, not human-authored knowledge.
 1. **Open Obsidian** → Click "Open Folder as Vault" → Select vault root
 2. **Verify indexing** → Check that `01_PROTOCOLS/`, `ADRs/`, etc. appear in sidebar
 3. **Test wikilinks** → Click any `[[link]]` to confirm navigation works
-4. **Set SANCTUARY_VAULT_PATH** → `export SANCTUARY_VAULT_PATH=/path/to/vault`
+4. **Set VAULT_PATH** → `export VAULT_PATH=/path/to/vault`
 
 ---
 
@@ -164,7 +164,7 @@ python plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py \
   --vault-root /path/to/your/project
 
 # 3. Set environment variable
-export SANCTUARY_VAULT_PATH=/path/to/your/project
+export VAULT_PATH=/path/to/your/project
 
 # 4. Open in Obsidian app
 open /Applications/Obsidian.app

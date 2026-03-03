@@ -61,7 +61,7 @@ def generate_readme(plugin_path: Path, description: str, apply: bool):
 
 ## Overview
 This plugin provides capabilities for the **{plugin_path.name}** domain.
-It follows the standard Project Sanctuary plugin architecture.
+It follows the standard Project Ecosystem plugin architecture.
 
 ## Structure
 - `skills/`: Contains the agent skills instructions (`SKILL.md`) and executable scripts.

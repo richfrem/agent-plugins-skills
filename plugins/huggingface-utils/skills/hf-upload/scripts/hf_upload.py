@@ -2,7 +2,7 @@
 HuggingFace Upload Primitives
 
 Purpose: Consolidated upload operations extracted from the legacy archive.
-All HF-consuming plugins (Guardian, Forge Soul, etc.) use these primitives.
+All HF-consuming plugins (Primary Agent, Forge Soul, etc.) use these primitives.
 Includes exponential backoff, dataset card management, and JSONL append.
 """
 import os

@@ -71,7 +71,7 @@ Query arrives →
 | Research topics | Summary in snapshot | `domain_data_dir/{name}/` |
 | Design decisions | Referenced by ID | `design_docs_dir/{id}_{name}.md` |
 | Governing docs | Referenced by ID | `governance_dir/{id}_{name}.md` |
-| Tools/scripts | — | Semantic Cache (RLM) |
+| plugins/rlm_factory | — | Semantic Cache (RLM) |
 | System docs | — | Semantic Cache (RLM) / Vector Store |
 | Relational knowledge | — | Linked Vault (e.g. Obsidian) |
 

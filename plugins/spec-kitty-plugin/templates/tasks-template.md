@@ -30,7 +30,7 @@ description: "Task list template for feature implementation"
 ## Phase 0: Pre-Flight
 - [ ] T000 Check for existing branch `spec/[NNN]-[name]`
 - [ ] T001 If clean, create/checkout branch `spec/[NNN]-[name]`
-- [ ] T002 Initialize Spec Bundle (`spec.md`, `plan.md`) via `/sanctuary-start`
+- [ ] T002 Initialize Spec Bundle (`spec.md`, `plan.md`) via `/project-start`
 
 ## Phase 1: Setup
 - [ ] T003 Initialize project/script structure
@@ -47,10 +47,10 @@ description: "Task list template for feature implementation"
 - [ ] T008 [US2] Implementation Step 1
 
 ## Phase N: Closure & Merge (MANDATORY)
-- [ ] TXXX Run `/sanctuary-retrospective` (Generates `retrospective.md`)
+- [ ] TXXX Run `/project-retrospective` (Generates `retrospective.md`)
 - [ ] TXXX Complete Retrospective with User (Part A questions)
 - [ ] TXXX Agent completes Part B self-assessment
 - [ ] TXXX Update key templates if issues found (e.g., `tasks-template.md`, `workflow-retrospective-template.md`)
-- [ ] TXXX Run `/sanctuary-end` — This handles: Human Review Gate → Git Add/Commit/Push → PR Creation
+- [ ] TXXX Run `/project-end` — This handles: Human Review Gate → Git Add/Commit/Push → PR Creation
 - [ ] TXXX Wait for User to confirm: "PR Merged?"
-- [ ] TXXX ONLY AFTER USER CONFIRMS MERGE: Run `/sanctuary-end` again for cleanup (branch deletion, task closure)
+- [ ] TXXX ONLY AFTER USER CONFIRMS MERGE: Run `/project-end` again for cleanup (branch deletion, task closure)

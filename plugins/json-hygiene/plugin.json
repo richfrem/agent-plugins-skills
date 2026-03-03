@@ -2,7 +2,7 @@
     "name": "json-hygiene",
     "version": "1.0.0",
     "description": "JSON hygiene agent that detects duplicate keys in JSON configuration files that might be silently ignored by standard parsers.",
-    "author": "Sanctuary Guardian",
+    "author": "Richard Fremmerlid",
     "skills": [
         "json-hygiene-agent"
     ],

@@ -9,7 +9,7 @@ Furthermore, the system implements a **Self-Healing Feedback Loop**, where the D
 ## 2. The Problem: Static Context Overhead
 
 * **Context Poisoning:** Loading all tools confuses the agent with unrelated noise.
-* **Maintenance Drift:** Manual descriptions in `tool_inventory.json` diverge from actual code behavior.
+* **Maintenance Drift:** Manual descriptions in `plugins/tool_inventory.json` diverge from actual code behavior.
 * **Token Cost:** High overhead for unused tools.
 
 ## 3. The Solution: Recursive "Librarian" Pattern

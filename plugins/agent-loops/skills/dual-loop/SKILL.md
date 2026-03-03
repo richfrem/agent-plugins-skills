@@ -1,6 +1,7 @@
 ---
 name: dual-loop
-description: "Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
+aliases: ["Sequential Agent", "Agent as a Tool"]
+description: "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
 ---
 
 # Dual-Loop (Inner/Outer Agent Delegation)
@@ -112,7 +113,7 @@ Throughout the process, the Outer Loop must maintain discipline over task states
 
 ## Workspace Isolation
 
-> **Dual-Loop (Agent-Loops) does not manage workspaces.** It receives an isolated directory or execution context from the Orchestrator and runs the loop inside it. Workspace creation (e.g., git worktrees, branches) is a delegated responsibility of the Orchestrator or Guardian level tools.
+> **Dual-Loop (Agent-Loops) does not manage workspaces.** It receives an isolated directory or execution context from the Orchestrator and runs the loop inside it. Workspace creation (e.g., git worktrees, branches) is a delegated responsibility of the Orchestrator or the global system environment.
 
 ### Fallback: In-Place Execution
 

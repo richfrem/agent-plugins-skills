@@ -3,8 +3,8 @@
     "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
     "version": "1.0.0",
     "author": {
-        "name": "Project Sanctuary",
-        "url": "https://github.com/richfrem/Project_Sanctuary"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/<your repo path>"
     },
     "license": "MIT",
     "keywords": [

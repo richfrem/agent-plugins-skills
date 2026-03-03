@@ -29,7 +29,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Environment
 # ---------------------------------------------------------------------------
-VAULT_ROOT = Path(os.environ.get("SANCTUARY_VAULT_PATH", Path(__file__).resolve().parents[4]))
+VAULT_ROOT = Path(os.environ.get("VAULT_PATH", Path(__file__).resolve().parents[4]))
 LOCK_FILE = VAULT_ROOT / ".agent-lock"
 
 

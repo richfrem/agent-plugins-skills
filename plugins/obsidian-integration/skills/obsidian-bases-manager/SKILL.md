@@ -6,7 +6,7 @@ description: "Read and manipulate Obsidian Bases (.base) files — YAML-based da
 # Obsidian Bases Manager
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** Obsidian Integration
 **Depends On:** `obsidian-vault-crud` (WP06)
 

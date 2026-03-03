@@ -1,7 +1,7 @@
 sequenceDiagram
     participant User as User / Agent
     participant CLI as manage_tool_inventory.py
-    participant JSON as tool_inventory.json
+    participant JSON as plugins/tool_inventory.json
     participant Chroma as ChromaDB (tool_summaries)
     participant FS as File System
     participant Distiller as distiller.py (optional)

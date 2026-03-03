@@ -6,7 +6,7 @@
 
 ## Overview
 
-The Project Sanctuary Agent Architecture uses a **Dual Bridge** system to manage configuration. This ensures that the core system rules (Kernel) remain stable while allowing for flexible extension (Plugins).
+The Architecture uses a **Dual Bridge** system to manage configuration. This ensures that the core system rules (Kernel) remain stable while allowing for flexible extension (Plugins).
 
 ### 1. The Kernel (System Bridge)
 **Source**: `.kittify/memory` (Rules), `.windsurf/workflows` (Core Workflows)
