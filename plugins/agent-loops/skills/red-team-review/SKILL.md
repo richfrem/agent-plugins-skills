@@ -1,6 +1,7 @@
 ---
 name: red-team-review
-description: "Orchestrated adversarial review loop. Use when: research, designs, architectures, or decisions need to be reviewed by red team agents (human, browser, or CLI). Iterates in rounds of research → bundle → review → feedback until approved."
+aliases: ["Review and Critique Pattern"]
+description: "(Industry standard: Review and Critique Pattern) Orchestrated adversarial review loop. Use when: research, designs, architectures, or decisions need to be reviewed by red team agents (human, browser, or CLI). Iterates in rounds of research → bundle → review → feedback until approved."
 ---
 
 # Red Team Review Loop

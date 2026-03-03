@@ -1,6 +1,7 @@
 ---
 name: dual-loop
-description: "Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
+aliases: ["Sequential Agent", "Agent as a Tool"]
+description: "(Industry standard: Sequential Agent / Agent as a Tool) Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
 ---
 
 # Dual-Loop (Inner/Outer Agent Delegation)

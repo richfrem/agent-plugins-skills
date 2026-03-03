@@ -1,6 +1,7 @@
 ---
 name: agent-swarm
-description: "Parallel multi-agent execution pattern. Use when: work can be partitioned into independent tasks that N agents can execute simultaneously across worktrees. Includes routing (sequential vs parallel), merge verification, and correction loops."
+aliases: ["Parallel Agent"]
+description: "(Industry standard: Parallel Agent) Parallel multi-agent execution pattern. Use when: work can be partitioned into independent tasks that N agents can execute simultaneously across worktrees. Includes routing (sequential vs parallel), merge verification, and correction loops."
 ---
 
 # Agent Swarm

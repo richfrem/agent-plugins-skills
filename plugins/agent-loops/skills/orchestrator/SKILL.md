@@ -1,6 +1,7 @@
 ---
 name: orchestrator
-description: "Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
+aliases: ["Routing Agent", "Orchestrator Pattern"]
+description: "(Industry standard: Routing Agent / Orchestrator Pattern) Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
 ---
 
 # Orchestrator: Loop Router & Lifecycle Manager

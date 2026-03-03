@@ -6,11 +6,11 @@ Composable agent loop architectures for **learning loops**, **agent orchestratio
 
 | Skill | Pattern | Description |
 |-------|---------|-------------|
-| **`orchestrator`** | Router | Assesses the trigger, selects the appropriate loop pattern, and manages shared closure (seal, persist, retro + self-improvement). |
-| **`learning-loop`** | 1. Simple Learning | Self-directed research, document, iterate. No inner agents or review gates. |
-| **`red-team-review`** | 2. Adversarial Review | Research → bundle context → red team review → iterate in rounds until approved. |
-| **`dual-loop`** | 3. Inner/Outer Agent | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies output. |
-| **`agent-swarm`** | 4. Parallel Execution | Partition work → dispatch to N agents across isolated workspaces → verify and merge all. |
+| **`orchestrator`** | Router (Routing Agent / Orchestrator Pattern) | Assesses the trigger, selects the appropriate loop pattern, and manages shared closure (seal, persist, retro + self-improvement). |
+| **`learning-loop`** | 1. Simple Learning (Loop Agent / Single Agent) | Self-directed research, document, iterate. No inner agents or review gates. |
+| **`red-team-review`** | 2. Adversarial Review (Review and Critique Pattern) | Research → bundle context → red team review → iterate in rounds until approved. |
+| **`dual-loop`** | 3. Inner/Outer Agent (Sequential Agent / Agent as a Tool) | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies output. |
+| **`agent-swarm`** | 4. Parallel Execution (Parallel Agent) | Partition work → dispatch to N agents across isolated workspaces → verify and merge all. |
 
 ## How It Works
 

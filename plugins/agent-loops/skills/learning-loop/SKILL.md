@@ -1,6 +1,7 @@
 ---
 name: learning-loop
-description: "Self-directed research and knowledge capture loop. Use when: starting a session (Orientation), performing research (Synthesis), or closing a session (Seal, Persist, Retrospective). Ensures knowledge survives across isolated agent sessions."
+aliases: ["Loop Agent", "Single Agent"]
+description: "(Industry standard: Loop Agent / Single Agent) Self-directed research and knowledge capture loop. Use when: starting a session (Orientation), performing research (Synthesis), or closing a session (Seal, Persist, Retrospective). Ensures knowledge survives across isolated agent sessions."
 ---
 
 # Learning Loop
