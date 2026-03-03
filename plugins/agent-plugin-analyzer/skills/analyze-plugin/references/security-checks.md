@@ -61,4 +61,4 @@ To prevent analyzer-shaped plugins (optimized for scoring rather than quality):
 - Do NOT reward pattern density. A plugin that uses 15 patterns is not inherently better than one using 5.
 - Flag "checklist-stuffing" — empty acceptance criteria files, placeholder CONNECTORS.md with no real mappings.
 - Consider qualitative override: if the LLM detects a high-scoring plugin that "feels wrong," flag it for human review.
-- Include a "justified deviation" allowance — plugins that deliberately break a pattern for good reason should be rewarded, not penalized.
+- Include a "justified deviation" allowance — plugins that deliberately break a pattern for good reason should be rewarded, not penalized. Specifically, if a plugin orchestrator requires `subprocess` or `urllib/requests.get` to download fundamental tool assets or trigger CI environments, check if the plugin includes a `security_override.json` stating this boundary case. If the override exists and matches the code logically, do NOT fail the plugin on P0 Network/Subprocess violations.

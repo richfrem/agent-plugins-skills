@@ -62,6 +62,8 @@ flowchart LR
    - The exact goal.
    - Only the specific file paths the sub-agent needs to care about.
    - Strict "NO GIT" constraints (the Inner Loop must not commit).
+   - If generating scripts/pipelines, instruct the Inner Loop to use the "Modular Building Blocks" architecture (split convenience CLI wrappers from core Python APIs).
+   - Clear Acceptance Criteria.
    - Clear Acceptance Criteria.
 3. Save the packet (e.g., `handoffs/task_packet_001.md`).
 

@@ -40,7 +40,7 @@ Use this to select the correct loop pattern:
 | Large feature, bulk migration, multi-concern parallel work | **Agent Swarm** | `agent-swarm` |
 
 ### Process Flow
-1.  **Plan (Strategy)**: You define the work (Spec → Plan → Tasks).
+1.  **Plan (Strategy)**: You define the work (Spec → Plan → Tasks). When planning scripts/pipelines, default to a "Modular Building Blocks" architecture (CLI wrappers + independent core modules).
 2.  **Delegate (Handoff)**: You pack the context into a **Task Packet** and assist the user in handing off to the Inner Loop.
 3.  **Execute (Tactics)**: The Inner Loop agent (which has *no* git access) writes code and runs tests.
 4.  **Verify (Review)**: You verify the output against acceptance criteria.

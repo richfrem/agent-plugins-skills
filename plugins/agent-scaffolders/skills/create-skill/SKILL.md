@@ -51,6 +51,7 @@ Before proceeding, read the `references/hitl-interaction-design.md` guide to und
   4. JSON export (machine/pipeline consumes)
   5. CSV export (spreadsheet/analytics consumes)
   6. Multiple formats (negotiate with user at runtime)
+  7. Code Generator Handoff (outputs an independent script for data engineers to integrate)
   ```
 
 ### 2. Scaffold the Infrastructure
