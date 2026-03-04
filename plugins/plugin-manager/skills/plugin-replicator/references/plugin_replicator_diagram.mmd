@@ -1,25 +1,32 @@
 flowchart LR
-    subgraph Central ["Central Repo: agent-plugins-skills"]
-        Plugins["plugins/plugin-name/"]
+    subgraph Source ["Source: agent-plugins-skills"]
+        SP["plugins/plugin-name/\n(source of truth)"]
     end
 
-    subgraph Replicator ["plugin-replicator Skill"]
-        PR["plugin_replicator.py\n(single plugin)"]
-        BR["bulk_replicator.py\n(all plugins)"]
+    subgraph Replicator ["plugin-replicator Scripts"]
+        PR["plugin_replicator.py\n--source / --dest\n--clean / --dry-run / --link"]
+        BR["bulk_replicator.py\n--source plugins/\n--dest ... --filter glob"]
     end
 
-    subgraph Project1 ["Consumer Project A"]
-        Target1["plugins/plugin-name/"]
+    subgraph DestProject ["Consumer Project (same machine)"]
+        DP["plugins/plugin-name/\n(replicated copy)"]
     end
 
-    subgraph Project2 ["Consumer Project B"]
-        Target2["plugins/plugin-name/"]
+    subgraph Activation ["Activate in Consumer Project"]
+        PM["plugin-maintenance sync\n(sync_with_inventory.py)"]
+        AE[".agent/ .claude/\n.gemini/ .github/"]
     end
 
-    %% Flows
-    Plugins -->|"--plugin plugin-name"| PR
-    Plugins -->|"--filter glob"| BR
+    SP -->|"single plugin"| PR
+    SP -->|"bulk / filtered"| BR
+    PR -->|"copy or symlink"| DP
+    BR -->|"copy or symlink"| DP
+    DP -->|"run in consumer project"| PM
+    PM --> AE
 
-    PR -->|"Copy mode (default)"| Target1
-    PR -->|"--link mode (symlink)"| Target2
-    BR -->|"Sync all matching"| Target1
+    classDef script fill:#bbf,stroke:#333,stroke-width:2px
+    classDef store fill:#eee,stroke:#333,stroke-width:1px
+    classDef agent fill:#bfb,stroke:#333,stroke-width:2px
+    class PR,BR script
+    class SP,DP store
+    class AE agent

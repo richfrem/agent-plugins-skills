@@ -18,18 +18,6 @@ python3 plugins/plugin-manager/scripts/update_agent_system.py
 
 ---
 
-## Initial Setup (New Project)
-
-```bash
-# Clone this repo as the central source
-git clone https://github.com/richfrem/agent-plugins-skills.git .vendor/agent-plugins-skills
-
-# Bootstrap plugins from vendor into your project
-python3 plugins/plugin-manager/scripts/plugin_bootstrap.py
-```
-
----
-
 ## Skills
 
 | Skill | Purpose | Key Scripts |
@@ -41,6 +29,16 @@ python3 plugins/plugin-manager/scripts/plugin_bootstrap.py
 
 ---
 
+## Commands (Slash Commands)
+
+| Command | Purpose |
+| :--- | :--- |
+| `/plugin-manager:update` | Sync all plugins to local agent environments (`.agent/`, `.claude/` etc.) |
+| `/plugin-manager:cleanup` | Remove orphaned artifacts from deleted plugins in agent environments |
+| `/plugin-manager:install` | Replicate a specific plugin from this repo to a target project's `plugins/` |
+
+---
+
 ## Directory Structure
 
 ```
@@ -48,12 +46,15 @@ plugin-manager/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── README.md
-├── commands/              <- Slash commands
-├── scripts/               <- Core Python scripts
+├── commands/
+│   ├── update.md       <- Sync all plugins to local agent environments
+│   ├── cleanup.md      <- Clean orphaned agent artifacts
+│   └── install.md      <- Replicate a plugin to another project
+├── scripts/
 │   ├── update_agent_system.py   <- Master orchestrator
-│   ├── sync_with_inventory.py   <- Agent env sync
+│   ├── sync_with_inventory.py   <- Agent env sync + cleanup
 │   ├── audit_structure.py       <- Structural audit
-│   ├── plugin_replicator.py     <- Single plugin copy
+│   ├── plugin_replicator.py     <- Single plugin copy (--source/--dest/--clean)
 │   ├── bulk_replicator.py       <- Bulk plugin copy
 │   └── generate_readmes.py      <- README scaffolding
 └── skills/

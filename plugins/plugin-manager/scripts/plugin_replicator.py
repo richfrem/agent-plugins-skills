@@ -1,17 +1,43 @@
+#!/usr/bin/env python3
 """
 Plugin Replicator
+=================
 
-Replicates a plugin from the `central-repo` into a target project.
-Designed to support 'monorepo of plugins' workflow where plugins reside in one repo
-and are replicated/linked into multiple consumer projects.
+Replicates a plugin from a source directory to a destination directory.
+Supports additive-update mode (default) and clean-sync mode (--clean).
 
 Usage:
-    plugin_replicator.py --plugin <plugin_name> --target <project_root> [--link]
+    plugin_replicator.py --source <src-plugin-dir> --dest <dest-dir> [--link] [--clean] [--dry-run]
 
 Arguments:
-    --plugin    Name of the plugin directory in 'plugins/' (e.g., 'obsidian-integration')
-    --target    Root directory of the target project (e.g., '../project-consumer')
-    --link      (Optional) Create a symbolic link instead of copying (Best for dev)
+    --source    Path to the source plugin folder (e.g., plugins/rlm-factory)
+    --dest      Path to the destination folder (e.g., /path/to/other-project/plugins/rlm-factory)
+    --link      Create a symlink instead of copying (best for active development)
+    --clean     Remove files/dirs in dest that no longer exist in source (default: additive only)
+    --dry-run   Preview changes without making them
+
+Modes:
+    Default     Copies new/updated files. Does NOT delete anything from dest.
+    --clean     Copies new/updated files AND removes dest files missing from source.
+    --link      Creates a symlink. Implies always up-to-date (no --clean needed).
+
+Examples:
+    # Additive update: replicate rlm-factory to Project Sanctuary
+    python3 plugin_replicator.py \\
+        --source plugins/rlm-factory \\
+        --dest /Users/richardfremmerlid/Projects/Project_Sanctuary/plugins/rlm-factory
+
+    # Clean sync: remove deleted skills/files too
+    python3 plugin_replicator.py \\
+        --source plugins/rlm-factory \\
+        --dest /Users/richardfremmerlid/Projects/Project_Sanctuary/plugins/rlm-factory \\
+        --clean
+
+    # Dev symlink (always live)
+    python3 plugin_replicator.py \\
+        --source plugins/rlm-factory \\
+        --dest /Users/richardfremmerlid/Projects/Project_Sanctuary/plugins/rlm-factory \\
+        --link
 """
 
 import sys
@@ -20,91 +46,124 @@ import platform
 import argparse
 from pathlib import Path
 
-def setup_logger():
-    # Simple logger setup
-    return print
 
-log = setup_logger()
+def replicate_plugin(
+    source: Path,
+    dest: Path,
+    use_link: bool = False,
+    clean: bool = False,
+    dry_run: bool = False,
+) -> bool:
+    """
+    Replicate a plugin directory from source to dest.
 
-def install_plugin(plugin_name, target_project_root, use_link=False):
-    # 1. Locate Source Plugin
-    # This script is in plugins/plugin-manager/scripts/
-    # So repo root is ../../../
-    current_script = Path(__file__).resolve()
-    repo_root = current_script.parents[3]
-    plugins_dir = repo_root / 'plugins'
-    
-    source_plugin_path = plugins_dir / plugin_name
-    
-    if not source_plugin_path.exists():
-        log(f"❌ Error: Source plugin '{plugin_name}' not found at {source_plugin_path}")
+    Args:
+        source:   Absolute path to source plugin directory.
+        dest:     Absolute path to destination directory (will be created if missing).
+        use_link: Create a symlink instead of copying.
+        clean:    Remove dest files/dirs that no longer exist in source.
+        dry_run:  Print actions without applying them.
+
+    Returns:
+        True on success, False on error.
+    """
+    prefix = "[DRY RUN] " if dry_run else ""
+
+    if not source.exists():
+        print(f"❌ Source not found: {source}")
         return False
-        
-    # 2. Locate Target Directory
-    # We install into <target_project_root>/.agent/plugins/<plugin_name>
-    target_root = Path(target_project_root).resolve()
-    if not target_root.exists():
-        log(f"❌ Error: Target project directory not found at {target_root}")
-        return False
-        
-    target_plugins_dir = target_root / '.agent' / 'plugins'
-    target_plugins_dir.mkdir(parents=True, exist_ok=True)
-    
-    target_plugin_path = target_plugins_dir / plugin_name
-    
-    # 3. Clean existing installation
-    if target_plugin_path.exists() or target_plugin_path.is_symlink():
-        log(f"🧹 Scouring existing installation at {target_plugin_path}...")
-        if target_plugin_path.is_symlink():
-            target_plugin_path.unlink()
-        elif target_plugin_path.is_dir():
-            shutil.rmtree(target_plugin_path)
-        else:
-            target_plugin_path.unlink()
 
-    # 4. Install (Copy or Link)
-    try:
-        if use_link:
-            log(f"🔗 Linking {plugin_name}...")
-            # On Windows, requires Admin or Developer Mode for symlinks usually.
-            # Using absolute paths for safety.
-            target_plugin_path.symlink_to(source_plugin_path, target_is_directory=True)
-            log(f"✅ Linked: {target_plugin_path} -> {source_plugin_path}")
-        else:
-            log(f"cp Copying {plugin_name}...")
-            shutil.copytree(source_plugin_path, target_plugin_path)
-            log(f"✅ Installed: {target_plugin_path}")
-            
-        # 5. Post-Install: Check for 'install.py' script in the plugin itself
-        # If the plugin has a custom installer, run it? (Optional, maybe for future)
-        plugin_install_script = target_plugin_path / 'scripts' / 'install.py'
-        if plugin_install_script.exists():
-             log(f"ℹ️  Note: This plugin has a custom install script at {plugin_install_script}. You may need to run it.")
-
+    # --- Symlink mode: simple and always live ---
+    if use_link:
+        if dest.exists() or dest.is_symlink():
+            print(f"{prefix}🧹 Removing existing: {dest}")
+            if not dry_run:
+                dest.unlink() if dest.is_symlink() else shutil.rmtree(dest)
+        print(f"{prefix}🔗 Linking: {dest} -> {source}")
+        if not dry_run:
+            try:
+                dest.symlink_to(source, target_is_directory=True)
+            except Exception as e:
+                print(f"❌ Symlink failed: {e}")
+                if platform.system() == "Windows":
+                    print("👉 Windows tip: run as Administrator or enable Developer Mode.")
+                return False
+        print(f"✅ Linked.")
         return True
 
-    except Exception as e:
-        log(f"❌ Installation failed: {e}")
-        # On Windows, symlink errors are common if not admin
-        if use_link and platform.system() == "Windows":
-            log("👉 Tip: On Windows, you must run this terminal as Administrator to create symlinks, or enable Developer Mode.")
-        return False
+    # --- Copy/update mode ---
+    dest.mkdir(parents=True, exist_ok=True)
 
-def main():
-    parser = argparse.ArgumentParser(description="Install a plugin into a target project.")
-    parser.add_argument("--plugin", required=True, help="Name of the plugin directory")
-    parser.add_argument("--target", required=True, help="Target project root directory")
-    parser.add_argument("--link", action="store_true", help="Use symlinks (junctions on Windows) instead of copying")
-    
+    # Step 1: Copy new/updated files from source -> dest
+    copied: int = 0
+    skipped: int = 0
+    for src_file in source.rglob("*"):
+        rel = src_file.relative_to(source)
+        dst_file = dest / rel
+        if src_file.is_dir():
+            if not dry_run:
+                dst_file.mkdir(parents=True, exist_ok=True)
+            continue
+        # Copy if missing or source is newer
+        if not dst_file.exists() or src_file.stat().st_mtime > dst_file.stat().st_mtime:
+            print(f"{prefix}  copy  {rel}")
+            if not dry_run:
+                dst_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_file, dst_file)
+            copied += 1
+        else:
+            skipped += 1
+
+    print(f"  {copied} files updated, {skipped} up-to-date.")
+
+    # Step 2: If --clean, remove dest files/dirs no longer in source
+    if clean:
+        removed: int = 0
+        for dst_item in list(dest.rglob("*")):
+            rel = dst_item.relative_to(dest)
+            src_item = source / rel
+            if not src_item.exists():
+                print(f"{prefix}  clean {rel}")
+                if not dry_run:
+                    if dst_item.is_dir():
+                        shutil.rmtree(dst_item, ignore_errors=True)
+                    else:
+                        dst_item.unlink(missing_ok=True)
+                removed += 1
+        if removed:
+            print(f"  {removed} stale items removed (--clean).")
+
+    print(f"✅ Done: {source.name} -> {dest}")
+    return True
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Replicate a plugin from source to destination.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--source", required=True, help="Source plugin directory path")
+    parser.add_argument("--dest",   required=True, help="Destination directory path")
+    parser.add_argument("--link",    action="store_true", help="Symlink instead of copy")
+    parser.add_argument("--clean",   action="store_true", help="Remove dest files missing from source")
+    parser.add_argument("--dry-run", action="store_true", dest="dry_run",
+                        help="Preview changes without applying them")
+
     args = parser.parse_args()
-    
-    print(f"🚀 Plugin Replicator: {args.plugin} -> {args.target}")
-    success = install_plugin(args.plugin, args.target, args.link)
-    
-    if success:
-        sys.exit(0)
-    else:
-        sys.exit(1)
+    source = Path(args.source).resolve()
+    dest   = Path(args.dest).resolve()
+
+    print(f"🚀 Plugin Replicator")
+    print(f"   Source : {source}")
+    print(f"   Dest   : {dest}")
+    print(f"   Mode   : {'symlink' if args.link else 'copy'}"
+          f"{' + clean' if args.clean else ''}"
+          f"{' [DRY RUN]' if args.dry_run else ''}")
+    print()
+
+    success = replicate_plugin(source, dest, args.link, args.clean, args.dry_run)
+    sys.exit(0 if success else 1)
+
 
 if __name__ == "__main__":
     main()
