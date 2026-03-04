@@ -1,24 +1,32 @@
 ---
 name: plugin-replicator
-description: >
-  Replicates plugin source code from one project's plugins/ directory to another
-  project's plugins/ directory on the same machine. Supports additive-update (default),
-  clean-sync (--clean), symlink (--link), and dry-run modes. Trigger when setting up a
-  new project workspace, distributing plugins to consumer projects, or syncing plugin
-  updates across local repos.
+description: >-
+  Developer machine tool for replicating plugin source code between local project
+  repositories. Use when you want to push plugin updates from agent-plugins-skills
+  to a consumer project, or pull the latest plugins into a consumer project from
+  this central repo. Works with explicit --source and --dest paths; supports
+  additive-update (default), --clean (also removes deleted files), --link (symlink),
+  and --dry-run modes.
 allowed-tools: Bash, Write, Read
 ---
 
 # Plugin Replicator
 
 ## Overview
-This skill copies plugin source code FROM this central repo TO another project's `plugins/` folder. It does **not** deploy to agent environments (`.agent/`, `.claude/` etc.) — that is handled by `plugin-maintenance` Sync in the target project.
+**Primarily a developer machine tool.** Use this when you have multiple local projects and want to keep plugin source code in sync between them without manual copying.
 
-**The pipeline:**
+It is **bidirectional** — source and destination are just paths, so it works as both a push (distribute updates outward) and pull (pull latest into a consumer project):
+
 ```
-plugin-replicator          → copies plugin/ code  → /other-project/plugins/
-plugin-maintenance sync    → installs into         → /other-project/.agent/, .gemini/, etc.
+PUSH (run from agent-plugins-skills):
+  plugins/X  ->  /other-project/plugins/X
+
+PULL (run from the consumer project):
+  /agent-plugins-skills/plugins/X  ->  plugins/X
 ```
+
+After replicating, run `plugin-maintenance` Sync in the target project to activate plugins in `.agent/`, `.claude/`, `.gemini/` etc.
+
 
 ## References
 - Overview: `plugins/plugin-manager/skills/plugin-replicator/references/plugin_replicator_overview.md`
@@ -63,30 +71,22 @@ Ask the user:
 
 ### Phase 3: Command Generation
 
-#### Single Plugin — Additive Update (default)
+#### Pull: From `agent-plugins-skills` into a consumer project (run FROM consumer project)
+```bash
+python3 plugins/plugin-manager/scripts/plugin_replicator.py \
+  --source /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/<plugin-name> \
+  --dest plugins/<plugin-name> \
+  --clean
+```
+
+#### Push: From this repo to another project (run FROM this repo)
 ```bash
 python3 plugins/plugin-manager/scripts/plugin_replicator.py \
   --source plugins/<plugin-name> \
   --dest /path/to/other-project/plugins/<plugin-name>
 ```
 
-#### Single Plugin — Clean Sync (also removes deleted files)
-```bash
-python3 plugins/plugin-manager/scripts/plugin_replicator.py \
-  --source plugins/<plugin-name> \
-  --dest /path/to/other-project/plugins/<plugin-name> \
-  --clean
-```
-
-#### Single Plugin — Preview First
-```bash
-python3 plugins/plugin-manager/scripts/plugin_replicator.py \
-  --source plugins/<plugin-name> \
-  --dest /path/to/other-project/plugins/<plugin-name> \
-  --dry-run
-```
-
-#### All Plugins — Bulk Sync
+#### Bulk Push: All plugins
 ```bash
 python3 plugins/plugin-manager/scripts/bulk_replicator.py \
   --source plugins/ \

@@ -1,30 +1,42 @@
 # Plugin Replicator Overview
 
-The **Plugin Replicator** allows you to develop plugins in one central location (`agent-plugins-skills`) and distribute them to any number of consumer project repos without manually copying code.
+The **Plugin Replicator** syncs plugin source code between local project repositories using explicit `--source` and `--dest` paths. It works in **both directions**:
 
-## Why use this?
-- **Single Source of Truth**: Fix a bug in `rlm-factory` once, sync it everywhere.
-- **Clean Projects**: Consumer repos only contain the plugins they actually need.
-- **Developer Experience**: Use `--link` mode to code in the central repo and test in the target project instantly.
+## Push (from `agent-plugins-skills` outward)
+Use when you want to distribute an update from this central repo to a consumer project:
+```bash
+python3 plugins/plugin-manager/scripts/plugin_replicator.py \
+  --source plugins/rlm-factory \
+  --dest /Users/richardfremmerlid/Projects/Project_Sanctuary/plugins/rlm-factory
+```
 
-## Workflow
+## Pull (from a consumer project inward)
+Use when you're inside a consumer project and want to pull the latest from this central repo:
+```bash
+# Run from Project_Sanctuary
+python3 plugins/plugin-manager/scripts/plugin_replicator.py \
+  --source /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/rlm-factory \
+  --dest plugins/rlm-factory \
+  --clean
+```
 
-1. **Develop**: Create or edit a plugin in `plugins/my-new-tool/`.
-2. **Replicate**: Run the replicator targeting your consumer project:
-   ```bash
-   python3 plugins/plugin-manager/scripts/plugin_replicator.py --plugin my-new-tool --target ../my-project
-   ```
-3. **Activate**: The plugin source is now at `../my-project/plugins/my-new-tool/`.
-   Then run `plugin-maintenance sync` in the consumer project to install it into `.agent/`, `.claude/` etc.
+## Bulk Sync
+```bash
+python3 plugins/plugin-manager/scripts/bulk_replicator.py \
+  --source /path/to/agent-plugins-skills/plugins/ \
+  --dest plugins/
+```
 
 ## Modes
 
 | Mode | Flag | Description | Best For |
 | :--- | :--- | :--- | :--- |
-| **Copy** | (Default) | Copies all files. Isolated from source changes until re-synced. | Production, stable deployments |
-| **Link** | `--link` | Creates a symlink. Changes in source reflect instantly. | Active development |
+| **Additive** | (Default) | Copies new/updated files. Never deletes from dest. | Safe everyday updates |
+| **Clean** | `--clean` | Copies new/updated AND removes files missing from source. | Full sync incl. deletions |
+| **Link** | `--link` | Creates a live symlink. Always reflects source. | Active development |
+| **Preview** | `--dry-run` | Prints what would happen without applying changes. | First-time verification |
 
 ## See Also
 - [Flow Diagram](plugin_replicator_diagram.mmd)
-- `plugins/plugin-manager/scripts/bulk_replicator.py` - sync entire plugin suites
+- `bulk_replicator.py` - for syncing the entire plugin suite at once
 - `plugin-maintenance` skill - activate replicated plugins in agent environments
