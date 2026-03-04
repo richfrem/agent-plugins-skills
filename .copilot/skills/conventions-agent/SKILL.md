@@ -4,6 +4,7 @@ description: >
   Coding conventions enforcement agent. Auto-invoked when writing new code,
   reviewing code quality, adding headers, or checking documentation compliance
   across Python, TypeScript/JavaScript, and C#/.NET.
+allowed-tools: Read, Write
 ---
 
 # Identity: The Standards Agent 📝

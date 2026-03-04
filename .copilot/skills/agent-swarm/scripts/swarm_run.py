@@ -175,9 +175,18 @@ def resolve_files(args, config) -> list[str]:
     exts = config.get("ext", [".md"])
     exts = set(e if e.startswith(".") else f".{e}" for e in exts)
 
+    root_dir = Path.cwd().resolve()
+
+    def is_safe_path(p: str) -> bool:
+        try:
+            resolved = Path(p).resolve()
+            return root_dir in resolved.parents or resolved == root_dir
+        except:
+            return False
+
     # 1. Explicit Files
     if args.files:
-        return args.files
+        return [f for f in args.files if is_safe_path(f)]
     
     # 2. Bundle Manifest (JSON/YAML)
     bundle_path = args.bundle or config.get("bundle")
@@ -194,7 +203,7 @@ def resolve_files(args, config) -> list[str]:
             paths = []
             for item in data:
                 p = item.get("path") if isinstance(item, dict) else item
-                if p: paths.append(str(p))
+                if p and is_safe_path(str(p)): paths.append(str(p))
             return paths
 
     # 3. Task Checklist
@@ -202,13 +211,14 @@ def resolve_files(args, config) -> list[str]:
     if task_path:
         task_path = Path(task_path)
         if task_path.exists():
-            return [m.group(1) for m in re.finditer(r"- \[ \] `(.+)`", task_path.read_text())]
+            matches = [m.group(1) for m in re.finditer(r"- \[ \] `(.+)`", task_path.read_text())]
+            return [m for m in matches if is_safe_path(m)]
 
     # 4. Directory Crawl
     dir_path = args.dir or config.get("dir")
     if dir_path:
         dir_path = Path(dir_path)
-        if dir_path.exists():
+        if dir_path.exists() and is_safe_path(str(dir_path)):
             return [
                 get_relative_path(f)
                 for f in sorted(dir_path.rglob("*"))
@@ -248,8 +258,9 @@ def execute_worker(
     # 1. Skip Check
     check_cmd_tmpl = job_config.get("check_cmd")
     if check_cmd_tmpl:
-        check_cmd = check_cmd_tmpl.format(file=file_path, **user_vars)
-        if subprocess.run(check_cmd, shell=True, capture_output=True, env=env_vars).returncode == 0:
+        check_cmd_tmpl_args = shlex.split(check_cmd_tmpl)
+        check_cmd_args = [arg.format_map({"file": file_path, **user_vars}) for arg in check_cmd_tmpl_args]
+        if subprocess.run(check_cmd_args, capture_output=True, env=env_vars).returncode == 0:
             logger.info(f"  ⏩ {file_path} (already cached)")
             result["success"] = True
             result["skipped"] = True
@@ -278,6 +289,7 @@ def execute_worker(
         elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
             effective_model = "gpt-5-mini"
 
+        payload = content
         if engine.lower() == "claude":
             cmd_args.extend([
                 "--model", effective_model,
@@ -295,8 +307,6 @@ def execute_worker(
             ]
             # Copilot CLI ignores stdin if -p is present. We must prepend the prompt.
             payload = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
-        else:
-            payload = content
 
         cmd_str = " ".join([shell_quote(p) for p in cmd_args])
         try:
@@ -346,14 +356,15 @@ def execute_worker(
     post_cmd_tmpl = job_config.get("post_cmd")
     if post_cmd_tmpl and not result["skipped"]:
         subs = {
-            "file": shell_quote(file_path),
-            "output": shell_quote(result["output"]),
+            "file": file_path,
+            "output": result["output"],
             "output_raw": result["output"],
             "basename": Path(file_path).stem,
             **user_vars
         }
-        cmd = post_cmd_tmpl.format_map(subs)
-        pr = subprocess.run(cmd, shell=True, text=True, capture_output=True, env=env_vars)
+        cmd_tmpl_args = shlex.split(post_cmd_tmpl)
+        cmd_args = [arg.format_map(subs) for arg in cmd_tmpl_args]
+        pr = subprocess.run(cmd_args, text=True, capture_output=True, env=env_vars)
         if pr.returncode != 0:
             result["success"] = False
             result["error"] = (pr.stderr or pr.stdout or "post-cmd failed").strip()[:300]

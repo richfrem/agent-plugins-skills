@@ -39,7 +39,8 @@ You must pause and explicitly list out:
 Ask the user: "Does this look right? (yes / adjust)"
 
 ### 2. Scaffold the Plugin
-Execute the deterministic `scaffold.py` script:
+Execute the deterministic `scaffold.py` script. **CRITICAL: Apply the Iteration Directory Isolation Pattern**.
+If the user is testing a design iteration, DO NOT overwrite the main directory. Append `--iteration <N>` to save to `.history/iteration-<N>/`.
 ```bash
 python3 ~~agent-scaffolders-root/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
 ```
@@ -64,6 +65,8 @@ Print a success message and recap the scaffolded structure. Remind the user of t
 2. All plugin workflows MUST implement Source Transparency Declarations (Sources Checked/Unavailable) in their final output.
 3. If this plugin will generate `.html`, `.svg`, or `.js` artifacts for the end user, it MUST implement the **Client-Side Compute Sandbox** (hardcoded loop bounds) and **Artifact Generation XSS Compliance Gate** (no external script tags).
 
+**CRITICAL: Scaffold Previewer Phase**
+Before finishing, if the user wants to check your generated code visually before it goes to production, offer to output the proposed hierarchy into `/tmp/scaffold-preview/` so they can evaluate the structure without modifying their real `plugins/` directory.
 
 ## Next Actions
 - Offer to run `create-skill` to populate the plugin.

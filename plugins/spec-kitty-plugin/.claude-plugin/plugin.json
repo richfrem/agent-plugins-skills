@@ -1,7 +1,7 @@
 {
     "name": "spec-kitty",
     "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "author": {
         "name": "Richard Fremmerlid",
         "url": "https://github.com/<your repo path>"

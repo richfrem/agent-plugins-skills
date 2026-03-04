@@ -2,6 +2,7 @@
 name: create-legacy-command
 description: Interactive initialization script that generates an Antigravity Workflow, Rule, or legacy Claude /command. Use when you need a simple flat-file procedural instruction set.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Legacy Command & Workflow Scaffold Generator
@@ -27,3 +28,7 @@ You are tasked with generating a flat-file execution routine, such as an Antigra
 
 4. **Confirmation:**
    Print a success message showing the file location. Explain the difference between this flat-file approach and the richer `Agent Skills` standard.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

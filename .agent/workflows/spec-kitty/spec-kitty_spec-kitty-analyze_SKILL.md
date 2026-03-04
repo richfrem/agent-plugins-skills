@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-analyze
-description: Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.
+description: Perform a non-destructive cross-artifact consistency and quality analysis
 ---
 
 ## User Input
@@ -25,11 +25,11 @@ Identify inconsistencies, duplications, ambiguities, and underspecified items ac
 
 ### 1. Initialize Analysis Context
 
-Run `(Missing script command for sh)` once from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS. Derive absolute paths:
+Run `spec-kitty agent feature check-prerequisites --json --include-tasks` once from repo root and parse JSON for feature_dir and available_docs. Derive absolute paths:
 
-- SPEC = FEATURE_DIR/spec.md
-- PLAN = FEATURE_DIR/plan.md
-- TASKS = FEATURE_DIR/tasks.md
+- SPEC = feature_dir/spec.md
+- PLAN = feature_dir/plan.md
+- TASKS = feature_dir/tasks.md
 
 Abort with an error message if any required file is missing (instruct the user to run missing prerequisite command).
 

@@ -10,7 +10,7 @@ description: Validate feature readiness and guide final acceptance steps.
 
 ## 📍 WORKING DIRECTORY: Run from MAIN repository
 
-**IMPORTANT**: Accept runs from the main repository root, NOT from a WP worktree.
+**IMPORTANT**: Accept runs from the primary repository checkout root, NOT from a WP worktree.
 
 ```bash
 # If you're in a worktree, return to main first:
@@ -49,7 +49,7 @@ Ask one focused question per item and confirm the summary before continuing. End
    - Append `--feature "<slug>"` when the user supplied a slug.
    - Append `--mode <mode>` (`pr`, `local`, or `checklist`).
    - Append `--test "<command>"` for each validation command provided.
-2. Run `(Missing script command for sh)` (the CLI wrapper) with the assembled arguments **and** `--json`.
+2. Run `spec-kitty agent feature accept --json $ARGUMENTS` (the CLI wrapper) with the assembled arguments **and** `--json`.
 3. Parse the JSON response. It contains:
    - `summary.ok` (boolean) and other readiness details.
    - `summary.outstanding` categories when issues remain.

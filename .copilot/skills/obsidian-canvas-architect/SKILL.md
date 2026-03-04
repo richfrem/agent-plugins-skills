@@ -1,6 +1,7 @@
 ---
 name: obsidian-canvas-architect
-description: "Programmatically create and manipulate Obsidian Canvas (.canvas) files using JSON Canvas Spec 1.0. Enables agents to generate visual flowcharts, architecture diagrams, and planning boards."
+description: "Programmatically create and manipulate Obsidian Canvas (.canvas) files using JSON Canvas Spec 1.0. Enables agents to generate visual flowcharts, architecture diagrams, and planning boards. Use when creating or editing visual canvas files."
+allowed-tools: Bash, Read, Write
 ---
 
 # Obsidian Canvas Architect

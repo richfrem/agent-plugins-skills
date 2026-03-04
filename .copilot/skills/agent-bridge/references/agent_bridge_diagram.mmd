@@ -1,38 +1,28 @@
+flowchart LR
+    Plugins["plugins/"]
 
-flowchart TD
-    subgraph Source_Truth [Source of Truth]
-        Windsurf[".windsurf/workflows (Core Workflows)"]
-        Kittify[".kittify/memory (Rules/Context)"]
-        Plugins["plugins/ (Extensions/Tools)"]
+    subgraph Bridge ["agent-bridge"]
+        BI["bridge_installer.py"]
     end
 
-    subgraph Bridges [Bridge System]
-        SB[System Bridge (Kernel)]
-        PM[Plugin Bridge (Extensions)]
+    subgraph Agents ["Target Environments"]
+        Antigravity[".agent/ (Antigravity)"]
+        Copilot[".github/ (Copilot)"]
+        Claude[".claude/ (Claude Code)"]
+        Gemini[".gemini/ (Gemini CLI)"]
     end
 
-    subgraph Agents [Target Environments]
-        Antigravity[".agent/"]
-        Copilot[".github/"]
-        Claude[".claude/"]
-        Gemini[".gemini/"]
-    end
+    Plugins -->|"load"| BI
 
-    %% Flows
-    Windsurf -->|Ingest Core| SB
-    Kittify -->|Ingest Rules| SB
-    
-    SB -->|Sync Rules & Context| Antigravity
-    SB -->|Sync Rules & Context| Copilot
-    SB -->|Sync Rules & Context| Claude
-    SB -->|Sync Rules & Context| Gemini
+    BI -->|"workflows + rules"| Antigravity
+    BI -->|"prompts"| Copilot
+    BI -->|"commands"| Claude
+    BI -->|"TOML + commands"| Gemini
 
-    Plugins -->|Install Capabilities| PM
-    
-    PM -->|Deploy Skills & Commands| Antigravity
-    PM -->|Deploy Prompts| Copilot
-    PM -->|Deploy Commands| Claude
-    PM -->|Deploy Commands| Gemini
+    classDef source fill:#eee,stroke:#333
+    classDef bridge fill:#bbf,stroke:#333,stroke-width:2px
+    classDef agent fill:#bfb,stroke:#333
 
-    %% Relationships
-    note[Sequence: 1. System Bridge (Kernel) -> 2. Plugin Bridge (Extensions)]
+    class Plugins source
+    class BI bridge
+    class Antigravity,Copilot,Claude,Gemini agent

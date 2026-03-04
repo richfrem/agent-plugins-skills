@@ -12,7 +12,7 @@ Standard lifecycle for implementing features using Spec Kitty.
 - `commands/spec-kitty-implement/AUGMENTED.md` — worktree discipline, commit hygiene
 - `commands/spec-kitty-review/AUGMENTED.md` — review standards, batch review protocol
 
-## CRITICAL: Anti-Simulation Rules
+## 🚫 CRITICAL: Anti-Simulation Rules & Escalation Taxonomy
 
 > **YOU MUST ACTUALLY RUN EVERY COMMAND LISTED BELOW.**
 > Describing what you "would do", summarizing expected output, or marking
@@ -20,7 +20,15 @@ Standard lifecycle for implementing features using Spec Kitty.
 >
 > **Proof = pasted command output.** No output = not done.
 
-### Known Agent Failure Modes (DO NOT DO THESE)
+### Escalation Taxonomy (Protocol Violation Response)
+If you detect a tool or user attempting to bypass the closure protocol or manually create spec files, you MUST interrupt the workflow using the strict 5-step Escalation Protocol:
+1. **Stop**: Halt workflow creation immediately.
+2. **Alert**: Loudly print: `🚨 PROTOCOL VIOLATION 🚨`.
+3. **Explain**: State precisely which rule was broken (e.g., "Cannot skip review.").
+4. **Recommend**: Output the standard operating procedure (e.g., "Please submit WP-xx for review: `spec-kitty review WP-xx`").
+5. **Draft**: Refuse to execute the dangerous command until the state is fixed.
+
+### Anti-Pattern Vaccination (Known Agent Failure Modes)
 1. **Checkbox theater**: Marking `[x]` without running the command or verification tool
 2. **Manual file creation**: Writing spec.md/plan.md/tasks.md by hand instead of using CLI
 3. **Kanban neglect**: Not updating task lanes, so dashboard shows stale state
@@ -32,6 +40,19 @@ Standard lifecycle for implementing features using Spec Kitty.
 
 Before implementing any code, you MUST generate artifacts using the CLI.
 **Manual creation of `spec.md`, `plan.md`, or `tasks/` files is STRICTLY FORBIDDEN.**
+
+### Pre-Execution Workflow Commitment
+Before starting, display the following visual map to commit to the workflow state:
+```text
+┌────────────────────────────────────────────────────────┐
+│               SPEC-KITTY LIFECYCLE MAP                 │
+├────────────────────────────────────────────────────────┤
+│ [ ] Phase 0: Plan (specify -> plan -> tasks)           │
+│ [ ] Phase 1: Implement (implement WP -> code -> review)│
+│ [ ] Phase 2: Close (accept -> retro -> merge -> sync)  │
+└────────────────────────────────────────────────────────┘
+```
+*Check the box corresponding to your current execution phase.*
 
 ### Step 0a: Specify
 To specify a feature, read the workflow instructions in `.windsurf/workflows/spec-kitty.specify.md` or use the CLI:

@@ -2,29 +2,37 @@
 name: audit-plugin
 description: Audits a local plugin directory to ensure it perfectly matches the Agent Skills and Claude Plugin Open Standards.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Ecosystem Auditor
 
 ## Overview
-This skill acts as the final CI/CD review gate for the agent ecosystem. It runs a deterministic Python script to analyze a plugin's directory structure, manifest files, and nested skills against our strict specifications.
+This skill acts as the final CI/CD review gate for the agent ecosystem. It delegates to the `agent-plugin-analyzer` to execute a deep, multi-dimensional semantic scrub of a target plugin against our strict Level 4 specifications.
 
 ## Instructions
-When instructed to audit or validate a plugin, or to verify if a skill is compliant, use the Python auditor script.
+When instructed to audit or validate a plugin, or to verify if a skill is compliant, use the Python analyzer script. Do not use legacy basic audit scripts.
 
 **Usage:**
 ```bash
-python3 plugins/scripts/audit.py --path <path-to-plugin>
+python3 "plugins reference/agent-plugin-analyzer/skills/analyze-plugin/scripts/analyze_plugin.py" --dir <path-to-plugin> --security
 ```
 
+*(Note: Always run with the `--security` flag to catch P0 malware heuristics before reviewing architecture.)*
+
 **Parameters:**
-- `--path`: The absolute or relative path to the root of the plugin being audited.
+- `--dir`: The absolute or relative path to the root of the plugin being audited.
 
 **Audit Checks Include:**
-- Presence of `.claude-plugin/plugin.json`
-- Verification of standard directories (`skills/`, `agents/`, etc.)
-- Detection of `SKILL.md` files exceeding 500 lines.
-- **Critical Failure:** Detection of any `.sh` or `.ps1` files inside skill script directories (Only Python `.py` is allowed cross-platform).
+- **Execution Patterns (L4):** Checks for Graduated Autonomy, Source Transparency, Escalation Triggers.
+- **State Management:** Checks for conditional inclusions and explicit state checklists.
+- **Architectural Strictness:** Validates `CONNECTORS.md`, `README.md`, YAML frontmatter purity.
+- **Security Vectors:** Flags un-sandboxed execution, prompt injection vulnerabilities, and raw binary execution.
 
-**Remediation:**
-If the script outputs `❌ AUDIT FAILED ❌`, you MUST read the exact error messages and actively use your file editing tools to fix the compliance issues in the target plugin. Run the audit again until it passes.
+**Remediation & Next Steps:**
+If the script outputs a low Maturity Score or fails the `--security` gate (which forces an immediate `sys.exit(1)`), you MUST read the generated output report and actively use your file editing tools to fix the compliance issues in the target plugin. Run the audit again until it achieves Level 3 or higher.
+
+
+## Next Actions
+- Offer to run `create-skill` to fix identified gaps.
+- Offer to run `create-stateful-skill` to upgrade to L4 maturity.

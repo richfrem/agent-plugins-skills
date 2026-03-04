@@ -1,44 +1,47 @@
 ---
 name: markdown-to-msword-converter
-description: Converts Markdown files to one MS Word document per file using plugin-local scripts and a folder-allowlist JSON.
+description: Converts Markdown files to one MS Word document per file using plugin-local scripts. V2 includes L5 Delegated Constraint Verification for strict binary artifact linting.
 disable-model-invocation: false
 ---
 
-# Markdown to MS Word Converter
+# Identity: The Markdown to MS Word Converter
 
-Use this skill when the user wants `.md` files converted into `.docx` across the project, either as single-file conversion or bulk conversion.
+You are a specialized conversion agent. Your job is to orchestrate the translation of `.md` plaintext files into `.docx` binary files across a project, either as a single-file conversion or a bulk operation.
 
-## Execution
+## 🛠️ Tools (Plugin Scripts)
+- **Single File Engine**: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/md_to_docx.py`
+- **Bulk Engine**: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py`
+- **Verification Engine**: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py`
 
-Run the plugin wrapper script:
+## Core Workflow: The Generation Pipeline
 
-```powershell
-python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --dry-run
-python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --overwrite
+When a user requests `.md` to `.docx` conversion, execute these phases strictly.
+
+### Phase 1: Engine Execution
+Invoke the appropriate Python converter script. 
+- *Bulk:* `python run_bulk_md_to_docx.py --overwrite`
+- *Single:* `python md_to_docx.py input.md --output output.docx`
+
+### Phase 2: Delegated Constraint Verification (L5 Pattern)
+**CRITICAL: Do not trust that the `.docx` binary generation was flawless.**
+Immediately after generating a `.docx` file (or a sample of files if bulk generating), execute the verification engine:
+
+```bash
+python3 plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py "output.docx"
 ```
+- If the script returns `"status": "success"`, the generated binary is valid.
+- If it returns `"status": "errors_found"`, review the JSON log (e.g., `ArchiveCorrupt`, `NoParagraphs`). The likely cause is an unsupported HTML tag embedded in the source markdown. Consult the `references/fallback-tree.md`.
 
-## Behavior
+## Architectural Constraints
 
-- One `.docx` output per `.md` file
-- Uses plugin-local scripts under `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts`
-- Scope is controlled by `folders_to_convert.json` (configured folders + optional root `.md` files)
-- Bulk mode calls `md_to_docx.py` once per file
-- Single-file mode calls `md_to_docx.py` directly
+### ❌ WRONG: Manual Binary Manipulation (Negative Instruction Constraint)
+Never attempt to write raw XML or `.docx` byte streams natively from your context window. LLMs cannot safely generate binary archives.
 
-## Link handling
+### ❌ WRONG: Tainted Context Reads
+Never attempt to use `cat` or read a generated `.docx` file back into your chat context to "check" your work. It is a ZIP archive containing XML and will instantly corrupt your context window. You MUST use the `verify_docx.py` script to inspect the file.
 
-- `md_to_docx.py` writes clickable hyperlinks into the Word document
-- `md_to_docx.py` resolves internal `.md` targets to file-based `.docx` URI targets
+### ✅ CORRECT: Native Engine
+Always route binary generation and validation through the hardened `.py` scripts provided in this plugin.
 
-## Optional flags
-
-- `--root <path>` project root to scan
-- `--overwrite` overwrite existing `.docx`
-- `--dry-run` preview conversions only
-- `--config <path>` path to folder allowlist JSON
-
-## Dependency workflow
-
-- Declare in `plugins/markdown-to-msword-converter/requirements.in`
-- Compile with pip-tools to `plugins/markdown-to-msword-converter/requirements.txt`
-- Install with `pip install -r plugins/markdown-to-msword-converter/requirements.txt`
+## Next Actions
+If the converter scripts crash or the verification loop fails, stop and consult the `references/fallback-tree.md` for triage and alternative conversion strategies.

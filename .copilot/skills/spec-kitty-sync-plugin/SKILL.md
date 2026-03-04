@@ -117,7 +117,7 @@ If changes are needed in custom skills:
 
 Present proposed changes to the user in diff format before applying them.
 
-#### 3b.4: Protected Files Checklist
+#### 3b.4: Protected Files Checklist & Escalation Taxonomy
 
 Before completing the sync, verify these files were NOT deleted or corrupted:
 - `.agent/rules/constitution.md` (symlinked from `.kittify/memory/`)
@@ -130,6 +130,14 @@ Before completing the sync, verify these files were NOT deleted or corrupted:
 test -f .agent/rules/constitution.md && echo "constitution OK" || echo "MISSING!"
 ls .agent/rules/01_PROCESS/ .agent/rules/02_OPERATIONS/ .agent/rules/03_TECHNICAL/ 2>/dev/null | head -20
 ```
+
+**Escalation Taxonomy (Missing Data Response)**
+If **ANY** protected file is missing or `ls` returns an error, trigger the Escalation Taxonomy:
+1. **Stop**: Do not proceed to Step 4 (Bridging).
+2. **Alert**: `🚨 PROTECTED FILE MISSING 🚨`
+3. **Explain**: State which file is missing (e.g., "constitution.md was deleted during update").
+4. **Recommend**: "We must restore this file from git history before bridging plugins."
+5. **Draft**: Ask the user for permission to run `git checkout -- <file>`.
 
 ### Step 4: Bridge to Agent Environments (Interactive)
 

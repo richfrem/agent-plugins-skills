@@ -1,6 +1,7 @@
 ---
 name: obsidian-graph-traversal
-description: "Semantic link traversal for Obsidian Vaults. Builds an in-memory graph index from wikilinks and provides instant forward-link, backlink, and multi-degree connection queries."
+description: "Semantic link traversal for Obsidian Vaults. Builds an in-memory graph index from wikilinks and provides instant forward-link, backlink, and multi-degree connection queries. Use when exploring note relationships or finding orphaned notes."
+allowed-tools: Bash, Read
 ---
 
 # Obsidian Graph Traversal

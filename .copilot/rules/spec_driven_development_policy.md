@@ -29,7 +29,18 @@ Artifacts live in `specs/NNN/` using templates from `.agent/templates/workflow/`
 | `plan.md` | `.agent/templates/workflow/plan-template.md` | The **How** |
 | `tasks.md` | `.agent/templates/workflow/tasks-template.md` | Execution checklist |
 
-## Lifecycle Summary
+## Lifecycle Summary (Pre-Execution Workflow Commitment)
+
+Before starting work, display this visual map to commit to the state:
+```text
+┌────────────────────────────────────────────────────────┐
+│               SPEC-KITTY LIFECYCLE MAP                 │
+├────────────────────────────────────────────────────────┤
+│ [ ] Phase 0: Plan (specify -> plan -> tasks)           │
+│ [ ] Phase 1: Implement (implement WP -> code -> review)│
+│ [ ] Phase 2: Close (accept -> retro -> merge -> sync)  │
+└────────────────────────────────────────────────────────┘
+```
 1. **Specify** → `/spec-kitty.specify` (or auto-generate for Track A)
 2. **Plan** → `/spec-kitty.plan`
 3. **Tasks** → `/spec-kitty.tasks`

@@ -118,6 +118,7 @@ Does this look right? (yes / adjust)
 - **Annotated JSON**: JSON with comments explaining each section
 - **Report + Data**: Markdown narrative with embedded code blocks containing structured data
 - **Interactive HTML + Export**: Dashboard with CSV/JSON download buttons
+- **Scaffold Previewer**: Local lightweight HTML server UI for side-by-side output review before destructive disk writes (Source: Anthropic `skill-creator`)
 
 ### When to Negotiate Format
 Add format negotiation to a skill when:

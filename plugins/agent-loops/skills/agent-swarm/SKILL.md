@@ -135,6 +135,7 @@ Then rerun with `--resume`.
 - Post-commands must be idempotent if using resume
 - Orchestrator owns the overall job state
 - `{file}` in post_cmd is shell-quoted automatically -- filenames with apostrophes are safe
+- **Asynchronous Benchmark Metric Capture**: Orchestrators MUST capture and log `total_tokens` and `duration_ms` from worker agents to a centralized `timing.json` log immediately as subtasks complete, rather than waiting for the entire swarm batch to finish.
 
 ## Diagram
 
