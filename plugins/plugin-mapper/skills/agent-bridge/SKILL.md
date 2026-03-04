@@ -41,10 +41,10 @@ python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --p
 ### Bridge All Plugins (Ecosystem Sync)
 For a standalone plugin install:
 ```bash
-python plugins/skills/agent-bridge/scripts/install_all_plugins.py --target gemini
+python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py --target gemini
 ```
 
-> **MASTER SYNC**: If you are performing a full system update (which includes synchronizing Spec Kitty templates, Windsurf workflows, Kernel rules, and all plugins), you should use the Plugin Manager's master orchestrator instead:
+> **MASTER SYNC**: For a full system update (all plugins, all environments), use the Plugin Manager's master orchestrator:
 > ```bash
 > python plugins/plugin-manager/scripts/update_agent_system.py
 > ```
