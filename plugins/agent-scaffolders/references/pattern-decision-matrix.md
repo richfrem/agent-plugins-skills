@@ -20,6 +20,7 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the user report surface symptoms that need root-cause diagnosis? | **Anti-Symptom Triage** | `anti-symptom-triage.md` |
 | Does the command group several sub-operations that have different outputs? | **Sub-Action Multiplexing** | `sub-action-multiplexing.md` |
 | Does the command require user input upstream where asking questions mid-flight hurts UX? | **Pre-Execution Input Manifest** | `pre-execution-input-manifest.md` |
+| Does the skill share overlapping keywords with generic tools, potentially causing discoverability issues? | **Multi-Variant Trigger Optimizer** | `multi-variant-trigger-optimizer.md` |
 
 ### Category 2: Execution and Safety
 | Diagnostic Question | Required Pattern | File |
@@ -36,6 +37,9 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Will the agent's natural sycophancy (agreeableness) ruin the analysis? | **Adversarial Objectivity Constraint** | `adversarial-objectivity-constraint.md` |
 | Is the command modifying constrained additive resources (dashboards, capacity)? | **Zero-Sum Addition Gate** | `zero-sum-addition-gate.md` |
 | Is there a minimum compliance safety standard that must never be bypassed regardless of the execution path or tool availability? | **Mode-Invariant Compliance Gate** | `mode-invariant-compliance-gate.md` |
+| Is the primary method for the task highly brittle or prone to edge-case failures (e.g. math, geometric extraction)? | **Highly Procedural Fallback Trees** | `highly-procedural-fallback-trees.md` |
+| Does the skill write code, configurations, or formulas that can be definitively proven broken by a compiler or engine evaluation? | **Delegated Constraint Verification Loop** | `delegated-constraint-verification-loop.md` |
+| Does the skill write executable code or loops destined to run directly on the client/browser? | **Client-Side Compute Sandbox Constraint** | `client-side-compute-sandbox-constraint.md` |
 
 ### Category 3: Output and Contracts
 | Diagnostic Question | Required Pattern | File |
@@ -55,7 +59,11 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the tool produce a strategic analysis that requires the user to decide? | **Mandatory Counterfactual Scenario Templating** | `mandatory-counterfactual-scenario-templating.md` |
 | Does the primary stakeholder lack context needed to understand raw metrics? | **Impact-Translated Status** | `impact-translated-status.md` |
 | Does the organization have an expected statistical distribution or budget curve for these entities? | **Population-Normative Distribution Constraint** | `population-normative-distribution-constraint.md` |
+| Does the LLM have a strong innate bias to solve the problem the "wrong" way (e.g., calculating math in Python instead of writing a formula)? | **Negative Instruction Constraint** | `negative-instruction-constraint.md` |
 | Does the skill evaluate metrics that require external industry benchmarks rather than the agent's subjective judgment? | **Category-Calibrated Benchmark Anchoring** | `category-calibrated-benchmark-anchoring.md` |
+| Will the generated output be consumed by fresh readers lacking the agent's conversational context? | **Tainted Context Cleanser** | `tainted-context-cleanser.md` |
+| Does the output's quality or performance need to be provably benchmarked against baselines? | **Rigorous Benchmarking & Grading Loop** | `rigorous-benchmarking-loop.md` |
+| Does the command generate full UI artifacts (HTML/SVG) where external asset injection poses a security risk? | **Artifact Generation XSS Compliance Gate** | `artifact-generation-xss-compliance-gate.md` |
 
 ### Category 4: State and Knowledge
 | Diagnostic Question | Required Pattern | File |
@@ -65,12 +73,15 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Is the domain highly regulated (laws, specific numeric thresholds)? | **Temporal Anchoring** | `temporal-anchoring.md` |
 | Does the skill generate living documents (e.g., KBs, playbooks)? | **Lifecycle-Aware Knowledge** | `lifecycle-aware-knowledge.md` |
 | Does the skill create artifact files? | **Artifact Lifecycle** | `artifact-lifecycle.md` |
+| Should branding, styling, or tone rules be shared globally across multiple distinct generation skills? | **Passive Style Injection Payload** | `passive-style-injection-payload.md` |
 | Does the workflow require complex knowledge gathering from multiple sources? | **Graduated Source-Attributed Knowledge Elicitation** | `graduated-source-attributed-elicitation.md` |
 | Is there a risk that the user will be overwhelmed by technical file-path/YAML minutiae? | **Dual-Register Communication Enforcement** | `dual-register-communication-enforcement.md` |
 | Should the command point the user to the next logical step in a workflow?| **Chained Command Invocation**| `chained-command-invocation.md` |
 | Do the commands require configuration that is tedious to supply on every run? | [Persistent Plugin Configuration](persistent-plugin-configuration.md) |
 | Does the workflow happen in recurring, time-bounded periods where the previous output is the next input? | [Cyclical State Propagation Contract](cyclical-state-propagation-contract.md) |
 | Should the generated artifact structurally record its own procedural history? | **Artifact-Embedded Execution Audit Trail** | `artifact-embedded-execution-audit-trail.md` |
+| Does the skill require orchestrating against an external SDK or schema that updates frequently? | **Dynamic Specification Fetching** | `dynamic-specification-fetching.md` |
+| Does the command generate randomized or chaotic output that a user might want to exactly replicate later? | **Explicit Seed-Anchored Determinism** | `explicit-seed-anchored-determinism.md` |
 
 ---
 

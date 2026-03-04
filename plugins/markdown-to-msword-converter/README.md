@@ -1,6 +1,6 @@
-# markdown-to-msword-converter
+# markdown-to-msword-converter (V2)
 
-Plugin wrapper that exposes Markdown-to-MS Word conversion as a single nested skill using plugin-local scripts.
+Plugin wrapper that exposes Markdown-to-MS Word conversion as a single nested skill using plugin-local scripts. Upgraded to V2 with L5 Delegated Constraint Verification.
 
 ## Nested Skill
 
@@ -10,6 +10,7 @@ Plugin wrapper that exposes Markdown-to-MS Word conversion as a single nested sk
 
 - Bulk wrapper: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py`
 - Per-file converter: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/md_to_docx.py`
+- Verification engine: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py`
 - Folder scope config: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/folders_to_convert.json`
 
 The per-file converter resolves internal markdown links to `.docx` targets directly so generated Word docs keep clickable references.

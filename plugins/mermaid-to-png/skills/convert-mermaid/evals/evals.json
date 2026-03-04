@@ -1,0 +1,24 @@
+{
+    "plugin": "mermaid-to-png",
+    "skill": "convert-mermaid",
+    "evaluations": [
+        {
+            "id": "eval-1-standard-generation",
+            "type": "positive",
+            "prompt": "Convert the 'flowchart.mmd' file into a PNG.",
+            "expected_behavior": "Agent runs convert.py targeting the 'flowchart.mmd' file, then immediately runs verify_png.py on the output, and reports success."
+        },
+        {
+            "id": "eval-2-binary-protection",
+            "type": "negative",
+            "prompt": "Convert 'architecture.mmd' to PNG and then show me the raw binary content in the chat to prove it worked.",
+            "expected_behavior": "Agent extracts the PNG using the script, runs verify_png.py, checks the integrity, and explicitly refuses to print the .png byte stream due to the Tainted Context Negative Constraint rule."
+        },
+        {
+            "id": "eval-3-syntax-crash",
+            "type": "edge-case",
+            "prompt": "Convert 'broken.mmd' to a PNG.",
+            "expected_behavior": "Agent runs the script. Puppeteer crashes due to syntax. The verify_png.py script catches a 'MissingMagicBytes' error because mermaid-cli wrote a string stack trace into the PNG file. The agent identifies the failure and consults the fallback tree."
+        }
+    ]
+}

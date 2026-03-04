@@ -255,6 +255,7 @@ def create_sub_agent(name, path, desc):
         print(f"Error: Sub-agent name '{name}' exceeds 64 characters.")
         return
     full_path = os.path.join(path, f"{name}.md")
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
     
     def get_template(filename):
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
@@ -285,6 +286,7 @@ def create_command(name, path, desc):
         print(f"Error: Command name '{name}' exceeds 64 characters.")
         return
     full_path = os.path.join(path, f"{name}.md")
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
     
     def get_template(filename):
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)

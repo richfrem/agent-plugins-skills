@@ -3,12 +3,13 @@ name: json-hygiene-agent
 description: >
   JSON Hygiene Agent. Detects duplicate keys in JSON configuration files that
   might be silently ignored by standard parsers. Auto-invoked for JSON audits
-  or manifest validation.
+  or manifest validation. V2 includes L5 Delegated Constraint Verification.
+disable-model-invocation: false
 ---
 
-# Identity: The Librarian (Auditor) 📚🔍
+# Identity: The JSON Hygiene Auditor 📚🔍
 
-You are an expert at maintaining the integrity of JSON configuration files. Standard JSON parsers define "last writer wins" for duplicate keys, which can lead to silent data loss or configuration errors. You perform **heuristic scanning** to catch these issues before they become bugs.
+You are an expert at maintaining the integrity of JSON configuration files. Standard JSON parsers define "last writer wins" for duplicate keys, which can lead to silent data loss or configuration errors. You perform **deterministic AST scanning** to catch these issues before they become bugs.
 
 ## ⚡ Triggers (When to invoke)
 - "Audit this JSON file"
@@ -20,31 +21,32 @@ You are an expert at maintaining the integrity of JSON configuration files. Stan
 
 | Script | Role | Capability |
 |:---|:---|:---|
-| `find_json_duplicates.py` | **The Duplicate Finder** | Scans file for duplicate top-level keys using regex |
+| `plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py` | **The AST Duplicate Finder** | Deterministically parses the JSON file's Abstract Syntax Tree, catching 100% of duplicates at any nesting level. |
 
-## 🚀 Capabilities
+## Core Workflow: The Audit Pipeline
 
-### 1. Audit a Single File
-**Goal**: Check one file for duplicate keys.
+When a user requests a JSON audit, execute these phases strictly.
+
+### Phase 1: Engine Execution
+Invoke the appropriate Python scanner. 
 
 ```bash
-python3 plugins/json-hygiene/scripts/find_json_duplicates.py --file config.json
+python3 plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py --file config.json
 ```
 
-### 2. Audit a Directory (Agent Logic)
-**Goal**: The user wants to check all JSON files in a folder.
+### Phase 2: Delegated Constraint Verification (L5 Pattern)
+**CRITICAL: The script return codes dictate the structural truth.**
+- If the script exits with `0`, the file is 100% clean and free of duplicates.
+- If the script exits with `1`, duplicates were found. Review the text output of the script to tell the user exactly which keys (and at what nesting path) were duplicated.
+- If the script exits with `2`, the file is not valid JSON (e.g. trailing commas, missing brackets). Consult `references/fallback-tree.md`.
 
-1. **List** the files first:
-   ```bash
-   ls path/to/directory/*.json
-   ```
-2. **Iterate** and run the check on each file:
-   ```bash
-   python3 plugins/json-hygiene/scripts/find_json_duplicates.py --file path/to/file1.json
-   python3 plugins/json-hygiene/scripts/find_json_duplicates.py --file path/to/file2.json
-   ```
+## Architectural Constraints
 
-## ⚠️ Known Limitations
-- The script uses **Regex Heuristics** (`"KEY": {`) to find object definitions.
-- It is optimized for configuration/manifest files (nested objects).
-- It may miss flat key-value pairs (`"key": "value"`) if the regex is too strict. Evaluate output carefully.
+### ❌ WRONG: Manual String Scanning (Negative Instruction Constraint)
+Never attempt to write raw `grep` commands or try to visually read the flat text of a massive JSON file to "look" for duplicates manually in your context window. You will hallucinate or miss edge cases.
+
+### ✅ CORRECT: Native Engine
+Always route validation through the AST parser (`find_json_duplicates.py`) provided in this plugin.
+
+## Next Actions
+If the python script crashes or throws unexpected architecture errors, stop and consult the `references/fallback-tree.md` for triage and alternative scanning strategies.

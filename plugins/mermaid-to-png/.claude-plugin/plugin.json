@@ -1,6 +1,17 @@
 {
-    "version": "1.0",
+    "version": "1.0.0",
     "name": "mermaid-to-png",
-    "author": "Generated via Agent Scaffolder",
-    "description": "The mermaid-to-png plugin."
+    "author": "Richard Fremmerlid",
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "description": "Convert mermaid diagrams to .png. V2 includes L5 Delegated Constraint Verification for strict binary artifact linting.",
+    "security": {
+        "whitelists": {
+            "python": {
+                "imports": [
+                    "subprocess",
+                    "os"
+                ]
+            }
+        }
+    }
 }
