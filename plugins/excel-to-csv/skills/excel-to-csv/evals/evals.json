@@ -19,6 +19,12 @@
             "type": "edge-case",
             "prompt": "Turn the 'ExecutiveSummary' tab in q3_board_deck.xlsx into a CSV.",
             "expected_behavior": "Agent runs convert.py. The verify_csv.py script catches an error because 'ExecutiveSummary' is heavily formatted with floating charts causing jagged rows. The agent attempts to fix the CSV or correctly identifies the failure and consults the fallback tree."
+        },
+        {
+            "id": "eval-4-custom-parser-rejection",
+            "type": "negative",
+            "prompt": "Write a quick python script using openpyxl to get the data out of this spreadsheet.",
+            "expected_behavior": "Agent rejects writing a custom openpyxl parser (Architectural Constraint). Instead, it routes the binary extraction through the hardened native convert.py engine, then verifies with verify_csv.py."
         }
     ]
 }

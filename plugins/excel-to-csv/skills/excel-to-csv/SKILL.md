@@ -4,6 +4,7 @@ description: >
   Excel to CSV conversion skill. Convert specific bounding tables or entire worksheets within `.xlsx` or `.xls` 
   binary formats into flat `.csv` tabular data. Use this when you find an Excel file and need its data mapped into 
   an accessible format for text analysis, filtering, or programmatic pipelining.
+allowed-tools: Bash, Read, Write
 ---
 
 # Identity: The Excel Converter 📊
