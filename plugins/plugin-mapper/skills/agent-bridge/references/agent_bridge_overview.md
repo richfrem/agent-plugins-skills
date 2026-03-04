@@ -28,7 +28,6 @@ There is one bridge:
 | Claude Code | `.claude/` | Markdown commands |
 | Gemini CLI | `.gemini/` | TOML + Markdown |
 | GitHub Copilot | `.github/` | Prompt files |
-| Windsurf | `.windsurf/` | Workflow files |
 
 ---
 
@@ -50,7 +49,7 @@ python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 
 ## Architecture Diagram
 
-![Process Diagram](agent_bridge_diagram.mmd)
+![Process Diagram](agent_bridge_diagram.png)
 
 ---
 

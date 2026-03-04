@@ -1,33 +1,28 @@
-flowchart TD
-    subgraph Source ["Source"]
-        Plugins["plugins/<br/>(any plugin, Open Standards format)"]
-    end
+flowchart LR
+    Plugins["plugins/"]
 
     subgraph Bridge ["agent-bridge"]
-        BI["bridge_installer.py<br/>(format translator + patcher)"]
+        BI["bridge_installer.py"]
     end
 
-    subgraph Agents ["Target Agent Environments"]
-        Antigravity[".agent/<br/>Antigravity"]
-        Copilot[".github/<br/>GitHub Copilot"]
-        Claude[".claude/<br/>Claude Code"]
-        Gemini[".gemini/<br/>Gemini CLI"]
-        Windsurf[".windsurf/<br/>Windsurf IDE"]
+    subgraph Agents ["Target Environments"]
+        Antigravity[".agent/ (Antigravity)"]
+        Copilot[".github/ (Copilot)"]
+        Claude[".claude/ (Claude Code)"]
+        Gemini[".gemini/ (Gemini CLI)"]
     end
 
-    %% Flows
-    Plugins -->|"Load skills + commands"| BI
+    Plugins -->|"load"| BI
 
-    BI -->|"Deploy workflows + rules"| Antigravity
-    BI -->|"Deploy prompt files"| Copilot
-    BI -->|"Deploy commands"| Claude
-    BI -->|"Deploy TOML + commands"| Gemini
-    BI -->|"Deploy workflow files"| Windsurf
+    BI -->|"workflows + rules"| Antigravity
+    BI -->|"prompts"| Copilot
+    BI -->|"commands"| Claude
+    BI -->|"TOML + commands"| Gemini
 
-    classDef source fill:#eee,stroke:#333,stroke-width:1px
+    classDef source fill:#eee,stroke:#333
     classDef bridge fill:#bbf,stroke:#333,stroke-width:2px
-    classDef agent fill:#bfb,stroke:#333,stroke-width:1px
+    classDef agent fill:#bfb,stroke:#333
 
     class Plugins source
     class BI bridge
-    class Antigravity,Copilot,Claude,Gemini,Windsurf agent
+    class Antigravity,Copilot,Claude,Gemini agent
