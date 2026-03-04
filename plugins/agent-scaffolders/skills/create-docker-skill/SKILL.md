@@ -40,3 +40,7 @@ Use file writing tools to inject a `security_override.json` at the root of the n
 
 ### 5. Finalize `SKILL.md`
 Populate the `SKILL.md` ensuring the flow forces the AI to run `scripts/check_environment.py` FIRST before ever attempting the containerized workload.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

@@ -32,3 +32,7 @@ You are tasked with generating a new Sub-Agent context boundary using our determ
 
 3. **Confirmation:**
    Print a success message and advise the user on how to spawn the sub-agent (usually via the System `Task` tool).
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

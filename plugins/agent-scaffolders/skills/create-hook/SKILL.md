@@ -26,3 +26,7 @@ You are tasked with generating a new Hook integration using our deterministic ba
 
 3. **Confirmation:**
    Print a success message showing the configured hook sequence.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

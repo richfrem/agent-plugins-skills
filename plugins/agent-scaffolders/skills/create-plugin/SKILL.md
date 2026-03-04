@@ -29,6 +29,14 @@ Use progressive diagnostic questioning to understand the plugin design. Do not d
 - **Interaction Style**: Based on the `hitl-interaction-design.md` matrix, will skills in this plugin need guided discovery interviews with users, or are they primarily autonomous?
 - **Pattern Routing**: Based on the `pattern-decision-matrix.md`, explicitly ask the diagnostic questions. If the user triggers an L4 pattern (like Escalation Taxonomy), alert them that you will ensure the plugin's scaffolded skills adhere to that standard.
 
+### Phase 1.5: Recap & Confirm
+**Do NOT immediately scaffold after the interview.**
+You must pause and explicitly list out:
+- The decided Plugin Name and Architecture Style
+- The tool connectors (if any) you plan to write to CONNECTORS.md
+- Any L4 Patterns you noted during discovery
+Ask the user: "Does this look right? (yes / adjust)"
+
 ### 2. Scaffold the Plugin
 Execute the deterministic `scaffold.py` script:
 ```bash
@@ -53,3 +61,8 @@ This ensures the plugin is tool-agnostic and portable across organizations.
 Print a success message and recap the scaffolded structure. Remind the user of two absolute standards:
 1. If supercharged, populate `CONNECTORS.md` with specific tool mappings.
 2. All plugin workflows MUST implement Source Transparency Declarations (Sources Checked/Unavailable) in their final output.
+
+
+## Next Actions
+- Offer to run `create-skill` to populate the plugin.
+- Offer to run `create-mcp-integration` to add tool connectors.

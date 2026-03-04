@@ -34,6 +34,13 @@ Does this skill require an Escalation Trigger Taxonomy (Stop, Alert, Explain, Re
 **Q5. Workflow Navigation (Chained Commands)**
 What commands logically follow this output? We will inject an "Offer Next Steps" block to chain this node to other skills.
 
+### Phase 1.5: Recap & Confirm
+**Do NOT immediately scaffold after the interview.**
+You must pause and explicitly list out:
+- The decided Skill Name and Description
+- Which of the 5 L4 State/Lifecycle templates you plan to inject
+Ask the user: "Does this look right? (yes / adjust)"
+
 ### 2. Scaffold the Infrastructure (Preventing Context Bloat)
 Execute the deterministic `scaffold.py` script to generate the physical directories:
 ```bash
@@ -43,7 +50,7 @@ python3 plugins/scripts/scaffold.py --type skill --name <requested-name> --path 
 ### 3. Generate Lean Pattern References (Lazy-Loading)
 **CRITICAL: Do NOT bloat the generated skill with massive definitions of these patterns.** 
 Instead of writing out the entire theory of Escalation Taxonomies or Lifecycle State Machines in every new skill, you must practice **Progressive Disclosure**:
-- For each selected L4 pattern in Step 1, create a LEAN file in `references/` (e.g., `references/tone-matrix.md`).
+- For each selected L4 pattern in Step 1, create a LEAN file in `references/` (e.g., `references/tone-matrix.md`). Load its specific definition file from the catalog `~~l4-pattern-catalog` (see CONNECTORS.md) to learn how to scaffold it.
 - This file should ONLY contain the domain-specific tables (the actual matrix values for this specific skill).
 - Do not explain *how* the pattern works; the central `pattern-catalog.md` already defines the mechanics. Just provide the blank or filled templates for this specific workflow.
 
@@ -53,3 +60,7 @@ Write the final `SKILL.md`. Ensure it:
 2. Uses Markdown links (e.g., `[See Escalation Rules](references/escalation-taxonomy.md)`) so the LLM only loads the context when needed.
 3. Includes the **Chained Commands** (Offer Next Steps) block at the bottom.
 4. Includes the mandatory **Source Transparency Declaration**.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

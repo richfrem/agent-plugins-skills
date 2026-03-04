@@ -247,8 +247,8 @@ def generate_workflow_file(
               PROMPT+="- Repository: $GITHUB_REPOSITORY"
               PROMPT+=$'\\n\\nTask: Execute instructions and write findings to /report.md'
 
-              # 3. Execute Headless
-              copilot --prompt "$PROMPT" --allow-all-tools --model claude-sonnet-4.5 < /dev/null
+              # NOTE: Uses a scoped tool boundary for safety. For testing only, you may expand this.
+              copilot --model claude-sonnet-4.6 --allow-tools "Read,Write,Bash" --prompt "$PROMPT" < /dev/null
 
           - name: Quality Gate (Smart Fail)
             if: always()

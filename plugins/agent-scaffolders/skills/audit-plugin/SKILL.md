@@ -30,3 +30,8 @@ python3 "plugins reference/agent-plugin-analyzer/skills/analyze-plugin/scripts/a
 
 **Remediation & Next Steps:**
 If the script outputs a low Maturity Score or fails the `--security` gate (which forces an immediate `sys.exit(1)`), you MUST read the generated output report and actively use your file editing tools to fix the compliance issues in the target plugin. Run the audit again until it achieves Level 3 or higher.
+
+
+## Next Actions
+- Offer to run `create-skill` to fix identified gaps.
+- Offer to run `create-stateful-skill` to upgrade to L4 maturity.

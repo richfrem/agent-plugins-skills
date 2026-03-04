@@ -123,3 +123,7 @@ permissions:
   with:
     files: dist/*
 ```
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.
