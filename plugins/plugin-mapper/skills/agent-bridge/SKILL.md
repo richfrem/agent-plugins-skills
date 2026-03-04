@@ -27,15 +27,15 @@ You are a Universal Translator. You are not limited to the primary examples. If 
 ### Bridge a Single Plugin
 ```bash
 # Bridge to Claude Code specifically
-python plugins/skills/agent-bridge/scripts/bridge_installer.py --plugin <plugin-path> --target claude
+python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin <plugin-path> --target claude
 
 # Bridge to Antigravity specifically
-python plugins/skills/agent-bridge/scripts/bridge_installer.py --plugin <plugin-path> --target antigravity
+python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin <plugin-path> --target antigravity
 ```
 
 **Example:**
 ```bash
-python plugins/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target antigravity
+python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target antigravity
 ```
 
 ### Bridge All Plugins (Ecosystem Sync)

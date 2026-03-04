@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph Central ["Central Repo: agent-plugins-skills"]
+        Plugins["plugins/plugin-name/"]
+    end
+
+    subgraph Replicator ["plugin-replicator Skill"]
+        PR["plugin_replicator.py\n(single plugin)"]
+        BR["bulk_replicator.py\n(all plugins)"]
+    end
+
+    subgraph Project1 ["Consumer Project A"]
+        Target1["plugins/plugin-name/"]
+    end
+
+    subgraph Project2 ["Consumer Project B"]
+        Target2["plugins/plugin-name/"]
+    end
+
+    %% Flows
+    Plugins -->|"--plugin plugin-name"| PR
+    Plugins -->|"--filter glob"| BR
+
+    PR -->|"Copy mode (default)"| Target1
+    PR -->|"--link mode (symlink)"| Target2
+    BR -->|"Sync all matching"| Target1

@@ -33,16 +33,16 @@ When setting up a fresh environment or updating the system, follow this sequence
 ### Step 1: Initialize Kernel (System Sync)
 Run this first to establish the ground rules and memory.
 ```bash
-python plugins/spec-kitty/skills/spec-kitty-agent/scripts/speckit_system_bridge.py
+python plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
 ```
-> **Outcome**: Updates `.agent/rules`, `CLAUDE.md`, `copilot-instructions.md`.
+> **Outcome**: Syncs .windsurf/workflows to plugins/spec-kitty-plugin/commands/, and rules to .agent/rules/.
 
 ### Step 2: Propagate Core Workflows (Spec Kitty Sync)
 Run this to bridge the gap between `.windsurf` (CLI Init) and the Plugin System.
 ```bash
-python plugins/spec-kitty/skills/spec-kitty-agent/scripts/sync_workflows.py
+python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 ```
-> **Outcome**: Copies fresh workflows from `.windsurf` to `plugins/spec-kitty/commands`.
+> **Outcome**: Deploys all `plugins/*` to `.agent/workflows`, `.github/prompts`, etc.
 
 ### Step 3: Install Capabilities (Plugin Manager)
 Run this to deploy all tools and commands to the agents.

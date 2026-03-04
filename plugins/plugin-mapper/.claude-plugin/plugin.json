@@ -1,16 +1,19 @@
 {
-    "name": "plugin-bridge",
-    "description": "Universal Installer for Agent Plugins. Maps generic .claude-plugin structures to target environments (Antigravity, GitHub Copilot, Gemini, Claude Desktop).",
-    "version": "1.0.0",
+    "name": "plugin-mapper",
+    "description": "Universal Bridge Installer for Agent Plugins. Adapts and deploys standard .claude-plugin structures to 30+ target environments (Antigravity, GitHub Copilot, Gemini, Claude Code, Cursor, Roo, and more).",
+    "version": "2.0.0",
     "author": {
-        "name": "Richard Fremmerlid"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem/agent-plugins-skills"
     },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
         "installer",
         "bridge",
         "deployment",
-        "mapping"
+        "mapping",
+        "universal"
     ],
     "commands_dir": "commands",
     "skills_dir": "skills",

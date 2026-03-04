@@ -12,6 +12,10 @@ allowed-tools: Bash, Write, Read
 ## Overview
 This skill manages the synchronization of plugin source code between the central repository and other projects, ensuring tools are consistent across all workspaces.
 
+## References
+- Overview: `plugins/plugin-manager/skills/plugin-replicator/references/plugin_replicator_overview.md`
+- Flow diagram: `plugins/plugin-manager/skills/plugin-replicator/references/plugin_replicator_diagram.mmd`
+
 ## Execution Protocol
 
 Do not immediately generate bash commands. Instead, operate as an interactive assistant using the following human-in-the-loop phases:
