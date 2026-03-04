@@ -207,6 +207,11 @@ def create_skill(name, path, description):
     print(f"Success: Skill '{name}' scaffolded at {skill_dir}")
 
 def create_hook(event, path, action_type):
+    import pathlib
+    resolved_path = pathlib.Path(path).resolve()
+    if not (resolved_path / ".claude-plugin").exists():
+        print(f"Error: Path '{resolved_path}' must be a plugin root containing .claude-plugin/")
+        return
     hooks_file = os.path.join(path, "hooks.json")
     
     hooks_data = []
@@ -243,6 +248,12 @@ def create_hook(event, path, action_type):
     print(f"Success: Hook appended to {hooks_file}")
 
 def create_sub_agent(name, path, desc):
+    if not re.match(r'^[a-z0-9-]+$', name):
+        print(f"Error: Sub-agent name '{name}' must contain only lowercase letters, numbers, and hyphens.")
+        return
+    if len(name) > 64:
+        print(f"Error: Sub-agent name '{name}' exceeds 64 characters.")
+        return
     full_path = os.path.join(path, f"{name}.md")
     
     def get_template(filename):
@@ -267,6 +278,12 @@ def create_sub_agent(name, path, desc):
     print(f"Success: Sub-agent saved to {full_path}")
 
 def create_command(name, path, desc):
+    if not re.match(r'^[a-z0-9-]+$', name):
+        print(f"Error: Command name '{name}' must contain only lowercase letters, numbers, and hyphens.")
+        return
+    if len(name) > 64:
+        print(f"Error: Command name '{name}' exceeds 64 characters.")
+        return
     full_path = os.path.join(path, f"{name}.md")
     
     def get_template(filename):

@@ -51,7 +51,7 @@ Ask the user: "Does this look right? (yes / adjust)"
 ### 2. Scaffold the Infrastructure
 Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
 ```bash
-python3 plugins/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ~~agent-scaffolders-root/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Acceptance Criteria

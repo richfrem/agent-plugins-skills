@@ -40,7 +40,7 @@ Ask the user: "Does this look right? (yes / adjust)"
 ### 2. Scaffold the Plugin
 Execute the deterministic `scaffold.py` script:
 ```bash
-python3 plugins/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
+python3 ~~agent-scaffolders-root/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
 ```
 *(Note: Usually `<destination-directory>` will be inside the `plugins/` root).*
 

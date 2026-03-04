@@ -52,8 +52,8 @@ python plugins/scripts/scaffold_agentic_workflow.py \
   --mode ide
 
 # CI/CD Smart Failure agent (Kill Switch pattern — works today)
-python plugins/scripts/scaffold_agentic_workflow.py \
-  --skill-dir <requested-skill-path> \
+python ~~agent-scaffolders-root/skills/create-agentic-workflow/scripts/scaffold_agentic_workflow.py \
+  --skill-dir <path-to-skill-directory> \
   --mode cicd \
   [--triggers pull_request push schedule issues release] \
   [--kill-switch "CUSTOM FAILURE PHRASE"]

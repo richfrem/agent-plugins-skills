@@ -248,12 +248,12 @@ def generate_workflow_file(
               PROMPT+=$'\\n\\nTask: Execute instructions and write findings to /report.md'
 
               # NOTE: Uses a scoped tool boundary for safety. For testing only, you may expand this.
-              copilot --model claude-sonnet-4.6 --allow-tools "Read,Write,Bash" --prompt "$PROMPT" < /dev/null
+              copilot --model claude-sonnet-4.6 --allow-tool read write shell --prompt "$PROMPT" < /dev/null
 
           - name: Quality Gate (Smart Fail)
             if: always()
             run: |
-              if grep -q "{kill_switch}" report.md; then
+              if grep -q -F -- "{kill_switch}" report.md; then
                 echo "❌ QUALITY GATE FAILED: {kill_switch}"
                 exit 1
               else
@@ -299,7 +299,7 @@ def generate_agentic_workflow(
     content = skill_file.read_text(encoding="utf-8")
     fm, body = parse_frontmatter(content)
 
-    name = fm.get("name", skill_file.parent.name)
+    name = re.sub(r'[^a-zA-Z0-9-]', '', fm.get("name", skill_file.parent.name))
     description = fm.get("description", f"Agentic workflow for {name}")
 
     if not kill_switch:

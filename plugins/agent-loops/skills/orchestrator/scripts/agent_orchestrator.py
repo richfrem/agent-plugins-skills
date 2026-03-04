@@ -161,7 +161,7 @@ def cmd_packet(args):
 
 def cmd_verify(args):
     """Verify worktree state."""
-    print(f"Verifying {args.wp}...")
+    print(f"Verifying {args.packet}...")
     
     # 1. Git Status (if git exists)
     diff = run_command(["git", "status", "--short"], cwd=Path(args.worktree) if args.worktree else None)
