@@ -1,12 +1,12 @@
 {
     "name": "link-checker",
-    "description": "Validate and auto-repair broken documentation links across your repository using file inventory mapping and fuzzy matching",
-    "version": "1.0.0",
+    "version": "2.0.0",
+    "description": "Quality assurance agent for documentation link integrity. Checks, fixes, and audits documentation links across a repository using a deterministic Map-Fix-Verify workflow.",
     "author": {
         "name": "Richard Fremmerlid",
-        "url": "https://github.com/<your repo path>"
+        "url": "https://github.com/richfrem"
     },
-    "repository": "https://github.com/<your repo path>",
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
         "links",
@@ -15,6 +15,7 @@
         "auto-repair",
         "markdown"
     ],
-    "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills": [
+        "link-checker-agent"
+    ]
 }

@@ -3,6 +3,7 @@ name: link-checker-agent
 description: >
   Quality assurance agent for documentation link integrity. Auto-invoked when tasks
   involve checking, fixing, or auditing documentation links across a repository.
+allowed-tools: Bash, Read, Write
 ---
 
 # Identity: The Link Checker 🔗
