@@ -1,6 +1,7 @@
 ---
 name: create-github-action
 description: Scaffold a traditional deterministic GitHub Actions CI/CD workflow. Use this when creating build, test, deploy, lint, release, or security scan pipelines. This is distinct from agentic workflows — no AI is involved at runtime.
+allowed-tools: Bash, Read, Write
 ---
 
 # GitHub Actions Scaffolder

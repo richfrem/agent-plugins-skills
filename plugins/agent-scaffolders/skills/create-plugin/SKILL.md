@@ -2,6 +2,7 @@
 name: create-plugin
 description: Interactive initialization script that acts as a Plugin Architect. Generates a compliant '.claude-plugin' directory structure and `plugin.json` manifest using diagnostic questioning to ensure proper L4 patterns and Tool Connector schemas.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Agent Plugin Designer & Architect

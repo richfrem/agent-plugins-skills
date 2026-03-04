@@ -2,6 +2,7 @@
 name: create-mcp-integration
 description: Interactive initialization script that scaffolds a new Model Context Protocol (MCP) server integration setup. Use when adding native code tools to an agent's environment.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # MCP Integration Scaffold Generator

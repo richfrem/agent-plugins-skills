@@ -3,6 +3,7 @@ name: create-stateful-skill
 description: Interactive initialization script that generates an advanced Agent Skill utilizing L4 State Management, Lifecycle Artifacts, Tone Configuration, and Chained Commands. Use when authoring complex, persistent workflows.
 disable-model-invocation: false
 tier: 1
+allowed-tools: Bash, Read, Write
 ---
 
 # Stateful Skill Scaffold Generator

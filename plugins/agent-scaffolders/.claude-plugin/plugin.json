@@ -1,9 +1,29 @@
 {
-    "version": "1.0",
     "name": "agent-scaffolders",
-    "author": "Antigravity",
-    "description": "A suite of generative agent skills designed to dynamically scaffold new extensions (Plugins, Skills, Hooks, etc.) in strict compliance with Open Standard specifications.",
-    "dependencies": [
-        "agent-skill-open-specifications"
+    "version": "2.0.0",
+    "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "skills": [
+        "audit-plugin",
+        "create-agentic-workflow",
+        "create-azure-agent",
+        "create-docker-skill",
+        "create-github-action",
+        "create-hook",
+        "create-legacy-command",
+        "create-mcp-integration",
+        "create-plugin",
+        "create-skill",
+        "create-stateful-skill",
+        "create-sub-agent"
+    ],
+    "scripts": [
+        "scripts/audit.py",
+        "scripts/scaffold.py"
     ]
 }
