@@ -1,95 +1,60 @@
 
-# Plugin Architecture & Bridge Process
+# Plugin Bridge: Architecture & Process
 
-**Author**: Spec Kitty Architect
-**Version**: 2.0 (Dual Bridge)
+**Version**: 2.0
 
 ## Overview
 
-The Architecture uses a **Dual Bridge** system to manage configuration. This ensures that the core system rules (Kernel) remain stable while allowing for flexible extension (Plugins).
+The `agent-bridge` skill translates plugins from a common format into the specific structure expected by each agent environment. It reads from `plugins/` and writes to the agent-specific directories.
 
-### 1. The Kernel (System Bridge)
-**Source**: `.kittify/memory` (Rules), `.windsurf/workflows` (Core Workflows)
-**Tool**: `speckit_system_bridge.py`
-**Responsibility**:
--   Syncs the **Constitution** and **Global Rules**.
--   Generates the **Monolithic Context Files** (`CLAUDE.md`, `GEMINI.md`, `copilot-instructions.md`).
--   Ensures all agents share the same "Brain" (Memory).
+There is one bridge:
 
-### 2. The Extensions (Plugin Bridge)
-**Source**: `plugins/` (Individual Tool Capabilities)
-**Tool**: `bridge_installer.py` (Plugin Manager)
-**Responsibility**:
--   Installs specific **Skills** (e.g., `dependency-analysis`).
--   Deploys granular **Commands** (e.g., `/codify-form`).
--   Converts Markdown workflows into Agent-specific formats (TOML for Gemini, Prompts for Copilot).
+**Plugin Bridge**
+- **Source**: `plugins/` (any plugin directory)
+- **Tool**: `bridge_installer.py`
+- **Responsibility**:
+  - Installs **Skills** into agent skill/workflow directories
+  - Deploys **Commands** as agent-specific slash commands
+  - Converts Markdown workflows into agent-specific formats (TOML for Gemini, prompts for Copilot, etc.)
+  - Patches agent-specific identifiers (e.g., `--actor` flags) into installed files
 
 ---
 
-## Execution Sequence
+## Supported Agent Environments
 
-When setting up a fresh environment or updating the system, follow this sequence:
+| Environment | Config Directory | Format |
+|-------------|-----------------|--------|
+| Antigravity | `.agent/` | Markdown workflows + rules |
+| Claude Code | `.claude/` | Markdown commands |
+| Gemini CLI | `.gemini/` | TOML + Markdown |
+| GitHub Copilot | `.github/` | Prompt files |
+| Windsurf | `.windsurf/` | Workflow files |
 
-### Step 1: Initialize Kernel (System Sync)
-Run this first to establish the ground rules and memory.
+---
+
+## Execution
+
+### Install a single plugin
 ```bash
-python plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py \
+  --plugin plugins/<plugin-name> \
+  --target <environment>
 ```
-> **Outcome**: Syncs .windsurf/workflows to plugins/spec-kitty-plugin/commands/, and rules to .agent/rules/.
 
-### Step 2: Propagate Core Workflows (Spec Kitty Sync)
-Run this to bridge the gap between `.windsurf` (CLI Init) and the Plugin System.
+### Install all plugins
 ```bash
 python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 ```
-> **Outcome**: Deploys all `plugins/*` to `.agent/workflows`, `.github/prompts`, etc.
-
-### Step 3: Install Capabilities (Plugin Manager)
-Run this to deploy all tools and commands to the agents.
-```bash
-python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
-```
-> **Outcome**: Deploys `plugins/*` to `.agent/workflows`, `.github/prompts`, etc.
 
 ---
 
 ## Architecture Diagram
 
-![Process Diagram](./process_diagram.mmd)
+![Process Diagram](agent_bridge_diagram.mmd)
 
-```mermaid
-flowchart TD
-    subgraph Source_Truth [Source of Truth]
-        Windsurf[".windsurf/workflows (Core Workflows)"]
-        Kittify[".kittify/memory (Rules/Context)"]
-        Plugins["plugins/ (Extensions/Tools)"]
-    end
+---
 
-    subgraph Bridges [Bridge System]
-        SB[System Bridge (Kernel)]
-        PM[Plugin Bridge (Extensions)]
-    end
-
-    subgraph Agents [Target Environments]
-        Antigravity[".agent/"]
-        Copilot[".github/"]
-        Claude[".claude/"]
-        Gemini[".gemini/"]
-    end
-
-    %% Flows
-    Windsurf -->|Ingest Core| SB
-    Kittify -->|Ingest Rules| SB
-    
-    SB -->|Sync Rules & Context| Antigravity
-    SB -->|Sync Rules & Context| Copilot
-    SB -->|Sync Rules & Context| Claude
-    SB -->|Sync Rules & Context| Gemini
-
-    Plugins -->|Install Capabilities| PM
-    
-    PM -->|Deploy Skills & Commands| Antigravity
-    PM -->|Deploy Prompts| Copilot
-    PM -->|Deploy Commands| Claude
-    PM -->|Deploy Commands| Gemini
-```
+## Notes
+- `--target auto` is explicitly discouraged. Always specify the target environment.
+- The bridge is format-agnostic: any plugin following the Open Standards structure is compatible.
+- Agent-specific patches (actor flags, path formats) are applied automatically per target.

@@ -8,7 +8,8 @@ args:
 
 # Update / Refresh Plugins
 
-# 1. Update Bridges (Priority: Propagate Local Changes)
-echo "Refreshing agent capabilities from local plugins..."
-python plugins/plugin-mapper/scripts/install_all_plugins.py
+```bash
+# Refresh all plugins in all agent environments
+python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 ```
+
