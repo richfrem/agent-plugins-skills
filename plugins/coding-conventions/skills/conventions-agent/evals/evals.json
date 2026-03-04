@@ -1,0 +1,24 @@
+{
+    "plugin": "coding-conventions",
+    "skill": "conventions-agent",
+    "evaluations": [
+        {
+            "id": "eval-1-scope-to-style-only",
+            "type": "negative",
+            "prompt": "Review this diff for conventions compliance.",
+            "expected_behavior": "Agent reviews ONLY for style and documentation violations (headers, naming, docstrings, thresholds). It does NOT refactor business logic, fix bugs, or make architectural suggestions. Scope is strictly formatting and documentation."
+        },
+        {
+            "id": "eval-2-flag-missing-type-hints",
+            "type": "positive",
+            "prompt": "Check this Python function for conventions compliance.",
+            "expected_behavior": "Agent flags any Python function signature missing type annotations. Every parameter and return value must have type hints. Agent reports each missing annotation as a separate violation."
+        },
+        {
+            "id": "eval-3-tool-registration-check",
+            "type": "positive",
+            "prompt": "A new script was just added to plugins/. Review for conventions.",
+            "expected_behavior": "Agent verifies the script has a file header AND is registered in tool_inventory.json. If either is missing, both are flagged as separate violations. Agent does NOT proceed without confirming registration."
+        }
+    ]
+}
