@@ -1,6 +1,15 @@
 {
-    "version": "1.0",
     "name": "agent-skill-open-specifications",
-    "author": "Antigravity",
-    "description": "Meta-plugin containing authoritative reference documentation and execution skills for the Agent Skills and Claude Plugin ecosystem."
+    "version": "2.0.0",
+    "description": "Meta-plugin containing authoritative reference documentation and execution skills for the Agent Skills and Claude Plugin ecosystem.",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "skills": [
+        "ecosystem-authoritative-sources",
+        "ecosystem-standards"
+    ]
 }
