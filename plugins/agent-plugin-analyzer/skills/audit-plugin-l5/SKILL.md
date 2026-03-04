@@ -2,6 +2,7 @@
 name: audit-plugin-l5
 description: Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Audit Plugin L5

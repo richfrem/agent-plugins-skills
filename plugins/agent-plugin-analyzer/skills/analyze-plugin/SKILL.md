@@ -5,6 +5,7 @@ description: >
   and reusable techniques. Trigger with "analyze this plugin", "mine patterns from", "review plugin
   structure", "extract learnings from", "what patterns does this plugin use", or when examining any
   plugin or skill collection to understand its design.
+allowed-tools: Bash, Read, Write
 ---
 
 # Plugin & Skill Analyzer

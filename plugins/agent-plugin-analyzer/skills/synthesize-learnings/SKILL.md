@@ -5,6 +5,7 @@ description: >
   and agent-skill-open-specifications. Trigger with "synthesize learnings", "generate improvement
   recommendations", "what should we improve in our scaffolders", "update our meta-skills based on
   these findings", or after completing a plugin analysis.
+allowed-tools: Bash, Read, Write
 ---
 
 # Synthesize Learnings
