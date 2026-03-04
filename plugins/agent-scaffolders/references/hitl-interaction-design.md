@@ -1,4 +1,5 @@
 # Human-in-the-Loop (HITL) Interaction Design Guide
+> **Standard Last Validated:** 2026-03-03
 
 A reference for deciding when and how to incorporate human interaction into skills, and how to design outputs for different audiences. Used by `create-skill` during the design phase.
 

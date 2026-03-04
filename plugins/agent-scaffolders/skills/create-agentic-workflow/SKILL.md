@@ -52,8 +52,8 @@ python plugins/scripts/scaffold_agentic_workflow.py \
   --mode ide
 
 # CI/CD Smart Failure agent (Kill Switch pattern — works today)
-python plugins/scripts/scaffold_agentic_workflow.py \
-  --skill-dir <requested-skill-path> \
+python ~~agent-scaffolders-root/skills/create-agentic-workflow/scripts/scaffold_agentic_workflow.py \
+  --skill-dir <path-to-skill-directory> \
   --mode cicd \
   [--triggers pull_request push schedule issues release] \
   [--kill-switch "CUSTOM FAILURE PHRASE"]
@@ -98,3 +98,8 @@ After generation, remind the user:
 - **CI/CD Official format agents**: After generation, run `gh aw compile` to generate the `.lock.yml` file. Commit **both** the `.md` and the `.lock.yml`. Requires the `gh-aw` extension: `gh extension install github/gh-aw`. Technical preview — may require preview access.
 
 - **Both**: The shared `.agent.md` must satisfy both use cases — include the full instruction set AND (if Smart Failure) the Kill Switch phrase.
+
+
+## Next Actions
+- Offer to run `create-github-action` to add CI/CD hooks.
+- Offer to run `audit-plugin` to validate YAML syntax.

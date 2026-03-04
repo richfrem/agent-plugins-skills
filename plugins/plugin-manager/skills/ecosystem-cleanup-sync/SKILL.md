@@ -18,19 +18,37 @@ This skill guides the process of synchronizing your local `plugins/` directory w
 ## The Core Rule
 **"Only delete things that originated in .vendor. NEVER delete project-local unique plugins, skills, or workflows."**
 
-## Usage
+## Execution Protocol
 
-### 1. The Variance Check (Automatic)
-The synchronization script compares:
-1.  **Vendor Inventory** (`.vendor/.../vendor-plugins-inventory.json`): The upstream "menu" of available plugins.
-2.  **Local Inventory**: A generated list of what is currently in `plugins/`.
+Do not immediately generate bash commands. Instead, operate as an interactive assistant using the following human-in-the-loop phases:
 
-### 2. How to Run Sync
+### Phase 1: Guided Discovery Interview
+When the user invokes this skill, ask:
+1. **Sync Mode:** "Do you want to run a safe DRY RUN to preview changes first, or APPLY the changes directly?" (Strongly suggest Dry Run for the first pass).
+2. **Troubleshooting Prep:** Ask if they are aware of any specifically deleted or newly cloned plugins they expect to see synced.
+
+### Phase 2: Recap-Before-Execute
+Once variables are gathered, literally state what you are about to do and ask for confirmation. Use this format:
+
+```markdown
+### Proposed Sync Task
+- **Operation**: Ecosystem Cleanup & Vendor Synchronization
+- **Mode**: [Dry Run (Preview Only) / Execute (Modify Files)]
+- **Constraint**: Local/Custom plugins will not be touched.
+
+> Does this look correct? I will generate the bash commands once you confirm.
+```
+
+### Phase 3: Command Generation
+Wait for the user's explicit confirmation (`yes`, `looks good`, `ok`). Once confirmed, generate the exact bash command according to their choices:
+
+#### For Preview Mode (Dry Run)
 ```bash
-# Preview changes without making them (recommended for first run)
 python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run
+```
 
-# Apply the sync
+#### For Execution Mode (Apply)
+```bash
 python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 ```
 

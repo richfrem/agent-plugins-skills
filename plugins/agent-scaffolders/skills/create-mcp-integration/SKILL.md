@@ -25,3 +25,7 @@ You are tasked with generating the scaffolding required to integrate a new Model
 
 3. **Confirmation:**
    Print a success message showing the modified configuration. Instruct the user that they may need to restart their agent environment to pick up the new MCP handles.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

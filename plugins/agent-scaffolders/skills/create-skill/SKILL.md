@@ -38,12 +38,20 @@ Based on the `hitl-interaction-design.md` matrix, ask diagnostic questions to de
 
 #### Step 1C: L4 Pattern Routing
 Based on the `pattern-decision-matrix.md`, explicitly ask the diagnostic questions found in its decision tree. 
-- If the user explicitly triggers a pattern (e.g. they need to manage persistent documents, thus triggering Artifact Lifecycle), explicitly route to that pattern and load its specific definition file from the catalog `plugins reference/agent-skill-open-specifications/L4-pattern-definitions/` to learn how to scaffold it.
+- If the user explicitly triggers a pattern (e.g. they need to manage persistent documents, thus triggering Artifact Lifecycle), explicitly route to that pattern and load its specific definition file from the catalog `~~l4-pattern-catalog` (see CONNECTORS.md) to learn how to scaffold it.
+
+### Phase 1.5: Recap & Confirm
+**Do NOT immediately scaffold after the interview.**
+You must pause and explicitly list out:
+- The decided Skill Name and Trigger Description
+- The chosen Interaction Style and Output Format
+- Any L4 Patterns you plan to inject
+Ask the user: "Does this look right? (yes / adjust)"
 
 ### 2. Scaffold the Infrastructure
 Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
 ```bash
-python3 plugins/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ~~agent-scaffolders-root/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Acceptance Criteria
@@ -60,7 +68,12 @@ Based on the user's answers in Step 1, embed the appropriate interaction pattern
 - **Always**: Add a `## Next Actions` section at the end offering follow-up options
 - **If Expensive Operations**: Add confirmation gates before destructive/costly steps
 - **If Processing Documents**: Include a Pre-Conversion Classification rule for large inputs
-- **If JIT Patterns Loaded**: Embed the lean tables/templates you learned from the `L4-pattern-definitions` directory into the skill's `references/` folder, and link to them from `SKILL.md`.
+- **If JIT Patterns Loaded**: Embed the lean tables/templates you learned from the `~~l4-pattern-catalog` abstraction into the skill's `references/` folder, and link to them from `SKILL.md`.
 
 ### 5. Finalize `SKILL.md`
 Use file writing tools to populate the generated `SKILL.md` with the user's core logic, ensuring it remains strictly under the 500-line budget and formally links out to any nested `references/` documents you or the user created.
+
+
+## Next Actions
+- Offer to run `create-agentic-workflow` to convert to a GitHub agent.
+- Offer to run `audit-plugin` to validate output.

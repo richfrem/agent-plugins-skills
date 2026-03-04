@@ -48,7 +48,8 @@ Ask the user for the following context:
 Run the scaffold script:
 
 ```bash
-python plugins/scripts/scaffold_github_action.py \
+python ~~agent-scaffolders-root/scripts/scaffold_github_action.py \
+  --skill-dir <path-to-skill-directory> \
   --category <test|build|lint|deploy|release|security|maintenance|custom> \
   --platform <python|nodejs|go|docker|dotnet|generic> \
   [--triggers pull_request push schedule workflow_dispatch] \
@@ -123,3 +124,7 @@ permissions:
   with:
     files: dist/*
 ```
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

@@ -21,7 +21,7 @@ Ask the user what specific external container or pipeline orchestrator is being 
 ### 2. Scaffold the Infrastructure
 Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
 ```bash
-python3 plugins/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ~~agent-scaffolders-root/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Pre-Flight Checker Script
@@ -40,3 +40,7 @@ Use file writing tools to inject a `security_override.json` at the root of the n
 
 ### 5. Finalize `SKILL.md`
 Populate the `SKILL.md` ensuring the flow forces the AI to run `scripts/check_environment.py` FIRST before ever attempting the containerized workload.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

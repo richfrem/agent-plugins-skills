@@ -35,21 +35,25 @@ fi
 
 # Validate iteration counter
 if [[ ! "$ITERATION" =~ ^[0-9]+$ ]]; then
-  echo "⚠️  Agent loop: State file corrupted (iteration: '$ITERATION')" >&2
-  rm "$LOOP_STATE_FILE"
+  jq -n \
+    --arg msg "⚠️  Agent loop: State file corrupted (iteration: '$ITERATION'). Please fix the state file." \
+    '{
+      "decision": "block",
+      "reason": "Corrupted state file.",
+      "systemMessage": $msg
+    }'
   exit 0
 fi
 
 # Check max iterations
 if [[ "$MAX_ITERATIONS" =~ ^[0-9]+$ ]] && [[ $MAX_ITERATIONS -gt 0 ]] && [[ $ITERATION -ge $MAX_ITERATIONS ]]; then
-  echo "🛑 Agent loop: Max iterations ($MAX_ITERATIONS) reached. Forcing closure." >&2
-  echo "" >&2
-  echo "   You MUST still complete the closure sequence:" >&2
-  echo "   1. Seal (bundle session artifacts)" >&2
-  echo "   2. Persist (append session traces)" >&2
-  echo "   3. Retrospective (analyze what went right/wrong)" >&2
-  echo "   4. Set closure_done: true in $LOOP_STATE_FILE" >&2
-  rm "$LOOP_STATE_FILE"
+  jq -n \
+    --arg msg "🛑 Agent loop: Max iterations ($MAX_ITERATIONS) reached. Forcing closure.\n\nYou MUST still complete the closure sequence:\n1. Seal (bundle session artifacts)\n2. Persist (append session traces)\n3. Retrospective (analyze what went right/wrong)\n4. Set closure_done: true in '$LOOP_STATE_FILE'" \
+    '{
+      "decision": "block",
+      "reason": "Max iterations reached.",
+      "systemMessage": $msg
+    }'
   exit 0
 fi
 

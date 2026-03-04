@@ -27,8 +27,12 @@ You are tasked with generating a new Sub-Agent context boundary using our determ
    
    Run the following bash command:
    ```bash
-   python3 plugins/scripts/scaffold.py --type sub-agent --name <requested-name> --path <destination-directory> --desc "<core-purpose>"
+   python3 ~~agent-scaffolders-root/scripts/scaffold.py --type sub-agent --name <requested-name> --path <destination-directory> --desc "<core-purpose>"
    ```
 
 3. **Confirmation:**
    Print a success message and advise the user on how to spawn the sub-agent (usually via the System `Task` tool).
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.
