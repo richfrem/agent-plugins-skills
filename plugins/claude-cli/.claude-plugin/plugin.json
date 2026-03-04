@@ -1,8 +1,12 @@
 {
     "name": "claude-cli",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Claude CLI sub-agent system for persona-based analysis. Pipes large contexts to Anthropic models for security audits, architecture reviews, QA analysis, or specialized analysis requiring a fresh model context.",
-    "author": "Anthropic",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "skills": [
         "claude-cli-agent"
     ]
