@@ -1,8 +1,12 @@
 {
     "name": "memory-management",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Tiered memory system for cognitive continuity across agent sessions. Manages hot cache (loaded at boot) and deep storage (loaded on demand) with configurable promotion/demotion rules.",
-    "author": "Richard Fremmerlid",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "skills": [
         "memory-management"
     ]
