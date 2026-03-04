@@ -1,10 +1,12 @@
 {
     "name": "dependency-management",
-    "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends",
-    "version": "1.0.0",
+    "version": "2.0.0",
+    "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends.",
     "author": {
-        "name": "Richard Fremmerlid"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
     },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
         "dependencies",
@@ -13,6 +15,7 @@
         "requirements",
         "security"
     ],
-    "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills": [
+        "dependency-management"
+    ]
 }
