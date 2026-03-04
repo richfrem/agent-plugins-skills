@@ -72,6 +72,7 @@ To keep `SKILL.md` under the recommended 500 max lines without overloading Conte
 2. **Domain-specific organization:** Group references by type so Claude only reads what's relevant (e.g., `reference/finance.md`, `reference/sales.md`).
 3. **One-Level Deep References:** **CRITICAL:** Do not nest references (e.g., SKILL.md -> A.md -> B.md). Claude may only partially read deeply nested chains. All reference files should be linked directly from `SKILL.md`.
 4. **Table of Contents:** Any reference file longer than 100 lines must have a TOC at the top so Claude can navigate partial reads effectively.
+5. **Modular Building Blocks:** For complex workflows, expose a convenience "wrapper" script for the standard LLM task while separating out core Python APIs into distinct modules. Instruct the LLM to delegate to the wrapper by default, but to chain the pure APIs when encountering edge cases or power-user commands.
 
 ### Anti-Patterns to Avoid
 - **Windows Paths:** Always use Unix-style forward slashes (`/`), even on Windows.
@@ -106,7 +107,7 @@ Since skills provide instructions and execute code, review third-party or intern
 1. **Script Execution:** Scripts run with full environment access based on the host surface. Sandboxed execution is advised.
 2. **Instruction Manipulation:** Check for directives asking Claude to ignore safety rules or hide operations.
 3. **Agent Tool Calls:** Ensure referenced tools (`ServerName:tool_name`) are expected and authorized.
-4. **Network Access / Exfiltration:** Review scripts/prompts for unauthorized `curl`, `requests.get`, or other network calls. Ensure there are no patterns reading sensitive data and encoding/transmitting it externally.
+4. **Network Access / Exfiltration:** Review scripts/prompts for unauthorized `curl`, `requests.get`, or other network calls. Ensure there are no patterns reading sensitive data and encoding/transmitting it externally. NOTE: Plugins dealing with DevOps orchestration or datasets may legitimately require these instructions; in these cases, ensure the plugin declares a `security_override.json` detailing exactly where and why network fetches occur.
 5. **Hardcoded Credentials:** Reject any skill storing API keys or passwords directly in `.md` or scripts. Use environment variables.
 6. **Tool Invocations:** Audit which bash/file tools are explicitly allowed or directed to run.
 

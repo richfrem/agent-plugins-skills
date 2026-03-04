@@ -2,6 +2,7 @@
 name: dual-loop
 aliases: ["Sequential Agent", "Agent as a Tool"]
 description: "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
+allowed-tools: Bash, Read, Write
 ---
 
 # Dual-Loop (Inner/Outer Agent Delegation)
@@ -60,8 +61,10 @@ flowchart LR
 1. Write a tightly scoped markdown document (the "Strategy Packet") specifically for the Inner Loop.
 2. **Requirements for the Packet**:
    - The exact goal.
+   - A **Pre-Execution Workflow Commitment Diagram** (an ASCII box) mapping out the steps the Inner Loop must take.
    - Only the specific file paths the sub-agent needs to care about.
    - Strict "NO GIT" constraints (the Inner Loop must not commit).
+   - If generating scripts/pipelines, instruct the Inner Loop to use the "Modular Building Blocks" architecture (split convenience CLI wrappers from core Python APIs).
    - Clear Acceptance Criteria.
 3. Save the packet (e.g., `handoffs/task_packet_001.md`).
 
@@ -91,7 +94,10 @@ Once the Inner Loop signals completion, the Outer Loop must verify the results:
 2. The task tracker is updated to "Done".
 
 #### On Verification FAIL:
-1. The Outer Loop generates a **Correction Packet** explaining exactly what failed (test logs, lint errors).
+1. The Outer Loop generates a **Correction Packet** using the strict **Severity-Stratified Output Schema**:
+   - 🔴 **CRITICAL**: The code fails to compile, tests fail, or the requested feature is entirely missing.
+   - 🟡 **MODERATE**: The feature works, but violates project architecture, ADRs, or performance standards.
+   - 🟢 **MINOR**: The feature works and follows architecture, but has minor naming or stylistic issues.
 2. The Outer Loop loops back to Step 4, handing the Correction Packet to the Inner Loop.
 
 ### Step 7: Completion & Handoff

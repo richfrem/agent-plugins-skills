@@ -1,6 +1,7 @@
 ---
 name: obsidian-markdown-mastery
-description: "Core markdown syntax skill for Obsidian. Enforces the strict parsing and authoring of Obsidian's proprietary syntax (Wikilinks, Blocks, Headings, Aliases, Embeds, and Callouts) ensuring compatibility with the Vault graph."
+description: "Core markdown syntax skill for Obsidian. Enforces strict parsing and authoring of Obsidian proprietary syntax (Wikilinks, Blocks, Headings, Aliases, Embeds, Callouts). Use when reading, writing, or validating Obsidian-flavored markdown."
+allowed-tools: Bash, Read, Write
 ---
 
 # Obsidian Markdown Mastery (Protocol 129 COMPLIANT)

@@ -2,6 +2,7 @@
 name: create-hook
 description: Interactive initialization script that generates a compliant lifecycle Hook for an AI Agent or Plugin. Use when you need to automate workflows based on events like PreToolUse or SessionStart.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Lifecycle Hook Scaffold Generator
@@ -21,8 +22,12 @@ You are tasked with generating a new Hook integration using our deterministic ba
    
    Run the following bash command:
    ```bash
-   python3 plugins/scripts/scaffold.py --type hook --name hook-stub --path <destination-directory> --event <lifecycle-event> --action <command|prompt|agent>
+   python3 ~~agent-scaffolders-root/scripts/scaffold.py --type hook --name hook-stub --path <destination-directory> --event <lifecycle-event> --action <command|prompt|agent>
    ```
 
 3. **Confirmation:**
    Print a success message showing the configured hook sequence.
+
+
+## Next Actions
+- Offer to run `audit-plugin` to validate the generated artifacts.

@@ -2,6 +2,7 @@
 name: agent-swarm
 aliases: ["Parallel Agent"]
 description: "(Industry standard: Parallel Agent) Primary Use Case: Work that can be partitioned into independent sub-tasks running concurrently across multiple agents. Parallel multi-agent execution pattern. Use when: work can be partitioned into independent tasks that N agents can execute simultaneously across worktrees. Includes routing (sequential vs parallel), merge verification, and correction loops."
+allowed-tools: Bash, Read, Write
 ---
 
 # Agent Swarm
@@ -134,6 +135,7 @@ Then rerun with `--resume`.
 - Post-commands must be idempotent if using resume
 - Orchestrator owns the overall job state
 - `{file}` in post_cmd is shell-quoted automatically -- filenames with apostrophes are safe
+- **Asynchronous Benchmark Metric Capture**: Orchestrators MUST capture and log `total_tokens` and `duration_ms` from worker agents to a centralized `timing.json` log immediately as subtasks complete, rather than waiting for the entire swarm batch to finish.
 
 ## Diagram
 

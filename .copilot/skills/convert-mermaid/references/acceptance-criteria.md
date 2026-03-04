@@ -1,7 +1,7 @@
-# Acceptance Criteria: convert-mermaid
+# Acceptance Criteria: Mermaid To PNG Converter
 
-**Purpose**: Verify the Mermaid.js integration converts raw `.mmd` string data into functional rasterized `.png` files.
+The `mermaid-to-png` workflow MUST satisfy the following success metrics:
 
-## 1. Conversion Execution
-- **[PASSED]**: Utilizing `npx @mermaid-js/mermaid-cli`, the workflow receives an input `.mmd` and generates a correctly formatted `.png` diagram without syntax crash errors.
-- **[FAILED]**: The CLI fails due to missing Puppeteer sandboxing or missing Node.js environment paths.
+1. **Successful Binary Generation**: Given an `.mmd` file, the command successfully triggers the Python wrapper to generate a `.png` via headless browser.
+2. **Delegated Constraint Pass**: The output `.png` must pass entirely through `verify_png.py` returning `"status": "success"` with 0 MissingMagicBytes.
+3. **Context Window Safety**: The agent must NEVER attempt to print or `cat` massive generated `.png` binaries into the context window to verify their existence.

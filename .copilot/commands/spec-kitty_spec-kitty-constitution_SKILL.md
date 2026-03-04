@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-constitution
-description: Create or update the project constitution through interactive phase-based discovery.
+description: Create or update the project constitution through interactive phase-based
 ---
 
 **Path reference rule:** When you mention directories or files, provide either the absolute path or a path relative to the project root (for example, `kitty-specs/<feature>/tasks/`). Never refer to a folder by name alone.

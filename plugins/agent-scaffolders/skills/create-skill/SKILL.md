@@ -50,7 +50,8 @@ You must pause and explicitly list out:
 Ask the user: "Does this look right? (yes / adjust)"
 
 ### 2. Scaffold the Infrastructure
-Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
+Execute the deterministic `scaffold.py` script to generate the compliant physical directories. **CRITICAL: Apply the Iteration Directory Isolation Pattern**.
+If the user is iterating on a design, DO NOT overwrite the main directory. Append `--iteration <N>` or save to `.history/iteration-<N>/`.
 ```bash
 python3 ~~agent-scaffolders-root/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
@@ -78,8 +79,14 @@ Based on the user's answers in Step 1, embed the appropriate interaction pattern
 - **If the LLM has a Known Bias**: Include the *Negative Instruction Constraint*, structurally forbidding the LLM's default instinct using ❌ WRONG vs ✅ CORRECT contrasting headers.
 - **If JIT Patterns Loaded**: Embed the lean tables/templates you learned from the `~~l4-pattern-catalog` abstraction into the skill's `references/` folder, and link to them from `SKILL.md`.
 
-### 5. Finalize `SKILL.md`
+### 5. Finalize `SKILL.md` (Local Interactive Output Viewer Loop)
 Use file writing tools to populate the generated `SKILL.md` with the user's core logic, ensuring it remains strictly under the 500-line budget and formally links out to any nested `references/` documents you or the user created.
+
+**CRITICAL: Scaffold Previewer Phase**
+Before considering the skill "finished", inform the user you have completed the file generation. If the generation is complex involving many files, offer to write the hierarchy to a `/tmp/scaffold-preview/` directory first for their review, rather than immediately overwriting their `plugins/` directory.
+
+### 6. Trigger Optimization (Trigger Description Optimization Loop)
+If the user is unsure if their trigger description is accurate, offer to run a background prompt evaluation using `evals.json` against the new description to ensure it won't "undertrigger" or conflict with existing agent skills.
 
 
 ## Next Actions

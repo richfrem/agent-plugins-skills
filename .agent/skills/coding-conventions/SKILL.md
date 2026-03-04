@@ -7,6 +7,7 @@ description: >
   headers or docstrings, (4) creating new tools that need inventory registration,
   (5) refactoring code that exceeds complexity thresholds, (6) setting up module structure.
   Covers file headers, function documentation, naming conventions, and tool inventory integration.
+allowed-tools: Read, Write
 ---
 
 # Coding Conventions

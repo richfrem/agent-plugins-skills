@@ -21,6 +21,7 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the command group several sub-operations that have different outputs? | **Sub-Action Multiplexing** | `sub-action-multiplexing.md` |
 | Does the command require user input upstream where asking questions mid-flight hurts UX? | **Pre-Execution Input Manifest** | `pre-execution-input-manifest.md` |
 | Does the skill share overlapping keywords with generic tools, potentially causing discoverability issues? | **Multi-Variant Trigger Optimizer** | `multi-variant-trigger-optimizer.md` |
+| Does the skill inherently struggle with undertriggering due to generic namespace intent vs actual semantic queries? | **Trigger Description Optimization Loop** | `trigger-description-optimization-loop.md` (Source: Anthropic `skill-creator`) |
 
 ### Category 2: Execution and Safety
 | Diagnostic Question | Required Pattern | File |
@@ -40,6 +41,8 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Is the primary method for the task highly brittle or prone to edge-case failures (e.g. math, geometric extraction)? | **Highly Procedural Fallback Trees** | `highly-procedural-fallback-trees.md` |
 | Does the skill write code, configurations, or formulas that can be definitively proven broken by a compiler or engine evaluation? | **Delegated Constraint Verification Loop** | `delegated-constraint-verification-loop.md` |
 | Does the skill write executable code or loops destined to run directly on the client/browser? | **Client-Side Compute Sandbox Constraint** | `client-side-compute-sandbox-constraint.md` |
+| Does the generation output directly to a working directory where mistaken rollback is impossible without git reset? | **Iteration Directory Isolation** | `iteration-directory-isolation.md` (Source: Anthropic `skill-creator`) |
+| Is critical timing or token benchmark data emitted asynchronously via system notifications rather than final outputs? | **Asynchronous Benchmark Metric Capture** | `asynchronous-benchmark-metric-capture.md` (Source: Anthropic `skill-creator`) |
 
 ### Category 3: Output and Contracts
 | Diagnostic Question | Required Pattern | File |
@@ -64,6 +67,8 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Will the generated output be consumed by fresh readers lacking the agent's conversational context? | **Tainted Context Cleanser** | `tainted-context-cleanser.md` |
 | Does the output's quality or performance need to be provably benchmarked against baselines? | **Rigorous Benchmarking & Grading Loop** | `rigorous-benchmarking-loop.md` |
 | Does the command generate full UI artifacts (HTML/SVG) where external asset injection poses a security risk? | **Artifact Generation XSS Compliance Gate** | `artifact-generation-xss-compliance-gate.md` |
+| Are generated UI artifacts or whole file hierarchies difficult for the user to review purely in code before saving? | **Local Interactive Output Viewer Loop** | `local-interactive-output-viewer-loop.md` (Source: Anthropic `skill-creator`) |
+| Does the interaction pop local browsers or servers that will crash in remote VMs or headless subagent loops? | **UI Degradation Constraint** | `ui-degradation-constraint.md` (Source: Anthropic `skill-creator`) |
 
 ### Category 4: State and Knowledge
 | Diagnostic Question | Required Pattern | File |

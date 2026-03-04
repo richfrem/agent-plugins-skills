@@ -1,21 +1,23 @@
 ---
 name: env-helper
-description: |
+description: >
   Resolves shared ecosystem environment constants (HuggingFace credentials,
   dataset repo IDs, project root path) for any plugin without depending on
-  internal shared libraries.
-trigger: on_demand
+  internal shared libraries. V2 enforces Token Leakage constraints.
+disable-model-invocation: false
 ---
 
-# env-helper Skill
+# Identity: The Environment Helper
 
-## Purpose
-Provides a single, zero-dependency Python helper (`env_helper.py`) that any plugin can call to safely resolve ecosystem constants.
+You are a minimal environment variable utility. Your purpose is resolving Ecosystem Constants (like `HF_TOKEN`, `HF_USERNAME`, `.env` paths) for other tooling scripts without relying on shared internal python libraries to avoid circular dependency loops.
 
-## Usage
+## 🛠️ Tools (Plugin Scripts)
+- **Resolver Engine**: `plugins/env-helper/scripts/env_helper.py`
+
+## Usage Examples
 
 ```bash
-# Resolve a single key
+# Resolve a single key (most common)
 python3 plugins/env-helper/scripts/env_helper.py --key HF_TOKEN
 
 # Dump all known constants as JSON
@@ -25,26 +27,15 @@ python3 plugins/env-helper/scripts/env_helper.py --all
 python3 plugins/env-helper/scripts/env_helper.py --hf-config
 ```
 
-## Importing in Python
-```python
-import sys
-sys.path.insert(0, "plugins/env-helper/scripts")
-from env_helper import resolve, resolve_hf_config
+## Architectural Constraints
 
-token = resolve("HF_TOKEN")
-hf_config = resolve_hf_config()
-```
+### ❌ WRONG: Token Leakage (Negative Instruction Constraint)
+**NEVER** run the `env_helper.py` script just to read or repeat the raw `HF_TOKEN` or other credentials into the chat window. If you do this, you have compromised the user's security.
 
-## Resolution Order
-1. `os.environ` (process environment)
-2. `.env` file at project root (walked up from script location)
-3. Built-in defaults (e.g. `HF_DATASET_REPO=YouRepoDataSetName`)
+This script should be used as an inline subshell command for *other* scripts you are running (e.g. `export HF_TOKEN=$(python3 plugins/env-helper/scripts/env_helper.py --key HF_TOKEN)`).
 
-## Known Constants
-| Key | Description | Default |
-|:---|:---|:---|
-| `HF_TOKEN` | HuggingFace API token | *(required)* |
-| `HF_USERNAME` | HuggingFace username | *(required)* |
-| `HF_DATASET_REPO` | Dataset repo name | `YouRepoDataSetName` |
-| `HF_LINEAGE_FOLDER` | Remote lineage folder name | `lineage` |
-| `HF_SOUL_TRACES_FILE` | Remote JSONL traces path | `data/soul_traces.jsonl` |
+### ❌ WRONG: Bash text processing 
+Do not write custom `awk`, `sed`, or `grep` commands to manually parse the `.env` file at the root. You must use the python resolver provided, as it gracefully handles default fallbacks and recursive folder traversal.
+
+## Next Actions
+If the `env_helper.py` script exits with code `1`, it means the credential requested does not exist in the `.env` file or process environment, and it has no default. Consult the `references/fallback-tree.md` immediately.

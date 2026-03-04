@@ -1,14 +1,7 @@
-# Acceptance Criteria: Excel to CSV Converter
+# Acceptance Criteria: Excel To CSV Converter
 
-The excel-to-csv skill must meet the following criteria to be considered operational:
+The `excel-to-csv` workflow MUST satisfy the following success metrics:
 
-## 1. Sheet Specificity
-- [ ] The agent correctly targets a specific sheet for conversion when asked, rather than blindly converting the entire workbook.
-- [ ] The output CSV is named consistently with the sanitized sheet name.
-
-## 2. Empty Data Handling
-- [ ] The script gracefully skips empty sheets by default and accurately reports them in the CLI `Summary` block.
-- [ ] Completely empty rows and columns in otherwise populated sheets are stripped before writing to CSV.
-
-## 3. Dependency Management
-- [ ] The skill gracefully handles execution errors when `pandas` or `openpyxl` are missing, presenting the user with a readable error instead of a raw traceback.
+1. **Successful Binary Extraction**: Given a multi-sheet `.xlsx` file, the command successfully triggers `convert.py` to extract designated sheets into separate `.csv` files inside an output directory.
+2. **Delegated Constraint Pass**: The output `.csv` must pass entirely through `verify_csv.py` returning `"status": "success"` with 0 jagged rows or empty bounds.
+3. **Context Window Safety**: The agent must NEVER attempt to print or `cat` massive generated `.csv` files into the context window, strictly obeying the `head` truncation rule for files > 50 lines.

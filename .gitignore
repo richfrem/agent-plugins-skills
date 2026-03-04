@@ -55,3 +55,4 @@ plugins/**/temp/
 .kittify/missions/__pycache__/
 
 .knowledge_vector_data/
+claude-skills-temp/

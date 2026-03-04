@@ -50,11 +50,16 @@ Consumed by:
     - Agent Scaffolders logic (create-plugin, create-skill, etc.)
 """
 
-def create_plugin(name, path):
+def create_plugin(name, path, iteration=None):
     if not re.match(r'^[a-z0-9-]+$', name):
         print(f"Error: Plugin name '{name}' must contain only lowercase letters, numbers, and hyphens.")
         return
-    full_path = os.path.join(path, name)
+        
+    if iteration:
+        full_path = os.path.join(path, ".history", f"iteration-{iteration}", name)
+    else:
+        full_path = os.path.join(path, name)
+        
     claude_plugin_dir = os.path.join(full_path, ".claude-plugin")
     
     os.makedirs(claude_plugin_dir, exist_ok=True)
@@ -124,7 +129,7 @@ def create_plugin(name, path):
         
     print(f"Success: Plugin '{name}' scaffolded at {full_path}")
 
-def create_skill(name, path, description):
+def create_skill(name, path, description, iteration=None):
     if not re.match(r'^[a-z0-9-]+$', name):
         print(f"Error: Skill name '{name}' must contain only lowercase letters, numbers, and hyphens.")
         return
@@ -132,7 +137,11 @@ def create_skill(name, path, description):
         print(f"Error: Skill name '{name}' exceeds 64 characters.")
         return
     
-    skill_dir = os.path.join(path, name)
+    if iteration:
+        skill_dir = os.path.join(path, ".history", f"iteration-{iteration}", name)
+    else:
+        skill_dir = os.path.join(path, name)
+        
     scripts_dir = os.path.join(skill_dir, "scripts")
     references_dir = os.path.join(skill_dir, "references")
     examples_dir = os.path.join(skill_dir, "examples")
@@ -317,13 +326,14 @@ def main():
     parser.add_argument("--desc", default="A generated resource.", help="Description for skills or agents")
     parser.add_argument("--event", default="PreToolUse", help="Lifecycle event for hooks")
     parser.add_argument("--action", default="command", choices=["command", "prompt", "agent"], help="Hook action type")
+    parser.add_argument("--iteration", type=int, help="Iteration number for safe rollback isolation (e.g., 1, 2)")
     
     args = parser.parse_args()
     
     if args.type == "plugin":
-        create_plugin(args.name, args.path)
+        create_plugin(args.name, args.path, args.iteration)
     elif args.type == "skill":
-        create_skill(args.name, args.path, args.desc)
+        create_skill(args.name, args.path, args.desc, args.iteration)
     elif args.type == "hook":
         create_hook(args.event, args.path, args.action)
     elif args.type == "sub-agent":

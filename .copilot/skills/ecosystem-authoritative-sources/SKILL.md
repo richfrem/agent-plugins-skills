@@ -2,13 +2,15 @@
 name: ecosystem-authoritative-sources
 description: Provides information about how to create, structure, install, and audit Agent Skills, Plugins, Antigravity Workflows, and Sub-agents. Trigger this when specifications, rules, or best practices for the ecosystem are required.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Ecosystem Authoritative Sources
 
 # Official Open Standard Recognition
-**Important:** This reference library draws heavy inspiration and structural standards directly from the Anthropic Claude Plugins official repository. For the foundational specification, always refer to:
-- `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev`
+**Important:** This reference library draws heavy inspiration and structural standards directly from the Anthropic Claude Plugins official repositories. Please refer to:
+- **Foundational Specification**: `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev`
+- **L4 Interaction & Execution Patterns**: Derived from `https://github.com/anthropics/claude-knowledgework-plugins` (specifically the Legal and Bio-Research plugins).
 
 # The Library
 The following open standards are available for review:
