@@ -2,6 +2,7 @@
 name: convert-mermaid
 description: Convert mermaid diagrams mmd/mermaid to .png and have an option to pick/increase resolution level. V2 includes L5 Delegated Constraint Verification for strict binary image linting.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Identity: The Mermaid Diagram Converter

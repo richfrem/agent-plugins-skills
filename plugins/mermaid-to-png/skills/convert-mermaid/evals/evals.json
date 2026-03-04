@@ -19,6 +19,12 @@
             "type": "edge-case",
             "prompt": "Convert 'broken.mmd' to a PNG.",
             "expected_behavior": "Agent runs the script. Puppeteer crashes due to syntax. The verify_png.py script catches a 'MissingMagicBytes' error because mermaid-cli wrote a string stack trace into the PNG file. The agent identifies the failure and consults the fallback tree."
+        },
+        {
+            "id": "eval-4-headless-dependency-failure",
+            "type": "negative",
+            "prompt": "Convert architecture.mmd to PNG.",
+            "expected_behavior": "Agent runs the script but 'npx @mermaid-js/mermaid-cli' fails due to missing Node.js or chromium binaries. Agent surfaces the subprocess error to the user and offers to install the missing npx dependencies instead of trying to write a custom renderer."
         }
     ]
 }
