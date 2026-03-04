@@ -2,6 +2,7 @@
 name: create-docker-skill
 description: Interactive initialization script that generates a compliant Agent Skill containing pre-flight environment checks, subprocess execution scaffolding, and a security-override config. Use when authoring new workflow routines that depend on external containerized runtimes (e.g., Docker, Nextflow, HPC).
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Dockerized Skill Scaffold Generator

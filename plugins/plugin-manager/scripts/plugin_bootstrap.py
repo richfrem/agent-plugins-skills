@@ -5,7 +5,7 @@ plugin_bootstrap.py (CLI)
 
 Purpose:
     Automates the synchronization of the local plugin ecosystem with the central vendor repository.
-    Handles cloning/updating the vendor source, updating local plugins, and syncing agent configurations.
+    Handles cloning/updating the vendor source and syncing agent configurations.
 
 Usage Examples:
     python3 plugins/plugin-manager/scripts/plugin_bootstrap.py
@@ -17,7 +17,6 @@ CLI Arguments:
 
 Key Functions:
     - ensure_vendor_source(): Clones or pulls the latest vendor repository.
-    - update_local_plugins(): Runs update_from_vendor.py to refresh local plugins.
     - sync_agent_configs(): Runs sync_with_inventory.py to update agent environments.
 """
 
@@ -49,14 +48,6 @@ def ensure_vendor_source(repo_url, vendor_dir):
         print(f"🔄 Updating vendor repository at {vendor_dir}...")
         return run_command(["git", "pull"], cwd=str(vendor_path))
 
-def update_local_plugins(script_path):
-    """Runs the update_from_vendor script."""
-    print("🚀 Updating local plugins from vendor source...")
-    if not script_path.exists():
-        print(f"❌ Error: update_from_vendor.py not found at {script_path}")
-        return False
-    return run_command([sys.executable, str(script_path)])
-
 def sync_agent_configs(script_path, target):
     """Runs the sync_with_inventory script."""
     print(f"🔗 Synchronizing agent configurations (target: {target})...")
@@ -74,19 +65,13 @@ def main():
 
     project_root = Path.cwd()
     pm_scripts = project_root / "plugins" / "plugin-manager" / "scripts"
-    
-    update_script = pm_scripts / "update_from_vendor.py"
     sync_script = pm_scripts / "sync_with_inventory.py"
 
     # Phase 1: Ensure Vendor Source
     if not ensure_vendor_source(args.repo, args.vendor_dir):
         sys.exit(1)
 
-    # Phase 2: Execute Update
-    if not update_local_plugins(update_script):
-        sys.exit(1)
-
-    # Phase 3: Finalize Sync
+    # Phase 2: Sync Plugins + Agent Configs
     if not sync_agent_configs(sync_script, args.target):
         sys.exit(1)
 

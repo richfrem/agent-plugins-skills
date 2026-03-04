@@ -2,6 +2,7 @@
 name: create-hook
 description: Interactive initialization script that generates a compliant lifecycle Hook for an AI Agent or Plugin. Use when you need to automate workflows based on events like PreToolUse or SessionStart.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Lifecycle Hook Scaffold Generator

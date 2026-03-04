@@ -1,0 +1,13 @@
+{
+    "name": "copilot-cli",
+    "version": "2.0.0",
+    "description": "Copilot CLI sub-agent system for persona-based analysis. Pipes large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or specialized analysis requiring a fresh model context.",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "skills": [
+        "copilot-cli-agent"
+    ]
+}

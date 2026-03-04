@@ -1,9 +1,19 @@
 {
-    "version": "1.0",
     "name": "agent-plugin-analyzer",
+    "version": "2.0.0",
+    "description": "Systematically analyze agent plugins and skills to extract design patterns, architectural decisions, and reusable techniques. Translates raw analysis into concrete improvement recommendations.",
     "author": {
         "name": "Richard Fremmerlid",
-        "email": ""
+        "url": "https://github.com/richfrem"
     },
-    "description": "Meta-plugin for analyzing agent plugins, skill folders, sub-agents, and any agent capability directory — extracting design patterns and generating improvement recommendations. Works with any structure: full plugins (.claude-plugin), standalone skill folders (SKILL.md), or mixed collections. Feeds a virtuous cycle: analyze → learn → improve scaffolders/specs → build better capabilities → analyze again."
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "skills": [
+        "analyze-plugin",
+        "audit-plugin-l5",
+        "synthesize-learnings"
+    ],
+    "scripts": [
+        "scripts/inventory_plugin.py"
+    ]
 }

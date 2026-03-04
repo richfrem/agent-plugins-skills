@@ -1,13 +1,22 @@
 {
     "name": "rlm-factory",
     "description": "Recursive Language Model factory \u2014 distill repository files into semantic summaries using Ollama for instant context retrieval",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "author": {
         "name": "Richard Fremmerlid",
-        "url": "https://github.com/<your repo path>"
+        "url": "https://github.com/richfrem"
     },
-    "repository": "https://github.com/<your repo path>",
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
+    "security": {
+        "whitelists": {
+            "python": {
+                "imports": [
+                    "requests"
+                ]
+            }
+        }
+    },
     "keywords": [
         "rlm",
         "summarization",

@@ -2,6 +2,7 @@
 name: audit-plugin
 description: Audits a local plugin directory to ensure it perfectly matches the Agent Skills and Claude Plugin Open Standards.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Ecosystem Auditor

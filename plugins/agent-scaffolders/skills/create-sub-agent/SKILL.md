@@ -2,6 +2,7 @@
 name: create-sub-agent
 description: Interactive initialization script that generates a compliant Sub-Agent configuration. Use when you need to create a nested contextual boundary with specific tools or persistent memory.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Sub-Agent Scaffold Generator

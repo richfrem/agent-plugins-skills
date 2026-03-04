@@ -56,12 +56,12 @@ my-repo/
 
 **Single plugin:**
 ```bash
-python plugins/plugin-mapper/scripts/bridge_installer.py --plugin plugins/my-plugin --target auto
+python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target auto
 ```
 
 **All plugins at once:**
 ```bash
-python plugins/plugin-mapper/scripts/install_all_plugins.py
+python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 ```
 
 ---
@@ -71,7 +71,7 @@ python plugins/plugin-mapper/scripts/install_all_plugins.py
 ### Force a Specific Target
 Install to a specific environment only (creates directory if needed):
 ```bash
-python plugins/plugin-mapper/scripts/bridge_installer.py --plugin plugins/my-plugin --target github
+python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target github
 ```
 
 ### Component Mapping Matrix

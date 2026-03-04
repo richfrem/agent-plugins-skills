@@ -2,6 +2,7 @@
 name: create-plugin
 description: Interactive initialization script that acts as a Plugin Architect. Generates a compliant '.claude-plugin' directory structure and `plugin.json` manifest using diagnostic questioning to ensure proper L4 patterns and Tool Connector schemas.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 # Agent Plugin Designer & Architect
@@ -34,7 +35,7 @@ Use progressive diagnostic questioning to understand the plugin design. Do not d
 You must pause and explicitly list out:
 - The decided Plugin Name and Architecture Style
 - The tool connectors (if any) you plan to write to CONNECTORS.md
-- Any L4 Patterns you noted during discovery
+- Any L4/L5 Patterns you noted during discovery (Crucially, note if the plugin requires Client-Side Compute Sandboxes or XSS Compliance Gates due to artifact generation).
 Ask the user: "Does this look right? (yes / adjust)"
 
 ### 2. Scaffold the Plugin
@@ -58,9 +59,10 @@ If the user indicated MCP integrations, create a `CONNECTORS.md` file at the plu
 This ensures the plugin is tool-agnostic and portable across organizations.
 
 ### 4. Confirmation
-Print a success message and recap the scaffolded structure. Remind the user of two absolute standards:
+Print a success message and recap the scaffolded structure. Remind the user of three absolute standards:
 1. If supercharged, populate `CONNECTORS.md` with specific tool mappings.
 2. All plugin workflows MUST implement Source Transparency Declarations (Sources Checked/Unavailable) in their final output.
+3. If this plugin will generate `.html`, `.svg`, or `.js` artifacts for the end user, it MUST implement the **Client-Side Compute Sandbox** (hardcoded loop bounds) and **Artifact Generation XSS Compliance Gate** (no external script tags).
 
 
 ## Next Actions

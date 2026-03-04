@@ -1,40 +1,45 @@
 ---
-description: Install a new plugin from the vendor collection.
+description: >-
+  Replicate a specific plugin from this project's plugins/ folder to a target
+  project, then activate it in the target's agent environments.
 args:
   plugin_name:
-    description: "The name of the plugin to install (e.g., agency-swarm)."
+    description: "The name of the plugin to replicate (e.g., rlm-factory)."
+    type: string
+    required: true
+  dest:
+    description: "Absolute path to the target project's plugins/ folder."
     type: string
     required: true
 ---
 
-# Install Plugin
+# Install Plugin to Target
 
-This command installs a specific plugin from the vendor collection into your project and activates its capabilities.
+Copies a plugin from this repo's `plugins/` to a target project's `plugins/` folder, then activates it in that project's agent environments.
 
 ```bash
 PLUGIN_NAME="${plugin_name}"
-VENDOR_PATH=".vendor/agent-plugins-skills/plugins/$PLUGIN_NAME"
-TARGET_PATH="plugins/$PLUGIN_NAME"
+SOURCE_PATH="$(pwd)/plugins/$PLUGIN_NAME"
+TARGET_PLUGINS="${dest}"
+DEST_PATH="$TARGET_PLUGINS/$PLUGIN_NAME"
 
-# 1. Validation
-if [ ! -d "$VENDOR_PATH" ]; then
-    echo "Error: Plugin '$PLUGIN_NAME' not found in vendor collection."
+# Validate source plugin exists
+if [ ! -d "$SOURCE_PATH" ]; then
+    echo "Error: Plugin '$PLUGIN_NAME' not found in plugins/."
     echo "Available plugins:"
-    ls .vendor/agent-plugins-skills/plugins
+    ls plugins/
     exit 1
 fi
 
-# 2. Install Code
-if [ -d "$TARGET_PATH" ]; then
-    echo "Plugin '$PLUGIN_NAME' is already installed. Updating..."
-else
-    echo "Installing '$PLUGIN_NAME'..."
-    mkdir -p plugins
-fi
+# Replicate source -> dest (additive update)
+python3 plugins/plugin-manager/scripts/plugin_replicator.py \
+  --source "$SOURCE_PATH" \
+  --dest "$DEST_PATH"
 
-cp -r "$VENDOR_PATH" "plugins/"
-
-# 3. Activate (Inventory Sync)
-echo "Activating plugin capabilities..."
-python plugins/plugin-manager/scripts/sync_with_inventory.py
+# Activate in target's agent environments
+echo "Activating plugin in target project..."
+cd "$TARGET_PLUGINS/.." && python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 ```
+
+> To also remove deleted files, add `--clean` to the `plugin_replicator.py` call.
+> To replicate all plugins at once, use `/plugin-manager:update` or `bulk_replicator.py`.

@@ -4,7 +4,7 @@ description: Perform structured research review with citation validation.
 
 ## Research Review Overview
 
-Research WPs produce deliverables in a **worktree**, which merge to main like code.
+Research WPs produce deliverables in a **worktree**, which merge to the target branch like code.
 
 ### Two Types of Artifacts
 
@@ -132,7 +132,7 @@ if source_register.exists():
      * Append a new entry in the prompt’s **Activity Log** detailing feedback (include timestamp, reviewer agent, shell PID).
      * Update frontmatter `lane` back to `planned`, clear `assignee` if necessary, keep history entry.
      * Add/revise a `## Review Feedback` section (create if missing) summarizing action items.
-     * Run `spec-kitty agent tasks move-task <FEATURE> <TASK_ID> planned --note "Returned for changes"` (use the PowerShell equivalent on Windows) so the move and history update are staged consistently.
+     * Save feedback to a file and run `spec-kitty agent tasks move-task <TASK_ID> --to planned --review-feedback-file <feedback-file>` (use the PowerShell equivalent on Windows) so rollback validation captures the feedback source deterministically.
   - **Approved**:
      * Append Activity Log entry capturing approval details (capture shell PID via `echo $$` or helper script).
      * Update frontmatter: set `lane=done`, set reviewer metadata (`agent`, `shell_pid`), optional `assignee` for approver.

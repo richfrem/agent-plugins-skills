@@ -17,6 +17,7 @@ Reference file for Phase 5 security analysis. These checks run FIRST (P0) before
 | Nested references | Reference files that link to other reference files | Warning |
 | Skill scope creep | Single SKILL.md with >3 distinct workflows | Warning |
 | Missing CONNECTORS.md | Plugin uses MCP tools but no connector abstraction | Warning |
+| Brittle Style Payloads | Passive style skills listing hex codes without Syntax Translation Routing (e.g. CSS vs Matplotlib mappings) | Warning |
 
 ## Security Checks (P0 — Check These First)
 
@@ -24,6 +25,8 @@ Reference file for Phase 5 security analysis. These checks run FIRST (P0) before
 |---------------|-------------------|----------|
 | Unauthorized network calls | `curl`, `requests`, `urllib`, `fetch` in scripts | Critical |
 | Prompt injection surfaces | User-controlled content injected into prompts without sanitization | Critical |
+| Unbounded Client-Side Compute | Generating HTML/JS artifacts or recursive algorithms without a hardcoded execution sandbox | Critical |
+| Artifact XSS Generation | Generating HTML artifacts without explicit network or strict DOM compliance gate instructions | Critical |
 | Overly permissive tool lists | Sub-agents with unrestricted tool access | Critical |
 | Hardcoded credentials | API keys, tokens, passwords in any file | Critical |
 | Data exfiltration risk | Discovery phases that gather sensitive data without boundaries | Error |

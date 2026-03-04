@@ -1,12 +1,22 @@
 {
     "name": "vector-db",
     "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "author": {
         "name": "Richard Fremmerlid",
-        "url": "https://github.com/<your repo path>"
+        "url": "https://github.com/richfrem"
     },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
+    "security": {
+        "whitelists": {
+            "python": {
+                "imports": [
+                    "subprocess"
+                ]
+            }
+        }
+    },
     "keywords": [
         "vector-db",
         "chromadb",

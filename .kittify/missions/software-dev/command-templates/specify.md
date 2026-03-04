@@ -158,13 +158,13 @@ Given that feature description, do this:
      "mission": "<selected-mission>",
      "source_description": "$ARGUMENTS",
      "created_at": "<ISO timestamp>",
-     "target_branch": "main",
+     "target_branch": "<current-branch>",
      "vcs": "git"
    }
    ```
 
    **CRITICAL**: Always set these fields explicitly:
-   - `target_branch`: Set to "main" by default (user can change to "2.x" for dual-branch features)
+   - `target_branch`: Set to the current branch (detected via `git branch --show-current`)
    - `vcs`: Set to "git" by default (enables VCS locking and prevents jj fallback)
 
 6. Generate the specification content by following this flow:
@@ -185,7 +185,7 @@ Given that feature description, do this:
 
 8. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
-   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
+   a. **Create Spec Quality Checklist**: Generate a checklist file at `feature_dir/checklists/requirements.md` using the checklist template structure with these validation items:
    
       ```markdown
       # Specification Quality Checklist: [FEATURE NAME]

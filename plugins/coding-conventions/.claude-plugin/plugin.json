@@ -1,10 +1,12 @@
 {
     "name": "coding-conventions",
-    "description": "Coding standards, documentation conventions, and header templates for Python, TypeScript/JavaScript, and C#/.NET",
-    "version": "1.0.0",
+    "version": "2.0.0",
+    "description": "Coding standards, documentation conventions, and header templates for Python, TypeScript/JavaScript, and C#/.NET.",
     "author": {
-        "name": "Richard Fremmerlid"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
     },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
         "coding",
@@ -13,6 +15,8 @@
         "documentation",
         "headers"
     ],
-    "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills": [
+        "coding-conventions",
+        "conventions-agent"
+    ]
 }

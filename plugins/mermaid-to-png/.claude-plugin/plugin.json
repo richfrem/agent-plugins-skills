@@ -1,6 +1,18 @@
 {
-    "version": "1.0",
     "name": "mermaid-to-png",
-    "author": "Generated via Agent Scaffolder",
-    "description": "The mermaid-to-png plugin."
+    "version": "2.0.0",
+    "description": "Convert Mermaid diagrams (.mmd) into high-resolution PNG images via headless Puppeteer. Includes L5 Delegated Constraint Verification for binary linting.",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "skills": [
+        "convert-mermaid"
+    ],
+    "scripts": [
+        "scripts/convert.py",
+        "scripts/verify_png.py"
+    ]
 }

@@ -2,8 +2,9 @@
 name: gemini-cli-agent
 description: >
   Gemini CLI sub-agent system for persona-based analysis. Use when piping
-  large contexts to Anthropic models for security audits, architecture reviews,
+  large contexts to Google Gemini models for security audits, architecture reviews,
   QA analysis, or any specialized analysis requiring a fresh model context.
+allowed-tools: Bash, Read, Write
 ---
 
 ## Ecosystem Role: Inner Loop Specialist

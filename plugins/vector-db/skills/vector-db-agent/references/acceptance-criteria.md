@@ -1,15 +1,6 @@
 # Acceptance Criteria: Vector DB Agent
 
-These test metrics guarantee the `vector-db-agent` correctly interfaces with the Python-based ingestion and retrieval scripts.
+This skill MUST satisfy the following success metrics:
 
-### Scenario: Local Ingestion & Vector Storage
-**Given** the user triggers the Vector DB Agent to ingest a file
-**When** the agent runs the ingestion wrapper script
-**Then** the script should pass the target arguments to the decoupled `operations.py` library
-**And** the document should be successfully split and embedded into ChromaDB.
-
-### Scenario: Local Semantic Search
-**Given** an indexed repository
-**When** the user asks the agent to query a technical topic
-**Then** the agent should run the query wrapper script
-**And** the output should yield exact semantic matches retrieved from the Chroma database.
+1. **Strict Electric Fence Adherence (Database Sovereignty)**: During queries or ingestion, the agent MUST NEVER be caught executing raw text retrieval (via `cat`, `grep`, `sqlite3`) directly against the underlying `.vector_data` storage binaries. It must always tunnel through `query.py`.
+2. **Transparent Failure States**: If an embedded query yields zero results from the parent-child node maps, the agent mathematically implements the **Source Transparency Declaration**, proving identically what it searched and what scope was missing from its retrieval window, rather than hallucinating generic advice.

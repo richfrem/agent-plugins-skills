@@ -20,6 +20,8 @@ agent-plugin-analyzer/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── README.md
+├── agents/
+│   └── l5-red-team-auditor.md   # Sub-agent: conducts L5 architecture analysis
 ├── commands/
 │   ├── mine-plugins.md          # Full analysis pipeline
 │   ├── mine-skill.md            # Single-skill analysis
@@ -48,6 +50,10 @@ agent-plugin-analyzer/
 │       └── references/
 │           ├── acceptance-criteria.md
 │           └── improvement-mapping.md
+│   └── audit-plugin-l5/
+│       ├── SKILL.md             # Triggers the l5-red-team-auditor sub-agent
+│       └── references/
+│           └── acceptance-criteria.md
 └── tests/
     ├── gold-standard-plugin/    # Known-good fixture (should pass)
     └── flawed-plugin/           # Known-bad fixture (should fail)
@@ -68,6 +74,13 @@ Analyze the sales plugin at claude-knowledgework-plugins/sales
 ### Analyze a Single Skill
 ```
 /mine-skill plugins/my-plugin/skills/my-skill
+```
+
+### L5 Red Team Audit (via Sub-Agent)
+```
+claude -p l5-red-team-auditor "Please deeply assess the plugin located at: plugins/[INSERT_PLUGIN_NAME_HERE]"
+# Alternatively, via skill execution:
+claude -s audit-plugin-l5
 ```
 
 ### Self-Audit (Regression Test)
@@ -106,6 +119,7 @@ Take the analysis results and generate improvement recommendations for our scaff
 |-------|-------------|
 | `analyze-plugin` | 6-phase analysis: Inventory → Structure → Content → Patterns → Security → Synthesis & Scoring |
 | `synthesize-learnings` | Converts raw analysis into actionable recommendations for 4 targets |
+| `audit-plugin-l5` | Abstract trigger to dispatch the `l5-red-team-auditor` sub-agent against a target plugin |
 
 ## Commands
 

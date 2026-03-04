@@ -1,18 +1,26 @@
 {
     "name": "excel-to-csv",
-    "description": "Convert Excel files (entire workbooks or specific worksheets/tables) into CSV format.",
-    "version": "1.0.0",
+    "description": "Convert Excel files (entire workbooks or specific worksheets/tables) into CSV format. V2 includes L5 Delegated Constraint Verification for strict artifact linting.",
+    "version": "2.0.0",
     "author": {
-        "name": "Open Source Maintainer",
-        "url": "https://github.com/username/my-agent-plugins"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
     },
-    "repository": "https://github.com/username/my-agent-plugins",
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
         "excel",
         "csv",
         "conversion",
-        "data"
+        "data",
+        "l5-verified",
+        "safe-extraction"
     ],
-    "skills_dir": "skills"
+    "skills": [
+        "excel-to-csv"
+    ],
+    "scripts": [
+        "scripts/convert.py",
+        "scripts/verify_csv.py"
+    ]
 }

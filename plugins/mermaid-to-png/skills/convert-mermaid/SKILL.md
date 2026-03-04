@@ -1,34 +1,50 @@
 ---
 name: convert-mermaid
-description: Convert mermaid diagrams mmd/mermaid to .png and have an option to pick/increase resolution level
+description: Convert mermaid diagrams mmd/mermaid to .png and have an option to pick/increase resolution level. V2 includes L5 Delegated Constraint Verification for strict binary image linting.
 disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
-# Convert Mermaid
+# Identity: The Mermaid Diagram Converter
 
-## Overview
-This skill converts Mermaid Diagram text files (`.mmd` or `.mermaid`) into high-resolution PNG images.
+You are a specialized conversion agent. Your job is to orchestrate the translation of `.mmd` or `.mermaid` syntax files into high-resolution `.png` binary images.
 
-## Instructions
-When a user asks you to convert a mermaid file to an image, you must use the deterministic Python script provided in this skill's `scripts/` directory. 
+## 🛠️ Tools (Plugin Scripts)
+- **Converter Engine**: `plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py`
+- **Verification Engine**: `plugins/mermaid-to-png/skills/convert-mermaid/scripts/verify_png.py`
 
-Do not attempt to write your own javascript or bash script to do this.
+## Core Workflow: The Generation Pipeline
 
-**Usage:**
+When a user requests `.mmd` to `.png` conversion, execute these phases strictly.
+
+### Phase 1: Engine Execution
+Invoke the appropriate Python converter script wrapper. 
+If the user asks for "high resolution", "retina", or "HQ", set `-s` to 3 or 4.
+
 ```bash
-python3 plugins/skills/convert-mermaid/scripts/convert.py -i <input-file.mmd> -o <output-file.png> -s <scale-number>
+python3 plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py -i architecture.mmd -o architecture.png -s 3
 ```
 
-**Parameters:**
-- `-i` The input file path.
-- `-o` The destination file path.
-- `-s` The resolution scale (default is 1). If the user asks for "high resolution", "retina", or "HQ", set `-s` to 3 or 4.
-- `-t` The theme (default, dark, forest, neutral).
+### Phase 2: Delegated Constraint Verification (L5 Pattern)
+**CRITICAL: Do not trust that the headless browser correctly generated the `.png`.**
+Immediately after the `convert.py` wrapper finishes, execute the verification engine:
 
-**Example:**
-If the user says: *"Convert architecture.mmd to a high res PNG"*
-You run:
-`python3 plugins/skills/convert-mermaid/scripts/convert.py -i architecture.mmd -o architecture.png -s 3`
+```bash
+python3 plugins/mermaid-to-png/skills/convert-mermaid/scripts/verify_png.py "architecture.png"
+```
+- If the script returns `"status": "success"`, the generated image is a valid PNG binary.
+- If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `references/fallback-tree.md`.
 
-## Reference Links
-Place any supplemental context or heavy documentation inside `reference.md` and link it here using relative paths.
+## Architectural Constraints
+
+### ❌ WRONG: Manual Binary Manipulation (Negative Instruction Constraint)
+Never attempt to write raw `.png` bitstreams natively from your context window. LLMs cannot safely generate binary blobs this way.
+
+### ❌ WRONG: Tainted Context Reads
+Never attempt to use `cat` or read a generated `.png` file back into your chat context to "verify" it. It is raw binary data and will instantly corrupt your context window. You MUST use the `verify_png.py` script to inspect the file mathematically.
+
+### ✅ CORRECT: Native Engine
+Always route binary generation and validation through the scripts provided in this plugin.
+
+## Next Actions
+If the `npx` wrapper script crashes or the verification loop fails, stop and consult the `references/fallback-tree.md` for triage and alternative conversion strategies.

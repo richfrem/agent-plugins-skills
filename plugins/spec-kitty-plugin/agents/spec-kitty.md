@@ -62,7 +62,7 @@ pip install spec-kitty-cli
 Keep the CLI current to get the latest features/fixes:
 ```bash
 pip install --upgrade spec-kitty-cli
-```
+```zzzz
 
 ### 3. Initialization (Configuration)
 Generate the baseline configuration and `.windsurf` workflows:

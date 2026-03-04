@@ -1,23 +1,27 @@
 ---
-description: Clean up orphaned artifacts from deleted plugins.
+description: >
+  Clean up orphaned artifacts left behind by plugins that have been removed
+  from the local plugins/ directory.
 args:
   dry_run:
-    description: "Run in dry-run mode to see what would happen without deleting files."
+    description: "Preview what would be deleted without making changes."
     type: boolean
 ---
 
-# Cleanup Plugins
+# Cleanup Orphaned Plugins
 
-This command identifies plugins that have been removed from the local `plugins/` directory but still have lingering artifacts (skills, rules, workflows) in agent paths. It safely removes these orphans.
+Identifies plugins removed from `plugins/` that still have lingering artifacts (skills, rules, workflows) in agent directories, and safely removes them.
 
-> **Safety Note:** This checks the Vendor Inventory. It ONLY deletes artifacts for plugins that originated from the vendor. Project-specific plugins are protected.
+> **Safety**: Only deletes artifacts for vendor-originated plugins. Project-specific custom plugins are never touched.
 
 ```bash
-echo "Running cleanup analysis..."
+echo "Running orphan cleanup analysis..."
 
 if [ "${dry_run}" = "true" ]; then
-    python plugins/plugin-manager/scripts/sync_with_inventory.py --cleanup-only --dry-run
+    python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run
 else
-    python plugins/plugin-manager/scripts/sync_with_inventory.py --cleanup-only
+    python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 fi
 ```
+
+> For a full sync (install new + cleanup removed), use the `/plugin-manager:update` command.
