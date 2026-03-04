@@ -8,15 +8,13 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It keeps agen
 
 ## Quick Start: Sync Everything
 
-To refresh all agent environments (Antigravity, Copilot, Gemini, Claude Code) with the current plugin code:
+To refresh all agent environments with the latest plugin code:
 
 ```bash
 python3 plugins/plugin-manager/scripts/update_agent_system.py
 ```
 
-This 2-step master sync:
-1. **Spec-Kitty Sync** — refreshes `.windsurf` workflows into the plugin
-2. **Plugin Install** — deploys all plugins to `.agent/`, `.claude/`, `.gemini/`, `.github/`
+> For step-by-step control, invoke the `plugin-maintenance` skill.
 
 ---
 
