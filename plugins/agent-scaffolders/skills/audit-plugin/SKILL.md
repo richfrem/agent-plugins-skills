@@ -24,10 +24,12 @@ python3 "plugins reference/agent-plugin-analyzer/skills/analyze-plugin/scripts/a
 - `--dir`: The absolute or relative path to the root of the plugin being audited.
 
 **Audit Checks Include:**
+- **Open Standards Validation:** Run `skills-ref validate <path-to-skill>` to definitively catch frontmatter parse errors, length constraints, and required fields (`name`, `description`).
+- **Naming & Content Constraints:** Verify the skill name uses the **gerund form** (`verb + -ing`, e.g., `analyzing-spreadsheets`). Reject generic nouns. Ensure the `name` exactly matches the parent directory. Verify `description` is written strictly in the **third person**.
 - **Execution Patterns (L4):** Checks for Graduated Autonomy, Source Transparency, Escalation Triggers.
 - **State Management:** Checks for conditional inclusions and explicit state checklists.
-- **Architectural Strictness:** Validates `CONNECTORS.md`, `README.md`, YAML frontmatter purity.
-- **Security Vectors:** Flags un-sandboxed execution, prompt injection vulnerabilities, and raw binary execution.
+- **Architectural Strictness:** Validates `CONNECTORS.md`, `README.md`, YAML frontmatter purity. Verifies `SKILL.md` uses 1-level deep relative file references ONLY and is < 500 lines.
+- **Security Vectors:** Flags un-sandboxed execution, prompt injection vulnerabilities, and raw binary execution. Ensure utility scripts use explicit error handling, not silent punting or voodoo constants.
 
 **Remediation & Next Steps:**
 If the script outputs a low Maturity Score or fails the `--security` gate (which forces an immediate `sys.exit(1)`), you MUST read the generated output report and actively use your file editing tools to fix the compliance issues in the target plugin. Run the audit again until it achieves Level 3 or higher.
