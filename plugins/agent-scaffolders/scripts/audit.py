@@ -104,6 +104,13 @@ def audit_plugin(plugin_path):
                 acceptance_file = os.path.join(references_dir, "acceptance-criteria.md")
                 if not os.path.isfile(acceptance_file):
                     errors.append(f"Skill '{skill_name}' is missing `references/acceptance-criteria.md`. All skills must have test criteria.")
+                    
+            # Check for illegal root directories inside skill (enforce agentskills.io Optional Directories)
+            allowed_skill_dirs = {".history", "scripts", "references", "assets", "examples", "templates"}
+            for item in os.listdir(skill_path):
+                full_item_path = os.path.join(skill_path, item)
+                if os.path.isdir(full_item_path) and item not in allowed_skill_dirs:
+                    errors.append(f"Skill '{skill_name}' contains illegal root directory '{item}/'. Only ['scripts', 'references', 'assets'] and specific scaffolds are allowed.")
 
     if errors:
         print("\n❌ AUDIT FAILED ❌")

@@ -153,6 +153,10 @@ def create_skill(name, path, description, iteration=None):
     os.makedirs(examples_dir, exist_ok=True)
     os.makedirs(templates_dir, exist_ok=True)
     
+    # Optional Directories AgentSkills.io Compliance
+    assets_dir = os.path.join(skill_dir, "assets")
+    os.makedirs(assets_dir, exist_ok=True)
+    
     def get_template(filename):
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
         if os.path.exists(template_path):
