@@ -16,7 +16,6 @@
         "red-team-review"
     ],
     "dependencies": [
-        "context-bundler",
-        "rlm-factory"
+        "context-bundler"
     ]
 }
