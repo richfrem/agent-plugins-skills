@@ -6,8 +6,9 @@ description: >
   recommendations", "what should we improve in our scaffolders", "update our meta-skills based on
   these findings", or after completing a plugin analysis.
 allowed-tools: Bash, Read, Write
----
+dependencies: ["plugin:agent-scaffolders", "plugin:agent-skill-open-specifications", "skill:analyze-plugin", "skill:create-skill", "skill:ecosystem-authoritative-sources", "skill:ecosystem-standards"]
 
+---
 # Synthesize Learnings
 
 Take raw analysis output from `analyze-plugin` and transform it into concrete, actionable improvements for our meta-skills ecosystem. This is the "close the loop" skill that turns observations into evolution.

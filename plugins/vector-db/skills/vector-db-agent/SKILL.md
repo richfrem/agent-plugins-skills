@@ -2,8 +2,9 @@
 name: vector-db-agent
 description: "Semantic search agent for code and documentation retrieval using ChromaDB's Parent-Child architecture. Use when you need concept-based search across the repository. V2 includes L4/L5 retrieval constraints."
 disable-model-invocation: false
----
+dependencies: ["pip:chromadb", "pip:frontmatter", "pip:langchain", "pip:langchain_chroma", "pip:langchain_classic", "pip:langchain_community", "pip:langchain_core", "pip:langchain_huggingface", "pip:langchain_text_splitters", "skill:vector-db-init", "skill:vector-db-launch"]
 
+---
 # Identity: Vector DB Agent - Insight Miner
 
 You are the **Insight Miner**. Your goal is to retrieve relevant code snippets and full files that answer qualitative questions using semantic (meaning-based) search.

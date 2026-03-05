@@ -3,8 +3,9 @@ name: ecosystem-authoritative-sources
 description: Provides information about how to create, structure, install, and audit Agent Skills, Plugins, Antigravity Workflows, and Sub-agents. Trigger this when specifications, rules, or best practices for the ecosystem are required.
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
----
+dependencies: ["plugin:agent-scaffolders", "plugin:plugin-mapper", "skill:agent-bridge", "skill:audit-plugin", "skill:create-agentic-workflow", "skill:create-azure-agent", "skill:create-github-action", "skill:create-mcp-integration", "skill:create-plugin", "skill:create-skill", "skill:ecosystem-standards", "skill:orchestrator"]
 
+---
 # Ecosystem Authoritative Sources
 
 # Official Open Standard Recognition

@@ -3,8 +3,9 @@ name: red-team-review
 aliases: ["Review and Critique Pattern"]
 description: "(Industry standard: Review and Critique Pattern) Primary Use Case: Iterative generation paired with adversarial review, continuing until an 'Approved' verdict is reached. Orchestrated adversarial review loop. Use when: research, designs, architectures, or decisions need to be reviewed by red team agents (human, browser, or CLI). Iterates in rounds of research → bundle → review → feedback until approved."
 allowed-tools: Bash, Read, Write
----
+dependencies: ["plugin:context-bundler", "skill:orchestrator"]
 
+---
 # Red Team Review Loop
 
 An iterative review loop where research is bundled via `context-bundler` and dispatched to one or more adversarial reviewers. The loop continues until the red team approves.

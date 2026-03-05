@@ -7,8 +7,9 @@ description: >
   validating new plugins, syncing plugins to agent configs, or performing
   routine ecosystem health checks.
 allowed-tools: Bash, Write, Read
----
+dependencies: ["plugin:agent-plugin-analyzer", "plugin:agent-scaffolders", "plugin:plugin-mapper", "skill:agent-bridge", "skill:analyze-plugin", "skill:create-skill"]
 
+---
 # Plugin Maintenance
 
 ## Overview

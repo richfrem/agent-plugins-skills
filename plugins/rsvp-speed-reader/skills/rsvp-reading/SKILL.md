@@ -4,8 +4,9 @@ description: Converts an input document (.txt, .md, .pdf, .docx) into a structur
 disable-model-invocation: false
 user-invocable: true
 allowed-tools: Bash, Read, Write
----
+dependencies: ["pip:docx", "pip:pdfminer"]
 
+---
 # RSVP Reading Skill
 
 **Rapid Serial Visual Presentation (RSVP)** is a speed reading method popularized by tools like [Spritz](https://spritzinc.com/). Words are flashed one at a time in a fixed position, while one letter per word is highlighted (typically in red) as an eye anchor — the **Optimal Recognition Point (ORP)**. This eliminates horizontal eye movement, the primary bottleneck of traditional reading, enabling speeds of 200-600+ WPM with solid comprehension.

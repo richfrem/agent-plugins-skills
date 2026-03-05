@@ -2,8 +2,9 @@
 name: create-agentic-workflow
 description: Scaffold GitHub Agent files from an existing Agent Skill. Generates IDE/UI agents (invokable from GitHub Copilot Chat via slash command) and/or CI/CD autonomous agents (GitHub Actions quality gates with Kill Switch). Use when converting a Skill into a GitHub-native agent.
 allowed-tools: Bash, Read, Write
----
+dependencies: ["plugin:spec-kitty-plugin", "skill:audit-plugin", "skill:create-github-action", "skill:spec-kitty-analyze"]
 
+---
 # GitHub Agent Scaffolder
 
 You are tasked with generating **GitHub Agent** files from an existing Agent Skill. There are two distinct GitHub agent types — understand both before asking the user which they need.

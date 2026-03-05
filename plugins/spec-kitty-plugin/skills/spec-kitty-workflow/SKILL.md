@@ -1,8 +1,9 @@
 ---
 name: Spec Kitty Workflow
 description: Standard operating procedures for the Spec Kitty agentic workflow (Plan -> Implement -> Review -> Merge).
----
+dependencies: ["plugin:agent-loops", "plugin:rlm-factory", "plugin:vector-db", "skill:dual-loop", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review"]
 
+---
 # Spec Kitty Workflow
 
 Standard lifecycle for implementing features using Spec Kitty.

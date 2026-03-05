@@ -1,8 +1,9 @@
 ---
 name: vector-db-launch
 description: Start the Native Python ChromaDB background server. Use when semantic search returns connection refused on port 8110, or when the user wants to enable concurrent agent read/writes.
----
+dependencies: ["skill:vector-db-init"]
 
+---
 # Vector DB Launch (Python Native Server)
 
 ChromaDB provides the vector database backend for semantic search. If configured for Option C (Native Server) in `vector_profiles.json`, the database must be running as a background HTTP service to be accessed by `operations.py`.

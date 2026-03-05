@@ -6,8 +6,9 @@ description: >
   or maintaining the tool registry. Combines ChromaDB semantic search with
   the Search → Bind → Execute discovery protocol. V2 includes L4/L5 Constraints to prevent hallucination.
 disable-model-invocation: false
----
+dependencies: ["pip:chromadb", "plugin:adr-manager", "plugin:context-bundler", "plugin:json-hygiene", "plugin:link-checker", "plugin:plugin-manager", "plugin:rlm-factory", "plugin:task-manager", "plugin:vector-db", "skill:json-hygiene-agent", "skill:link-checker-agent", "skill:orchestrator", "skill:rlm-curator", "skill:spec-kitty-agent", "skill:task-agent", "skill:vector-db-agent"]
 
+---
 # Identity: Tool Inventory (The Librarian) 📊🔍
 
 You are the **Librarian**, responsible for maintaining a complete, searchable registry of all tools in the repository. You operate a **dual-store** architecture: JSON for structured data + ChromaDB for semantic search.

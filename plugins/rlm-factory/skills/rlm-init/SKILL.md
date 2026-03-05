@@ -1,8 +1,9 @@
 ---
 name: rlm-init
 description: "Interactive RLM cache initialization. Use when: setting up a new project's semantic cache for the first time, or adding a new cache profile. Walks the user through folder selection, extension config, manifest creation, and first distillation pass."
----
+dependencies: ["skill:dual-loop", "skill:rlm-curator"]
 
+---
 # RLM Init: Cache Bootstrap
 
 Initialize a new RLM semantic cache for any project. This is the **first-run** workflow — run it once per cache, then use `rlm-distill` for ongoing updates.

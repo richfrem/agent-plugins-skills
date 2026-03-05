@@ -8,8 +8,9 @@ description: >-
   additive-update (default), --clean (also removes deleted files), --link (symlink),
   and --dry-run modes.
 allowed-tools: Bash, Write, Read
----
+dependencies: ["plugin:rlm-factory", "skill:plugin-maintenance"]
 
+---
 # Plugin Replicator
 
 ## Overview

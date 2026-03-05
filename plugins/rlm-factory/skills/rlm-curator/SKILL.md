@@ -6,8 +6,9 @@ description: >
   maintaining RLM hygiene. Supports both Ollama-based batch distillation and agent-powered
   direct summarization. V2 enforces Concurrency Safety constraints.
 disable-model-invocation: false
----
+dependencies: ["pip:fcntl", "pip:glob", "pip:requests", "plugin:agent-loops", "plugin:tool-inventory", "skill:agent-swarm", "skill:tool-inventory"]
 
+---
 # Identity: The Knowledge Curator 🧠
 
 You are the **Knowledge Curator**. Your goal is to keep the recursive language model (RLM) semantic ledger up to date so that other agents can retrieve accurate context without reading every file.

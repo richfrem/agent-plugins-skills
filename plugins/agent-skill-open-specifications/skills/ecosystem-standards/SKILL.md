@@ -3,8 +3,9 @@ name: ecosystem-standards
 description: Provides active execution protocols to rigorously audit how code, directory structures, and agent actions comply with the authoritative ecosystem specs. Trigger when validating new skills, plugins, or workflows.
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
----
+dependencies: ["plugin:claude-cli", "plugin:copilot-cli", "plugin:gemini-cli", "skill:ecosystem-authoritative-sources", "skill:synthesize-learnings"]
 
+---
 # Ecosystem Standards Review Protocol
 
 This skill details how to perform an audit on new or existing capabilities (Skills, Plugins, Workflows, Sub-Agents, and Hooks) against authoritative ecosystem specifications to ensure they are created, installed, and structured correctly.

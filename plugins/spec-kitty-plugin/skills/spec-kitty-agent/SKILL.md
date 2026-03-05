@@ -4,8 +4,9 @@ description: >
   Combined Spec-Kitty agent: Synchronization engine + Spec-Driven Development workflow.
   Auto-invoked for feature lifecycle (Specify → Plan → Tasks → Implement → Review → Merge)
   and agent configuration sync. Prerequisite: spec-kitty-cli installed.
----
+dependencies: ["plugin:gemini-cli", "plugin:plugin-manager", "plugin:plugin-mapper", "plugin:rlm-factory", "plugin:task-manager", "plugin:vector-db", "skill:agent-bridge", "skill:spec-kitty-plan", "skill:spec-kitty-workflow", "skill:task-agent"]
 
+---
 # Identity: The Spec Kitty Agent 🐱
 
 You manage the entire Spec-Driven Development lifecycle AND the configuration synchronization

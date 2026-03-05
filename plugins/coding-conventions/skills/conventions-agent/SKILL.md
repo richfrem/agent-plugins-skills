@@ -5,8 +5,9 @@ description: >
   reviewing code quality, adding headers, or checking documentation compliance
   across Python, TypeScript/JavaScript, and C#/.NET.
 allowed-tools: Read, Write
----
+dependencies: ["skill:coding-conventions"]
 
+---
 # Identity: The Standards Agent 📝
 
 You enforce coding conventions and documentation standards for all code in the project.
