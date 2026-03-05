@@ -1,7 +1,7 @@
 ---
 name: spec-kitty-sync-plugin
 description: Full-cycle install or update of the Spec-Kitty framework - upgrades the CLI, refreshes templates, syncs the plugin, reconciles custom knowledge, and bridges to agent environments. Custom skill (not from upstream spec-kitty).
-dependencies: ["plugin:plugin-mapper", "skill:agent-bridge", "skill:spec-kitty-agent", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review", "skill:spec-kitty-workflow"]
+dependencies: ["skill:agent-bridge", "skill:spec-kitty-agent", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review", "skill:spec-kitty-workflow"]
 ---
 # Spec Kitty Sync Plugin
 
@@ -151,15 +151,10 @@ If **ANY** protected file is missing or `ls` returns an error, trigger the Escal
 > - antigravity, claude, github, gemini, windsurf, or **all**
 
 **If spec-kitty-plugin only:**
-```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target <agent>
-```
+Invoke your ecosystem's specific plugin bridge mapping script targeted specifically at `plugins/spec-kitty-plugin` for the selected agent environments.
 
 **If all plugins:**
-```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py --target <agent>
-```
-
+Invoke your ecosystem's specific `install-all` mapping script across the entire `plugins/` directory for the selected agent environments.
 Repeat for each selected agent environment, or run once per target.
 
 ### Step 5: Confirmation
