@@ -1,0 +1,8 @@
+# Core RSVP Speed Reader dependencies
+# Compile with: pip-compile requirements.in
+
+# PDF parsing (no native binary deps required)
+pdfminer.six
+
+# DOCX parsing
+python-docx
