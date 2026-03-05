@@ -16,5 +16,12 @@
     ],
     "commands_dir": "commands",
     "skills_dir": "skills",
-    "dependencies": []
+    "dependencies": [
+        "agent-plugin-analyzer",
+        "agent-scaffolders",
+        "agent-skill-open-specifications",
+        "plugin-mapper",
+        "rlm-factory",
+        "spec-kitty-plugin"
+    ]
 }

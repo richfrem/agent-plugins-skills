@@ -25,5 +25,10 @@
     "scripts": [
         "scripts/audit.py",
         "scripts/scaffold.py"
+    ],
+    "dependencies": [
+        "agent-plugin-analyzer",
+        "agent-skill-open-specifications",
+        "spec-kitty-plugin"
     ]
 }

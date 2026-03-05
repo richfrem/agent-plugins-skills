@@ -17,5 +17,6 @@
     ],
     "skills": [
         "link-checker-agent"
-    ]
+    ],
+    "dependencies": []
 }

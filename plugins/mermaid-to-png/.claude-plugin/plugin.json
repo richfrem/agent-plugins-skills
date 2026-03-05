@@ -14,5 +14,6 @@
     "scripts": [
         "scripts/convert.py",
         "scripts/verify_png.py"
-    ]
+    ],
+    "dependencies": []
 }

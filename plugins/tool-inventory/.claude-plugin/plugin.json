@@ -38,5 +38,15 @@
         "note": "Vendors RLM scripts (distiller, query_cache, cleanup_cache, rlm_config, inventory) for tool-scoped operations. The rlm-factory plugin handles docs-only cache separately."
     },
     "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills_dir": "skills",
+    "dependencies": [
+        "adr-manager",
+        "context-bundler",
+        "json-hygiene",
+        "link-checker",
+        "plugin-manager",
+        "rlm-factory",
+        "task-manager",
+        "vector-db"
+    ]
 }

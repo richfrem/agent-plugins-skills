@@ -9,5 +9,8 @@
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "skills": [
         "memory-management"
+    ],
+    "dependencies": [
+        "vector-db"
     ]
 }

@@ -9,5 +9,8 @@
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "skills": [
         "gemini-cli-agent"
+    ],
+    "dependencies": [
+        "agent-loops"
     ]
 }

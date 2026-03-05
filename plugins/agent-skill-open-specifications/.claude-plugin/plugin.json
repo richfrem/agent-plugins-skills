@@ -11,5 +11,12 @@
     "skills": [
         "ecosystem-authoritative-sources",
         "ecosystem-standards"
+    ],
+    "dependencies": [
+        "agent-scaffolders",
+        "claude-cli",
+        "copilot-cli",
+        "gemini-cli",
+        "plugin-mapper"
     ]
 }

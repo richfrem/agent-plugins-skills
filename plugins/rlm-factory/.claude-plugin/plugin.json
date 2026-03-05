@@ -38,5 +38,10 @@
         ]
     },
     "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills_dir": "skills",
+    "dependencies": [
+        "agent-loops",
+        "context-bundler",
+        "tool-inventory"
+    ]
 }

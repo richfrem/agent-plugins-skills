@@ -20,5 +20,16 @@
         "init": "spec-kitty init . --ai windsurf"
     },
     "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills_dir": "skills",
+    "dependencies": [
+        "agent-loops",
+        "coding-conventions",
+        "dependency-management",
+        "gemini-cli",
+        "plugin-manager",
+        "plugin-mapper",
+        "rlm-factory",
+        "task-manager",
+        "vector-db"
+    ]
 }

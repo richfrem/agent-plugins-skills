@@ -1,22 +1,25 @@
 {
-  "name": "agent-loops",
-  "version": "2.0.0",
-  "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
-  "author": {
-    "name": "Richard Fremmerlid",
-    "url": "https://github.com/richfrem"
-  },
-  "repository": "https://github.com/richfrem/agent-plugins-skills",
-  "license": "MIT",
-  "skills": [
-    "agent-swarm",
-    "dual-loop",
-    "learning-loop",
-    "orchestrator",
-    "red-team-review"
-  ],
-  "dependencies": [
-    "context-bundler",
-    "rlm-factory"
-  ]
+    "name": "agent-loops",
+    "version": "2.0.0",
+    "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
+    "author": {
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "skills": [
+        "agent-swarm",
+        "dual-loop",
+        "learning-loop",
+        "orchestrator",
+        "red-team-review"
+    ],
+    "dependencies": [
+        "claude-cli",
+        "context-bundler",
+        "copilot-cli",
+        "gemini-cli",
+        "rlm-factory"
+    ]
 }

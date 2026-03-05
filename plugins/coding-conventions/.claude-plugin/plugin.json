@@ -18,5 +18,11 @@
     "skills": [
         "coding-conventions",
         "conventions-agent"
+    ],
+    "dependencies": [
+        "context-bundler",
+        "rlm-factory",
+        "tool-inventory",
+        "vector-db"
     ]
 }
