@@ -78,7 +78,7 @@ After Update/Init, you MUST propagate the new configuration to the agent ecosyst
 ```bash
 python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
 ```
-*Note: This automatically converts local workflows into Open Standard skills inside the plugin.*
+*Note: The new `agentskills.io` 2.0 standard mandates that legacy workflows/commands be deployed natively as **Agent Skills** containing a `SKILL.md` file and empty optional directories (`scripts/`, `references/`, `assets/`, `evals/`).*
 
 **Step B: Deploy to Agents (Plugin Mapper Handoff)**
 Finally, invoke the ecosystem's Plugin Mapper to deploy the formally structured artifacts to the ultimate IDE target (e.g. `antigravity`, `claude`, `gemini`, `github`):

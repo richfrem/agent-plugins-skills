@@ -285,23 +285,28 @@ def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
 
     plugin_name = metadata.get("name", plugin_path.name)
 
-    # 1. Workflows (Commands)
+    # 1. Workflows (Commands) Upgraded to Skills
     commands_dir = plugin_path / "commands"
     if not commands_dir.exists():
         commands_dir = plugin_path / "workflows"
         
     if commands_dir.exists():
-        plugin_wf_dir = target_wf / plugin_name
-        plugin_wf_dir.mkdir(parents=True, exist_ok=True)
         for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
             content = f.read_text(encoding='utf-8')
             content = transform_content(content, "antigravity")
             stem = command_output_stem(commands_dir, f, plugin_name)
-            dest = plugin_wf_dir / f"{stem}.md"
+            
+            # Wrap as a Skill (AgentSkills 2.0)
+            skill_dir = target_skills / stem
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (skill_dir / opt_dir).mkdir(exist_ok=True)
+                
+            dest = skill_dir / "SKILL.md"
             dest.write_text(content, encoding='utf-8')
-            print(f"    -> Workflow: {dest.relative_to(root)}")
+            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
 
-    # 2. Skills
+    # 2. Native Skills
     skills_dir = plugin_path / "skills"
     if skills_dir.exists():
         shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
@@ -315,6 +320,11 @@ def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
             agent_dir = target_skills / final_name
             agent_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Ensure optional directories exist
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (agent_dir / opt_dir).mkdir(exist_ok=True)
+                
             shutil.copy2(f, agent_dir / "SKILL.md")
         print(f"    -> Agents (as Skills): {target_skills.relative_to(root)}")
 
@@ -361,8 +371,12 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
             stem = command_output_stem(commands_dir, f, plugin_name)
             
             # Construct GitHub Models Prompt Structure (.prompt.yml)
+            fm_name = fm.get("name", stem)
+            if isinstance(fm_name, list):
+                fm_name = fm_name[0]
+                
             prompt_data = {
-                "name": fm.get("name", stem).replace('_', ' ').title(),
+                "name": str(fm_name).replace('_', ' ').title(),
                 "description": fm.get("description", f"Command generated from {plugin_name}"),
                 "model": fm.get("model", "openai/gpt-4o"),
                 "messages": [
@@ -379,7 +393,17 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
             
             dest = target_prompts / f"{stem}.prompt.yml"
             dest.write_text(yaml.dump(prompt_data, sort_keys=False), encoding='utf-8')
-            print(f"    -> Prompt: {dest.relative_to(root)}")
+            print(f"    -> Prompt Model: {dest.relative_to(root)}")
+            
+            # ALSO wrapper export it as a Skill for GitHub Copilot IDE support
+            target_skills = root / TARGET_MAPPINGS["github"]["skills"]
+            skill_dir = target_skills / stem
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (skill_dir / opt_dir).mkdir(exist_ok=True)
+            dest_skill = skill_dir / "SKILL.md"
+            dest_skill.write_text(raw_content, encoding='utf-8')
+            print(f"    -> GitHub Copilot Skill Wrapper: {skill_dir.relative_to(root)}")
 
     # 2. Skills
     skills_dir = plugin_path / "skills"
@@ -399,6 +423,8 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
             agent_dir = target_skills_dir / final_name
             agent_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (agent_dir / opt_dir).mkdir(exist_ok=True)
             shutil.copy2(f, agent_dir / "SKILL.md")
         print(f"    -> Agents (as Skills): {target_skills_dir.relative_to(root)}")
 
@@ -427,12 +453,13 @@ def install_gemini(plugin_path: Path, root: Path, metadata: dict):
 
     plugin_name = metadata.get("name", plugin_path.name)
 
-    # 1. Workflows -> TOML Commands
+    # 1. Workflows -> TOML Commands and Skill Wrappers
     commands_dir = plugin_path / "commands"
     if not commands_dir.exists():
         commands_dir = plugin_path / "workflows"
         
     if commands_dir.exists():
+        target_skills = root / TARGET_MAPPINGS["gemini"]["skills"]
         for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
             raw_content = f.read_text(encoding='utf-8')
             fm, body = parse_frontmatter(raw_content)  # Extract frontmatter
@@ -445,7 +472,16 @@ def install_gemini(plugin_path: Path, root: Path, metadata: dict):
             dest.write_text(toml_content, encoding='utf-8')
             for w in validate_toml_content(dest):
                 print(w)
-            print(f"    -> Command: {dest.relative_to(root)}")
+            print(f"    -> TOML Command: {dest.relative_to(root)}")
+            
+            # Wrap as a Skill for Gemini Context usage (AgentSkills 2.0)
+            skill_dir = target_skills / stem
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (skill_dir / opt_dir).mkdir(exist_ok=True)
+            dest_skill = skill_dir / "SKILL.md"
+            dest_skill.write_text(raw_content, encoding='utf-8')
+            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
 
     # 2. Skills
     skills_dir = plugin_path / "skills"
@@ -480,19 +516,27 @@ def install_claude(plugin_path: Path, root: Path, metadata: dict):
 
     plugin_name = metadata.get("name", plugin_path.name)
 
-    # 1. Workflows (Commands)
+    # 1. Workflows (Commands) Upgraded to Skills
     commands_dir = plugin_path / "commands"
     if not commands_dir.exists():
         commands_dir = plugin_path / "workflows"
         
     if commands_dir.exists():
+        target_skills = root / TARGET_MAPPINGS["claude"]["skills"]
         for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
             content = f.read_text(encoding='utf-8')
             content = transform_content(content, "claude")
             stem = command_output_stem(commands_dir, f, plugin_name)
-            dest = target_cmds / f"{stem}.md"
+            
+            # Wrap as a Skill (AgentSkills 2.0)
+            skill_dir = target_skills / stem
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (skill_dir / opt_dir).mkdir(exist_ok=True)
+                
+            dest = skill_dir / "SKILL.md"
             dest.write_text(content, encoding='utf-8')
-            print(f"    -> Command: {dest.relative_to(root)}")
+            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
 
     # 2. Skills
     skills_dir = plugin_path / "skills"
@@ -512,6 +556,8 @@ def install_claude(plugin_path: Path, root: Path, metadata: dict):
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
             agent_dir = target_skills_dir / final_name
             agent_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (agent_dir / opt_dir).mkdir(exist_ok=True)
             shutil.copy2(f, agent_dir / "SKILL.md")
         print(f"    -> Agents (as Skills): {target_skills_dir.relative_to(root)}")
 
@@ -562,7 +608,7 @@ def install_generic(plugin_path: Path, root: Path, metadata: dict, target_name: 
 
     plugin_name = metadata.get("name", plugin_path.name)
 
-    # 1. Workflows (Commands)
+    # 1. Workflows (Commands) Upgraded to Skills
     commands_dir = plugin_path / "commands"
     if not commands_dir.exists():
         commands_dir = plugin_path / "workflows"
@@ -572,9 +618,16 @@ def install_generic(plugin_path: Path, root: Path, metadata: dict, target_name: 
             content = f.read_text(encoding='utf-8')
             content = transform_content(content, target_name)
             stem = command_output_stem(commands_dir, f, plugin_name)
-            dest = target_wf / f"{stem}.md"
+            
+            # Wrap as a Skill (AgentSkills 2.0)
+            skill_dir = target_skills / stem
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (skill_dir / opt_dir).mkdir(exist_ok=True)
+                
+            dest = skill_dir / "SKILL.md"
             dest.write_text(content, encoding='utf-8')
-            print(f"    -> Command: {dest.relative_to(root)}")
+            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
 
     # 2. Skills
     skills_dir = plugin_path / "skills"
@@ -590,6 +643,8 @@ def install_generic(plugin_path: Path, root: Path, metadata: dict, target_name: 
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
             agent_dir = target_skills / final_name
             agent_dir.mkdir(parents=True, exist_ok=True)
+            for opt_dir in ["scripts", "references", "assets", "evals"]:
+                (agent_dir / opt_dir).mkdir(exist_ok=True)
             shutil.copy2(f, agent_dir / "SKILL.md")
         print(f"    -> Agents (as Skills): {target_skills.relative_to(root)}")
 
