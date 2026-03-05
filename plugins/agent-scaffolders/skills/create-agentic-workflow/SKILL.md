@@ -24,7 +24,7 @@ You are tasked with generating **GitHub Agent** files from an existing Agent Ski
 
 Ask the user for the following context before proceeding:
 
-1. **Target Skill**: Path to the Agent Skill directory to convert (e.g., `plugins/spec-kitty-plugin/skills/spec-kitty-analyze`).
+1. **Target Skill**: Path to the Agent Skill directory to convert (e.g., `plugins/my-plugin/skills/my-skill`).
 
 2. **Agent Type**: Ask which type(s) they need:
    - **IDE Agent** — appears in the Copilot Chat agent picker and is invokable via a `/slug` slash command from VS Code or GitHub.com
@@ -91,7 +91,7 @@ The script will parse the skill's YAML frontmatter, extract its name and descrip
 
 After generation, remind the user:
 
-- **IDE agents**: The `.agent.md` body is a starting skeleton. For rich workflows (like spec-kitty's chained agents), the full instruction set from the source SKILL.md should be manually ported into the `.agent.md` body, and `handoffs:` frontmatter added for chaining to other agents.
+- **IDE agents**: The `.agent.md` body is a starting skeleton. For rich workflows (like multi-agent orchestrators), the full instruction set from the source SKILL.md should be manually ported into the `.agent.md` body, and `handoffs:` frontmatter added for chaining to other agents.
 
 - **CI/CD Smart Failure agents**: The `.github/workflows/*.yml` requires a `COPILOT_GITHUB_TOKEN` secret in the repository settings. The Kill Switch phrase must appear verbatim in the `.agent.md` body instructions for the quality gate to work. Furthermore, you MUST explicitly define an **Escalation Trigger Taxonomy** in the `.agent.md` so the agent knows precisely when to halt and trigger the Kill Switch vs when to auto-approve.
 

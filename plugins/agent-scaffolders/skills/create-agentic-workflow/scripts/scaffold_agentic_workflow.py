@@ -362,7 +362,7 @@ if __name__ == "__main__":
 
         Batch mode (--plugin-dir):
           Walks all skills/ subdirectories in a plugin and scaffolds each SKILL.md.
-          Example: --plugin-dir plugins/spec-kitty-plugin --mode ide
+          Example: --plugin-dir plugins/my-plugin --mode ide
         """),
     )
 
