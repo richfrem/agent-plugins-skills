@@ -1,7 +1,7 @@
 ---
 name: Spec Kitty Workflow
 description: Standard operating procedures for the Spec Kitty agentic workflow (Plan -> Implement -> Review -> Merge).
-dependencies: ["plugin:rlm-factory", "plugin:vector-db", "skill:dual-loop", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review"]
+dependencies: ["skill:dual-loop", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review"]
 ---
 # Spec Kitty Workflow
 
@@ -279,19 +279,8 @@ rm -f .kittify/workspaces/<SLUG>-WP*.json
 - [ ] WP branches have been deleted
 - [ ] Working tree is clean
 - [ ] Workspace tracking JSONs removed from `.kittify/workspaces/`
-
-### Step 4g: Intelligence sync
-```bash
-python3 plugins/rlm-factory/scripts/distill.py --path kitty-specs/<SPEC-ID>/
-```
-**PROOF**: Paste output confirming RLM cache updated.
-
-> If vector DB is available, also run:
-> ```bash
-> python3 plugins/vector-db/scripts/ingest.py --path kitty-specs/<SPEC-ID>/
-> ```
-
-### Step 4h: Update kanban to done
+282. 
+283. ### Step 4g: Update kanban to done
 ```bash
 spec-kitty agent tasks move-task <WP-ID> --to done --note "Merged and cleaned up"
 ```
