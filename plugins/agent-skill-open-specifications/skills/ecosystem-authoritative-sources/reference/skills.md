@@ -23,12 +23,12 @@ Skills are resolved automatically. Any nested `.claude/skills/` directory relati
 The frontmatter configures invocation rules, argument hints, tool allowances, and execution environments.
 
 ### Open Standard Properties (`agentskills.io`)
-- `name` **(Required)**: Display name. Max 64 characters. Must contain only lowercase letters, numbers, and hyphens. Cannot start/end with a hyphen, nor contain consecutive hyphens (`--`). Must match the parent directory name.
-- `description` **(Required)**: Helps the agent decide autonomously when it should trigger the skill based on the conversation context. Max 1024 characters.
-- `license` *(Optional)*: License name or reference to a bundled license file (`Apache-2.0`).
+- `name` **(Required)**: Display name. 1-64 characters. Must contain only lowercase alphanumeric characters and hyphens (`a-z` and `-`). Cannot start/end with a hyphen, nor contain consecutive hyphens (`--`). **Must perfectly match the parent directory name.**
+- `description` **(Required)**: Helps the agent decide autonomously when it should trigger the skill. 1-1024 characters.
+- `license` *(Optional)*: License name or reference to a bundled license file (e.g., `Apache-2.0`). Recommendation: Keep it short.
 - `compatibility` *(Optional)*: Indicates specific environment requirements like system packages or network access. Max 500 characters.
-- `metadata` *(Optional)*: Arbitrary key-value map for tool-specific meta (e.g., `author: org`, `version: "1.0"`).
-- `allowed-tools` *(Optional/Experimental)*: Space-delimited list of tools the agent can use without asking for explicit permission (e.g., `Bash(git:*) Read`).
+- `metadata` *(Optional)*: A map from string keys to string values for tool-specific meta. Make key names unique to avoid conflicts (e.g., `author: org`, `version: "1.0"`).
+- `allowed-tools` *(Optional/Experimental)*: Space-delimited list of pre-approved tools the skill may use (e.g., `Bash(git:*) Read`). Support varies by implementation.
 
 ### Claude Code Specific Properties
 - `argument-hint`: Visual hint for the autocomplete UI (e.g., `[issue-number]`).
@@ -61,25 +61,32 @@ When creating a skill for distribution (e.g. sharing across an enterprise):
 - **Dependencies:** `dependencies` can be added to the frontmatter (e.g. `python>=3.8, pandas>=1.5.0`) to define software packages required. Claude Code can install from standard endpoints like PyPI or npm. (Note: API Skills require pre-installed containers).
 
 ## Best Practices & Authoring Guidelines
-- **Focus & Conciseness:** Assume Claude is highly intelligent. Do not waste tokens explaining basic concepts. Create separate, composable skills for different workflows instead of a single monolithic skill.
-- **Naming Conventions:** Use the **gerund form** (verb + -ing) for skill names (e.g., `processing-pdfs`, `analyzing-spreadsheets`). Always lowercase and hyphenated.
-- **Descriptions:** Must be written in the **third person** (e.g., "Processes Excel files", not "I process"). Must clearly state both *what* it does and *when* Claude should trigger it autonomously. Max 1024 characters.
+- **Concise is Key:** The context window is a public good. Assume Claude is highly intelligent and only add context Claude doesn't already know. Challenge each piece of information: "Does Claude really need this explanation?"
+- **Degrees of Freedom (Fragility):** Match the level of specificity (High vs Low freedom) to the task's fragility. 
+    - Text-based review = High freedom (general direction).
+    - Pseudocode/Script templating = Medium freedom (preferred patterns).
+    - Database migrations/Deployments = Low freedom (exact scripts, no deviations).
+- **Test Across Models:** Skills act as additions to models. Ensure instructions are clear enough for smaller/faster models (Haiku) but efficient enough not to bog down powerful reasoning models (Opus).
+- **Evaluating First:** Create evaluations *first* before writing extensive documentation. Measure baseline performance, write minimal instructions to pass the eval, and iterate. Do not solve imagined problems.
+- **Naming Conventions:** Use the **gerund form** (verb + -ing) for skill names (e.g., `processing-pdfs`, `analyzing-spreadsheets`). Always lowercase and hyphenated. Avoid generic vague nouns (`helper`, `utils`).
+- **Descriptions:** Must be written in the **third person** (e.g., "Processes Excel files", not "I process"). Must clearly state both *what* it does and *when* Claude should trigger it autonomously. Avoid vague descriptions like "Helps with documents." Max 1024 characters.
 - **Progressive Disclosure:** Claude reads only the frontmatter `description` fields first to decide if a skill is relevant, before reading the `SKILL.md` body. Be precise.
 
 ### Refined Progressive Disclosure Patterns
 To keep `SKILL.md` under the recommended 500 max lines without overloading Context:
 1. **High-level guide with references:** SKILL.md provides quick-starts, then links to `REFERENCE.md` or `EXAMPLES.md` for deep dives.
 2. **Domain-specific organization:** Group references by type so Claude only reads what's relevant (e.g., `reference/finance.md`, `reference/sales.md`).
-3. **One-Level Deep References:** **CRITICAL:** Do not nest references (e.g., SKILL.md -> A.md -> B.md). Claude may only partially read deeply nested chains. All reference files should be linked directly from `SKILL.md`.
+3. **One-Level Deep References:** **CRITICAL:** Do not nest references (e.g., SKILL.md -> A.md -> B.md). Claude may only partially read deeply nested chains (often via `head -n 100`). All reference files should be linked directly from `SKILL.md`.
 4. **Table of Contents:** Any reference file longer than 100 lines must have a TOC at the top so Claude can navigate partial reads effectively.
-5. **Modular Building Blocks:** For complex workflows, expose a convenience "wrapper" script for the standard LLM task while separating out core Python APIs into distinct modules. Instruct the LLM to delegate to the wrapper by default, but to chain the pure APIs when encountering edge cases or power-user commands.
+5. **Workflow Checklists:** For complex workflows, provide a copyable Markdown checklist in `SKILL.md` that Claude can paste into its response and check off as it progresses.
+6. **Verifiable Intermediate Plans:** For destructive or massive operations, use a plan-validate-execute loop. Have Claude output an intermediate `plan.json`, run a validation script strictly against it, and *then* execute.
 
 ### Anti-Patterns to Avoid
 - **Windows Paths:** Always use Unix-style forward slashes (`/`), even on Windows.
-- **Bash/PowerShell Scripts:** Avoid `.sh` or `.ps1` files for complex logic. **Python (`.py`) is the required standard** for skill scripts to guarantee true cross-platform execution (Windows, Mac, Linux) regardless of the host environment.
+- **Bash/PowerShell Scripts:** Avoid `.sh` or `.ps1` files for complex logic. **Python (`.py`) is the required standard** for skill scripts to guarantee true cross-platform execution (Windows, Mac, Linux).
 - **Punting Errors:** Utility scripts should handle exceptions and edge cases themselves (e.g., creating a missing file with default content) rather than failing and forcing Claude to figure it out. Provide explicit error messages in `stdout/stderr` back to Claude.
-- **Voodoo Constants:** Document *why* magical numbers or timeouts are set to what they are in your scripts so Claude understands the parameters.
-- **Unqualified Tools:** When referencing a tool, always explicitly provide the namespace: `ServerName:tool_name` (e.g., `GitHub:create_issue`).
+- **Voodoo Constants:** Document *why* magical numbers (e.g., `TIMEOUT=47`) or timeouts are set to what they are in your scripts so Claude understands the parameters.
+- **Unqualified MCP Tools:** When referencing a tool, always explicitly provide the namespace: `ServerName:tool_name` (e.g., `GitHub:create_issue`) to avoid "tool not found" collisions.
 
 ## Example Repositories
 Official open-source repositories containing exemplary and foundational Agent Skills configurations:
@@ -117,6 +124,18 @@ Since skills provide instructions and execute code, review third-party or intern
 3. **Recall Limits:** Don't load hundreds of skills simultaneously. API requests max out at 8 skills per request explicitly. Evaluate recall accuracy when bundling too many skills into a single system prompt.
 4. **Source Control:** Maintain skill directories via Git and use CI/CD deployment hooks to sync up to the API/Marketplace.
 5. **Versioning:** Pin skills to specific tested versions, and provide quick rollback paths for failed workflows.
+
+### File References
+When referencing other files inside your skill (e.g. scripts or docs), use **relative paths from the skill root**.
+- Good: `See [the guide](references/REFERENCE.md)` or `Run scripts/extract.py`
+- Bad: `../` or absolute paths.
+
+### Official Validation
+The open standard provides an official NPM-based CLI validator for skill structure. When authoring new skills, always manually run:
+```bash
+skills-ref validate ./my-skill
+```
+This ensures frontmatter is syntactically valid and length constraints are respected.
 
 ## Integrating Skills into Custom Agents (`agentskills.io`)
 If building a custom agent or product, skills can be integrated in two ways:

@@ -25,7 +25,8 @@ Our architectural mandate is that skills function as pure, portable filesystem r
 This repository aligns with and draws massive inspiration from a neutral open ecosystem of standards:
 
 1.  **Agent Skills Open Standard (`agentskills.io`)**: For standardizing the `SKILL.md` format, Progressive Disclosure directory structures (`scripts/`, `references/`), and multi-agent compatibility.
-2.  **Anthropic Model Context Protocol (MCP)**: For standardizing tool and server integrations.
-3.  **Anthropic Claude Code Plugins**: Specifically the `.claude-plugin` repository structure, `hooks/hooks.json` lifecycle methods, and `.mcp.json` dynamic context integrations.
+2.  **Anthropic Agent Skills Best Practices**: To rigorously enforce gerund-based naming, progressive disclosure patterns, copy/paste-able LLM feedback loops, and verifiable intermediate outputs (e.g. `changes.json`).
+3.  **Anthropic Model Context Protocol (MCP)**: For standardizing tool and server integrations.
+4.  **Anthropic Claude Code Plugins**: Specifically the `.claude-plugin` repository structure, `hooks/hooks.json` lifecycle methods, and `.mcp.json` dynamic context integrations.
 
 Our specifications enforce a unified "Scaffolder V2" paradigm that perfectly harmonizes these open standards into a single, aggressively compatible meta-structure spanning Antigravity, GitHub Copilot, Gemini, Roo Code, and Claude Code.
