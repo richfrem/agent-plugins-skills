@@ -17,12 +17,8 @@ spec-kitty init . --ai windsurf
 ```
 
 ## Installation
-### Universal IDE Deployment (Antigravity, Claude Code, Gemini, Copilot)
-This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use the ecosystem's `plugin-mapper`:
-```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target antigravity
-```
-*(Replace `antigravity` with your target IDE, e.g. `claude`, `gemini`, `github`)*
+### Universal IDE Deployment (Antigravity, Claude Code, Gemini, Copilot, Windsurf)
+This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use your ecosystem's specific agent bridge or plugin-mapper installer script, pointing it at `plugins/spec-kitty-plugin` and targeting your preferred IDE.
 
 ### 1. Initializing Spec Kitty (First Time)
 Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-init` skill:
@@ -56,31 +52,7 @@ These skills automate the administration of the framework itself.
 
 ## Architecture
 
-This plugin acts as a formal bundle containing Workflows (Commands), Active Skills, and Rules.
-
-```mermaid
-graph TD
-    A["Workspace Outputs (.windsurf/workflows, .kittify/memory)"]
-    B["sync_configuration.py"]
-    C["spec-kitty-plugin/commands"]
-    D["spec-kitty-plugin/rules"]
-    E["spec-kitty-plugin/skills"]
-    F["plugin-mapper (bridge_installer.py)"]
-    G["Target Runtime (e.g. .agent/)"]
-
-    A -->|Parsed by| B
-    B -->|Generates| C
-    B -->|Copies| D
-    B -.->|Preserves existing| E
-    
-    C -->|Bundled by| F
-    D -->|Bundled by| F
-    E -->|Bundled by| F
-    
-    F -->|Deploys| G
-```
-
-## Structure
+This plugin acts as a formal bundle containing Workflows (Commands), Active Skills, and Rules. It abstracts upstream configuration tools into locally compliant AgentSkills that can be deployed by your ecosystem bridge.
 ```
 spec-kitty-plugin/
 ├── .claude-plugin/plugin.json
@@ -91,11 +63,9 @@ spec-kitty-plugin/
 │   ├── spec-kitty-init/ (Installer routine)
 │   └── spec-kitty-update/ (Upgrader routine)
 ├── docs/
-│   ├── bridge_architecture_overview.md
 │   ├── LLM_UNPACKAGING_INSTRUCTIONS.md
 │   └── agent-worktree-reference.md
 ├── references/
-│   ├── standard-spec-kitty-workflow.mmd
 │   ├── standard-workflow-rules.md
 │   └── spec_driven_development_policy.md
 └── README.md
