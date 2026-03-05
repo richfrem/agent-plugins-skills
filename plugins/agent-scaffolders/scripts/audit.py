@@ -44,6 +44,7 @@ import glob
 
 def audit_plugin(plugin_path):
     print(f"Auditing Plugin at: {plugin_path}")
+    plugin_name = os.path.basename(os.path.normpath(plugin_path))
     errors = []
     warnings = []
 
@@ -81,12 +82,14 @@ def audit_plugin(plugin_path):
                 continue
             
             skill_md = os.path.join(skill_path, "SKILL.md")
+            is_auto_synced_spec_kitty = (plugin_name == "spec-kitty-plugin" and skill_name not in ["spec-kitty-agent", "spec-kitty-sync-plugin", "spec-kitty-workflow"])
+
             if not os.path.isfile(skill_md):
                 errors.append(f"Skill '{skill_name}' is missing `SKILL.md`.")
             else:
                 with open(skill_md, "r") as f:
                     lines = f.readlines()
-                    if len(lines) > 500:
+                    if not is_auto_synced_spec_kitty and len(lines) > 500:
                         warnings.append(f"Skill '{skill_name}' SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")
             
             # Check for illegal bash/powershell scripts
@@ -97,16 +100,17 @@ def audit_plugin(plugin_path):
                         errors.append(f"Skill '{skill_name}' contains illegal script '{script_file}'. Only Python (.py) is allowed.")
                         
             # Check for Microsoft Progressive Disclosure & Testing standard
-            references_dir = os.path.join(skill_path, "references")
-            if not os.path.isdir(references_dir):
-                warnings.append(f"Skill '{skill_name}' is missing a `references/` directory. Progressive Disclosure is highly recommended.")
-            else:
-                acceptance_file = os.path.join(references_dir, "acceptance-criteria.md")
-                if not os.path.isfile(acceptance_file):
-                    errors.append(f"Skill '{skill_name}' is missing `references/acceptance-criteria.md`. All skills must have test criteria.")
+            if not is_auto_synced_spec_kitty:
+                references_dir = os.path.join(skill_path, "references")
+                if not os.path.isdir(references_dir):
+                    warnings.append(f"Skill '{skill_name}' is missing a `references/` directory. Progressive Disclosure is highly recommended.")
+                else:
+                    acceptance_file = os.path.join(references_dir, "acceptance-criteria.md")
+                    if not os.path.isfile(acceptance_file):
+                        errors.append(f"Skill '{skill_name}' is missing `references/acceptance-criteria.md`. All skills must have test criteria.")
                     
             # Check for illegal root directories inside skill (enforce agentskills.io Optional Directories)
-            allowed_skill_dirs = {".history", "scripts", "references", "assets", "examples", "templates"}
+            allowed_skill_dirs = {".history", "scripts", "references", "assets", "examples", "templates", "evals"}
             for item in os.listdir(skill_path):
                 full_item_path = os.path.join(skill_path, item)
                 if os.path.isdir(full_item_path) and item not in allowed_skill_dirs:
