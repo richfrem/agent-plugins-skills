@@ -21,10 +21,5 @@
     },
     "commands_dir": "commands",
     "skills_dir": "skills",
-    "dependencies": [
-        "plugin-mapper",
-        "rlm-factory",
-        "task-manager",
-        "vector-db"
-    ]
+    "dependencies": []
 }
