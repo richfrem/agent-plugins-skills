@@ -80,11 +80,8 @@ python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configura
 ```
 *Note: The new `agentskills.io` 2.0 standard mandates that legacy workflows/commands be deployed natively as **Agent Skills** containing a `SKILL.md` file and empty optional directories (`scripts/`, `references/`, `assets/`, `evals/`).*
 
-**Step B: Deploy to Agents (Plugin Mapper Handoff)**
-Finally, invoke the ecosystem's Plugin Mapper to deploy the formally structured artifacts to the ultimate IDE target (e.g. `antigravity`, `claude`, `gemini`, `github`):
-```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target antigravity
-```
+**Step B: Deploy to Agents (Agent Handoff)**
+Finally, ask the user if they would like to use their ecosystem's plugin bridge (e.g. the Plugin Mapper) to deploy these natively formatted skills to their active AI environments (e.g. `antigravity`, `claude`, `gemini`, `github`).
 
 ---
 
