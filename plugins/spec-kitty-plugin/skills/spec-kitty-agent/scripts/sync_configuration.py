@@ -149,8 +149,8 @@ def main() -> None:
     sync_workflows()
     sync_rules()
     
-    print("\n⚠️  NEXT STEP: Propagate to Agents")
-    print("   Run: python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target <your_ide>")
+    print("\n⚠️  AGENT INSTRUCTION:")
+    print("   The local repository is now synced. Ask the user if they want to use their ecosystem's plugin bridge to install or update `plugins/spec-kitty-plugin` for their active AI environment.")
 
 if __name__ == "__main__":
     main()
