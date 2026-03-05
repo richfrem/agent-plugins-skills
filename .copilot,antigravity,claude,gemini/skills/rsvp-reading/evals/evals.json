@@ -1,0 +1,38 @@
+{
+    "schema_version": "1.0",
+    "skill": "rsvp-reading",
+    "evals": [
+        {
+            "id": "eval-001",
+            "type": "positive",
+            "description": "User asks to speed read a markdown file at 300 WPM",
+            "prompt": "Speed read my file notes.md at 300 WPM",
+            "expected_trigger": true,
+            "expected_behavior": "Invoke rsvp-reading skill, parse notes.md, generate token stream at 300 WPM"
+        },
+        {
+            "id": "eval-002",
+            "type": "positive",
+            "description": "User asks to RSVP a PDF document",
+            "prompt": "RSVP this article: research.pdf",
+            "expected_trigger": true,
+            "expected_behavior": "Invoke rsvp-reading skill, parse research.pdf, prompt for WPM if not given"
+        },
+        {
+            "id": "eval-003",
+            "type": "negative",
+            "description": "User asks about reading comprehension strategies in general",
+            "prompt": "What are some good speed reading tips?",
+            "expected_trigger": false,
+            "expected_behavior": "Answer conversationally, do not invoke the rsvp-reading skill"
+        },
+        {
+            "id": "eval-004",
+            "type": "negative",
+            "description": "User asks to summarize a document, not speed read it",
+            "prompt": "Can you summarize this report.pdf for me?",
+            "expected_trigger": false,
+            "expected_behavior": "Invoke a summarization skill, not rsvp-reading"
+        }
+    ]
+}
