@@ -3,8 +3,6 @@ name: create-skill
 description: Interactive initialization script that acts as a Skill Designer and Architect. Generates a compliant Agent Skill containing strict YAML frontmatter, optimal interaction designs, and L4 patterns based on diagnostic questioning.
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
-dependencies: ["skill:audit-plugin", "skill:create-agentic-workflow"]
-
 ---
 # Agent Skill Designer & Architect
 

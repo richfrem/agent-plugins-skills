@@ -4,8 +4,6 @@ description: Interactive initialization script that generates an advanced Agent 
 disable-model-invocation: false
 tier: 1
 allowed-tools: Bash, Read, Write
-dependencies: ["skill:audit-plugin", "skill:create-skill"]
-
 ---
 # Stateful Skill Scaffold Generator
 

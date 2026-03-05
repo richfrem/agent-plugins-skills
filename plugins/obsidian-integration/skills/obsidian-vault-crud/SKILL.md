@@ -2,8 +2,7 @@
 name: obsidian-vault-crud
 description: "Safe Create/Read/Update/Delete operations for Obsidian Vault notes. Implements atomic writes, advisory locking, concurrent edit detection, and lossless YAML frontmatter handling. Use when reading, writing, updating, or appending to any vault note."
 allowed-tools: Bash, Read, Write
-dependencies: ["pip:ruamel", "skill:obsidian-markdown-mastery"]
-
+dependencies: ["pip:ruamel"]
 ---
 # Obsidian Vault CRUD
 

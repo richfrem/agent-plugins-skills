@@ -3,8 +3,7 @@ name: orchestrator
 aliases: ["Routing Agent", "Orchestrator Pattern"]
 description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations. Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
 allowed-tools: Bash, Read, Write
-dependencies: ["plugin:claude-cli", "plugin:context-bundler", "plugin:copilot-cli", "plugin:gemini-cli", "skill:agent-swarm", "skill:claude-cli-agent", "skill:dual-loop", "skill:learning-loop", "skill:red-team-review"]
-
+dependencies: ["skill:agent-swarm"]
 ---
 # Orchestrator: Loop Router & Lifecycle Manager
 

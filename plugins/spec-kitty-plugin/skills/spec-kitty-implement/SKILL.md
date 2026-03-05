@@ -2,7 +2,6 @@
 name: spec-kitty-implement
 description: Create an isolated workspace (worktree) for implementing a specific work
 ---
-
 ## ⚠️ CRITICAL: Working Directory Requirement
 
 **After running `spec-kitty implement WP##`, you MUST:**

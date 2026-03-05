@@ -6,8 +6,7 @@ description: >
   maintaining RLM hygiene. Supports both Ollama-based batch distillation and agent-powered
   direct summarization. V2 enforces Concurrency Safety constraints.
 disable-model-invocation: false
-dependencies: ["pip:fcntl", "pip:glob", "pip:requests", "plugin:agent-loops", "plugin:tool-inventory", "skill:agent-swarm", "skill:tool-inventory"]
-
+dependencies: ["pip:fcntl", "pip:glob", "pip:requests", "plugin:agent-loops", "skill:agent-swarm"]
 ---
 # Identity: The Knowledge Curator 🧠
 

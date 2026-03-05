@@ -2,7 +2,6 @@
 name: spec-kitty-review
 description: Perform structured code review and kanban transitions for completed task
 ---
-
 **IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
 
 **You MUST scroll to the BOTTOM** to see the completion commands!

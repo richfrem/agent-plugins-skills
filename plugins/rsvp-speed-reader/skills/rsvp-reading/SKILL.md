@@ -5,7 +5,6 @@ disable-model-invocation: false
 user-invocable: true
 allowed-tools: Bash, Read, Write
 dependencies: ["pip:docx", "pip:pdfminer"]
-
 ---
 # RSVP Reading Skill
 

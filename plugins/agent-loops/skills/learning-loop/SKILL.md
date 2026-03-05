@@ -3,8 +3,6 @@ name: learning-loop
 aliases: ["Loop Agent", "Single Agent"]
 description: "(Industry standard: Loop Agent / Single Agent) Primary Use Case: Self-contained research, content generation, and exploration where no inner delegation is required. Self-directed research and knowledge capture loop. Use when: starting a session (Orientation), performing research (Synthesis), or closing a session (Seal, Persist, Retrospective). Ensures knowledge survives across isolated agent sessions."
 allowed-tools: Bash, Read, Write
-dependencies: ["plugin:claude-cli", "plugin:context-bundler", "skill:claude-cli-agent", "skill:dual-loop"]
-
 ---
 # Learning Loop
 

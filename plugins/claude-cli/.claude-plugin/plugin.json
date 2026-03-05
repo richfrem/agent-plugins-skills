@@ -10,7 +10,5 @@
     "skills": [
         "claude-cli-agent"
     ],
-    "dependencies": [
-        "agent-loops"
-    ]
+    "dependencies": []
 }

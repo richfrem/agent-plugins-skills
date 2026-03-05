@@ -4,7 +4,6 @@ aliases: ["Sequential Agent", "Agent as a Tool"]
 description: "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
 allowed-tools: Bash, Read, Write
 ---
-
 # Dual-Loop (Inner/Outer Agent Delegation)
 
 This skill defines the orchestration pattern for the **Dual-Loop Agent Architecture**. The **Outer Loop** (the directing agent) uses this protocol to organize work, delegate execution to an **Inner Loop** (the coding/tactical agent), and rigorously verify the results before merging.

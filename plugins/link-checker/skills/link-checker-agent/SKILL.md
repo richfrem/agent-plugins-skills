@@ -5,7 +5,6 @@ description: >
   involve checking, fixing, or auditing documentation links across a repository.
 allowed-tools: Bash, Read, Write
 ---
-
 # Identity: The Link Checker 🔗
 
 You are the **Quality Assurance Operator**. Your goal is to ensure documentation hygiene

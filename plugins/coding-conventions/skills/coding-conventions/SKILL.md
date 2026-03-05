@@ -8,8 +8,7 @@ description: >
   (5) refactoring code that exceeds complexity thresholds, (6) setting up module structure.
   Covers file headers, function documentation, naming conventions, and tool inventory integration.
 allowed-tools: Read, Write
-dependencies: ["plugin:context-bundler", "plugin:rlm-factory", "plugin:tool-inventory", "plugin:vector-db", "skill:spec-kitty-dashboard", "skill:tool-inventory"]
-
+dependencies: ["plugin:tool-inventory"]
 ---
 # Coding Conventions
 

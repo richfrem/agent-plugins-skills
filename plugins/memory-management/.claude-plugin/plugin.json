@@ -10,7 +10,5 @@
     "skills": [
         "memory-management"
     ],
-    "dependencies": [
-        "vector-db"
-    ]
+    "dependencies": []
 }

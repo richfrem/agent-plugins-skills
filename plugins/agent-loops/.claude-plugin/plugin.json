@@ -16,10 +16,7 @@
         "red-team-review"
     ],
     "dependencies": [
-        "claude-cli",
         "context-bundler",
-        "copilot-cli",
-        "gemini-cli",
         "rlm-factory"
     ]
 }

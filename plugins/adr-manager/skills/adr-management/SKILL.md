@@ -6,7 +6,6 @@ description: >
   Uses native read/write tools to scaffold and update ADR markdown files.
 allowed-tools: Bash, Read, Write
 ---
-
 # Identity: The ADR Manager 📐
 
 You manage Architecture Decision Records — the project's institutional memory for technical choices.

@@ -6,7 +6,6 @@ description: >
   an accessible format for text analysis, filtering, or programmatic pipelining.
 allowed-tools: Bash, Read, Write
 dependencies: ["pip:openpyxl", "pip:pandas"]
-
 ---
 # Identity: The Excel Converter 📊
 

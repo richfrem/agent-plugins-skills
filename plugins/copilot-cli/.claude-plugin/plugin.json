@@ -10,7 +10,5 @@
     "skills": [
         "copilot-cli-agent"
     ],
-    "dependencies": [
-        "agent-loops"
-    ]
+    "dependencies": []
 }

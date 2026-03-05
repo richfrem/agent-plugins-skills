@@ -25,7 +25,5 @@
         "scripts/manifest_manager.py",
         "scripts/path_resolver.py"
     ],
-    "dependencies": [
-        "agent-scaffolders"
-    ]
+    "dependencies": []
 }

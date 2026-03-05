@@ -16,8 +16,5 @@
     "scripts": [
         "scripts/inventory_plugin.py"
     ],
-    "dependencies": [
-        "agent-scaffolders",
-        "agent-skill-open-specifications"
-    ]
+    "dependencies": []
 }

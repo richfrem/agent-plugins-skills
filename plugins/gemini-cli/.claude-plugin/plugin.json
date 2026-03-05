@@ -10,7 +10,5 @@
     "skills": [
         "gemini-cli-agent"
     ],
-    "dependencies": [
-        "agent-loops"
-    ]
+    "dependencies": []
 }

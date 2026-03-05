@@ -2,8 +2,6 @@
 name: create-azure-agent
 description: Interactive initialization script that generates Azure AI Foundry Agent API deployment wrappers (Python SDK and Bicep basics) from an existing Agent Skill. Use when adapting a skill into an Azure Foundry environment.
 allowed-tools: Bash, Write, Read
-dependencies: ["skill:audit-plugin"]
-
 ---
 # Create Azure AI Foundry Agent
 

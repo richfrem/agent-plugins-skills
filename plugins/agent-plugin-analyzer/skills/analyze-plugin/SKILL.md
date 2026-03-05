@@ -6,8 +6,6 @@ description: >
   structure", "extract learnings from", "what patterns does this plugin use", or when examining any
   plugin or skill collection to understand its design.
 allowed-tools: Bash, Read, Write
-dependencies: ["plugin:agent-scaffolders", "plugin:agent-skill-open-specifications", "skill:audit-plugin", "skill:audit-plugin-l5", "skill:create-plugin", "skill:create-skill", "skill:orchestrator", "skill:synthesize-learnings"]
-
 ---
 # Plugin & Skill Analyzer
 

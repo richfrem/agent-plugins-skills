@@ -2,7 +2,6 @@
 name: spec-kitty-sync-plugin
 description: Full-cycle install or update of the Spec-Kitty framework - upgrades the CLI, refreshes templates, syncs the plugin, reconciles custom knowledge, and bridges to agent environments. Custom skill (not from upstream spec-kitty).
 dependencies: ["plugin:plugin-mapper", "skill:agent-bridge", "skill:spec-kitty-agent", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review", "skill:spec-kitty-workflow"]
-
 ---
 # Spec Kitty Sync Plugin
 

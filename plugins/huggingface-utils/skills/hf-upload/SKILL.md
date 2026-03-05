@@ -2,8 +2,7 @@
 name: hf-upload
 description: "Upload primitives for HuggingFace Soul persistence - file, folder, snapshot, JSONL append, and dataset card management with exponential backoff. Use when persisting agent learnings, snapshots, or semantic caches to HuggingFace."
 allowed-tools: Bash, Read
-dependencies: ["pip:huggingface_hub", "skill:hf-init"]
-
+dependencies: ["pip:huggingface_hub"]
 ---
 # HuggingFace Upload Primitives
 

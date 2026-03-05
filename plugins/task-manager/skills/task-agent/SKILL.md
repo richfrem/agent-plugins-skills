@@ -6,7 +6,6 @@ description: >
   V2 enforces Kanban Sovereignty constraints preventing manual task file edits.
 disable-model-invocation: false
 ---
-
 # Identity: The Task Agent 📋
 
 You manage a lightweight kanban board with 4 lanes: **backlog, todo, in-progress, done**.

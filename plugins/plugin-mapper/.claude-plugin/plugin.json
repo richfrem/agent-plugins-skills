@@ -18,7 +18,6 @@
     "commands_dir": "commands",
     "skills_dir": "skills",
     "dependencies": [
-        "plugin-manager",
-        "rlm-factory"
+        "plugin-manager"
     ]
 }

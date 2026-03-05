@@ -2,7 +2,6 @@
 name: spec-kitty-tasks
 description: Generate grouped work packages with actionable subtasks and matching
 ---
-
 # /spec-kitty.tasks - Generate Work Packages
 
 **Version**: 0.11.0+

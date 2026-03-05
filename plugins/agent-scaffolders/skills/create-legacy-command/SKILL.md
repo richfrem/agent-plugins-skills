@@ -3,8 +3,6 @@ name: create-legacy-command
 description: Interactive initialization script that generates an Antigravity Workflow, Rule, or legacy Claude /command. Use when you need a simple flat-file procedural instruction set.
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
-dependencies: ["skill:audit-plugin"]
-
 ---
 # Legacy Command & Workflow Scaffold Generator
 

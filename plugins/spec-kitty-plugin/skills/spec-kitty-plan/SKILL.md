@@ -2,7 +2,6 @@
 name: spec-kitty-plan
 description: Execute the implementation planning workflow using the plan template
 ---
-
 # /spec-kitty.plan - Create Implementation Plan
 
 **Version**: 0.11.0+

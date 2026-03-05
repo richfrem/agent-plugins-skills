@@ -5,8 +5,7 @@ description: >
   large contexts to GitHub Copilot models for security audits, architecture reviews,
   QA analysis, or any specialized analysis requiring a fresh model context.
 allowed-tools: Bash, Read, Write
-dependencies: ["plugin:agent-loops", "skill:dual-loop", "skill:orchestrator"]
-
+dependencies: ["skill:dual-loop"]
 ---
 ## Ecosystem Role: Inner Loop Specialist
 
