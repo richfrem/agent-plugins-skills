@@ -7,7 +7,7 @@ Synchronizes fresh artifacts from the local workspace back into the plugin's
 source of truth directories for distribution via the Bridge.
 
 Artifacts:
-1. Workflows (.windsurf/workflows -> plugins/spec-kitty/commands)
+1. Workflows (.windsurf/workflows -> plugins/spec-kitty/skills)
 2. Rules (.kittify/memory -> plugins/spec-kitty/rules)
 
 Assumptions:
@@ -36,11 +36,12 @@ AGENTS_RULES_SRC = ROOT / ".kittify/AGENTS.md"
 TEMPLATES_SOURCE_DIR = ROOT / ".kittify/missions/research/command-templates"
 
 # Destinations
-WORKFLOWS_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/commands"
+WORKFLOWS_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/skills"
 RULES_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/rules"
 TEMPLATES_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/templates"
 
 # Legacy Cleanup
+LEGACY_COMMANDS_DIR = ROOT / "plugins/spec-kitty-plugin/commands"
 LEGACY_WORKFLOWS_DIR = ROOT / "plugins/spec-kitty-plugin/workflows"
 
 def sync_workflows() -> None:
@@ -62,9 +63,13 @@ def sync_workflows() -> None:
         # Determine the user-facing name for the YAML
         display_name = skill_name.replace("spec-kitty.", "Spec Kitty ").replace(".", " ").title()
         
-        # Create skill directory
+        # Create skill directory (AgentSkills 2.0 Native Wrapper)
         skill_dir = WORKFLOWS_DEST_DIR / skill_name.replace(".", "-")
         skill_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Enforce AgentSkills Optional Directories
+        for opt_dir in ["scripts", "references", "assets", "evals"]:
+            (skill_dir / opt_dir).mkdir(exist_ok=True)
         
         # Read source content
         content = src_file.read_text(encoding="utf-8")
@@ -102,6 +107,10 @@ description: {description}
     if LEGACY_WORKFLOWS_DIR.exists():
         print(f"🗑️  Removing legacy workflows dir: {LEGACY_WORKFLOWS_DIR}")
         shutil.rmtree(LEGACY_WORKFLOWS_DIR)
+        
+    if LEGACY_COMMANDS_DIR.exists():
+        print(f"🗑️  Removing legacy commands dir: {LEGACY_COMMANDS_DIR}")
+        shutil.rmtree(LEGACY_COMMANDS_DIR)
 
 def sync_rules() -> None:
     """Syncs rule files and templates from Kittify source to plugin rules."""
