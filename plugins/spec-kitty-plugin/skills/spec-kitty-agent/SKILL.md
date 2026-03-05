@@ -4,7 +4,7 @@ description: >
   Combined Spec-Kitty agent: Synchronization engine + Spec-Driven Development workflow.
   Auto-invoked for feature lifecycle (Specify → Plan → Tasks → Implement → Review → Merge)
   and agent configuration sync. Prerequisite: spec-kitty-cli installed.
-dependencies: ["plugin:plugin-mapper", "skill:agent-bridge"]
+dependencies: ["skill:agent-bridge"]
 ---
 # Identity: The Spec Kitty Agent 🐱
 
@@ -61,11 +61,8 @@ python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configura
 ```
 *Note: This automatically converts local workflows into Open Standard skills inside the plugin.*
 
-**Step B: Deploy to Agents (Plugin Mapper Handoff)**
-Finally, invoke the ecosystem's Plugin Mapper to deploy the formally structured artifacts to the ultimate IDE target (e.g. `antigravity`, `claude`, `gemini`, `github`):
-```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target antigravity
-```
+**Step B: Deploy to Agents (Agent Handoff)**
+Finally, ask the user if they would like to use their ecosystem's plugin bridge (e.g. the Plugin Mapper) to deploy these natively formatted skills to their active AI environments (e.g. `antigravity`, `claude`, `gemini`, `github`).
 
 ---
 
