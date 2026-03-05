@@ -1,0 +1,32 @@
+flowchart TD
+    subgraph Input
+        Q[/"User Query"/]
+    end
+
+    subgraph Analysis
+        Q --> D{Query Type?}
+    end
+
+    subgraph Path1["Path 1: /rlm-factory_query (O(1))"]
+        D -->|"Direct lookup"| RLM[(RLM Cache)]
+        RLM -->|Instant| S1[File Summary]
+    end
+
+    subgraph Path2["Path 2: /vector-db_query (Semantic)"]
+        D -->|"Semantic search"| VDB[(Chroma Vector DB)]
+        VDB -->|Similarity| S2[Ranked Chunks]
+    end
+
+    subgraph SuperRAG["Super-RAG: Context Injection"]
+        S2 --> INJ{Augment with<br/>RLM Summary?}
+        INJ -->|Yes| AUG["[CONTEXT: form purpose]<br/>+ chunk content"]
+    end
+
+    subgraph Output
+        S1 --> R[/"Agent Response"/]
+        AUG --> R
+    end
+
+    style RLM fill:#4CAF50,color:#fff
+    style VDB fill:#2196F3,color:#fff
+    style INJ fill:#FF9800,color:#fff

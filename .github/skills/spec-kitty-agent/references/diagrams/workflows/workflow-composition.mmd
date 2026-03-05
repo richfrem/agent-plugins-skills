@@ -1,0 +1,59 @@
+graph TD
+    %% Styling
+    classDef orchestrator fill:#d4e1f5,stroke:#2b5797,stroke-width:2px,color:#000
+    classDef investigator fill:#e3f2fd,stroke:#0288d1,stroke-width:2px,color:#000
+    classDef atomic fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef output fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+
+    subgraph Tier3 ["Tier 3: Orchestrators (Context & Decisions)"]
+        CodifyForm["/legacy-system-oracle-forms_codify-form"]:::orchestrator
+        CodifyApp["/legacy-system-oracle-forms_codify-app"]:::orchestrator
+        Modernize["/code-conversion_modernize-form"]:::orchestrator
+        SpecKit["/spec-kitty.* (Discovery)"]:::orchestrator
+    end
+
+    subgraph Tier2 ["Tier 2: Investigators (Technical Extraction)"]
+        InvForm["/legacy-system-oracle-forms_investigate-form"]:::investigator
+        InvMenu["/legacy-system-oracle-forms_investigate-menu"]:::investigator
+        InvLib["/legacy-system-oracle-forms_investigate-library"]:::investigator
+    end
+
+    subgraph Tier1 ["Tier 1: Atomic (Single Responsibility)"]
+        Start["/workflow-start"]:::atomic
+        End["/workflow-end"]:::atomic
+        Sync["/rlm-factory_distill"]:::atomic
+        Deps["/dependency-analysis_investigate-direct-dependencies"]:::atomic
+        BR["/legacy-system-business-rules_investigate-business-rule"]:::atomic
+        Roles["/legacy-system-roles_investigate-roles"]:::atomic
+    end
+
+    subgraph Outputs ["Outputs"]
+        Doc["Overviews (MD)"]:::output
+        Code["React Code (TSX)"]:::output
+        Cache["RLM Cache & Vector DB"]:::output
+    end
+
+    %% Composition flows
+    CodifyForm --> Start
+    CodifyForm --> Deps
+    CodifyForm --> InvForm
+    CodifyForm --> Roles
+    CodifyForm --> Sync
+    CodifyForm --> End
+
+    Modernize --> Start
+    Modernize --> InvForm
+    Modernize --> End
+
+    %% Dependencies
+    InvForm --> BR
+    InvForm -- "Recursive Discovery" --> InvLib
+    
+    %% Output generation
+    CodifyForm --> Doc
+    Modernize --> Code
+    Sync --> Cache
+
+    %% Links/Notes
+    click CodifyForm "https://github.com/.../blob/main/.agent/workflows/codify-form.md" "View Workflow"
+    click InvForm "https://github.com/.../blob/main/.agent/workflows/investigate-form.md" "View Workflow"

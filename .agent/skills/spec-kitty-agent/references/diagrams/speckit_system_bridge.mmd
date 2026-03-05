@@ -1,0 +1,39 @@
+graph TD
+    %% Phase 1: Sources
+    subgraph Phase1 ["Phase 1: Sources of Truth"]
+        P_Rules[".agent/rules/ (Constitution, etc.)"]
+        W_Masters[".windsurf/workflows/ (Spec Kitty Masters)"]
+        Plugins["plugins/*/ (Capabilities)"]
+    end
+
+    %% Phase 2: Bridge Logic
+    subgraph Phase2 ["Phase 2: Bridge Systems"]
+        BridgeSync["speckit_system_bridge.py<br/>(Universal Rule/Workflow Sync)"]
+        BridgeInstall["/plugin-manager_install<br/>(Plugin Bridge)"]
+    end
+
+    %% Phase 3: Targets
+    subgraph Phase3 ["Phase 3: Agent Environments"]
+        Antigravity[".agent/ (Antigravity)"]
+        Claude[".claude/ (Claude)"]
+        Gemini[".gemini/ (Gemini)"]
+        Copilot[".github/ (Copilot)"]
+    end
+
+    %% Connections
+    P_Rules --> BridgeSync
+    W_Masters --> BridgeSync
+    Plugins --> BridgeInstall
+
+    %% BridgeSync Outbound
+    BridgeSync -->|"Monolithic Context"| Antigravity
+    BridgeSync -->|"Monolithic Context"| Claude
+    BridgeSync -->|"Monolithic Context"| Gemini
+    BridgeSync -->|"Monolithic Context"| Copilot
+    BridgeSync -->|".agent/workflows/spec-kitty/"| Antigravity
+
+    %% BridgeInstall Outbound
+    BridgeInstall -->|".agent/skills/ & workflows/"| Antigravity
+    BridgeInstall -->|".claude/commands/"| Claude
+    BridgeInstall -->|".gemini/commands/"| Gemini
+    BridgeInstall -->|".github/prompts/"| Copilot

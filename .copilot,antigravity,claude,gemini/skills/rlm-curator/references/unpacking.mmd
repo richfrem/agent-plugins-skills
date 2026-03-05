@@ -1,0 +1,17 @@
+flowchart TD
+    subgraph Received [Input Artifact]
+        Bundle(tool-bundle.md)
+    end
+    subgraph Hydration [Agent Actions]
+        Parse{Parse Markdown} --> Split(Identify Files)
+        Split -- "Extract code" --> Write(Write .py Scripts)
+        Write -- "Pip Install" --> Deps(requirements.txt)
+        Deps -- "Configure" --> Env(.env)
+        Env -- "Verify" --> Audit(inventory.py)
+        note1["CRITICAL: Ensure Ollama is running"]
+        note1 -.- Env
+    end
+    subgraph Ready [Operational]
+        Tool[RLM Factory Ready]
+    end
+    Audit --> Tool
