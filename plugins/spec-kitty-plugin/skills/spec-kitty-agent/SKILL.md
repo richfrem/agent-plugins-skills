@@ -166,7 +166,6 @@ Each state transition requires proof (pasted command output). No state may be sk
 7. **NEVER merge from inside a worktree** — Always `cd <PROJECT_ROOT>` first
 8. **ALWAYS use `--feature <SLUG>`** with merge — never bare `spec-kitty merge`
 9. **ALWAYS verify post-merge** — Run the verification checklist (git log, worktree list, branch, status)
-10. **ALWAYS sync intelligence** — RLM/Vector update after merge completes
 
 ## 📂 Kanban CLI
 ```bash

@@ -53,4 +53,3 @@ description: "Task list template for feature implementation"
 - [ ] TXXX Update key templates if issues found (e.g., `tasks-template.md`)
 - [ ] TXXX Run `/spec-kitty.merge` -- Handles: merge + worktree cleanup + branch deletion
 - [ ] TXXX Wait for User to confirm: "PR Merged?"
-- [ ] TXXX After merge: Run RLM/Vector sync to update semantic cache
