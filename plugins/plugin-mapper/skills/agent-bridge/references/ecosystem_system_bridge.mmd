@@ -1,15 +1,15 @@
 graph TD
     %% Phase 1: Sources
     subgraph Phase1 ["Phase 1: Sources of Truth"]
-        P_Rules[".agent/rules/ (Constitution, etc.)"]
-        W_Masters[".windsurf/workflows/ (Spec Kitty Masters)"]
-        Plugins["plugins/*/ (Capabilities)"]
+        P_Rules["Ecosystem Rules<br/>(Constitution, Conventions)"]
+        W_Masters["Ecosystem Workflows<br/>(.windsurf, scripts)"]
+        Plugins["Ecosystem Plugins<br/>(plugins/*/)"]
     end
 
     %% Phase 2: Bridge Logic
     subgraph Phase2 ["Phase 2: Bridge Systems"]
-        BridgeSync["speckit_system_bridge.py<br/>(Universal Rule/Workflow Sync)"]
-        BridgeInstall["/plugin-manager_install<br/>(Plugin Bridge)"]
+        BridgeSync["Ecosystem Sync Engine<br/>(Rule/Template Propagation)"]
+        BridgeInstall["Plugin Mapper<br/>(Bridge Installation)"]
     end
 
     %% Phase 3: Targets
@@ -30,10 +30,10 @@ graph TD
     BridgeSync -->|"Monolithic Context"| Claude
     BridgeSync -->|"Monolithic Context"| Gemini
     BridgeSync -->|"Monolithic Context"| Copilot
-    BridgeSync -->|".agent/workflows/spec-kitty/"| Antigravity
+    BridgeSync -->|"Native Workflows"| Antigravity
 
     %% BridgeInstall Outbound
-    BridgeInstall -->|".agent/skills/ & workflows/"| Antigravity
-    BridgeInstall -->|".claude/commands/"| Claude
-    BridgeInstall -->|".gemini/commands/"| Gemini
-    BridgeInstall -->|".github/prompts/"| Copilot
+    BridgeInstall -->|"Native Skills"| Antigravity
+    BridgeInstall -->|"Native Skills"| Claude
+    BridgeInstall -->|"Native Skills"| Gemini
+    BridgeInstall -->|"Native Skills"| Copilot
