@@ -10,7 +10,13 @@ Skills are modular capabilities that package procedural knowledge, context, and 
 ## Creation & Structure
 - Skills are individual directories named `<skill-name>`, housing at least one `SKILL.md` file.
 - The `SKILL.md` file contains YAML frontmatter configuring the skill and Markdown content acting as the prompt instructions.
-- Supporting files (e.g., templates, scripts, reference docs) can be stored in the skill directory and referenced inside `SKILL.md`. Claude will read them only if needed or explicitly invoked.
+- Supporting files must be strictly organized into the official standard directories (`scripts/`, `references/`, or `assets/`) and referenced inside `SKILL.md`. Claude will read them only if needed.
+
+## Optional Directories
+Agent skills support three standard optional directories to keep the root clean:
+- **`scripts/`**: Contains executable code (Python, Bash, JS). Must be self-contained, handle edge cases gracefully, and include helpful error messages instead of failing silently.
+- **`references/`**: Contains additional documentation loaded on-demand (e.g., `REFERENCE.md`, `FORMS.md`, `domain.md`). Keep these small and focused to save context window space.
+- **`assets/`**: Contains static resources like templates, images (diagrams), and data files (lookup tables, schemas).
 
 ## Resolution Precedence
 Skills are resolved automatically. Any nested `.claude/skills/` directory relative to the current working file is also discovered (useful in monorepos).

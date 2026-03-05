@@ -14,9 +14,9 @@ When invoked to review a codebase component or a planned extension:
 
 1.  **Identify the Component Type**: Determine if the subject is a Plugin boundary, an Agent Skill, an Antigravity Workflow/Rule, a Sub-Agent, or a Hook.
 2.  **Recall the Specs**: Before reviewing, read the relevant specification file found in the `ecosystem-authoritative-sources` skill library.
-    *   *Path:* `plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/*.md`
+    *   *Path:* `plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/*.md`
 3.  **Perform Rigorous Audit**:
-    *   **Structure**: Does the directory schema match the standard? (e.g., `.claude-plugin/plugin.json`, `my-skill/SKILL.md`).
+    *   **Structure**: Does the directory schema match the standard (`.claude-plugin/plugin.json`, `my-skill/SKILL.md`)? Are all supporting files strictly organized into the official optional directories (`scripts/`, `references/`, `assets/`) rather than cluttering the skill root?
     *   **Naming**: Verify the skill name uses the **gerund form** (`verb + -ing`, e.g., `analyzing-spreadsheets`). Reject generic nouns. Ensure the `name` is 1-64 lowercase alphanumeric chars/hyphens only, contains NO consecutive hyphens (`--`), and EXACTLY matches the parent directory name.
     *   **Content**: Does the YAML frontmatter adhere precisely to rules (`description` 1-1024 chars, `compatibility` max 500 chars, `metadata` strictly string-to-string keys/values)? Provide the recommendation to run `skills-ref validate ./my-skill` to definitively catch parse errors.
     *   **Description Viewpoint**: Ensure the `description` is written strictly in the **third person** ("Extracts text", not "I extract text") and isn't overly vague.
