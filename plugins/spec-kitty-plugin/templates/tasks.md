@@ -130,7 +130,7 @@ git branch --show-current  # Should show the target branch (meta.json → target
        - Evidence tracking requirements
        - Quality validation criteria
 
-   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `spec-kitty agent tasks move-task`.
+   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `python3 .kittify/scripts/tasks/tasks_cli.py update`.
 
 7. **Finalize tasks with dependency parsing and commit**:
 
@@ -188,7 +188,7 @@ subtasks:
   - "T002"
 title: "Literature Search & Source Collection"
 phase: "Phase 1 - Literature Review"
-lane: "planned"  # DO NOT EDIT - use: spec-kitty agent tasks move-task <WPID> --to <lane>
+lane: "planned"  # DO NOT EDIT - use: python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WPID> <lane>
 assignee: ""
 agent: ""
 shell_pid: ""
@@ -215,7 +215,7 @@ history:
 - Mark parallel subtasks (database searches, source reviews)
 - Include evidence tracking in every WP prompt
 - Quality validation depends on all content WPs
-- Use `spec-kitty agent tasks move-task` to change lanes
+- Use `python3 .kittify/scripts/tasks/tasks_cli.py update` to change lanes
 
 **For Users**:
 - Tasks.md shows the full research work breakdown

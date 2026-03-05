@@ -27,7 +27,7 @@ When reviewing multiple WPs in sequence (common for serial implementation):
 Before approving a WP with dependencies:
 ```bash
 # Check if dependency WPs are already merged
-spec-kitty agent tasks move-task WP## --to done --note "Review passed"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## done --note "Review passed"
 ```
 
 The CLI will block if dependencies aren't met.
@@ -36,17 +36,17 @@ The CLI will block if dependencies aren't met.
 
 ### Approve
 ```bash
-spec-kitty agent tasks move-task WP## --to done --note "Review passed: <summary>"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## done --note "Review passed: <summary>"
 ```
 
 ### Reject
 ```bash
-spec-kitty agent tasks move-task WP## --to planned --review-feedback-file <temp-file-path>
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## planned --review-feedback-file <temp-file-path>
 ```
 
 ### Force Approve (when kitty-specs artifacts are expected)
 ```bash
-spec-kitty agent tasks move-task WP## --to done --force --note "Review passed. kitty-specs artifact leak expected from serial implementation."
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## done --force --note "Review passed. kitty-specs artifact leak expected from serial implementation."
 ```
 
 ## Known Failure Modes

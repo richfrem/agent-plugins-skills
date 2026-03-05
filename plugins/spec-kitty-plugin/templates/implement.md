@@ -114,7 +114,7 @@ Example commit messages:
 **Only after committing**, move your WP to review:
 
 ```bash
-spec-kitty agent tasks move-task {{wp_id}} --to for_review --note "Ready for review: <summary>"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> {{wp_id}} for_review --note "Ready for review: <summary>"
 ```
 
 ---
@@ -236,7 +236,7 @@ echo "# Findings" > {{deliverables_path}}/findings.md  # GOOD!
 ```bash
 # Edit deliverables
 # Immediately run:
-spec-kitty agent tasks move-task {{wp_id}} --to for_review  # BAD! Nothing committed!
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> {{wp_id}} for_review  # BAD! Nothing committed!
 ```
 
 **Right**:
@@ -244,7 +244,7 @@ spec-kitty agent tasks move-task {{wp_id}} --to for_review  # BAD! Nothing commi
 # Edit deliverables
 git add {{deliverables_path}}/
 git commit -m "research({{wp_id}}): Document findings"
-spec-kitty agent tasks move-task {{wp_id}} --to for_review  # GOOD!
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> {{wp_id}} for_review  # GOOD!
 ```
 
 ### Mistake 3: Editing Planning Artifacts in Worktree

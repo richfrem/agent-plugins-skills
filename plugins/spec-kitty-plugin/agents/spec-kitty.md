@@ -193,7 +193,7 @@ Each state transition requires proof (pasted command output). No state may be sk
 /spec-kitty.status
 
 # Move lane (planned → doing → for_review → done)
-spec-kitty agent tasks move-task <WP-ID> --to <LANE> --note "reason"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
 ```
 
 ## 🔧 Troubleshooting

@@ -3,7 +3,7 @@
 ## 1. Context: Unified Plugin Architecture
 **InvestmentToolkit** utilizes a **Unified Plugin Architecture** for systematic AI agent interaction.
 -   **Upstream Source**: The `plugins/` directory contains portable agent modules (Workflows, Skills, Scripts, Rules).
--   **Role**: Plugins provide the functional capabilities (e.g., `spec-kitty`, `vector-db`, `rlm-factory`), while the project code resides in `legacy-system/` and other directories.
+-   **Role**: Plugins provide the functional capabilities (e.g., `spec-kitty`, `vector-db`, `rlm-factory`), while the project code resides in the target application's standard source directories (e.g., `src/`, `app/`, `legacy-system/`).
 
 The **Bridge System** acts as the "Universal Adapter," projecting plugin capabilities and project-specific rules into the native formats required by specific AI tools (Antigravity, Gemini, Copilot, Claude).
 

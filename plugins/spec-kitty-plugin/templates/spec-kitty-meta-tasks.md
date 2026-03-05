@@ -10,6 +10,6 @@
 
 ## Phase B: Review & Merge
 - [ ] **Review Completed WPs**: `/spec-kitty.review`
-- [ ] **Move to Review**: `spec-kitty agent tasks move-task <WP> --to for_review`
+- [ ] **Move to Review**: `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP> for_review`
 - [ ] **Final Acceptance**: `/spec-kitty.accept`
 - [ ] **Merge Feature**: `/spec-kitty.merge`

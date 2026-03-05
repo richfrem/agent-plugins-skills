@@ -65,7 +65,7 @@ git commit -m "feat(WP##): <describe your implementation>"
 
 **Then move to review:**
 ```bash
-spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## for_review --note "Ready for review: <summary>"
 ```
 
 **Why this matters:**

@@ -63,7 +63,7 @@ If validation fails:
 git checkout -- <file>
 
 # For kitty-specs leakage (use --force only if content is valid):
-spec-kitty agent tasks move-task WP## --to for_review --force
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## for_review --force
 ```
 
 ## Dependency Management
