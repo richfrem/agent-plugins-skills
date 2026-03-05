@@ -26,7 +26,5 @@
         "scripts/audit.py",
         "scripts/scaffold.py"
     ],
-    "dependencies": [
-        "spec-kitty-plugin"
-    ]
+    "dependencies": []
 }
