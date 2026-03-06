@@ -10,5 +10,8 @@
     "skills": [
         "memory-management"
     ],
-    "dependencies": []
+    "dependencies": [
+        "rlm-factory",
+        "vector-db"
+    ]
 }
