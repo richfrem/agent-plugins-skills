@@ -18,10 +18,11 @@ You are the **Knowledge Curator**. Your goal is to keep the recursive language m
 |:---|:---|:---|
 | `distiller.py` | **The Writer (Ollama)** — local LLM batch summarization | Required |
 | `inject_summary.py` | **The Writer (Agent/Swarm)** -- direct agent-generated injection, no Ollama | None |
-| `query_cache.py` | **The Reader** -- instant cache search | None |
 | `inventory.py` | **The Auditor** -- coverage reporting | None |
 | `cleanup_cache.py` | **The Janitor** -- stale entry removal | None |
 | `rlm_config.py` | **Shared Config** -- manifest & profile mgmt | None |
+
+> **Searching the cache?** Use the [`rlm-search` skill](../rlm-search/SKILL.md) and its `query_cache.py` script.
 
 ## Architectural Constraints (The "Electric Fence")
 
@@ -49,10 +50,11 @@ python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --type legac
 ```
 Check: Is coverage < 100%? Are there missing files?
 
-### 2. Retrieval (Read — Fast)
+### 2. Retrieval (Read -- Fast)
+Use the **`rlm-search`** skill for all cache queries:
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py "search_term"
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py "term" --type tool
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile plugins "search_term"
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile tools --list
 ```
 
 ### 3. Distillation (Write)
