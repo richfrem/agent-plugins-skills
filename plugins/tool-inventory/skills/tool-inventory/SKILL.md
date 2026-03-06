@@ -6,7 +6,7 @@ description: >
   or maintaining the tool registry. Combines ChromaDB semantic search with
   the Search → Bind → Execute discovery protocol. V2 includes L4/L5 Constraints to prevent hallucination.
 disable-model-invocation: false
-dependencies: ["pip:chromadb", "plugin:plugin-manager", "plugin:rlm-factory", "skill:rlm-curator"]
+dependencies: ["pip:chromadb", "plugin:rlm-factory", "skill:rlm-curator"]
 ---
 # Identity: Tool Inventory (The Librarian) 📊🔍
 
