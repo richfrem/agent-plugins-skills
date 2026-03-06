@@ -1,1 +1,0 @@
-# rsvp-reading Connectors Map\n\nMap abstract `~~category` tool requirements to exact system dependencies here to keep the plugin portable.
