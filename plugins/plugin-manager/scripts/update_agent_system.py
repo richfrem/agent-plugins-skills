@@ -24,6 +24,12 @@ import sys
 import subprocess
 from pathlib import Path
 
+print("\n" + "="*80)
+print("⚠️  DEPRECATION NOTICE: This script is partially superseded by `npx skills`.")
+print("For standard syncing to agents, use: `npx skills update`")
+print("This script remains for legacy custom syncing and structural audits.")
+print("="*80 + "\n")
+
 ROOT = Path.cwd()
 
 SPEC_KITTY_SYNC = ROOT / "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py"

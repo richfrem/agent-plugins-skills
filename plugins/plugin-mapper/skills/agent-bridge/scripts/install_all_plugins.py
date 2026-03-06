@@ -38,6 +38,13 @@ import argparse
 import subprocess
 from pathlib import Path
 
+print("\n" + "="*80)
+print("⚠️  DEPRECATION NOTICE: For consumers, this script is superseded by `npx skills`.")
+print("To install all plugins natively, run from your project root:")
+print("  npx skills add richfrem/agent-plugins-skills")
+print("This local Python script is retained for contributors deploying from local source.")
+print("="*80 + "\n")
+
 # Setup paths
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent # Project root
