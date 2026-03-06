@@ -9,5 +9,6 @@
     ],
     "scripts": [
         "skills/json-hygiene-agent/scripts/find_json_duplicates.py"
-    ]
+    ],
+    "dependencies": []
 }

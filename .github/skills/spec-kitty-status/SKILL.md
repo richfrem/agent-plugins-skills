@@ -2,7 +2,6 @@
 name: spec-kitty-status
 description: Display kanban board status showing work package progress across lanes (planned/doing/for_review/done).
 ---
-
 ## Status Board
 
 Show the current status of all work packages in the active feature. This displays:

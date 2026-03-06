@@ -13,5 +13,6 @@
     ],
     "scripts": [
         "scripts/hf_config.py"
-    ]
+    ],
+    "dependencies": []
 }

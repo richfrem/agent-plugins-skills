@@ -1,16 +1,16 @@
 ---
 name: Spec Kitty Workflow
 description: Standard operating procedures for the Spec Kitty agentic workflow (Plan -> Implement -> Review -> Merge).
+dependencies: ["skill:dual-loop", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review"]
 ---
-
 # Spec Kitty Workflow
 
 Standard lifecycle for implementing features using Spec Kitty.
 
 **Command-specific guidance**: For detailed best practices on individual commands, see the `AUGMENTED.md` files co-located with each auto-synced command:
-- `commands/spec-kitty-merge/AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
-- `commands/spec-kitty-implement/AUGMENTED.md` — worktree discipline, commit hygiene
-- `commands/spec-kitty-review/AUGMENTED.md` — review standards, batch review protocol
+- `skills/spec-kitty-merge/references/AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
+- `skills/spec-kitty-implement/references/AUGMENTED.md` — worktree discipline, commit hygiene
+- `skills/spec-kitty-review/references/AUGMENTED.md` — review standards, batch review protocol
 
 ## 🚫 CRITICAL: Anti-Simulation Rules & Escalation Taxonomy
 
@@ -93,7 +93,7 @@ git worktree list
 
 ### Step 1b: Update kanban
 ```bash
-spec-kitty agent tasks move-task <WP-ID> --to doing --note "Starting implementation"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> doing --note "Starting implementation"
 ```
 **PROOF**: Paste the CLI output confirming lane change.
 
@@ -131,7 +131,7 @@ Run `git status` to ensure all files are committed.
 
 ### Step 3b: Update kanban to for_review
 ```bash
-spec-kitty agent tasks move-task <WP-ID> --to for_review --note "Implementation complete, ready for review"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> for_review --note "Implementation complete, ready for review"
 ```
 **PROOF**: Paste the CLI output.
 
@@ -279,21 +279,10 @@ rm -f .kittify/workspaces/<SLUG>-WP*.json
 - [ ] WP branches have been deleted
 - [ ] Working tree is clean
 - [ ] Workspace tracking JSONs removed from `.kittify/workspaces/`
-
-### Step 4g: Intelligence sync
+282. 
+283. ### Step 4g: Update kanban to done
 ```bash
-python3 plugins/rlm-factory/scripts/distill.py --path kitty-specs/<SPEC-ID>/
-```
-**PROOF**: Paste output confirming RLM cache updated.
-
-> If vector DB is available, also run:
-> ```bash
-> python3 plugins/vector-db/scripts/ingest.py --path kitty-specs/<SPEC-ID>/
-> ```
-
-### Step 4h: Update kanban to done
-```bash
-spec-kitty agent tasks move-task <WP-ID> --to done --note "Merged and cleaned up"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done --note "Merged and cleaned up"
 ```
 **PROOF**: Paste CLI output + final `/spec-kitty.status` board.
 
@@ -337,10 +326,10 @@ The tasks CLI manages WP lane transitions. **Always use this instead of manually
 
 ```bash
 # Move a WP between lanes (planned -> doing -> for_review -> done)
-spec-kitty agent tasks move-task <WP-ID> --to <LANE> --note "reason"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
 
 # Force-move (when kitty-specs artifacts leak from serial implementation)
-spec-kitty agent tasks move-task <WP-ID> --to done --force --note "reason"
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done --force --note "reason"
 
 # View kanban board
 /spec-kitty.status

@@ -18,5 +18,8 @@
     "skills": [
         "coding-conventions",
         "conventions-agent"
+    ],
+    "dependencies": [
+        "tool-inventory"
     ]
 }

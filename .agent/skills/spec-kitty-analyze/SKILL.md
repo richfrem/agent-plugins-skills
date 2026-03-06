@@ -2,7 +2,6 @@
 name: spec-kitty-analyze
 description: Perform a non-destructive cross-artifact consistency and quality analysis
 ---
-
 ## User Input
 
 ```text

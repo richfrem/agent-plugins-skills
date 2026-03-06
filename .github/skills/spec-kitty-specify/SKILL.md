@@ -2,7 +2,6 @@
 name: spec-kitty-specify
 description: Create or update the feature specification from a natural language feature
 ---
-
 # /spec-kitty.specify - Create Feature Specification
 
 **Version**: 0.11.0+

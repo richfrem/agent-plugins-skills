@@ -11,5 +11,6 @@
     "skills": [
         "ecosystem-authoritative-sources",
         "ecosystem-standards"
-    ]
+    ],
+    "dependencies": []
 }

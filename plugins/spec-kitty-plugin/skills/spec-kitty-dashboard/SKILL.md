@@ -2,7 +2,6 @@
 name: spec-kitty-dashboard
 description: Open the Spec Kitty dashboard in your browser.
 ---
-
 ## Dashboard Access
 
 This command launches the Spec Kitty dashboard in your browser using the spec-kitty CLI.

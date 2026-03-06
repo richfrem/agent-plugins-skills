@@ -25,5 +25,6 @@
     "scripts": [
         "scripts/audit.py",
         "scripts/scaffold.py"
-    ]
+    ],
+    "dependencies": []
 }

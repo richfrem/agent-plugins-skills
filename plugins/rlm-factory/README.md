@@ -35,20 +35,12 @@ After loading, `/help` should show:
 
 ## Configuration
 
-### Environment Variables (.env)
-Create a `.env` file in the **project root** (`.env`) to customize the factory:
+### Profiles (`rlm_profiles.json`)
 
-```bash
-# Configuration in <project_root>/.env
-OLLAMA_MODEL=granite3.2:8b
-OLLAMA_HOST=http://localhost:11434
+Configuration lives in `.agent/learning/rlm_profiles.json` (no `.env` required).
+Profiles declare which files to index, where to store the cache, and which model to use.
 
-# Optional Cache Overrides
-# RLM_TOOL_CACHE=.agent/learning/rlm_tool_cache.json
-# RLM_SUMMARY_CACHE=.agent/learning/rlm_summary_cache.json
-```
-
----
+See `resources/` for manifest files and `rlm_profiles.json` for profile templates.
 
 ## Usage Guide
 
@@ -111,11 +103,11 @@ Store your customized LLM summarization prompts here.
 
 | Command | Script | Ollama? | Description |
 |:---|:---|:---|:---|
-| `/rlm-factory:distill` | `distiller.py` | ✅ | LLM-powered file summarization |
-| `/rlm-factory:gap-fill` | Sub-Agent | ❌ | Agent-powered summarization (faster, higher quality) |
-| `/rlm-factory:query` | `query_cache.py` | ❌ | Search the semantic ledger |
-| `/rlm-factory:audit` | `inventory.py` | ❌ | Coverage report (fs vs cache) |
-| `/rlm-factory:cleanup` | `cleanup_cache.py` | ❌ | Remove stale/orphan entries |
+| `/rlm-factory:distill` | `rlm-curator/scripts/distiller.py` | Yes | LLM-powered file summarization |
+| `/rlm-factory:gap-fill` | Sub-Agent (inject_summary.py) | No | Agent-powered summarization |
+| `/rlm-factory:query` | `rlm-search/scripts/query_cache.py` | No | Search the semantic ledger |
+| `/rlm-factory:audit` | `rlm-curator/scripts/inventory.py` | No | Coverage report (fs vs cache) |
+| `/rlm-factory:cleanup` | `rlm-curator/scripts/cleanup_cache.py` | No | Remove stale/orphan entries |
 
 ### Agent Distillation (The "Brain Upgrade")
 
@@ -140,11 +132,13 @@ graph LR
     C -->|Curate| E["Cleanup 🧹"]
 ```
 
-Additional diagrams:
-- [distillation_process.mmd](skills/rlm-curator/references/distillation_process.mmd) — Detailed data flow
-- [search_process.mmd](skills/rlm-curator/references/search_process.mmd) — Summary-first search
-- [logic.mmd](skills/rlm-curator/references/logic.mmd) — Internal decision logic
-- [workflow.mmd](skills/rlm-curator/references/workflow.mmd) — User workflow
+Additional diagrams (in `references/diagrams/`):
+- [search_process.mmd](references/diagrams/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
+- [rlm-factory-architecture.mmd](references/diagrams/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
+- [rlm-factory-dual-path.mmd](references/diagrams/rlm-factory-dual-path.mmd) -- Super-RAG context injection
+- [rlm-factory-workflow.mmd](references/diagrams/rlm-factory-workflow.mmd) -- Full distill/audit/query/cleanup lifecycle
+- [workflow.mmd](references/diagrams/workflow.mmd) -- Build + query decision flow
+- [logic.mmd](references/diagrams/logic.mmd) -- Install + distill + consume overview
 
 ### How It Works
 1. **Distiller** reads each file, computes a content hash
@@ -157,29 +151,34 @@ Additional diagrams:
 ### Plugin Directory Structure
 ```
 rlm-factory/
-├── .claude-plugin/
-│   └── plugin.json              # Plugin identity + runtime deps
-├── commands/
-│   ├── distill.md               # /rlm-factory:distill
-│   ├── rlm-factory_gap-fill.md  # /rlm-factory:gap-fill
-│   ├── query.md                 # /rlm-factory:query
-│   ├── audit.md                 # /rlm-factory:audit
-│   └── cleanup.md               # /rlm-factory:cleanup
-├── skills/
-│   ├── rlm-curator/
-│   │   ├── SKILL.md             # Auto-invoked curator skill
-│   │   ├── references/          # Architecture docs, diagrams, research
-│   │   └── scripts/             # distiller.py, query_cache.py, etc.
-│   └── ollama-launch/
-│       └── SKILL.md             # Ollama server management
-├── agents/
-│   └── rlm-gap-fill.md          # Primary Gap-Fill Sub-Agent configuration
-├── resources/
-│   ├── manifest-index.json      # Profile registry
-│   ├── distiller_manifest.json  # Default scope config
-│   └── rlm_manifest.json        # Legacy manifest
-├── requirements.in              # Python dependencies
-└── README.md
++-- .claude-plugin/
+|   +-- plugin.json              # Plugin identity + runtime deps
++-- commands/
+|   +-- distill.md               # /rlm-factory:distill
+|   +-- rlm-factory_gap-fill.md  # /rlm-factory:gap-fill
+|   +-- query.md                 # /rlm-factory:query
+|   +-- audit.md                 # /rlm-factory:audit
+|   +-- cleanup.md               # /rlm-factory:cleanup
++-- skills/
+|   +-- rlm-curator/             # WRITE skill: distill, inject, audit, cleanup
+|   |   +-- SKILL.md
+|   |   +-- scripts/             # distiller.py, inject_summary.py,
+|   |   |                        # inventory.py, cleanup_cache.py, rlm_config.py
+|   |   +-- references/
+|   |       +-- diagrams/architecture/ # Architecture .mmd diagrams
+|   +-- rlm-search/              # READ skill: 3-phase search protocol
+|   |   +-- SKILL.md             # Phase 1/2/3 instructions + decision tree
+|   |   +-- scripts/             # query_cache.py (Phase 1 RLM scan)
+|   +-- ollama-launch/
+|       +-- SKILL.md             # Ollama server management
++-- agents/
+|   +-- rlm-gap-fill.md          # Gap-Fill Sub-Agent configuration
++-- resources/
+|   +-- manifest-index.json      # Profile registry
+|   +-- distiller_manifest.json  # Default scope config
+|   +-- prompts/rlm/             # LLM summarization prompts
++-- requirements.in              # Python dependencies (pip-compile)
++-- README.md
 ```
 
 ---

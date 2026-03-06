@@ -1,17 +1,18 @@
 {
-  "version": "2.0.0",
-  "name": "markdown-to-msword-converter",
-  "author": "Richard Fremmerlid",
-  "repository": "https://github.com/richfrem/agent-plugins-skills",
-  "description": "Plugin packaging for Markdown-to-MS Word conversion with one nested skill. V2 includes L5 Delegated Constraint Verification for strict binary artifact linting.",
-  "security": {
-    "whitelists": {
-      "python": {
-        "imports": [
-          "urllib.parse",
-          "subprocess"
-        ]
-      }
-    }
-  }
+    "version": "2.0.0",
+    "name": "markdown-to-msword-converter",
+    "author": "Richard Fremmerlid",
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "description": "Plugin packaging for Markdown-to-MS Word conversion with one nested skill. V2 includes L5 Delegated Constraint Verification for strict binary artifact linting.",
+    "security": {
+        "whitelists": {
+            "python": {
+                "imports": [
+                    "urllib.parse",
+                    "subprocess"
+                ]
+            }
+        }
+    },
+    "dependencies": []
 }

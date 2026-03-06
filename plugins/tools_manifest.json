@@ -270,7 +270,7 @@
         },
         {
           "name": "query_cache.py",
-          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py",
+          "path": "plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py",
           "purpose": "",
           "type": "python"
         },

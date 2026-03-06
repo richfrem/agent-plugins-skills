@@ -15,5 +15,6 @@
     ],
     "scripts": [
         "scripts/inventory_plugin.py"
-    ]
+    ],
+    "dependencies": []
 }

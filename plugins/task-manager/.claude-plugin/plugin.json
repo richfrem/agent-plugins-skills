@@ -15,5 +15,6 @@
         "project-management"
     ],
     "commands_dir": "commands",
-    "skills_dir": "skills"
+    "skills_dir": "skills",
+    "dependencies": []
 }

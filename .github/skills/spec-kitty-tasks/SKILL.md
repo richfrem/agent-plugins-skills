@@ -2,7 +2,6 @@
 name: spec-kitty-tasks
 description: Generate grouped work packages with actionable subtasks and matching
 ---
-
 # /spec-kitty.tasks - Generate Work Packages
 
 **Version**: 0.11.0+
@@ -153,7 +152,7 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
    - **MAXIMUM PROMPT SIZE**: 700 lines per WP (10 subtasks max)
    - **If prompts are >700 lines**: Split the WP - it's too large
 
-   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `spec-kitty agent tasks move-task`.
+   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE>`.
 
 7. **Finalize tasks with dependency parsing and commit**:
    After generating all WP prompt files, run the finalization command to:

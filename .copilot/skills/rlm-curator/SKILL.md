@@ -51,8 +51,8 @@ Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read — Fast)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py "search_term"
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py "term" --type tool
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py "search_term"
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py "term" --type tool
 ```
 
 ### 3. Distillation (Write)

@@ -80,11 +80,8 @@ python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configura
 ```
 *Note: The new `agentskills.io` 2.0 standard mandates that legacy workflows/commands be deployed natively as **Agent Skills** containing a `SKILL.md` file and empty optional directories (`scripts/`, `references/`, `assets/`, `evals/`).*
 
-**Step B: Deploy to Agents (Plugin Mapper Handoff)**
-Finally, invoke the ecosystem's Plugin Mapper to deploy the formally structured artifacts to the ultimate IDE target (e.g. `antigravity`, `claude`, `gemini`, `github`):
-```bash
-python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target antigravity
-```
+**Step B: Deploy to Agents (Agent Handoff)**
+Finally, ask the user if they would like to use their ecosystem's plugin bridge (e.g. the Plugin Mapper) to deploy these natively formatted skills to their active AI environments (e.g. `antigravity`, `claude`, `gemini`, `github`).
 
 ---
 
@@ -104,8 +101,7 @@ spec-kitty tasks    →  verify --phase tasks
 2. cd .worktrees/WP-xx            → Isolate in worktree
 3. Code & Test                    → Implement feature
 4. git add . && git commit        → Commit locally
-5. python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py move <ID> for_review → Submit for review
-6. spec-kitty review WP-xx        → Review & move to done
+5. spec-kitty review WP-xx        → Review & move to done
 ```
 
 ### Phase 2: Feature Completion (Deterministic Closure Protocol)
@@ -146,11 +142,8 @@ Each state transition requires proof (pasted command output). No state may be sk
 6. Post-merge verification:
    git log --oneline -5   → Merge commits visible
    git worktree list      → No orphaned worktrees
-   git branch             → WP branches deleted
-   git status             → Clean working tree
-
-7. Intelligence sync:
-   python3 plugins/rlm-factory/scripts/distill.py --path kitty-specs/<SPEC-ID>/
+149.    git branch             → WP branches deleted
+150.    git status             → Clean working tree
 ```
 
 #### Merge Location Rule
@@ -189,22 +182,14 @@ Each state transition requires proof (pasted command output). No state may be sk
 7. **NEVER merge from inside a worktree** — Always `cd <PROJECT_ROOT>` first
 8. **ALWAYS use `--feature <SLUG>`** with merge — never bare `spec-kitty merge`
 9. **ALWAYS verify post-merge** — Run the verification checklist (git log, worktree list, branch, status)
-10. **ALWAYS sync intelligence** — RLM/Vector update after merge completes
 
 ## 📂 Kanban CLI
 ```bash
-# List WPs
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py list
+# View board / List WPs
+/spec-kitty.status
 
 # Move lane (planned → doing → for_review → done)
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py move <WP-ID> <LANE> \
-  --note "reason"
-
-# Activity log
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py history <WP-ID> --note "..."
-
-# Rollback
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py rollback <WP-ID>
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
 ```
 
 ## 🔧 Troubleshooting

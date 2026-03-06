@@ -39,6 +39,6 @@
         ]
     },
     "prerequisites": {
-        "rlm-factory": "Optional but recommended — provides Super-RAG context injection"
+        "rlm-factory": "Optional but recommended \u2014 provides Super-RAG context injection"
     }
 }

@@ -9,5 +9,10 @@
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "skills": [
         "memory-management"
+    ],
+    "dependencies": [
+        "rlm-factory",
+        "vector-db",
+        "obsidian-integration"
     ]
 }

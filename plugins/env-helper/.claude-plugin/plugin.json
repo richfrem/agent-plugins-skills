@@ -9,5 +9,6 @@
     ],
     "scripts": [
         "scripts/env_helper.py"
-    ]
+    ],
+    "dependencies": []
 }

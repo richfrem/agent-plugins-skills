@@ -1,0 +1,30 @@
+{
+    "plugin": "agent-plugin-analyzer",
+    "skill": "analyze-plugin",
+    "evaluations": [
+        {
+            "id": "eval-1-full-phase-execution",
+            "type": "positive",
+            "prompt": "Analyze the 'legacy-to-modern' plugin in my directory.",
+            "expected_behavior": "Agent executes all 6 phases of the analysis framework sequentially. Starts by running inventory_plugin.py, assesses structure, extracts patterns from SKILL.md, and concludes with Virtuous Cycle Recommendations."
+        },
+        {
+            "id": "eval-2-strict-pattern-deduplication",
+            "type": "negative",
+            "prompt": "I found a new pattern: it asks the user for confirmation before deleting. Add it to the catalog.",
+            "expected_behavior": "Agent checks references/pattern-catalog.md, identifies this as the existing 'Confirmation Gate' pattern, and explicitly refuses to create a duplicate entry. Updates frequency instead."
+        },
+        {
+            "id": "eval-3-security-first-evaluation",
+            "type": "positive",
+            "prompt": "Analyze this script for anti-patterns.",
+            "expected_behavior": "Agent executes the checks in references/security-checks.md FIRST before evaluating structural anti-patterns, adhering to the P0 severity ordering rule."
+        },
+        {
+            "id": "eval-4-missing-inventory-script",
+            "type": "edge-case",
+            "prompt": "Analyze this plugin (but inventory_plugin.py is deleted).",
+            "expected_behavior": "Agent gracefully falls back to the manual 4-step enumeration process defined in Phase 1, building a structured checklist of all files instead of hard crashing."
+        }
+    ]
+}

@@ -10,9 +10,9 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage:
-    python plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py --profile plugins "rlm"
-    python plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py --profile tools --list
-    python plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py --profile plugins "factory" --json
+    python plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile plugins "rlm"
+    python plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile tools --list
+    python plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile plugins "factory" --json
 
 Related:
     - rlm_config.py (configuration & cache utilities)
@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py
+# File is at: plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]

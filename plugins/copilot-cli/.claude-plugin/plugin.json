@@ -9,5 +9,6 @@
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "skills": [
         "copilot-cli-agent"
-    ]
+    ],
+    "dependencies": []
 }

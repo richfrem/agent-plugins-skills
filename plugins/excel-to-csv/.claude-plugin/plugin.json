@@ -22,5 +22,6 @@
     "scripts": [
         "scripts/convert.py",
         "scripts/verify_csv.py"
-    ]
+    ],
+    "dependencies": []
 }

@@ -192,5 +192,5 @@ The agent distillation is better for:
 
 - `plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py` — Original Ollama-based distiller
 - `plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py` — Configuration and cache utilities
-- `plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py` — Search the cache
+- `plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py` — Search the cache
 - `plugins/rlm-factory/resources/rlm_manifest.json` — Defines which directories get distilled

@@ -9,7 +9,6 @@ description: >
   Enforces the pip-compile locked-file workflow and tiered dependency hierarchy.
 allowed-tools: Bash, Read, Write
 ---
-
 # Dependency Management
 
 ## Core Rules
