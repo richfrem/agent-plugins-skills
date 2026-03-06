@@ -1,72 +1,65 @@
 ---
-name: vector-db-agent
-description: "Semantic search agent for code and documentation retrieval using ChromaDB's Parent-Child architecture. Use when you need concept-based search across the repository. V2 includes L4/L5 retrieval constraints."
-disable-model-invocation: false
+name: vector-db-search
+description: "Semantic search skill for retrieving code and documentation from the ChromaDB vector store. Use when you need concept-based search across the repository (Phase 2 of the 3-phase search protocol). V2 includes L4/L5 retrieval constraints."
+allowed-tools: Bash, Read
 dependencies: ["pip:chromadb", "pip:frontmatter", "pip:langchain", "pip:langchain_chroma", "pip:langchain_classic", "pip:langchain_community", "pip:langchain_core", "pip:langchain_huggingface", "pip:langchain_text_splitters", "skill:vector-db-init"]
 ---
-# Identity: Vector DB Agent - Insight Miner
+# Vector DB Search
 
-You are the **Insight Miner**. Your goal is to retrieve relevant code snippets and full files that answer qualitative questions using semantic (meaning-based) search.
+Semantic (meaning-based) search against the ChromaDB vector store.
+Use for Phase 2 of the 3-phase search protocol -- after the RLM Summary Ledger (Phase 1)
+returns insufficient results.
 
-## Tool Identification
+## Scripts
 
 | Script | Role |
-|:---|:---|
-| `scripts/vector_config.py` | Config helper for JSON profiles (`vector_profiles.json`). |
-| `scripts/operations.py` | Core library for Parent-Child Retrieval & ChromaDB logic. |
-| `scripts/ingest.py` | CLI to build/update the database from repository files. |
-| `scripts/query.py` | CLI for testing semantic search queries. |
-| `scripts/cleanup.py` | CLI to remove orphaned chunks for deleted files. |
+|:-------|:-----|
+| `scripts/query.py` | Semantic search -- CLI entry point |
+| `scripts/operations.py` | Core Parent-Child retrieval library |
+| `scripts/vector_config.py` | Profile config helper (`vector_profiles.json`) |
+| `scripts/vector_consistency_check.py` | Integrity validation |
 
-## When to Use This
+**Write operations** (ingest, cleanup) are handled by dedicated agents: `vdb-ingest`, `vdb-cleanup`.
 
-- User asks "how does feature X work?" → Use `query.py`
-- Setting up a new environment or indexing new directories → Use `ingest.py --full`
+## When to Use
 
-## Architectural Constraints (The "Electric Fence")
-
-The Vector Database contains millions of floats and metadata chunks. You are not a native SQLite or Vector Database engine.
-
-### ❌ WRONG: Manual Database Reads (Negative Instruction Constraint)
-**NEVER** attempt to read the binary blobs or SQLite `.sqlite3` files inside the `.vector_data` directory using raw bash tools (`cat`, `strings`, `sqlite3`). You will corrupt the context window and the retrieval pipeline.
-
-### ✅ CORRECT: Database API
-**ALWAYS** use `query.py` to pipe semantic searches natively through the ChromaDB embeddings engine. 
-
-### ❌ WRONG: Hallucinated Context 
-If the Vector Store returns empty results, **NEVER** hallucinate that you ran a query and found an answer. 
-
-### ✅ CORRECT: Source Transparency Declaration (L5 Pattern)
-When Semantic Search returns empty results ("Not Found"), you MUST explicitly state the boundaries of what was searched using this standard format in your response:
-```markdown
-> 🚫 **Not Found in Vector Store**
-> I searched the `[profile_name]` profile for `"[query]"`.
-> • This profile covers: [Describe scope of profile]
-> • I did not search: [Describe what is NOT in this profile]
-```
-
-## Delegated Constraint Verification (L5 Pattern)
-
-When executing `query.py` or `ingest.py`:
-1. If the script throws a connection refused error on port `8110`, the background server is offline. Do not attempt to retry or hallucinate data. You **MUST IMMEDIATELY** refer to `references/fallback-tree.md`.
-
----
+- Phase 1 (RLM Summary Ledger) returned no match or insufficient detail
+- User asks "how does X work?" / "find code that does Y"
+- You need specific snippets, not just file-level summaries
 
 ## Execution Protocol
 
-### 1. Verify Server Health
-Ensure Chroma is running (usually on 8110):
+### 1. Verify ChromaDB is running
+
 ```bash
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
 
+If connection refused: refer to `vector-db-launch` skill to start the server.
+
 ### 2. Search
+
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py "your natural language question" --profile knowledge
+python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
+  "your natural language question" --profile knowledge --limit 5
 ```
 
-### 3. Maintenance
-```bash
-# Add new/modified files from manifest
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --since 24 --profile knowledge
+Results include ranked parent chunks with RLM Super-RAG context pre-injected.
+
+## Architectural Constraints (Electric Fence)
+
+### NEVER -- direct database reads
+Do **not** `cat`, `strings`, or `sqlite3` the `.vector_data/` directory.
+Binary blobs will corrupt your context window and the retrieval pipeline.
+
+### ALWAYS -- use the API
+All access goes through `query.py`. No exceptions.
+
+### Source Transparency Declaration (L5 Pattern)
+When search returns empty results, explicitly state:
+```
+> Not Found in Vector Store
+> Searched profile: [profile_name] for "[query]"
+> Profile covers: [scope]
+> Not searched: [out-of-scope areas]
 ```
