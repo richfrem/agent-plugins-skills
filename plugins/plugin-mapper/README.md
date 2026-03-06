@@ -1,6 +1,12 @@
 # Plugin Mapper
 
+> [!NOTE]
+> **For consumers: use `npx skills` instead.**
+> `npx skills add richfrem/agent-plugins-skills` auto-detects your agent environment and installs all plugins natively -- no Python required.
+> This plugin is now primarily a **local development tool** for contributors who need to: deploy from local source, generate Gemini TOML, wire lifecycle hooks, or bridge to custom/unlisted targets.
+
 **The Universal Bridge for Agent Plugins**
+
 
 The **Plugin Mapper** adapts and bridges standard Claude Code plugins for use in many compatible agent environments — allowing you to write your core plugin logic once and deploy it across a wide variety of tools.
 

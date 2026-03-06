@@ -14,6 +14,35 @@ Instead of keeping documentation trapped in disparate folders, this site serves 
 
 ---
 
+## Installation
+
+Use the `npx skills` CLI to install plugins directly into your agent environment. It auto-detects installed agents (Claude Code, GitHub Copilot, Gemini, Cursor, and 30+ others) and wires everything up natively.
+
+```bash
+# Install all plugins from this repo
+npx skills add richfrem/agent-plugins-skills
+
+# Install a single plugin
+npx skills add richfrem/agent-plugins-skills/plugins/rlm-factory
+npx skills add richfrem/agent-plugins-skills/plugins/vector-db
+npx skills add richfrem/agent-plugins-skills/plugins/spec-kitty-plugin
+
+# Update all installed skills to latest
+npx skills update
+```
+
+> **Why this works**: each plugin in `plugins/` contains a `SKILL.md` following the [open agent skills standard](https://skills.sh/docs). The CLI reads it and configures your IDE automatically.
+
+Browse all available plugins and their install status at:
+**[skills.sh/richfrem/agent-plugins-skills](https://skills.sh/richfrem/agent-plugins-skills)**
+
+> [!NOTE]
+> **Contributors / local dev only**: if you are working on the plugins themselves, use `python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py --target <your-agent>` to deploy from local source to your agent environments.
+
+
+
+---
+
 ## Core Architecture: Agent Loops
 
 The system relies heavily on the **[Agent Loops](plugins/agent-loops/README.md)** architecture, a sophisticated routing system that unifies state management across complex agent executions. 
