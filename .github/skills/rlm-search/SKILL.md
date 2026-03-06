@@ -34,18 +34,46 @@ Phase 3: Grep / Exact Search     -- Seconds, O(N) -- "Ctrl+F"
 
 **The concept:** The RLM pre-reads every file ONCE, generates a dense 1-sentence summary, and caches it forever. Searching those summaries costs nothing. This is amortized prework -- pay the reading cost once, benefit many times.
 
+### Profile Selection
+
+Profiles are **project-defined** in `rlm_profiles.json` (see `rlm-init` skill). Any number of profiles can exist. Discover what's available:
+
 ```bash
-# Keyword search across all summaries
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
-  --profile plugins "vector query"
+cat .agent/learning/rlm_profiles.json
+```
 
-# List all cached entries to understand what is indexed
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
-  --profile plugins --list
+Common defaults (your project may use different names or define more):
 
-# Output as JSON for programmatic use
+| Profile | Typical Contents | Use When |
+|:--------|:----------------|:---------|
+| `project` | Docs, protocols, research, markdown | Topic is a concept, decision, or process |
+| `tools` | Plugins, skills, scripts, Python files | Topic is a tool, command, or implementation |
+| *(any custom)* | Project-specific scope | Check `rlm_profiles.json` for your project's profiles |
+
+**When topic is ambiguous: search all configured profiles.** Each is O(1) -- near-zero cost.
+
+```bash
+# Search docs/protocols cache
 python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
-  --profile plugins "embedding search" --json
+  --profile project "vector query"
+
+# Search plugins/scripts cache
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+  --profile tools "vector query"
+
+# Ambiguous topic -- search both (recommended default)
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+  --profile project "embedding search" && \
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+  --profile tools "embedding search"
+
+# List all cached entries for a profile
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+  --profile project --list
+
+# JSON output for programmatic use
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+  --profile tools "inject_summary" --json
 ```
 
 **Phase 1 is sufficient when:** The summary gives you enough context to proceed (file path + what the file does). You do not need the exact code yet.
@@ -106,9 +134,9 @@ The diagrams below document the system this skill operates in:
 
 | Diagram | What It Shows |
 |:--------|:--------------|
-| [search_process.mmd](references/diagrams/architecture/search_process.mmd) | Full 3-phase sequence diagram |
-| [rlm-factory-architecture.mmd](references/diagrams/architecture/rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
-| [rlm-factory-dual-path.mmd](references/diagrams/architecture/rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
+| [search_process.mmd](../../references/diagrams/search_process.mmd) | Full 3-phase sequence diagram |
+| [rlm-factory-architecture.mmd](../../references/diagrams/rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
+| [rlm-factory-dual-path.mmd](../../references/diagrams/rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
 
 ---
 
