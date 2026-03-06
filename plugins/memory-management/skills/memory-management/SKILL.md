@@ -9,28 +9,39 @@ Tiered memory system that makes an AI agent a continuous collaborator across ses
 
 ## Architecture
 
-The memory system has four tiers, configurable per project:
+The memory system has six tiers, configurable per project:
 
 ```
-HOT CACHE (always loaded at boot -- ~200 lines target)
+Tier 1: HOT CACHE (always loaded at boot -- ~200 lines target)
 +-- <primer_file>             Role, identity, constraints
 +-- <boot_digest_file>        Tactical status, active tasks
 +-- <boot_contract_file>      Immutable constraints
 +-- <snapshot_file>           Cognitive Hologram (1 sentence per file)
 
-RLM SUMMARY LEDGER (fast keyword lookup -- loaded on demand)
+Tier 2: RLM SUMMARY LEDGER (fast keyword lookup -- loaded on demand)
 +-- <summary_cache_file>      Pre-generated text summaries: docs, protocols, research
+                              Plugin: rlm-factory | Skill: rlm-search | Profile: project
 +-- <tool_cache_file>         Pre-generated text summaries: plugins, skills, scripts
+                              Plugin: rlm-factory | Skill: rlm-search | Profile: tools
 
-VECTOR STORE (semantic embedding search -- loaded on demand)
-+-- <vector_db_backend>       ChromaDB via vector-db plugin
+Tier 3: VECTOR STORE (semantic embedding search -- loaded on demand)
++-- <vector_db_backend>       ChromaDB via vector-db plugin / vector-db-agent skill
+                              Profile: knowledge | Port: configured in vector_profiles.json
 
-DEEP STORAGE (authoritative source -- loaded on demand)
+Tier 4: DEEP STORAGE (filesystem -- authoritative source, loaded on demand)
 +-- <domain_data_dir>/        Research topics: {topic}/analysis.md
 +-- <design_docs_dir>/        ADRs, RFCs
 +-- <governance_dir>/         Protocols, playbooks
-+-- <vault_dir>/              Linked knowledge graph (e.g. Obsidian)
-+-- <traces_file>             External persistent log (e.g. HuggingFace)
+
+Tier 5: VAULT (Obsidian -- linked knowledge graph, loaded on demand)
++-- <vault_dir>/              Plugin: obsidian-integration
+                              Skills: obsidian-vault-crud, obsidian-canvas-architect,
+                                      obsidian-graph-traversal, obsidian-bases-manager
+                              Env: VAULT_PATH or OBSIDIAN_VAULT_PATH
+
+Tier 6: SOUL (external persistence -- optional, synced at session seal)
++-- <traces_file>             Plugin: project-specific (e.g. huggingface-utils)
+                              e.g. lineage/, data/, soul_traces.jsonl on HF Hub
 ```
 
 Projects define their own file paths for each slot. Tiers may be omitted or added based on project complexity.
@@ -123,6 +134,22 @@ rg "def query" plugins/vector-db/ --type py
 | **Script: config** | `skills/vector-db-agent/scripts/vector_config.py` |
 | **Backend** | ChromaDB (`chromadb.HttpClient` with `PersistentClient` fallback) |
 
+### `obsidian-integration` -- Linked Vault (Tier 5)
+
+| Component | Value |
+|:----------|:------|
+| **Plugin** | `plugins/obsidian-integration/` |
+| **Skill: vault setup** | `skills/obsidian-init/` -- prerequisites, `.obsidian/` config, exclusion filters |
+| **Skill: read/write notes** | `skills/obsidian-vault-crud/` -- atomic create/read/update/append via `vault_ops.py` |
+| **Skill: markdown** | `skills/obsidian-markdown-mastery/` -- wikilinks, frontmatter, callouts |
+| **Skill: canvas** | `skills/obsidian-canvas-architect/` -- visual boards (JSON Canvas spec) |
+| **Skill: graph** | `skills/obsidian-graph-traversal/` -- backlink and wikilink traversal |
+| **Skill: bases** | `skills/obsidian-bases-manager/` -- table/grid/card views from YAML metadata |
+| **Script: CRUD** | `skills/obsidian-vault-crud/scripts/vault_ops.py` |
+| **Script: parse** | `obsidian-parser/parser.py` -- shared markdown parser |
+| **Requires** | `pip:ruamel.yaml` (lossless YAML frontmatter), Obsidian Desktop |
+| **Env** | `VAULT_PATH` -- absolute path to the vault root |
+
 ## Promotion / Demotion Rules
 
 ### Promote to Hot Cache when:
@@ -143,14 +170,15 @@ rg "def query" plugins/vector-db/ --type py
 | Active tasks | Boot digest | -- |
 | Identity/role | Primer file | -- |
 | Constraints | Boot contract | -- |
-| Session state | Snapshot file | Traces file |
-| Research topics | Summary in snapshot | `domain_data_dir/{name}/` |
-| Design decisions | Referenced by ID | `design_docs_dir/{id}_{name}.md` |
-| Governing docs | Referenced by ID | `governance_dir/{id}_{name}.md` |
-| Plugins/scripts/tools | -- | RLM Summary Ledger (tool cache) |
-| Docs/protocols/research | -- | RLM Summary Ledger (summary cache) |
-| System docs | -- | RLM Summary Ledger + Vector Store |
-| Relational knowledge | -- | Linked Vault (e.g. Obsidian) |
+| Session state | Snapshot file | Tier 6 Soul (traces) |
+| Research topics | Summary in snapshot | Tier 4: `domain_data_dir/{name}/` |
+| Design decisions | Referenced by ID | Tier 4: `design_docs_dir/{id}_{name}.md` |
+| Governing docs | Referenced by ID | Tier 4: `governance_dir/{id}_{name}.md` |
+| Plugins/scripts/tools | -- | Tier 2: RLM Summary Ledger (tool cache) |
+| Docs/protocols/research | -- | Tier 2: RLM Summary Ledger (summary cache) |
+| System docs | -- | Tier 2 RLM + Tier 3 Vector Store |
+| Linked notes, canvases | -- | Tier 5: Vault (Obsidian) |
+| External persistence | -- | Tier 6: Soul (HuggingFace or equivalent) |
 
 ## Session Memory Workflow
 

@@ -12,6 +12,7 @@
     ],
     "dependencies": [
         "rlm-factory",
-        "vector-db"
+        "vector-db",
+        "obsidian-integration"
     ]
 }

@@ -59,8 +59,9 @@ Use this plugin when:
 
 | Plugin | Why |
 |:-------|:----|
-| `rlm-factory` | Provides RLM Summary Ledger (pre-generated text summaries via `query_cache.py`) |
+| `rlm-factory` | Provides Recursive Language Model (RLM) Summary Ledger (pre-generated text summaries via `query_cache.py`) |
 | `vector-db` | Provides Vector Store tier (ChromaDB semantic search) |
+| `obsidian-integration` | Provides Vault tier (Tier 5) -- read/write Obsidian notes via `vault_ops.py` |
 
 ## Promotion / Demotion Rules
 
