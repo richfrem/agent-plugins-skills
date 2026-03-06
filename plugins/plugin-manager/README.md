@@ -1,6 +1,13 @@
 # Plugin Manager
 
+> [!NOTE]
+> **Partially superseded by `npx skills`.**
+> - `/plugin-manager:update` and `/plugin-manager:cleanup` -- use `npx skills update` instead (auto-detects agents, no Python required).
+> - **`plugin-replicator`** remains the only tool for copying plugin source between local repos -- no npx equivalent exists for this workflow.
+> - `/plugin-manager:install` -- superseded by `npx skills add richfrem/agent-plugins-skills/plugins/<name>`.
+
 **The Orchestration Hub for Your Plugin Ecosystem**
+
 
 The **Plugin Manager** maintains a healthy local plugin ecosystem. It keeps agent configurations in sync with your `plugins/` folder and distributes plugins to other project repos.
 
