@@ -1,0 +1,40 @@
+flowchart TD
+    subgraph HotCache["Tier 1: HOT CACHE (always loaded at boot)"]
+        P["primer_file\nRole / Identity / Constraints"]
+        BD["boot_digest_file\nTactical Status / Active Tasks"]
+        BC["boot_contract_file\nImmutable Constraints"]
+        SN["snapshot_file\nCognitive Hologram (1 sentence/file)"]
+    end
+
+    subgraph RLMLedger["Tier 2: RLM SUMMARY LEDGER (keyword lookup -- O(1))"]
+        SC["summary_cache_file\nPre-generated summaries: docs, protocols, research\nPlugin: rlm-factory | Skill: rlm-search\nScript: query_cache.py"]
+        TC["tool_cache_file\nPre-generated summaries: plugins, skills, scripts\nPlugin: rlm-factory | Skill: rlm-search\nScript: query_cache.py"]
+    end
+
+    subgraph VectorStore["Tier 3: VECTOR STORE (semantic embedding search)"]
+        VDB["ChromaDB vector backend\nPlugin: vector-db | Skill: vector-db-agent\nScript: query.py (nearest-neighbor)"]
+    end
+
+    subgraph DeepStorage["Tier 4: DEEP STORAGE (authoritative source)"]
+        DOM["domain_data_dir/\nResearch topics: {topic}/analysis.md"]
+        DES["design_docs_dir/\nADRs, RFCs"]
+        GOV["governance_dir/\nProtocols, Playbooks"]
+        VLT["vault_dir/\nObsidian Linked Knowledge Graph"]
+        TRC["traces_file\nExternal log (e.g. HuggingFace)"]
+    end
+
+    Agent[/"AI Agent Query"/] --> HotCache
+    HotCache -->|"~90% of needs answered here"| OUT[/"Agent Response"/]
+    HotCache -->|"Miss"| RLMLedger
+    RLMLedger -->|"Summary found"| OUT
+    RLMLedger -->|"Need exact content"| VectorStore
+    VectorStore -->|"Chunk found"| OUT
+    VectorStore -->|"Need precise location"| Grep["Grep / rg\nPhase 3: exact keyword search"]
+    Grep --> DeepStorage
+    DeepStorage --> OUT
+
+    style HotCache fill:#4CAF50,color:#fff
+    style RLMLedger fill:#2196F3,color:#fff
+    style VectorStore fill:#9C27B0,color:#fff
+    style DeepStorage fill:#FF9800,color:#fff
+    style OUT fill:#607D8B,color:#fff

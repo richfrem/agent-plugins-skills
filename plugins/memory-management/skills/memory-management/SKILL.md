@@ -170,3 +170,12 @@ Projects configure the memory system by setting file paths in their project-spec
 | `MEMORY_DOMAIN_DIR` | Directory for domain research |
 | `MEMORY_DESIGN_DIR` | Directory for design docs (e.g. ADRs) |
 | `MEMORY_GOVERNANCE_DIR` | Directory for governing docs (e.g. Protocols) |
+
+## Architecture Diagrams
+
+| Diagram | What It Shows |
+|:--------|:--------------|
+| [memory_architecture.mmd](references/diagrams/architecture/memory_architecture.mmd) | Full 4-tier memory system with exact plugin/skill/script names per tier |
+| [memory_lookup_flow.mmd](references/diagrams/architecture/memory_lookup_flow.mmd) | 3-phase search sequence: Hot Cache -> RLM Ledger -> Vector Store -> Grep |
+| [memory_session_lifecycle.mmd](references/diagrams/architecture/memory_session_lifecycle.mmd) | Session Boot -> Active -> Seal lifecycle with all event types |
+
