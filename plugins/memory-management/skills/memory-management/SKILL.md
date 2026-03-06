@@ -98,10 +98,30 @@ rg "def query" plugins/vector-db/ --type py
 
 ## Dependencies
 
-| Plugin | Tier Provided | How |
-|:-------|:-------------|:----|
-| `rlm-factory` | RLM Summary Ledger | `rlm-search/scripts/query_cache.py` keyword lookup |
-| `vector-db` | Vector Store | `query.py` ChromaDB nearest-neighbor search |
+### `rlm-factory` -- RLM Summary Ledger (Tier 2)
+
+| Component | Value |
+|:----------|:------|
+| **Plugin** | `plugins/rlm-factory/` |
+| **Skill (write)** | `skills/rlm-curator/` -- distill, inject, audit, cleanup |
+| **Skill (read)** | `skills/rlm-search/` -- query the ledger |
+| **Script: Phase 1 search** | `skills/rlm-search/scripts/query_cache.py` |
+| **Script: inject summary** | `skills/rlm-curator/scripts/inject_summary.py` |
+| **Script: audit coverage** | `skills/rlm-curator/scripts/inventory.py` |
+| **Script: shared config** | `skills/rlm-curator/scripts/rlm_config.py` |
+| **Cache files** | `.agent/learning/rlm_summary_cache.json` (docs), `.agent/learning/rlm_tool_cache.json` (tools) |
+
+### `vector-db` -- Vector Store (Tier 3)
+
+| Component | Value |
+|:----------|:------|
+| **Plugin** | `plugins/vector-db/` |
+| **Skill** | `skills/vector-db-agent/` -- ingest, query, operations |
+| **Script: Phase 2 search** | `skills/vector-db-agent/scripts/query.py` |
+| **Script: ingest files** | `skills/vector-db-agent/scripts/ingest.py` |
+| **Script: operations** | `skills/vector-db-agent/scripts/operations.py` |
+| **Script: config** | `skills/vector-db-agent/scripts/vector_config.py` |
+| **Backend** | ChromaDB (`chromadb.HttpClient` with `PersistentClient` fallback) |
 
 ## Promotion / Demotion Rules
 
