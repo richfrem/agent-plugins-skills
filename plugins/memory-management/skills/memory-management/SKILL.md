@@ -18,9 +18,9 @@ HOT CACHE (always loaded at boot)
 ├── <boot_contract_file>      ← Immutable constraints
 └── <snapshot_file>           ← Cognitive Hologram (1-line per file)
 
-SEMANTIC CACHE (fast lookup, loaded on demand)
-├── <summary_cache_file>      ← RLM summaries for project specific key content, documentation , etc. 
-└── <tool_cache_file>         ← RLM summaries for plugins/skills/scripts/tools
+RLM SUMMARY LEDGER (fast keyword lookup -- loaded on demand)
+├── <summary_cache_file>      <- RLM ledger: project docs, protocols, research
+└── <tool_cache_file>         <- RLM ledger: plugins, skills, scripts, tools
 
 VECTOR STORE (semantic search, loaded on demand)
 └── <vector_db_backend>       ← e.g. ChromaDB via vector-db plugin
@@ -71,8 +71,8 @@ Query arrives →
 | Research topics | Summary in snapshot | `domain_data_dir/{name}/` |
 | Design decisions | Referenced by ID | `design_docs_dir/{id}_{name}.md` |
 | Governing docs | Referenced by ID | `governance_dir/{id}_{name}.md` |
-| plugins/rlm_factory | — | Semantic Cache (RLM) |
-| System docs | — | Semantic Cache (RLM) / Vector Store |
+| plugins/rlm_factory | -- | RLM Summary Ledger |
+| System docs | -- | RLM Summary Ledger / Vector Store |
 | Relational knowledge | — | Linked Vault (e.g. Obsidian) |
 
 ## Session Memory Workflow

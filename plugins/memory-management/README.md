@@ -59,7 +59,7 @@ Use this plugin when:
 
 | Plugin | Why |
 |:-------|:----|
-| `rlm-factory` | Provides Semantic Cache (RLM summaries via `query_cache.py`) |
+| `rlm-factory` | Provides RLM Summary Ledger (pre-generated text summaries via `query_cache.py`) |
 | `vector-db` | Provides Vector Store tier (ChromaDB semantic search) |
 
 ## Promotion / Demotion Rules

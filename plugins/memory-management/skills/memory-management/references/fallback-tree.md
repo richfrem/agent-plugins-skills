@@ -12,6 +12,6 @@ If the snapshot file has not been updated since the last session seal:
 If the configured `MEMORY_DESIGN_DIR`, `MEMORY_DOMAIN_DIR`, or `MEMORY_GOVERNANCE_DIR` does not exist:
 - **Action**: Report the missing directory. Do NOT silently create it without confirmation. Ask the user if it should be created before proceeding with the demotion.
 
-## 4. Tool Inventory / Semantic Cache Unavailable
+## 4. Tool Inventory / RLM Summary Ledger Unavailable
 If the semantic cache (`MEMORY_TOOL_CACHE`) or vector store is unavailable:
 - **Action**: Skip tiers 3 and 4 of the lookup flow. Report that semantic search is unavailable. Do NOT fail the session — fall back to asking the user directly.
