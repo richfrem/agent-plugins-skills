@@ -6,6 +6,15 @@ description: Interactively initializes the Vector DB plugin. Installs the requir
 
 The `vector-db-init` skill is an automated setup routine that prepares the environment for the Vector DBMS. 
 
+## Examples
+
+Real-world examples of each config file are in `references/examples/`:
+
+| File | Purpose |
+|:-----|:--------|
+| [`vector_profiles.json`](../../references/examples/vector_profiles.json) | Profile registry -- defines named vector collections and ChromaDB connection |
+| [`vector_knowledge_manifest.json`](../../references/examples/vector_knowledge_manifest.json) | Manifest -- what folders/globs to include/exclude in the vector index |
+
 ## When to Use This
 - When a user first installs the `vector-db` plugin.
 - If the user complains that `chromadb` is not installed or `ModuleNotFoundError` is thrown.
