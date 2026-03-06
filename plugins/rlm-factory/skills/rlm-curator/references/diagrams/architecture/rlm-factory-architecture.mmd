@@ -1,7 +1,8 @@
+flowchart TD
     Q[/"AI Agent Query"/] --> D{Route Query}
     
-    D --> RLM[(/rlm-factory_query)]
-    D --> VDB[(/vector-db_query)]
+    D --> RLM[("( / ) rlm-factory_query")]
+    D --> VDB[("( / ) vector-db_query")]
     
     RLM -->|"O(1) lookups"| R1[File Summary]
     VDB -->|"Semantic similarity"| R2[Ranked Chunks]
