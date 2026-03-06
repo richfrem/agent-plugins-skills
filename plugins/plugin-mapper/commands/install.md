@@ -9,6 +9,7 @@ args:
     description: "The specific target environment to install for (e.g., antigravity, claude, github, gemini)."
     type: string
     required: true
+github-model-export: true
 ---
 
 # Install/Bridge Plugin
