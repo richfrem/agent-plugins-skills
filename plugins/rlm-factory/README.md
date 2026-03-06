@@ -132,10 +132,13 @@ graph LR
     C -->|Curate| E["Cleanup 🧹"]
 ```
 
-Additional diagrams (in `skills/rlm-curator/references/diagrams/architecture/`):
-- [search_process.mmd](skills/rlm-curator/references/diagrams/architecture/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
-- [rlm-factory-architecture.mmd](skills/rlm-curator/references/diagrams/architecture/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
-- [rlm-factory-dual-path.mmd](skills/rlm-curator/references/diagrams/architecture/rlm-factory-dual-path.mmd) -- Super-RAG context injection
+Additional diagrams (in `references/diagrams/`):
+- [search_process.mmd](references/diagrams/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
+- [rlm-factory-architecture.mmd](references/diagrams/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
+- [rlm-factory-dual-path.mmd](references/diagrams/rlm-factory-dual-path.mmd) -- Super-RAG context injection
+- [rlm-factory-workflow.mmd](references/diagrams/rlm-factory-workflow.mmd) -- Full distill/audit/query/cleanup lifecycle
+- [workflow.mmd](references/diagrams/workflow.mmd) -- Build + query decision flow
+- [logic.mmd](references/diagrams/logic.mmd) -- Install + distill + consume overview
 
 ### How It Works
 1. **Distiller** reads each file, computes a content hash
