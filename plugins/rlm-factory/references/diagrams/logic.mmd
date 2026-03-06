@@ -15,7 +15,7 @@ flowchart TD
         Distiller -- "POST /api/generate + rlm_summarize_general.md prompt" --> Ollama((Ollama API\ngranite3.2:8b))
         Ollama -- "1-sentence dense summary" --> Distiller
         Distiller -- "Incremental write (fcntl.flock)" --> Cache[("rlm_summary_cache.json\nrlm_tool_cache.json")]
-        Inject["inject_summary.py\n(agent gap-fill path)"] -- "Single-file inject" --> Cache
+        Inject["inject_summary.py\n(agent distill path)"] -- "Single-file inject" --> Cache
     end
 
     subgraph Consumption ["Step 3: Query the Ledger (rlm-search skill)"]

@@ -9,7 +9,7 @@ flowchart TD
     Audit --> CmdAudit[/"python plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project"/]
     CmdAudit -- "Missing Files?" --> Gaps{Gaps Found?}
 
-    Gaps -- Yes --> Patch["Distill Specific File or\nUse Agent Gap-Fill (/rlm-factory_gap-fill)"]
+    Gaps -- Yes --> Patch["Distill Specific File or\nUse Agent Distill (/rlm-factory:distill-agent)"]
     Patch --> CmdPatch[/"python plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile project --file path"/]
     CmdPatch --> Cache
 

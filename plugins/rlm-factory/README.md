@@ -103,8 +103,8 @@ Store your customized LLM summarization prompts here.
 
 | Command | Script | Ollama? | Description |
 |:---|:---|:---|:---|
-| `/rlm-factory:distill` | `rlm-curator/scripts/distiller.py` | Yes | LLM-powered file summarization |
-| `/rlm-factory:gap-fill` | Sub-Agent (inject_summary.py) | No | Agent-powered summarization |
+| `/rlm-factory:distill` | `rlm-curator/scripts/distiller.py` | Yes | Ollama batch summarization |
+| `/rlm-factory:distill-agent` | `inject_summary.py` via agent | No | Agent-powered summarization |
 | `/rlm-factory:query` | `rlm-search/scripts/query_cache.py` | No | Search the semantic ledger |
 | `/rlm-factory:audit` | `rlm-curator/scripts/inventory.py` | No | Coverage report (fs vs cache) |
 | `/rlm-factory:cleanup` | `rlm-curator/scripts/cleanup_cache.py` | No | Remove stale/orphan entries |
@@ -115,7 +115,7 @@ For small batches (< 10 files), the agent can distill directly without Ollama by
 reading the file and writing the summary into the cache JSON. This is 3-5x faster
 and produces higher-quality summaries using frontier model intelligence.
 
-See `agents/rlm-gap-fill.md` for the full Agent Distill protocol.
+See `agents/rlm-distill.md` for the full Agent Distill protocol.
 
 ---
 
@@ -155,7 +155,7 @@ rlm-factory/
 |   +-- plugin.json              # Plugin identity + runtime deps
 +-- commands/
 |   +-- distill.md               # /rlm-factory:distill
-|   +-- rlm-factory_gap-fill.md  # /rlm-factory:gap-fill
+|   +-- distill-agent.md         # /rlm-factory:distill-agent
 |   +-- query.md                 # /rlm-factory:query
 |   +-- audit.md                 # /rlm-factory:audit
 |   +-- cleanup.md               # /rlm-factory:cleanup
@@ -172,7 +172,8 @@ rlm-factory/
 |   +-- ollama-launch/
 |       +-- SKILL.md             # Ollama server management
 +-- agents/
-|   +-- rlm-gap-fill.md          # Gap-Fill Sub-Agent configuration
+|   +-- rlm-distill.md           # rlm-distill agent (agent-first distillation)
+|   +-- rlm-cleanup.md          # rlm-cleanup agent (prune stale entries)
 +-- resources/
 |   +-- manifest-index.json      # Profile registry
 |   +-- distiller_manifest.json  # Default scope config

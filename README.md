@@ -137,19 +137,18 @@ Sub-systems allowing fresh, isolated model context spaces for advanced tasks (au
 - **RLM Factory** — Reverse Language Modeling engine generating high-speed offline functional cache representations of code.
   ↳ [`ollama-launch`](plugins/rlm-factory/skills/ollama-launch/SKILL.md)
   ↳ [`rlm-curator`](plugins/rlm-factory/skills/rlm-curator/SKILL.md)
-  ↳ [`rlm-distill`](plugins/rlm-factory/skills/rlm-distill/SKILL.md)
-  ↳ [`rlm-factory-rlm-gap-fill`](plugins/rlm-factory/skills/rlm-factory-rlm-gap-fill/SKILL.md)
+  ↳ [`rlm-distill`](plugins/rlm-factory/agents/rlm-distill.md) *(agent)*
+  ↳ [`rlm-cleanup`](plugins/rlm-factory/agents/rlm-cleanup.md) *(agent)*
   ↳ [`rlm-init`](plugins/rlm-factory/skills/rlm-init/SKILL.md)
   ↳ [`tool-inventory-init`](plugins/rlm-factory/skills/tool-inventory-init/SKILL.md)
 - **Tool Inventory** — Vector-search registry for all python scripts making them accessible to agents without hard-coded rules.
   ↳ [`tool-inventory`](plugins/tool-inventory/skills/tool-inventory/SKILL.md)
 - **Vector DB** — ChromaDB driven continuous semantic embedding indexing module for native codebase integration search.
-  ↳ [`vector-db-agent`](plugins/vector-db/skills/vector-db-agent/SKILL.md)
-  ↳ [`vector-db-cleanup`](plugins/vector-db/skills/vector-db-cleanup/SKILL.md)
-  ↳ [`vector-db-ingest`](plugins/vector-db/skills/vector-db-ingest/SKILL.md)
+  ↳ [`vector-db-search`](plugins/vector-db/skills/vector-db-agent/SKILL.md) *(read-only skill)*
+  ↳ [`vdb-ingest`](plugins/vector-db/agents/vdb-ingest.md) *(agent)*
+  ↳ [`vdb-cleanup`](plugins/vector-db/agents/vdb-cleanup.md) *(agent)*
   ↳ [`vector-db-init`](plugins/vector-db/skills/vector-db-init/SKILL.md)
   ↳ [`vector-db-launch`](plugins/vector-db/skills/vector-db-launch/SKILL.md)
-  ↳ [`vector-db-query`](plugins/vector-db/skills/vector-db-query/SKILL.md)
 
 ### Utilities
 - **Migration Utils** — Standard scripts utilized during extensive codebase restructuring architectures.
