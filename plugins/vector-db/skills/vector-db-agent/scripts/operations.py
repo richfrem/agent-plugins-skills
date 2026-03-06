@@ -57,11 +57,19 @@ class VectorDBOperations:
         self.parent_collection_name = parent_collection
         
         # 2. ChromaDB Client Initialization
+        self.chroma_client = None
         if self.chroma_host:
             print(f"🔗 Connecting to ChromaDB at {self.chroma_host}:{self.chroma_port}...")
-            self.chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
-        else:
-            # Fallback to persistent local storage if no host defined
+            try:
+                self.chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
+                # Test the connection to immediately raise if offline
+                self.chroma_client.heartbeat()
+            except Exception as e:
+                print(f"⚠️ Failed to connect to remote ChromaDB ({e}). Falling back to local persistent store.")
+                self.chroma_client = None
+                
+        if not self.chroma_client:
+            # Fallback to persistent local storage if no host defined or host is offline
             db_path = (self.project_root / self.chroma_data_path).resolve()
             print(f"📁 Connecting to local persistent ChromaDB at {db_path}...")
             db_path.mkdir(parents=True, exist_ok=True)
