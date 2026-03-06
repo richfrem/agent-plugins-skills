@@ -4,11 +4,25 @@ description: High-speed RLM distillation of project documentation using agentic 
 
 # Agent-Driven Distillation Workflow (PROJECT)
 
-Use this workflow to bypass slow local Ollama models when summarizing **documentation** (MD, TXT) for the RLM project cache. The agent (Claude, Gemini, Antigravity, etc.) reads the file itself, generates a high-quality summary, and injects it into the cache.
+Use this workflow to dramatically accelerate the summarization of documents (MD, TXT) or code for the RLM cache by utilizing frontier AI models instead of slow, low-power local models.
+
+## 🧠 Distillation Efficiency Tiers (Why this exists)
+
+RLM Distillation maps to three tiers of speed and scale:
+
+1. **Tier 1 (Slowest): Local LLM via `distiller.py`**
+   - *Use Case*: Offline or zero-cost background runs.
+   - *Limitation*: Requires Ollama. Takes 3-5 minutes per file on M1 hardware. High failure rate on complex files.
+2. **Tier 2 (Fast): Single Agent Injection (This Workflow)**
+   - *Use Case*: On-the-fly gap-filling of 1-10 files.
+   - *Advantage*: The agent (Claude/Gemini/Antigravity) simply reads the file, generates a perfect summary instantly, and uses `inject_summary.py` to bypass the slow local distiller.
+3. **Tier 3 (Fastest/Scale): Multi-Agent Swarm**
+   - *Use Case*: Mass gap-filling of dozens/hundreds of files (e.g., initial repository documentation).
+   - *Advantage*: Delegates the exact same prompt to a parallel orchestrator (`swarm_run.py`) to hit API endpoints concurrently in seconds.
 
 ## 🚀 Execution Steps (Batch / Bulk)
 
-For filling large gaps (e.g., Chronicle entries), the [Orchestrator](plugins/agent-loops/skills/orchestrator/SKILL.md) routes work to the **[Agent Swarm](plugins/agent-loops/skills/agent-swarm/SKILL.md)** pattern (Pattern 4). This pattern is implemented by the `swarm_run.py` script.
+For filling large gaps (e.g., repository documentation), the [Orchestrator](plugins/agent-loops/skills/orchestrator/SKILL.md) routes work to the **[Agent Swarm](plugins/agent-loops/skills/agent-swarm/SKILL.md)** pattern (Pattern 4). This pattern is implemented by the `swarm_run.py` script.
 
 1.  **Locate or create a Job File** (e.g., `plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md`).
 2.  **Execute the Swarm Runner**:
