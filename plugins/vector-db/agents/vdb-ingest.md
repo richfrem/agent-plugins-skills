@@ -28,20 +28,22 @@ searched. You build or update the parent-child chunk structure that `query.py` s
 
 ## Prerequisites
 
-### 1. Verify ChromaDB is running
-
+### 1. First-time setup
+If `chromadb` is not installed or `vector_profiles.json` is missing, run the init skill first:
 ```bash
+python3 plugins/vector-db/skills/vector-db-init/scripts/init.py
+```
+
+### 2. Verify server is running
+Use the `vector-db-launch` skill if the server is not already up:
+```bash
+# Check heartbeat
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
+
+# If not running, start it:
+chroma run --host 127.0.0.1 --port 8110 --path .vector_data &
 ```
-
-If connection refused: refer to `plugins/vector-db/skills/vector-db-launch/SKILL.md` to start the server first.
-
-### 2. Check what profile to ingest
-
-```bash
-# List available profiles
-python3 plugins/vector-db/skills/vector-db-agent/scripts/vector_config.py --list
-```
+See `plugins/vector-db/skills/vector-db-launch/SKILL.md` for full launch instructions.
 
 ## Execution Protocol
 

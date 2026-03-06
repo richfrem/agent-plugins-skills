@@ -36,13 +36,13 @@ vector index accurate and prevents false search results.
 
 ## Prerequisites
 
-### Verify ChromaDB is running
+### Verify server is running
+If not already up, see `plugins/vector-db/skills/vector-db-launch/SKILL.md`.
+For first-time setup (dependencies + profile config): `plugins/vector-db/skills/vector-db-init/SKILL.md`.
 
 ```bash
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
-
-If connection refused: refer to `plugins/vector-db/skills/vector-db-launch/SKILL.md`.
 
 ## Execution Protocol
 

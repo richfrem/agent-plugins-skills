@@ -26,6 +26,10 @@ its file no longer exists or has moved. Running this regularly keeps the ledger 
 
 **This is a write operation.** Always confirm scope before running.
 
+## Prerequisites
+
+**Profile not configured?** Run `rlm-init` skill first: `plugins/rlm-factory/skills/rlm-init/SKILL.md`
+
 ## When to Run
 
 - After deleting or renaming files that were previously summarized

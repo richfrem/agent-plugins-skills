@@ -35,7 +35,8 @@ returns insufficient results.
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
 
-If connection refused: refer to `vector-db-launch` skill to start the server.
+If connection refused: run `vector-db-launch` skill (`plugins/vector-db/skills/vector-db-launch/SKILL.md`).
+For first-time setup: run `vector-db-init` skill (`plugins/vector-db/skills/vector-db-init/scripts/init.py`).
 
 ### 2. Search
 

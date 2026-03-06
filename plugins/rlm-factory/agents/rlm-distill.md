@@ -34,6 +34,14 @@ summary, and inject it into the ledger via `inject_summary.py`.
 - A new plugin, skill, or document was just created
 - A file's content changed significantly since it was last summarized
 
+## Prerequisites
+
+**First-time setup or missing profile?** Run the `rlm-init` skill first:
+```bash
+# See: plugins/rlm-factory/skills/rlm-init/SKILL.md
+# Creates rlm_profiles.json, manifest, and empty cache
+```
+
 ## Execution Protocol
 
 ### 1. Identify missing files
