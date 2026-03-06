@@ -1,0 +1,19 @@
+{
+  "source_directories": [
+    {
+      "import_root": ".",
+      "source": "."
+    }
+  ],
+  "search_path": [
+    "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages"
+  ],
+  "exclude": [
+    ".*/\\.venv/.*",
+    ".*/\\.agent/.*",
+    ".*/\\.gemini/.*",
+    ".*/\\.claude/.*",
+    ".*/\\.copilot/.*",
+    ".*/node_modules/.*"
+  ]
+}
