@@ -44,11 +44,6 @@ For a standalone plugin install:
 python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py --target gemini
 ```
 
-> **MASTER SYNC**: For a full system update (all plugins, all environments), use the Plugin Manager's master orchestrator:
-> ```bash
-> python plugins/plugin-manager/scripts/update_agent_system.py
-> ```
-
 ---
 
 ## Component Mapping Matrix
