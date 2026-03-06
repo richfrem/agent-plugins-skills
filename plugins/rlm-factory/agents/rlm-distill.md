@@ -71,17 +71,36 @@ The script uses `fcntl.flock` for safe concurrent writes. Never write to the JSO
 
 ### 4. Batching -- if 50+ files are missing
 
-Do not attempt manual distillation for large batches. Delegate to the agent swarm:
+Do not attempt manual distillation for large batches. Choose an engine based on cost and
+throughput, then delegate to the agent swarm:
+
+| Engine | Model | Cost | Workers | Best For |
+|:-------|:------|:-----|:--------|:---------|
+| `--engine copilot` | gpt-5-mini (nano tier) | **$0 free** | `--workers 2` (rate-limit safe) | Bulk summarization, zero-cost default |
+| `--engine gemini` | gemini-3-pro-preview | **$0 free** | `--workers 5` | Large-context batches, higher throughput |
+| `--engine claude` | Haiku / Sonnet | Low-Medium | `--workers 3` | Higher quality summaries, not free |
+| Local Ollama | granite3.2:8b | $0 (CPU) | 1 (serial) | Offline / air-gapped only |
+
+**Default recommendation**: start with `--engine copilot` (free, no rate risk at workers=2).
+Switch to `--engine gemini --workers 5` if you need faster throughput.
 
 ```bash
+# Zero-cost bulk distillation (Copilot -- recommended default)
 python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
   --engine copilot \
   --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
   --files-from rlm_distill_tasks_project.md \
   --resume --workers 2
+
+# Higher throughput -- also free (Gemini)
+python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+  --engine gemini \
+  --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
+  --files-from rlm_distill_tasks_project.md \
+  --resume --workers 5
 ```
 
-Use `--engine gemini --workers 5` for higher throughput (both free tier).
+See `plugins/agent-loops/skills/agent-swarm/SKILL.md` for full swarm configuration options.
 
 ## Quality Standard for Summaries
 
