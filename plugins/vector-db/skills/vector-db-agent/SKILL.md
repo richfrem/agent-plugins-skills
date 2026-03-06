@@ -38,7 +38,15 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 If connection refused: run `vector-db-launch` skill (`plugins/vector-db/skills/vector-db-launch/SKILL.md`).
 For first-time setup: run `vector-db-init` skill (`plugins/vector-db/skills/vector-db-init/scripts/init.py`).
 
-### 2. Search
+### 2. Select Profile and Search
+
+Profiles are **project-defined** in `vector_profiles.json` (see `vector-db-init` skill). Any number can exist. Discover what's available:
+
+```bash
+cat .agent/learning/vector_profiles.json
+```
+
+Common default is `knowledge` -- your project may define more (e.g. separate profiles for code vs docs). When topic is ambiguous, search all profiles.
 
 ```bash
 python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
@@ -46,6 +54,7 @@ python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
 ```
 
 Results include ranked parent chunks with RLM Super-RAG context pre-injected.
+
 
 ## Architectural Constraints (Electric Fence)
 

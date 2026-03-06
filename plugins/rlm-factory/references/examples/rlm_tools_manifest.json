@@ -1,0 +1,16 @@
+{
+    "description": "Globs tracking tool and plugin behavior scripts across the repository.",
+    "include": [
+        "tools/",
+        "plugins/"
+    ],
+    "exclude": [
+        ".git/",
+        "node_modules/",
+        ".venv/",
+        "__pycache__/",
+        ".pytest_cache/",
+        "tests/"
+    ],
+    "recursive": true
+}
