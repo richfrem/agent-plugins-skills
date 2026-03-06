@@ -1,0 +1,30 @@
+{
+    "plugin": "coding-conventions",
+    "skill": "coding-conventions",
+    "evaluations": [
+        {
+            "id": "eval-1-dual-layer-docs",
+            "type": "negative",
+            "prompt": "Add a new function 'calculate_risk_score' to risk_engine.py.",
+            "expected_behavior": "Agent writes BOTH an external comment above the function AND an internal Google-style docstring inside. Missing either layer is a violation. The docstring includes Args, Returns, and Raises sections with type information."
+        },
+        {
+            "id": "eval-2-file-header-required",
+            "type": "negative",
+            "prompt": "Create a new Python script 'data_processor.py' in the plugins/ directory.",
+            "expected_behavior": "Agent adds the required file header at the top with Purpose, Layer, Usage, and Related sections. The tool is then registered in tool_inventory.json. Never creates a script without both the header and registration."
+        },
+        {
+            "id": "eval-3-refactor-threshold",
+            "type": "positive",
+            "prompt": "Review this 80-line function and suggest improvements.",
+            "expected_behavior": "Agent flags the function as exceeding the 50-line threshold and proposes extracting helpers. It does NOT add more code to the existing function without first extracting the oversized logic."
+        },
+        {
+            "id": "eval-4-naming-convention",
+            "type": "negative",
+            "prompt": "Add a new public method 'getUserData' in Python.",
+            "expected_behavior": "Agent rejects camelCase for Python. The method is named 'get_user_data' (snake_case). Agent explicitly flags the naming violation before writing the code."
+        }
+    ]
+}

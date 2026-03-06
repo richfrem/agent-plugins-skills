@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant User as User / Agent
+    participant CLI as /task-manager_create
+    participant JSON as tasks/tasks.json
+
+    User->>/task-manager_create: create "Fix bug"
+    /task-manager_create->>JSON: Append task
+    /task-manager_create-->>User: ✅ Created
+
+    User->>/task-manager_board: board
+    /task-manager_board->>JSON: Read all tasks
+    /task-manager_board-->>User: 📋 Kanban board
+
+    User->>/task-manager_move: move N in-progress
+    /task-manager_move->>JSON: Update status
+    /task-manager_move-->>User: ✅ Moved
+
+    User->>/task-manager_list: list --status done
+    /task-manager_list->>JSON: Filter by status
+    /task-manager_list-->>User: List of completed tasks

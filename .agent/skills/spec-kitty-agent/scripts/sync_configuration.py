@@ -7,8 +7,8 @@ Synchronizes fresh artifacts from the local workspace back into the plugin's
 source of truth directories for distribution via the Bridge.
 
 Artifacts:
-1. Workflows (.windsurf/workflows -> plugins/spec-kitty/skills)
-2. Rules (.kittify/memory -> plugins/spec-kitty/rules)
+1. Workflows (.windsurf/workflows -> plugins/spec-kitty-plugin/skills)
+2. Rules (.kittify/memory -> plugins/spec-kitty-plugin/rules)
 
 Assumptions:
 1. User has installed the 'spec-kitty' CLI: `pip install --upgrade spec-kitty-cli`
@@ -16,7 +16,7 @@ Assumptions:
 3. Run this script to propagate updates into the plugin system.
 
 Usage:
-    python3 plugins/spec-kitty/skills/spec-kitty-agent/scripts/sync_configuration.py
+    python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
 """
 
 import shutil
@@ -149,8 +149,8 @@ def main() -> None:
     sync_workflows()
     sync_rules()
     
-    print("\n⚠️  NEXT STEP: Propagate to Agents")
-    print("   Run: python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target <your_ide>")
+    print("\n⚠️  AGENT INSTRUCTION:")
+    print("   The local repository is now synced. Ask the user if they want to use their ecosystem's plugin bridge to install or update `plugins/spec-kitty-plugin` for their active AI environment.")
 
 if __name__ == "__main__":
     main()

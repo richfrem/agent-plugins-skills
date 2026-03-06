@@ -2,7 +2,6 @@
 name: spec-kitty-clarify
 description: Identify underspecified areas in the current feature spec by asking up
 ---
-
 ## User Input
 
 ```text

@@ -7,8 +7,8 @@ description: >
   own requirements files, (4) debugging pip install failures or Docker build issues related
   to dependencies, (5) reviewing or auditing the dependency tree, (6) running pip-compile.
   Enforces the pip-compile locked-file workflow and tiered dependency hierarchy.
+allowed-tools: Bash, Read, Write
 ---
-
 # Dependency Management
 
 ## Core Rules

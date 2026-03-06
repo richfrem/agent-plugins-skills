@@ -133,7 +133,7 @@ git commit -m "feat(WP07): description"
 git push origin 002-screener-ui-improvements-WP07
 
 # 7. Move to review
-spec-kitty agent tasks move-task WP07 --to for_review
+python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP07 for_review
 ```
 
 ---

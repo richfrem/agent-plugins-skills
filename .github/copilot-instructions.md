@@ -121,7 +121,6 @@ Any operation that:
 ## V. Session Closure (Mandate)
 - **ALWAYS** run `/spec-kitty.accept` then `/spec-kitty.merge` at feature completion.
 - **NEVER** abandon a feature without acceptance + retrospective.
-- **RLM sync**: Run distill after merge to update the semantic cache.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
 
@@ -541,7 +540,6 @@ Any operation that:
 ## V. Session Closure (Mandate)
 - **ALWAYS** run `/spec-kitty.accept` then `/spec-kitty.merge` at feature completion.
 - **NEVER** abandon a feature without acceptance + retrospective.
-- **RLM sync**: Run distill after merge to update the semantic cache.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
 
@@ -961,7 +959,6 @@ Any operation that:
 ## V. Session Closure (Mandate)
 - **ALWAYS** run `/spec-kitty.accept` then `/spec-kitty.merge` at feature completion.
 - **NEVER** abandon a feature without acceptance + retrospective.
-- **RLM sync**: Run distill after merge to update the semantic cache.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
 
@@ -1381,7 +1378,6 @@ Any operation that:
 ## V. Session Closure (Mandate)
 - **ALWAYS** run `/spec-kitty.accept` then `/spec-kitty.merge` at feature completion.
 - **NEVER** abandon a feature without acceptance + retrospective.
-- **RLM sync**: Run distill after merge to update the semantic cache.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
 
@@ -1753,7 +1749,6 @@ Any operation that:
 ## V. Session Closure (Mandate)
 - **ALWAYS** run `/spec-kitty.accept` then `/spec-kitty.merge` at feature completion.
 - **NEVER** abandon a feature without acceptance + retrospective.
-- **RLM sync**: Run distill after merge to update the semantic cache.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
 
@@ -2222,7 +2217,6 @@ Any operation that:
 ## V. Session Closure (Mandate)
 - **ALWAYS** run `/spec-kitty.accept` then `/spec-kitty.merge` at feature completion.
 - **NEVER** abandon a feature without acceptance + retrospective.
-- **RLM sync**: Run distill after merge to update the semantic cache.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
 

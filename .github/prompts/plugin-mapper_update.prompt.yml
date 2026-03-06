@@ -1,0 +1,18 @@
+name: Plugin-Mapper Update
+description: Run in dry-run mode to see what would happen without making changes.
+model: openai/gpt-4o
+messages:
+- role: system
+  content: You are a specialized AI agent executing a workflow. Follow the instructions
+    precisely.
+- role: user
+  content: '# Update / Refresh Plugins
+
+
+    ```bash
+
+    # Refresh all plugins in all agent environments
+
+    python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
+
+    ```'

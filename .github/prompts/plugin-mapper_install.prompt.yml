@@ -1,0 +1,24 @@
+name: Plugin-Mapper Install
+description: The specific target environment to install for (e.g., antigravity, claude,
+  github, gemini).
+model: openai/gpt-4o
+messages:
+- role: system
+  content: You are a specialized AI agent executing a workflow. Follow the instructions
+    precisely.
+- role: user
+  content: "# Install/Bridge Plugin\n\nThis command installs a plugin into your project\
+    \ (if not present) and bridges its capabilities to your specific agent environment.\
+    \ It prioritizes local plugins first. Note you MUST pass your own architecture\
+    \ name (e.g., `antigravity`) to the `--target_env` parameter.\n\n```bash\nPLUGIN_NAME=\"\
+    ${plugin_name}\"\nTARGET_ENV=\"${target_env}\"\nLOCAL_PATH=\"plugins/$PLUGIN_NAME\"\
+    \nVENDOR_PATH=\".vendor/agent-plugins-skills/plugins/$PLUGIN_NAME\"\n\n# 1. Check\
+    \ Local (Priority: User Created/Modified)\nif [ -d \"$LOCAL_PATH\" ]; then\n \
+    \   echo \"Processing local plugin: '$PLUGIN_NAME'...\"\n\n# 2. Check Vendor (Fallback:\
+    \ Downloadable)\nelif [ -d \"$VENDOR_PATH\" ]; then\n    echo \"Plugin '$PLUGIN_NAME'\
+    \ found in vendor. Installing...\"\n    mkdir -p plugins\n    cp -r \"$VENDOR_PATH\"\
+    \ \"plugins/\"\nelse\n    echo \"Error: Plugin '$PLUGIN_NAME' not found locally\
+    \ or in vendor collection.\"\n    exit 1\nfi\n\n# 3. Bridge/Convert (The Core\
+    \ Action)\necho \"Bridging '$PLUGIN_NAME' to environment '$TARGET_ENV'...\"\n\
+    python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin\
+    \ \"plugins/$PLUGIN_NAME\" --target \"$TARGET_ENV\"\n```"

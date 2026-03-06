@@ -1,0 +1,16 @@
+flowchart TD
+    subgraph Received [Input Artifact]
+        Bundle(tool-bundle.md)
+    end
+    subgraph Hydration [Agent Actions]
+        Parse{Parse Markdown} --> Split(Identify Files)
+        Split -- \"Extract code blocks\" --> Write(Write .py Scripts)
+        Write -- \"Execute Setup\" --> Init(Run Mapper)
+        Init -- \"Initialize JSON\" --> Inv[(file_inventory.json)]
+        note1[\"CRITICAL: Must run mapper to enable fixers\"]
+        note1 -.- Init
+    end
+    subgraph Ready [Operational]
+        Tool[Link Checker Ready]
+    end
+    Inv --> Tool
