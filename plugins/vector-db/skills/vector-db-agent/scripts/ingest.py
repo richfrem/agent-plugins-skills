@@ -34,12 +34,16 @@ from vector_config import VectorConfig
 from operations import VectorDBOperations
 
 # Try to import RLM for code context injection if available
-try:
-    # This might be in a different plugin or legacy path
-    from rlm_config import RLMConfig
-    HAS_RLM = True
-except ImportError:
-    HAS_RLM = False
+HAS_RLM_IMPORTS = False
+rlm_script_dir = PROJECT_ROOT / "plugins/rlm-factory/skills/rlm-curator/scripts"
+if rlm_script_dir.exists():
+    if str(rlm_script_dir) not in sys.path:
+        sys.path.insert(0, str(rlm_script_dir))
+    try:
+        from rlm_config import RLMConfig, load_cache
+        HAS_RLM_IMPORTS = True
+    except ImportError:
+        pass
 
 # Code shim for advanced parsing
 try:
@@ -62,6 +66,18 @@ def main():
     # 1. Load configuration from JSON profile (no .env)
     vec_config = VectorConfig(profile_name=args.profile, project_root=str(PROJECT_ROOT))
     manifest = vec_config.load_manifest()
+    
+    # 1b. Attempt to load paired RLM profile for Super-RAG Context Injection
+    rlm_cache = {}
+    HAS_RLM = False
+    if HAS_RLM_IMPORTS:
+        try:
+            rlm_config = RLMConfig(profile_name=args.profile, project_root=PROJECT_ROOT)
+            rlm_cache = load_cache(rlm_config.cache_path)
+            HAS_RLM = True
+            print(f"🧠 RLM Integration Active: Loaded cache for Super-RAG injection.")
+        except SystemExit:
+            print(f"⚠️ No paired RLM profile for '{args.profile}'. Proceeding without Super-RAG.")
     
     # 2. Initialize operations module with profile config
     cortex = VectorDBOperations(
@@ -119,8 +135,17 @@ def main():
             metadata = {
                 "source": rel_path,
                 "type": full_path.suffix.lstrip('.'),
-                "last_modified": os.path.getmtime(full_path)
+                "last_modified": os.path.getmtime(full_path),
+                "has_rlm_context": False
             }
+            
+            # Super-RAG Injection
+            if HAS_RLM and rlm_cache:
+                rlm_entry = rlm_cache.get(rel_path)
+                if rlm_entry and "summary" in rlm_entry:
+                    summary_text = rlm_entry["summary"]
+                    content = f"--- RLM SUPER-RAG CONTEXT ---\n{summary_text}\n---------------------------\n\n{content}"
+                    metadata["has_rlm_context"] = True
             
             # Ingest via Core
             doc = Document(page_content=content, metadata=metadata)
