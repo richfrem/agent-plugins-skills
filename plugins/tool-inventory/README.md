@@ -86,7 +86,7 @@ ChromaDB is the primary truth store. JSON cache is kept for backward compatibili
 
 | RLM Command/Script | Purpose | Executable Type |
 |:---|:---|:---|
-| `/rlm-factory_gap-fill` | Agent-powered file summarization | ✅ Sub-Agent |
+| `/rlm-factory:distill-agent` | Agent-powered file summarization | Agent (inject_summary.py) |
 | `distiller.py` | Batch LLM summarization | ✅ Local Ollama |
 | `query_cache.py` | Legacy JSON cache search | ❌ Command Line |
 | `inventory.py` | Coverage reporting | ❌ Command Line |
