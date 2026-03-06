@@ -2,21 +2,26 @@
 description: High-speed RLM distillation of project documentation using agentic intelligence.
 ---
 
-# Agent-Driven Distillation Workflow (PROJECT)
+# Agent-Driven Distillation Workflow
 
-Use this workflow to bypass slow local Ollama models when summarizing **documentation** (MD, TXT) for the RLM project cache. The agent (Claude, Gemini, Antigravity, etc.) reads the file itself, generates a high-quality summary, and injects it into the cache.
+Use the `rlm-distill` agent to summarize files into the RLM Summary Ledger
+using frontier AI instead of slow local Ollama.
 
-## 🚀 Execution Steps
+> For full protocol, quality standards, and swarm delegation: see [`rlm-distill` agent](../../plugins/rlm-factory/agents/rlm-distill.md)
 
-1.  **Identify the document** (e.g., `docs/architecture_overview.md`).
-2.  **Read the document** using `view_file`.
-3.  **Read the summarization prompt** from [rlm_summarize_legacy.md](${CLAUDE_PLUGIN_ROOT}/resources/prompts/rlm/rlm_summarize_legacy.md).
-4.  **Generate a high-quality summary** following the prompt's guidelines.
-5.  **Execute the distiller** to inject your summary into the cache:
+## Steps
 
+1. Run audit to find missing files:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/rlm-curator/scripts/distiller.py --file <path_to_doc> --type project --summary '<summary_text>'
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
 ```
 
-6.  **Verify** that `rlm_summary_cache.json` is updated.
+2. For each missing file -- read it deeply, generate a 1-sentence dense summary, inject:
+```bash
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+  --profile project \
+  --file <path_to_file> \
+  --summary "Your summary here."
+```
 
+3. For 50+ files -- delegate to the swarm (see rlm-distill agent for details).
