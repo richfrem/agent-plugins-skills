@@ -7,8 +7,8 @@ Synchronizes fresh artifacts from the local workspace back into the plugin's
 source of truth directories for distribution via the Bridge.
 
 Artifacts:
-1. Workflows (.windsurf/workflows -> plugins/spec-kitty/skills)
-2. Rules (.kittify/memory -> plugins/spec-kitty/rules)
+1. Workflows (.windsurf/workflows -> plugins/spec-kitty-plugin/skills)
+2. Rules (.kittify/memory -> plugins/spec-kitty-plugin/rules)
 
 Assumptions:
 1. User has installed the 'spec-kitty' CLI: `pip install --upgrade spec-kitty-cli`
@@ -16,7 +16,7 @@ Assumptions:
 3. Run this script to propagate updates into the plugin system.
 
 Usage:
-    python3 plugins/spec-kitty/skills/spec-kitty-agent/scripts/sync_configuration.py
+    python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
 """
 
 import shutil

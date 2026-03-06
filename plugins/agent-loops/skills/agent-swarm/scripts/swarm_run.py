@@ -31,7 +31,7 @@ WHAT IS A JOB FILE?
        This is the exact text sent to Claude as the system prompt. The file
        content being processed is piped to Claude's stdin.
 
-    Example Job File (plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md):
+    Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):
     ```
     ---
     model: haiku
@@ -44,8 +44,8 @@ WHAT IS A JOB FILE?
     vars:
       profile: project
     ---
-    Summarize this Chronicle entry as a single dense paragraph for the RLM cache.
-    Start with "Chronicle Entry [number]". Include key decisions, outcomes, and
+    Summarize this document as a single dense paragraph for the cache.
+    Start with "Document Review". Include key decisions, outcomes, and
     technical artifacts. Keep it under 200 words.
     ```
 
@@ -67,24 +67,24 @@ FEATURES:
 FILE DISCOVERY (checked in this order):
     1. --files file1.md file2.md    Explicit file list
     2. --bundle manifest.json       Context-bundler manifest (JSON/YAML with "files" key)
-    3. --files-from checklist.md    Markdown checklist (extracts `- [ ] \\`path\``)
+    3. --files-from checklist.md    Markdown checklist (extracts `- [ ] \`path\``)
     4. --dir some/directory         Recursive crawl filtered by ext
 
 USAGE EXAMPLES:
-    # 1. Basic: Summarize all Chronicle entries
-    python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \\
-        --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \\
-        --dir 00_CHRONICLE/ENTRIES
+    # 1. Basic: Summarize all Documents
+    python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+        --job plugins/my-plugin/resources/jobs/my_job.job.md \
+        --dir docs/
 
     # 2. Resume after interruption (rate limit, Ctrl+C, crash)
     python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \\
-        --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \\
-        --dir 00_CHRONICLE/ENTRIES --resume
+        --job plugins/my-plugin/resources/jobs/my_job.job.md \
+        --dir docs/ --resume
 
     # 3. Dry run to verify which files would be processed
-    python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \\
-        --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \\
-        --dir 00_CHRONICLE/ENTRIES --dry-run
+    python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+        --job plugins/my-plugin/resources/jobs/my_job.job.md \
+        --dir docs/ --dry-run
 
     # 4. Override model and worker count at runtime
     python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \\
