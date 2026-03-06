@@ -1,0 +1,24 @@
+# Vector DB Dependencies (Intent File)
+# Workflow:
+#   1. Edit this file
+#   2. pip-compile plugins/vector-db/skills/vector-db-agent/scripts/requirements.in
+#   3. pip install -r plugins/vector-db/skills/vector-db-agent/scripts/requirements.txt
+
+# Core Chroma DB
+chromadb
+
+# LangChain Integration
+langchain-chroma
+langchain-huggingface
+langchain-community
+langchain-text-splitters
+
+# Embeddings
+sentence-transformers
+
+# Frontmatter (for vector_consistency_check.py)
+python-frontmatter
+
+# Security Overrides
+protobuf>=6.33.5
+langchain-core>=1.2.11

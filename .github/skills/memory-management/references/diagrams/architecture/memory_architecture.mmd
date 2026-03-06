@@ -1,0 +1,50 @@
+flowchart TD
+    subgraph HotCache["Tier 1: HOT CACHE (always loaded at boot)"]
+        P["primer_file<BR>Role / Identity / Constraints"]
+        BD["boot_digest_file<BR>Tactical Status / Active Tasks"]
+        BC["boot_contract_file<BR>Immutable Constraints"]
+        SN["snapshot_file<BR>Cognitive Hologram (1 sentence/file)"]
+    end
+
+    subgraph RLMLedger["Tier 2: RLM SUMMARY LEDGER (keyword lookup -- O(1))"]
+        SC["summary_cache_file<BR>Pre-generated summaries: docs, protocols, research<BR>Plugin: rlm-factory | Skill: rlm-search<BR>Script: query_cache.py | Profile: project"]
+        TC["tool_cache_file<BR>Pre-generated summaries: plugins, skills, scripts<BR>Plugin: rlm-factory | Skill: rlm-search<BR>Script: query_cache.py | Profile: tools"]
+    end
+
+    subgraph VectorStore["Tier 3: VECTOR STORE (semantic embedding search)"]
+        VDB["ChromaDB vector backend<BR>Plugin: vector-db | Skill: vector-db-agent<BR>Script: query.py | Profile: knowledge<BR>Port: configured in vector_profiles.json"]
+    end
+
+    subgraph DeepStorage["Tier 4: DEEP STORAGE (filesystem -- authoritative source)"]
+        DOM["domain_data_dir/<BR>Research topics: {topic}/analysis.md"]
+        DES["design_docs_dir/<BR>ADRs, RFCs"]
+        GOV["governance_dir/<BR>Protocols, Playbooks"]
+    end
+
+    subgraph Vault["Tier 5: VAULT (Obsidian -- linked knowledge graph)"]
+        OBS["vault_dir/<BR>Plugin: obsidian-integration<BR>Skills: obsidian-vault-crud, obsidian-canvas-architect,<BR>obsidian-graph-traversal, obsidian-bases-manager<BR>Env: VAULT_PATH / OBSIDIAN_VAULT_PATH"]
+    end
+
+    subgraph Soul["Tier 6: SOUL (external persistence -- optional)"]
+        HF["traces_file / external dataset<BR>Plugin: huggingface-utils (project-specific)<BR>Synced at session seal via upload functions<BR>e.g. lineage/, data/, soul_traces.jsonl"]
+    end
+
+    Agent[/"AI Agent Query"/] --> HotCache
+    HotCache -->|"~90% of needs answered here"| OUT[/"Agent Response"/]
+    HotCache -->|"Miss"| RLMLedger
+    RLMLedger -->|"Summary found"| OUT
+    RLMLedger -->|"Need exact content"| VectorStore
+    VectorStore -->|"Chunk found"| OUT
+    VectorStore -->|"Need precise location"| Grep["Grep / rg<BR>Phase 3: exact keyword search<BR>scoped to paths from Tier 2 or 3"]
+    Grep --> DeepStorage
+    DeepStorage --> OUT
+    Vault -.->|"on demand"| OUT
+    Soul -.->|"session seal sync"| OUT
+
+    style HotCache fill:#4CAF50,color:#fff
+    style RLMLedger fill:#2196F3,color:#fff
+    style VectorStore fill:#9C27B0,color:#fff
+    style DeepStorage fill:#FF9800,color:#fff
+    style Vault fill:#607D8B,color:#fff
+    style Soul fill:#795548,color:#fff
+    style OUT fill:#37474F,color:#fff
