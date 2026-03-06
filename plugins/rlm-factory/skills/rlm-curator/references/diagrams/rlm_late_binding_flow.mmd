@@ -8,20 +8,20 @@ sequenceDiagram
     participant FileSystem as Tool Source Code
 
     note over Agent, FileSystem: Phase 1: Intent & Discovery (Late Binding)
-    User->>Agent: "Code a new Business Rule for FORM0000"
+    User->>Agent: "Find tools for vector search"
     Agent->>Agent: Check Context (Tool Missing?)
-    Agent->>Skill: activate(intent="create business rule")
+    Agent->>Skill: activate(intent="vector search")
     
-    Skill->>Search: search("business rule", store="tool")
+    Skill->>Search: search("vector", store="tool")
     Search->>Cache: Query Index (Fuzzy/Vector)
-    Cache-->>Search: Match: plugins/codify/business_rule.py
+    Cache-->>Search: Match: plugins/retrieve/vector/query.py
     Search-->>Skill: Return List [Tool ID, Path, Purpose]
 
     note over Agent, FileSystem: Phase 2: Just-In-Time Context Loading
     Skill->>FileSystem: Read Tool Instructions (Detailed)
     FileSystem-->>Skill: Full Docstring/Usage
-    Skill-->>Agent: Inject Context: [business_rule.py Usage]
+    Skill-->>Agent: Inject Context: [query.py Usage]
 
     note over Agent, FileSystem: Phase 3: Execution
-    Agent->>FileSystem: Execute: python plugins/codify/business_rule.py ...
+    Agent->>FileSystem: Execute: python plugins/retrieve/vector/query.py ...
     FileSystem-->>Agent: Success / Output
