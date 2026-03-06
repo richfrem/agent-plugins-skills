@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Agent
+    participant RLM as rlm-factory_query<br>(query_cache.py)
+    participant VDB as vector-db_query<br>(query.py)
+    participant Ledger as RLM Ledger<br>(JSON)
+    participant Chroma as ChromaDB<br>(Vector Store)
+
+    Note over Agent, Ledger: Phase 1: High-Speed Orientation (O(1))
+    
+    Agent->>RLM: "What does the vector query tool do?"
+    RLM->>Ledger: Key/Value Lookup
+    Ledger-->>RLM: "query.py handles semantic search..."
+    RLM-->>Agent: Returns 1-Sentence Summary
+    
+    alt Summary Sufficient
+        Agent->>Agent: Proceed with high-level planning
+        Note right of Agent: "I know enough to continue."
+    else Summary Insufficient
+        Note over Agent, Chroma: Phase 2: Targeted Deep Dive (Semantic)
+        Agent->>VDB: "Find exact code for vector semantic search"
+        VDB->>Chroma: Nearest-neighbor embedding search
+        Chroma-->>VDB: Ranked Chunks + Super-RAG Context
+        VDB-->>Agent: Returns exact file snippets
+        Agent->>Agent: Perform deep analysis
+    end
