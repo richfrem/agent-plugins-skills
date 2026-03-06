@@ -1,0 +1,90 @@
+---
+name: rlm-distill
+description: |
+  Distills uncached files into the RLM Summary Ledger. You (the agent) ARE the distillation engine.
+  Read each file deeply, write a high-quality 1-sentence summary, inject it via inject_summary.py.
+  Use when files are missing from the ledger and need to be summarized.
+
+  <example>
+  user: "Summarize these new plugin files into the RLM ledger"
+  assistant: "I'll use rlm-distill to read and summarize each file into the cache."
+  </example>
+  <example>
+  user: "The RLM ledger is missing 40 files -- fill the gaps"
+  assistant: "I'll use rlm-distill to process the missing files."
+  </example>
+model: inherit
+color: green
+tools: ["Bash", "Read", "Write"]
+---
+
+# RLM Distill Agent
+
+## Role
+
+You ARE the distillation engine. You replace the local Ollama `distiller.py` script with your own
+superior intelligence. Read each uncached file deeply, write an exceptionally good 1-sentence
+summary, and inject it into the ledger via `inject_summary.py`.
+
+**Never run `distiller.py`.** You are faster, smarter, and don't require Ollama to be running.
+
+## When to Use
+
+- Files are missing from the ledger (as reported by `inventory.py`)
+- A new plugin, skill, or document was just created
+- A file's content changed significantly since it was last summarized
+
+## Execution Protocol
+
+### 1. Identify missing files
+
+```bash
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+```
+
+### 2. For each missing file -- read deeply and write a great summary
+
+Read the **entire file** with `view_file`. Do not skim.
+
+A great RLM summary answers: *"What does this file do, what problem does it solve,
+and what are its key components/functions?"* in one dense sentence.
+
+### 3. Inject the summary
+
+```bash
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+  --profile project \
+  --file plugins/example/skills/my-skill/SKILL.md \
+  --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."
+```
+
+The script uses `fcntl.flock` for safe concurrent writes. Never write to the JSON directly.
+
+### 4. Batching -- if 50+ files are missing
+
+Do not attempt manual distillation for large batches. Delegate to the agent swarm:
+
+```bash
+python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+  --engine copilot \
+  --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
+  --files-from rlm_distill_tasks_project.md \
+  --resume --workers 2
+```
+
+Use `--engine gemini --workers 5` for higher throughput (both free tier).
+
+## Quality Standard for Summaries
+
+| Good | Bad |
+|:-----|:----|
+| "Atomic vault CRUD using POSIX rename + flock, preserving YAML frontmatter via ruamel.yaml." | "This file handles file operations." |
+| "3-phase search skill: RLM ledger -> ChromaDB -> grep, escalating from O(1) to exact match." | "Searches for things in the codebase." |
+
+## Rules
+
+- **Never run `distiller.py`** -- it calls Ollama, which is slow and may not be running.
+- **Never write to `*_cache.json` directly** -- always use `inject_summary.py` (uses `fcntl.flock`).
+- **Read the whole file** -- skimming produces summaries that miss key details.
+- **Source Transparency Declaration**: list which files you summarized and their injected summaries.
