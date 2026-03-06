@@ -1,27 +1,25 @@
 ---
-description: Clean stale and orphan entries from the RLM cache (offline)
-argument-hint: "[--type legacy|tool] [--apply] [--prune-orphans] [--prune-failed]"
+description: Remove stale and orphaned entries from the RLM Summary Ledger (offline)
+argument-hint: "[--profile project|tools] [--apply]"
 ---
 
-# Clean RLM Cache
+# /rlm-factory:cleanup
 
-Remove stale entries (deleted files) and orphans (files outside manifest scope).
+Remove stale entries (deleted files) and orphans (files outside manifest scope) from the ledger.
 
-## Usage
+> **For detailed execution protocol, see agent:** [`rlm-cleanup`](../agents/rlm-cleanup.md)
+
+## Quick Reference
+
 ```bash
-# Dry run — see what would be removed
+# Dry run -- see what would be removed (safe, no changes)
 python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile project
 
-# Actually remove stale entries
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile project --cleanup
+# Apply -- actually remove stale entries
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile project --apply
 
-# Also prune orphans (entries not matching manifest scope)
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile tools --cleanup
-
-# Remove failed distillation entries
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile project --cleanup
+# Both profiles
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile tools --apply
 ```
 
-## Safety
-- **Dry run by default** — nothing is deleted without `--apply`
-- Verbose mode with `--v`
+**Dry run by default.** Nothing is deleted without `--apply`.

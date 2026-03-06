@@ -1,29 +1,24 @@
 ---
-description: "Search the vector database for semantically relevant code and documentation"
+description: Search the vector database for semantically relevant code and documentation
+argument-hint: "\"search query\" [--profile knowledge] [--limit N] [--stats]"
 ---
 
 # /vector-db:query
 
-Perform semantic (meaning-based) search across the ingested repository content.
+Semantic (meaning-based) search against the ChromaDB vector store.
 
-## Usage
+> **For constraints and Source Transparency rules, see skill:** [`vector-db-search`](../skills/vector-db-agent/SKILL.md)
 
-### Basic Search
+## Quick Reference
+
 ```bash
-python3 plugins/vector-db/scripts/query.py "how is bail handled for youth offenders"
+# Semantic search
+python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
+  "your natural language question" --profile knowledge --limit 5
+
+# Check DB stats / health
+python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py --profile knowledge --stats
 ```
 
-### Check DB Health
-```bash
-python3 plugins/vector-db/scripts/query.py --stats
-```
-
-## Steps
-1. Run the query command with your natural language question.
-2. Review the returned chunks (ranked by cosine similarity).
-3. Use the file paths and line numbers to navigate to the source.
-
-## Notes
-- Returns top-k results (default: 5). Use `--top-k N` to change.
-- Results include the original file path, chunk content, and similarity score.
-- If results are poor, run `/vector-db:ingest` to rebuild the index.
+Results are ranked by cosine similarity and include file path, chunk content, and score.
+If results are poor or empty, run `/vector-db:ingest` to rebuild the index.
