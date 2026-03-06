@@ -28,11 +28,7 @@ Instead, you must **act as the distiller yourself**.
     *   Create a high-quality summary of the content yourself.
     *   Execute `inject_summary.py` to manually inject your JSON/Text summary string into the cache structure.
     *   Log: "Updated cache for [file] via Agent Distill."
-3.  **Batching (The Swarm Protocol):** If there are hundreds of files missing, DO NOT attempt to do them manually. You must use the parallel Multi-CLI Swarm engine:
-    ```bash
-    python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md --dir <TARGET_DIR>
-    ```
-    This script (`swarm_run.py`) natively supports `--engine [claude|gemini|copilot]` and will dispatch the RLM summarization job in parallel.
+3.  **Batching (The Orchestrator Protocol):** If there are hundreds of files missing, DO NOT attempt to do them manually. You must delegate to a multi-agent orchestrator or batch runner if one is available in your ecosystem (e.g., using `--engine copilot` against a job file) to dispatch the summarization jobs in parallel.
 
 ## Why This Exists (The RLM Philosophy)
 
@@ -107,9 +103,9 @@ First, run the RLM Auditor to generate an actionable checklist of all files miss
 python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile <profile_name> --tasks
 ```
 
-If the gap is massive (e.g., >20 files), you should pivot to `--engine copilot` (or `gemini`) and execute `swarm_run.py` against the generated checklist:
+If the gap is massive (e.g., >20 files), you should pivot to a batch-orchestrator (if available in your host ecosystem) and execute the job against the generated checklist, for example:
 ```bash
-python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py --engine copilot --files-from rlm_distill_tasks_<profile_name>.md --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md
+python3 <path_to_your_orchestrator>/swarm_run.py --engine copilot --files-from rlm_distill_tasks_<profile_name>.md --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md
 ```
 
 This generates `rlm_distill_tasks_<profile_name>.md` in the project root, containing checkboxes and pre-written `inject_summary.py` commands for every missing file.
