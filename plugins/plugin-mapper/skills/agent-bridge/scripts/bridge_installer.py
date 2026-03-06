@@ -48,6 +48,13 @@ import re
 import argparse
 from pathlib import Path
 
+print("\n" + "="*80)
+print("⚠️  DEPRECATION NOTICE: For consumers, this script is superseded by `npx skills`.")
+print("To install a plugin natively: `npx skills add richfrem/agent-plugins-skills/plugins/<name>`")
+print("This script is retained for contributors needing custom targets, ")
+print("Gemini TOML generation, or CLAUDE.md rule appending.")
+print("="*80 + "\n")
+
 try:
     import tomllib  # Python 3.11+
 except ImportError:
