@@ -40,6 +40,7 @@
     "commands_dir": "commands",
     "skills_dir": "skills",
     "dependencies": [
-        "vector-db"
+        "vector-db",
+        "agent-loops"
     ]
 }
