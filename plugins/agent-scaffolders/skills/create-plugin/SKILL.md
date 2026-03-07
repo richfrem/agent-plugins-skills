@@ -41,7 +41,7 @@ Ask the user: "Does this look right? (yes / adjust)"
 Execute the deterministic `scaffold.py` script. **CRITICAL: Apply the Iteration Directory Isolation Pattern**.
 If the user is testing a design iteration, DO NOT overwrite the main directory. Append `--iteration <N>` to save to `.history/iteration-<N>/`.
 ```bash
-python3 ~~agent-scaffolders-root/skills/create-plugin/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
+python3 ~~agent-scaffolders-root/scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
 ```
 *(Note: Usually `<destination-directory>` will be inside the `plugins/` root).*
 
