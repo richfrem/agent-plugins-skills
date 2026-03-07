@@ -40,7 +40,7 @@ if str(SCRIPT_DIR) not in sys.path:
 try:
     from rlm_config import RLMConfig, load_cache
 except ImportError as e:
-    print(f"❌ Could not import RLMConfig from {SCRIPT_DIR}: {e}")
+    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
 

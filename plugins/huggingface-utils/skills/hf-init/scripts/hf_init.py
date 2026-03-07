@@ -22,13 +22,13 @@ import asyncio
 import argparse
 from pathlib import Path
 
-# Resolve imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
+# Resolve imports (locally symlinked)
+sys.path.insert(0, str(Path(__file__).parent))
 try:
     from hf_config import get_hf_config, validate_config
-except ImportError:
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "huggingface-utils" / "scripts"))
-    from hf_config import get_hf_config, validate_config
+except ImportError as e:
+    print(f"Failed to import local hf_config: {e}")
+    sys.exit(1)
 
 
 async def full_init(validate_only: bool = False) -> dict:

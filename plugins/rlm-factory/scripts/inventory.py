@@ -27,9 +27,9 @@ from typing import Set
 # ============================================================
 # PATHS
 # File is at: plugins/rlm-factory/scripts/inventory.py
-# Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
+# Root is 4 levels up (scripts→rlm-factory→plugins→ROOT)
 # ============================================================
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 if str(SCRIPT_DIR) not in sys.path:
@@ -37,6 +37,9 @@ if str(SCRIPT_DIR) not in sys.path:
 
 try:
     from rlm_config import RLMConfig, load_cache, collect_files
+except ImportError as e:
+    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
+    sys.exit(1)
 except ImportError as e:
     print(f"❌ Could not import RLMConfig from {SCRIPT_DIR}: {e}")
     sys.exit(1)

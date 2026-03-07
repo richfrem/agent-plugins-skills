@@ -31,9 +31,7 @@ from typing import List, Dict, Optional
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/scripts/rlm_config.py
-# Root is 4 levels up (scripts→rlm-factory→plugins→ROOT)
-# ============================================================
+# Root is 3 levels up (scripts -> rlm-factory -> plugins -> ROOT)
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 

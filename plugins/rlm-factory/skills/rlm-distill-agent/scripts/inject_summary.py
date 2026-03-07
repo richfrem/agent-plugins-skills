@@ -28,9 +28,6 @@ from datetime import datetime
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
-
 try:
     from rlm_config import (
         RLMConfig,
@@ -39,7 +36,7 @@ try:
         save_cache
     )
 except ImportError as e:
-    print(f"❌ Could not import local RLMConfig from {SCRIPT_DIR}: {e}")
+    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
 
