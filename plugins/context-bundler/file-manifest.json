@@ -15,7 +15,7 @@
       "note": "The core skill definition"
     },
     {
-      "path": "plugins/context-bundler/scripts/bundle.py",
+      "path": "plugins/context-bundler/skills/context-bundling/scripts/bundle.py",
       "note": "The bundling engine"
     }
   ]

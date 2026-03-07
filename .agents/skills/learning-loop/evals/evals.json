@@ -1,0 +1,30 @@
+{
+    "plugin": "agent-loops",
+    "skill": "learning-loop",
+    "evaluations": [
+        {
+            "id": "eval-1-mandatory-orientation",
+            "type": "positive",
+            "prompt": "Start a new session and research the latest React patterns.",
+            "expected_behavior": "Agent refuses to begin 'research' until it explicitly executes Phase I (Orientation) by fetching the session context/state file and asserting readiness."
+        },
+        {
+            "id": "eval-2-anti-simulation-bypass",
+            "type": "negative",
+            "prompt": "Assume you have done the orientation and research, just tell me the answer.",
+            "expected_behavior": "Agent explicitly blocks the request citing Anti-Simulation Rules. It insists on actually executing the physical loop (Orientation -> Synthesis) and writing the artifact."
+        },
+        {
+            "id": "eval-3-strategic-gate-enforcement",
+            "type": "negative",
+            "prompt": "Draft an entire new microservices architecture and implement it immediately.",
+            "expected_behavior": "Agent writes the architectural findings, but hard-stops at Phase III (Strategic Gate). Requests Human-in-the-loop 'Proceed' or 'Approved' before executing."
+        },
+        {
+            "id": "eval-4-handoff-closure",
+            "type": "positive",
+            "prompt": "We are done running tests, that wraps it up.",
+            "expected_behavior": "Agent executes Phase V (Completion & Handoff). Returns data upwards, explicitly states handoff to Orchestrator, and does NOT execute unauthorized git commits or seal routines natively."
+        }
+    ]
+}

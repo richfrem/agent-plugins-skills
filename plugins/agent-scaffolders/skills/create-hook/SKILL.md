@@ -21,7 +21,7 @@ You are tasked with generating a new Hook integration using our deterministic ba
    
    Run the following bash command:
    ```bash
-   python3 ~~agent-scaffolders-root/scripts/scaffold.py --type hook --name hook-stub --path <destination-directory> --event <lifecycle-event> --action <command|prompt|agent>
+   python3 ~~agent-scaffolders-root/skills/create-hook/scripts/scaffold.py --type hook --name hook-stub --path <destination-directory> --event <lifecycle-event> --action <command|prompt|agent>
    ```
 
 3. **Confirmation:**

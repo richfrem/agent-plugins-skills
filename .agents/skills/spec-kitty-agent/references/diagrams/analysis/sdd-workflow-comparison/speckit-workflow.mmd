@@ -1,0 +1,75 @@
+%% Spec-Kitty: From Idea to Production in 6 Steps
+%% Official spec-kitty CLI workflow with command/artifact mapping
+
+graph TD
+    subgraph SpecKitty ["🐱 Spec-Kitty: From Idea to Production in 6 Steps"]
+        direction TB
+        
+        %% Phase 1: Specify
+        A["📝 Specify<br/>Plan What"]
+        Specify["spec-kitty specify<br/>or /spec-kitty.specify"]
+        SpecArtifact["spec.md"]
+        A --> Specify
+        Specify -->|Generates| SpecArtifact
+        
+        %% Phase 1b: Clarify (Optional)
+        Clarify["/spec-kitty.clarify"]
+        SpecArtifact -.-> Clarify
+        Clarify -.->|Updates| SpecArtifact
+        
+        %% Phase 2: Plan
+        B["🎯 Plan<br/>Plan How"]
+        Plan["spec-kitty plan<br/>or /spec-kitty.plan"]
+        PlanArtifact["plan.md"]
+        SpecArtifact --> B
+        B --> Plan
+        Plan -->|Generates| PlanArtifact
+        
+        %% Phase 3: Tasks
+        C["📋 Tasks<br/>WPs"]
+        Tasks["spec-kitty tasks<br/>or /spec-kitty.tasks"]
+        TaskArtifact["tasks.md"]
+        PlanArtifact --> C
+        C --> Tasks
+        Tasks -->|Generates| TaskArtifact
+        
+        %% Phase 4: Implement
+        D["⚡ Implement<br/>Execute WP"]
+        Implement["spec-kitty implement<br/>or /legacy-system-oracle-forms_* SOPs"]
+        Code["Code Changes"]
+        TaskArtifact --> D
+        D --> Implement
+        Implement -->|Generates| Code
+        
+        %% Phase 5: Review
+        E["🔍 Review<br/>Acceptance"]
+        Accept["spec-kitty accept<br/>+ /spec-kitty_retrospective"]
+        Code --> E
+        E --> Accept
+        Accept --> F
+        
+        %% Phase 6: Merge
+        F["🚀 Merge<br/>Closure"]
+        Merge["spec-kitty merge"]
+        F --> Merge
+        Merge --> Done([Done])
+    end
+
+    style A fill:#e1f5ff,stroke:#333
+    style B fill:#e1f5ff,stroke:#333
+    style C fill:#fff3e0,stroke:#333
+    style D fill:#f3e5f5,stroke:#333
+    style E fill:#e8f5e9,stroke:#333
+    style F fill:#fce4ec,stroke:#333
+    style Specify fill:#b3e5fc,stroke:#333
+    style Clarify fill:#e0e0e0,stroke:#333
+    style Plan fill:#b3e5fc,stroke:#333
+    style Tasks fill:#ffe0b2,stroke:#333
+    style Implement fill:#e1bee7,stroke:#333
+    style Accept fill:#c8e6c9,stroke:#333
+
+    style Merge fill:#f8bbd9,stroke:#333
+    style SpecArtifact fill:#fffacd,stroke:#999
+    style PlanArtifact fill:#fffacd,stroke:#999
+    style TaskArtifact fill:#fffacd,stroke:#999
+    style Code fill:#fffacd,stroke:#999
