@@ -14,7 +14,7 @@
     "agent-bridge": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "86d468b7817e58ca221d2228100ab1cae75ba9e5c3fd063a77a9808c2f13c72d"
+      "computedHash": "006786e5edcec227a728569a122d8b76dce8b803f9a28a1c26ecba2de0ca32ef"
     },
     "agent-swarm": {
       "source": "richfrem/agent-plugins-skills",
@@ -24,12 +24,12 @@
     "analyze-plugin": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "fd74818201090f5cd78662621a833175fdb594a8c13eafaccb128c1093abb11a"
+      "computedHash": "a3d641abeee96daa9b345a55bc813620d89327ecf3ffda646c76d3b2fba4498f"
     },
     "audit-plugin": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "66acfd725ca4a5ab5137363578f7067d97690a84d4952b863354f19ab1a099be"
+      "computedHash": "15ebd924adf24f535f6c15589254b85ef66afa78aec9a30e4919d2f887dfa526"
     },
     "audit-plugin-l5": {
       "source": "richfrem/agent-plugins-skills",
@@ -49,7 +49,7 @@
     "context-bundling": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "cf4dfbe26e9cf29b898ab19835edfb0066816efcd5f9be41edf09c633453c2ef"
+      "computedHash": "446884df878b3eaba5fda25a81319ebd11e62df212cda23e79ef43e5a3b25368"
     },
     "conventions-agent": {
       "source": "richfrem/agent-plugins-skills",
@@ -79,7 +79,7 @@
     "create-docker-skill": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "3d17ee73ca2b45c17434a80bd6a5ed31a71de248c5526e8acbcebd51b18cfe70"
+      "computedHash": "60e51dca8620bc278b597f5a75407f759ded63b88ce8663ff653ffea59d65e5c"
     },
     "create-github-action": {
       "source": "richfrem/agent-plugins-skills",
@@ -89,7 +89,7 @@
     "create-hook": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "43f79ca1c3a9edd92e0927b9c4fac0f03001d6a3a27b48131b4b8fbbcc323d89"
+      "computedHash": "99a48b9fb9127fa3cb3b62b3f7e927ba3ea139674814b69faa7c25758a281de1"
     },
     "create-legacy-command": {
       "source": "richfrem/agent-plugins-skills",
@@ -104,22 +104,22 @@
     "create-plugin": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "b16a9d82a8c753e1ed51575ec5ff073edb263587c5c686c218c1b9248453237d"
+      "computedHash": "7431d898dd86f9037c6f57d8db0e117807eee6813b7b468da5fdae037da8710e"
     },
     "create-skill": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "8c79c5085e5e0e222c07f9bc2b05a441c8135221c7758e14e4e6cbc09f37023d"
+      "computedHash": "c3ba8009a6d295d72cb790a5af9acf9d904149ef2485a926c4bade3a2e4233cf"
     },
     "create-stateful-skill": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "e7168b108c686459bbb54c99075679e86bc5df5c7da7f2a040682402bf123a46"
+      "computedHash": "6288cdcdda2ac8d5de2deae349ce847b27b397d6fb78b31a82a54cc90959b1d6"
     },
     "create-sub-agent": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "e81c3d9b575242cc568a7cde9fd114f9c943fee14cd2b443e5499da6e8b14ca9"
+      "computedHash": "7d865f079e869f3191620e9c965ad121bd4d8aac57995b5759cf56ef550767b5"
     },
     "dependency-management": {
       "source": "richfrem/agent-plugins-skills",
@@ -129,22 +129,22 @@
     "dual-loop": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "800c864bd806fe1e2835051bfc05be774d16ec367a46f8f52975ec80dbe5c5d9"
+      "computedHash": "0d32528a8bfa5356fa9aa7546609c40da7032f71429a158492708fec9880cda8"
     },
     "ecosystem-authoritative-sources": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "d6aabac4ebef9ff0aad43719287444f3a769040619c8e60337099ad6c7a0cb28"
+      "computedHash": "635e8b5d5bcc059c9f0bcb966ed1da9da07b1492749b5817ba1c58be17f36d79"
     },
     "ecosystem-standards": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "37e9134eebe2d76349c96c7a21a86379390d0d1318bc33b02bae16d100db9a10"
+      "computedHash": "8aac61dbab3ec2de1e46982ca8ac6fdb667aa59efd135a6319e6a1bd87b416f7"
     },
     "env-helper": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "3b26569fe3c65adf71583d9a10fb263e20dfe16d7ee3ef9ec8012d50fb6f2acc"
+      "computedHash": "cb8d774fae54049eac1be366723b581b99114a5cfbdd18b5d0b3801a70d2ef48"
     },
     "excel-to-csv": {
       "source": "richfrem/agent-plugins-skills",
@@ -159,7 +159,7 @@
     "hf-init": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "7e672ccc818e7251cdccbce6ba2af57ac4314253ee3a9c2610ff2c9278a4e25a"
+      "computedHash": "88bc7c63fabb11b425a0af9e8e24c162faf231b32d6610ae00004daf5793b064"
     },
     "hf-upload": {
       "source": "richfrem/agent-plugins-skills",
@@ -234,17 +234,17 @@
     "plugin-maintenance": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "1eaf36ccc21abd02a71ed1565bf1fb696ad911201dfe28663d94a82b3aed50c9"
+      "computedHash": "c8e6d73688c640fdfc776c238e4c229924d1e110e610c6b582e9d9f5d1ef8eab"
     },
     "plugin-replicator": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "f8d1b1115ed38bcc5358aeeb1d1894c5a3ae94227790bd1839b16455bc8aa3df"
+      "computedHash": "327d2f235e4c43edddbcb4a94965bc04b99bdaa7fb3d71932c1ea7f093b95071"
     },
     "red-team-review": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "8c4dee960e2504faf6a96451b56702c4cee822f29e5133e818048c2aaf85bd4e"
+      "computedHash": "a4e3bf42895912acee226285e07482ebd94ed937f6a30f14570513ea8ec33471"
     },
     "rlm-curator": {
       "source": "richfrem/agent-plugins-skills",
@@ -254,12 +254,12 @@
     "rlm-init": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "2af811e8d4a00c91298305b3943a8567ed960cd551baf94c84b2963cccb43f08"
+      "computedHash": "b5015a12560f90c2d698e511d33690a7874dc0b1e448acbc12119d3b26366f3f"
     },
     "rlm-search": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "3792eba7c5d41700b1f922b018961dd51a62a50bdd1dd02def6d7035f6e6fea5"
+      "computedHash": "580f35af4979be5fb79e3d148a0f23473d6653cf132238d3777d0a68a0fc9ea8"
     },
     "rsvp-reading": {
       "source": "richfrem/agent-plugins-skills",
@@ -369,7 +369,7 @@
     "vector-db-init": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "a113ceb11c99f8ebb4e6ac8591cb15c37230f1a24a6394945fd84357d2bde14d"
+      "computedHash": "38d35579e723ac7c525b78aa14e11078341f1270af3dfe1fb943dcf6bfcc89dd"
     },
     "vector-db-launch": {
       "source": "richfrem/agent-plugins-skills",
@@ -384,7 +384,7 @@
     "zip-bundling": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "4b94a4429269ec7ad8f46a07d5f2691f0201b8c1a9439421baa4cb1ec97e4f5e"
+      "computedHash": "358c9980d20c844ea027a2a051aa091c3ff15b276d27fea0c38d0bfee002e776"
     }
   }
 }

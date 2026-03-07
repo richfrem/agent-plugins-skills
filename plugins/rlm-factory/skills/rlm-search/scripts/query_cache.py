@@ -28,22 +28,19 @@ from typing import List, Dict, Any
 # PATHS
 # File is at: plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py
 # Root is 6 levels up (scripts->rlm-search->skills->rlm-factory->plugins->ROOT)
-# RLMConfig lives in sibling skill: rlm-curator/scripts/
+# rlm_config is symlinked into the same directory
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# rlm_config.py lives in the curator skill (shared library)
-CURATOR_SCRIPTS_DIR = PROJECT_ROOT / "plugins/rlm-factory/skills/rlm-curator/scripts"
-
-for _dir in [str(SCRIPT_DIR), str(CURATOR_SCRIPTS_DIR)]:
-    if _dir not in sys.path:
-        sys.path.insert(0, _dir)
+# Add the script's directory to sys.path to allow local imports
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
     from rlm_config import RLMConfig, load_cache
 except ImportError as e:
-    print(f"❌ Could not import RLMConfig from {SCRIPT_DIR}: {e}")
+    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
 

@@ -55,6 +55,6 @@ The LLM never holds the entire system in tokens.
 This allows us to document a massive codebase with standard context windows, achieving depth and accuracy impossible with simple context stuffing.
 
 ## 5. Tooling Reference
-*   **Distiller:** `plugins/rlm-factory/scripts/distiller.py` (Maintains the RLM Cache)
+*   **Distiller:** `../scripts/distiller.py` (Maintains the RLM Cache)
 *   **Discovery CLI:** Scripts within self-contained plugins/skills architecture (Recursive Scanner)
-*   **Query Cache:** `plugins/rlm-factory/scripts/query_cache.py` (Tool Discovery)
+*   **Query Cache:** `../scripts/query_cache.py` (Tool Discovery)

@@ -18,13 +18,13 @@ from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger("hf_upload")
 
-# Add parent for hf_config import
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+# Resolve imports (locally symlinked)
+sys.path.insert(0, str(Path(__file__).parent))
 try:
     from hf_config import get_hf_config, HFConfig, HFUploadResult, get_discovery_tags
-except ImportError:
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "huggingface-utils" / "scripts"))
-    from hf_config import get_hf_config, HFConfig, HFUploadResult, get_discovery_tags
+except ImportError as e:
+    print(f"Failed to import local hf_config: {e}")
+    sys.exit(1)
 
 
 def _build_dataset_readme(config: HFConfig = None, project_name: str = None) -> str:
