@@ -23,13 +23,12 @@ claude --plugin-dir ./plugins/rlm-factory
 > work offline — they just read/write JSON.
 
 ### Verify Installation
-After loading, `/help` should show:
-```
-/rlm-factory:distill   Summarize files via Ollama
-/rlm-factory:query     Search the semantic ledger
-/rlm-factory:audit     Report cache coverage
-/rlm-factory:cleanup   Remove stale entries
-```
+After loading, the following skills should be available:
+- `rlm-init` (Bootstrap caching)
+- `rlm-search` (Search semantic ledger)
+- `rlm-curator` (Audit and analyze cache coverages)
+- `rlm-distill-agent` / `rlm-distill-ollama` (Summarization engines)
+- `rlm-cleanup-agent` (Pruning entries)
 
 ---
 
@@ -47,17 +46,17 @@ See `resources/` for manifest files and `rlm_profiles.json` for profile template
 ### Quick Start
 ```bash
 # 1. Check what's already memorized
-/rlm-factory:audit
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
 
 # 2. Search for a topic (no Ollama needed)
-/rlm-factory:query "authentication"
+python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py "authentication" --profile project
 
 # 3. Distill missing files (requires Ollama running)
 ollama serve  # in another terminal
-/rlm-factory:distill
+python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile project
 
 # 4. Clean up deleted files
-/rlm-factory:cleanup --apply
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile project --apply
 ```
 
 ### Memory Banks (Profiles)
@@ -99,15 +98,15 @@ Store your customized LLM summarization prompts here.
 
 ---
 
-### Commands Reference
+### Skills Reference
 
-| Command | Script | Ollama? | Description |
+| Skill | Script | Ollama? | Description |
 |:---|:---|:---|:---|
-| `/rlm-factory:distill` | `rlm-curator/scripts/distiller.py` | Yes | Ollama batch summarization |
-| `/rlm-factory:distill-agent` | `inject_summary.py` via agent | No | Agent-powered summarization |
-| `/rlm-factory:query` | `rlm-search/scripts/query_cache.py` | No | Search the semantic ledger |
-| `/rlm-factory:audit` | `rlm-curator/scripts/inventory.py` | No | Coverage report (fs vs cache) |
-| `/rlm-factory:cleanup` | `rlm-curator/scripts/cleanup_cache.py` | No | Remove stale/orphan entries |
+| `rlm-distill-ollama` | `skills/rlm-distill-ollama/scripts/distiller.py` | Yes | Ollama batch summarization |
+| `rlm-distill-agent` | `skills/rlm-distill-agent/scripts/inject_summary.py` | No | Agent-powered summarization |
+| `rlm-search` | `skills/rlm-search/scripts/query_cache.py` | No | Search the semantic ledger |
+| `rlm-curator` | `skills/rlm-curator/scripts/inventory.py` | No | Coverage report (fs vs cache) |
+| `rlm-cleanup-agent` | `skills/rlm-cleanup-agent/scripts/cleanup_cache.py` | No | Remove stale/orphan entries |
 
 ### Agent Distillation (The "Brain Upgrade")
 
@@ -115,7 +114,7 @@ For small batches (< 10 files), the agent can distill directly without Ollama by
 reading the file and writing the summary into the cache JSON. This is 3-5x faster
 and produces higher-quality summaries using frontier model intelligence.
 
-See `agents/rlm-distill.md` for the full Agent Distill protocol.
+See `skills/rlm-distill-agent/SKILL.md` for the full Agent Distill protocol.
 
 ---
 
@@ -153,27 +152,25 @@ Additional diagrams (in `references/diagrams/`):
 rlm-factory/
 +-- .claude-plugin/
 |   +-- plugin.json              # Plugin identity + runtime deps
-+-- commands/
-|   +-- distill.md               # /rlm-factory:distill
-|   +-- distill-agent.md         # /rlm-factory:distill-agent
-|   +-- query.md                 # /rlm-factory:query
-|   +-- audit.md                 # /rlm-factory:audit
-|   +-- cleanup.md               # /rlm-factory:cleanup
++-- scripts/
+|   +-- rlm_config.py            # Shared utility
+|   +-- inventory.py             # Shared utility
+|   +-- debug_rlm.py             # Shared utility
 +-- skills/
-|   +-- rlm-curator/             # WRITE skill: distill, inject, audit, cleanup
+|   +-- rlm-curator/             # WRITE skill: audit/overall curation
 |   |   +-- SKILL.md
-|   |   +-- scripts/             # distiller.py, inject_summary.py,
-|   |   |                        # inventory.py, cleanup_cache.py, rlm_config.py
-|   |   +-- references/
-|   |       +-- diagrams/architecture/ # Architecture .mmd diagrams
+|   |   +-- scripts/             # Symlinks to inventory.py, rlm_config.py
+|   |   +-- references/          # Architecture .mmd diagrams
 |   +-- rlm-search/              # READ skill: 3-phase search protocol
-|   |   +-- SKILL.md             # Phase 1/2/3 instructions + decision tree
-|   |   +-- scripts/             # query_cache.py (Phase 1 RLM scan)
-|   +-- ollama-launch/
-|       +-- SKILL.md             # Ollama server management
-+-- agents/
-|   +-- rlm-distill.md           # rlm-distill agent (agent-first distillation)
-|   +-- rlm-cleanup.md          # rlm-cleanup agent (prune stale entries)
+|   |   +-- scripts/query_cache.py
+|   +-- rlm-distill-agent/       # WRITE skill: Agent-based fast RLM injection
+|   |   +-- scripts/inject_summary.py
+|   +-- rlm-distill-ollama/      # WRITE skill: Batch processing script
+|   |   +-- scripts/distiller.py
+|   +-- rlm-cleanup-agent/       # WRITE skill: Cache pruning
+|   |   +-- scripts/cleanup_cache.py
+|   +-- rlm-init/                # SETUP skill: New configurations
+|   +-- ollama-launch/           # SETUP skill: Ollama management
 +-- resources/
 |   +-- manifest-index.json      # Profile registry
 |   +-- distiller_manifest.json  # Default scope config

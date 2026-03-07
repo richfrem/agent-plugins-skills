@@ -1,16 +1,16 @@
 ---
-name: rlm-cleanup
+name: rlm-cleanup-agent
 description: |
   Removes stale and orphaned entries from the RLM Summary Ledger.
   Use after files are deleted, renamed, or moved to keep the ledger in sync with the filesystem.
 
   <example>
   user: "Clean up the RLM cache after I renamed some files"
-  assistant: "I'll use rlm-cleanup to remove stale entries from the ledger."
+  assistant: "I'll use rlm-cleanup-agent to remove stale entries from the ledger."
   </example>
   <example>
   user: "The RLM ledger has entries for files that no longer exist"
-  assistant: "I'll run rlm-cleanup to prune orphaned entries."
+  assistant: "I'll run rlm-cleanup-agent to prune orphaned entries."
   </example>
 model: inherit
 color: orange
@@ -47,10 +47,10 @@ Default: run against all configured profiles. Ask if unsure:
 ### 2. Dry run first -- show what will be removed
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py \
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
   --profile project --dry-run
 
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py \
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
   --profile tools --dry-run
 ```
 
@@ -59,17 +59,17 @@ Report: "Found N stale entries across profiles: [list of paths]"
 ### 3. Apply -- only after confirming with the user
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py \
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
   --profile project --apply
 
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py \
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
   --profile tools --apply
 ```
 
 ### 4. Verify
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/inventory.py --profile project
 ```
 
 Report the new coverage percentage.

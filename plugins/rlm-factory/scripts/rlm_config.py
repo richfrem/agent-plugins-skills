@@ -31,7 +31,7 @@ from typing import List, Dict, Optional
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py
+# File is at: plugins/rlm-factory/scripts/rlm_config.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 # ============================================================

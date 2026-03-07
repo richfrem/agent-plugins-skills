@@ -7,7 +7,7 @@ argument-hint: "[--profile project|tools] [--file path/to/file] [--since N]"
 
 Summarize files into the RLM Summary Ledger. Two paths depending on context:
 
-> **For detailed execution protocol, see agent:** [`rlm-distill`](../agents/rlm-distill.md)
+> **For detailed execution protocol, see agent:** [`rlm-distill-agent`](../rlm-distill-agent/SKILL.md)
 
 ## Path 1 -- Agent Distillation (default, fast, no Ollama)
 
@@ -15,7 +15,7 @@ The agent reads each file and writes a high-quality summary via `inject_summary.
 Use for 1-50 files. The agent is faster and produces better summaries than local Ollama.
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your agent-generated summary here."
@@ -27,13 +27,13 @@ Requires Ollama running locally (`ollama serve`, model: `granite3.2:8b`).
 
 ```bash
 # All files in profile scope
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project
+python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile project
 
 # Single file
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project --file path/to/file.md
+python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile project --file path/to/file.md
 
 # Changed in last 2 hours
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project --since 2
+python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile project --since 2
 ```
 
 | Profile | Flag | Cache file |

@@ -5,7 +5,7 @@ dependencies: ["skill:rlm-curator"]
 ---
 # RLM Init: Cache Bootstrap
 
-Initialize a new RLM semantic cache for any project. This is the **first-run** workflow — run it once per cache, then use `rlm-distill` for ongoing updates.
+Initialize a new RLM semantic cache for any project. This is the **first-run** workflow — run it once per cache, then use `rlm-distill-agent` for ongoing updates.
 
 ## When to Use
 
@@ -103,7 +103,7 @@ echo "{}" > <cache_path>
 
 Scan the manifest against the cache to find uncached files:
 ```bash
-python3 plugins/skills/rlm-curator/scripts/inventory.py --profile <NAME>
+python3 plugins/rlm-factory/skills/rlm-init/scripts/inventory.py --profile <NAME>
 ```
 
 Report: "N files in manifest, M already cached, K remaining."
@@ -132,7 +132,7 @@ For each uncached file:
 
 Run audit again:
 ```bash
-python3 plugins/skills/rlm-curator/scripts/inventory.py --profile <NAME>
+python3 plugins/rlm-factory/skills/rlm-init/scripts/inventory.py --profile <NAME>
 ```
 
 Target: 100% coverage. If gaps remain, repeat Step 6 for missing files.
@@ -148,6 +148,6 @@ Every summary should answer: **"Why does this file exist and what does it do?"**
 
 ## After Init
 
-- Use [`rlm-distill`](../rlm-distill/SKILL.md) for ongoing cache updates
+- Use [`rlm-distill-agent`](../rlm-distill-agent/SKILL.md) for ongoing cache updates
 - Use [`rlm-curator`](../rlm-curator/SKILL.md) for querying, auditing, and cleanup
 - Cache files should be `.gitignore`d if they contain project-specific summaries

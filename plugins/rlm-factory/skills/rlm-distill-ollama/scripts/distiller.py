@@ -11,9 +11,9 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage:
-    python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile plugins
-    python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile tools --file path/to/file.py --force
-    python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile plugins --since 24
+    python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile plugins
+    python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile tools --file path/to/file.py --force
+    python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile plugins --since 24
 
 Related:
     - rlm_config.py (configuration & utilities)
@@ -34,7 +34,7 @@ from typing import Dict, List, Optional
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py
+# File is at: plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]

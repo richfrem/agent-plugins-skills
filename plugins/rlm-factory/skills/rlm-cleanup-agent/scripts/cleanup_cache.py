@@ -11,13 +11,13 @@ Layer: Curate / Rlm
 
 Usage:
     # Dry run — preview stale entries
-    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile plugins
+    python plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile plugins
 
     # Remove files whose source no longer exists
-    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile plugins --apply
+    python plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile plugins --apply
 
     # Remove entries outside the manifest + failed distillations
-    python plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --profile tools --prune-orphans --prune-failed --apply
+    python plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile tools --prune-orphans --prune-failed --apply
 
 Related:
     - rlm_config.py (configuration & utilities)
@@ -31,7 +31,7 @@ from typing import Dict, Optional, Set
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py
+# File is at: plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]

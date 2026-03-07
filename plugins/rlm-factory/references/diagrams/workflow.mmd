@@ -2,7 +2,7 @@ flowchart TD
     Start([User Needs Context]) --> Check{Is RLM\nLedger Built?}
 
     Check -- No --> Build["Run Distiller (requires Ollama)\nSkill: rlm-curator"]
-    Build --> CmdBuild[/"python plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py --profile project"/]
+    Build --> CmdBuild[/"python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile project"/]
     CmdBuild -- "Process all files" --> Cache[(RLM Summary Ledger\nrlm_summary_cache.json\nrlm_tool_cache.json)]
 
     Check -- Yes --> Audit["Check Coverage\nSkill: rlm-curator"]
@@ -10,7 +10,7 @@ flowchart TD
     CmdAudit -- "Missing Files?" --> Gaps{Gaps Found?}
 
     Gaps -- Yes --> Patch["Distill Specific File or\nUse Agent Distill (/rlm-factory:distill-agent)"]
-    Patch --> CmdPatch[/"python plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile project --file path"/]
+    Patch --> CmdPatch[/"python plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py --profile project --file path"/]
     CmdPatch --> Cache
 
     Gaps -- No --> Search["Query Cache (offline, O(1))\nSkill: rlm-search"]

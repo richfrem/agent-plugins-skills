@@ -1,5 +1,5 @@
 ---
-name: rlm-distill
+name: rlm-distill-agent
 description: |
   Distills uncached files into the RLM Summary Ledger. You (the agent) ARE the distillation engine.
   Read each file deeply, write a high-quality 1-sentence summary, inject it via inject_summary.py.
@@ -7,11 +7,11 @@ description: |
 
   <example>
   user: "Summarize these new plugin files into the RLM ledger"
-  assistant: "I'll use rlm-distill to read and summarize each file into the cache."
+  assistant: "I'll use rlm-distill-agent to read and summarize each file into the cache."
   </example>
   <example>
   user: "The RLM ledger is missing 40 files -- fill the gaps"
-  assistant: "I'll use rlm-distill to process the missing files."
+  assistant: "I'll use rlm-distill-agent to process the missing files."
   </example>
 model: inherit
 color: green
@@ -47,8 +47,8 @@ summary, and inject it into the ledger via `inject_summary.py`.
 ### 1. Identify missing files
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inventory.py --profile project
+python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inventory.py --profile tools
 ```
 
 ### 2. For each missing file -- read deeply and write a great summary
@@ -61,7 +61,7 @@ and what are its key components/functions?"* in one dense sentence.
 ### 3. Inject the summary
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py \
   --profile project \
   --file plugins/example/skills/my-skill/SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."

@@ -17,7 +17,7 @@ timeout: 90
 ext: [".md"]
 
 post_cmd: >-
-  python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py
+  python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py \
   --profile {profile} --file {file} --summary {output}
 
 vars:

@@ -11,8 +11,8 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage:
-    python plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile plugins
-    python plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+    python plugins/rlm-factory/scripts/inventory.py --profile plugins
+    python plugins/rlm-factory/scripts/inventory.py --profile tools
 
 Related:
     - rlm_config.py (configuration & file collection)
@@ -26,7 +26,7 @@ from typing import Set
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py
+# File is at: plugins/rlm-factory/scripts/inventory.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
@@ -107,7 +107,7 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
                 for p in sorted_missing:
                     # Provide an actionable command for the agent/user
                     f.write(f"- [ ] `{p}`\n")
-                    f.write(f"  - Command: `python plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py --profile {config.profile_name} --file \"{p}\" --summary \"YOUR_SUMMARY_HERE\"`\n")
+                    f.write(f"  - Command: `python plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py --profile {config.profile_name} --file \"{p}\" --summary \"YOUR_SUMMARY_HERE\"`\n")
             print(f"\n📝 Exported task list to: {task_file.relative_to(PROJECT_ROOT)}")
 
     if stale_in_cache:

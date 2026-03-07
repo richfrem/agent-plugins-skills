@@ -75,12 +75,12 @@ python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
 
 #### Option B: Ollama Batch (requires Ollama running locally)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py
+python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py
 ```
 
 #### Option C: Manual Agent Injection (< 5 files)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your dense summary here..."
@@ -88,7 +88,7 @@ python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --type legacy --apply
+python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --type legacy --apply
 ```
 
 ## Quality Guidelines
