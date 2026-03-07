@@ -72,7 +72,7 @@ Ask the user:
 
 #### Pull: From `agent-plugins-skills` into a consumer project (run FROM consumer project)
 ```bash
-python3 plugins/plugin-manager/scripts/plugin_replicator.py \
+python3 plugins/plugin-manager/skills/plugin-replicator/scripts/plugin_replicator.py \
   --source /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/<plugin-name> \
   --dest plugins/<plugin-name> \
   --clean
@@ -80,21 +80,21 @@ python3 plugins/plugin-manager/scripts/plugin_replicator.py \
 
 #### Push: From this repo to another project (run FROM this repo)
 ```bash
-python3 plugins/plugin-manager/scripts/plugin_replicator.py \
+python3 plugins/plugin-manager/skills/plugin-replicator/scripts/plugin_replicator.py \
   --source plugins/<plugin-name> \
   --dest /path/to/other-project/plugins/<plugin-name>
 ```
 
 #### Bulk Push: All plugins
 ```bash
-python3 plugins/plugin-manager/scripts/bulk_replicator.py \
+python3 plugins/plugin-manager/skills/plugin-replicator/scripts/bulk_replicator.py \
   --source plugins/ \
   --dest /path/to/other-project/plugins/
 ```
 
 #### Filtered Bulk (e.g., only obsidian-* plugins)
 ```bash
-python3 plugins/plugin-manager/scripts/bulk_replicator.py \
+python3 plugins/plugin-manager/skills/plugin-replicator/scripts/bulk_replicator.py \
   --source plugins/ \
   --dest /path/to/other-project/plugins/ \
   --filter "obsidian-*" --clean

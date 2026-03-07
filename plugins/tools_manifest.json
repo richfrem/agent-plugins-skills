@@ -56,7 +56,7 @@
         },
         {
           "name": "scaffold.py",
-          "path": "plugins/agent-scaffolders/scripts/scaffold.py",
+          "path": "plugins/agent-scaffolders/skills/create-skill/scripts/scaffold.py",
           "purpose": "",
           "type": "python"
         }

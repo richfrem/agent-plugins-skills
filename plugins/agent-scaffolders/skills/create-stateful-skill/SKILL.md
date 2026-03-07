@@ -44,7 +44,7 @@ Ask the user: "Does this look right? (yes / adjust)"
 ### 2. Scaffold the Infrastructure (Preventing Context Bloat)
 Execute the deterministic `scaffold.py` script to generate the physical directories:
 ```bash
-python3 ~~agent-scaffolders-root/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ~~agent-scaffolders-root/skills/create-stateful-skill/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Lean Pattern References (Lazy-Loading)

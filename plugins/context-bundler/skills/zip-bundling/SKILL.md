@@ -46,7 +46,7 @@ You must generate a `file-manifest.json` containing the exact files to be bundle
 Once the `file-manifest.json` is safely written to disk, invoke the native bundler script explicitly requesting a `.zip` output destination:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/bundle_zip.py" --manifest "file-manifest.json" --bundle "output_bundle.zip"
+python3 "plugins/context-bundler/skills/zip-bundling/scripts/bundle_zip.py" --manifest "file-manifest.json" --bundle "output_bundle.zip"
 ```
 
 The script will automatically parse your JSON notes and generate a `_manifest_notes.md` root document explaining the archive contents to whoever unzips it.

@@ -22,25 +22,25 @@ Because of the Progressive Disclosure architecture, you should selectively read 
 To read any of the reference guides, use your file system tools to `cat` or `view` the relevant file.
 
 *   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills/` (and equivalents like `.agent/skills/` and `.github/skills/`). Custom agents deployed as Skills are stored here as `<plugin>-<agent>/SKILL.md`.
-    *   [reference/skills.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/skills.md)
-    *   [reference/skill-execution-flow.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/skill-execution-flow.mmd)
+    *   [reference/skills.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/skills.md)
+    *   [reference/diagrams/skill-execution-flow.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/diagrams/skill-execution-flow.mmd)
 *   **Claude Plugins**: Specification for the `.claude-plugin` architecture, manifest setup, and distribution.
-    *   [reference/plugins.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/plugins.md)
-    *   [reference/plugin-architecture.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/plugin-architecture.mmd)
+    *   [reference/plugins.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/plugins.md)
+    *   [reference/diagrams/plugin-architecture.mmd](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/diagrams/plugin-architecture.mmd)
 *   **Antigravity Workflows & Rules (and Legacy Commands)**: Specifications for global/workspace Rules, deterministic trajectory Workflows, and the critical distinction between deploying **Skills** vs. Legacy **Commands**.
-    *   [reference/workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/workflows.md)
+    *   [reference/workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/workflows.md)
 *   **Sub-Agents**: Definition, setup, and orchestration of nested contextual LLM boundaries. Sub-Agents are deployed structurally as pure Skills (mapped to `skills/<agent-name>/SKILL.md`).
-    *   [reference/sub-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/sub-agents.md)
+    *   [reference/sub-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/sub-agents.md)
 *   **GitHub Copilot Prompts (Models)**: Documentation on the exact YAML schema, dynamic variables, and exclusion logic (`exclude-targets`) used by GitHub Copilot chat environments.
-    *   [reference/github-prompts.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/github-prompts.md)
+    *   [reference/github-prompts.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/github-prompts.md)
 *   **GitHub Agentic Workflows**: Documentation on the "Continuous AI" autonomous agents responding to CI/CD events.
-    *   [reference/github-agentic-workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/github-agentic-workflows.md)
+    *   [reference/github-agentic-workflows.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/github-agentic-workflows.md)
 *   **Hooks**: Lifecycle event integrations (e.g., `pre-commit`, `on-startup`).
-    *   [reference/hooks.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/hooks.md)
+    *   [reference/hooks.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/hooks.md)
 *   **Azure AI Foundry Agents**: Documentation on how to map Open Agent-Skills to Azure Foundry Agent Service, including API payloads, constraints (e.g., 128-tool limits), and standard setups.
-    *   [reference/azure-foundry-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/azure-foundry-agents.md)
+    *   [reference/azure-foundry-agents.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/azure-foundry-agents.md)
 *   **Marketplace**: Registering registries and interacting with the `marketplace.json` distribution format.
-    *   [reference/marketplace.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/marketplace.md)
+    *   [reference/marketplace.md](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/references/marketplace.md)
 
 ## Usage Instruction
 Never guess the specifics of `SKILL.md` frontmatter, plugin directory limits, or workflow sizes. Read the exact specifications linked above before constructing new ecosystem extensions.

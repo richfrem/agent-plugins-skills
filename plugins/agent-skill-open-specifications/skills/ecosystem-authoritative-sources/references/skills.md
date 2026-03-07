@@ -14,9 +14,22 @@ Skills are modular capabilities that package procedural knowledge, context, and 
 
 ## Optional Directories
 Agent skills support three standard optional directories to keep the root clean:
-- **`scripts/`**: Contains executable code (Python, Bash, JS). Must be self-contained, handle edge cases gracefully, and include helpful error messages instead of failing silently.
+- **`scripts/`**: Contains executable code (Python, Bash, JS). Must be self-contained, handle edge cases gracefully, and include helpful error messages instead of failing silently. **Scripts must live inside the skill's own `scripts/` directory, never at the parent plugin level.** This ensures the skill is fully portable when installed via `npx skills add`, which copies skill folders individually.
 - **`references/`**: Contains additional documentation loaded on-demand (e.g., `REFERENCE.md`, `FORMS.md`, `domain.md`). Keep these small and focused to save context window space.
 - **`assets/`**: Contains static resources like templates, images (diagrams), and data files (lookup tables, schemas).
+
+### Self-Containment Rule (Portability)
+Each skill folder must be **fully self-contained**. All scripts, references, and assets that a skill depends on must exist inside the skill's own directory tree. Do not place shared scripts at the plugin level and reference them from skills -- this breaks `npx skills add` installation, which copies only the skill folder into the consumer's agent environment.
+
+**Shared scripts across sibling skills:** When multiple skills within the same plugin share utility scripts, use **relative symlinks** from the secondary skill's `scripts/` directory pointing to the primary skill's copy. This avoids file duplication while maintaining portability -- `npx skills add` automatically dereferences symlinks into real files during installation, so each installed skill receives a standalone copy.
+
+Example structure:
+```
+my-plugin/
+  skills/
+    primary-skill/scripts/shared_util.py       # Real file (single source of truth)
+    secondary-skill/scripts/shared_util.py      # Symlink -> ../../primary-skill/scripts/shared_util.py
+```
 
 ## Resolution Precedence
 Skills are resolved automatically. Any nested `.claude/skills/` directory relative to the current working file is also discovered (useful in monorepos).
@@ -105,7 +118,7 @@ The filesystem-based architecture of Skills naturally forces a 3-level "Progress
 2. **Level 2 (Instructions) - Activation:** Loaded when triggered. The `SKILL.md` body. Usually < 5k tokens. Loaded via a background bash command (`read pdf-skill/SKILL.md`).
 3. **Level 3+ (Resources & Code) - Execution:** Loaded as-needed. Arbitrary scripts or reference files (`REFERENCE.md`) referenced by Level 2. Executing scripts uses tokens only for the *output*, not the script content itself.This makes skills self-documenting, extensible, and highly portable.
 
-*See visual representation of this lifecycle in [skill-execution-flow.mmd](./skill-execution-flow.mmd)*
+*See visual representation of this lifecycle in [skill-execution-flow.mmd](./diagrams/skill-execution-flow.mmd)*
 
 ## Cross-Surface Constraints
 Skills run in different environments depending on the host surface. Always plan the execution requirements correctly:
@@ -135,6 +148,7 @@ Since skills provide instructions and execute code, review third-party or intern
 When referencing other files inside your skill (e.g. scripts or docs), use **relative paths from the skill root**.
 - Good: `See [the guide](references/REFERENCE.md)` or `Run scripts/extract.py`
 - Bad: `../` or absolute paths.
+- Bad: `plugins/my-plugin/scripts/shared.py` (plugin-level scripts break `npx skills add` portability -- use a relative symlink inside the skill's own `scripts/` directory pointing to the primary skill's copy).
 
 ### Official Validation
 The open standard provides an official NPM-based CLI validator for skill structure. When authoring new skills, always manually run:
