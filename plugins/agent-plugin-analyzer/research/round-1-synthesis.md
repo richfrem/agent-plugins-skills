@@ -66,7 +66,7 @@ Cross-LLM consensus analysis from Gemini 3.1 Pro, Grok 4.2, GPT 5.3, and Claude 
 - `skills/analyze-plugin/SKILL.md` — expand Phase 5
 - `references/analysis-framework.md` — add security rubric
 - `references/analysis-questions-by-type.md` — add security questions per file type
-- `scripts/inventory_plugin.py` — add security scan flags
+- `skills/analyze-plugin/scripts/inventory_plugin.py` — add security scan flags
 
 ## P3: Pattern Confidence/Reliability Scoring
 

@@ -1,7 +1,7 @@
 # Procedural Fallback Tree: Plugin Analyzer
 
 ## 1. inventory_plugin.py Fails or is Missing
-If `scripts/inventory_plugin.py` throws an error, returns empty, or is not executable:
+If `skills/analyze-plugin/scripts/inventory_plugin.py` throws an error, returns empty, or is not executable:
 - **Action**: Do not abort the analysis. Fall back to the manual directory walk described in Phase 1. Use standard file reading capabilities (`ls`, `find`, or tool-specific equivalents) to build the structured inventory checklist.
 
 ## 2. Plugin Contains No SKILL.md Files

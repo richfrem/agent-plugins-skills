@@ -56,3 +56,6 @@ plugins/**/temp/
 
 .knowledge_vector_data/
 claude-skills-temp/
+.agents/
+
+.agent/
