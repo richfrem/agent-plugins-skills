@@ -1,1 +1,1 @@
-../../hf-init/scripts/hf_config.py
+../../scripts/hf_config.py
