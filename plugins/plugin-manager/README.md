@@ -18,7 +18,7 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It keeps agen
 To refresh all agent environments with the latest plugin code:
 
 ```bash
-python3 plugins/plugin-manager/scripts/update_agent_system.py
+python3 plugins/plugin-manager/skills/*/scripts/update_agent_system.py
 ```
 
 > For step-by-step control, invoke the `plugin-maintenance` skill.

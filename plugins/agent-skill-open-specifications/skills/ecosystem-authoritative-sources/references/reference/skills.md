@@ -14,9 +14,12 @@ Skills are modular capabilities that package procedural knowledge, context, and 
 
 ## Optional Directories
 Agent skills support three standard optional directories to keep the root clean:
-- **`scripts/`**: Contains executable code (Python, Bash, JS). Must be self-contained, handle edge cases gracefully, and include helpful error messages instead of failing silently.
+- **`scripts/`**: Contains executable code (Python, Bash, JS). Must be self-contained, handle edge cases gracefully, and include helpful error messages instead of failing silently. **Scripts must live inside the skill's own `scripts/` directory, never at the parent plugin level.** This ensures the skill is fully portable when installed via `npx skills add`, which copies skill folders individually.
 - **`references/`**: Contains additional documentation loaded on-demand (e.g., `REFERENCE.md`, `FORMS.md`, `domain.md`). Keep these small and focused to save context window space.
 - **`assets/`**: Contains static resources like templates, images (diagrams), and data files (lookup tables, schemas).
+
+### Self-Containment Rule (Portability)
+Each skill folder must be **fully self-contained**. All scripts, references, and assets that a skill depends on must exist inside the skill's own directory tree. Do not place shared scripts at the plugin level and reference them from skills -- this breaks `npx skills add` installation, which copies only the skill folder into the consumer's agent environment. If multiple skills within the same plugin share utility scripts, duplicate them into each skill's `scripts/` folder.
 
 ## Resolution Precedence
 Skills are resolved automatically. Any nested `.claude/skills/` directory relative to the current working file is also discovered (useful in monorepos).
@@ -135,6 +138,7 @@ Since skills provide instructions and execute code, review third-party or intern
 When referencing other files inside your skill (e.g. scripts or docs), use **relative paths from the skill root**.
 - Good: `See [the guide](references/REFERENCE.md)` or `Run scripts/extract.py`
 - Bad: `../` or absolute paths.
+- Bad: `plugins/my-plugin/scripts/shared.py` (plugin-level scripts break `npx skills add` portability -- move the script into the skill's own `scripts/` directory).
 
 ### Official Validation
 The open standard provides an official NPM-based CLI validator for skill structure. When authoring new skills, always manually run:

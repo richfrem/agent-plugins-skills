@@ -52,7 +52,7 @@ Ask the user: "Does this look right? (yes / adjust)"
 Execute the deterministic `scaffold.py` script to generate the compliant physical directories. **CRITICAL: Apply the Iteration Directory Isolation Pattern**.
 If the user is iterating on a design, DO NOT overwrite the main directory. Append `--iteration <N>` or save to `.history/iteration-<N>/`.
 ```bash
-python3 ~~agent-scaffolders-root/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ~~agent-scaffolders-root/skills/create-skill/scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Testing, Evaluation, and Fallback Assets

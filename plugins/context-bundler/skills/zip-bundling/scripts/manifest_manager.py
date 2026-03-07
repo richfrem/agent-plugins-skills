@@ -1,0 +1,1 @@
+../../context-bundling/scripts/manifest_manager.py

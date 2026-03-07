@@ -1,0 +1,23 @@
+flowchart TD
+    subgraph Initialization [Step 1: Indexing]
+        Repo[Repository Files] --> Mapper[map_repository_files.py]
+        Mapper -- Walks Directory Tree --> Inventory[(file_inventory.json)]
+        note1[Creates a JSON map of all filenames]
+        note1 -.- Mapper
+    end
+    
+    subgraph Repair [Step 2: Auto-Correction]
+        Inventory --> Fixer[smart_fix_links.py]
+        Markdown[Docs / Markdown] --> Fixer
+        Fixer -- Fuzzy Match Filenames --> UpdatedDocs[Updated Markdown]
+        note2[Replaces broken paths with valid ones from Inventory]
+        note2 -.- Fixer
+    end
+    
+    subgraph Verification [Step 3: Validation]
+        UpdatedDocs --> Checker[check_broken_paths.py]
+        Checker -- Scans for 404s --> Log[broken_links.log]
+        Checker --> Console[Console Output]
+        note3[Reports any remaining dead links]
+        note3 -.- Checker
+    end
