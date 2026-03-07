@@ -1,1 +1,1 @@
-../../resources/rag_design_choices.md
+../../../resources/rag_design_choices.md

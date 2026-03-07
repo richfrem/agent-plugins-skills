@@ -1,1 +1,1 @@
-../../resources/kepano-analysis-summary.md
+../../../resources/kepano-analysis-summary.md
