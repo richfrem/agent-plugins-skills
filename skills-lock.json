@@ -14,7 +14,7 @@
     "agent-bridge": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "1e2b3197017a5fd0126c11163d67e63140e6ff1a24940e1fe71a992c9aae8ece"
+      "computedHash": "86d468b7817e58ca221d2228100ab1cae75ba9e5c3fd063a77a9808c2f13c72d"
     },
     "agent-swarm": {
       "source": "richfrem/agent-plugins-skills",
@@ -384,7 +384,7 @@
     "zip-bundling": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "358c9980d20c844ea027a2a051aa091c3ff15b276d27fea0c38d0bfee002e776"
+      "computedHash": "4b94a4429269ec7ad8f46a07d5f2691f0201b8c1a9439421baa4cb1ec97e4f5e"
     }
   }
 }
