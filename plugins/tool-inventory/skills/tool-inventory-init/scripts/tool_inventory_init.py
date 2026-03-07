@@ -12,7 +12,7 @@ Purpose:
 Layer: Curate / Inventories
 
 Usage:
-    python3 plugins/tool-inventory/skills/tool-inventory-init/scripts/tool_inventory_init.py
+    python3 ./scripts/tool_inventory_init.py
 """
 
 import sys
@@ -121,7 +121,7 @@ def main():
     initialize_cache()
     
     print("\n✅ Initialization complete. The ledger and schemas are scaffolded.")
-    print("\nNext Steps for Agent:\n  1. Run the RLM auditor to identify missing scripts: \n     python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools")
+    print("\nNext Steps for Agent:\n  1. Run the RLM auditor to identify missing scripts: \n     python3 ./scripts/inventory.py --profile tools")
     print("  2. Perform initial distillation on those missing tools.")
     
 if __name__ == "__main__":

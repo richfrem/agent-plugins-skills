@@ -35,14 +35,14 @@ There is one bridge:
 
 ### Install a single plugin
 ```bash
-python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py \
+python ./scripts/bridge_installer.py \
   --plugin plugins/<plugin-name> \
   --target <environment>
 ```
 
 ### Install all plugins
 ```bash
-python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
+python ./scripts/install_all_plugins.py
 ```
 
 ---

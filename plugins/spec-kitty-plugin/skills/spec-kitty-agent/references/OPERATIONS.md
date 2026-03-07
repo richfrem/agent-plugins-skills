@@ -32,10 +32,10 @@ gemini run system-sync
 spec-kitty init . --ai windsurf
 
 # Phase 2: Standard Bridge (Layer 1)
-python plugins/spec-kitty/scripts/speckit_system_bridge.py --inbound
+python ./scripts/speckit_system_bridge.py --inbound
 
 # Phase 3: Custom Bridge (Layer 2)
-python plugins/spec-kitty/scripts/speckit_system_bridge.py --outbound
+python ./scripts/speckit_system_bridge.py --outbound
 ```
 
 **Option B: Antigravity / Workflow**
@@ -114,5 +114,5 @@ head .github/copilot-instructions.md
 **Step 3: automated Integrity Audit**
 Run the automated auditor to check all Rules, Workflows, and Skills:
 ```bash
-python plugins/spec-kitty/scripts/verify_bridge_integrity.py
+python ./scripts/verify_bridge_integrity.py
 ```

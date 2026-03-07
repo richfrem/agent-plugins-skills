@@ -66,10 +66,10 @@ RLM is **amortized prework**: each file read ONCE, summarized ONCE, cached as pl
 Searching summaries is O(1) keyword lookup -- no embeddings, no inference.
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile plugins "what does the vector query tool do"
 
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile project --list
 ```
 
@@ -84,7 +84,7 @@ Embedding-based nearest-neighbor search across all indexed chunks. Returns ranke
 parent chunks with RLM Super-RAG context pre-injected.
 
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
+python3 ./scripts/query.py \
   "nearest-neighbor embedding search implementation" \
   --profile knowledge --limit 5
 ```

@@ -31,7 +31,7 @@ searched. You build or update the parent-child chunk structure that `query.py` s
 ### 1. First-time setup
 If `chromadb` is not installed or `vector_profiles.json` is missing, run the init skill first:
 ```bash
-python3 plugins/vector-db/skills/vector-db-init/scripts/init.py
+python3 ./scripts/init.py
 ```
 
 ### 2. Verify server is running
@@ -50,21 +50,21 @@ See `plugins/vector-db/skills/vector-db-launch/SKILL.md` for full launch instruc
 ### Full ingest (first time or full rebuild)
 
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py \
+python3 ./scripts/ingest.py \
   --profile knowledge --full
 ```
 
 ### Incremental ingest (only new/changed files since N hours)
 
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py \
+python3 ./scripts/ingest.py \
   --profile knowledge --since 24
 ```
 
 ### Code files (uses AST parsing shim)
 
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py \
+python3 ./scripts/ingest.py \
   --profile knowledge --full --code
 ```
 
@@ -76,7 +76,7 @@ functions and classes as discrete chunks rather than raw text blocks.
 Run a quick smoke test to confirm the new content is retrievable:
 
 ```bash
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
+python3 ./scripts/query.py \
   "describe what was just ingested" --profile knowledge --limit 3
 ```
 

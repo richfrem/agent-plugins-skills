@@ -23,7 +23,7 @@ To unpackage and install this capability:
 3.  **Verify Installation**:
     Run the integrity check to confirm the bridge is operational:
     ```bash
-    python3 plugins/spec-kitty/scripts/verify_bridge_integrity.py
+    python3 ./scripts/verify_bridge_integrity.py
     ```
 
 4.  **Register Tools**:

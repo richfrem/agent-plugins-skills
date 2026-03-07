@@ -29,9 +29,9 @@ This script manages the installation of standalone plugins into agent environmen
 3.  **Transformation**: Performs actor swapping (`--actor "windsurf"` -> `--actor "claude"`) and agent-specific wrapping (e.g., Gemini TOML).
 
 ## 4. Automation & Workflows
--   **Usage (Rules/SDD)**: Run `python3 plugins/spec-kitty/scripts/speckit_system_bridge.py` to sync project rules.
--   **Usage (Plugins)**: Run `python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/<name>` to install a specific plugin.
--   **Batch Install**: `for plugin in plugins/*/; do python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin "$plugin"; done`
+-   **Usage (Rules/SDD)**: Run `python3 ./scripts/speckit_system_bridge.py` to sync project rules.
+-   **Usage (Plugins)**: Run `python3 ./scripts/bridge_installer.py --plugin plugins/<name>` to install a specific plugin.
+-   **Batch Install**: `for plugin in plugins/*/; do python3 ./scripts/bridge_installer.py --plugin "$plugin"; done`
 
 ## 5. Visual Representation
 See `plugins/spec-kitty/docs/bridge_process.mmd` for a detailed process diagram.

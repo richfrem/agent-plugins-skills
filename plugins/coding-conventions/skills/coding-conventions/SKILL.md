@@ -151,8 +151,8 @@ All Python scripts in `plugins/` **must** be registered in `plugins/tool_invento
 
 After creating or modifying a tool:
 ```bash
-python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path "plugins/path/to/script.py"
-python plugins/tool-inventory/scripts/manage_tool_inventory.py audit
+python ./scripts/manage_tool_inventory.py add --path "plugins/path/to/script.py"
+python ./scripts/manage_tool_inventory.py audit
 ```
 
 The extended Python header's `Purpose:` section is auto-extracted for the RLM cache and tool inventory.

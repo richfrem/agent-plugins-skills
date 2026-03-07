@@ -10,13 +10,13 @@ Layer: Curate / Bundler
 
 Usage Examples:
     # 1. Initialize a custom manifest in a temp folder
-    python plugins/context-bundler/scripts/manifest_manager.py --manifest temp/my_manifest.json init --type generic --bundle-title "My Project"
+    python ./scripts/manifest_manager.py --manifest temp/my_manifest.json init --type generic --bundle-title "My Project"
 
     # 2. Add files to that custom manifest
-    python plugins/context-bundler/scripts/manifest_manager.py --manifest temp/my_manifest.json add --path "docs/example.md" --note "Reference doc"
+    python ./scripts/manifest_manager.py --manifest temp/my_manifest.json add --path "docs/example.md" --note "Reference doc"
 
     # 3. Bundle using that custom manifest
-    python plugins/context-bundler/scripts/manifest_manager.py --manifest temp/my_manifest.json bundle --output temp/my_bundle.md
+    python ./scripts/manifest_manager.py --manifest temp/my_manifest.json bundle --output temp/my_bundle.md
 
     # NOTE: Global flags like --manifest and --base MUST come BEFORE the subcommand (init, add, bundle, etc.)
 
@@ -84,7 +84,7 @@ from typing import Dict, Any, Optional
 # Plugin-aware path resolution
 # =====================================================
 current_dir = Path(__file__).parent.resolve()
-plugin_root = current_dir.parent.resolve()  # plugins/context-bundler/
+    plugin_root = current_dir.parent.resolve()  # skill root
 
 # Detect project root: walk up from plugin looking for .git or .agent
 def _find_project_root() -> str:

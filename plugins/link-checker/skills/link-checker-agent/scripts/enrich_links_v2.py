@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Utilities
 
 Usage Examples:
-    python plugins/link-checker/scripts/enrich_links_v2.py --help
+    python ./scripts/enrich_links_v2.py --help
 
 Supported Object Types:
     - Generic

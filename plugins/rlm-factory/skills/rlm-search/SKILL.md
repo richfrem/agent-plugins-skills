@@ -54,25 +54,25 @@ Common defaults (your project may use different names or define more):
 
 ```bash
 # Search docs/protocols cache
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile project "vector query"
 
 # Search plugins/scripts cache
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile tools "vector query"
 
 # Ambiguous topic -- search both (recommended default)
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile project "embedding search" && \
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile tools "embedding search"
 
 # List all cached entries for a profile
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile project --list
 
 # JSON output for programmatic use
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
+python3 ./scripts/query_cache.py \
   --profile tools "inject_summary" --json
 ```
 
@@ -90,12 +90,12 @@ python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py \
 
 ```bash
 # Semantic search across all indexed content
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
+python3 ./scripts/query.py \
   "nearest-neighbor embedding search implementation" \
   --profile knowledge --limit 5
 
 # More results for broad topics
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py \
+python3 ./scripts/query.py \
   "ChromaDB parent child retrieval" \
   --profile knowledge --limit 10
 ```

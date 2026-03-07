@@ -24,22 +24,22 @@ This skill provides the **disk I/O layer** for all agent interactions with the O
 
 ### Read a Note
 ```bash
-python plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py read --file <path>
+python ./scripts/vault_ops.py read --file <path>
 ```
 
 ### Create a Note
 ```bash
-python plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py create --file <path> --content <text> [--frontmatter key=value ...]
+python ./scripts/vault_ops.py create --file <path> --content <text> [--frontmatter key=value ...]
 ```
 
 ### Update a Note
 ```bash
-python plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py update --file <path> --content <text>
+python ./scripts/vault_ops.py update --file <path> --content <text>
 ```
 
 ### Append to a Note
 ```bash
-python plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py append --file <path> --content <text>
+python ./scripts/vault_ops.py append --file <path> --content <text>
 ```
 
 ## Safety Guarantees

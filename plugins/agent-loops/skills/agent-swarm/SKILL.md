@@ -65,21 +65,21 @@ The **swarm_run.py** script is the universal engine for executing this pattern. 
 # Zero-cost Copilot batch (2 workers recommended to avoid rate limits)
 source ~/.zshrc   # NOTE: use source ~/.zshrc, NOT 'export COPILOT_GITHUB_TOKEN=$(gh auth token)'
                   # gh auth token generates a PAT without Copilot scope -> auth failures
-python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
     --engine copilot \
     --job plugins/my-plugin/resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 2
 
 # Gemini (free, higher parallelism)
-python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
     --engine gemini \
     --job plugins/my-plugin/resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 5
 
 # Claude (paid, highest quality)
-python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
     --job plugins/my-plugin/resources/jobs/my_job.job.md \
     [--dir some/dir] [--resume] [--dry-run]
 ```
@@ -93,9 +93,9 @@ workers: 2          # keep to 2 for Copilot, up to 5-10 for Gemini/Claude
 timeout: 120        # seconds per worker
 ext: [".md"]        # filters for --dir
 # Shell template. {file} is shell-quoted automatically (handles apostrophes safely)
-post_cmd: "python3 plugins/my-plugin/scripts/my_post_cmd.py --file {file} --summary {output}"
+post_cmd: "python3 ./scripts/my_post_cmd.py --file {file} --summary {output}"
 # Optional command to check if work is already done (exit 0 => skip)
-check_cmd: "python3 plugins/my-plugin/scripts/check_cache.py --file {file}"
+check_cmd: "python3 ./scripts/check_cache.py --file {file}"
 vars:
   profile: project
 ---

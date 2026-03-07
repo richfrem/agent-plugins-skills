@@ -11,13 +11,13 @@ Layer: Curate / Rlm
 
 Usage:
     # Dry run — preview stale entries
-    python plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile plugins
+    python ./scripts/cleanup_cache.py --profile plugins
 
     # Remove files whose source no longer exists
-    python plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile plugins --apply
+    python ./scripts/cleanup_cache.py --profile plugins --apply
 
     # Remove entries outside the manifest + failed distillations
-    python plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile tools --prune-orphans --prune-failed --apply
+    python ./scripts/cleanup_cache.py --profile tools --prune-orphans --prune-failed --apply
 
 Related:
     - rlm_config.py (configuration & utilities)

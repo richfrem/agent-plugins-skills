@@ -11,13 +11,13 @@ Purpose:
 Layer: Plugin / Task-Manager
 
 Usage:
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py create "Fix login bug" --lane todo
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py list
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py list --lane in-progress
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py move 3 in-progress
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py get 3
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py search "login"
-    python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py board
+    python3 ./scripts/task_manager.py create "Fix login bug" --lane todo
+    python3 ./scripts/task_manager.py list
+    python3 ./scripts/task_manager.py list --lane in-progress
+    python3 ./scripts/task_manager.py move 3 in-progress
+    python3 ./scripts/task_manager.py get 3
+    python3 ./scripts/task_manager.py search "login"
+    python3 ./scripts/task_manager.py board
 """
 
 import os

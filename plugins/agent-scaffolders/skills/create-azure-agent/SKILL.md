@@ -23,7 +23,7 @@ You are the Azure Agent Scaffolder. When the user requests to deploy an existing
 
 ```bash
 # Example invocation
-python plugins/skills/create-azure-agent/scripts/scaffold_azure_agent.py --skill plugins/my-plugin/skills/my-skill
+python ./create-azure-agent/scripts/scaffold_azure_agent.py --skill plugins/my-plugin/skills/my-skill
 ```
 
 ## How It Works (The 128 Tool Limit)

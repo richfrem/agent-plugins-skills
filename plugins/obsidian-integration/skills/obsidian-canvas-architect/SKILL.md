@@ -54,24 +54,24 @@ A `.canvas` file is JSON with two top-level arrays:
 
 ### Create a Canvas
 ```bash
-python plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py create --file <path.canvas>
+python ./scripts/canvas_ops.py create --file <path.canvas>
 ```
 
 ### Add a Node
 ```bash
-python plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py add-node \
+python ./scripts/canvas_ops.py add-node \
   --file <path.canvas> --type text --text "My Node" --x 100 --y 200
 ```
 
 ### Add an Edge
 ```bash
-python plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py add-edge \
+python ./scripts/canvas_ops.py add-edge \
   --file <path.canvas> --from-node id1 --to-node id2
 ```
 
 ### Read a Canvas
 ```bash
-python plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py read --file <path.canvas>
+python ./scripts/canvas_ops.py read --file <path.canvas>
 ```
 
 ## Safety Guarantees

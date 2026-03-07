@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Cli_Entry_Points
 
 Usage Examples:
-    python plugins/link-checker/scripts/smart_fix_links.py --help
+    python ./scripts/smart_fix_links.py --help
 
 Supported Object Types:
     - Generic

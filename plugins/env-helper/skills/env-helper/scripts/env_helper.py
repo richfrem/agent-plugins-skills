@@ -4,9 +4,9 @@
 # without any dependency on internal shared libraries.
 #
 # Usage:
-#   python3 plugins/env-helper/scripts/env_helper.py --key HF_TOKEN
-#   python3 plugins/env-helper/scripts/env_helper.py --key HF_DATASET_REPO
-#   python3 plugins/env-helper/scripts/env_helper.py --all
+#   python3 ./scripts/env_helper.py --key HF_TOKEN
+#   python3 ./scripts/env_helper.py --key HF_DATASET_REPO
+#   python3 ./scripts/env_helper.py --all
 """
 
 from __future__ import annotations

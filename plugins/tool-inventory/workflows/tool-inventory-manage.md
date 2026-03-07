@@ -21,7 +21,7 @@ inputs:
 ### Option A: CLI (Automated)
 // turbo
 ```bash
-python3 plugins/tool-inventory/scripts/manage_tool_inventory.py add --path "[ToolPath]"
+python3 ./scripts/manage_tool_inventory.py add --path "[ToolPath]"
 ```
 
 ### Option B: Manual Edit (For complex entries)
@@ -50,7 +50,7 @@ Edit `plugins/tool_inventory.json` directly, adding an entry like:
 The inventory manager auto-triggers RLM distillation. To run manually:
 // turbo
 ```bash
-python3 plugins/rlm-factory/scripts/distiller.py --file "[ToolPath]" --type tool
+python3 ./scripts/distiller.py --file "[ToolPath]" --type tool
 ```
 
 ### Option B: Manual Edit (For precise control)
@@ -59,7 +59,7 @@ Edit `.agent/learning/rlm_tool_cache.json` directly, adding an entry like:
 "plugins/retrieve/bundler/validate.py": {
   "hash": "new_validate_2026",
   "summarized_at": "2026-02-01T10:00:00.000000",
-  "summary": "{\n  \"purpose\": \"Validates manifest files against schema...\",\n  \"layer\": \"Retrieve / Bundler\",\n  \"usage\": [\"python plugins/retrieve/bundler/validate.py manifest.json\"],\n  \"args\": [\"manifest: Path to manifest\", \"--all-base\", \"--check-index\"],\n  \"inputs\": [\"Manifest JSON files\"],\n  \"outputs\": [\"Validation report\", \"Exit code 0/1\"],\n  \"dependencies\": [\"file-manifest-schema.json\"],\n  \"consumed_by\": [\"/bundle-manage\", \"CI/CD\"],\n  \"key_functions\": [\"validate_manifest()\", \"validate_index()\"]\n}"
+  "summary": "{\n  \"purpose\": \"Validates manifest files against schema...\",\n  \"layer\": \"Retrieve / Bundler\",\n  \"usage\": [\"python ./bundler/validate.py manifest.json\"],\n  \"args\": [\"manifest: Path to manifest\", \"--all-base\", \"--check-index\"],\n  \"inputs\": [\"Manifest JSON files\"],\n  \"outputs\": [\"Validation report\", \"Exit code 0/1\"],\n  \"dependencies\": [\"file-manifest-schema.json\"],\n  \"consumed_by\": [\"/bundle-manage\", \"CI/CD\"],\n  \"key_functions\": [\"validate_manifest()\", \"validate_index()\"]\n}"
 }
 ```
 
@@ -71,7 +71,7 @@ Edit `.agent/learning/rlm_tool_cache.json` directly, adding an entry like:
 Regenerate `plugins/TOOL_INVENTORY.md` for human readability:
 // turbo
 ```bash
-python3 plugins/tool-inventory/scripts/manage_tool_inventory.py generate --output plugins/TOOL_INVENTORY.md
+python3 ./scripts/manage_tool_inventory.py generate --output plugins/TOOL_INVENTORY.md
 ```
 
 **Expected Output:** `✅ Generated Markdown: plugins/TOOL_INVENTORY.md`
@@ -82,7 +82,7 @@ python3 plugins/tool-inventory/scripts/manage_tool_inventory.py generate --outpu
 Verify no tools are missing from the inventory:
 // turbo
 ```bash
-python3 plugins/tool-inventory/scripts/manage_tool_inventory.py audit
+python3 ./scripts/manage_tool_inventory.py audit
 ```
 
 **Expected Output:** `✅ All tools registered` (or list of untracked tools to add)
@@ -93,7 +93,7 @@ python3 plugins/tool-inventory/scripts/manage_tool_inventory.py audit
 Test that the tool is now discoverable via RLM:
 // turbo
 ```bash
-python3 plugins/rlm-factory/scripts/query_cache.py --type tool "[keyword]"
+python3 ./scripts/query_cache.py --type tool "[keyword]"
 ```
 
 **Expected Output:** Tool appears in search results

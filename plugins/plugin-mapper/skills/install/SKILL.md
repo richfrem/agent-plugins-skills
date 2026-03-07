@@ -38,5 +38,5 @@ fi
 
 # 3. Bridge/Convert (The Core Action)
 echo "Bridging '$PLUGIN_NAME' to environment '$TARGET_ENV'..."
-python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin "plugins/$PLUGIN_NAME" --target "$TARGET_ENV"
+python ./scripts/bridge_installer.py --plugin "plugins/$PLUGIN_NAME" --target "$TARGET_ENV"
 ```

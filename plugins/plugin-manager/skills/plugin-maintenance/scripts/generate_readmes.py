@@ -7,7 +7,7 @@ Generates a standardized README.md for plugins that are missing one.
 Extracts description from .claude-plugin/plugin.json or SKILL.md.
 
 Usage:
-    python3 plugins/plugin-manager/skills/plugin-manager/scripts/generate_readmes.py [--apply]
+    python3 ./scripts/generate_readmes.py [--apply]
 """
 
 import sys

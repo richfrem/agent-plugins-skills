@@ -19,8 +19,8 @@ Purpose:
 Layer: Investigate / Codify / Curate / Retrieve  (Pick one)
 
 Usage Examples:
-    python plugins/path/to/script.py --target JCSE0004 --deep
-    python plugins/path/to/script.py --target MY_PKG --direction upstream --json
+    python ./to/script.py --target JCSE0004 --deep
+    python ./to/script.py --target MY_PKG --direction upstream --json
 
 Supported Object Types:
     - Type 1: Description

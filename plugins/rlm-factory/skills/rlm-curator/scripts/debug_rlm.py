@@ -11,7 +11,7 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage:
-    python plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py
+    python ./scripts/debug_rlm.py
 
 Related:
     - rlm_config.py (configuration & file collection)

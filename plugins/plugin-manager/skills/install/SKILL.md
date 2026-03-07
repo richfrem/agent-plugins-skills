@@ -32,13 +32,13 @@ if [ ! -d "$SOURCE_PATH" ]; then
 fi
 
 # Replicate source -> dest (additive update)
-python3 plugins/plugin-manager/skills/*/scripts/plugin_replicator.py \
+python3 ./skills/*/scripts/plugin_replicator.py \
   --source "$SOURCE_PATH" \
   --dest "$DEST_PATH"
 
 # Activate in target's agent environments
 echo "Activating plugin in target project..."
-cd "$TARGET_PLUGINS/.." && python3 plugins/plugin-manager/skills/*/scripts/sync_with_inventory.py
+cd "$TARGET_PLUGINS/.." && python3 ./skills/*/scripts/sync_with_inventory.py
 ```
 
 > To also remove deleted files, add `--clean` to the `plugin_replicator.py` call.

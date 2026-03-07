@@ -39,17 +39,17 @@ onboarding a new project, or whenever credentials change.
 
 ### Validate Config
 ```bash
-python plugins/huggingface-utils/skills/hf-init/scripts/hf_config.py
+python ./scripts/hf_config.py
 ```
 
 ### Full Init (Validate + Create Structure + Dataset Card)
 ```bash
-python plugins/huggingface-utils/skills/hf-init/scripts/hf_init.py
+python ./scripts/hf_init.py
 ```
 
 ### Validate Only (No Changes)
 ```bash
-python plugins/huggingface-utils/skills/hf-init/scripts/hf_init.py --validate-only
+python ./scripts/hf_init.py --validate-only
 ```
 
 ## Quick Setup
@@ -68,5 +68,5 @@ HUGGING_FACE_TAGS=reasoning-traces,cognitive-continuity,your-project-tag
 HUGGING_FACE_PROJECT_NAME=My Project Soul
 
 # Run init
-python plugins/huggingface-utils/skills/hf-init/scripts/hf_init.py
+python ./scripts/hf_init.py
 ```

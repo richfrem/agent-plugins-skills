@@ -12,7 +12,7 @@ Checks for:
 3. RLM Sync: Checks if tools are present in the RLM cache.
 
 Usage:
-    python3 plugins/tool-inventory/scripts/audit_plugins.py
+    python3 ./scripts/audit_plugins.py
 """
 
 import sys

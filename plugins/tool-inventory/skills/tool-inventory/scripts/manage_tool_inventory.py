@@ -9,16 +9,16 @@ Purpose:
 Layer: Curate / Curate
 
 Usage Examples:
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py --help
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py list
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py search "keyword"
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py remove --path "path/to/tool.py"
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py update --path "tool.py" --desc "New description"
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py discover --auto-stub
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py summarize-missing
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py sync-from-cache
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py reset-from-cache
-    python plugins/tool-inventory/scripts/manage_tool_inventory.py clear-inventory
+    python ./scripts/manage_tool_inventory.py --help
+    python ./scripts/manage_tool_inventory.py list
+    python ./scripts/manage_tool_inventory.py search "keyword"
+    python ./scripts/manage_tool_inventory.py remove --path "path/to/tool.py"
+    python ./scripts/manage_tool_inventory.py update --path "tool.py" --desc "New description"
+    python ./scripts/manage_tool_inventory.py discover --auto-stub
+    python ./scripts/manage_tool_inventory.py summarize-missing
+    python ./scripts/manage_tool_inventory.py sync-from-cache
+    python ./scripts/manage_tool_inventory.py reset-from-cache
+    python ./scripts/manage_tool_inventory.py clear-inventory
 
 Supported Object Types:
     - Generic
@@ -1143,7 +1143,7 @@ def generate_markdown(manager: InventoryManager, output_path: Path):
         "",
         f"> **Auto-generated:** {timestamp}",
         f"> **Source:** [`{inv_rel_path}`]({inv_rel_path})",
-        f"> **Regenerate:** `python plugins/tool-inventory/scripts/manage_tool_inventory.py generate --inventory {inv_rel_path}`",
+        f"> **Regenerate:** `python ./scripts/manage_tool_inventory.py generate --inventory {inv_rel_path}`",
         "",
         "---",
         ""

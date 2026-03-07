@@ -42,22 +42,22 @@ When executing `task_manager.py`:
 
 ### 1. Creating a Task
 ```bash
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py create "Fix login validation" --lane todo
+python3 ./scripts/task_manager.py create "Fix login validation" --lane todo
 ```
 
 ### 2. Viewing the Board
 ```bash
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py board
+python3 ./scripts/task_manager.py board
 ```
 
 ### 3. Moving a Task Between Lanes
 ```bash
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py move 3 in-progress --note "Starting work"
+python3 ./scripts/task_manager.py move 3 in-progress --note "Starting work"
 ```
 
 ### 4. Searching Tasks
 ```bash
-python3 plugins/task-manager/skills/task-agent/scripts/task_manager.py search "login"
+python3 ./scripts/task_manager.py search "login"
 ```
 
 ## 📂 Data Structure

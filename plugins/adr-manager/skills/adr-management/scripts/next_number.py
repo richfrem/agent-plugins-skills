@@ -11,10 +11,10 @@ Purpose:
 Layer: Investigate / Utils
 
 Usage Examples:
-    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type spec
-    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type task
-    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type br
-    python3 plugins/adr-manager/skills/adr-management/scripts/next_number.py --type all
+    python3 ./scripts/next_number.py --type spec
+    python3 ./scripts/next_number.py --type task
+    python3 ./scripts/next_number.py --type br
+    python3 ./scripts/next_number.py --type all
 
 CLI Arguments:
     --type          : Artifact type (spec, task, adr, chronicle, br, bw, all)

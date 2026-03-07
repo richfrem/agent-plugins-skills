@@ -32,7 +32,7 @@ Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, C
 If your environment is not explicitly documented but relies on standard markdown prompts, slash commands, or tools, simply run the bridge installer with the name of your environment:
 ```bash
 # Example for 'cursor' or 'roo'
-python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin <plugin-path> --target cursor
+python ./scripts/bridge_installer.py --plugin <plugin-path> --target cursor
 ```
 This automatically scaffolds a `.{target}/` hidden directory populated with `commands/` and `skills/` using the generic markdown fallback installer. Agents equipped with the `agent-bridge` skill can do this dynamically on-demand for any target!
 
@@ -62,12 +62,12 @@ my-repo/
 
 **Single plugin:**
 ```bash
-python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target auto
+python ./scripts/bridge_installer.py --plugin plugins/my-plugin --target auto
 ```
 
 **All plugins at once:**
 ```bash
-python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
+python ./scripts/install_all_plugins.py
 ```
 
 ---
@@ -77,7 +77,7 @@ python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
 ### Force a Specific Target
 Install to a specific environment only (creates directory if needed):
 ```bash
-python plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target github
+python ./scripts/bridge_installer.py --plugin plugins/my-plugin --target github
 ```
 
 ### Component Mapping Matrix

@@ -47,7 +47,7 @@ Run the deterministic `scaffold_agentic_workflow.py` script with the correct `--
 
 ```bash
 # IDE agent only (Copilot Chat slash command)
-python plugins/scripts/scaffold_agentic_workflow.py \
+python ./scaffold_agentic_workflow.py \
   --skill-dir <requested-skill-path> \
   --mode ide
 
@@ -59,14 +59,14 @@ python ~~agent-scaffolders-root/skills/create-agentic-workflow/scripts/scaffold_
   [--kill-switch "CUSTOM FAILURE PHRASE"]
 
 # CI/CD Official GitHub Agentic Workflow (technical preview — Feb 2026)
-python plugins/scripts/scaffold_agentic_workflow.py \
+python ./scaffold_agentic_workflow.py \
   --skill-dir <requested-skill-path> \
   --mode cicd \
   --format official \
   [--triggers pull_request push schedule]
 
 # Both IDE + CI/CD (shared persona)
-python plugins/scripts/scaffold_agentic_workflow.py \
+python ./scaffold_agentic_workflow.py \
   --skill-dir <requested-skill-path> \
   --mode both \
   [--triggers pull_request push]

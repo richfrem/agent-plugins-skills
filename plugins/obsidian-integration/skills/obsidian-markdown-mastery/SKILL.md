@@ -22,11 +22,11 @@ The `obsidian-markdown-mastery` skill is responsible for the exact formatting, e
 
 ### Analyze Markdown Content
 Extracts all Obsidian-specific metadata (links, embeds, blocks) from a given markdown file or string.
-**Command**: `python plugins/obsidian-integration/obsidian-parser/parser.py analyze --file <path_to_md>`
+**Command**: `python ./obsidian-parser/parser.py analyze --file <path_to_md>`
 
 ### Inject Callout
 Wraps a target text block in an Obsidian-flavored callout.
-**Command**: `python plugins/obsidian-integration/obsidian-parser/parser.py callout --type <type> --title <title> --text <content>`
+**Command**: `python ./obsidian-parser/parser.py callout --type <type> --title <title> --text <content>`
 
 ## The Parsed Syntax (Data Dictionary)
 

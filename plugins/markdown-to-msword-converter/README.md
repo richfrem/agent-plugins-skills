@@ -35,6 +35,6 @@ python -m pip install -r "plugins/markdown-to-msword-converter/requirements.txt"
 ## Typical usage
 
 ```powershell
-python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --dry-run
-python plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py --overwrite
+python ./scripts/run_bulk_md_to_docx.py --dry-run
+python ./scripts/run_bulk_md_to_docx.py --overwrite
 ```

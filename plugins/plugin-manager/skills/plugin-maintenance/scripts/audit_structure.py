@@ -12,7 +12,7 @@ Purpose:
 Layer: Plugin Manager / Structure Validation
 
 Usage:
-    python3 plugins/plugin-manager/scripts/audit_structure.py
+    python3 ./scripts/audit_structure.py
 
 Related:
     - plugins/agent-skill-open-specifications/skills/ecosystem-standards/SKILL.md

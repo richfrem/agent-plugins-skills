@@ -30,7 +30,7 @@ When a user requests a JSON audit, execute these phases strictly.
 Invoke the appropriate Python scanner. 
 
 ```bash
-python3 plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py --file config.json
+python3 ./scripts/find_json_duplicates.py --file config.json
 ```
 
 ### Phase 2: Delegated Constraint Verification (L5 Pattern)

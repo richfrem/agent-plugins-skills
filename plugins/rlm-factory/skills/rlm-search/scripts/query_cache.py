@@ -10,9 +10,9 @@ Purpose:
 Layer: Search / Rlm
 
 Usage:
-    python plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile plugins "rlm"
-    python plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile tools --list
-    python plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile plugins "factory" --json
+    python ./scripts/query_cache.py --profile plugins "rlm"
+    python ./scripts/query_cache.py --profile tools --list
+    python ./scripts/query_cache.py --profile plugins "factory" --json
 
 Related:
     - rlm_config.py (configuration & cache utilities)

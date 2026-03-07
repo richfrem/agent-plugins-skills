@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Bundler
 
 Usage Examples:
-    python plugins/context-bundler/scripts/path_resolver.py --help
+    python ./scripts/path_resolver.py --help
 
 Supported Object Types:
     - Generic

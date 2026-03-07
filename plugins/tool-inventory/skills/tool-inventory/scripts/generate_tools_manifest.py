@@ -9,8 +9,8 @@ Purpose:
 Layer: Curate / Discovery
 
 Usage:
-    python3 plugins/tool-inventory/skills/tool-inventory/scripts/generate_tools_manifest.py
-    python3 plugins/tool-inventory/skills/tool-inventory/scripts/generate_tools_manifest.py --output plugins/tools_manifest.json
+    python3 ./scripts/generate_tools_manifest.py
+    python3 ./scripts/generate_tools_manifest.py --output plugins/tools_manifest.json
 
 Output:
     - plugins/tools_manifest.json (default)

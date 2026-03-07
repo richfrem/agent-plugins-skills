@@ -10,7 +10,7 @@ Purpose:
     This effectively "hydrates" the manual inventory with LLM-generated insights.
 
 Usage:
-    python plugins/tool-inventory/scripts/sync_inventory_descriptions.py
+    python ./scripts/sync_inventory_descriptions.py
 
 Dependencies:
     - plugins/tool-inventory/scripts/manage_tool_inventory.py

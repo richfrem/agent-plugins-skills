@@ -22,17 +22,17 @@ configuration (columns, filters, sorts) untouched.
 
 ### Read a Base
 ```bash
-python plugins/obsidian-integration/skills/obsidian-bases-manager/scripts/bases_ops.py read --file <path.base>
+python ./scripts/bases_ops.py read --file <path.base>
 ```
 
 ### Append a Row
 ```bash
-python plugins/obsidian-integration/skills/obsidian-bases-manager/scripts/bases_ops.py append-row --file <path.base> --data key1=value1 key2=value2
+python ./scripts/bases_ops.py append-row --file <path.base> --data key1=value1 key2=value2
 ```
 
 ### Update a Cell
 ```bash
-python plugins/obsidian-integration/skills/obsidian-bases-manager/scripts/bases_ops.py update-cell --file <path.base> --row-index 0 --column key1 --value "new value"
+python ./scripts/bases_ops.py update-cell --file <path.base> --row-index 0 --column key1 --value "new value"
 ```
 
 ## Safety Guarantees

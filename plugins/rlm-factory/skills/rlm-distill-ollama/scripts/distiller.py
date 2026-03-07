@@ -11,9 +11,9 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage:
-    python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile plugins
-    python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile tools --file path/to/file.py --force
-    python plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile plugins --since 24
+    python ./scripts/distiller.py --profile plugins
+    python ./scripts/distiller.py --profile tools --file path/to/file.py --force
+    python ./scripts/distiller.py --profile plugins --since 24
 
 Related:
     - rlm_config.py (configuration & utilities)

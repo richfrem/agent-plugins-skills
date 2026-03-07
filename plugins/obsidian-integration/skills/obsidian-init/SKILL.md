@@ -83,19 +83,19 @@ For advanced vault features, install these from within the Obsidian app:
 
 ### Interactive Init
 ```bash
-python plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py --vault-root <path>
+python ./scripts/init_vault.py --vault-root <path>
 ```
 
 ### With Custom Exclusions
 ```bash
-python plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py \
+python ./scripts/init_vault.py \
   --vault-root <path> \
   --exclude "custom_dir/" "*.tmp"
 ```
 
 ### Validate Only (No Changes)
 ```bash
-python plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py --vault-root <path> --validate-only
+python ./scripts/init_vault.py --vault-root <path> --validate-only
 ```
 
 ### What It Does
@@ -160,7 +160,7 @@ npm install -g obsidian-cli         # CLI tools
 pip install ruamel.yaml             # Lossless YAML
 
 # 2. Initialize vault
-python plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py \
+python ./scripts/init_vault.py \
   --vault-root /path/to/your/project
 
 # 3. Set environment variable

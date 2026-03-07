@@ -8,7 +8,7 @@ Purpose:
     Handles cloning/updating the vendor source and syncing agent configurations.
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/plugin_bootstrap.py
+    python3 ./scripts/plugin_bootstrap.py
 
 CLI Arguments:
     --repo          : Git repository URL (default: https://github.com/richfrem/agent-plugins-skills.git)

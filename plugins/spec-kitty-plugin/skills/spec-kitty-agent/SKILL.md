@@ -57,7 +57,7 @@ After Update/Init, you MUST propagate the new configuration to the agent ecosyst
 
 **Step A: Sync Local Configurations (Windsurf/Kittify -> Plugin System)**
 ```bash
-python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+python3 ./scripts/sync_configuration.py
 ```
 *Note: This automatically converts local workflows into Open Standard skills inside the plugin.*
 

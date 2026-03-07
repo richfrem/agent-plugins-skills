@@ -18,9 +18,9 @@ Identifies plugins removed from `plugins/` that still have lingering artifacts (
 echo "Running orphan cleanup analysis..."
 
 if [ "${dry_run}" = "true" ]; then
-    python3 plugins/plugin-manager/skills/*/scripts/sync_with_inventory.py --dry-run
+    python3 ./skills/*/scripts/sync_with_inventory.py --dry-run
 else
-    python3 plugins/plugin-manager/skills/*/scripts/sync_with_inventory.py
+    python3 ./skills/*/scripts/sync_with_inventory.py
 fi
 ```
 

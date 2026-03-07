@@ -14,9 +14,9 @@ Runs the master sync to update plugins and redeploy all agent capabilities.
 
 ```bash
 if [ "${dry_run}" = "true" ]; then
-    python3 plugins/plugin-manager/skills/*/scripts/sync_with_inventory.py --dry-run
+    python3 ./skills/*/scripts/sync_with_inventory.py --dry-run
 else
-    python3 plugins/plugin-manager/skills/*/scripts/update_agent_system.py
+    python3 ./skills/*/scripts/update_agent_system.py
 fi
 ```
 

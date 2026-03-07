@@ -76,7 +76,7 @@ After Update/Init, you MUST propagate the new configuration to the agent ecosyst
 
 **Step A: Sync Local Configurations (Windsurf/Kittify -> Plugin System)**
 ```bash
-python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+python3 ./scripts/sync_configuration.py
 ```
 *Note: The new `agentskills.io` 2.0 standard mandates that legacy workflows/commands be deployed natively as **Agent Skills** containing a `SKILL.md` file and empty optional directories (`scripts/`, `references/`, `assets/`, `evals/`).*
 

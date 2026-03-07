@@ -18,7 +18,7 @@ claude --plugin-dir ./plugins/json-hygiene
 ### CLI
 ```bash
 # Check a single file
-python3 plugins/json-hygiene/scripts/find_json_duplicates.py --file plugins/tool_inventory.json
+python3 ./scripts/find_json_duplicates.py --file plugins/tool_inventory.json
 ```
 
 ### Agent Integration

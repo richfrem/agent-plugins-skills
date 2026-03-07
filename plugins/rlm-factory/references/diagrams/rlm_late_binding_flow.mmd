@@ -23,5 +23,5 @@ sequenceDiagram
     Skill-->>Agent: Inject Context: [query.py Usage]
 
     note over Agent, FileSystem: Phase 3: Execution
-    Agent->>FileSystem: Execute: python plugins/retrieve/vector/query.py ...
+    Agent->>FileSystem: Execute: python ./vector/query.py ...
     FileSystem-->>Agent: Success / Output

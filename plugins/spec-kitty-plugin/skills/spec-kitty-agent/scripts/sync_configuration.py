@@ -16,7 +16,7 @@ Assumptions:
 3. Run this script to propagate updates into the plugin system.
 
 Usage:
-    python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+    python3 ./scripts/sync_configuration.py
 """
 
 import shutil

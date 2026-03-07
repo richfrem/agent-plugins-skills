@@ -46,17 +46,17 @@ See `resources/` for manifest files and `rlm_profiles.json` for profile template
 ### Quick Start
 ```bash
 # 1. Check what's already memorized
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
+python3 ./scripts/inventory.py --profile project
 
 # 2. Search for a topic (no Ollama needed)
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py "authentication" --profile project
+python3 ./scripts/query_cache.py "authentication" --profile project
 
 # 3. Distill missing files (requires Ollama running)
 ollama serve  # in another terminal
-python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py --profile project
+python3 ./scripts/distiller.py --profile project
 
 # 4. Clean up deleted files
-python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile project --apply
+python3 ./scripts/cleanup_cache.py --profile project --apply
 ```
 
 ### Memory Banks (Profiles)

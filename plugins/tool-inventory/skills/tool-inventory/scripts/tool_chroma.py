@@ -17,11 +17,11 @@ Usage:
     results = tc.search("distiller", n=5)
 
     # As a CLI
-    python3 plugins/tool-inventory/scripts/inventory.py
-    python3 plugins/tool-inventory/scripts/tool_chroma.py stats
-    python3 plugins/tool-inventory/scripts/tool_chroma.py search "query cache"
-    python3 plugins/tool-inventory/scripts/tool_chroma.py list
-    python3 plugins/tool-inventory/scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
+    python3 ./scripts/inventory.py
+    python3 ./scripts/tool_chroma.py stats
+    python3 ./scripts/tool_chroma.py search "query cache"
+    python3 ./scripts/tool_chroma.py list
+    python3 ./scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
 """
 
 import os

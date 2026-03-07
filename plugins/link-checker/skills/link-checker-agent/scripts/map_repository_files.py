@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Cli_Entry_Points
 
 Usage Examples:
-    python plugins/link-checker/scripts/map_repository_files.py --help
+    python ./scripts/map_repository_files.py --help
 
 Supported Object Types:
     - Generic

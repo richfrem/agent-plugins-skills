@@ -7,7 +7,7 @@ Updates plugins/tool_inventory.json to reflect the new plugin structure:
 plugins/<plugin>/scripts/X -> plugins/<plugin>/skills/<skill>/scripts/X
 
 Usage:
-    python3 plugins/tool-inventory/skills/tool-inventory/scripts/fix_inventory_paths.py [--apply]
+    python3 ./scripts/fix_inventory_paths.py [--apply]
 """
 
 import json

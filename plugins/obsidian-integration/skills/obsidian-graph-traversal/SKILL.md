@@ -22,27 +22,27 @@ of Concept A?" — instantly, without rescanning the vault.
 
 ### Build the Graph Index
 ```bash
-python plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py build --vault-root <path>
+python ./scripts/graph_ops.py build --vault-root <path>
 ```
 
 ### Get Forward Links (outbound)
 ```bash
-python plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py forward --note "Note Name"
+python ./scripts/graph_ops.py forward --note "Note Name"
 ```
 
 ### Get Backlinks (inbound)
 ```bash
-python plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py backlinks --note "Note Name"
+python ./scripts/graph_ops.py backlinks --note "Note Name"
 ```
 
 ### Get N-Degree Connections
 ```bash
-python plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py connections --note "Note Name" --depth 2
+python ./scripts/graph_ops.py connections --note "Note Name" --depth 2
 ```
 
 ### Find Orphaned Notes
 ```bash
-python plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py orphans --vault-root <path>
+python ./scripts/graph_ops.py orphans --vault-root <path>
 ```
 
 ## Architecture

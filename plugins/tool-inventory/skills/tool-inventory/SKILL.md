@@ -51,18 +51,18 @@ When executing a search in `ChromaDB`:
 
 ### 1. Register New Tools
 ```bash
-python3 plugins/tool-inventory/scripts/manage_tool_inventory.py add --path plugins/new_script.py
+python3 ./scripts/manage_tool_inventory.py add --path plugins/new_script.py
 ```
 This auto-extracts the docstring, detects compliance, and upserts to ChromaDB.
 
 ### 2. Discover Gaps
 ```bash
-python3 plugins/tool-inventory/scripts/manage_tool_inventory.py discover --auto-stub
+python3 ./scripts/manage_tool_inventory.py discover --auto-stub
 ```
 
 ### 3. Generate Docs
 ```bash
-python3 plugins/tool-inventory/scripts/manage_tool_inventory.py generate
+python3 ./scripts/manage_tool_inventory.py generate
 ```
 
 ## Next Actions

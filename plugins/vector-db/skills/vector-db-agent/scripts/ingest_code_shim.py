@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Vector
 
 Usage Examples:
-    python plugins/vector-db/scripts/ingest_code_shim.py --help
+    python ./scripts/ingest_code_shim.py --help
 
 Supported Object Types:
     - Generic

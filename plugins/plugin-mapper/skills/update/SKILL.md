@@ -11,6 +11,6 @@ github-model-export: true
 
 ```bash
 # Refresh all plugins in all agent environments
-python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py
+python ./scripts/install_all_plugins.py
 ```
 

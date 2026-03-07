@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Utilities
 
 Usage Examples:
-    python plugins/link-checker/scripts/find_source_links.py --help
+    python ./scripts/find_source_links.py --help
 
 Supported Object Types:
     - Generic

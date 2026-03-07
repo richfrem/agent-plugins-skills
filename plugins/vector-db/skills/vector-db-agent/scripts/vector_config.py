@@ -108,7 +108,7 @@ class VectorConfig:
         
         if not profiles_path.exists():
             print(f"❌ Error: Vector profiles not found at {profiles_path}")
-            print(f"   Run: python3 plugins/vector-db/skills/vector-db-init/scripts/init.py")
+            print(f"   Run: python3 ./scripts/init.py")
             sys.exit(1)
             
         try:

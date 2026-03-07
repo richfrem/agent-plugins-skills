@@ -46,15 +46,15 @@ When executing `distiller.py`:
 
 ### 1. Assessment (Always First)
 ```bash
-python3 plugins/rlm-factory/scripts/inventory.py --type legacy
+python3 ./scripts/inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read -- Fast)
 Use the **`rlm-search`** skill for all cache queries:
 ```bash
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile plugins "search_term"
-python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile tools --list
+python3 ./scripts/query_cache.py --profile plugins "search_term"
+python3 ./scripts/query_cache.py --profile tools --list
 ```
 
 ### 3. Distillation (Write)
@@ -63,10 +63,10 @@ python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile t
 Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free):
 ```bash
 # Generate gap list first
-python3 plugins/rlm-factory/scripts/inventory.py --profile project --missing > rlm_gap_list.md
+python3 ./scripts/inventory.py --profile project --missing > rlm_gap_list.md
 
 # Run zero-cost swarm
-python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
   --engine copilot \
   --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
   --files-from rlm_gap_list.md \
@@ -75,12 +75,12 @@ python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
 
 #### Option B: Ollama Batch (requires Ollama running locally)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py
+python3 ./scripts/distiller.py
 ```
 
 #### Option C: Manual Agent Injection (< 5 files)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py \
+python3 ./scripts/inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your dense summary here..."
@@ -88,7 +88,7 @@ python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py \
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --type legacy --apply
+python3 ./scripts/cleanup_cache.py --type legacy --apply
 ```
 
 ## Quality Guidelines
