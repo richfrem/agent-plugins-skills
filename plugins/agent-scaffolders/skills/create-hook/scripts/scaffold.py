@@ -1,1 +1,1 @@
-../../create-skill/scripts/scaffold.py
+../../../scripts/scaffold.py

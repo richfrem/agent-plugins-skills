@@ -24,12 +24,7 @@
     ],
     "scripts": [
         "skills/audit-plugin/scripts/audit.py",
-        "skills/create-docker-skill/scripts/scaffold.py",
-        "skills/create-hook/scripts/scaffold.py",
-        "skills/create-plugin/scripts/scaffold.py",
-        "skills/create-skill/scripts/scaffold.py",
-        "skills/create-stateful-skill/scripts/scaffold.py",
-        "skills/create-sub-agent/scripts/scaffold.py"
+        "scripts/scaffold.py"
     ],
     "dependencies": []
 }

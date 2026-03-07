@@ -52,7 +52,7 @@ python ./scaffold_agentic_workflow.py \
   --mode ide
 
 # CI/CD Smart Failure agent (Kill Switch pattern — works today)
-python ~~agent-scaffolders-root/skills/create-agentic-workflow/scripts/scaffold_agentic_workflow.py \
+python ./scripts/scaffold_agentic_workflow.py \
   --skill-dir <path-to-skill-directory> \
   --mode cicd \
   [--triggers pull_request push schedule issues release] \
