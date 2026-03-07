@@ -15,7 +15,7 @@ When instructed to audit or validate a plugin, or to verify if a skill is compli
 
 **Usage:**
 ```bash
-python3 "plugins/agent-plugin-analyzer/skills/analyze-plugin/scripts/analyze_plugin.py" --dir <path-to-plugin> --security
+python3 "plugins reference/agent-plugin-analyzer/skills/analyze-plugin/scripts/analyze_plugin.py" --dir <path-to-plugin> --security
 ```
 
 *(Note: Always run with the `--security` flag to catch P0 malware heuristics before reviewing architecture.)*

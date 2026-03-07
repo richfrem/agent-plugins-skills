@@ -39,7 +39,7 @@ onboarding a new project, or whenever credentials change.
 
 ### Validate Config
 ```bash
-python plugins/huggingface-utils/skills/hf-init/scripts/hf_config.py
+python plugins/huggingface-utils/scripts/hf_config.py
 ```
 
 ### Full Init (Validate + Create Structure + Dataset Card)

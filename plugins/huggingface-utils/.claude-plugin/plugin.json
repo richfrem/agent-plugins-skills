@@ -12,8 +12,7 @@
         "hf-upload"
     ],
     "scripts": [
-        "skills/hf-init/scripts/hf_config.py",
-        "skills/hf-upload/scripts/hf_config.py"
+        "scripts/hf_config.py"
     ],
     "dependencies": []
 }

@@ -18,10 +18,10 @@ claude --plugin-dir ./plugins/env-helper
 ### CLI
 ```bash
 # Resolve a single key
-python3 plugins/env-helper/skills/*/scripts/env_helper.py --key HF_TOKEN
+python3 plugins/env-helper/scripts/env_helper.py --key HF_TOKEN
 
 # Dump the HuggingFace dataset configuration block
-python3 plugins/env-helper/skills/*/scripts/env_helper.py --hf-config
+python3 plugins/env-helper/scripts/env_helper.py --hf-config
 ```
 
 ### Agent Integration

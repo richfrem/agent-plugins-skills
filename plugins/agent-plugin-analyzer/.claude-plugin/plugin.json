@@ -14,7 +14,7 @@
         "synthesize-learnings"
     ],
     "scripts": [
-        "skills/analyze-plugin/scripts/inventory_plugin.py"
+        "scripts/inventory_plugin.py"
     ],
     "dependencies": []
 }
