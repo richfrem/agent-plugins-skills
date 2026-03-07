@@ -32,10 +32,10 @@ from typing import List, Dict, Optional
 # ============================================================
 # PATHS
 # File is at: plugins/rlm-factory/scripts/rlm_config.py
-# Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
+# Root is 4 levels up (scripts→rlm-factory→plugins→ROOT)
 # ============================================================
 # ============================================================
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 def _get_profiles_path() -> Path:
     """Get the path to rlm_profiles.json from env var or default."""
