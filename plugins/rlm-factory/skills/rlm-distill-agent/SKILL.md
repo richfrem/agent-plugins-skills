@@ -47,8 +47,8 @@ summary, and inject it into the ledger via `inject_summary.py`.
 ### 1. Identify missing files
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inventory.py --profile project
-python3 plugins/rlm-factory/skills/rlm-distill-agent/scripts/inventory.py --profile tools
+python3 plugins/rlm-factory/scripts/inventory.py --profile project
+python3 plugins/rlm-factory/scripts/inventory.py --profile tools
 ```
 
 ### 2. For each missing file -- read deeply and write a great summary

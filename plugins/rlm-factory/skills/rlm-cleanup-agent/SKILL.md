@@ -69,7 +69,7 @@ python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
 ### 4. Verify
 
 ```bash
-python3 plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/inventory.py --profile project
+python3 plugins/rlm-factory/scripts/inventory.py --profile project
 ```
 
 Report the new coverage percentage.

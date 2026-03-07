@@ -46,7 +46,7 @@ When executing `distiller.py`:
 
 ### 1. Assessment (Always First)
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --type legacy
+python3 plugins/rlm-factory/scripts/inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
@@ -63,7 +63,7 @@ python3 plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py --profile t
 Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free):
 ```bash
 # Generate gap list first
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project --missing > rlm_gap_list.md
+python3 plugins/rlm-factory/scripts/inventory.py --profile project --missing > rlm_gap_list.md
 
 # Run zero-cost swarm
 python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
