@@ -1,1 +1,1 @@
-../../resources/architecture-background.md
+../../../resources/architecture-background.md
