@@ -49,7 +49,7 @@
     "context-bundling": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "502e6bc4603f0b5b2f2630edfff1c114abdc2d4e1365121978108bb48fa1cfd7"
+      "computedHash": "cf4dfbe26e9cf29b898ab19835edfb0066816efcd5f9be41edf09c633453c2ef"
     },
     "conventions-agent": {
       "source": "richfrem/agent-plugins-skills",
@@ -384,7 +384,7 @@
     "zip-bundling": {
       "source": "richfrem/agent-plugins-skills",
       "sourceType": "github",
-      "computedHash": "655acdd6c4bcb73f96780aebc33b9b6b5aeed931237799e3c3341b370f3a0085"
+      "computedHash": "358c9980d20c844ea027a2a051aa091c3ff15b276d27fea0c38d0bfee002e776"
     }
   }
 }
