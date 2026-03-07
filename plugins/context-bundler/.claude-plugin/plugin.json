@@ -20,10 +20,12 @@
         "zip-bundling"
     ],
     "scripts": [
-        "scripts/manifest_manager.py",
-        "scripts/path_resolver.py",
         "skills/context-bundling/scripts/bundle.py",
-        "skills/zip-bundling/scripts/bundle_zip.py"
+        "skills/context-bundling/scripts/manifest_manager.py",
+        "skills/context-bundling/scripts/path_resolver.py",
+        "skills/zip-bundling/scripts/bundle_zip.py",
+        "skills/zip-bundling/scripts/manifest_manager.py",
+        "skills/zip-bundling/scripts/path_resolver.py"
     ],
     "dependencies": []
 }
