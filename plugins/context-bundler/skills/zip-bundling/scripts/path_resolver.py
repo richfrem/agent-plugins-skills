@@ -1,1 +1,1 @@
-../../context-bundling/scripts/path_resolver.py
+../../../scripts/path_resolver.py

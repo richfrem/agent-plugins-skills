@@ -1,1 +1,1 @@
-../../context-bundling/scripts/manifest_manager.py
+../../../scripts/manifest_manager.py
