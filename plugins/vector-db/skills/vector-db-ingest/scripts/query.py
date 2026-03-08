@@ -1,1 +1,1 @@
-../../vector-db-search/scripts/query.py
+../../../scripts/query.py
