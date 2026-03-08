@@ -25,7 +25,7 @@ Real-world examples of each config file are in `references/examples/`:
 1. **Run the Initialization Script:**
    You must execute the interactive initialization script located at `scripts/init.py`.
    ```bash
-   python3 ../../.../../.../../../scripts/init.py
+   python3 ./scripts/init.py
    ```
 
 2. **Wait for Completion:** 

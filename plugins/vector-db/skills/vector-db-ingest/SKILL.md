@@ -31,7 +31,7 @@ searched. You build or update the parent-child chunk structure that `query.py` s
 ### 1. First-time setup
 If `chromadb` is not installed or `vector_profiles.json` is missing, run the init skill first:
 ```bash
-python3 ../../.../../.../../../scripts/init.py
+python3 ./scripts/init.py
 ```
 
 ### 2. Verify server is running

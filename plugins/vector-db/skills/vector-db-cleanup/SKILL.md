@@ -65,7 +65,7 @@ python3 ./scripts/cleanup.py \
 ### 3. Verify store integrity (optional)
 
 ```bash
-python3 ../../.../../.../../../scripts/vector_consistency_check.py \
+python3 ./scripts/vector_consistency_check.py \
   --profile knowledge
 ```
 

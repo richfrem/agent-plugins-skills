@@ -31,7 +31,7 @@ The script above creates the target manifest, but **YOU** (the Agent) will execu
 
 Check what needs to be cached using the auditor:
 ```bash
-python3 plugins/../rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+python3 ./scripts/inventory.py --profile tools
 ```
 
 *If there are uncached tools:*
@@ -44,14 +44,14 @@ For each file identified as missing:
 
 **Option B (Batch Distillation) - Recommended for > 20 tools:**
 ```bash
-python3 plugins/../rlm-factory/skills/rlm-curator/scripts/distiller.py --type tool
+python3 ./scripts/distiller.py --type tool
 ```
 
 ### Step 3: Verify
 
 Run the audit again to confirm 100% coverage:
 ```bash
-python3 plugins/../rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+python3 ./scripts/inventory.py --profile tools
 ```
 
 ## After Init
