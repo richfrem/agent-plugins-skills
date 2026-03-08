@@ -5,7 +5,7 @@
 
 ## Overview
 
-The `agent-bridge` skill translates plugins from a common format into the specific structure expected by each agent environment. It reads from `plugins/` and writes to the agent-specific directories.
+The `bridge-plugin` skill translates plugins from a common format into the specific structure expected by each agent environment. It reads from `plugins/` and writes to the agent-specific directories.
 
 There is one bridge:
 

@@ -1,5 +1,5 @@
 ---
-name: agent-bridge
+name: bridge-plugin
 description: Bridge plugin capabilities (commands, skills, agents, hooks, MCP) to specific agent environments (Claude Code, GitHub Copilot, Gemini, Antigravity). Use this skill when converting or installing a plugin to a target runtime.
 allowed-tools: Bash, Write, Read
 dependencies: ["pip:yaml"]

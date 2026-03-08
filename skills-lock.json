@@ -36,6 +36,11 @@
       "sourceType": "github",
       "computedHash": "d38e9eb2f8abf334bb83f6b0082a341c9bcc7ab8c13ec8d24fd503f3ba9f7af3"
     },
+    "bridge-plugin": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
+      "sourceType": "local",
+      "computedHash": "240333dfdc632dca5f00881ac2fa22fc4eb7d09d7ffd35fd6c59601098bf1879"
+    },
     "claude-cli-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
@@ -196,6 +201,11 @@
       "sourceType": "local",
       "computedHash": "ac3ae5d05803c177bf20608baa17db270d78ce394c914f7eef0d6d4c30049842"
     },
+    "maintain-plugins": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
+      "sourceType": "local",
+      "computedHash": "df18a7f5fac8d667885b2affeaa6df30c9827989e108a4e14c4a917935e66a95"
+    },
     "markdown-to-msword-converter": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
@@ -260,6 +270,11 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-loops",
       "sourceType": "local",
       "computedHash": "a4e3bf42895912acee226285e07482ebd94ed937f6a30f14570513ea8ec33471"
+    },
+    "replicate-plugin": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
+      "sourceType": "local",
+      "computedHash": "dd48f39d7ef8505ba3cdcb813e83f9a59722a156c502cef57b10240828f7a7fe"
     },
     "rlm-cleanup": {
       "source": "richfrem/agent-plugins-skills",

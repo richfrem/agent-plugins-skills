@@ -169,6 +169,6 @@ python3 ./scripts/generate_readmes.py --apply
 - **Before a release** — to ensure clean distribution state
 
 ## Next Actions
-- Run `agent-bridge` from `plugin-mapper` to deploy updated plugins to agent environments.
+- Run `bridge-plugin` from `plugin-manager` to deploy updated plugins to agent environments.
 - Run `l5-red-team-auditor` from `agent-plugin-analyzer` for full L5 maturity assessment.
 - Run `create-skill` from `agent-scaffolders` to fix scaffolding gaps in audited plugins.

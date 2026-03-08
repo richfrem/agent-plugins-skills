@@ -16,7 +16,7 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and
 
 ## 🌐 Supported Targets
 
-The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `agent-bridge` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
+The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `bridge-plugin` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
 
 **Popular Examples:**
 | Target | Command Syntax | Default Directory (Created Automatically) |

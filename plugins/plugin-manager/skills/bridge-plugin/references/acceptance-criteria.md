@@ -1,4 +1,4 @@
-# Acceptance Criteria: agent-bridge
+# Acceptance Criteria: bridge-plugin
 
 **Purpose**: Verify the Universal System Bridger executes and maps components accurately.
 

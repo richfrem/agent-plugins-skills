@@ -1,6 +1,6 @@
 {
     "plugin": "plugin-manager",
-    "skill": "agent-bridge",
+    "skill": "bridge-plugin",
     "evaluations": [
         {
             "id": "eval-1-never-use-auto-target",
