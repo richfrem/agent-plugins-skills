@@ -36,7 +36,7 @@ Script Dependencies:
 
 Consumed by:
     - User (CLI)
-    - install_all_plugins.py
+    - install_all_plugins
     - bridge-plugin (Agent Skill)
 """
 
