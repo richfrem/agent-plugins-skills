@@ -5,7 +5,7 @@ globs: ["*.py", "*.ts", "*.js", "*.cs"]
 
 ## 📝 Coding Conventions (Summary)
 
-**Full standards → `plugins/coding-conventions/skills/conventions-agent/SKILL.md`**
+**Full standards → `../../SKILL.md`**
 
 ### Non-Negotiables
 1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class.

@@ -7,7 +7,7 @@
 
 The `doc-coauthoring` skill (from your LLM provider) provides a structured 3-stage workflow that significantly improves specification quality. **Use it when writing spec.md content.**
 
-**Cross-reference**: `plugins/doc-coauthoring/skills/doc-coauthoring/SKILL.md`
+**Cross-reference**: `../../SKILL.md`
 
 ### When to Use Doc Co-Authoring
 

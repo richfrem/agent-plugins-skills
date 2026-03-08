@@ -62,12 +62,12 @@ All personas are physically located inside their respective CLI plugin directori
 When asked to perform a comprehensive "Audit Loop", you should construct a sequence of CLI dispatches passing the SAME `bundle.md` or context code block to three consecutive personas.
 
 1. **Red Team**
-   `cat plugins/claude-cli/personas/security/security-auditor.md | claude -p "ACT AS THE SECURITY AUDITOR. Do NOT use tools. Do NOT search filesystem." < bundle.md > audit_01_security.md`
+   `cat ../../personas/security/security-auditor.md | claude -p "ACT AS THE SECURITY AUDITOR. Do NOT use tools. Do NOT search filesystem." < bundle.md > audit_01_security.md`
    
 2. **Architect**
-   `cat plugins/claude-cli/personas/quality-testing/architect-review.md | claude -p "ACT AS THE ARCHITECT REVIEWER. Focus on complexity, patterns, scalability. Do NOT use tools." < bundle.md > audit_02_architecture.md`
+   `cat ../../personas/quality-testing/architect-review.md | claude -p "ACT AS THE ARCHITECT REVIEWER. Focus on complexity, patterns, scalability. Do NOT use tools." < bundle.md > audit_02_architecture.md`
    
 3. **QA Expert**
-   `cat plugins/claude-cli/personas/quality-testing/qa-expert.md | claude -p "ACT AS THE QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
+   `cat ../../personas/quality-testing/qa-expert.md | claude -p "ACT AS THE QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
 
 Always run the Architect **AFTER** the Red Team to catch any security-driven side effects that may have artificially inflated the system's complexity.

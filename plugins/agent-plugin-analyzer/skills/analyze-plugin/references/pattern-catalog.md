@@ -75,7 +75,6 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **First Seen In**: Anthropic bio-research `single-cell-rna-qc`
 - **Description**: Providing a "complete pipeline" convenience CLI wrapper script for standard/default executions, alongside separated "modular building block" Python APIs in a core module. The skill explicitly delegates standard requests to the CLI and edge-case/custom requests to chaining the Python APIs natively.
 - **When to Use**: High-variability computational pipelines where a standard CLI covers 80% of use cases but fails on 20% edge cases that require power-user composability.
-- **Example**: Supplying `scripts/qc_analysis.py` for default executions and `scripts/qc_core.py` for custom Python chains in the environment.
 
 ### Multi-Mode Commands with Mode Dispatch
 - **Category**: Architectural

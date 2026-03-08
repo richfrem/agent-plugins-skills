@@ -23,7 +23,7 @@ except ImportError:
     from manage_tool_inventory import InventoryManager
 
 def rebuild():
-    inventory_path = PROJECT_ROOT / "tools" / "plugins/tool_inventory.json"
+    inventory_path = PROJECT_ROOT / "tools" / "tool_inventory.json"
     
     # Backup existing if it exists
     if inventory_path.exists():

@@ -3,7 +3,7 @@ description: Update tool inventories, RLM cache, and associated artifacts after 
 tier: 2
 track: Curate
 inputs:
-  - ToolPath: Path to the new or modified tool (e.g., plugins/retrieve/bundler/validate.py)
+  - ToolPath: Path to the new or modified tool (e.g., ../../bundler/validate.py)
 ---
 
 # Workflow: Tool Update
@@ -29,7 +29,7 @@ Edit `plugins/tool_inventory.json` directly, adding an entry like:
 ```json
 {
   "name": "validate.py",
-  "path": "plugins/retrieve/bundler/validate.py",
+  "path": "../../bundler/validate.py",
   "description": "Validates manifest files against schema. Checks required fields, path traversal, and legacy format warnings.",
   "original_path": "new-creation",
   "decision": "keep",
@@ -56,7 +56,7 @@ python3 ./scripts/distiller.py --file "[ToolPath]" --type tool
 ### Option B: Manual Edit (For precise control)
 Edit `.agent/learning/rlm_tool_cache.json` directly, adding an entry like:
 ```json
-"plugins/retrieve/bundler/validate.py": {
+"../../bundler/validate.py": {
   "hash": "new_validate_2026",
   "summarized_at": "2026-02-01T10:00:00.000000",
   "summary": "{\n  \"purpose\": \"Validates manifest files against schema...\",\n  \"layer\": \"Retrieve / Bundler\",\n  \"usage\": [\"python ./bundler/validate.py manifest.json\"],\n  \"args\": [\"manifest: Path to manifest\", \"--all-base\", \"--check-index\"],\n  \"inputs\": [\"Manifest JSON files\"],\n  \"outputs\": [\"Validation report\", \"Exit code 0/1\"],\n  \"dependencies\": [\"file-manifest-schema.json\"],\n  \"consumed_by\": [\"/bundle-manage\", \"CI/CD\"],\n  \"key_functions\": [\"validate_manifest()\", \"validate_index()\"]\n}"

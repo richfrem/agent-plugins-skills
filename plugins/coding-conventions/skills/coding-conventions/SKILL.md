@@ -151,7 +151,7 @@ All Python scripts in `plugins/` **must** be registered in `plugins/tool_invento
 
 After creating or modifying a tool:
 ```bash
-python ./scripts/manage_tool_inventory.py add --path "plugins/path/to/script.py"
+python ./scripts/manage_tool_inventory.py add --path "../../to/script.py"
 python ./scripts/manage_tool_inventory.py audit
 ```
 

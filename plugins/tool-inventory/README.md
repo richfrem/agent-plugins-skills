@@ -99,7 +99,7 @@ See [docs/tool-inventory-workflow.mmd](docs/tool-inventory-workflow.mmd).
 
 ```mermaid
 graph TD
-    A["manage_tool_inventory.py"] -->|CRUD| B["plugins/tool_inventory.json"]
+    A["manage_tool_inventory.py"] -->|CRUD| B["tool_inventory.json"]
     A -->|Generate| C["TOOL_INVENTORY.md"]
     A -->|Upsert| D["ChromaDB"]
     D -->|Semantic Search| E["tool_chroma.py"]

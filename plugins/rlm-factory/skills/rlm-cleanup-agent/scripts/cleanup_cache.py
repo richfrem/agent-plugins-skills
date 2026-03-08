@@ -31,7 +31,7 @@ from typing import Dict, Optional, Set
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py
+# File is at: ./scripts/cleanup_cache.py
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
@@ -200,3 +200,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# DIAGNOSTIC: npx skills add local update test (cleanup_cache.py via hardlink)

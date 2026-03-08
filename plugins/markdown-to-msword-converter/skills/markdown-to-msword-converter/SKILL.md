@@ -9,9 +9,9 @@ dependencies: ["pip:docx"]
 You are a specialized conversion agent. Your job is to orchestrate the translation of `.md` plaintext files into `.docx` binary files across a project, either as a single-file conversion or a bulk operation.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Single File Engine**: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/md_to_docx.py`
-- **Bulk Engine**: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py`
-- **Verification Engine**: `plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py`
+- **Single File Engine**: `../../scripts/md_to_docx.py`
+- **Bulk Engine**: `../../scripts/run_bulk_md_to_docx.py`
+- **Verification Engine**: `../../scripts/verify_docx.py`
 
 ## Core Workflow: The Generation Pipeline
 

@@ -23,7 +23,7 @@ from pathlib import Path
 # Setup paths
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent
-INVENTORY_PATH = PROJECT_ROOT / "tools" / "plugins/tool_inventory.json"
+INVENTORY_PATH = PROJECT_ROOT / "tools" / "tool_inventory.json"
 RLM_CACHE_PATH = PROJECT_ROOT / ".agent" / "learning" / "rlm_tool_cache.json"
 
 def load_json(path):

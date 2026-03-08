@@ -4,7 +4,7 @@ trigger: always_on
 
 # 🛡️ Tool Discovery & Use Policy (Summary)
 
-**Full workflow → `plugins/tool-inventory/skills/tool_discovery/SKILL.md`**
+**Full workflow → `../../SKILL.md`**
 
 ### Non-Negotiables
 1. **No filesystem search for tools** — `grep`, `find`, `ls -R` are **forbidden** for tool discovery.

@@ -17,7 +17,7 @@ To unpackage and install this capability:
 
 2.  **Make Executable**: Ensure the Python scripts in `plugins/bridge/` are executable:
     ```bash
-    chmod +x plugins/bridge/*.py
+    chmod +x ../../*.py
     ```
 
 3.  **Verify Installation**:

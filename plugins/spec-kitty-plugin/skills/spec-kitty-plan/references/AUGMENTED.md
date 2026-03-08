@@ -7,7 +7,7 @@
 
 The `doc-coauthoring` skill (from your LLM provider) provides a structured 3-stage workflow that improves plan quality. **Use it when writing plan.md content, especially for complex architectures.**
 
-**Cross-reference**: `plugins/doc-coauthoring/skills/doc-coauthoring/SKILL.md`
+**Cross-reference**: `../../SKILL.md`
 
 ### When to Use Doc Co-Authoring
 

@@ -1,0 +1,1 @@
+../../vector-db-search/scripts/query.py

@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
-# scripts/ → task-agent/ → skills/ → task-manager/
 PLUGIN_ROOT = SCRIPT_DIR.parents[2]
 
 VALID_LANES = ["backlog", "todo", "in-progress", "done"]
@@ -41,17 +40,14 @@ LANE_ICONS = {
 TASK_PATTERN = re.compile(r"^(\d{4})-(.*?)\.md$")
 
 
-def _find_project_root() -> Path:
-    """Walk up from PLUGIN_ROOT to find the project root."""
-    p = PLUGIN_ROOT
-    for _ in range(10):
-        if (p / ".git").exists() or (p / ".agent").exists():
-            return p
-        p = p.parent
-    return Path.cwd()
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[4]
 
-
-PROJECT_ROOT = _find_project_root()
+PROJECT_ROOT = _find_project_root(Path(__file__))
 TEMPLATE_PATH = PLUGIN_ROOT / "templates" / "task-template.md"
 
 

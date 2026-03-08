@@ -30,10 +30,21 @@ from pathlib import Path
 from typing import List, Dict, Optional
 
 # ============================================================
-# PATHS
-# Root is 3 levels up (scripts -> rlm-factory -> plugins -> ROOT)
+# PATHS:
+# Robustly discover the Project Root from wherever this script happens
+# to be installed (e.g. plugins/ vs .agents/skills/)
 # ============================================================
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    # 1. Walk up to explicitly find the repository root (looking for .git)
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+            
+    # 2. Fallback to older depth assumption if not in a git repo
+    return current.parents[3]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 
 def _get_profiles_path() -> Path:
     """Get the path to rlm_profiles.json from env var or default."""
@@ -41,7 +52,14 @@ def _get_profiles_path() -> Path:
     if env_path:
         path = Path(env_path)
         return path if path.is_absolute() else (PROJECT_ROOT / path).resolve()
-    return PROJECT_ROOT / ".agent" / "learning" / "rlm_profiles.json"
+    
+    # Try singular first (older spec), then plural (current spec)
+    p1 = PROJECT_ROOT / ".agent" / "learning" / "rlm_profiles.json"
+    p2 = PROJECT_ROOT / ".agents" / "learning" / "rlm_profiles.json"
+    
+    if p1.exists():
+        return p1
+    return p2
 
 DEFAULT_PROFILES_PATH = _get_profiles_path()
 
@@ -111,7 +129,7 @@ class RLMConfig:
         self.parser_type = profile.get("parser", "directory_glob")
         prompt_path_rel = profile.get(
             "prompt_path",
-            "plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_general.md"
+            "../../resources/prompts/rlm/rlm_summarize_general.md"
         )
         self.prompt_full_path = (self.root / prompt_path_rel).resolve()
         self.prompt_template = self._load_prompt()

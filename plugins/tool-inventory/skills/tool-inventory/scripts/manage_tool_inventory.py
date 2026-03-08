@@ -55,11 +55,11 @@ Key Functions:
     - main(): No description.
 
 Script Dependencies:
-    - plugins/tool-inventory/scripts/distiller.py (Cyclical: Triggers distillation on update)
-    - plugins/tool-inventory/scripts/cleanup_cache.py (Atomic cleanup on removal)
+    - ../../scripts/distiller.py (Cyclical: Triggers distillation on update)
+    - ../../scripts/cleanup_cache.py (Atomic cleanup on removal)
 
 Consumed by:
-    - plugins/tool-inventory/scripts/distiller.py (Invokes update_tool for RLM-driven enrichment)
+    - ../../scripts/distiller.py (Invokes update_tool for RLM-driven enrichment)
 """
 import os
 import sys
@@ -124,7 +124,7 @@ class InventoryManager:
     def _determine_root(self) -> Path:
         """Heuristic to find the 'root' relative to the inventory location."""
         # If global inventory, root is repo root
-        if self.inventory_path.name == 'plugins/tool_inventory.json' and self.inventory_path.parent.name == 'reference-data':
+        if self.inventory_path.name == "tool_inventory.json" and self.inventory_path.parent.name == 'reference-data':
             return self.inventory_path.parent.parent.parent
         # If local inventory (e.g. inside xml-to-markdown), root is that tool's dir
         return self.inventory_path.parent
@@ -154,7 +154,7 @@ class InventoryManager:
         Triggers the RLM Distiller for a specific tool.
         This ensures the RLM Cache (rlm_tool_cache.json) is always in sync with the Inventory.
         """
-        distiller_script = self.root_dir / "plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py"
+        distiller_script = self.root_dir / "../../scripts/distiller.py"
         if not distiller_script.exists():
             print(f"⚠️  Distiller not found at {distiller_script}. Skipping sync.")
             return
@@ -473,7 +473,7 @@ class InventoryManager:
 
     def _remove_from_cache(self, tool_path: str):
         """Removes the tool from the RLM Tool Cache using rlm-factory cleanup_cache.py."""
-        cleanup_script = self.root_dir / "plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py"
+        cleanup_script = self.root_dir / "../../scripts/cleanup_cache.py"
         if not cleanup_script.exists():
             print(f"⚠️  Cleanup script not found at {cleanup_script}. RLM Cache may be out of sync.")
             return
@@ -579,7 +579,7 @@ class InventoryManager:
              try:
                  rel = str(f.relative_to(self.root_dir))
                  if rel.startswith("plugins/investment-screener"):
-                     if not rel.startswith("plugins/investment-screener/backend/py_services"):
+                     if not rel.startswith("../../backend/py_services"):
                          continue
              except ValueError:
                  continue

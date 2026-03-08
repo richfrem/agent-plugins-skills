@@ -36,7 +36,7 @@ The branch name must match the WP you're implementing (e.g., `<FEATURE>-WP01`).
 
 ```bash
 # CORRECT: Stage specific deliverables
-git add plugins/my-plugin/scripts/new_script.py tests/test_new_script.py
+git add ../../scripts/new_script.py tests/test_new_script.py
 
 # WRONG: Never use git add -A or git add .
 # This captures kitty-specs changes, .gitignore noise, etc.

@@ -7,8 +7,8 @@ Synchronizes fresh artifacts from the local workspace back into the plugin's
 source of truth directories for distribution via the Bridge.
 
 Artifacts:
-1. Workflows (.windsurf/workflows -> plugins/spec-kitty-plugin/skills)
-2. Rules (.kittify/memory -> plugins/spec-kitty-plugin/rules)
+1. Workflows (.windsurf/workflows -> ../../skills)
+2. Rules (.kittify/memory -> ../../rules)
 
 Assumptions:
 1. User has installed the 'spec-kitty' CLI: `pip install --upgrade spec-kitty-cli`
@@ -36,13 +36,13 @@ AGENTS_RULES_SRC = ROOT / ".kittify/AGENTS.md"
 TEMPLATES_SOURCE_DIR = ROOT / ".kittify/missions/research/command-templates"
 
 # Destinations
-WORKFLOWS_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/skills"
-RULES_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/rules"
-TEMPLATES_DEST_DIR = ROOT / "plugins/spec-kitty-plugin/templates"
+WORKFLOWS_DEST_DIR = ROOT / "skills"
+RULES_DEST_DIR = ROOT / "../../rules"
+TEMPLATES_DEST_DIR = ROOT / "../../templates"
 
 # Legacy Cleanup
-LEGACY_COMMANDS_DIR = ROOT / "plugins/spec-kitty-plugin/commands"
-LEGACY_WORKFLOWS_DIR = ROOT / "plugins/spec-kitty-plugin/workflows"
+LEGACY_COMMANDS_DIR = ROOT / "../../commands"
+LEGACY_WORKFLOWS_DIR = ROOT / "../../workflows"
 
 def sync_workflows() -> None:
     """Syncs workflow files from Windsurf source to plugin commands."""

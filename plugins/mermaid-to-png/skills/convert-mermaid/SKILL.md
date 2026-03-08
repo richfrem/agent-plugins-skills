@@ -9,8 +9,8 @@ allowed-tools: Bash, Read, Write
 You are a specialized conversion agent. Your job is to orchestrate the translation of `.mmd` or `.mermaid` syntax files into high-resolution `.png` binary images.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Converter Engine**: `plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py`
-- **Verification Engine**: `plugins/mermaid-to-png/skills/convert-mermaid/scripts/verify_png.py`
+- **Converter Engine**: `../../scripts/convert.py`
+- **Verification Engine**: `../../scripts/verify_png.py`
 
 ## Core Workflow: The Generation Pipeline
 

@@ -214,7 +214,7 @@ def main():
     args = parser.parse_args()
     
     # Find project root
-    # plugins/adr-manager/skills/adr-management/scripts/next_number.py -> scripts -> adr-management -> skills -> adr-manager -> plugins -> root
+    # ./scripts/next_number.py -> scripts -> adr-management -> skills -> adr-manager -> plugins -> root
     script_path = Path(__file__).resolve()
     # Go up 5 levels to reach project root
     project_root = script_path.parents[4]

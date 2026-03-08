@@ -67,20 +67,20 @@ source ~/.zshrc   # NOTE: use source ~/.zshrc, NOT 'export COPILOT_GITHUB_TOKEN=
                   # gh auth token generates a PAT without Copilot scope -> auth failures
 python3 ./scripts/swarm_run.py \
     --engine copilot \
-    --job plugins/my-plugin/resources/jobs/my_job.job.md \
+    --job ../../resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 2
 
 # Gemini (free, higher parallelism)
 python3 ./scripts/swarm_run.py \
     --engine gemini \
-    --job plugins/my-plugin/resources/jobs/my_job.job.md \
+    --job ../../resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 5
 
 # Claude (paid, highest quality)
 python3 ./scripts/swarm_run.py \
-    --job plugins/my-plugin/resources/jobs/my_job.job.md \
+    --job ../../resources/jobs/my_job.job.md \
     [--dir some/dir] [--resume] [--dry-run]
 ```
 

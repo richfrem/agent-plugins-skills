@@ -28,7 +28,7 @@ its file no longer exists or has moved. Running this regularly keeps the ledger 
 
 ## Prerequisites
 
-**Profile not configured?** Run `rlm-init` skill first: `plugins/rlm-factory/skills/rlm-init/SKILL.md`
+**Profile not configured?** Run `rlm-init` skill first: `../../SKILL.md`
 
 ## When to Run
 
@@ -79,3 +79,5 @@ Report the new coverage percentage.
 - **Always dry-run first.** Never apply without showing the user what will be deleted.
 - **Never edit `*_cache.json` directly.** Always use `cleanup_cache.py`.
 - **Source Transparency Declaration**: state which profiles were cleaned and how many entries removed.
+
+<!-- DIAGNOSTIC: npx skills add local update test (SKILL.md) -->

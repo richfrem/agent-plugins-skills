@@ -18,7 +18,7 @@ spec-kitty init . --ai windsurf
 
 ## Installation
 ### Universal IDE Deployment (Antigravity, Claude Code, Gemini, Copilot, Windsurf)
-This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use your ecosystem's specific agent bridge or plugin-mapper installer script, pointing it at `plugins/spec-kitty-plugin` and targeting your preferred IDE.
+This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use your ecosystem's specific agent bridge or plugin-manager installer script, pointing it at `plugins/spec-kitty-plugin` and targeting your preferred IDE.
 
 ### 1. Initializing Spec Kitty (First Time)
 Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-init` skill:

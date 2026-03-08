@@ -32,13 +32,13 @@ This project uses multiple technology stacks that each require dependency manage
 For Vector DB project:
 ```bash
 # Edit the intent file
-vim plugins/vector-db/requirements.in
+vim ../../requirements.in
 ```
 
 For RLM Factory project:
 ```bash
 # Edit the intent file
-vim plugins/rlm-factory/requirements.in
+vim ../../requirements.in
 ```
 
 **Step 2: Add the package**
@@ -51,14 +51,14 @@ pydantic>=2.0.0
 **Step 3: Generate lockfile**
 ```bash
 # Generate the locked requirements.txt
-pip-compile plugins/vector-db/requirements.in \
-  --output-file plugins/vector-db/requirements.txt
+pip-compile ../../requirements.in \
+  --output-file ../../requirements.txt
 ```
 
 **Step 4: Install locally**
 ```bash
 # Install from lockfile
-pip install -r plugins/vector-db/requirements.txt
+pip install -r ../../requirements.txt
 ```
 
 ### Updating Python Dependencies
@@ -67,12 +67,12 @@ pip install -r plugins/vector-db/requirements.txt
 
 Update a specific package:
 ```bash
-pip-compile --upgrade-package chromadb plugins/vector-db/requirements.in
+pip-compile --upgrade-package chromadb ../../requirements.in
 ```
 
 Update all packages:
 ```bash
-pip-compile --upgrade plugins/vector-db/requirements.in
+pip-compile --upgrade ../../requirements.in
 ```
 
 ## Node.js Dependency Management
@@ -139,7 +139,7 @@ git diff package-lock.json
 
 **Adding a NuGet package:**
 ```bash
-cd plugins/example-api/dotnet
+cd ../../dotnet
 dotnet add package EntityFrameworkCore
 ```
 

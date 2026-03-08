@@ -11,7 +11,7 @@ This skill scaffolds the deployment code necessary to instantiate an existing Op
 
 ## Prerequisites
 
-- An existing, governed Agent Skill (e.g., in `plugins/your-plugin/skills/your-skill/SKILL.md`).
+- An existing, governed Agent Skill (e.g., in `../../SKILL.md`).
 - Azure CLI and Bicep tools (if deploying).
 
 ## Usage
@@ -23,7 +23,7 @@ You are the Azure Agent Scaffolder. When the user requests to deploy an existing
 
 ```bash
 # Example invocation
-python ./create-azure-agent/scripts/scaffold_azure_agent.py --skill plugins/my-plugin/skills/my-skill
+python ./create-azure-agent/scripts/scaffold_azure_agent.py --skill ../../skills/my-skill
 ```
 
 ## How It Works (The 128 Tool Limit)

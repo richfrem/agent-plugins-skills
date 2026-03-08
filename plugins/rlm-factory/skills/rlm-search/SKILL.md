@@ -115,10 +115,10 @@ python3 ./scripts/query.py \
 ```bash
 # Scoped search (preferred -- use paths from Phase 1 or 2)
 grep_search "VectorDBOperations" \
-  plugins/vector-db/skills/vector-db-agent/scripts/
+  ../../scripts/
 
 # Ripgrep for regex patterns
-rg "def query" plugins/vector-db/ --type py
+rg "def query" ../../ --type py
 
 # Find specific config key
 rg "chroma_host" plugins/ -l

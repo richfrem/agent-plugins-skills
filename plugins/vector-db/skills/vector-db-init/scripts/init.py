@@ -14,9 +14,17 @@ import json
 import subprocess
 from pathlib import Path
 
-# Project paths
-# File is at: plugins/vector-db/skills/vector-db-init/scripts/init.py
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+# ============================================================
+# PATHS
+# ============================================================
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[5]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).parent
 
 

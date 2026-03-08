@@ -23,7 +23,7 @@ To properly integrate Azure AI Foundry into our existing tooling and governance 
 
 ### Phase 1: Establish the Standard (Update `ecosystem-authoritative-sources`)
 Before building deployment tools, we must define how Azure Foundry fits into our ecosystem constraints.
-*   **Action:** Add a new reference file: `plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/reference/azure-foundry-agents.md`.
+*   **Action:** Add a new reference file: `../../reference/azure-foundry-agents.md`.
 *   **Content:** Document how `SKILL.md` maps to the `instructions` parameter, how MCP tools are declared, and the strict adherence to the 128-tool limit requiring multi-agent orchestration. This serves as the ground truth for any scripts we write later.
 
 ### Phase 2: Update the Bridge (`agent-bridge` Skill)

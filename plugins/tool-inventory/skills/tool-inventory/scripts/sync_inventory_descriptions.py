@@ -13,7 +13,7 @@ Usage:
     python ./scripts/sync_inventory_descriptions.py
 
 Dependencies:
-    - plugins/tool-inventory/scripts/manage_tool_inventory.py
+    - ../../scripts/manage_tool_inventory.py
     - .agent/learning/rlm_tool_cache.json
 """
 
@@ -37,7 +37,7 @@ except ImportError:
 def main():
     # Cache and Inventory paths
     cache_path = PROJECT_ROOT / ".agent/learning/rlm_tool_cache.json"
-    inventory_path = PROJECT_ROOT / "plugins/tool_inventory.json"
+    inventory_path = PROJECT_ROOT / "tool_inventory.json"
 
     
     if not cache_path.exists():

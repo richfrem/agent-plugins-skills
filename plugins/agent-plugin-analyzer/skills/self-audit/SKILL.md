@@ -16,8 +16,8 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
 
 2. **Run scanner against test fixtures:**
    ```bash
-   python3 ./skills/*/scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer/tests/gold-standard-plugin --format json
-   python3 ./skills/*/scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer/tests/flawed-plugin --format json
+   python3 ./skills/*/scripts/inventory_plugin.py --path ../../tests/gold-standard-plugin --format json
+   python3 ./skills/*/scripts/inventory_plugin.py --path ../../tests/flawed-plugin --format json
    ```
 
 3. **Validate deterministic scanner results:**

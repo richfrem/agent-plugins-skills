@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-plugins/tool-inventory/skills/tool-inventory/scripts/generate_tools_manifest.py
+../../scripts/generate_tools_manifest.py
 ====================================
 Purpose:
     Scans the plugins/ directory and generates a flat JSON manifest

@@ -21,7 +21,7 @@ The vision for the next 1-2 years heavily involves Azure-hosted agents accessibl
 - **MCP Integration:** `create-mcp-integration` will be vital here. Web agents in Azure will need to securely connect to organizational databases, APIM interfaces, and internal APIs via the backend Model Context Protocol to actually execute the instructions in the SME-authored skills.
 
 ## 4. The "Write Once, Run Anywhere" Bridge
-You mentioned using the `plugin-mapper` to install skills for GitHub Copilot, but also using them in Antigravity. This touches on the Holy Grail of agentic workflows:
+You mentioned using the `plugin-manager` to install skills for GitHub Copilot, but also using them in Antigravity. This touches on the Holy Grail of agentic workflows:
 - **Centralized Governance:** The proposed "central repo for agent skill curation for bcgov with governance" serves as the single source of truth.
 - **Omni-Channel Execution:** A single "OIDC Setup" skill can be written once, and then invoked by a developer in VS Code (Copilot), by a CI/CD pipeline (`create-agentic-workflow` Smart Failure), or by a non-technical user in the Azure Web UI. 
 
@@ -35,7 +35,7 @@ The recently published article, *"Context-Driven Development: Agent Skills for M
 
 ### Shared Architectural Principles
 - **Activation Context, Not Just Documentation:** Microsoft explicitly states that agents don't lack intelligence, they lack *domain knowledge about your SDKs and patterns*. Skills provide the "activation context." This perfectly mirrors your shift from human-readable docs (like the OIDC Setup Guide) to machine-readable skills.
-- **Context Rot Prevention:** The article warns against loading all 126 skills at once, citing "context rot" (diluted attention and wasted tokens). This validates your push for modular, targeted skills and the use of the `plugin-mapper` to selectively install only what's needed for a specific repository or agent environment.
+- **Context Rot Prevention:** The article warns against loading all 126 skills at once, citing "context rot" (diluted attention and wasted tokens). This validates your push for modular, targeted skills and the use of the `plugin-manager` to selectively install only what's needed for a specific repository or agent environment.
 - **The Omni-Channel Bridge:** Just as your `agent-plugins-skills` repo bridges skills into Copilot and Antigravity, Microsoft's repo explicitly supports GitHub Copilot, Claude Code, and the Copilot CLI using the exact same underlying structure (`.github/skills/` and `SKILL.md`).
 - **MCP Integration is Standard:** Microsoft ships pre-configured MCP servers (for Docs, GitHub, Context7) directly alongside their skills. Your `create-mcp-integration` scaffolder positions you perfectly to replicate this pattern, grounding Azure Web Agents in live BC Gov documentation and internal APIs.
 

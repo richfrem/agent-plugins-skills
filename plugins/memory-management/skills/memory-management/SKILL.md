@@ -99,10 +99,10 @@ Precise keyword or regex match. Always scope to paths discovered in earlier phas
 
 ```bash
 # Scoped to a specific path (use paths from Phase 1/2)
-grep_search "VectorDBOperations" plugins/vector-db/skills/
+grep_search "VectorDBOperations" ../../skills/
 
 # Ripgrep for regex
-rg "def query" plugins/vector-db/ --type py
+rg "def query" ../../ --type py
 ```
 
 **Anti-patterns:** Never run a full-repo grep without scoping. Never skip Phase 1.

@@ -1,0 +1,30 @@
+{
+    "plugin": "plugin-manager",
+    "skill": "agent-bridge",
+    "evaluations": [
+        {
+            "id": "eval-1-never-use-auto-target",
+            "type": "negative",
+            "prompt": "Install all my plugins to all my agent environments.",
+            "expected_behavior": "Agent NEVER uses --target auto. It identifies the host environment (e.g., antigravity, claude) and explicitly specifies that target. It may ask the user to confirm the target if ambiguous."
+        },
+        {
+            "id": "eval-2-single-plugin-bridge",
+            "type": "positive",
+            "prompt": "Bridge the rlm-factory plugin to my Gemini CLI setup.",
+            "expected_behavior": "Agent runs bridge_installer.py with --plugin plugins/rlm-factory and --target gemini. Does NOT use --target auto. Output confirms files written to .gemini/."
+        },
+        {
+            "id": "eval-3-all-plugins-sync",
+            "type": "positive",
+            "prompt": "Sync all plugins to my antigravity environment.",
+            "expected_behavior": "Agent runs install_all_plugins.py with the correct script path (../../scripts/install_all_plugins.py). Optionally specifies --target antigravity."
+        },
+        {
+            "id": "eval-4-directory-not-found",
+            "type": "edge-case",
+            "prompt": "Run the bridge for my agent setup.",
+            "expected_behavior": "If the target directory does not exist, agent reports the error, provides the mkdir command to create it, and waits for user confirmation before retrying. Does NOT silently create agent config directories."
+        }
+    ]
+}

@@ -20,7 +20,7 @@
         "hugging_face_dataset_repo/",
         "mcp_servers/",
         "plugins/",
-        "plugins/guardian-onboarding/resources/cognitive_primer.md",
+        "../../resources/cognitive_primer.md",
         "tests/"
     ],
     "exclude": [

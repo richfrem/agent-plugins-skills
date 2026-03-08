@@ -1,0 +1,40 @@
+{
+    "global_ignores": {
+        "__init__.py": "Standard Python module initializer. Not a standalone skill executable.",
+        "example.py": "Generic documentation placeholder often used in references."
+    },
+    "plugin_ignores": {
+        "adr-manager": {},
+        "agent-loops": {},
+        "agent-plugin-analyzer": {
+            "audit.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders.",
+            "qc_analysis.py": "Hypothetical docs example.",
+            "qc_core.py": "Hypothetical docs example.",
+            "scaffold.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders."
+        },
+        "agent-scaffolders": {},
+        "agent-skill-open-specifications": {},
+        "claude-cli": {},
+        "coding-conventions": {},
+        "context-bundler": {},
+        "copilot-cli": {},
+        "dependency-management": {},
+        "env-helper": {},
+        "excel-to-csv": {},
+        "gemini-cli": {},
+        "huggingface-utils": {},
+        "json-hygiene": {},
+        "link-checker": {},
+        "markdown-to-msword-converter": {},
+        "memory-management": {},
+        "mermaid-to-png": {},
+        "obsidian-integration": {},
+        "plugin-manager": {},
+        "rlm-factory": {},
+        "rsvp-speed-reader": {},
+        "spec-kitty-plugin": {},
+        "task-manager": {},
+        "tool-inventory": {},
+        "vector-db": {}
+    }
+}

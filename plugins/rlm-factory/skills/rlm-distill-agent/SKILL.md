@@ -38,7 +38,7 @@ summary, and inject it into the ledger via `inject_summary.py`.
 
 **First-time setup or missing profile?** Run the `rlm-init` skill first:
 ```bash
-# See: plugins/rlm-factory/skills/rlm-init/SKILL.md
+# See: ../../SKILL.md
 # Creates rlm_profiles.json, manifest, and empty cache
 ```
 
@@ -63,7 +63,7 @@ and what are its key components/functions?"* in one dense sentence.
 ```bash
 python3 ./scripts/inject_summary.py \
   --profile project \
-  --file plugins/example/skills/my-skill/SKILL.md \
+  --file ../../SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."
 ```
 
@@ -88,19 +88,19 @@ Switch to `--engine gemini --workers 5` if you need faster throughput.
 # Zero-cost bulk distillation (Copilot -- recommended default)
 python3 ./scripts/swarm_run.py \
   --engine copilot \
-  --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
+  --job ../../resources/jobs/rlm_chronicle.job.md \
   --files-from rlm_distill_tasks_project.md \
   --resume --workers 2
 
 # Higher throughput -- also free (Gemini)
 python3 ./scripts/swarm_run.py \
   --engine gemini \
-  --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
+  --job ../../resources/jobs/rlm_chronicle.job.md \
   --files-from rlm_distill_tasks_project.md \
   --resume --workers 5
 ```
 
-See `plugins/agent-loops/skills/agent-swarm/SKILL.md` for full swarm configuration options.
+See `../../SKILL.md` for full swarm configuration options.
 
 ## Quality Standard for Summaries
 

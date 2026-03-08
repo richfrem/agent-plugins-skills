@@ -1,4 +1,9 @@
 {
+  "agent-plugins-skills/plugins/agent-scaffolders/scripts/scaffold.py": {
+    "hash": "551990890f90a278",
+    "summarized_at": "2026-03-08T09:34:56.971466",
+    "summary": "Deterministically generates compliant directory architectures and boilerplate logic for plugins, skills, hooks, sub-agents, and commands using Jinja templates."
+  },
   "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py": {
     "file_mtime": 1771339354.9427407,
     "hash": "ad388ed431dc640b",
@@ -20,6 +25,11 @@
     "hash": "61017310912ea0e8",
     "summarized_at": "2026-02-17T07:47:25.351159",
     "summary": "{\"purpose\": \"agent_orchestrator.py (CLI)\", \"layer\": \"Plugin / Agent Orchestrator\", \"usage\": [\"python3 plugins/agent-orchestrator/scripts/agent_orchestrator.py\"], \"args\": [], \"inputs\": [\"agents\"], \"outputs\": [\"orchestration\"], \"dependencies\": [], \"key_functions\": [\"orchestrate\", \"main\"]}"
+  },
+  "plugins/agent-scaffolders/scripts/scaffold.py": {
+    "hash": "551990890f90a278",
+    "summarized_at": "2026-03-08T09:39:09.171555",
+    "summary": "Deterministically generates compliant directory architectures and boilerplate logic for plugins, skills, hooks, sub-agents, and commands using Jinja templates."
   },
   "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit.py": {
     "hash": "agent_distilled_2026_02_22",

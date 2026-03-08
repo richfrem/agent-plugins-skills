@@ -25,7 +25,14 @@ from datetime import datetime
 # ============================================================
 # PATHS
 # ============================================================
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[5]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 try:

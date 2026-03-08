@@ -167,13 +167,13 @@ def create_skill(name, path, description, iteration=None):
     # 1. Standard Skill Frontend
     skill_template = get_template("SKILL.md.jinja")
     if skill_template:
-        # Avoid format() errors with the literal ${{CLAUDE_PLUGIN_ROOT}} by replacing it temporarily
+        # Avoid format() errors with the literal ${{plugins}} by replacing it temporarily
         template_safe = skill_template.replace("${{", "{").replace("}}", "}")
         skill_content = template_safe.format(
             name=name,
             description=description,
             title_name=name.replace("-", " ").title(),
-            CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}"
+            plugins="${plugins}"
         )
     else:
         skill_content = f"---snip---"

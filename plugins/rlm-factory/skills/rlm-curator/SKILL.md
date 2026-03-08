@@ -68,7 +68,7 @@ python3 ./scripts/inventory.py --profile project --missing > rlm_gap_list.md
 # Run zero-cost swarm
 python3 ./scripts/swarm_run.py \
   --engine copilot \
-  --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
+  --job ../../resources/jobs/rlm_chronicle.job.md \
   --files-from rlm_gap_list.md \
   --resume --workers 2
 ```

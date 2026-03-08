@@ -71,6 +71,42 @@ This acts as a preprocessor, inserting the standard output directly into the mar
 ## Integration with Subagents
 If you use `context: fork`, the `SKILL.md` body becomes the System Prompt task for a new subagent, defined by the `agent` property. This protects the main thread's context limit or isolates specific workflows (like exhaustive testing or background code exploration).
 
+## Installation via `npx skills`
+The open standard provides a universal installer that automatically detects the active agent environment (Claude Code, GitHub Copilot, Gemini CLI, Cursor, etc.) and routes the skills to the correct configuration directories.
+
+### Installing from Remote Repositories
+You can install single skills or entire curated collections directly from GitHub and other git providers:
+- **Specific Skill:** `npx skills add <github-user>/<repo>/plugins/<plugin-name>`
+- **Full Collection:** `npx skills add <github-user>/<repo>`
+
+**Notable Open Skill Collections:**
+- **Anthropic Official:** `npx skills add anthropics/skills`
+- **Microsoft Official:** `npx skills add microsoft/skills`
+- **Agent Plugins (This Repo):** `npx skills add richfrem/agent-plugins-skills`
+
+### Updating Skills
+To update all skills installed via `npx` to their latest versions from their respective remote sources:
+```bash
+npx skills update
+```
+
+### Local Development & Reinstallation
+When authoring or modifying skills locally, you can install them from your local filesystem instead of a remote repository:
+```bash
+# Install a specific local plugin
+npx skills add ./plugins/my-plugin --force
+
+# Install all local plugins
+npx skills add ./plugins/ --force
+```
+
+**CRITICAL:** When iterating locally, `npx` may cache symlinks or encounter folder lock constraints when attempting to overwrite an existing installation. To ensure a clean local reinstallation, you must manually wipe the destination environment first:
+```bash
+# Example for Antigravity / universal agents
+rm -rf .agents/
+npx skills add ./plugins/my-plugin --force
+```
+
 ## Packaging & Distribution (ZIP)
 When creating a skill for distribution (e.g. sharing across an enterprise):
 - The skill folder must match the Skill's name.

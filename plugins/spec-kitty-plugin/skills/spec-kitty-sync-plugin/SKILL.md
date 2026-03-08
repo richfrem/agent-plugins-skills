@@ -77,7 +77,7 @@ This generates skills, rules, and templates that agents can consume.
 
 Compare the new `.kittify/` content against what was there before:
 ```bash
-git diff --stat -- .kittify/ .windsurf/ plugins/spec-kitty-plugin/
+git diff --stat -- .kittify/ .windsurf/ ../../
 ```
 Summarize the key changes for the user (new commands, removed commands, changed templates, updated mission configs).
 

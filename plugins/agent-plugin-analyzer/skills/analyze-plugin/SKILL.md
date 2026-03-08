@@ -27,7 +27,7 @@ Execute these six phases sequentially. Do not skip phases.
 
 Run the deterministic inventory script first:
 ```bash
-python3 "plugins/agent-plugin-analyzer/skills/analyze-plugin/scripts/inventory_plugin.py" --path <plugin-dir> --format json
+python3 "../../scripts/inventory_plugin.py" --path <plugin-dir> --format json
 ```
 
 If the script is unavailable, manually enumerate:

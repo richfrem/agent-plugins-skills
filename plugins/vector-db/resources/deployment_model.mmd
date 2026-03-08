@@ -6,9 +6,9 @@ stateDiagram-v2
 
     %% Application / User Space 
     state "User Scripts (CLI Wrappers)" as UserScripts {
-        ingest_script: plugins/vector-db/skills/vector-db-agent/scripts/ingest.py
-        query_script: plugins/vector-db/skills/vector-db-agent/scripts/query.py
-        cleanup_script: plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py
+        ingest_script: ../../scripts/ingest.py
+        query_script: ../../scripts/query.py
+        cleanup_script: ../../scripts/cleanup.py
     }
     
     %% Config Space

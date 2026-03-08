@@ -67,7 +67,7 @@ from scripts.stabilizers.vector_consistency_check import (
 # Define your native Python Vector DB query function
 def vector_query(query: str, max_results: int = 5) -> dict:
     # Call the actual Vector DB query script here
-    # This would use plugins/vector-db/skills/vector-db-agent/scripts/query.py in production
+    # This would use ../../scripts/query.py in production
     pass
 
 # Run stabilizer check on a topic directory

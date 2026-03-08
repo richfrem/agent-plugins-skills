@@ -1,0 +1,1 @@
+../../scripts/bridge_installer.py

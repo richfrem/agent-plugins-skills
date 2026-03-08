@@ -4,15 +4,15 @@
 ## Phase A: Strategy (Outer Loop)
 - [ ] **Verify planning artifacts**: Confirm spec, plan, and task documents exist
 - [ ] **Create worktree**: Create an isolated workspace for the Inner Loop (or use branch-direct mode)
-- [ ] **Generate Strategy Packet**: `python3 ./dual_loop/generate_strategy_packet.py --tasks-file <PATH> --task-id <WP-ID>`
+- [ ] **Generate Strategy Packet**: Create a targeted markdown packet holding context and acceptance criteria for the inner loop
 
 ## Phase B: Hand-off & Execution
 - [ ] **Hand off to Inner Loop**: Launch the inner agent with the strategy packet (e.g., `claude "Read handoffs/task_packet_NNN.md. Execute the mission. Do NOT use git."`)
 - [ ] **Inner Loop completes**: All acceptance criteria met, no git commands used
 
 ## Phase C: Verification (Outer Loop)
-- [ ] **Verify result**: `python3 ./dual_loop/verify_inner_loop_result.py --packet <PATH> --verbose`
-- [ ] **Verify clean state**: `python3 ./verify_workflow_state.py --wp <WP-ID> --phase review`
+- [ ] **Verify result**: Run tests, check deltas, and validate output against the strategy packet
+- [ ] **Verify clean state**: Ensure no git rules were violated and the inner loop workspace is clean
 - [ ] **On PASS**: Commit in worktree, update task lane to `done`
 - [ ] **On FAIL**: Hand off `correction_packet_NNN.md`, repeat Phase B
 

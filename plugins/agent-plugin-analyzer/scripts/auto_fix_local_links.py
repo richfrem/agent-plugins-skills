@@ -44,8 +44,9 @@ def fix_file(file_path: Path):
         return 0
         
     lines = content.splitlines()
+    lines = content.splitlines()
     fixed_lines = []
-    replacements = 0
+    state = {'replacements': 0}
     
     for line in lines:
         if "npx skills add" in line or "#" in line and "Hardcoded" in line:
@@ -53,26 +54,28 @@ def fix_file(file_path: Path):
             continue
             
         def replacer(match):
-            nonlocal replacements
             cmd = match.group(1)
             target = match.group(3)
-            replacements += 1
+            state['replacements'] += 1
+            
             # Check if it was executing a script directly in the plugin root instead of a skill
             if not target.startswith("scripts/"):
                 # if the original string was plugins/agent-plugin-analyzer/scripts/foo.py
                 # group 3 would be "scripts/foo.py". 
-                pass
+                if target.startswith("scripts/"):
+                    return f"{cmd} ../../{target}"
+                return f"{cmd} ./{target}"
+            
             return f"{cmd} ./{target}"
             
         new_line = EXEC_RX.sub(replacer, line)
         if new_line != line:
-            replacements += 1
+            state['replacements'] += 1
         fixed_lines.append(new_line)
         
-    if replacements > 0:
+    if state['replacements'] > 0:
         file_path.write_text("\n".join(fixed_lines) + "\n", encoding="utf-8")
-        
-    return replacements
+    return state['replacements']
 
 def main():
     root = resolve_project_root()

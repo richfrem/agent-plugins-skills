@@ -23,7 +23,7 @@ Search your repository by *meaning*, not just keywords. Uses a highly-accurate *
 
 | Command | Description |
 |:---|:---|
-| `plugins/vector-db/skills/vector-db-init/scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
+| `../../scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
 | `chroma run --host 127.0.0.1 --port 8110 --path .vector_data` | Background server launch (Option C, Recommended). |
 | `python3 ./scripts/ingest.py` | CLI to build/update the database. |
 | `python3 ./scripts/query.py` | CLI for testing semantic searches. |

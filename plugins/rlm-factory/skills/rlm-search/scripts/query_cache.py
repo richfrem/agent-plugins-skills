@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 
 # ============================================================
 # PATHS
-# File is at: plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py
+# File is at: ./scripts/query_cache.py
 # Root is 6 levels up (scripts->rlm-search->skills->rlm-factory->plugins->ROOT)
 # rlm_config is symlinked into the same directory
 # ============================================================
@@ -115,6 +115,18 @@ def list_cache(config: RLMConfig) -> None:
     for rel_path in sorted(data.keys()):
         print(f"   - {rel_path}")
 
+
+# ============================================================
+# CONFIG / PATHS
+# ============================================================
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[5]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 
 # ============================================================
 # CLI ENTRY POINT
