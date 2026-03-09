@@ -29,7 +29,14 @@ from typing import Set
 # File is at: ../../scripts/inventory.py
 # Root is 4 levels up (scripts→rlm-factory→plugins→ROOT)
 # ============================================================
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[3]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 if str(SCRIPT_DIR) not in sys.path:

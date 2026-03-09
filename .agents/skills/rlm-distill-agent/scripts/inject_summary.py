@@ -30,7 +30,7 @@ def _find_project_root(start_path: Path) -> Path:
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
             return parent
-    return current.parents[5]
+    return current.parents[3]
 
 PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent

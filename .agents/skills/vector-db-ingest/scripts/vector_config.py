@@ -13,7 +13,9 @@ def _find_project_root(start_path: Path) -> Path:
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
             return parent
-    return current.parents[5]
+    # Fallback if no .git found (e.g., in a zipped bundle)
+    # The script is in plugins/vector-db/scripts/, so root is 3 levels up
+    return current.parents[2]
 
 PROJECT_ROOT = _find_project_root(Path(__file__))
 LEARNING_DIR = PROJECT_ROOT / ".agent" / "learning"

@@ -13,8 +13,15 @@ import argparse
 from pathlib import Path
 
 # Project paths
-# File is at: plugins/vector-db/skills/vector-db-agent/scripts/query.py
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+# File is at: plugins/vector-db/scripts/query.py
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[2]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 if str(SCRIPT_DIR) not in sys.path:

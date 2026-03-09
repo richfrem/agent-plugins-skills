@@ -30,7 +30,14 @@ from typing import List, Dict, Any
 # Root is 6 levels up (scripts->rlm-search->skills->rlm-factory->plugins->ROOT)
 # rlm_config is symlinked into the same directory
 # ============================================================
-PROJECT_ROOT = Path(__file__).resolve().parents[5]
+def _find_project_root(start_path: Path) -> Path:
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        if (parent / ".git").is_dir():
+            return parent
+    return current.parents[3]
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 # Add the script's directory to sys.path to allow local imports
@@ -124,7 +131,7 @@ def _find_project_root(start_path: Path) -> Path:
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
             return parent
-    return current.parents[5]
+    return current.parents[3]
 
 PROJECT_ROOT = _find_project_root(Path(__file__))
 

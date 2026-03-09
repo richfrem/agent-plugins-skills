@@ -132,12 +132,12 @@ if source_register.exists():
      * Append a new entry in the prompt’s **Activity Log** detailing feedback (include timestamp, reviewer agent, shell PID).
      * Update frontmatter `lane` back to `planned`, clear `assignee` if necessary, keep history entry.
      * Add/revise a `## Review Feedback` section (create if missing) summarizing action items.
-     * Save feedback to a file and run `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <TASK_ID> planned --review-feedback-file <feedback-file>` (use the PowerShell equivalent on Windows) so rollback validation captures the feedback source deterministically.
+     * Save feedback to a file and run `spec-kitty agent tasks move-task <TASK_ID> --to planned --review-feedback-file <feedback-file>` (use the PowerShell equivalent on Windows) so rollback validation captures the feedback source deterministically.
   - **Approved**:
      * Append Activity Log entry capturing approval details (capture shell PID via `echo $$` or helper script).
      * Update frontmatter: set `lane=done`, set reviewer metadata (`agent`, `shell_pid`), optional `assignee` for approver.
      * Use helper script to mark the task complete in `tasks.md` (see Step 6).
-     * Run `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <TASK_ID> done --note "Approved for release"` (PowerShell variant available) to transition the prompt into `tasks/`.
+     * Run `spec-kitty agent tasks move-task <FEATURE> <TASK_ID> done --note "Approved for release"` (PowerShell variant available) to transition the prompt into `tasks/`.
 
 6. Update `tasks.md` automatically:
    - Run `spec-kitty agent tasks mark-status --task-id <TASK_ID> --status done` (POSIX) or `spec-kitty agent tasks mark-status --task-id <TASK_ID> --status done` (PowerShell) from repo root.

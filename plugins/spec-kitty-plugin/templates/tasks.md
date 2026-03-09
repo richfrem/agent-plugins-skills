@@ -19,8 +19,15 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Verify you are in the planning repository (not a worktree). Task generation happens on the target branch for ALL missions.
 
+1. Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks` from the repository root and capture:
+   - `target_branch` / `base_branch`
+   - `TARGET_BRANCH` / `BASE_BRANCH`
+   - `feature_dir`
+
+   Treat this JSON as canonical branch context for this command. Do not infer from `meta.json`.
+
 ```bash
-git branch --show-current  # Should show the target branch (meta.json → target_branch)
+git branch --show-current  # Should match TARGET_BRANCH from check-prerequisites JSON
 ```
 
 **Note**: Task generation in the target branch is standard for all spec-kitty missions. Implementation happens in per-WP worktrees.
@@ -29,9 +36,12 @@ git branch --show-current  # Should show the target branch (meta.json → target
 
 ## Outline
 
-1. **Setup**: Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks`
+1. **Setup**: Use the `check-prerequisites` JSON from Location Pre-flight and capture:
+   - `feature_dir`
+   - `target_branch` / `base_branch`
 
-   **CRITICAL**: The command returns JSON with `FEATURE_DIR` as an ABSOLUTE path (e.g., `/Users/robert/Code/project/kitty-specs/015-research-topic`).
+   **CRITICAL**: The command returns JSON with `feature_dir` as an ABSOLUTE path (e.g., `/Users/robert/Code/project/kitty-specs/015-research-topic`).
+   It also returns `runtime_vars.now_utc_iso` (`NOW_UTC_ISO`) for deterministic timestamp fields.
 
    **YOU MUST USE THIS PATH** for ALL subsequent file operations.
 
@@ -108,7 +118,7 @@ git branch --show-current  # Should show the target branch (meta.json → target
    - **P3 (polish)**: Quality validation, external review
 
 5. **Write `tasks.md`**:
-   - Location: `FEATURE_DIR/tasks.md`
+   - Location: `feature_dir/tasks.md`
    - Use `templates/tasks-template.md` from research mission
    - Include work packages with subtasks
    - Mark parallel opportunities (`[P]`)
@@ -117,12 +127,14 @@ git branch --show-current  # Should show the target branch (meta.json → target
 
 6. **Generate prompt files**:
 
-   **CRITICAL PATH RULE**: All work package files MUST be created in a FLAT `FEATURE_DIR/tasks/` directory, NOT in subdirectories!
+   **CRITICAL PATH RULE**: All work package files MUST be created in a FLAT `feature_dir/tasks/` directory, NOT in subdirectories!
 
-   - Create flat `FEATURE_DIR/tasks/` directory (no subdirectories!)
+   - Use `artifact_dirs.tasks_dir` when available.
+   - Do **not** shell out with `mkdir -p`; `create-feature` already creates `tasks/` in normal flow.
+   - If `tasks/` is missing unexpectedly, report the mismatch instead of improvising shell directory setup.
    - For each work package:
      - Derive a kebab-case slug from the title; filename: `WPxx-slug.md`
-     - Full path: `FEATURE_DIR/tasks/WP01-literature-search.md`
+     - Full path: `feature_dir/tasks/WP01-literature-search.md`
      - Use `templates/task-prompt-template.md` to capture:
        - **YAML frontmatter with `lane: "planned"`** (CRITICAL - this is how review finds WPs!)
        - `work_package_id`, `subtasks` array, `dependencies`, history entry
@@ -130,7 +142,7 @@ git branch --show-current  # Should show the target branch (meta.json → target
        - Evidence tracking requirements
        - Quality validation criteria
 
-   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `python3 .kittify/scripts/tasks/tasks_cli.py update`.
+   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `spec-kitty agent tasks move-task`.
 
 7. **Finalize tasks with dependency parsing and commit**:
 
@@ -188,7 +200,7 @@ subtasks:
   - "T002"
 title: "Literature Search & Source Collection"
 phase: "Phase 1 - Literature Review"
-lane: "planned"  # DO NOT EDIT - use: python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WPID> <lane>
+lane: "planned"  # DO NOT EDIT - use: spec-kitty agent tasks move-task <WPID> --to <lane>
 assignee: ""
 agent: ""
 shell_pid: ""
@@ -215,7 +227,7 @@ history:
 - Mark parallel subtasks (database searches, source reviews)
 - Include evidence tracking in every WP prompt
 - Quality validation depends on all content WPs
-- Use `python3 .kittify/scripts/tasks/tasks_cli.py update` to change lanes
+- Use `spec-kitty agent tasks move-task` to change lanes
 
 **For Users**:
 - Tasks.md shows the full research work breakdown

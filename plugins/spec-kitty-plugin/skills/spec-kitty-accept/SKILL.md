@@ -2,6 +2,7 @@
 name: spec-kitty-accept
 description: Validate feature readiness and guide final acceptance steps.
 ---
+
 # /spec-kitty.accept - Validate Feature Readiness
 
 **Version**: 0.11.0+

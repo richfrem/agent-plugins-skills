@@ -109,12 +109,12 @@
     "create-stateful-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "b9292019e727d5ec24759c02bb68ef9226f18ced48ff786e90d452f216fd319f"
+      "computedHash": "a2491c30c3233266c52236a4e5a18999d6345ee92790d944e945eceaf90ac0a4"
     },
     "create-sub-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "b7b38b0bf68c3aa6a18de3fc31fed812310eb9cbcadf338b3c7dd460ca0de2a2"
+      "computedHash": "18ae357a4e5432a037098a26b3baaf99d896bf0afbdf3951afa45b403094a1f7"
     },
     "dependency-management": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -149,7 +149,7 @@
     "excel-to-csv": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "7606cff5f2632a26397ae34fd0f82e481887688d649eebf63db8a49420a8018a"
+      "computedHash": "8cf668d53960ab296b8be69659b1ce7c99675e53aa186d0556ba602457b5b084"
     },
     "flawed-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -264,7 +264,7 @@
     "rlm-curator": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "e79a2a5a21917f70d1a789165d2795442c659cc57352a33e2c690ec33790fb63"
+      "computedHash": "007564a8d830fe5e6c68ffbf5aaf1d132b1b93021194fe1bc5619a2eac84b9d9"
     },
     "rlm-distill-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -274,7 +274,7 @@
     "rlm-init": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "0be7793f396c5f2d3272b0c30b9db30e9ba230e22a0110b9bc4d2b76086ad0bf"
+      "computedHash": "3d554c61dc39168446a43aef55125ac4edcfd801f7cee3f61544bc442c1a2ec9"
     },
     "rlm-search": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -294,82 +294,82 @@
     "spec-kitty-accept": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "7468223023ffb80ff5cf522ae44499c84795d54ab4d05fa4aac5b734cc67accf"
+      "computedHash": "b2638fbff5506f98ef769dc4eacfa5f528ea5cc66818031af831521fe1806d04"
     },
     "spec-kitty-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "beba2529149376329f94cd1187f26fa44072935ca1b4b28bfa7c6e4c0102c36b"
+      "computedHash": "b178abd136fd2be05a5825b8ad1721f5efa38c6eab8e97b9f3422b43481245b3"
     },
     "spec-kitty-analyze": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "aab03d67eead9c8beda9ba02dbde9a53771aab86307304378d6d41885f430742"
+      "computedHash": "7bcf73349688e2c10481b8cecbb16fcca8b879b1fbf83e02d355eda5121fc6b5"
     },
     "spec-kitty-checklist": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "9dca9f7b804ae15f5ac2cb2617d1a67e15f4cfa8e1a0ca48df6b0eacc471f972"
+      "computedHash": "905e6a76579d6f20f8a205c3ee11416a1253c2b4f8e93fe5b36b5014cbf25072"
     },
     "spec-kitty-clarify": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "2796be9f850f4fe238e4e1ee0aa1d3121adc0a9c9a1f080351f854636197d1f0"
+      "computedHash": "67189710f92a32a72eee2edf54d53b8fd1e6e704a0385f1bde0a409b4448579f"
     },
     "spec-kitty-constitution": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "637cd35c6a1f5d61fb26a448740cdea0cce065fa619d6aed4908079024e00ea6"
+      "computedHash": "e7a99b64b18bda1801cf2a246a7bf021bc31e99b7a72004181ffca850755e40d"
     },
     "spec-kitty-dashboard": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "39e870ee699ec745ab14b7c443b2fa8d44ba3f493c5178b35a1f6599da40e8b8"
+      "computedHash": "64a61da5b6986222efa4cdb864c2b7fe6164f4e88c005ff7387e6f14a6fea25c"
     },
     "spec-kitty-implement": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "f426c83ebb3123975bf89eebe73bb5e65f516820c17bbc5aeb0686398e1994c0"
+      "computedHash": "96a8e370818e97188893442a2f04e2c084364cb26b62d9df4ceb072edcc2d33b"
     },
     "spec-kitty-merge": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "dd6bf873b9081320afa25df030f9fab056c403e5a3e067820d19cd8768ed188c"
+      "computedHash": "d778fd50f07ee9813a0a8e68f5c224a1c3e5647ff78544097a56975d91b96e24"
     },
     "spec-kitty-plan": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "880cde2bc7d8dd5bda9d0bb486c6a66d286cf4bf9da3461eb38d2b6d915a58b0"
+      "computedHash": "d25bfe71265d07d2c55b31be36ec4ea4e5f2e7547bd768498b80f0dedaf4113a"
     },
     "spec-kitty-research": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "a7ab90b12f06b0e675e38442109590cc420c8f3cef3c3f7cfacc803005885fe8"
+      "computedHash": "ceb59a802a8acb0ab07fbbe193625dd90f155d41a5ad82a81265a2753e10e910"
     },
     "spec-kitty-review": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "476663fa4d15c24dedaa5923bbb47f4d8e7572b80eaf3e8c1fdce1f7b3cf0967"
+      "computedHash": "c62702dfd21367fc99b2b597d198396646a53c7af91524b8d61f9a2c47977c8f"
     },
     "spec-kitty-specify": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "26131051923d349565fe4201f09452d12a1d7e094f49b00e64ca4fca418633d5"
+      "computedHash": "49796fc3bbd552e16f8825b02ec3019de1f707f30578f26c05b677045b92e21f"
     },
     "spec-kitty-status": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "7c4bdbfaddb15fdfcd2446adf6ad90a40dfe90aa92ad47771e6cfd78a3c2fdff"
+      "computedHash": "170aa8c660c64c1b850cb94ad4925477903b8545e5a99f64d0c27a27a0955edf"
     },
     "spec-kitty-sync-plugin": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "85c50e8a263390e0671aeafe74ce4e553478aab92944f9a5690ead48b6ac544c"
+      "computedHash": "e4de7f1dceac413c6f6552013ace303bd07ba5abfaaa4f40f39f158345dfe784"
     },
     "spec-kitty-tasks": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "2f28cad9ed9a7d34261cb449185fe98454fd98df4f5a9f65a1ac0fa5ca37e597"
+      "computedHash": "bce656cc6f3b99ea13b5a6c52971ac270f60b3e690033b10dc97e50ee4f88448"
     },
     "synthesize-learnings": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -380,6 +380,16 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
       "computedHash": "3a9f8f924dd19991a07b047d689c9d2e911944272d7dce2f1f001dbc3c7f738f"
+    },
+    "tool-inventory": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "sourceType": "local",
+      "computedHash": "f789c6a43255577869ea1798998eca7e846d302bb8da1c134e61a361434012b9"
+    },
+    "tool-inventory-init": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "sourceType": "local",
+      "computedHash": "eb478e18216ad0fb45a32535ad1813a70912ed499f3d2b5db4cb75f50799338e"
     },
     "vector-db-cleanup": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
