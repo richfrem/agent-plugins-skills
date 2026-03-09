@@ -2,6 +2,7 @@
 name: spec-kitty-merge
 description: Merge a completed feature into the target branch and clean up worktree
 ---
+
 # /spec-kitty.merge - Deterministic Merge
 
 Run merge from the **primary repository checkout root** (outside `.worktrees/`).

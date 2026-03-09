@@ -59,12 +59,16 @@ After Update/Init, you MUST propagate the new configuration to the agent ecosyst
 
 **Step A: Sync Local Configurations (Windsurf/Kittify -> Plugin System)**
 ```bash
-python3 ./scripts/sync_configuration.py
+python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
 ```
 *Note: This automatically converts local workflows into Open Standard skills inside the plugin.*
 
 **Step B: Deploy to Agents (Agent Handoff)**
-Finally, ask the user if they would like to use their ecosystem's plugin bridge (e.g. the Plugin Mapper) to deploy these natively formatted skills to their active AI environments (e.g. `antigravity`, `claude`, `gemini`, `github`).
+Finally, ask the user if they would like to use the new `npx skills add` open standard to deploy these natively formatted skills to their active AI environments.
+```bash
+# To install just the spec-kitty plugin updates:
+npx skills add ./plugins/spec-kitty-plugin --force
+```
 
 ---
 

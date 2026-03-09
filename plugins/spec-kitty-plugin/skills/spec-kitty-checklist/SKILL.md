@@ -2,6 +2,7 @@
 name: spec-kitty-checklist
 description: Generate a custom checklist for the current feature based on user requirements.
 ---
+
 ## Checklist Purpose: "Unit Tests for English"
 
 **CRITICAL CONCEPT**: Checklists are **UNIT TESTS FOR REQUIREMENTS WRITING** - they validate the quality, clarity, and completeness of requirements in a given domain.
@@ -33,6 +34,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `spec-kitty agent feature check-prerequisites --json` from repo root and parse JSON for feature_dir and available_docs list.
    - All file paths must be absolute.
+   - Treat `target_branch` / `base_branch` in the JSON payload as canonical branch context for this run.
 
 2. **Clarify intent (dynamic)**: Derive up to THREE initial contextual clarifying questions (no pre-baked catalog). They MUST:
    - Be generated from the user's phrasing + extracted signals from spec/plan/tasks

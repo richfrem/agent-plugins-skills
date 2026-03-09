@@ -26,23 +26,23 @@ from pathlib import Path
 from typing import NoReturn
 
 # Paths
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
-ROOT = PROJECT_ROOT
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent.parent
+PLUGIN_ROOT = Path(__file__).parent.parent.parent.parent
 
 # Sources
-WORKFLOWS_SOURCE_DIR = ROOT / ".windsurf/workflows"
-RULES_SOURCE_DIR = ROOT / ".kittify/memory"
-AGENTS_RULES_SRC = ROOT / ".kittify/AGENTS.md"
-TEMPLATES_SOURCE_DIR = ROOT / ".kittify/missions/research/command-templates"
+WORKFLOWS_SOURCE_DIR = PROJECT_ROOT / ".windsurf/workflows"
+RULES_SOURCE_DIR = PROJECT_ROOT / ".kittify/memory"
+AGENTS_RULES_SRC = PROJECT_ROOT / ".kittify/AGENTS.md"
+TEMPLATES_SOURCE_DIR = PROJECT_ROOT / ".kittify/missions/research/command-templates"
 
 # Destinations
-WORKFLOWS_DEST_DIR = ROOT / "skills"
-RULES_DEST_DIR = ROOT / "../../rules"
-TEMPLATES_DEST_DIR = ROOT / "../../templates"
+WORKFLOWS_DEST_DIR = PLUGIN_ROOT / "skills"
+RULES_DEST_DIR = PLUGIN_ROOT / "rules"
+TEMPLATES_DEST_DIR = PLUGIN_ROOT / "templates"
 
 # Legacy Cleanup
-LEGACY_COMMANDS_DIR = ROOT / "../../commands"
-LEGACY_WORKFLOWS_DIR = ROOT / "../../workflows"
+LEGACY_COMMANDS_DIR = PLUGIN_ROOT / "commands"
+LEGACY_WORKFLOWS_DIR = PLUGIN_ROOT / "workflows"
 
 def sync_workflows() -> None:
     """Syncs workflow files from Windsurf source to plugin commands."""

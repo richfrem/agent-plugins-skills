@@ -2,6 +2,7 @@
 name: spec-kitty-implement
 description: Create an isolated workspace (worktree) for implementing a specific work
 ---
+
 ## ⚠️ CRITICAL: Working Directory Requirement
 
 **After running `spec-kitty implement WP##`, you MUST:**
@@ -65,7 +66,7 @@ git commit -m "feat(WP##): <describe your implementation>"
 
 **Then move to review:**
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## for_review --note "Ready for review: <summary>"
+spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
 ```
 
 **Why this matters:**

@@ -172,7 +172,7 @@ class RLMConfig:
 
         # Fallback: check relative to the skill's resources directory
         internal_fallback = (
-            Path(__file__).resolve().parents[2]
+            Path(__file__).resolve().parents[1]
             / "resources" / "prompts" / "rlm" / "rlm_summarize_general.md"
         )
         if internal_fallback.exists():

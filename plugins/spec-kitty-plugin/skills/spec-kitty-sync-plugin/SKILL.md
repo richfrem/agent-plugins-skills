@@ -63,7 +63,7 @@ spec-kitty init . --ai windsurf --force
 
 Convert the refreshed `.kittify/` templates into distributable plugin components inside `plugins/spec-kitty-plugin/`:
 ```bash
-python3 ./scripts/sync_configuration.py
+python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
 ```
 This generates skills, rules, and templates that agents can consume.
 
@@ -139,23 +139,25 @@ If **ANY** protected file is missing or `ls` returns an error, trigger the Escal
 4. **Recommend**: "We must restore this file from git history before bridging plugins."
 5. **Draft**: Ask the user for permission to run `git checkout -- <file>`.
 
-### Step 4: Bridge to Agent Environments (Interactive)
+### Step 4: Deploy to Agent Environments (Interactive)
 
-**ASK THE USER** before bridging:
+**ASK THE USER** before deploying:
 
-> Which plugins should I bridge?
+> Which plugins should I install/update?
 > 1. **Only spec-kitty-plugin** (just the updated spec-kitty commands)
-> 2. **All plugins** (full ecosystem sync across all plugins)
->
-> Which agent environments?
-> - antigravity, claude, github, gemini, windsurf, or **all**
+> 2. **All plugins** (full ecosystem sync across all 80+ plugins)
 
 **If spec-kitty-plugin only:**
-Invoke your ecosystem's specific plugin bridge mapping script targeted specifically at `plugins/spec-kitty-plugin` for the selected agent environments.
+Invoke the `npx skills` installer targeted specifically at `plugins/spec-kitty-plugin`:
+```bash
+npx skills add ./plugins/spec-kitty-plugin --force
+```
 
 **If all plugins:**
-Invoke your ecosystem's specific `install-all` mapping script across the entire `plugins/` directory for the selected agent environments.
-Repeat for each selected agent environment, or run once per target.
+Invoke the `npx skills` installer across the entire `plugins/` directory:
+```bash
+npx skills add ./plugins/ --force
+```
 
 ### Step 5: Confirmation
 
