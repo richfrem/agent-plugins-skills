@@ -39,14 +39,14 @@ The autonomous agent executes a strict 3-Step Protocol: **Order matters: Map →
 cd /path/to/your/repo
 
 # Step 1: Map
-python3 plugins/link-checker/skills/link-checker-agent/scripts/map_repository_files.py
+python3 ./scripts/map_repository_files.py
 
 # Step 2: Fix
-python3 plugins/link-checker/skills/link-checker-agent/scripts/smart_fix_links.py
+python3 ./scripts/smart_fix_links.py
 
 # Step 3: Check
-python3 plugins/link-checker/skills/link-checker-agent/scripts/check_broken_paths.py
-python3 plugins/link-checker/skills/link-checker-agent/scripts/check_broken_paths.py --file docs/specific.md
+python3 ./scripts/check_broken_paths.py
+python3 ./scripts/check_broken_paths.py --file docs/specific.md
 ```
 
 ### How the Fixer Works

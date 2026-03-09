@@ -18,6 +18,8 @@ Instead of keeping documentation trapped in disparate folders, this site serves 
 
 Use the `npx skills` CLI to install plugins directly into your agent environment. It auto-detects installed agents (Claude Code, GitHub Copilot, Gemini, Cursor, and 30+ others) and wires everything up natively.
 
+### Installing from GitHub
+
 ```bash
 # Install all plugins from this repo
 npx skills add richfrem/agent-plugins-skills
@@ -31,14 +33,36 @@ npx skills add richfrem/agent-plugins-skills/plugins/spec-kitty-plugin
 npx skills update
 ```
 
+### Installing Locally (For Contributors / Local Dev)
+
+If you are developing or modifying plugins locally, you can install them directly from the local filesystem instead of pulling from GitHub.
+
+> [!WARNING]
+> When testing local changes to a skill, `npx` may cache previous symlinks or encounter folder lock issues when overwriting. Before reinstalling your local changes, you **must remove the existing destination folders** first.
+
+```bash
+# First, remove the existing agent skills folder to prevent caching/lock issues
+
+# remove a specific skill first check list 
+npx skills list
+
+#remove a specific skill 
+npx skills remove skill-name
+
+# Remove all skills from all agents
+npx skills remove --all -y
+
+# Install a specific local plugin
+npx skills add ./plugins/rlm-factory --force
+
+# Install the entire local plugins directory
+npx skills add ./plugins/ --force
+```
+
 > **Why this works**: each plugin in `plugins/` contains a `SKILL.md` following the [open agent skills standard](https://skills.sh/docs). The CLI reads it and configures your IDE automatically.
 
 Browse all available plugins and their install status at:
 **[skills.sh/richfrem/agent-plugins-skills](https://skills.sh/richfrem/agent-plugins-skills)**
-
-> [!NOTE]
-> **Contributors / local dev only**: if you are working on the plugins themselves, use `python plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py --target <your-agent>` to deploy from local source to your agent environments.
-
 
 
 ---

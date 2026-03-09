@@ -23,7 +23,7 @@
         "create-sub-agent"
     ],
     "scripts": [
-        "scripts/audit.py",
+        "skills/audit-plugin/scripts/audit.py",
         "scripts/scaffold.py"
     ],
     "dependencies": []

@@ -73,7 +73,7 @@ Analyze the sales plugin at claude-knowledgework-plugins/sales
 
 ### Analyze a Single Skill
 ```
-/mine-skill plugins/my-plugin/skills/my-skill
+/mine-skill ../../skills/my-skill
 ```
 
 ### L5 Red Team Audit (via Sub-Agent)

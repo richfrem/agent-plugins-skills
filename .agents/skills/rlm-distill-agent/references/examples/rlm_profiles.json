@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "profiles": {
+        "project": {
+            "description": "Project Sanctuary documentation, protocols, ADRs, workflows",
+            "manifest": ".agent/learning/rlm_summary_cache_manifest.json",
+            "cache": ".agent/learning/rlm_summary_cache.json",
+            "extensions": [
+                ".md",
+                ".txt"
+            ]
+        },
+        "tools": {
+            "description": "Semantic Registry of Project Tools and Executable Code logic.",
+            "manifest": ".agent/learning/rlm_tools_manifest.json",
+            "cache": ".agent/learning/rlm_tool_cache.json",
+            "extensions": [
+                ".py",
+                ".js",
+                ".ts",
+                ".sh"
+            ]
+        }
+    },
+    "default_profile": "project"
+}

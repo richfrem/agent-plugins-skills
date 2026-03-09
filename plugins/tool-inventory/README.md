@@ -86,10 +86,10 @@ ChromaDB is the primary truth store. JSON cache is kept for backward compatibili
 
 | RLM Command/Script | Purpose | Executable Type |
 |:---|:---|:---|
-| `/rlm-factory:distill-agent` | Agent-powered file summarization | Agent (inject_summary.py) |
-| `distiller.py` | Batch LLM summarization | ✅ Local Ollama |
-| `query_cache.py` | Legacy JSON cache search | ❌ Command Line |
-| `inventory.py` | Coverage reporting | ❌ Command Line |
+| `/rlm-factory:distill-agent` | Agent-powered file summarization | Agent |
+| `rlm-distill-agent skill` | Batch LLM summarization | ✅ Orchestrator |
+| `rlm-query-agent skill` | Legacy JSON cache search | ❌ Command Line |
+| `rlm-curator skill` | Coverage reporting | ❌ Command Line |
 
 ---
 
@@ -99,11 +99,11 @@ See [docs/tool-inventory-workflow.mmd](docs/tool-inventory-workflow.mmd).
 
 ```mermaid
 graph TD
-    A["manage_tool_inventory.py"] -->|CRUD| B["plugins/tool_inventory.json"]
+    A["manage_tool_inventory.py"] -->|CRUD| B["tool_inventory.json"]
     A -->|Generate| C["TOOL_INVENTORY.md"]
     A -->|Upsert| D["ChromaDB"]
     D -->|Semantic Search| E["tool_chroma.py"]
-    F["distiller.py"] -.->|Optional| D
+    F["rlm-distill-agent skill"] -.->|Optional| D
 ```
 
 ### Plugin Directory Structure

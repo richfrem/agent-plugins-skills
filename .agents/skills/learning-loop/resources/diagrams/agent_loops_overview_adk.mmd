@@ -1,0 +1,27 @@
+---
+config:
+  theme: base
+---
+%% Hierarchical (Orchestrator) ADK Pattern
+flowchart LR
+    Input(["Input Trigger"]) --> Router
+
+    subgraph Hierarchical ["Routing Agent (Orchestrator)"]
+        direction LR
+        Router{"Router Model"} 
+        Router -->|Analysis| Pat1["Loop Agent"]
+        Router --> Pat2["Review & Critique"]
+        Router --> Pat3["Sequential Agent"]
+        Router --> Pat4["Parallel Agent"]
+    end
+
+    Pat1 & Pat2 & Pat3 & Pat4 --> Output(["Execution Output"])
+
+    style Input fill:#ffebee,stroke:#c62828,stroke-width:2px
+    style Hierarchical fill:#ffffff,stroke:#c62828,stroke-width:2px,stroke-dasharray: 5 5
+    style Router fill:#c62828,stroke:#b71c1c,stroke-width:2px,color:#fff
+    style Pat1 fill:#ef5350,stroke:#c62828,stroke-width:2px,color:#fff
+    style Pat2 fill:#ef5350,stroke:#c62828,stroke-width:2px,color:#fff
+    style Pat3 fill:#ef5350,stroke:#c62828,stroke-width:2px,color:#fff
+    style Pat4 fill:#ef5350,stroke:#c62828,stroke-width:2px,color:#fff
+    style Output fill:#ffebee,stroke:#c62828,stroke-width:2px

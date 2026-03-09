@@ -16,32 +16,32 @@ Search your repository by *meaning*, not just keywords. Uses a highly-accurate *
 - Python 3.8+
 - Use the initialization skill to set up the environment:
   ```bash
-  python3 plugins/vector-db/skills/vector-db-init/scripts/init.py
+  python3 ./scripts/init.py
   ```
 
 ## Commands
 
 | Command | Description |
 |:---|:---|
-| `plugins/vector-db/skills/vector-db-init/scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
+| `../../scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
 | `chroma run --host 127.0.0.1 --port 8110 --path .vector_data` | Background server launch (Option C, Recommended). |
-| `python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py` | CLI to build/update the database. |
-| `python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py` | CLI for testing semantic searches. |
-| `python3 plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py` | Scans for and removes deleted files from the DB. |
+| `python3 ./scripts/ingest.py` | CLI to build/update the database. |
+| `python3 ./scripts/query.py` | CLI for testing semantic searches. |
+| `python3 ./scripts/cleanup.py` | Scans for and removes deleted files from the DB. |
 
 ## Quick Start
 ```bash
 # 1. Initialize DB + Profile
-python3 plugins/vector-db/skills/vector-db-init/scripts/init.py
+python3 ./scripts/init.py
 
 # 2. Start the Server (In a background terminal / new tab)
 chroma run --host 127.0.0.1 --port 8110 --path .vector_data
 
 # 3. Ingest Repository
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --full --profile knowledge
+python3 ./scripts/ingest.py --full --profile knowledge
 
 # 4. Search
-python3 plugins/vector-db/skills/vector-db-agent/scripts/query.py "your question here" --profile knowledge
+python3 ./scripts/query.py "your question here" --profile knowledge
 ```
 
 ## Troubleshooting & Technical Notes

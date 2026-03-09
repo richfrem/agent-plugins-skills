@@ -1,1 +1,0 @@
-../../create-skill/scripts/scaffold.py

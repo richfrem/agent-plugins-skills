@@ -2,6 +2,8 @@
 
 The flagship workflow plugin — **Spec-Driven Development lifecycle** + **Universal Bridge sync engine**.
 
+> **⚠️ CRITICAL REQUIREMENT**: This plugin is entirely dependent on the host machine having `spec-kitty-cli` installed and initialized locally via `spec-kitty init . --ai windsurf`. Do not install this plugin if those prerequisites are not met.
+
 Source repo [https://github.com/Priivacy-ai/spec-kitty](https://github.com/Priivacy-ai/spec-kitty)
 
 ## Prerequisites
@@ -18,7 +20,7 @@ spec-kitty init . --ai windsurf
 
 ## Installation
 ### Universal IDE Deployment (Antigravity, Claude Code, Gemini, Copilot, Windsurf)
-This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use your ecosystem's specific agent bridge or plugin-mapper installer script, pointing it at `plugins/spec-kitty-plugin` and targeting your preferred IDE.
+This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use your ecosystem's specific agent bridge or plugin-manager installer script, pointing it at `plugins/spec-kitty-plugin` and targeting your preferred IDE.
 
 ### 1. Initializing Spec Kitty (First Time)
 Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-init` skill:

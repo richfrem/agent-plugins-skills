@@ -1,0 +1,26 @@
+# {name} Plugin
+
+Generated via Agent Scaffolder.
+
+## Purpose
+{description}
+
+## Dependencies
+By default, standard library dependencies are assumed. If external packages are required, declare them in `requirements.in` and use the standard `pip-compile` workflow:
+```bash
+cd plugins/{name}
+pip-compile requirements.in
+pip install -r requirements.txt
+```
+
+## Directory Structure
+
+```text
+{name}/
+├── .claude-plugin/plugin.json
+├── README.md
+├── references/
+├── scripts/
+├── skills/
+└── templates/
+```

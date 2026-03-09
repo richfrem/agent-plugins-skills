@@ -1,6 +1,6 @@
 ---
 name: vector-db-init
-description: Interactively initializes the Vector DB plugin. Installs the required pip dependencies (chromadb, langchain wrappers) and configures the vector_profiles.json for Native Python Server connections. Run this before attempting to use the vector-db-agent or vector-db-launch skills.
+description: Interactively initializes the Vector DB plugin. Installs the required pip dependencies (chromadb, langchain wrappers) and configures the vector_profiles.json for Native Python Server connections. Run this before attempting to use the vector-db-search or vector-db-launch skills.
 ---
 # Vector DB Initialization
 
@@ -25,7 +25,7 @@ Real-world examples of each config file are in `references/examples/`:
 1. **Run the Initialization Script:**
    You must execute the interactive initialization script located at `scripts/init.py`.
    ```bash
-   python3 plugins/vector-db/skills/vector-db-init/scripts/init.py
+   python3 ./scripts/init.py
    ```
 
 2. **Wait for Completion:** 

@@ -14,7 +14,7 @@ globs: ["*.py", "*.ts", "*.js", "*.cs"]
 
 ## 📝 Coding Conventions (Summary)
 
-**Full standards → `plugins/coding-conventions/skills/conventions-agent/SKILL.md`**
+**Full standards → `../../SKILL.md`**
 
 ### Non-Negotiables
 1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class.
@@ -40,7 +40,7 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 
 ## 🐍 Python Dependency Rules (Summary)
 
-**Full workflow details → `plugins/dependency-management/skills/dependency-management/SKILL.md`**
+**Full workflow details → `../../SKILL.md`**
 
 ### Non-Negotiables
 1. **No manual `pip install`** — all changes go through `.in` → `pip-compile` → `.txt`.
@@ -50,7 +50,6 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 5. **Declarative Dockerfiles** — only `COPY requirements.txt` + `RUN pip install -r`. No ad-hoc installs.
 
 <!-- END RULES FROM PLUGIN: dependency-management -->
-
 <!-- BEGIN RULES FROM PLUGIN: spec-kitty -->
 # SHARED RULES FROM spec-kitty
 ## Constitution (spec-kitty)

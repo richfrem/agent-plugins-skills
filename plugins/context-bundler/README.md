@@ -61,7 +61,7 @@ Claude will:
       "note": "Implementation logic"
     },
     {
-      "path": "plugins/agent-scaffolders/scripts",
+      "path": "../../scripts",
       "note": "You can provide directories to recursively bundle all text files inside."
     }
   ]

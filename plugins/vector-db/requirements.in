@@ -1,8 +1,8 @@
 # Vector DB Dependencies (Intent File)
 # Workflow:
 #   1. Edit this file
-#   2. pip-compile plugins/vector-db/requirements.in --output-file plugins/vector-db/requirements.txt
-#   3. pip install -r plugins/vector-db/requirements.txt
+#   2. pip-compile ../../requirements.in --output-file ../../requirements.txt
+#   3. pip install -r ../../requirements.txt
 
 # Core
 python-frontmatter

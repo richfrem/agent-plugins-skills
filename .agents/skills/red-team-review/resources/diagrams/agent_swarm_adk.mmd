@@ -1,0 +1,34 @@
+---
+config:
+  theme: base
+---
+%% Parallel Agent (Swarm) ADK Pattern
+flowchart LR
+    Input(["Input (Partitioned Work)"])
+    
+    subgraph ParallelAgent ["Parallel Agent (Swarm)"]
+        direction TB
+        Agent1["Worker 1"]
+        Agent2["Worker 2"]
+        AgentN["Worker N"]
+    end
+    
+    Input --> Agent1
+    Input --> Agent2
+    Input --> AgentN
+    
+    Agent1 --> Out1["Output 1"]
+    Agent2 --> Out2["Output 2"]
+    AgentN --> OutN["Output N"]
+
+    Out1 & Out2 & OutN --> Merge["Aggregator / Merge"]
+
+    style Input fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    style ParallelAgent fill:#eceff1,stroke:#b0bec5,stroke-width:2px
+    style Agent1 fill:#f57f17,stroke:#e65100,stroke-width:2px,color:#fff
+    style Agent2 fill:#f57f17,stroke:#e65100,stroke-width:2px,color:#fff
+    style AgentN fill:#f57f17,stroke:#e65100,stroke-width:2px,color:#fff
+    style Out1 fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    style Out2 fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    style OutN fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    style Merge fill:#ffca28,stroke:#f57f17,stroke-width:2px

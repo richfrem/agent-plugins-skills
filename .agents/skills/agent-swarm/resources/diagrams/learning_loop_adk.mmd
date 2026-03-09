@@ -1,0 +1,20 @@
+---
+config:
+  theme: base
+---
+%% Loop Agent (Simple Learning) ADK Pattern
+flowchart LR
+    User(["Input Goal"]) --> Agent
+
+    subgraph SingleAgent ["Loop Agent (Single Agent)"]
+        direction TB
+        Agent["Agent Context"] <-->|Tool Call / Output| Tools["Tools<br>(File Read, Search, Script)"]
+    end
+
+    Agent --> Output(["Synthesized Artifact"])
+
+    style User fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style SingleAgent fill:#ffffff,stroke:#2e7d32,stroke-width:2px,stroke-dasharray: 5 5
+    style Agent fill:#2e7d32,stroke:#1b5e20,stroke-width:2px,color:#fff
+    style Tools fill:#a5d6a7,stroke:#2e7d32,stroke-width:2px
+    style Output fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
