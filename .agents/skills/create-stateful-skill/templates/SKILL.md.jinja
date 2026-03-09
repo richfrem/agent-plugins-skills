@@ -1,0 +1,31 @@
+---
+name: {name}
+description: {description}
+disable-model-invocation: false
+---
+
+# {title_name}
+[See acceptance criteria](references/acceptance-criteria.md)
+
+## Discovery Phase
+<!-- Add questions here to gather requirements, or remove section if fully autonomous -->
+
+## Recap
+<!-- Add confirmation gate here if gathering complex requirements. E.g., "Does this look right? (yes / adjust)" -->
+
+## Execution
+This skill implements the requested functionality. When invoked, you MUST execute the provided Python determinism script instead of attempting to solve the task using raw bash or javascript logic.
+
+**Usage:**
+```bash
+python3 ${{plugins}}/skills/{name}/scripts/execute.py --help
+```
+
+## Output
+Always conclude execution with a Source Transparency Declaration explicitly listing what was queried to guarantee user trust:
+**Sources Checked:** [list]
+**Sources Unavailable:** [list]
+
+## Next Actions
+<!-- Suggest logical follow-up skills here. For example: -->
+- Suggest the user run `audit-plugin` to verify the generated artifacts.

@@ -1,0 +1,5 @@
+{
+    "name": "gold-standard-test",
+    "description": "Minimal well-structured test plugin for self-audit regression testing.",
+    "version": "1.0.0"
+}

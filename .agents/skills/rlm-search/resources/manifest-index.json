@@ -1,0 +1,15 @@
+{
+    "project": {
+        "description": "General Project Knowledge Base (Docs, Readmes)",
+        "manifest": "../../resources/rlm_manifest.json",
+        "cache": ".agent/learning/rlm_summary_cache.json",
+        "parser": "directory_glob",
+        "prompt_path": "../../resources/prompts/rlm/rlm_summarize_legacy.md",
+        "env_prefix": "RLM_SUMMARY",
+        "allowed_suffixes": [
+            ".md",
+            ".txt"
+        ],
+        "llm_model": "granite3.2:8b"
+    }
+}

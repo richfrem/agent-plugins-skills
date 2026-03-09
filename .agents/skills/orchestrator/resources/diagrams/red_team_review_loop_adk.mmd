@@ -1,0 +1,21 @@
+---
+config:
+  theme: base
+---
+%% Review and Critique (Red Team) ADK Pattern
+flowchart LR
+    Input(["Initial Context"]) --> Generator
+
+    subgraph RedTeam ["Review and Critique Pattern"]
+        direction LR
+        Generator["Generator Agent<br>(Research & Analyze)"] --> Reviewer["Reviewer Agent<br>(Critique & Pushback)"]
+        Reviewer -.->|"Feedback"| Generator
+    end
+
+    Reviewer -->|"Approved"| Output(["Verified Output"])
+
+    style Input fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style RedTeam fill:#ffffff,stroke:#6a1b9a,stroke-width:2px,stroke-dasharray: 5 5
+    style Generator fill:#8e24aa,stroke:#6a1b9a,stroke-width:2px,color:#fff
+    style Reviewer fill:#ab47bc,stroke:#8e24aa,stroke-width:2px,color:#fff
+    style Output fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px

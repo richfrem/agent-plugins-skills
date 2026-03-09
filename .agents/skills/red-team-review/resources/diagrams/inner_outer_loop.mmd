@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph Outer["Outer Loop (Strategy & Protocol)"]
+        Scout[Scout & Plan] --> Spec[Define Tasks]
+        Spec --> Packet[Generate Strategy Packet]
+        Verify[Verify Result] -->|Pass| Commit[Seal & Commit]
+        Verify -->|Fail| Correct[Generate Correction Packet]
+    end
+
+    subgraph Inner["Inner Loop (Execution)"]
+        Receive[Read Packet] --> Execute[Write Code & Run Tests]
+        Execute -->|No Git| Done[Signal Done]
+    end
+
+    Packet -->|Handoff| Receive
+    Done -->|Completion| Verify
+    Correct -->|Delta Fix| Receive
