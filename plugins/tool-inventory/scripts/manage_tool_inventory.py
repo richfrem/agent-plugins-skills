@@ -123,10 +123,10 @@ class InventoryManager:
 
     def _determine_root(self) -> Path:
         """Heuristic to find the 'root' relative to the inventory location."""
-        # If global inventory, root is repo root
-        if self.inventory_path.name == "tool_inventory.json" and self.inventory_path.parent.name == 'reference-data':
-            return self.inventory_path.parent.parent.parent
-        # If local inventory (e.g. inside xml-to-markdown), root is that tool's dir
+        # If global inventory in /tools, root is repo root
+        if self.inventory_path.name == "tool_inventory.json" and self.inventory_path.parent.name == 'tools':
+            return self.inventory_path.parent.parent
+        # If local inventory (e.g. inside a plugin), root is that tool's dir
         return self.inventory_path.parent
 
     def _load(self) -> Dict[str, Any]:
@@ -1180,7 +1180,7 @@ def main():
     parser = argparse.ArgumentParser(description="Manage Tool Inventories (Global & Local)")
     
     # Global args
-    parser.add_argument("--inventory", default="legacy-system/reference-data/plugins/tool_inventory.json", help="Path to JSON inventory")
+    parser.add_argument("--inventory", default="tools/tool_inventory.json", help="Path to JSON inventory")
     
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
     

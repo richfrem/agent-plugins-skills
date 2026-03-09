@@ -46,21 +46,16 @@ def main():
     # 1. Map Inventory
     inventory_paths = set()
     
-    # Handle structured inventory (python/javascript -> tools -> categories)
-    for lang in ["python", "javascript"]:
-        lang_section = inventory.get(lang, {})
-        tools_section = lang_section.get("tools", {})
+    # Handle structured inventory (python/javascript/scripts -> tools/categories)
+    for lang in ["python", "javascript", "scripts"]:
+        # If flat "scripts" dict:
+        if lang == "scripts":
+            tools_section = inventory.get("scripts", {})
+        else:
+            lang_section = inventory.get(lang, {})
+            tools_section = lang_section.get("tools", {})
+            
         for category, tools in tools_section.items():
-            if isinstance(tools, list):
-                for tool in tools:
-                    path = tool.get("path")
-                    if path:
-                        inventory_paths.add(path)
-
-    # Legacy support (flat scripts key)
-    if "scripts" in inventory:
-        scripts_dict = inventory.get("scripts", {})
-        for category, tools in scripts_dict.items():
             if isinstance(tools, list):
                 for tool in tools:
                     path = tool.get("path")
