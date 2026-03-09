@@ -124,9 +124,9 @@ The diagrams below document the system this skill operates in:
 
 | Diagram | What It Shows |
 |:--------|:--------------|
-| [search_process.mmd](references/diagrams/search_process.mmd) | Full 3-phase sequence diagram |
-| [rlm-factory-architecture.mmd](references/diagrams/rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
-| [rlm-factory-dual-path.mmd](references/diagrams/rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
+| [search_process.mmd](../../references/diagrams/search_process.mmd) | Full 3-phase sequence diagram |
+| [rlm-factory-architecture.mmd](../../references/diagrams/rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
+| [rlm-factory-dual-path.mmd](../../references/diagrams/rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
 
 ---
 

@@ -8,7 +8,7 @@
         "env-helper"
     ],
     "scripts": [
-        "skills/env-helper/scripts/env_helper.py"
+        "scripts/env_helper.py"
     ],
     "dependencies": []
 }
