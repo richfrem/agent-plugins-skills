@@ -10,7 +10,9 @@ from pathlib import Path
 
 # Setup paths
 SCRIPT_DIR = Path(__file__).parent.resolve()
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent
+# This script is at plugins/tool-inventory/skills/tool-inventory/scripts/rebuild_inventory.py
+# Root is 5 levels up
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
@@ -47,30 +49,33 @@ def rebuild():
     print(f"🔍 Scanning {plugins_dir}...")
     
     count = 0
-    for file_path in plugins_dir.rglob("*.py"):
-        # Filters
-        if file_path.name == "__init__.py": continue
-        if "tests" in file_path.parts: continue
-        if "node_modules" in file_path.parts: continue
-        if ".venv" in file_path.parts: continue
-        
-        # Calculate relative path from PROJECT_ROOT
-        try:
-            rel_path = file_path.relative_to(PROJECT_ROOT)
-        except ValueError:
-            continue
+    extensions = ["*.py", "*.js", "*.sh"]
+    
+    for ext in extensions:
+        for file_path in plugins_dir.rglob(ext):
+            # Filters
+            if file_path.name == "__init__.py": continue
+            if "tests" in file_path.parts: continue
+            if "node_modules" in file_path.parts: continue
+            if ".venv" in file_path.parts: continue
             
-        # Determine Category from plugin name
-        # plugins/<plugin-name>/scripts/...
-        parts = rel_path.parts
-        if len(parts) > 1:
-            category = parts[1] # plugin name
-        else:
-            category = "uncategorized"
-            
-        print(f"Registering: {rel_path} ({category})")
-        manager.add_tool(str(rel_path), category=category)
-        count += 1
+            # Calculate relative path from PROJECT_ROOT
+            try:
+                rel_path = file_path.relative_to(PROJECT_ROOT)
+            except ValueError:
+                continue
+                
+            # Determine Category from plugin name
+            # plugins/<plugin-name>/scripts/...
+            parts = rel_path.parts
+            if len(parts) > 1:
+                category = parts[1] # plugin name
+            else:
+                category = "uncategorized"
+                
+            print(f"Registering: {rel_path} ({category})")
+            manager.add_tool(str(rel_path), category=category)
+            count += 1
 
     print(f"\n✅ Rebuild Complete. Registered {count} tools.")
 
