@@ -10,7 +10,7 @@ If a function being written grows beyond 50 lines:
 
 ## 3. New Script Not Registered in tool_inventory.json
 If a new script in plugins/ is missing from tool_inventory.json after creation:
-- **Action**: Run `manage_tool_inventory.py add --path <path>` immediately. Do NOT commit the script without the registration. Run `audit` to confirm 0 untracked scripts before staging.
+- **Action**: Trigger the `tool-inventory` skill to register the script. Do NOT commit the script without the registration. Ask the agent to confirm 0 untracked scripts before staging.
 
 ## 4. Ambiguous Naming Convention (Multi-Language File)
 If a file or function spans multiple language contexts (e.g., a Python script calling TypeScript-style names from a schema):

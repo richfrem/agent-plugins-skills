@@ -26,24 +26,10 @@ gemini run system-sync
 ```
 *   *Default*: Runs BOTH Inbound and Outbound phases.
 
-**Option B: Manual Python (3-Phase Control)**
-```bash
-# Phase 1: Initialization
-spec-kitty init . --ai windsurf
+**Option B: Trigger via spec-kitty-plugin:spec-kitty-sync-plugin**
+Ask the agent to trigger the `spec-kitty-plugin:spec-kitty-sync-plugin` skill with `--inbound` or `--outbound` phase as needed.
 
-# Phase 2: Standard Bridge (Layer 1)
-python ./scripts/speckit_system_bridge.py --inbound
-
-# Phase 3: Custom Bridge (Layer 2)
-python ./scripts/speckit_system_bridge.py --outbound
-```
-
-**Option B: Antigravity / Workflow**
-```bash
-python /path/to/workflow/script.py system-sync
-```
-
-**Option C: Manual Python**
+**Option C: Via Gemini / Agent Workflow**
 ```bash
 # Run a specific workflow
 gemini run codify-form
@@ -88,10 +74,7 @@ To use models (Claude Opus or Gemini Pro/Ultra via API):
 ## 3. Maintenance Workflows
 To ingest new capabilities into the system:
 3.  **Register Tools**:
-    *   If you added new python scripts, register them:
-        ```bash
-        python /path/to/inventory/manage_tool_inventory.py add --path plugins/new_script.py
-        ```
+    *   If you added new python scripts, trigger the `tool-inventory:tool-inventory` skill to register them.
 4.  **Run System Sync**:
     *   Execute `gemini run system-sync` to broadcast these new capabilities to Copilot and Gemini CLI.
 
@@ -111,8 +94,5 @@ ls .github/prompts/your-workflow.prompt.md
 head .github/copilot-instructions.md
 ```
 
-**Step 3: automated Integrity Audit**
-Run the automated auditor to check all Rules, Workflows, and Skills:
-```bash
-python ./scripts/verify_bridge_integrity.py
-```
+**Step 3: Automated Integrity Audit**
+Trigger the `spec-kitty-plugin:spec-kitty-sync-plugin` skill to verify all Rules, Workflows, and Skills are correctly bridged.

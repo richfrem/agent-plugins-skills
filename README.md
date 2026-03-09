@@ -42,7 +42,15 @@ If you are developing or modifying plugins locally, you can install them directl
 
 ```bash
 # First, remove the existing agent skills folder to prevent caching/lock issues
-rm -rf .agents/
+
+# remove a specific skill first check list 
+npx skills list
+
+#remove a specific skill 
+npx skills remove skill-name
+
+# Remove all skills from all agents
+npx skills remove --all -y
 
 # Install a specific local plugin
 npx skills add ./plugins/rlm-factory --force

@@ -54,8 +54,8 @@ When searching for information, ALWAYS escalate in order. Never skip ahead.
 Query arrives ->
 1. HOT CACHE                     Instant. Boot files cover ~90% of context needs.
 2. DEEP STORAGE (topic/decision) Load specific domain dir or design doc by subject.
-3. RLM SUMMARY LEDGER (Phase 1)  Keyword search via query_cache.py.
-4. VECTOR STORE (Phase 2)        Semantic search via query.py + ChromaDB.
+3. RLM SUMMARY LEDGER (Phase 1)  Keyword search via rlm-factory:rlm-search skill.
+4. VECTOR STORE (Phase 2)        Semantic search via vector-db:vector-db-search skill.
 5. GREP / EXACT SEARCH (Phase 3) rg/grep scoped to paths from Steps 3 or 4.
 6. Ask user                      Unknown? Learn it and persist it.
 ```
@@ -65,13 +65,7 @@ Query arrives ->
 RLM is **amortized prework**: each file read ONCE, summarized ONCE, cached as plain text JSON.
 Searching summaries is O(1) keyword lookup -- no embeddings, no inference.
 
-```bash
-python3 ./scripts/query_cache.py \
-  --profile plugins "what does the vector query tool do"
-
-python3 ./scripts/query_cache.py \
-  --profile project --list
-```
+Trigger the `rlm-factory:rlm-search` skill, providing the profile and search term.
 
 **Use Phase 1 when:** You need to understand what a file does, find which file owns a feature,
 or navigate the codebase without reading individual files.
@@ -83,11 +77,7 @@ or navigate the codebase without reading individual files.
 Embedding-based nearest-neighbor search across all indexed chunks. Returns ranked
 parent chunks with RLM Super-RAG context pre-injected.
 
-```bash
-python3 ./scripts/query.py \
-  "nearest-neighbor embedding search implementation" \
-  --profile knowledge --limit 5
-```
+Trigger the `vector-db:vector-db-search` skill, providing the query, profile, and limit.
 
 **Use Phase 2 when:** You need specific code snippets, patterns, or implementations.
 
@@ -116,10 +106,10 @@ rg "def query" ../../ --type py
 | **Plugin** | `plugins/rlm-factory/` |
 | **Skill (write)** | `skills/rlm-curator/` -- distill, inject, audit, cleanup |
 | **Skill (read)** | `skills/rlm-search/` -- query the ledger |
-| **Script: Phase 1 search** | `skills/rlm-search/scripts/query_cache.py` |
-| **Script: inject summary** | `skills/rlm-curator/scripts/inject_summary.py` |
-| **Script: audit coverage** | `skills/rlm-curator/scripts/inventory.py` |
-| **Script: shared config** | `skills/rlm-curator/scripts/rlm_config.py` |
+| **Skill (Phase 1 search)** | `rlm-factory:rlm-search` |
+| **Skill (write/inject)** | `rlm-factory:rlm-curator` |
+| **Skill (audit coverage)** | `rlm-factory:rlm-curator` |
+| **Skill (shared config)** | `rlm-factory:rlm-curator` |
 | **Cache files** | `.agent/learning/rlm_summary_cache.json` (docs), `.agent/learning/rlm_tool_cache.json` (tools) |
 
 ### `vector-db` -- Vector Store (Tier 3)
@@ -128,10 +118,10 @@ rg "def query" ../../ --type py
 |:----------|:------|
 | **Plugin** | `plugins/vector-db/` |
 | **Skill** | `skills/vector-db-agent/` -- ingest, query, operations |
-| **Script: Phase 2 search** | `skills/vector-db-agent/scripts/query.py` |
-| **Script: ingest files** | `skills/vector-db-agent/scripts/ingest.py` |
-| **Script: operations** | `skills/vector-db-agent/scripts/operations.py` |
-| **Script: config** | `skills/vector-db-agent/scripts/vector_config.py` |
+| **Skill (Phase 2 search)** | `vector-db:vector-db-search` |
+| **Skill (ingest files)** | `vector-db:vector-db-ingest` |
+| **Skill (operations)** | `vector-db:vector-db-search` |
+| **Skill (config)** | `vector-db:vector-db-search` |
 | **Backend** | ChromaDB (`chromadb.HttpClient` with `PersistentClient` fallback) |
 
 ### `obsidian-integration` -- Linked Vault (Tier 5)
@@ -140,13 +130,9 @@ rg "def query" ../../ --type py
 |:----------|:------|
 | **Plugin** | `plugins/obsidian-integration/` |
 | **Skill: vault setup** | `skills/obsidian-init/` -- prerequisites, `.obsidian/` config, exclusion filters |
-| **Skill: read/write notes** | `skills/obsidian-vault-crud/` -- atomic create/read/update/append via `vault_ops.py` |
-| **Skill: markdown** | `skills/obsidian-markdown-mastery/` -- wikilinks, frontmatter, callouts |
-| **Skill: canvas** | `skills/obsidian-canvas-architect/` -- visual boards (JSON Canvas spec) |
-| **Skill: graph** | `skills/obsidian-graph-traversal/` -- backlink and wikilink traversal |
-| **Skill: bases** | `skills/obsidian-bases-manager/` -- table/grid/card views from YAML metadata |
-| **Script: CRUD** | `skills/obsidian-vault-crud/scripts/vault_ops.py` |
-| **Script: parse** | `obsidian-parser/parser.py` -- shared markdown parser |
+| **Skill: read/write notes** | `obsidian-integration:obsidian-vault-crud` -- atomic create/read/update/append |
+| **Skill: CRUD operations** | `obsidian-integration:obsidian-vault-crud` |
+| **Skill: parse markdown** | `obsidian-integration:obsidian-vault-crud` -- shared markdown parser |
 | **Requires** | `pip:ruamel.yaml` (lossless YAML frontmatter), Obsidian Desktop |
 | **Env** | `VAULT_PATH` -- absolute path to the vault root |
 

@@ -15,16 +15,10 @@ To unpackage and install this capability:
 
 1.  **Extract Files**: Read the file paths from the bundle header and write the content to the corresponding absolute paths in the workspace. Ensure parent directories are created if they don't exist.
 
-2.  **Make Executable**: Ensure the Python scripts in `plugins/bridge/` are executable:
-    ```bash
-    chmod +x ../../*.py
-    ```
+2.  **Install via Bridge**: Trigger the `plugin-manager:bridge-plugin` skill to install the bridge capability into the active agent environment. The skill handles file placement and permissions.
 
 3.  **Verify Installation**:
-    Run the integrity check to confirm the bridge is operational:
-    ```bash
-    python3 ./scripts/verify_bridge_integrity.py
-    ```
+    Trigger the `spec-kitty-plugin:spec-kitty-sync-plugin` skill to confirm the bridge is operational.
 
 4.  **Register Tools**:
     Access `plugins/bridge/plugins/tool_inventory.json` (included in this bundle) to see the list of tools available for registration in your agent's configuration.

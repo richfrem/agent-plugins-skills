@@ -88,17 +88,7 @@ python3 ./scripts/query_cache.py \
 
 **The concept:** The Vector DB stores chunked embeddings of every file. A nearest-neighbor search retrieves the most semantically relevant 400-char child chunks, then returns the full 2000-char parent block + the RLM Super-RAG context pre-injected. Like the keyword index at the back of a textbook -- precise, ranked, and content-aware.
 
-```bash
-# Semantic search across all indexed content
-python3 ./scripts/query.py \
-  "nearest-neighbor embedding search implementation" \
-  --profile knowledge --limit 5
-
-# More results for broad topics
-python3 ./scripts/query.py \
-  "ChromaDB parent child retrieval" \
-  --profile knowledge --limit 10
-```
+Trigger the `vector-db:vector-db-search` skill to perform semantic search. Provide the query and optional `--profile` and `--limit` parameters.
 
 **Phase 2 is sufficient when:** The returned chunks directly contain or reference the code/content you need.
 
@@ -153,7 +143,7 @@ START: I need to find something in the codebase
    +-- No summary / insufficient detail?
          |
          v
-      [Phase 2] query.py -- "find code for X"
+      [Phase 2] vector-db:vector-db-search -- "find code for X"
          |
          +-- Chunks found + sufficient? --> USE THEM. Done.
          |

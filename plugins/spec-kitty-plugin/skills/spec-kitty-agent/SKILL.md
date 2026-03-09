@@ -11,6 +11,8 @@ dependencies: ["skill:agent-bridge"]
 You manage the entire Spec-Driven Development lifecycle AND the configuration synchronization
 that captures local project workflows and broadcasts them across all AI agents.
 
+> **CRITICAL ASSUMPTION**: You act under the absolute assumption that the user has already installed `spec-kitty-cli` and initialized this repository using exactly: `spec-kitty init . --ai windsurf`. Do not attempt to operate unless this initialization has occurred.
+
 ## 🚫 CRITICAL: Anti-Simulation Rules
 
 > **YOU MUST ACTUALLY RUN EVERY COMMAND.**
@@ -21,7 +23,7 @@ that captures local project workflows and broadcasts them across all AI agents.
 ### Known Agent Failure Modes (DO NOT DO THESE)
 1. **Checkbox theater**: Marking `[x]` without running the command
 2. **Manual file creation**: Writing spec.md/plan.md/tasks.md by hand instead of using CLI
-3. **Kanban neglect**: Not updating task lanes via task_manager.py
+3. **Kanban neglect**: Not updating task lanes via `spec-kitty agent tasks move-task`
 4. **Verification skip**: Marking a phase complete without running `verify_workflow_state.py`
 5. **Closure amnesia**: Finishing code but skipping review/merge/closure
 6. **Premature cleanup**: Manually deleting worktrees before `spec-kitty merge`
@@ -169,8 +171,8 @@ Each state transition requires proof (pasted command output). No state may be sk
 # View board / List WPs
 /spec-kitty.status
 
-# Move lane (planned → doing → for_review → done)
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
+# Move lane (planned -> doing -> for_review -> done)
+spec-kitty agent tasks move-task <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
 ```
 
 ## 🔧 Troubleshooting

@@ -2,6 +2,8 @@
 
 The flagship workflow plugin — **Spec-Driven Development lifecycle** + **Universal Bridge sync engine**.
 
+> **⚠️ CRITICAL REQUIREMENT**: This plugin is entirely dependent on the host machine having `spec-kitty-cli` installed and initialized locally via `spec-kitty init . --ai windsurf`. Do not install this plugin if those prerequisites are not met.
+
 Source repo [https://github.com/Priivacy-ai/spec-kitty](https://github.com/Priivacy-ai/spec-kitty)
 
 ## Prerequisites

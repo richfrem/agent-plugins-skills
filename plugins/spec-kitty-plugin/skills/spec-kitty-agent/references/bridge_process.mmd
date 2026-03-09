@@ -1,8 +1,8 @@
 flowchart TD
     subgraph Sources [1. Sources of Truth]
-        A[.agent/rules] -->|Project Rules| B{speckit_system_bridge.py}
+        A[.agent/rules] -->|Project Rules| B{"spec-kitty-plugin:spec-kitty-sync-plugin"}
         W[.windsurf/workflows] -->|Master SDD| B
-        P[plugins/*] -->|Capabilities| C{bridge_installer.py}
+        P[plugins/*] -->|Capabilities| C{"plugin-manager:bridge-plugin"}
     end
 
     subgraph Sync [2. Bridge Sync & Install]

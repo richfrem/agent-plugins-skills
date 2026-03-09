@@ -84,21 +84,15 @@ throughput, then delegate to the agent swarm:
 **Default recommendation**: start with `--engine copilot` (free, no rate risk at workers=2).
 Switch to `--engine gemini --workers 5` if you need faster throughput.
 
-```bash
-# Zero-cost bulk distillation (Copilot -- recommended default)
-python3 ./scripts/swarm_run.py \
-  --engine copilot \
-  --job ../../resources/jobs/rlm_chronicle.job.md \
-  --files-from rlm_distill_tasks_project.md \
-  --resume --workers 2
+Delegate to the `agent-loops:agent-swarm` skill with the appropriate engine and job:
 
-# Higher throughput -- also free (Gemini)
-python3 ./scripts/swarm_run.py \
-  --engine gemini \
-  --job ../../resources/jobs/rlm_chronicle.job.md \
-  --files-from rlm_distill_tasks_project.md \
-  --resume --workers 5
-```
+| Engine | Model | Cost | Workers | Best For |
+|:-------|:------|:-----|:--------|:---------|
+| `copilot` | gpt-5-mini (nano tier) | **$0 free** | 2 (rate-limit safe) | Bulk summarization, zero-cost default |
+| `gemini` | gemini-3-pro-preview | **$0 free** | 5 | Large-context batches, higher throughput |
+| `claude` | Haiku / Sonnet | Low-Medium | 3 | Higher quality summaries, not free |
+
+Provide the job file: `../../resources/jobs/rlm_chronicle.job.md` and the gap file from `inventory.py --missing`.
 
 See `../../SKILL.md` for full swarm configuration options.
 

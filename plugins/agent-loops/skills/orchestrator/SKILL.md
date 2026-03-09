@@ -142,8 +142,8 @@ This makes each loop iteration smoother than the last.
 Once the loop is complete and learning has been extracted, the Orchestrator MUST pass control to the environment's global sovereign (e.g., the primary agent plugin). 
 
 **The Orchestrator explicitly DOES NOT:**
-- Execute `bundle.py` or update recursive language model (RLMs) summaries in caches.
-- Execute `persist_soul.py` or sync to HuggingFace.
+- Trigger `context-bundler:context-bundling` or update recursive language model (RLMs) summaries in caches.
+- Trigger `persist_soul` or sync to HuggingFace.
 - Execute Vector DB ingestion scripts.
 - Execute Git commands (`git commit`, `git push`).
 

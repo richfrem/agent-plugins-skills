@@ -5,9 +5,9 @@ sequenceDiagram
     participant pip as pip / PyPI
     participant CLI as spec-kitty CLI
     participant Kittify as .kittify/
-    participant SyncScript as sync_configuration.py
+    participant SyncScript as spec-kitty-plugin:spec-kitty-sync-plugin
     participant Plugin as ../../
-    participant Bridge as bridge_installer.py
+    participant Bridge as plugin-manager:bridge-plugin
     participant Agents as Agent Environments
 
     User->>Agent: /spec-kitty.sync-plugin
@@ -49,9 +49,9 @@ sequenceDiagram
         User-->>Agent: Selection
 
         alt Only spec-kitty-plugin
-            Agent->>Bridge: bridge_installer.py --plugin spec-kitty-plugin --target agent
+            Agent->>Bridge: Trigger spec-kitty-plugin only --target agent
         else All plugins
-            Agent->>Bridge: install_all_plugins.py --target agent
+            Agent->>Bridge: Trigger all plugins --target agent
         end
 
         Bridge->>Plugin: Read skills/, rules/, workflows/

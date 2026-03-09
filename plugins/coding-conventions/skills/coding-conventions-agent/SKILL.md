@@ -1,29 +1,31 @@
 ---
-name: coding-conventions
+name: coding-conventions-agent
 description: >
-  Coding conventions and documentation standards across Python,
-  TypeScript/JavaScript, and C#/.NET codebases. Use when: (1) writing new code files or
-  functions, (2) reviewing code for style and documentation compliance, (3) adding file
-  headers or docstrings, (4) creating new tools that need inventory registration,
-  (5) refactoring code that exceeds complexity thresholds, (6) setting up module structure.
-  Covers file headers, function documentation, naming conventions, and tool inventory integration.
+  Coding conventions enforcement agent. Auto-invoked when writing new code,
+  reviewing code quality, adding headers, or checking documentation compliance
+  across Python, TypeScript/JavaScript, and C#/.NET.
 allowed-tools: Read, Write
-dependencies: ["plugin:tool-inventory"]
 ---
-# Coding Conventions
+# Identity: The Standards Agent 📝
 
-## Dual-Layer Documentation
+You enforce coding conventions and documentation standards for all code in the project.
 
-Every non-trivial code element needs two layers:
-- **External comment/header** — scannable description above the definition
-- **Internal docstring** — detailed docs inside the definition
+## 🚫 Non-Negotiables
+1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class
+2. **File headers** — every source file starts with a purpose header
+3. **Type hints** — all Python function signatures use type annotations
+4. **Naming** — `snake_case` (Python), `camelCase` (JS/TS), `PascalCase` (C# public)
+5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers
+6. **Tool registration** — all `plugins/` scripts registered in `plugins/tool_inventory.json`
+7. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
 
-## File Headers
+## 📂 Header Templates
+- **Python**: `plugins/templates/python-tool-header-template.py`
+- **JS/TS**: `plugins/templates/js-tool-header-template.js`
 
-Every source file starts with a header describing its purpose.
+## 📝 File Headers
 
-### Python Files
-
+### Python
 ```python
 #!/usr/bin/env python3
 """
@@ -37,18 +39,10 @@ Layer: Investigate / Codify / Curate / Retrieve
 
 Usage:
     python script.py [args]
-
-Related:
-    - related_script.py
 """
 ```
 
-For CLI tools in `plugins/`, use the extended format with Usage Examples, CLI Arguments,
-Key Functions, and Script Dependencies sections. See `references/header_templates.md`
-for the full gold-standard template.
-
-### TypeScript/JavaScript Files
-
+### TypeScript/JavaScript
 ```javascript
 /**
  * path/to/file.js
@@ -62,8 +56,7 @@ for the full gold-standard template.
  */
 ```
 
-### C#/.NET Files
-
+### C#/.NET
 ```csharp
 // path/to/File.cs
 // Purpose: Class responsibility.
@@ -71,10 +64,9 @@ for the full gold-standard template.
 // Used by: Consuming services.
 ```
 
-## Function Documentation
+## 📝 Function Documentation
 
-### Python — Google-style docstrings with type hints
-
+### Python — Google-style docstrings
 ```python
 def process_data(xml_path: str, fmt: str = 'markdown') -> Dict[str, Any]:
     """
@@ -92,8 +84,7 @@ def process_data(xml_path: str, fmt: str = 'markdown') -> Dict[str, Any]:
     """
 ```
 
-### TypeScript — JSDoc with `@param`, `@returns`, `@throws`
-
+### TypeScript — JSDoc
 ```typescript
 /**
  * Fetches RCC data and updates component state.
@@ -102,40 +93,20 @@ def process_data(xml_path: str, fmt: str = 'markdown') -> Dict[str, Any]:
  * @returns Promise resolving to RCC data object
  * @throws {ApiError} If the API request fails
  */
-async function fetchRCCData(rccId: string): Promise<RCCData> {}
 ```
 
-### C# — XML doc comments
-
-```csharp
-/// <summary>
-/// Retrieves RCC details by ID.
-/// </summary>
-/// <param name="rccId">Unique identifier.</param>
-/// <returns>RCC entity with related data.</returns>
-public async Task<RCC> GetRCCDetailsAsync(int rccId) {}
-```
-
-## Naming Conventions
+## 📋 Naming Conventions
 
 | Language | Functions/Vars | Classes | Constants |
-|----------|---------------|---------|-----------|
+|:---|:---|:---|:---|
 | Python | `snake_case` | `PascalCase` | `UPPER_SNAKE_CASE` |
 | TS/JS | `camelCase` | `PascalCase` | `UPPER_SNAKE_CASE` |
 | C# | `PascalCase` (public) | `PascalCase` | `PascalCase` |
 
 C# private fields use `_camelCase` prefix.
 
-## Code Quality Thresholds
-
-- **50+ lines** in a function → extract helpers
-- **3+ nesting levels** → refactor
-- **Comments** explain *why*, not *what*
-- **TODO format**: `// TODO(#123): description`
-
-## Module Organization (Python)
-
-```text
+## 📂 Module Organization (Python)
+```
 module/
 ├── __init__.py       # Exports
 ├── models.py         # Data models / DTOs
@@ -145,7 +116,13 @@ module/
 └── constants.py      # Constants and enums
 ```
 
-### Script Architectural Rules
+## ⚠️ Quality Thresholds
+- **50+ lines** → extract helpers
+- **3+ nesting** → refactor
+- **Comments** explain *why*, not *what*
+- **TODO format**: `// TODO(#123): description`
+
+## 🏗️ Script Architectural Rules
 
 1. **Cross-Plugin Dependencies (ADR-001)**: 
    - Never execute another plugin's scripts directly via `subprocess` or `python ../../`.
@@ -156,32 +133,13 @@ module/
    - **Single-Skill Usage**: Place script physically inside the owning skill directory (`plugins/<plugin>/skills/<skill>/scripts/foo.py`).
    - **Multi-Skill Usage**: Extract to the primary Plugin root (`plugins/<plugin>/scripts/foo.py`) and wire backward-looking, local symlinks into each consuming `skills/` directory.
 
-## Tool Inventory Integration
+## 🛠️ Tool Inventory Integration
 
 All Python scripts in `plugins/` **must** be registered in `plugins/tool_inventory.json`.
 
-After creating or modifying a tool:
-```bash
-python ./scripts/manage_tool_inventory.py add --path "../../to/script.py"
-python ./scripts/manage_tool_inventory.py audit
-```
-
-The extended Python header's `Purpose:` section is auto-extracted for the RLM cache and tool inventory.
+After creating or modifying a tool, trigger the `tool-inventory` skill to register the script and audit coverage.
 
 ### Pre-Commit Checklist
 - [ ] File has proper header
-- [ ] Script registered in `plugins/tool_inventory.json`
-- [ ] `manage_tool_inventory.py audit` shows 0 untracked scripts
-
-## Manifest Schema (ADR 097)
-
-For `.agent/learning/` manifests, use the simple schema:
-```json
-{
-    "title": "Bundle Name",
-    "description": "Purpose of the bundle.",
-    "files": [
-        {"path": "path/to/file.md", "note": "Brief description"}
-    ]
-}
-```
+- [ ] Script registered in `plugins/tool_inventory.json` (via `tool-inventory` skill)
+- [ ] Tool inventory audit shows 0 untracked scripts

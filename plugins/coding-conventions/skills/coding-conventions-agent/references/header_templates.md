@@ -55,7 +55,7 @@ Consumed by:
 """
 ```
 
-> The `manage_tool_inventory.py` tool auto-extracts the "Purpose:" section from this header.
+> The `tool-inventory` skill auto-extracts the "Purpose:" section from this header for the registry.
 
 ## TypeScript Utility Module Header (Extended)
 

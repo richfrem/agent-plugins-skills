@@ -368,12 +368,6 @@ Script: check_broken_paths.py
   2. Used by skills: link-checker-agent
   3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
 
-Script: enrich_links_v2.py
-  1. Exists physically in plugin: Yes (1 location(s))
-     -> Exists at pluginroot/scripts: No
-  2. Used by skills: link-checker-agent
-  3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
-
 Script: find_source_links.py
   1. Exists physically in plugin: Yes (1 location(s))
      -> Exists at pluginroot/scripts: No
@@ -392,9 +386,6 @@ Script: smart_fix_links.py
   2. Used by skills: link-checker-agent
   3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
 
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - build_master_collection.py (Referenced by: link-checker-agent)
-
 ======================================================================
 PLUGIN: agent-loops
 ======================================================================
@@ -412,44 +403,23 @@ Script: swarm_run.py
   4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
   5. Symlink exists in all 2 utilizing skills? Yes
 
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - bundle.py (Referenced by: orchestrator)
-      - check_cache.py (Referenced by: agent-swarm)
-      - inject_summary.py (Referenced by: agent-swarm, orchestrator)
-      - my_post_cmd.py (Referenced by: agent-swarm)
-      - persist_soul.py (Referenced by: orchestrator)
-
 ======================================================================
 PLUGIN: spec-kitty-plugin
 ======================================================================
 
 Script: sync_configuration.py
-  1. Exists physically in plugin: Yes (9 location(s))
+  1. Exists physically in plugin: Yes (8 location(s))
      -> Exists at pluginroot/scripts: Yes
-  2. Used by skills: spec-kitty, spec-kitty-agent, spec-kitty-implement, spec-kitty-merge, spec-kitty-plan, spec-kitty-review, spec-kitty-specify, spec-kitty-sync-plugin
-  4. Used by 8 skills. Exists in plugin root (scripts/)? Yes
-  5. Symlink exists in all 8 utilizing skills? Yes
+  2. Used by skills: spec-kitty-agent, spec-kitty-implement, spec-kitty-merge, spec-kitty-plan, spec-kitty-review, spec-kitty-specify, spec-kitty-sync-plugin
+  4. Used by 7 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 7 utilizing skills? Yes
 
 Script: verify_workflow_state.py
-  1. Exists physically in plugin: Yes (3 location(s))
+  1. Exists physically in plugin: Yes (2 location(s))
      -> Exists at pluginroot/scripts: Yes
-  2. Used by skills: spec-kitty, spec-kitty-agent
-  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
-  5. Symlink exists in all 2 utilizing skills? Yes
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - auth.py (Referenced by: spec-kitty-tasks)
-      - bridge_installer.py (Referenced by: spec-kitty-agent)
-      - file.py (Referenced by: spec-kitty-implement)
-      - manage_tool_inventory.py (Referenced by: spec-kitty-agent)
-      - new_script.py (Referenced by: spec-kitty-agent, spec-kitty-implement)
-      - script.py (Referenced by: spec-kitty-agent)
-      - speckit_system_bridge.py (Referenced by: spec-kitty-agent)
-      - task_manager.py (Referenced by: spec-kitty, spec-kitty-agent)
-      - tasks_cli.py (Referenced by: spec-kitty, spec-kitty-agent, spec-kitty-implement, spec-kitty-review, spec-kitty-tasks, spec-kitty-workflow)
-      - test_auth.py (Referenced by: spec-kitty-tasks)
-      - test_new_script.py (Referenced by: spec-kitty-implement)
-      - verify_bridge_integrity.py (Referenced by: spec-kitty-agent)
+  2. Used by skills: spec-kitty-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (spec-kitty-agent)? No
+     -> Found in: ['scripts/verify_workflow_state.py']
 
 ======================================================================
 PLUGIN: coding-conventions
@@ -458,25 +428,8 @@ PLUGIN: coding-conventions
 Script: python-tool-header-template.py
   1. Exists physically in plugin: Yes (1 location(s))
      -> Exists at pluginroot/scripts: No
-  2. Used by skills: conventions-agent
-  3. Only used by 1 skill. Physically exists ONLY in that skill (conventions-agent)? No
-     -> Found in: ['templates/python-tool-header-template.py']
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - constants.py (Referenced by: coding-conventions, conventions-agent)
-      - data_processor.py (Referenced by: coding-conventions)
-      - dependency1.py (Referenced by: coding-conventions)
-      - dependency2.py (Referenced by: coding-conventions)
-      - foo.py (Referenced by: coding-conventions)
-      - manage_tool_inventory.py (Referenced by: coding-conventions)
-      - models.py (Referenced by: coding-conventions, conventions-agent)
-      - parent_script.py (Referenced by: coding-conventions)
-      - related_script.py (Referenced by: coding-conventions)
-      - repositories.py (Referenced by: coding-conventions, conventions-agent)
-      - risk_engine.py (Referenced by: coding-conventions)
-      - script.py (Referenced by: coding-conventions, conventions-agent)
-      - services.py (Referenced by: coding-conventions, conventions-agent)
-      - utils.py (Referenced by: coding-conventions, conventions-agent)
+  2. Used by skills: coding-conventions-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (coding-conventions-agent)? Yes
 
 ======================================================================
 PLUGIN: excel-to-csv
@@ -493,9 +446,6 @@ Script: verify_csv.py
      -> Exists at pluginroot/scripts: No
   2. Used by skills: excel-to-csv
   3. Only used by 1 skill. Physically exists ONLY in that skill (excel-to-csv)? Yes
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - excel_to_csv.py (Referenced by: excel-to-csv)
 
 ======================================================================
 PLUGIN: mermaid-to-png
@@ -536,30 +486,6 @@ Script: hf_upload.py
      -> Exists at pluginroot/scripts: No
   2. Used by skills: hf-upload
   3. Only used by 1 skill. Physically exists ONLY in that skill (hf-upload)? Yes
-
-======================================================================
-PLUGIN: memory-management
-======================================================================
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - ingest.py (Referenced by: memory-management)
-      - inject_summary.py (Referenced by: memory-management)
-      - inventory.py (Referenced by: memory-management)
-      - operations.py (Referenced by: memory-management)
-      - parser.py (Referenced by: memory-management)
-      - query.py (Referenced by: memory-management)
-      - query_cache.py (Referenced by: memory-management)
-      - rlm_config.py (Referenced by: memory-management)
-      - vault_ops.py (Referenced by: memory-management)
-      - vector_config.py (Referenced by: memory-management)
-
-======================================================================
-PLUGIN: dependency-management
-======================================================================
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - ingest.py (Referenced by: dependency-management)
-      - setup_cuda_env.py (Referenced by: dependency-management)
 
 ======================================================================
 PLUGIN: vector-db
@@ -634,13 +560,6 @@ Script: find_json_duplicates.py
 PLUGIN: agent-skill-open-specifications
 ======================================================================
 
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - bridge_installer.py (Referenced by: ecosystem-authoritative-sources)
-      - extract.py (Referenced by: ecosystem-authoritative-sources, ecosystem-standards)
-      - script.py (Referenced by: ecosystem-authoritative-sources)
-      - shared.py (Referenced by: ecosystem-authoritative-sources)
-      - shared_util.py (Referenced by: ecosystem-authoritative-sources)
-
 ======================================================================
 PLUGIN: adr-manager
 ======================================================================
@@ -688,80 +607,3 @@ Script: verify_docx.py
      -> Exists at pluginroot/scripts: No
   2. Used by skills: markdown-to-msword-converter
   3. Only used by 1 skill. Physically exists ONLY in that skill (markdown-to-msword-converter)? Yes
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - args.py (Referenced by: markdown-to-msword-converter)
-
-
-======================================================================
-GLOBAL SUMMARY: MISSING SCRIPTS PER PLUGIN
-======================================================================
-
-agent-loops:
-  - bundle.py (via: orchestrator)
-  - check_cache.py (via: agent-swarm)
-  - inject_summary.py (via: agent-swarm, orchestrator)
-  - my_post_cmd.py (via: agent-swarm)
-  - persist_soul.py (via: orchestrator)
-
-agent-skill-open-specifications:
-  - bridge_installer.py (via: ecosystem-authoritative-sources)
-  - extract.py (via: ecosystem-authoritative-sources, ecosystem-standards)
-  - script.py (via: ecosystem-authoritative-sources)
-  - shared.py (via: ecosystem-authoritative-sources)
-  - shared_util.py (via: ecosystem-authoritative-sources)
-
-coding-conventions:
-  - constants.py (via: coding-conventions, conventions-agent)
-  - data_processor.py (via: coding-conventions)
-  - dependency1.py (via: coding-conventions)
-  - dependency2.py (via: coding-conventions)
-  - foo.py (via: coding-conventions)
-  - manage_tool_inventory.py (via: coding-conventions)
-  - models.py (via: coding-conventions, conventions-agent)
-  - parent_script.py (via: coding-conventions)
-  - related_script.py (via: coding-conventions)
-  - repositories.py (via: coding-conventions, conventions-agent)
-  - risk_engine.py (via: coding-conventions)
-  - script.py (via: coding-conventions, conventions-agent)
-  - services.py (via: coding-conventions, conventions-agent)
-  - utils.py (via: coding-conventions, conventions-agent)
-
-dependency-management:
-  - ingest.py (via: dependency-management)
-  - setup_cuda_env.py (via: dependency-management)
-
-excel-to-csv:
-  - excel_to_csv.py (via: excel-to-csv)
-
-link-checker:
-  - build_master_collection.py (via: link-checker-agent)
-
-markdown-to-msword-converter:
-  - args.py (via: markdown-to-msword-converter)
-
-memory-management:
-  - ingest.py (via: memory-management)
-  - inject_summary.py (via: memory-management)
-  - inventory.py (via: memory-management)
-  - operations.py (via: memory-management)
-  - parser.py (via: memory-management)
-  - query.py (via: memory-management)
-  - query_cache.py (via: memory-management)
-  - rlm_config.py (via: memory-management)
-  - vault_ops.py (via: memory-management)
-  - vector_config.py (via: memory-management)
-
-spec-kitty-plugin:
-  - auth.py (via: spec-kitty-tasks)
-  - bridge_installer.py (via: spec-kitty-agent)
-  - file.py (via: spec-kitty-implement)
-  - manage_tool_inventory.py (via: spec-kitty-agent)
-  - new_script.py (via: spec-kitty-agent, spec-kitty-implement)
-  - script.py (via: spec-kitty-agent)
-  - speckit_system_bridge.py (via: spec-kitty-agent)
-  - task_manager.py (via: spec-kitty, spec-kitty-agent)
-  - tasks_cli.py (via: spec-kitty, spec-kitty-agent, spec-kitty-implement, spec-kitty-review, spec-kitty-tasks, spec-kitty-workflow)
-  - test_auth.py (via: spec-kitty-tasks)
-  - test_new_script.py (via: spec-kitty-implement)
-  - verify_bridge_integrity.py (via: spec-kitty-agent)

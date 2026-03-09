@@ -58,7 +58,7 @@ This split reduces CI/CD installation time and prevents dependency conflicts. Fo
 | `langchain-community`| 0.4.1 | Provides community components, including the `MarkdownHeaderTextSplitter` used to intelligently chunk our protocols and chronicles. |
 | `langchain-nomic`| 1.0.0 | Integration for Nomic's high-quality text embedding models, enabling sovereign, on-device text vectorization. |
 | `langchain-ollama`| 1.0.0 | The specific LangChain integration that allows the RAG pipeline to use our sovereign **Ollama** instance for answer generation. |
-| `langchain-text-splitters`| 1.0.0 | Contains the specific text splitting algorithms used by the `ingest.py` script to prepare the Cognitive Genome for the Cortex. |
+| `langchain-text-splitters`| 1.0.0 | Contains the specific text splitting algorithms used to prepare data for RAG system. |
 | `chromadb` | 1.3.4 | The client for the Chroma vector database, which serves as the persistent, local-first storage for the **RAG system**. |
 | `nomic[local]` | 3.9.0 | The Nomic embedding library itself, allowing the **RAG system** to generate text embeddings without relying on external APIs. |
 
@@ -205,7 +205,7 @@ This split reduces CI/CD installation time and prevents dependency conflicts. Fo
 
 All dependencies are explicitly version-pinned to ensure **reproducible builds** and prevent unexpected breaking changes. This aligns with the **atomic commit principles** by guaranteeing that the the project's cognitive infrastructure remains stable across deployments.
 
-**Synchronization Status:** This manifest is now fully synchronized with the `setup_cuda_env.py` script outputs, ensuring that automated setup and manual installation produce identical environments.
+**Synchronization Status:** This manifest is now fully synchronized with script outputs, ensuring that automated setup and manual installation produce identical environments.
 
 ### Dependency Categories
 

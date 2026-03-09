@@ -11,8 +11,8 @@ This document outlines how files from the **Source of Truth** (Plugins & Project
 
 | Artifact | Source Path | Target Bridge | Transformation |
 | :--- | :--- | :--- | :--- |
-| **Project Rules** | `.agent/rules/*.md` | `speckit_system_bridge.py` | Concatenation (Constitution Top + Rule Block) |
-| **Project Workflows** | `.windsurf/workflows/*.md` | `speckit_system_bridge.py` | Actor Swapping + Command Patching |
-| **Plugin Commands** | `plugins/*/commands/*.md` | `bridge_installer.py` | TOML Wrapping (Gemini) / Actor Swapping |
-| **Plugin Skills** | `plugins/*/skills/*/` | `bridge_installer.py` | Target Directory Projection |
-| **Plugin Resources** | `plugins/*/resources/` | `bridge_installer.py` | Contextual Linking |
+| **Project Rules** | `.agent/rules/*.md` | `spec-kitty-sync-plugin` skill | Concatenation (Constitution Top + Rule Block) |
+| **Project Workflows** | `.windsurf/workflows/*.md` | `spec-kitty-sync-plugin` skill | Actor Swapping + Command Patching |
+| **Plugin Commands** | `plugins/*/commands/*.md` | `bridge-plugin` skill (`plugin-manager`) | TOML Wrapping (Gemini) / Actor Swapping |
+| **Plugin Skills** | `plugins/*/skills/*/` | `bridge-plugin` skill (`plugin-manager`) | Target Directory Projection |
+| **Plugin Resources** | `plugins/*/resources/` | `bridge-plugin` skill (`plugin-manager`) | Contextual Linking |

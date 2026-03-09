@@ -60,18 +60,13 @@ python3 ./scripts/query_cache.py --profile tools --list
 ### 3. Distillation (Write)
 
 #### Option A: Zero-Cost Swarm (Preferred for bulk > 10 files)
-Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free):
-```bash
-# Generate gap list first
-python3 ./scripts/inventory.py --profile project --missing > rlm_gap_list.md
+Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free).
 
-# Run zero-cost swarm
-python3 ./scripts/swarm_run.py \
-  --engine copilot \
-  --job ../../resources/jobs/rlm_chronicle.job.md \
-  --files-from rlm_gap_list.md \
-  --resume --workers 2
-```
+Delegate to the `agent-loops:agent-swarm` skill, providing:
+- Engine: `copilot` (free default) or `gemini` (higher throughput)
+- Job: `../../resources/jobs/rlm_chronicle.job.md`
+- Files: gap list from `inventory.py --missing`
+- Workers: `2` for copilot (rate-limit safe), `5` for gemini
 
 #### Option B: Ollama Batch (requires Ollama running locally)
 ```bash

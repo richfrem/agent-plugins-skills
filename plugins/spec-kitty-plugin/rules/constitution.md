@@ -45,7 +45,6 @@ Any operation that:
 - **NEVER** use `grep` / `find` / `ls -R` for tool discovery.
 - **ALWAYS** use defined **Slash Commands** (`/spec-kitty.*`) over raw scripts.
 - **ALWAYS** use `spec-kitty-cli` for SDD lifecycle operations.
-- **ALWAYS** use the `task_manager.py` CLI for kanban lane transitions.
 
 ## IV. Governing Law (The Tiers)
 

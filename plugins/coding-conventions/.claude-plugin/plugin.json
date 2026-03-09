@@ -16,8 +16,7 @@
         "headers"
     ],
     "skills": [
-        "coding-conventions",
-        "conventions-agent"
+        "coding-conventions-agent"
     ],
     "dependencies": [
         "tool-inventory"
