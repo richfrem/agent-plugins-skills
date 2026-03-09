@@ -33,18 +33,18 @@ python3 "./scripts/inventory_plugin.py" --path <plugin-dir> --format json
 If the script is unavailable, manually enumerate:
 1. Walk the directory tree
 2. Classify every file by type:
-   - `SKILL.md` -> Skill definition
-   - `commands/*.md` -> Command definition
-   - `references/*.md` -> Reference material (progressive disclosure)
-   - `scripts/*.py` -> Executable scripts (must live inside the skill folder, not at plugin level)
-   - `README.md` -> Plugin documentation
-   - `CONNECTORS.md` -> Connector abstractions
-   - `plugin.json` -> Plugin manifest
-   - `*.json` -> Configuration (MCP, hooks, etc.)
-   - `*.yaml` / `*.yml` -> Pipeline/config data
-   - `*.html` -> Artifact templates
-   - `*.mmd` -> Architecture diagrams
-   - Other -> Assets/misc
+   - `SKILL.md` → Skill definition
+   - `commands/*.md` → Command definition
+   - `references/*.md` → Reference material (progressive disclosure)
+   - `scripts/*.py` → Executable scripts
+   - `README.md` → Plugin documentation
+   - `CONNECTORS.md` → Connector abstractions
+   - `plugin.json` → Plugin manifest
+   - `*.json` → Configuration (MCP, hooks, etc.)
+   - `*.yaml` / `*.yml` → Pipeline/config data
+   - `*.html` → Artifact templates
+   - `*.mmd` → Architecture diagrams
+   - Other → Assets/misc
 
 3. Record for each file: path, type, line count, byte size
 4. Output a structured inventory as a markdown checklist with one checkbox per file

@@ -518,6 +518,9 @@ class InventoryManager:
                 # Keep JS scanning if present in tools
                 for f in d.rglob("*.js"):
                     found_files.add(f)
+                # Keep SH scanning if present in tools
+                for f in d.rglob("*.sh"):
+                    found_files.add(f)
 
         for f in found_files:
              # Blacklist: __init__.py
