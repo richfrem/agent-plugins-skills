@@ -135,7 +135,7 @@ C# private fields use `_camelCase` prefix.
 
 ## Module Organization (Python)
 
-```
+```text
 module/
 ├── __init__.py       # Exports
 ├── models.py         # Data models / DTOs
@@ -144,6 +144,17 @@ module/
 ├── utils.py          # Helpers
 └── constants.py      # Constants and enums
 ```
+
+### Script Architectural Rules
+
+1. **Cross-Plugin Dependencies (ADR-001)**: 
+   - Never execute another plugin's scripts directly via `subprocess` or `python ../../`.
+   - Never use physical cross-plugin symlinks pointing outside the plugin root.
+   - **Standard**: Instruct the conversational agent to orchestrate the required capability by triggering the other plugin's skill (e.g. `Please trigger the rlm-curator skill`).
+
+2. **Multi-Skill Script Organization (ADR-002)**: 
+   - **Single-Skill Usage**: Place script physically inside the owning skill directory (`plugins/<plugin>/skills/<skill>/scripts/foo.py`).
+   - **Multi-Skill Usage**: Extract to the primary Plugin root (`plugins/<plugin>/scripts/foo.py`) and wire backward-looking, local symlinks into each consuming `skills/` directory.
 
 ## Tool Inventory Integration
 

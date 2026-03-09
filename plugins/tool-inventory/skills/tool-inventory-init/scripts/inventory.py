@@ -1,1 +1,0 @@
-../../../../rlm-factory/scripts/inventory.py

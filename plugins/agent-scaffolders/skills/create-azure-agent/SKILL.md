@@ -33,7 +33,7 @@ Because Azure AI Foundry enforces a strict 128-tool limit, this scaffolder gener
 ## Outputs
 
 The script will generate an `azure_deployment/` directory within the target skill containing:
-1. `azure_agent.py` - The `azure-ai-projects` Python SDK orchestration script.
+1. `scaffold_azure_agent.py` - The `azure-ai-projects` Python SDK orchestration script.
 2. `main.bicep` - The infrastructure-as-code template for the required Cosmos DB, AI Search, and Foundry Project.
 
 

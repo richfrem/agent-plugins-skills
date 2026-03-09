@@ -6,7 +6,7 @@ task_manager.py — Lightweight Kanban Task Manager
 Purpose:
     Markdown-backed task board with lane directories: backlog, todo, in-progress, done.
     Each task is a Markdown file (NNNN-title.md) stored in its lane directory.
-    Consolidates create_task.py and board.py into a single manager.
+    Centralized CLI for all task management and kanban board operations.
 
 Layer: Plugin / Task-Manager
 

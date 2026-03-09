@@ -12,8 +12,8 @@ Usage Examples:
     python ./scripts/manage_tool_inventory.py --help
     python ./scripts/manage_tool_inventory.py list
     python ./scripts/manage_tool_inventory.py search "keyword"
-    python ./scripts/manage_tool_inventory.py remove --path "path/to/tool.py"
-    python ./scripts/manage_tool_inventory.py update --path "tool.py" --desc "New description"
+    python ./scripts/manage_tool_inventory.py remove --path "path/to/tool_script.py"
+    python ./scripts/manage_tool_inventory.py update --path "tool_script.py" --desc "New description"
     python ./scripts/manage_tool_inventory.py discover --auto-stub
     python ./scripts/manage_tool_inventory.py summarize-missing
     python ./scripts/manage_tool_inventory.py sync-from-cache
@@ -55,11 +55,11 @@ Key Functions:
     - main(): No description.
 
 Script Dependencies:
-    - ../../scripts/distiller.py (Cyclical: Triggers distillation on update)
-    - ../../scripts/cleanup_cache.py (Atomic cleanup on removal)
+    - Agent orchestration expected: 'rlm-curator' skill (for updating)
+    - Agent orchestration expected: 'rlm-cleanup-agent' skill (for removals)
 
 Consumed by:
-    - ../../scripts/distiller.py (Invokes update_tool for RLM-driven enrichment)
+    - rlm-factory skills
 """
 import os
 import sys
@@ -151,37 +151,13 @@ class InventoryManager:
 
     def _trigger_distillation(self, tool_path: str):
         """
-        Triggers the RLM Distiller for a specific tool.
-        This ensures the RLM Cache (rlm_tool_cache.json) is always in sync with the Inventory.
+        Signals the RLM Distiller that a specific tool needs semantic synchronization.
+        Instead of directly executing cross-plugin scripts, it outputs a prompt 
+        for the Agent to run the appropriate skill.
         """
-        distiller_script = self.root_dir / "../../scripts/distiller.py"
-        if not distiller_script.exists():
-            print(f"⚠️  Distiller not found at {distiller_script}. Skipping sync.")
-            return
-
-        print(f"🔄 Triggering RLM Distillation for {tool_path}...")
-        try:
-            # Run distiller in 'tool' mode for this specific file
-            # --cleanup ensures if we renamed something, old keys might get cleaned up (though per-file cleanup is tricky)
-            # Actually, per-file mode + cleanup might be aggressive, but safest is just to distill the file.
-            cmd = [
-                sys.executable,
-                str(distiller_script),
-                "--type", "tool",
-                "--file", tool_path
-            ]
-            
-            # Using Popen to run in background or run_and_wait?
-            # User likely wants immediate consistency, so wait.
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                print(f"   ✅ Distillation successful.")
-            else:
-                print(f"   ❌ Distillation failed:")
-                print(result.stderr)
-        except Exception as e:
-            print(f"   ❌ Error running distiller: {e}")
+        print(f"🔄 RLM Synchronization Required for {tool_path}")
+        print(f"   🚨 ACTION REQUIRED: Please execute the 'rlm-curator' skill")
+        print(f"      to distill semantics and update the rlm tool cache.")
 
     def add_tool(self, tool_path: str, category: str = None, description: str = None):
         """Register a tool in the inventory."""
@@ -472,31 +448,10 @@ class InventoryManager:
         self._remove_from_cache(tool_path)
 
     def _remove_from_cache(self, tool_path: str):
-        """Removes the tool from the RLM Tool Cache using rlm-factory cleanup_cache.py."""
-        cleanup_script = self.root_dir / "../../scripts/cleanup_cache.py"
-        if not cleanup_script.exists():
-            print(f"⚠️  Cleanup script not found at {cleanup_script}. RLM Cache may be out of sync.")
-            return
-
-        try:
-            cmd = [
-                sys.executable,
-                str(cleanup_script),
-                "--type", "tool",
-                "--apply"  # Apply will likely need logic to target a specific file if supported, else this is generic
-            ]
-            
-            # Note: rlm-factory cleanup_cache.py is designed to purge *all* missing files inherently by scanning.
-            # So just running it with --apply is enough to sync the ledger with the deletion.
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                print(f"✅ Synced removal with RLM Cache via Janitor scan.")
-            else:
-                print(f"⚠️  Error syncing with cache: {result.stderr}")
-                
-        except Exception as e:
-            print(f"⚠️  Error executing cache cleanup: {e}")
+        """Signals that the RLM Tool Cache needs a janitor scan."""
+        print(f"🔄 RLM Cache Cleanup Required for removed tool: {tool_path}")
+        print(f"   🚨 ACTION REQUIRED: Please execute the 'rlm-cleanup-agent' skill")
+        print(f"      to prune the cache and sync with the ledger deletion.")
 
     def _detect_header_style(self, file_path: Path) -> str:
         """Detect the documentation header style of a Python file."""
@@ -778,7 +733,7 @@ class InventoryManager:
         
         cli_args = []
         functions = []
-        template_name = "python-tool-header-template.py" if not is_js else "js-tool-header-template.js"
+        template_name = "py-tool-header-template.txt" if not is_js else "js-tool-header-template.txt"
 
         try:
             with open(full_path, 'r', encoding='utf-8') as f:

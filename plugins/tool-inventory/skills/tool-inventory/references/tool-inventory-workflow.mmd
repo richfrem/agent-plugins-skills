@@ -4,7 +4,7 @@ sequenceDiagram
     participant JSON as plugins/tool_inventory.json
     participant Chroma as ChromaDB (tool_summaries)
     participant FS as File System
-    participant Distiller as distiller.py (optional)
+    participant Distiller as rlm-distill-agent skill (optional)
     participant Ollama as Ollama (optional)
 
     Note over User, Ollama: Add Tool Flow

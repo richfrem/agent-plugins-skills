@@ -16,8 +16,8 @@ Usage:
 
 Related:
     - rlm_config.py (configuration & file collection)
-    - distiller.py (cache population)
-    - cleanup_cache.py (stale entry removal)
+    - -> Delegated to rlm-factory skills (cache population)
+    - -> Delegated to rlm-factory skills (stale entry removal)
 """
 import sys
 import argparse

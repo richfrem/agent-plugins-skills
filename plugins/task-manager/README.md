@@ -24,8 +24,7 @@ The agent will automatically manage `[NNNN]-[title].md` files inside the defined
 task-manager/
 ├── .claude-plugin/plugin.json
 ├── skills/task-agent/SKILL.md
-├── skills/task-agent/scripts/create_task.py
-├── skills/task-agent/scripts/board.py
+├── skills/task-agent/scripts/task_manager.py
 ├── templates/task-template.md 
 └── README.md
 ```

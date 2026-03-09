@@ -1,7 +1,9 @@
 {
     "global_ignores": {
         "__init__.py": "Standard Python module initializer. Not a standalone skill executable.",
-        "example.py": "Generic documentation placeholder often used in references."
+        "example.py": "Generic documentation placeholder often used in references.",
+        "example_script.py": "Dummy script name used frequently in code examples.",
+        "tool_script.py": "Dummy script name used frequently in CLI help blocks."
     },
     "plugin_ignores": {
         "adr-manager": {},
@@ -12,11 +14,18 @@
             "qc_core.py": "Hypothetical docs example.",
             "scaffold.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders."
         },
-        "agent-scaffolders": {},
+        "agent-scaffolders": {
+            "azure_agent.py": "Dummy template string.",
+            "check_environment.py": "Dummy template string.",
+            "execute.py": "Dummy template string."
+        },
         "agent-skill-open-specifications": {},
         "claude-cli": {},
         "coding-conventions": {},
-        "context-bundler": {},
+        "context-bundler": {
+            "file.py": "Dummy placeholder string in SKILL.md for missing file handling examples.",
+            "main.py": "Dummy script reference in examples."
+        },
         "copilot-cli": {},
         "dependency-management": {},
         "env-helper": {},
@@ -30,11 +39,18 @@
         "mermaid-to-png": {},
         "obsidian-integration": {},
         "plugin-manager": {},
-        "rlm-factory": {},
+        "rlm-factory": {
+            "auth.py": "Dummy script reference.",
+            "file.py": "Dummy script reference.",
+            "query.py": "Dummy script reference.",
+            "swarm_run.py": "Dummy script reference."
+        },
         "rsvp-speed-reader": {},
         "spec-kitty-plugin": {},
         "task-manager": {},
-        "tool-inventory": {},
+        "tool-inventory": {
+            "tool_distiller.py": "Hypothetical script discussed conceptually in strategy analysis prose."
+        },
         "vector-db": {}
     }
 }

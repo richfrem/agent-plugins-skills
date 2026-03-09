@@ -17,7 +17,7 @@ Usage:
     results = tc.search("distiller", n=5)
 
     # As a CLI
-    python3 ./scripts/inventory.py
+    python3 ./scripts/tool_chroma.py
     python3 ./scripts/tool_chroma.py stats
     python3 ./scripts/tool_chroma.py search "query cache"
     python3 ./scripts/tool_chroma.py list

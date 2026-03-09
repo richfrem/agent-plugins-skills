@@ -6,7 +6,7 @@ This document analyzes the current recursive language model (RLM) architecture a
 ## 2. Current Architecture State
 
 ### Core Components
-*   **Engine**: `plugins/rlm-factory/scripts/distiller.py`
+*   **Engine**: `plugins/rlm-factory/` domain (distillation engine)
     *   **Input**: Directory paths defined in `distiller_manifest.json` (or CLI args).
     *   **Processing**: Recursive walk -> Filter (.md/.txt) -> Ollama (Granite 3.2).
     *   **Prompting**: Hardcoded prompt focused on "Business Function" and "Feature Purpose" (Legacy Context).
@@ -19,14 +19,14 @@ This document analyzes the current recursive language model (RLM) architecture a
     *   **Metadata**: Manually curated descriptions + status.
 
 ### Identified Gaps
-1.  **Incompatible Source of Truth**: `distiller.py` expects directory limits, whereas Tools are best defined by the **explicit list** in `plugins/tool_inventory.json`.
+1.  **Incompatible Source of Truth**: The legacy distillation engine expects directory limits, whereas Tools are best defined by the **explicit list** in `plugins/tool_inventory.json`.
 2.  **Incompatible Prompts**: The current prompt asks "What business function does this serve?". For tools, we need "How do I use this CLI?".
 3.  **Cache Contamination**: Mixing "How to run script X" with "How Business Rule Y works" in a single `rlm_summary_cache.json` risks semantic confusion and context poisoning.
 
 ## 3. Options for Approach
 
 ### Option A: The "Twin Engines" (Separation of Concerns)
-Create a dedicated `tool_distiller.py` specifically for the Tool Inventory.
+Create a dedicated distillation runner specifically for the Tool Inventory.
 *   **Pros**: 
     *   Zero risk of breaking existing RLM logic.
     *   Can have completely custom input logic (reading JSON inventory directly).
@@ -36,7 +36,7 @@ Create a dedicated `tool_distiller.py` specifically for the Tool Inventory.
     *   Two scripts to maintain/update if core RLM logic (e.g., Ollama URL) changes.
 
 ### Option B: The "Modal Engine" (Unified Distiller)
-Refactor `distiller.py` to support distinct **Modes** via CLI arguments.
+Refactor the core distillation engine to support distinct **Modes** via CLI arguments.
 *   **Mechanism**:
     *   `--mode doc` (Default): Uses `distiller_manifest.json`, Legacy Prompt, `rlm_summary_cache.json`.
     *   `--mode tool`: Uses `plugins/tool_inventory.json` (via `--inventory`), Tool Prompt, `rlm_tool_cache.json`.
@@ -44,7 +44,7 @@ Refactor `distiller.py` to support distinct **Modes** via CLI arguments.
     *   Single codebase for hashing/caching/API logic.
     *   Centralized configuration.
 *   **Cons**:
-    *   Increases complexity of `distiller.py`.
+    *   Increases complexity of the core distillation script.
     *   Requires careful regression testing to ensure Legacy mode is untouched.
 
 ### Option C: The "Hybrid Manifest" (Not Recommended)
@@ -56,7 +56,7 @@ Add `plugins/` to the existing `distiller_manifest.json`.
     *   Cannot easily apply different Prompts to tools vs docs.
 
 ## 4. Recommendation
-**Option B (Modal Engine)** is recommended entirely *if and only if* `distiller.py` is refactored cleanly. It balances maintainability with the specialized requirements. 
+**Option B (Modal Engine)** is recommended to enforce ADR-001 separation of concerns. Distillation belongs entirely in the `rlm-factory` plugin. It balances maintainability with the specialized requirements.
 
 However, given the user's emphasis on "Systematic" and "No Rework", **Option A (Twin Engines)** might be safer if we want to treat the Tool Discovery system as a distinct "Meta-Skill" subsystem, decoupling it from the Legacy Analysis workflow.
 

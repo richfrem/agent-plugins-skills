@@ -121,7 +121,7 @@ def main():
     initialize_cache()
     
     print("\n✅ Initialization complete. The ledger and schemas are scaffolded.")
-    print("\nNext Steps for Agent:\n  1. Run the RLM auditor to identify missing scripts: \n     python3 ./scripts/inventory.py --profile tools")
+    print("\nNext Steps for Agent:\n  1. Trigger the 'rlm-curator' skill to identify missing tools")
     print("  2. Perform initial distillation on those missing tools.")
     
 if __name__ == "__main__":

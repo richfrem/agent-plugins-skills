@@ -51,7 +51,7 @@ When executing a search in `ChromaDB`:
 
 ### 1. Register New Tools
 ```bash
-python3 ./scripts/manage_tool_inventory.py add --path plugins/new_script.py
+python3 ./scripts/manage_tool_inventory.py add --path plugins/new_script_example.txt
 ```
 This auto-extracts the docstring, detects compliance, and upserts to ChromaDB.
 

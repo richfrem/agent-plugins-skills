@@ -12,7 +12,6 @@ Commands:
   packet    -> Generate strategy packet from inputs
   verify    -> Check worktree diff against criteria
   correct   -> Generate correction packet (delta)
-  bundle    -> Bundle files for review (red team context)
   retro     -> Generate retrospective template
 """
 
@@ -72,12 +71,6 @@ Original Packet: {original_packet_path}
 3. Signal completion.
 """
 
-REVIEW_BUNDLE_HEADER = """# Review Bundle: {title}
-**Date**: {date}
-**Files**: {file_count}
-
----
-"""
 
 RETRO_TEMPLATE = """# Retrospective: {session_id}
 **Date**: {date}
@@ -197,41 +190,6 @@ def cmd_correct(args):
     out_file.write_text(content)
     print(f"Correction packet generated: {out_file}")
 
-def cmd_bundle(args):
-    """Bundle files for review."""
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    # Collect files
-    files = []
-    if args.manifest:
-        try:
-            m = json.loads(Path(args.manifest).read_text())
-            files = m.get("files", [])
-        except Exception as e:
-            print(f"Error reading manifest: {e}", file=sys.stderr)
-            sys.exit(1)
-            
-    if args.files:
-        files.extend(args.files)
-        
-    # Build content
-    out = REVIEW_BUNDLE_HEADER.format(title="Ad-Hoc Review", date=timestamp, file_count=len(files))
-    
-    for f in files:
-        p = Path(f)
-        out += f"\n## File: {f}\n"
-        if not p.exists():
-            out += "[MISSING]\n"
-            continue
-            
-        ext = p.suffix.lstrip(".")
-        content = read_file(p)
-        out += f"```{ext}\n{content}\n```\n"
-        
-    out_path = Path(args.output)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(out)
-    print(f"Bundle created: {out_path}")
 
 def cmd_retro(args):
     """Generate retrospective."""
@@ -267,11 +225,6 @@ def main():
     p_correct.add_argument("--feedback", required=True, help="Feedback / Failure reason")
     p_correct.add_argument("--iteration", help="Iteration number")
     
-    # Bundle
-    p_bundle = subparsers.add_parser("bundle")
-    p_bundle.add_argument("--files", nargs="+", help="List of files to bundle")
-    p_bundle.add_argument("--manifest", help="JSON manifest file")
-    p_bundle.add_argument("--output", required=True, help="Output markdown file")
     
     # Retro
     p_retro = subparsers.add_parser("retro")
@@ -282,7 +235,6 @@ def main():
     if args.command == "packet": cmd_packet(args)
     elif args.command == "verify": cmd_verify(args)
     elif args.command == "correct": cmd_correct(args)
-    elif args.command == "bundle": cmd_bundle(args)
     elif args.command == "retro": cmd_retro(args)
 
 if __name__ == "__main__":

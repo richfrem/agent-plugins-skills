@@ -149,19 +149,6 @@ Script: tool_inventory_init.py
   2. Used by skills: tool-inventory-init
   3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory-init)? Yes
 
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - cleanup_cache.py (Referenced by: tool-inventory, tool-inventory-init)
-      - distiller.py (Referenced by: tool-inventory, tool-inventory-init)
-      - example_script.py (Referenced by: tool-inventory)
-      - inject_summary.py (Referenced by: tool-inventory-init)
-      - inventory.py (Referenced by: tool-inventory, tool-inventory-init)
-      - new_script.py (Referenced by: tool-inventory)
-      - python-tool-header-template.py (Referenced by: tool-inventory, tool-inventory-init)
-      - query_cache.py (Referenced by: tool-inventory)
-      - refresh_cache.py (Referenced by: tool-inventory)
-      - tool.py (Referenced by: tool-inventory, tool-inventory-init)
-      - tool_distiller.py (Referenced by: tool-inventory, tool-inventory-init)
-
 ======================================================================
 PLUGIN: rsvp-speed-reader
 ======================================================================
@@ -221,12 +208,6 @@ Script: scaffold_github_action.py
   2. Used by skills: create-github-action
   3. Only used by 1 skill. Physically exists ONLY in that skill (create-github-action)? Yes
 
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - analyze_plugin.py (Referenced by: audit-plugin)
-      - azure_agent.py (Referenced by: create-azure-agent)
-      - check_environment.py (Referenced by: create-docker-skill)
-      - execute.py (Referenced by: create-docker-skill, create-stateful-skill, create-sub-agent)
-
 ======================================================================
 PLUGIN: task-manager
 ======================================================================
@@ -236,10 +217,6 @@ Script: task_manager.py
      -> Exists at pluginroot/scripts: No
   2. Used by skills: task-agent
   3. Only used by 1 skill. Physically exists ONLY in that skill (task-agent)? Yes
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - board.py (Referenced by: task-agent)
-      - create_task.py (Referenced by: task-agent)
 
 ======================================================================
 PLUGIN: rlm-factory
@@ -300,12 +277,6 @@ Script: test_rlm_config.py
      -> Exists at pluginroot/scripts: No
   2. Used by skills: None
 
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - auth.py (Referenced by: rlm-curator)
-      - file.py (Referenced by: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search)
-      - query.py (Referenced by: rlm-search)
-      - swarm_run.py (Referenced by: rlm-curator, rlm-distill-agent)
-
 ======================================================================
 PLUGIN: context-bundler
 ======================================================================
@@ -321,7 +292,8 @@ Script: bundle_zip.py
   1. Exists physically in plugin: Yes (1 location(s))
      -> Exists at pluginroot/scripts: No
   2. Used by skills: zip-bundling
-  3. Only used by 1 skill. Physically exists ONLY in that skill (zip-bundling)? Yes
+  3. Only used by 1 skill. Physically exists ONLY in that skill (zip-bundling)? No
+     -> Found in: []
 
 Script: manifest_manager.py
   1. Exists physically in plugin: Yes (3 location(s))
@@ -338,10 +310,6 @@ Script: path_resolver.py
   4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
   5. Symlink exists in all utilizing skills? No.
      -> Missing symlinks in: context-bundling, zip-bundling
-
-[!] MISSING OR UNRESOLVED SCRIPTS (See Global Summary below):
-      - file.py (Referenced by: context-bundling, zip-bundling)
-      - main.py (Referenced by: context-bundling, zip-bundling)
 
 ======================================================================
 PLUGIN: obsidian-integration
@@ -499,6 +467,7 @@ Script: python-tool-header-template.py
       - data_processor.py (Referenced by: coding-conventions)
       - dependency1.py (Referenced by: coding-conventions)
       - dependency2.py (Referenced by: coding-conventions)
+      - foo.py (Referenced by: coding-conventions)
       - manage_tool_inventory.py (Referenced by: coding-conventions)
       - models.py (Referenced by: coding-conventions, conventions-agent)
       - parent_script.py (Referenced by: coding-conventions)
@@ -735,12 +704,6 @@ agent-loops:
   - my_post_cmd.py (via: agent-swarm)
   - persist_soul.py (via: orchestrator)
 
-agent-scaffolders:
-  - analyze_plugin.py (via: audit-plugin)
-  - azure_agent.py (via: create-azure-agent)
-  - check_environment.py (via: create-docker-skill)
-  - execute.py (via: create-docker-skill, create-stateful-skill, create-sub-agent)
-
 agent-skill-open-specifications:
   - bridge_installer.py (via: ecosystem-authoritative-sources)
   - extract.py (via: ecosystem-authoritative-sources, ecosystem-standards)
@@ -753,6 +716,7 @@ coding-conventions:
   - data_processor.py (via: coding-conventions)
   - dependency1.py (via: coding-conventions)
   - dependency2.py (via: coding-conventions)
+  - foo.py (via: coding-conventions)
   - manage_tool_inventory.py (via: coding-conventions)
   - models.py (via: coding-conventions, conventions-agent)
   - parent_script.py (via: coding-conventions)
@@ -762,10 +726,6 @@ coding-conventions:
   - script.py (via: coding-conventions, conventions-agent)
   - services.py (via: coding-conventions, conventions-agent)
   - utils.py (via: coding-conventions, conventions-agent)
-
-context-bundler:
-  - file.py (via: context-bundling, zip-bundling)
-  - main.py (via: context-bundling, zip-bundling)
 
 dependency-management:
   - ingest.py (via: dependency-management)
@@ -792,12 +752,6 @@ memory-management:
   - vault_ops.py (via: memory-management)
   - vector_config.py (via: memory-management)
 
-rlm-factory:
-  - auth.py (via: rlm-curator)
-  - file.py (via: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search)
-  - query.py (via: rlm-search)
-  - swarm_run.py (via: rlm-curator, rlm-distill-agent)
-
 spec-kitty-plugin:
   - auth.py (via: spec-kitty-tasks)
   - bridge_installer.py (via: spec-kitty-agent)
@@ -811,20 +765,3 @@ spec-kitty-plugin:
   - test_auth.py (via: spec-kitty-tasks)
   - test_new_script.py (via: spec-kitty-implement)
   - verify_bridge_integrity.py (via: spec-kitty-agent)
-
-task-manager:
-  - board.py (via: task-agent)
-  - create_task.py (via: task-agent)
-
-tool-inventory:
-  - cleanup_cache.py (via: tool-inventory, tool-inventory-init)
-  - distiller.py (via: tool-inventory, tool-inventory-init)
-  - example_script.py (via: tool-inventory)
-  - inject_summary.py (via: tool-inventory-init)
-  - inventory.py (via: tool-inventory, tool-inventory-init)
-  - new_script.py (via: tool-inventory)
-  - python-tool-header-template.py (via: tool-inventory, tool-inventory-init)
-  - query_cache.py (via: tool-inventory)
-  - refresh_cache.py (via: tool-inventory)
-  - tool.py (via: tool-inventory, tool-inventory-init)
-  - tool_distiller.py (via: tool-inventory, tool-inventory-init)
