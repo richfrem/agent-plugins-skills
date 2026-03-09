@@ -1,0 +1,865 @@
+{
+  "metadata": {
+    "last_updated": "2026-03-09T12:53:50.081983"
+  },
+  "scripts": {
+    "root": [
+      {
+        "name": "adr_manager.py",
+        "path": "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py",
+        "description": "adr_manager.py — Architecture Decision Record Manager",
+        "last_updated": "2026-03-09T12:53:50.080565",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "agent_orchestrator.py",
+        "path": "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py",
+        "description": "Agent Orchestrator (Core Script)",
+        "last_updated": "2026-03-09T12:53:50.080259",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "audit.py",
+        "path": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit.py",
+        "description": "audit.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.078692",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "audit.py",
+        "path": "plugins/agent-scaffolders/scripts/audit.py",
+        "description": "audit.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080859",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "audit_plugins.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/audit_plugins.py",
+        "description": "Audit Plugin Inventory",
+        "last_updated": "2026-03-09T12:53:50.078292",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "audit_structure.py",
+        "path": "plugins/plugin-manager/scripts/audit_structure.py",
+        "description": "Audit Plugin Structure",
+        "last_updated": "2026-03-09T12:53:50.077516",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "audit_structure.py",
+        "path": "plugins/plugin-manager/skills/plugin-maintenance/scripts/audit_structure.py",
+        "description": "Audit Plugin Structure",
+        "last_updated": "2026-03-09T12:53:50.077969",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "bad_script.py",
+        "path": "plugins/agent-plugin-analyzer/tests/flawed-plugin/scripts/bad_script.py",
+        "description": "Deliberately flawed script for testing security detection.",
+        "last_updated": "2026-03-09T12:53:50.079708",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bases_ops.py",
+        "path": "plugins/obsidian-integration/skills/obsidian-bases-manager/scripts/bases_ops.py",
+        "description": "Obsidian Bases Manager Operations",
+        "last_updated": "2026-03-09T12:53:50.080762",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bridge_installer.py",
+        "path": "plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py",
+        "description": "bridge_installer.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.075359",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "bulk_replicator.py",
+        "path": "plugins/plugin-manager/scripts/bulk_replicator.py",
+        "description": "Bulk Plugin Replicator",
+        "last_updated": "2026-03-09T12:53:50.078470",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bulk_replicator.py",
+        "path": "plugins/plugin-manager/skills/plugin-replicator/scripts/bulk_replicator.py",
+        "description": "Bulk Plugin Replicator",
+        "last_updated": "2026-03-09T12:53:50.079408",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bundle.py",
+        "path": "plugins/context-bundler/skills/context-bundling/scripts/bundle.py",
+        "description": "Context Bundler Engine",
+        "last_updated": "2026-03-09T12:53:50.075921",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bundle.py",
+        "path": "plugins/context-bundler/scripts/bundle.py",
+        "description": "Context Bundler Engine",
+        "last_updated": "2026-03-09T12:53:50.077587",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bundle_zip.py",
+        "path": "plugins/context-bundler/skills/zip-bundling/scripts/bundle_zip.py",
+        "description": "Context Bundler Engine - ZIP Archiver",
+        "last_updated": "2026-03-09T12:53:50.077836",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "bundle_zip.py",
+        "path": "plugins/context-bundler/scripts/bundle_zip.py",
+        "description": "Context Bundler Engine - ZIP Archiver",
+        "last_updated": "2026-03-09T12:53:50.078860",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "canvas_ops.py",
+        "path": "plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py",
+        "description": "Obsidian Canvas Architect Operations",
+        "last_updated": "2026-03-09T12:53:50.078031",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "check_broken_paths.py",
+        "path": "plugins/link-checker/skills/link-checker-agent/scripts/check_broken_paths.py",
+        "description": "check_broken_paths.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.077256",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "clean_orphans.py",
+        "path": "plugins/plugin-manager/scripts/clean_orphans.py",
+        "description": "Plugin Orphan Cleaner",
+        "last_updated": "2026-03-09T12:53:50.075611",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "cleanup.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py",
+        "description": "cleanup.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.079846",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "cleanup_cache.py",
+        "path": "plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py",
+        "description": "cleanup_cache.py",
+        "last_updated": "2026-03-09T12:53:50.078592",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "cleanup_targets.py",
+        "path": "plugins/plugin-manager/scripts/cleanup_targets.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081924",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "convert.py",
+        "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/convert.py",
+        "description": "excel_to_csv.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.076343",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "convert.py",
+        "path": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py",
+        "description": "convert.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.079966",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "debug_rlm.py",
+        "path": "plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py",
+        "description": "debug_rlm.py",
+        "last_updated": "2026-03-09T12:53:50.076286",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "distiller.py",
+        "path": "plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py",
+        "description": "distiller.py",
+        "last_updated": "2026-03-09T12:53:50.080324",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "enrich_links_v2.py",
+        "path": "plugins/link-checker/skills/link-checker-agent/scripts/enrich_links_v2.py",
+        "description": "enrich_links_v2.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.075787",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "env_helper.py",
+        "path": "plugins/env-helper/scripts/env_helper.py",
+        "description": "# Purpose: Shared ecosystem environment variable helper for plugins.",
+        "last_updated": "2026-03-09T12:53:50.078805",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "env_helper.py",
+        "path": "plugins/env-helper/skills/env-helper/scripts/env_helper.py",
+        "description": "# Purpose: Shared ecosystem environment variable helper for plugins.",
+        "last_updated": "2026-03-09T12:53:50.079910",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "execute.py",
+        "path": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/scripts/execute.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081606",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "execute.py",
+        "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/execute.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081766",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "find_json_duplicates.py",
+        "path": "plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py",
+        "description": "find_json_duplicates.py (V2)",
+        "last_updated": "2026-03-09T12:53:50.081314",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "find_source_links.py",
+        "path": "plugins/link-checker/skills/link-checker-agent/scripts/find_source_links.py",
+        "description": "find_source_links.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.077205",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "fix_inventory_paths.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/fix_inventory_paths.py",
+        "description": "Fix Inventory Paths",
+        "last_updated": "2026-03-09T12:53:50.079281",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "generate_readmes.py",
+        "path": "plugins/plugin-manager/scripts/generate_readmes.py",
+        "description": "Generate Plugin READMEs",
+        "last_updated": "2026-03-09T12:53:50.074993",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "generate_readmes.py",
+        "path": "plugins/plugin-manager/skills/plugin-maintenance/scripts/generate_readmes.py",
+        "description": "Generate Plugin READMEs",
+        "last_updated": "2026-03-09T12:53:50.080151",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "generate_tools_manifest.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/generate_tools_manifest.py",
+        "description": "Purpose:",
+        "last_updated": "2026-03-09T12:53:50.078414",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "graph_ops.py",
+        "path": "plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py",
+        "description": "Obsidian Graph Traversal Engine",
+        "last_updated": "2026-03-09T12:53:50.078917",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "hf_config.py",
+        "path": "plugins/huggingface-utils/skills/hf-init/scripts/hf_config.py",
+        "description": "HuggingFace Configuration & Environment Utilities",
+        "last_updated": "2026-03-09T12:53:50.078104",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "hf_config.py",
+        "path": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_config.py",
+        "description": "HuggingFace Configuration & Environment Utilities",
+        "last_updated": "2026-03-09T12:53:50.078160",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "hf_config.py",
+        "path": "plugins/huggingface-utils/scripts/hf_config.py",
+        "description": "HuggingFace Configuration & Environment Utilities",
+        "last_updated": "2026-03-09T12:53:50.078749",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "hf_init.py",
+        "path": "plugins/huggingface-utils/skills/hf-init/scripts/hf_init.py",
+        "description": "HuggingFace Init Script",
+        "last_updated": "2026-03-09T12:53:50.077653",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "hf_upload.py",
+        "path": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_upload.py",
+        "description": "HuggingFace Upload Primitives",
+        "last_updated": "2026-03-09T12:53:50.077156",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "ingest.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/ingest.py",
+        "description": "ingest.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.074911",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "ingest_code_shim.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/ingest_code_shim.py",
+        "description": "ingest_code_shim.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.076084",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "init.py",
+        "path": "plugins/vector-db/skills/vector-db-init/scripts/init.py",
+        "description": "init.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.076513",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "init_vault.py",
+        "path": "plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py",
+        "description": "Obsidian Vault Initialization Script",
+        "last_updated": "2026-03-09T12:53:50.075976",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "inject_summary.py",
+        "path": "plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py",
+        "description": "inject_summary.py",
+        "last_updated": "2026-03-09T12:53:50.081378",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "install_all_plugins.py",
+        "path": "plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py",
+        "description": "install_all_plugins.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080916",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "inventory.py",
+        "path": "plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py",
+        "description": "inventory.py",
+        "last_updated": "2026-03-09T12:53:50.077409",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "inventory_plugin.py",
+        "path": "plugins/agent-plugin-analyzer/skills/analyze-plugin/scripts/inventory_plugin.py",
+        "description": "inventory_plugin.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.076863",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "inventory_plugin.py",
+        "path": "plugins/agent-plugin-analyzer/scripts/inventory_plugin.py",
+        "description": "inventory_plugin.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.081242",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "js-tool-header-template.js",
+        "path": "plugins/coding-conventions/templates/js-tool-header-template.js",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081496",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "manage_tool_inventory.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/manage_tool_inventory.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081668",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "manifest_manager.py",
+        "path": "plugins/context-bundler/scripts/manifest_manager.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081549",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "manifest_manager.py",
+        "path": "plugins/context-bundler/skills/context-bundling/scripts/manifest_manager.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081718",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "manifest_manager.py",
+        "path": "plugins/context-bundler/skills/zip-bundling/scripts/manifest_manager.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081975",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "map_repository_files.py",
+        "path": "plugins/link-checker/skills/link-checker-agent/scripts/map_repository_files.py",
+        "description": "map_repository_files.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.077082",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "md_to_docx.py",
+        "path": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/md_to_docx.py",
+        "description": "Markdown -> Word (.docx) converter.",
+        "last_updated": "2026-03-09T12:53:50.079102",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "next_number.py",
+        "path": "plugins/adr-manager/skills/adr-management/scripts/next_number.py",
+        "description": "next_number.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.078525",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "operations.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/operations.py",
+        "description": "Core domain logic for Vector DB operations.",
+        "last_updated": "2026-03-09T12:53:50.074835",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "orp_engine.py",
+        "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/orp_engine.py",
+        "description": "orp_engine.py",
+        "last_updated": "2026-03-09T12:53:50.075181",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "parse_document.py",
+        "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/parse_document.py",
+        "description": "parse_document.py",
+        "last_updated": "2026-03-09T12:53:50.078354",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "parser.py",
+        "path": "plugins/obsidian-integration/obsidian-parser/parser.py",
+        "description": "Core parser for Obsidian-flavored Markdown syntax.",
+        "last_updated": "2026-03-09T12:53:50.075115",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "path_resolver.py",
+        "path": "plugins/context-bundler/skills/zip-bundling/scripts/path_resolver.py",
+        "description": "path_resolver.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.077713",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "path_resolver.py",
+        "path": "plugins/context-bundler/scripts/path_resolver.py",
+        "description": "path_resolver.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.079212",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "path_resolver.py",
+        "path": "plugins/context-bundler/skills/context-bundling/scripts/path_resolver.py",
+        "description": "path_resolver.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.079767",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "plugin_bootstrap.py",
+        "path": "plugins/plugin-manager/skills/plugin-maintenance/scripts/plugin_bootstrap.py",
+        "description": "plugin_bootstrap.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.078641",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "plugin_bootstrap.py",
+        "path": "plugins/plugin-manager/scripts/plugin_bootstrap.py",
+        "description": "plugin_bootstrap.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080491",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "plugin_inventory.py",
+        "path": "plugins/plugin-manager/skills/plugin-maintenance/scripts/plugin_inventory.py",
+        "description": "Plugin Inventory Generator",
+        "last_updated": "2026-03-09T12:53:50.075058",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "plugin_inventory.py",
+        "path": "plugins/plugin-manager/scripts/plugin_inventory.py",
+        "description": "Plugin Inventory Generator",
+        "last_updated": "2026-03-09T12:53:50.081092",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "plugin_replicator.py",
+        "path": "plugins/plugin-manager/skills/plugin-replicator/scripts/plugin_replicator.py",
+        "description": "Plugin Replicator",
+        "last_updated": "2026-03-09T12:53:50.075457",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "plugin_replicator.py",
+        "path": "plugins/plugin-manager/scripts/plugin_replicator.py",
+        "description": "Plugin Replicator",
+        "last_updated": "2026-03-09T12:53:50.079607",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "python-tool-header-template.py",
+        "path": "plugins/coding-conventions/templates/python-tool-header-template.py",
+        "description": "{{script_name}} (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080086",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "query.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/query.py",
+        "description": "query.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.077319",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "query_cache.py",
+        "path": "plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py",
+        "description": "query_cache.py",
+        "last_updated": "2026-03-09T12:53:50.077906",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "rebuild_inventory.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/rebuild_inventory.py",
+        "description": "rebuild_inventory.py",
+        "last_updated": "2026-03-09T12:53:50.075244",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "rlm_config.py",
+        "path": "plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py",
+        "description": "rlm_config.py",
+        "last_updated": "2026-03-09T12:53:50.076405",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "run_bulk_md_to_docx.py",
+        "path": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py",
+        "description": "Load bulk conversion scope config from JSON file.",
+        "last_updated": "2026-03-09T12:53:50.076219",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/skills/create-plugin/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.075672",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/skills/create-docker-skill/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.079042",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.079459",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/skills/create-stateful-skill/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080618",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/skills/create-hook/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080810",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.081142",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold.py",
+        "path": "plugins/agent-scaffolders/skills/create-skill/scripts/scaffold.py",
+        "description": "scaffold.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.081187",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "scaffold_agentic_workflow.py",
+        "path": "plugins/agent-scaffolders/skills/create-agentic-workflow/scripts/scaffold_agentic_workflow.py",
+        "description": "Scaffold Agentic Workflow",
+        "last_updated": "2026-03-09T12:53:50.078985",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "scaffold_azure_agent.py",
+        "path": "plugins/agent-scaffolders/skills/create-azure-agent/scripts/scaffold_azure_agent.py",
+        "description": "scaffold_azure_agent.py",
+        "last_updated": "2026-03-09T12:53:50.081036",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "scaffold_github_action.py",
+        "path": "plugins/agent-scaffolders/skills/create-github-action/scripts/scaffold_github_action.py",
+        "description": "Scaffold GitHub Action",
+        "last_updated": "2026-03-09T12:53:50.079518",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "smart_fix_links.py",
+        "path": "plugins/link-checker/skills/link-checker-agent/scripts/smart_fix_links.py",
+        "description": "smart_fix_links.py (CLI)",
+        "last_updated": "2026-03-09T12:53:50.080972",
+        "compliance_status": "stub",
+        "header_style": "extended"
+      },
+      {
+        "name": "swarm_run.py",
+        "path": "plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081879",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "sync_configuration.py",
+        "path": "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py",
+        "description": "Spec Kitty Configuration Sync",
+        "last_updated": "2026-03-09T12:53:50.075861",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "sync_inventory_descriptions.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/sync_inventory_descriptions.py",
+        "description": "sync_inventory_descriptions.py",
+        "last_updated": "2026-03-09T12:53:50.079345",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "sync_with_inventory.py",
+        "path": "plugins/plugin-manager/scripts/sync_with_inventory.py",
+        "description": "Sync Plugins with Inventory",
+        "last_updated": "2026-03-09T12:53:50.076040",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "sync_with_inventory.py",
+        "path": "plugins/plugin-manager/skills/plugin-maintenance/scripts/sync_with_inventory.py",
+        "description": "Sync Plugins with Inventory",
+        "last_updated": "2026-03-09T12:53:50.079169",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "task_manager.py",
+        "path": "plugins/task-manager/skills/task-agent/scripts/task_manager.py",
+        "description": "task_manager.py — Lightweight Kanban Task Manager",
+        "last_updated": "2026-03-09T12:53:50.080701",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "test_parser.py",
+        "path": "plugins/obsidian-integration/obsidian-parser/tests/test_parser.py",
+        "description": "TBD",
+        "last_updated": "2026-03-09T12:53:50.081821",
+        "compliance_status": "stub",
+        "header_style": "none"
+      },
+      {
+        "name": "tool_chroma.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory/scripts/tool_chroma.py",
+        "description": "tool_chroma.py — Embedded ChromaDB wrapper for tool-inventory plugin",
+        "last_updated": "2026-03-09T12:53:50.075553",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "tool_inventory_init.py",
+        "path": "plugins/tool-inventory/skills/tool-inventory-init/scripts/tool_inventory_init.py",
+        "description": "Tool Inventory Setup (Librarian Bootstrapper)",
+        "last_updated": "2026-03-09T12:53:50.080391",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "update_agent_system.py",
+        "path": "plugins/plugin-manager/scripts/update_agent_system.py",
+        "description": "Update Agent System (Master Sync)",
+        "last_updated": "2026-03-09T12:53:50.080035",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "vault_ops.py",
+        "path": "plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py",
+        "description": "Obsidian Vault CRUD Operations",
+        "last_updated": "2026-03-09T12:53:50.076138",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "vector_config.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/vector_config.py",
+        "description": "Wraps the raw manifest JSON dict and provides file discovery methods.",
+        "last_updated": "2026-03-09T12:53:50.078218",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "vector_consistency_check.py",
+        "path": "plugins/vector-db/skills/vector-db-agent/scripts/vector_consistency_check.py",
+        "description": "Vector Consistency Stabilizer",
+        "last_updated": "2026-03-09T12:53:50.077778",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      },
+      {
+        "name": "verify_csv.py",
+        "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/verify_csv.py",
+        "description": "verify_csv.py",
+        "last_updated": "2026-03-09T12:53:50.081439",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "verify_docx.py",
+        "path": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py",
+        "description": "verify_docx.py",
+        "last_updated": "2026-03-09T12:53:50.080204",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "verify_png.py",
+        "path": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/verify_png.py",
+        "description": "verify_png.py",
+        "last_updated": "2026-03-09T12:53:50.080442",
+        "compliance_status": "stub",
+        "header_style": "basic"
+      },
+      {
+        "name": "verify_workflow_state.py",
+        "path": "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/verify_workflow_state.py",
+        "description": "verify_workflow_state.py",
+        "last_updated": "2026-03-09T12:53:50.075735",
+        "compliance_status": "stub",
+        "header_style": "minimal"
+      }
+    ]
+  }
+}
