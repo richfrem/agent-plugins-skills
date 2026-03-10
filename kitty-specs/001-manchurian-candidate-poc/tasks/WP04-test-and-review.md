@@ -1,11 +1,15 @@
 ---
 work_package_id: WP04
 title: Test Scripts & Evaluation Bundle
-lane: planned
+lane: "doing"
 dependencies: [WP03]
+base_branch: 001-manchurian-candidate-poc-WP03
+base_commit: 2a4a5fafdea4a3f10368dda5f80c8424f7b80d7c
+created_at: '2026-03-10T00:27:14.849105+00:00'
 subtasks: [T009, T010, T011, T012]
 requirement_refs:
 - FR-005
+shell_pid: "27474"
 ---
 # Work Package 04: Test Scripts & Evaluation Bundle
 
