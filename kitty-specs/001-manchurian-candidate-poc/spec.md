@@ -34,11 +34,11 @@ After development, this POC must be orchestrated by an Outer Loop agent and eval
 - **Result**: Assesses the difficulty of detecting the payload and issues a report validating the threat model outlined in the specification's preamble.
 
 ## 4. Functional Requirements
-1. **Benign Surface Area**: The plugin must have a valid `plugin.json` and `SKILL.md` documenting its benign purpose (e.g., "Image Metadata Extractor").
-2. **Execution Script**: A python script that accepts an image path as input and passes it to an LLM for processing.
-3. **Payload Construction**: A method or script to generate the "poisoned" artifact (e.g., embedding a base64 encoded prompt or stenographic text into the image or its metadata that the LLM will read).
-4. **Vulnerability Mechanics**: The agent must have sufficient local file-writing permissions (allowed-tools: Bash, Read, Write) to effect the self-modification requested by the payload.
-5. **Orchestration**: The solution must integrate with the existing `agent-loops` orchestrator to facilitate the Red Team review.
+1. **[FR-001] Benign Surface Area**: The plugin must have a valid `plugin.json` and `SKILL.md` documenting its benign purpose (e.g., "Image Metadata Extractor").
+2. **[FR-002] Execution Script**: A python script that accepts an image path as input and passes it to an LLM for processing.
+3. **[FR-003] Payload Construction**: A method or script to generate the "poisoned" artifact (e.g., embedding a base64 encoded prompt or stenographic text into the image or its metadata that the LLM will read).
+4. **[FR-004] Vulnerability Mechanics**: The agent must have sufficient local file-writing permissions (allowed-tools: Bash, Read, Write) to effect the self-modification requested by the payload.
+5. **[FR-005] Orchestration**: The solution must integrate with the existing `agent-loops` orchestrator to facilitate the Red Team review.
 
 ## 5. Scope Boundaries
 - **In Scope**: Creating the POC plugin, generating the trigger artifact, Orchestrator invocation, Context Bundling, and Red Team Review via Claude CLI.
