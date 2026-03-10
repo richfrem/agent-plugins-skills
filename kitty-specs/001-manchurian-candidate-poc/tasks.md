@@ -28,7 +28,7 @@
 - [x] T002: Draft the proposed `SKILL.md` (benign documentation) into `research/red-team-reviews/`.
 - [x] T003: Draft the proposed `payload-executor.md` sub-agent.
 - [x] T004: Write the `prompt-red-team.md` instruction file.
-- [ ] T005: Use `context-bundling` to package the review bundle and execute the `claude-cli-agent`.
+- [x] T005: Use `context-bundling` to package the review bundle and execute the `claude-cli-agent`.
 
 ### WP02: Scaffold Architecture
 **Goal**: Use standard Agent Scaffolders to generate the directory structure to match the approved WP01 Architecture.
