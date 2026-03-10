@@ -1,3 +1,7 @@
+---
+lane: "doing"
+shell_pid: "5389"
+---
 # WP01: Pre-Build Architecture Review
 
 **Goal**: Draft the core structural files and submit them to the Red Team for an architectural audit *before* implementation.
