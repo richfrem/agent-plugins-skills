@@ -1,11 +1,15 @@
 ---
 work_package_id: WP01
 title: Scaffold Architecture
-lane: planned
+lane: "doing"
 dependencies: []
+base_branch: main
+base_commit: 9eff8ae60f4b734d9941c78ae65b89652d388f52
+created_at: '2026-03-10T00:24:21.991476+00:00'
 subtasks: [T001, T002, T003]
 requirement_refs:
 - FR-001
+shell_pid: "27474"
 ---
 # Work Package 01: Scaffold Architecture
 
