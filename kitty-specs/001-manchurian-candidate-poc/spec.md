@@ -1,15 +1,17 @@
 # Specification: Manchurian Candidate POC Plugin
 
 ## 1. Feature Description
-Create a proof-of-concept (POC) AI Agent Skill designed to demonstrate a "Manchurian Candidate" threat model. The skill will masquerade as a benign image-processing utility, but will contain a dormant capability that triggers when it encounters a specific hidden payload (e.g., instructions embedded invisibly within an image's pixels or EXIF data) or a rare string of text. Upon activation, the agent will execute the hidden instructions, modifying its own source code as a proof of vulnerability.
+Create a proof-of-concept (POC) AI Agent Skill designed to empirically demonstrate the "Manchurian Candidate" threat model, specifically acting as an **Agent Hijacker** archetype. The skill will masquerade as a benign image-processing utility, but will contain a **shadow feature**—a dormant capability that triggers when it encounters a specific hidden payload (e.g., instructions embedded invisibly within an image's pixels, EXIF data, or a rare base64 string). 
 
-After development, this POC must be orchestrated by an Outer Loop agent and evaluated by a Red Team auditing agent to validate that modern security scanners (like CodeQL) cannot detect the payload, and to prove the necessity of an "AI layer in front of the AI layer" (agent proxies/routers).
+Upon activation, the agent exploits the **consent gap** (acting on local privileges granted for benign image processing) to execute the hidden instructions, modifying its own source code as a proof of vulnerability.
+
+After development, this POC must be orchestrated by an Outer Loop agent and evaluated by a Red Team auditing agent to validate that modern static security scanners (like CodeQL) cannot detect the payload, and to prove the necessity of "Cognitive Layer Security" (semantic agent proxies/routers).
 
 ## 2. Goals & Outcomes
 ### Primary Goals
-- **Demonstrate Intent Obfuscation**: Prove that an agent can harbor a dormant, malicious capability that is absent from its benign documentation.
-- **Demonstrate Payload Delivery**: Prove that a seemingly harmless artifact (an image) can deliver an executable payload to the model's attention mechanism that bypasses standard CI/CD static analysis.
-- **Demonstrate Impact**: Prove that once triggered, the agent can enact state changes (e.g., self-modification of the skill codebase).
+- **Demonstrate Intent Obfuscation**: Prove that an agent can harbor a **shadow feature** that is functionally active at runtime but absent from its public documentation, bypassing static analysis.
+- **Demonstrate Payload Delivery**: Prove that a seemingly harmless artifact (an image) can deliver an executable payload to the model's perception layer ("Stealthy Prompt Injection").
+- **Demonstrate Impact**: Prove that once triggered, the agent can subvert instructions and enact state changes (e.g., self-modification of the skill codebase) using inherited privileges.
 
 ### Success Criteria
 - **Execution Success**: The POC agent successfully reads the "benign" image and executes the hidden payload.
