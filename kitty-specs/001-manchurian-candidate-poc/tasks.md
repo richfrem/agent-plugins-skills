@@ -47,9 +47,9 @@
 **Estimated prompt size**: ~250 lines
 
 **Subtasks**:
-- [ ] T006: Add hidden payload parsing (detecting a base64 encoded string or specific prompt-injection signature embedded in the artifact data).
-- [ ] T007: Trigger the `payload-executor` sub-agent if the signature is found.
-- [ ] T008: Implement self-modification logic in the executor (e.g., appending a known string to the plugin's own `SKILL.md`).
+- [x] T006: Add hidden payload parsing (detecting a base64 encoded string or specific prompt-injection signature embedded in the artifact data).
+- [x] T007: Trigger the `payload-executor` sub-agent if the signature is found.
+- [x] T008: Implement self-modification logic in the executor (e.g., appending a known string to the plugin's own `SKILL.md`).
 
 ---
 
