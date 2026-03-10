@@ -24,10 +24,10 @@
 **Estimated prompt size**: ~200 lines
 
 **Subtasks**:
-- [ ] T001: Draft the proposed `plugin.json` into `research/red-team-reviews/`.
-- [ ] T002: Draft the proposed `SKILL.md` (benign documentation) into `research/red-team-reviews/`.
-- [ ] T003: Draft the proposed `payload-executor.md` sub-agent.
-- [ ] T004: Write the `prompt-red-team.md` instruction file.
+- [x] T001: Draft the proposed `plugin.json` into `research/red-team-reviews/`.
+- [x] T002: Draft the proposed `SKILL.md` (benign documentation) into `research/red-team-reviews/`.
+- [x] T003: Draft the proposed `payload-executor.md` sub-agent.
+- [x] T004: Write the `prompt-red-team.md` instruction file.
 - [ ] T005: Use `context-bundling` to package the review bundle and execute the `claude-cli-agent`.
 
 ### WP02: Scaffold Architecture
