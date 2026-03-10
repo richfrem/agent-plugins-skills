@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Scaffold Architecture
-lane: "doing"
+lane: "for_review"
 dependencies: []
 base_branch: main
 base_commit: 9eff8ae60f4b734d9941c78ae65b89652d388f52
@@ -38,3 +38,4 @@ agent: "antigravity"
 ## Activity Log
 
 - 2026-03-10T00:24:22Z – antigravity – shell_pid=27474 – lane=doing – Assigned agent via workflow command
+- 2026-03-10T00:25:51Z – antigravity – shell_pid=27474 – lane=for_review – Architecture scaffolded.
