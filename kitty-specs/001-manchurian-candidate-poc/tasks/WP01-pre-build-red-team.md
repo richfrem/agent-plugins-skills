@@ -50,3 +50,4 @@ We are intentionally drafting the skeleton of our Manchurian Candidate POC to ve
 - 2026-03-10T01:27:53Z – Antigravity – shell_pid=47100 – lane=doing – Started implementation via workflow command
 - 2026-03-10T01:32:41Z – Antigravity – shell_pid=47100 – lane=for_review – Bundle generated safely in docs/research/. Rebuilt from scratch with spec-kitty CLI.
 - 2026-03-10T01:34:28Z – Antigravity – shell_pid=47100 – lane=for_review – Bundle generated perfectly under docs/research/.
+- 2026-03-10T01:35:35Z – Antigravity – shell_pid=47100 – lane=for_review – Bundle generated perfectly under kitty-specs/research/.
