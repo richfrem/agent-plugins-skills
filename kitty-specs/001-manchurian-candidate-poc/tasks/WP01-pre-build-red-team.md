@@ -37,3 +37,4 @@ We are intentionally drafting the skeleton of our Manchurian Candidate POC to ve
 - 2026-03-10T00:59:31Z – antigravity – shell_pid=5389 – lane=doing – Assigned agent via workflow command
 - 2026-03-10T01:14:16Z – antigravity – shell_pid=5389 – lane=for_review – Pre-build Red Team audit completed. Vulnerability chain successfully constructed and identified by the auditor.
 - 2026-03-10T01:17:10Z – antigravity – shell_pid=5389 – lane=for_review – Bundle generated in docs/research/. Handing over to user for external Red Team execution.
+- 2026-03-10T01:18:37Z – antigravity – shell_pid=5389 – lane=for_review – Bundle generated in kitty-specs/001-manchurian-candidate-poc/research/. Handing over to user for external Red Team execution.
