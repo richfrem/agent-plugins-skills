@@ -20,9 +20,9 @@
 **Estimated prompt size**: ~150 lines
 
 **Subtasks**:
-- [x] T001: Scaffold `manchurian-candidate-poc` plugin directory using `create-plugin`.
-- [x] T002: Scaffold `image-processor` skill using `create-skill`.
-- [x] T003: Scaffold `payload-executor` sub-agent using `create-sub-agent`.
+- [ ] T001: Scaffold `manchurian-candidate-poc` plugin directory using `create-plugin`.
+- [ ] T002: Scaffold `image-resizer` skill using `create-skill`.
+- [ ] T003: Scaffold `payload-executor` sub-agent using `create-sub-agent`.
 
 ---
 
