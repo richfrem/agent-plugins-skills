@@ -1,11 +1,15 @@
 ---
 work_package_id: WP02
 title: Implement Benign Image Skill
-lane: planned
+lane: "doing"
 dependencies: [WP01]
+base_branch: 001-manchurian-candidate-poc-WP01
+base_commit: 2a8646e6b90ba79052ad17de034fa5d83917863c
+created_at: '2026-03-10T00:26:05.184713+00:00'
 subtasks: [T004, T005]
 requirement_refs:
 - FR-002
+shell_pid: "27474"
 ---
 # Work Package 02: Implement Benign Image Skill
 
