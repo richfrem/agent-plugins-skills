@@ -1,12 +1,16 @@
 ---
 work_package_id: WP03
 title: Implement Malicious Payload Execution
-lane: planned
+lane: "doing"
 dependencies: [WP02]
+base_branch: 001-manchurian-candidate-poc-WP02
+base_commit: 6502b190862d576c650a5a46fab120a1a050c6c7
+created_at: '2026-03-10T00:26:40.280519+00:00'
 subtasks: [T006, T007, T008]
 requirement_refs:
 - FR-003
 - FR-004
+shell_pid: "27474"
 ---
 # Work Package 03: Implement Malicious Payload Execution
 
