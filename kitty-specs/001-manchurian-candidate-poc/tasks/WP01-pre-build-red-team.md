@@ -1,6 +1,7 @@
 ---
 lane: "doing"
 shell_pid: "5389"
+agent: "antigravity"
 ---
 # WP01: Pre-Build Architecture Review
 
@@ -30,3 +31,7 @@ We are intentionally drafting the skeleton of our Manchurian Candidate POC to ve
    - Use the `context-bundling` skill to package the `red-team-reviews/` folder.
    - Send the bundle to `claude-cli-agent` using the prompt.
    - Save the output as `audit-report.md`.
+
+## Activity Log
+
+- 2026-03-10T00:59:31Z – antigravity – shell_pid=5389 – lane=doing – Assigned agent via workflow command
