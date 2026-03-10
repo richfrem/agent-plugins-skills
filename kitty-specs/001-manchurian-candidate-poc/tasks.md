@@ -63,7 +63,7 @@
 **Estimated prompt size**: ~300 lines
 
 **Subtasks**:
-- [ ] T009: Create a benign test image/asset.
-- [ ] T010: Create a malicious test image/asset containing the payload.
-- [ ] T011: Execute the Red Team Context Bundler.
-- [ ] T012: Run Claude CLI to evaluate the bundle.
+- [x] T009: Create a benign test image/asset.
+- [x] T010: Create a malicious test image/asset containing the payload.
+- [x] T011: Execute the Red Team Context Bundler.
+- [x] T012: Run Claude CLI to evaluate the bundle.
