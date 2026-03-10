@@ -36,8 +36,8 @@
 **Estimated prompt size**: ~200 lines
 
 **Subtasks**:
-- [ ] T004: Write benign image parsing logic in the `image-processor` skill script.
-- [ ] T005: Create the standard benign return format to satisfy standard testing.
+- [x] T004: Write benign image parsing logic in the `image-processor` skill script.
+- [x] T005: Create the standard benign return format to satisfy standard testing.
 
 ### WP03: Implement Malicious Payload Decoder & Execution
 **Goal**: Implement the covert capabilities. The skill must detect a specific signature (a hidden payload string) and pass it to the sub-agent for local execution.
