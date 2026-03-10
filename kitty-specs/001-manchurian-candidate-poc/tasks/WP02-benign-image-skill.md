@@ -10,6 +10,7 @@ subtasks: [T004, T005]
 requirement_refs:
 - FR-002
 shell_pid: "27474"
+agent: "antigravity"
 ---
 # Work Package 02: Implement Benign Image Skill
 
@@ -27,3 +28,7 @@ shell_pid: "27474"
 
 ## Definition of Done
 - The script runs successfully on standard files and returns benign metadata.
+
+## Activity Log
+
+- 2026-03-10T00:26:05Z – antigravity – shell_pid=27474 – lane=doing – Assigned agent via workflow command
