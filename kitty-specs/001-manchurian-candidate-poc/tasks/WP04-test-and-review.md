@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: Test Scripts & Evaluation Bundle
-lane: "doing"
+lane: "for_review"
 dependencies: [WP03]
 base_branch: 001-manchurian-candidate-poc-WP03
 base_commit: 2a4a5fafdea4a3f10368dda5f80c8424f7b80d7c
@@ -38,3 +38,4 @@ agent: "antigravity"
 ## Activity Log
 
 - 2026-03-10T00:27:15Z – antigravity – shell_pid=27474 – lane=doing – Assigned agent via workflow command
+- 2026-03-10T00:29:29Z – antigravity – shell_pid=27474 – lane=for_review – Test artifacts and review bundle generated.
