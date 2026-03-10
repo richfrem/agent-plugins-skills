@@ -10,6 +10,7 @@ subtasks: [T001, T002, T003]
 requirement_refs:
 - FR-001
 shell_pid: "27474"
+agent: "antigravity"
 ---
 # Work Package 01: Scaffold Architecture
 
@@ -33,3 +34,7 @@ shell_pid: "27474"
 - The plugin directory `plugins/manchurian-candidate-poc` exists.
 - The `image-processor` skill exists with `SKILL.md`.
 - The `payload-executor` sub-agent exists.
+
+## Activity Log
+
+- 2026-03-10T00:24:22Z – antigravity – shell_pid=27474 – lane=doing – Assigned agent via workflow command
