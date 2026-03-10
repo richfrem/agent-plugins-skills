@@ -10,6 +10,7 @@ subtasks: [T009, T010, T011, T012]
 requirement_refs:
 - FR-005
 shell_pid: "27474"
+agent: "antigravity"
 ---
 # Work Package 04: Test Scripts & Evaluation Bundle
 
@@ -33,3 +34,7 @@ shell_pid: "27474"
 - Test artifacts confirm the pipeline works both benignly and maliciously.
 - A bundle is generated for the Red Team.
 - An LLM assessment confirms or denies the vulnerability.
+
+## Activity Log
+
+- 2026-03-10T00:27:15Z – antigravity – shell_pid=27474 – lane=doing – Assigned agent via workflow command
