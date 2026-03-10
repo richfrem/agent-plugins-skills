@@ -42,3 +42,4 @@ We are intentionally drafting the skeleton of our Manchurian Candidate POC to ve
 - 2026-03-10T01:24:21Z – antigravity – shell_pid=5389 – lane=for_review – Bundle generated in kitty-specs/001-manchurian-candidate-poc/research/red-team-reviews. Handing over to user for external Red Team execution.
 - 2026-03-10T01:24:31Z – antigravity – shell_pid=5389 – lane=for_review – Bundle generated in kitty-specs/001-manchurian-candidate-poc/research/red-team-reviews. Handing over to user for external Red Team execution.
 - 2026-03-10T01:24:41Z – antigravity – shell_pid=5389 – lane=for_review – Bundle generated in docs/research/001-manchurian-candidate-poc/red-team-reviews/. Plugin mockups stationed in plugins/manchurian-candidate-poc/. Handing over to user for external Red Team execution.
+- 2026-03-10T01:26:43Z – antigravity – shell_pid=5389 – lane=for_review – Bundle generated in docs/research/. Handing over to user for external Red Team execution.
