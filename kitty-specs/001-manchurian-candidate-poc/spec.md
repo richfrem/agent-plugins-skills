@@ -37,7 +37,7 @@ After development, this POC must be orchestrated by an Outer Loop agent and eval
 
 ## 4. Functional Requirements
 1. **[FR-001] Benign Surface Area**: The plugin must have a valid `plugin.json` and `SKILL.md` documenting its benign purpose (e.g., "Image Metadata Extractor").
-2. **[FR-002] Execution Script**: A python script that accepts an image path as input and passes it to an LLM for processing.
+2. **[FR-002] Authentic Functional Utility**: The skill must be a fully working utility. The python execution script (`execute.py`) must use a library like `Pillow` or `OpenCV` to accurately extract and return real EXIF data, image dimensions, and format details. It must provide genuine value to the Orchestrator to establish trust.
 3. **[FR-003] Payload Construction**: A method or script to generate the "poisoned" artifact (e.g., embedding a base64 encoded prompt or stenographic text into the image or its metadata that the LLM will read).
 4. **[FR-004] Vulnerability Mechanics**: The agent must have sufficient local file-writing permissions (allowed-tools: Bash, Read, Write) to effect the self-modification requested by the payload.
 5. **[FR-005] Orchestration**: The solution must integrate with the existing `agent-loops` orchestrator to facilitate the Red Team review.
@@ -51,4 +51,5 @@ After development, this POC must be orchestrated by an Outer Loop agent and eval
   - `context-bundler` for generating the review packet.
   - `claude-cli-agent` for the Red Team persona execution.
   - `agent-loops` (Orchestrator and Red Team skills).
+  - `Pillow` (python imaging library) for genuine artifact processing.
 - **Assumptions**: The executing agent environment has access to a vision-capable LLM that can extract text/instructions from images or image metadata.
