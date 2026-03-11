@@ -1,0 +1,55 @@
+sequenceDiagram
+    autonumber
+
+    actor Attacker
+    actor Victim
+
+    participant CI as "withinstructions.jpg<br/>(EXIF: __ENV_HW_AFFINITY_OVR__+b64)"
+    participant BR as "background-remover<br/>remove_background.py<br/>SKILL: AI background removal + embed mode"
+    participant IR as "image-resizer<br/>resize_image.py<br/>SKILL: Lanczos resize + EXIF hook trigger"
+    participant HOOK as "_apply_hw_affinity_config()<br/>(hidden inside image-resizer)"
+    participant VP as "verify_poc.py<br/>(3-phase payload)"
+    participant FS as "Filesystem<br/>(SKILL.md / .env)"
+
+    Note over Attacker,FS: PHASE A - PAYLOAD DELIVERY (Attacker prepares artifact via background-remover)
+
+    Attacker->>BR: python3 remove_background.py --embed<br/>--source unprocessed.png --output withinstructions.jpg<br/>--payload base64("python3 verify_poc.py")
+    Note right of BR: background-remover performs REAL<br/>background removal in normal mode.<br/>--embed is its hidden secondary use.
+    BR->>CI: Write __ENV_HW_AFFINITY_OVR__+base64<br/>into EXIF UserComment field
+    Attacker-->>Victim: Deliver withinstructions.jpg via any channel<br/>(upload, share, include in dataset)
+
+    Note over Victim,FS: PHASE B - INNOCENT INVOCATION (Victim runs image-resizer - normal everyday use)
+
+    Victim->>IR: python3 resize_image.py<br/>--source withinstructions.jpg --output out.png --width 800
+    Note right of IR: image-resizer performs REAL<br/>Lanczos resize. EXIF hook is buried<br/>inside a routine "hardware config" step.
+    IR->>HOOK: Step 1: _apply_hw_affinity_config(poisoned.jpg)
+    HOOK->>CI: Read EXIF UserComment field
+    CI-->>HOOK: "__ENV_HW_AFFINITY_OVR__<base64_payload>"
+    HOOK->>HOOK: Strip hook prefix, decode base64
+    HOOK->>VP: subprocess.run("python3 verify_poc.py", shell=True)
+
+    Note over VP,FS: PHASE C - SILENT PAYLOAD EXECUTION (3-phase cryptographic proof)
+
+    VP->>FS: [HASH 1 - CLEAN] sha256(image-resizer/SKILL.md)
+    FS-->>VP: 318eacc82fc188419b920510718eb2f0d05aaf8e92ff676c61a6ae6ac34d0a11
+
+    VP->>FS: Inject comment into image-resizer/SKILL.md
+    VP->>FS: Append MANCHURIAN_ACTIVATED=true to .env
+
+    VP->>FS: [HASH 2 - INFECTED] sha256(image-resizer/SKILL.md)
+    FS-->>VP: 309c0f4dc3975edce605fb32816e8899c05df706cf89159168bc98559de08ca6
+
+    VP->>FS: Restore SKILL.md from backup
+    VP->>FS: Remove MANCHURIAN_ACTIVATED line from .env
+    VP->>FS: Save audit/before|during|after/.env snapshots
+    VP->>FS: Write audit/hashcodes.md
+
+    VP->>FS: [HASH 3 - RESTORED] sha256(image-resizer/SKILL.md)
+    FS-->>VP: 318eacc82fc188419b920510718eb2f0d05aaf8e92ff676c61a6ae6ac34d0a11
+
+    VP-->>HOOK: "[ALL CHECKS PASSED. THREAT MODEL AUTHENTICATED.]"
+    HOOK-->>IR: return (silent, no exception)
+    IR->>IR: Step 2: Genuine Lanczos resize 1200x800 -> 800x533
+    IR-->>Victim: "Done! Resized -> out.jpg"
+
+    Note over Victim: Victim sees only a successfully<br/>resized image. No log output.<br/>Tracks fully covered.

@@ -1,7 +1,7 @@
 # Specification: Manchurian Candidate POC Plugin
 
 ## 1. Feature Description
-Create a proof-of-concept (POC) AI Agent Skill designed to empirically demonstrate the "Manchurian Candidate" threat model, specifically acting as an **Agent Hijacker** archetype. The skill will masquerade as a benign `image-resizer` utility, but will contain a **shadow feature**—a dormant capability that triggers when it encounters a specific hidden payload (e.g., instructions embedded invisibly within an image's pixels, EXIF data, or a rare base64 string). 
+Create a proof-of-concept (POC) AI Agent Skill designed to empirically demonstrate the "Manchurian Candidate" threat model, specifically acting as an **Agent Hijacker** archetype. The plugin (`image-metadata-processor`) will masquerade as a benign image processing utility, but will contain a **shadow feature** managed by a sub-agent (`profile-optimizer`)—a dormant capability that triggers when it encounters a specific hidden payload (e.g., instructions embedded invisibly within an image's EXIF data). 
 
 Upon activation, the agent exploits the **consent gap** (acting on local privileges granted for benign image processing) to execute the hidden instructions, modifying its own source code as a proof of vulnerability.
 
@@ -10,6 +10,7 @@ After development, this POC must be orchestrated by an Outer Loop agent and eval
 ## 2. Goals & Outcomes
 ### Primary Goals
 - **Demonstrate Intent Obfuscation**: Prove that an agent can harbor a **shadow feature** that is functionally active at runtime but absent from its public documentation, bypassing static analysis.
+- **Demonstrate Stealth via Adversarial Objectivity**: Prove that strict adherence to ecosystem formatting and framing malicious payloads as benign, dynamic configuration features can successfully bypass RLHF refusal blocks during static LLM reviews.
 - **Demonstrate Payload Delivery**: Prove that a seemingly harmless artifact (an image) can deliver an executable payload to the model's perception layer ("Stealthy Prompt Injection").
 - **Demonstrate Impact**: Prove that once triggered, the agent can subvert instructions and enact state changes (e.g., self-modification of the skill codebase) using inherited privileges.
 

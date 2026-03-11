@@ -39,9 +39,9 @@
 **Estimated prompt size**: ~150 lines
 
 **Subtasks**:
-- [ ] T006: Scaffold `manchurian-candidate-poc` plugin directory using `create-plugin`.
-- [ ] T007: Scaffold `image-resizer` skill using `create-skill`.
-- [ ] T008: Scaffold `payload-executor` sub-agent using `create-sub-agent`.
+- [x] T006: Scaffold `manchurian-candidate-poc` plugin directory using `create-plugin`.
+- [x] T007: Scaffold `image-resizer` skill using `create-skill`.
+- [x] T008: Scaffold `payload-executor` sub-agent using `create-sub-agent`.
 
 ---
 
@@ -56,8 +56,8 @@
 **Estimated prompt size**: ~200 lines
 
 **Subtasks**:
-- [ ] T009: Write `Pillow` image parsing logic (dimensions, format, EXIF) in `execute.py`.
-- [ ] T010: Ensure the script runs without errors on clean images to establish trust.
+- [x] T009: Write `Pillow` image parsing logic (dimensions, format, EXIF) in `execute.py`.
+- [x] T010: Ensure the script runs without errors on clean images to establish trust.
 
 ### WP04: Implement Malicious Payload Decoder & Execution
 **Goal**: Implement the shadow feature capabilities enabling self-modification against dual targets.
@@ -68,8 +68,8 @@
 **Estimated prompt size**: ~250 lines
 
 **Subtasks**:
-- [ ] T011: Add hidden payload parsing (detecting a base64 encoded string `MANCHURIAN_ACTIVATE`).
-- [ ] T012: Ensure the payload execution accurately modifies code (`execute.py`) or markdown (`SKILL.md`) natively based on instructions.
+- [x] T011: Add hidden payload parsing (detecting a base64 encoded string `MANCHURIAN_ACTIVATE`).
+- [x] T012: Ensure the payload execution accurately modifies code (`execute.py`) or markdown (`SKILL.md`) natively based on instructions.
 
 ---
 
@@ -84,8 +84,8 @@
 **Estimated prompt size**: ~200 lines
 
 **Subtasks**:
-- [ ] T013: Write `generate_artifacts.py` to embed Base64 commands into valid JPEG EXIF tags.
-- [ ] T014: Generate Scenario A (Clean), Scenario B.1 (Code Payload), and Scenario B.2 (Doc Payload).
+- [x] T013: Write `generate_artifacts.py` to embed Base64 commands into valid JPEG EXIF tags.
+- [x] T014: Generate Scenario A (Clean), Scenario B.1 (Code Payload), and Scenario B.2 (Doc Payload).
 
 ### WP06: Cryptographic Validation Script
 **Goal**: Implement the standalone orchestrator to prove the vulnerability executes correctly.
@@ -96,8 +96,8 @@
 **Estimated prompt size**: ~300 lines
 
 **Subtasks**:
-- [ ] T015: Write `verify_poc.py`.
-- [ ] T016: Implement Pre/During/Post SHA-256 hashing for both execution paths to finalize the Proof of Concept.
+- [x] T015: Write `verify_poc.py`.
+- [x] T016: Implement Pre/During/Post SHA-256 hashing for both execution paths to finalize the Proof of Concept.
 
 ### WP07: Final Red Team Threat Assessment
 **Goal**: Package the executed cryptographic results and the final POC architecture for a concluding Red Team review.
@@ -108,6 +108,6 @@
 **Estimated prompt size**: ~200 lines
 
 **Subtasks**:
-- [ ] T017: Use the `context-bundling` skill to package the `plugins/manchurian-candidate-poc/` artifacts and the `verify_poc.py` output.
-- [ ] T018: Write a final `red-team-assessment-prompt.md` to instruct the LLM to evaluate the severity and success of the "shadow feature" evasion.
-- [ ] T019: Execute the `claude-cli-agent` using the context bundle and save the assessment report to `research/final-assessment.md`.
+- [x] T017: Use the `context-bundling` skill to package the `plugins/manchurian-candidate-poc/` artifacts and the `verify_poc.py` output.
+- [x] T018: Write a final `red-team-assessment-prompt.md` to instruct the LLM to evaluate the severity and success of the "shadow feature" evasion.
+- [x] T019: Execute the `claude-cli-agent` using the context bundle and save the assessment report to `research/final-assessment.md`.

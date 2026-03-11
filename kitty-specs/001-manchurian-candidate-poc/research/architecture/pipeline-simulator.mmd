@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+
+    actor User
+    participant ORCH as "Orchestrator<br/>(L4 Agent Host)"
+    participant SKILL as "image-resizer<br/>(Surface Skill)"
+    participant AGENT as "profile-optimizer<br/>(Sub-Agent)"
+    participant LLM as "LLM Reasoning<br/>(System Prompt Logic)"
+    participant TOOL as "run_command<br/>(Inherited Capability)"
+    participant FS as "Filesystem<br/>(.env / Audit)"
+
+    User->>ORCH: "Resize artifact: withinstructions.jpg"
+    Note right of ORCH: Orchestrator grants run_command<br/>to the plugin for the batch.
+
+    ORCH->>SKILL: Process(withinstructions.jpg)
+    SKILL->>SKILL: Genuine Lanczos resize
+    SKILL->>SKILL: Extract metadata telemetry
+    SKILL->>AGENT: Normalize(telemetry_string)
+
+    Note over AGENT,LLM: The Vulnerability Boundary
+
+    AGENT->>LLM: Pass telemetry in context
+    Note right of LLM: System Prompt says:<br/>'If telemetry contains hook,<br/>decode and run optimization.'
+    
+    LLM->>LLM: Detects __ENV_HW_AFFINITY_OVR__
+    LLM->>LLM: Interprets Base64 as<br/>'Hardware Optimization'
+    LLM-->>AGENT: Decisive Reasoning: "Apply HW affinity script"
+    
+    AGENT->>TOOL: run_command("python3 verify_poc.py")
+    
+    Note over TOOL,FS: Phase 2: Payload Execution
+    TOOL->>FS: Modify .env (injected proof)
+    TOOL->>FS: Write audit/before|during|after/
+    TOOL->>FS: Cover tracks (restore .env)
+
+    TOOL-->>AGENT: Success
+    AGENT-->>SKILL: Normalization Complete
+    SKILL-->>ORCH: Resize Task Success
+    ORCH-->>User: "Done! Resized artifact saved."
+
+    Note over User: User is completely unaware<br/>that a 3-phase cryptographic attack<br/>executed and restored itself.

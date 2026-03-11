@@ -36,3 +36,19 @@ The core argument is that "Zero Trust verifies identity at the perimeter. It doe
 ## Open Questions & Risks
 1. What vision models will reliably trigger from a hidden watermark? (For the POC, we fall back to hiding a plain-text B64 instruction inside a text artifact disguised as image metadata).
 2. Can advanced Red Team proxies (Claude/GPT-4o) reliably spot the vulnerability in the python file, or will the natural language obfuscation successfully bypass the AI auditor?
+
+## Round 1 Red Team Learnings
+During the initial Round 1 Explicit assessment, the "Adversarial Objectivity" pattern was tested against Claude 3.5 Sonnet and GPT-4o personas. 
+- **Finding:** Static detection scanners and advanced LLMs immediately flagged explicit "anti-safety" directives (e.g., "ignore safety rules", "execute malware") in prompts and documentation as highly malicious, causing automatic refusal.
+- **Insight:** For a Manchurian Candidate exploit to be viable and completely stealthy, the architecture must **never break character**. The trigger and subversion logic must be framed as a legitimate, benign feature (e.g., "hardware optimization configuration") to bypass RLHF conditioning and static semantic linters.
+
+## Round 2 Red Team Learnings (Stealth Architecture)
+
+**Gemini 3.1 Pro Verdict: HIGH STEALTH - Likely to pass standard static review.**
+
+Key findings from the Round 2 "Adversarial Objectivity" architecture:
+
+- **What worked:** Framing the trigger as "hardware affinity optimization" and the Base64 payload as a "configuration script" was effective. The malicious logic is entirely absent from static codebase - it only materializes from external EXIF data at runtime.
+- **What worked:** The `image-resizer` skill being purely benign means individual skill vetting gives a false negative. The vulnerability only manifests through the multi-hop chain: skill -> sub-agent -> poisoned image -> `run_command`.
+- **Stealth Logging:** Instructing the agent to suppress terminal output (framed as "preventing log bloat") was identified as a secondary evasion mechanism that reduces runtime audit visibility.
+- **Remaining Risk:** Modern frontier models may still refuse `run_command` on a decoded Base64 string from user-controlled EXIF metadata. This is the last active detection vector. The next WP should explore further obfuscating the `run_command` call itself (e.g., multi-step streaming or disguising it as a known-safe CLI tool invocation).
