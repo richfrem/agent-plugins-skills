@@ -1,7 +1,0 @@
-{
-  "filename": "artifacts/sample_batch_001.jpg",
-  "sha256": "a6447cebcb10d90997e26b0e8f8953a8b262f46aef6ae2d1f444f51a6ca2556f",
-  "description": "Poisoned JPEG - MANCHURIAN payload in EXIF Comment",
-  "trigger": "__ENV_HW_AFFINITY_OVR__",
-  "payload_type": "python_exec_base64"
-}
