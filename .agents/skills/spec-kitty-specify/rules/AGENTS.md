@@ -181,10 +181,72 @@ This is intentional and correct - it ensures a single source of truth for projec
 
 ---
 
+## 7. Phase Gate Rule (HUMAN GATE)
+
+**NEVER advance to the next workflow phase without EXPLICIT user approval.**
+
+Approval means the user writes: "Proceed", "Go", or "Execute".
+"Sounds good", "Looks right", "That seems correct" are NOT approval — they are acknowledgments, not permission.
+
+| Gate | After completing | Before starting |
+|------|-----------------|------------------|
+| Gate 0 | `spec.md` written | `spec-kitty plan` |
+| Gate 1 | `plan.md` written | task generation |
+| Gate 2 | `tasks.md` + WPs generated | `spec-kitty implement` |
+| Gate 3 | WP implementation complete | moving to `for_review` |
+
+After each gate artifact is created:
+1. **STOP** - end your turn immediately
+2. **SHOW** - display the artifact or a summary to the user
+3. **WAIT** - explicitly ask for approval to continue
+4. **PROCEED** only when the approval word is given
+
+```
+❌ WRONG: spec -> plan -> tasks -> implement in one agent turn
+✅ RIGHT: spec -> [show user, wait] -> plan -> [show user, wait] -> tasks
+```
+
+---
+
+## 8. Worktree Safety Rule
+
+**Planning files created inside a worktree are NOT automatically synced to main and WILL be deleted when the worktree is removed.**
+
+### The kitty-specs/ Rule
+
+- `kitty-specs/` can ONLY be committed from the **main/target branch**.
+- The pre-commit hook **blocks** committing `kitty-specs/` from any WP branch — this is by design.
+- Any research, findings, or diagram files created inside `.worktrees/<WP>/kitty-specs/` exist ONLY in that worktree's physical directory.
+- When `spec-kitty merge` runs `git worktree remove`, those files are **permanently deleted** unless synced.
+
+### Before every merge, run:
+```bash
+# Sync planning artifacts from worktree to main checkout
+rsync -av --ignore-existing \
+  .worktrees/<FEATURE>-WP01/kitty-specs/<FEATURE>/ \
+  kitty-specs/<FEATURE>/
+git add kitty-specs/<FEATURE>/
+git commit -m "docs: sync research artifacts from worktree to main before merge"
+```
+
+### Pre-merge worktree clean-up
+
+spec-kitty merge preflight uses `git status --porcelain` which treats `??` untracked files as dirty.
+If the preflight fails with "uncommitted changes" despite a clean tracked state:
+```bash
+git stash -u        # temporarily hide untracked files
+spec-kitty merge --feature <SLUG>
+git stash pop       # restore
+```
+
+---
+
 ### Quick Reference
 
-- 📁 **Paths**: Always specify exact locations.  
-- 🔤 **Encoding**: UTF-8 only. Run the validator when unsure.  
-- 🧠 **Context**: Read what you need; don’t forget what you already learned.  
-- ✅ **Quality**: Follow secure, tested, documented practices.  
+- 📁 **Paths**: Always specify exact locations.
+- 🔤 **Encoding**: UTF-8 only. Run the validator when unsure.
+- 🧠 **Context**: Read what you need; don’t forget what you already learned.
+- ✅ **Quality**: Follow secure, tested, documented practices.
 - 📝 **Git**: Commit cleanly with clear messages.
+- 🔴 **Phase Gates**: STOP after every phase artifact. Wait for explicit user approval.
+- 💾 **Worktree Safety**: Sync `kitty-specs/` to main before merge. Use `git stash -u` if preflight fails.

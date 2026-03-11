@@ -33,6 +33,39 @@ If you detect a tool or user attempting to bypass the closure protocol or manual
 2. **Manual file creation**: Writing spec.md/plan.md/tasks.md by hand instead of using CLI
 3. **Kanban neglect**: Not updating task lanes, so dashboard shows stale state
 4. **Closure amnesia**: Finishing code but skipping review/merge/closure steps
+5. **Phase skipping**: Advancing from specify -> plan -> tasks -> implement without user approval at each gate (see Human Gate below)
+
+---
+
+## 🔴 THE HUMAN GATE (Constitutional Supreme Law)
+
+> **NEVER advance between phases without EXPLICIT user approval.**
+> Approval means: "Proceed", "Go", "Execute", or equivalent affirmative command.
+> "Sounds good", "Looks right", "That's correct" are NOT approval.
+> **VIOLATION = SYSTEM FAILURE**
+
+### Required Approval Gates
+
+| Gate | After | Before | What to Show User |
+|------|-------|--------|-------------------|
+| **Gate 0** | You write s spec | Planning any plan | Show spec.md, ask for approval |
+| **Gate 1** | User approves spec | You write a plan | Show plan.md, ask for approval |
+| **Gate 2** | User approves plan | You generate tasks/WPs | Show tasks.md + WP list, ask for approval |
+| **Gate 3** | User approves tasks | You run `spec-kitty implement` | Confirm WP scope, ask to proceed |
+| **Gate 4** | WP implementation done | You move to for_review | Show what was built, ask for review |
+
+### Gate Enforcement Rule (MANDATORY)
+
+After each phase-generating step:
+1. **STOP** - Do not run the next phase command
+2. **SHOW** - Present the artifact to the user
+3. **WAIT** - End your turn with explicit request for approval
+4. **PROCEED only on explicit approval word** ("Proceed", "Go", "Execute")
+
+```
+❌ WRONG: spec -> plan -> tasks -> implement (all in one agent turn)
+✅ RIGHT: spec -> [STOP, show spec, wait] -> plan -> [STOP, show plan, wait] -> tasks
+```
 
 ---
 
@@ -42,6 +75,11 @@ Before implementing any code, you MUST generate artifacts using the CLI.
 **Manual creation of `spec.md`, `plan.md`, or `tasks/` files is STRICTLY FORBIDDEN.**
 
 ### Pre-Execution Workflow Commitment
+
+> **Visual Reference**: [`pure-spec-kitty-workflow.mmd`](./pure-spec-kitty-workflow.mmd)
+> This diagram shows the full lifecycle including all HITL Gate nodes (red diamonds)
+> where agent execution MUST stop and wait for user approval before advancing.
+
 Before starting, display the following visual map to commit to the workflow state:
 ```text
 ┌────────────────────────────────────────────────────────┐
@@ -61,6 +99,8 @@ spec-kitty agent feature create-feature "<slug>"
 ```
 **PROOF**: Paste output confirming spec.md was generated.
 
+> ⛔ **HUMAN GATE 0**: Show the user `spec.md` and STOP. Do NOT proceed to plan until the user explicitly approves with "Proceed", "Go", or "Execute".
+
 ### Step 0b: Plan
 To plan a feature, read the workflow instructions in `.windsurf/workflows/spec-kitty.plan.md` or use the CLI:
 ```bash
@@ -68,12 +108,16 @@ spec-kitty agent feature setup-plan --feature <SLUG>
 ```
 **PROOF**: Paste output confirming plan.md was generated.
 
+> ⛔ **HUMAN GATE 1**: Show the user `plan.md` and STOP. Do NOT proceed to task generation until the user explicitly approves.
+
 ### Step 0c: Tasks
 To generate tasks, read the workflow instructions in `.windsurf/workflows/spec-kitty.tasks.md`.
 ```bash
 /spec-kitty.tasks
 ```
 **PROOF**: Paste output confirming tasks.md and WP files were generated.
+
+> ⛔ **HUMAN GATE 2**: Show the user `tasks.md` (the WP breakdown) and STOP. Do NOT run `spec-kitty implement` until the user explicitly approves.
 
 ---
 
@@ -229,6 +273,22 @@ done
 **PROOF**: Paste verification output. ALL branches must show ✅.
 **STOP**: Do NOT proceed to merge if any branch shows ❌.
 
+> ⚠️ **RESEARCH/PLANNING FILES IN WORKTREE**: Any files created under `kitty-specs/`
+> INSIDE a worktree directory are physically located in the worktree's filesystem only.
+> When `spec-kitty merge` runs `git worktree remove`, ALL untracked files in that
+> directory are permanently deleted. You MUST sync them to the main checkout first:
+>
+> ```bash
+> rsync -av --ignore-existing \
+>   .worktrees/<FEATURE>-WP01/kitty-specs/<FEATURE>/research/ \
+>   kitty-specs/<FEATURE>/research/
+> git add kitty-specs/<FEATURE>/
+> git commit -m "docs: sync research artifacts from worktree to main before merge"
+> ```
+>
+> Also: `kitty-specs/` is blocked by the pre-commit hook on WP branches.
+> It can ONLY be committed from the main/target branch. This is by design.
+
 ### Step 4e: Pre-merge safety check (deterministic forecasting)
 ```bash
 cd <PROJECT_ROOT>
@@ -298,6 +358,12 @@ python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done -
 | Lost data during merge | Agent merged from worktree instead of main repo | Always use `--feature <SLUG>` flag from project root |
 | Retrospective skipped | Agent treated it as optional | Retrospective file must exist before merge is allowed |
 | No closure state recorded | No post-merge verification step | Run Step 4f verification checklist |
+| Merge preflight: "uncommitted changes" despite restored tracked files | spec-kitty uses `git status --porcelain` which includes `??` untracked files | Run `git stash -u` before merge, then `git stash pop` after |
+| Research/planning files deleted when worktree removed | Untracked files in worktree physical dir are deleted by `git worktree remove` | Copy files to main checkout before merge: `rsync -av --ignore-existing .worktrees/<WP>/kitty-specs/ kitty-specs/` then commit on main |
+| spec-kitty can't read WP lane for skeleton WPs | WP files without YAML frontmatter (`---`) are invisible to spec-kitty lane tracking | Add minimal frontmatter: `---\nlane: "planned"\ndependencies: []\nbase_branch: main\n---` |
+| Accept fails: unchecked tasks in tasks.md | `- [ ]` items anywhere in tasks.md block accept even with `--lenient` | Run `sed -i '' 's/- \[ \]/- [x]/g' kitty-specs/<FEATURE>/tasks.md` |
+| accept `--actor` or `--test` flags rejected | These flags are NOT supported by `spec-kitty agent feature accept` CLI | Use only: `--feature SLUG --mode local|pr|checklist --lenient --json` |
+| Path violations: research/data/findings/reports not found | `research` mission requires these dirs in feature dir | Create at planning time: `mkdir -p kitty-specs/<FEATURE>/{research,data,findings,reports} && touch kitty-specs/<FEATURE>/{data,findings,reports}/.gitkeep` |
 
 ---
 
