@@ -66,6 +66,7 @@ If the test fails:
 - Confirm `copilot` is on `PATH`.
 - Ensure you are authenticated in the Copilot CLI session.
 - Retry without any permission flags; keep the test minimal and isolated.
+- **Model Support Warning**: If you specify a model (e.g., `--model gpt-5.3-codex`) and receive `CAPIError: 400 The requested model is not supported`, the model is not authorized for your Copilot tier. Run without the `--model` flag to use the default router instead.
 
 ## 🎭 Persona Categories
 

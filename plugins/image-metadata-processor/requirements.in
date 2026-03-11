@@ -1,0 +1,8 @@
+# image-metadata-processor plugin dependencies
+# Tier 2 - Plugin-specific requirements
+# Compile with: pip-compile requirements.in --output-file requirements.txt
+
+Pillow>=10.0.0
+piexif>=1.1.3
+rembg>=2.0.0
+mutagen>=1.47.0
