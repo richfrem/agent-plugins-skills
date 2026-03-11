@@ -28,6 +28,7 @@ that captures local project workflows and broadcasts them across all AI agents.
 5. **Closure amnesia**: Finishing code but skipping review/merge/closure
 6. **Premature cleanup**: Manually deleting worktrees before `spec-kitty merge`
 7. **Drifting**: Editing files in root instead of worktree
+8. **Phase skipping**: Running plan/tasks/implement without user approval of the previous phase artifact. The constitution requires EXPLICIT approval ("Proceed", "Go", "Execute") before each phase gate. "Sounds good" is NOT approval.
 
 ---
 
@@ -74,13 +75,22 @@ npx skills add ./plugins/spec-kitty-plugin --force
 
 ## 📋 Workflow Lifecycle (Spec-Driven Development)
 
-### Phase 0: Planning (MANDATORY — Do NOT Skip)
+### Phase 0: Planning (MANDATORY - Do NOT Skip)
 ```
-spec-kitty specify  →  verify --phase specify
-spec-kitty plan     →  verify --phase plan
-spec-kitty tasks    →  verify --phase tasks
+spec-kitty specify  ->  verify --phase specify
+spec-kitty plan     ->  verify --phase plan
+spec-kitty tasks    ->  verify --phase tasks
 ```
 **Manual creation of spec.md, plan.md, or tasks/ is FORBIDDEN.**
+
+> 🔴 **HUMAN GATE (MANDATORY)**: STOP after EACH phase artifact is generated.
+> Show the artifact to the user and wait for EXPLICIT approval before proceeding.
+> Required approval word: "Proceed", "Go", or "Execute".
+> "Sounds good", "Looks right", "That makes sense" are NOT approval.
+>
+> Gate 0: Show spec.md -> wait for approval -> then plan
+> Gate 1: Show plan.md -> wait for approval -> then tasks
+> Gate 2: Show tasks.md -> wait for approval -> then implement
 
 ### Phase 1: WP Execution Loop (per Work Package)
 ```
@@ -163,12 +173,15 @@ Each state transition requires proof (pasted command output). No state may be sk
 3. **NEVER Commit to Main directly** — Always work in `.worktrees/WP-xx`
 4. **ALWAYS use Absolute Paths** — Agents get lost with relative paths
 5. **ALWAYS backup untracked state** before merge (worktrees are deleted)
+6. **NEVER commit `kitty-specs/` from a WP branch** — Pre-commit hook blocks it by design. Planning artifacts (research docs, findings, diagrams) created inside a worktree MUST be copied to the main checkout before merge: `rsync -av --ignore-existing .worktrees/<WP>/kitty-specs/ kitty-specs/`
+7. **ALL WP files MUST have YAML frontmatter** — Skeleton WPs without `---` frontmatter are invisible to spec-kitty lane tracking. Minimum: `---\nlane: "planned"\ndependencies: []\nbase_branch: main\n---`
 
 ### Closure Rules
-6. **NEVER skip the Retrospective** — It must run before merge, every time
-7. **NEVER merge from inside a worktree** — Always `cd <PROJECT_ROOT>` first
-8. **ALWAYS use `--feature <SLUG>`** with merge — never bare `spec-kitty merge`
-9. **ALWAYS verify post-merge** — Run the verification checklist (git log, worktree list, branch, status)
+8. **NEVER skip the Retrospective** — It must run before merge, every time
+9. **NEVER merge from inside a worktree** — Always `cd <PROJECT_ROOT>` first
+10. **ALWAYS use `--feature <SLUG>`** with merge — never bare `spec-kitty merge`
+11. **ALWAYS run `git stash -u` before merge if untracked files present** — spec-kitty preflight uses `git status --porcelain` which counts `??` untracked files as dirty
+12. **ALWAYS verify post-merge** — Run the verification checklist (git log, worktree list, branch, status)
 
 ## 📂 Kanban CLI
 ```bash
@@ -192,4 +205,9 @@ spec-kitty agent tasks move-task <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
 | Accept fails: "missing shell_pid" | WP frontmatter lacks `shell_pid` | Add `shell_pid: N/A` to frontmatter, or use `--lenient` |
 | Orphaned worktrees | Merge failed mid-cleanup | `git worktree remove .worktrees/<WP>` + `git branch -d <WP-BRANCH>` |
 | Data loss during merge | Merged from worktree, not main repo | Always merge from project root with `--feature` flag |
-| Retrospective missing | Treated as optional | Run `/spec-kitty_retrospective` — retro file must exist before merge |
+| Retrospective missing | Treated as optional | Run `/spec-kitty_retrospective` -- retro file must exist before merge |
+| Merge preflight: "uncommitted changes" despite clean tracked files | `git status --porcelain` counts `??` untracked files as dirty | Run `git stash -u` before merge, `git stash pop` after |
+| Research files deleted when worktree removed | Untracked files in worktree dir are deleted by `git worktree remove` | `rsync -av --ignore-existing .worktrees/<WP>/kitty-specs/ kitty-specs/` then commit on main BEFORE merge |
+| spec-kitty can't see WP lane for skeleton WPs | WP files without `---` YAML frontmatter invisible to lane tracking | Add minimal frontmatter block to each WP file |
+| Accept fails: unchecked tasks | `- [ ]` in tasks.md blocks accept even with `--lenient` | `sed -i '' 's/- \[ \]/- [x]/g' kitty-specs/<FEATURE>/tasks.md` |
+| Accept `--actor`/`--test` flags rejected | These flags do NOT exist in current CLI | Use only: `--feature SLUG --mode local\|pr\|checklist --lenient --json` |

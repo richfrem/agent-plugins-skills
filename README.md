@@ -50,6 +50,7 @@ npx skills list
 npx skills remove skill-name
 
 # Remove all skills from all agents
+rm -rf .agents/
 npx skills remove --all -y
 
 # Install a specific local plugin

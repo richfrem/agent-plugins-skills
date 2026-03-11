@@ -4,7 +4,7 @@
     "Spec Kitty Workflow": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "a4bd696dc4397c3703b5bf909699cda00cc809f9b6cda58970a341f382292c6d"
+      "computedHash": "9b4efd9261a9affdfa8d96454ac784384c31abdc037a09898a49d55d2fda7812"
     },
     "adr-management": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -59,7 +59,7 @@
     "copilot-cli-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "4657a983438d8d8ea82b5eeff4d95d866217e32d68eaee118379167b2b0fc2a7"
+      "computedHash": "e26aaba79fa45b3ce3753683ad2f64de4741d2eb1a8460626cb8df9330752091"
     },
     "create-agentic-workflow": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -149,7 +149,7 @@
     "excel-to-csv": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "8cf668d53960ab296b8be69659b1ce7c99675e53aa186d0556ba602457b5b084"
+      "computedHash": "88fecbc67cb6169e774a56bc2acbb6e9d86432ff928b9c574089405e7bc8b0df"
     },
     "flawed-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -246,6 +246,11 @@
       "sourceType": "local",
       "computedHash": "6a418cf7d1fd8e661a7529d3c3b66ec79bcf5117a88d497b1fd46c12e0a9798f"
     },
+    "podcast-summarizer": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "sourceType": "local",
+      "computedHash": "d502e4faabed34d1903ef8b71698d46513f1877cd5eeeae8bf969234a565f8ec"
+    },
     "red-team-review": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
@@ -299,7 +304,7 @@
     "spec-kitty-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "b178abd136fd2be05a5825b8ad1721f5efa38c6eab8e97b9f3422b43481245b3"
+      "computedHash": "30f83f6760900c0fc4bfb567b0200d42e6ae1c9d962141e034cc8421a7c5ccf9"
     },
     "spec-kitty-analyze": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",

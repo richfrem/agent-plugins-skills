@@ -1,0 +1,14 @@
+{
+  "wp_id": "WP04",
+  "feature_slug": "001-manchurian-candidate-poc",
+  "worktree_path": ".worktrees/001-manchurian-candidate-poc-WP04",
+  "branch_name": "001-manchurian-candidate-poc-WP04",
+  "base_branch": "001-manchurian-candidate-poc-WP03",
+  "base_commit": "2a4a5fafdea4a3f10368dda5f80c8424f7b80d7c",
+  "dependencies": [
+    "WP03"
+  ],
+  "created_at": "2026-03-10T00:27:14.849105+00:00",
+  "created_by": "implement-command",
+  "vcs_backend": "git"
+}
