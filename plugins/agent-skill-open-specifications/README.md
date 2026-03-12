@@ -30,3 +30,10 @@ This repository aligns with and draws massive inspiration from a neutral open ec
 4.  **Anthropic Claude Code Plugins**: Specifically the `.claude-plugin` repository structure, `hooks/hooks.json` lifecycle methods, and `.mcp.json` dynamic context integrations.
 
 Our specifications enforce a unified "Scaffolder V2" paradigm that perfectly harmonizes these open standards into a single, aggressively compatible meta-structure spanning Antigravity, GitHub Copilot, Gemini, Roo Code, and Claude Code.
+
+## Plugin Components
+
+### Skills
+- `ecosystem-authoritative-sources`
+- `ecosystem-standards`
+

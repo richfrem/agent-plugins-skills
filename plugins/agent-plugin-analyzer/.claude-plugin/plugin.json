@@ -3,18 +3,8 @@
     "version": "2.0.0",
     "description": "Systematically analyze agent plugins and skills to extract design patterns, architectural decisions, and reusable techniques. Translates raw analysis into concrete improvement recommendations.",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
-    "license": "MIT",
-    "skills": [
-        "analyze-plugin",
-        "audit-plugin-l5",
-        "synthesize-learnings"
-    ],
-    "scripts": [
-        "scripts/inventory_plugin.py"
-    ],
-    "dependencies": []
+    "license": "MIT"
 }

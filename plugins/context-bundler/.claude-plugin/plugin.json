@@ -3,8 +3,7 @@
     "version": "2.0.0",
     "description": "Bundle source files and documentation into single-file LLM context packages (Markdown or ZIP archives) for portable AI agent distribution.",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
@@ -14,16 +13,5 @@
         "llm",
         "packaging",
         "agent-tools"
-    ],
-    "skills": [
-        "context-bundling",
-        "zip-bundling"
-    ],
-    "scripts": [
-        "scripts/bundle.py",
-        "scripts/bundle_zip.py",
-        "scripts/manifest_manager.py",
-        "scripts/path_resolver.py"
-    ],
-    "dependencies": []
+    ]
 }

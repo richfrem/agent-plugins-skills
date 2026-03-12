@@ -34,3 +34,27 @@ agent-scaffolders/
 └── templates/
     └── (5 Jinja templating files)
 ```
+
+## Plugin Components
+
+### Skills
+- `audit-plugin`
+- `create-agentic-workflow`
+- `create-azure-agent`
+- `create-docker-skill`
+- `create-github-action`
+- `create-hook`
+- `create-legacy-command`
+- `create-mcp-integration`
+- `create-plugin`
+- `create-skill`
+- `create-stateful-skill`
+- `create-sub-agent`
+
+### Scripts
+- `skills/audit-plugin/scripts/audit.py`
+- `scripts/scaffold.py`
+
+### Dependencies
+- `context-bundler`
+

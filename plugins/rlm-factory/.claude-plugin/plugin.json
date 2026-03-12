@@ -3,8 +3,7 @@
     "description": "Recursive Language Model factory \u2014 distill repository files into semantic summaries using Ollama for instant context retrieval",
     "version": "2.0.0",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
@@ -36,27 +35,5 @@
         "models": [
             "granite3.2:8b (default)"
         ]
-    },
-    "skills": [
-        "ollama-launch",
-        "rlm-cleanup-agent",
-        "rlm-curator",
-        "rlm-distill-agent",
-        "rlm-distill-ollama",
-        "rlm-init",
-        "rlm-search"
-    ],
-    "scripts": [
-        "scripts/inventory.py",
-        "scripts/rlm_config.py",
-        "skills/rlm-cleanup-agent/scripts/cleanup_cache.py",
-        "skills/rlm-curator/scripts/debug_rlm.py",
-        "skills/rlm-distill-agent/scripts/inject_summary.py",
-        "skills/rlm-distill-ollama/scripts/distiller.py",
-        "skills/rlm-search/scripts/query_cache.py"
-    ],
-    "dependencies": [
-        "vector-db",
-        "agent-loops"
-    ]
+    }
 }

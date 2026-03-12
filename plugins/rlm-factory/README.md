@@ -184,3 +184,28 @@ rlm-factory/
 ## License
 
 MIT
+
+## Plugin Components
+
+### Skills
+- `ollama-launch`
+- `rlm-cleanup-agent`
+- `rlm-curator`
+- `rlm-distill-agent`
+- `rlm-distill-ollama`
+- `rlm-init`
+- `rlm-search`
+
+### Scripts
+- `scripts/inventory.py`
+- `scripts/rlm_config.py`
+- `skills/rlm-cleanup-agent/scripts/cleanup_cache.py`
+- `skills/rlm-curator/scripts/debug_rlm.py`
+- `skills/rlm-distill-agent/scripts/inject_summary.py`
+- `skills/rlm-distill-ollama/scripts/distiller.py`
+- `skills/rlm-search/scripts/query_cache.py`
+
+### Dependencies
+- `vector-db`
+- `agent-loops`
+

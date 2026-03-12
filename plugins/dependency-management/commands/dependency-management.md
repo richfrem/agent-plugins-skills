@@ -1,0 +1,1 @@
+../skills/dependency-management/SKILL.md

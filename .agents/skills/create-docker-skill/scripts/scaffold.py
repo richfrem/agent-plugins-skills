@@ -86,12 +86,16 @@ def create_plugin(name, path, iteration=None):
                 return f.read()
         return None
 
-    # 1. Standard Plugin Manifest
+    # 1. Standard Plugin Manifest (Authoritative Schema)
+    # CRITICAL: No `skills`, `scripts`, or `commands` arrays.
+    # Skills are auto-discovered from skills/*/SKILL.md directory structure.
     manifest = {
-        "version": "1.0",
         "name": name,
-        "author": "Generated via Agent Scaffolder",
-        "description": f"The {name} plugin."
+        "version": "0.1.0",
+        "description": f"The {name} plugin.",
+        "author": {
+            "name": "Generated via Agent Scaffolder"
+        }
     }
     with open(os.path.join(claude_plugin_dir, "plugin.json"), "w") as f:
         json.dump(manifest, f, indent=4)

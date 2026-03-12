@@ -3,16 +3,12 @@
     "version": "1.0.0",
     "description": "Converts documents into word-by-word RSVP token streams with ORP (Optimal Recognition Point) alignment for speed reading. Supports .txt, .md, .pdf, and .docx input files.",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/Project_Sanctuary",
     "architecture": "standalone",
-    "skills": [
-        "rsvp-reading"
-    ],
     "agents": [
         "rsvp-comprehension-agent"
     ],
-    "dependencies": []
+    "license": "MIT"
 }

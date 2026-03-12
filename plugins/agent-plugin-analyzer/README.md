@@ -151,3 +151,14 @@ Take the analysis results and generate improvement recommendations for our scaff
 |-------|-----------|-----------------|
 | Round 1 | Gemini 3.1 Pro, Grok 4.2, GPT 5.3, Claude 4.6 Opus | Pattern governance, security layer, maturity model, self-audit |
 | Round 2 | GPT 5.3, Gemini 3.1 Pro, Grok 4.2, Claude Sonnet + Opus | Extract to references, test fixtures, score weights, LLM attack vectors |
+
+## Plugin Components
+
+### Skills
+- `analyze-plugin`
+- `audit-plugin-l5`
+- `synthesize-learnings`
+
+### Scripts
+- `scripts/inventory_plugin.py`
+

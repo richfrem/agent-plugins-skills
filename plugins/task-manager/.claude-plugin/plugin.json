@@ -3,8 +3,7 @@
     "description": "Lightweight kanban task board \u2014 directory-backed with zero dependencies. V2 enforces Kanban Sovereignty constraints preventing manual task file edits.",
     "version": "2.0.0",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
@@ -13,8 +12,5 @@
         "kanban",
         "todo",
         "project-management"
-    ],
-    "commands_dir": "commands",
-    "skills_dir": "skills",
-    "dependencies": []
+    ]
 }

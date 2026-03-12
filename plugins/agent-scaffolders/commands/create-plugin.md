@@ -1,0 +1,1 @@
+../skills/create-plugin/SKILL.md

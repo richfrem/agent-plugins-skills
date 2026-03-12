@@ -1,0 +1,1 @@
+../skills/hf-upload/SKILL.md

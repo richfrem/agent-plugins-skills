@@ -32,3 +32,12 @@ We align with the open ecosystem driving this architecture:
 - [Agent Skills Open Standard (agentskills.io)](https://agentskills.io/)
 - [Anthropic Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
 - [Microsoft Skills Repository](https://github.com/microsoft/skills)
+
+## Plugin Components
+
+### Skills
+- `coding-conventions-agent`
+
+### Dependencies
+- `tool-inventory`
+

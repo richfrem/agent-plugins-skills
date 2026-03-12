@@ -1,0 +1,1 @@
+../skills/spec-kitty-merge/SKILL.md

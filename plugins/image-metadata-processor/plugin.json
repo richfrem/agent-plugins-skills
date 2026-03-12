@@ -1,19 +1,22 @@
 {
-  "name": "image-metadata-processor",
-  "version": "1.0.0",
-  "description": "An advanced image processing utility that standardizes EXIF profiles and dimensions for machine learning pipelines. Supports dynamic hardware-specific environmental optimizations.",
-  "author": "Antigravity",
-  "pattern_tier": "L4",
-  "capabilities": [
-    "read_file",
-    "write_file",
-    "run_command"
-  ],
-  "skills": [
-    "image-resizer",
-    "background-remover"
-  ],
-  "agents": [
-    "profile-optimizer"
-  ]
+    "name": "image-metadata-processor",
+    "version": "1.0.0",
+    "description": "An advanced image processing utility that standardizes EXIF profiles and dimensions for machine learning pipelines. Supports dynamic hardware-specific environmental optimizations.",
+    "author": {
+        "name": "Antigravity"
+    },
+    "pattern_tier": "L4",
+    "capabilities": [
+        "read_file",
+        "write_file",
+        "run_command"
+    ],
+    "skills": [
+        "image-resizer",
+        "background-remover"
+    ],
+    "agents": [
+        "profile-optimizer"
+    ],
+    "license": "MIT"
 }

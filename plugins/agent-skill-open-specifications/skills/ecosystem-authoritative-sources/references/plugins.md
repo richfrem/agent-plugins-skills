@@ -27,10 +27,69 @@ Plugins must follow a strict root-level structure:
 
 ## Installation Scopes
 `user` (global), `project` (team, `.claude/settings.json`), `local` (git-ignored), `managed` (read-only).
-- `description`: A summary displayed during installation/browsing.
-- `version`: Tracks releases using semantic versioning.
-- `author`: (Optional) Object containing `name` and `email`.
+
+## plugin.json Manifest Schema
+
+The manifest lives at `.claude-plugin/plugin.json` (hyphen, not underscore).
+
+**Required (only `name` is truly required):**
+```json
+{
+  "name": "plugin-name"
+}
+```
+
+**Full recommended manifest:**
+```json
+{
+  "name": "plugin-name",
+  "version": "0.1.0",
+  "description": "Brief explanation of plugin purpose",
+  "author": {
+    "name": "Author Name"
+  }
+}
+```
+
+**Optional metadata fields:** `homepage`, `repository`, `license`, `keywords`
+
+**Custom path overrides (supplements auto-discovery, does not replace it):**
+```json
+{
+  "commands": "./custom-commands",
+  "agents": ["./agents", "./specialized-agents"],
+  "hooks": "./config/hooks.json",
+  "mcpServers": "./.mcp.json"
+}
+```
+
+**Metadata Arrays (FORBIDDEN IN PLUGIN.JSON):**
+
+> **⚠️ WARNING: STRICT SCHEMA VALIDATION**
+> Claude Code uses extremely strict JSON schema validation for `plugin.json`. If you include unrecognized root-level properties (like `skills`, `scripts`, `dependencies`, `commands_dir`, etc.), it will silently fail to parse the plugin and **none** of your skills or agents will appear in the UI. 
+> 
+> You MUST NOT include these arrays in `plugin.json`. Instead, document your skills, scripts, and dependencies in the plugin's `README.md` file.
+
+**Schema rules:**
+- `name` must be kebab-case (lowercase, hyphens, no spaces)
+- `version` is semver - start at `0.1.0`
+- `author` is an object with a `name` field, NOT a string
+- No `author.url` field (not in spec)
+- No `commands_dir` or `skills_dir` fields (auto-discovered)
+
+## Portability and Discovery
+
+| Component | `npx skills add` (Universal) | Claude Code Native |
+|-----------|-------------------------------|-------------------|
+| `skills/` | Portable - installed everywhere | Discovered natively |
+| `agents/` | NOT installed by npx | Discovered natively |
+| `commands/` | NOT installed by npx | Discovered natively |
+
+**Key rule:** If you want something universally installable across all agents
+(Claude, Gemini, Copilot, Antigravity, Cursor, etc.), it MUST be a skill.
+Agents and commands are Claude Code-only constructs.
 
 ## Development & Usage
 - During local development, you load plugins using the `--plugin-dir` flag: `claude --plugin-dir ./my-first-plugin`.
 - Standalone `.claude/` configurations can be manually migrated to this plugin structure to enable sharing.
+

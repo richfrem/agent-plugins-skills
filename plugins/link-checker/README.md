@@ -108,3 +108,9 @@ link-checker/
 ## License
 
 MIT
+
+## Plugin Components
+
+### Skills
+- `link-checker-agent`
+

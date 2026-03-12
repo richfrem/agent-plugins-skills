@@ -13,3 +13,13 @@ This plugin provides the necessary skills and scripts to persist cognitive conti
 
 ## Usage
 These utilities are primarily invoked autonomously by the primary agent during the session closure configuration.
+
+## Plugin Components
+
+### Skills
+- `hf-init`
+- `hf-upload`
+
+### Scripts
+- `scripts/hf_config.py`
+

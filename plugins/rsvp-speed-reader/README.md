@@ -61,3 +61,9 @@ rsvp-speed-reader/
 │       └── examples/
 └── rsvp-speed-reader-architecture.mmd
 ```
+
+## Plugin Components
+
+### Skills
+- `rsvp-reading`
+

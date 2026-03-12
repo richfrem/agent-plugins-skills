@@ -20,3 +20,13 @@ mermaid-to-png/
 ├── README.md             # This documentation file
 └── mermaid-to-png-architecture.mmd # Mermaid visual architecture diagram
 ```
+
+## Plugin Components
+
+### Skills
+- `convert-mermaid`
+
+### Scripts
+- `scripts/convert.py`
+- `scripts/verify_png.py`
+

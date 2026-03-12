@@ -3,8 +3,7 @@
     "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
     "version": "2.0.0",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
@@ -25,9 +24,6 @@
         "embeddings",
         "ingest"
     ],
-    "commands_dir": "commands",
-    "skills_dir": "skills",
-    "dependencies": [],
     "runtime": {
         "python_deps": [
             "chromadb",

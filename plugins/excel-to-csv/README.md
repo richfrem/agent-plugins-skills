@@ -28,3 +28,13 @@ excel-to-csv/
 
 ## Usage
 The skill is invoked automatically. The agent will use the local `scripts/convert.py` to flatten your `.xlsx` data, and will immediately run the generated output through `scripts/verify_csv.py`. This strict L5 Delegated Constraint Loop ensures no jagged rows or corrupt headers are generated before the agent analyzes the tabular CSV data.
+
+## Plugin Components
+
+### Skills
+- `excel-to-csv`
+
+### Scripts
+- `scripts/convert.py`
+- `scripts/verify_csv.py`
+

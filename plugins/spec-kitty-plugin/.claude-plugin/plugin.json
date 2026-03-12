@@ -3,8 +3,7 @@
     "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
     "version": "2.0.0",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/<your repo path>"
+        "name": "Richard Fremmerlid"
     },
     "license": "MIT",
     "keywords": [
@@ -18,8 +17,5 @@
     "prerequisites": {
         "spec-kitty-cli": "pip install spec-kitty-cli OR uv tool install spec-kitty-cli",
         "init": "spec-kitty init . --ai windsurf"
-    },
-    "commands_dir": "commands",
-    "skills_dir": "skills",
-    "dependencies": []
+    }
 }

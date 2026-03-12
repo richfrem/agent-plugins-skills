@@ -139,3 +139,9 @@ tool-inventory/
 ## License
 
 MIT
+
+## Plugin Components
+
+### Dependencies
+- `rlm-factory`
+

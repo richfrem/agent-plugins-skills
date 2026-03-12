@@ -40,3 +40,9 @@ adr-manager/
 ├── templates/adr-template.md  # ADR scaffold reference
 └── README.md
 ```
+
+## Plugin Components
+
+### Skills
+- `adr-management`
+
