@@ -3,8 +3,7 @@
     "version": "2.0.0",
     "description": "Quality assurance agent for documentation link integrity. Checks, fixes, and audits documentation links across a repository using a deterministic Map-Fix-Verify workflow.",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
@@ -14,9 +13,5 @@
         "validation",
         "auto-repair",
         "markdown"
-    ],
-    "skills": [
-        "link-checker-agent"
-    ],
-    "dependencies": []
+    ]
 }

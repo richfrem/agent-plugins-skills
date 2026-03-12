@@ -49,7 +49,7 @@
     "context-bundling": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "77134d221d2cf9421a9024e52ffad8e26a2662b1dfca53a66e4c4dd5f5263406"
+      "computedHash": "c9e00dc2f528c06d803261eedae11620fce35cb071af929eac6a870a1cee658d"
     },
     "convert-mermaid": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -99,7 +99,7 @@
     "create-plugin": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "37ca79868d77d0e1798fcb5f969dba4f2298f07f81e1323bd191f19094fb5feb"
+      "computedHash": "6e144980f6e728c211fbdfdd6fa986dd75b07923d0a6b2aa8bd781eae426a8d6"
     },
     "create-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -129,12 +129,12 @@
     "ecosystem-authoritative-sources": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "d88f0b6a1e29b2af56a215a109b00a3251f456d060a565abf59a5165d9e32ac2"
+      "computedHash": "cd010d8f055fe20a7b2090957b23666f1ed7b366f8d4ca3fe1cfc748dab8cfa8"
     },
     "ecosystem-standards": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "001fe5448bd5af1cd588579e79e7f9764207f5dea05fc7a9af9991cfd617aa2f"
+      "computedHash": "b319e09dd1bf8c5a4e65010cc740f8566ea1455d071ee4bbf8d4ee1aaff8bf8b"
     },
     "env-helper": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -245,6 +245,11 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
       "computedHash": "6a418cf7d1fd8e661a7529d3c3b66ec79bcf5117a88d497b1fd46c12e0a9798f"
+    },
+    "package-plugin": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "sourceType": "local",
+      "computedHash": "4b382cb1fc34a7800952af038e04acc663b7ba477afa858c9f5ec03c3fe79928"
     },
     "podcast-summarizer": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -424,7 +429,7 @@
     "zip-bundling": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",
-      "computedHash": "4c90dd34678f9c7ac70720b44b304228024cad11f38d81edd96b4b526d48210f"
+      "computedHash": "cf02665fc58026f8cbb5ea732e89c4eb3f2f2ed423929009c002a82a927a354b"
     }
   }
 }

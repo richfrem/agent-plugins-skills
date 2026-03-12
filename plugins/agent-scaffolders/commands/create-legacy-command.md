@@ -1,0 +1,1 @@
+../skills/create-legacy-command/SKILL.md

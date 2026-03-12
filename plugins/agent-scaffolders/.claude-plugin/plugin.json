@@ -3,28 +3,17 @@
     "version": "2.0.0",
     "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
-    "skills": [
-        "audit-plugin",
-        "create-agentic-workflow",
-        "create-azure-agent",
-        "create-docker-skill",
-        "create-github-action",
-        "create-hook",
-        "create-legacy-command",
-        "create-mcp-integration",
-        "create-plugin",
-        "create-skill",
-        "create-stateful-skill",
-        "create-sub-agent"
+    "keywords": [
+        "scaffolder",
+        "plugin-generator",
+        "skill-generator",
+        "agent-tooling"
     ],
-    "scripts": [
-        "skills/audit-plugin/scripts/audit.py",
-        "scripts/scaffold.py"
-    ],
-    "dependencies": []
+    "agents": [],
+    "hooks": [],
+    "commands": []
 }

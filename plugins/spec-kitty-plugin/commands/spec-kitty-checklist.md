@@ -1,0 +1,1 @@
+../skills/spec-kitty-checklist/SKILL.md

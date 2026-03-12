@@ -26,3 +26,9 @@ dependency-management/
 ├── skills/dependency-management/SKILL.md
 └── README.md
 ```
+
+## Plugin Components
+
+### Skills
+- `dependency-management`
+

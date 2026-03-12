@@ -101,3 +101,14 @@ memory-management/
 |       +-- SKILL.md       # Full tiered memory protocol
 +-- README.md
 ```
+
+## Plugin Components
+
+### Skills
+- `memory-management`
+
+### Dependencies
+- `rlm-factory`
+- `vector-db`
+- `obsidian-integration`
+

@@ -39,3 +39,12 @@ json-hygiene/
 
 ## License
 MIT
+
+## Plugin Components
+
+### Skills
+- `json-hygiene-agent`
+
+### Scripts
+- `skills/json-hygiene-agent/scripts/find_json_duplicates.py`
+

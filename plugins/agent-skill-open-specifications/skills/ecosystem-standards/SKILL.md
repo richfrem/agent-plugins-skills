@@ -17,6 +17,14 @@ When invoked to review a codebase component or a planned extension:
     *   *Path:* `../../references/*.md`
 3.  **Perform Rigorous Audit**:
     *   **Structure**: Does the directory schema match the standard (`.claude-plugin/plugin.json`, `my-skill/SKILL.md`)? Are all supporting files strictly organized into the official optional directories (`scripts/`, `references/`, `assets/`) rather than cluttering the skill root?
+    *   **Manifest Schema**: Does `plugin.json` follow the authoritative schema? Check:
+        - `name` is kebab-case (lowercase, hyphens, no spaces)
+        - `version` uses semver (e.g., `0.1.0`, not `1.0`)
+        - `author` is an object `{"name": "..."}`, NOT a string
+        - No `author.url` field (not in spec)
+        - No `commands_dir` or `skills_dir` fields (auto-discovered)
+        - `skills`, `agents`, `hooks`, `commands`, `scripts`, `dependencies` arrays are documentation-only (ignored by runtime, OK to keep for human readability)
+        - See `references/plugins.md` in `ecosystem-authoritative-sources` for the full schema
     *   **Naming**: Verify the skill name uses the **gerund form** (`verb + -ing`, e.g., `analyzing-spreadsheets`). Reject generic nouns. Ensure the `name` is 1-64 lowercase alphanumeric chars/hyphens only, contains NO consecutive hyphens (`--`), and EXACTLY matches the parent directory name.
     *   **Content**: Does the YAML frontmatter adhere precisely to rules (`description` 1-1024 chars, `compatibility` max 500 chars, `metadata` strictly string-to-string keys/values)? Provide the recommendation to run `skills-ref validate ./my-skill` to definitively catch parse errors.
     *   **Description Viewpoint**: Ensure the `description` is written strictly in the **third person** ("Extracts text", not "I extract text") and isn't overly vague.

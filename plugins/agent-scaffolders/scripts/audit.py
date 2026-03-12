@@ -56,6 +56,15 @@ def audit_plugin(plugin_path):
         manifest_path = os.path.join(claude_plugin_dir, "plugin.json")
         if not os.path.isfile(manifest_path):
             errors.append("Missing `plugin.json` inside `.claude-plugin/`.")
+        else:
+            with open(manifest_path, "r") as f:
+                try:
+                    manifest = json.load(f)
+                    for forbidden in ["commands_dir", "skills_dir", "skills", "scripts", "dependencies"]:
+                        if forbidden in manifest:
+                            errors.append(f"'{forbidden}' is not in the spec - remove it from plugin.json (auto-discovered). Put them in README.md.")
+                except json.JSONDecodeError:
+                    errors.append("Invalid JSON in `plugin.json`.")
 
     # 1.2. Check standard file layout
     if os.path.isfile(os.path.join(plugin_path, "mcp.json")):

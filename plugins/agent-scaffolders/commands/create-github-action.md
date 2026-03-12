@@ -1,0 +1,1 @@
+../skills/create-github-action/SKILL.md

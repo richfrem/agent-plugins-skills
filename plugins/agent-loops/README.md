@@ -80,3 +80,16 @@ The orchestration layer works with any CLI-invokable agent:
 - **GitHub**: Copilot CLI (`gh copilot`)
 - **OpenHands**: OpenClaw / ClawdBot
 - **Local**: Ollama, LM Studio, or any custom agent
+
+## Plugin Components
+
+### Skills
+- `agent-swarm`
+- `dual-loop`
+- `learning-loop`
+- `orchestrator`
+- `red-team-review`
+
+### Dependencies
+- `context-bundler`
+

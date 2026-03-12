@@ -1,0 +1,1 @@
+../skills/audit-plugin/SKILL.md

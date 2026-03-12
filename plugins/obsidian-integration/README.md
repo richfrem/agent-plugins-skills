@@ -20,3 +20,17 @@ Provides a suite of skills allowing LLM agents to safely perform CRUD operations
 
 ## Usage
 These skills are invoked autonomously by the agent whenever a task involves reading, updating, or organizing information within the targeted Obsidian Vault directory.
+
+## Plugin Components
+
+### Skills
+- `obsidian-init`
+- `obsidian-vault-crud`
+- `obsidian-markdown-mastery`
+- `obsidian-canvas-architect`
+- `obsidian-graph-traversal`
+- `obsidian-bases-manager`
+
+### Scripts
+- `obsidian-parser/parser.py`
+

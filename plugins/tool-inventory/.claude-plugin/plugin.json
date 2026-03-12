@@ -3,8 +3,7 @@
     "description": "Manage tool registries with embedded ChromaDB for semantic tool discovery \u2014 self-contained with vendored RLM scripts. V2 upgrades include strict Negative Constraints preventing manual OS search.",
     "version": "2.0.0",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
@@ -36,10 +35,5 @@
     },
     "integrates": {
         "note": "Vendors RLM scripts (distiller, query_cache, cleanup_cache, rlm_config, inventory) for tool-scoped operations. The rlm-factory plugin handles docs-only cache separately."
-    },
-    "commands_dir": "commands",
-    "skills_dir": "skills",
-    "dependencies": [
-        "rlm-factory"
-    ]
+    }
 }

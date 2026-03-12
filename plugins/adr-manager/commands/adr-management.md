@@ -1,0 +1,1 @@
+../skills/adr-management/SKILL.md

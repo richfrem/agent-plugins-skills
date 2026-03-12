@@ -1,7 +1,7 @@
 ---
 name: zip-bundling
 description: Create technical ZIP bundles of code, design, and documentation for external review or context sharing. Use when you need to package multiple project files into a portable `.zip` archive instead of a single Markdown file.
-allowed-tools: Bash, Read, Write
+version: 1.0.0
 ---
 # ZIP Context Bundling Skill 📦
 

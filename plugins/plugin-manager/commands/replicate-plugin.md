@@ -1,0 +1,1 @@
+../skills/replicate-plugin/SKILL.md

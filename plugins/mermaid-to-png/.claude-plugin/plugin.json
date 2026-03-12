@@ -3,17 +3,8 @@
     "version": "2.0.0",
     "description": "Convert Mermaid diagrams (.mmd) into high-resolution PNG images via headless Puppeteer. Includes L5 Delegated Constraint Verification for binary linting.",
     "author": {
-        "name": "Richard Fremmerlid",
-        "url": "https://github.com/richfrem"
+        "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
-    "license": "MIT",
-    "skills": [
-        "convert-mermaid"
-    ],
-    "scripts": [
-        "scripts/convert.py",
-        "scripts/verify_png.py"
-    ],
-    "dependencies": []
+    "license": "MIT"
 }

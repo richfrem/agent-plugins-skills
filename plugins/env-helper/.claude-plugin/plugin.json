@@ -1,14 +1,10 @@
 {
     "name": "env-helper",
     "version": "2.0.0",
-    "author": "Richard Fremmerlid",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "description": "Minimal environment variable utility for resolving shared ecosystem constants without circular dependencies. V2 adds strict Token Leakage negative constraints.",
-    "skills": [
-        "env-helper"
-    ],
-    "scripts": [
-        "scripts/env_helper.py"
-    ],
-    "dependencies": []
+    "license": "MIT"
 }

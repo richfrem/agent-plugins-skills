@@ -45,6 +45,63 @@ python3 ./scripts/scaffold.py --type plugin --name <requested-name> --path <dest
 ```
 *(Note: Usually `<destination-directory>` will be inside the `plugins/` root).*
 
+### Authoritative plugin.json Schema Reference
+
+The `plugin.json` manifest lives at `.claude-plugin/plugin.json` inside the plugin root.
+The scaffold script generates this automatically, but agents MUST verify it matches this schema.
+
+**Minimal (only `name` is required):**
+```json
+{
+  "name": "plugin-name"
+}
+```
+
+**Full recommended manifest:**
+```json
+{
+  "name": "plugin-name",
+  "version": "0.1.0",
+  "description": "Brief explanation of plugin purpose",
+  "author": {
+    "name": "Author Name"
+  }
+}
+```
+
+**Optional fields:** `homepage`, `repository`, `license`, `keywords`
+
+**Custom path overrides (supplements auto-discovery, does not replace it):**
+```json
+{
+  "commands": "./custom-commands",
+  "agents": ["./agents", "./specialized-agents"],
+  "hooks": "./config/hooks.json",
+  "mcpServers": "./.mcp.json"
+}
+```
+
+**Ignored by runtime (kept for human documentation only):**
+
+The agent runtime auto-discovers skills from `skills/*/SKILL.md`, agents from `agents/`,
+etc. These arrays are NOT read by Claude/Cowork, but are useful for humans browsing
+the manifest to understand what a plugin contains:
+```json
+{
+  "skills": ["skill-a", "skill-b"],
+  "agents": [],
+  "hooks": [],
+  "commands": [],
+  "dependencies": ["other-plugin-name"]
+}
+```
+
+**Key rules:**
+- `name` must be kebab-case (lowercase, hyphens, no spaces)
+- `version` is semver - start at `0.1.0`
+- File lives at `.claude-plugin/plugin.json` (hyphen, not underscore)
+- `author` is an object with a `name` field, not a string
+
 ### 3. Generate CONNECTORS.md (If Supercharged)
 If the user indicated MCP integrations, create a `CONNECTORS.md` file at the plugin root using the `~~category` abstraction pattern:
 

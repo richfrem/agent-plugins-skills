@@ -1,0 +1,1 @@
+../skills/bridge-plugin/SKILL.md

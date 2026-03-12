@@ -1,5 +1,13 @@
 {
     "name": "gold-standard-test",
+    "version": "1.0.0",
     "description": "Minimal well-structured test plugin for self-audit regression testing.",
-    "version": "1.0.0"
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "license": "MIT",
+    "skills": [
+        "example-skill"
+    ],
+    "dependencies": []
 }

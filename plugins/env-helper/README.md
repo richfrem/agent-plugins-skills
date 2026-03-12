@@ -40,3 +40,12 @@ env-helper/
 
 ## License
 MIT
+
+## Plugin Components
+
+### Skills
+- `env-helper`
+
+### Scripts
+- `scripts/env_helper.py`
+
