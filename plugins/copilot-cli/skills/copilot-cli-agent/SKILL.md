@@ -68,6 +68,21 @@ If the test fails:
 - Retry without any permission flags; keep the test minimal and isolated.
 - **Model Support Warning**: If you specify a model (e.g., `--model gpt-5.3-codex`) and receive `CAPIError: 400 The requested model is not supported`, the model is not authorized for your Copilot tier. Run without the `--model` flag to use the default router instead.
 
+### Authentication and Token Precedence (Important)
+In non-interactive runs, Copilot CLI can fail even after successful `copilot login` if shell env tokens override the session.
+
+Recommended recovery flow:
+1. Run interactive auth:
+   - `copilot login`
+2. If `copilot -p ...` still fails with authentication errors, check for overriding env vars:
+   - `GITHUB_TOKEN`
+   - `GH_TOKEN`
+   - `COPILOT_GITHUB_TOKEN`
+3. Re-run commands with those vars unset for the command invocation:
+   - `env -u GITHUB_TOKEN -u GH_TOKEN -u COPILOT_GITHUB_TOKEN copilot -p "Reply with exactly: COPILOT_OK" --model gpt-5-mini --allow-all-tools`
+
+For benchmark loops that call Copilot as the improvement backend, apply the same `env -u ...` wrapper to avoid token precedence collisions.
+
 ## 🎭 Persona Categories
 
 | Category | Personas | Use For |

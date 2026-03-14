@@ -21,6 +21,16 @@ This skill implements the requested functionality. When invoked, you MUST execut
 python3 ${{plugins}}/skills/{name}/scripts/execute.py --help
 ```
 
+## Baseline Validation
+Before optimizing behavior, run one baseline evaluation and log it in `evals/results.tsv`.
+
+## Iteration Loop
+When iterating, follow a disciplined loop:
+1. Change one dominant variable per iteration.
+2. Re-run evaluations.
+3. Mark the attempt as `keep` or `discard`.
+4. If the run crashes or times out, log the failure and continue from the last known good state.
+
 ## Output
 Always conclude execution with a Source Transparency Declaration explicitly listing what was queried to guarantee user trust:
 **Sources Checked:** [list]
@@ -28,4 +38,5 @@ Always conclude execution with a Source Transparency Declaration explicitly list
 
 ## Next Actions
 <!-- Suggest logical follow-up skills here. For example: -->
+- Use `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for repeatable improvement loops.
 - Suggest the user run `audit-plugin` to verify the generated artifacts.

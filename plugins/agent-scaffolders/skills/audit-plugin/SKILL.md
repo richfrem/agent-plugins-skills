@@ -36,5 +36,7 @@ If the script outputs a low Maturity Score or fails the `--security` gate (which
 
 
 ## Next Actions
+- Offer to run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` if trigger precision needs iterative tuning.
+- Offer to run `./scripts/eval-viewer/generate_review.py` to inspect iteration outcomes.
 - Offer to run `create-skill` to fix identified gaps.
 - Offer to run `create-stateful-skill` to upgrade to L4 maturity.

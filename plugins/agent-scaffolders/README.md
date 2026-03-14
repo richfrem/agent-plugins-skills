@@ -1,60 +1,60 @@
 # Agent Scaffolders Plugin
 
-Generated via Agent Scaffolder.
-
 ## Purpose
-This plugin provides an active suite of code-generation tools to build Claude-compliant plugins seamlessly based on the `plugin-dev` official open standards set by Anthropic.
+`plugins/agent-scaffolders` generates and upgrades skills, plugins, hooks, and workflows using a pattern-driven architecture.
 
-## Acknowledgments
-We would like to give special recognition to the official Anthropic plugin repository as an important source of inspiration and foundational standards for this project:
-- [Anthropic Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
-- [Official Plugin-Dev Toolkit](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)
+It now uses a "best of both" optimization model:
+- **Karpathy-style loop governance**: baseline-first, one-hypothesis iterations, explicit keep/discard, crash logging, persistent ledger.
+- **Existing benchmark rigor**: train/test split, repeated runs, score tracking, timing telemetry, and review artifacts.
 
-## Core Dependencies
-This plugin relies heavily on the **Separation of Concerns** principle. It acts as the "Tool/Router" but relies on the `agent-skill-open-specifications` plugin as the "Source of Truth" for canonical standards. Therefore, to scaffold L4 skills, this plugin dynamically fetches constraints from:
-- `plugins reference/agent-skill-open-specifications/L4-pattern-definitions/`
+## Updated Optimization Architecture
 
-## Directory Structure
+The benchmarking stack in `plugins/agent-scaffolders/scripts/benchmarking/` supports:
+- `run_eval.py` for trigger evaluation (live routing check).
+- `improve_description.py` for description optimization via selectable backend.
+- `run_loop.py` for closed-loop iterative optimization with ledger output.
 
+### Model Backends
+
+- **Evaluation backend**: currently `claude` (for live skill trigger detection).
+- **Improvement backend**: `claude` or `copilot`.
+
+This enables **Copilot CLI model-driven self-improvement** (for example GPT-5 family models) without running a self-hosted GPU training stack.
+
+## Pattern Source of Truth
+
+Canonical L4 pattern definitions live in:
+- `plugins/agent-skill-open-specifications/L4-pattern-definitions/`
+
+To avoid cross-plugin path drift, each scaffolder skill now has local references:
+- `references/hitl-interaction-design.md` (symlink)
+- `references/pattern-decision-matrix.md` (symlink)
+- `references/patterns/*.md` (symlinks to all L4 pattern definitions)
+
+Skills should reference local paths under their own `references/` directory.
+
+## Directory Structure (High Level)
 
 ```text
-agent-scaffolders/
+plugins/agent-scaffolders/
+  .claude-plugin/plugin.json
+  README.md
+  references/
+  scripts/
+    scaffold.py
+    benchmarking/
+    eval-viewer/
+  skills/
+    <13 scaffolder/optimizer skills>/
+      SKILL.md
+      references/
+      scripts/
+      evals/
+  templates/
 ```
-agent-scaffolders/
-├── .claude-plugin/plugin.json
-├── README.md
-├── references/
-│   ├── hitl-interaction-design.md
-│   └── pattern-decision-matrix.md
-├── scripts/
-│   ├── audit.py
-│   └── scaffold.py
-├── skills/
-│   └── (12 scaffolder skills)
-└── templates/
-    └── (5 Jinja templating files)
-```
 
-## Plugin Components
+## Notes
 
-### Skills
-- `audit-plugin`
-- `create-agentic-workflow`
-- `create-azure-agent`
-- `create-docker-skill`
-- `create-github-action`
-- `create-hook`
-- `create-legacy-command`
-- `create-mcp-integration`
-- `create-plugin`
-- `create-skill`
-- `create-stateful-skill`
-- `create-sub-agent`
-
-### Scripts
-- `skills/audit-plugin/scripts/audit.py`
-- `scripts/scaffold.py`
-
-### Dependencies
-- `context-bundler`
-
+- `scripts/scaffold.py` now creates `evals/evals.json` and `evals/results.tsv` by default for new skills.
+- `evals/results.tsv` is the persistent experiment ledger:
+  `iteration  train_score  test_score  decision  notes  description`

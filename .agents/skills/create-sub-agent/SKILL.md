@@ -35,4 +35,6 @@ You are tasked with generating a new Sub-Agent context boundary using our determ
 
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Iterative Improvement**: Run `./scripts/benchmarking/run_loop.py` to evaluate the sub-agent's task performance.
+- **Review Results**: Run `./scripts/eval-viewer/generate_review.py` to launch the interactive viewer.
+- **Audit**: Run `audit-plugin` to validate the generated artifacts.

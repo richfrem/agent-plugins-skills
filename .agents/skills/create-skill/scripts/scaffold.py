@@ -150,17 +150,18 @@ def create_skill(name, path, description, iteration=None):
     references_dir = os.path.join(skill_dir, "references")
     examples_dir = os.path.join(skill_dir, "examples")
     templates_dir = os.path.join(skill_dir, "templates")
+    evals_dir = os.path.join(skill_dir, "evals")
+    test_dir = os.path.join(skill_dir, "test")
     
     os.makedirs(skill_dir, exist_ok=True)
     os.makedirs(scripts_dir, exist_ok=True)
     os.makedirs(references_dir, exist_ok=True)
     os.makedirs(examples_dir, exist_ok=True)
     os.makedirs(templates_dir, exist_ok=True)
+    os.makedirs(evals_dir, exist_ok=True)
+    os.makedirs(test_dir, exist_ok=True)
     
-    # Optional Directories AgentSkills.io Compliance
-    assets_dir = os.path.join(skill_dir, "assets")
-    os.makedirs(assets_dir, exist_ok=True)
-    
+    # 1. Standard Skill Frontend
     def get_template(filename):
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
         if os.path.exists(template_path):
@@ -168,7 +169,6 @@ def create_skill(name, path, description, iteration=None):
                 return f.read()
         return None
 
-    # 1. Standard Skill Frontend
     skill_template = get_template("SKILL.md.jinja")
     if skill_template:
         # Avoid format() errors with the literal ${{plugins}} by replacing it temporarily
@@ -187,15 +187,28 @@ def create_skill(name, path, description, iteration=None):
         
     # 2. Add sample reference and testing files
     with open(os.path.join(skill_dir, "CONNECTORS.md"), "w") as f:
-        f.write(f"# {name} Connectors Map\\n\\nMap abstract `~~category` tool requirements to exact system dependencies here to keep the plugin portable.")
+        f.write(f"# {name} Connectors Map\n\nMap abstract `~~category` tool requirements to exact system dependencies here to keep the plugin portable.")
         
     with open(os.path.join(references_dir, "architecture.md"), "w") as f:
-        f.write(f"# {name} Protocol Reference\\n\\nPut deep context here so it is not loaded into context implicitly.")
+        f.write(f"# {name} Protocol Reference\n\nPut deep context here so it is not loaded into context implicitly.")
         
     with open(os.path.join(references_dir, "acceptance-criteria.md"), "w") as f:
-        f.write(f"# Acceptance Criteria: {name}\\n\\nDefine at least two testable criteria or correct/incorrect operational patterns here to ensure the skill functions correctly.")
-        
-    # 3. Recommended Best Practice: Mermaid Diagram for workflows
+        f.write(f"# Acceptance Criteria: {name}\n\nDefine at least two testable criteria or correct/incorrect operational patterns here to ensure the skill functions correctly.")
+
+    # 3. Add Eval Set for Benchmarking Loop
+    eval_set = [
+        {"query": f"I need help using the {name} skill", "should_trigger": True},
+        {"query": f"Can you use the {name} skill for me?", "should_trigger": True},
+        {"query": "What time is it in New York?", "should_trigger": False},
+        {"query": "How do I boil an egg?", "should_trigger": False}
+    ]
+    with open(os.path.join(evals_dir, "evals.json"), "w") as f:
+        json.dump(eval_set, f, indent=2)
+
+    with open(os.path.join(evals_dir, "results.tsv"), "w") as f:
+        f.write("iteration\ttrain_score\ttest_score\tdecision\tnotes\tdescription\n")
+
+    # 4. Recommended Best Practice: Mermaid Diagram for workflows
     mmd_content = f"""stateDiagram-v2
     [*] --> Init
     Init --> Process : Execute {name}
@@ -204,8 +217,9 @@ def create_skill(name, path, description, iteration=None):
     with open(os.path.join(skill_dir, f"{name}-flow.mmd"), "w") as f:
         f.write(mmd_content)
 
-    # 4. Mandatory Specification: Python Scripts over Bash/PS1
+    # 5. Mandatory Specification: Python Scripts over Bash/PS1
     execute_template = get_template("execute.py.jinja")
+    script_content = ""
     if execute_template:
         script_content = execute_template.format(
             description=description,

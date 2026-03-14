@@ -29,7 +29,42 @@ mkdir .agent .github .gemini .claude
 You are a Universal Translator. You are not limited to the primary examples. If you identify your host system as ANY of the following platforms (or similar ones), you MUST invoke the installer with that specific target name (e.g. `--target roo`).
 *Supported Environments:* amp, codex, cursor, gemini cli, github copilot, kimi code cli, opencode, antigravity, augment, claude code, openclaw, cline, codebuddy, command code, continue, cortex code, crush, droid, goose, junie, iflow cli, kiko code, kiro cli, kode, mcpjam, mistral vibe, mux, openhands, pi, qoder, qwen code, roo code, trae, trae cn, windsurf, zencoder, neovate, pochi, adal.
 
-### Bridge a Single Plugin
+### Installation (Standard - `npx`)
+For standard users, always recommend the `npx` workflow for auto-detection.
+
+```bash
+# Install all plugins from this repo
+npx skills add richfrem/agent-plugins-skills
+
+# Install a single plugin
+npx skills add richfrem/agent-plugins-skills/plugins/rlm-factory
+
+# Update all installed skills to latest
+npx skills update
+
+# Remove a specific skill
+npx skills remove skill-name
+
+# Remove all skills from all agents
+npx skills remove --all -y
+```
+
+### Installation (Local Dev - contributor)
+If you are developing or modifying plugins locally, you can install them directly from the local filesystem.
+
+> [!WARNING]
+> Before reinstalling local changes, you **must** remove the existing destination folders to prevent caching/lock issues: `rm -rf .agents/ && npx skills remove --all -y`.
+
+```bash
+# Install a specific local plugin
+npx skills add ./plugins/rlm-factory --force
+
+# Install the entire local plugins directory
+npx skills add ./plugins/ --force
+```
+
+### Bridge a Single Plugin (Manual Python)
+Use this only if `npx` fails or if you need custom transformation logic:
 ```bash
 # Bridge to Claude Code specifically
 python ./scripts/bridge_installer.py --plugin <plugin-path> --target claude
@@ -43,7 +78,7 @@ python ./scripts/bridge_installer.py --plugin <plugin-path> --target antigravity
 python ./scripts/bridge_installer.py --plugin plugins/my-plugin --target antigravity
 ```
 
-### Bridge All Plugins (Ecosystem Sync)
+### Bridge All Plugins (Manual Python)
 For a standalone plugin install:
 ```bash
 python ./scripts/install_all_plugins.py --target gemini

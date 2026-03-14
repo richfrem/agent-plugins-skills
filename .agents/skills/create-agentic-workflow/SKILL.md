@@ -101,5 +101,6 @@ After generation, remind the user:
 
 
 ## Next Actions
-- Offer to run `create-github-action` to add CI/CD hooks.
-- Offer to run `audit-plugin` to validate YAML syntax.
+- **Continuous Improvement Loop**: Run `./scripts/benchmarking/run_loop.py` to evaluate your agent's task accuracy.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to launch the interactive viewer.
+- **Audit**: Run `audit-plugin` to validate YAML and workflow syntax.

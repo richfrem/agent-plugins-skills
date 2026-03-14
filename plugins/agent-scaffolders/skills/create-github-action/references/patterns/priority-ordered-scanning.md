@@ -1,0 +1,1 @@
+../../../../../agent-skill-open-specifications/L4-pattern-definitions/priority-ordered-scanning.md

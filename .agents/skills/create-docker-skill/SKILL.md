@@ -41,6 +41,15 @@ Use file writing tools to inject a `security_override.json` at the root of the n
 ### 5. Finalize `SKILL.md`
 Populate the `SKILL.md` ensuring the flow forces the AI to run `scripts/check_environment.py` FIRST before ever attempting the containerized workload.
 
+### 6. Iteration Governance (Autoresearch-Compatible)
+If this dockerized skill will be tuned iteratively, require:
+1. Baseline-first measurement.
+2. Single-hypothesis iteration steps.
+3. Keep/discard decisions with explicit rollback on regressions.
+4. Crash/timeout logging to preserve failure learnings.
+5. Persistent experiment ledger in `evals/results.tsv`.
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect run quality and failure patterns.
+- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

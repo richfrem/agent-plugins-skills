@@ -36,6 +36,16 @@ The script will generate an `azure_deployment/` directory within the target skil
 1. `scaffold_azure_agent.py` - The `azure-ai-projects` Python SDK orchestration script.
 2. `main.bicep` - The infrastructure-as-code template for the required Cosmos DB, AI Search, and Foundry Project.
 
+## Iteration Governance (Autoresearch-Compatible)
+
+If the user wants iterative optimization of generated prompts/instructions, enforce:
+1. Baseline-first evaluation before changing instructions.
+2. One dominant change per iteration.
+3. Keep/discard decision each iteration.
+4. Crash/timeout logging with rollback to last known good.
+5. Persistent iteration ledger in `evals/results.tsv`.
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for disciplined iteration.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect iteration outcomes.
+- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

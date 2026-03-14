@@ -28,6 +28,14 @@ You are tasked with generating a flat-file execution routine, such as an Antigra
 4. **Confirmation:**
    Print a success message showing the file location. Explain the difference between this flat-file approach and the richer `Agent Skills` standard.
 
+5. **If Iterating, Use a Disciplined Loop:**
+   - Baseline first.
+   - One change per iteration.
+   - Keep/discard decision each run.
+   - Crash/timeout logging.
+   - Track iterations in `evals/results.tsv` if this command is being benchmarked.
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` when calibrating trigger text.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect iterative outcomes.
+- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.
