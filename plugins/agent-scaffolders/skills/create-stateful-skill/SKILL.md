@@ -41,6 +41,14 @@ You must pause and explicitly list out:
 - Which of the 5 L4 State/Lifecycle templates you plan to inject
 Ask the user: "Does this look right? (yes / adjust)"
 
+### 1.8 Autoresearch Governance (Required)
+Stateful skills often run iterative maintenance loops. Apply Karpathy-style governance:
+1. **Baseline First**: Record one baseline evaluation before modifications.
+2. **One Variable Per Iteration**: Change one control dimension at a time.
+3. **Keep / Discard Decisions**: Keep only measurable improvements; revert to last known good when performance regresses.
+4. **Crash / Timeout Protocol**: Treat failed iterations as explicit outcomes, log them, and continue from known-good state.
+5. **Persistent Ledger**: Write an iteration history to `evals/results.tsv`.
+
 ### 2. Scaffold the Infrastructure (Preventing Context Bloat)
 Execute the deterministic `scaffold.py` script to generate the physical directories:
 ```bash
@@ -50,7 +58,7 @@ python3 ./scripts/scaffold.py --type skill --name <requested-name> --path <desti
 ### 3. Generate Lean Pattern References (Lazy-Loading)
 **CRITICAL: Do NOT bloat the generated skill with massive definitions of these patterns.** 
 Instead of writing out the entire theory of Escalation Taxonomies or Lifecycle State Machines in every new skill, you must practice **Progressive Disclosure**:
-- For each selected L4 pattern in Step 1, create a LEAN file in `references/` (e.g., `references/tone-matrix.md`). Load its specific definition file from the catalog `~~l4-pattern-catalog` (see CONNECTORS.md) to learn how to scaffold it.
+- For each selected L4 pattern in Step 1, create a LEAN file in `references/` (e.g., `references/tone-matrix.md`). Load its specific definition file from `references/patterns/<pattern-name>.md` to learn how to scaffold it.
 - This file should ONLY contain the domain-specific tables (the actual matrix values for this specific skill).
 - Do not explain *how* the pattern works; the central `pattern-catalog.md` already defines the mechanics. Just provide the blank or filled templates for this specific workflow.
 
@@ -60,7 +68,10 @@ Write the final `SKILL.md`. Ensure it:
 2. Uses Markdown links (e.g., `[See Escalation Rules](references/escalation-taxonomy.md)`) so the LLM only loads the context when needed.
 3. Includes the **Chained Commands** (Offer Next Steps) block at the bottom.
 4. Includes the mandatory **Source Transparency Declaration**.
+5. Includes an **Iteration Governance** section that references baseline-first + keep/discard + ledger behavior.
 
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Continuous Improvement Loop**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` to evaluate your stateful skill with persistent experiment traces.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to launch the interactive viewer.
+- **Audit**: Run `audit-plugin` to validate the generated artifacts.

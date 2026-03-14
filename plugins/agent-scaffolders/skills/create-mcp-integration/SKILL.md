@@ -26,6 +26,15 @@ You are tasked with generating the scaffolding required to integrate a new Model
 3. **Confirmation:**
    Print a success message showing the modified configuration. Instruct the user that they may need to restart their agent environment to pick up the new MCP handles.
 
+4. **If Optimizing Trigger Behavior:**
+   Apply autoresearch-style governance:
+   - Baseline-first eval.
+   - One dominant change per loop.
+   - Keep/discard decisions.
+   - Crash/timeout logging.
+   - Persisted iteration ledger in `evals/results.tsv`.
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for repeatable trigger calibration.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect false positives/false negatives.
+- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

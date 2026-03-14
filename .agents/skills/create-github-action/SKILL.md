@@ -68,6 +68,14 @@ After generating, advise the user:
 - **Permissions**: Generated workflows declare minimal permissions (`contents: read` by default, elevated only when needed).
 - **Review before committing**: Treat workflow YAML as code — review it before merging.
 
+### 4. Optional Optimization Loop (Autoresearch-Compatible)
+If the workflow prompt/instructions need iterative calibration:
+1. Capture a baseline eval first.
+2. Change one dominant variable per iteration.
+3. Label each attempt as keep/discard.
+4. Log crashes/timeouts explicitly.
+5. Preserve an iteration ledger in `evals/results.tsv`.
+
 ## GitHub Actions Key Reference
 
 ### Available Trigger Events
@@ -127,4 +135,6 @@ permissions:
 
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for controlled trigger optimization.
+- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect quality across iterations.
+- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

@@ -29,4 +29,6 @@ You are tasked with generating a new Hook integration using our deterministic ba
 
 
 ## Next Actions
-- Offer to run `audit-plugin` to validate the generated artifacts.
+- **Iterative Testing**: Run `./scripts/benchmarking/run_loop.py` to verify the hook's trigger conditions.
+- **Review**: Run `./scripts/eval-viewer/generate_review.py` to analyze hook performance.
+- **Audit**: Run `audit-plugin` to validate the generated artifacts.

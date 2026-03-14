@@ -37,6 +37,14 @@ You must pause and explicitly list out:
 - Any L4/L5 Patterns you noted during discovery (Crucially, note if the plugin requires Client-Side Compute Sandboxes or XSS Compliance Gates due to artifact generation).
 Ask the user: "Does this look right? (yes / adjust)"
 
+### Phase 1.8: Autoresearch Compatibility Check (Required)
+For plugins that scaffold or optimize prompts/skills, enforce a Karpathy-style optimization protocol:
+- Baseline-first measurement before edits.
+- One-hypothesis-per-iteration tuning.
+- Explicit keep/discard decision after each run.
+- Crash/timeout logging with rollback to last known good state.
+- Persistent experiment ledger in `evals/results.tsv` (or equivalent per generated skill).
+
 ### 2. Scaffold the Plugin
 Execute the deterministic `scaffold.py` script. **CRITICAL: Apply the Iteration Directory Isolation Pattern**.
 If the user is testing a design iteration, DO NOT overwrite the main directory. Append `--iteration <N>` to save to `.history/iteration-<N>/`.
@@ -120,10 +128,13 @@ Print a success message and recap the scaffolded structure. Remind the user of t
 1. If supercharged, populate `CONNECTORS.md` with specific tool mappings.
 2. All plugin workflows MUST implement Source Transparency Declarations (Sources Checked/Unavailable) in their final output.
 3. If this plugin will generate `.html`, `.svg`, or `.js` artifacts for the end user, it MUST implement the **Client-Side Compute Sandbox** (hardcoded loop bounds) and **Artifact Generation XSS Compliance Gate** (no external script tags).
+4. If this plugin includes iterative optimization loops, it MUST include baseline-first + keep/discard + results ledger governance.
 
 **CRITICAL: Scaffold Previewer Phase**
 Before finishing, if the user wants to check your generated code visually before it goes to production, offer to output the proposed hierarchy into `/tmp/scaffold-preview/` so they can evaluate the structure without modifying their real `plugins/` directory.
 
 ## Next Actions
-- Offer to run `create-skill` to populate the plugin.
-- Offer to run `create-mcp-integration` to add tool connectors.
+- **Iterative Refinement**: Run `./scripts/benchmarking/run_loop.py` loop to calibrate skill triggers.
+- **Evaluation Viewer**: Run `./scripts/eval-viewer/generate_review.py` for visual run analysis.
+- **Populate Plugin**: Offer to run `create-skill` to add functionality.
+- **Add Tools**: Offer to run `create-mcp-integration` to add tool connectors.
