@@ -10,6 +10,28 @@ allowed-tools: Bash, Read, Write
 **Important:** This reference library draws heavy inspiration and structural standards directly from the Anthropic Claude Plugins official repositories. Please refer to:
 - **Foundational Specification**: `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev`
 - **L4 Interaction & Execution Patterns**: Derived from `https://github.com/anthropics/claude-knowledgework-plugins` (specifically the Legal and Bio-Research plugins).
+- **Skill Creator 2.0 (Anthropic, March 2026)**: `https://github.com/anthropics/skills/tree/main/skills/skill-creator`
+- **Anthropic Official Claude Code docs**: `https://docs.anthropic.com/en/docs/claude-code/`
+
+## Agentic OS / Agent Harness Pattern
+The Agentic OS is a synthesized runtime environment pattern built from Anthropic primitives:
+
+| Component | Anthropic Primitive | Official URL |
+|-----------|--------------------|--------------|
+| Project kernel | `CLAUDE.md` hierarchy (5 scopes) | https://docs.anthropic.com/en/docs/claude-code/memory |
+| Scheduled tasks | `/loop` command | https://docs.anthropic.com/en/docs/claude-code/loop |
+| Task specialists | Sub-agents (`.claude/agents/`) | https://docs.anthropic.com/en/docs/claude-code/sub-agents |
+| Automation | Hooks (`hooks.json`) | https://docs.anthropic.com/en/docs/claude-code/hooks |
+| Personal shortcuts | Slash commands (`.claude/commands/`) | https://docs.anthropic.com/en/docs/claude-code/slash-commands |
+| Per-project config | Plugin settings (`.claude/*.local.md`) | Anthropic plugin-dev docs |
+
+The `context/` folder structure, `heartbeat.md`, `START_HERE.md`, and memory log patterns
+are community conventions built on top of these primitives (not Anthropic-official).
+
+For bootstrapping Agentic OS in a project, use the `agentic-os-init` skill:
+```
+plugins/agent-agentic-os/skills/agentic-os-init/SKILL.md
+```
 
 # The Library
 The following open standards are available for review:
@@ -54,6 +76,17 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
     *   [reference/marketplace.md](../../references/marketplace.md)
 *   **Installation & Management**: Universal CLI guidelines for `npx skills`, including remote installations, updates, and local development workarounds.
     *   [reference/npx-skills.md](../../references/npx-skills.md)
+
+## Anthropic Plugin-Dev Key Learnings (March 2026)
+The following patterns were confirmed from Anthropic's official `plugin-dev` plugin:
+- **`${CLAUDE_PLUGIN_ROOT}`**: Required for all absolute path references inside plugin scripts/hooks (portability).
+- **Prompt-based hooks**: LLM-driven hooks run in parallel; use for semantic decisions. Command-based hooks for deterministic validation.
+- **`model: inherit`**: Default for sub-agents. Explicitly setting a model pins the agent to a version.
+- **`<example>` blocks**: Use 2-4 `<example>` blocks in agent frontmatter descriptions for richer trigger context (including proactive and negative instructions).
+- **`.local.md` settings**: Store per-project agent config in `.claude/<plugin-name>.local.md` (always gitignore).
+- **`examples/` directory**: Add to skills alongside `references/` for working code samples.
+- **SKILL.md target**: 1500-2000 words / under 500 lines. Third-person description, imperative body.
+- **Description checklist**: 3-5 triggers, 100-word limit, precise action verbs, 1 negative boundary.
 
 ## Usage Instruction
 Never guess the specifics of `SKILL.md` frontmatter, plugin directory limits, or workflow sizes. Read the exact specifications linked above before constructing new ecosystem extensions.

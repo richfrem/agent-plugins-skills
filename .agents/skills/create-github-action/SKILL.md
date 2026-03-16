@@ -1,140 +1,45 @@
 ---
 name: create-github-action
-description: Scaffold a traditional deterministic GitHub Actions CI/CD workflow. Use this when creating build, test, deploy, lint, release, or security scan pipelines. This is distinct from agentic workflows — no AI is involved at runtime.
+accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
+description: >
+  Scaffold a traditional deterministic GitHub Actions CI/CD workflow. Trigger with 
+  "setup github actions", "create a test workflow", "add a ci pipeline", "setup PR validation",
+  or when you need a standard build, set, deploy, lint, release, or security scan pipeline.
+  This is distinct from agentic workflows — no AI is involved at runtime.
 allowed-tools: Bash, Read, Write
 ---
 # GitHub Actions Scaffolder
 
-You are scaffolding a **traditional GitHub Actions YAML workflow** — deterministic CI/CD automation with no AI at runtime. This is different from agentic workflows.
+You are an expert CI/CD Pipeline Architect. Your job is to scaffold traditional GitHub Actions workflows (deterministic automations with no AI at runtime). 
 
-## When to Use This Skill vs Others
+Read `references/action-types.md` before starting to understand triggers, permissions, and common action versions.
 
-| Task | Use This Skill | Use `create-agentic-workflow` |
-|---|---|---|
-| Run tests on every PR | ✅ | ❌ |
-| Build and publish a Docker image | ✅ | ❌ |
-| Deploy to GitHub Pages | ✅ | ❌ |
-| Check if PR matches the spec | ❌ | ✅ |
-| Daily repo health report | ❌ | ✅ |
-| Code review with AI judgment | ❌ | ✅ |
+## Execution Flow
 
-## Execution Steps
+Execute these phases in order. Do not skip phases.
 
-### 1. Gather Requirements
+### Phase 1: Guided Discovery
+Conduct a short interview to understand the pipeline requirements:
+1. **Category**: What does this workflow need to accomplish? (Test, Build, Lint, Deploy, Release, Security, Maintenance)
+2. **Platform/Language**: What is the technology stack? (Python, Node.js, Go, Docker, .NET, Generic)
+3. **Triggers**: When should this fire? (`pull_request`, `push`, `workflow_dispatch`, `schedule`, `release`)
 
-Ask the user for the following context:
+Wait for the user's answers before generating any files.
 
-1. **Workflow Category**: What does this workflow need to do?
-   - **Test** — run unit/integration tests on PR/push (pytest, jest, go test, etc.)
-   - **Build** — compile, bundle, or build Docker images
-   - **Lint** — run linters or formatters (ruff, eslint, markdownlint, etc.)
-   - **Deploy** — publish to GitHub Pages, Vercel, AWS, etc.
-   - **Release** — create GitHub releases, publish npm/PyPI packages
-   - **Security** — dependency audits, SAST, secret scanning (CodeQL, trivy, etc.)
-   - **Maintenance** — scheduled jobs, stale issue cleanup, dependency updates
-   - **Custom** — describe the steps manually
-
-2. **Platform/Language**: What stack? (Python, Node.js, Go, Docker, .NET, etc.)
-
-3. **Trigger Events**: When should this fire?
-   - `pull_request` — on PR open/update (most quality gates)
-   - `push` to main — on merge to main (post-merge validation, deploys)
-   - `workflow_dispatch` — manual run
-   - `schedule` — cron schedule (maintenance jobs)
-   - `release` — on GitHub Release published
-
-### 2. Generate the Workflow
-
-Run the scaffold script:
+### Phase 2: Action Scaffold
+Once parameters are approved, use bash execution to run the scaffold script:
 
 ```bash
-python ./scripts/scaffold_github_action.py \
-  --skill-dir <path-to-skill-directory> \
-  --category <test|build|lint|deploy|release|security|maintenance|custom> \
-  --platform <python|nodejs|go|docker|dotnet|generic> \
-  [--triggers pull_request push schedule workflow_dispatch] \
-  [--name "My Workflow Name"] \
-  [--branch main]
+python ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_github_action.py \
+  --category [category] \
+  --platform [platform] \
+  --triggers [triggers-list]
 ```
 
-The script outputs a ready-to-use `.yml` file in `.github/workflows/`.
+*Note: Ensure you pass the exact parameters determined in Phase 1.*
 
-### 3. Post-Scaffold Guidance
-
-After generating, advise the user:
-
-- **Platform-specific secrets**: Some steps require repository secrets (e.g., `PYPI_TOKEN`, `NPM_TOKEN`, `DOCKER_PASSWORD`, `DEPLOY_KEY`).
-- **Pinned action versions**: All generated steps use pinned `@v4`/`@v3` action refs for security.
-- **Permissions**: Generated workflows declare minimal permissions (`contents: read` by default, elevated only when needed).
-- **Review before committing**: Treat workflow YAML as code — review it before merging.
-
-### 4. Optional Optimization Loop (Autoresearch-Compatible)
-If the workflow prompt/instructions need iterative calibration:
-1. Capture a baseline eval first.
-2. Change one dominant variable per iteration.
-3. Label each attempt as keep/discard.
-4. Log crashes/timeouts explicitly.
-5. Preserve an iteration ledger in `evals/results.tsv`.
-
-## GitHub Actions Key Reference
-
-### Available Trigger Events
-
-| Trigger | Fires when | Common for |
-|---|---|---|
-| `pull_request` | PR opened/updated | Tests, lint, security |
-| `push` | Branch pushed | Deploy, release checks |
-| `schedule` (cron) | On a time schedule | Maintenance, reports |
-| `workflow_dispatch` | Manual button click | Deploys, one-off jobs |
-| `release` | Release published | Package publishing |
-| `issues` | Issue opened/labeled | Triage, notifications |
-| `workflow_call` | Called by another workflow | Reusable sub-workflows |
-
-### Permissions Model
-
-```yaml
-permissions:
-  contents: read      # Read repo files
-  contents: write     # Commit files, push
-  pull-requests: write # Comment on PRs
-  issues: write       # Create/update issues
-  packages: write     # Publish packages
-  id-token: write     # OIDC (for cloud deploys)
-```
-
-> Always declare minimum required permissions. The `GITHUB_TOKEN` grants no permissions by default unless declared.
-
-### Common Action Patterns
-
-```yaml
-# Checkout
-- uses: actions/checkout@v4
-
-# Setup language
-- uses: actions/setup-python@v5
-  with:
-    python-version: "3.12"
-
-# Cache dependencies
-- uses: actions/cache@v4
-  with:
-    path: ~/.cache/pip
-    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-
-# Upload artifacts
-- uses: actions/upload-artifact@v4
-  with:
-    name: report
-    path: output/
-
-# Publish GitHub Release
-- uses: softprops/action-gh-release@v2
-  with:
-    files: dist/*
-```
-
-
-## Next Actions
-- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for controlled trigger optimization.
-- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect quality across iterations.
-- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.
+### Phase 3: Post-Scaffold Instructions
+After successful execution, provide the user with the relevant next steps:
+1. **Secrets Management**: If the workflow requires deploy keys or tokens (e.g., `PYPI_TOKEN`, `DOCKER_PASSWORD`), remind the user to add them to Repo Secrets.
+2. **Review**: Advise them to review the generated `.yml` file in `.github/workflows/` before committing.
+3. **Audit**: Offer to run `audit-plugin` to validate the YAML syntax.

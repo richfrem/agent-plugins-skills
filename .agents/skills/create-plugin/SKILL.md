@@ -1,85 +1,144 @@
 ---
 name: create-plugin
-description: Interactive initialization script that acts as a Plugin Architect. Generates a compliant '.claude-plugin' directory structure and `plugin.json` manifest using diagnostic questioning to ensure proper L4 patterns and Tool Connector schemas.
+accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
+description: >
+  This skill should be used when the user asks to "create a plugin", "scaffold a plugin",
+  "build a new plugin", "set up plugin structure", "initialize a plugin", "make a Claude
+  Code plugin", "organize plugin components", "set up plugin.json", or asks how to
+  structure a plugin with commands, agents, skills, hooks, or MCP servers. Use this skill
+  whenever someone wants to build a new plugin from scratch -- even if they just say
+  "I want to build something for Claude Code." Do NOT use this for creating individual
+  components in isolation (use create-skill, create-command, create-hook, create-sub-agent,
+  or create-mcp-integration for those).
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
-# Agent Plugin Designer & Architect
 
-You are not merely a file generator; you are an **Agent Plugin Architect**. Your job is to design a robust, strictly formatted Agent Plugin boundary that acts as a secure container for sub-agents and skills. Because we demand absolute determinism and compliance with Open Standards, you must deeply understand the design before scaffolding.
+# Agent Plugin Architect
 
-## Execution Steps:
+A plugin is a directory that bundles commands, agents, skills, hooks, and MCP servers
+into a portable, auto-discovered package. Think of it as a "product" for Claude Code --
+self-contained, distributable, and instantly usable when installed.
 
-### Phase 1: The Architect's Discovery Interview
-Before proceeding, you MUST use your file reading tools to consume:
-1. `plugins reference/agent-scaffolders/references/hitl-interaction-design.md`
-2. `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md`
+> Reference files:
+> - `references/hitl-interaction-design.md` -- interaction design patterns for components
+> - `references/pattern-decision-matrix.md` -- L4 pattern selection guide
 
-Use progressive diagnostic questioning to understand the plugin design. Do not dump the theories on the user; just ask the questions:
+---
 
-- **Plugin Name**: Must be descriptive, kebab-case, lowercase.
-- **Architecture Style**: Ask using a numbered option menu:
-  ```
-  Which architecture pattern should this plugin follow?
-  1. Standalone — works entirely without external tools
-  2. Supercharged — works standalone but enhanced with MCP integrations
-  3. Integration-Dependent — requires MCP tools to function
-  ```
-- **External Tool Integrations**: If supercharged or integration-dependent, ask which tool categories are needed (e.g., `~~CRM`, `~~project tracker`, `~~source control`). These will seed the `CONNECTORS.md`.
-- **Interaction Style**: Based on the `hitl-interaction-design.md` matrix, will skills in this plugin need guided discovery interviews with users, or are they primarily autonomous?
-- **Pattern Routing**: Based on the `pattern-decision-matrix.md`, explicitly ask the diagnostic questions. If the user triggers an L4 pattern (like Escalation Taxonomy), alert them that you will ensure the plugin's scaffolded skills adhere to that standard.
+## Plugin Structure at a Glance
 
-### Phase 1.5: Recap & Confirm
-**Do NOT immediately scaffold after the interview.**
-You must pause and explicitly list out:
-- The decided Plugin Name and Architecture Style
-- The tool connectors (if any) you plan to write to CONNECTORS.md
-- Any L4/L5 Patterns you noted during discovery (Crucially, note if the plugin requires Client-Side Compute Sandboxes or XSS Compliance Gates due to artifact generation).
-Ask the user: "Does this look right? (yes / adjust)"
+```
+plugin-name/
+├── .claude-plugin/
+│   └── plugin.json          # REQUIRED: manifest (must be in .claude-plugin/, not root)
+├── commands/                # Slash commands (.md files) -- auto-discovered
+├── agents/                  # Sub-agent definitions (.md files) -- auto-discovered
+├── skills/                  # Agent skills (one subdirectory per skill) -- auto-discovered
+│   └── skill-name/
+│       └── SKILL.md
+├── hooks/
+│   └── hooks.json           # Event handler configuration
+├── .mcp.json                # MCP server definitions
+├── scripts/                 # Shared utilities and helpers
+└── README.md
+```
 
-### Phase 1.8: Autoresearch Compatibility Check (Required)
-For plugins that scaffold or optimize prompts/skills, enforce a Karpathy-style optimization protocol:
-- Baseline-first measurement before edits.
-- One-hypothesis-per-iteration tuning.
-- Explicit keep/discard decision after each run.
-- Crash/timeout logging with rollback to last known good state.
-- Persistent experiment ledger in `evals/results.tsv` (or equivalent per generated skill).
+**Critical rules:**
+- `plugin.json` lives in `.claude-plugin/` -- NOT in the root
+- Component dirs (`commands/`, `agents/`, `skills/`, `hooks/`) live at the ROOT, not inside `.claude-plugin/`
+- Only create directories for components the plugin actually uses
+- All names use kebab-case
 
-### 2. Scaffold the Plugin
-Execute the deterministic `scaffold.py` script. **CRITICAL: Apply the Iteration Directory Isolation Pattern**.
-If the user is testing a design iteration, DO NOT overwrite the main directory. Append `--iteration <N>` to save to `.history/iteration-<N>/`.
+---
+
+## Phase 1: Discover the Plugin Purpose
+
+Ask the user (or infer from context):
+
+1. **What problem does this plugin solve?** Who uses it and when?
+2. **What type of plugin?**
+   - **Standalone** -- works entirely without external tools
+   - **Supercharged** -- standalone + optional MCP integrations
+   - **Integration-Dependent** -- requires MCP tools to function
+3. **Is there a similar plugin to reference?**
+
+Summarize understanding and confirm before proceeding.
+
+---
+
+## Phase 2: Plan Components
+
+Determine which components are needed. Present as a table:
+
+| Component | Count | Purpose |
+|-----------|-------|---------|
+| Skills | ? | Specialized knowledge/guidance |
+| Commands | ? | User-initiated slash commands |
+| Agents | ? | Autonomous sub-agents |
+| Hooks | ? | Event-driven automation |
+| MCP | ? | External service integration |
+| Settings | ? | Per-project configuration |
+
+**Load the relevant skill before implementing each type:**
+- Skills -> `create-skill`
+- Commands -> `create-command`
+- Agents -> `create-sub-agent`
+- Hooks -> `create-hook`
+- MCP -> `create-mcp-integration`
+
+Get user confirmation before moving to implementation.
+
+---
+
+## Phase 3: Ask Clarifying Questions
+
+**DO NOT SKIP THIS PHASE.** For each component, identify underspecified aspects:
+
+- **Skills**: What triggers them? What knowledge? Lean body target (1,500-2,000 words)?
+- **Commands**: What arguments? Which tools? Interactive or automated?
+- **Agents**: Proactive or reactive? Which tools? Output format?
+- **Hooks**: Which events? prompt or command type? Validation criteria?
+- **MCP**: Server type (stdio/SSE)? Auth? Which tools?
+- **Settings**: What fields? Required vs optional? Defaults?
+
+Present all questions grouped by component. Wait for answers before implementing.
+
+---
+
+## Phase 4: Scaffold Structure
+
 ```bash
-python3 ./scripts/scaffold.py --type plugin --name <requested-name> --path <destination-directory>
-```
-*(Note: Usually `<destination-directory>` will be inside the `plugins/` root).*
-
-### Authoritative plugin.json Schema Reference
-
-The `plugin.json` manifest lives at `.claude-plugin/plugin.json` inside the plugin root.
-The scaffold script generates this automatically, but agents MUST verify it matches this schema.
-
-**Minimal (only `name` is required):**
-```json
-{
-  "name": "plugin-name"
-}
+# Create plugin structure
+PLUGIN="plugin-name"
+mkdir -p "$PLUGIN/.claude-plugin"
+mkdir -p "$PLUGIN/skills"     # if needed
+mkdir -p "$PLUGIN/commands"   # if needed
+mkdir -p "$PLUGIN/agents"     # if needed
+mkdir -p "$PLUGIN/hooks"      # if needed
+mkdir -p "$PLUGIN/scripts"    # for shared utilities
 ```
 
-**Full recommended manifest:**
+**Create `plugin.json` manifest:**
 ```json
 {
   "name": "plugin-name",
   "version": "0.1.0",
   "description": "Brief explanation of plugin purpose",
   "author": {
-    "name": "Author Name"
-  }
+    "name": "Author Name",
+    "email": "author@example.com"
+  },
+  "homepage": "https://docs.example.com",
+  "repository": "https://github.com/user/plugin-name",
+  "license": "MIT",
+  "keywords": ["tag1", "tag2"]
 }
 ```
 
-**Optional fields:** `homepage`, `repository`, `license`, `keywords`
+Only `name` is truly required. `name` must be kebab-case. Version follows semver.
 
-**Custom path overrides (supplements auto-discovery, does not replace it):**
+**Custom path overrides** (supplements auto-discovery, does not replace it):
 ```json
 {
   "commands": "./custom-commands",
@@ -89,52 +148,123 @@ The scaffold script generates this automatically, but agents MUST verify it matc
 }
 ```
 
-**Ignored by runtime (kept for human documentation only):**
-
-The agent runtime auto-discovers skills from `skills/*/SKILL.md`, agents from `agents/`,
-etc. These arrays are NOT read by Claude/Cowork, but are useful for humans browsing
-the manifest to understand what a plugin contains:
-```json
-{
-  "skills": ["skill-a", "skill-b"],
-  "agents": [],
-  "hooks": [],
-  "commands": [],
-  "dependencies": ["other-plugin-name"]
-}
-```
-
-**Key rules:**
-- `name` must be kebab-case (lowercase, hyphens, no spaces)
-- `version` is semver - start at `0.1.0`
-- File lives at `.claude-plugin/plugin.json` (hyphen, not underscore)
-- `author` is an object with a `name` field, not a string
-
-### 3. Generate CONNECTORS.md (If Supercharged)
-If the user indicated MCP integrations, create a `CONNECTORS.md` file at the plugin root using the `~~category` abstraction pattern:
-
+**If plugin has MCP integrations, create `CONNECTORS.md`:**
 ```markdown
 # Connectors
 
 | Category | Examples | Used By |
 |----------|----------|---------|
-| ~~category-name | Tool A, Tool B | skill-name |
+| ~~crm | Salesforce, HubSpot | outreach-skill |
+| ~~source-control | GitHub, GitLab | pr-review-agent |
+```
+Use `~~category` abstraction for portability across tool vendors.
+
+**Add to `.gitignore`:**
+```gitignore
+.claude/*.local.md
+.claude/*.local.json
 ```
 
-This ensures the plugin is tool-agnostic and portable across organizations.
+---
 
-### 4. Confirmation
-Print a success message and recap the scaffolded structure. Remind the user of three absolute standards:
-1. If supercharged, populate `CONNECTORS.md` with specific tool mappings.
-2. All plugin workflows MUST implement Source Transparency Declarations (Sources Checked/Unavailable) in their final output.
-3. If this plugin will generate `.html`, `.svg`, or `.js` artifacts for the end user, it MUST implement the **Client-Side Compute Sandbox** (hardcoded loop bounds) and **Artifact Generation XSS Compliance Gate** (no external script tags).
-4. If this plugin includes iterative optimization loops, it MUST include baseline-first + keep/discard + results ledger governance.
+## Phase 5: Implement Components
 
-**CRITICAL: Scaffold Previewer Phase**
-Before finishing, if the user wants to check your generated code visually before it goes to production, offer to output the proposed hierarchy into `/tmp/scaffold-preview/` so they can evaluate the structure without modifying their real `plugins/` directory.
+Use the appropriate scaffolder for each component type. Apply these cross-cutting standards:
+
+**Skills (use create-skill):**
+- Third-person description with trigger phrases + anti-undertrigger nudge
+- Body in imperative form, 1,500-2,000 words (lean)
+- Resources first: `references/`, `examples/`, `scripts/`, then `SKILL.md`
+
+**Commands (use create-command):**
+- Body written as instructions FOR Claude, not to the user
+- `description` under 60 chars, `argument-hint` documents all args
+- `allowed-tools` restricted to minimum needed
+- Use `${CLAUDE_PLUGIN_ROOT}` for all plugin-relative paths
+
+**Agents (use create-sub-agent):**
+- 3+ `<example>` blocks in description (Context/user/assistant format)
+- System prompt 500-3,000 chars, second-person, concrete steps
+- Tool least-privilege: only what the agent actually needs
+
+**Hooks (use create-hook):**
+- Prefer prompt-based hooks for complex logic
+- Always use `${CLAUDE_PLUGIN_ROOT}` for script paths
+- Validate with `validate-hook-schema.sh` and `test-hook.sh`
+
+**Settings (`.claude/plugin-name.local.md` pattern):**
+- YAML frontmatter for structured config, markdown body for prompts/notes
+- Always add `.claude/*.local.md` to `.gitignore` -- never commit
+- Use quick-exit pattern in hooks: `if [ ! -f "$STATE_FILE" ]; then exit 0; fi`
+- Parse frontmatter with: `sed -n '/^---$/,/^---$/{ /^---$/d; p; }' "$FILE"`
+- Document restart requirement: settings changes need Claude Code restart
+
+---
+
+## Phase 6: Validate Plugin
+
+**Run plugin-validator agent** (triggers automatically when asked):
+```
+"Validate my plugin before I publish it"
+```
+
+Validator checks: manifest JSON, name format, component structure, naming conventions,
+agent `<example>` blocks, skill frontmatter, hook JSON schema, MCP config, security
+(no hardcoded credentials, HTTPS for MCP servers).
+
+**Also validate per component type:**
+```bash
+# Agents
+bash scripts/validate-agent.sh agents/my-agent.md
+
+# Hooks
+bash scripts/validate-hook-schema.sh hooks/hooks.json
+bash scripts/test-hook.sh --hook hooks/validate.sh --event PreToolUse \
+  --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
+```
+
+Fix all critical issues. Address warnings that indicate real problems.
+
+---
+
+## Phase 7: Test and Verify
+
+**Install locally:**
+```bash
+cc --plugin-dir /path/to/plugin-name
+```
+
+**Verification checklist:**
+- [ ] Skills load when triggered (ask questions matching trigger phrases)
+- [ ] Commands appear in `/help` and execute with correct arguments
+- [ ] Agents trigger on appropriate scenarios
+- [ ] Hooks activate on events -- test with `claude --debug`
+- [ ] MCP servers connect -- check with `/mcp`
+- [ ] Settings files parse correctly
+
+---
+
+## Phase 8: Document and Distribute
+
+**README minimum structure:**
+- Overview and purpose
+- Features list (components included)
+- Installation instructions
+- Prerequisites (required tools, env vars)
+- Usage for each command/agent
+- Configuration template (if settings used)
+- Contribution/publishing notes
+
+**Security standards (non-negotiable):**
+- No hardcoded credentials in any file
+- MCP servers use HTTPS/WSS not HTTP/WS
+- Hook scripts quote all bash variables
+- No secrets in example files or README
+
+---
 
 ## Next Actions
-- **Iterative Refinement**: Run `./scripts/benchmarking/run_loop.py` loop to calibrate skill triggers.
-- **Evaluation Viewer**: Run `./scripts/eval-viewer/generate_review.py` for visual run analysis.
-- **Populate Plugin**: Offer to run `create-skill` to add functionality.
-- **Add Tools**: Offer to run `create-mcp-integration` to add tool connectors.
+- **Add components**: Run `create-skill`, `create-command`, `create-hook` to add functionality
+- **Add tools**: Run `create-mcp-integration` to add tool connectors
+- **Validate**: Trigger `audit-plugin` or `plugin-validator` agent for full compliance check
+- **Iterate**: Use eval loop to optimize skill trigger descriptions

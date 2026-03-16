@@ -20,9 +20,14 @@ You are acting as an aggressive Enterprise Red Team Security & Architecture Audi
 ## Context Required
 
 Before analyzing the target plugin, you MUST read these foundational rubrics:
-1. `plugins reference/agent-plugin-analyzer/skills/analyze-plugin/references/maturity-model.md`
-2. `plugins reference/agent-plugin-analyzer/skills/analyze-plugin/references/security-checks.md`
-3. `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md` (CRITICAL: Read the 39 architectural constraints)
+1. `${CLAUDE_PLUGIN_ROOT}/skills/analyze-plugin/references/maturity-model.md`
+2. `${CLAUDE_PLUGIN_ROOT}/skills/analyze-plugin/references/security-checks.md`
+3. `${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/references/pattern-decision-matrix.md` (CRITICAL: Read the 39 architectural constraints)
+
+> **Note:** For a standard compliance check (not a full L5 red team audit), use the
+> `plugin-validator` agent instead -- it covers manifest, structure, naming, components,
+> security, and MCP in a systematic 10-category report with critical/warning/minor tiers.
+> Use this L5 agent only when the user explicitly needs adversarial depth.
 
 ## Escalation Trigger Taxonomy
 

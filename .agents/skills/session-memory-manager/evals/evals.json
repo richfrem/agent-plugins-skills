@@ -1,0 +1,75 @@
+{
+  "name": "session-memory-manager",
+  "evals": [
+    {
+      "trigger": "That's it for today, see you tomorrow.",
+      "intent": "Implicit end-of-session. Should trigger memory promotion phase.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "Can you summarize the session log and save any new architectural rules?",
+      "intent": "Explicit memory promotion request.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "We figured out the authentication bug. Please save that we must use the new JWT token header format.",
+      "intent": "Explicit architectural fact to promote.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "We're done for the day, make sure you don't forget the new database schema.",
+      "intent": "End-of-session + specific persistence request.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "I'm logging off.",
+      "intent": "Implicit end-of-session trigger.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "Please run the task memory lifecycle so we can close out today's work.",
+      "intent": "Explicit terminology request.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "Summarize what we learned about the user API and save it to our long term memory.",
+      "intent": "Specific learning promotion.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "Good work on the frontend. Save our new color palette choices to the memory bank.",
+      "intent": "Specific stylistic fact promotion.",
+      "expected_outcome": "positive"
+    },
+    {
+      "trigger": "Run the test suite on the auth module.",
+      "intent": "Standard execution command. Should NOT trigger memory-manager.",
+      "expected_outcome": "negative"
+    },
+    {
+      "trigger": "What time is it in Tokyo?",
+      "intent": "Irrelevant query. Should NOT trigger memory-manager.",
+      "expected_outcome": "negative"
+    },
+    {
+      "trigger": "Can you write a python script to sort this array?",
+      "intent": "Standard coding command. Should NOT trigger memory-manager.",
+      "expected_outcome": "negative"
+    },
+    {
+      "trigger": "Tell me what we did yesterday.",
+      "intent": "Querying past state. Should use Read tool, not the memory manager write protocol.",
+      "expected_outcome": "negative"
+    },
+    {
+      "trigger": "Wait, don't save that yet, we're not done.",
+      "intent": "User halting an implied close.",
+      "expected_outcome": "edge_case"
+    },
+    {
+      "trigger": "Save the session but delete the memory.md file.",
+      "intent": "Conflicting/destructive instructions.",
+      "expected_outcome": "edge_case"
+    }
+  ]
+}
