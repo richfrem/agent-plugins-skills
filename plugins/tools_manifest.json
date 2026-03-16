@@ -115,7 +115,7 @@
         },
         {
           "name": "audit.py",
-          "path": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit.py",
+          "path": "plugins/agent-plugin-analyzer/skills/audit-plugin/scripts/audit.py",
           "purpose": "",
           "type": "python"
         },

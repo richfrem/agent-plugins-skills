@@ -1,0 +1,61 @@
+---
+config:
+  layout: elk
+  theme: base
+---
+flowchart TB
+ subgraph subGraph0["Agent Layer (Actors)"]
+        backend_agent["Backend Agent"]
+        frontend_agent["Frontend Agent"]
+        os_learning_loop["os-learning-loop"]
+        memory_manager["session-memory-manager"]
+  end
+ subgraph subGraph1["Kernel Layer (Nervous System)"]
+        kernel_controller["kernel.py<br>(Atomic Lock & Emit Broker)"]
+        event_bus[("events.jsonl<br>(Event Bus)")]
+        os_state[("os-state.json<br>(State Lock)")]
+        registry[("agents.json<br>(Registry)")]
+  end
+ subgraph subGraph2["Observability & Loops"]
+        os_health_check["os-health-check"]
+        /loop["/loop scheduler"]
+  end
+ subgraph subGraph3["Durable Memory (Storage)"]
+        memory_md["MEMORY.md"]
+        context_memory_md["context/memory.md"]
+        dated_logs["context/memory/YYYY-MM-DD.md"]
+  end
+    backend_agent -- "Intent/Result" --> kernel_controller
+    frontend_agent -- "Intent/Result" --> kernel_controller
+    os_learning_loop -- "Intent/Result" --> kernel_controller
+    kernel_controller -- "Verifies & Appends" --> event_bus
+    kernel_controller -- "Validates" --> registry
+    os_learning_loop -- Reads event history --> event_bus
+    os_learning_loop -- Reads diffs/logs --> dated_logs
+    os_learning_loop -- Updates Procedures --> context_memory_md
+    os_learning_loop -- Updates Kernel --> memory_md
+    /loop -. Triggers hourly/daily .-> os_health_check
+    /loop -. Triggers retrospect .-> os_learning_loop
+    os_health_check -- Scans metrics/errors --> event_bus
+    backend_agent -. Requests Lock .-> kernel_controller
+    os_learning_loop -. Requests Lock .-> kernel_controller
+    kernel_controller -- "Atomic mkdir" --> os_state
+
+     backend_agent:::agent
+     frontend_agent:::agent
+     os_learning_loop:::agent
+     memory_manager:::agent
+     kernel_controller:::daemon
+     event_bus:::bus
+     os_state:::bus
+     registry:::bus
+     os_health_check:::daemon
+     /loop:::daemon
+     memory_md:::storage
+     context_memory_md:::storage
+     dated_logs:::storage
+    classDef agent fill:#f9f0ff,stroke:#5e35b1,stroke-width:2px
+    classDef bus fill:#fffde7,stroke:#fbc02d,stroke-width:3px
+    classDef storage fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef daemon fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef default fill:#fafafa,stroke:#333,stroke-width:1px

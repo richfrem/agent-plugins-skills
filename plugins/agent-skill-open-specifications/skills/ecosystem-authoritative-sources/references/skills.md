@@ -124,7 +124,8 @@ When creating a skill for distribution (e.g. sharing across an enterprise):
 - **Test Across Models:** Skills act as additions to models. Ensure instructions are clear enough for smaller/faster models (Haiku) but efficient enough not to bog down powerful reasoning models (Opus).
 - **Evaluating First:** Create evaluations *first* before writing extensive documentation. Measure baseline performance, write minimal instructions to pass the eval, and iterate. Do not solve imagined problems.
 - **Naming Conventions:** Use the **gerund form** (verb + -ing) for skill names (e.g., `processing-pdfs`, `analyzing-spreadsheets`). Always lowercase and hyphenated. Avoid generic vague nouns (`helper`, `utils`).
-- **Descriptions:** Must be written in the **third person** (e.g., "Processes Excel files", not "I process"). Must clearly state both *what* it does and *when* Claude should trigger it autonomously. Avoid vague descriptions like "Helps with documents." Max 1024 characters.
+- **Descriptions (Anti-Undertriggering Rule):** Must use an **imperative trigger format** (e.g., "Trigger with 'process excel', or when the user describes functionality aligned with..."). Do *not* use descriptive third-person phrasing (like "This skill processes Excel files"). The router needs explicit commands and keyword maps to reliably activate the skill without false negatives. Max 1024 characters.
+- **Phase-Based Execution:** Avoid open-ended instructions. For complex workflows, explicitly segment the `SKILL.md` body into numbered Execution Phases (e.g., *Phase 1: Guided Discovery*, *Phase 2: Validation*, *Phase 3: Execution*). Tell the agent to "Execute these phases in order. Do not skip phases."
 - **Progressive Disclosure:** Claude reads only the frontmatter `description` fields first to decide if a skill is relevant, before reading the `SKILL.md` body. Be precise.
 
 ### Refined Progressive Disclosure Patterns

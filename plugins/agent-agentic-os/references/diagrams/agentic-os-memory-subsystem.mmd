@@ -1,0 +1,36 @@
+flowchart TD
+    classDef external fill:#1E293B,stroke:#3B82F6,stroke-width:2px,color:#F8FAFC
+    classDef auto fill:#0F172A,stroke:#F59E0B,stroke-width:2px,color:#F8FAFC
+    classDef storage fill:#334155,stroke:#10B981,stroke-width:2px,color:#F8FAFC
+    classDef manual fill:#020617,stroke:#EF4444,stroke-width:2px,color:#F8FAFC
+    
+    Host[Host Agent executing a task]:::external
+    
+    subgraph "Phase 1: Automated Capture"
+        Hook[PostToolUse / SessionStart Hook]:::auto
+        UpdatePy[update_memory.py]:::auto
+        DailyLog[(context/memory/YYYY-MM-DD.md)]:::storage
+        
+        Host -- Saves a file --> Hook
+        Hook -- Triggers --> UpdatePy
+        UpdatePy -- "Appends action\n(Skips volatile files)" --> DailyLog
+    end
+    
+    subgraph "Phase 2: Semantic Promotion"
+        Trigger((End of Session OR Background Tick))
+        SMM[session-memory-manager]:::auto
+        L3[(context/memory.md)]:::storage
+        Archive[(context/memory/archive/)]:::storage
+        
+        Trigger --> SMM
+        SMM -- Parses --> DailyLog
+        SMM -- "1. Identifies facts" --> SMM
+        SMM -- "2. Check for Conflicts" --> L3
+        SMM -- "3. Appends Rules" --> L3
+        SMM -- "4. Moves Old Logs" --> Archive
+    end
+    
+    subgraph "Phase 3: Human Override"
+        UserAction[User directly edits memory.md]:::manual
+        UserAction -- "Fixes conflicts / prunes" --> L3
+    end

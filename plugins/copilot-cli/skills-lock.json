@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "copilot-cli-agent": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/copilot-cli",
+      "sourceType": "local",
+      "computedHash": "f7e17ed45a975ccb478e31f36db93c65d265a3373f18c2ac3d761287a0e1207a"
+    }
+  }
+}

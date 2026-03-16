@@ -45,7 +45,8 @@ plugins/agent-scaffolders/
     benchmarking/
     eval-viewer/
   skills/
-    <13 scaffolder/optimizer skills>/
+    <12 scaffolder/optimizer skills>/
+      # Note: audit-plugin moved to agent-plugin-analyzer
       SKILL.md
       references/
       scripts/

@@ -1,0 +1,54 @@
+flowchart TD
+    classDef purpleNode fill:#f3e8ff,stroke:#d8b4fe,stroke-width:1px,color:#581c87
+    classDef greenNode fill:#dcfce7,stroke:#86efac,stroke-width:1px,color:#14532d
+    classDef blueNode fill:#dbeafe,stroke:#93c5fd,stroke-width:1px,color:#1e3a8a
+    classDef redNode fill:#fee2e2,stroke:#fca5a5,stroke-width:1px,color:#7f1d1d
+    classDef yellowNode fill:#fef3c7,stroke:#fcd34d,stroke-width:1px,color:#78350f
+    classDef pinkNode fill:#fce7f3,stroke:#f9a8d4,stroke-width:1px,color:#831843
+
+    Top["<b>CLAUDE.md</b><br>The kernel — loaded every session<br><br><i>Brand, tone, @imports context/skills<br>project index, MCP tools, global</i>"]:::purpleNode
+
+    subgraph Context [context/]
+        direction TB
+        C1["<b>soul.md</b><br>Identity, values, personality"]:::greenNode
+        C2["<b>user.md</b><br>Preferences, working style"]:::greenNode
+        C3["<b>memory.md</b><br>Long-term facts, decisions"]:::greenNode
+        C4["<b>memory/YYYY-MM-DD.md</b><br>Session log — what happened,<br>lessons learned, skills updated"]:::greenNode
+        C1 ~~~ C2 ~~~ C3 ~~~ C4
+    end
+    style Context fill:#f0fdf4,stroke:#bbf7d0,color:#166534,stroke-width:2px,rx:10,ry:10
+
+    subgraph Skills [skills/ + .claude/]
+        direction TB
+        S1["<b>skills/my-skill/SKILL.md</b><br>Procedural knowledge bundles"]:::blueNode
+        S2["<b>.claude/agents/</b><br>Specialists with isolated context"]:::blueNode
+        S3["<b>.claude/commands/</b><br>Slash commands, workflows"]:::blueNode
+        S4["<b>.claude/hooks/</b><br>PostToolUse → update memory,<br>apply lessons after each session"]:::blueNode
+        S1 ~~~ S2 ~~~ S3 ~~~ S4
+    end
+    style Skills fill:#eff6ff,stroke:#bfdbfe,color:#1e3a8a,stroke-width:2px,rx:10,ry:10
+
+    subgraph Projects [projects/]
+        direction TB
+        P1["<b>my-project/CLAUDE.md</b><br>Project-scoped context inherits<br>from root. Architecture, commands,<br>team conventions"]:::redNode
+    end
+    style Projects fill:#fef2f2,stroke:#fecaca,color:#7f1d1d,stroke-width:2px,rx:10,ry:10
+
+    subgraph Heartbeat [heartbeat / //loop cron]
+        direction TB
+        H1["<b>heartbeat.md + /loop</b><br>Scheduled: scan logs, open PRs,<br>write memory, send summaries.<br>Auto-expires after 3 days."]:::yellowNode
+    end
+    style Heartbeat fill:#fffbeb,stroke:#fde68a,color:#78350f,stroke-width:2px,rx:10,ry:10
+
+    Mem["<b>MEMORY.md (auto-memory)</b><br>Written by Claude, not you<br><br><i>Build commands, code patterns,<br>decisions discovered this session</i>"]:::greenNode
+
+    Start["<b>START_HERE.md / onboarding prompt</b><br>Bootstraps new sessions — loads context, memory, active tasks"]:::pinkNode
+
+    %% Links/Flow
+    Top --> Context
+    Top --> Skills
+    Context --> Projects
+    Skills --> Heartbeat
+    Projects --> Mem
+    Heartbeat --> Mem
+    Mem --> Start
