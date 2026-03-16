@@ -21,27 +21,50 @@ You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI s
 
 ## 🛠️ Core Pattern
 ```bash
-cat <PERSONA_PROMPT> | copilot -p "<INSTRUCTION>" <INPUT> > <OUTPUT>
+copilot -p "$(cat <PERSONA_PROMPT>)
+
+---SOURCE DOCUMENT---
+$(cat <INPUT>)
+
+---INSTRUCTION---
+<INSTRUCTION>" > <OUTPUT>
 ```
 *Note: Copilot uses `-p` or `--prompt` for non-interactive scripting runs.*
 
 ## ⚠️ CLI Best Practices
 
-### 1. Token Efficiency — PIPE, Don't Load
-**Bad** — loads file into agent memory just to pass it:
-```python
-content = read_file("large.log")
-run_command(f"copilot -p 'Analyze: {content}'")
-```
-**Good** — direct shell piping:
+### 1. Prompt Construction — Embed Source Material When Using `-p`
+`copilot -p` is the authoritative prompt channel. If you rely on stdin at the same time, the CLI can prioritize the prompt text and ignore or underweight the piped document.
+
+**Bad** — prompt in `-p`, source document on stdin:
 ```bash
-copilot -p "Analyze this log" < large.log > analysis.md
+cat session-brief.md | copilot -p "Mode: problem-framing" > problem-framing.md
 ```
+
+**Good** — embed the source document directly into the prompt:
+```bash
+copilot -p "$(cat agent.md)
+
+---SESSION BRIEF---
+$(cat session-brief.md)
+
+---INSTRUCTION---
+Mode: problem-framing. Capture the problem statement, user groups, goals, and initial scope hypotheses from the session brief above." > problem-framing.md
+```
+
+For multi-pass workflows, keep each pass as a single invocation and grow the embedded context cumulatively.
+
+Pass sequence:
+- Pass 1: embed `session-brief.md`
+- Pass 2: embed `session-brief.md` + `problem-framing.md`
+- Pass 3: embed `session-brief.md` + `problem-framing.md` + `brd-draft.md`
+- Pass 4: embed `session-brief.md` + `problem-framing.md` + `brd-draft.md`
+- Handoff: embed all four capture files
 
 ### 2. Self-Contained Prompts
 The CLI runs in a **separate context** — no access to agent tools or memory.
 - **Add**: "Do NOT use tools. Do NOT search filesystem."
-- Ensure prompt + piped input contain 100% of necessary context.
+- Ensure the prompt contains 100% of necessary context.
 - **Security Check**: Copilot CLI has explicit permission flags (e.g. `--allow-all-tools`, `--allow-all-paths`). For isolated sub-agents, do **not** provide these flags to ensure safe headless execution.
 
 ### 3. Output to File
@@ -82,6 +105,11 @@ Recommended recovery flow:
    - `env -u GITHUB_TOKEN -u GH_TOKEN -u COPILOT_GITHUB_TOKEN copilot -p "Reply with exactly: COPILOT_OK" --model gpt-5-mini --allow-all-tools`
 
 For benchmark loops that call Copilot as the improvement backend, apply the same `env -u ...` wrapper to avoid token precedence collisions.
+
+### 5. Why The Embedded Pattern Works
+- `-p` sets the main instruction context, so source material embedded there is reliably seen by the model.
+- Inline `$(cat file.md)` substitution happens in the shell before the CLI runs, which avoids competing stdin vs prompt channels.
+- This preserves cumulative-context workflows without needing temporary concatenation files.
 
 ## 🎭 Persona Categories
 

@@ -1,77 +1,60 @@
 ---
 name: create-stateful-skill
-description: Interactive initialization script that generates an advanced Agent Skill utilizing L4 State Management, Lifecycle Artifacts, Tone Configuration, and Chained Commands. Use when authoring complex, persistent workflows.
-disable-model-invocation: false
-tier: 1
+accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
+description: >
+  Interactive initialization script that generates an advanced Agent Skill utilizing L4 State
+  Management, Lifecycle Artifacts, Tone Configuration, and Chained Commands. Trigger with
+  "create a complex skill", "build a stateful agent workflow", "setup a skill with lifecycle management",
+  or when authoring workflows that require persistent state, high-stakes governance, or
+  multi-step escalation taxonomies.
 allowed-tools: Bash, Read, Write
 ---
 # Stateful Skill Scaffold Generator
 
-## Overview
-You are tasked with generating a new **Stateful Agent Skill**. 
+You are an expert L4 Agent Architect. Your job is to scaffold advanced **Stateful Agent Skills**.
+
 While standard skills (via `create-skill`) execute isolated tasks, stateful skills possess deeper systemic awareness: they manage artifact lifecycles over time, configure multi-dimensional tone, propagate epistemic confidence hierarchies, and link to other skills via Chained Commands.
 
-These patterns were extracted from the L4 Anthropic Customer Support and Legal ecosystems.
+## Execution Flow
 
-## Execution Steps
+Execute these phases in order. Do not skip phases.
 
-### 1. Requirements & L4 Pattern Discovery
-Use a guided discovery interview. First, get the standard metadata (Skill Name, Description).
+### Phase 1: Guided Discovery & Architecture
+Conduct a guided discovery interview. First, get the standard metadata (Skill Name, Description).
 Then, progressively ask the user which L4 State/Lifecycle templates they need injected:
 
-**Q1. Epistemic Trust (Tiered Authority)**
-Does the agent need a Tiered Source Authority model to propagate a Confidence Score (High/Med/Low) into its outputs based on the evidentiary hierarchy?
+1. **Epistemic Trust (Tiered Authority)**: Does the agent need a Tiered Source Authority model to propagate a Confidence Score (High/Med/Low) into its outputs based on the evidentiary hierarchy?
+2. **Artifact Lifecycle Management**: Does this skill create or maintain persistent outputs (e.g., KB articles, tickets)? If so, we will inject the Artifact Lifecycle State Machine (Draft → Published → Needs Update).
+3. **Multi-Dimensional Tone**: Does this skill draft external communications? If so, we will inject the Tone Configuration matrix (Situation Type × Audience Segment).
+4. **Escalation & Quality Gates**: Does this skill require an Escalation Trigger Taxonomy (Stop, Alert, Explain, Recommend) or a Business Impact Quantification Protocol before proceeding?
+5. **Workflow Navigation**: What commands logically follow this output? We will inject an "Offer Next Steps" block to chain this node to other skills.
 
-**Q2. Artifact Lifecycle Management**
-Does this skill create or maintain persistent outputs (e.g., KB articles, tickets)? If so, we will inject the Artifact Lifecycle State Machine (Draft → Published → Needs Update) and a Scheduled Maintenance Cadence.
+**Pause here.** Explicitly list out the decided Name, Description, and the selected L4 templates. Ask the user: "Should I proceed with scaffolding this architecture?"
 
-**Q3. Multi-Dimensional Tone Configuration**
-Does this skill draft external communications? If so, we will inject the Tone Configuration matrix (Situation Type × Audience Segment = Tone Label).
+### Phase 2: Scaffold Infrastructure
+Once approved, execute the deterministic `scaffold.py` script to generate the physical directories:
 
-**Q4. Escalation & Quality Gates**
-Does this skill require an Escalation Trigger Taxonomy (Stop, Alert, Explain, Recommend) or a Business Impact Quantification Protocol before proceeding?
-
-**Q5. Workflow Navigation (Chained Commands)**
-What commands logically follow this output? We will inject an "Offer Next Steps" block to chain this node to other skills.
-
-### Phase 1.5: Recap & Confirm
-**Do NOT immediately scaffold after the interview.**
-You must pause and explicitly list out:
-- The decided Skill Name and Description
-- Which of the 5 L4 State/Lifecycle templates you plan to inject
-Ask the user: "Does this look right? (yes / adjust)"
-
-### 1.8 Autoresearch Governance (Required)
-Stateful skills often run iterative maintenance loops. Apply Karpathy-style governance:
-1. **Baseline First**: Record one baseline evaluation before modifications.
-2. **One Variable Per Iteration**: Change one control dimension at a time.
-3. **Keep / Discard Decisions**: Keep only measurable improvements; revert to last known good when performance regresses.
-4. **Crash / Timeout Protocol**: Treat failed iterations as explicit outcomes, log them, and continue from known-good state.
-5. **Persistent Ledger**: Write an iteration history to `evals/results.tsv`.
-
-### 2. Scaffold the Infrastructure (Preventing Context Bloat)
-Execute the deterministic `scaffold.py` script to generate the physical directories:
 ```bash
-python3 ./scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold.py \
+  --type skill \
+  --name [requested-name] \
+  --desc "[short-description]"
 ```
 
-### 3. Generate Lean Pattern References (Lazy-Loading)
-**CRITICAL: Do NOT bloat the generated skill with massive definitions of these patterns.** 
-Instead of writing out the entire theory of Escalation Taxonomies or Lifecycle State Machines in every new skill, you must practice **Progressive Disclosure**:
-- For each selected L4 pattern in Step 1, create a LEAN file in `references/` (e.g., `references/tone-matrix.md`). Load its specific definition file from `references/patterns/<pattern-name>.md` to learn how to scaffold it.
-- This file should ONLY contain the domain-specific tables (the actual matrix values for this specific skill).
-- Do not explain *how* the pattern works; the central `pattern-catalog.md` already defines the mechanics. Just provide the blank or filled templates for this specific workflow.
+### Phase 3: Progressive Disclosure Generation
+**CRITICAL: Prevent Context Bloat.**
+Instead of writing out the entire theory of Escalation Taxonomies or Lifecycle State Machines in the generated `SKILL.md`, practice **Progressive Disclosure**:
 
-### 4. Finalize the `SKILL.md` (Pointers Only)
-Write the final `SKILL.md`. Ensure it:
-1. Keeps the primary instructions concise (<300 lines).
-2. Uses Markdown links (e.g., `[See Escalation Rules](references/escalation-taxonomy.md)`) so the LLM only loads the context when needed.
-3. Includes the **Chained Commands** (Offer Next Steps) block at the bottom.
-4. Includes the mandatory **Source Transparency Declaration**.
-5. Includes an **Iteration Governance** section that references baseline-first + keep/discard + ledger behavior.
+1. For each selected L4 pattern from Phase 1, create a lean Markdown file in the new skill's `references/` directory (e.g., `references/tone-matrix.md`).
+2. This file should ONLY contain the domain-specific tables (the actual matrix values for this specific workflow).
+3. Do not explain *how* the pattern works — just provide the blank or pre-filled templates appropriate for the user's workflow.
 
+### Phase 4: Finalize SKILL.md
+Write the final `SKILL.md` for the new skill. Ensure it:
+1. Is concise (<300 lines).
+2. Uses Markdown links (e.g., `[See Escalation Rules](references/escalation-taxonomy.md)`) so the executing LLM only loads context when needed.
+3. Includes a **Chained Commands** (Offer Next Steps) block at the bottom.
+4. Includes an **Iteration Governance** section referencing baseline-first, keep/discard, and ledger behavior.
 
-## Next Actions
-- **Continuous Improvement Loop**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` to evaluate your stateful skill with persistent experiment traces.
-- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to launch the interactive viewer.
-- **Audit**: Run `audit-plugin` to validate the generated artifacts.
+### Phase 5: Post-Scaffold Review
+Inform the user that scaffolding is complete. Suggest they review the injected matrices in `references/` to customize the thresholds. Offer to run `audit-plugin` to validate the final structure.
