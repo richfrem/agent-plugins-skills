@@ -1,5 +1,7 @@
 # Agent Agentic OS Plugin
 
+> **Executive Summary**: For a conceptual overview of the architecture, OS analogy deep-dive, and key differentiators from a traditional operating system, read [`SUMMARY.md`](./SUMMARY.md) first.
+
 ## Purpose
 
 `plugins/agent-agentic-os` is the canonical operational reference for the **Agentic OS / Agent Harness** pattern.
@@ -152,6 +154,7 @@ Flowchart portraying how raw logs are transitioned from short-term memory arrays
 
 ## Key References
 
+- [Executive Summary & OS Analogy](./SUMMARY.md) — conceptual architecture, analogy table, and key differentiators
 - [Anthropic CLAUDE.md documentation](https://docs.anthropic.com/en/docs/claude-code/memory)
 - [Anthropic /loop scheduler](https://docs.anthropic.com/en/docs/claude-code/loop)
 - [Agent Skills Open Standard](https://agentskills.io)
