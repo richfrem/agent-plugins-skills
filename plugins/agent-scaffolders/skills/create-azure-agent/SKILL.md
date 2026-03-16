@@ -1,51 +1,44 @@
 ---
 name: create-azure-agent
-description: Interactive initialization script that generates Azure AI Foundry Agent API deployment wrappers (Python SDK and Bicep basics) from an existing Agent Skill. Use when adapting a skill into an Azure Foundry environment.
+accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill---
+name: create-azure-agent
+accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
+description: >
+  Interactive initialization script that generates Azure AI Foundry Agent API deployment
+  wrappers. Trigger with "deploy this skill to azure", "create an azure foundry agent",
+  "scaffold bicep and python for azure", or when the user wants to take a local skill
+  and deploy it as a hosted service in Azure AI Foundry.
 allowed-tools: Bash, Write, Read
 ---
-# Create Azure AI Foundry Agent
+# Azure AI Foundry Agent Scaffolder
 
-## Overview
+You are an expert Cloud Integration Architect. Your job is to convert local Agent Skills into deployable Azure AI Foundry Agent Services.
 
-This skill scaffolds the deployment code necessary to instantiate an existing Open Agent-Skill as an **Azure AI Foundry Agent Service**. It reads a target `SKILL.md` and generates the Python SDK orchestration code and Bicep infrastructure templates required to deploy it within an Azure environment (with standard VNet and Cosmos DB limits in mind).
+Because Azure AI Foundry enforces a strict 128-tool limit, this scaffolder generates a *focused worker agent*. The generated python service (`azure_agent.py`) will precisely parse the target `SKILL.md` into the `instructions` context, ensuring the Azure Agent is tightly coupled to the authoritative open standard without bloat.
 
-## Prerequisites
+## Execution Flow
 
-- An existing, governed Agent Skill (e.g., in `../../SKILL.md`).
-- Azure CLI and Bicep tools (if deploying).
+Execute these phases in order. Do not skip phases.
 
-## Usage
+### Phase 1: Guided Discovery
+Ask the user for the parameters for the Azure scaffolding:
+1. **Target Skill**: The directory path to the existing skill (e.g., `plugins/my-plugin/skills/my-skill`).
+2. **Naming Preference**: Should the Azure Project and Cosmos DB instances use a specific prefix, or generate automatically?
 
-You are the Azure Agent Scaffolder. When the user requests to deploy an existing skill to Azure Foundry, you must:
+Wait for the user's answers before generating any files.
 
-1. **Ask for the target skill:** Identify the path to the `SKILL.md` the user wants to adapt.
-2. **Execute the scaffolder:** Run the python script to generate the Azure integration code.
+### Phase 2: Action Scaffold
+Once approved, use bash execution to run the scaffold script:
 
 ```bash
 # Example invocation
-python ./scripts/scaffold_azure_agent.py --skill ../../skills/my-skill
+python ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_azure_agent.py \
+  --skill [target-skill-path]
 ```
 
-## How It Works (The 128 Tool Limit)
-
-Because Azure AI Foundry enforces a strict 128-tool limit, this scaffolder generates a *focused worker agent*. The generated python service (`azure_agent.py`) will precisely parse your `SKILL.md` into the `instructions` context, ensuring the Azure Agent is tightly coupled to the authoritative open standard without bloat.
-
-## Outputs
-
-The script will generate an `azure_deployment/` directory within the target skill containing:
+### Phase 3: Post-Scaffold Review
+After successful execution, summarize the outputs generated within the target skill's `azure_deployment/` directory:
 1. `scaffold_azure_agent.py` - The `azure-ai-projects` Python SDK orchestration script.
 2. `main.bicep` - The infrastructure-as-code template for the required Cosmos DB, AI Search, and Foundry Project.
 
-## Iteration Governance (Autoresearch-Compatible)
-
-If the user wants iterative optimization of generated prompts/instructions, enforce:
-1. Baseline-first evaluation before changing instructions.
-2. One dominant change per iteration.
-3. Keep/discard decision each iteration.
-4. Crash/timeout logging with rollback to last known good.
-5. Persistent iteration ledger in `evals/results.tsv`.
-
-## Next Actions
-- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for disciplined iteration.
-- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect iteration outcomes.
-- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.
+Advise the user to review the `.bicep` parameters and run `az deployment group create` when they are ready to provision the infrastructure. Offer to run `audit-plugin` to validate the underlying skill before they deploy.

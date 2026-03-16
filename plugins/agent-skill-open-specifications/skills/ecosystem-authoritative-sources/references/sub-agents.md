@@ -16,7 +16,7 @@ Subagents are specialized AI assistants that run in their own context window wit
 ## Core Configuration (YAML Frontmatter)
 The frontmatter defines the metadata and bounds of the subagent:
 - `name` (required): Unique identifier (e.g., `code-reviewer`). Included in namespace if part of a plugin.
-- `description` (required): Tells the main Claude agent *when* and *why* to delegate tasks to this subagent.
+- `description` (required): Tells the main Claude agent *when* and *why* to delegate tasks to this subagent. **Must include 2-4 XML `<example>` blocks containing a simulated user/assistant conversation turn** demonstrating the exact context in which the subagent should be invoked (including proactive use cases and negative instructions).
 - `tools`: An allowlist of specific tools (e.g., `Read, Glob, Grep`).
 - `disallowedTools`: A denylist of inherited tools.
 - `model`: Defaults to `inherit` from parent, but can be forced (e.g., `sonnet`, `haiku`).

@@ -1,0 +1,38 @@
+{
+    "name": "agent-agentic-os",
+    "version": "1.0.0",
+    "description": "Canonical reference and operational guide for the Agentic OS / Agent Harness pattern. Covers CLAUDE.md hierarchy, persistent context layers, memory management, session bootstrapping, hooks-based auto-learning, and the /loop scheduler pattern.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "agentic-os",
+        "agent-harness",
+        "claude-md",
+        "context-management",
+        "memory-management",
+        "session-management"
+    ],
+    "skills": [
+        "skills/agentic-os-guide/SKILL.md",
+        "skills/agentic-os-init/SKILL.md",
+        "skills/session-memory-manager/SKILL.md",
+        "skills/os-clean-locks/SKILL.md",
+        "skills/skill-improvement-eval/SKILL.md"
+    ],
+    "agents": [
+        "agents/agentic-os-setup.md",
+        "agents/os-learning-loop.md",
+        "agents/os-health-check.md"
+    ],
+    "hooks": [
+        "hooks/hooks.json"
+    ],
+    "commands": [
+        "commands/os-init.md",
+        "commands/os-loop.md",
+        "commands/os-memory.md"
+    ]
+}

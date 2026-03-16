@@ -45,15 +45,18 @@ agent-plugin-analyzer/
 │   │       ├── output-templates.md
 │   │       ├── pattern-catalog.md
 │   │       └── security-checks.md
+│   ├── audit-plugin/
+│   │   ├── SKILL.md             # Standard compliance audit (manifest, structure, security)
+│   │   └── references/
+│   ├── audit-plugin-l5/
+│   │   ├── SKILL.md             # Triggers the l5-red-team-auditor sub-agent
+│   │   └── references/
+│   │       └── acceptance-criteria.md
 │   └── synthesize-learnings/
 │       ├── SKILL.md
 │       └── references/
 │           ├── acceptance-criteria.md
 │           └── improvement-mapping.md
-│   └── audit-plugin-l5/
-│       ├── SKILL.md             # Triggers the l5-red-team-auditor sub-agent
-│       └── references/
-│           └── acceptance-criteria.md
 └── tests/
     ├── gold-standard-plugin/    # Known-good fixture (should pass)
     └── flawed-plugin/           # Known-bad fixture (should fail)
@@ -117,9 +120,10 @@ Take the analysis results and generate improvement recommendations for our scaff
 
 | Skill | Description |
 |-------|-------------|
-| `analyze-plugin` | 6-phase analysis: Inventory → Structure → Content → Patterns → Security → Synthesis & Scoring |
+| `analyze-plugin` | 7-phase analysis: Compliance Pre-Check + Inventory + Structure + Content + Patterns + Security + Scoring |
+| `audit-plugin` | Standard compliance audit: manifest, structure, naming, components, security (uses plugin-validator agent) |
+| `audit-plugin-l5` | Adversarial red team audit -- dispatches `l5-red-team-auditor` against 39-point architecture matrix |
 | `synthesize-learnings` | Converts raw analysis into actionable recommendations for 4 targets |
-| `audit-plugin-l5` | Abstract trigger to dispatch the `l5-red-team-auditor` sub-agent against a target plugin |
 
 ## Commands
 
@@ -156,6 +160,7 @@ Take the analysis results and generate improvement recommendations for our scaff
 
 ### Skills
 - `analyze-plugin`
+- `audit-plugin`
 - `audit-plugin-l5`
 - `synthesize-learnings`
 

@@ -1,15 +1,18 @@
 ---
 name: analyze-plugin
 description: >
-  Systematically analyze agent plugins and skills to extract design patterns, architectural decisions,
-  and reusable techniques. Trigger with "analyze this plugin", "mine patterns from", "review plugin
-  structure", "extract learnings from", "what patterns does this plugin use", or when examining any
-  plugin or skill collection to understand its design.
+  Systematically analyze agent plugins and skills to extract design patterns, architectural
+  decisions, and reusable techniques. Trigger with "analyze this plugin", "mine patterns from",
+  "review plugin structure", "extract learnings from", "what patterns does this plugin use",
+  "check if this plugin is well-structured", "validate plugin compliance", or when examining
+  any plugin or skill collection to understand its design. Use this skill even when the user
+  just says "look at this plugin" or "tell me how this is structured."
 allowed-tools: Bash, Read, Write
 ---
 # Plugin & Skill Analyzer
 
-Perform deep structural and content analysis on agent plugins and skills. Extract reusable patterns that feed the virtuous cycle of continuous improvement.
+Perform deep structural and content analysis on agent plugins and skills. Extract reusable
+patterns that feed the virtuous cycle of continuous improvement.
 
 ## Two Analysis Modes
 
@@ -21,7 +24,37 @@ Analyze multiple plugins side-by-side. Use when looking for common patterns acro
 
 ## Analysis Framework
 
-Execute these six phases sequentially. Do not skip phases.
+Execute these phases sequentially. Do not skip phases.
+
+### Phase 0: Quick Compliance Pre-Check
+
+Before deep analysis, run a rapid compliance scan to surface blockers:
+
+**Manifest check:**
+```bash
+# plugin.json must be in .claude-plugin/ (not root)
+ls .claude-plugin/plugin.json && jq . .claude-plugin/plugin.json
+```
+- `name` present and kebab-case (no spaces, no uppercase)?
+- `version` follows semver (X.Y.Z) if present?
+- No unknown fields causing warnings?
+
+**Structure check:**
+- Component dirs (`commands/`, `agents/`, `skills/`, `hooks/`) at plugin ROOT (not inside `.claude-plugin/`)?
+- All file names use kebab-case?
+- `SKILL.md` (not `README.md`) inside each skill directory?
+
+**Security scan:**
+```bash
+# Hardcoded credentials
+grep -rn "password\|api_key\|secret" --include="*.md" --include="*.json" --include="*.sh" .
+
+# Hardcoded paths (should use ${CLAUDE_PLUGIN_ROOT})
+grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
+```
+
+Report Phase 0 findings before proceeding. If CRITICAL issues found (invalid JSON,
+hardcoded credentials, missing required fields), flag them prominently in the final report.
 
 ### Phase 1: Inventory
 

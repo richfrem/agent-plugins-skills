@@ -1,0 +1,8 @@
+{
+  "SessionStart": {
+    "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/update_memory.py"
+  },
+  "PostToolUse": {
+    "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/update_memory.py"
+  }
+}
