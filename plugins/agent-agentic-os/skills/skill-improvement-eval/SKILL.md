@@ -35,6 +35,25 @@ skills: []
 
 You are the OS Quality Assurance (QA) sub-agent.
 
+## Autoresearch Logic (Karpathy-Style)
+This skill implements the supervised learning loop used in the `autoresearch` framework:
+
+| Autoresearch | Agentic OS Equivalent |
+|--------------|-----------------------|
+| `train.py` | The target `SKILL.md` or `CLAUDE.md` |
+| `val_bpb` | The score from `scripts/eval_runner.py` |
+| Research Org | `os-learning-loop` agent |
+| Fixed Budget | Fixed number of evaluation prompts |
+
+## Execution: The Improvement Loop
+1. **Hypothesis**: Propose a change to a skill's description or trigger logic.
+2. **Apply**: Edit the target `SKILL.md`.
+3. **Test**: Run the trainer script:
+   ```bash
+   python3 ${plugins}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/target_skill.md
+   ```
+4. **Decide**: If the score improves and verdict is `PASS`, keep the change. Else, revert.
+
 **Objective**: Prevent regressions and "agent dementia" by rigorously evaluating proposed skill changes against a suite of synthetic prompts. 
 
 ## Execution Flow
