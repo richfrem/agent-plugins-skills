@@ -23,7 +23,7 @@ The Agentic OS implements a rigorous, objective self-improvement loop inspired b
 - **Objective Metrics (The Trainer)**: `skill-improvement-eval` uses `eval_runner.py` to calculate routing accuracy against a fixed validation set (`evals/evals.json`). A change is only kept if it improves the objective score.
 - **Persistent Benchmarking**: All evaluation results are recorded in `evals/results.tsv` (commit, score, status), establishing a clear baseline for every skill.
 - **Autonomous Supervision**: The `post_run_metrics.py` hook automatically captures session errors and friction events, emitting them to the Event Bus (`events.jsonl`) without human intervention.
-- **Continuous Optimization**: The `os-learning-loop` agent mines these metrics to propose patches to scripts, skills, and memory.
+- **Optimization Strategy**: Agents should follow the [Skill Optimization Guide](references/skill_optimization_guide.md) to achieve high routing accuracy through scoped keywords and diversity in `<example>` blocks.
 
 ## Part of the Triad
 
