@@ -40,19 +40,20 @@ This skill implements the supervised learning loop used in the `autoresearch` fr
 
 | Autoresearch | Agentic OS Equivalent |
 |--------------|-----------------------|
-| `train.py` | The target `SKILL.md` or `CLAUDE.md` |
-| `val_bpb` | The score from `scripts/eval_runner.py` |
+| `train.py` | The target `SKILL.md` |
+| `val_bpb` | Routing Accuracy (calculated by `eval_runner.py` from `evals.json`) |
 | Research Org | `os-learning-loop` agent |
-| Fixed Budget | Fixed number of evaluation prompts |
+| Fixed Budget | Fixed number of prompts in `evals/evals.json` |
+| `results.tsv` | `evals/results.tsv` (Persistent baseline recording) |
 
 ## Execution: The Improvement Loop
-1. **Hypothesis**: Propose a change to a skill's description or trigger logic.
+1. **Hypothesis**: Formulate a change to improve routing (e.g., adding triggers to frontmatter).
 2. **Apply**: Edit the target `SKILL.md`.
-3. **Test**: Run the trainer script:
+3. **Test**: Run the objective trainer:
    ```bash
-   python3 ${plugins}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/target_skill.md
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/skill.md
    ```
-4. **Decide**: If the score improves and verdict is `PASS`, keep the change. Else, revert.
+4. **Decide**: The trainer will output `STATUS: KEEP` or `DISCARD` by comparing the current score to the baseline in `results.tsv`.
 
 **Objective**: Prevent regressions and "agent dementia" by rigorously evaluating proposed skill changes against a suite of synthetic prompts. 
 

@@ -103,7 +103,7 @@ def rotate_events():
     except FileExistsError:
         pass # Another process is already rotating it
 
-def emit_event(agent, type_, action, status=None, summary=None):
+def emit_event(agent, type_, action, status=None, summary=None, results=None):
     if not validate_agent(agent):
         sys.exit(1)
         
@@ -119,6 +119,11 @@ def emit_event(agent, type_, action, status=None, summary=None):
         event["status"] = status
     if summary is not None:
         event["summary"] = summary
+    if results is not None:
+        try:
+            event["results"] = json.loads(results) if isinstance(results, str) else results
+        except json.JSONDecodeError:
+            event["results"] = results
         
     try:
         # Use an atomic lock to append to events.jsonl
@@ -210,10 +215,11 @@ def main():
     # emit_event
     event_parser = subparsers.add_parser("emit_event")
     event_parser.add_argument("--agent", required=True)
-    event_parser.add_argument("--type", required=True, choices=["intent", "result", "error", "learning", "memory_promotion", "skill_update", "agent_start", "agent_stop"])
+    event_parser.add_argument("--type", required=True, choices=["intent", "result", "error", "learning", "memory_promotion", "skill_update", "agent_start", "agent_stop", "metric"])
     event_parser.add_argument("--action", required=True)
     event_parser.add_argument("--status", choices=["success", "fail"])
     event_parser.add_argument("--summary")
+    event_parser.add_argument("--results")
     
     # state_update
     state_parser = subparsers.add_parser("state_update")
@@ -227,7 +233,7 @@ def main():
     elif args.command == "release_lock":
         release_lock(args.name)
     elif args.command == "emit_event":
-        emit_event(args.agent, args.type, args.action, args.status, args.summary)
+        emit_event(args.agent, args.type, args.action, args.status, args.summary, args.results)
     elif args.command == "state_update":
         state_update(args.key, args.value)
 
