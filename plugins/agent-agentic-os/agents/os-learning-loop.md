@@ -58,9 +58,11 @@ Use the `Bash` tool to run:
 
 1. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-learning-loop`, `python3 context/kernel.py state_update mode reflection`, and update the `last_reflection` timestamp via `state_update`.
 2. **Strict Lock Protocol**: Run `python3 context/kernel.py acquire_lock kernel` using the `Bash` tool to acquire the lock. If it fails, another agent is modifying this context and you must abort. The kernel handles stale lock cleanup automatically.
-3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `context/events.jsonl` and `context/memory/hook-errors.log`. Identify where agents failed, stalled, or produced `<WRITE_FAILED>` errors.
+3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `context/events.jsonl` and `context/memory/hook-errors.log`. 
+   - **Prioritize Metrics**: Identify events with `type: metric` where `status: failure` or where high counts of `human_rescue` are reported.
+   - **Gap Identification**: Identify where agents failed, stalled, or produced `<WRITE_FAILED>` errors.
 4. **(Optional) User Augmentation**: If the user provided specific feedback ("Ask the user what went well..."), incorporate it, but do not block the analysis on user input.
-5. Identify precisely where the OS failed, produced errors, or required too many turns to succeed by comparing the event stream against the project's `CLAUDE.md` and `agents/*`.
+5. Identify precisely where the OS failed, produced errors, or required too many turns to succeed by comparing the metric/event stream against the project's `CLAUDE.md` and `agents/*`.
 
 ### Phase 2: Root Cause Analysis
 Determine the layer of the OS responsible for the friction:
