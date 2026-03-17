@@ -215,6 +215,9 @@ npx skills add richfrem/agent-plugins-skills/plugins/agent-agentic-os
 npx skills add ./plugins/agent-agentic-os --force
 ```
 
+> [!TIP]
+> **Avoid File Duplication**: When installing local/development plugins, ensure they are linked as **Symbolic Links** rather than deep copied (verify if `npx skills add` does this, or use `ln -s`). This guarantees that continuous improvements made during your session update the primary source file instantly.
+
 ---
 
 ## Reference Materials
