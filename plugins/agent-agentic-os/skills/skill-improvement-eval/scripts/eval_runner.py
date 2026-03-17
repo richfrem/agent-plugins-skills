@@ -40,7 +40,7 @@ def calculate_heuristic_score(skill_content: str) -> Dict[str, Any]:
 def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Simulates routing based on keyword/description match.
-    Scopes keyword extraction to the frontmatter 'description' field for Phase A accuracy.
+    Scopes keyword extraction to the frontmatter for Phase A accuracy.
     """
     passed = 0
     total = len(evals)
@@ -49,22 +49,23 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
 
     details = []
     
-    # Scoped Keyword Extraction: Extract the first frontmatter block and find the description: field
-    # Most skills follow the YAML frontmatter format (--- ... ---)
+    # Scoped Keyword Extraction: Extract the first frontmatter block
     frontmatter_match = re.search(r'^---\s*\n(.*?)\n---\s*\n', skill_content, re.DOTALL | re.MULTILINE)
     routing_content = skill_content # Fallback
     if frontmatter_match:
-        yaml_content = frontmatter_match.group(1)
-        # Find description: ... or name: ...
-        # For simplicity, we'll take the whole frontmatter as 'routing-relevant'
-        routing_content = yaml_content
+        routing_content = frontmatter_match.group(1)
         
     skill_keywords = set(re.findall(r'\w{4,}', routing_content.lower()))
     skill_keywords.add(skill_name.lower())
     
     for item in evals:
-        prompt = item["prompt"].lower()
-        expected = item["expected"].lower() # "pass" (should trigger) or "fail" (should not)
+        # Support both 'prompt'/'query' and 'expected'/'should_trigger'
+        prompt = (item.get("prompt") or item.get("query", "")).lower()
+        expected_raw = item.get("expected") or item.get("should_trigger")
+        
+        if expected_raw is True: expected = "pass"
+        elif expected_raw is False: expected = "fail"
+        else: expected = str(expected_raw).lower()
         
         # Does the prompt overlap with skill keywords?
         prompt_words = set(re.findall(r'\w{4,}', prompt))
@@ -79,9 +80,9 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
             
         if is_correct:
             passed += 1
-            details.append({"prompt": item["prompt"], "result": "CORRECT"})
+            details.append({"prompt": prompt, "result": "CORRECT"})
         else:
-            details.append({"prompt": item["prompt"], "result": "INCORRECT", "expected": expected, "triggered": triggers})
+            details.append({"prompt": prompt, "result": "INCORRECT", "expected": expected, "triggered": triggers})
             
     return {"accuracy": passed / total, "details": details}
 
