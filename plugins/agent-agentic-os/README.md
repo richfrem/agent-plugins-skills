@@ -16,6 +16,15 @@ This plugin teaches agents how to:
 - Bootstrap new sessions via `START_HERE.md` and `MEMORY.md`
 - Manage memory hygiene: when to write, promote, archive, and expire
 
+## Supervised Learning & Improvement Loop (Karpathy Parity)
+
+The Agentic OS implements a rigorous, objective self-improvement loop inspired by Andrej Karpathy's `autoresearch`:
+
+- **Objective Metrics (The Trainer)**: `skill-improvement-eval` uses `eval_runner.py` to calculate routing accuracy against a fixed validation set (`evals/evals.json`). A change is only kept if it improves the objective score.
+- **Persistent Benchmarking**: All evaluation results are recorded in `evals/results.tsv` (commit, score, status), establishing a clear baseline for every skill.
+- **Autonomous Supervision**: The `post_run_metrics.py` hook automatically captures session errors and friction events, emitting them to the Event Bus (`events.jsonl`) without human intervention.
+- **Continuous Optimization**: The `os-learning-loop` agent mines these metrics to propose patches to scripts, skills, and memory.
+
 ## Part of the Triad
 
 | Plugin | Role |

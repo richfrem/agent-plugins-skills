@@ -58,9 +58,11 @@ Use the `Bash` tool to run:
 
 1. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-learning-loop`, `python3 context/kernel.py state_update mode reflection`, and update the `last_reflection` timestamp via `state_update`.
 2. **Strict Lock Protocol**: Run `python3 context/kernel.py acquire_lock kernel` using the `Bash` tool to acquire the lock. If it fails, another agent is modifying this context and you must abort. The kernel handles stale lock cleanup automatically.
-3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `context/events.jsonl` and `context/memory/hook-errors.log`. Identify where agents failed, stalled, or produced `<WRITE_FAILED>` errors.
+3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `context/events.jsonl` and `context/memory/hook-errors.log`. 
+   - **Prioritize Metrics**: Identify events with `type: metric` where `status: failure` or where high counts of `human_rescue` are reported.
+   - **Gap Identification**: Identify where agents failed, stalled, or produced `<WRITE_FAILED>` errors.
 4. **(Optional) User Augmentation**: If the user provided specific feedback ("Ask the user what went well..."), incorporate it, but do not block the analysis on user input.
-5. Identify precisely where the OS failed, produced errors, or required too many turns to succeed by comparing the event stream against the project's `CLAUDE.md` and `agents/*`.
+5. Identify precisely where the OS failed, produced errors, or required too many turns to succeed by comparing the metric/event stream against the project's `CLAUDE.md` and `agents/*`.
 
 ### Phase 2: Root Cause Analysis
 Determine the layer of the OS responsible for the friction:
@@ -68,17 +70,18 @@ Determine the layer of the OS responsible for the friction:
 - **RAM (`context/`)**: Outdated or conflicting facts in `memory.md`, or the `soul.md` persona needs adjusting.
 - **Stdlib (`skills/`)**: A skill failed, lacked edge-case handling, had a bad description (undertriggering), or a new skill needs to be created.
 
-### Phase 3: Action Execution (The Sandboxed Fix)
+### Phase 3: Action Execution (The objective Research Loop)
 
 **SANDBOX PROTECTION RULE**: The learning loop can PROPOSE changes, but the following files **must not be auto-edited without explicit, manual user approval** for every single modification:
 - `CLAUDE.md` (Global Kernel)
 - `SKILL.md` files (Stdlib)
 - `agents/*` (Processes/Sub-Agents)
 
-1. Design and propose a specific change.
-2. **Eval-Gate**: If proposing an edit to an agent or a skill, you MUST execute `skill-improvement-eval` to validate the trigger routing of your proposed markup. Only proceed if it returns `<EVAL_PASSED>`.
-3. Present the *exact* diff to the user. Once the user EXPLICITLY approves:
-4. **Loop Recovery Snapshot**: Before applying any Write, create a snapshot of the target file (e.g., `cp CLAUDE.md context/backups/kernel.md.pre-learning`) to provide a rollback recovery switch if the learning loop causes a crash in the next session.
+1. Design and propose a specific change based on identified friction.
+2. **Eval-Gate (Objective Trainer)**: If proposing an edit to an agent or a skill, you MUST execute `skill-improvement-eval` using the `eval_runner` trainer. 
+3. **Keep/Discard**: Only present the diff to the user if the trainer returns `STATUS: KEEP` or `STATUS: BASELINE` (meaning accuracy improved or was maintained). If it returns `STATUS: DISCARD`, you must revise your hypothesis and try a different edit.
+4. Present the *exact* diff to the approved change. Once the user EXPLICITLY approves:
+5. **Loop Recovery Snapshot**: Before applying any Write, create a snapshot of the target file (e.g., `cp CLAUDE.md context/backups/kernel.md.pre-learning`) to provide a rollback recovery switch.
 5. Edit `CLAUDE.md` to clarify global instructions.
 6. Edit or create a `SKILL.md` using the `Write` tool to patch the procedural gap.
 7. Update `context/memory.md` to record the new convention.
