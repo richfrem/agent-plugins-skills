@@ -181,7 +181,7 @@ def print_next_steps(target: Path, did_global: bool) -> None:
     print("   context/events.jsonl")
     print("   context/.locks/")
     print("   .claude/")
-    print("   MEMORY.md")
+    print("   context/memory.md")
     print("\n6. Keep in git (shared with team):")
     print("   CLAUDE.md, context/soul.md, context/user.md, heartbeat.md, START_HERE.md")
     print("   context/kernel.py, context/agents.json")

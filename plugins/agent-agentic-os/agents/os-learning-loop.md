@@ -2,9 +2,9 @@
 name: os-learning-loop
 description: >
   Trigger with "run the learning loop", "perform a retrospective", "how can we improve
-  from this session", "update our skills based on what we learned", or when the user 
-  wants the OS to reflect on recent actions and organically update its skills, prompts, 
-  or CLAUDE.md to prevent future mistakes and improve efficiency.
+  from this session", "update our skills based on what we learned", "conduct a post-run 
+  self-assessment", "complete the quality survey", or when the user wants the OS to 
+  reflect on recent actions and organically update its skills, prompts, or CLAUDE.md.
   
   <example>
   Context: User just finished a difficult debugging session.
@@ -52,13 +52,13 @@ Execute these phases in order. Do not skip phases.
 
 Before taking any actions, you MUST publish your intent to the Event Bus.
 Use the `Bash` tool to run:
-`python3 context/kernel.py emit_event --agent os-learning-loop --type intent --action analyze_logs`
+`python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type intent --action analyze_logs`
 
 ### Phase 1: Context Gathering & OS State Lock
 
-1. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-learning-loop`, `python3 context/kernel.py state_update mode reflection`, and update the `last_reflection` timestamp via `state_update`.
-2. **Strict Lock Protocol**: Run `python3 context/kernel.py acquire_lock kernel` using the `Bash` tool to acquire the lock. If it fails, another agent is modifying this context and you must abort. The kernel handles stale lock cleanup automatically.
-3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `context/events.jsonl` and `context/memory/hook-errors.log`. 
+1. **Update OS State**: Run `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py state_update active_agent os-learning-loop`, `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py state_update mode reflection`, and update the `last_reflection` timestamp via `state_update`.
+2. **Strict Lock Protocol**: Run `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py acquire_lock kernel` using the `Bash` tool to acquire the lock. If it fails, another agent is modifying this context and you must abort. The kernel handles stale lock cleanup automatically.
+3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `${CLAUDE_PROJECT_DIR}/context/events.jsonl` and `${CLAUDE_PROJECT_DIR}/context/memory/hook-errors.log`. 
    - **Prioritize Metrics**: Identify events with `type: metric` where `status: failure` or where high counts of `human_rescue` are reported.
    - **Gap Identification**: Identify where agents failed, stalled, or produced `<WRITE_FAILED>` errors.
 4. **(Optional) User Augmentation**: If the user provided specific feedback ("Ask the user what went well..."), incorporate it, but do not block the analysis on user input.
@@ -78,31 +78,45 @@ Determine the layer of the OS responsible for the friction:
 - `agents/*` (Processes/Sub-Agents)
 
 1. Design and propose a specific change based on identified friction.
-2. **Eval-Gate (Objective Trainer)**: If proposing an edit to an agent or a skill, you MUST execute `skill-improvement-eval` using the `eval_runner` trainer. 
-3. **Keep/Discard**: Only present the diff to the user if the trainer returns `STATUS: KEEP` or `STATUS: BASELINE` (meaning accuracy improved or was maintained). If it returns `STATUS: DISCARD`, you must revise your hypothesis and try a different edit.
+    - Follow the [Skill Optimization Guide](../references/skill_optimization_guide.md) to ensure high Routing Accuracy.
+    - **Optimization Strategy**: Use the "Direct vs. Audit" pattern in `<example>` blocks to ensure robustness across different user phrasing.
+    - **Scoped Keywords**: Ensure critical trigger words are placed in the frontmatter `description` for optimal extraction by the trainer.
+2. **Eval-Gate**: Use the `Bash` tool to run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py` on your proposed changes.
+3. **Keep/Discard**: Only present the diff to the user if the trainer returns `STATUS: KEEP` or `STATUS: BASELINE`. If it returns `STATUS: DISCARD`, you MUST revise your hypothesis (e.g., adjust keyword scoping or example diversity) and retry.
 4. Present the *exact* diff to the approved change. Once the user EXPLICITLY approves:
 5. **Loop Recovery Snapshot**: Before applying any Write, create a snapshot of the target file (e.g., `cp CLAUDE.md context/backups/kernel.md.pre-learning`) to provide a rollback recovery switch.
-5. Edit `CLAUDE.md` to clarify global instructions.
-6. Edit or create a `SKILL.md` using the `Write` tool to patch the procedural gap.
-7. Update `context/memory.md` to record the new convention.
+6. Edit `CLAUDE.md` to clarify global instructions.
+7. Edit or create a `SKILL.md` using the `Write` tool to patch the procedural gap.
+8. Update `${CLAUDE_PROJECT_DIR}/context/memory.md` to record the new convention.
 
 ### Phase 4: Verification (Closed Loop)
 Before finishing any modifications:
-1. Use the `Read` tool to verify the exact file you plan to modify, AND read the last 10 entries of `MEMORY.md` and `context/status.md`.
+1. Use the `Read` tool to verify the exact file you plan to modify, AND read the last 10 entries of `MEMORY.md` and `${CLAUDE_PROJECT_DIR}/context/status.md`.
 2. **Conflict Check**: If ANY semantic overlap exists with existing rules across these contexts, you MUST explicitly output `<CONFLICT>` before any Write.
 3. **Safe Write Protocol**: Wrap every `Write` in a `git stash` + diff preview (use `Bash` tool).
 4. Prompt the user to confirm the diff. If the user rejects, run `git stash pop` to rollback.
 5. **Post-Write Verification**: After the Write, use the `Read` tool on the exact file to confirm the exact diff is correctly applied. If the expected diff is not present, output `<WRITE_FAILED>` and run `git stash pop`.
-6. **Validation Tick**: Execute a "null task" validation tick by running `python3 context/kernel.py state_update validation_tick true` to verify the kernel and environment still bootstraps without syntax or structural errors before releasing the lock.
+6. **Validation Tick**: Execute a "null task" validation tick by running `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py state_update validation_tick true` to verify the kernel and environment still bootstraps without syntax or structural errors before releasing the lock.
 
-### Phase 5: Final Briefing & Lock Release
+### Phase 5: Final Briefing
 
 Summarize exactly what files were changed. Explain to the user how the OS will behave differently the next time this scenario occurs.
 
-**Event Bus Publish**: Use `Bash` to emit your success result:
-`python3 context/kernel.py emit_event --agent os-learning-loop --type result --action analyze_logs --status success`
+### Phase 6: Qualitative Self-Assessment Survey
 
-Finally, **Lock Release Protocol**: Execute `python3 context/kernel.py release_lock kernel` to release the acquired loop lock.
+Immediately after the retrospective, you MUST perform a qualitative self-assessment:
+1. Use the [Post-Run Survey Template](../references/post_run_survey.md) as your guide.
+2. Formally answer every qualitative question to capture the friction of the session.
+3. Save the results as a new artifact: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[DATE]_[TIME].md`.
+4. **Survey Observability**: Use `Bash` to emit a survey completion event:
+   `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type learning --action survey_completed --summary survey_[DATE]_[TIME].md`
+
+### Phase 7: Closure & Lock Release
+
+**Event Bus Publish**: Use `Bash` to emit your success result:
+`python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type result --action analyze_logs --status success`
+
+Finally, **Lock Release Protocol**: Execute `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py release_lock kernel` to release the acquired loop lock.
 
 ## Operating Principles
 - **Read Before Write**: You must use the `Read` tool to examine a file *before* executing a `Write` to it. Never guess line numbers or current content.
