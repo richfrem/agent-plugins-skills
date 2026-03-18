@@ -190,7 +190,7 @@ context/events.jsonl
 context/os-state.json
 context/.locks/
 .claude/
-MEMORY.md
+context/memory.md
 context/status.md
 ```
 

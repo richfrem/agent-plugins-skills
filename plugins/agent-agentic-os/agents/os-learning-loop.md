@@ -109,7 +109,7 @@ Immediately after the retrospective, you MUST perform a qualitative self-assessm
 2. Formally answer every qualitative question to capture the friction of the session.
 3. Save the results as a new artifact: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[DATE]_[TIME].md`.
 4. **Survey Observability**: Use `Bash` to emit a survey completion event:
-   `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type learning --action survey_completed --results survey_[DATE]_[TIME].md`
+   `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type learning --action survey_completed --summary survey_[DATE]_[TIME].md`
 
 ### Phase 7: Closure & Lock Release
 
