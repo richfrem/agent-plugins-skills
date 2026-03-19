@@ -41,10 +41,9 @@ VENDOR_ROOT = Path(".vendor")
 # Fallback for simple setups or legacy references
 DEFAULT_VENDOR_DIR = VENDOR_ROOT / "agent-plugins-skills"
 LOCAL_ROOT = Path(".")
-# Bridge installer is provided by plugin-mapper (canonical, supports 30+ targets)
-# plugin-manager/scripts/bridge_installer.py has been removed — use this path instead.
+# Bridge installer is provided by plugin-manager
 PROJECT_ROOT = SCRIPT_DIR.parents[2]  # scripts→plugin-manager→plugins→ROOT
-BRIDGE_INSTALLER = PROJECT_ROOT / "plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py"
+BRIDGE_INSTALLER = PROJECT_ROOT / "plugins/plugin-manager/scripts/bridge_installer.py"
 
 AGENT_DIRS = {
     "antigravity": {
@@ -90,7 +89,7 @@ def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool):
 
 def run_bridge_installer(plugin_path: Path):
     """Runs the bridge installer for a specific plugin."""
-    cmd = [sys.executable, str(BRIDGE_INSTALLER), "--plugin", str(plugin_path), "--target", "auto"]
+    cmd = [sys.executable, str(BRIDGE_INSTALLER), "--plugin", str(plugin_path)]
     try:
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         print(f"  [INSTALL] Success: {plugin_path.name}")

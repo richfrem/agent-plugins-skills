@@ -1,0 +1,1 @@
+../skills/spec-kitty-agent/SKILL.md

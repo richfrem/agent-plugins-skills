@@ -1,0 +1,1 @@
+../skills/vector-db-ingest/SKILL.md

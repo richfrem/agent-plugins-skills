@@ -40,8 +40,9 @@ Ensure your plugin is situated inside `plugins/<name>`, then run the bridge inst
 
 **Single Plugin:**
 ```bash
-python3 ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin --target auto
+python3 ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
 ```
+> The installer automatically detects existing agent directories (e.g. `.agent/`, `.claude/`). No `--target` argument is needed or accepted.
 
 **Sync Everything / All Plugins:**
 ```bash

@@ -48,19 +48,18 @@ def ensure_vendor_source(repo_url, vendor_dir):
         print(f"🔄 Updating vendor repository at {vendor_dir}...")
         return run_command(["git", "pull"], cwd=str(vendor_path))
 
-def sync_agent_configs(script_path, target):
+def sync_agent_configs(script_path):
     """Runs the sync_with_inventory script."""
-    print(f"🔗 Synchronizing agent configurations (target: {target})...")
+    print("🔗 Synchronizing agent configurations...")
     if not script_path.exists():
         print(f"❌ Error: sync_with_inventory.py not found at {script_path}")
         return False
-    return run_command([sys.executable, str(script_path), "--target", target])
+    return run_command([sys.executable, str(script_path)])
 
 def main():
     parser = argparse.ArgumentParser(description="Plugin Bootstrap Automation")
     parser.add_argument("--repo", default="https://github.com/richfrem/agent-plugins-skills.git", help="Vendor Git repository URL")
     parser.add_argument("--vendor-dir", default=".vendor/agent-plugins-skills", help="Local vendor directory")
-    parser.add_argument("--target", default="auto", help="Sync target (auto, antigravity, claude, etc.)")
     args = parser.parse_args()
 
     project_root = Path.cwd()
@@ -72,7 +71,7 @@ def main():
         sys.exit(1)
 
     # Phase 2: Sync Plugins + Agent Configs
-    if not sync_agent_configs(sync_script, args.target):
+    if not sync_agent_configs(sync_script):
         sys.exit(1)
 
     print("\n✅ Plugin bootstrap complete! Your ecosystem is up to date.")

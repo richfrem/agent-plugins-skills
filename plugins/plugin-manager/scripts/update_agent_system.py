@@ -24,16 +24,10 @@ import sys
 import subprocess
 from pathlib import Path
 
-print("\n" + "="*80)
-print("⚠️  DEPRECATION NOTICE: This script is partially superseded by `npx skills`.")
-print("For standard syncing to agents, use: `npx skills update`")
-print("This script remains for legacy custom syncing and structural audits.")
-print("="*80 + "\n")
-
 ROOT = Path.cwd()
 
 SPEC_KITTY_SYNC = ROOT / "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py"
-PLUGIN_INSTALLER = ROOT / "plugins/plugin-mapper/skills/agent-bridge/scripts/install_all_plugins.py"
+PLUGIN_INSTALLER = ROOT / "plugins/plugin-manager/scripts/install_all_plugins.py"
 
 
 def run_step(name: str, script_path: Path, args: list = []) -> None:
@@ -55,6 +49,12 @@ def run_step(name: str, script_path: Path, args: list = []) -> None:
 
 
 def main() -> None:
+    print("\n" + "="*80)
+    print("⚠️  DEPRECATION NOTICE: This script is partially superseded by `npx skills`.")
+    print("For standard syncing to agents, use: `npx skills update`")
+    print("This script remains for legacy custom syncing and structural audits.")
+    print("="*80 + "\n")
+
     print("🚀 Starting Full Agent System Update...")
     print("=======================================")
 
