@@ -1,0 +1,1 @@
+../skills/link-checker-agent/SKILL.md
