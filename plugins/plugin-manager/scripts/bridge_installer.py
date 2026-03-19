@@ -76,10 +76,14 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
 
     # Clean existing
     if link_path.exists() or link_path.is_symlink():
-        if link_path.is_dir() and not link_path.is_symlink():
+        is_link = link_path.is_symlink() or os.path.islink(link_path) or (hasattr(os.path, 'isjunction') and os.path.isjunction(link_path))
+        if link_path.is_dir() and not is_link:
             shutil.rmtree(link_path)
         else:
-            link_path.unlink()
+            try:
+                link_path.unlink()
+            except PermissionError:
+                os.rmdir(link_path)
 
     try:
         rel = os.path.relpath(src, link_path.parent)
