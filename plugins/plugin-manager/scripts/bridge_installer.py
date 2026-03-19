@@ -33,6 +33,7 @@ DETECTABLE_AGENTS = {
     ".claude": {
         "name": "claude",
         "skills": ".claude/skills",
+        "agents": ".claude/agents",
         "commands": ".claude/commands",
         "rules": None,
         "rules_append_target": "CLAUDE.md",
@@ -87,10 +88,23 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
 
     try:
         rel = os.path.relpath(src, link_path.parent)
-        os.symlink(rel, link_path)
+        if os.name == 'nt':
+            os.symlink(rel, link_path, target_is_directory=src.is_dir())
+        else:
+            os.symlink(rel, link_path)
         print(f"    -> Symlinked for {env_name}: {link_path.relative_to(root)}")
         return True
     except (OSError, NotImplementedError):
+        if os.name == 'nt' and src.is_dir():
+            import subprocess
+            try:
+                subprocess.run(["cmd", "/c", "mklink", "/J", str(link_path), str(src)],
+                               check=True, capture_output=True)
+                print(f"    -> Symlinked (Junction) for {env_name}: {link_path.relative_to(root)}")
+                return True
+            except Exception:
+                pass
+
         # Windows fallback: copy instead of symlink
         try:
             if src.is_dir():
@@ -190,7 +204,46 @@ def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
                 target_link = cmd_dir / f"{dest_name}{ext}"
                 _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
 
-def deploy_rules(plugin_path: Path, plugin_name: str, targets: list[str],
+
+def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
+                  root: Path, dry_run: bool = False):
+    """Deploy agent .md files to IDE-native agents directories (e.g. .claude/agents/)."""
+    agents_dir_src = plugin_path / "agents"
+    if not agents_dir_src.exists():
+        return
+
+    central_agents = root / ".agents" / "agents"
+    if not dry_run:
+        central_agents.mkdir(parents=True, exist_ok=True)
+
+    for agent_file in sorted(agents_dir_src.glob("*.md")):
+        agent_name = agent_file.stem
+        dest_name = f"{plugin_name}-{agent_name}" if not plugin_name.endswith(agent_name) else plugin_name
+        central_dest = central_agents / f"{dest_name}.md"
+
+        if not dry_run:
+            shutil.copy2(agent_file, central_dest)
+        else:
+            print(f"  [DRY RUN] central agent copy: .agents/agents/{dest_name}.md")
+
+        for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config or not config.get("agents"):
+                continue
+
+            ide_dir = root / target_dir_name
+            if not ide_dir.exists():
+                continue
+
+            ide_agents = root / config["agents"]
+            if not dry_run:
+                ide_agents.mkdir(parents=True, exist_ok=True)
+
+            target_link = ide_agents / f"{dest_name}.md"
+            _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+
+
+def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                  root: Path, dry_run: bool = False):
     rules_dir = plugin_path / "rules"
     if not rules_dir.exists():
@@ -317,13 +370,21 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                     target_symlink = ide_skills / item.name
                     _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
                     
-    # 4. Standalone Agents (Convert native agent artifacts to AgentSkills wrappers)
+    # 4. Standalone Agents:
+    #    - For IDEs with native agents/ dirs (e.g. Claude): deploy .md files directly there.
+    #    - For IDEs without native agents/ dirs (e.g. Antigravity): wrap in a SKILL.md wrapper.
     agents_dir_src = plugin_path / "agents"
     if agents_dir_src.exists():
+        # Targets WITHOUT a native agents dir get the skill-wrapper treatment
+        non_native_agent_targets = [
+            t for t in targets
+            if not DETECTABLE_AGENTS.get(t, {}).get("agents")
+        ]
+
         for agent_file in agents_dir_src.glob("*.md"):
             agent_name = agent_file.stem
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
-            
+
             dest = central_skills / final_name
             if not dry_run:
                 dest.mkdir(parents=True, exist_ok=True)
@@ -333,22 +394,22 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                 print(f"  ✓ Universal central copy (Agent Wrapper): {dest.relative_to(root)}")
             else:
                 print(f"  [DRY RUN] Universal central copy (Agent Wrapper): .agents/skills/{final_name}")
-                
+
             installed_skills.append(final_name)
-            
-            for target_dir_name in targets:
+
+            for target_dir_name in non_native_agent_targets:
                 config = DETECTABLE_AGENTS.get(target_dir_name)
                 if not config or not config.get("skills"):
                     continue
-                    
+
                 ide_dir = root / target_dir_name
                 if not ide_dir.exists():
                     continue
-                    
+
                 ide_skills = root / config["skills"]
                 if not dry_run:
                     ide_skills.mkdir(parents=True, exist_ok=True)
-                
+
                 target_symlink = ide_skills / final_name
                 _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
 
@@ -385,6 +446,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             
     deploy_commands(plugin_path, plugin_name, targets, root, dry_run)
     deploy_rules(plugin_path, plugin_name, targets, root, dry_run)
+    deploy_agents(plugin_path, plugin_name, targets, root, dry_run)
     
     # MCP merge (future -- log intent for now)
     mcp_file = plugin_path / ".mcp.json"

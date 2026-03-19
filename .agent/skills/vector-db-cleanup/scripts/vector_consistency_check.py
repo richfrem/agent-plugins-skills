@@ -1,0 +1,1 @@
+../../../scripts/vector_consistency_check.py

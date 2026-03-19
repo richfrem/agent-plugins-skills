@@ -97,7 +97,7 @@ def main():
 
     print(f"🚀 Starting Local Batch Installation mimicking `npx skills add ./plugins/`...")
     print("Flushing old .agents/ source block to ensure a clean central repo before symlinking...")
-    target_agents_repo = PROJECT_ROOT / ".agents"
+    target_agents_repo = Path.cwd() / ".agents"
     if not args.dry_run:
         if target_agents_repo.exists():
             shutil.rmtree(target_agents_repo, ignore_errors=True)
@@ -142,7 +142,7 @@ def main():
             print(f"❌ Unexpected error installing {plugin_dir.name}: {e}")
             plugins_failed += 1
 
-    _update_lock_hashes(PROJECT_ROOT, PLUGINS_ROOT, args.dry_run)
+    _update_lock_hashes(Path.cwd(), PLUGINS_ROOT, args.dry_run)
 
     print("\n" + "="*50)
     print(f"Batch Installation into .agents/ Complete")

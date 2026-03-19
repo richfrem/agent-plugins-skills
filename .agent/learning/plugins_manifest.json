@@ -1,0 +1,13 @@
+{
+    "description": "Plugin README and SKILL.md summaries for the agent-plugins-skills ecosystem",
+    "include": [
+        "plugins/*/README.md",
+        "plugins/*/skills/*/SKILL.md"
+    ],
+    "exclude": [
+        "plugins/*/templates/",
+        "plugins/*/skills/*/references/",
+        "plugins/*/skills/*/scripts/"
+    ],
+    "recursive": false
+}
