@@ -20,9 +20,9 @@ AGENTS_FILE = KERNEL_DIR / "agents.json"
 EVENTS_MAX_SIZE = 10 * 1024 * 1024  # 10MB
 
 def validate_agent(agent_name):
-    if not AGENTS_FILE.exists():
-        return False # Fail closed
     try:
+        if not AGENTS_FILE.exists():
+            return False # Fail closed — no registry
         with open(AGENTS_FILE, "r") as f:
             registry = json.load(f)
             if agent_name in registry.get("permitted_agents", []):
@@ -30,7 +30,11 @@ def validate_agent(agent_name):
             print(f"Error: Unregistered agent spoofing detected: {agent_name}", file=sys.stderr)
             return False
     except json.JSONDecodeError:
-        return True # Fallback if corrupted
+        print(f"Error: agents.json is malformed — rejecting agent '{agent_name}' (fail-closed)", file=sys.stderr)
+        return False
+    except Exception as e:
+        print(f"Error: agents.json could not be read ({e}) — rejecting agent '{agent_name}' (fail-closed)", file=sys.stderr)
+        return False
 
 def acquire_lock(lock_name):
     """Acquires a lock atomically using os.mkdir."""

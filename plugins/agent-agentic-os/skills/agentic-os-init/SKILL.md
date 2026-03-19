@@ -205,6 +205,27 @@ heartbeat.md
 START_HERE.md
 ```
 
+### Priority 4b: context/agents.json (kernel permit list)
+`agents.json` controls which agent names are allowed to emit events to the kernel bus. Any agent or hook that calls `kernel.py emit_event` must be listed here — unlisted agents are rejected (fail-closed). When a new plugin is installed that fires kernel events from hooks, its hook agent name must be added to `permitted_agents`.
+
+Standard entries (from the runtime template):
+```json
+{
+  "schema_version": "1.0",
+  "permitted_agents": [
+    "agentic-os-setup",
+    "os-learning-loop",
+    "session-memory-manager",
+    "os-health-check",
+    "os-clean-locks",
+    "skill-improvement-eval",
+    "system"
+  ]
+}
+```
+
+When installing a plugin that fires hook events, check the plugin's `hooks/` directory for the `--agent` value passed to `emit_event` and add it to the list. Missing entries cause silent event rejection (or, on unpatched kernels, fail-open — a security risk).
+
 ### Priority 5: Install skills (optional)
 If the user wants additional skills for this environment:
 ```bash
