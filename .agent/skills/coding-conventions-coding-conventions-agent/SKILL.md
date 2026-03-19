@@ -1,1 +1,0 @@
-../skills/coding-conventions-agent/SKILL.md

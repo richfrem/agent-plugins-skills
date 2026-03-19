@@ -1,1 +1,0 @@
-../../../scripts/manage_tool_inventory.py

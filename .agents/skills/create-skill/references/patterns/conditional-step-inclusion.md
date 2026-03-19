@@ -1,1 +1,0 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/conditional-step-inclusion.md
