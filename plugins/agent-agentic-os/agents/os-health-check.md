@@ -13,7 +13,7 @@ description: >
   </example>
 model: inherit
 color: cyan
-tools: ["Bash", "Read", "Write"]
+tools: ["Bash", "Read"]
 skills: []
 ---
 

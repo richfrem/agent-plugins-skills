@@ -13,7 +13,41 @@ import collections
 from datetime import datetime
 from pathlib import Path
 
+def _check_execution_gate() -> bool:
+    """Return True if the hook should proceed, False if it should be skipped.
+    Reads execution_mode and hook_sample_rate from os-state.json.
+    - execution_mode=lightweight: always skip
+    - hook_sample_rate=N: run 1 in every N calls (counter stored in os-state.json)
+    """
+    try:
+        project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
+        state_file = Path(project_dir) / "context" / "os-state.json"
+        if not state_file.exists():
+            return True  # No state file: proceed normally
+
+        with open(state_file, "r", encoding="utf-8") as f:
+            state = json.load(f)
+
+        if state.get("execution_mode") == "lightweight":
+            return False
+
+        rate = int(state.get("hook_sample_rate", 1))
+        if rate > 1:
+            count = int(state.get("hook_call_count", 0)) + 1
+            state["hook_call_count"] = count
+            with open(state_file, "w", encoding="utf-8") as f:
+                json.dump(state, f, indent=2)
+            if count % rate != 0:
+                return False
+    except Exception:
+        pass  # If state is unreadable, proceed normally
+    return True
+
+
 def main():
+    if not _check_execution_gate():
+        return
+
     try:
         # 1. Parse the hook payload
         if len(sys.argv) > 1:

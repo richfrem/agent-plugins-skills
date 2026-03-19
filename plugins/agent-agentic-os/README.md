@@ -129,6 +129,8 @@ agent-agentic-os
 │       │   └── templates/
 │       ├── os-clean-locks/
 │       │   ├── SKILL.md
+│       │   ├── evals/
+│       │   │   └── evals.json
 │       │   └── references/
 │       │       └── acceptance-criteria.md
 │       ├── session-memory-manager/

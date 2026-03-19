@@ -4,9 +4,35 @@ description: >
   Trigger with "set up agentic OS", "initialize agent harness", "init my project for AI agents",
   "where do I put CLAUDE.md", "what goes in context folder", "create my agent environment",
   "scaffold my project for Claude Code", "how do I install skills", "set up persistent memory",
-  or "get Claude to remember things between sessions". Guides users through a contextual 
-  interview to understand their use case, then scaffolds the right Agentic OS structure. 
+  or "get Claude to remember things between sessions". Guides users through a contextual
+  interview to understand their use case, then scaffolds the right Agentic OS structure.
   Use this skill even when the user just asks WHERE to put files.
+
+  <example>
+  Context: User wants to set up their new project for AI-assisted development.
+  user: "I want Claude to remember stuff between sessions. How do I set that up?"
+  assistant: "I'll walk you through the Agentic OS init process -- a few quick questions first to tailor the structure for your project."
+  <commentary>
+  Implicit request for persistent memory triggers the init interview workflow.
+  </commentary>
+  </example>
+
+  <example>
+  Context: Agent discovers an uninitialized project at session start.
+  assistant: [autonomously] "This project has no context/ folder or CLAUDE.md. I'll suggest running agentic-os-init to bootstrap the structure before we begin."
+  <commentary>
+  Implicit audit trigger -- agent notices missing OS artifacts and proactively surfaces init.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User asks where to put a CLAUDE.md file they already wrote.
+  user: "I have a CLAUDE.md, where should I put it?"
+  assistant: "I'll use the agentic-os-init guide to explain the CLAUDE.md hierarchy and which directory fits your setup."
+  <commentary>
+  Question about file placement triggers the init skill even without a full setup request.
+  </commentary>
+  </example>
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---

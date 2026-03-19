@@ -17,8 +17,14 @@ from datetime import date
 # ---------------------------------------------------------------------------
 
 def load_template(filename: str) -> str:
-    """Load a given template from the skills/agentic-os-init/templates directory."""
-    plugin_root = Path(__file__).resolve().parent.parent.parent.parent
+    """Load a given template from the skills/agentic-os-init/templates directory.
+    Tries CLAUDE_PLUGIN_ROOT env var first (set by Claude Code and npx skills),
+    then falls back to path-relative resolution for direct script invocation."""
+    env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if env_root:
+        plugin_root = Path(env_root).resolve()
+    else:
+        plugin_root = Path(__file__).resolve().parent.parent.parent.parent
     template_path = plugin_root / "skills" / "agentic-os-init" / "templates" / filename
     
     if not template_path.exists():
@@ -32,8 +38,13 @@ def load_template(filename: str) -> str:
 
 def copy_runtime_file(filename: str) -> str:
     """Load a runtime file from skills/agentic-os-init/runtime/.
-    These are plain file copies with no template substitution."""
-    plugin_root = Path(__file__).resolve().parent.parent.parent.parent
+    Tries CLAUDE_PLUGIN_ROOT env var first (set by Claude Code and npx skills),
+    then falls back to path-relative resolution for direct script invocation."""
+    env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if env_root:
+        plugin_root = Path(env_root).resolve()
+    else:
+        plugin_root = Path(__file__).resolve().parent.parent.parent.parent
     runtime_path = plugin_root / "skills" / "agentic-os-init" / "runtime" / filename
 
     if not runtime_path.exists():
@@ -181,13 +192,13 @@ def print_next_steps(target: Path, did_global: bool) -> None:
     print("   context/events.jsonl")
     print("   context/.locks/")
     print("   .claude/")
-    print("   context/memory.md")
     print("\n6. Keep in git (shared with team):")
     print("   CLAUDE.md, context/soul.md, context/user.md, heartbeat.md, START_HERE.md")
-    print("   context/kernel.py, context/agents.json")
+    print("   context/kernel.py, context/agents.json, context/memory.md")
     if did_global:
         print("\n7. Global kernel created at ~/.claude/CLAUDE.md")
         print("   Add your identity, universal rules, and tool defaults there.")
+        print("   Note: manually @import context/kernel.py or add kernel rules to this file")
     print("\n8. Start the OS (optional):")
     print("   /loop \"Read heartbeat.md and execute the items listed under Every Hour\" --interval 1h")
     print("\n9. Wire Hooks (optional, requires restart):")
