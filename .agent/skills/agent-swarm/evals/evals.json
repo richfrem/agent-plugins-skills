@@ -1,0 +1,30 @@
+{
+    "plugin": "agent-loops",
+    "skill": "agent-swarm",
+    "evaluations": [
+        {
+            "id": "eval-1-swarm-execution",
+            "type": "positive",
+            "prompt": "Run a batch formatting job across these 50 markdown files.",
+            "expected_behavior": "Agent scopes the boundaries, generates a job (.job.md) file, and invokes swarm_run.py to split the work across independent parallel workers."
+        },
+        {
+            "id": "eval-2-strict-isolation",
+            "type": "negative",
+            "prompt": "Have the 5 agents in the swarm collaborate on a single file at the same time.",
+            "expected_behavior": "Agent rejects the request. Explains the strict isolation constraint of agent-swarm (no cross-worktree communication). Tasks must be partitioned independently."
+        },
+        {
+            "id": "eval-3-copilot-rate-limit-protection",
+            "type": "edge-case",
+            "prompt": "Launch 10 parallel Copilot workers to process this checklist fast.",
+            "expected_behavior": "Agent overrides the worker count down to 2, explicitly citing the Known Engine Quirks rate-limit protection for Copilot. It refuses to launch 10 workers which would trigger abuse filters."
+        },
+        {
+            "id": "eval-4-resume-capability",
+            "type": "positive",
+            "prompt": "The batch job crashed halfway through. Can we finish the rest?",
+            "expected_behavior": "Agent identifies the partially filled state file and re-invokes swarm_run.py using the --resume flag, intentionally skipping already-processed files."
+        }
+    ]
+}

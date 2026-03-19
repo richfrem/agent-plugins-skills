@@ -87,7 +87,10 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
 
     try:
         rel = os.path.relpath(src, link_path.parent)
-        os.symlink(rel, link_path)
+        if os.name == 'nt':
+            os.symlink(rel, link_path, target_is_directory=src.is_dir())
+        else:
+            os.symlink(rel, link_path)
         print(f"    -> Symlinked for {env_name}: {link_path.relative_to(root)}")
         return True
     except (OSError, NotImplementedError):
