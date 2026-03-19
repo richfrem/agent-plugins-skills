@@ -21,60 +21,292 @@ from pathlib import Path
 
 # The standard recognized agent configurations in your IDE workspace.
 DETECTABLE_AGENTS = {
-    ".agent": "antigravity",
-    ".claude": "claude",
-    ".github": "github",
-    ".gemini": "gemini",
-    ".azure": "azure"
+    ".agent": {
+        "name": "antigravity",
+        "skills": ".agent/skills",
+        "commands": ".agent/workflows",
+        "rules": ".agent/rules",
+        "hooks": None,
+        "rules_mode": "files",
+    },
+    ".claude": {
+        "name": "claude",
+        "skills": ".claude/skills",
+        "commands": ".claude/commands",
+        "rules": None,
+        "rules_append_target": "CLAUDE.md",
+        "hooks": ".claude/hooks",
+        "rules_mode": "append",
+    },
+    ".gemini": {
+        "name": "gemini",
+        "skills": ".gemini/skills",
+        "commands": ".gemini/commands",
+        "rules": None,
+        "rules_append_target": "GEMINI.md",
+        "hooks": None,
+        "rules_mode": "append",
+        "commands_format": "toml",
+    },
+    ".github": {
+        "name": "github",
+        "skills": ".github/skills",
+        "commands": ".github/prompts",
+        "rules": None,
+        "rules_append_target": ".github/copilot-instructions.md",
+        "hooks": None,
+        "rules_mode": "append",
+        "commands_ext": ".prompt.md",
+    },
+    ".azure": {
+        "name": "azure",
+        "skills": ".azure/skills",
+        "commands": None,
+        "rules": None,
+        "hooks": None,
+    },
 }
 
-def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str]):
+def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
+                     root: Path, env_name: str) -> bool:
+    if dry_run:
+        print(f"  [DRY RUN] symlink {link_path.relative_to(root)} -> {src.relative_to(root)}")
+        return True
+
+    # Clean existing
+    if link_path.exists() or link_path.is_symlink():
+        if link_path.is_dir() and not link_path.is_symlink():
+            shutil.rmtree(link_path)
+        else:
+            link_path.unlink()
+
+    try:
+        rel = os.path.relpath(src, link_path.parent)
+        os.symlink(rel, link_path)
+        print(f"    -> Symlinked for {env_name}: {link_path.relative_to(root)}")
+        return True
+    except (OSError, NotImplementedError):
+        # Windows fallback: copy instead of symlink
+        try:
+            if src.is_dir():
+                shutil.copytree(src, link_path, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src, link_path)
+            print(f"    -> Copied (symlink failed) for {env_name}: "
+                  f"{link_path.relative_to(root)}")
+            return False  # False = symlinkFailed, like npx skills
+        except Exception as e:
+            print(f"    X Failed for {env_name}: {e}")
+            return False
+
+def _write_toml_command(md_file: Path, dest_toml: Path, plugin_name: str, flat: str, dry_run: bool, root: Path):
+    if dry_run:
+        print(f"  [DRY RUN] write TOML cmd: {dest_toml.relative_to(root)}")
+        return
+        
+    content = md_file.read_text(encoding="utf-8")
+    
+    # Very basic frontmatter parser
+    description = ""
+    body = content
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            fm = parts[1]
+            body = parts[2].strip()
+            for line in fm.splitlines():
+                if line.startswith("description:"):
+                    description = line.replace("description:", "", 1).strip()
+                    # Strip basic quotes
+                    if description.startswith('"') and description.endswith('"'):
+                        description = description[1:-1]
+                    elif description.startswith("'") and description.endswith("'"):
+                        description = description[1:-1]
+
+    toml_content = f"""command = "{plugin_name}:{flat}"
+description = "{description}"
+prompt = \"\"\"
+{body}
+\"\"\"
+"""
+    dest_toml.write_text(toml_content, encoding="utf-8")
+    print(f"    -> Wrapped TOML for gemini: {dest_toml.relative_to(root)}")
+
+
+def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
+                    root: Path, dry_run: bool = False):
+    commands_dir = plugin_path / "commands"
+    if not commands_dir.exists():
+        return
+
+    central_workflows = root / ".agents" / "workflows"
+    if not dry_run:
+        central_workflows.mkdir(parents=True, exist_ok=True)
+
+    for cmd_file in sorted(commands_dir.rglob("*.md")):
+        # Flatten path to snake_case name
+        rel = cmd_file.relative_to(commands_dir)
+        flat = "_".join(rel.with_suffix("").parts)
+        dest_name = f"{plugin_name}_{flat}"
+
+        # Central canonical copy
+        central_dest = central_workflows / f"{dest_name}.md"
+        if not dry_run:
+            shutil.copy2(cmd_file, central_dest)
+        else:
+            print(f"  [DRY RUN] copy command: {central_dest.relative_to(root)}")
+
+        for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config or not config.get("commands"):
+                continue
+
+            ide_dir = root / target_dir_name
+            if not ide_dir.exists():
+                continue
+
+            cmd_dir = root / config["commands"]
+            if not dry_run:
+                cmd_dir.mkdir(parents=True, exist_ok=True)
+
+            fmt = config.get("commands_format")
+            ext = config.get("commands_ext", ".md")
+
+            if fmt == "toml":
+                # Parse frontmatter, wrap in TOML
+                _write_toml_command(cmd_file, cmd_dir / f"{dest_name}.toml",
+                                    plugin_name, flat, dry_run, root)
+            else:
+                target_link = cmd_dir / f"{dest_name}{ext}"
+                _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+
+def deploy_rules(plugin_path: Path, plugin_name: str, targets: list[str],
+                 root: Path, dry_run: bool = False):
+    rules_dir = plugin_path / "rules"
+    if not rules_dir.exists():
+        return
+
+    central_rules = root / ".agents" / "rules"
+    if not dry_run:
+        central_rules.mkdir(parents=True, exist_ok=True)
+
+    for rule_file in sorted(rules_dir.glob("*.md")):
+        dest_name = f"{plugin_name}_{rule_file.stem}.md"
+        central_dest = central_rules / dest_name
+        if not dry_run:
+            shutil.copy2(rule_file, central_dest)
+
+        for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config:
+                continue
+
+            ide_dir = root / target_dir_name
+            if not ide_dir.exists():
+                continue
+
+            if config.get("rules_mode") == "files" and config.get("rules"):
+                rules_target_dir = root / config["rules"]
+                if not dry_run:
+                    rules_target_dir.mkdir(parents=True, exist_ok=True)
+                target_link = rules_target_dir / dest_name
+                _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+
+            elif config.get("rules_mode") == "append":
+                append_target = root / config["rules_append_target"]
+                content = rule_file.read_text(encoding="utf-8")
+                marker = f"<!-- plugin: {plugin_name} / {rule_file.stem} -->"
+                if not dry_run:
+                    existing = append_target.read_text(encoding="utf-8") if append_target.exists() else ""
+                    if marker not in existing:
+                        with open(append_target, "a", encoding="utf-8") as f:
+                            f.write(f"\n{marker}\n{content}\n")
+                else:
+                    try:
+                        relative_path = append_target.relative_to(root)
+                    except ValueError:
+                        relative_path = append_target.name
+                    print(f"  [DRY RUN] append rule to {relative_path}")
+
+def write_project_lock(plugin_path: Path, metadata: dict,
+                       installed_skills: list[str], root: Path, dry_run: bool = False):
+    if dry_run:
+        print(f"  [DRY RUN] skip writing to skills-lock.json ({len(installed_skills)} skills)")
+        return
+        
+    lock_path = root / "skills-lock.json"
+    try:
+        lock = json.loads(lock_path.read_text(encoding="utf-8")) if lock_path.exists() else {"version": 1, "skills": {}}
+    except Exception:
+        lock = {"version": 1, "skills": {}}
+
+    source = metadata.get("repository", plugin_path.name)
+    import datetime
+    now = datetime.datetime.utcnow().isoformat() + "Z"
+
+    for skill_name in installed_skills:
+        existing = lock.get("skills", {}).get(skill_name, {})
+        if "skills" not in lock:
+            lock["skills"] = {}
+        lock["skills"][skill_name] = {
+            "source": source,
+            "sourceType": "local",
+            "computedHash": "",   # filled by install_all_plugins if needed
+            "installedAt": existing.get("installedAt", now),
+            "updatedAt": now,
+        }
+
+    # Sort keys for stable diffs
+    lock["skills"] = dict(sorted(lock["skills"].items()))
+    lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+    print(f"  ✓ Updated skills-lock.json ({len(installed_skills)} skills)")
+
+
+def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str], dry_run: bool = False):
     root = Path.cwd()
     plugin_name = metadata.get("name", plugin_path.name)
     
-    # 1. Ensure central `c:/Users/RICHFREM/source/repos/agent-plugins-skills/.agents` exists
     agents_root = root / ".agents"
-    agents_root.mkdir(exist_ok=True)
+    if not dry_run:
+        agents_root.mkdir(exist_ok=True)
+    
+    installed_skills = []
     
     # 2. Central Skills
     skills_dir = plugin_path / "skills"
     central_skills = agents_root / "skills"
     
     if skills_dir.exists():
-        central_skills.mkdir(exist_ok=True)
+        if not dry_run:
+            central_skills.mkdir(exist_ok=True)
         # Deep copy the real sources
         for item in skills_dir.iterdir():
             if item.is_dir():
                 dest = central_skills / item.name
-                shutil.copytree(item, dest, dirs_exist_ok=True)
-                print(f"  ✓ Universal central copy: {dest.relative_to(root)}")
+                if not dry_run:
+                    shutil.copytree(item, dest, dirs_exist_ok=True)
+                    print(f"  ✓ Universal central copy: {dest.relative_to(root)}")
+                else:
+                    print(f"  [DRY RUN] Universal central copy: .agents/skills/{item.name}")
+                
+                installed_skills.append(item.name)
 
                 # 3. Iterate local agent folders and establish symlinks
                 for target_dir_name in targets:
+                    config = DETECTABLE_AGENTS.get(target_dir_name)
+                    if not config or not config.get("skills"):
+                        continue
+                        
                     ide_dir = root / target_dir_name
                     if not ide_dir.exists():
                         continue
                     
-                    ide_skills = ide_dir / "skills"
-                    ide_skills.mkdir(exist_ok=True)
+                    ide_skills = root / config["skills"]
+                    if not dry_run:
+                        ide_skills.mkdir(parents=True, exist_ok=True)
                     
                     target_symlink = ide_skills / item.name
-                    
-                    # Clean out previous symlinks strictly
-                    if target_symlink.exists() or target_symlink.is_symlink():
-                        if target_symlink.is_dir() and not target_symlink.is_symlink():
-                            shutil.rmtree(target_symlink)
-                        else:
-                            target_symlink.unlink()
-                            
-                    try:
-                        rel = os.path.relpath(dest, target_symlink.parent)
-                        os.symlink(rel, target_symlink)
-                    except Exception:
-                        os.symlink(dest.absolute(), target_symlink)
-                        
-                    env_name = DETECTABLE_AGENTS.get(target_dir_name, target_dir_name)
-                    print(f"    -> Symlinked for {env_name}: {target_symlink.relative_to(root)}")
+                    _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
                     
     # 4. Standalone Agents (Convert native agent artifacts to AgentSkills wrappers)
     agents_dir_src = plugin_path / "agents"
@@ -84,63 +316,80 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
             
             dest = central_skills / final_name
-            dest.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (dest / opt_dir).mkdir(exist_ok=True)
-            
-            shutil.copy2(agent_file, dest / "SKILL.md")
-            print(f"  ✓ Universal central copy (Agent Wrapper): {dest.relative_to(root)}")
+            if not dry_run:
+                dest.mkdir(parents=True, exist_ok=True)
+                for opt_dir in ["scripts", "references", "assets", "evals"]:
+                    (dest / opt_dir).mkdir(exist_ok=True)
+                shutil.copy2(agent_file, dest / "SKILL.md")
+                print(f"  ✓ Universal central copy (Agent Wrapper): {dest.relative_to(root)}")
+            else:
+                print(f"  [DRY RUN] Universal central copy (Agent Wrapper): .agents/skills/{final_name}")
+                
+            installed_skills.append(final_name)
             
             for target_dir_name in targets:
+                config = DETECTABLE_AGENTS.get(target_dir_name)
+                if not config or not config.get("skills"):
+                    continue
+                    
                 ide_dir = root / target_dir_name
                 if not ide_dir.exists():
                     continue
-                ide_skills = ide_dir / "skills"
-                ide_skills.mkdir(exist_ok=True)
+                    
+                ide_skills = root / config["skills"]
+                if not dry_run:
+                    ide_skills.mkdir(parents=True, exist_ok=True)
                 
                 target_symlink = ide_skills / final_name
-                if target_symlink.exists() or target_symlink.is_symlink():
-                    if target_symlink.is_dir() and not target_symlink.is_symlink():
-                        shutil.rmtree(target_symlink)
-                    else:
-                        target_symlink.unlink()
-                        
-                try:
-                    rel = os.path.relpath(dest, target_symlink.parent)
-                    os.symlink(rel, target_symlink)
-                except Exception:
-                    os.symlink(dest.absolute(), target_symlink)
+                _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
 
     # 5. Native Hooks (e.g. for PreToolUse, Subagent events)
     hooks_file = plugin_path / "hooks" / "hooks.json"
     if hooks_file.exists():
         central_hooks = agents_root / "hooks"
-        central_hooks.mkdir(exist_ok=True)
+        if not dry_run:
+            central_hooks.mkdir(exist_ok=True)
+            
         dest = central_hooks / f"{plugin_name}-hooks.json"
-        shutil.copy2(hooks_file, dest)
+        
+        if not dry_run:
+            shutil.copy2(hooks_file, dest)
+            print(f"  ✓ Hook central copy: {dest.relative_to(root)}")
+        else:
+            print(f"  [DRY RUN] Hook central copy: .agents/hooks/{dest.name}")
         
         for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config or not config.get("hooks"):
+                continue
+                
             ide_dir = root / target_dir_name
-            # Hooks generally only deployed to Claude environment
-            if not ide_dir.exists() or target_dir_name not in [".claude"]:
+            if not ide_dir.exists():
                 continue 
             
-            ide_hooks = ide_dir / "hooks"
-            ide_hooks.mkdir(exist_ok=True)
+            ide_hooks = root / config["hooks"]
+            if not dry_run:
+                ide_hooks.mkdir(parents=True, exist_ok=True)
             
             target_symlink = ide_hooks / dest.name
-            if target_symlink.exists() or target_symlink.is_symlink():
-                target_symlink.unlink()
-            try:
-                os.symlink(os.path.relpath(dest, target_symlink.parent), target_symlink)
-            except Exception:
-                os.symlink(dest.absolute(), target_symlink)
-            print(f"    -> Hook Symlinked for claude: {target_symlink.relative_to(root)}")
+            _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
+            
+    deploy_commands(plugin_path, plugin_name, targets, root, dry_run)
+    deploy_rules(plugin_path, plugin_name, targets, root, dry_run)
+    
+    # MCP merge (future -- log intent for now)
+    mcp_file = plugin_path / ".mcp.json"
+    if mcp_file.exists():
+        print(f"  ⚠ .mcp.json found but merge not yet implemented - "
+              f"manually merge {mcp_file} into ./.mcp.json")
+              
+    return installed_skills
 
 
 def main():
     parser = argparse.ArgumentParser(description="Plugin Bridge Installer (.agents symlinking)")
     parser.add_argument("--plugin", required=True, help="Path to plugin directory")
+    parser.add_argument("--dry-run", action="store_true", help="Preview all actions without writing any files or symlinks")
     args = parser.parse_args()
 
     plugin_path = Path(args.plugin).resolve()
@@ -160,8 +409,11 @@ def main():
     
     print(f"\nInstalling plugin '{metadata['name']}' using target symlinking (.agents/ Strategy).")
     print(f"Detected IDE environments: {', '.join(targets)}")
+    if args.dry_run:
+        print(">>> DRY RUN MODE <<<")
 
-    provision_central_and_symlink(plugin_path, metadata, targets)
+    installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run)
+    write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
     
 if __name__ == "__main__":
     main()
