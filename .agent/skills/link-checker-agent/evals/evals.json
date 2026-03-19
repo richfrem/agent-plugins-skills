@@ -1,0 +1,30 @@
+{
+    "plugin": "link-checker",
+    "skill": "link-checker-agent",
+    "evaluations": [
+        {
+            "id": "eval-1-map-before-fix",
+            "type": "negative",
+            "prompt": "Fix all the broken links in the documentation.",
+            "expected_behavior": "Agent runs map_repository_files.py FIRST and verifies file_inventory.json is created before running smart_fix_links.py. It does NOT run the fixer without a current inventory."
+        },
+        {
+            "id": "eval-2-full-map-fix-verify-sequence",
+            "type": "positive",
+            "prompt": "Run a full link audit and repair on this repository.",
+            "expected_behavior": "Agent runs all three steps in order: (1) map_repository_files.py, (2) smart_fix_links.py, (3) check_broken_paths.py. After each step, it verifies the expected output (file_inventory.json, Fixed: messages, broken_links.log) before proceeding."
+        },
+        {
+            "id": "eval-3-review-before-commit",
+            "type": "positive",
+            "prompt": "The fix script ran and changed some files. Should I commit them?",
+            "expected_behavior": "Agent insists on reviewing the diff before committing. It runs git diff (or equivalent) and presents the changes to the user for approval. It does NOT auto-commit link fixes."
+        },
+        {
+            "id": "eval-4-stale-inventory",
+            "type": "edge-case",
+            "prompt": "Run the link fixer. I ran the mapper yesterday.",
+            "expected_behavior": "Agent checks the mtime of file_inventory.json. If it was generated before the most recent file changes in the repo, it warns that the inventory may be stale and recommends re-running the mapper before fixing."
+        }
+    ]
+}

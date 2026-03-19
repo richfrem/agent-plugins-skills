@@ -33,7 +33,9 @@ Run the targeted analysis pipeline on a single Agent Skill. This allows for focu
 ## Execution Flow
 
 1. **Invoke Analysis**: The system triggers `analyze-plugin` operating in Single Skill Mode on the provided `$ARGUMENTS`.
-2. **Execute Inventory**: `plugins/agent-plugin-analyzer/skills/*/scripts/inventory_plugin.py` runs against the skill path.
+2. **Execute Inventory**: `plugins/agent-plugin-analyzer/scripts/inventory_plugin.py` runs against the skill path.
+   > **Security scanning is enabled by default.** Credential detection, network call detection,
+   > and environment variable checks run on all script files unless `--no-security` is passed.
 3. **Pattern Matching**: Checks against `references/pattern-catalog.md` and detects anti-patterns.
 4. **Knowledge Synthesis**: `synthesize-learnings` is invoked to map discovered patterns back to our core `agent-scaffolders` and `agent-skill-open-specifications`.
 5. **Output**: Renders the analysis inline, highlighting the novel techniques implemented in the isolated skill.

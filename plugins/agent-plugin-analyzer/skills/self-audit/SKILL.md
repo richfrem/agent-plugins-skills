@@ -32,10 +32,15 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
    - `warnings` = [] (zero missing components)
 
    **Flawed fixture scanner must confirm:**
-   - `security_flags` count ≥ 5 (credential + network calls + env access)
+   - `security_flags` count ≥ 4 (network calls + env access; obfuscated credential is LLM-only)
    - `issues` count ≥ 1 (bash script violation)
    - `warnings` count ≥ 2 (missing acceptance criteria + references)
    - See `tests/flawed-plugin/README.md` for the full expected findings manifest
+
+   **To run assertions programmatically:**
+   ```bash
+   python3 ./scripts/assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
+   ```
 
 4. **Run the full 6-phase analysis on each fixture:**
    - `tests/gold-standard-plugin/` — should score maturity ≥ L2, zero Critical, at least 2 patterns identified

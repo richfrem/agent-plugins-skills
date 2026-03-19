@@ -7,7 +7,7 @@ description: >
   "what is a loop scheduler or heartbeat", or when the user asks for the canonical 
   reference and operational guide for the Agentic OS / Agent Harness pattern.
 disable-model-invocation: false
-tools: ["Read", "Write"]
+allowed-tools: Read, Write
 ---
 # Agentic OS Guide
 

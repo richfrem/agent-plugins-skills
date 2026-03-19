@@ -1,0 +1,17 @@
+[
+  {
+    "prompt": "evaluate this skill",
+    "expected": "pass",
+    "type": "positive"
+  },
+  {
+    "prompt": "run tests on the new skill",
+    "expected": "pass",
+    "type": "positive"
+  },
+  {
+    "prompt": "what is the weather?",
+    "expected": "fail",
+    "type": "negative"
+  }
+]

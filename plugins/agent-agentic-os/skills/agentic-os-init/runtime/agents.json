@@ -7,6 +7,8 @@
         "os-health-check",
         "os-clean-locks",
         "skill-improvement-eval",
+        "post_run_hook",
+        "background-hook",
         "system"
     ]
 }

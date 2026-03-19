@@ -22,16 +22,15 @@ agent-plugin-analyzer/
 ├── README.md
 ├── agents/
 │   └── l5-red-team-auditor.md   # Sub-agent: conducts L5 architecture analysis
-├── commands/
-│   ├── mine-plugins.md          # Full analysis pipeline
-│   ├── mine-skill.md            # Single-skill analysis
-│   └── self-audit.md            # Regression smoke test
 ├── research/
 │   ├── round-1-redteam-review-prompt.md
 │   ├── round-1-synthesis.md
 │   ├── round-2-redteam-review-prompt.md
-│   └── round-2-synthesis.md
+│   ├── round-2-synthesis.md
+│   ├── round-3-redteam-review-prompt.md
+│   └── round-3-redteam-review-claude-opus.md
 ├── scripts/
+│   ├── assert_audit.py          # Programmatic regression assertions
 │   └── inventory_plugin.py      # Deterministic inventory + security scan
 ├── skills/
 │   ├── analyze-plugin/
@@ -47,19 +46,30 @@ agent-plugin-analyzer/
 │   │       └── security-checks.md
 │   ├── audit-plugin/
 │   │   ├── SKILL.md             # Standard compliance audit (manifest, structure, security)
+│   │   ├── CONNECTORS.md        # Declares plugin-validator cross-plugin dependency
 │   │   └── references/
 │   ├── audit-plugin-l5/
 │   │   ├── SKILL.md             # Triggers the l5-red-team-auditor sub-agent
 │   │   └── references/
 │   │       └── acceptance-criteria.md
+│   ├── mine-plugins/
+│   │   └── SKILL.md             # Full pipeline: inventory -> analyze -> extract -> synthesize
+│   ├── mine-skill/
+│   │   └── SKILL.md             # Targeted single-skill analysis
+│   ├── self-audit/
+│   │   └── SKILL.md             # Regression smoke test (analyzer vs itself + fixtures)
 │   └── synthesize-learnings/
 │       ├── SKILL.md
 │       └── references/
 │           ├── acceptance-criteria.md
-│           └── improvement-mapping.md
+│           ├── fallback-tree.md
+│           ├── improvement-mapping.md
+│           ├── input-contract.md    # Required sections from analyze-plugin output
+│           └── open-recommendations.md  # Persistent recommendation tracker
 └── tests/
     ├── gold-standard-plugin/    # Known-good fixture (should pass)
-    └── flawed-plugin/           # Known-bad fixture (should fail)
+    ├── flawed-plugin/           # Known-bad fixture (should fail)
+    └── goodhart-plugin/         # Structurally compliant but substantively hollow
 ```
 
 ## Usage
@@ -124,6 +134,9 @@ Take the analysis results and generate improvement recommendations for our scaff
 | `audit-plugin` | Standard compliance audit: manifest, structure, naming, components, security (uses plugin-validator agent) |
 | `audit-plugin-l5` | Adversarial red team audit -- dispatches `l5-red-team-auditor` against 39-point architecture matrix |
 | `synthesize-learnings` | Converts raw analysis into actionable recommendations for 4 targets |
+| `mine-plugins` (user-invocable) | Full pipeline: inventory -> analyze -> extract -> synthesize -> recommend |
+| `mine-skill` (user-invocable) | Targeted analysis of a single skill directory |
+| `self-audit` (user-invocable) | Regression test: runs analyzer against itself + test fixtures |
 
 ## Commands
 
@@ -155,6 +168,7 @@ Take the analysis results and generate improvement recommendations for our scaff
 |-------|-----------|-----------------|
 | Round 1 | Gemini 3.1 Pro, Grok 4.2, GPT 5.3, Claude 4.6 Opus | Pattern governance, security layer, maturity model, self-audit |
 | Round 2 | GPT 5.3, Gemini 3.1 Pro, Grok 4.2, Claude Sonnet + Opus | Extract to references, test fixtures, score weights, LLM attack vectors |
+| Round 3 | Claude Opus 4.6 | Fixture accuracy, eval schema alignment, Goodhart gap, input contract, pattern ossification |
 
 ## Plugin Components
 

@@ -31,6 +31,10 @@ Establish the plugin root:
 
 ## Step 2: Run plugin-validator Agent
 
+> **Cross-plugin dependency**: The `plugin-validator` agent used in this step is defined in the
+> `agent-scaffolders` plugin, not this plugin. It must be installed for this step to work.
+> See `CONNECTORS.md` for the dependency declaration and fallback instructions.
+
 Trigger the `plugin-validator` agent for comprehensive validation:
 
 ```

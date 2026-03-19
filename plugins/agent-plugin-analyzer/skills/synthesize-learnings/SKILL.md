@@ -113,6 +113,17 @@ Rank recommendations by impact:
 
 Append any newly discovered patterns to `references/pattern-catalog.md` in the `analyze-plugin` skill. This is the self-improvement loop — every analysis makes future analyses better.
 
+### Step 5b: Log Recommendations to Tracker
+
+Append each recommendation to `references/open-recommendations.md` using this format:
+
+```markdown
+| [YYYY-MM-DD] | [Title] | [Target] | [Priority] | open |
+```
+
+See `references/open-recommendations.md` for the tracker schema. When a recommendation is
+implemented, update its status from `open` to `implemented` and add the PR or commit reference.
+
 Format new catalog entries as:
 ```markdown
 ### [Pattern Name]

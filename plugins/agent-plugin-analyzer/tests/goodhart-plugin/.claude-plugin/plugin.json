@@ -1,0 +1,8 @@
+{
+    "name": "goodhart-plugin",
+    "version": "1.0.0",
+    "description": "A test fixture that passes all structural checklist gates but contains no real content.",
+    "author": {
+        "name": "Test Fixture"
+    }
+}

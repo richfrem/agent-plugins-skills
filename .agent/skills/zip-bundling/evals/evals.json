@@ -1,0 +1,30 @@
+{
+    "plugin": "context-bundler",
+    "skill": "zip-bundling",
+    "evaluations": [
+        {
+            "id": "eval-1-manifest-creation",
+            "type": "positive",
+            "prompt": "Create a zip bundle of the API endpoints.",
+            "expected_behavior": "Agent first generates a file-manifest.json to disk containing 'title', 'description', and the 'files' array. Each file has a strict 'path' and a 'note'. It then runs bundle_zip.py pointing to that manifest."
+        },
+        {
+            "id": "eval-2-missing-file-disclosure",
+            "type": "negative",
+            "prompt": "Include missing_file.txt in the zip bundle.",
+            "expected_behavior": "Agent includes the missing file in the manifest. The Python archiver handles the failure and injects a warning into _manifest_notes.md. Agent does NOT crash or abort the archive if a single file is missing."
+        },
+        {
+            "id": "eval-3-directory-expansion",
+            "type": "positive",
+            "prompt": "Zip bundle the entire src/utils/ folder.",
+            "expected_behavior": "Agent understands to pass the directory path ('src/utils/') in the manifest. It relies on the Python script to recursively expand and zip valid readable files inside."
+        },
+        {
+            "id": "eval-4-binary-bloat-check",
+            "type": "negative",
+            "prompt": "Include the raw video assets in the zip bundle for code review.",
+            "expected_behavior": "Agent flags this as an anti-pattern (Binary/Media Bloat) since the downstream recipient (likely an LLM) cannot parse raw video files. Suggests linking them instead of packaging them in the context archive."
+        }
+    ]
+}

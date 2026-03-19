@@ -59,88 +59,104 @@ The OS operates on a centralized Python-based event bus (`context/kernel.py`) in
 
 ```text
 agent-agentic-os
+│   ├── .claude-plugin/
+│   │   └── plugin.json
 │   ├── CONNECTORS.md
 │   ├── README.md
+│   ├── SUMMARY.md
 │   ├── agent-agentic-os-architecture.mmd
-│   ├── agents
+│   ├── agents/
 │   │   ├── agentic-os-setup.md
-│   │   ├── os-learning-loop.md
-│   ├── commands
+│   │   ├── os-health-check.md
+│   │   └── os-learning-loop.md
+│   ├── commands/
 │   │   ├── os-init.md
 │   │   ├── os-loop.md
-│   │   ├── os-memory.md
-│   ├── hooks
+│   │   └── os-memory.md
+│   ├── hooks/
 │   │   ├── hooks.json
-│   │   ├── scripts
 │   │   ├── update_memory.py
+│   │   └── scripts/
+│   │       └── post_run_metrics.py
 │   ├── lsp.json
-│   ├── references
+│   ├── references/
 │   │   ├── anthropic-official-docs.md
-│   │   ├── diagrams
-│   │   │   ├── agentic-os-loop-lifecycle.mmd
-│   │   │   ├── agentic-os-loop-lifecycle.png
-│   │   │   ├── agentic-os-memory-subsystem.mmd
-│   │   │   ├── agentic-os-memory-subsystem.png
-│   │   │   ├── agentic-os-overview.mmd
-│   │   │   ├── agentic-os-overview.png
-│   │   │   ├── agentic-os-structure.mmd
-│   │   │   ├── agentic-os-structure.png
-│   │   │   ├── agentic-os-system-architecture.mmd
-│   │   │   ├── agentic-os-system-architecture.png
+│   │   ├── metrics.md
+│   │   ├── post_run_survey.md
+│   │   ├── skill_optimization_guide.md
 │   │   ├── status-file-spec.md
+│   │   └── diagrams/
+│   │       ├── agentic-os-loop-lifecycle.mmd / .png
+│   │       ├── agentic-os-memory-subsystem.mmd / .png
+│   │       ├── agentic-os-overview.mmd / .png
+│   │       ├── agentic-os-structure.mmd / .png
+│   │       ├── agentic-os-system-architecture.mmd / .png
+│   │       └── event-bus-architecture.mmd
 │   ├── requirements.in
-│   ├── skills
-│   │   ├── agentic-os-guide
-│   │   │   ├── CONNECTORS.md
-│   │   │   ├── SKILL.md
-│   │   │   ├── acceptance-criteria.md
-│   │   │   ├── agentic-os-guide-flow.mmd
-│   │   │   ├── evals
-│   │   │   │   ├── evals.json
-│   │   │   │   ├── results.tsv
-│   │   │   ├── examples
-│   │   │   ├── references
-│   │   │   │   ├── acceptance-criteria.md
-│   │   │   │   ├── architecture.md
-│   │   │   │   ├── canonical-file-structure.md
-│   │   │   │   ├── claude-md-hierarchy.md
-│   │   │   │   ├── context-folder-patterns.md
-│   │   │   │   ├── loop-scheduler.md
-│   │   │   │   ├── memory-hygiene.md
-│   │   │   │   ├── sub-agents-and-hooks.md
-│   │   │   ├── scripts
-│   │   │   ├── templates
-│   │   ├── agentic-os-init
-│   │   │   ├── CONNECTORS.md
-│   │   │   ├── SKILL.md
-│   │   │   ├── acceptance-criteria.md
-│   │   │   ├── agentic-os-init-flow.mmd
-│   │   │   ├── evals
-│   │   │   │   ├── evals.json
-│   │   │   │   ├── results.tsv
-│   │   │   ├── examples
-│   │   │   ├── references
-│   │   │   │   ├── acceptance-criteria.md
-│   │   │   │   ├── architecture.md
-│   │   │   │   ├── project-setup-guide.md
-│   │   │   ├── scripts
-│   │   │   │   ├── init_agentic_os.py
-│   │   │   ├── templates
-│   │   ├── session-memory-manager
-│   │   │   ├── CONNECTORS.md
-│   │   │   ├── SKILL.md
-│   │   │   ├── acceptance-criteria.md
-│   │   │   ├── evals
-│   │   │   │   ├── evals.json
-│   │   │   │   ├── results.tsv
-│   │   │   ├── examples
-│   │   │   ├── references
-│   │   │   │   ├── acceptance-criteria.md
-│   │   │   │   ├── architecture.md
-│   │   │   │   ├── memory-promotion-guide.md
-│   │   │   ├── scripts
-│   │   │   ├── session-memory-manager-flow.mmd
-│   │   │   ├── templates
+│   └── skills/
+│       ├── agentic-os-guide/
+│       │   ├── CONNECTORS.md
+│       │   ├── SKILL.md
+│       │   ├── agentic-os-guide-flow.mmd
+│       │   ├── evals/
+│       │   │   ├── evals.json
+│       │   │   └── results.tsv
+│       │   └── references/
+│       │       ├── acceptance-criteria.md
+│       │       ├── architecture.md
+│       │       ├── canonical-file-structure.md
+│       │       ├── claude-md-hierarchy.md
+│       │       ├── context-folder-patterns.md
+│       │       ├── loop-scheduler.md
+│       │       ├── memory-hygiene.md
+│       │       └── sub-agents-and-hooks.md
+│       ├── agentic-os-init/
+│       │   ├── CONNECTORS.md
+│       │   ├── SKILL.md
+│       │   ├── agentic-os-init-flow.mmd
+│       │   ├── evals/
+│       │   │   ├── evals.json
+│       │   │   └── results.tsv
+│       │   ├── references/
+│       │   │   ├── acceptance-criteria.md
+│       │   │   ├── architecture.md
+│       │   │   └── project-setup-guide.md
+│       │   ├── runtime/
+│       │   │   ├── agents.json        <- kernel agent permit list
+│       │   │   └── kernel.py          <- atomic lock + event bus controller
+│       │   ├── scripts/
+│       │   │   └── init_agentic_os.py
+│       │   └── templates/
+│       ├── os-clean-locks/
+│       │   ├── SKILL.md
+│       │   └── references/
+│       │       └── acceptance-criteria.md
+│       ├── session-memory-manager/
+│       │   ├── CONNECTORS.md
+│       │   ├── SKILL.md
+│       │   ├── evals/
+│       │   │   ├── evals.json
+│       │   │   └── results.tsv
+│       │   ├── references/
+│       │   │   ├── acceptance-criteria.md
+│       │   │   ├── architecture.md
+│       │   │   └── memory-promotion-guide.md
+│       │   └── session-memory-manager-flow.mmd
+│       ├── skill-improvement-eval/
+│       │   ├── SKILL.md
+│       │   ├── evals/
+│       │   │   └── evals.json
+│       │   ├── references/
+│       │   │   ├── acceptance-criteria.md
+│       │   │   └── optimizer-engine-patterns.md
+│       │   └── scripts/
+│       │       └── eval_runner.py
+│       └── todo-check/
+│           ├── SKILL.md
+│           ├── evals/
+│           │   └── evals.json
+│           └── scripts/
+│               └── check_todos.py
 ```
 
 ## Architecture Visualizations
