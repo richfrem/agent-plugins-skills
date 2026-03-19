@@ -1,1 +1,0 @@
-../../../scripts/ingest.py

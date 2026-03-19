@@ -89,7 +89,7 @@ def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool):
 
 def run_bridge_installer(plugin_path: Path):
     """Runs the bridge installer for a specific plugin."""
-    cmd = [sys.executable, str(BRIDGE_INSTALLER), "--plugin", str(plugin_path), "--target", "auto"]
+    cmd = [sys.executable, str(BRIDGE_INSTALLER), "--plugin", str(plugin_path)]
     try:
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         print(f"  [INSTALL] Success: {plugin_path.name}")

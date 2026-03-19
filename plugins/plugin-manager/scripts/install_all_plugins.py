@@ -22,14 +22,6 @@ import json
 import hashlib
 from pathlib import Path
 
-print("\n" + "="*80)
-print("⚠️  DEPRECATION NOTICE: This is the full-stack installer.")
-print("NOTE: npx skills installs SKILLS ONLY (no commands, rules, or hooks).")
-print("This script is the full-stack installer. Use it when you need")
-print("commands, rules, or hooks deployed alongside skills.")
-print("For end-user skill-only distribution, use: npx skills add ./plugins/ --force")
-print("="*80 + "\n")
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent 
 PLUGINS_ROOT = PROJECT_ROOT / "plugins"
@@ -41,7 +33,10 @@ def _compute_folder_hash(folder: Path) -> str:
     hasher = hashlib.sha256()
     file_list = []
     
-    for root_dir, _, files in os.walk(folder):
+    for root_dir, dirs, files in os.walk(folder):
+        # Skip hidden dirs and known noise
+        dirs[:] = [d for d in dirs if not d.startswith('.') 
+                   and d not in ('node_modules', '__pycache__')]
         for f in files:
             file_list.append(Path(root_dir) / f)
             
@@ -89,6 +84,12 @@ def main():
     parser = argparse.ArgumentParser(description="Install all plugins via bridge_installer")
     parser.add_argument("--dry-run", action="store_true", help="Pass --dry-run to each bridge_installer invocation")
     args = parser.parse_args()
+
+    tag = " [DRY RUN]" if args.dry_run else ""
+    print(f"\n{'='*80}")
+    print(f"Full-stack installer{tag}: deploys skills + commands + rules + hooks.")
+    print("npx skills installs SKILLS ONLY. Use this script for complete deployment.")
+    print(f"{'='*80}\n")
 
     if not INSTALLER_SCRIPT.exists():
         print(f"❌ Error: Installer script not found at {INSTALLER_SCRIPT}")

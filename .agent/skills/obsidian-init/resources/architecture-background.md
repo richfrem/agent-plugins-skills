@@ -1,1 +1,0 @@
-../../../resources/architecture-background.md
