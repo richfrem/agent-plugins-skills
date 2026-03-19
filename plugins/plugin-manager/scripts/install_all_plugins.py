@@ -4,64 +4,44 @@ install_all_plugins.py (CLI)
 =====================================
 
 Purpose:
-    Iterates through all directories in `plugins/` and runs the `bridge_installer.py` for each one to orchestrate a bulk repository update.
-
-Layer: System Integration
+    Iterates through all directories in `plugins/` and runs the `bridge_installer.py` for each one 
+    to orchestrate a bulk repository update, strictly using the new .agents centralized symlink pattern.
 
 Usage Examples:
-    python3 install_all_plugins.py --target <auto|antigravity|github|gemini|claude>
-
-Supported Object Types:
-    - Local directory structure iteration
-
-CLI Arguments:
-    --target: Target environment (defaults to auto).
-
-Input Files:
-    - Looks at all subfolders in the `plugins/` namespace.
-
-Output:
-    - Stdout metrics of successful/failed bulk deployments.
-
-Key Functions:
-    - None (Sequential loop)
+    python3 install_all_plugins.py
 
 Script Dependencies:
     - bridge_installer.py
-
-Consumed by:
-    - User (CLI)
 """
 import os
 import sys
 import argparse
 import subprocess
+import shutil
 from pathlib import Path
 
 print("\n" + "="*80)
-print("⚠️  DEPRECATION NOTICE: For consumers, this script is superseded by `npx skills`.")
-print("To install all plugins natively, run from your project root:")
-print("  npx skills add richfrem/agent-plugins-skills")
-print("This local Python script is retained for contributors deploying from local source.")
+print("⚠️  DEPRECATION NOTICE: For standard consumer pipelines, use `npx skills`.")
+print("To install all plugins natively from remote: `npx skills add richfrem/agent-plugins-skills`")
+print("This local Python script is retained for bulk rebuilding local source plugins.")
 print("="*80 + "\n")
 
-# Setup paths
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent # Project root
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent 
 PLUGINS_ROOT = PROJECT_ROOT / "plugins"
 
 INSTALLER_SCRIPT = SCRIPT_DIR / "bridge_installer.py"
 
 def main():
-    parser = argparse.ArgumentParser(description="Bulk Plugin Installer")
-    parser.add_argument("--target", default="auto", help="Target environment (e.g., auto, antigravity, claude, cursor, roo, OpenHands)")
-    args = parser.parse_args()
-
     if not INSTALLER_SCRIPT.exists():
         print(f"❌ Error: Installer script not found at {INSTALLER_SCRIPT}")
         sys.exit(1)
 
-    print(f"🚀 Starting Batch Installation to target '{args.target}' from {PLUGINS_ROOT}...")
+    print(f"🚀 Starting Local Batch Installation mimicking `npx skills add ./plugins/`...")
+    print("Flushing old .agents/ source block to ensure a clean central repo before symlinking...")
+    target_agents_repo = PROJECT_ROOT / ".agents"
+    if target_agents_repo.exists():
+        shutil.rmtree(target_agents_repo, ignore_errors=True)
     
     plugins_processed = 0
     plugins_failed = 0
@@ -77,19 +57,17 @@ def main():
         if plugin_dir.name in ["node_modules", "venv", "env"]:
             continue
             
-        print(f"\n📦 Installing: {plugin_dir.name}")
+        print(f"\n📦 Installing Component: {plugin_dir.name}")
         
         try:
-            # Run the bridge installer for this plugin
-            # We use subprocess to isolate execution and ensure clean state
+            # We use subprocess to isolate execution and ensure clean state per plugin
             cmd = [
                 sys.executable, 
                 str(INSTALLER_SCRIPT),
-                "--plugin", str(plugin_dir),
-                "--target", args.target
+                "--plugin", str(plugin_dir)
             ]
             
-            result = subprocess.run(cmd, check=True, text=True)
+            subprocess.run(cmd, check=True, text=True)
             plugins_processed += 1
             
         except subprocess.CalledProcessError as e:
@@ -100,7 +78,7 @@ def main():
             plugins_failed += 1
 
     print("\n" + "="*50)
-    print(f"Batch Installation Complete")
+    print(f"Batch Installation into .agents/ Complete")
     print(f"✅ Success: {plugins_processed}")
     if plugins_failed > 0:
         print(f"❌ Failed:  {plugins_failed}")

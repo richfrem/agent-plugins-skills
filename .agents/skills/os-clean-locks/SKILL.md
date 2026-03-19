@@ -14,6 +14,14 @@ description: >
   python3 context/kernel.py state_update active_agent os-clean-locks
   </Bash>
   </example>
+
+  <example>
+  Context: Agent detects a deadlock when trying to acquire a lock during a task.
+  assistant: [autonomously] "The acquire_lock call for 'memory' failed -- a prior agent likely crashed and left a stale lock. I'll invoke os-clean-locks to clear it before retrying."
+  <commentary>
+  Implicit audit trigger -- agent detects deadlock from kernel output and self-heals using os-clean-locks without user prompting.
+  </commentary>
+  </example>
 model: inherit
 color: red
 tools: ["Bash", "Read", "Write"]
@@ -30,6 +38,14 @@ You are a specialized expert sub-agent acting as the system administrator of thi
 
 Execute these phases in order:
 
+### Phase 0: Intent Emission (Event Bus)
+
+Before taking any actions, emit intent to the Event Bus (if kernel is available):
+```bash
+python3 context/kernel.py emit_event --agent os-clean-locks --type intent --action clear_locks
+```
+If kernel.py does not exist, skip this step.
+
 ### Phase 1: Context Verification
 1. Verify that `context/.locks/` exists.
 2. If it does not exist, inform the user that there are no locks to clean and exit.
@@ -42,4 +58,10 @@ Execute these phases in order:
 2. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-clean-locks` and `python3 context/kernel.py state_update locks_cleared true`.
 
 ### Phase 4: Final Briefing
+
+Emit a result event to the Event Bus (if kernel is available):
+```bash
+python3 context/kernel.py emit_event --agent os-clean-locks --type result --action clear_locks --status success
+```
+
 Summarize exactly which locks were removed and confirm that the system is ready for subsequent agent operations.

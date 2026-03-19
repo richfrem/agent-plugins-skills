@@ -110,23 +110,31 @@ If a fact is selected for promotion, you **MUST first read `context/memory.md` A
 2. **THE DEMENTIA DEFENSE**: If the topic, or *any* overlapping topic exists, you must flag it as a potential **Conflict** even if the wording differs. LLMs are bad at detecting semantic equivalence. Err toward false positives. 
 3. **Deduplication IDs**: Assign a sequential unique ID based on the current highest ID in `context/memory.md` (e.g., if the highest is `[#042]`, assign `[#043]`) to prevent syntactic duplication. Ensure this ID prefix `[#ID]` is stored with the fact. Let the user know the generated ID. Use `grep -c "^\[#"` via `Bash` if you need help finding the count.
 4. **Cross-Skill Conflict Detection**: Run `grep -ri "[Fact Keywords]" ./skills/` using the `Bash` tool to ensure promoted memory doesn't break or contradict existing procedural skills.
-5. **Semantic Deduplication**: If ANY semantic overlap exists, explicitly output `<CONFLICT>` before any Write. Ask the user if the new proposed fact *supersedes* the existing fact (to replace the old hash) or if it's a conflict to resolve.
+5. **Semantic Deduplication**: If ANY semantic overlap exists, explicitly output `<CONFLICT>` before any Write. Ask the user if the new proposed fact *supersedes* the existing fact (to replace the old hash) or if it's a conflict to resolve. If superseding, you MUST output a `<SUPERSEDE old_id=NNN>` marker (e.g., `<SUPERSEDE old_id=042>`) so the next learning loop can locate and prune the old fact. Never silently overwrite — the marker is required for audit trail continuity.
 6. **Safe Write Protocol**: Wrap every `Write` in a `git stash` + diff preview (use `Bash` tool). If the user rejects the preview, run `git stash pop` to rollback.
 7. If there is absolutely no conflict (or the user resolves it), append the numbered/hashed fact cleanly.
 8. **Post-Write Verification**: After writing, use the `Read` tool on the exact file. If the expected diff is not present, output `<WRITE_FAILED>` and run `git stash pop`.
 
-Format facts in `context/memory.md` like this:
+Format facts in `context/memory.md` like this (choose one format and stick to it):
 
+**Option A — Markdown (default, human-readable):**
 ```markdown
 ## [YYYY-MM-DD] [Topic]
 [The fact, decision, or convention in 1-3 sentences]
 ```
 
+**Option B — Structured JSON entries (recommended for projects with high fact volume or automated tooling):**
+```json
+{"id": "build_cmd_001", "type": "command", "topic": "build", "value": "npm run build", "source": "session-2026-03-19", "supersedes": null}
+```
+Append one JSON object per line to a `context/memory.jsonl` file. Reference it from `context/memory.md` with a note: `<!-- structured facts in context/memory.jsonl -->`. Benefits: unambiguous deduplication by `id`, machine-queryable, easier `<SUPERSEDE>` enforcement.
+
 ### Phase 4: Enforce Memory.md Size Limits
 
 You MUST verify the size of the curated memory file to prevent context degradation.
-1. Run `wc -l context/memory.md` using the `Bash` tool to check the exact line count.
-2. If the line count is strictly greater than 500 lines, you must condense it:
+1. Run `wc -c context/memory.md` using the `Bash` tool to check the exact byte size.
+   (Line count is unreliable on Windows due to CRLF line endings; byte size is platform-neutral.)
+2. If the byte size is strictly greater than 50000 bytes, you must condense it:
    - **Merge & Prune**: Look for redundant, outdated, or supersedable facts and merge them.
    - **Archive**: If still too large, create the archive directory: `mkdir -p context/memory/archive/`
    - Move the oldest (top-most) ~200 lines to `context/memory/archive/YYYY-MM.md` using `Write`.
