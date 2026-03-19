@@ -35,14 +35,13 @@ There is one bridge:
 
 ### Install a single plugin
 ```bash
-python ./scripts/bridge_installer.py \
-  --plugin plugins/<plugin-name> \
-  --target <environment>
+python ./plugins/plugin-manager/scripts/bridge_installer.py \
+  --plugin plugins/<plugin-name>
 ```
 
 ### Install all plugins
 ```bash
-python ./scripts/install_all_plugins.py
+python ./plugins/plugin-manager/scripts/install_all_plugins.py
 ```
 
 ---
@@ -54,6 +53,6 @@ python ./scripts/install_all_plugins.py
 ---
 
 ## Notes
-- `--target auto` is explicitly discouraged. Always specify the target environment.
+- The bridge uses automatic target detection mapping to central `.agents/` repositories. It does not accept a `--target` argument.
 - The bridge is format-agnostic: any plugin following the Open Standards structure is compatible.
 - Agent-specific patches (actor flags, path formats) are applied automatically per target.
