@@ -2,6 +2,31 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## [1.3.1] - 2026-03-19
+
+### Bug Fixes (claude-4.6 review of v1.3.0)
+- **os-learning-loop.md Phase 1**: Lock acquisition (`acquire_lock kernel`) is now conditional — skipped entirely in Fast Path mode. Previously Fast Path held the kernel write lock while doing a read-only analysis, defeating the lightweight intent.
+- **AUTO-APPLY ZONE**: Replaced vague "low-risk" with four concrete, enumerable conditions that must ALL be true for auto-apply (user-confirmed this session, pure addition, factual not policy, non-strict mode). Conditions are now present in both the CLAUDE.md template comment and the SANDBOX PROTECTION RULE in `os-learning-loop.md` so the agent has them at decision time.
+
+## [1.3.0] - 2026-03-19
+
+### Execution Tiers (Issue: process overhead for lightweight use cases)
+- **os-state.json template**: Added `execution_mode` (`lightweight` | `standard` | `strict`, default `standard`), `hook_sample_rate` (default 1 = every call), and `lock_timeout_seconds` (default 1800) fields.
+- **update_memory.py**: Added `_check_execution_gate()` — skips hook entirely when `execution_mode=lightweight`; skips `N-1` of every `N` calls when `hook_sample_rate > 1` (counter stored in `os-state.json["hook_call_count"]`).
+- **CLAUDE_MD_PROJECT.md template**: Added `## [AUTO-APPLY ZONE]` append-only section; the learning loop may write low-risk facts here without manual approval when `execution_mode != strict`.
+- **os-learning-loop.md**: Added "Fast Path (Passive Analyzer)" mode — default for routine sessions. Completes Phases 0-2 and emits a `FINDINGS:` block without acquiring write locks or modifying files. Full loop only on explicit user request or 3+ same-type friction events.
+
+### Hook Visibility (Issue: silent failures unnoticed)
+- **post_run_metrics.py**: Added `count_hook_errors()` that reads `context/memory/hook-errors.log`; hook error count included in Stop-hook summary line and in the emitted metric event (`results.hook_errors`). Failures are now visible at session end.
+
+### Memory Schema (Issue: freeform drift)
+- **session-memory-manager/SKILL.md**: Added Option B — structured JSONL format (`context/memory.jsonl`) as an alternative to freeform markdown. Benefits: unambiguous deduplication by `id`, machine-queryable, easier `<SUPERSEDE>` enforcement.
+
+### Backlog (architectural, deferred to v2.0)
+- `temp/backlog/agentic-os-backlog-kernel-split.md` — split `kernel.py` into `lock_manager`, `event_bus`, `state_manager`
+- `temp/backlog/agentic-os-backlog-sqlite-backend.md` — SQLite backend for `events.jsonl` and `context/memory.md`
+- `temp/backlog/agentic-os-backlog-embedding-routing.md` — TF-IDF / embedding-based skill routing replacing keyword heuristic
+
 ## [1.2.0] - 2026-03-19
 
 ### Security / Correctness

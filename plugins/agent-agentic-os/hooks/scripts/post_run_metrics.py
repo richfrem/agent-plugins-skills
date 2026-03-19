@@ -60,14 +60,27 @@ def emit_event(project_root, event_data):
         except Exception as e2:
             print(f"Failed to record metrics: {e2}")
 
+def count_hook_errors(project_root: Path) -> int:
+    """Count error lines written to hook-errors.log this session.
+    Returns 0 if the log does not exist."""
+    error_log = project_root / "context" / "memory" / "hook-errors.log"
+    if not error_log.exists():
+        return 0
+    try:
+        with open(error_log, "r", encoding="utf-8") as f:
+            return sum(1 for line in f if line.strip())
+    except Exception:
+        return 0
+
+
 def main():
     target_dir = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     project_root = Path(target_dir).resolve()
     events_log = project_root / "context" / "events.jsonl"
-    
+
     cli_errors = 0
     friction_events = 0
-    
+
     if events_log.exists():
         with open(events_log, "r") as f:
             for line in f:
@@ -79,6 +92,8 @@ def main():
                         friction_events += 1
                 except json.JSONDecodeError:
                     continue
+
+    hook_errors = count_hook_errors(project_root)
 
     metrics = {
         "time": datetime.utcnow().isoformat() + "Z",
@@ -92,12 +107,17 @@ def main():
             "missed_steps": 0,
             "cli_errors": cli_errors,
             "friction_events_total": friction_events,
+            "hook_errors": hook_errors,
             "session_id": os.environ.get("CLAUDE_SESSION_ID", "unknown")
         }
     }
 
     emit_event(project_root, metrics)
-    print(f"--- AGENTIC OS: SESSION METRICS CAPTURED ({cli_errors} errors, {friction_events} friction events) ---")
+    summary = f"--- AGENTIC OS: SESSION METRICS CAPTURED ({cli_errors} errors, {friction_events} friction events"
+    if hook_errors > 0:
+        summary += f", {hook_errors} HOOK FAILURES - check context/memory/hook-errors.log"
+    summary += ") ---"
+    print(summary)
 
 if __name__ == "__main__":
     main()

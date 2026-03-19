@@ -115,12 +115,19 @@ If a fact is selected for promotion, you **MUST first read `context/memory.md` A
 7. If there is absolutely no conflict (or the user resolves it), append the numbered/hashed fact cleanly.
 8. **Post-Write Verification**: After writing, use the `Read` tool on the exact file. If the expected diff is not present, output `<WRITE_FAILED>` and run `git stash pop`.
 
-Format facts in `context/memory.md` like this:
+Format facts in `context/memory.md` like this (choose one format and stick to it):
 
+**Option A — Markdown (default, human-readable):**
 ```markdown
 ## [YYYY-MM-DD] [Topic]
 [The fact, decision, or convention in 1-3 sentences]
 ```
+
+**Option B — Structured JSON entries (recommended for projects with high fact volume or automated tooling):**
+```json
+{"id": "build_cmd_001", "type": "command", "topic": "build", "value": "npm run build", "source": "session-2026-03-19", "supersedes": null}
+```
+Append one JSON object per line to a `context/memory.jsonl` file. Reference it from `context/memory.md` with a note: `<!-- structured facts in context/memory.jsonl -->`. Benefits: unambiguous deduplication by `id`, machine-queryable, easier `<SUPERSEDE>` enforcement.
 
 ### Phase 4: Enforce Memory.md Size Limits
 
