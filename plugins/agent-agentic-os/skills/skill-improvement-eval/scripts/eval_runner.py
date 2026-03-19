@@ -138,12 +138,12 @@ def main():
                     pass
 
     # Write new entry
-    headers = ["timestamp", "score", "accuracy", "heuristic", "status", "description"]
+    headers = ["timestamp", "score", "accuracy", "heuristic", "llm_routing_score", "status", "description"]
     write_header = not results_path.exists()
-    
+
     status = "KEEP" if final_score >= last_score else "DISCARD"
     if last_score == 0: status = "BASELINE"
-    
+
     with open(results_path, 'a', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=headers, delimiter='\t')
         if write_header:
@@ -153,6 +153,7 @@ def main():
             "score": f"{final_score:.4f}",
             "accuracy": f"{routing['accuracy']:.4f}",
             "heuristic": f"{heuristic['score']:.4f}",
+            "llm_routing_score": "N/A",  # populated by LLM judge when available
             "status": status,
             "description": args.desc
         })

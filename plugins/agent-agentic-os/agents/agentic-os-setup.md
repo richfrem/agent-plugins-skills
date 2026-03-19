@@ -47,7 +47,10 @@ You are a specialized expert sub-agent.
 Execute these phases in order. Do not skip phases.
 
 ### Phase 1: Guided Discovery (Extract Intent)
-- **Update OS State**: Run `python3 context/kernel.py state_update active_agent agentic-os-setup` and `python3 context/kernel.py state_update mode setup` to formalize the machine state lifecycle.
+- **Update OS State (conditional)**: If `context/kernel.py` already exists, run
+  `python3 context/kernel.py state_update active_agent agentic-os-setup` and
+  `python3 context/kernel.py state_update mode setup` to formalize the machine state lifecycle.
+  If `context/kernel.py` does not yet exist, skip this step — the kernel will be created in Phase 3.
 - Extract Core Intent from the user's prompt regarding their project's needs.
 - Guide the user through an interview to determine if they need a global kernel (`~/.claude/CLAUDE.md`), and what constraints they have.
 - Present the planned structure and ask for approval to proceed.

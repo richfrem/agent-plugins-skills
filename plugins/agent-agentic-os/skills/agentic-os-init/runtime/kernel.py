@@ -18,6 +18,48 @@ LOCKS_DIR = KERNEL_DIR / ".locks"
 STATE_FILE = KERNEL_DIR / "os-state.json"
 AGENTS_FILE = KERNEL_DIR / "agents.json"
 EVENTS_MAX_SIZE = 10 * 1024 * 1024  # 10MB
+REQUIRED_EVENT_FIELDS = {"time", "agent", "type", "action"}
+ROTATE_LOCK_STALE_SECONDS = 60  # self-clean on startup if rotation lock is orphaned
+
+def get_lock_timeout() -> int:
+    """Read lock_timeout_seconds from os-state.json. Default 1800 (30 min).
+    Configurable via: python3 kernel.py state_update lock_timeout_seconds 3600"""
+    try:
+        if STATE_FILE.exists():
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                state = json.load(f)
+            return int(state.get("lock_timeout_seconds", 1800))
+    except Exception:
+        pass
+    return 1800
+
+
+def validate_event_schema(event: dict) -> bool:
+    """Reject events missing required fields. Prevents malformed entries on the bus."""
+    missing = REQUIRED_EVENT_FIELDS - set(event.keys())
+    if missing:
+        print(f"[Kernel] Event rejected: missing required fields {missing}", file=sys.stderr)
+        return False
+    return True
+
+
+def cleanup_stale_rotate_lock():
+    """On kernel startup, clean an orphaned events_rotate.lock if older than 60s.
+    Prevents permanent deadlock if kernel was SIGKILLed during rotation."""
+    rotate_lock = LOCKS_DIR / "events_rotate.lock"
+    if rotate_lock.exists():
+        age = time.time() - rotate_lock.stat().st_mtime
+        if age > ROTATE_LOCK_STALE_SECONDS:
+            try:
+                # Remove PID file inside lock dir if present
+                pid_file = rotate_lock / "pid"
+                if pid_file.exists():
+                    pid_file.unlink()
+                os.rmdir(rotate_lock)
+                print(f"[Kernel] Cleared orphaned rotation lock (age {age:.0f}s)")
+            except OSError:
+                pass
+
 
 def validate_agent(agent_name):
     try:
@@ -42,9 +84,10 @@ def acquire_lock(lock_name):
     os.makedirs(LOCKS_DIR, exist_ok=True)
     
     # Check for stale lock first
+    lock_timeout = get_lock_timeout()
     if lock_path.exists():
         age = time.time() - lock_path.stat().st_mtime
-        if age > 1800: # 30 mins
+        if age > lock_timeout:
             try:
                 os.rmdir(lock_path)
                 print(f"[Kernel] Cleared stale lock: {lock_name}")
@@ -85,7 +128,12 @@ def rotate_events():
         # This is internal to the kernel.
         events_lock = LOCKS_DIR / "events_rotate.lock"
         os.mkdir(events_lock)
-        
+        # Write PID stamp so a crashed-kernel self-clean can identify orphaned locks
+        try:
+            (events_lock / "pid").write_text(str(os.getpid()), encoding="utf-8")
+        except OSError:
+            pass
+
         try:
             # Re-check size after acquiring lock
             if EVENTS_FILE.exists() and EVENTS_FILE.stat().st_size > EVENTS_MAX_SIZE:
@@ -108,11 +156,13 @@ def rotate_events():
         pass # Another process is already rotating it
 
 def emit_event(agent, type_, action, status=None, summary=None, results=None):
+    cleanup_stale_rotate_lock()
+
     if not validate_agent(agent):
         sys.exit(1)
-        
+
     rotate_events()
-    
+
     event = {
         "time": datetime.now().isoformat() + "Z",
         "agent": agent,
@@ -128,7 +178,10 @@ def emit_event(agent, type_, action, status=None, summary=None, results=None):
             event["results"] = json.loads(results) if isinstance(results, str) else results
         except json.JSONDecodeError:
             event["results"] = results
-        
+
+    if not validate_event_schema(event):
+        sys.exit(1)
+
     try:
         # Use an atomic lock to append to events.jsonl
         events_write_lock = LOCKS_DIR / "events_write.lock"
@@ -205,6 +258,10 @@ def state_update(key, value):
         os.rmdir(state_lock)
 
 def main():
+    # Self-heal orphaned rotation lock on every startup
+    if LOCKS_DIR.exists():
+        cleanup_stale_rotate_lock()
+
     parser = argparse.ArgumentParser(description="Agentic OS Kernel Controller")
     subparsers = parser.add_subparsers(dest="command", required=True)
     

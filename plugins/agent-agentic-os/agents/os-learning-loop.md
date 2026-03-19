@@ -25,6 +25,14 @@ description: >
   </example>
   
   <example>
+  Context: Agent proactively detects systemic friction while reviewing events.jsonl after a session.
+  assistant: [autonomously, after reviewing logs] "I notice 3 consecutive skill timeouts and 2 human_rescue events in the last session. I'll invoke the os-learning-loop to identify and patch the root cause before continuing."
+  <commentary>
+  No explicit user request -- the OS detects recurring friction from the event stream and triggers improvement autonomously. This is the primary implicit audit trigger.
+  </commentary>
+  </example>
+
+  <example>
   Context: User wants information about the system.
   user: "Don't run the learning loop right now, but can you explain how it works?"
   assistant: "The learning loop is a specialized sub-agent that... [explanation continues without running the loop]"

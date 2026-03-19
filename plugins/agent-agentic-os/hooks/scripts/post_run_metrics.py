@@ -31,7 +31,12 @@ def emit_event(project_root, event_data):
         # Try 'metric' type, fallback to 'result' if the kernel is old
         event_type = event_data["type"]
         summary_payload = json.dumps(event_data["results"])
-        
+        # Truncate to prevent oversized CLI arguments. The kernel receives this
+        # as a list-form subprocess arg (not shell=True), so there is no shell
+        # injection risk, but we cap at 2048 chars as a defensive measure.
+        if len(summary_payload) > 2048:
+            summary_payload = summary_payload[:2048]
+
         cmd = [
             "python3", str(kernel_path), "emit_event",
             "--agent", event_data["agent"],
@@ -43,13 +48,8 @@ def emit_event(project_root, event_data):
         
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            # If 'metric' type failed (likely due to choice validation), retry as 'result'
-            if "choice" in result.stderr.lower():
-                cmd[cmd.index("--type") + 1] = "result"
-                subprocess.run(cmd, check=True, capture_output=True)
-            else:
-                # Other error, try direct append as final fallback
-                raise Exception(result.stderr)
+            # kernel.py accepts "metric" type natively; no fallback needed
+            raise Exception(result.stderr)
                 
     except Exception as e:
         # Final fallback: direct append
