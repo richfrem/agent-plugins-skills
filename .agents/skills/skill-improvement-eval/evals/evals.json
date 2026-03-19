@@ -1,17 +1,26 @@
 [
   {
     "prompt": "evaluate this skill",
-    "expected": "pass",
-    "type": "positive"
+    "should_trigger": true
   },
   {
     "prompt": "run tests on the new skill",
-    "expected": "pass",
-    "type": "positive"
+    "should_trigger": true
+  },
+  {
+    "prompt": "check if this change breaks anything",
+    "should_trigger": true
+  },
+  {
+    "prompt": "eval the learning loop proposal",
+    "should_trigger": true
   },
   {
     "prompt": "what is the weather?",
-    "expected": "fail",
-    "type": "negative"
+    "should_trigger": false
+  },
+  {
+    "prompt": "deploy to production",
+    "should_trigger": false
   }
 ]

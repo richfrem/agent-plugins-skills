@@ -4,673 +4,392 @@ bridge_installer.py (CLI)
 =====================================
 
 Purpose:
-    Installs Agent Plugins (.claude-plugin structure) into target environments dynamically (e.g., .claude, .gemini, .agent, .github).
-
-Layer: System Integration Layer
+    Installs Agent Plugins into .agents/ central repository natively 
+    and symlinks them across locally installed agent platforms 
+    (mimicking the behavior of npx skills add --force).
 
 Usage Examples:
-    python3 bridge_installer.py --plugin <path> [--target <auto|antigravity|github|gemini>]
-
-Supported Object Types:
-    - .claude-plugin directory structures
-    - Markdown commands, skills, and agents
-    - hooks.json manifests
-
-CLI Arguments:
-    --plugin: Absolute or relative path to the plugin folder to install.
-    --target: (Optional) Specific agent environment subset to install into. Defaults to "auto".
-
-Input Files:
-    - Target `plugin.json` for validation and namespace.
-
-Output:
-    - Copies formatted skills, rules, and commands directly into the active Agent IDE configuration folders.
-
-Key Functions:
-    - parse_frontmatter(): Isolates YAML from execution strings.
-    - command_output_stem(): Builds flattened names.
-    - install_{target}(): Specialized mapping strategies per ecosystem.
-
-Script Dependencies:
-    None
-
-Consumed by:
-    - User (CLI)
-    - install_all_plugins
-    - bridge-plugin (Agent Skill)
+    python3 bridge_installer.py --plugin <path>
 """
 
 import os
 import sys
 import shutil
 import json
-import re
 import argparse
 from pathlib import Path
 
-print("\n" + "="*80)
-print("⚠️  DEPRECATION NOTICE: For consumers, this script is superseded by `npx skills`.")
-print("To install a plugin natively: `npx skills add richfrem/agent-plugins-skills/plugins/<name>`")
-print("This script is retained for contributors needing custom targets, ")
-print("Gemini TOML generation, or CLAUDE.md rule appending.")
-print("="*80 + "\n")
-
-try:
-    import tomllib  # Python 3.11+
-except ImportError:
-    tomllib = None  # type: ignore
-
-def validate_yaml_frontmatter(filepath: Path) -> list[str]:
-    """Check YAML frontmatter for common errors. Returns list of warnings."""
-    warnings = []
-    content = filepath.read_text(encoding='utf-8')
-    if not content.startswith('---'):
-        return warnings
-    parts = content.split('---', 2)
-    if len(parts) < 3:
-        return warnings
-    try:
-        import yaml
-        yaml.safe_load(parts[1])
-    except Exception as e:
-        warnings.append(f"  ⚠️  YAML error in {filepath.name}: {e}")
-    return warnings
-
-def validate_toml_content(filepath: Path) -> list[str]:
-    """Validate a generated TOML file parses correctly. Returns list of warnings."""
-    if tomllib is None:
-        return []
-    warnings = []
-    try:
-        with open(filepath, 'rb') as f:
-            tomllib.load(f)
-    except Exception as e:
-        warnings.append(f"  ⚠️  TOML error in {filepath.name}: {e}")
-    return warnings
-
-# --- Constants ---
-
-TARGET_MAPPINGS = {
-    "antigravity": {
-        "check": ".agent",
-        "workflows": ".agent/workflows",
+# The standard recognized agent configurations in your IDE workspace.
+DETECTABLE_AGENTS = {
+    ".agent": {
+        "name": "antigravity",
         "skills": ".agent/skills",
+        "commands": ".agent/workflows",
         "rules": ".agent/rules",
-        "tools": "tools"
+        "hooks": None,
+        "rules_mode": "files",
     },
-    "github": {
-        "check": ".github",
-        "workflows": ".github/prompts",
-        "agents": ".github/agents",
-        "github_workflows": ".github/workflows",
-        "skills": ".github/skills",
-        "instructions": ".github/copilot-instructions.md",
-        "rules": ".github/rules"
-    },
-    "gemini": {
-        "check": ".gemini",
-        "workflows": ".gemini/commands",
-        "skills": ".gemini/skills",
-        "rules": ".gemini/rules"
-    },
-    "claude": {
-        "check": ".claude",
-        "commands": ".claude/commands",
+    ".claude": {
+        "name": "claude",
         "skills": ".claude/skills",
-        "rules": ".claude/rules"
+        "commands": ".claude/commands",
+        "rules": None,
+        "rules_append_target": "CLAUDE.md",
+        "hooks": ".claude/hooks",
+        "rules_mode": "append",
     },
-    "azure": {
-        "check": ".azure",
+    ".gemini": {
+        "name": "gemini",
+        "skills": ".gemini/skills",
+        "commands": ".gemini/commands",
+        "rules": None,
+        "rules_append_target": "GEMINI.md",
+        "hooks": None,
+        "rules_mode": "append",
+        "commands_format": "toml",
+    },
+    ".github": {
+        "name": "github",
+        "skills": ".github/skills",
+        "commands": ".github/prompts",
+        "rules": None,
+        "rules_append_target": ".github/copilot-instructions.md",
+        "hooks": None,
+        "rules_mode": "append",
+        "commands_ext": ".prompt.md",
+    },
+    ".azure": {
+        "name": "azure",
         "skills": ".azure/skills",
-        "agents": ".azure/agents"
-    }
+        "commands": None,
+        "rules": None,
+        "hooks": None,
+    },
 }
 
-def install_hooks(plugin_path: Path, root: Path, plugin_name: str):
-    """Copy hooks/hooks.json to .claude/hooks/{plugin-name}-hooks.json.
-    Hooks are Claude Code-specific; non-Claude targets are notified via a comment."""
-    hooks_file = plugin_path / "hooks" / "hooks.json"
-    if not hooks_file.exists():
-        return
-    
-    target_hooks_dir = root / ".claude" / "hooks"
-    target_hooks_dir.mkdir(parents=True, exist_ok=True)
-    dest = target_hooks_dir / f"{plugin_name}-hooks.json"
-    shutil.copy2(hooks_file, dest)
-    print(f"    -> Hooks: {dest.relative_to(root)} (Claude only — review before activating)")
+def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
+                     root: Path, env_name: str) -> bool:
+    if dry_run:
+        print(f"  [DRY RUN] symlink {link_path.relative_to(root)} -> {src.relative_to(root)}")
+        return True
 
-def parse_frontmatter(content: str) -> tuple[dict[str, str | list[str]], str]:
-    """Parse YAML frontmatter block from markdown. Returns (metadata_dict, body_without_frontmatter)."""
-    metadata: dict[str, str | list[str]] = {}
-    match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
-    if match:
-        fm_block = str(match.group(1))
-        body = content[match.end():]
-        # Simple key: value parse (no full YAML needed)
-        for line in fm_block.splitlines():
-            if ':' in line:
-                key, _, value = line.partition(':')
-                key = key.strip()
-                value = value.strip().strip('"')
+    # Clean existing
+    if link_path.exists() or link_path.is_symlink():
+        if link_path.is_dir() and not link_path.is_symlink():
+            shutil.rmtree(link_path)
+        else:
+            link_path.unlink()
 
-                # Check if it's an array syntax like ["github", "gemini"]
-                if value.startswith('[') and value.endswith(']'):
-                    inner = value[1:len(value) - 1]
-                    items = inner.split(',')
-                    metadata[key] = [item.strip().strip('"').strip("'") for item in items]
-                else:
-                    metadata[key] = value
-        return metadata, body
-    return metadata, content
-
-def command_output_stem(commands_dir: Path, f: Path, plugin_name: str) -> str:
-    """Build flat output filename from potentially nested command path.
-    e.g. commands/refactor/extract.md -> plugin-name_refactor_extract"""
     try:
-        rel = f.relative_to(commands_dir)
-    except ValueError:
-        rel = Path(f.name)
-    parts = list(rel.parts)
-    # Drop .md suffix on last part
-    parts[-1] = Path(parts[-1]).stem
-    return plugin_name + '_' + '_'.join(parts)
-
-def transform_content(content: str, target_agent: str) -> str:
-    """Transforms content for specific target agents."""
-    # 1. Actor Swapping
-    # Replace default actor with target
-    if target_agent == "antigravity":
-        content = content.replace('--actor "windsurf"', '--actor "antigravity"')
-        content = content.replace('--actor "claude"', '--actor "antigravity"')
-    elif target_agent == "github":
-        content = content.replace('--actor "windsurf"', '--actor "copilot"')
-        content = content.replace('--actor "claude"', '--actor "copilot"')
-    elif target_agent == "gemini":
-        content = content.replace('--actor "windsurf"', '--actor "gemini"')
-        content = content.replace('--actor "claude"', '--actor "gemini"')
-        content = content.replace('$ARGUMENTS', '{{args}}') # Gemini argument syntax
-    elif target_agent == "claude":
-        content = content.replace('--actor "windsurf"', '--actor "claude"')
-        # No change needed if already "claude"
-
-    return content
-
-def transform_rule(content: str) -> str:
-    """Strips Cursor-specific <rule> XML frontmatter from MDC files."""
-    # Look for a <rule>...</rule> block at the very start of the file
-    match = re.search(r"^<rule>\s*.*?</rule>\s*", content, re.DOTALL | re.IGNORECASE)
-    if match:
-        content = content[match.end():]
-    return content
-
-def detect_targets(root: Path):
-    targets = []
-    for name, config in TARGET_MAPPINGS.items():
-        if (root / config["check"]).exists():
-            targets.append(name)
-    return targets
-
-def build_rule_block(rules_dir: Path, plugin_name: str) -> str:
-    """Compiles rules from MDC files into a monolithic block."""
-    if not rules_dir.exists():
-        return ""
-        
-    other_rules = []
-    constitution = ""
-    
-    for f in rules_dir.glob("*"):
-        if f.is_file():
-            content = f.read_text(encoding='utf-8')
-            content = transform_rule(content)
-            
-            # Special case for constitution as the primary project driver
-            if f.stem.lower() == "constitution":
-                constitution = f"## Constitution ({plugin_name})\n\n{content}\n\n---\n\n"
+        rel = os.path.relpath(src, link_path.parent)
+        os.symlink(rel, link_path)
+        print(f"    -> Symlinked for {env_name}: {link_path.relative_to(root)}")
+        return True
+    except (OSError, NotImplementedError):
+        # Windows fallback: copy instead of symlink
+        try:
+            if src.is_dir():
+                shutil.copytree(src, link_path, dirs_exist_ok=True)
             else:
-                other_rules.append(f"\n\n--- RULE: {f.stem} ({plugin_name}) ---\n\n{content}")
-                
-    rules_body = "".join(other_rules)
-    if not constitution and not rules_body:
-        return ""
-        
-    marker_start = f"<!-- BEGIN RULES FROM PLUGIN: {plugin_name} -->"
-    marker_end = f"<!-- END RULES FROM PLUGIN: {plugin_name} -->"
-    
-    block = f"\n\n{marker_start}\n# SHARED RULES FROM {plugin_name}\n"
-    block += constitution
-    block += rules_body
-    block += f"\n{marker_end}\n"
-    
-    return block
+                shutil.copy2(src, link_path)
+            print(f"    -> Copied (symlink failed) for {env_name}: "
+                  f"{link_path.relative_to(root)}")
+            return False  # False = symlinkFailed, like npx skills
+        except Exception as e:
+            print(f"    X Failed for {env_name}: {e}")
+            return False
 
-def append_monolithic_rules(target_file: Path, block: str, header: str):
-    """Safely upserts a rule block into a monolithic instructions file.
-    Uses <!-- BEGIN/END RULES FROM PLUGIN: name --> markers for idempotent
-    replacement. All existing occurrences of this plugin's block are removed,
-    then the new block is appended exactly once. This prevents accumulation
-    from repeated installs."""
-    if not block:
+def _write_toml_command(md_file: Path, dest_toml: Path, plugin_name: str, flat: str, dry_run: bool, root: Path):
+    if dry_run:
+        print(f"  [DRY RUN] write TOML cmd: {dest_toml.relative_to(root)}")
+        return
+        
+    content = md_file.read_text(encoding="utf-8")
+    
+    # Very basic frontmatter parser
+    description = ""
+    body = content
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            fm = parts[1]
+            body = parts[2].strip()
+            for line in fm.splitlines():
+                if line.startswith("description:"):
+                    description = line.replace("description:", "", 1).strip()
+                    # Strip basic quotes
+                    if description.startswith('"') and description.endswith('"'):
+                        description = description[1:-1]
+                    elif description.startswith("'") and description.endswith("'"):
+                        description = description[1:-1]
+
+    toml_content = f"""command = "{plugin_name}:{flat}"
+description = "{description}"
+prompt = \"\"\"
+{body}
+\"\"\"
+"""
+    dest_toml.write_text(toml_content, encoding="utf-8")
+    print(f"    -> Wrapped TOML for gemini: {dest_toml.relative_to(root)}")
+
+
+def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
+                    root: Path, dry_run: bool = False):
+    commands_dir = plugin_path / "commands"
+    if not commands_dir.exists():
         return
 
-    if target_file.exists():
-        content = target_file.read_text(encoding='utf-8')
-    else:
-        content = header
+    central_workflows = root / ".agents" / "workflows"
+    if not dry_run:
+        central_workflows.mkdir(parents=True, exist_ok=True)
 
-    # Extract the plugin name from the block's marker
-    marker_match = re.search(r'<!-- BEGIN RULES FROM PLUGIN: (.+?) -->', block)
-    if marker_match:
-        plugin_name = marker_match.group(1)
-        # Remove ALL existing occurrences of this plugin's block (handles duplicates
-        # from previous installs where count=0 re.sub kept N copies as N copies)
-        pattern = re.compile(
-            rf'\n*<!--\s*BEGIN RULES FROM PLUGIN:\s*{re.escape(plugin_name)}\s*-->.*?'
-            rf'<!--\s*END RULES FROM PLUGIN:\s*{re.escape(plugin_name)}\s*-->\n*',
-            re.DOTALL
-        )
-        content = pattern.sub('', content)
-    else:
-        # No markers — legacy path: still append (no dedup possible without markers)
-        pass
+    for cmd_file in sorted(commands_dir.rglob("*.md")):
+        # Flatten path to snake_case name
+        rel = cmd_file.relative_to(commands_dir)
+        flat = "_".join(rel.with_suffix("").parts)
+        dest_name = f"{plugin_name}_{flat}"
 
-    # Append exactly one clean copy
-    content = content.rstrip('\n') + '\n'
-    content += block
+        # Central canonical copy
+        central_dest = central_workflows / f"{dest_name}.md"
+        if not dry_run:
+            shutil.copy2(cmd_file, central_dest)
+        else:
+            print(f"  [DRY RUN] copy command: {central_dest.relative_to(root)}")
 
-    target_file.write_text(content, encoding='utf-8')
-
-# --- Installers ---
-
-def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
-    print("  [Antigravity] Installing...")
-    target_wf = root / TARGET_MAPPINGS["antigravity"]["workflows"]
-    target_skills = root / TARGET_MAPPINGS["antigravity"]["skills"]
-    target_tools = root / TARGET_MAPPINGS["antigravity"]["tools"]
-
-    target_wf.mkdir(parents=True, exist_ok=True)
-    target_skills.mkdir(parents=True, exist_ok=True)
-    target_tools.mkdir(parents=True, exist_ok=True)
-
-    plugin_name = metadata.get("name", plugin_path.name)
-
-    # 1. Workflows (Commands) Upgraded to Skills
-    commands_dir = plugin_path / "commands"
-    if not commands_dir.exists():
-        commands_dir = plugin_path / "workflows"
-        
-    if commands_dir.exists():
-        for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
-            content = f.read_text(encoding='utf-8')
-            content = transform_content(content, "antigravity")
-            stem = command_output_stem(commands_dir, f, plugin_name)
-            
-            # Wrap as a Skill (AgentSkills 2.0)
-            skill_dir = target_skills / stem
-            skill_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (skill_dir / opt_dir).mkdir(exist_ok=True)
-                
-            dest = skill_dir / "SKILL.md"
-            dest.write_text(content, encoding='utf-8')
-            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
-
-    # 2. Native Skills
-    skills_dir = plugin_path / "skills"
-    if skills_dir.exists():
-        shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
-        print(f"    -> Skills: {target_skills.relative_to(root)}")
-
-    # 3. Agents (bridge as progressive disclosure skills)
-    agents_dir = plugin_path / "agents"
-    if agents_dir.exists():
-        for f in agents_dir.glob("*.md"):
-            agent_name = f.stem
-            final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
-            agent_dir = target_skills / final_name
-            agent_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Ensure optional directories exist
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (agent_dir / opt_dir).mkdir(exist_ok=True)
-                
-            shutil.copy2(f, agent_dir / "SKILL.md")
-        print(f"    -> Agents (as Skills): {target_skills.relative_to(root)}")
-
-    # 4. Rules (Antigravity natively supports .agent/rules/ directories)
-    rules_dir = plugin_path / "rules"
-    if rules_dir.exists():
-        target_rules = root / TARGET_MAPPINGS["antigravity"]["rules"]
-        target_rules.mkdir(parents=True, exist_ok=True)
-        for f in rules_dir.glob("*"):
-            if f.is_file():
-                content = f.read_text(encoding='utf-8')
-                content = transform_rule(content)
-                # Ensure it saves as .md
-                dest = target_rules / (f.stem + ".md")
-                dest.write_text(content, encoding='utf-8')
-        print(f"    -> Rules: {target_rules.relative_to(root)}")
-
-def install_github(plugin_path: Path, root: Path, metadata: dict):
-    print("  [GitHub] Installing...")
-    target_prompts = root / TARGET_MAPPINGS["github"]["workflows"]
-    target_prompts.mkdir(parents=True, exist_ok=True)
-
-    plugin_name = metadata.get("name", plugin_path.name)
-
-    # 1. Workflows -> Prompts
-    commands_dir = plugin_path / "commands"
-    if not commands_dir.exists():
-        commands_dir = plugin_path / "workflows"
-        
-    if commands_dir.exists():
-        import yaml
-        for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
-            raw_content = f.read_text(encoding='utf-8')
-            fm, body = parse_frontmatter(raw_content)
-            
-            # STRICT OPT-IN FOR GITHUB MODELS
-            # Most IDE commands are useless in GitHub CI/CD, so we drop them by default.
-            export_flag = fm.get('github-model-export', 'false')
-            if str(export_flag).lower() not in ['true', 'yes', '1']:
-                print(f"    -> Prompt: Skipped {f.relative_to(root)} (Missing 'github-model-export: true' in frontmatter)")
+        for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config or not config.get("commands"):
                 continue
 
-            content = transform_content(body, "github")
-            stem = command_output_stem(commands_dir, f, plugin_name)
-            
-            # Construct GitHub Models Prompt Structure (.prompt.yml)
-            fm_name = fm.get("name", stem)
-            if isinstance(fm_name, list):
-                fm_name = fm_name[0]
-                
-            prompt_data = {
-                "name": str(fm_name).replace('_', ' ').title(),
-                "description": fm.get("description", f"Command generated from {plugin_name}"),
-                "model": fm.get("model", "openai/gpt-4o"),
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are a specialized AI agent executing a workflow. Follow the instructions precisely."
-                    },
-                    {
-                        "role": "user",
-                        "content": content.strip()
-                    }
-                ]
-            }
-            
-            dest = target_prompts / f"{stem}.prompt.yml"
-            dest.write_text(yaml.dump(prompt_data, sort_keys=False), encoding='utf-8')
-            print(f"    -> Prompt Model: {dest.relative_to(root)}")
-            
-            # ALSO wrapper export it as a Skill for GitHub Copilot IDE support
-            target_skills = root / TARGET_MAPPINGS["github"]["skills"]
-            skill_dir = target_skills / stem
-            skill_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (skill_dir / opt_dir).mkdir(exist_ok=True)
-            dest_skill = skill_dir / "SKILL.md"
-            dest_skill.write_text(raw_content, encoding='utf-8')
-            print(f"    -> GitHub Copilot Skill Wrapper: {skill_dir.relative_to(root)}")
+            ide_dir = root / target_dir_name
+            if not ide_dir.exists():
+                continue
 
-    # 2. Skills
-    skills_dir = plugin_path / "skills"
-    if skills_dir.exists():
-        target_skills = root / TARGET_MAPPINGS["github"]["skills"]
-        target_skills.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
-        print(f"    -> Skills: {target_skills.relative_to(root)}")
+            cmd_dir = root / config["commands"]
+            if not dry_run:
+                cmd_dir.mkdir(parents=True, exist_ok=True)
 
-    # 3. Agents (bridge as progressive disclosure skills)
-    agents_dir = plugin_path / "agents"
-    if agents_dir.exists():
-        target_skills_dir = root / TARGET_MAPPINGS["github"]["skills"]
-        target_skills_dir.mkdir(parents=True, exist_ok=True)
-        for f in agents_dir.glob("*.md"):
-            agent_name = f.stem
-            final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
-            agent_dir = target_skills_dir / final_name
-            agent_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (agent_dir / opt_dir).mkdir(exist_ok=True)
-            shutil.copy2(f, agent_dir / "SKILL.md")
-        print(f"    -> Agents (as Skills): {target_skills_dir.relative_to(root)}")
+            fmt = config.get("commands_format")
+            ext = config.get("commands_ext", ".md")
 
-    # 4. GitHub Workflows -> .github/workflows/ (CI/CD YAML runners)
-    github_wf_dir = plugin_path / "github_workflows"
-    if github_wf_dir.exists():
-        target_wf_dir = root / TARGET_MAPPINGS["github"]["github_workflows"]
-        target_wf_dir.mkdir(parents=True, exist_ok=True)
-        for f in github_wf_dir.glob("*.yml"):
-            shutil.copy2(f, target_wf_dir / f.name)
-            print(f"    -> Workflow: {(target_wf_dir / f.name).relative_to(root)}")
+            if fmt == "toml":
+                # Parse frontmatter, wrap in TOML
+                _write_toml_command(cmd_file, cmd_dir / f"{dest_name}.toml",
+                                    plugin_name, flat, dry_run, root)
+            else:
+                target_link = cmd_dir / f"{dest_name}{ext}"
+                _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
 
-    # 5. Monolithic Rules (copilot-instructions.md)
+def deploy_rules(plugin_path: Path, plugin_name: str, targets: list[str],
+                 root: Path, dry_run: bool = False):
     rules_dir = plugin_path / "rules"
-    if rules_dir.exists():
-        target_rules_file = root / TARGET_MAPPINGS["github"]["instructions"]
-        target_rules_file.parent.mkdir(parents=True, exist_ok=True)
-        block = build_rule_block(rules_dir, plugin_name)
-        append_monolithic_rules(target_rules_file, block, "# Copilot Instructions\n> Auto-generated by Agent Bridge Plugin Mapper.\n\n")
-        print(f"    -> Rules: Appended to {target_rules_file.relative_to(root)}")
+    if not rules_dir.exists():
+        return
 
-def install_gemini(plugin_path: Path, root: Path, metadata: dict):
-    print("  [Gemini] Installing...")
-    target_cmds = root / TARGET_MAPPINGS["gemini"]["workflows"]
-    target_cmds.mkdir(parents=True, exist_ok=True)
+    central_rules = root / ".agents" / "rules"
+    if not dry_run:
+        central_rules.mkdir(parents=True, exist_ok=True)
 
-    plugin_name = metadata.get("name", plugin_path.name)
+    for rule_file in sorted(rules_dir.glob("*.md")):
+        dest_name = f"{plugin_name}_{rule_file.stem}.md"
+        central_dest = central_rules / dest_name
+        if not dry_run:
+            shutil.copy2(rule_file, central_dest)
 
-    # 1. Workflows -> TOML Commands and Skill Wrappers
-    commands_dir = plugin_path / "commands"
-    if not commands_dir.exists():
-        commands_dir = plugin_path / "workflows"
+        for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config:
+                continue
+
+            ide_dir = root / target_dir_name
+            if not ide_dir.exists():
+                continue
+
+            if config.get("rules_mode") == "files" and config.get("rules"):
+                rules_target_dir = root / config["rules"]
+                if not dry_run:
+                    rules_target_dir.mkdir(parents=True, exist_ok=True)
+                target_link = rules_target_dir / dest_name
+                _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+
+            elif config.get("rules_mode") == "append":
+                append_target = root / config["rules_append_target"]
+                content = rule_file.read_text(encoding="utf-8")
+                marker = f"<!-- plugin: {plugin_name} / {rule_file.stem} -->"
+                if not dry_run:
+                    existing = append_target.read_text(encoding="utf-8") if append_target.exists() else ""
+                    if marker not in existing:
+                        with open(append_target, "a", encoding="utf-8") as f:
+                            f.write(f"\n{marker}\n{content}\n")
+                else:
+                    try:
+                        relative_path = append_target.relative_to(root)
+                    except ValueError:
+                        relative_path = append_target.name
+                    print(f"  [DRY RUN] append rule to {relative_path}")
+
+def write_project_lock(plugin_path: Path, metadata: dict,
+                       installed_skills: list[str], root: Path, dry_run: bool = False):
+    if dry_run:
+        print(f"  [DRY RUN] skip writing to skills-lock.json ({len(installed_skills)} skills)")
+        return
         
-    if commands_dir.exists():
-        target_skills = root / TARGET_MAPPINGS["gemini"]["skills"]
-        for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
-            raw_content = f.read_text(encoding='utf-8')
-            fm, body = parse_frontmatter(raw_content)  # Extract frontmatter
-            description = fm.get('description', 'Imported from plugin')
-            body = transform_content(body, "gemini")
-            stem = command_output_stem(commands_dir, f, plugin_name)
-            cmd_name = stem.replace(plugin_name + '_', '', 1).replace('_', ':')
-            toml_content = f'command = "{plugin_name}:{cmd_name}"\ndescription = "{description}"\nprompt = \'\'\'\n{body}\n\'\'\''
-            dest = target_cmds / f"{stem}.toml"
-            dest.write_text(toml_content, encoding='utf-8')
-            for w in validate_toml_content(dest):
-                print(w)
-            print(f"    -> TOML Command: {dest.relative_to(root)}")
-            
-            # Wrap as a Skill for Gemini Context usage (AgentSkills 2.0)
-            skill_dir = target_skills / stem
-            skill_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (skill_dir / opt_dir).mkdir(exist_ok=True)
-            dest_skill = skill_dir / "SKILL.md"
-            dest_skill.write_text(raw_content, encoding='utf-8')
-            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
+    lock_path = root / "skills-lock.json"
+    try:
+        lock = json.loads(lock_path.read_text(encoding="utf-8")) if lock_path.exists() else {"version": 1, "skills": {}}
+    except Exception:
+        lock = {"version": 1, "skills": {}}
 
-    # 2. Skills
-    skills_dir = plugin_path / "skills"
-    if skills_dir.exists():
-        target_skills = root / TARGET_MAPPINGS["gemini"]["skills"]
-        target_skills.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
-        print(f"    -> Skills: {target_skills.relative_to(root)}")
+    source = metadata.get("repository", plugin_path.name)
+    import datetime
+    now = datetime.datetime.utcnow().isoformat() + "Z"
 
-    # 3. Agents (bridge as sub-agent skills)
-    agents_dir = plugin_path / "agents"
-    if agents_dir.exists():
-        target_skills_dir = root / TARGET_MAPPINGS["gemini"]["skills"]
-        agent_skills_dir = target_skills_dir / plugin_name / "agents"
-        agent_skills_dir.mkdir(parents=True, exist_ok=True)
-        for f in agents_dir.glob("*.md"):
-            shutil.copy2(f, agent_skills_dir / f.name)
-        print(f"    -> Agents: {agent_skills_dir.relative_to(root)}")
+    for skill_name in installed_skills:
+        existing = lock.get("skills", {}).get(skill_name, {})
+        if "skills" not in lock:
+            lock["skills"] = {}
+        lock["skills"][skill_name] = {
+            "source": source,
+            "sourceType": "local",
+            "computedHash": "",   # filled by install_all_plugins if needed
+            "installedAt": existing.get("installedAt", now),
+            "updatedAt": now,
+        }
 
-    # 4. Monolithic Rules (GEMINI.md)
-    rules_dir = plugin_path / "rules"
-    if rules_dir.exists():
-        target_rules_file = root / "GEMINI.md"
-        block = build_rule_block(rules_dir, plugin_name)
-        append_monolithic_rules(target_rules_file, block, "# Gemini CLI Instructions\n> Auto-generated by Agent Bridge Plugin Mapper.\n\n")
-        print(f"    -> Rules: Appended to {target_rules_file.relative_to(root)}")
+    # Sort keys for stable diffs
+    lock["skills"] = dict(sorted(lock["skills"].items()))
+    lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+    print(f"  ✓ Updated skills-lock.json ({len(installed_skills)} skills)")
 
-def install_claude(plugin_path: Path, root: Path, metadata: dict):
-    print("  [Claude] Installing...")
-    target_cmds = root / TARGET_MAPPINGS["claude"]["commands"]
-    target_cmds.mkdir(parents=True, exist_ok=True)
 
+def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str], dry_run: bool = False):
+    root = Path.cwd()
     plugin_name = metadata.get("name", plugin_path.name)
-
-    # 1. Workflows (Commands) Upgraded to Skills
-    commands_dir = plugin_path / "commands"
-    if not commands_dir.exists():
-        commands_dir = plugin_path / "workflows"
-        
-    if commands_dir.exists():
-        target_skills = root / TARGET_MAPPINGS["claude"]["skills"]
-        for f in commands_dir.rglob("*.md"):  # rglob: pick up nested subdirs
-            content = f.read_text(encoding='utf-8')
-            content = transform_content(content, "claude")
-            stem = command_output_stem(commands_dir, f, plugin_name)
-            
-            # Wrap as a Skill (AgentSkills 2.0)
-            skill_dir = target_skills / stem
-            skill_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (skill_dir / opt_dir).mkdir(exist_ok=True)
-                
-            dest = skill_dir / "SKILL.md"
-            dest.write_text(content, encoding='utf-8')
-            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
-
-    # 2. Skills
-    skills_dir = plugin_path / "skills"
-    if skills_dir.exists():
-        target_skills = root / TARGET_MAPPINGS["claude"]["skills"]
-        target_skills.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
-        print(f"    -> Skills: {target_skills.relative_to(root)}")
-
-    # 3. Agents (bridge as progressive disclosure skills)
-    agents_dir = plugin_path / "agents"
-    if agents_dir.exists():
-        target_skills_dir = root / TARGET_MAPPINGS["claude"]["skills"]
-        target_skills_dir.mkdir(parents=True, exist_ok=True)
-        for f in agents_dir.glob("*.md"):
-            agent_name = f.stem
-            final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
-            agent_dir = target_skills_dir / final_name
-            agent_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (agent_dir / opt_dir).mkdir(exist_ok=True)
-            shutil.copy2(f, agent_dir / "SKILL.md")
-        print(f"    -> Agents (as Skills): {target_skills_dir.relative_to(root)}")
-
-    # 4. Monolithic Rules (CLAUDE.md)
-    rules_dir = plugin_path / "rules"
-    if rules_dir.exists():
-        target_rules_file = root / "CLAUDE.md"
-        block = build_rule_block(rules_dir, plugin_name)
-        append_monolithic_rules(target_rules_file, block, "# Claude Assistant Instructions\n> Auto-generated by Agent Bridge Plugin Mapper.\n\n")
-        print(f"    -> Rules: Appended to {target_rules_file.relative_to(root)}")
-
-    # 5. Hooks (Claude-specific)
-    install_hooks(plugin_path, root, plugin_name)
-
-def install_azure(plugin_path: Path, root: Path, metadata: dict):
-    print("  [Azure] Installing...")
-    plugin_name = metadata.get("name", plugin_path.name)
-
-    # 1. Skills
-    skills_dir = plugin_path / "skills"
-    if skills_dir.exists():
-        target_skills = root / TARGET_MAPPINGS["azure"]["skills"]
-        target_skills.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
-        print(f"    -> Skills: {target_skills.relative_to(root)}")
-
-    # 2. Agents
-    agents_dir = plugin_path / "agents"
-    if agents_dir.exists():
-        target_agents_dir = root / TARGET_MAPPINGS["azure"]["agents"]
-        target_agents_dir.mkdir(parents=True, exist_ok=True)
-        for f in agents_dir.glob("*.md"):
-            shutil.copy2(f, target_agents_dir / f.name)
-        print(f"    -> Agents: {target_agents_dir.relative_to(root)}")
-
-def install_generic(plugin_path: Path, root: Path, metadata: dict, target_name: str):
-    print(f"  [{target_name.capitalize()}] Installing generic mapped target...")
     
-    # Generic target directories map to standard markdown workflows/skills logic
-    target_dir = root / f".{target_name}"
-    target_wf = target_dir / "commands"
-    target_skills = target_dir / "skills"
-    target_rules = target_dir / "rules"
-
-    target_wf.mkdir(parents=True, exist_ok=True)
-    target_skills.mkdir(parents=True, exist_ok=True)
-    target_rules.mkdir(parents=True, exist_ok=True)
-
-    plugin_name = metadata.get("name", plugin_path.name)
-
-    # 1. Workflows (Commands) Upgraded to Skills
-    commands_dir = plugin_path / "commands"
-    if not commands_dir.exists():
-        commands_dir = plugin_path / "workflows"
-        
-    if commands_dir.exists():
-        for f in commands_dir.rglob("*.md"):
-            content = f.read_text(encoding='utf-8')
-            content = transform_content(content, target_name)
-            stem = command_output_stem(commands_dir, f, plugin_name)
-            
-            # Wrap as a Skill (AgentSkills 2.0)
-            skill_dir = target_skills / stem
-            skill_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (skill_dir / opt_dir).mkdir(exist_ok=True)
-                
-            dest = skill_dir / "SKILL.md"
-            dest.write_text(content, encoding='utf-8')
-            print(f"    -> Command Wrapper (Skill): {skill_dir.relative_to(root)}")
-
-    # 2. Skills
+    agents_root = root / ".agents"
+    if not dry_run:
+        agents_root.mkdir(exist_ok=True)
+    
+    installed_skills = []
+    
+    # 2. Central Skills
     skills_dir = plugin_path / "skills"
+    central_skills = agents_root / "skills"
+    
     if skills_dir.exists():
-        shutil.copytree(skills_dir, target_skills, dirs_exist_ok=True)
-        print(f"    -> Skills: {target_skills.relative_to(root)}")
+        if not dry_run:
+            central_skills.mkdir(exist_ok=True)
+        # Deep copy the real sources
+        for item in skills_dir.iterdir():
+            if item.is_dir():
+                dest = central_skills / item.name
+                if not dry_run:
+                    shutil.copytree(item, dest, dirs_exist_ok=True)
+                    print(f"  ✓ Universal central copy: {dest.relative_to(root)}")
+                else:
+                    print(f"  [DRY RUN] Universal central copy: .agents/skills/{item.name}")
+                
+                installed_skills.append(item.name)
 
-    # 3. Agents (bridge as progressive disclosure skills)
-    agents_dir = plugin_path / "agents"
-    if agents_dir.exists():
-        for f in agents_dir.glob("*.md"):
-            agent_name = f.stem
+                # 3. Iterate local agent folders and establish symlinks
+                for target_dir_name in targets:
+                    config = DETECTABLE_AGENTS.get(target_dir_name)
+                    if not config or not config.get("skills"):
+                        continue
+                        
+                    ide_dir = root / target_dir_name
+                    if not ide_dir.exists():
+                        continue
+                    
+                    ide_skills = root / config["skills"]
+                    if not dry_run:
+                        ide_skills.mkdir(parents=True, exist_ok=True)
+                    
+                    target_symlink = ide_skills / item.name
+                    _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
+                    
+    # 4. Standalone Agents (Convert native agent artifacts to AgentSkills wrappers)
+    agents_dir_src = plugin_path / "agents"
+    if agents_dir_src.exists():
+        for agent_file in agents_dir_src.glob("*.md"):
+            agent_name = agent_file.stem
             final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
-            agent_dir = target_skills / final_name
-            agent_dir.mkdir(parents=True, exist_ok=True)
-            for opt_dir in ["scripts", "references", "assets", "evals"]:
-                (agent_dir / opt_dir).mkdir(exist_ok=True)
-            shutil.copy2(f, agent_dir / "SKILL.md")
-        print(f"    -> Agents (as Skills): {target_skills.relative_to(root)}")
+            
+            dest = central_skills / final_name
+            if not dry_run:
+                dest.mkdir(parents=True, exist_ok=True)
+                for opt_dir in ["scripts", "references", "assets", "evals"]:
+                    (dest / opt_dir).mkdir(exist_ok=True)
+                shutil.copy2(agent_file, dest / "SKILL.md")
+                print(f"  ✓ Universal central copy (Agent Wrapper): {dest.relative_to(root)}")
+            else:
+                print(f"  [DRY RUN] Universal central copy (Agent Wrapper): .agents/skills/{final_name}")
+                
+            installed_skills.append(final_name)
+            
+            for target_dir_name in targets:
+                config = DETECTABLE_AGENTS.get(target_dir_name)
+                if not config or not config.get("skills"):
+                    continue
+                    
+                ide_dir = root / target_dir_name
+                if not ide_dir.exists():
+                    continue
+                    
+                ide_skills = root / config["skills"]
+                if not dry_run:
+                    ide_skills.mkdir(parents=True, exist_ok=True)
+                
+                target_symlink = ide_skills / final_name
+                _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
 
-    # 4. Rules
-    rules_dir = plugin_path / "rules"
-    if rules_dir.exists():
-        for f in rules_dir.glob("*"):
-            if f.is_file():
-                content = f.read_text(encoding='utf-8')
-                content = transform_rule(content)
-                dest = target_rules / (f.stem + ".md")
-                dest.write_text(content, encoding='utf-8')
-        print(f"    -> Rules: {target_rules.relative_to(root)}")
+    # 5. Native Hooks (e.g. for PreToolUse, Subagent events)
+    hooks_file = plugin_path / "hooks" / "hooks.json"
+    if hooks_file.exists():
+        central_hooks = agents_root / "hooks"
+        if not dry_run:
+            central_hooks.mkdir(exist_ok=True)
+            
+        dest = central_hooks / f"{plugin_name}-hooks.json"
+        
+        if not dry_run:
+            shutil.copy2(hooks_file, dest)
+            print(f"  ✓ Hook central copy: {dest.relative_to(root)}")
+        else:
+            print(f"  [DRY RUN] Hook central copy: .agents/hooks/{dest.name}")
+        
+        for target_dir_name in targets:
+            config = DETECTABLE_AGENTS.get(target_dir_name)
+            if not config or not config.get("hooks"):
+                continue
+                
+            ide_dir = root / target_dir_name
+            if not ide_dir.exists():
+                continue 
+            
+            ide_hooks = root / config["hooks"]
+            if not dry_run:
+                ide_hooks.mkdir(parents=True, exist_ok=True)
+            
+            target_symlink = ide_hooks / dest.name
+            _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
+            
+    deploy_commands(plugin_path, plugin_name, targets, root, dry_run)
+    deploy_rules(plugin_path, plugin_name, targets, root, dry_run)
+    
+    # MCP merge (future -- log intent for now)
+    mcp_file = plugin_path / ".mcp.json"
+    if mcp_file.exists():
+        print(f"  ⚠ .mcp.json found but merge not yet implemented - "
+              f"manually merge {mcp_file} into ./.mcp.json")
+              
+    return installed_skills
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Plugin Bridge Installer")
+    parser = argparse.ArgumentParser(description="Plugin Bridge Installer (.agents symlinking)")
     parser.add_argument("--plugin", required=True, help="Path to plugin directory")
-    parser.add_argument("--target", default="auto", help="Target environment (e.g., auto, antigravity, claude, cursor, roo, OpenHands)")
+    parser.add_argument("--dry-run", action="store_true", help="Preview all actions without writing any files or symlinks")
     args = parser.parse_args()
 
     plugin_path = Path(args.plugin).resolve()
@@ -678,44 +397,23 @@ def main():
         print(f"Error: Plugin path not found: {plugin_path}")
         sys.exit(1)
 
-    # Read Metadata
     manifest = plugin_path / ".claude-plugin" / "plugin.json"
+    metadata = {}
     if manifest.exists():
         metadata = json.loads(manifest.read_text(encoding='utf-8'))
     else:
         metadata = {"name": plugin_path.name}
 
     root = Path.cwd()
-    targets = []
+    targets = [t for t in DETECTABLE_AGENTS.keys() if (root / t).exists()]
     
-    if args.target == "auto":
-        targets = detect_targets(root)
-        if not targets:
-            print("Error: No compatible environments detected.")
-            print("Create one or more target directories first:")
-            print("  mkdir .agent .github .gemini .claude")
-            print("Then re-run the bridge installer.")
-            sys.exit(1)
-    else:
-        targets = [args.target]
+    print(f"\nInstalling plugin '{metadata['name']}' using target symlinking (.agents/ Strategy).")
+    print(f"Detected IDE environments: {', '.join(targets)}")
+    if args.dry_run:
+        print(">>> DRY RUN MODE <<<")
 
-    print(f"Installing plugin '{metadata['name']}' to: {', '.join(targets)}")
-
-    for t in targets:
-        # Standard complex parsers
-        if t == "antigravity":
-            install_antigravity(plugin_path, root, metadata)
-        elif t == "github":
-            install_github(plugin_path, root, metadata)
-        elif t == "gemini":
-            install_gemini(plugin_path, root, metadata)
-        elif t == "claude":
-            install_claude(plugin_path, root, metadata)
-        elif t == "azure" or t == "azure-foundry":
-            install_azure(plugin_path, root, metadata)
-        else:
-            # Universal Generic fallback block
-            install_generic(plugin_path, root, metadata, t.lower())
-
+    installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run)
+    write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
+    
 if __name__ == "__main__":
     main()

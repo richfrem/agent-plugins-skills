@@ -24,3 +24,11 @@ Context: Scanning for debt as part of a review.
 user: "List the pending work items in utils.py before we merge."
 assistant: "I'll use the todo-check tool to scan utils.py for any TODO markers or debt."
 </example>
+
+<example>
+Context: Agent proactively audits before proposing a code change.
+assistant: [autonomously, before suggesting a refactor] "Let me run todo-check on this file first to surface any existing debt markers before adding more changes."
+<commentary>
+Implicit audit trigger -- agent uses todo-check as a pre-flight check, no user prompt needed.
+</commentary>
+</example>

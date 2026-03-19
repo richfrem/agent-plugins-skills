@@ -18,6 +18,14 @@ description: >
   </example>
 
   <example>
+  Context: os-learning-loop has a proposed skill edit and needs validation before writing.
+  assistant: [autonomously] "Before I apply this description change to session-memory-manager, I'll run skill-improvement-eval to confirm routing accuracy doesn't regress."
+  <commentary>
+  Implicit audit trigger -- agent self-gates on the evaluator before any skill write. No user prompt required.
+  </commentary>
+  </example>
+
+  <example>
   Context: An agent is asking for general information about a skill, not evaluating a proposed change.
   agentic-os-setup: "Can someone tell me what the os-clean-locks skill does?"
   assistant: "It cleans up stale lock files..."
@@ -45,6 +53,13 @@ This skill implements the supervised learning loop used in the `autoresearch` fr
 | Research Org | `os-learning-loop` agent |
 | Fixed Budget | Fixed number of prompts in `evals/evals.json` |
 | `results.tsv` | `evals/results.tsv` (Persistent baseline recording) |
+
+> **Scope caveat**: `eval_runner.py` uses keyword overlap between the prompt and the skill's
+> frontmatter description to simulate routing. This is a heuristic proxy, not real LLM routing.
+> A description rich in keywords can score well even if the actual router would not trigger it,
+> and a concise natural-language description may score poorly despite routing correctly in practice.
+> Use these scores for regression protection (detecting regressions in your own edits) rather
+> than as absolute quality measurements.
 
 ## Execution: The Improvement Loop
 1. **Hypothesis**: Formulate a change to improve routing (e.g., adding triggers to frontmatter).

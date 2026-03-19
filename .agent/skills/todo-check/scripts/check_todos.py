@@ -10,9 +10,17 @@ def check_todos(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()
         
+    # Matches common debt markers across languages:
+    # TODO/FIXME/HACK/XXX/NOTE with optional colon, in # // /* <!-- comment styles
+    DEBT_PATTERN = re.compile(
+        r'(?:#|//|/\*|<!--|--)\s*'
+        r'(?:TODO|FIXME|HACK|XXX|NOTE)\b',
+        re.IGNORECASE
+    )
+
     todo_found = False
     for i, line in enumerate(lines, 1):
-        if re.search(r'#.*TODO:', line, re.IGNORECASE) or re.search(r'//.*TODO:', line, re.IGNORECASE):
+        if DEBT_PATTERN.search(line):
             print(f"{file_path}:{i}: {line.strip()}")
             todo_found = True
             

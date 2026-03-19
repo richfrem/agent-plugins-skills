@@ -19,12 +19,12 @@
     "agentic-os-guide": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "ffebafcdf33aa0c946a7af8023901d8617e3c07def888ba1ab4340518d48e181"
+      "computedHash": "560b8ed2000bcf82029285a44329e442a48117cd4d69db561ae616a4663046de"
     },
     "agentic-os-init": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "8c3659ae277dbc0e6cc5b03e1d94169c98a3e9933b60863c69ecb4a3ca4c6d0b"
+      "computedHash": "c360ac71b1a9b866d97d9b8486c12adc83b80b4415f3cec949da49ed27a9003d"
     },
     "analyze-plugin": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
@@ -34,7 +34,7 @@
     "audit-plugin": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "5bc50ffb86d23a497fa4a1d27041df3445f04fc7ab661ab56e8f2de2d962cd15"
+      "computedHash": "3c5f2b7a16dfbc01142a15364d9313e161134773c2493879705416070b365007"
     },
     "audit-plugin-l5": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
@@ -274,7 +274,7 @@
     "os-clean-locks": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "4c982b5656bfd1d12e037c249ef5332583c55f970204374447a558974d01bc8e"
+      "computedHash": "e61ac1cd3c7363dbb5667eb08bba1791961a34b1aa6dbbbeb6558c6e1d84c655"
     },
     "package-plugin": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
@@ -359,12 +359,12 @@
     "session-memory-manager": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "fb2cfa63265c929532d867ba7fa861599c79dd565cf7fa115ab131be3bf6484e"
+      "computedHash": "4cc4fcff5fd237bc35f2f26ac64d470317fc1a5a11d977e19913c6a877bf6258"
     },
     "skill-improvement-eval": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "b24f086e7d34355f9a116fb8bc9d3ca99046f973e41fe229080258e3bad4f706"
+      "computedHash": "c7144ea3280b6103cb29fe96155f34e538f7c96734d54cd33da75295d7db2131"
     },
     "spec-kitty-accept": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
@@ -449,7 +449,7 @@
     "synthesize-learnings": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "d653a270c7467570b46602d1af0f652e5165ff829fed797734c05c031631fece"
+      "computedHash": "c6ab1e31563e62aad4d932d3eb7a8d5abfaf78f1ef047581ceda887c938778bb"
     },
     "task-agent": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
@@ -459,7 +459,7 @@
     "todo-check": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "sourceType": "local",
-      "computedHash": "453f8c07ca4ebfbfeac31bcd5fbafce14c1f0d6302d3e122a3e4f6046016140c"
+      "computedHash": "18138995b7cf357a286f614be30b867dcc632788ab7fdd0e1dc28d3064d0be56"
     },
     "tool-inventory": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
