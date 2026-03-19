@@ -88,10 +88,13 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
 
 def main():
     parser = argparse.ArgumentParser(description="Skill Improvement Evaluator (Trainer)")
-    parser.add_argument("--skill", required=True, help="Path to the SKILL.md to evaluate")
+    parser.add_argument("--skill", "--target", dest="skill", required=True,
+                        help="Path to the SKILL.md to evaluate (--target is an alias for programmatic callers)")
     parser.add_argument("--baseline", action="store_true", help="Record result as baseline")
     parser.add_argument("--desc", default="Manual iteration", help="Description for results.tsv")
-    
+    parser.add_argument("--json", action="store_true", dest="json_output",
+                        help="Output machine-readable JSON: {\"quality_score\": N} for optimizer callers")
+
     args = parser.parse_args()
     skill_path = Path(args.skill).resolve()
     skill_dir = skill_path.parent
@@ -153,6 +156,11 @@ def main():
             "status": status,
             "description": args.desc
         })
+
+    # Machine-readable output for programmatic callers (execute.py --json)
+    if args.json_output:
+        print(json.dumps({"quality_score": final_score}))
+        return
 
     print(f"--- Skill Evaluation: {skill_path.name} ---")
     print(f"Routing Accuracy: {routing['accuracy']:.4f}")
