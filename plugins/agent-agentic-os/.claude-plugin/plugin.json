@@ -20,7 +20,8 @@
         "skills/agentic-os-init/SKILL.md",
         "skills/session-memory-manager/SKILL.md",
         "skills/os-clean-locks/SKILL.md",
-        "skills/skill-improvement-eval/SKILL.md"
+        "skills/skill-improvement-eval/SKILL.md",
+        "skills/todo-check/SKILL.md"
     ],
     "agents": [
         "agents/agentic-os-setup.md",

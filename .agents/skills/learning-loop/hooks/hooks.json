@@ -1,9 +1,0 @@
-{
-    "hooks": [
-        {
-            "type": "Stop",
-            "description": "Prevents premature session exit without completing the closure sequence (Seal, Persist, Retrospective). Checks for an active loop state file and blocks exit if closure phases are incomplete.",
-            "command": "${plugins}/hooks/closure-guard.sh"
-        }
-    ]
-}

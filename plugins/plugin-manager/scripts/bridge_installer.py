@@ -246,11 +246,12 @@ def build_rule_block(rules_dir: Path, plugin_name: str) -> str:
 def append_monolithic_rules(target_file: Path, block: str, header: str):
     """Safely upserts a rule block into a monolithic instructions file.
     Uses <!-- BEGIN/END RULES FROM PLUGIN: name --> markers for idempotent
-    replacement. If the plugin's markers already exist, the block is replaced
-    in-place. Otherwise it is appended."""
+    replacement. All existing occurrences of this plugin's block are removed,
+    then the new block is appended exactly once. This prevents accumulation
+    from repeated installs."""
     if not block:
         return
-        
+
     if target_file.exists():
         content = target_file.read_text(encoding='utf-8')
     else:
@@ -260,22 +261,22 @@ def append_monolithic_rules(target_file: Path, block: str, header: str):
     marker_match = re.search(r'<!-- BEGIN RULES FROM PLUGIN: (.+?) -->', block)
     if marker_match:
         plugin_name = marker_match.group(1)
-        # Build a pattern that matches the entire existing block for this plugin
+        # Remove ALL existing occurrences of this plugin's block (handles duplicates
+        # from previous installs where count=0 re.sub kept N copies as N copies)
         pattern = re.compile(
-            rf'\n*<!-- BEGIN RULES FROM PLUGIN: {re.escape(plugin_name)} -->.*?'
-            rf'<!-- END RULES FROM PLUGIN: {re.escape(plugin_name)} -->\n*',
+            rf'\n*<!--\s*BEGIN RULES FROM PLUGIN:\s*{re.escape(plugin_name)}\s*-->.*?'
+            rf'<!--\s*END RULES FROM PLUGIN:\s*{re.escape(plugin_name)}\s*-->\n*',
             re.DOTALL
         )
-        if pattern.search(content):
-            # Replace existing block in-place
-            content = pattern.sub(block, content)
-        else:
-            # First time — append
-            content += block
+        content = pattern.sub('', content)
     else:
-        # No markers — legacy append
-        content += block
-    
+        # No markers — legacy path: still append (no dedup possible without markers)
+        pass
+
+    # Append exactly one clean copy
+    content = content.rstrip('\n') + '\n'
+    content += block
+
     target_file.write_text(content, encoding='utf-8')
 
 # --- Installers ---

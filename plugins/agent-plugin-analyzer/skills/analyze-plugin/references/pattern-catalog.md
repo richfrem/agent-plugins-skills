@@ -18,10 +18,15 @@ Every pattern entry MUST include:
 - **Lifecycle**: `proposed` / `validated` / `canonical` / `deprecated`
 - **Confidence**: High (≥3 plugins) / Medium (2 plugins) / Low (1 plugin)
 - **First Seen In**: Plugin name and analysis date
+- **Last Validated**: Date of most recent cross-plugin confirmation (YYYY-MM-DD)
 - **Frequency**: Count of plugins observed using this pattern
 - **Description**: What it is and how it works
 - **When to Use**: Conditions where this pattern applies
 - **Example**: Concrete implementation reference
+
+> **Ossification trigger**: If a `canonical` pattern has `Last Validated` older than 180 days,
+> flag it for re-review before the next catalog update. Patterns not confirmed in a living plugin
+> for >1 year should be downgraded to `deprecated` unless actively used in scaffolder templates.
 
 ### Deduplication Rules
 Before adding a new pattern:

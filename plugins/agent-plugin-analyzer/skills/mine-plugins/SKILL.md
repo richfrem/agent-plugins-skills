@@ -50,6 +50,10 @@ For each plugin in scope, run:
 python3 "./scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 
+> **Security scanning is enabled by default.** The inventory script runs credential detection,
+> network call detection, and environment variable access checks on every script file.
+> Pass `--no-security` only if you want to suppress the security scan output.
+
 If the script fails, perform manual inventory per the `analyze-plugin` skill Phase 1.
 
 ### Step 3: Deep Analysis

@@ -1,0 +1,30 @@
+{
+    "plugin": "gemini-cli",
+    "skill": "gemini-cli-agent",
+    "evaluations": [
+        {
+            "id": "eval-1-pipe-not-load",
+            "type": "negative",
+            "prompt": "Run an architecture review on this large codebase bundle using Gemini CLI.",
+            "expected_behavior": "Agent pipes via shell redirection ('gemini -p \"...\" < bundle.md > output.md'). Never reads content into agent memory to pass inline."
+        },
+        {
+            "id": "eval-2-model-flag",
+            "type": "positive",
+            "prompt": "Use the fastest Gemini model for a quick QA scan.",
+            "expected_behavior": "Agent uses the '-m' flag to select the appropriate model (e.g., '-m gemini-2.5-flash'). It does NOT default to the heaviest model when a lighter one is appropriate."
+        },
+        {
+            "id": "eval-3-severity-schema",
+            "type": "positive",
+            "prompt": "Run a QA analysis using Gemini CLI.",
+            "expected_behavior": "Agent instructs Gemini CLI to format findings using the Severity-Stratified Schema: CRITICAL, MODERATE, MINOR. Output is saved to a file for deterministic Outer Loop parsing."
+        },
+        {
+            "id": "eval-4-context-isolation",
+            "type": "positive",
+            "prompt": "Ask Gemini CLI to review the API design.",
+            "expected_behavior": "Prompt includes 'Do NOT use tools. Do NOT search filesystem.' and all necessary context inline. Gemini CLI receives no access to agent memory or filesystem tools."
+        }
+    ]
+}

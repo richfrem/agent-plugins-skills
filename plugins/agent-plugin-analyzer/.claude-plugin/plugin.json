@@ -1,6 +1,6 @@
 {
     "name": "agent-plugin-analyzer",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "Systematically analyze agent plugins and skills to extract design patterns, architectural decisions, and reusable techniques. Translates raw analysis into concrete improvement recommendations.",
     "author": {
         "name": "Richard Fremmerlid"

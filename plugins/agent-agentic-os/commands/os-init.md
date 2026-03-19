@@ -1,4 +1,5 @@
 ---
+name: os-init
 description: Bootstrap the project by triggering the agentic-os-setup conversational architect.
 ---
 # /os-init Command

@@ -1,4 +1,5 @@
 ---
+name: os-memory
 description: Force garbage collection and conflict resolution on the tiered memory system.
 ---
 # /os-memory Command
