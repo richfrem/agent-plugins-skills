@@ -1,1 +1,32 @@
-../../references/diagrams/rlm-factory-dual-path.mmd
+flowchart TD
+    subgraph Input
+        Q[/"User Query"/]
+    end
+
+    subgraph Analysis
+        Q --> D{Query Type?}
+    end
+
+    subgraph Path1["Path 1: rlm-factory / rlm-search (O(1) -- offline, no Ollama)"]
+        D -->|"Keyword lookup"| RLM[("RLM Summary Ledger\nrlm_summary_cache.json\nrlm_tool_cache.json")]
+        RLM -->|"Instant"| S1["1-sentence file summary\n+ file path"]
+    end
+
+    subgraph Path2["Path 2: vector-db / vector-db-agent (Semantic -- ChromaDB)"]
+        D -->|"Semantic search"| VDB[("ChromaDB\nlocalhost:port")]
+        VDB -->|"Nearest-neighbor"| S2[Ranked parent chunks]
+    end
+
+    subgraph SuperRAG["Super-RAG: RLM Context Injection"]
+        S2 --> INJ{Augment with<br/>RLM Summary?}
+        INJ -->|Yes| AUG["[CONTEXT: file purpose from RLM ledger]<br/>+ chunk content"]
+    end
+
+    subgraph Output
+        S1 --> R[/"Agent Response"/]
+        AUG --> R
+    end
+
+    style RLM fill:#4CAF50,color:#fff
+    style VDB fill:#2196F3,color:#fff
+    style INJ fill:#FF9800,color:#fff

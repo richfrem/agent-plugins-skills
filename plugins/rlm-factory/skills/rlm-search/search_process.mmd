@@ -1,1 +1,40 @@
-../../references/diagrams/search_process.mmd
+sequenceDiagram
+    participant Agent
+    participant RLM as rlm-factory_query<br>(query_cache.py)
+    participant VDB as vector-db_query<br>(query.py)
+    participant Grep as Grep / Search Tools<br>(grep, find, rg)
+    participant Ledger as RLM Ledger<br>(JSON)
+    participant Chroma as ChromaDB<br>(Vector Store)
+    participant FileSys as File System
+
+    Note over Agent, Ledger: Phase 1 -- RLM Summary Scan (Table of Contents)
+    Note right of Agent: Pre-work: each file read ONCE,<br>summarized ONCE, cached forever.<br>Search summaries many times O(1).
+
+    Agent->>RLM: "What does the vector query tool do?"
+    RLM->>Ledger: Key/Value lookup across all summaries
+    Ledger-->>RLM: 1-sentence dense summary per file
+
+    alt Phase 1 Sufficient -- summary answers the question
+        RLM-->>Agent: Return matching summary + file path
+        Agent->>Agent: Proceed with high-level understanding
+        Note right of Agent: "I have enough context to continue."
+    else Phase 1 Insufficient -- need to locate exact content
+        Note over Agent, Chroma: Phase 2 -- Vector DB Semantic Search (Back-of-Book Index)
+        Agent->>VDB: "Find exact code for vector semantic search"
+        VDB->>Chroma: Nearest-neighbor embedding search
+        Chroma-->>VDB: Ranked parent chunks + RLM Super-RAG context
+        VDB-->>Agent: Returns specific file snippets with source paths
+
+        alt Phase 2 Sufficient -- chunk contains the answer
+            Agent->>Agent: Perform deep analysis on returned chunks
+            Note right of Agent: "Found the exact context needed."
+        else Phase 2 Insufficient -- need exact keyword or line
+            Note over Agent, FileSys: Phase 3 -- Grep / Exact Search (Ctrl+F)
+            Agent->>Grep: Search for specific keyword, symbol, or pattern
+            Grep->>FileSys: rg / grep across discovered file paths
+            FileSys-->>Grep: Exact matching lines + line numbers
+            Grep-->>Agent: Precise location of specific text
+            Agent->>Agent: Read targeted file section
+        end
+    end
+
