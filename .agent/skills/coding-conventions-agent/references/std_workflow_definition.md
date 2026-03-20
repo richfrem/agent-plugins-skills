@@ -3,7 +3,7 @@
 **Purpose:** [Brief description of what this workflow enables.]
 
 > **Hybrid Workflow Compliance:**
-> This workflow adheres to the [Agent Workflow Orchestration Design](../../docs/architecture/Agent_Workflow_Orchestration_Design.md).
+> This workflow adheres to the Agent Workflow Orchestration Design.
 > It MUST NOT proceed to execution without a valid `spec.md`, `plan.md`, and `tasks.md`.
 
 ---

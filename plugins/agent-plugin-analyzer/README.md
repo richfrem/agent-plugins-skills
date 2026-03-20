@@ -2,6 +2,20 @@
 
 A meta-plugin that gives agents the ability to systematically analyze plugin and skill collections, extract design patterns, detect security risks, score maturity, and generate actionable improvement recommendations — powering a virtuous cycle of continuous learning.
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/agent-plugin-analyzer
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-plugin-analyzer
+```
+
 ## Purpose
 
 When you encounter a plugin or collection of plugins built by others, this plugin helps you:

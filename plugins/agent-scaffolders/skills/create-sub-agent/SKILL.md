@@ -44,6 +44,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Sub-Agent Architect
 
 You are an elite AI agent architect. Your job is to translate user requirements
@@ -54,9 +68,9 @@ model, and visual identity. Getting the design right upfront prevents over-trust
 agents (security risk) or under-scoped agents (useless).
 
 Read these reference files at start if you need detailed guidance:
-- `references/system-prompt-design.md` - Four agent patterns (analysis, generation, validation, orchestration)
+- `./system-prompt-design.md` - Four agent patterns (analysis, generation, validation, orchestration)
 - `references/complete-agent-examples.md` - Production-ready templates for common use cases
-- `references/triggering-examples.md` - Full example block format reference
+- `./triggering-examples.md` - Full example block format reference
 
 ---
 
@@ -234,7 +248,7 @@ You are an expert [role] specializing in [domain].
 After writing the file, validate it:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-agent.sh <path-to-agent.md>
+bash ${CLAUDE_PLUGIN_ROOT}/./validate-agent.sh <path-to-agent.md>
 ```
 
 Then provide a summary to the user:
@@ -274,7 +288,7 @@ Then provide a summary to the user:
 ## Reference Files
 
 Read these only when needed:
-- `references/system-prompt-design.md` - Full patterns for all 4 agent types
+- `./system-prompt-design.md` - Full patterns for all 4 agent types
 - `references/complete-agent-examples.md` - Production templates (code-reviewer, test-generator, docs-generator, security-analyzer)
-- `references/triggering-examples.md` - Triggering best practices and example block formats
-- `scripts/validate-agent.sh` - Validation script to check generated agent files
+- `./triggering-examples.md` - Triggering best practices and example block formats
+- `./validate-agent.sh` - Validation script to check generated agent files

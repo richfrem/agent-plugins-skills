@@ -52,13 +52,13 @@ pydantic>=2.0.0
 ```bash
 # Generate the locked requirements.txt
 pip-compile ../../requirements.in \
-  --output-file ../../requirements.txt
+  --output-file ../requirements.txt
 ```
 
 **Step 4: Install locally**
 ```bash
 # Install from lockfile
-pip install -r ../../requirements.txt
+pip install -r ../requirements.txt
 ```
 
 ### Updating Python Dependencies

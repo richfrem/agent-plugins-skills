@@ -8,7 +8,7 @@ The `agentic-os-guide` must successfully pass the following scenarios.
 1. **Architectural Overview**: "What is an Agentic OS?" -> Agent successfully explains the Kernel (CLAUDE.md), RAM (context/), standard library (skills/), and processes (agents/).
 2. **Setup Request Mapping**: "How do I add this OS to my repo?" -> Agent successfully directs the user to invoke `agentic-os-setup` rather than trying to perform the setup itself.
 3. **Memory Explanation**: "How does Claude remember things between sessions here?" -> Agent correctly explains the dated session logs, hooks, and `session-memory-manager` promotion phase.
-4. **Loop Explanation**: "What is the learning loop?" -> Agent describes the `os-learning-loop` agent and how retrospectives lead to self-improving `SKILL.md` rules.
+4. **Loop Explanation**: "What is the learning loop?" -> Agent describes the `os-learning-loop` agent and how retrospectives lead to self-improving `./SKILL.md` rules.
 5. **Progressive Disclosure**: User asks a complex question about hooks. Agent actively uses the `Read` tool to load `sub-agents-and-hooks.md` reference material before answering.
 
 ## ❌ Negative Scenarios (Must Halt or Fail Cleanly)

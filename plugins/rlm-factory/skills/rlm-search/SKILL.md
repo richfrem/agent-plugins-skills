@@ -7,6 +7,20 @@ description: >
   Vector DB Semantic Search -> Grep/Exact Match. Never skip phases.
 dependencies: ["skill:rlm-curator", "plugin:vector-db"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Identity: The Knowledge Navigator 🔍
 
 You are the **Knowledge Navigator**. Your job is to find things efficiently.
@@ -54,25 +68,25 @@ Common defaults (your project may use different names or define more):
 
 ```bash
 # Search docs/protocols cache
-python3 ./scripts/query_cache.py \
+python3 ./query_cache.py \
   --profile project "vector query"
 
 # Search plugins/scripts cache
-python3 ./scripts/query_cache.py \
+python3 ./query_cache.py \
   --profile tools "vector query"
 
 # Ambiguous topic -- search both (recommended default)
-python3 ./scripts/query_cache.py \
+python3 ./query_cache.py \
   --profile project "embedding search" && \
-python3 ./scripts/query_cache.py \
+python3 ./query_cache.py \
   --profile tools "embedding search"
 
 # List all cached entries for a profile
-python3 ./scripts/query_cache.py \
+python3 ./query_cache.py \
   --profile project --list
 
 # JSON output for programmatic use
-python3 ./scripts/query_cache.py \
+python3 ./query_cache.py \
   --profile tools "inject_summary" --json
 ```
 
@@ -105,7 +119,7 @@ Trigger the `vector-db:vector-db-search` skill to perform semantic search. Provi
 ```bash
 # Scoped search (preferred -- use paths from Phase 1 or 2)
 grep_search "VectorDBOperations" \
-  ../../scripts/
+  ./scripts/
 
 # Ripgrep for regex patterns
 rg "def query" ../../ --type py
@@ -124,9 +138,9 @@ The diagrams below document the system this skill operates in:
 
 | Diagram | What It Shows |
 |:--------|:--------------|
-| [search_process.mmd](../../references/diagrams/search_process.mmd) | Full 3-phase sequence diagram |
-| [rlm-factory-architecture.mmd](../../references/diagrams/rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
-| [rlm-factory-dual-path.mmd](../../references/diagrams/rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
+| [search_process.mmd](./search_process.mmd) | Full 3-phase sequence diagram |
+| [rlm-factory-architecture.mmd](./rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
+| [rlm-factory-dual-path.mmd](./rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
 
 ---
 

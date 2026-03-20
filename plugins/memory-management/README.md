@@ -3,6 +3,20 @@
 Tiered memory system for cognitive continuity across agent sessions. Makes AI agents
 continuous collaborators -- they carry context between sessions instead of starting blank.
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/memory-management
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/memory-management
+```
+
 ## Architecture
 
 Memory is organized into four tiers, loaded progressively based on need:

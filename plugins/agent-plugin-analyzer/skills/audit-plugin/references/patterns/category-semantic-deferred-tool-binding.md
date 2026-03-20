@@ -27,7 +27,7 @@ When a customizer agent processes this file later, the text `project tracker` it
 ```markdown
 1. Always use `~~<category>` for placeholder values if the target tool is unknown.
 2. The category must be plain, human-readable, lowercase English (e.g., `~~chat`, `~~project tracker`).
-3. Maintain a `CONNECTORS.md` file that formally maps the categories used in the placeholders to known tool ecosystem equivalents.
+3. Maintain a `././CONNECTORS.md` file that formally maps the categories used in the placeholders to known tool ecosystem equivalents.
 4. When customizing, use the category text directly as the search query against the tool registry.
 5. Never expose the `~~` syntax or the word "placeholder" to the end user.
 ```

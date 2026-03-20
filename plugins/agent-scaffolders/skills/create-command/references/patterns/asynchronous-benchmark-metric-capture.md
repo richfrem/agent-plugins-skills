@@ -10,7 +10,7 @@ During parallel benchmark executions or deep subagent loops, critical telemetry 
 ## When to Use
 - When executing the `Rigorous Benchmarking & Grading Loop` pattern across positive/negative prompt test cases.
 - In multi-agent swarm environments where parallel workers consume highly variable token counts.
-- When tracking the overhead cost of complex `SKILL.md` contexts against a baseline.
+- When tracking the overhead cost of complex `././SKILL.md` contexts against a baseline.
 
 ## Implementation Example
 ```markdown

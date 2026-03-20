@@ -1,0 +1,1 @@
+../../scripts/eval-viewer/generate_review.py

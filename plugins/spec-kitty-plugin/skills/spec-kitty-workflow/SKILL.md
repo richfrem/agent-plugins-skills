@@ -3,14 +3,28 @@ name: Spec Kitty Workflow
 description: Standard operating procedures for the Spec Kitty agentic workflow (Plan -> Implement -> Review -> Merge).
 dependencies: ["skill:dual-loop", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Spec Kitty Workflow
 
 Standard lifecycle for implementing features using Spec Kitty.
 
 **Command-specific guidance**: For detailed best practices on individual commands, see the `AUGMENTED.md` files co-located with each auto-synced command:
-- `skills/spec-kitty-merge/references/AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
-- `skills/spec-kitty-implement/references/AUGMENTED.md` — worktree discipline, commit hygiene
-- `skills/spec-kitty-review/references/AUGMENTED.md` — review standards, batch review protocol
+- `./AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
+- `./AUGMENTED.md` — worktree discipline, commit hygiene
+- `./AUGMENTED.md` — review standards, batch review protocol
 
 ## 🚫 CRITICAL: Anti-Simulation Rules & Escalation Taxonomy
 

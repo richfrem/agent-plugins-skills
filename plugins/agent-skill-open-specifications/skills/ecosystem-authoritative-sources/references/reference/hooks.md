@@ -27,7 +27,7 @@ Hooks fire based on lifecycle events. The available events are:
 15. **SessionEnd**: When the session terminates.
 
 ## Configuration & Structure
-Hooks are configured in `hooks.json` files or inline within `plugin.json`, `SKILL.md`, or agent frontmatter.
+Hooks are configured in `hooks.json` files or inline within `plugin.json`, `././SKILL.md`, or agent frontmatter.
 
 The general nested structure in JSON:
 1. Selection of a Hook Event (e.g. `"PreToolUse"`).

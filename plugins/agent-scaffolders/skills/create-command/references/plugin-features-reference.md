@@ -101,7 +101,7 @@ Read template: @${CLAUDE_PLUGIN_ROOT}/templates/report.md
 
 **Expands to:**
 ```
-Run analysis: !`node /path/to/plugins/plugin-name/scripts/analyze.js`
+Run analysis: !`node /path/to/./scripts/analyze.js`
 
 Read template: @/path/to/plugins/plugin-name/templates/report.md
 ```

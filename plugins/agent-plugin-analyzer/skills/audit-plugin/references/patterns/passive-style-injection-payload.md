@@ -9,7 +9,7 @@ Standard agent skills are generally procedural (e.g., "Do X, then Y, then Z"). A
 
 ## When to Use
 - When multiple different skills in your ecosystem (chart generators, UI builders, presentation makers) all need to adhere to the same corporate branding or visual identity.
-- When isolating tone-of-voice or persona rules away from core workflow logic to keep core `SKILL.md` files lean.
+- When isolating tone-of-voice or persona rules away from core workflow logic to keep core `././SKILL.md` files lean.
 
 ## Implementation Example
 ```markdown

@@ -14,4 +14,4 @@ If the `l5-red-team-auditor` returns a malformed report that misses the required
 
 ## 4. Red Team Finds Zero Flaws
 If the sub-agent returns a perfect L5 score on a complex plugin:
-- **Action**: Flag the review as suspiciously shallow. Verify that the sub-agent actually read the `scripts/` directory and didn't just parse the `SKILL.md` frontmatter. Prompt the user to double-check the `Sources Checked` transparency list.
+- **Action**: Flag the review as suspiciously shallow. Verify that the sub-agent actually read the `scripts/` directory and didn't just parse the `./SKILL.md` frontmatter. Prompt the user to double-check the `Sources Checked` transparency list.

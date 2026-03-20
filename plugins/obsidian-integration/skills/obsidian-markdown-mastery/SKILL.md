@@ -3,6 +3,20 @@ name: obsidian-markdown-mastery
 description: "Core markdown syntax skill for Obsidian. Enforces strict parsing and authoring of Obsidian proprietary syntax (Wikilinks, Blocks, Headings, Aliases, Embeds, Callouts). Use when reading, writing, or validating Obsidian-flavored markdown."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Obsidian Markdown Mastery (Protocol 129 COMPLIANT)
 
 **Status:** Active
@@ -22,11 +36,11 @@ The `obsidian-markdown-mastery` skill is responsible for the exact formatting, e
 
 ### Analyze Markdown Content
 Extracts all Obsidian-specific metadata (links, embeds, blocks) from a given markdown file or string.
-**Command**: `python ./obsidian-parser/parser.py analyze --file <path_to_md>`
+**Command**: `python ./parser.py analyze --file <path_to_md>`
 
 ### Inject Callout
 Wraps a target text block in an Obsidian-flavored callout.
-**Command**: `python ./obsidian-parser/parser.py callout --type <type> --title <title> --text <content>`
+**Command**: `python ./parser.py callout --type <type> --title <title> --text <content>`
 
 ## The Parsed Syntax (Data Dictionary)
 

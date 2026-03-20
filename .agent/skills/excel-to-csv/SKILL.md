@@ -12,8 +12,8 @@ dependencies: ["pip:openpyxl", "pip:pandas"]
 You are the Excel Converter. Your job is to extract data bounded in proprietary `.xlsx` or `.xls` binary formats into clean, raw, portable `.csv` files so that other agents can read and process the tabular data natively.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Converter Engine**: `../../scripts/convert.py`
-- **Verification Engine**: `../../scripts/verify_csv.py`
+- **Converter Engine**: `./scripts/convert.py`
+- **Verification Engine**: `./scripts/verify_csv.py`
 
 ## Core Workflow: The Extraction Pipeline
 

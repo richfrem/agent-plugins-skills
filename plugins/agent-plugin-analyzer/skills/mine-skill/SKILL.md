@@ -3,6 +3,20 @@ user-invocable: true
 argument-hint: "[path-to-skill-directory]"
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Mine Skill
 
 Run the targeted analysis pipeline on a single Agent Skill. This allows for focused extraction and synthesis from isolated directories without processing an entire plugin.
@@ -33,7 +47,7 @@ Run the targeted analysis pipeline on a single Agent Skill. This allows for focu
 ## Execution Flow
 
 1. **Invoke Analysis**: The system triggers `analyze-plugin` operating in Single Skill Mode on the provided `$ARGUMENTS`.
-2. **Execute Inventory**: `plugins/agent-plugin-analyzer/scripts/inventory_plugin.py` runs against the skill path.
+2. **Execute Inventory**: `./inventory_plugin.py` runs against the skill path.
    > **Security scanning is enabled by default.** Credential detection, network call detection,
    > and environment variable checks run on all script files unless `--no-security` is passed.
 3. **Pattern Matching**: Checks against `references/pattern-catalog.md` and detects anti-patterns.

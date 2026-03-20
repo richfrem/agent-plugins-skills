@@ -1,7 +1,7 @@
 # Project Ecosystem: Review Augmentation
 
 > This file contains project-specific review standards and best practices.
-> It is NOT overwritten by `sync_configuration.py` — only `SKILL.md` is auto-synced.
+> It is NOT overwritten by `sync_configuration.py` — only `./SKILL.md` is auto-synced.
 
 ## Review Standards
 

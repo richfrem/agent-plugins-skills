@@ -14,12 +14,12 @@ injects it via `inject_summary.py`.
 
 1. Identify missing files:
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
+python3 ./scripts/inventory.py --profile project
 ```
 
 2. For each missing file -- read it deeply, generate a 1-sentence dense summary, inject:
 ```bash
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+python3 ./scripts/inject_summary.py \
   --profile project \
   --file <path_to_file> \
   --summary "Your summary here."

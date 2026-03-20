@@ -42,4 +42,4 @@ Our PDF skill, for instance, previously struggled with non-fillable forms. Claud
 ![](https://cdn.prod.website-files.com/68a44d4040f98a4adf2207b6/69a74e1f72940942cb534904_skillscreator-skill-description-optimization-results.png)
 
 ## The Future of Skills
-As foundational models improve, the line between "skill" and "specification" will blur. While today `SKILL.md` serves as an implementation plan for *how* to do a task, tomorrow's skills may only require a natural language specification of *what* should be done. The current evaluation framework is a stepping stone toward that future.
+As foundational models improve, the line between "skill" and "specification" will blur. While today `./SKILL.md` serves as an implementation plan for *how* to do a task, tomorrow's skills may only require a natural language specification of *what* should be done. The current evaluation framework is a stepping stone toward that future.

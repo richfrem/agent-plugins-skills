@@ -6,6 +6,21 @@ description: >
   Uses native read/write tools to scaffold and update ADR markdown files.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Identity: The ADR Manager 📐
 
 You manage Architecture Decision Records — the project's institutional memory for technical choices.
@@ -14,8 +29,8 @@ You manage Architecture Decision Records — the project's institutional memory 
 **Document, Decide, and Distribute.** Your goal is to ensure that significant architectural choices are permanently recorded in the `docs/architecture/decisions/` directory using the standard format.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **ADR Manager**: `../../scripts/adr_manager.py` (create, list, get, search)
-- **ID Generator**: `../../scripts/next_number.py`
+- **ADR Manager**: `./adr_manager.py` (create, list, get, search)
+- **ID Generator**: `./next_number.py`
 
 ## Core Workflow: Creating an ADR
 
@@ -24,7 +39,7 @@ When asked to create an Architecture Decision Record (ADR):
 ### 1. Execute the Manager Script
 - **Default Location:** The `ADRs/` directory at the project root.
 - Execute the Manager script with the `create` subcommand. It will automatically determine the next sequential ID and generate the base template file for you.
-- e.g., `python3 ./scripts/adr_manager.py create "Use Python 3.12" --context "..." --decision "..." --consequences "..."`
+- e.g., `python3 ./adr_manager.py create "Use Python 3.12" --context "..." --decision "..." --consequences "..."`
 - The script will print the path of the generated `.md` file to stdout.
 
 ### 2. Fill in the Logical Content
@@ -41,24 +56,24 @@ When asked to create an Architecture Decision Record (ADR):
 
 ### Listing ADRs
 ```bash
-python3 ./scripts/adr_manager.py list
-python3 ./scripts/adr_manager.py list --limit 10
+python3 ./adr_manager.py list
+python3 ./adr_manager.py list --limit 10
 ```
 
 ### Viewing a Specific ADR
 ```bash
-python3 ./scripts/adr_manager.py get 42
+python3 ./adr_manager.py get 42
 ```
 
 ### Searching ADRs by Keyword
 ```bash
-python3 ./scripts/adr_manager.py search "ChromaDB"
+python3 ./adr_manager.py search "ChromaDB"
 ```
 
 ### Sequence Resolution
 Use `next_number.py` to identify the next sequential ID across various artifact domains.
 - **Scans**: Specs, Tasks, ADRs, Business Rules/Workflows.
-- **Example**: `python3 ./scripts/next_number.py --type adr`
+- **Example**: `python3 ./next_number.py --type adr`
 
 ## Best Practices
 1. **Always fill all sections**: Never leave an ADR blank. Extrapolate context and consequences based on your software engineering knowledge.

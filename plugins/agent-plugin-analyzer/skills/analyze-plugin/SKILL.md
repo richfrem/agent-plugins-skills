@@ -9,6 +9,20 @@ description: >
   just says "look at this plugin" or "tell me how this is structured."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Plugin & Skill Analyzer
 
 Perform deep structural and content analysis on agent plugins and skills. Extract reusable
@@ -60,7 +74,7 @@ hardcoded credentials, missing required fields), flag them prominently in the fi
 
 Run the deterministic inventory script first:
 ```bash
-python3 "./scripts/inventory_plugin.py" --path <plugin-dir> --format json
+python3 "./inventory_plugin.py" --path <plugin-dir> --format json
 ```
 
 If the script is unavailable, manually enumerate:
@@ -98,7 +112,7 @@ Evaluate the plugin's architectural decisions:
 
 ### Phase 3: Content Analysis
 
-For each file, load the appropriate question set from `references/analysis-questions-by-type.md` and work through every checkbox. See the process diagram in `analyze-plugin-flow.mmd` for the full pipeline visualization.
+For each file, load the appropriate question set from `./analysis-questions-by-type.md` and work through every checkbox. See the process diagram in `./analyze-plugin-flow.mmd` for the full pipeline visualization.
 
 For each SKILL.md, evaluate:
 
@@ -143,7 +157,7 @@ For each SKILL.md, evaluate:
 
 ### Phase 4: Pattern Extraction
 
-Identify instances of known patterns from `references/pattern-catalog.md`. Also watch for novel patterns not yet cataloged.
+Identify instances of known patterns from `./pattern-catalog.md`. Also watch for novel patterns not yet cataloged.
 
 **For each pattern found, document:**
 ```
@@ -169,7 +183,7 @@ Lifecycle: [proposed / validated / canonical / deprecated]
 
 ### Phase 5: Anti-Pattern & Security Detection
 
-Load the full check tables from `references/security-checks.md`.
+Load the full check tables from `./security-checks.md`.
 
 **Execution order:**
 1. Run security checks FIRST (P0 — Critical severity items)
@@ -181,7 +195,7 @@ If `inventory_plugin.py` was run with `--security`, use its deterministic findin
 
 ### Phase 6: Synthesis & Scoring
 
-Load the maturity model and scoring rubric from `references/maturity-model.md`.
+Load the maturity model and scoring rubric from `./maturity-model.md`.
 
 **Steps:**
 1. Assign maturity level (L1-L5)

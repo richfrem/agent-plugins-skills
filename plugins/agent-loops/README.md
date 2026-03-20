@@ -2,6 +2,20 @@
 
 Composable agent loop architectures for **learning loops**, **agent orchestration**, **red team coordination**, and **parallel swarm execution**. Framework-agnostic — works with any AI agent in any repository, with or without other plugins.
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/agent-loops
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-loops
+```
+
 ## Core Skills
 
 | Skill | Pattern | Description |

@@ -9,6 +9,20 @@ description: >-
   and --dry-run modes.
 allowed-tools: Bash, Write, Read
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Plugin Replicator
 
 ## Overview
@@ -28,8 +42,8 @@ After replicating, run `maintain-plugins` Sync in the target project to activate
 
 
 ## References
-- Overview: `../../references/plugin_replicator_overview.md`
-- Flow diagram: `../../references/plugin_replicator_diagram.mmd`
+- Overview: `./plugin_replicator_overview.md`
+- Flow diagram: `./plugin_replicator_diagram.mmd`
 
 ---
 
@@ -72,7 +86,7 @@ Ask the user:
 
 #### Pull: From `agent-plugins-skills` into a consumer project (run FROM consumer project)
 ```bash
-python3 ./scripts/plugin_replicator.py \
+python3 ./plugin_replicator.py \
   --source /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/<plugin-name> \
   --dest plugins/<plugin-name> \
   --clean
@@ -80,21 +94,21 @@ python3 ./scripts/plugin_replicator.py \
 
 #### Push: From this repo to another project (run FROM this repo)
 ```bash
-python3 ./scripts/plugin_replicator.py \
+python3 ./plugin_replicator.py \
   --source plugins/<plugin-name> \
   --dest /path/to/other-project/plugins/<plugin-name>
 ```
 
 #### Bulk Push: All plugins
 ```bash
-python3 ./scripts/bulk_replicator.py \
+python3 ./bulk_replicator.py \
   --source plugins/ \
   --dest /path/to/other-project/plugins/
 ```
 
 #### Filtered Bulk (e.g., only obsidian-* plugins)
 ```bash
-python3 ./scripts/bulk_replicator.py \
+python3 ./bulk_replicator.py \
   --source plugins/ \
   --dest /path/to/other-project/plugins/ \
   --filter "obsidian-*" --clean

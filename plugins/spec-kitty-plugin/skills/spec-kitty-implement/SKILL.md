@@ -3,6 +3,20 @@ name: spec-kitty-implement
 description: Create an isolated workspace (worktree) for implementing a specific work
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 ## ⚠️ CRITICAL: Working Directory Requirement
 
 **After running `spec-kitty implement WP##`, you MUST:**

@@ -8,7 +8,7 @@ Instruct the agent to modulate its cognitive evaluation mode by adding a tempora
 
 ### Implementation Standard
 
-1. **Skill Definition**: Encode the stage considerations in the declarative `SKILL.md`.
+1. **Skill Definition**: Encode the stage considerations in the declarative `././SKILL.md`.
    ```markdown
    ## Stage Considerations
    - **Exploration Stage:** Focus on structural issues, logic, and broad concepts. Ignore minor typos or exact formatting.

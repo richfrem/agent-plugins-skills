@@ -4,6 +4,20 @@ aliases: ["Sequential Agent", "Agent as a Tool"]
 description: "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Dual-Loop (Inner/Outer Agent Delegation)
 
 This skill defines the orchestration pattern for the **Dual-Loop Agent Architecture**. The **Outer Loop** (the directing agent) uses this protocol to organize work, delegate execution to an **Inner Loop** (the coding/tactical agent), and rigorously verify the results before merging.
@@ -38,7 +52,7 @@ flowchart LR
     Correct -->|Delta Fix| Receive
 ```
 
-**Reference**: [Architecture Diagram](../../resources/diagrams/dual_loop_architecture.mmd)
+**Reference**: [Architecture Diagram](./resources/diagrams/dual_loop_architecture.mmd)
 
 ---
 

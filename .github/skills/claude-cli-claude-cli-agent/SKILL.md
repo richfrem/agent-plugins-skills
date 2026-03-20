@@ -1,1 +1,0 @@
-../skills/claude-cli-agent/SKILL.md

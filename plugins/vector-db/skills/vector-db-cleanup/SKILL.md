@@ -17,6 +17,20 @@ color: orange
 tools: ["Bash", "Read", "Write"]
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # VDB Cleanup Agent
 
 ## Role
@@ -37,8 +51,8 @@ vector index accurate and prevents false search results.
 ## Prerequisites
 
 ### Verify server is running
-If not already up, see `../../SKILL.md`.
-For first-time setup (dependencies + profile config): `../../SKILL.md`.
+If not already up, run the `vector-db-launch` skill first.
+For first-time setup (dependencies + profile config): run the `vector-db-init` skill.
 
 ```bash
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
@@ -49,7 +63,7 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ### 1. Dry run -- show what will be removed
 
 ```bash
-python3 ./scripts/cleanup.py \
+python3 ./cleanup.py \
   --profile knowledge --dry-run
 ```
 
@@ -58,21 +72,21 @@ Report: "Found N orphaned chunks from X deleted files: [list of paths]"
 ### 2. Apply -- only after confirming with user
 
 ```bash
-python3 ./scripts/cleanup.py \
+python3 ./cleanup.py \
   --profile knowledge --apply
 ```
 
 ### 3. Verify store integrity (optional)
 
 ```bash
-python3 ./scripts/vector_consistency_check.py \
+python3 ./vector_consistency_check.py \
   --profile knowledge
 ```
 
 ### 4. Smoke test search still works
 
 ```bash
-python3 ./scripts/query.py \
+python3 ./query.py \
   "test query" --profile knowledge --limit 3
 ```
 

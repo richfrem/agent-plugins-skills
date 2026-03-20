@@ -77,10 +77,10 @@ This is the profile registry. You can add or rename profiles here:
 ```json
 "project": {
     "description": "Custom Docs Profile",
-    "manifest": "../../resources/rlm_manifest.json",
+    "manifest": "./resources/rlm_manifest.json",
     "cache": ".agent/learning/custom_cache.json",
     "parser": "directory_glob",
-    "prompt_path": "../../resources/prompts/rlm/custom_prompt.md",
+    "prompt_path": "./resources/prompts/rlm/custom_prompt.md",
     "env_prefix": "RLM_CUSTOM",
     "allowed_suffixes": [".md", ".txt"],
     "llm_model": "granite3.2:8b"

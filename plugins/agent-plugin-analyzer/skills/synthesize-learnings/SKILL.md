@@ -7,6 +7,20 @@ description: >
   these findings", or after completing a plugin analysis.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Synthesize Learnings
 
 Take raw analysis output from `analyze-plugin` and transform it into concrete, actionable improvements for our meta-skills ecosystem. This is the "close the loop" skill that turns observations into evolution.
@@ -115,13 +129,13 @@ Append any newly discovered patterns to `references/pattern-catalog.md` in the `
 
 ### Step 5b: Log Recommendations to Tracker
 
-Append each recommendation to `references/open-recommendations.md` using this format:
+Append each recommendation to `./open-recommendations.md` using this format:
 
 ```markdown
 | [YYYY-MM-DD] | [Title] | [Target] | [Priority] | open |
 ```
 
-See `references/open-recommendations.md` for the tracker schema. When a recommendation is
+See `./open-recommendations.md` for the tracker schema. When a recommendation is
 implemented, update its status from `open` to `implemented` and add the PR or commit reference.
 
 Format new catalog entries as:

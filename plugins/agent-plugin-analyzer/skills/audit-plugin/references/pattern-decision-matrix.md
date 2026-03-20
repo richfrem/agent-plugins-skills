@@ -9,7 +9,7 @@ A reference for deciding when and how to incorporate advanced L4 architectural a
 
 Not every skill needs complex architectural patterns. Use this tree during the discovery phase to determine which patterns to inject.
 
-**CRITICAL RULE**: Do not explain the theory of these patterns to the user. Ask the diagnostic question. If the user answers YES, **MUST** load the corresponding markdown definition from `~~l4-pattern-catalog` (see CONNECTORS.md).
+**CRITICAL RULE**: Do not explain the theory of these patterns to the user. Ask the diagnostic question. If the user answers YES, **MUST** load the corresponding markdown definition from `~~l4-pattern-catalog` (see ./CONNECTORS.md).
 
 ### Category 1: Input and Routing
 | Diagnostic Question | Required Pattern | File |
@@ -94,15 +94,15 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 
 If a pattern is triggered and loaded, you must perform **Progressive Disclosure Injection** into the generated skill:
 
-1.  **Do not bloat the `SKILL.md`** with the full theory of the pattern.
+1.  **Do not bloat the `./SKILL.md`** with the full theory of the pattern.
 2.  Create a lean reference file in the new skill's `references/` directory (e.g. `references/escalation-rules.md`).
 3.  Populate that new reference file with ONLY the concrete, domain-specific tables and rules requested by the pattern definition.
-4.  Add a markdown link in the new `SKILL.md` pointing to this newly generated reference file so the runtime agent knows to load it when executing.
+4.  Add a markdown link in the new `./SKILL.md` pointing to this newly generated reference file so the runtime agent knows to load it when executing.
 
-This mechanism ensures that new skills possess L4 statefulness and safety boundaries without violating the 500-line `SKILL.md` context constraint.
+This mechanism ensures that new skills possess L4 statefulness and safety boundaries without violating the 500-line `./SKILL.md` context constraint.
 ## L4 Pattern Reference Catalog
 
-Once a pattern is triggered by the decision tree above, load the corresponding file from `~~l4-pattern-catalog` (see CONNECTORS.md) to learn how to explicitly construct the logic in the new skill.
+Once a pattern is triggered by the decision tree above, load the corresponding file from `~~l4-pattern-catalog` (see ./CONNECTORS.md) to learn how to explicitly construct the logic in the new skill.
 
 ### Root-Cause Category Selection (Anti-Symptom Triage)
 - **File:** `anti-symptom-triage.md`
@@ -234,7 +234,7 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Statutory Temporal Anchoring
 - **File:** `temporal-anchoring.md`
 - **Use Case:** Compliance, Legal, Security, or heavily regulated domains where the "truth" changes over time based on external regulations.
-- **Core Mechanic:** Domain knowledge codified in a `SKILL.md` degrades over time. If a skill states "Breach notification is required within 72 hours," it becomes silently...
+- **Core Mechanic:** Domain knowledge codified in a `./SKILL.md` degrades over time. If a skill states "Breach notification is required within 72 hours," it becomes silently...
 
 ### Tiered Source Authority with Propagated Confidence
 - **File:** `tiered-source-authority.md`
@@ -314,7 +314,7 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Concept-Dialect Translation Table
 - **File:** `concept-dialect-translation-table.md`
 - **Use Case:** Integrating external systems (like Notion or Jira) whose internal terminology differs from your domain terminology.
-- **Core Mechanic:** A literal Markdown table in `CONNECTORS.md` that maps internal domain concepts to external system equivalents, so the agent can naturally "speak" the target API's dialect.
+- **Core Mechanic:** A literal Markdown table in `./CONNECTORS.md` that maps internal domain concepts to external system equivalents, so the agent can naturally "speak" the target API's dialect.
 
 ### Category-Semantic Deferred Tool Binding
 - **File:** `category-semantic-deferred-tool-binding.md`
@@ -339,7 +339,7 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Progressive Disclosure
 - **File:** `progressive-disclosure.md`
 - **Use Case:** Coping with large architectures or domain rules.
-- **Core Mechanic:** Splitting knowledge out of the primary `SKILL.md` (which is always loaded into context window) into `references/*.md`, mapped to specific triggers so they only load when strictly necessary.
+- **Core Mechanic:** Splitting knowledge out of the primary `./SKILL.md` (which is always loaded into context window) into `references/*.md`, mapped to specific triggers so they only load when strictly necessary.
 - **Evolution:** *Tiered Progressive Disclosure with Explicit Budget Constraints* — Implementing hard token/word count budgets per progressive disclosure tier.
 
 ### Zero-Sum Addition Gate

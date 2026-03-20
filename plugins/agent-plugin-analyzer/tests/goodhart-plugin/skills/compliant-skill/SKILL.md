@@ -8,4 +8,4 @@ allowed-tools: Read, Write
 
 This skill can help with various tasks.
 
-See `references/acceptance-criteria.md` for completion criteria.
+See `./acceptance-criteria.md` for completion criteria.

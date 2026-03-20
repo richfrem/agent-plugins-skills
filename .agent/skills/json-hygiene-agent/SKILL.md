@@ -20,7 +20,7 @@ You are an expert at maintaining the integrity of JSON configuration files. Stan
 
 | Script | Role | Capability |
 |:---|:---|:---|
-| `../../scripts/find_json_duplicates.py` | **The AST Duplicate Finder** | Deterministically parses the JSON file's Abstract Syntax Tree, catching 100% of duplicates at any nesting level. |
+| `./scripts/find_json_duplicates.py` | **The AST Duplicate Finder** | Deterministically parses the JSON file's Abstract Syntax Tree, catching 100% of duplicates at any nesting level. |
 
 ## Core Workflow: The Audit Pipeline
 

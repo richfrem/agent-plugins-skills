@@ -1,0 +1,1 @@
+../scripts/plugin_replicator.py

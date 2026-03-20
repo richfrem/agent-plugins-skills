@@ -37,6 +37,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Agentic OS Init
 
 Bootstrap the Agentic OS / Agent Harness structure into any project. The setup is
@@ -272,4 +286,4 @@ npx skills add ./plugins/agent-agentic-os --force
 For the agent running this skill:
 - Full Agentic OS pattern explained -> `agentic-os-guide` skill
 - Memory write/promote/archive decisions -> `session-memory-manager` skill
-- Project setup reference -> `references/project-setup-guide.md`
+- Project setup reference -> `./project-setup-guide.md`

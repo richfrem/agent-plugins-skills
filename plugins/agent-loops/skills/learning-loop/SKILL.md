@@ -4,6 +4,20 @@ aliases: ["Loop Agent", "Single Agent"]
 description: "(Industry standard: Loop Agent / Single Agent) Primary Use Case: Self-contained research, content generation, and exploration where no inner delegation is required. Self-directed research and knowledge capture loop. Use when: starting a session (Orientation), performing research (Synthesis), or closing a session (Seal, Persist, Retrospective). Ensures knowledge survives across isolated agent sessions."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Learning Loop
 
 The Learning Loop is a structured cognitive continuity protocol ensuring that knowledge survives across isolated agent sessions. It is designed to be universally applicable to any agent framework.

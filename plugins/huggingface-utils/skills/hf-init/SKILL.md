@@ -4,6 +4,20 @@ description: "Initialize HuggingFace integration - validates .env variables, tes
 allowed-tools: Bash, Read
 dependencies: ["pip:hf_upload"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # HuggingFace Init (Onboarding)
 
 **Status:** Active
@@ -39,17 +53,17 @@ onboarding a new project, or whenever credentials change.
 
 ### Validate Config
 ```bash
-python ./scripts/hf_config.py
+python ./hf_config.py
 ```
 
 ### Full Init (Validate + Create Structure + Dataset Card)
 ```bash
-python ./scripts/hf_init.py
+python ./hf_init.py
 ```
 
 ### Validate Only (No Changes)
 ```bash
-python ./scripts/hf_init.py --validate-only
+python ./hf_init.py --validate-only
 ```
 
 ## Quick Setup
@@ -68,5 +82,5 @@ HUGGING_FACE_TAGS=reasoning-traces,cognitive-continuity,your-project-tag
 HUGGING_FACE_PROJECT_NAME=My Project Soul
 
 # Run init
-python ./scripts/hf_init.py
+python ./hf_init.py
 ```

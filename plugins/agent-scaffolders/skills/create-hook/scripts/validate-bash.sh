@@ -1,0 +1,1 @@
+examples/validate-bash.sh

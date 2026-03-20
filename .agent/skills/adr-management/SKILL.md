@@ -14,8 +14,8 @@ You manage Architecture Decision Records — the project's institutional memory 
 **Document, Decide, and Distribute.** Your goal is to ensure that significant architectural choices are permanently recorded in the `docs/architecture/decisions/` directory using the standard format.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **ADR Manager**: `../../scripts/adr_manager.py` (create, list, get, search)
-- **ID Generator**: `../../scripts/next_number.py`
+- **ADR Manager**: `./scripts/adr_manager.py` (create, list, get, search)
+- **ID Generator**: `./scripts/next_number.py`
 
 ## Core Workflow: Creating an ADR
 

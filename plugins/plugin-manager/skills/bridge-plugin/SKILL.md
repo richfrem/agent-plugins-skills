@@ -12,6 +12,20 @@ allowed-tools: Bash, Write, Read
 dependencies: ["pip:yaml"]
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Agent Bridge
 
 ## Overview
@@ -161,18 +175,18 @@ rm -rf .agents/ && npx skills remove --all -y
 
 **Install a single plugin:**
 ```bash
-python ./plugins/plugin-manager/scripts/bridge_installer.py \
+python ./bridge_installer.py \
   --plugin plugins/my-plugin
 ```
 
 **Install all plugins:**
 ```bash
-python ./plugins/plugin-manager/scripts/install_all_plugins.py
+python ./install_all_plugins.py
 ```
 
 **Dry run (preview only, no writes):**
 ```bash
-python ./plugins/plugin-manager/scripts/bridge_installer.py \
+python ./bridge_installer.py \
   --plugin plugins/my-plugin --dry-run
 ```
 
@@ -187,7 +201,7 @@ python ./plugins/plugin-manager/scripts/bridge_installer.py \
 
 Before running the bridge, verify:
 
-1. Plugin path exists and has `.claude-plugin/plugin.json`
+1. Plugin path exists and has `./plugin.json`
 2. At least one of `.agent/`, `.claude/`, `.github/`, `.gemini/` exists
    (do NOT create these automatically — if missing, print the exact `mkdir`
    command and wait for user confirmation)

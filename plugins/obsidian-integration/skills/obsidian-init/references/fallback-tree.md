@@ -5,7 +5,7 @@ If `ls /Applications/Obsidian.app` fails:
 - **Action**: Report explicitly that the Obsidian desktop app is required. Provide the Homebrew install command. Do NOT proceed with vault init until the user confirms Obsidian is installed.
 
 ## 2. Target Directory Has No Markdown Files
-If `init_vault.py` reports zero `.md` files found:
+If `./init_vault.py` reports zero `.md` files found:
 - **Action**: Report the finding and ask the user to confirm they want to initialize an empty vault. Do NOT silently create `.obsidian/` in an unintended directory.
 
 ## 3. `.gitignore` Write Permission Denied

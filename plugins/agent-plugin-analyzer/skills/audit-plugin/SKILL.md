@@ -2,14 +2,28 @@
 name: audit-plugin
 description: >
   This skill should be used when the user asks to "audit a plugin", "validate my plugin",
-  "check plugin structure", "verify plugin is correct", "validate plugin.json", "check if
+  "check plugin structure", "verify plugin is correct", "validate ././././././././././././plugin.json", "check if
   my plugin is compliant", "review plugin components", or mentions plugin validation or
   structure compliance. Also trigger proactively after the user creates or modifies any
-  plugin component (commands, agents, skills, hooks, plugin.json). Use this skill even
+  plugin component (commands, agents, skills, hooks, ././././././././././././plugin.json). Use this skill even
   when the user says "check my work" or "make sure this is right" in a plugin context.
   Do NOT use this for auditing individual skills only (use skill-reviewer for that).
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write, Glob, Grep
+---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././././././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
 ---
 
 # Plugin Auditor
@@ -23,7 +37,7 @@ naming conventions, component requirements, and security best practices. Uses th
 ## Step 1: Locate the Plugin
 
 Establish the plugin root:
-- Look for `.claude-plugin/plugin.json` -- this is the definitive marker
+- Look for `./././././././././././././plugin.json` -- this is the definitive marker
 - If user didn't specify a path, check current directory and common locations
 - Confirm with user if ambiguous
 
@@ -33,7 +47,7 @@ Establish the plugin root:
 
 > **Cross-plugin dependency**: The `plugin-validator` agent used in this step is defined in the
 > `agent-scaffolders` plugin, not this plugin. It must be installed for this step to work.
-> See `CONNECTORS.md` for the dependency declaration and fallback instructions.
+> See `./CONNECTORS.md` for the dependency declaration and fallback instructions.
 
 Trigger the `plugin-validator` agent for comprehensive validation:
 
@@ -42,7 +56,7 @@ Trigger the `plugin-validator` agent for comprehensive validation:
 ```
 
 The agent checks all 10 categories automatically:
-1. Manifest (`.claude-plugin/plugin.json`) -- JSON syntax, required `name` field, kebab-case
+1. Manifest (`./././././././././././././plugin.json`) -- JSON syntax, required `name` field, kebab-case
 2. Directory structure -- components at root, not inside `.claude-plugin/`
 3. Commands (`commands/**/*.md`) -- frontmatter, `description`, `argument-hint`, `allowed-tools`
 4. Agents (`agents/**/*.md`) -- `name`, `description` with `<example>` blocks, `model`, `color`
@@ -109,13 +123,13 @@ For issues the scripts may not catch:
 **Plugin structure check:**
 ```bash
 # Manifest must be here (not in root)
-ls .claude-plugin/plugin.json
+ls ./././././././././././././plugin.json
 
 # Components must be at root (not in .claude-plugin/)
 ls commands/ agents/ skills/ hooks/
 
 # Validate JSON
-jq . .claude-plugin/plugin.json
+jq . ./././././././././././././plugin.json
 ```
 
 **Security scan:**
@@ -163,12 +177,12 @@ grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
 
 ## Standards Reference
 
-**plugin.json minimal valid:**
+**././././././././././././plugin.json minimal valid:**
 ```json
 { "name": "plugin-name" }
 ```
 
-**plugin.json recommended:**
+**././././././././././././plugin.json recommended:**
 ```json
 {
   "name": "plugin-name",

@@ -5,6 +5,20 @@ description: "(Industry standard: Parallel Agent) Primary Use Case: Work that ca
 allowed-tools: Bash, Read, Write
 dependencies: ["pip:shlex", "pip:yaml", "plugin:context-bundler"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Agent Swarm
 
 Parallel or pipelined execution across multiple agents and worktrees. The orchestrator partitions work, dispatches to agents, and verifies/merges the results.
@@ -47,9 +61,9 @@ Each worktree can be assigned to a different worker type based on task complexit
 
 > **Zero-Cost Batch Strategy**: For bulk summarization or distillation jobs, use `--engine copilot` (gpt-5-mini) or `--engine gemini` (gemini-3-pro-preview). Both are free-tier models available via their respective CLIs. Gemini Flash 2.0 is also very cheap if more capacity is needed. Use `--workers 2` for Copilot (rate-limit safe) and `--workers 5` for Gemini.
 
-## Implementation: swarm_run.py
+## Implementation: ././././swarm_run.py
 
-The **swarm_run.py** script is the universal engine for executing this pattern. It is driven by **Job Files** (.md with YAML frontmatter).
+The **././././swarm_run.py** script is the universal engine for executing this pattern. It is driven by **Job Files** (.md with YAML frontmatter).
 
 ### Key Features
 
@@ -65,22 +79,22 @@ The **swarm_run.py** script is the universal engine for executing this pattern. 
 # Zero-cost Copilot batch (2 workers recommended to avoid rate limits)
 source ~/.zshrc   # NOTE: use source ~/.zshrc, NOT 'export COPILOT_GITHUB_TOKEN=$(gh auth token)'
                   # gh auth token generates a PAT without Copilot scope -> auth failures
-python3 ./scripts/swarm_run.py \
+python3 ./././././swarm_run.py \
     --engine copilot \
-    --job ../../resources/jobs/my_job.job.md \
+    --job ./resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 2
 
 # Gemini (free, higher parallelism)
-python3 ./scripts/swarm_run.py \
+python3 ./././././swarm_run.py \
     --engine gemini \
-    --job ../../resources/jobs/my_job.job.md \
+    --job ./resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 5
 
 # Claude (paid, highest quality)
-python3 ./scripts/swarm_run.py \
-    --job ../../resources/jobs/my_job.job.md \
+python3 ./././././swarm_run.py \
+    --job ./resources/jobs/my_job.job.md \
     [--dir some/dir] [--resume] [--dry-run]
 ```
 
@@ -102,14 +116,14 @@ vars:
 Prompt for the agent goes here.
 
 IMPORTANT for Copilot engine: The copilot CLI ignores stdin when -p is used.
-Instead, the instruction is prepended to the file content automatically by swarm_run.py.
+Instead, the instruction is prepended to the file content automatically by ././././swarm_run.py.
 Do NOT use tool calls or filesystem access - rely only on the content provided via stdin.
 ```
 
 ## Known Engine Quirks
 
 ### Copilot CLI
-- **No `-p` flag** -- Copilot ignores stdin when `-p` is present. `swarm_run.py` automatically prepends the prompt to the file content instead.
+- **No `-p` flag** -- Copilot ignores stdin when `-p` is present. `././././swarm_run.py` automatically prepends the prompt to the file content instead.
 - **Auth token scope** -- Use `source ~/.zshrc` to load your token. `gh auth token` returns a PAT without Copilot permissions, causing auth failures under concurrency.
 - **Rate limits** -- Use `--workers 2` maximum. Higher concurrency trips GitHub's anti-abuse systems and surfaces as authentication errors.
 - **Concurrent writes** -- If using a shared JSON post-cmd output (e.g. cache), ensure the writer script uses `fcntl.flock` for atomic writes. See `inject_summary.py`.
@@ -139,4 +153,4 @@ Then rerun with `--resume`.
 
 ## Diagram
 
-See: [plugins/agent-loops/resources/diagrams/agent_swarm.mmd](plugins/agent-loops/resources/diagrams/agent_swarm.mmd)
+See: [././agent_swarm.mmd](././agent_swarm.mmd)

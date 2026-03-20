@@ -22,5 +22,5 @@ Base all your function signatures and schemas on this dynamically fetched docume
 ```
 
 ## Anti-Patterns
-- Hardcoding thousands of lines of external API documentation into `SKILL.md`.
+- Hardcoding thousands of lines of external API documentation into `././SKILL.md`.
 - Suggesting the user manually copy-paste the documentation into the chat.

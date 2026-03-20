@@ -6,4 +6,4 @@
 
 3. On crash/timeout during improvement, the loop must continue from the last known good description and record the failure reason.
 
-4. The optimizer must not auto-apply generated changes to source `SKILL.md` unless explicitly requested by the caller.
+4. The optimizer must not auto-apply generated changes to source `./SKILL.md` unless explicitly requested by the caller.

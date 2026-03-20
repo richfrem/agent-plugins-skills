@@ -1,6 +1,6 @@
 # Procedural Fallback Tree: Env-Helper Resolution
 
-If the primary scanning engine (`env_helper.py`) fails to resolve a key and exits with code `1`, execute the following triage steps exactly in order:
+If the primary scanning engine (`././env_helper.py`) fails to resolve a key and exits with code `1`, execute the following triage steps exactly in order:
 
 ## 1. Missing `.env` File
 If the script exits with `1` claiming a required key (like `HF_TOKEN` or `HF_USERNAME`) is missing:
@@ -12,4 +12,4 @@ HF_USERNAME=""
 ```
 
 ## 2. Unregistered Key
-If the script exits with `1` for a key that *is* defined in the `.env` file, the `env_helper.py` script may need the key added to its internal `REQUIRED` or `DEFAULTS` list, or it may not be exporting the variables correctly. Read the script implementation.
+If the script exits with `1` for a key that *is* defined in the `.env` file, the `././env_helper.py` script may need the key added to its internal `REQUIRED` or `DEFAULTS` list, or it may not be exporting the variables correctly. Read the script implementation.

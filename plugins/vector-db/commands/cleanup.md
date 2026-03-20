@@ -12,10 +12,10 @@ Remove orphaned chunks from the vector store for files that no longer exist on d
 
 ```bash
 # Dry run -- see what would be removed
-python3 plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py --profile knowledge --dry-run
+python3 ./scripts/cleanup.py --profile knowledge --dry-run
 
 # Apply
-python3 plugins/vector-db/skills/vector-db-agent/scripts/cleanup.py --profile knowledge --apply
+python3 ./scripts/cleanup.py --profile knowledge --apply
 ```
 
 **Dry run by default.** Nothing is deleted without `--apply`.

@@ -4,6 +4,20 @@ description: "Semantic search skill for retrieving code and documentation from t
 allowed-tools: Bash, Read
 dependencies: ["pip:chromadb", "pip:frontmatter", "pip:langchain", "pip:langchain_chroma", "pip:langchain_classic", "pip:langchain_community", "pip:langchain_core", "pip:langchain_huggingface", "pip:langchain_text_splitters", "skill:vector-db-init"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Vector DB Search
 
 Semantic (meaning-based) search against the ChromaDB vector store.
@@ -14,10 +28,10 @@ returns insufficient results.
 
 | Script | Role |
 |:-------|:-----|
-| `scripts/query.py` | Semantic search -- CLI entry point |
-| `scripts/operations.py` | Core Parent-Child retrieval library |
-| `scripts/vector_config.py` | Profile config helper (`vector_profiles.json`) |
-| `scripts/vector_consistency_check.py` | Integrity validation |
+| `./query.py` | Semantic search -- CLI entry point |
+| `./operations.py` | Core Parent-Child retrieval library |
+| `./vector_config.py` | Profile config helper (`vector_profiles.json`) |
+| `./vector_consistency_check.py` | Integrity validation |
 
 **Write operations** (ingest, cleanup) are handled by dedicated agents: `vdb-ingest`, `vdb-cleanup`.
 
@@ -36,7 +50,7 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
 
 If connection refused: run `vector-db-launch` skill (`plugins/vector-db/skills/vector-db-launch/SKILL.md`).
-For first-time setup: run `vector-db-init` skill (`plugins/vector-db/skills/vector-db-init/scripts/init.py`).
+For first-time setup: run `vector-db-init` skill (`./init.py`).
 
 ### 2. Select Profile and Search
 
@@ -49,7 +63,7 @@ cat .agent/learning/vector_profiles.json
 Common default is `knowledge` -- your project may define more (e.g. separate profiles for code vs docs). When topic is ambiguous, search all profiles.
 
 ```bash
-python3 ./scripts/query.py \
+python3 ./query.py \
   "your natural language question" --profile knowledge --limit 5
 ```
 

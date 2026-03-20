@@ -6,16 +6,30 @@ user-invocable: true
 allowed-tools: Bash, Read, Write
 dependencies: ["pip:docx", "pip:pdfminer"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # RSVP Reading Skill
 
 **Rapid Serial Visual Presentation (RSVP)** is a speed reading method popularized by tools like [Spritz](https://spritzinc.com/). Words are flashed one at a time in a fixed position, while one letter per word is highlighted (typically in red) as an eye anchor — the **Optimal Recognition Point (ORP)**. This eliminates horizontal eye movement, the primary bottleneck of traditional reading, enabling speeds of 200-600+ WPM with solid comprehension.
 
 This skill converts any document into an RSVP token stream: each word paired with its ORP index and a calibrated display delay based on your target WPM.
 
-> Full architecture: `references/architecture.md`
-> Acceptance criteria: `references/acceptance-criteria.md`
-> Fallback tree: `references/fallback-tree.md`
-> Token stream schema: `references/token-stream-schema.md`
+> Full architecture: `./architecture.md`
+> Acceptance criteria: `./acceptance-criteria.md`
+> Fallback tree: `./fallback-tree.md`
+> Token stream schema: `./token-stream-schema.md`
 
 ---
 
@@ -44,14 +58,14 @@ If any are missing, ask for them before proceeding.
 
 ### Step 1: Parse the Document
 ```bash
-python3 ./scripts/parse_document.py \
+python3 ./parse_document.py \
   --input <file_path> \
   --output /tmp/rsvp_words.json
 ```
 
 ### Step 2: Generate Token Stream
 ```bash
-python3 ./scripts/orp_engine.py \
+python3 ./orp_engine.py \
   --input /tmp/rsvp_words.json \
   --wpm <wpm> \
   --output <output_path>
@@ -68,7 +82,7 @@ Report to the user:
 
 ## Output Format
 
-Each token in the stream follows the schema in `references/token-stream-schema.md`:
+Each token in the stream follows the schema in `./token-stream-schema.md`:
 ```json
 {"w": "Hello", "orp": 1, "delay_ms": 200, "is_sentence_end": false, "is_para_end": false}
 ```

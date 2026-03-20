@@ -1,1 +1,4 @@
-../../../resources/rlm_manifest.json
+{
+    "description": "Tool Inventory RLM configuration",
+    "manifest": "plugins/tool_inventory.json"
+}

@@ -20,6 +20,12 @@ import argparse
 import datetime
 from pathlib import Path
 
+# Force UTF-8 output on Windows to avoid UnicodeEncodeError with emoji in print()
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # The standard recognized agent configurations in your IDE workspace.
 DETECTABLE_AGENTS = {
     ".agent": {
@@ -68,6 +74,43 @@ DETECTABLE_AGENTS = {
         "hooks": None,
     },
 }
+
+def _is_pointer_file(path: Path) -> bool:
+    """Return True if the file is a single-line relative-path pointer (no real content)."""
+    try:
+        content = path.read_text(encoding="utf-8", errors="ignore").strip()
+        return "\n" not in content and content.startswith("../")
+    except Exception:
+        return False
+
+
+def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
+    """Recursively copy src_dir to dst_dir.
+    Pointer files (single-line '../...' paths) are resolved to their real target
+    so the installed copy in .agents/ is fully self-contained and works in any
+    consuming project that has no plugins/ source tree.
+    """
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    for item in src_dir.iterdir():
+        dst_item = dst_dir / item.name
+        if item.is_dir():
+            _copy_resolving_pointers(item, dst_item)
+        elif item.is_file():
+            if _is_pointer_file(item):
+                # Resolve the pointer relative to the file's location
+                rel_target = item.read_text(encoding="utf-8").strip()
+                real_src = (item.parent / rel_target).resolve()
+                if real_src.exists():
+                    if real_src.is_dir():
+                        shutil.copytree(real_src, dst_item, dirs_exist_ok=True)
+                    else:
+                        shutil.copy2(real_src, dst_item)
+                else:
+                    # Pointer target missing — copy the pointer as-is (best effort)
+                    shutil.copy2(item, dst_item)
+            else:
+                shutil.copy2(item, dst_item)
+
 
 def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
                      root: Path, env_name: str) -> bool:
@@ -346,8 +389,8 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             if item.is_dir():
                 dest = central_skills / item.name
                 if not dry_run:
-                    shutil.copytree(item, dest, dirs_exist_ok=True)
-                    print(f"  ✓ Universal central copy: {dest.relative_to(root)}")
+                    _copy_resolving_pointers(item, dest)
+                    print(f"  \u2713 Universal central copy: {dest.relative_to(root)}")
                 else:
                     print(f"  [DRY RUN] Universal central copy: .agents/skills/{item.name}")
                 

@@ -16,6 +16,23 @@ This plugin teaches agents how to:
 - Bootstrap new sessions via `START_HERE.md` and `MEMORY.md`
 - Manage memory hygiene: when to write, promote, archive, and expire
 
+## Installation
+
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/agent-agentic-os
+```
+This installs all skills from the Agentic OS plugin. Each skill can be used independently for OS management, memory operations, and evaluation tasks.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components (skills, commands, agents, hooks), use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-agentic-os
+```
+
+**Note:** This plugin installs with **standard library only** (no external dependencies). See `requirements.txt` for details.
+
 ## Supervised Learning & Improvement Loop (Karpathy Parity)
 
 The Agentic OS implements a rigorous, objective self-improvement loop inspired by Andrej Karpathy's `autoresearch`:

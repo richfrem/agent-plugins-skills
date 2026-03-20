@@ -2,6 +2,20 @@
 
 Bridge the gap between programmatic AI agent workflows and the local Obsidian knowledge base.
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/obsidian-integration
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/obsidian-integration
+```
+
 ## Overview
 Provides a suite of skills allowing LLM agents to safely perform CRUD operations on Obsidian Vaults, parse proprietary Obsidian Markdown (Wikilinks, block refs, callouts), traverse the connection graph, and manipulate dynamic visual views like Bases and Canvas.
 

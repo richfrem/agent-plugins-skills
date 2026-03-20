@@ -17,7 +17,7 @@ Command-line utilities and scripts used for analysis and conversion (tooling onl
 
 ##  [analysis-outputs/] (Reference Missing: )
 Generated reports and data derived from the legacy system using our analysis tools.
-- **Form Relationships:** See [plugins/form-relationships/scripts/] (Reference Missing: ) for dependency analysis outputs:
+- **Form Relationships:** See [./scripts/] (Reference Missing: ) for dependency analysis outputs:
   - [form_relationships.csv](../../legacy-system/reference-data/collections/code-detected/form_relationships.csv) - Detected parent-child form references
   - [form_relationships.csv](../../legacy-system/reference-data/collections/combined-relationships/form_relationships.csv) - Combined analysis
 - [business-rules/] (Reference Missing: ) - Detailed reports on access control and functional rules (by-form and topic-based).

@@ -4,7 +4,7 @@
 
 ## The Core Mechanic
 
-Domain knowledge codified in a `SKILL.md` degrades over time. If a skill states "Breach notification is required within 72 hours," it becomes silently wrong if the law changes. Instead, anchor every factual numeric claim to its specific legal, regulatory, or policy source version.
+Domain knowledge codified in a `././SKILL.md` degrades over time. If a skill states "Breach notification is required within 72 hours," it becomes silently wrong if the law changes. Instead, anchor every factual numeric claim to its specific legal, regulatory, or policy source version.
 
 ### Implementation Standard
 

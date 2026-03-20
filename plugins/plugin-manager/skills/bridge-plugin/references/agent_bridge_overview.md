@@ -35,13 +35,13 @@ There is one bridge:
 
 ### Install a single plugin
 ```bash
-python ./plugins/plugin-manager/scripts/bridge_installer.py \
+python ./bridge_installer.py \
   --plugin plugins/<plugin-name>
 ```
 
 ### Install all plugins
 ```bash
-python ./plugins/plugin-manager/scripts/install_all_plugins.py
+python ./install_all_plugins.py
 ```
 
 ---

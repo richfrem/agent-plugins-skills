@@ -4,6 +4,20 @@
 
 Search your repository by *meaning*, not just keywords. Uses a highly-accurate **Parent-Child Retrieval Architecture** and local **Nomic Embeddings** to provide precise code context to the agent without sacrificing the "big picture" surrounding logic.
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/vector-db
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/vector-db
+```
+
 ## Architecture Highlights
 - **Parent-Child Retrieval**: Files are stored exactly as they are (Parents), but searched via tiny chunks (Children). This guarantees exact semantic matches of specific functions, while returning the entire file to the LLM for maximum context.
 - **Nomic Embeddings**: Uses `nomic-ai/nomic-embed-text-v1.5` (768-dim) for enterprise-grade, local code embedding without API keys.
@@ -23,7 +37,7 @@ Search your repository by *meaning*, not just keywords. Uses a highly-accurate *
 
 | Command | Description |
 |:---|:---|
-| `../../scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
+| `./scripts/init.py` | Interactive setup for profiles, PIP deps, and Manifest. |
 | `chroma run --host 127.0.0.1 --port 8110 --path .vector_data` | Background server launch (Option C, Recommended). |
 | `python3 ./scripts/ingest.py` | CLI to build/update the database. |
 | `python3 ./scripts/query.py` | CLI for testing semantic searches. |

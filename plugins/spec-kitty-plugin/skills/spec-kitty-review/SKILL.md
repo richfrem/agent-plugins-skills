@@ -3,6 +3,20 @@ name: spec-kitty-review
 description: Perform structured code review and kanban transitions for completed task
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 **IMPORTANT**: After running the command below, you'll see a LONG work package prompt (~1000+ lines).
 
 **You MUST scroll to the BOTTOM** to see the completion commands!

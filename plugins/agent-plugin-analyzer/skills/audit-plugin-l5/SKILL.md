@@ -4,8 +4,22 @@ description: Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin aga
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Audit Plugin L5
-[See acceptance criteria](references/acceptance-criteria.md)
+[See acceptance criteria](./acceptance-criteria.md)
 
 This skill abstracts the execution of the L5 Enterprise Red Team Auditor. By using this skill, you trigger an uncompromising architecture and security review against the 39-point pattern matrix.
 

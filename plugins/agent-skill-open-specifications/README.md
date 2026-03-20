@@ -1,5 +1,19 @@
 # Agent Skill Open Specifications Meta-Plugin
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/agent-skill-open-specifications
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-skill-open-specifications
+```
+
 ## Purpose
 This plugin acts as the central **Meta-Protocol** for the repository. It houses the authoritative research and the execution instructions necessary for agents to build, audit, and understand the extensible agent ecosystem.
 

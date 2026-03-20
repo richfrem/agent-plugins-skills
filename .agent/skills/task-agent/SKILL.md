@@ -12,7 +12,7 @@ You manage a lightweight kanban board with 4 lanes: **backlog, todo, in-progress
 Tasks are represented as standalone Markdown files (`NNNN-title.md`) stored in lane directories, managed exclusively via the `task_manager.py` CLI.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Task Manager**: `../../scripts/task_manager.py`
+- **Task Manager**: `./scripts/task_manager.py`
 
 ## Architectural Constraints (Kanban Sovereignty)
 

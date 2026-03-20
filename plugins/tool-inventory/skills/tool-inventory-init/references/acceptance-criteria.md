@@ -5,7 +5,7 @@ Ensure the Agent can correctly scaffold the initial repository configurations fo
 
 ## Scenario 1: Initializing the Profile
 - **Setup**: Agent is asked to initialize the tool inventory for a new project.
-- **Action**: The Agent executes `tool_inventory_init.py`.
+- **Action**: The Agent executes `./tool_inventory_init.py`.
 - **Validation**: The script creates `.agent/learning/rlm_profiles.json` and a `tools` profile exists defining the extensions to `.py` and `.js`.
 
 ## Scenario 2: Manifest Generation 

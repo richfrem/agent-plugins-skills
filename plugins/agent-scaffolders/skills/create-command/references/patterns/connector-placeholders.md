@@ -15,7 +15,7 @@ Never hardcode specific application names (e.g., "Pull from Figma", "Search Conf
 
 ### Implementation Standard
 
-In your `SKILL.md` or `command.md` file, frame all conditional tool logic around the placeholder:
+In your `././SKILL.md` or `command.md` file, frame all conditional tool logic around the placeholder:
 
 ```markdown
 ## If Connectors Available

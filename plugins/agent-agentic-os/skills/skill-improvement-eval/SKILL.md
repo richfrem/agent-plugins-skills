@@ -39,6 +39,20 @@ tools: ["Bash", "Read", "Write"]
 skills: []
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Skill Improvement Evaluator
 
 You are the OS Quality Assurance (QA) sub-agent.
@@ -51,7 +65,7 @@ This skill implements the supervised learning loop used in the `autoresearch` fr
 | `train.py` | The target `SKILL.md` |
 | `val_bpb` | Routing Accuracy (calculated by `eval_runner.py` from `evals.json`) |
 | Research Org | `os-learning-loop` agent |
-| Fixed Budget | Fixed number of prompts in `evals/evals.json` |
+| Fixed Budget | Fixed number of prompts in `./evals.json` |
 | `results.tsv` | `evals/results.tsv` (Persistent baseline recording) |
 
 > **Scope caveat**: `eval_runner.py` uses keyword overlap between the prompt and the skill's
