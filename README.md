@@ -84,7 +84,7 @@ Agent Loops ensure **shared closure** across all operations, which means no sess
 
 ## Site Navigation & Plugin Ecosystem
 
-This repository currently hosts **28 distinct plugin packages** containing over extensive modular agent skills. Below is the complete manifest of capabilities, each linked to its respective definition document (`SKILL.md`).
+This repository currently hosts **29 distinct plugin packages** containing over extensive modular agent skills. Below is the complete manifest of capabilities, each linked to its respective definition document (`SKILL.md`).
 
 ### Architecture & Design
 - **ADR Manager** — Automatically draft and syndicate Architecture Decision Records.
@@ -151,6 +151,13 @@ Sub-systems allowing fresh, isolated model context spaces for advanced tasks (au
   ↳ [`convert-mermaid`](plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md)
 
 ### Feature Driven Engineering
+- **Exploration Cycle** — Autonomous discovery loop for idea framing, business requirements capture, user stories, prototyping, and handoff into formal engineering specs. Sits before and alongside the Spec-Kitty lifecycle.
+  ↳ [`exploration-workflow`](plugins/exploration-cycle-plugin/skills/exploration-workflow/SKILL.md)
+  ↳ [`exploration-session-brief`](plugins/exploration-cycle-plugin/skills/exploration-session-brief/SKILL.md)
+  ↳ [`business-requirements-capture`](plugins/exploration-cycle-plugin/skills/business-requirements-capture/SKILL.md)
+  ↳ [`user-story-capture`](plugins/exploration-cycle-plugin/skills/user-story-capture/SKILL.md)
+  ↳ [`exploration-handoff`](plugins/exploration-cycle-plugin/skills/exploration-handoff/SKILL.md)
+  ↳ [`exploration-optimizer`](plugins/exploration-cycle-plugin/skills/exploration-optimizer/SKILL.md)
 - **Spec Kitty Suite** — The massive enterprise-grade Spec-Driven Development implementation layer handling the `Spec -> Plan -> Tasks -> Implement -> Merge` workflow autonomously.
   ↳ [`spec-kitty-accept`](plugins/spec-kitty-plugin/skills/spec-kitty-accept/SKILL.md)
   ↳ [`spec-kitty-agent`](plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md)
