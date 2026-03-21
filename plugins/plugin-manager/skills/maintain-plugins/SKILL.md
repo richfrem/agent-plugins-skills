@@ -33,8 +33,8 @@ This skill is the ecosystem health hub. It covers three operations:
 **Core constraint**: Custom, project-specific plugins are NEVER deleted during sync. Only vendor-managed plugins that have been locally removed are cleaned up.
 
 ## References
-- Sync process guide: `./../references/cleanup_process.md`
-- Sync flow diagram: `./../references/cleanup_flow.mmd`
+- Sync process guide: `./references/cleanup_process.md`
+- Sync flow diagram: `./references/cleanup_flow.mmd`
 
 ---
 

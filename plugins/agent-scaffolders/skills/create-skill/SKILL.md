@@ -305,7 +305,7 @@ Save to `timing.json` immediately -- this data is only available via task notifi
 Run the description optimization loop (splits 60% train / 40% test, 5 iterations max):
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/./../scripts/run_loop.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/./scripts/run_loop.py \
   --skill-path <skill-path> \
   --eval-set ./evals.json \
   --model <model> \
@@ -346,7 +346,7 @@ When improving after eval feedback:
 
 ## Next Actions
 - **Quality review**: Trigger `skill-reviewer` agent to audit description and content
-- **Continuous improvement**: Run `./../scripts/run_loop.py` for trigger optimization
+- **Continuous improvement**: Run `./scripts/run_loop.py` for trigger optimization
 - **Audit**: Run `audit-plugin` to validate the full plugin structure
 - **Convert to agent**: Run `create-agentic-workflow` for a GitHub-native version
 

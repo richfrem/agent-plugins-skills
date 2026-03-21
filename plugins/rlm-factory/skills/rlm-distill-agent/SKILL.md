@@ -108,7 +108,7 @@ Delegate to the `agent-loops:agent-swarm` skill with the appropriate engine and 
 
 Provide the job file: `./resources/jobs/rlm_chronicle.job.md` and the gap file from `inventory.py --missing`.
 
-See `../SKILL.md` for full swarm configuration options.
+See `SKILL.md` for full swarm configuration options.
 
 ## Quality Standard for Summaries
 

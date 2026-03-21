@@ -65,6 +65,6 @@ If this dockerized skill will be tuned iteratively, require:
 5. Persistent experiment ledger in `evals/results.tsv`.
 
 ## Next Actions
-- **Continuous Improvement**: Run `./../scripts/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
-- **Review Loop**: Run `./../scripts/generate_review.py` to inspect run quality and failure patterns.
+- **Continuous Improvement**: Run `./scripts/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
+- **Review Loop**: Run `./scripts/generate_review.py` to inspect run quality and failure patterns.
 - **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

@@ -3,7 +3,7 @@
 If the primary task management CLI (`./../scripts/task_manager.py`) fails, execute the following triage steps exactly in order:
 
 ## 1. Task ID Not Found
-If `./../scripts/task_manager.py move` or `././task_manager.py get` exits with code `1` stating a task ID does not exist:
+If `./../scripts/task_manager.py move` or `./../scripts/task_manager.py get` exits with code `1` stating a task ID does not exist:
 - **Action**: Do not scan the `tasks/` directory manually to find the file. Run `./../scripts/task_manager.py board` or `list` to retrieve the full current list of task IDs, present the live list to the user, and ask them to confirm the correct ID.
 
 ## 2. Duplicate Task ID Detected

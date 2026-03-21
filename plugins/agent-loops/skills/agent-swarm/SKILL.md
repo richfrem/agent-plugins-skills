@@ -153,4 +153,4 @@ Then rerun with `--resume`.
 
 ## Diagram
 
-See: [./../assets/resources/agent_swarm.mmd](../assets/resources/agent_swarm.mmd)
+See: [./assets/resources/agent_swarm.mmd](assets/resources/agent_swarm.mmd)
