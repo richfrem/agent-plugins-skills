@@ -291,20 +291,6 @@
       "installedAt": "2026-03-21T16:30:17.082858Z",
       "updatedAt": "2026-03-21T16:36:25.905261Z"
     },
-    "json-hygiene-agent": {
-      "source": "https://github.com/richfrem/agent-plugins-skills",
-      "sourceType": "local",
-      "computedHash": "47fb6898adec9fe341b0bae96d9ae2077524bdb151def7251edf72ee73b3a98f",
-      "installedAt": "2026-03-21T16:30:17.124720Z",
-      "updatedAt": "2026-03-21T16:36:25.949395Z"
-    },
-    "json-hygiene-json-hygiene-agent": {
-      "source": "https://github.com/richfrem/agent-plugins-skills",
-      "sourceType": "local",
-      "computedHash": "d803413d254c943173a03def19a1ce32d2429ea696ca489c2c5a731c4011d61e",
-      "installedAt": "2026-03-19T23:20:42.229680Z",
-      "updatedAt": "2026-03-21T16:36:25.949395Z"
-    },
     "l5-red-team-auditor": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",

@@ -33,7 +33,6 @@ SKILL_MAPPINGS = {
     "link-checker": "link-checker-agent",
     "mermaid-export": "diagram-agent",
     "code-snapshot": "snapshot-agent",
-    "json-hygiene": "json-hygiene-agent",
     "agent-orchestrator": "orchestrator-agent",
 }
 

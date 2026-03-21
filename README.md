@@ -117,8 +117,6 @@ This repository currently hosts **28 distinct plugin packages** containing over 
 - **Coding Conventions** — Centralized rules engine for standardizing file headers and `snake_case/camelCase/PascalCase` semantics across multiple languages.
   ↳ [`coding-conventions`](plugins/coding-conventions/skills/coding-conventions/SKILL.md)
   ↳ [`conventions-agent`](plugins/coding-conventions/skills/conventions-agent/SKILL.md)
-- **JSON Hygiene** — Agentic scanner detecting broken configuration values (e.g., duplicated keys masked by standard JSON parsers).
-  ↳ [`json-hygiene-agent`](plugins/json-hygiene/skills/json-hygiene-agent/SKILL.md)
 
 ### Data & Code Manipulation
 - **Context Bundler** — Tooling to package deep directory contexts and code traces into single readable files.

@@ -256,17 +256,6 @@
         }
       ]
     },
-    "json-hygiene": {
-      "count": 1,
-      "scripts": [
-        {
-          "name": "find_json_duplicates.py",
-          "path": "plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
-    },
     "link-checker": {
       "count": 5,
       "scripts": [
