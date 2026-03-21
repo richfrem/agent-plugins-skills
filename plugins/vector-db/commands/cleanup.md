@@ -6,7 +6,7 @@ description: Remove stale chunks from deleted or renamed files in the vector dat
 
 Remove orphaned chunks from the vector store for files that no longer exist on disk.
 
-> **For detailed execution protocol, see agent:** [`vector-db-cleanup`](../agents/vector-db-cleanup.md)
+> **For detailed execution protocol, see agent:** `vector-db-cleanup`
 
 ## Quick Reference
 

@@ -7,7 +7,7 @@ argument-hint: "[--profile project|tools] [--file path/to/file] [--since N]"
 
 Summarize files into the RLM Summary Ledger. Two paths depending on context:
 
-> **For detailed execution protocol, see agent:** [`rlm-distill`](../agents/rlm-distill.md)
+> **For detailed execution protocol, see agent:** `rlm-distill`
 
 ## Path 1 -- Agent Distillation (default, fast, no Ollama)
 

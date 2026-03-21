@@ -7,7 +7,7 @@ argument-hint: "[--profile knowledge] [--full] [--since N]"
 
 Build or update the vector index by chunking files and embedding them into ChromaDB.
 
-> **For detailed execution protocol, see agent:** [`vector-db-ingest`](../agents/vector-db-ingest.md)
+> **For detailed execution protocol, see agent:** `vector-db-ingest`
 
 ## Quick Reference
 

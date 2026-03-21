@@ -7,7 +7,7 @@ argument-hint: "[--profile project|tools] [--apply]"
 
 Remove stale entries (deleted files) and orphans (files outside manifest scope) from the ledger.
 
-> **For detailed execution protocol, see agent:** [`rlm-cleanup`](../agents/rlm-cleanup.md)
+> **For detailed execution protocol, see agent:** `rlm-cleanup`
 
 ## Quick Reference
 

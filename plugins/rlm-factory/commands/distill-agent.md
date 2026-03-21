@@ -8,7 +8,7 @@ Use this workflow to bypass slow local Ollama models when summarizing files for 
 Summary Ledger. The agent reads the file itself, generates a high-quality summary, and
 injects it via `inject_summary.py`.
 
-> For full protocol, quality standards, and swarm delegation: see [`rlm-distill` agent](../agents/rlm-distill.md)
+> For full protocol, quality standards, and swarm delegation: see the `rlm-distill` agent
 
 ## Steps
 
