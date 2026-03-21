@@ -20,7 +20,6 @@
         "hugging_face_dataset_repo/",
         "mcp_servers/",
         "plugins/",
-        "../../resources/cognitive_primer.md",
         "tests/",
         "tools/"
     ],
