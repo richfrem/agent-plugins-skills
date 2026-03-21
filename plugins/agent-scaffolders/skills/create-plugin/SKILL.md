@@ -35,8 +35,8 @@ into a portable, auto-discovered package. Think of it as a "product" for Claude 
 self-contained, distributable, and instantly usable when installed.
 
 > Reference files:
-> - `./hitl-interaction-design.md` -- interaction design patterns for components
-> - `./pattern-decision-matrix.md` -- L4 pattern selection guide
+> - `references/hitl-interaction-design.md` -- interaction design patterns for components
+> - `references/pattern-decision-matrix.md` -- L4 pattern selection guide
 
 ---
 

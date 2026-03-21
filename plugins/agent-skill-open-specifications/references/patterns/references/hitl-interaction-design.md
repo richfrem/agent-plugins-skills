@@ -1,1 +1,1 @@
-../../agent-scaffolders/references/hitl-interaction-design.md
+../../../../agent-scaffolders/references/hitl-interaction-design.md

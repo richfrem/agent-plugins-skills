@@ -57,7 +57,7 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 # If not running, start it:
 chroma run --host 127.0.0.1 --port 8110 --path .vector_data &
 ```
-See `../../SKILL.md` for full launch instructions.
+See `../SKILL.md` for full launch instructions.
 
 ## Execution Protocol
 

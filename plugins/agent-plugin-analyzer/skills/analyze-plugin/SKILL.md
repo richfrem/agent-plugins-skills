@@ -112,7 +112,7 @@ Evaluate the plugin's architectural decisions:
 
 ### Phase 3: Content Analysis
 
-For each file, load the appropriate question set from `./analysis-questions-by-type.md` and work through every checkbox. See the process diagram in `./analyze-plugin-flow.mmd` for the full pipeline visualization.
+For each file, load the appropriate question set from `references/analysis-questions-by-type.md` and work through every checkbox. See the process diagram in `./analyze-plugin-flow.mmd` for the full pipeline visualization.
 
 For each SKILL.md, evaluate:
 
@@ -157,7 +157,7 @@ For each SKILL.md, evaluate:
 
 ### Phase 4: Pattern Extraction
 
-Identify instances of known patterns from `./pattern-catalog.md`. Also watch for novel patterns not yet cataloged.
+Identify instances of known patterns from `references/pattern-catalog.md`. Also watch for novel patterns not yet cataloged.
 
 **For each pattern found, document:**
 ```
@@ -183,7 +183,7 @@ Lifecycle: [proposed / validated / canonical / deprecated]
 
 ### Phase 5: Anti-Pattern & Security Detection
 
-Load the full check tables from `./security-checks.md`.
+Load the full check tables from `references/security-checks.md`.
 
 **Execution order:**
 1. Run security checks FIRST (P0 — Critical severity items)
@@ -195,7 +195,7 @@ If `inventory_plugin.py` was run with `--security`, use its deterministic findin
 
 ### Phase 6: Synthesis & Scoring
 
-Load the maturity model and scoring rubric from `./maturity-model.md`.
+Load the maturity model and scoring rubric from `references/maturity-model.md`.
 
 **Steps:**
 1. Assign maturity level (L1-L5)

@@ -27,7 +27,7 @@ The **Orchestrator** assesses the incoming trigger, selects the right loop patte
 
 ### Ecosystem Context
 - **Patterns**: [`learning-loop`](../learning-loop/SKILL.md) | [`red-team-review`](../red-team-review/SKILL.md) | [`dual-loop`](../dual-loop/SKILL.md) | [`agent-swarm`](../agent-swarm/SKILL.md)
-- **Inner Loop Reference**: [`cli-agent-executor.md`](./cli-agent-executor.md) — Persona configs for specialized CLI execution.
+- **Inner Loop Reference**: [`cli-agent-executor.md`](references/cli-agent-executor.md) — Persona configs for specialized CLI execution.
 
 ## Routing Decision Tree
 
@@ -209,7 +209,7 @@ The orchestrator must verify these gates at each phase:
 
 | Mechanism | Purpose |
 |-----------|---------|
-| **Stop Hook** (`./closure-guard.sh`) | Blocks premature session exit until Seal → Persist → Retrospective are complete. |
+| **Stop Hook** (`scripts/closure-guard.sh`) | Blocks premature session exit until Seal → Persist → Retrospective are complete. |
 | **Red Team Subagent** | Red team review can run as a forked subagent to keep the main session context clean. |
 
 ---

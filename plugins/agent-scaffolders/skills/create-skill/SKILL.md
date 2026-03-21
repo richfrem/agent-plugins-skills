@@ -44,7 +44,7 @@ model can fully possess.
 Be flexible. The process is a guide, not a cage.
 
 > All content references below use `${CLAUDE_PLUGIN_ROOT}` for portable paths.
-> Read `./hitl-interaction-design.md` and `./pattern-decision-matrix.md`
+> Read `references/hitl-interaction-design.md` and `references/pattern-decision-matrix.md`
 > at the start if you need in-depth interaction design and L4 pattern guidance.
 
 ---
@@ -259,8 +259,8 @@ Header: `iteration\ttrain_score\ttest_score\tdecision\tnotes\tdescription`
 
 For skills with L4 patterns (dual-mode bootstrap, artifact lifecycle, etc.), read the
 pattern decision matrix first:
-- Read `./hitl-interaction-design.md`
-- Read `./pattern-decision-matrix.md`
+- Read `references/hitl-interaction-design.md`
+- Read `references/pattern-decision-matrix.md`
 - Embed only the pattern-specific scaffolding needed; link detailed docs to `references/`
 
 ---
@@ -305,7 +305,7 @@ Save to `timing.json` immediately -- this data is only available via task notifi
 Run the description optimization loop (splits 60% train / 40% test, 5 iterations max):
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/./././run_loop.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/./../scripts/run_loop.py \
   --skill-path <skill-path> \
   --eval-set ./evals.json \
   --model <model> \
@@ -346,7 +346,7 @@ When improving after eval feedback:
 
 ## Next Actions
 - **Quality review**: Trigger `skill-reviewer` agent to audit description and content
-- **Continuous improvement**: Run `./././run_loop.py` for trigger optimization
+- **Continuous improvement**: Run `./../scripts/run_loop.py` for trigger optimization
 - **Audit**: Run `audit-plugin` to validate the full plugin structure
 - **Convert to agent**: Run `create-agentic-workflow` for a GitHub-native version
 
@@ -355,7 +355,7 @@ When improving after eval feedback:
 ## Reference Files
 
 Read these when needed:
-- `./hitl-interaction-design.md` - Interaction modes (autonomous, guided, hybrid)
-- `./pattern-decision-matrix.md` - L4 pattern routing (artifact lifecycle, dual-mode, etc.)
+- `references/hitl-interaction-design.md` - Interaction modes (autonomous, guided, hybrid)
+- `references/pattern-decision-matrix.md` - L4 pattern routing (artifact lifecycle, dual-mode, etc.)
 - `references/patterns/` - Individual L4 pattern definitions (load only when pattern is triggered)
-- `./acceptance-criteria.md` - How to write testable acceptance criteria
+- `references/acceptance-criteria.md` - How to write testable acceptance criteria

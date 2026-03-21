@@ -26,8 +26,8 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 You are the Excel Converter. Your job is to extract data bounded in proprietary `.xlsx` or `.xls` binary formats into clean, raw, portable `.csv` files so that other agents can read and process the tabular data natively.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Converter Engine**: `./convert.py`
-- **Verification Engine**: `./verify_csv.py`
+- **Converter Engine**: `scripts/convert.py`
+- **Verification Engine**: `scripts/verify_csv.py`
 
 ## Core Workflow: The Extraction Pipeline
 
@@ -68,4 +68,4 @@ Never attempt to write arbitrary Python scripts using raw `openpyxl` commands to
 Always route binary extractions through the `convert.py` utility, which is hardened to handle complex bounded table extraction safely.
 
 ## Next Actions
-If the `convert.py` script returns a brutal exception (e.g., password protected workbook, corrupted ZIP metadata), stop and consult the `./fallback-tree.md` for alternative extraction strategies.
+If the `convert.py` script returns a brutal exception (e.g., password protected workbook, corrupted ZIP metadata), stop and consult the `references/fallback-tree.md` for alternative extraction strategies.

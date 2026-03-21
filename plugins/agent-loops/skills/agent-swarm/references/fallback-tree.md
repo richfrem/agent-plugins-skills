@@ -10,7 +10,7 @@ If the parallel workers are writing to a single JSON file and it becomes malform
 - **Action**: The `post_cmd` script lacks atomic locking. Temporarily switch to `--workers 1` to run the batch sequentially. For a permanent fix, rewrite the writer script to use `fcntl.flock` for atomic file operations. 
 
 ## 3. Worker Timeout Reached
-If the `./swarm_run.py` script reports `Timeout` for specific files:
+If the `../scripts/swarm_run.py` script reports `Timeout` for specific files:
 - **Action**: The work package is too large for the configured CLI agent. If using `haiku` or `gpt-5-mini`, re-run the job explicitly passing the failed files but bumping the `--timeout` parameter or switching to a heavier engine (`--engine claude`).
 
 ## 4. Checkpoint State File Corrupted

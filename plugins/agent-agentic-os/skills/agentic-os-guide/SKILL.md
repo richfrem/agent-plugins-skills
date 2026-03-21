@@ -71,12 +71,12 @@ full operating system metaphor.
 
 Execute these phases in order. Do not skip phases. This skill uses **Progressive Disclosure**. Load only what you need:
 
-1. For CLAUDE.md scope rules and precedence -> read `./claude-md-hierarchy.md`
-2. For context/ folder patterns (soul.md, user.md, memory.md) -> read `./context-folder-patterns.md`
-3. For /loop and heartbeat.md scheduling -> read `./loop-scheduler.md`
-4. For sub-agents, hooks, auto-memory -> read `./sub-agents-and-hooks.md`
-5. For memory hygiene (write/promote/archive rules) -> read `./memory-hygiene.md`
-6. For the full canonical directory tree -> read `./canonical-file-structure.md`
+1. For CLAUDE.md scope rules and precedence -> read `references/claude-md-hierarchy.md`
+2. For context/ folder patterns (soul.md, user.md, memory.md) -> read `references/context-folder-patterns.md`
+3. For /loop and heartbeat.md scheduling -> read `references/loop-scheduler.md`
+4. For sub-agents, hooks, auto-memory -> read `references/sub-agents-and-hooks.md`
+5. For memory hygiene (write/promote/archive rules) -> read `references/memory-hygiene.md`
+6. For the full canonical directory tree -> read `references/canonical-file-structure.md`
 
 ## Quick Orientation
 
@@ -105,15 +105,15 @@ Execute these phases in order. Do not skip phases. This skill uses **Progressive
 
 Ask the user which aspect they need help with:
 
-1. **Setting up** a new Agentic OS from scratch -> read `./canonical-file-structure.md`, walk them through the setup
+1. **Setting up** a new Agentic OS from scratch -> read `references/canonical-file-structure.md`, walk them through the setup
 2. **Understanding** a specific layer (context/, hooks, /loop) -> load the matching reference file
 3. **Memory management** (what to record, promote, archive) -> invoke `session-memory-manager` skill
 4. **Continuous Improvement** (retrospectives, skill updates) -> invoke `os-learning-loop` agent
-5. **Troubleshooting** (context not loading, skills not triggering) -> read `./claude-md-hierarchy.md` for scope precedence
+5. **Troubleshooting** (context not loading, skills not triggering) -> read `references/claude-md-hierarchy.md` for scope precedence
 
 ## Next Actions
 
 - For memory write/promote/archive decisions -> invoke `session-memory-manager`
 - To orchestrate an end-to-end setup of a new environment -> run `agentic-os-setup`
 - To perform a retrospective and improve the OS -> run `os-learning-loop`
-- To add a scheduled heartbeat -> read `./loop-scheduler.md`
+- To add a scheduled heartbeat -> read `references/loop-scheduler.md`

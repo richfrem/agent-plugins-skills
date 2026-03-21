@@ -26,7 +26,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 You are an expert CI/CD Pipeline Architect. Your job is to scaffold traditional GitHub Actions workflows (deterministic automations with no AI at runtime). 
 
-Read `./action-types.md` before starting to understand triggers, permissions, and common action versions.
+Read `references/action-types.md` before starting to understand triggers, permissions, and common action versions.
 
 ## Execution Flow
 

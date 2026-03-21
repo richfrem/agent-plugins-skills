@@ -42,8 +42,8 @@ After replicating, run `maintain-plugins` Sync in the target project to activate
 
 
 ## References
-- Overview: `./plugin_replicator_overview.md`
-- Flow diagram: `./plugin_replicator_diagram.mmd`
+- Overview: `references/plugin_replicator_overview.md`
+- Flow diagram: `references/plugin_replicator_diagram.mmd`
 
 ---
 

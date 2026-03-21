@@ -47,7 +47,7 @@ Run the targeted analysis pipeline on a single Agent Skill. This allows for focu
 ## Execution Flow
 
 1. **Invoke Analysis**: The system triggers `analyze-plugin` operating in Single Skill Mode on the provided `$ARGUMENTS`.
-2. **Execute Inventory**: `./inventory_plugin.py` runs against the skill path.
+2. **Execute Inventory**: `scripts/inventory_plugin.py` runs against the skill path.
    > **Security scanning is enabled by default.** Credential detection, network call detection,
    > and environment variable checks run on all script files unless `--no-security` is passed.
 3. **Pattern Matching**: Checks against `references/pattern-catalog.md` and detects anti-patterns.

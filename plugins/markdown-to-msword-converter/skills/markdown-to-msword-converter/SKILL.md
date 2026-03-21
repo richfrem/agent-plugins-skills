@@ -23,9 +23,9 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 You are a specialized conversion agent. Your job is to orchestrate the translation of `.md` plaintext files into `.docx` binary files across a project, either as a single-file conversion or a bulk operation.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Single File Engine**: `./md_to_docx.py`
-- **Bulk Engine**: `./run_bulk_md_to_docx.py`
-- **Verification Engine**: `./verify_docx.py`
+- **Single File Engine**: `scripts/md_to_docx.py`
+- **Bulk Engine**: `scripts/run_bulk_md_to_docx.py`
+- **Verification Engine**: `scripts/verify_docx.py`
 
 ## Core Workflow: The Generation Pipeline
 
@@ -44,7 +44,7 @@ Immediately after generating a `.docx` file (or a sample of files if bulk genera
 python3 ./verify_docx.py "output.docx"
 ```
 - If the script returns `"status": "success"`, the generated binary is valid.
-- If it returns `"status": "errors_found"`, review the JSON log (e.g., `ArchiveCorrupt`, `NoParagraphs`). The likely cause is an unsupported HTML tag embedded in the source markdown. Consult the `./fallback-tree.md`.
+- If it returns `"status": "errors_found"`, review the JSON log (e.g., `ArchiveCorrupt`, `NoParagraphs`). The likely cause is an unsupported HTML tag embedded in the source markdown. Consult the `references/fallback-tree.md`.
 
 ## Architectural Constraints
 
@@ -58,4 +58,4 @@ Never attempt to use `cat` or read a generated `.docx` file back into your chat 
 Always route binary generation and validation through the hardened `.py` scripts provided in this plugin.
 
 ## Next Actions
-If the converter scripts crash or the verification loop fails, stop and consult the `./fallback-tree.md` for triage and alternative conversion strategies.
+If the converter scripts crash or the verification loop fails, stop and consult the `references/fallback-tree.md` for triage and alternative conversion strategies.

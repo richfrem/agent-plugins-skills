@@ -26,7 +26,7 @@ You manage a lightweight kanban board with 4 lanes: **backlog, todo, in-progress
 Tasks are represented as standalone Markdown files (`NNNN-title.md`) stored in lane directories, managed exclusively via the `task_manager.py` CLI.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Task Manager**: `./task_manager.py`
+- **Task Manager**: `scripts/task_manager.py`
 
 ## Architectural Constraints (Kanban Sovereignty)
 
@@ -48,7 +48,7 @@ The kanban board is a strictly managed directory state. Task IDs must be globall
 
 When executing `task_manager.py`:
 1. If the script exits with code `1` stating a task ID does not exist, do not attempt to manually look for the file in the lane directories. Report the ID as not found and ask the user to confirm.
-2. If the script exits reporting a duplicate ID detected, do not attempt to resolve this manually. Consult the `./fallback-tree.md`.
+2. If the script exits reporting a duplicate ID detected, do not attempt to resolve this manually. Consult the `references/fallback-tree.md`.
 
 ---
 

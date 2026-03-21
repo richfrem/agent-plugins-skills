@@ -35,8 +35,8 @@ Hooks are event-driven automation that execute in response to Claude Code events
 Use them to validate operations before they run, react to results, enforce policies,
 add context, and integrate external tools into the agent workflow.
 
-> Reference files: `./patterns.md` (8+ proven patterns), `./advanced.md`
-> (advanced use cases), `./migration.md` (upgrading basic hooks). Example
+> Reference files: `references/patterns.md` (8+ proven patterns), `references/advanced.md`
+> (advanced use cases), `references/migration.md` (upgrading basic hooks). Example
 > scripts in `examples/`. Validation utilities in `scripts/`.
 
 ---
@@ -203,8 +203,8 @@ Access in prompt hooks via: `$TOOL_INPUT`, `$TOOL_RESULT`, `$USER_PROMPT`.
 ## Step 4: Implement the Hook
 
 ### For command hooks, write the script
-Use `./validate-write.sh`, `./validate-bash.sh`, or
-`./load-context.sh` as starting templates.
+Use `scripts/validate-write.sh`, `scripts/validate-bash.sh`, or
+`scripts/load-context.sh` as starting templates.
 
 **Security non-negotiables for every command hook:**
 ```bash
@@ -324,10 +324,10 @@ Need to preserve info across context compact? -> PreCompact
 ## Reference Files
 
 Read these when needed:
-- `./patterns.md` -- 8+ proven hook patterns (security validator, completeness checker, context loader, etc.)
-- `./advanced.md` -- advanced techniques: MCP integration, multi-hook orchestration, stateful hooks
-- `./migration.md` -- migrating from basic command hooks to advanced prompt-based hooks
-- `./validate-write.sh` -- complete file write validation example
-- `./validate-bash.sh` -- complete bash command validation example
-- `./load-context.sh` -- complete SessionStart context loading example
+- `references/patterns.md` -- 8+ proven hook patterns (security validator, completeness checker, context loader, etc.)
+- `references/advanced.md` -- advanced techniques: MCP integration, multi-hook orchestration, stateful hooks
+- `references/migration.md` -- migrating from basic command hooks to advanced prompt-based hooks
+- `scripts/validate-write.sh` -- complete file write validation example
+- `scripts/validate-bash.sh` -- complete bash command validation example
+- `scripts/load-context.sh` -- complete SessionStart context loading example
 - Official docs: https://docs.claude.com/en/docs/claude-code/hooks

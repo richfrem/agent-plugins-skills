@@ -57,7 +57,7 @@ The ecosystem contains hundreds of scripts. You are fundamentally incapable of h
 
 When executing a search in `ChromaDB`:
 1. If the database tool returns a result, you **MUST IMMEDIATELY** use `view_file` to read the first 200 lines of the script. The script header is the Official Manual. Do not guess the CLI arguments based on the search excerpt.
-2. If the database returns 0 results or an error, do not fallback to `find`. Read the `./fallback-tree.md` for proper escalation.
+2. If the database returns 0 results or an error, do not fallback to `find`. Read the `references/fallback-tree.md` for proper escalation.
 
 ---
 
@@ -80,4 +80,4 @@ python3 ./manage_tool_inventory.py generate
 ```
 
 ## Next Actions
-If any of these registry scripts fail or ChromaDB refuses a connection, immediately refer to the `./fallback-tree.md`.
+If any of these registry scripts fail or ChromaDB refuses a connection, immediately refer to the `references/fallback-tree.md`.

@@ -1,1 +1,1 @@
-../../agent-scaffolders/references/pattern-decision-matrix.md
+../../../../agent-scaffolders/references/pattern-decision-matrix.md

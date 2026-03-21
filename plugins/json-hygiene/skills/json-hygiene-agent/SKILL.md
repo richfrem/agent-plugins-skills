@@ -34,7 +34,7 @@ You are an expert at maintaining the integrity of JSON configuration files. Stan
 
 | Script | Role | Capability |
 |:---|:---|:---|
-| `./find_json_duplicates.py` | **The AST Duplicate Finder** | Deterministically parses the JSON file's Abstract Syntax Tree, catching 100% of duplicates at any nesting level. |
+| `scripts/find_json_duplicates.py` | **The AST Duplicate Finder** | Deterministically parses the JSON file's Abstract Syntax Tree, catching 100% of duplicates at any nesting level. |
 
 ## Core Workflow: The Audit Pipeline
 
@@ -51,7 +51,7 @@ python3 ./find_json_duplicates.py --file config.json
 **CRITICAL: The script return codes dictate the structural truth.**
 - If the script exits with `0`, the file is 100% clean and free of duplicates.
 - If the script exits with `1`, duplicates were found. Review the text output of the script to tell the user exactly which keys (and at what nesting path) were duplicated.
-- If the script exits with `2`, the file is not valid JSON (e.g. trailing commas, missing brackets). Consult `./fallback-tree.md`.
+- If the script exits with `2`, the file is not valid JSON (e.g. trailing commas, missing brackets). Consult `references/fallback-tree.md`.
 
 ## Architectural Constraints
 
@@ -62,4 +62,4 @@ Never attempt to write raw `grep` commands or try to visually read the flat text
 Always route validation through the AST parser (`find_json_duplicates.py`) provided in this plugin.
 
 ## Next Actions
-If the python script crashes or throws unexpected architecture errors, stop and consult the `./fallback-tree.md` for triage and alternative scanning strategies.
+If the python script crashes or throws unexpected architecture errors, stop and consult the `references/fallback-tree.md` for triage and alternative scanning strategies.

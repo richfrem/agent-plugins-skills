@@ -32,7 +32,7 @@ Prompt-based hooks offer several advantages:
 }
 ```
 
-**Script (./validate-bash.sh):**
+**Script (../scripts/validate-bash.sh):**
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -101,7 +101,7 @@ fi
 }
 ```
 
-**Script (./validate-write.sh):**
+**Script (../scripts/validate-write.sh):**
 ```bash
 #!/bin/bash
 input=$(cat)

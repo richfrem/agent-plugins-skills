@@ -22,9 +22,9 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 Standard lifecycle for implementing features using Spec Kitty.
 
 **Command-specific guidance**: For detailed best practices on individual commands, see the `AUGMENTED.md` files co-located with each auto-synced command:
-- `./AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
-- `./AUGMENTED.md` — worktree discipline, commit hygiene
-- `./AUGMENTED.md` — review standards, batch review protocol
+- `references/AUGMENTED.md` — pre-merge safety, branch protection, conflict resolution
+- `references/AUGMENTED.md` — worktree discipline, commit hygiene
+- `references/AUGMENTED.md` — review standards, batch review protocol
 
 ## 🚫 CRITICAL: Anti-Simulation Rules & Escalation Taxonomy
 

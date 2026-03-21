@@ -26,8 +26,8 @@ Real-world examples of each config file are in `references/examples/`:
 
 | File | Purpose |
 |:-----|:--------|
-| [`vector_profiles.json`](./vector_profiles.json) | Profile registry -- defines named vector collections and ChromaDB connection |
-| [`vector_knowledge_manifest.json`](./vector_knowledge_manifest.json) | Manifest -- what folders/globs to include/exclude in the vector index |
+| [`vector_profiles.json`](assets/vector_profiles.json) | Profile registry -- defines named vector collections and ChromaDB connection |
+| [`vector_knowledge_manifest.json`](assets/vector_knowledge_manifest.json) | Manifest -- what folders/globs to include/exclude in the vector index |
 
 ## When to Use This
 - When a user first installs the `vector-db` plugin.
@@ -37,7 +37,7 @@ Real-world examples of each config file are in `references/examples/`:
 ## Instructions for Agent
 
 1. **Run the Initialization Script:**
-   You must execute the interactive initialization script located at `./init.py`.
+   You must execute the interactive initialization script located at `scripts/init.py`.
    ```bash
    python3 ./init.py
    ```

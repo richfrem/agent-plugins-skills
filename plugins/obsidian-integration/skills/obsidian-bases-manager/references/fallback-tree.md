@@ -1,7 +1,7 @@
 # Procedural Fallback Tree: Obsidian Bases Manager
 
 ## 1. Malformed YAML in Base File
-If `./bases_ops.py` reports a YAML parse error:
+If `../scripts/bases_ops.py` reports a YAML parse error:
 - **Action**: Report the error with line number. Do NOT attempt auto-repair. Ask user to restore from backup. Never write to a Base file with corrupt YAML.
 
 ## 2. Row Index Out of Bounds

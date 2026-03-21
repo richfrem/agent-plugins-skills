@@ -33,9 +33,9 @@ Real-world examples of each config file are in `references/examples/`:
 
 | File | Purpose |
 |:-----|:--------|
-| [`rlm_profiles.json`](./rlm_profiles.json) | Profile registry -- defines named caches and their manifest/cache paths |
-| [`rlm_summary_cache_manifest.json`](./rlm_summary_cache_manifest.json) | Project docs manifest -- what folders/globs to include and exclude |
-| [`rlm_tools_manifest.json`](./rlm_tools_manifest.json) | Tools manifest -- scoped to scripts and plugins only |
+| [`rlm_profiles.json`](assets/rlm_profiles.json) | Profile registry -- defines named caches and their manifest/cache paths |
+| [`rlm_summary_cache_manifest.json`](assets/rlm_summary_cache_manifest.json) | Project docs manifest -- what folders/globs to include and exclude |
+| [`rlm_tools_manifest.json`](assets/rlm_tools_manifest.json) | Tools manifest -- scoped to scripts and plugins only |
 
 ## Interactive Setup Protocol
 

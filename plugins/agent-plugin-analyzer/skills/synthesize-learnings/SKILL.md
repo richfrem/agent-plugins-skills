@@ -129,13 +129,13 @@ Append any newly discovered patterns to `references/pattern-catalog.md` in the `
 
 ### Step 5b: Log Recommendations to Tracker
 
-Append each recommendation to `./open-recommendations.md` using this format:
+Append each recommendation to `references/open-recommendations.md` using this format:
 
 ```markdown
 | [YYYY-MM-DD] | [Title] | [Target] | [Priority] | open |
 ```
 
-See `./open-recommendations.md` for the tracker schema. When a recommendation is
+See `references/open-recommendations.md` for the tracker schema. When a recommendation is
 implemented, update its status from `open` to `implemented` and add the PR or commit reference.
 
 Format new catalog entries as:

@@ -37,13 +37,13 @@ The per-file converter resolves internal markdown links to `.docx` targets direc
 Compile lockfile:
 
 ```powershell
-python -m piptools compile "../../requirements.in" --output-file "../../requirements.txt"
+python -m piptools compile "../requirements.in" --output-file "../requirements.txt"
 ```
 
 Install from lockfile:
 
 ```powershell
-python -m pip install -r "../../requirements.txt"
+python -m pip install -r "../requirements.txt"
 ```
 
 ## Typical usage

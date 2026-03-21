@@ -52,7 +52,7 @@ summary, and inject it into the ledger via `inject_summary.py`.
 
 **First-time setup or missing profile?** Run the `rlm-init` skill first:
 ```bash
-# See: ../../SKILL.md
+# See: ../SKILL.md
 # Creates rlm_profiles.json, manifest, and empty cache
 ```
 
@@ -77,7 +77,7 @@ and what are its key components/functions?"* in one dense sentence.
 ```bash
 python3 ./inject_summary.py \
   --profile project \
-  --file ../../SKILL.md \
+  --file ../SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."
 ```
 
@@ -108,7 +108,7 @@ Delegate to the `agent-loops:agent-swarm` skill with the appropriate engine and 
 
 Provide the job file: `./resources/jobs/rlm_chronicle.job.md` and the gap file from `inventory.py --missing`.
 
-See `../../SKILL.md` for full swarm configuration options.
+See `../SKILL.md` for full swarm configuration options.
 
 ## Quality Standard for Summaries
 

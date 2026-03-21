@@ -68,9 +68,9 @@ model, and visual identity. Getting the design right upfront prevents over-trust
 agents (security risk) or under-scoped agents (useless).
 
 Read these reference files at start if you need detailed guidance:
-- `./system-prompt-design.md` - Four agent patterns (analysis, generation, validation, orchestration)
+- `references/system-prompt-design.md` - Four agent patterns (analysis, generation, validation, orchestration)
 - `references/complete-agent-examples.md` - Production-ready templates for common use cases
-- `./triggering-examples.md` - Full example block format reference
+- `references/triggering-examples.md` - Full example block format reference
 
 ---
 
@@ -288,7 +288,7 @@ Then provide a summary to the user:
 ## Reference Files
 
 Read these only when needed:
-- `./system-prompt-design.md` - Full patterns for all 4 agent types
+- `references/system-prompt-design.md` - Full patterns for all 4 agent types
 - `references/complete-agent-examples.md` - Production templates (code-reviewer, test-generator, docs-generator, security-analyzer)
-- `./triggering-examples.md` - Triggering best practices and example block formats
-- `./validate-agent.sh` - Validation script to check generated agent files
+- `references/triggering-examples.md` - Triggering best practices and example block formats
+- `scripts/validate-agent.sh` - Validation script to check generated agent files

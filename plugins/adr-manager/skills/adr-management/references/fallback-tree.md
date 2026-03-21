@@ -5,7 +5,7 @@ If `adr_manager.py create` is run and the target directory (`ADRs/` or custom) d
 - **Action**: The script creates the directory automatically on first run (per acceptance criteria). Report to the user that the directory was created. Do NOT fail silently.
 
 ## 2. ID Numbering Conflict (Duplicate Found)
-If `./next_number.py` detects that the next sequential ID already exists as a file:
+If `../scripts/next_number.py` detects that the next sequential ID already exists as a file:
 - **Action**: Report the conflict, showing the conflicting filename. Do NOT overwrite the existing file. Increment past the conflict and report the new ID used.
 
 ## 3. Existing ADR Not Found When Superseding

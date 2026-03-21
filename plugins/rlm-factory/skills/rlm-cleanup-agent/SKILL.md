@@ -42,7 +42,7 @@ its file no longer exists or has moved. Running this regularly keeps the ledger 
 
 ## Prerequisites
 
-**Profile not configured?** Run `rlm-init` skill first: `../../SKILL.md`
+**Profile not configured?** Run `rlm-init` skill first: `../SKILL.md`
 
 ## When to Run
 

@@ -34,9 +34,9 @@ Ask the user what specific external container or pipeline orchestrator is being 
 - **Network Scope**: Does this pull models from HuggingFace, data from NCBI, or containers from Docker Hub? (Required for the security whitelist).
 
 ### 2. Scaffold the Infrastructure
-Execute the deterministic `././scaffold.py` script to generate the compliant physical directories:
+Execute the deterministic `./../scripts/scaffold.py` script to generate the compliant physical directories:
 ```bash
-python3 ./././scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ./../scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Pre-Flight Checker Script
@@ -65,6 +65,6 @@ If this dockerized skill will be tuned iteratively, require:
 5. Persistent experiment ledger in `evals/results.tsv`.
 
 ## Next Actions
-- **Continuous Improvement**: Run `././run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
-- **Review Loop**: Run `././generate_review.py` to inspect run quality and failure patterns.
+- **Continuous Improvement**: Run `./../scripts/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
+- **Review Loop**: Run `./../scripts/generate_review.py` to inspect run quality and failure patterns.
 - **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

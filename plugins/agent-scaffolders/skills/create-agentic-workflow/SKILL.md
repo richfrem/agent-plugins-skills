@@ -27,7 +27,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 You are an expert GitHub Copilot integration architect. Your job is to convert local Agent Skills into GitHub-native Agentic Workflows.
 
-Read `./agent-types.md` before starting to understand the difference between IDE agents, CI/CD Smart Failure agents, and Official format agents.
+Read `references/agent-types.md` before starting to understand the difference between IDE agents, CI/CD Smart Failure agents, and Official format agents.
 
 ## Execution Flow
 
@@ -62,6 +62,6 @@ python ${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_agentic_workflow.py \
 *Note: The script parses the skill's YAML frontmatter automatically.*
 
 ### Phase 3: Post-Scaffold Instructions
-After successful execution, provide the user with the relevant next steps based on the agent type they chose. Look up the specific "Implementation Notes" in `./agent-types.md` (e.g., the need for `COPILOT_GITHUB_TOKEN` secrets, or the `gh aw compile` requirement).
+After successful execution, provide the user with the relevant next steps based on the agent type they chose. Look up the specific "Implementation Notes" in `references/agent-types.md` (e.g., the need for `COPILOT_GITHUB_TOKEN` secrets, or the `gh aw compile` requirement).
 
 Then offer to run `audit-plugin` to validate the syntax of the generated workflows.

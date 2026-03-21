@@ -19,7 +19,7 @@ flowchart TD
     end
 
     subgraph Retrieval [Step 3: Access Memory]
-        Chroma --> Query[./query.py]
+        Chroma --> Query[../scripts/query.py]
         User((User)) -- "Natural Language" --> Query
         Query -- "Ranked Results" --> User
     end

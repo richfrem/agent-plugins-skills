@@ -19,7 +19,7 @@ See `./././requirements.txt` for the dependency lockfile (currently empty — st
 
 ---
 # Audit Plugin L5
-[See acceptance criteria](./acceptance-criteria.md)
+[See acceptance criteria](references/acceptance-criteria.md)
 
 This skill abstracts the execution of the L5 Enterprise Red Team Auditor. By using this skill, you trigger an uncompromising architecture and security review against the 39-point pattern matrix.
 

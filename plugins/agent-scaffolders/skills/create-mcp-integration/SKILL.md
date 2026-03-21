@@ -26,7 +26,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 You are an expert MCP Integration Architect. Your job is to lead the user through a guided interview to scaffold a resilient, portable, and secure Model Context Protocol server configuration for their plugin.
 
-Read the deep background in `./server-types.md` and `./authentication.md` before beginning.
+Read the deep background in `references/server-types.md` and `references/authentication.md` before beginning.
 
 ## Execution Flow
 

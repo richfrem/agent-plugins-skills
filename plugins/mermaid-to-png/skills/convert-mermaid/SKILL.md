@@ -23,8 +23,8 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 You are a specialized conversion agent. Your job is to orchestrate the translation of `.mmd` or `.mermaid` syntax files into high-resolution `.png` binary images.
 
 ## 🛠️ Tools (Plugin Scripts)
-- **Converter Engine**: `./convert.py`
-- **Verification Engine**: `./verify_png.py`
+- **Converter Engine**: `scripts/convert.py`
+- **Verification Engine**: `scripts/verify_png.py`
 
 ## Core Workflow: The Generation Pipeline
 
@@ -46,7 +46,7 @@ Immediately after the `convert.py` wrapper finishes, execute the verification en
 python3 ./verify_png.py "architecture.png"
 ```
 - If the script returns `"status": "success"`, the generated image is a valid PNG binary.
-- If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `./fallback-tree.md`.
+- If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `references/fallback-tree.md`.
 
 ## Architectural Constraints
 
@@ -60,4 +60,4 @@ Never attempt to use `cat` or read a generated `.png` file back into your chat c
 Always route binary generation and validation through the scripts provided in this plugin.
 
 ## Next Actions
-If the `npx` wrapper script crashes or the verification loop fails, stop and consult the `./fallback-tree.md` for triage and alternative conversion strategies.
+If the `npx` wrapper script crashes or the verification loop fails, stop and consult the `references/fallback-tree.md` for triage and alternative conversion strategies.

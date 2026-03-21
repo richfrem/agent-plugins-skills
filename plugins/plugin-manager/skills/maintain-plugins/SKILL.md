@@ -33,8 +33,8 @@ This skill is the ecosystem health hub. It covers three operations:
 **Core constraint**: Custom, project-specific plugins are NEVER deleted during sync. Only vendor-managed plugins that have been locally removed are cleaned up.
 
 ## References
-- Sync process guide: `././cleanup_process.md`
-- Sync flow diagram: `././cleanup_flow.mmd`
+- Sync process guide: `./../references/cleanup_process.md`
+- Sync flow diagram: `./../references/cleanup_flow.mmd`
 
 ---
 
@@ -78,7 +78,7 @@ Wait for explicit confirmation (`yes`, `looks good`, `ok`).
 
 ### Step 1: Run Deterministic Scanner
 ```bash
-python3 ././audit_structure.py
+python3 ./../scripts/audit_structure.py
 ```
 > For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
 
@@ -143,12 +143,12 @@ For each violation found, report with severity:
 
 #### Preview Changes (Always Run First)
 ```bash
-python3 ./././sync_with_inventory.py --dry-run
+python3 ./../scripts/sync_with_inventory.py --dry-run
 ```
 
 #### Apply Changes
 ```bash
-python3 ./././sync_with_inventory.py
+python3 ./../scripts/sync_with_inventory.py
 ```
 
 ### Post-Sync Verification
@@ -160,7 +160,7 @@ python3 ./././sync_with_inventory.py
 
 ## [README] Generate Missing Documentation
 ```bash
-python3 ././generate_readmes.py --apply
+python3 ./../scripts/generate_readmes.py --apply
 ```
 
 ---

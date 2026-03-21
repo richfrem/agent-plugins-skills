@@ -7,7 +7,7 @@
       "note": "Primary documentation"
     },
     {
-      "path": "../../file-manifest.json",
+      "path": "../../../../../file-manifest.json",
       "note": "The generic JSON schema example"
     },
     {
@@ -15,7 +15,7 @@
       "note": "The core skill definition"
     },
     {
-      "path": ".././bundle.py",
+      "path": "../../../scripts/bundle.py",
       "note": "The bundling engine"
     }
   ]

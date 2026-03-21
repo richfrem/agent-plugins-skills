@@ -9,6 +9,6 @@ This skill operationalizes the autoresearch pattern for skill optimization:
 - Persistent experiment ledger for auditability.
 
 Execution engine:
-- Evaluates trigger behavior via `./scripts/benchmarking/run_eval.py`.
+- Evaluates trigger behavior via `../../../scripts/benchmarking/run_eval.py`.
 - Proposes improvements via `improve_description.py` using either Claude or Copilot backend.
 - Orchestrates loop via `run_loop.py`.

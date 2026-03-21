@@ -6,7 +6,7 @@ The paper proposes treating "Context" not as text stuffed into a prompt window, 
 
 For Project Ecosystem, we have implemented this as an **Infinite Context Ecosystem**. The LLM does not "read" the codebase; it **explores** it using a robust toolchain, maintaining state in external artifacts (Markdown & JSON).
 
-## 2. The Ecosystem Architecture (See [BLUEPRINT.md](../BLUEPRINT.md))
+## 2. The Ecosystem Architecture (See [BLUEPRINT.md](BLUEPRINT.md))
 
 **Architecture Diagram:** [workflows/infinite-context-ecosystem.mmd](../../../../docs/diagrams/workflows/archive/infinite-context-ecosystem.mmd)
 

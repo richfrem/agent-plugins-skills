@@ -66,7 +66,7 @@ Load project-specific context at session start:
 }
 ```
 
-**Example script (./load-context.sh):**
+**Example script (../scripts/load-context.sh):**
 ```bash
 #!/bin/bash
 cd "$CLAUDE_PROJECT_DIR" || exit 1

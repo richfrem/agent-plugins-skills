@@ -28,10 +28,10 @@ returns insufficient results.
 
 | Script | Role |
 |:-------|:-----|
-| `./query.py` | Semantic search -- CLI entry point |
-| `./operations.py` | Core Parent-Child retrieval library |
-| `./vector_config.py` | Profile config helper (`vector_profiles.json`) |
-| `./vector_consistency_check.py` | Integrity validation |
+| `scripts/query.py` | Semantic search -- CLI entry point |
+| `scripts/operations.py` | Core Parent-Child retrieval library |
+| `scripts/vector_config.py` | Profile config helper (`vector_profiles.json`) |
+| `scripts/vector_consistency_check.py` | Integrity validation |
 
 **Write operations** (ingest, cleanup) are handled by dedicated agents: `vdb-ingest`, `vdb-cleanup`.
 
@@ -50,7 +50,7 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
 
 If connection refused: run `vector-db-launch` skill (`plugins/vector-db/skills/vector-db-launch/SKILL.md`).
-For first-time setup: run `vector-db-init` skill (`./init.py`).
+For first-time setup: run `vector-db-init` skill (`scripts/init.py`).
 
 ### 2. Select Profile and Search
 
