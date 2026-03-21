@@ -9,7 +9,6 @@ description: >-
   lock file. Trigger when a user says "bridge", "install plugin", "deploy
   plugin", or "sync plugin to agents".
 allowed-tools: Bash, Write, Read
-dependencies: ["pip:yaml"]
 ---
 
 ## Dependencies

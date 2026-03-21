@@ -15,18 +15,32 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and
 ---
 
 ## Installation
-### Option 1: Skills Only (End Users)
+
+### Option 1: From a Marketplace (Recommended)
+```bash
+/plugin marketplace add <marketplace-url>
+/plugin install plugin-manager
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/plugin-manager
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/plugin-manager
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install plugin-manager
+```
+
+### Option 3: Local Development Checkout
 ```bash
 npx skills add ./plugins/plugin-manager
 ```
-This installs the skills from this plugin.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the bridge-plugin skill:
-```bash
-# Use the bridge-plugin skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/plugin-manager
-```
+For full deployment (skills + commands + rules + hooks), use the `bridge-plugin` skill after checkout.
 
 ## 🌐 Supported Targets
 
@@ -102,8 +116,6 @@ The installer intelligently translates plugin components into the specific direc
 > **Note on Commands:** When writing command logic, you can use nested folders (`commands/ops/restart.md`). The bridge automatically flattens these into a snake_case format (`ops_restart.md`) to remain compatible with IDEs that don't support deeply nested slash-commands. Gemini targets are wrapped in TOML automatically.
 
 ---
-
-## Directory Structure
 
 ## Directory Structure
 
