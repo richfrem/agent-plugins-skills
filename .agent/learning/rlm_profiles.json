@@ -1,0 +1,27 @@
+{
+    "version": 1,
+    "default_profile": "plugins",
+    "profiles": {
+        "plugins": {
+            "description": "Plugin README and SKILL.md summaries",
+            "manifest": ".agent/learning/plugins_manifest.json",
+            "cache": ".agent/learning/rlm_plugins_cache.json",
+            "extensions": [
+                ".md"
+            ],
+            "llm_model": "granite3.2:8b"
+        },
+        "tools": {
+            "description": "Semantic Registry of Project Tools and Executable Code logic.",
+            "manifest": ".agent/learning/rlm_tools_manifest.json",
+            "cache": ".agent/learning/rlm_tool_cache.json",
+            "extensions": [
+                ".py",
+                ".js",
+                ".ts",
+                ".sh"
+            ],
+            "llm_model": "granite3.2:8b"
+        }
+    }
+}
