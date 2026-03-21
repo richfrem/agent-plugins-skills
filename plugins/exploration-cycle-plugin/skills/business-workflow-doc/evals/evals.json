@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Can you map out the checkout flow based on what we've captured?",
+    "should_trigger": true
+  },
+  {
+    "query": "Document the order status workflow as a state diagram.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a process diagram showing the approval flow.",
+    "should_trigger": true
+  },
+  {
+    "query": "Visualize the current system state machine before we redesign it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Generate a BRD from our session captures.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create user stories from the requirements.",
+    "should_trigger": false
+  },
+  {
+    "query": "Let's kick off a new exploration session.",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy the latest build to production.",
+    "should_trigger": false
+  }
+]

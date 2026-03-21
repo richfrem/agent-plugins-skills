@@ -1,18 +1,34 @@
 [
   {
-    "query": "I need help using the exploration-optimizer skill",
+    "query": "Evaluate and improve the exploration-session-brief skill.",
     "should_trigger": true
   },
   {
-    "query": "Can you use the exploration-optimizer skill for me?",
+    "query": "Run an optimization loop on our exploration workflow to find what to improve.",
     "should_trigger": true
   },
   {
-    "query": "What time is it in New York?",
+    "query": "The exploration cycle feels slow — help me identify which skill to optimize first.",
+    "should_trigger": true
+  },
+  {
+    "query": "Iterate on the business-requirements-capture prompts to improve BRD quality.",
+    "should_trigger": true
+  },
+  {
+    "query": "Generate a BRD from our session captures.",
     "should_trigger": false
   },
   {
-    "query": "How do I boil an egg?",
+    "query": "Let's kick off a new exploration session.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create user stories from the BRD.",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy the latest build to production.",
     "should_trigger": false
   }
 ]
