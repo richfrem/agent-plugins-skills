@@ -3,17 +3,30 @@
 Plugin wrapper that exposes Markdown-to-MS Word conversion as a single nested skill using plugin-local scripts. Upgraded to V2 with L5 Delegated Constraint Verification.
 
 ## Installation
-### Option 1: Skills Only (End Users)
+
+### Option 1: From a Marketplace (Recommended)
+```bash
+/plugin marketplace add <marketplace-url>
+/plugin install markdown-to-msword-converter
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/markdown-to-msword-converter
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/markdown-to-msword-converter
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install markdown-to-msword-converter
+```
+
+### Option 3: Local Development Checkout
 ```bash
 npx skills add ./plugins/markdown-to-msword-converter
-```
-This installs the skills from this plugin.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the bridge-plugin skill:
-```bash
-# Use the bridge-plugin skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/markdown-to-msword-converter
 ```
 
 ## Nested Skill
