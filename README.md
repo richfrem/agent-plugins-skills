@@ -125,8 +125,6 @@ This repository currently hosts **28 distinct plugin packages** containing over 
   ↳ [`context-bundling`](plugins/context-bundler/skills/context-bundling/SKILL.md)
 - **Dependency Management** — Handles cross-platform pip-compile workflows securely.
   ↳ [`dependency-management`](plugins/dependency-management/skills/dependency-management/SKILL.md)
-- **Excel to CSV** — Flat file extraction module for ingestion and parsing.
-  ↳ [`excel-to-csv`](plugins/excel-to-csv/skills/excel-to-csv/SKILL.md)
 
 ### Agent Persona CLI Interfaces
 Sub-systems allowing fresh, isolated model context spaces for advanced tasks (audits, QA, external validation).

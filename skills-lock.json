@@ -258,13 +258,6 @@
       "sourceType": "local",
       "computedHash": "db098dc73fd679366c750eafcc2f5e94c42c017094874e07008dd318d3046c96"
     },
-    "excel-to-csv": {
-      "source": "https://github.com/richfrem/agent-plugins-skills",
-      "sourceType": "local",
-      "computedHash": "ca6d67d673253ee0620ead633965c51ed39b4ac39cbd6cf0ec40c7b7aa8654d9",
-      "installedAt": "2026-03-21T16:30:16.996267Z",
-      "updatedAt": "2026-03-21T16:36:25.812727Z"
-    },
     "flawed-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",

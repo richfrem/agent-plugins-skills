@@ -221,23 +221,6 @@
         }
       ]
     },
-    "excel-to-csv": {
-      "count": 2,
-      "scripts": [
-        {
-          "name": "convert.py",
-          "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/convert.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "verify_csv.py",
-          "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/verify_csv.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
-    },
     "huggingface-utils": {
       "count": 5,
       "scripts": [
