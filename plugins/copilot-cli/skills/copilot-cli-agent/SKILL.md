@@ -5,7 +5,6 @@ description: >
   large contexts to GitHub Copilot models for security audits, architecture reviews,
   QA analysis, or any specialized analysis requiring a fresh model context.
 allowed-tools: Bash, Read, Write
-dependencies: ["skill:dual-loop"]
 ---
 
 ## Dependencies

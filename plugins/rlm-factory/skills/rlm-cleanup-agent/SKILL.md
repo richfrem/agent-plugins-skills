@@ -12,9 +12,7 @@ description: |
   user: "The RLM ledger has entries for files that no longer exist"
   assistant: "I'll run rlm-cleanup-agent to prune orphaned entries."
   </example>
-model: inherit
-color: orange
-tools: ["Bash", "Read", "Write"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

@@ -2,7 +2,6 @@
 name: obsidian-bases-manager
 description: "Read and manipulate Obsidian Bases (.base) files - YAML-based database views that render as tables, cards, and grids inside the vault. Use when reading, appending rows, or updating cells in a Base file."
 allowed-tools: Bash, Read, Write
-dependencies: ["pip:ruamel"]
 ---
 
 ## Dependencies

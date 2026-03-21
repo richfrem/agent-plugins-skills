@@ -3,17 +3,30 @@
 Bridge the gap between programmatic AI agent workflows and the local Obsidian knowledge base.
 
 ## Installation
-### Option 1: Skills Only (End Users)
+
+### Option 1: From a Marketplace (Recommended)
+```bash
+/plugin marketplace add <marketplace-url>
+/plugin install obsidian-integration
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/obsidian-integration
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/obsidian-integration
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install obsidian-integration
+```
+
+### Option 3: Local Development Checkout
 ```bash
 npx skills add ./plugins/obsidian-integration
-```
-This installs the skills from this plugin.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the bridge-plugin skill:
-```bash
-# Use the bridge-plugin skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/obsidian-integration
 ```
 
 ## Overview

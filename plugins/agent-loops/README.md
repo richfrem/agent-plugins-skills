@@ -3,17 +3,30 @@
 Composable agent loop architectures for **learning loops**, **agent orchestration**, **red team coordination**, and **parallel swarm execution**. Framework-agnostic — works with any AI agent in any repository, with or without other plugins.
 
 ## Installation
-### Option 1: Skills Only (End Users)
+
+### Option 1: From a Marketplace (Recommended)
+```bash
+/plugin marketplace add <marketplace-url>
+/plugin install agent-loops
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/agent-loops
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/agent-loops
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install agent-loops
+```
+
+### Option 3: Local Development Checkout
 ```bash
 npx skills add ./plugins/agent-loops
-```
-This installs the skills from this plugin.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the bridge-plugin skill:
-```bash
-# Use the bridge-plugin skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-loops
 ```
 
 ## Core Skills
@@ -64,7 +77,7 @@ agent-loops/
 ├── .claude-plugin/      # Plugin manifest
 ├── hooks/               # Lifecycle hooks (closure enforcement)
 ├── personas/            # Specialized AI subagent configurations
-├── resources/
+├── assets/resources/
 │   ├── diagrams/        # Architecture diagrams (overview + per-pattern)
 │   └── templates/       # Strategy packets, retrospective, audit templates
 ├── skills/
@@ -73,18 +86,18 @@ agent-loops/
 │   ├── red-team-review/ # Pattern 2
 │   ├── dual-loop/       # Pattern 3
 │   └── agent-swarm/     # Pattern 4
-└── workflows/           # Pre-built loop workflows
+└── references/          # Pattern guide and cross-skill references
 ```
 
 ## Diagrams
 
 | Diagram | Shows |
 |---------|-------|
-| [agent_loops_overview.mmd](resources/diagrams/agent_loops_overview.mmd) | High-level routing to all 4 patterns |
-| [learning_loop.mmd](resources/diagrams/learning_loop.mmd) | Pattern 1: Simple learning |
-| [red_team_review_loop.mmd](resources/diagrams/red_team_review_loop.mmd) | Pattern 2: Adversarial review |
-| [inner_outer_loop.mmd](resources/diagrams/inner_outer_loop.mmd) | Pattern 3: Dual-loop handoff |
-| [agent_swarm.mmd](resources/diagrams/agent_swarm.mmd) | Pattern 4: Parallel swarm |
+| [agent_loops_overview.mmd](assets/resources/diagrams/agent_loops_overview.mmd) | High-level routing to all 4 patterns |
+| [learning_loop.mmd](assets/resources/diagrams/learning_loop.mmd) | Pattern 1: Simple learning |
+| [red_team_review_loop.mmd](assets/resources/diagrams/red_team_review_loop.mmd) | Pattern 2: Adversarial review |
+| [inner_outer_loop.mmd](assets/resources/diagrams/inner_outer_loop.mmd) | Pattern 3: Dual-loop handoff |
+| [agent_swarm.mmd](assets/resources/diagrams/agent_swarm.mmd) | Pattern 4: Parallel swarm |
 
 ## Compatible Agents
 

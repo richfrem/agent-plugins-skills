@@ -5,9 +5,29 @@ using Ollama for instant context retrieval.
 
 ## Installation
 
-### Local Development
+### Option 1: From a Marketplace (Recommended)
 ```bash
-claude --plugin-dir ./plugins/rlm-factory
+/plugin marketplace add <marketplace-url>
+/plugin install rlm-factory
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/rlm-factory
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/rlm-factory
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install rlm-factory
+```
+
+### Option 3: Local Development Checkout
+```bash
+npx skills add ./plugins/rlm-factory
 ```
 
 ### Prerequisites
@@ -120,7 +140,7 @@ See `skills/rlm-distill-agent/SKILL.md` for the full Agent Distill protocol.
 
 ## Architecture
 
-See [docs/rlm-factory-workflow.mmd](docs/rlm-factory-workflow.mmd) for the full
+See [rlm-factory-workflow.mmd](assets/references/diagrams/rlm-factory-workflow.mmd) for the full
 sequence diagram.
 
 ```mermaid
@@ -131,13 +151,13 @@ graph LR
     C -->|Curate| E["Cleanup 🧹"]
 ```
 
-Additional diagrams (in `references/diagrams/`):
-- [search_process.mmd](references/diagrams/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
-- [rlm-factory-architecture.mmd](references/diagrams/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
-- [rlm-factory-dual-path.mmd](references/diagrams/rlm-factory-dual-path.mmd) -- Super-RAG context injection
-- [rlm-factory-workflow.mmd](references/diagrams/rlm-factory-workflow.mmd) -- Full distill/audit/query/cleanup lifecycle
-- [workflow.mmd](references/diagrams/workflow.mmd) -- Build + query decision flow
-- [logic.mmd](references/diagrams/logic.mmd) -- Install + distill + consume overview
+Additional diagrams (in `assets/references/diagrams/`):
+- [search_process.mmd](assets/references/diagrams/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
+- [rlm-factory-architecture.mmd](assets/references/diagrams/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
+- [rlm-factory-dual-path.mmd](assets/references/diagrams/rlm-factory-dual-path.mmd) -- Super-RAG context injection
+- [rlm-factory-workflow.mmd](assets/references/diagrams/rlm-factory-workflow.mmd) -- Full distill/audit/query/cleanup lifecycle
+- [workflow.mmd](assets/references/diagrams/workflow.mmd) -- Build + query decision flow
+- [logic.mmd](assets/references/diagrams/logic.mmd) -- Install + distill + consume overview
 
 ### How It Works
 1. **Distiller** reads each file, computes a content hash
@@ -171,7 +191,7 @@ rlm-factory/
 |   |   +-- scripts/cleanup_cache.py
 |   +-- rlm-init/                # SETUP skill: New configurations
 |   +-- ollama-launch/           # SETUP skill: Ollama management
-+-- resources/
++-- assets/resources/
 |   +-- manifest-index.json      # Profile registry
 |   +-- distiller_manifest.json  # Default scope config
 |   +-- prompts/rlm/             # LLM summarization prompts

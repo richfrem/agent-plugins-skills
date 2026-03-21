@@ -5,23 +5,29 @@ for portable AI agent distribution.
 
 ## Installation
 
-### Option 1: Local Development
+### Option 1: From a Marketplace (Recommended)
 ```bash
-claude --plugin-dir ./plugins/context-bundler
+/plugin marketplace add <marketplace-url>
+/plugin install context-bundler
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/context-bundler
 ```
 
-### Option 2: From Marketplace (when published)
-```
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/context-bundler
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
 /plugin install context-bundler
 ```
 
-### Option 3: From GitHub
-```json
-// In your marketplace.json
-{
-  "name": "context-bundler",
-  "source": { "source": "github", "repo": "username/my-agent-plugins" }
-}
+### Option 3: Local Development Checkout
+```bash
+npx skills add ./plugins/context-bundler
 ```
 
 ### Prerequisites

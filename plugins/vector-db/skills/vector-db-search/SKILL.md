@@ -2,7 +2,6 @@
 name: vector-db-search
 description: "Semantic search skill for retrieving code and documentation from the ChromaDB vector store. Use when you need concept-based search across the repository (Phase 2 of the 3-phase search protocol). V2 includes L4/L5 retrieval constraints."
 allowed-tools: Bash, Read
-dependencies: ["pip:chromadb", "pip:frontmatter", "pip:langchain", "pip:langchain_chroma", "pip:langchain_classic", "pip:langchain_community", "pip:langchain_core", "pip:langchain_huggingface", "pip:langchain_text_splitters", "skill:vector-db-init"]
 ---
 
 ## Dependencies

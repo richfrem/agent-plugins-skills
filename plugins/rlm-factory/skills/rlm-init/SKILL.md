@@ -1,7 +1,7 @@
 ---
 name: rlm-init
 description: "Interactive RLM cache initialization. Use when: setting up a new project's semantic cache for the first time, or adding a new cache profile. Walks the user through folder selection, extension config, manifest creation, and first distillation pass."
-dependencies: ["skill:rlm-curator"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

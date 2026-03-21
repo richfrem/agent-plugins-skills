@@ -1,6 +1,7 @@
 ---
 name: ollama-launch
 description: Start and verify the local Ollama LLM server. Use when Ollama is needed for RLM distillation, seal snapshots, embeddings, or any local LLM inference — and it's not already running. Checks if Ollama is running, starts it if not, and verifies the health endpoint.
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

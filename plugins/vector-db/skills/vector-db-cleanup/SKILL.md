@@ -12,9 +12,7 @@ description: |
   user: "The vector database has chunks for files that no longer exist"
   assistant: "I'll run vector-db-cleanup to prune them."
   </example>
-model: inherit
-color: orange
-tools: ["Bash", "Read", "Write"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

@@ -1,7 +1,7 @@
 ---
 name: tool-inventory-init
 description: "Interactive Tool Inventory bootstrap. Use this when initializing a new project repo to configure the semantic tracking of Python/JS tools. It creates a dedicated RLM profile specifically for tools and performs the first intelligent distillation pass."
-dependencies: ["plugin:rlm-factory", "skill:rlm-curator"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

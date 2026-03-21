@@ -6,5 +6,6 @@
         "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
-    "license": "MIT"
+    "license": "MIT",
+    "keywords": ["claude", "anthropic", "cli", "sub-agent", "persona", "security-audit", "code-review"]
 }

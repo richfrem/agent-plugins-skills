@@ -5,8 +5,7 @@ description: >
   when tasks involve registering tools, searching for scripts, auditing coverage,
   or maintaining the tool registry. Combines ChromaDB semantic search with
   the Search → Bind → Execute discovery protocol. V2 includes L4/L5 Constraints to prevent hallucination.
-disable-model-invocation: false
-dependencies: ["pip:chromadb", "plugin:rlm-factory", "skill:rlm-curator"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

@@ -14,7 +14,6 @@ description: |
   assistant: "I'll use rlm-distill to process the missing files."
   </example>
 model: inherit
-color: green
 tools: ["Bash", "Read", "Write"]
 ---
 

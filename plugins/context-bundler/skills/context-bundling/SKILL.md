@@ -1,7 +1,7 @@
 ---
 name: context-bundling
 description: Create technical bundles of code, design, and documentation for external review or context sharing. Use when you need to package multiple project files into a single Markdown file while preserving folder hierarchy and providing contextual notes for each file.
-version: 1.0.0
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
