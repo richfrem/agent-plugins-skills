@@ -14,6 +14,7 @@
         "worktree",
         "kanban"
     ],
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "prerequisites": {
         "spec-kitty-cli": "pip install spec-kitty-cli OR uv tool install spec-kitty-cli",
         "init": "spec-kitty init . --ai windsurf"

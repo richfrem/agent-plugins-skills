@@ -4,7 +4,7 @@ description: >
   Combined Spec-Kitty agent: Synchronization engine + Spec-Driven Development workflow.
   Auto-invoked for feature lifecycle (Specify → Plan → Tasks → Implement → Review → Merge)
   and agent configuration sync. Prerequisite: spec-kitty-cli installed.
-dependencies: ["skill:agent-bridge"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
