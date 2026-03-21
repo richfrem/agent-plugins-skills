@@ -21,8 +21,8 @@ Each entry in the `plugins` array defines how a specific plugin is fetched. You 
 - `source` (required): Where to fetch the plugin. Can be:
     - Relative Path: `"./plugins/my-plugin"` (Note: only works if the marketplace itself was installed via a Git repository clone or local path, not a direct URL).
     - GitHub Source: `{"source": "github", "repo": "owner/repo", "ref": "branch", "sha": "commit-hash"}`.
-- `strict`: Boolean controlling whether the plugin's internal `plugin.json` is the authority (`true`, default), or if the marketplace entry is the entire definition (`false`), overriding the plugin's native manifest.
-- Custom component paths: The marketplace entry can also specify paths to `commands`, `agents`, `hooks`, etc., relative to the plugin's root. For paths referencing files after the plugin is cached, the `plugins` variable can be used.
+- `strict`: Boolean controlling whether the plugin's internal `plugin.json` is the authority (`true`, default), or if the marketplace entry is the entire definition (`false`).
+- Custom component paths: The marketplace entry can specify paths to `commands`, `agents`, `hooks`, etc., relative to the plugin's root. For paths referencing files after the plugin is cached, use variables like `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_PLUGIN_DATA}` in hooks or server configs.
 
 ## Discovery and Installation
 
@@ -43,4 +43,8 @@ Once a marketplace catalog is added, individual plugins can be installed into sp
 
 ### Prebuilt & Official Tooling
 - **Anthropic Official Marketplace (`claude-plugins-official`)**: Pre-installed. Discoverable under the Discover tab. Notably hosts Code Intelligence plugins (e.g., `typescript-lsp`, `python-lsp`) and External Integrations (e.g., `github`, `slack`, `figma`).
-- **Code Intelligence Plugins**: LSP plugins only configure the connection to the Language Server; the underlying binary (like `pyright` or `typescript-language-server`) MUST be installed manually by the user in their OS `$PATH`.
+- Code Intelligence Plugins: LSP plugins configure the connection to the Language Server; the binary MUST be installed manually in the OS `$PATH`.
+
+## Static Seeding & Restrictions
+- **Static Seeding (`CLAUDE_CODE_PLUGIN_SEED_DIR`):** Pre-populate plugins in containers/CI to avoid runtime cloning.
+- **Enterprise Restrictions (`strictKnownMarketplaces`):** Admins can restrict added marketplaces using allowlists (exact match, hostPattern, pathPattern) in managed settings.

@@ -1,6 +1,5 @@
 ---
 name: create-agentic-workflow
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   Scaffold GitHub Agent files from an existing Agent Skill. Generates IDE/UI agents
   (invokable from Copilot Chat) or CI/CD autonomous agents. Trigger with "create a

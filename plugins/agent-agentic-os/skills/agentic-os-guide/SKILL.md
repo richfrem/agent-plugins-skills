@@ -32,7 +32,6 @@ description: >
   Question about a specific file -- read it directly, do not invoke the full guide.
   </commentary>
   </example>
-disable-model-invocation: false
 allowed-tools: Read, Write
 ---
 

@@ -33,10 +33,7 @@ description: >
   Information request, not an evaluation trigger. Do not trigger skill-improvement-eval.
   </commentary>
   </example>
-model: inherit
-color: yellow
-tools: ["Bash", "Read", "Write"]
-skills: []
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

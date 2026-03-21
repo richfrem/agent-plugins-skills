@@ -1,6 +1,5 @@
 ---
 name: create-mcp-integration
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   Interactive initialization script that scaffolds a new Model Context Protocol (MCP) server
   integration for a plugin. Trigger with "add an MCP", "setup mcp server", "integrate postgres mcp",

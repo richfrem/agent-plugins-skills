@@ -1,7 +1,6 @@
 ---
 name: ecosystem-authoritative-sources
 description: Provides information about how to create, structure, install, and audit Agent Skills, Plugins, Antigravity Workflows, and Sub-agents. Trigger this when specifications, rules, or best practices for the ecosystem are required.
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
@@ -93,7 +92,8 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
 
 ## Anthropic Plugin-Dev Key Learnings (March 2026)
 The following patterns were confirmed from Anthropic's official `plugin-dev` plugin:
-- **`${CLAUDE_PLUGIN_ROOT}`**: Required for all absolute path references inside plugin scripts/hooks (portability).
+- **`${CLAUDE_PLUGIN_ROOT}`**: Absolute path to the plugin's installation directory (read-only during updates).
+- **`${CLAUDE_PLUGIN_DATA}`**: Persistent directory for plugin state (e.g., node_modules, venv) that survives updates.
 - **Prompt-based hooks**: LLM-driven hooks run in parallel; use for semantic decisions. Command-based hooks for deterministic validation.
 - **`model: inherit`**: Default for sub-agents. Explicitly setting a model pins the agent to a version.
 - **`<example>` blocks**: Use 2-4 `<example>` blocks in agent frontmatter descriptions for richer trigger context (including proactive and negative instructions).

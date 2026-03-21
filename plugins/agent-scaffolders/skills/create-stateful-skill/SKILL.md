@@ -1,6 +1,5 @@
 ---
 name: create-stateful-skill
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   Interactive initialization script that generates an advanced Agent Skill utilizing L4 State
   Management, Lifecycle Artifacts, Tone Configuration, and Chained Commands. Trigger with

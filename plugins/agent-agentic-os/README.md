@@ -18,17 +18,35 @@ This plugin teaches agents how to:
 
 ## Installation
 
-### Option 1: Skills Only (End Users)
+### Option 1: From a Marketplace (Recommended)
+If this plugin is listed in a marketplace catalog, add the marketplace first then install:
 ```bash
-npx skills add ./plugins/agent-agentic-os
+/plugin marketplace add <marketplace-url>
+/plugin install agent-agentic-os
 ```
-This installs all skills from the Agentic OS plugin. Each skill can be used independently for OS management, memory operations, and evaluation tasks.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components (skills, commands, agents, hooks), use the bridge-plugin skill:
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
 ```bash
-# Use the bridge-plugin skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-agentic-os
+npx skills add <marketplace-url>/plugins/agent-agentic-os
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only (portable, works with all agents)
+npx skills add richfrem/agent-plugins-skills --path plugins/agent-agentic-os
+
+# Full plugin (Claude Code native - skills + commands + agents + hooks)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install agent-agentic-os
+```
+
+### Option 3: Local Development Checkout
+```bash
+# Skills only
+npx skills add ./plugins/agent-agentic-os
+
+# Full plugin
+/plugin marketplace add ./
+/plugin install agent-agentic-os
 ```
 
 **Note:** This plugin installs with **standard library only** (no external dependencies). See `requirements.txt` for details.

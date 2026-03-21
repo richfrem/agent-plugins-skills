@@ -1,6 +1,13 @@
 ---
+name: mine-skill
+description: >
+  Trigger with "mine this skill", "analyze this skill", "run targeted skill analysis",
+  "extract patterns from this skill", or when you want focused analysis on a single Agent
+  Skill directory without processing an entire plugin. Use this when the user points to
+  a specific skill folder or says "look at this skill".
 user-invocable: true
 argument-hint: "[path-to-skill-directory]"
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

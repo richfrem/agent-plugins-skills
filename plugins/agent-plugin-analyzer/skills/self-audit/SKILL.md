@@ -1,6 +1,13 @@
 ---
+name: self-audit
+description: >
+  Trigger with "run self-audit", "test the analyzer", "regression test the plugin analyzer",
+  "audit the agent-plugin-analyzer", or "verify the analyzer works correctly". Runs the
+  analyze-plugin skill against the agent-plugin-analyzer itself and its test fixtures as a
+  regression smoke test. Use this after making changes to the analyzer to verify nothing broke.
 user-invocable: true
 argument-hint: "[optional: path to plugin]"
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

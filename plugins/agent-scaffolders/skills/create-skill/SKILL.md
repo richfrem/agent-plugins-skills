@@ -1,6 +1,5 @@
 ---
 name: create-skill
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   This skill should be used when the user wants to "create a skill", "add a skill",
   "write a new skill", "build a skill for my plugin", "scaffold a skill", "make a skill
@@ -11,7 +10,6 @@ description: >
   eval/iterate loop if a draft already exists. Do NOT use this for creating sub-agents
   (use create-sub-agent), slash commands (use create-command), or hooks
   (use create-hook).
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 

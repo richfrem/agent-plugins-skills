@@ -33,7 +33,6 @@ description: >
   Question about file placement triggers the init skill even without a full setup request.
   </commentary>
   </example>
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 

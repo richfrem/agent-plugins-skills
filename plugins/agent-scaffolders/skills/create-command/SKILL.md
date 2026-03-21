@@ -1,6 +1,5 @@
 ---
 name: create-command
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   This skill should be used when the user asks to "create a slash command", "add a command",
   "write a custom command", "define a command with arguments", "create a command that runs
@@ -12,7 +11,6 @@ description: >
   that reviews PRs" or "automate my deploy workflow" should trigger this.
   Do NOT use this for hooks (use create-hook), skills (use create-skill), or agents
   (use create-sub-agent).
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 

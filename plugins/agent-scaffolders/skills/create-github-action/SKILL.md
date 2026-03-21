@@ -1,6 +1,5 @@
 ---
 name: create-github-action
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   Scaffold a traditional deterministic GitHub Actions CI/CD workflow. Trigger with 
   "setup github actions", "create a test workflow", "add a ci pipeline", "setup PR validation",

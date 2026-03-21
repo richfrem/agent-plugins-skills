@@ -1,8 +1,5 @@
 ---
 name: create-azure-agent
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill---
-name: create-azure-agent
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   Interactive initialization script that generates Azure AI Foundry Agent API deployment
   wrappers. Trigger with "deploy this skill to azure", "create an azure foundry agent",

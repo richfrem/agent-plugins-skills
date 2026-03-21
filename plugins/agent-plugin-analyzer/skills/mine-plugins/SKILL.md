@@ -1,6 +1,14 @@
 ---
+name: mine-plugins
+description: >
+  Trigger with "mine plugins", "analyze plugin collection", "run the full analysis pipeline",
+  "inventory and analyze all plugins", "mine patterns from this directory", or when you want
+  to run the complete virtuous cycle: inventory, analyze, extract patterns, synthesize
+  recommendations, and deliver a structured report. Use this even if the user just says
+  "analyze everything in this folder".
 user-invocable: true
 argument-hint: "[path-to-plugin-or-directory]"
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
@@ -53,7 +61,7 @@ Run the full analysis pipeline on a plugin or collection of plugins. This is the
 ### Step 1: Determine Scope
 
 Check if `$ARGUMENTS` points to:
-- A **single plugin** (contains `./plugin.json` or `skills/` directory) → Single Plugin Mode
+- A **single plugin** (contains `.claude-plugin/plugin.json` or `skills/` directory) → Single Plugin Mode
 - A **directory of plugins** (contains multiple subdirectories with plugins) → Comparative Mode
 - A **single skill** (contains `SKILL.md`) → Single Skill Mode
 
