@@ -19,8 +19,31 @@ spec-kitty init . --ai windsurf
 ```
 
 ## Installation
-### Universal IDE Deployment (Antigravity, Claude Code, Gemini, Copilot, Windsurf)
-This plugin leverages the **Agent Skills Open Standard**. To install it into your active environment, use your ecosystem's specific agent bridge or plugin-manager installer script, pointing it at `plugins/spec-kitty-plugin` and targeting your preferred IDE.
+
+### Option 1: From a Marketplace (Recommended)
+```bash
+/plugin marketplace add <marketplace-url>
+/plugin install spec-kitty
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/spec-kitty-plugin
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/spec-kitty-plugin
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install spec-kitty
+```
+
+### Option 3: Local Development Checkout
+```bash
+npx skills add ./plugins/spec-kitty-plugin
+```
 
 ### 1. Initializing Spec Kitty (First Time)
 Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-init` skill:
@@ -58,18 +81,18 @@ This plugin acts as a formal bundle containing Workflows (Commands), Active Skil
 ```
 spec-kitty-plugin/
 ├── .claude-plugin/plugin.json
+├── agents/
+├── assets/
 ├── commands/ (14 slash command workflows)
-├── rules/ (constitution and guidance logic)
-├── skills/
-│   ├── spec-kitty-agent/ (Lifecycle handler)
-│   ├── spec-kitty-init/ (Installer routine)
-│   └── spec-kitty-update/ (Upgrader routine)
-├── docs/
-│   ├── LLM_UNPACKAGING_INSTRUCTIONS.md
-│   └── agent-worktree-reference.md
 ├── references/
 │   ├── standard-workflow-rules.md
 │   └── spec_driven_development_policy.md
+├── scripts/
+├── skills/
+│   ├── spec-kitty-agent/     (Lifecycle handler)
+│   ├── spec-kitty-sync-plugin/ (Install/update sync)
+│   ├── spec-kitty-workflow/  (SDD workflow SOPs)
+│   └── ... (13 auto-synced skills from CLI)
 └── README.md
 ```
 

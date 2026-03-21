@@ -1,7 +1,7 @@
 ---
-name: Spec Kitty Workflow
+name: spec-kitty-workflow
 description: Standard operating procedures for the Spec Kitty agentic workflow (Plan -> Implement -> Review -> Merge).
-dependencies: ["skill:dual-loop", "skill:spec-kitty-implement", "skill:spec-kitty-merge", "skill:spec-kitty-review"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
