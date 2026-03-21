@@ -7,7 +7,7 @@ argument-hint: "\"search query\" [--profile knowledge] [--limit N] [--stats]"
 
 Semantic (meaning-based) search against the ChromaDB vector store.
 
-> **For constraints and Source Transparency rules, see skill:** [`vector-db-search`](../skills/vector-db-agent/SKILL.md)
+> **For constraints and Source Transparency rules, see skill:** [`vector-db-search`](../skills/vector-db-search/SKILL.md)
 
 ## Quick Reference
 

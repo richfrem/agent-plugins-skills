@@ -11,7 +11,7 @@
       "note": "The generic JSON schema example"
     },
     {
-      "path": ".././SKILL.md",
+      "path": "../SKILL.md",
       "note": "The core skill definition"
     },
     {
