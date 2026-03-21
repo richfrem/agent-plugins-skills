@@ -81,7 +81,7 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
 *   **GitHub Copilot Prompts (Models)**: Documentation on the exact YAML schema, dynamic variables, and exclusion logic (`exclude-targets`) used by GitHub Copilot chat environments.
     *   [reference/./references/github-prompts.md](./references/github-prompts.md)
 *   **GitHub Agentic Workflows**: Documentation on the "Continuous AI" autonomous agents responding to CI/CD events.
-    *   [reference/github-agentic-./references/workflows.md](./github-agentic-././workflows.md)
+    *   [reference/github-agentic-./references/workflows.md](../workflows.md)
 *   **Hooks**: Lifecycle event integrations (e.g., `pre-commit`, `on-startup`).
     *   [reference/./references/hooks.md](./references/hooks.md)
 *   **Azure AI Foundry Agents**: Documentation on how to map Open Agent-Skills to Azure Foundry Agent Service, including API payloads, constraints (e.g., 128-tool limits), and standard setups.
@@ -89,7 +89,7 @@ To read any of the reference guides, use your file system tools to `cat` or `vie
 *   **Marketplace**: Registering registries and interacting with the `marketplace.json` distribution format.
     *   [reference/./references/marketplace.md](./references/marketplace.md)
 *   **Installation & Management**: Universal CLI guidelines for `npx skills`, including remote installations, updates, and local development workarounds.
-    *   [reference/npx-./references/skills.md](./npx-././././skills.md)
+    *   [reference/npx-./references/skills.md](../skills.md)
 
 ## Anthropic Plugin-Dev Key Learnings (March 2026)
 The following patterns were confirmed from Anthropic's official `plugin-dev` plugin:

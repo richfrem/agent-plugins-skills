@@ -122,7 +122,7 @@ python3 ./check_plugin_boundaries.py inventory.json --plugin plugins/bridge-plug
 **Example violation:**
 ```
 FILE: plugins/adr-manager/commands/adr-management.md:8
-  REF: ../../../docs/architecture.md
+  REF: .././architecture.md
   PLUGIN ROOT: plugins/adr-manager/
   RESOLVES TO: docs/architecture.md  ❌ OUTSIDE!
 ```
