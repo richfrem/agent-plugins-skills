@@ -7,11 +7,25 @@ description: >
 allowed-tools: Bash, Read, Write
 dependencies: ["skill:dual-loop"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 ## Ecosystem Role: Inner Loop Specialist
 
-This skill provides specialized **Inner Loop Execution** for the [`dual-loop`](../../../agent-loops/skills/dual-loop/SKILL.md).
+This skill provides specialized **Inner Loop Execution** for the `dual-loop` skill.
 
-- **Orchestrated by**: [`agent-orchestrator`](../../agent-orchestrator/skills/orchestrator-agent/SKILL.md)
+- **Orchestrated by**: the `agent-orchestrator` skill (see the dual-loop plugin)
 - **Use Case**: When "generic coding" is insufficient and specialized expertise (Security, QA, Architecture) is required.
 - **Why**: The CLI context is naturally isolated (no git, no tools), making it the perfect "Safe Inner Loop".
 

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/explicit-seed-anchored-determinism.md
+../../../../../agent-skill-open-specifications/references/patterns/explicit-seed-anchored-determinism.md

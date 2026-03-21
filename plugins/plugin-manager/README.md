@@ -14,6 +14,20 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and
 
 ---
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/plugin-manager
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/plugin-manager
+```
+
 ## 🌐 Supported Targets
 
 The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `bridge-plugin` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
@@ -40,13 +54,13 @@ Ensure your plugin is situated inside `plugins/<name>`, then run the bridge inst
 
 **Single Plugin:**
 ```bash
-python3 ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
+python3 ././scripts/bridge_installer.py --plugin plugins/my-plugin
 ```
 > The installer automatically detects existing agent directories (e.g. `.agent/`, `.claude/`). No `--target` argument is needed or accepted.
 
 **Sync Everything / All Plugins:**
 ```bash
-python3 ./plugins/plugin-manager/scripts/update_agent_system.py
+python3 ././scripts/update_agent_system.py
 ```
 
 > For step-by-step control, invoke the `maintain-plugins` skill.

@@ -9,7 +9,7 @@ A reference for deciding when and how to incorporate advanced L4 architectural a
 
 Not every skill needs complex architectural patterns. Use this tree during the discovery phase to determine which patterns to inject.
 
-**CRITICAL RULE**: Do not explain the theory of these patterns to the user. Ask the diagnostic question. If the user answers YES, **MUST** load the corresponding markdown definition from `~~l4-pattern-catalog` (see CONNECTORS.md).
+**CRITICAL RULE**: Do not explain the theory of these patterns to the user. Ask the diagnostic question. If the user answers YES, **MUST** load the corresponding markdown definition from `~~l4-pattern-catalog` (see ./CONNECTORS.md).
 
 ### Category 1: Input and Routing
 | Diagnostic Question | Required Pattern | File |
@@ -21,7 +21,7 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the command group several sub-operations that have different outputs? | **Sub-Action Multiplexing** | `sub-action-multiplexing.md` |
 | Does the command require user input upstream where asking questions mid-flight hurts UX? | **Pre-Execution Input Manifest** | `pre-execution-input-manifest.md` |
 | Does the skill share overlapping keywords with generic tools, potentially causing discoverability issues? | **Multi-Variant Trigger Optimizer** | `multi-variant-trigger-optimizer.md` |
-| Does the skill inherently struggle with undertriggering due to generic namespace intent vs actual semantic queries? | **Trigger Description Optimization Loop** | `./scripts/benchmarking/improve_description.py` (Source: Anthropic `skill-creator`) |
+| Does the skill inherently struggle with undertriggering due to generic namespace intent vs actual semantic queries? | **Trigger Description Optimization Loop** | `../scripts/improve_description.py` (Source: Anthropic `skill-creator`) |
 
 ### Category 2: Execution and Safety
 | Diagnostic Question | Required Pattern | File |
@@ -65,9 +65,9 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the LLM have a strong innate bias to solve the problem the "wrong" way (e.g., calculating math in Python instead of writing a formula)? | **Negative Instruction Constraint** | `negative-instruction-constraint.md` |
 | Does the skill evaluate metrics that require external industry benchmarks rather than the agent's subjective judgment? | **Category-Calibrated Benchmark Anchoring** | `category-calibrated-benchmark-anchoring.md` |
 | Will the generated output be consumed by fresh readers lacking the agent's conversational context? | **Tainted Context Cleanser** | `tainted-context-cleanser.md` |
-| Does the output's quality or performance need to be provably benchmarked against baselines? | **Rigorous Benchmarking & Grading Loop** | `./scripts/benchmarking/run_loop.py` |
+| Does the output's quality or performance need to be provably benchmarked against baselines? | **Rigorous Benchmarking & Grading Loop** | `../scripts/run_loop.py` |
 | Does the command generate full UI artifacts (HTML/SVG) where external asset injection poses a security risk? | **Artifact Generation XSS Compliance Gate** | `artifact-generation-xss-compliance-gate.md` |
-| Are generated UI artifacts or whole file hierarchies difficult for the user to review purely in code before saving? | **Local Interactive Output Viewer Loop** | `./scripts/eval-viewer/generate_review.py` (Source: Anthropic `skill-creator`) |
+| Are generated UI artifacts or whole file hierarchies difficult for the user to review purely in code before saving? | **Local Interactive Output Viewer Loop** | `../scripts/generate_review.py` (Source: Anthropic `skill-creator`) |
 | Does the interaction pop local browsers or servers that will crash in remote VMs or headless subagent loops? | **UI Degradation Constraint** | `ui-degradation-constraint.md` (Source: Anthropic `skill-creator`) |
 
 ### Category 4: State and Knowledge
@@ -94,15 +94,15 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 
 If a pattern is triggered and loaded, you must perform **Progressive Disclosure Injection** into the generated skill:
 
-1.  **Do not bloat the `SKILL.md`** with the full theory of the pattern.
+1.  **Do not bloat the `./SKILL.md`** with the full theory of the pattern.
 2.  Create a lean reference file in the new skill's `references/` directory (e.g. `references/escalation-rules.md`).
 3.  Populate that new reference file with ONLY the concrete, domain-specific tables and rules requested by the pattern definition.
-4.  Add a markdown link in the new `SKILL.md` pointing to this newly generated reference file so the runtime agent knows to load it when executing.
+4.  Add a markdown link in the new `./SKILL.md` pointing to this newly generated reference file so the runtime agent knows to load it when executing.
 
-This mechanism ensures that new skills possess L4 statefulness and safety boundaries without violating the 500-line `SKILL.md` context constraint.
+This mechanism ensures that new skills possess L4 statefulness and safety boundaries without violating the 500-line `./SKILL.md` context constraint.
 ## L4 Pattern Reference Catalog
 
-Once a pattern is triggered by the decision tree above, load the corresponding file from `~~l4-pattern-catalog` (see CONNECTORS.md) to learn how to explicitly construct the logic in the new skill.
+Once a pattern is triggered by the decision tree above, load the corresponding file from `~~l4-pattern-catalog` (see ./CONNECTORS.md) to learn how to explicitly construct the logic in the new skill.
 
 ### Root-Cause Category Selection (Anti-Symptom Triage)
 - **File:** `anti-symptom-triage.md`
@@ -234,7 +234,7 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Statutory Temporal Anchoring
 - **File:** `temporal-anchoring.md`
 - **Use Case:** Compliance, Legal, Security, or heavily regulated domains where the "truth" changes over time based on external regulations.
-- **Core Mechanic:** Domain knowledge codified in a `SKILL.md` degrades over time. If a skill states "Breach notification is required within 72 hours," it becomes silently...
+- **Core Mechanic:** Domain knowledge codified in a `./SKILL.md` degrades over time. If a skill states "Breach notification is required within 72 hours," it becomes silently...
 
 ### Tiered Source Authority with Propagated Confidence
 - **File:** `tiered-source-authority.md`
@@ -314,7 +314,7 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Concept-Dialect Translation Table
 - **File:** `concept-dialect-translation-table.md`
 - **Use Case:** Integrating external systems (like Notion or Jira) whose internal terminology differs from your domain terminology.
-- **Core Mechanic:** A literal Markdown table in `CONNECTORS.md` that maps internal domain concepts to external system equivalents, so the agent can naturally "speak" the target API's dialect.
+- **Core Mechanic:** A literal Markdown table in `./CONNECTORS.md` that maps internal domain concepts to external system equivalents, so the agent can naturally "speak" the target API's dialect.
 
 ### Category-Semantic Deferred Tool Binding
 - **File:** `category-semantic-deferred-tool-binding.md`
@@ -339,7 +339,7 @@ Once a pattern is triggered by the decision tree above, load the corresponding f
 ### Progressive Disclosure
 - **File:** `progressive-disclosure.md`
 - **Use Case:** Coping with large architectures or domain rules.
-- **Core Mechanic:** Splitting knowledge out of the primary `SKILL.md` (which is always loaded into context window) into `references/*.md`, mapped to specific triggers so they only load when strictly necessary.
+- **Core Mechanic:** Splitting knowledge out of the primary `./SKILL.md` (which is always loaded into context window) into `references/*.md`, mapped to specific triggers so they only load when strictly necessary.
 - **Evolution:** *Tiered Progressive Disclosure with Explicit Budget Constraints* — Implementing hard token/word count budgets per progressive disclosure tier.
 
 ### Zero-Sum Addition Gate

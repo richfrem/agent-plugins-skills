@@ -8,6 +8,20 @@ description: >
   routine ecosystem health checks.
 allowed-tools: Bash, Write, Read
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Plugin Maintenance
 
 ## Overview
@@ -19,8 +33,8 @@ This skill is the ecosystem health hub. It covers three operations:
 **Core constraint**: Custom, project-specific plugins are NEVER deleted during sync. Only vendor-managed plugins that have been locally removed are cleaned up.
 
 ## References
-- Sync process guide: `../../references/cleanup_process.md`
-- Sync flow diagram: `../../references/cleanup_flow.mmd`
+- Sync process guide: `cleanup_process.md`
+- Sync flow diagram: `cleanup_flow.mmd`
 
 ---
 
@@ -64,7 +78,7 @@ Wait for explicit confirmation (`yes`, `looks good`, `ok`).
 
 ### Step 1: Run Deterministic Scanner
 ```bash
-python3 ./scripts/audit_structure.py
+python3 ./../scripts/audit_structure.py
 ```
 > For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
 
@@ -79,7 +93,7 @@ For each plugin being audited, classify every file by type and check against Ope
 | Command | `commands/*.md` | Slash-command instructions |
 | Reference | `skills/*/references/*.md` | Progressive disclosure content |
 | Script | `scripts/*.py` | Python only — no .sh/.ps1 |
-| Manifest | `.claude-plugin/plugin.json` | Required |
+| Manifest | `../../../.claude-plugin/plugin.json` | Required |
 | Connectors | `CONNECTORS.md` | Required if Supercharged/Integration-Dependent |
 | Diagram | `*.mmd` | Architecture diagrams |
 | README | `README.md` | Required |
@@ -94,7 +108,7 @@ For each plugin being audited, classify every file by type and check against Ope
 | **README Quality** | Has directory tree, usage examples, skill table. |
 | **CONNECTORS.md** | Present if plugin uses external tools. Uses `~~category` abstraction. |
 | **Architecture fit** | Is Standalone / Supercharged / Integration-Dependent clearly declared? |
-| **plugin.json** | Has unique `name`, `version`, `description`, `author.url`, `repository`. |
+| **././././plugin.json** | Has unique `name`, `version`, `description`, `author.url`, `repository`. |
 
 **SKILL.md Frontmatter Quality Checks:**
 - [ ] `description` written in third person
@@ -116,10 +130,10 @@ For each plugin being audited, classify every file by type and check against Ope
 
 ### Step 3: Flag and Report
 For each violation found, report with severity:
-- **CRITICAL** — Missing `plugin.json`, `shell=True` in scripts, hardcoded credentials
+- **CRITICAL** — Missing `../../../.claude-plugin/plugin.json`, `shell=True` in scripts, hardcoded credentials
 - **HIGH** — SKILL.md over 500 lines, name convention violations, missing `allowed-tools`
 - **MEDIUM** — Missing `CONNECTORS.md` for tool-using plugin, missing fallback-tree
-- **LOW** — Missing README, no `repository` in plugin.json
+- **LOW** — Missing README, no `repository` in ././././plugin.json
 
 > For L5 maturity scoring, invoke the `l5-red-team-auditor` agent from `agent-plugin-analyzer`.
 
@@ -129,12 +143,12 @@ For each violation found, report with severity:
 
 #### Preview Changes (Always Run First)
 ```bash
-python3 ./scripts/sync_with_inventory.py --dry-run
+python3 ./../scripts/sync_with_inventory.py --dry-run
 ```
 
 #### Apply Changes
 ```bash
-python3 ./scripts/sync_with_inventory.py
+python3 ./../scripts/sync_with_inventory.py
 ```
 
 ### Post-Sync Verification
@@ -146,7 +160,7 @@ python3 ./scripts/sync_with_inventory.py
 
 ## [README] Generate Missing Documentation
 ```bash
-python3 ./scripts/generate_readmes.py --apply
+python3 ./../scripts/generate_readmes.py --apply
 ```
 
 ---

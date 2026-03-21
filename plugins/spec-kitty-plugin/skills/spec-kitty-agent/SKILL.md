@@ -6,6 +6,20 @@ description: >
   and agent configuration sync. Prerequisite: spec-kitty-cli installed.
 dependencies: ["skill:agent-bridge"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Identity: The Spec Kitty Agent 🐱
 
 You manage the entire Spec-Driven Development lifecycle AND the configuration synchronization
@@ -60,7 +74,7 @@ After Update/Init, you MUST propagate the new configuration to the agent ecosyst
 
 **Step A: Sync Local Configurations (Windsurf/Kittify -> Plugin System)**
 ```bash
-python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+python3 ./sync_configuration.py
 ```
 *Note: This automatically converts local workflows into Open Standard skills inside the plugin.*
 

@@ -3,6 +3,20 @@ name: rlm-init
 description: "Interactive RLM cache initialization. Use when: setting up a new project's semantic cache for the first time, or adding a new cache profile. Walks the user through folder selection, extension config, manifest creation, and first distillation pass."
 dependencies: ["skill:rlm-curator"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # RLM Init: Cache Bootstrap
 
 Initialize a new RLM semantic cache for any project. This is the **first-run** workflow — run it once per cache, then use `rlm-distill-agent` for ongoing updates.
@@ -19,9 +33,9 @@ Real-world examples of each config file are in `references/examples/`:
 
 | File | Purpose |
 |:-----|:--------|
-| [`rlm_profiles.json`](../../references/examples/rlm_profiles.json) | Profile registry -- defines named caches and their manifest/cache paths |
-| [`rlm_summary_cache_manifest.json`](../../references/examples/rlm_summary_cache_manifest.json) | Project docs manifest -- what folders/globs to include and exclude |
-| [`rlm_tools_manifest.json`](../../references/examples/rlm_tools_manifest.json) | Tools manifest -- scoped to scripts and plugins only |
+| [`rlm_profiles.json`](assets/rlm_profiles.json) | Profile registry -- defines named caches and their manifest/cache paths |
+| [`rlm_summary_cache_manifest.json`](assets/rlm_summary_cache_manifest.json) | Project docs manifest -- what folders/globs to include and exclude |
+| [`rlm_tools_manifest.json`](assets/rlm_tools_manifest.json) | Tools manifest -- scoped to scripts and plugins only |
 
 ## Interactive Setup Protocol
 
@@ -103,7 +117,7 @@ echo "{}" > <cache_path>
 
 Scan the manifest against the cache to find uncached files:
 ```bash
-python3 ./scripts/inventory.py --profile <NAME>
+python3 ./inventory.py --profile <NAME>
 ```
 
 Report: "N files in manifest, M already cached, K remaining."
@@ -132,7 +146,7 @@ For each uncached file:
 
 Run audit again:
 ```bash
-python3 ./scripts/inventory.py --profile <NAME>
+python3 ./inventory.py --profile <NAME>
 ```
 
 Target: 100% coverage. If gaps remain, repeat Step 6 for missing files.

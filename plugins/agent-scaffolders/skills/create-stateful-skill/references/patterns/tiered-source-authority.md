@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/tiered-source-authority.md
+../../../../../agent-skill-open-specifications/references/patterns/tiered-source-authority.md

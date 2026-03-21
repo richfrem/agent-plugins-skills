@@ -2,6 +2,20 @@
 name: ollama-launch
 description: Start and verify the local Ollama LLM server. Use when Ollama is needed for RLM distillation, seal snapshots, embeddings, or any local LLM inference — and it's not already running. Checks if Ollama is running, starts it if not, and verifies the health endpoint.
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Ollama Launch
 
 Ollama provides local LLM inference for RLM distillation (seal phase summarization) and embeddings.

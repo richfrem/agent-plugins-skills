@@ -8,9 +8,9 @@ This document captures our accumulated knowledge and definitive specifications f
 Skills are modular capabilities that package procedural knowledge, context, and workflows into reusable, filesystem-based resources. While built primarily for Claude and Claude Code, they adhere to the open [Agent Skills](https://agentskills.io/) standard originally developed by Anthropic. Because it is an open standard, skills are highly portable and supported by a wide ecosystem of AI developer tools (e.g., Cursor, Gemini CLI, Goose, VS Code, Letta, Roo Code, etc.). They replace and expand upon older legacy feature sets like `/commands`.
 
 ## Creation & Structure
-- Skills are individual directories named `<skill-name>`, housing at least one `SKILL.md` file.
-- The `SKILL.md` file contains YAML frontmatter configuring the skill and Markdown content acting as the prompt instructions.
-- Supporting files must be strictly organized into the official standard directories (`scripts/`, `references/`, or `assets/`) and referenced inside `SKILL.md`. Claude will read them only if needed.
+- Skills are individual directories named `<skill-name>`, housing at least one `./SKILL.md` file.
+- The `./SKILL.md` file contains YAML frontmatter configuring the skill and Markdown content acting as the prompt instructions.
+- Supporting files must be strictly organized into the official standard directories (`scripts/`, `references/`, or `assets/`) and referenced inside `./SKILL.md`. Claude will read them only if needed.
 
 ## Optional Directories
 Agent skills support three standard optional directories to keep the root clean:
@@ -34,9 +34,9 @@ my-plugin/
 ## Resolution Precedence
 Skills are resolved automatically. Any nested `.claude/skills/` directory relative to the current working file is also discovered (useful in monorepos).
 1. **Enterprise** (`managed settings`)
-2. **Personal** (`~/.claude/skills/<skill-name>/SKILL.md`)
-3. **Project** (`.claude/skills/<skill-name>/SKILL.md`)
-4. **Plugin** (`<plugin_root>/skills/<skill-name>/SKILL.md` - namespaces prevent conflicts here)
+2. **Personal** (`~/.claude/skills/<skill-name>/./SKILL.md`)
+3. **Project** (`.claude/skills/<skill-name>/./SKILL.md`)
+4. **Plugin** (`<plugin_root>/skills/<skill-name>/./SKILL.md` - namespaces prevent conflicts here)
 
 ## Configuration (YAML Frontmatter)
 The frontmatter configures invocation rules, argument hints, tool allowances, and execution environments.
@@ -69,7 +69,7 @@ You can use `!`command\`\` syntax to execute shell commands **before** Claude re
 This acts as a preprocessor, inserting the standard output directly into the markdown prior to AI inference.
 
 ## Integration with Subagents
-If you use `context: fork`, the `SKILL.md` body becomes the System Prompt task for a new subagent, defined by the `agent` property. This protects the main thread's context limit or isolates specific workflows (like exhaustive testing or background code exploration).
+If you use `context: fork`, the `./SKILL.md` body becomes the System Prompt task for a new subagent, defined by the `agent` property. This protects the main thread's context limit or isolates specific workflows (like exhaustive testing or background code exploration).
 
 ## Installation via `npx skills`
 The open standard provides a universal installer that automatically detects the active agent environment (Claude Code, GitHub Copilot, Gemini CLI, Cursor, etc.) and routes the skills to the correct configuration directories.
@@ -111,8 +111,8 @@ npx skills add ./plugins/my-plugin --force
 When creating a skill for distribution (e.g. sharing across an enterprise):
 - The skill folder must match the Skill's name.
 - Package it as a ZIP file where the **folder itself** is the root (not the loose files).
-  - **Correct:** `my-skill.zip -> my-skill/SKILL.md`
-  - **Incorrect:** `my-skill.zip -> SKILL.md`
+  - **Correct:** `my-skill.zip -> my-skill/./SKILL.md`
+  - **Incorrect:** `my-skill.zip -> ./SKILL.md`
 - **Dependencies:** `dependencies` can be added to the frontmatter (e.g. `python>=3.8, pandas>=1.5.0`) to define software packages required. Claude Code can install from standard endpoints like PyPI or npm. (Note: API Skills require pre-installed containers).
 
 ## Best Practices & Authoring Guidelines
@@ -125,16 +125,16 @@ When creating a skill for distribution (e.g. sharing across an enterprise):
 - **Evaluating First:** Create evaluations *first* before writing extensive documentation. Measure baseline performance, write minimal instructions to pass the eval, and iterate. Do not solve imagined problems.
 - **Naming Conventions:** Use the **gerund form** (verb + -ing) for skill names (e.g., `processing-pdfs`, `analyzing-spreadsheets`). Always lowercase and hyphenated. Avoid generic vague nouns (`helper`, `utils`).
 - **Descriptions (Anti-Undertriggering Rule):** Must use an **imperative trigger format** (e.g., "Trigger with 'process excel', or when the user describes functionality aligned with..."). Do *not* use descriptive third-person phrasing (like "This skill processes Excel files"). The router needs explicit commands and keyword maps to reliably activate the skill without false negatives. Max 1024 characters.
-- **Phase-Based Execution:** Avoid open-ended instructions. For complex workflows, explicitly segment the `SKILL.md` body into numbered Execution Phases (e.g., *Phase 1: Guided Discovery*, *Phase 2: Validation*, *Phase 3: Execution*). Tell the agent to "Execute these phases in order. Do not skip phases."
-- **Progressive Disclosure:** Claude reads only the frontmatter `description` fields first to decide if a skill is relevant, before reading the `SKILL.md` body. Be precise.
+- **Phase-Based Execution:** Avoid open-ended instructions. For complex workflows, explicitly segment the `./SKILL.md` body into numbered Execution Phases (e.g., *Phase 1: Guided Discovery*, *Phase 2: Validation*, *Phase 3: Execution*). Tell the agent to "Execute these phases in order. Do not skip phases."
+- **Progressive Disclosure:** Claude reads only the frontmatter `description` fields first to decide if a skill is relevant, before reading the `./SKILL.md` body. Be precise.
 
 ### Refined Progressive Disclosure Patterns
-To keep `SKILL.md` under the recommended 500 max lines without overloading Context:
-1. **High-level guide with references:** SKILL.md provides quick-starts, then links to `REFERENCE.md` or `EXAMPLES.md` for deep dives.
+To keep `./SKILL.md` under the recommended 500 max lines without overloading Context:
+1. **High-level guide with references:** ./SKILL.md provides quick-starts, then links to `REFERENCE.md` or `EXAMPLES.md` for deep dives.
 2. **Domain-specific organization:** Group references by type so Claude only reads what's relevant (e.g., `reference/finance.md`, `reference/sales.md`).
-3. **One-Level Deep References:** **CRITICAL:** Do not nest references (e.g., SKILL.md -> A.md -> B.md). Claude may only partially read deeply nested chains (often via `head -n 100`). All reference files should be linked directly from `SKILL.md`.
+3. **One-Level Deep References:** **CRITICAL:** Do not nest references (e.g., ./SKILL.md -> A.md -> B.md). Claude may only partially read deeply nested chains (often via `head -n 100`). All reference files should be linked directly from `./SKILL.md`.
 4. **Table of Contents:** Any reference file longer than 100 lines must have a TOC at the top so Claude can navigate partial reads effectively.
-5. **Workflow Checklists:** For complex workflows, provide a copyable Markdown checklist in `SKILL.md` that Claude can paste into its response and check off as it progresses.
+5. **Workflow Checklists:** For complex workflows, provide a copyable Markdown checklist in `./SKILL.md` that Claude can paste into its response and check off as it progresses.
 6. **Verifiable Intermediate Plans:** For destructive or massive operations, use a plan-validate-execute loop. Have Claude output an intermediate `plan.json`, run a validation script strictly against it, and *then* execute.
 
 ### Anti-Patterns to Avoid
@@ -152,10 +152,10 @@ Official open-source repositories containing exemplary and foundational Agent Sk
 ## Architecture & Progressive Disclosure
 The filesystem-based architecture of Skills naturally forces a 3-level "Progressive Disclosure" strategy that preserves context window space:
 1. **Level 1 (Metadata) - Discovery:** Loaded at startup. The YAML frontmatter (`name`, `description`). Only ~100 tokens. Claude uses this to determine *if* the skill is useful.
-2. **Level 2 (Instructions) - Activation:** Loaded when triggered. The `SKILL.md` body. Usually < 5k tokens. Loaded via a background bash command (`read pdf-skill/SKILL.md`).
+2. **Level 2 (Instructions) - Activation:** Loaded when triggered. The `./SKILL.md` body. Usually < 5k tokens. Loaded via a background bash command (`read pdf-skill/./SKILL.md`).
 3. **Level 3+ (Resources & Code) - Execution:** Loaded as-needed. Arbitrary scripts or reference files (`REFERENCE.md`) referenced by Level 2. Executing scripts uses tokens only for the *output*, not the script content itself.This makes skills self-documenting, extensible, and highly portable.
 
-*See visual representation of this lifecycle in [skill-execution-flow.mmd](./diagrams/skill-execution-flow.mmd)*
+*See visual representation of this lifecycle in [skill-execution-flow.mmd](./skill-execution-flow.mmd)*
 
 ## Cross-Surface Constraints
 Skills run in different environments depending on the host surface. Always plan the execution requirements correctly:
@@ -185,7 +185,7 @@ Since skills provide instructions and execute code, review third-party or intern
 When referencing other files inside your skill (e.g. scripts or docs), use **relative paths from the skill root**.
 - Good: `See [the guide](references/REFERENCE.md)` or `Run scripts/extract.py`
 - Bad: `../` or absolute paths.
-- Bad: `plugins/my-plugin/scripts/shared.py` (plugin-level scripts break `npx skills add` portability -- use a relative symlink inside the skill's own `scripts/` directory pointing to the primary skill's copy).
+- Bad: `./scripts/shared.py` (plugin-level scripts break `npx skills add` portability -- use a relative symlink inside the skill's own `scripts/` directory pointing to the primary skill's copy).
 
 ### Official Validation
 The open standard provides an official NPM-based CLI validator for skill structure. When authoring new skills, always manually run:
@@ -196,8 +196,8 @@ This ensures frontmatter is syntactically valid and length constraints are respe
 
 ## Integrating Skills into Custom Agents (`agentskills.io`)
 If building a custom agent or product, skills can be integrated in two ways:
-1. **Filesystem-based Agents:** The model operates fully within a sandboxed Unix environment, activating skills by issuing native `cat /path/to/SKILL.md` shell commands, identical to Claude Code.
-2. **Tool-based Agents:** The model lacks native filesystem tools, and instead relies on custom-built agent tools to read the `SKILL.md` file and execute its references.
+1. **Filesystem-based Agents:** The model operates fully within a sandboxed Unix environment, activating skills by issuing native `cat /path/to/./SKILL.md` shell commands, identical to Claude Code.
+2. **Tool-based Agents:** The model lacks native filesystem tools, and instead relies on custom-built agent tools to read the `./SKILL.md` file and execute its references.
 
 ### Metadata Injection (Level 1)
 At startup, the custom agent parses the YAML frontmatter of every discovered skill and injects it into the system prompt as an XML block. For example:
@@ -206,7 +206,7 @@ At startup, the custom agent parses the YAML frontmatter of every discovered ski
   <skill>
     <name>pdf-processing</name>
     <description>Extracts text and tables from PDF files, fills forms, merges documents.</description>
-    <location>/path/to/skills/pdf-processing/SKILL.md</location>
+    <location>/path/to/skills/pdf-processing/./SKILL.md</location>
   </skill>
 </available_skills>
 ```
@@ -225,9 +225,9 @@ GitHub Copilot natively loads skills to improve its performance in specialized t
 Agent Skills stored in the repository (`.github/skills`) can also be invoked autonomously during Continuous Integration and Deployment workflows. 
 
 To use an Agent Skill within a GitHub Action:
-1. Ensure the skill is exported to `.github/skills/<skill-id>/SKILL.md`.
+1. Ensure the skill is exported to `.github/skills/<skill-id>/./SKILL.md`.
 2. Ensure the frontmatter defines the `name` (unique identifier), `description`, and any required `argument-hint` text.
-3. Configure the GitHub Agentic Workflow or Actions pipeline to trigger the skill by its identifier. The AI Agent will read the `SKILL.md` file, adhere to its guidelines, and execute any referenced scripts contextually during the CI run.
+3. Configure the GitHub Agentic Workflow or Actions pipeline to trigger the skill by its identifier. The AI Agent will read the `./SKILL.md` file, adhere to its guidelines, and execute any referenced scripts contextually during the CI run.
 
 *Note: This differs from **GitHub Models Prompts** (`.github/prompts/*.prompt.yml`), which are static templates exported via `github-model-export: true`, whereas `.github/skills` are fully dynamic agent behaviors.*
 
@@ -244,4 +244,4 @@ For platforms like **Antigravity** (Google Deepmind's agent framework), the open
 
 ### Best Practices (Antigravity Specific)
 - **Scripts as Black Boxes:** If providing helper scripts (e.g., in `scripts/`), design them so the agent can simply run `python script.py --help` rather than needing to read and map the full source code. This saves massive context space.
-- **Decision Trees:** For complex, ambiguous tasks, embed a clear decision-tree inside the `SKILL.md` to guide the agent on choosing the right sub-path or script based on the situational context.
+- **Decision Trees:** For complex, ambiguous tasks, embed a clear decision-tree inside the `./SKILL.md` to guide the agent on choosing the right sub-path or script based on the situational context.

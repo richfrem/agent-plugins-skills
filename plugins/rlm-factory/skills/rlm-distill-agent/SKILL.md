@@ -18,6 +18,20 @@ color: green
 tools: ["Bash", "Read", "Write"]
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # RLM Distill Agent
 
 ## Role
@@ -38,7 +52,7 @@ summary, and inject it into the ledger via `inject_summary.py`.
 
 **First-time setup or missing profile?** Run the `rlm-init` skill first:
 ```bash
-# See: ../../SKILL.md
+# See: ../SKILL.md
 # Creates rlm_profiles.json, manifest, and empty cache
 ```
 
@@ -47,8 +61,8 @@ summary, and inject it into the ledger via `inject_summary.py`.
 ### 1. Identify missing files
 
 ```bash
-python3 ./scripts/inventory.py --profile project
-python3 ./scripts/inventory.py --profile tools
+python3 ./inventory.py --profile project
+python3 ./inventory.py --profile tools
 ```
 
 ### 2. For each missing file -- read deeply and write a great summary
@@ -61,9 +75,9 @@ and what are its key components/functions?"* in one dense sentence.
 ### 3. Inject the summary
 
 ```bash
-python3 ./scripts/inject_summary.py \
+python3 ./inject_summary.py \
   --profile project \
-  --file ../../SKILL.md \
+  --file ../SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."
 ```
 
@@ -92,9 +106,9 @@ Delegate to the `agent-loops:agent-swarm` skill with the appropriate engine and 
 | `gemini` | gemini-3-pro-preview | **$0 free** | 5 | Large-context batches, higher throughput |
 | `claude` | Haiku / Sonnet | Low-Medium | 3 | Higher quality summaries, not free |
 
-Provide the job file: `../../resources/jobs/rlm_chronicle.job.md` and the gap file from `inventory.py --missing`.
+Provide a job file describing the summarization task and the gap file from `inventory.py --missing`.
 
-See `../../SKILL.md` for full swarm configuration options.
+See `SKILL.md` for full swarm configuration options.
 
 ## Quality Standard for Summaries
 

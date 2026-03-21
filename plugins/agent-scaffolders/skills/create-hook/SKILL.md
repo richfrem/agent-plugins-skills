@@ -15,6 +15,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Hook Development for Claude Code Plugins
 
 Hooks are event-driven automation that execute in response to Claude Code events.
@@ -189,8 +203,8 @@ Access in prompt hooks via: `$TOOL_INPUT`, `$TOOL_RESULT`, `$USER_PROMPT`.
 ## Step 4: Implement the Hook
 
 ### For command hooks, write the script
-Use `examples/validate-write.sh`, `examples/validate-bash.sh`, or
-`examples/load-context.sh` as starting templates.
+Use `scripts/validate-write.sh`, `scripts/validate-bash.sh`, or
+`scripts/load-context.sh` as starting templates.
 
 **Security non-negotiables for every command hook:**
 ```bash
@@ -313,7 +327,7 @@ Read these when needed:
 - `references/patterns.md` -- 8+ proven hook patterns (security validator, completeness checker, context loader, etc.)
 - `references/advanced.md` -- advanced techniques: MCP integration, multi-hook orchestration, stateful hooks
 - `references/migration.md` -- migrating from basic command hooks to advanced prompt-based hooks
-- `examples/validate-write.sh` -- complete file write validation example
-- `examples/validate-bash.sh` -- complete bash command validation example
-- `examples/load-context.sh` -- complete SessionStart context loading example
+- `scripts/validate-write.sh` -- complete file write validation example
+- `scripts/validate-bash.sh` -- complete bash command validation example
+- `scripts/load-context.sh` -- complete SessionStart context loading example
 - Official docs: https://docs.claude.com/en/docs/claude-code/hooks

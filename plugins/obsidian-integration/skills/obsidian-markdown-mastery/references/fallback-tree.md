@@ -1,7 +1,7 @@
 # Procedural Fallback Tree: Obsidian Markdown Mastery
 
 ## 1. parser.py Not Found
-If `parser.py` cannot be located at `plugins/obsidian-integration/obsidian-parser/parser.py`:
+If `parser.py` cannot be located at `./parser.py`:
 - **Action**: Do NOT write ad-hoc regex to parse markdown. Report that the parser module is missing. Ask the user to verify the plugin is installed correctly.
 
 ## 2. OBSIDIAN_VAULT_PATH Not Set

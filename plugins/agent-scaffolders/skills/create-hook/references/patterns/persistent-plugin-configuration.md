@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/persistent-plugin-configuration.md
+../../../../../agent-skill-open-specifications/references/patterns/persistent-plugin-configuration.md

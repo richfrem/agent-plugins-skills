@@ -8,6 +8,20 @@ description: >
   effective prompt using the benchmarking engine.
 disable-model-invocation: false
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Continuous Skill Optimizer
 
 You are an expert AI evaluations and prompt optimization engineer. 
@@ -60,4 +74,4 @@ The script runs a strict loop governed by these rules:
 ### Phase 4: Post-Optimization Review
 After execution, summarize the findings. If `auto-apply` was false, provide the winning description/body text and ask the user if they'd like you to manually apply it to the skill. 
 
-Advise the user to review the ledger at `evals/results.tsv` or run `./scripts/eval-viewer/generate_review.py` for visual review of the iteration outcomes.
+Advise the user to review the ledger at `evals/results.tsv` or run `scripts/generate_review.py` for visual review of the iteration outcomes.

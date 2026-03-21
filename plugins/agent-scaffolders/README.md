@@ -1,5 +1,19 @@
 # Agent Scaffolders Plugin
 
+## Installation
+### Option 1: Skills Only (End Users)
+```bash
+npx skills add ./plugins/agent-scaffolders
+```
+This installs the skills from this plugin.
+
+### Option 2: Full Deployment (Skills + Commands + Agents)
+For complete access to all components, use the bridge-plugin skill:
+```bash
+# Use the bridge-plugin skill to deploy all components
+# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-scaffolders
+```
+
 ## Purpose
 `plugins/agent-scaffolders` generates and upgrades skills, plugins, hooks, and workflows using a pattern-driven architecture.
 
@@ -9,7 +23,7 @@ It now uses a "best of both" optimization model:
 
 ## Updated Optimization Architecture
 
-The benchmarking stack in `plugins/agent-scaffolders/scripts/benchmarking/` supports:
+The benchmarking stack in `./scripts/benchmarking/` supports:
 - `run_eval.py` for trigger evaluation (live routing check).
 - `improve_description.py` for description optimization via selectable backend.
 - `run_loop.py` for closed-loop iterative optimization with ledger output.

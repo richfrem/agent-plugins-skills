@@ -22,8 +22,8 @@ When analyzed by `agent-plugin-analyzer`, this fixture MUST:
 
 This skill uses **Progressive Disclosure**. Load only what you need:
 
-1. For acceptance criteria and completion gates -> read `references/acceptance-criteria.md`
-2. For analysis notes and known patterns in this fixture -> read `references/analysis-notes.md`
+1. For acceptance criteria and completion gates -> read `./acceptance-criteria.md`
+2. For analysis notes and known patterns in this fixture -> read `./analysis-notes.md`
 
 ### Step 1: Orient
 
@@ -35,13 +35,13 @@ Identify what the user needs:
 ### Step 2: Execute
 
 Present the relevant output based on the user's goal. Always confirm the acceptance
-criteria in `references/acceptance-criteria.md` are satisfied before marking complete.
+criteria in `./acceptance-criteria.md` are satisfied before marking complete.
 
 ## Design Principles Demonstrated
 
 | Principle | Implementation |
 |-----------|---------------|
 | Progressive Disclosure | Deep content in `references/`, lean SKILL.md |
-| Acceptance Criteria Gate | Explicit checklist in `references/acceptance-criteria.md` |
+| Acceptance Criteria Gate | Explicit checklist in `./acceptance-criteria.md` |
 | Structured Output | Table-formatted step summary |
 | Trigger Vocabulary | Rich `description` with multiple phrasing variants |

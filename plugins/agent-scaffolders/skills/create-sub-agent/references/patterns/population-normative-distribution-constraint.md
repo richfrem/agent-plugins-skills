@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/population-normative-distribution-constraint.md
+../../../../../agent-skill-open-specifications/references/patterns/population-normative-distribution-constraint.md

@@ -4,7 +4,7 @@ Generate Plugin READMEs
 =======================
 
 Generates a standardized README.md for plugins that are missing one.
-Extracts description from .claude-plugin/plugin.json or SKILL.md.
+Extracts description from .claude-plugin/plugin.json or ././SKILL.md.
 
 Usage:
     python3 ./scripts/generate_readmes.py [--apply]
@@ -30,13 +30,13 @@ def get_plugin_description(plugin_path: Path) -> str:
         except:
             pass
             
-    # 2. Check SKILL.md
-    # Try to find SKILL.md in skills/*/SKILL.md
+    # 2. Check ././SKILL.md
+    # Try to find ././SKILL.md in skills/*/././SKILL.md
     skills_dir = plugin_path / "skills"
     if skills_dir.exists():
         for skill_dir in skills_dir.iterdir():
             if not skill_dir.is_dir(): continue
-            skill_md = skill_dir / "SKILL.md"
+            skill_md = skill_dir / "././SKILL.md"
             if skill_md.exists():
                 # Extract description from frontmatter
                 content = skill_md.read_text()
@@ -64,7 +64,7 @@ This plugin provides capabilities for the **{plugin_path.name}** domain.
 It follows the standard Project Ecosystem plugin architecture.
 
 ## Structure
-- `skills/`: Contains the agent skills instructions (`SKILL.md`) and executable scripts.
+- `skills/`: Contains the agent skills instructions (`././SKILL.md`) and executable scripts.
 - `.claude-plugin/`: Plugin manifest and configuration.
 
 ## Usage

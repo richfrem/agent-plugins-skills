@@ -7,6 +7,20 @@ description: >
   these findings", or after completing a plugin analysis.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Synthesize Learnings
 
 Take raw analysis output from `analyze-plugin` and transform it into concrete, actionable improvements for our meta-skills ecosystem. This is the "close the loop" skill that turns observations into evolution.

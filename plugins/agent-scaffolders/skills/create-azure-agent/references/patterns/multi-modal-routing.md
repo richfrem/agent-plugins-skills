@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/multi-modal-routing.md
+../../../../../agent-skill-open-specifications/references/patterns/multi-modal-routing.md

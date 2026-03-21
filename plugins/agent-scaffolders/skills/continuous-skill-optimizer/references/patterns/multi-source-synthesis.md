@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/multi-source-synthesis.md
+../../../../../agent-skill-open-specifications/references/patterns/multi-source-synthesis.md

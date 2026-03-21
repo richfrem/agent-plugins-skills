@@ -18,7 +18,7 @@ Every loop instance should track:
 
 > **Mandatory first step for every session.**
 
-1. **Access Mode Check**: Read any local `cognitive_primer` or orientation documentation.
+1. **Access Mode Check**: Read any local orientation documentation.
 2. **Context Load**: Execute the environment's Wakeup / Context Load tool to retrieve the current historical state.
 3. **Integrity Check**: Validate the loaded context is coherent and not corrupted. If FAIL → Safe Mode (read-only). If PASS → proceed.
 4. **Truth Anchor**: Locate and ingest the `learning_package_snapshot.md` (or equivalent Cognitive Hologram) embedded in the waking context.

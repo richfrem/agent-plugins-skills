@@ -3,6 +3,20 @@ name: spec-kitty-dashboard
 description: Open the Spec Kitty dashboard in your browser.
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 ## Dashboard Access
 
 This command launches the Spec Kitty dashboard in your browser using the spec-kitty CLI.

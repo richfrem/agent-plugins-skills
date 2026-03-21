@@ -9,13 +9,27 @@ description: >
   Enforces the pip-compile locked-file workflow and tiered dependency hierarchy.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Dependency Management
 
 ## Core Rules
 
 1. **Never `pip install <pkg>` directly.** All changes flow through `.in` → `pip-compile` → `.txt`.
 2. **Always commit both `.in` and `.txt` together.** The `.in` is human intent; the `.txt` is the machine-verified lockfile.
-3. **One runtime per service.** Each isolated service owns its own `requirements.txt` lockfile.
+3. **One runtime per service.** Each isolated service owns its own `./requirements.txt` lockfile.
 
 ## Repository Layout (Example)
 
@@ -26,13 +40,13 @@ src/
 ├── services/
 │   ├── auth_service/
 │   │   ├── requirements.in       # Tier 2: inherits core + auth deps
-│   │   └── requirements.txt
+│   │   └── ./requirements.txt
 │   ├── payments_service/
 │   │   ├── requirements.in
-│   │   └── requirements.txt
+│   │   └── ./requirements.txt
 │   └── database_service/
 │       ├── requirements.in
-│       └── requirements.txt
+│       └── ./requirements.txt
 ```
 
 ## Tiered Hierarchy
@@ -60,13 +74,13 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
 
    # Individual service (example: auth)
    pip-compile src/services/auth_service/requirements.in \
-     --output-file src/services/auth_service/requirements.txt
+     --output-file src/services/auth_service/./requirements.txt
    ```
    Because services inherit core via `-r`, recompiling a service also picks up core changes.
 
 3. **Sync** — Install locally to verify:
    ```bash
-   pip install -r src/services/<service>/requirements.txt
+   pip install -r src/services/<service>/./requirements.txt
    ```
 
 4. **Verify** — Rebuild the affected Docker/Podman container to confirm stable builds.
@@ -100,14 +114,14 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
    # 2. Then each service
    for svc in auth_service payments_service database_service; do
      pip-compile "src/services/${svc}/requirements.in" \
-       --output-file "src/services/${svc}/requirements.txt"
+       --output-file "src/services/${svc}/./requirements.txt"
    done
    ```
 
 6. **Verify the patched version appears** in all affected `.txt` files:
    ```bash
    grep -i "package-name" src/requirements-core.txt \
-     src/services/*/requirements.txt
+     src/services/*/./requirements.txt
    ```
 
 7. **If no newer version exists** (e.g., inherent design risk like pickle deserialization),
@@ -115,9 +129,9 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
 
 ## Container / Dockerfile Constraints
 
-- Dockerfiles **only** use `COPY requirements.txt` + `RUN pip install -r requirements.txt`.
+- Dockerfiles **only** use `COPY ./requirements.txt` + `RUN pip install -r ./requirements.txt`.
 - No `RUN pip install <pkg>` commands. No manual installs.
-- Copy `requirements.txt` **before** source code to preserve Docker layer caching.
+- Copy `./requirements.txt` **before** source code to preserve Docker layer caching.
 
 ## Common Pitfalls
 

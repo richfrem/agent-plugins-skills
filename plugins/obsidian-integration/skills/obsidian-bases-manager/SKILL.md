@@ -4,6 +4,20 @@ description: "Read and manipulate Obsidian Bases (.base) files - YAML-based data
 allowed-tools: Bash, Read, Write
 dependencies: ["pip:ruamel"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Obsidian Bases Manager
 
 **Status:** Active
@@ -22,17 +36,17 @@ configuration (columns, filters, sorts) untouched.
 
 ### Read a Base
 ```bash
-python ./scripts/bases_ops.py read --file <path.base>
+python ./bases_ops.py read --file <path.base>
 ```
 
 ### Append a Row
 ```bash
-python ./scripts/bases_ops.py append-row --file <path.base> --data key1=value1 key2=value2
+python ./bases_ops.py append-row --file <path.base> --data key1=value1 key2=value2
 ```
 
 ### Update a Cell
 ```bash
-python ./scripts/bases_ops.py update-cell --file <path.base> --row-index 0 --column key1 --value "new value"
+python ./bases_ops.py update-cell --file <path.base> --row-index 0 --column key1 --value "new value"
 ```
 
 ## Safety Guarantees

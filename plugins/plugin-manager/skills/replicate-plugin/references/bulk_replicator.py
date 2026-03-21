@@ -1,0 +1,1 @@
+../scripts/bulk_replicator.py

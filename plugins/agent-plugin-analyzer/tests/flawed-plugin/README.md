@@ -26,7 +26,7 @@ These are structural anti-patterns the scanner doesn't check. The LLM must flag 
 | Missing acceptance criteria for `flawed-skill` | Warning |
 | Missing `references/` directory for `flawed-skill` | Warning |
 | Missing README file tree (`├──` / `└──` chars) | Warning |
-| No `.claude-plugin/plugin.json` manifest | Warning |
+| No `./plugin.json` manifest | Warning |
 
 > **Note**: The credential in `bad_script.py` uses string concatenation to evade regex scanners.
 > The deterministic scanner will NOT detect it. Only the LLM phase catches this pattern.

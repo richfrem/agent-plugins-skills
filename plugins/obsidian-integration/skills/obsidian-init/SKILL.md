@@ -3,6 +3,20 @@ name: obsidian-init
 description: "Initialize and onboard a new project repository as an Obsidian Vault. Covers prerequisite installation, vault configuration, exclusion filters, and validation. Use when setting up Obsidian for the first time in a project."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Obsidian Init (Vault Onboarding)
 
 **Status:** Active
@@ -83,19 +97,19 @@ For advanced vault features, install these from within the Obsidian app:
 
 ### Interactive Init
 ```bash
-python ./scripts/init_vault.py --vault-root <path>
+python ./init_vault.py --vault-root <path>
 ```
 
 ### With Custom Exclusions
 ```bash
-python ./scripts/init_vault.py \
+python ./init_vault.py \
   --vault-root <path> \
   --exclude "custom_dir/" "*.tmp"
 ```
 
 ### Validate Only (No Changes)
 ```bash
-python ./scripts/init_vault.py --vault-root <path> --validate-only
+python ./init_vault.py --vault-root <path> --validate-only
 ```
 
 ### What It Does
@@ -160,7 +174,7 @@ npm install -g obsidian-cli         # CLI tools
 pip install ruamel.yaml             # Lossless YAML
 
 # 2. Initialize vault
-python ./scripts/init_vault.py \
+python ./init_vault.py \
   --vault-root /path/to/your/project
 
 # 3. Set environment variable

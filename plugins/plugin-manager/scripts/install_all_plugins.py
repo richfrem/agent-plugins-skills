@@ -16,6 +16,13 @@ Script Dependencies:
 import os
 import sys
 import argparse
+
+# Force UTF-8 output on Windows to avoid UnicodeEncodeError with emoji in print()
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import subprocess
 import shutil
 import json

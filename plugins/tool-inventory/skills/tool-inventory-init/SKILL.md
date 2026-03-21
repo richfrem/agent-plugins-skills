@@ -3,6 +3,20 @@ name: tool-inventory-init
 description: "Interactive Tool Inventory bootstrap. Use this when initializing a new project repo to configure the semantic tracking of Python/JS tools. It creates a dedicated RLM profile specifically for tools and performs the first intelligent distillation pass."
 dependencies: ["plugin:rlm-factory", "skill:rlm-curator"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Tool Inventory Init: The Librarian's Setup 🛠️
 
 Initialize the semantic Tool Inventory for a new project. This is the **first-run** workflow for tracking executable scripts. 
@@ -22,7 +36,7 @@ Initialize the semantic Tool Inventory for a new project. This is the **first-ru
 Run the automated bootstrapping script. This script will ensure `.agent/learning/rlm_profiles.json` exists and will inject a `tools` profile if it doesn't. 
 
 ```bash
-python3 ./tool-inventory-init/scripts/tool_inventory_init.py
+python3 ./tool_inventory_init.py
 ```
 
 ### Step 2: Serial Agent Distillation

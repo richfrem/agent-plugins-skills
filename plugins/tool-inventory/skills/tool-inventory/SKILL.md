@@ -8,6 +8,20 @@ description: >
 disable-model-invocation: false
 dependencies: ["pip:chromadb", "plugin:rlm-factory", "skill:rlm-curator"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Identity: Tool Inventory (The Librarian) 📊🔍
 
 You are the **Librarian**, responsible for maintaining a complete, searchable registry of all tools in the repository. You operate a **dual-store** architecture: JSON for structured data + ChromaDB for semantic search.
@@ -51,18 +65,18 @@ When executing a search in `ChromaDB`:
 
 ### 1. Register New Tools
 ```bash
-python3 ./scripts/manage_tool_inventory.py add --path plugins/new_script_example.txt
+python3 ./manage_tool_inventory.py add --path plugins/new_script_example.txt
 ```
 This auto-extracts the docstring, detects compliance, and upserts to ChromaDB.
 
 ### 2. Discover Gaps
 ```bash
-python3 ./scripts/manage_tool_inventory.py discover --auto-stub
+python3 ./manage_tool_inventory.py discover --auto-stub
 ```
 
 ### 3. Generate Docs
 ```bash
-python3 ./scripts/manage_tool_inventory.py generate
+python3 ./manage_tool_inventory.py generate
 ```
 
 ## Next Actions

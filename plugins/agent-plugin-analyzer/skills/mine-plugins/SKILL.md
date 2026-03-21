@@ -3,6 +3,20 @@ user-invocable: true
 argument-hint: "[path-to-plugin-or-directory]"
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Mine Plugins
 
 Run the full analysis pipeline on a plugin or collection of plugins. This is the one-shot command for the virtuous cycle.
@@ -39,7 +53,7 @@ Run the full analysis pipeline on a plugin or collection of plugins. This is the
 ### Step 1: Determine Scope
 
 Check if `$ARGUMENTS` points to:
-- A **single plugin** (contains `.claude-plugin/plugin.json` or `skills/` directory) → Single Plugin Mode
+- A **single plugin** (contains `./plugin.json` or `skills/` directory) → Single Plugin Mode
 - A **directory of plugins** (contains multiple subdirectories with plugins) → Comparative Mode
 - A **single skill** (contains `SKILL.md`) → Single Skill Mode
 
@@ -47,7 +61,7 @@ Check if `$ARGUMENTS` points to:
 
 For each plugin in scope, run:
 ```bash
-python3 "./scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
+python3 "scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 
 > **Security scanning is enabled by default.** The inventory script runs credential detection,

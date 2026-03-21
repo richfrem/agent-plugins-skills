@@ -5,6 +5,20 @@ description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary 
 allowed-tools: Bash, Read, Write
 dependencies: ["skill:agent-swarm"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Orchestrator: Loop Router & Lifecycle Manager
 
 The **Orchestrator** assesses the incoming trigger, selects the right loop pattern, and manages the shared closure sequence (seal, persist, retrospective, self-improvement).
@@ -101,7 +115,7 @@ python scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN.m
 ### 4. Parallel Execution (Agent Swarm)
 For bulk operations or partitioned tasks, use the `swarm_run.py` script from the `agent-swarm` skill.
 ```bash
-python3 ./scripts/swarm_run.py --job <JOB_FILE> [--resume]
+python3 ./swarm_run.py --job <JOB_FILE> [--resume]
 ```
 This is the designated route for all Pattern 4 triggers.
 
@@ -195,7 +209,7 @@ The orchestrator must verify these gates at each phase:
 
 | Mechanism | Purpose |
 |-----------|---------|
-| **Stop Hook** (`hooks/closure-guard.sh`) | Blocks premature session exit until Seal → Persist → Retrospective are complete. |
+| **Stop Hook** (`scripts/closure-guard.sh`) | Blocks premature session exit until Seal → Persist → Retrospective are complete. |
 | **Red Team Subagent** | Red team review can run as a forked subagent to keep the main session context clean. |
 
 ---

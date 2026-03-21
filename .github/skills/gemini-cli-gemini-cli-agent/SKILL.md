@@ -1,1 +1,0 @@
-../skills/gemini-cli-agent/SKILL.md

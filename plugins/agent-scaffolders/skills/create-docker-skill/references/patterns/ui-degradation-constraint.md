@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/ui-degradation-constraint.md
+../../../../../agent-skill-open-specifications/references/patterns/ui-degradation-constraint.md

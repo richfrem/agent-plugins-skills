@@ -1,7 +1,7 @@
 # Acceptance Criteria: Agent Swarm
 
 ## 1. Execution Boundary Constraints
-- [ ] Orchestrator does NOT execute the payload commands itself. It strictly maps the jobs and invokes `swarm_run.py`.
+- [ ] Orchestrator does NOT execute the payload commands itself. It strictly maps the jobs and invokes `../scripts/swarm_run.py`.
 - [ ] The swarm partition strategy ensures that no two workers are modifying the same source code file simultaneously.
 
 ## 2. Resiliency & Scale

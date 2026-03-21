@@ -10,6 +10,20 @@ description: >
   and deploy it as a hosted service in Azure AI Foundry.
 allowed-tools: Bash, Write, Read
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Azure AI Foundry Agent Scaffolder
 
 You are an expert Cloud Integration Architect. Your job is to convert local Agent Skills into deployable Azure AI Foundry Agent Services.

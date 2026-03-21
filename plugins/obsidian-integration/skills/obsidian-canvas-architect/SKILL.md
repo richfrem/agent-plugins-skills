@@ -3,6 +3,20 @@ name: obsidian-canvas-architect
 description: "Programmatically create and manipulate Obsidian Canvas (.canvas) files using JSON Canvas Spec 1.0. Enables agents to generate visual flowcharts, architecture diagrams, and planning boards. Use when creating or editing visual canvas files."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Obsidian Canvas Architect
 
 **Status:** Active
@@ -54,24 +68,24 @@ A `.canvas` file is JSON with two top-level arrays:
 
 ### Create a Canvas
 ```bash
-python ./scripts/canvas_ops.py create --file <path.canvas>
+python ./canvas_ops.py create --file <path.canvas>
 ```
 
 ### Add a Node
 ```bash
-python ./scripts/canvas_ops.py add-node \
+python ./canvas_ops.py add-node \
   --file <path.canvas> --type text --text "My Node" --x 100 --y 200
 ```
 
 ### Add an Edge
 ```bash
-python ./scripts/canvas_ops.py add-edge \
+python ./canvas_ops.py add-edge \
   --file <path.canvas> --from-node id1 --to-node id2
 ```
 
 ### Read a Canvas
 ```bash
-python ./scripts/canvas_ops.py read --file <path.canvas>
+python ./canvas_ops.py read --file <path.canvas>
 ```
 
 ## Safety Guarantees

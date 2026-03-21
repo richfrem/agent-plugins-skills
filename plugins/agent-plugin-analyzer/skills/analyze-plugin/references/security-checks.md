@@ -7,7 +7,7 @@ Reference file for Phase 5 security analysis. These checks run FIRST (P0) before
 | Anti-Pattern | Check | Severity |
 |-------------|-------|----------|
 | SKILL.md > 500 lines | Line count from Phase 1 | Error |
-| Missing acceptance criteria | No `references/acceptance-criteria.md` | Warning |
+| Missing acceptance criteria | No `./acceptance-criteria.md` | Warning |
 | Missing progressive disclosure | No `references/` directory | Warning |
 | Bash/PowerShell scripts | `.sh` or `.ps1` files in `scripts/` | Error |
 | Hardcoded paths | Absolute paths instead of relative | Error |

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/adversarial-objectivity-constraint.md
+../../../../../agent-skill-open-specifications/references/patterns/adversarial-objectivity-constraint.md

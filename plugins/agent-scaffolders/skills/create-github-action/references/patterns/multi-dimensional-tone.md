@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/multi-dimensional-tone.md
+../../../../../agent-skill-open-specifications/references/patterns/multi-dimensional-tone.md

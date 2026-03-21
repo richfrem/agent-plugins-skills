@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/artifact-generation-xss-compliance-gate.md
+../../../../../agent-skill-open-specifications/references/patterns/artifact-generation-xss-compliance-gate.md

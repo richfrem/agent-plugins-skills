@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/structured-output-contracts.md
+../../../../../agent-skill-open-specifications/references/patterns/structured-output-contracts.md

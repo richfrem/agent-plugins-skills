@@ -1,1 +1,0 @@
-../skills/rsvp-comprehension-agent/SKILL.md

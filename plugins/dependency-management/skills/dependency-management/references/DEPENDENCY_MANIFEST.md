@@ -17,16 +17,16 @@ In accordance with the clean code principles, each dependency is cataloged with 
 
 **As of 2025-11-26**, the project uses a split dependency architecture:
 
-- **`requirements.txt`**: Core dependencies for general development, CI/CD, and MCP servers (lightweight, fast installation)
+- **`../../../requirements.txt`**: Core dependencies for general development, CI/CD, and MCP servers (lightweight, fast installation)
 - **`requirements-finetuning.txt`**: Heavy ML/CUDA dependencies for model fine-tuning (PyTorch, transformers, etc.)
 
-This split reduces CI/CD installation time and prevents dependency conflicts. For fine-tuning tasks, use `requirements-finetuning.txt`. For general development and testing, use `requirements.txt`.
+This split reduces CI/CD installation time and prevents dependency conflicts. For fine-tuning tasks, use `requirements-finetuning.txt`. For general development and testing, use `../../../requirements.txt`.
 
 ---
 
 ## Unified Dependency Manifest (Example)
 
-**Note:** The listings below represent an *example* of a complete dependency set used in a unified ML/AI architecture. They are intended to demonstrate how a complex project can be modeled into clear, strategic dependency categories. Your actual project's `requirements.txt` will vary.
+**Note:** The listings below represent an *example* of a complete dependency set used in a unified ML/AI architecture. They are intended to demonstrate how a complex project can be modeled into clear, strategic dependency categories. Your actual project's `../../../requirements.txt` will vary.
 
 ### AI & Cognitive Engines
 

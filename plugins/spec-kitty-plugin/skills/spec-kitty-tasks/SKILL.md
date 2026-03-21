@@ -3,6 +3,20 @@ name: spec-kitty-tasks
 description: Generate grouped work packages with actionable subtasks and matching
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # /spec-kitty.tasks - Generate Work Packages
 
 **Version**: 0.11.0+

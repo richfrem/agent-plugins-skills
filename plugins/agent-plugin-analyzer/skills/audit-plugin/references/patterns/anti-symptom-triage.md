@@ -8,7 +8,7 @@ Agents naturally classify based on semantic similarity to user input (e.g., User
 
 ### Implementation Standard
 
-Provide a category disambiguation table in the `SKILL.md` that teaches the agent how to look past symptoms:
+Provide a category disambiguation table in the `././SKILL.md` that teaches the agent how to look past symptoms:
 
 ```markdown
 ## Classification Principles (Root Cause > Symptom)

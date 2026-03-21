@@ -9,6 +9,20 @@ description: >
   just says "look at this plugin" or "tell me how this is structured."
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Plugin & Skill Analyzer
 
 Perform deep structural and content analysis on agent plugins and skills. Extract reusable
@@ -60,7 +74,7 @@ hardcoded credentials, missing required fields), flag them prominently in the fi
 
 Run the deterministic inventory script first:
 ```bash
-python3 "./scripts/inventory_plugin.py" --path <plugin-dir> --format json
+python3 "scripts/inventory_plugin.py" --path <plugin-dir> --format json
 ```
 
 If the script is unavailable, manually enumerate:

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/connector-placeholders.md
+../../../../../agent-skill-open-specifications/references/patterns/connector-placeholders.md

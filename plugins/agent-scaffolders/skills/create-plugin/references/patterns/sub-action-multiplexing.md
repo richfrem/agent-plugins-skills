@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/sub-action-multiplexing.md
+../../../../../agent-skill-open-specifications/references/patterns/sub-action-multiplexing.md

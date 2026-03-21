@@ -5,6 +5,20 @@ description: Interactive initialization script that generates a compliant Agent 
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Dockerized Skill Scaffold Generator
 
 You are tasked with generating a new Agent Skill resource using our deterministic backend scaffolding pipeline, specifically tailored for **Containerized Computational Workloads** (like bioinformatics, deep learning, or local db spinning).
@@ -20,9 +34,9 @@ Ask the user what specific external container or pipeline orchestrator is being 
 - **Network Scope**: Does this pull models from HuggingFace, data from NCBI, or containers from Docker Hub? (Required for the security whitelist).
 
 ### 2. Scaffold the Infrastructure
-Execute the deterministic `scaffold.py` script to generate the compliant physical directories:
+Execute the deterministic `scripts/scaffold.py` script to generate the compliant physical directories:
 ```bash
-python3 ./scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
+python3 ./../scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
 ```
 
 ### 3. Generate Pre-Flight Checker Script
@@ -51,6 +65,6 @@ If this dockerized skill will be tuned iteratively, require:
 5. Persistent experiment ledger in `evals/results.tsv`.
 
 ## Next Actions
-- **Continuous Improvement**: Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
-- **Review Loop**: Run `./scripts/eval-viewer/generate_review.py` to inspect run quality and failure patterns.
+- **Continuous Improvement**: Run `./scripts/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
+- **Review Loop**: Run `scripts/generate_review.py` to inspect run quality and failure patterns.
 - **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.

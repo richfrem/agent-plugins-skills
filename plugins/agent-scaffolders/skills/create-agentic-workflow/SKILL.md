@@ -9,6 +9,20 @@ description: >
   a local skill into GitHub's native ecosystem.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # GitHub Agent Scaffolder
 
 You are an expert GitHub Copilot integration architect. Your job is to convert local Agent Skills into GitHub-native Agentic Workflows.

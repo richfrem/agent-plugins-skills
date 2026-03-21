@@ -15,6 +15,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Skill Designer and Architect
 
 Skills are modular packages that transform Claude from a general-purpose agent into a
@@ -226,7 +240,7 @@ into a spreadsheet." Near-miss negative queries are the most valuable test cases
 
 **Add evals and acceptance criteria:**
 
-Save test cases to `evals/evals.json` -- prompts only, no assertions yet:
+Save test cases to `./evals.json` -- prompts only, no assertions yet:
 ```json
 {
   "skill_name": "example-skill",
@@ -291,9 +305,9 @@ Save to `timing.json` immediately -- this data is only available via task notifi
 Run the description optimization loop (splits 60% train / 40% test, 5 iterations max):
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/benchmarking/run_loop.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/./scripts/run_loop.py \
   --skill-path <skill-path> \
-  --eval-set evals/evals.json \
+  --eval-set ./evals.json \
   --model <model> \
   --results-dir evals/experiments
 ```
@@ -332,7 +346,7 @@ When improving after eval feedback:
 
 ## Next Actions
 - **Quality review**: Trigger `skill-reviewer` agent to audit description and content
-- **Continuous improvement**: Run `./scripts/benchmarking/run_loop.py` for trigger optimization
+- **Continuous improvement**: Run `scripts/run_loop.py` for trigger optimization
 - **Audit**: Run `audit-plugin` to validate the full plugin structure
 - **Convert to agent**: Run `create-agentic-workflow` for a GitHub-native version
 

@@ -58,7 +58,7 @@ Load project-specific context at session start:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh"
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/./load-context.sh"
         }
       ]
     }
@@ -66,7 +66,7 @@ Load project-specific context at session start:
 }
 ```
 
-**Example script (load-context.sh):**
+**Example script (../scripts/load-context.sh):**
 ```bash
 #!/bin/bash
 cd "$CLAUDE_PROJECT_DIR" || exit 1
@@ -248,7 +248,7 @@ Combine multiple patterns for comprehensive protection:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh"
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/./load-context.sh"
         }
       ]
     }

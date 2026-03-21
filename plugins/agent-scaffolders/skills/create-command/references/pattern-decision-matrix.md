@@ -1,1 +1,1 @@
-../../../../references/pattern-decision-matrix.md
+../../../references/pattern-decision-matrix.md

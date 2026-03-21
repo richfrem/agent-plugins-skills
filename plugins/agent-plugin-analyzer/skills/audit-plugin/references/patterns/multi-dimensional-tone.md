@@ -8,7 +8,7 @@
 
 ### Implementation Standard
 
-Embed a tone matrix and strict writing mechanics into the `SKILL.md`:
+Embed a tone matrix and strict writing mechanics into the `././SKILL.md`:
 
 ```markdown
 ## Tone Configuration

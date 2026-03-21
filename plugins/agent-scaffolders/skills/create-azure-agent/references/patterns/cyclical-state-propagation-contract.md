@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/cyclical-state-propagation-contract.md
+../../../../../agent-skill-open-specifications/references/patterns/cyclical-state-propagation-contract.md

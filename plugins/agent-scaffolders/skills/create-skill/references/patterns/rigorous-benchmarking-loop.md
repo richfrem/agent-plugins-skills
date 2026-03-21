@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/rigorous-benchmarking-loop.md
+../../../../../agent-skill-open-specifications/references/patterns/rigorous-benchmarking-loop.md

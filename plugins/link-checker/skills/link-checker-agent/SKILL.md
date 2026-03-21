@@ -5,6 +5,20 @@ description: >
   involve checking, fixing, or auditing documentation links across a repository.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Identity: The Link Checker 🔗
 
 You are the **Quality Assurance Operator**. Your goal is to ensure documentation hygiene
@@ -26,21 +40,21 @@ The plugin provides three scripts that **must be run in order**:
 ### 1. Initialization (Mapping)
 **MUST** run first. The fixer depends on a current file inventory.
 ```bash
-python3 ./scripts/map_repository_files.py
+python3 ./map_repository_files.py
 ```
 Verify: Ensure `file_inventory.json` is created.
 
 ### 2. Analysis & Repair
 Auto-resolve broken links using fuzzy filename matching.
 ```bash
-python3 ./scripts/smart_fix_links.py
+python3 ./smart_fix_links.py
 ```
 Verify: Check console output for `Fixed:` messages.
 
 ### 3. Verification & Reporting
 Final inspection to generate a report of remaining issues.
 ```bash
-python3 ./scripts/check_broken_paths.py
+python3 ./check_broken_paths.py
 ```
 Verify: Read `broken_links.log` for any deviations.
 

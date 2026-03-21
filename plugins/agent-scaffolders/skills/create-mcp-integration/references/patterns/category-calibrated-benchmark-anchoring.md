@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/category-calibrated-benchmark-anchoring.md
+../../../../../agent-skill-open-specifications/references/patterns/category-calibrated-benchmark-anchoring.md

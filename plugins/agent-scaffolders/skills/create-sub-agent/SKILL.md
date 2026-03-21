@@ -44,6 +44,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Sub-Agent Architect
 
 You are an elite AI agent architect. Your job is to translate user requirements
@@ -234,7 +248,7 @@ You are an expert [role] specializing in [domain].
 After writing the file, validate it:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-agent.sh <path-to-agent.md>
+bash ${CLAUDE_PLUGIN_ROOT}/./validate-agent.sh <path-to-agent.md>
 ```
 
 Then provide a summary to the user:

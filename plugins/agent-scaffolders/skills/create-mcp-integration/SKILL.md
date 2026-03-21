@@ -8,6 +8,20 @@ description: >
   via the Model Context Protocol.
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # MCP Integration Scaffolder
 
 You are an expert MCP Integration Architect. Your job is to lead the user through a guided interview to scaffold a resilient, portable, and secure Model Context Protocol server configuration for their plugin.
@@ -41,7 +55,7 @@ Show the user the proposed JSON structure (whether for `.mcp.json` or `mcpServer
 Once approved, use `Write` tools to scaffold the integration:
 1. Create/update the `.mcp.json` or `plugin.json` file.
 2. If environment variables are required, create/update `.claude/.local.md` setting a safe default or instructions. Add `.claude/.local.md` to `.gitignore`.
-3. Scaffold or update `CONNECTORS.md` at the plugin root. Map the raw MCP tool names (e.g., `mcp__plugin_name_server__query`) to abstract tag aliases (e.g., `~~database-query`). Explain that this protects commands from breaking if the underlying MCP changes.
+3. Scaffold or update `../../CONNECTORS.md` at the plugin root. Map the raw MCP tool names (e.g., `mcp__plugin_name_server__query`) to abstract tag aliases (e.g., `~~database-query`). Explain that this protects commands from breaking if the underlying MCP changes.
 
 ### Phase 4: Documentation & Test Stub
 1. Output instructions on how to start/restart the agent to load the MCP.

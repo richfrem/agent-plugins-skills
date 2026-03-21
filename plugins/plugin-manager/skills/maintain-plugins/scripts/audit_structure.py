@@ -15,7 +15,7 @@ Usage:
     python3 ./scripts/audit_structure.py
 
 Related:
-    - ../../SKILL.md
+    - .././SKILL.md
       → For a deeper LLM-driven content audit (YAML frontmatter, anti-patterns,
         line limits, SKILL.md quality). Use this after the structure check passes.
 """

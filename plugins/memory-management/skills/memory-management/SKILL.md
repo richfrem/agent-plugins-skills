@@ -209,7 +209,7 @@ Projects configure the memory system by setting file paths in their project-spec
 
 | Diagram | What It Shows |
 |:--------|:--------------|
-| [memory_architecture.mmd](references/diagrams/architecture/memory_architecture.mmd) | Full 4-tier memory system with exact plugin/skill/script names per tier |
-| [memory_lookup_flow.mmd](references/diagrams/architecture/memory_lookup_flow.mmd) | 3-phase search sequence: Hot Cache -> RLM Ledger -> Vector Store -> Grep |
-| [memory_session_lifecycle.mmd](references/diagrams/architecture/memory_session_lifecycle.mmd) | Session Boot -> Active -> Seal lifecycle with all event types |
+| [memory_architecture.mmd](assets/resources/memory_architecture.mmd) | Full 4-tier memory system with exact plugin/skill/script names per tier |
+| [memory_lookup_flow.mmd](assets/resources/memory_lookup_flow.mmd) | 3-phase search sequence: Hot Cache -> RLM Ledger -> Vector Store -> Grep |
+| [memory_session_lifecycle.mmd](assets/resources/memory_session_lifecycle.mmd) | Session Boot -> Active -> Seal lifecycle with all event types |
 

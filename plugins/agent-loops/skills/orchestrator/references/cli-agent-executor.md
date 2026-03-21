@@ -8,9 +8,9 @@ description: >
 
 ## Ecosystem Role: Inner Loop Specialist
 
-This reference describes specialized **Inner Loop Execution** patterns for the [`dual-loop`](../dual-loop/SKILL.md) skill.
+This reference describes specialized **Inner Loop Execution** patterns for the [`dual-loop`](../SKILL.md) skill.
 
-- **Orchestrated by**: [`orchestrator`](../orchestrator/SKILL.md)
+- **Orchestrated by**: [`orchestrator`](../SKILL.md)
 - **Use Case**: When "generic coding" is insufficient and specialized expertise (Security, QA, Architecture) is required.
 - **Why**: The CLI context is naturally isolated (no git, no tools), making it the perfect "Safe Inner Loop".
 
@@ -62,12 +62,12 @@ All personas are physically located inside their respective CLI plugin directori
 When asked to perform a comprehensive "Audit Loop", you should construct a sequence of CLI dispatches passing the SAME `bundle.md` or context code block to three consecutive personas.
 
 1. **Red Team**
-   `cat ../../personas/security/security-auditor.md | claude -p "ACT AS THE SECURITY AUDITOR. Do NOT use tools. Do NOT search filesystem." < bundle.md > audit_01_security.md`
+   `cat ././security-auditor.md | claude -p "ACT AS THE SECURITY AUDITOR. Do NOT use tools. Do NOT search filesystem." < bundle.md > audit_01_security.md`
    
 2. **Architect**
-   `cat ../../personas/quality-testing/architect-review.md | claude -p "ACT AS THE ARCHITECT REVIEWER. Focus on complexity, patterns, scalability. Do NOT use tools." < bundle.md > audit_02_architecture.md`
+   `cat ././architect-review.md | claude -p "ACT AS THE ARCHITECT REVIEWER. Focus on complexity, patterns, scalability. Do NOT use tools." < bundle.md > audit_02_architecture.md`
    
 3. **QA Expert**
-   `cat ../../personas/quality-testing/qa-expert.md | claude -p "ACT AS THE QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
+   `cat ././qa-expert.md | claude -p "ACT AS THE QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
 
 Always run the Architect **AFTER** the Red Team to catch any security-driven side effects that may have artificially inflated the system's complexity.

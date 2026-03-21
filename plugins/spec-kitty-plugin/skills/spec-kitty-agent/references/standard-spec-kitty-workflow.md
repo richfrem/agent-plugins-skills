@@ -1,6 +1,6 @@
 # Standard Spec-Kitty Workflow
 
-> **Visual Guide:** [Workflow Diagram](../diagrams/standard-spec-kitty-workflow.mmd)
+> **Visual Guide:** [Workflow Diagram](./kittify/standard-spec-kitty-workflow.mmd)
 
 This document outlines the **Correct** Spec-Kitty lifecycle. Unlike the "Incremental Safety Protocol" (which merges per WP), the Standard Workflow is designed to handle multiple Work Packages in parallel or sequence, performing a **Batch Merge** only when the entire feature is complete.
 

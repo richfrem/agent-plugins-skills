@@ -10,10 +10,10 @@ Compare the ledger against the actual filesystem to report coverage gaps.
 ## Usage
 ```bash
 # Audit legacy docs coverage
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project
+python3 ./scripts/inventory.py --profile project
 
 # Audit tool scripts coverage
-python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile tools
+python3 ./scripts/inventory.py --profile tools
 ```
 
 ## Output

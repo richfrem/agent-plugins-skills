@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/dynamic-specification-fetching.md
+../../../../../agent-skill-open-specifications/references/patterns/dynamic-specification-fetching.md

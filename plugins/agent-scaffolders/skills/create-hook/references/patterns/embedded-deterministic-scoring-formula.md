@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/embedded-deterministic-scoring-formula.md
+../../../../../agent-skill-open-specifications/references/patterns/embedded-deterministic-scoring-formula.md

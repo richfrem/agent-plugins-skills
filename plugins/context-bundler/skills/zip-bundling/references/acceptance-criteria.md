@@ -1,7 +1,7 @@
 # Acceptance Criteria: ZIP Bundling
 
 ## 1. Manifest Enforcement
-- [ ] Agent always generates a valid `file-manifest.json` on disk BEFORE invoking the Python archiver.
+- [ ] Agent always generates a valid `../../../file-manifest.json` on disk BEFORE invoking the Python archiver.
 - [ ] Every item in the manifest includes a substantive `"note"` to provide context.
 
 ## 2. Script Delegation

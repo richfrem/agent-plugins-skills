@@ -3,6 +3,20 @@ user-invocable: true
 argument-hint: "[optional: path to plugin]"
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Self-Audit: Analyze the Analyzer
 
 Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and the test fixtures. This is a regression smoke test that verifies the analyzer produces consistent, expected results.
@@ -11,13 +25,13 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
 
 1. **Run inventory on self (security scanning is on by default):**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer --format json
+   python3 ./inventory_plugin.py --path plugins/agent-plugin-analyzer --format json
    ```
 
 2. **Run scanner against test fixtures:**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path ../../tests/gold-standard-plugin --format json
-   python3 ./scripts/inventory_plugin.py --path ../../tests/flawed-plugin --format json
+   python3 ./inventory_plugin.py --path ./tests/gold-standard-plugin --format json
+   python3 ./inventory_plugin.py --path ./tests/flawed-plugin --format json
    ```
 
 3. **Validate deterministic scanner results:**
@@ -35,11 +49,11 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
    - `security_flags` count ≥ 4 (network calls + env access; obfuscated credential is LLM-only)
    - `issues` count ≥ 1 (bash script violation)
    - `warnings` count ≥ 2 (missing acceptance criteria + references)
-   - See `tests/flawed-plugin/README.md` for the full expected findings manifest
+   - See `./README.md` for the full expected findings manifest
 
    **To run assertions programmatically:**
    ```bash
-   python3 ./scripts/assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
+   python3 ./assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
    ```
 
 4. **Run the full 6-phase analysis on each fixture:**

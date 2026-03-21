@@ -14,6 +14,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # Agent Plugin Architect
 
 A plugin is a directory that bundles commands, agents, skills, hooks, and MCP servers
@@ -148,7 +162,7 @@ Only `name` is truly required. `name` must be kebab-case. Version follows semver
 }
 ```
 
-**If plugin has MCP integrations, create `CONNECTORS.md`:**
+**If plugin has MCP integrations, create `../../CONNECTORS.md`:**
 ```markdown
 # Connectors
 

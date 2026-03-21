@@ -61,7 +61,7 @@ Claude will:
       "note": "Implementation logic"
     },
     {
-      "path": "../../scripts",
+      "path": "scripts",
       "note": "You can provide directories to recursively bundle all text files inside."
     }
   ]

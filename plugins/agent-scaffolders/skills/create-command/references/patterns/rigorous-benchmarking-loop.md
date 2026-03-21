@@ -19,7 +19,7 @@ This pattern treats agent skills like software by enforcing strict unit testing 
    - **Baseline**: Prompt without the skill.
    - **With Skill**: Prompt with access to this specific skill.
 2. Capture `total_tokens` and `duration_ms` for both runs.
-3. Spawn a Grader subagent to evaluate both outputs against the assertions defined in `evals/evals.json`.
+3. Spawn a Grader subagent to evaluate both outputs against the assertions defined in `./evals.json`.
 4. Aggregate the pass rates and resource usage into a `benchmark.json` summary.
 ```
 

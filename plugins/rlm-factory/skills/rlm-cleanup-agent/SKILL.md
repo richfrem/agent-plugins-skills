@@ -17,6 +17,20 @@ color: orange
 tools: ["Bash", "Read", "Write"]
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # RLM Cleanup Agent
 
 ## Role
@@ -28,7 +42,7 @@ its file no longer exists or has moved. Running this regularly keeps the ledger 
 
 ## Prerequisites
 
-**Profile not configured?** Run `rlm-init` skill first: `../../SKILL.md`
+**Profile not configured?** Run `rlm-init` skill first: `SKILL.md`
 
 ## When to Run
 
@@ -47,10 +61,10 @@ Default: run against all configured profiles. Ask if unsure:
 ### 2. Dry run first -- show what will be removed
 
 ```bash
-python3 ./scripts/cleanup_cache.py \
+python3 ./cleanup_cache.py \
   --profile project --dry-run
 
-python3 ./scripts/cleanup_cache.py \
+python3 ./cleanup_cache.py \
   --profile tools --dry-run
 ```
 
@@ -59,17 +73,17 @@ Report: "Found N stale entries across profiles: [list of paths]"
 ### 3. Apply -- only after confirming with the user
 
 ```bash
-python3 ./scripts/cleanup_cache.py \
+python3 ./cleanup_cache.py \
   --profile project --apply
 
-python3 ./scripts/cleanup_cache.py \
+python3 ./cleanup_cache.py \
   --profile tools --apply
 ```
 
 ### 4. Verify
 
 ```bash
-python3 ./scripts/inventory.py --profile project
+python3 ./inventory.py --profile project
 ```
 
 Report the new coverage percentage.

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/artifact-state-interrogative-routing.md
+../../../../../agent-skill-open-specifications/references/patterns/artifact-state-interrogative-routing.md

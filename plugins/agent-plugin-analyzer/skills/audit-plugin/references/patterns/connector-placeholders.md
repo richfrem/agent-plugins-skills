@@ -15,7 +15,7 @@ Never hardcode specific application names (e.g., "Pull from Figma", "Search Conf
 
 ### Implementation Standard
 
-In your `SKILL.md` or `command.md` file, frame all conditional tool logic around the placeholder:
+In your `././SKILL.md` or `command.md` file, frame all conditional tool logic around the placeholder:
 
 ```markdown
 ## If Connectors Available
@@ -24,4 +24,4 @@ If **~~knowledge base** is connected:
 - Extract the executive summaries and cross-reference with the current findings.
 ```
 
-The plugin must also include a `CONNECTORS.md` file at its root that maps the categories to actual allowed MCP servers, acting as the dependency injection blueprint.
+The plugin must also include a `././CONNECTORS.md` file at its root that maps the categories to actual allowed MCP servers, acting as the dependency injection blueprint.

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/complexity-tiered-output.md
+../../../../../agent-skill-open-specifications/references/patterns/complexity-tiered-output.md

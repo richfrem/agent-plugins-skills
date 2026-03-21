@@ -24,7 +24,7 @@ Prompt-based hooks offer several advantages:
       "hooks": [
         {
           "type": "command",
-          "command": "bash validate-bash.sh"
+          "command": "bash ./validate-bash.sh"
         }
       ]
     }
@@ -32,7 +32,7 @@ Prompt-based hooks offer several advantages:
 }
 ```
 
-**Script (validate-bash.sh):**
+**Script (../scripts/validate-bash.sh):**
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -93,7 +93,7 @@ fi
       "hooks": [
         {
           "type": "command",
-          "command": "bash validate-write.sh"
+          "command": "bash ./validate-write.sh"
         }
       ]
     }
@@ -101,7 +101,7 @@ fi
 }
 ```
 
-**Script (validate-write.sh):**
+**Script (../scripts/validate-write.sh):**
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -259,8 +259,8 @@ my-plugin/
 ├── .claude-plugin/plugin.json
 ├── hooks/hooks.json
 └── scripts/
-    ├── validate-bash.sh
-    ├── validate-write.sh
+    ├── ./validate-bash.sh
+    ├── ./validate-write.sh
     └── check-tests.sh
 ```
 
@@ -272,8 +272,8 @@ my-plugin/
 ├── hooks/hooks.json      # Now uses prompt hooks
 └── scripts/              # Archive or delete
     └── archive/
-        ├── validate-bash.sh
-        ├── validate-write.sh
+        ├── ./validate-bash.sh
+        ├── ./validate-write.sh
         └── check-tests.sh
 ```
 

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/escalation-taxonomy.md
+../../../../../agent-skill-open-specifications/references/patterns/escalation-taxonomy.md

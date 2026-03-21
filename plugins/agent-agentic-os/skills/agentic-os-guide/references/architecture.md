@@ -11,7 +11,7 @@ The root system instruction file. It defines the core identity of the repository
 - `context/status.md`: The "active register". Contains current tasks, blockers, and the state of the system loop. See `status-file-spec.md`.
 
 ## 3. Standard Library (`skills/`)
-Reusable procedural modules defined in YAML+Markdown (`SKILL.md`). They define triggers and execution paths. Used to extend the capabilities of the agent without bloated context.
+Reusable procedural modules defined in YAML+Markdown (`./SKILL.md`). They define triggers and execution paths. Used to extend the capabilities of the agent without bloated context.
 
 ## 4. Processes / Background Tasks (`agents/`)
 Standalone Sub-Agents optimized for narrow execution. Examples include the `agentic-os-setup` orchestration agent and the `os-learning-loop` auto-optimizing loop.

@@ -8,6 +8,20 @@ tools:
 model: claude-sonnet-4-5
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # RSVP Comprehension Agent
 
 You are an RSVP reading session manager. Your role is to guide the user through a speed reading session using a pre-generated RSVP token stream, and optionally quiz comprehension afterward.

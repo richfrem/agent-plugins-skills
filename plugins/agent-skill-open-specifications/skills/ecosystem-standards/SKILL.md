@@ -5,6 +5,20 @@ disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 dependencies: ["skill:ecosystem-authoritative-sources"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Ecosystem Standards Review Protocol
 
 This skill details how to perform an audit on new or existing capabilities (Skills, Plugins, Workflows, Sub-Agents, and Hooks) against authoritative ecosystem specifications to ensure they are created, installed, and structured correctly.
@@ -14,9 +28,9 @@ When invoked to review a codebase component or a planned extension:
 
 1.  **Identify the Component Type**: Determine if the subject is a Plugin boundary, an Agent Skill, an Antigravity Workflow/Rule, a Sub-Agent, or a Hook.
 2.  **Recall the Specs**: Before reviewing, read the relevant specification file found in the `ecosystem-authoritative-sources` skill library.
-    *   *Path:* `../../references/*.md`
+    *   *Path:* `./references/*.md`
 3.  **Perform Rigorous Audit**:
-    *   **Structure**: Does the directory schema match the standard (`.claude-plugin/plugin.json`, `my-skill/SKILL.md`)? Are all supporting files strictly organized into the official optional directories (`scripts/`, `references/`, `assets/`) rather than cluttering the skill root?
+    *   **Structure**: Does the directory schema match the standard (`./plugin.json`, `my-skill/SKILL.md`)? Are all supporting files strictly organized into the official optional directories (`scripts/`, `references/`, `assets/`) rather than cluttering the skill root?
     *   **Manifest Schema**: Does `plugin.json` follow the authoritative schema? Check:
         - `name` is kebab-case (lowercase, hyphens, no spaces)
         - `version` uses semver (e.g., `0.1.0`, not `1.0`)

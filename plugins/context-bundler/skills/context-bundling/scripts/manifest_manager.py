@@ -289,7 +289,7 @@ def load_manifest(manifest_path: Optional[str] = None, base_type: Optional[str] 
 
     Args:
         manifest_path: Optional custom path to the manifest file. 
-                       Defaults to ../../file-manifest.json.
+                       Defaults to .././file-manifest.json.
         base_type: If provided, loads a base manifest template instead of a specific manifest file.
 
     Returns:
@@ -353,7 +353,7 @@ def save_manifest(manifest: Dict[str, Any], manifest_path: Optional[str] = None,
     Args:
         manifest: The dictionary content to save.
         manifest_path: Optional custom destination path. 
-                       Defaults to ../../file-manifest.json.
+                       Defaults to .././file-manifest.json.
         base_type: If provided, saves to a base manifest template path.
     """
     if base_type:

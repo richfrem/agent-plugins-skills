@@ -3,6 +3,20 @@ name: spec-kitty-specify
 description: Create or update the feature specification from a natural language feature
 ---
 
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
+
 # /spec-kitty.specify - Create Feature Specification
 
 **Version**: 0.11.0+

@@ -1,6 +1,6 @@
 # File, Namespace, and Class Naming Conventions
 
-> **Note:** For guidance on where to place shared React and .NET code, see [Common Package Guidance](./common-package-guidance.md) and [Project Directory Structure Requirements](./project-folder-structure-guidance.md). All shared React code must be in `outputs/common/react/` and all shared .NET code in `outputs/common/dotnet/`.
+> **Note:** For guidance on where to place shared React and .NET code, see [Project Directory Structure Requirements](./project-folder-structure-guidance.md). All shared React code must be in `outputs/common/react/` and all shared .NET code in `outputs/common/dotnet/`.
 
 Consistent naming conventions in .NET and React projects improve readability and maintainability. This guide summarizes best practices for naming files, classes, and namespaces, with recommendations for mixed-language projects.
 

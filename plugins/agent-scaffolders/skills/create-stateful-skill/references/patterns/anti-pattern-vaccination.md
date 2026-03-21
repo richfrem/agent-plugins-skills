@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/anti-pattern-vaccination.md
+../../../../../agent-skill-open-specifications/references/patterns/anti-pattern-vaccination.md

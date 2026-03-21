@@ -4,6 +4,20 @@ description: "Safe Create/Read/Update/Delete operations for Obsidian Vault notes
 allowed-tools: Bash, Read, Write
 dependencies: ["pip:ruamel"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Obsidian Vault CRUD
 
 **Status:** Active
@@ -24,22 +38,22 @@ This skill provides the **disk I/O layer** for all agent interactions with the O
 
 ### Read a Note
 ```bash
-python ./scripts/vault_ops.py read --file <path>
+python ./vault_ops.py read --file <path>
 ```
 
 ### Create a Note
 ```bash
-python ./scripts/vault_ops.py create --file <path> --content <text> [--frontmatter key=value ...]
+python ./vault_ops.py create --file <path> --content <text> [--frontmatter key=value ...]
 ```
 
 ### Update a Note
 ```bash
-python ./scripts/vault_ops.py update --file <path> --content <text>
+python ./vault_ops.py update --file <path> --content <text>
 ```
 
 ### Append to a Note
 ```bash
-python ./scripts/vault_ops.py append --file <path> --content <text>
+python ./vault_ops.py append --file <path> --content <text>
 ```
 
 ## Safety Guarantees

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/anti-symptom-triage.md
+../../../../../agent-skill-open-specifications/references/patterns/anti-symptom-triage.md

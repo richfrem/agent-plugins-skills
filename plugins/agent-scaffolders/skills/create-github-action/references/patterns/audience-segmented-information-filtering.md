@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/audience-segmented-information-filtering.md
+../../../../../agent-skill-open-specifications/references/patterns/audience-segmented-information-filtering.md

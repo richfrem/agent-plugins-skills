@@ -15,7 +15,7 @@ Plugins must follow a strict root-level structure:
 *See visual representation in [plugin-architecture.mmd](./plugin-architecture.mmd)*
 
 ## Component Details
-- **Skills (`skills/` prefix):** Directories containing a `SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).
+- **Skills (`skills/` prefix):** Directories containing a `././SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).
 - **Agents (`agents/` prefix):** Markdown files outlining capabilities and defining specialized subagent behaviors.
 - **Hooks (`hooks.json`):** Event handlers (e.g., `PostToolUse`, `PreToolUse`) that automate shell scripts, prompt evaluation, or subagents.
 - **MCP Servers (`.mcp.json`):** Bundles Model Context Protocol servers to provide external tools seamlessly.
@@ -65,7 +65,7 @@ The manifest lives at `.claude-plugin/plugin.json` (hyphen, not underscore).
 
 **Documentation arrays (ignored by runtime, kept for human readability):**
 
-The agent runtime auto-discovers skills from `skills/*/SKILL.md`, agents from `agents/`,
+The agent runtime auto-discovers skills from `skills/*/././SKILL.md`, agents from `agents/`,
 etc. These arrays are NOT read by Claude/Cowork, but are useful for humans browsing
 the manifest:
 ```json

@@ -9,7 +9,7 @@ The maintain-plugins skill must meet the following criteria to be considered ope
 ## 2. Audit Operation
 - [ ] The agent correctly classifies all 8 file types (SKILL.md, commands, references, scripts, README, CONNECTORS.md, plugin.json, diagrams).
 - [ ] The agent evaluates all 7 structural dimensions and produces a checklist output with severity labels (CRITICAL / HIGH / MEDIUM / LOW).
-- [ ] If `audit_structure.py` is unavailable, the agent performs the manual audit using the checklist in SKILL.md without skipping.
+- [ ] If `../scripts/audit_structure.py` is unavailable, the agent performs the manual audit using the checklist in SKILL.md without skipping.
 
 ## 3. Sync Operation
 - [ ] The agent proposes a `--dry-run` pass before any live sync.

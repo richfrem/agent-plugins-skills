@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/asynchronous-benchmark-metric-capture.md
+../../../../../agent-skill-open-specifications/references/patterns/asynchronous-benchmark-metric-capture.md

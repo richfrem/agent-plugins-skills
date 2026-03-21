@@ -9,13 +9,13 @@ Plugins let you extend Claude Code with custom functionality (skills, agents, ho
 
 ## Directory Structure
 Plugins must follow a strict root-level structure:
-- `.claude-plugin/plugin.json`: The manifest (must only contain `plugin.json`).
+- `./plugin.json`: The manifest (must only contain `plugin.json`).
 - `README.md`: Included as a best practice. It is highly recommended to contain a text-based file tree structure (using `├──` and `└──`) detailing the components inside the plugin and their purpose.
 
-*See visual representation in [plugin-architecture.mmd](./diagrams/plugin-architecture.mmd)*
+*See visual representation in [plugin-architecture.mmd](./plugin-architecture.mmd)*
 
 ## Component Details
-- **Skills (`skills/` prefix):** Directories containing a `SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).
+- **Skills (`skills/` prefix):** Directories containing a `./SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).
 - **Agents (`agents/` prefix):** Markdown files outlining capabilities and defining specialized subagent behaviors.
 - **Hooks (`hooks.json`):** Event handlers (e.g., `PostToolUse`, `PreToolUse`) that automate shell scripts, prompt evaluation, or subagents.
 - **MCP Servers (`.mcp.json`):** Bundles Model Context Protocol servers to provide external tools seamlessly.
@@ -30,7 +30,7 @@ Plugins must follow a strict root-level structure:
 
 ## plugin.json Manifest Schema
 
-The manifest lives at `.claude-plugin/plugin.json` (hyphen, not underscore).
+The manifest lives at `./plugin.json` (hyphen, not underscore).
 
 **Required (only `name` is truly required):**
 ```json

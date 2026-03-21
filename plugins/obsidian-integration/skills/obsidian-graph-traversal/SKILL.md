@@ -3,6 +3,20 @@ name: obsidian-graph-traversal
 description: "Semantic link traversal for Obsidian Vaults. Builds an in-memory graph index from wikilinks and provides instant forward-link, backlink, and multi-degree connection queries. Use when exploring note relationships or finding orphaned notes."
 allowed-tools: Bash, Read
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Obsidian Graph Traversal
 
 **Status:** Active
@@ -22,27 +36,27 @@ of Concept A?" — instantly, without rescanning the vault.
 
 ### Build the Graph Index
 ```bash
-python ./scripts/graph_ops.py build --vault-root <path>
+python ./graph_ops.py build --vault-root <path>
 ```
 
 ### Get Forward Links (outbound)
 ```bash
-python ./scripts/graph_ops.py forward --note "Note Name"
+python ./graph_ops.py forward --note "Note Name"
 ```
 
 ### Get Backlinks (inbound)
 ```bash
-python ./scripts/graph_ops.py backlinks --note "Note Name"
+python ./graph_ops.py backlinks --note "Note Name"
 ```
 
 ### Get N-Degree Connections
 ```bash
-python ./scripts/graph_ops.py connections --note "Note Name" --depth 2
+python ./graph_ops.py connections --note "Note Name" --depth 2
 ```
 
 ### Find Orphaned Notes
 ```bash
-python ./scripts/graph_ops.py orphans --vault-root <path>
+python ./graph_ops.py orphans --vault-root <path>
 ```
 
 ## Architecture

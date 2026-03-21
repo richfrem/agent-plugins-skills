@@ -1,1 +1,1 @@
-../../../../references/hitl-interaction-design.md
+../../../references/hitl-interaction-design.md

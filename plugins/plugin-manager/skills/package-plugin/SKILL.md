@@ -4,6 +4,20 @@ description: Package a plugin directory into a distributable ZIP archive with co
 disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Package Plugin
 
 Package a plugin into a distributable `.zip` archive suitable for importing into Claude Code
@@ -22,12 +36,12 @@ or sharing with other teams.
 Before packaging, verify the plugin has a valid manifest:
 
 ```bash
-python3 plugins/plugin-manager/skills/package-plugin/scripts/package.py \
+python3 ./package.py \
   --validate-only --plugin <path-to-plugin>
 ```
 
 This checks:
-- `.claude-plugin/plugin.json` exists and is valid JSON
+- `./plugin.json` exists and is valid JSON
 - `name` is kebab-case
 - `version` is semver
 - `author` is an object (not a string)
@@ -36,7 +50,7 @@ This checks:
 ### 2. Package the Plugin
 
 ```bash
-python3 plugins/plugin-manager/skills/package-plugin/scripts/package.py \
+python3 ./package.py \
   --plugin <path-to-plugin> --output <destination>
 ```
 
@@ -45,7 +59,7 @@ python3 plugins/plugin-manager/skills/package-plugin/scripts/package.py \
 ### 3. Verify the Package (Optional)
 
 ```bash
-python3 plugins/plugin-manager/skills/package-plugin/scripts/package.py \
+python3 ./package.py \
   --verify <path-to-zip>
 ```
 

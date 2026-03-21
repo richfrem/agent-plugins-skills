@@ -64,7 +64,7 @@ The `analysis-framework.md` Phase 6 section contains an old report template that
 
 The mine-plugins command's Step 2 runs:
 ```bash
-python3 "./scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
+python3 "../scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 But it doesn't include `--security`. Neither does the SKILL.md Phase 1 command. The security flag has to be deliberately invoked — the default path skips deterministic security scanning entirely. This should be the default for any analysis run, not an opt-in.
 
@@ -110,7 +110,7 @@ But it doesn't include `--security`. Neither does the SKILL.md Phase 1 command. 
 
 3. **Backfill the pattern catalog.** Assign realistic values to all 28 patterns. Suggested starting point: patterns "First Seen In" multiple plugins → `validated`, `Confidence: High`, `Frequency: 3+`. Single-source patterns → `proposed`, `Confidence: Low`, `Frequency: 1`. Add an actual changelog at the bottom of the file.
 
-4. **Reconcile analysis-framework.md Phase 6.** Replace the Phase 6 report template with: `> For the synthesis report template, see [output-templates.md](./output-templates.md).`
+4. **Reconcile analysis-framework.md Phase 6.** Replace the Phase 6 report template with: `> For the synthesis report template, see [output-templates.md](../skills/analyze-plugin/references/output-templates.md).`
 
 5. **Fix gold-standard skill name.** Change frontmatter `name: gold-standard-test` → `name: example-skill` to match directory.
 

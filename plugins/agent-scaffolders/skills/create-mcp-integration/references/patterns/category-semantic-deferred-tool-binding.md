@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/category-semantic-deferred-tool-binding.md
+../../../../../agent-skill-open-specifications/references/patterns/category-semantic-deferred-tool-binding.md

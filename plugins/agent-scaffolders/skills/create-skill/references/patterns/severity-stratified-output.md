@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/severity-stratified-output.md
+../../../../../agent-skill-open-specifications/references/patterns/severity-stratified-output.md

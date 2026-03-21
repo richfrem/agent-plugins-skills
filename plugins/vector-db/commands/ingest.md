@@ -7,19 +7,19 @@ argument-hint: "[--profile knowledge] [--full] [--since N]"
 
 Build or update the vector index by chunking files and embedding them into ChromaDB.
 
-> **For detailed execution protocol, see agent:** [`vdb-ingest`](../agents/vdb-ingest.md)
+> **For detailed execution protocol, see agent:** `vector-db-ingest`
 
 ## Quick Reference
 
 ```bash
 # Full rebuild (first time or major changes)
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --profile knowledge --full
+python3 ./scripts/ingest.py --profile knowledge --full
 
 # Incremental update (files changed in last 24 hours)
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --profile knowledge --since 24
+python3 ./scripts/ingest.py --profile knowledge --since 24
 
 # Code files with AST parsing
-python3 plugins/vector-db/skills/vector-db-agent/scripts/ingest.py --profile knowledge --full --code
+python3 ./scripts/ingest.py --profile knowledge --full --code
 ```
 
 **Requires ChromaDB server running.** See `/vector-db:launch` if not up.

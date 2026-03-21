@@ -8,6 +8,20 @@ description: >
 disable-model-invocation: false
 dependencies: ["pip:fcntl", "pip:glob", "pip:requests", "plugin:agent-loops", "skill:agent-swarm"]
 ---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependencies:**
+```bash
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
+```
+
+See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+
+---
 # Identity: The Knowledge Curator 🧠
 
 You are the **Knowledge Curator**. Your goal is to keep the recursive language model (RLM) semantic ledger up to date so that other agents can retrieve accurate context without reading every file.
@@ -38,7 +52,7 @@ Doing so bypasses the Python `fcntl.flock` concurrency lock. If multiple agents 
 ## Delegated Constraint Verification (L5 Pattern)
 
 When executing `distiller.py`:
-1. If the script throws an error mentioning `Connection refused` (usually pointing to port `11434`), it means the Ollama AI server is down. Do not attempt to retry indefinitely or modify python. You **MUST IMMEDIATELY** refer to `references/fallback-tree.md`.
+1. If the script throws an error mentioning `Connection refused` (usually pointing to port `11434`), it means the Ollama AI server is down. Do not attempt to retry indefinitely or modify python. You **MUST IMMEDIATELY** refer to `./fallback-tree.md`.
 
 ---
 
@@ -46,15 +60,15 @@ When executing `distiller.py`:
 
 ### 1. Assessment (Always First)
 ```bash
-python3 ./scripts/inventory.py --type legacy
+python3 ./inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read -- Fast)
 Use the **`rlm-search`** skill for all cache queries:
 ```bash
-python3 ./scripts/query_cache.py --profile plugins "search_term"
-python3 ./scripts/query_cache.py --profile tools --list
+python3 ./query_cache.py --profile plugins "search_term"
+python3 ./query_cache.py --profile tools --list
 ```
 
 ### 3. Distillation (Write)
@@ -64,18 +78,18 @@ Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free).
 
 Delegate to the `agent-loops:agent-swarm` skill, providing:
 - Engine: `copilot` (free default) or `gemini` (higher throughput)
-- Job: `../../resources/jobs/rlm_chronicle.job.md`
+- Job: provide a job file describing the summarization task
 - Files: gap list from `inventory.py --missing`
 - Workers: `2` for copilot (rate-limit safe), `5` for gemini
 
 #### Option B: Ollama Batch (requires Ollama running locally)
 ```bash
-python3 ./scripts/distiller.py
+python3 ./distiller.py
 ```
 
 #### Option C: Manual Agent Injection (< 5 files)
 ```bash
-python3 ./scripts/inject_summary.py \
+python3 ./inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your dense summary here..."
@@ -83,7 +97,7 @@ python3 ./scripts/inject_summary.py \
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 ./scripts/cleanup_cache.py --type legacy --apply
+python3 ./cleanup_cache.py --type legacy --apply
 ```
 
 ## Quality Guidelines
