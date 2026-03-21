@@ -11,7 +11,7 @@ dependencies: ["skill:dual-loop"]
 
 This skill provides specialized **Inner Loop Execution** for the [`dual-loop`](../../../agent-loops/skills/dual-loop/SKILL.md).
 
-- **Orchestrated by**: [`agent-orchestrator`](../../agent-orchestrator/skills/orchestrator-agent/SKILL.md)
+- **Orchestrated by**: the `agent-orchestrator` skill (see the dual-loop plugin)
 - **Use Case**: When "generic coding" is insufficient and specialized expertise (Security, QA, Architecture) is required.
 - **Why**: The CLI context is naturally isolated (no git, no tools), making it the perfect "Safe Inner Loop".
 

@@ -8,7 +8,7 @@ For Project Ecosystem, we have implemented this as an **Infinite Context Ecosyst
 
 ## 2. The Ecosystem Architecture (See [BLUEPRINT.md](../BLUEPRINT.md))
 
-**Architecture Diagram:** [workflows/infinite-context-ecosystem.mmd](../../../../docs/diagrams/workflows/archive/infinite-context-ecosystem.mmd)
+**Architecture Diagram:** workflows/infinite-context-ecosystem.mmd (diagram not available)
 
 Our implementation combines three layers of memory and a "REPL" toolchain:
 

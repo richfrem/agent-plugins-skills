@@ -17,8 +17,7 @@ Standard RAG (Retrieval-Augmented Generation) uses Vector Databases to find spec
 The RLM is a **precognitive, holographic cache**. Instead of slicing the repository into incoherent chunks, it maintains a **"One-Sentence Source of Truth"** for every single file in the project.
 
 **The Ecosystem View:**
-This pattern is the memory core of the [Infinite Context Ecosystem](../../../docs/diagrams/workflows/archive/infinite-context-ecosystem.mmd).
-![Ecosystem](../../../docs/diagrams/workflows/archive/infinite-context-ecosystem.png)
+This pattern is the memory core of the Infinite Context Ecosystem.
 
 ### Core Concepts
 
