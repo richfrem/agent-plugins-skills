@@ -2,13 +2,12 @@
 name: audit-plugin
 description: >
   This skill should be used when the user asks to "audit a plugin", "validate my plugin",
-  "check plugin structure", "verify plugin is correct", "validate ././././././././././././plugin.json", "check if
+  "check plugin structure", "verify plugin is correct", "validate .claude-plugin/plugin.json", "check if
   my plugin is compliant", "review plugin components", or mentions plugin validation or
   structure compliance. Also trigger proactively after the user creates or modifies any
-  plugin component (commands, agents, skills, hooks, ././././././././././././plugin.json). Use this skill even
+  plugin component (commands, agents, skills, hooks, .claude-plugin/plugin.json). Use this skill even
   when the user says "check my work" or "make sure this is right" in a plugin context.
   Do NOT use this for auditing individual skills only (use skill-reviewer for that).
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 
@@ -123,13 +122,13 @@ For issues the scripts may not catch:
 **Plugin structure check:**
 ```bash
 # Manifest must be here (not in root)
-ls ./././././././././././././plugin.json
+ls .claude-plugin/plugin.json
 
 # Components must be at root (not in .claude-plugin/)
 ls commands/ agents/ skills/ hooks/
 
 # Validate JSON
-jq . ./././././././././././././plugin.json
+jq . .claude-plugin/plugin.json
 ```
 
 **Security scan:**
@@ -177,12 +176,12 @@ grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
 
 ## Standards Reference
 
-**././././././././././././plugin.json minimal valid:**
+**.claude-plugin/plugin.json minimal valid:**
 ```json
 { "name": "plugin-name" }
 ```
 
-**././././././././././././plugin.json recommended:**
+**.claude-plugin/plugin.json recommended:**
 ```json
 {
   "name": "plugin-name",

@@ -6,5 +6,12 @@
         "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
-    "license": "MIT"
+    "license": "MIT",
+    "keywords": [
+        "plugin-analyzer",
+        "pattern-extraction",
+        "security-audit",
+        "maturity-model",
+        "skill-analysis"
+    ]
 }

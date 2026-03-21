@@ -34,8 +34,18 @@ description: >
   </Read>
   <commentary>Reads documentation instead of trying to lock the memory manager.</commentary>
   </example>
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
+---
+
+## Prerequisites
+
+This skill requires the **Agentic OS to be initialized first**. It calls `context/kernel.py`, `context/memory.md`, and `context/.locks/` — files that only exist after running the `agentic-os-init` skill in your project.
+
+If you have not yet initialized the OS, run:
+```
+agentic-os-init
+```
+
 ---
 
 ## Dependencies

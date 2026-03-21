@@ -9,7 +9,7 @@ Deep reference for the 6-phase plugin/skill analysis methodology.
 The inventory phase produces a complete file manifest. The goal is zero surprises — every file accounted for and classified.
 
 **Classification Priority Order:**
-1. Exact filename match (e.g., `./SKILL.md` → skill, `plugin.json` → manifest)
+1. Exact filename match (e.g., `./SKILL.md` → skill, `.claude-plugin/plugin.json` → manifest)
 2. Parent directory context (e.g., files in `commands/` → command, files in `references/` → reference)
 3. File extension fallback (e.g., `.py` → script, `.md` → document)
 4. Default to "other"

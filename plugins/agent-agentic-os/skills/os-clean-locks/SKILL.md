@@ -22,10 +22,7 @@ description: >
   Implicit audit trigger -- agent detects deadlock from kernel output and self-heals using os-clean-locks without user prompting.
   </commentary>
   </example>
-model: inherit
-color: red
-tools: ["Bash", "Read", "Write"]
-skills: []
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
@@ -69,7 +66,7 @@ If kernel.py does not exist, skip this step.
 
 ### Phase 3: Lock Removal
 1. For each `.lock` file found, safely delete it using the `Bash` tool (e.g., `rm context/.locks/skill.lock`).
-2. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-clean-locks` and `python3 context/kernel.py state_update locks_cleared true`.
+2. **Update OS State** (if kernel.py is available): Run `python3 context/kernel.py state_update active_agent os-clean-locks` and `python3 context/kernel.py state_update locks_cleared true`. Skip this step if `context/kernel.py` does not exist.
 
 ### Phase 4: Final Briefing
 

@@ -9,7 +9,7 @@ Plugins let you extend Claude Code with custom functionality (skills, agents, ho
 
 ## Directory Structure
 Plugins must follow a strict root-level structure:
-- `./plugin.json`: The manifest (must only contain `plugin.json`).
+- `.claude-plugin/plugin.json`: The manifest.
 - `README.md`: Included as a best practice. It is highly recommended to contain a text-based file tree structure (using `├──` and `└──`) detailing the components inside the plugin and their purpose.
 
 *See visual representation in [plugin-architecture.mmd](./plugin-architecture.mmd)*
@@ -23,14 +23,15 @@ Plugins must follow a strict root-level structure:
 
 ## Environment Variables & Caching
 - **Plugin Cache:** Installed marketplace plugins are copied to a cache (`~/.claude/plugins/cache`).
-- **`plugins`:** Always use this environment variable inside `hooks.json`, `.mcp.json`, and scripts to reference the absolute path of your plugin (e.g. `"../../execute.sh"`).
+- **`${CLAUDE_PLUGIN_ROOT}`:** Absolute path to the plugin's installation directory. Use for referencing scripts or configuration files bundled with the plugin (read-only during updates).
+- **`${CLAUDE_PLUGIN_DATA}`:** Persistent directory for plugin state (e.g., `node_modules`, venv) that survives updates.
 
 ## Installation Scopes
 `user` (global), `project` (team, `.claude/settings.json`), `local` (git-ignored), `managed` (read-only).
 
 ## plugin.json Manifest Schema
 
-The manifest lives at `./plugin.json` (hyphen, not underscore).
+The manifest lives at `.claude-plugin/plugin.json` (inside the `.claude-plugin/` directory).
 
 **Required (only `name` is truly required):**
 ```json
@@ -63,12 +64,12 @@ The manifest lives at `./plugin.json` (hyphen, not underscore).
 }
 ```
 
-**Metadata Arrays (FORBIDDEN IN PLUGIN.JSON):**
+**Metadata Array Overrides (Supported):**
 
-> **⚠️ WARNING: STRICT SCHEMA VALIDATION**
-> Claude Code uses extremely strict JSON schema validation for `plugin.json`. If you include unrecognized root-level properties (like `skills`, `scripts`, `dependencies`, `commands_dir`, etc.), it will silently fail to parse the plugin and **none** of your skills or agents will appear in the UI. 
-> 
-> You MUST NOT include these arrays in `plugin.json`. Instead, document your skills, scripts, and dependencies in the plugin's `README.md` file.
+The `plugin.json` supports configuring custom component paths to supplement auto-discovery:
+- `commands`, `agents`, `skills`, `hooks`, `mcpServers`, `lspServers`, `outputStyles`
+
+These can map to single file paths or arrays of paths. Unrecognized root-level properties outside the schema should be avoided to prevent parsing issues.
 
 **Schema rules:**
 - `name` must be kebab-case (lowercase, hyphens, no spaces)

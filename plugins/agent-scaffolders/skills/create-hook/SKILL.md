@@ -1,6 +1,5 @@
 ---
 name: create-hook
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   This skill should be used when the user asks to "create a hook", "add a hook",
   "add a PreToolUse hook", "add a Stop hook", "validate tool use", "implement a
@@ -11,7 +10,6 @@ description: >
   the user doesn't say the word "hook" explicitly -- e.g. "run a script before
   Claude writes files" or "validate commands before execution" should trigger this.
   Do NOT use this for creating skills (use create-skill) or sub-agents (use create-sub-agent).
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 

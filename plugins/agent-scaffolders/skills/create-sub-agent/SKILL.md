@@ -1,6 +1,5 @@
 ---
 name: create-sub-agent
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   This skill should be used when the user asks to "create an agent", "add an agent",
   "write a subagent", "build a new agent", "make me an agent that...", "add an agent
@@ -40,7 +39,6 @@ description: >
   Plugin and agentic OS context. create-sub-agent handles agent file generation.
   </commentary>
   </example>
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 

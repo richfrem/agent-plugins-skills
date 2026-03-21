@@ -1,12 +1,11 @@
 ---
 name: continuous-skill-optimizer
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   Autonomous optimization loop for any skill. Trigger with "optimize this skill",
   "run the continuous optimizer", "improve this trigger description", or when you want
   to automatically test variations of a skill's instructions to find the most empirically
   effective prompt using the benchmarking engine.
-disable-model-invocation: false
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

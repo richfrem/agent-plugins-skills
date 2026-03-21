@@ -12,8 +12,5 @@
         "plugin-generator",
         "skill-generator",
         "agent-tooling"
-    ],
-    "agents": [],
-    "hooks": [],
-    "commands": []
+    ]
 }

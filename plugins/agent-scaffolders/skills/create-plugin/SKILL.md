@@ -1,6 +1,5 @@
 ---
 name: create-plugin
-accreditation: Patterns, examples, and terminology gratefully adapted from Anthropic public plugin-dev and skill-creator repositories.
 description: >
   This skill should be used when the user asks to "create a plugin", "scaffold a plugin",
   "build a new plugin", "set up plugin structure", "initialize a plugin", "make a Claude
@@ -10,7 +9,6 @@ description: >
   "I want to build something for Claude Code." Do NOT use this for creating individual
   components in isolation (use create-skill, create-command, create-hook, create-sub-agent,
   or create-mcp-integration for those).
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 
@@ -54,6 +52,8 @@ plugin-name/
 ├── hooks/
 │   └── hooks.json           # Event handler configuration
 ├── .mcp.json                # MCP server definitions
+├── .lsp.json                # LSP server configurations
+├── settings.json            # Default settings (e.g., default agent)
 ├── scripts/                 # Shared utilities and helpers
 └── README.md
 ```
@@ -158,7 +158,8 @@ Only `name` is truly required. `name` must be kebab-case. Version follows semver
   "commands": "./custom-commands",
   "agents": ["./agents", "./specialized-agents"],
   "hooks": "./config/hooks.json",
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.mcp.json",
+  "lspServers": "./.lsp.json"
 }
 ```
 
@@ -194,7 +195,8 @@ Use the appropriate scaffolder for each component type. Apply these cross-cuttin
 - Body written as instructions FOR Claude, not to the user
 - `description` under 60 chars, `argument-hint` documents all args
 - `allowed-tools` restricted to minimum needed
-- Use `${CLAUDE_PLUGIN_ROOT}` for all plugin-relative paths
+- Use `${CLAUDE_PLUGIN_ROOT}` for scripts/binaries bundled with the plugin (read-only in update)
+- Use `${CLAUDE_PLUGIN_DATA}` for persistent state (e.g., `node_modules`, python venv) that survives updates
 
 **Agents (use create-sub-agent):**
 - 3+ `<example>` blocks in description (Context/user/assistant format)
@@ -212,6 +214,7 @@ Use the appropriate scaffolder for each component type. Apply these cross-cuttin
 - Use quick-exit pattern in hooks: `if [ ! -f "$STATE_FILE" ]; then exit 0; fi`
 - Parse frontmatter with: `sed -n '/^---$/,/^---$/{ /^---$/d; p; }' "$FILE"`
 - Document restart requirement: settings changes need Claude Code restart
+- **Plugin settings.json**: Use at plugin root to set defaults (e.g., `{"agent": "default-agent"}`)
 
 ---
 
