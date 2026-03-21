@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/pre-committed-rollback-contract.md
+../../../../../agent-skill-open-specifications/references/patterns/pre-committed-rollback-contract.md

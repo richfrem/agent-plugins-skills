@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/quantification-enforcement.md
+../../../../../agent-skill-open-specifications/references/patterns/quantification-enforcement.md

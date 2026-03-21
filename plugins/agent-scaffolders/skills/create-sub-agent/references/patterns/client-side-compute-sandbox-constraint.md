@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/client-side-compute-sandbox-constraint.md
+../../../../../agent-skill-open-specifications/references/patterns/client-side-compute-sandbox-constraint.md

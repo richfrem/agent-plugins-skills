@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/graduated-source-attributed-elicitation.md
+../../../../../agent-skill-open-specifications/references/patterns/graduated-source-attributed-elicitation.md

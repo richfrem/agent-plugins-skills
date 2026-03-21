@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/stage-aware-feedback.md
+../../../../../agent-skill-open-specifications/references/patterns/stage-aware-feedback.md

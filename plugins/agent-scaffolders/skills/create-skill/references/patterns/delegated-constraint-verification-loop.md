@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/delegated-constraint-verification-loop.md
+../../../../../agent-skill-open-specifications/references/patterns/delegated-constraint-verification-loop.md

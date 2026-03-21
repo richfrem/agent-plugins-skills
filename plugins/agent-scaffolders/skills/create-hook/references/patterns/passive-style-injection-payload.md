@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/passive-style-injection-payload.md
+../../../../../agent-skill-open-specifications/references/patterns/passive-style-injection-payload.md

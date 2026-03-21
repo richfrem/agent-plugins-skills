@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/mandatory-counterfactual-scenario-templating.md
+../../../../../agent-skill-open-specifications/references/patterns/mandatory-counterfactual-scenario-templating.md

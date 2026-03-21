@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/source-transparency.md
+../../../../../agent-skill-open-specifications/references/patterns/source-transparency.md

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/artifact-embedded-execution-audit-trail.md
+../../../../../agent-skill-open-specifications/references/patterns/artifact-embedded-execution-audit-trail.md

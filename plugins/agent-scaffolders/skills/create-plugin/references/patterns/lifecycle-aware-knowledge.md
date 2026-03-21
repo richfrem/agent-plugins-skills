@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/lifecycle-aware-knowledge.md
+../../../../../agent-skill-open-specifications/references/patterns/lifecycle-aware-knowledge.md

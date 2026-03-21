@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/output-classification.md
+../../../../../agent-skill-open-specifications/references/patterns/output-classification.md

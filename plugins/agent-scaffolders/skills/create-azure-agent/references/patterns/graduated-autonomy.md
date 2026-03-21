@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/graduated-autonomy.md
+../../../../../agent-skill-open-specifications/references/patterns/graduated-autonomy.md

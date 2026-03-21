@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/mode-invariant-compliance-gate.md
+../../../../../agent-skill-open-specifications/references/patterns/mode-invariant-compliance-gate.md

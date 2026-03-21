@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/highly-procedural-fallback-trees.md
+../../../../../agent-skill-open-specifications/references/patterns/highly-procedural-fallback-trees.md

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/dual-register-communication-enforcement.md
+../../../../../agent-skill-open-specifications/references/patterns/dual-register-communication-enforcement.md

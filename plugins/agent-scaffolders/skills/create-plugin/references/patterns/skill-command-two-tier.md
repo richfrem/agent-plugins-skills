@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/skill-command-two-tier.md
+../../../../../agent-skill-open-specifications/references/patterns/skill-command-two-tier.md

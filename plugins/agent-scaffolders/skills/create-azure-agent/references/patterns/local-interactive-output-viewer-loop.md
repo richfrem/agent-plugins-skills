@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/local-interactive-output-viewer-loop.md
+../../../../../agent-skill-open-specifications/references/patterns/local-interactive-output-viewer-loop.md

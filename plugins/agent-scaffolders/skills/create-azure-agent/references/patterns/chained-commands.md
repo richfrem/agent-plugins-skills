@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/chained-commands.md
+../../../../../agent-skill-open-specifications/references/patterns/chained-commands.md

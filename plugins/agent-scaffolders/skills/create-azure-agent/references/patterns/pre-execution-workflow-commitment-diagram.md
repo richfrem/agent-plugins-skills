@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/pre-execution-workflow-commitment-diagram.md
+../../../../../agent-skill-open-specifications/references/patterns/pre-execution-workflow-commitment-diagram.md

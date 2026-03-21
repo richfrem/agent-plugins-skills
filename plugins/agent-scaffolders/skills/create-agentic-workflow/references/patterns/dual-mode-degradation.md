@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/dual-mode-degradation.md
+../../../../../agent-skill-open-specifications/references/patterns/dual-mode-degradation.md

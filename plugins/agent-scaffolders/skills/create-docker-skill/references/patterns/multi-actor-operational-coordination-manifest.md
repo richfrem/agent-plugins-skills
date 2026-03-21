@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/L4-pattern-definitions/multi-actor-operational-coordination-manifest.md
+../../../../../agent-skill-open-specifications/references/patterns/multi-actor-operational-coordination-manifest.md

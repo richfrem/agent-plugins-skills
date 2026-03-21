@@ -1,1 +1,1 @@
-../../../resources/safety-learnings.md
+../../../../assets/resources/safety-learnings.md
