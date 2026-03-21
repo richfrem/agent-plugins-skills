@@ -9,7 +9,7 @@ dependencies: ["skill:dual-loop"]
 ---
 ## Ecosystem Role: Inner Loop Specialist
 
-This skill provides specialized **Inner Loop Execution** for the [`dual-loop`](../../../agent-loops/skills/dual-loop/SKILL.md).
+This skill provides specialized **Inner Loop Execution** for the [`dual-loop`](../../../../agent-loops/skills/dual-loop/SKILL.md).
 
 - **Orchestrated by**: the `agent-orchestrator` skill (see the dual-loop plugin)
 - **Use Case**: When "generic coding" is insufficient and specialized expertise (Security, QA, Architecture) is required.
