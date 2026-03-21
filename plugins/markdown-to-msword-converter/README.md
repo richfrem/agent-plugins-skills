@@ -44,19 +44,17 @@ The per-file converter resolves internal markdown links to `.docx` targets direc
 
 ## Dependencies
 
-- Intent file: `plugins/markdown-to-msword-converter/requirements.in`
-- Lockfile: `plugins/markdown-to-msword-converter/requirements.txt`
+This plugin requires `python-docx`:
 
-Compile lockfile:
-
-```powershell
-python -m piptools compile "requirements.in" --output-file "requirements.txt"
+```bash
+pip install -r requirements.txt
+# or: pip install python-docx
 ```
 
-Install from lockfile:
-
-```powershell
-python -m pip install -r "requirements.txt"
+Lockfile workflow:
+```bash
+pip-compile requirements.in
+pip install -r requirements.txt
 ```
 
 ## Typical usage

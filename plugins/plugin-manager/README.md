@@ -62,6 +62,15 @@ Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, C
 
 ---
 
+## Dependencies
+
+The `bridge-plugin` skill requires `PyYAML`:
+
+```bash
+pip install -r requirements.txt
+# or: pip install PyYAML
+```
+
 ## Quick Start: Deploy Local Source
 
 Ensure your plugin is situated inside `plugins/<name>`, then run the bridge installer to scaffold the target environment rules and commands.

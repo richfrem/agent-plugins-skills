@@ -29,6 +29,15 @@ npx skills add richfrem/agent-plugins-skills --path plugins/huggingface-utils
 npx skills add ./plugins/huggingface-utils
 ```
 
+## Dependencies
+
+The `hf-upload` skill requires `huggingface_hub`:
+
+```bash
+pip install -r requirements.txt
+# or: pip install huggingface_hub
+```
+
 ## Overview
 This plugin provides the necessary skills and scripts to persist cognitive continuity data, RLM cache states, and deterministic traces up to a remote HuggingFace repository (the "Soul"), ensuring no agent learnings are lost between sessions.
 
