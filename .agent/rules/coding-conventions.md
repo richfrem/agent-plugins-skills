@@ -5,7 +5,7 @@ globs: ["*.py", "*.ts", "*.js", "*.cs"]
 
 ## 📝 Coding Conventions (Summary)
 
-**Full standards → `../../SKILL.md`**
+**Full standards → `.agents/skills/coding-conventions-agent/SKILL.md` (installed locally via `bridge_installer.py`)**
 
 ### Non-Negotiables
 1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class.

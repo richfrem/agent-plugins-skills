@@ -142,7 +142,8 @@ Agent directories like `.claude/`, `.codex/`, `.gemini/` contain:
 - `.gitignore` - With all agent directories excluded
 
 ❌ **DO NOT commit:**
-- `.claude/`, `.codex/`, `.gemini/`, etc. - Agent runtime directories
+- `.agents/` - The Smart Central Store (auto-generated locally as hard copies via `npx skills add` or `bridge_installer.py`)
+- `.claude/`, `.agent/`, `.codex/`, `.gemini/`, etc. - Agent runtime directories (auto-generated locally as symlinks pointing to `.agents/`)
 - `.kittify/templates/command-templates/` - These are templates, not final commands
 - Any `auth.json`, `credentials.json`, or similar files
 

@@ -8,7 +8,7 @@ trigger: manual
 **Revised**: 2026-03-12
 **Related Constitution Articles**: IV (Documentation First), V (Test-First), VI (Simplicity)
 
-**Full workflow details -> `.agent/skills/spec_kitty_workflow/SKILL.md`**
+**Full workflow details -> `.agents/skills/spec-kitty-workflow/SKILL.md` (installed locally via `bridge_installer.py`)**
 
 ---
 
