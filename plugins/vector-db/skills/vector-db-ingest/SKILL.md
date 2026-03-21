@@ -12,9 +12,7 @@ description: |
   user: "The vector store is missing recent files -- update it"
   assistant: "I'll use vector-db-ingest to re-index the changes."
   </example>
-model: inherit
-color: green
-tools: ["Bash", "Read", "Write"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

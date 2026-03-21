@@ -13,9 +13,7 @@ description: |
   user: "The RLM ledger is missing 40 files -- fill the gaps"
   assistant: "I'll use rlm-distill-agent to process the missing files."
   </example>
-model: inherit
-color: green
-tools: ["Bash", "Read", "Write"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

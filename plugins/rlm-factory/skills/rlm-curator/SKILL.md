@@ -5,8 +5,7 @@ description: >
   distilling code summaries, querying the semantic ledger, auditing cache coverage, or
   maintaining RLM hygiene. Supports both Ollama-based batch distillation and agent-powered
   direct summarization. V2 enforces Concurrency Safety constraints.
-disable-model-invocation: false
-dependencies: ["pip:fcntl", "pip:glob", "pip:requests", "plugin:agent-loops", "skill:agent-swarm"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

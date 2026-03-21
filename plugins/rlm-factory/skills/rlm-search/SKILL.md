@@ -5,7 +5,7 @@ description: >
   when tasks involve finding code, documentation, or architecture context in the
   repository. Enforces the optimal search order: RLM Summary Scan (O(1)) ->
   Vector DB Semantic Search -> Grep/Exact Match. Never skip phases.
-dependencies: ["skill:rlm-curator", "plugin:vector-db"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

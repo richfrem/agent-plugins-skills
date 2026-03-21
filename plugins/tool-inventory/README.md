@@ -5,9 +5,29 @@ Semantic tool discovery powered by ChromaDB. Integrates directly with the `rlm-f
 
 ## Installation
 
-### Local Development
+### Option 1: From a Marketplace (Recommended)
 ```bash
-claude --plugin-dir ./plugins/tool-inventory
+/plugin marketplace add <marketplace-url>
+/plugin install tool-inventory
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/tool-inventory
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/tool-inventory
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install tool-inventory
+```
+
+### Option 3: Local Development Checkout
+```bash
+npx skills add ./plugins/tool-inventory
 ```
 
 ### Prerequisites
@@ -95,7 +115,7 @@ ChromaDB is the primary truth store. JSON cache is kept for backward compatibili
 
 ## Architecture
 
-See [docs/tool-inventory-workflow.mmd](docs/tool-inventory-workflow.mmd).
+See [tool-inventory-workflow.mmd](skills/tool-inventory/references/tool-inventory-workflow.mmd).
 
 ```mermaid
 graph TD

@@ -1,6 +1,7 @@
 ---
 name: vector-db-init
 description: Interactively initializes the Vector DB plugin. Installs the required pip dependencies (chromadb, langchain wrappers) and configures the vector_profiles.json for Native Python Server connections. Run this before attempting to use the vector-db-search or vector-db-launch skills.
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

@@ -13,7 +13,6 @@ description: |
   assistant: "I'll run rlm-cleanup to prune orphaned entries."
   </example>
 model: inherit
-color: orange
 tools: ["Bash", "Read", "Write"]
 ---
 

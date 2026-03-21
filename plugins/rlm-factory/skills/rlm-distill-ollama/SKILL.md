@@ -1,6 +1,8 @@
 ---
+name: rlm-distill-ollama
 description: Distill repository files into the RLM Summary Ledger using agentic intelligence (fast) or Ollama (offline batch)
 argument-hint: "[--profile project|tools] [--file path/to/file] [--since N]"
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
