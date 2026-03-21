@@ -26,7 +26,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 
@@ -38,12 +38,12 @@ workflows. Commands can be simple prompts or powerful multi-step workflows using
 arguments, file references, bash execution, and integration with agents and skills.
 
 > Reference files for deep dives:
-> - `./references/frontmatter-reference.md` -- full list of all frontmatter fields
-> - `./references/interactive-commands.md` -- AskUserQuestion, conditional logic
-> - `./references/advanced-workflows.md` -- multi-step, multi-component patterns
-> - `./references/plugin-features-reference.md` -- ${CLAUDE_PLUGIN_ROOT}, bash execution syntax
-> - `./references/examples/simple-commands.md` -- copy-ready simple command templates
-> - `./references/examples/plugin-commands.md` -- copy-ready plugin command templates
+> - `../frontmatter-reference.md` -- full list of all frontmatter fields
+> - `../interactive-commands.md` -- AskUserQuestion, conditional logic
+> - `../advanced-workflows.md` -- multi-step, multi-component patterns
+> - `../plugin-features-reference.md` -- ${CLAUDE_PLUGIN_ROOT}, bash execution syntax
+> - `../examples/simple-commands.md` -- copy-ready simple command templates
+> - `../examples/plugin-commands.md` -- copy-ready plugin command templates
 
 ---
 
@@ -225,7 +225,7 @@ No frontmatter is needed for simple commands -- omit the `---` block entirely.
 !`git diff HEAD~1`  -- inject git diff
 !`cat package.json` -- inject file contents (alternative to @syntax)
 ```
-Use `allowed-tools: Bash(git:*)` to scope permissions. See `./references/plugin-features-reference.md`
+Use `allowed-tools: Bash(git:*)` to scope permissions. See `../plugin-features-reference.md`
 for full bash execution details and edge cases.
 
 ### File references
@@ -339,6 +339,6 @@ audit-plugin    -- validates full plugin structure including commands
 
 ## Next Actions
 - **Refine**: Run `continuous-skill-optimizer` to benchmark trigger optimization
-- **Extend**: Add interactivity with `AskUserQuestion` -- see `./references/interactive-commands.md`
-- **Distribute**: Add to a plugin for team sharing -- see `./references/examples/plugin-commands.md`
+- **Extend**: Add interactivity with `AskUserQuestion` -- see `../interactive-commands.md`
+- **Distribute**: Add to a plugin for team sharing -- see `../examples/plugin-commands.md`
 - **Audit**: Run `audit-plugin` to validate structure

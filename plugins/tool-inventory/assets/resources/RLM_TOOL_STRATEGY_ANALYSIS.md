@@ -61,7 +61,7 @@ Add `plugins/` to the existing `distiller_manifest.json`.
 However, given the user's emphasis on "Systematic" and "No Rework", **Option A (Twin Engines)** might be safer if we want to treat the Tool Discovery system as a distinct "Meta-Skill" subsystem, decoupling it from the Legacy Analysis workflow.
 
 ## 5. Integration Point
-Regardless of the Engine choice, `./scripts/manage_tool_inventory.py` will serve as the **Trigger**.
+Regardless of the Engine choice, `../../scripts/manage_tool_inventory.py` will serve as the **Trigger**.
 *   **Trigger Event**: `add_tool` or `update_tool` success.
 *   **Action**: Spawn subprocess to run the Engine for the specific file.
 *   **Result**: Instant consistency between Inventory and Cache.

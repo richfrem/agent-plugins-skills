@@ -19,7 +19,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 # Continuous Skill Optimizer
@@ -74,4 +74,4 @@ The script runs a strict loop governed by these rules:
 ### Phase 4: Post-Optimization Review
 After execution, summarize the findings. If `auto-apply` was false, provide the winning description/body text and ask the user if they'd like you to manually apply it to the skill. 
 
-Advise the user to review the ledger at `evals/results.tsv` or run `./scripts/generate_review.py` for visual review of the iteration outcomes.
+Advise the user to review the ledger at `evals/results.tsv` or run `../scripts/generate_review.py` for visual review of the iteration outcomes.

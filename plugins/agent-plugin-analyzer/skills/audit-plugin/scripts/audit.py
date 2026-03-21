@@ -53,9 +53,9 @@ def audit_plugin(plugin_path):
     if not os.path.isdir(claude_plugin_dir):
         errors.append("Missing `.claude-plugin/` directory.")
     else:
-        manifest_path = os.path.join(claude_plugin_dir, "./plugin.json")
+        manifest_path = os.path.join(claude_plugin_dir, "../../../.claude-plugin/plugin.json")
         if not os.path.isfile(manifest_path):
-            errors.append("Missing `./plugin.json` inside `.claude-plugin/`.")
+            errors.append("Missing `../../../.claude-plugin/plugin.json` inside `.claude-plugin/`.")
 
     # 1.2. Check standard file layout
     if os.path.isfile(os.path.join(plugin_path, "mcp.json")):

@@ -21,7 +21,7 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the command group several sub-operations that have different outputs? | **Sub-Action Multiplexing** | `sub-action-multiplexing.md` |
 | Does the command require user input upstream where asking questions mid-flight hurts UX? | **Pre-Execution Input Manifest** | `pre-execution-input-manifest.md` |
 | Does the skill share overlapping keywords with generic tools, potentially causing discoverability issues? | **Multi-Variant Trigger Optimizer** | `multi-variant-trigger-optimizer.md` |
-| Does the skill inherently struggle with undertriggering due to generic namespace intent vs actual semantic queries? | **Trigger Description Optimization Loop** | `./scripts/benchmarking/improve_description.py` (Source: Anthropic `skill-creator`) |
+| Does the skill inherently struggle with undertriggering due to generic namespace intent vs actual semantic queries? | **Trigger Description Optimization Loop** | `../scripts/benchmarking/improve_description.py` (Source: Anthropic `skill-creator`) |
 
 ### Category 2: Execution and Safety
 | Diagnostic Question | Required Pattern | File |
@@ -65,9 +65,9 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the LLM have a strong innate bias to solve the problem the "wrong" way (e.g., calculating math in Python instead of writing a formula)? | **Negative Instruction Constraint** | `negative-instruction-constraint.md` |
 | Does the skill evaluate metrics that require external industry benchmarks rather than the agent's subjective judgment? | **Category-Calibrated Benchmark Anchoring** | `category-calibrated-benchmark-anchoring.md` |
 | Will the generated output be consumed by fresh readers lacking the agent's conversational context? | **Tainted Context Cleanser** | `tainted-context-cleanser.md` |
-| Does the output's quality or performance need to be provably benchmarked against baselines? | **Rigorous Benchmarking & Grading Loop** | `./scripts/benchmarking/run_loop.py` |
+| Does the output's quality or performance need to be provably benchmarked against baselines? | **Rigorous Benchmarking & Grading Loop** | `../scripts/benchmarking/run_loop.py` |
 | Does the command generate full UI artifacts (HTML/SVG) where external asset injection poses a security risk? | **Artifact Generation XSS Compliance Gate** | `artifact-generation-xss-compliance-gate.md` |
-| Are generated UI artifacts or whole file hierarchies difficult for the user to review purely in code before saving? | **Local Interactive Output Viewer Loop** | `./scripts/eval-viewer/generate_review.py` (Source: Anthropic `skill-creator`) |
+| Are generated UI artifacts or whole file hierarchies difficult for the user to review purely in code before saving? | **Local Interactive Output Viewer Loop** | `../scripts/eval-viewer/generate_review.py` (Source: Anthropic `skill-creator`) |
 | Does the interaction pop local browsers or servers that will crash in remote VMs or headless subagent loops? | **UI Degradation Constraint** | `ui-degradation-constraint.md` (Source: Anthropic `skill-creator`) |
 
 ### Category 4: State and Knowledge

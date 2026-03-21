@@ -26,7 +26,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 
@@ -38,9 +38,9 @@ workflows. Commands can be simple prompts or powerful multi-step workflows using
 arguments, file references, bash execution, and integration with agents and skills.
 
 > Reference files for deep dives:
-> - `./././frontmatter-reference.md` -- full list of all frontmatter fields
-> - `./././././interactive-commands.md` -- AskUserQuestion, conditional logic
-> - `./././advanced-workflows.md` -- multi-step, multi-component patterns
+> - `../frontmatter-reference.md` -- full list of all frontmatter fields
+> - `../interactive-commands.md` -- AskUserQuestion, conditional logic
+> - `../advanced-workflows.md` -- multi-step, multi-component patterns
 > - `./././plugin-features-reference.md` -- ${CLAUDE_PLUGIN_ROOT}, bash execution syntax
 > - `././simple-commands.md` -- copy-ready simple command templates
 > - `./././plugin-commands.md` -- copy-ready plugin command templates
@@ -339,6 +339,6 @@ audit-plugin    -- validates full plugin structure including commands
 
 ## Next Actions
 - **Refine**: Run `continuous-skill-optimizer` to benchmark trigger optimization
-- **Extend**: Add interactivity with `AskUserQuestion` -- see `./././././interactive-commands.md`
+- **Extend**: Add interactivity with `AskUserQuestion` -- see `../interactive-commands.md`
 - **Distribute**: Add to a plugin for team sharing -- see `./././plugin-commands.md`
 - **Audit**: Run `audit-plugin` to validate structure

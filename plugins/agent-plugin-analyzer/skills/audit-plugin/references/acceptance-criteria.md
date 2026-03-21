@@ -3,7 +3,7 @@
 **Purpose**: Verify the system auditor accurately detects specification failures.
 
 ## 1. File Detection
-- **[PASSED]**: Auditor throws an error if `././plugin.json` or `.claude-plugin/` directory is missing.
+- **[PASSED]**: Auditor throws an error if `../../../.claude-plugin/plugin.json` or `.claude-plugin/` directory is missing.
 - **[FAILED]**: Auditor silently passes a plugin that stores its `hooks.json` in the root directory instead of `hooks/hooks.json`.
 
 ## 2. Script Restriction  

@@ -1,7 +1,7 @@
 {
     "project": {
         "description": "General Project Knowledge Base (Docs, Readmes)",
-        "manifest": "../../resources/rlm_manifest.json",
+        "manifest": "rlm_manifest.json",
         "cache": ".agent/learning/rlm_summary_cache.json",
         "parser": "directory_glob",
         "prompt_path": "../../resources/prompts/rlm/rlm_summarize_legacy.md",

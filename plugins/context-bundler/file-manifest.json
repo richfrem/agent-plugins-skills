@@ -3,11 +3,11 @@
   "description": "The source code and documentation for the context-bundler plugin.",
   "files": [
     {
-      "path": ".././README.md",
+      "path": "README.md",
       "note": "Primary documentation"
     },
     {
-      "path": "../file-manifest.json",
+      "path": "file-manifest.json",
       "note": "The generic JSON schema example"
     },
     {
@@ -15,7 +15,7 @@
       "note": "The core skill definition"
     },
     {
-      "path": "../scripts/bundle.py",
+      "path": "scripts/bundle.py",
       "note": "The bundling engine"
     }
   ]

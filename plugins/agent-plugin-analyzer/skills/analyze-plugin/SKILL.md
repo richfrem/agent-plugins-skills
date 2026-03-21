@@ -20,7 +20,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 # Plugin & Skill Analyzer
@@ -74,7 +74,7 @@ hardcoded credentials, missing required fields), flag them prominently in the fi
 
 Run the deterministic inventory script first:
 ```bash
-python3 "./inventory_plugin.py" --path <plugin-dir> --format json
+python3 "scripts/inventory_plugin.py" --path <plugin-dir> --format json
 ```
 
 If the script is unavailable, manually enumerate:
@@ -112,7 +112,7 @@ Evaluate the plugin's architectural decisions:
 
 ### Phase 3: Content Analysis
 
-For each file, load the appropriate question set from `references/analysis-questions-by-type.md` and work through every checkbox. See the process diagram in `./analyze-plugin-flow.mmd` for the full pipeline visualization.
+For each file, load the appropriate question set from `references/analysis-questions-by-type.md` and work through every checkbox. See the process diagram in `../analyze-plugin-flow.mmd` for the full pipeline visualization.
 
 For each SKILL.md, evaluate:
 

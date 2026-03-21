@@ -16,7 +16,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 # Agent Swarm
@@ -123,7 +123,7 @@ Do NOT use tool calls or filesystem access - rely only on the content provided v
 ## Known Engine Quirks
 
 ### Copilot CLI
-- **No `-p` flag** -- Copilot ignores stdin when `-p` is present. `./../scripts/swarm_run.py` automatically prepends the prompt to the file content instead.
+- **No `-p` flag** -- Copilot ignores stdin when `-p` is present. `../../scripts/swarm_run.py` automatically prepends the prompt to the file content instead.
 - **Auth token scope** -- Use `source ~/.zshrc` to load your token. `gh auth token` returns a PAT without Copilot permissions, causing auth failures under concurrency.
 - **Rate limits** -- Use `--workers 2` maximum. Higher concurrency trips GitHub's anti-abuse systems and surfaces as authentication errors.
 - **Concurrent writes** -- If using a shared JSON post-cmd output (e.g. cache), ensure the writer script uses `fcntl.flock` for atomic writes. See `inject_summary.py`.

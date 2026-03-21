@@ -47,7 +47,7 @@ Check if `$ARGUMENTS` points to:
 
 For each plugin in scope, run:
 ```bash
-python3 "./scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
+python3 "../scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 
 If the script fails, perform manual inventory per the `analyze-plugin` skill Phase 1.

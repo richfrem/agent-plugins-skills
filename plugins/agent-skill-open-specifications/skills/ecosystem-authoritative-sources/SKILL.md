@@ -15,7 +15,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././././././././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 # Ecosystem Authoritative Sources
@@ -63,33 +63,33 @@ This ecosystem uses the universal `npx skills` CLI to install, update, and manag
 *   **Update All Skills:** `npx skills update`
 *   **Local Development Install:** `rm -rf .agents/ && npx skills add ./plugins/<plugin-name> --force`
 
-*For full installation documentation and architecture rules, strictly refer to `./references/skills.md`.*
+*For full installation documentation and architecture rules, strictly refer to `../skills.md`.*
 
 ## Table of Contents
 To read any of the reference guides, use your file system tools to `cat` or `view` the relevant file.
 
 *   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills/` (and equivalents like `.agent/skills/` and `.github/skills/`). Custom agents deployed as Skills are stored here as `<plugin>-<agent>/SKILL.md`.
-    *   [reference/./references/skills.md](./references/skills.md)
+    *   [reference/../skills.md](../skills.md)
     *   [reference/diagrams/references/diagrams/skill-execution-flow.mmd](references/diagrams/skill-execution-flow.mmd)
 *   **Claude Plugins**: Specification for the `.claude-plugin` architecture, manifest setup, and distribution.
-    *   [reference/./references/plugins.md](./references/plugins.md)
+    *   [reference/../plugins.md](../plugins.md)
     *   [reference/diagrams/references/diagrams/plugin-architecture.mmd](references/diagrams/plugin-architecture.mmd)
 *   **Antigravity Workflows & Rules (and Legacy Commands)**: Specifications for global/workspace Rules, deterministic trajectory Workflows, and the critical distinction between deploying **Skills** vs. Legacy **Commands**.
-    *   [reference/./references/workflows.md](./references/workflows.md)
+    *   [reference/../workflows.md](../workflows.md)
 *   **Sub-Agents**: Definition, setup, and orchestration of nested contextual LLM boundaries. Sub-Agents are deployed structurally as pure Skills (mapped to `skills/<agent-name>/SKILL.md`).
-    *   [reference/./references/sub-agents.md](./references/sub-agents.md)
+    *   [reference/../sub-agents.md](../sub-agents.md)
 *   **GitHub Copilot Prompts (Models)**: Documentation on the exact YAML schema, dynamic variables, and exclusion logic (`exclude-targets`) used by GitHub Copilot chat environments.
-    *   [reference/./references/github-prompts.md](./references/github-prompts.md)
+    *   [reference/../github-prompts.md](../github-prompts.md)
 *   **GitHub Agentic Workflows**: Documentation on the "Continuous AI" autonomous agents responding to CI/CD events.
-    *   [reference/github-agentic-./references/workflows.md](../workflows.md)
+    *   [reference/github-agentic-./references/workflows.md](workflows.md)
 *   **Hooks**: Lifecycle event integrations (e.g., `pre-commit`, `on-startup`).
-    *   [reference/./references/hooks.md](./references/hooks.md)
+    *   [reference/../hooks.md](../hooks.md)
 *   **Azure AI Foundry Agents**: Documentation on how to map Open Agent-Skills to Azure Foundry Agent Service, including API payloads, constraints (e.g., 128-tool limits), and standard setups.
     *   [reference/references/azure-foundry-agents.md](references/azure-foundry-agents.md)
 *   **Marketplace**: Registering registries and interacting with the `marketplace.json` distribution format.
-    *   [reference/./references/marketplace.md](./references/marketplace.md)
+    *   [reference/../marketplace.md](../marketplace.md)
 *   **Installation & Management**: Universal CLI guidelines for `npx skills`, including remote installations, updates, and local development workarounds.
-    *   [reference/npx-./references/skills.md](../skills.md)
+    *   [reference/npx-./references/skills.md](skills.md)
 
 ## Anthropic Plugin-Dev Key Learnings (March 2026)
 The following patterns were confirmed from Anthropic's official `plugin-dev` plugin:

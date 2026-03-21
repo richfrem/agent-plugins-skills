@@ -61,7 +61,7 @@ Check if `$ARGUMENTS` points to:
 
 For each plugin in scope, run:
 ```bash
-python3 "./inventory_plugin.py" --path "$ARGUMENTS" --format json
+python3 "scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 
 > **Security scanning is enabled by default.** The inventory script runs credential detection,

@@ -554,4 +554,4 @@ Use for: Verifying required plugin files exist
 ---
 
 For detailed plugin-specific features, see `./plugin-features-reference.md`.
-For general command development, see main `./SKILL.md`.
+For general command development, see main `../SKILL.md`.

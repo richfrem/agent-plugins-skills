@@ -77,7 +77,7 @@ This is the profile registry. You can add or rename profiles here:
 ```json
 "project": {
     "description": "Custom Docs Profile",
-    "manifest": "./resources/rlm_manifest.json",
+    "manifest": "assets/resources/rlm_manifest.json",
     "cache": ".agent/learning/custom_cache.json",
     "parser": "directory_glob",
     "prompt_path": "./resources/prompts/rlm/custom_prompt.md",

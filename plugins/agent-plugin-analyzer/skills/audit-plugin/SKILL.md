@@ -22,7 +22,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././././././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 
@@ -37,7 +37,7 @@ naming conventions, component requirements, and security best practices. Uses th
 ## Step 1: Locate the Plugin
 
 Establish the plugin root:
-- Look for `./././././././././././././plugin.json` -- this is the definitive marker
+- Look for `../../../../.claude-plugin/plugin.json` -- this is the definitive marker
 - If user didn't specify a path, check current directory and common locations
 - Confirm with user if ambiguous
 
@@ -47,7 +47,7 @@ Establish the plugin root:
 
 > **Cross-plugin dependency**: The `plugin-validator` agent used in this step is defined in the
 > `agent-scaffolders` plugin, not this plugin. It must be installed for this step to work.
-> See `./CONNECTORS.md` for the dependency declaration and fallback instructions.
+> See `../CONNECTORS.md` for the dependency declaration and fallback instructions.
 
 Trigger the `plugin-validator` agent for comprehensive validation:
 
@@ -56,7 +56,7 @@ Trigger the `plugin-validator` agent for comprehensive validation:
 ```
 
 The agent checks all 10 categories automatically:
-1. Manifest (`./././././././././././././plugin.json`) -- JSON syntax, required `name` field, kebab-case
+1. Manifest (`../../../../.claude-plugin/plugin.json`) -- JSON syntax, required `name` field, kebab-case
 2. Directory structure -- components at root, not inside `.claude-plugin/`
 3. Commands (`commands/**/*.md`) -- frontmatter, `description`, `argument-hint`, `allowed-tools`
 4. Agents (`agents/**/*.md`) -- `name`, `description` with `<example>` blocks, `model`, `color`

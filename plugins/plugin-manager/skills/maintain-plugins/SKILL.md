@@ -19,7 +19,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 # Plugin Maintenance
@@ -33,8 +33,8 @@ This skill is the ecosystem health hub. It covers three operations:
 **Core constraint**: Custom, project-specific plugins are NEVER deleted during sync. Only vendor-managed plugins that have been locally removed are cleaned up.
 
 ## References
-- Sync process guide: `./references/cleanup_process.md`
-- Sync flow diagram: `./references/cleanup_flow.mmd`
+- Sync process guide: `cleanup_process.md`
+- Sync flow diagram: `cleanup_flow.mmd`
 
 ---
 
@@ -93,7 +93,7 @@ For each plugin being audited, classify every file by type and check against Ope
 | Command | `commands/*.md` | Slash-command instructions |
 | Reference | `skills/*/references/*.md` | Progressive disclosure content |
 | Script | `scripts/*.py` | Python only — no .sh/.ps1 |
-| Manifest | `./././././plugin.json` | Required |
+| Manifest | `../../../.claude-plugin/plugin.json` | Required |
 | Connectors | `CONNECTORS.md` | Required if Supercharged/Integration-Dependent |
 | Diagram | `*.mmd` | Architecture diagrams |
 | README | `README.md` | Required |
@@ -130,7 +130,7 @@ For each plugin being audited, classify every file by type and check against Ope
 
 ### Step 3: Flag and Report
 For each violation found, report with severity:
-- **CRITICAL** — Missing `././././plugin.json`, `shell=True` in scripts, hardcoded credentials
+- **CRITICAL** — Missing `../../../.claude-plugin/plugin.json`, `shell=True` in scripts, hardcoded credentials
 - **HIGH** — SKILL.md over 500 lines, name convention violations, missing `allowed-tools`
 - **MEDIUM** — Missing `CONNECTORS.md` for tool-using plugin, missing fallback-tree
 - **LOW** — Missing README, no `repository` in ././././plugin.json

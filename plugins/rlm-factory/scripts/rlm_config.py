@@ -129,7 +129,7 @@ class RLMConfig:
         self.parser_type = profile.get("parser", "directory_glob")
         prompt_path_rel = profile.get(
             "prompt_path",
-            "../../assets/resources/prompts/rlm/rlm_summarize_general.md"
+            "../assets/resources/prompts/rlm/rlm_summarize_general.md"
         )
         self.prompt_full_path = (self.root / prompt_path_rel).resolve()
         self.prompt_template = self._load_prompt()

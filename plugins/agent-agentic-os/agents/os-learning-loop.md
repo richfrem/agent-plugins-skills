@@ -105,7 +105,7 @@ Determine the layer of the OS responsible for the friction:
 4. `execution_mode` is `"standard"` or `"lightweight"` (never `"strict"`)
 
 1. Design and propose a specific change based on identified friction.
-    - Follow the [Skill Optimization Guide](./references/skill_optimization_guide.md) to ensure high Routing Accuracy.
+    - Follow the [Skill Optimization Guide](../references/skill_optimization_guide.md) to ensure high Routing Accuracy.
     - **Optimization Strategy**: Use the "Direct vs. Audit" pattern in `<example>` blocks to ensure robustness across different user phrasing.
     - **Scoped Keywords**: Ensure critical trigger words are placed in the frontmatter `description` for optimal extraction by the trainer.
 2. **Eval-Gate**: Use the `Bash` tool to run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py` on your proposed changes.
@@ -132,7 +132,7 @@ Summarize exactly what files were changed. Explain to the user how the OS will b
 ### Phase 6: Qualitative Self-Assessment Survey
 
 Immediately after the retrospective, you MUST perform a qualitative self-assessment:
-1. Use the [Post-Run Survey Template](./references/post_run_survey.md) as your guide.
+1. Use the [Post-Run Survey Template](../references/post_run_survey.md) as your guide.
 2. Formally answer every qualitative question to capture the friction of the session.
 3. Save the results as a new artifact: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[DATE]_[TIME].md`.
 4. **Survey Observability**: Use `Bash` to emit a survey completion event:

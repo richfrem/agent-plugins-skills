@@ -15,7 +15,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 # Dual-Loop (Inner/Outer Agent Delegation)

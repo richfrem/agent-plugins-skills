@@ -162,7 +162,7 @@ Only `name` is truly required. `name` must be kebab-case. Version follows semver
 }
 ```
 
-**If plugin has MCP integrations, create `./CONNECTORS.md`:**
+**If plugin has MCP integrations, create `../../CONNECTORS.md`:**
 ```markdown
 # Connectors
 

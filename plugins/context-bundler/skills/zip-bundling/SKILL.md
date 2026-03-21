@@ -38,7 +38,7 @@ Before bundling, determine what the user is trying to accomplish:
 - **Handoffs**: Include `README`, `.env.example`, and structural scaffolding.
 
 ### 2. Formulate the Manifest Schema
-You must generate a `./file-manifest.json` containing the exact files to be bundled.
+You must generate a `../../file-manifest.json` containing the exact files to be bundled.
 ```json
 {
   "title": "Bundle Title",
@@ -57,10 +57,10 @@ You must generate a `./file-manifest.json` containing the exact files to be bund
 ```
 
 ### 3. Generate the ZIP Archive
-Once the `./file-manifest.json` is safely written to disk, invoke the native bundler script explicitly requesting a `.zip` output destination:
+Once the `../../file-manifest.json` is safely written to disk, invoke the native bundler script explicitly requesting a `.zip` output destination:
 
 ```bash
-python3 "./bundle_zip.py" --manifest "./file-manifest.json" --bundle "output_bundle.zip"
+python3 "scripts/bundle_zip.py" --manifest "../../file-manifest.json" --bundle "output_bundle.zip"
 ```
 
 The script will automatically parse your JSON notes and generate a `_manifest_notes.md` root document explaining the archive contents to whoever unzips it.
