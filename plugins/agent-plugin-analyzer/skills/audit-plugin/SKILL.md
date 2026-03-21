@@ -22,7 +22,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `../../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 
@@ -47,7 +47,7 @@ Establish the plugin root:
 
 > **Cross-plugin dependency**: The `plugin-validator` agent used in this step is defined in the
 > `agent-scaffolders` plugin, not this plugin. It must be installed for this step to work.
-> See `../CONNECTORS.md` for the dependency declaration and fallback instructions.
+> See `CONNECTORS.md` for the dependency declaration and fallback instructions.
 
 Trigger the `plugin-validator` agent for comprehensive validation:
 

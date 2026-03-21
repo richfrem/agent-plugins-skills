@@ -25,7 +25,7 @@ pip-compile ./requirements.in
 pip install -r ./requirements.txt
 ```
 
-See `../../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
 ---
 
@@ -346,7 +346,7 @@ When improving after eval feedback:
 
 ## Next Actions
 - **Quality review**: Trigger `skill-reviewer` agent to audit description and content
-- **Continuous improvement**: Run `../scripts/run_loop.py` for trigger optimization
+- **Continuous improvement**: Run `scripts/run_loop.py` for trigger optimization
 - **Audit**: Run `audit-plugin` to validate the full plugin structure
 - **Convert to agent**: Run `create-agentic-workflow` for a GitHub-native version
 
