@@ -10,6 +10,24 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+<example>
+<commentary>User wants to run the full Phase A discovery loop on a problem.</commentary>
+User: Run the exploration workflow on this problem — we need to understand why users are abandoning the onboarding flow.
+Agent: [invokes exploration-workflow, starts Phase A: session brief → requirements capture → handoff package]
+</example>
+
+<example>
+<commentary>User asks for end-to-end guidance on the exploration cycle.</commentary>
+User: Walk me through the full Phase A exploration cycle.
+Agent: [invokes exploration-workflow, explains and guides through each phase in order]
+</example>
+
+<example>
+<commentary>BRD-only requests route to business-requirements-capture, not this skill.</commentary>
+User: Generate a BRD from our session captures.
+Agent: [invokes business-requirements-capture, NOT exploration-workflow]
+</example>
+
 # Exploration Cycle Workflow
 
 This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the Spec-Kitty engineering workflow and produces handoff packages that optionally feed into it.

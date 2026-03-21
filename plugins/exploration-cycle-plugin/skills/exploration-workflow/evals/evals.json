@@ -16,7 +16,7 @@
     "should_trigger": true
   },
   {
-    "query": "Generate a BRD from our session captures.",
+    "query": "Build a stakeholder map for the new initiative.",
     "should_trigger": false
   },
   {
