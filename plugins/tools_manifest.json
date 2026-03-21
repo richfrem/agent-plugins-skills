@@ -221,34 +221,6 @@
         }
       ]
     },
-    "env-helper": {
-      "count": 1,
-      "scripts": [
-        {
-          "name": "env_helper.py",
-          "path": "plugins/env-helper/skills/env-helper/scripts/env_helper.py",
-          "purpose": "# Purpose: Shared ecosystem environment variable helper for plugins.",
-          "type": "python"
-        }
-      ]
-    },
-    "excel-to-csv": {
-      "count": 2,
-      "scripts": [
-        {
-          "name": "convert.py",
-          "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/convert.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "verify_csv.py",
-          "path": "plugins/excel-to-csv/skills/excel-to-csv/scripts/verify_csv.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
-    },
     "huggingface-utils": {
       "count": 5,
       "scripts": [
@@ -280,17 +252,6 @@
           "name": "hf_upload.py",
           "path": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_upload.py",
           "purpose": "Consolidated upload operations extracted from the legacy archive.",
-          "type": "python"
-        }
-      ]
-    },
-    "json-hygiene": {
-      "count": 1,
-      "scripts": [
-        {
-          "name": "find_json_duplicates.py",
-          "path": "plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py",
-          "purpose": "",
           "type": "python"
         }
       ]

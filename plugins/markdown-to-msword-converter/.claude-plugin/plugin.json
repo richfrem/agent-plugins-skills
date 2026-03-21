@@ -16,5 +16,6 @@
             }
         }
     },
-    "license": "MIT"
+    "license": "MIT",
+    "keywords": ["markdown", "docx", "msword", "convert", "word", "document"]
 }

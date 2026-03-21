@@ -6,5 +6,6 @@
         "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
-    "license": "MIT"
+    "license": "MIT",
+    "keywords": ["huggingface", "hf-hub", "soul-persistence", "upload", "dataset", "cognitive-continuity"]
 }

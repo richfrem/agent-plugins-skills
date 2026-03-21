@@ -3,27 +3,46 @@
 Coding standards and header templates for Python, TypeScript/JavaScript, and C#/.NET.
 
 ## Installation
+
+### Option 1: From a Marketplace (Recommended)
 ```bash
-claude --plugin-dir ./plugins/coding-conventions
+/plugin marketplace add <marketplace-url>
+/plugin install coding-conventions
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/coding-conventions
 ```
 
-## Passive Rules
-| Rule | Description |
-|:---|:---|
-| `rules/coding-conventions.mdc` | Automatically injects core syntax requirements (headers, docstrings, typehints) into any `.py`, `.ts`, or `.cs` file being modified by the agent. |
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/coding-conventions
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install coding-conventions
+```
+
+### Option 3: Local Development Checkout
+```bash
+npx skills add ./plugins/coding-conventions
+```
 
 ## Templates Included
-- `templates/python-tool-header-template.py` — Extended Python header
-- `templates/js-tool-header-template.js` — JS/TS header
+- `skills/coding-conventions-agent/assets/templates/python-tool-header-template.py` — Extended Python header
+- `skills/coding-conventions-agent/assets/templates/js-tool-header-template.js` — JS/TS header
 
 ## Structure
+```
 coding-conventions/
 ├── .claude-plugin/plugin.json
-├── rules/coding-conventions.mdc
-├── skills/conventions-agent/SKILL.md
-├── templates/
-│   ├── python-tool-header-template.py
-│   └── js-tool-header-template.js
+├── skills/coding-conventions-agent/
+│   ├── SKILL.md
+│   ├── assets/templates/
+│   │   ├── python-tool-header-template.py
+│   │   └── js-tool-header-template.js
+│   └── references/
 └── README.md
 ```
 

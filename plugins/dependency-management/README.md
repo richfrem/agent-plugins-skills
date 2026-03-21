@@ -3,14 +3,31 @@
 Python dependency management with pip-compile locked-file workflow for multi-service or monorepo python backends.
 
 ## Installation
+
+### Option 1: From a Marketplace (Recommended)
 ```bash
-claude --plugin-dir ./plugins/dependency-management
+/plugin marketplace add <marketplace-url>
+/plugin install dependency-management
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/dependency-management
 ```
 
-## Passive Rules
-| Rule | Description |
-|:---|:---|
-| `rules/dependency-management.mdc` | Automatically injects core dependency workflow constraints (like `.in` to `pip-compile`) when editing `requirements` or `Dockerfile` files. |
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/dependency-management
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install dependency-management
+```
+
+### Option 3: Local Development Checkout
+```bash
+npx skills add ./plugins/dependency-management
+```
 
 ## Core Rules
 1. No manual `pip install` — use `.in` → `pip-compile` → `.txt`
@@ -22,8 +39,9 @@ claude --plugin-dir ./plugins/dependency-management
 ```
 dependency-management/
 ├── .claude-plugin/plugin.json
-├── rules/dependency-management.mdc
-├── skills/dependency-management/SKILL.md
+├── skills/dependency-management/
+│   ├── SKILL.md
+│   └── references/
 └── README.md
 ```
 

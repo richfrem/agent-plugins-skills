@@ -51,11 +51,8 @@
         },
         "copilot-cli": {},
         "dependency-management": {},
-        "env-helper": {},
-        "excel-to-csv": {},
         "gemini-cli": {},
         "huggingface-utils": {},
-        "json-hygiene": {},
         "link-checker": {},
         "markdown-to-msword-converter": {
             "args.py": "false positive"

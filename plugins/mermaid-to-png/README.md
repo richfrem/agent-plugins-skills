@@ -3,17 +3,30 @@
 Generated via Agent Scaffolder.
 
 ## Installation
-### Option 1: Skills Only (End Users)
+
+### Option 1: From a Marketplace (Recommended)
+```bash
+/plugin marketplace add <marketplace-url>
+/plugin install mermaid-to-png
+```
+For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
+```bash
+npx skills add <marketplace-url>/plugins/mermaid-to-png
+```
+
+### Option 2: From GitHub Directly
+```bash
+# Skills only
+npx skills add richfrem/agent-plugins-skills --path plugins/mermaid-to-png
+
+# Full plugin (Claude Code native)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install mermaid-to-png
+```
+
+### Option 3: Local Development Checkout
 ```bash
 npx skills add ./plugins/mermaid-to-png
-```
-This installs the skills from this plugin.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the bridge-plugin skill:
-```bash
-# Use the bridge-plugin skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/mermaid-to-png
 ```
 
 ## Purpose
@@ -24,15 +37,15 @@ Converts Mermaid Markdown diagrams into high resolution PNG images.
 ```text
 mermaid-to-png/
 ├── .claude-plugin/
-│   └── plugin.json       # Plugin manifest and routing definitions
-├── skills/               # Directory containing Agent Skills (prompt logic)
-├── agents/               # Directory containing Sub-Agent definitions
-├── commands/             # Legacy commands and flat-file workflows
-├── hooks.json            # Agent lifecycle hook subscriptions
-├── lsp.json              # Language Server Protocol definitions
-├── mcp.json              # Model Context Protocol integrations
-├── README.md             # This documentation file
-└── mermaid-to-png-architecture.mmd # Mermaid visual architecture diagram
+│   └── plugin.json
+├── skills/
+│   └── convert-mermaid/
+│       ├── SKILL.md
+│       ├── scripts/
+│       │   ├── convert.py
+│       │   └── verify_png.py
+│       └── references/
+└── README.md
 ```
 
 ## Plugin Components

@@ -27,34 +27,6 @@
         "last_updated": "2026-03-09T13:17:40.855396",
         "compliance_status": "needs_review",
         "header_style": "basic"
-      }
-    ],
-    "env-helper": [
-      {
-        "name": "env_helper.py",
-        "path": "plugins/env-helper/scripts/env_helper.py",
-        "description": "# Purpose: Shared ecosystem environment variable helper for plugins.",
-        "last_updated": "2026-03-09T13:17:40.855888",
-        "compliance_status": "needs_review",
-        "header_style": "basic"
-      },
-      {
-        "name": "env_helper.py",
-        "path": "plugins/env-helper/skills/env-helper/scripts/env_helper.py",
-        "description": "# Purpose: Shared ecosystem environment variable helper for plugins.",
-        "last_updated": "2026-03-09T13:17:40.856515",
-        "compliance_status": "needs_review",
-        "header_style": "basic"
-      }
-    ],
-    "adr-manager": [
-      {
-        "name": "adr_manager.py",
-        "path": "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py",
-        "description": "adr_manager.py — Architecture Decision Record Manager",
-        "last_updated": "2026-03-09T13:17:40.857371",
-        "compliance_status": "needs_review",
-        "header_style": "basic"
       },
       {
         "name": "next_number.py",
@@ -63,16 +35,6 @@
         "last_updated": "2026-03-09T13:17:40.857851",
         "compliance_status": "compliant",
         "header_style": "extended"
-      }
-    ],
-    "json-hygiene": [
-      {
-        "name": "find_json_duplicates.py",
-        "path": "plugins/json-hygiene/skills/json-hygiene-agent/scripts/find_json_duplicates.py",
-        "description": "find_json_duplicates.py (V2)",
-        "last_updated": "2026-03-09T13:17:40.859678",
-        "compliance_status": "needs_review",
-        "header_style": "basic"
       }
     ],
     "vector-db": [

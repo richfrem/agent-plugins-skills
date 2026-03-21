@@ -567,16 +567,6 @@ Script: vector_consistency_check.py
   5. Symlink exists in all 3 utilizing skills? Yes
 
 ======================================================================
-PLUGIN: json-hygiene
-======================================================================
-
-Script: find_json_duplicates.py
-  1. Exists physically in plugin: Yes (1 location(s))
-     -> Exists at pluginroot/scripts: No
-  2. Used by skills: json-hygiene-agent
-  3. Only used by 1 skill. Physically exists ONLY in that skill (json-hygiene-agent)? Yes
-
-======================================================================
 PLUGIN: agent-skill-open-specifications
 ======================================================================
 
@@ -595,16 +585,6 @@ Script: next_number.py
      -> Exists at pluginroot/scripts: No
   2. Used by skills: adr-management
   3. Only used by 1 skill. Physically exists ONLY in that skill (adr-management)? Yes
-
-======================================================================
-PLUGIN: env-helper
-======================================================================
-
-Script: env_helper.py
-  1. Exists physically in plugin: Yes (2 location(s))
-     -> Exists at pluginroot/scripts: Yes
-  2. Used by skills: env-helper
-  3. Only used by 1 skill. Physically exists ONLY in that skill (env-helper)? Yes
 
 ======================================================================
 PLUGIN: markdown-to-msword-converter

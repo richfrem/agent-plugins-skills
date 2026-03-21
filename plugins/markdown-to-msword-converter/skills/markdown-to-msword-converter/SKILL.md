@@ -1,8 +1,7 @@
 ---
 name: markdown-to-msword-converter
 description: Converts Markdown files to one MS Word document per file using plugin-local scripts. V2 includes L5 Delegated Constraint Verification for strict binary artifact linting.
-disable-model-invocation: false
-dependencies: ["pip:docx"]
+allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies

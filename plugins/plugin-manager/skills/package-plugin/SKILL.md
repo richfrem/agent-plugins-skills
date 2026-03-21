@@ -1,7 +1,6 @@
 ---
 name: package-plugin
 description: Package a plugin directory into a distributable ZIP archive with correct flags for symlink preservation, exclusion of build artifacts, and manifest validation before packaging.
-disable-model-invocation: false
 allowed-tools: Bash, Read, Write
 ---
 

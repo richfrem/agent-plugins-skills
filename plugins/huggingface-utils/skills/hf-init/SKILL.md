@@ -2,7 +2,6 @@
 name: hf-init
 description: "Initialize HuggingFace integration - validates .env variables, tests API connectivity, and ensures the dataset repository structure exists. Use when onboarding a new project to HuggingFace or when credentials change."
 allowed-tools: Bash, Read
-dependencies: ["pip:hf_upload"]
 ---
 
 ## Dependencies

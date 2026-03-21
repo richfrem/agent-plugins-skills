@@ -117,16 +117,12 @@ This repository currently hosts **28 distinct plugin packages** containing over 
 - **Coding Conventions** — Centralized rules engine for standardizing file headers and `snake_case/camelCase/PascalCase` semantics across multiple languages.
   ↳ [`coding-conventions`](plugins/coding-conventions/skills/coding-conventions/SKILL.md)
   ↳ [`conventions-agent`](plugins/coding-conventions/skills/conventions-agent/SKILL.md)
-- **JSON Hygiene** — Agentic scanner detecting broken configuration values (e.g., duplicated keys masked by standard JSON parsers).
-  ↳ [`json-hygiene-agent`](plugins/json-hygiene/skills/json-hygiene-agent/SKILL.md)
 
 ### Data & Code Manipulation
 - **Context Bundler** — Tooling to package deep directory contexts and code traces into single readable files.
   ↳ [`context-bundling`](plugins/context-bundler/skills/context-bundling/SKILL.md)
 - **Dependency Management** — Handles cross-platform pip-compile workflows securely.
   ↳ [`dependency-management`](plugins/dependency-management/skills/dependency-management/SKILL.md)
-- **Excel to CSV** — Flat file extraction module for ingestion and parsing.
-  ↳ [`excel-to-csv`](plugins/excel-to-csv/skills/excel-to-csv/SKILL.md)
 
 ### Agent Persona CLI Interfaces
 Sub-systems allowing fresh, isolated model context spaces for advanced tasks (audits, QA, external validation).
@@ -138,8 +134,6 @@ Sub-systems allowing fresh, isolated model context spaces for advanced tasks (au
   ↳ [`gemini-cli-agent`](plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md)
 
 ### Artificial Constraints & Vectors
-- **Environment Helper** — Universal resolver for constant integration values across environments.
-  ↳ [`env-helper`](plugins/env-helper/skills/env-helper/SKILL.md)
 - **HuggingFace Utils** — Snapshot persistence and HuggingFace Soul repository lifecycle actions.
   ↳ [`hf-init`](plugins/huggingface-utils/skills/hf-init/SKILL.md)
   ↳ [`hf-upload`](plugins/huggingface-utils/skills/hf-upload/SKILL.md)

@@ -29,6 +29,15 @@ npx skills add richfrem/agent-plugins-skills --path plugins/obsidian-integration
 npx skills add ./plugins/obsidian-integration
 ```
 
+## Dependencies
+
+The `obsidian-vault-crud` and `obsidian-bases-manager` skills require `ruamel.yaml` for lossless YAML round-trip parsing:
+
+```bash
+pip install -r requirements.txt
+# or: pip install ruamel.yaml
+```
+
 ## Overview
 Provides a suite of skills allowing LLM agents to safely perform CRUD operations on Obsidian Vaults, parse proprietary Obsidian Markdown (Wikilinks, block refs, callouts), traverse the connection graph, and manipulate dynamic visual views like Bases and Canvas.
 
