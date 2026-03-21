@@ -20,7 +20,7 @@
     "should_trigger": false
   },
   {
-    "query": "Let's kick off a new exploration session.",
+    "query": "Refactor the login module for clarity.",
     "should_trigger": false
   },
   {
