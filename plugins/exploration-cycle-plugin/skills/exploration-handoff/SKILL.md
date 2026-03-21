@@ -8,6 +8,24 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+<example>
+<commentary>User has finished exploration and wants to produce a handoff package.</commentary>
+User: I finished my exploration session, help me write the handoff package.
+Agent: [invokes exploration-handoff, synthesizes session artifacts into structured handoff]
+</example>
+
+<example>
+<commentary>User wants to synthesize all exploration artifacts for a specific downstream consumer.</commentary>
+User: Synthesize our session captures into a handoff for the engineering team.
+Agent: [invokes exploration-handoff, targets handoff at engineering/spec downstream]
+</example>
+
+<example>
+<commentary>Starting a new session routes to exploration-session-brief, not this skill.</commentary>
+User: Let's kick off a new exploration session.
+Agent: [invokes exploration-session-brief, NOT exploration-handoff]
+</example>
+
 # Exploration Handoff (Interactive Co-Authoring)
 
 > ⚠️ **STUB** — `execute.py` not yet implemented. Use the [handoff-preparer-agent](../../agents/handoff-preparer-agent.md) for the real logic.
