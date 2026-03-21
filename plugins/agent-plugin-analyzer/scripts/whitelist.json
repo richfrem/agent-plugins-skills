@@ -51,7 +51,6 @@
         },
         "copilot-cli": {},
         "dependency-management": {},
-        "env-helper": {},
         "excel-to-csv": {},
         "gemini-cli": {},
         "huggingface-utils": {},

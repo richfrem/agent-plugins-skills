@@ -221,17 +221,6 @@
         }
       ]
     },
-    "env-helper": {
-      "count": 1,
-      "scripts": [
-        {
-          "name": "env_helper.py",
-          "path": "plugins/env-helper/skills/env-helper/scripts/env_helper.py",
-          "purpose": "# Purpose: Shared ecosystem environment variable helper for plugins.",
-          "type": "python"
-        }
-      ]
-    },
     "excel-to-csv": {
       "count": 2,
       "scripts": [

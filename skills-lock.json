@@ -253,13 +253,6 @@
       "installedAt": "2026-03-21T16:30:16.667589Z",
       "updatedAt": "2026-03-21T16:36:25.479423Z"
     },
-    "env-helper": {
-      "source": "https://github.com/richfrem/agent-plugins-skills",
-      "sourceType": "local",
-      "computedHash": "c3bf30ddcd66ef428004465cac7fa7948ad7fbb447f929d3032277ba791bf1de",
-      "installedAt": "2026-03-21T16:30:16.951645Z",
-      "updatedAt": "2026-03-21T16:36:25.768170Z"
-    },
     "example-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "sourceType": "local",

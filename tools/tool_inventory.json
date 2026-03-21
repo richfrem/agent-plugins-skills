@@ -29,24 +29,6 @@
         "header_style": "basic"
       }
     ],
-    "env-helper": [
-      {
-        "name": "env_helper.py",
-        "path": "plugins/env-helper/scripts/env_helper.py",
-        "description": "# Purpose: Shared ecosystem environment variable helper for plugins.",
-        "last_updated": "2026-03-09T13:17:40.855888",
-        "compliance_status": "needs_review",
-        "header_style": "basic"
-      },
-      {
-        "name": "env_helper.py",
-        "path": "plugins/env-helper/skills/env-helper/scripts/env_helper.py",
-        "description": "# Purpose: Shared ecosystem environment variable helper for plugins.",
-        "last_updated": "2026-03-09T13:17:40.856515",
-        "compliance_status": "needs_review",
-        "header_style": "basic"
-      }
-    ],
     "adr-manager": [
       {
         "name": "adr_manager.py",

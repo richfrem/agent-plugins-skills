@@ -138,8 +138,6 @@ Sub-systems allowing fresh, isolated model context spaces for advanced tasks (au
   ↳ [`gemini-cli-agent`](plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md)
 
 ### Artificial Constraints & Vectors
-- **Environment Helper** — Universal resolver for constant integration values across environments.
-  ↳ [`env-helper`](plugins/env-helper/skills/env-helper/SKILL.md)
 - **HuggingFace Utils** — Snapshot persistence and HuggingFace Soul repository lifecycle actions.
   ↳ [`hf-init`](plugins/huggingface-utils/skills/hf-init/SKILL.md)
   ↳ [`hf-upload`](plugins/huggingface-utils/skills/hf-upload/SKILL.md)
