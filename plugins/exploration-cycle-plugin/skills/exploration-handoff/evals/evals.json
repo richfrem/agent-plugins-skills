@@ -1,18 +1,38 @@
 [
   {
-    "query": "I need help using the exploration-handoff skill",
+    "query": "I finished my exploration session, help me write the handoff package.",
     "should_trigger": true
   },
   {
-    "query": "Can you use the exploration-handoff skill for me?",
+    "query": "Synthesize our session captures into a handoff for the engineering team.",
     "should_trigger": true
   },
   {
-    "query": "What time is it in New York?",
+    "query": "Prepare a handoff document from all our exploration artifacts.",
+    "should_trigger": true
+  },
+  {
+    "query": "We're done exploring — let's produce the handoff for the spec authors.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let's kick off a new exploration session.",
     "should_trigger": false
   },
   {
-    "query": "How do I boil an egg?",
+    "query": "Generate a BRD from our captures.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create Gherkin acceptance criteria for these stories.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing auth test.",
+    "should_trigger": false
+  },
+  {
+    "query": "What does the handoff skill do? Don't run it yet.",
     "should_trigger": false
   }
 ]

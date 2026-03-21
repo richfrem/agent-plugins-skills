@@ -9,6 +9,30 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+<example>
+<commentary>User wants to start a new exploration session.</commentary>
+User: Let's kick off a new exploration session. I want to capture a brief for the problem I've been thinking about.
+Agent: [invokes exploration-session-brief, starts Stage 1 context gathering]
+</example>
+
+<example>
+<commentary>User has a vague idea and wants structured help thinking it through.</commentary>
+User: I have a rough idea to explore — somewhere between a process improvement and a new feature. Can you help me think it through and write it up?
+Agent: [invokes exploration-session-brief, guides user through the 3-stage co-authoring workflow]
+</example>
+
+<example>
+<commentary>Explanation request — do NOT invoke. Only trigger when user actively wants to start or capture a brief, not when asking about the skill.</commentary>
+User: What does the exploration-session-brief skill do? Don't start it yet.
+Agent: [explains the skill without invoking it]
+</example>
+
+<example>
+<commentary>Handoff requests route to exploration-handoff, not this skill.</commentary>
+User: I finished my exploration session, help me write the handoff package.
+Agent: [invokes exploration-handoff, NOT exploration-session-brief]
+</example>
+
 # Exploration Session Brief (Interactive Co-Authoring)
 
 > ⚠️ **STUB** — `execute.py` not yet implemented. Use the [intake-agent](../../agents/intake-agent.md) for the real logic.
