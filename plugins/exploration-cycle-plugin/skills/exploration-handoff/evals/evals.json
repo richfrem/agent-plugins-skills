@@ -1,0 +1,18 @@
+[
+  {
+    "query": "I need help using the exploration-handoff skill",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you use the exploration-handoff skill for me?",
+    "should_trigger": true
+  },
+  {
+    "query": "What time is it in New York?",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I boil an egg?",
+    "should_trigger": false
+  }
+]

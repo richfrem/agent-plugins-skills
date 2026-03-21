@@ -1,0 +1,15 @@
+title: Agent Plugins & Skills
+description: A marketplace of agent plugins and skills for Claude Code and compatible AI agents.
+theme: jekyll-theme-primer
+
+exclude:
+  - plugins/
+  - tools/
+  - specs/
+  - kitty-specs/
+  - scripts/
+  - "*.py"
+  - "*.json"
+  - "*.lock"
+  - requirements*.txt
+  - requirements*.in
