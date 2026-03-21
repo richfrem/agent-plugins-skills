@@ -106,7 +106,7 @@ Delegate to the `agent-loops:agent-swarm` skill with the appropriate engine and 
 | `gemini` | gemini-3-pro-preview | **$0 free** | 5 | Large-context batches, higher throughput |
 | `claude` | Haiku / Sonnet | Low-Medium | 3 | Higher quality summaries, not free |
 
-Provide the job file: `./resources/jobs/rlm_chronicle.job.md` and the gap file from `inventory.py --missing`.
+Provide a job file describing the summarization task and the gap file from `inventory.py --missing`.
 
 See `SKILL.md` for full swarm configuration options.
 

@@ -78,7 +78,7 @@ Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free).
 
 Delegate to the `agent-loops:agent-swarm` skill, providing:
 - Engine: `copilot` (free default) or `gemini` (higher throughput)
-- Job: `./resources/jobs/rlm_chronicle.job.md`
+- Job: provide a job file describing the summarization task
 - Files: gap list from `inventory.py --missing`
 - Workers: `2` for copilot (rate-limit safe), `5` for gemini
 

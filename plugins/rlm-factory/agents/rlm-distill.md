@@ -88,14 +88,14 @@ Switch to `--engine gemini --workers 5` if you need faster throughput.
 # Zero-cost bulk distillation (Copilot -- recommended default)
 python3 ./scripts/swarm_run.py \
   --engine copilot \
-  --job ./resources/jobs/rlm_chronicle.job.md \
+  --job <path-to-job-file> \
   --files-from rlm_distill_tasks_project.md \
   --resume --workers 2
 
 # Higher throughput -- also free (Gemini)
 python3 ./scripts/swarm_run.py \
   --engine gemini \
-  --job ./resources/jobs/rlm_chronicle.job.md \
+  --job <path-to-job-file> \
   --files-from rlm_distill_tasks_project.md \
   --resume --workers 5
 ```

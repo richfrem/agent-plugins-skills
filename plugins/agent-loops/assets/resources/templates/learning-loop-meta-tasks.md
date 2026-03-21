@@ -2,7 +2,7 @@
 <!-- To be included in Session Task List -->
 
 ## Phase I: Orientation
-- [ ] **Read Primer** (orientation docs, `cognitive_primer.md` if available)
+- [ ] **Read Primer** (orientation docs if available)
 - [ ] **Review Snapshot** (last session's `learning_package_snapshot.md`)
 - [ ] **Verify Tool Access** (ensure CLI tools and cache are accessible)
 
