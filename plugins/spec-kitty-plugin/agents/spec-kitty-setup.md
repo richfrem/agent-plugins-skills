@@ -23,7 +23,7 @@ description: >
   </example>
 model: inherit
 color: cyan
-allowed-tools: Bash, Read, Write
+tools: ["Bash", "Read", "Write"]
 ---
 
 # Spec Kitty Setup & Sync Orchestrator
