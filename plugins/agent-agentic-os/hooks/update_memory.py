@@ -94,11 +94,12 @@ def main():
             if any(part in noisy_dirs for part in target_path.parts):
                 return
                 
-            # It's difficult to know the exact agent name from the hook, so we default to 'system'
-            # and rely on the agent itself to emit its own intent events.
+            # Emit as "legacy-hook" so agents.json permit lists don't need a "system" entry.
+            # "system" was the prior value but caused silent failures when "system" was not
+            # in the permitted_agents list.
             event_doc = {
                 "time": datetime.now().isoformat() + "Z",
-                "agent": "system",
+                "agent": "legacy-hook",
                 "type": "result",
                 "action": "file_write",
                 "file": target_path.as_posix(),
@@ -107,7 +108,7 @@ def main():
         elif event_type == "SessionStart":
             event_doc = {
                 "time": datetime.now().isoformat() + "Z",
-                "agent": "system",
+                "agent": "legacy-hook",
                 "type": "agent_start",
                 "action": "session_start",
                 "status": "success"

@@ -42,6 +42,9 @@ One row per KEEP cycle per skill target. Written by ORCHESTRATOR at Stage 4.7.
 ```
 
 **Rules:**
+- **First run of any skill MUST use status `BASELINE`, not `KEEP`**. There is no prior score to
+  beat on cycle 1, so a KEEP verdict is meaningless. Label it BASELINE so the step-line chart
+  anchors correctly and does not show a false improvement signal.
 - DISCARD cycles are also recorded (they show what did NOT work).
 - `Baseline` for the first run of a skill is `0.00 (first run)` — it establishes the baseline.
 - `Sub-cycles to KEEP` counts how many INNER_AGENT attempts before KEEP verdict in this loop.
@@ -69,8 +72,10 @@ that resulted in a concrete change attempt (whether KEEP or DISCARD).
 **Rules:**
 - Only record friction items where an action was taken. Friction items that were noted
   but not yet acted on go in the session log Open Items, not in this ledger.
-- `Eval Delta` is the score change in the next eval run on the same target AFTER the change.
-  If the change was not eval'd yet, write "N/A — pending eval".
+- **`Eval Delta` MUST be written as `"N/A — pending eval"` at the time of the change.**
+  It is filled in only after the next eval run on the same target completes. Writing a
+  forward-looking or estimated delta at change time is a protocol violation — it produces
+  hallucinated trace entries that cannot be verified.
 - `Outcome` is KEEP, DISCARD, BASELINE (neutral score), or "Not eval'd".
 - One row per friction item that generated a change. One survey can generate multiple rows.
 - This trace is how you prove the flywheel is working: friction -> change -> score delta -> keep.
