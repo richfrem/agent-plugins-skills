@@ -654,7 +654,7 @@ Surveys compared — if both agents report same confusion point, os-learning-loo
 
 ## References
 
-- [dual-loop SKILL](../../agent-loops/skills/dual-loop/SKILL.md) - strategy packet format, correction packets, verification
+- [dual-loop protocol](references/dual-loop.md) - strategy packet format, correction packets, verification (inlined from agent-loops)
 - [skill-improvement-eval SKILL](../skill-improvement-eval/SKILL.md) - eval_runner.py, KEEP/DISCARD, results.tsv
 - [session-memory-manager SKILL](../session-memory-manager/SKILL.md) - session log template, L2/L3 promotion
 - [os-learning-loop agent](../../agents/os-learning-loop.md) - root cause analysis, Full Loop patching

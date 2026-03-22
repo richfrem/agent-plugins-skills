@@ -3,9 +3,13 @@ name: loop-progress-report
 description: >
   Trigger with "show me the improvement chart", "how are we improving", "progress report",
   "graph the eval scores", "show cycle of improvement", "what's the trend", "are we getting
-  better", "show improvement over time", "generate the progress chart", or any time the user
-  wants a visual or text summary of how the agentic loop is improving across cycles.
-  Works across all plugins that write to an improvement-ledger.md — not just agent-agentic-os.
+  better", "show improvement over time", "generate the progress chart", "are we improving",
+  "what did this cycle contribute", or any time the user wants a visual or text summary of
+  how the agentic loop is improving across cycles. Use this skill even when the user says
+  "show me the data" or "how are we doing overall" in the context of an improvement loop.
+  Works across all plugins that write to an improvement-ledger.md. Do NOT use this to run
+  the learning loop or to evaluate a specific skill change -- use os-learning-loop or
+  skill-improvement-eval for those.
 
   <example>
   Context: User wants to see if the agentic-os skills are getting better over cycles.
@@ -176,6 +180,7 @@ tied to agent-agentic-os specifically.
 ## References
 
 - [improvement-ledger-spec.md](../../references/improvement-ledger-spec.md) — ledger format, writing protocol, initialization
+- [chart-reading-guide.md](references/chart-reading-guide.md) — how to interpret KEEP/DISCARD dots, step line, and text summary fields
 - [concurrent-agent-loop SKILL](../concurrent-agent-loop/SKILL.md) — Stage 4.7 writes to the ledger
 - [test-scenarios-seed.md](../../references/test-scenarios-seed.md) — 50 pre-designed test hypotheses
 - [post_run_survey.md](../../references/post_run_survey.md) — survey template (Section 2 trace sources)

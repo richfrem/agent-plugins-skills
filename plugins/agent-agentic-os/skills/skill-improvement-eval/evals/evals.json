@@ -22,5 +22,9 @@
   {
     "prompt": "deploy to production",
     "should_trigger": false
+  },
+  {
+    "prompt": "measure the performance gain",
+    "should_trigger": true
   }
 ]
