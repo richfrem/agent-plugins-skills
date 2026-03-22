@@ -1,0 +1,83 @@
+---
+config:
+  layout: elk
+  theme: base
+---
+
+%% Shared Memory + Bus Architecture
+%% Shows what is shared vs. private per agent, and the memory tiers
+
+flowchart LR
+
+  subgraph Private ["Private Per-Agent (Context Window / Stack)"]
+    direction TB
+    UP_CTX["UPSTREAM\nContext Window\n- Active SKILL.md being edited\n- Git diff\n- Last audit findings"]
+    LAB_CTX["LAB\nContext Window\n- Eval results buffer\n- npx sync state\n- Current eval score"]
+    IA_CTX["INNER_AGENT\nContext Window\n- Piped SKILL.md\n- Audit findings\n- Proposed rewrites"]
+  end
+
+  subgraph SharedMem ["Shared Memory (Filesystem - All Agents Read/Write)"]
+    direction TB
+
+    subgraph L1 ["L1: Event Bus (Hot - append-only, current session)"]
+      BUS[("events.jsonl\nStructured JSON events\nfull audit trail\nfrom: all agents")]
+    end
+
+    subgraph L2 ["L2: Session Memory (Warm - today's logs)"]
+      SessionLog["context/memory/\n2026-03-21.md\nSummary + decisions\nfrom: session-memory-manager"]
+    end
+
+    subgraph L3 ["L3: Long-Term Memory (Cold - curated facts)"]
+      LTMem["context/memory.md\nDurable conventions\nArchitecture decisions\nfrom: promoted by agents"]
+    end
+
+    subgraph Locks ["Sync Primitives"]
+      OSState[("os-state.json\nMutex holder\nSemaphore counters\nLock timestamps")]
+      Registry[("agent-registry.json\nAgent IDs + roles\nSubscription table\nHeartbeat timestamps")]
+    end
+
+  end
+
+  subgraph CrossProject ["Cross-Project Shared (Proposed - new for Pattern 5)"]
+    GlobalBus[("~/Projects/.agent-bus/\nevents.jsonl\nGlobal event bus\nspanning UPSTREAM + LAB")]
+    GlobalReg[("~/Projects/.agent-bus/\nagent-registry.json\nGlobal agent table")]
+  end
+
+  %% Private reads from shared
+  UP_CTX <--> BUS
+  UP_CTX <--> L3
+  UP_CTX <--> OSState
+
+  LAB_CTX <--> BUS
+  LAB_CTX <--> SessionLog
+
+  IA_CTX -.-> BUS
+  Note_IA["Note: INNER_AGENT reads bus\nif event-native;\notherwise uses piped context"]
+  IA_CTX --- Note_IA
+
+  %% Memory promotion flow (vertical through tiers)
+  BUS -- "session-memory-manager\npromotes hot events" --> SessionLog
+  SessionLog -- "os-learning-loop\ndistills durable facts" --> LTMem
+
+  %% Cross-project bus (proposed)
+  BUS -.->|"sync (proposed)"| GlobalBus
+  Registry -.->|"register (proposed)"| GlobalReg
+
+  %% Lock interactions
+  UP_CTX --> OSState
+  LAB_CTX -.-> OSState
+
+  %% Style
+  classDef private fill:#f9f0ff,stroke:#5e35b1,stroke-width:2px
+  classDef hot fill:#fff8e1,stroke:#fbc02d,stroke-width:3px
+  classDef warm fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+  classDef cold fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+  classDef lock fill:#fce4ec,stroke:#c62828,stroke-width:2px
+  classDef global fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,stroke-dasharray: 6 3
+
+  class UP_CTX,LAB_CTX,IA_CTX private
+  class BUS hot
+  class SessionLog warm
+  class LTMem cold
+  class OSState,Registry lock
+  class GlobalBus,GlobalReg global

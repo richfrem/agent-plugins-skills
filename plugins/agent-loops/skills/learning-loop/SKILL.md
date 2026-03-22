@@ -87,16 +87,77 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 ---
 
-## Session Close (MANDATORY — DO NOT SKIP)
+## Session Close (MANDATORY — DO NOT SKIP ANY STEP)
 
 > **This loop is now complete.** You must formally exit the loop and return control to the Orchestrator.
+> Skipping any close step means the next agent starts blind and the flywheel stalls.
 
-### Phase V: Completion & Handoff
+### Phase V: Self-Assessment Survey (MANDATORY)
 
-1.  **Verify Exit Condition**: Confirm that the research/synthesis acceptance criteria have been met.
-2.  **Return Data**: Pass the synthesized documents and context back up to the Orchestrator.
-3.  **Terminate Loop**: Explicitly state "Learning Loop Complete. Passing control to Orchestrator for Retrospective and Closure."
-4.  **STOP**: Do not attempt to seal the session, persist to long-term memory, or commit to Git. The global ecosystem layers will handle that.
+Before handoff, you MUST complete the Post-Run Self-Assessment Survey
+(`references/post_run_survey.md`). Answer every question — do not summarize or skip sections.
+
+Survey sections (all mandatory):
+
+**Run Metadata**: date, task type, task complexity, skill/capability under test
+
+**Completion Outcome**:
+- Did you complete the full intended workflow end to end? (Yes/No)
+- Did the run require major human rescue? (Yes/No)
+
+**Count-Based Signals (Karpathy Parity)**:
+- How many times did you not know what to do next?
+- How many times did you miss or skip a required step?
+- How many times did you use the wrong CLI syntax?
+- How many times were you redirected by a human?
+- Total Friction Events
+
+**Qualitative Friction**:
+1. At what point were you most uncertain about what to do next?
+2. Which instruction, rule, or workflow step felt ambiguous or underspecified?
+3. Which command, tool, or template was most confusing in practice?
+4. What was the single biggest source of friction in this run?
+5. Which failure felt avoidable with a better prompt, skill, or rule?
+6. What is the smallest workflow change that would have improved this run the most?
+
+**Improvement Recommendation**:
+- What one change should be tested before the next run?
+- What evidence from this run supports that change?
+- Target (Skill/Prompt/Script/Rule)?
+
+Save completed survey to:
+`${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_[AGENT].md`
+
+Emit survey completion event:
+```bash
+python3 context/kernel.py emit_event --agent os-learning-loop \
+  --type learning --action survey_completed \
+  --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
+```
+
+### Phase VI: Post-Run Metrics
+
+Run the automated metric collector:
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"
+```
+
+This emits a `type: metric` event capturing: human_interventions, workflow_uncertainty,
+missed_steps, cli_errors, friction_events_total, hook_errors. These feed the os-learning-loop
+auto-trigger: 3+ friction events of same type = Full Loop improvement before next cycle.
+
+### Phase VII: Memory Persistence
+
+Run `session-memory-manager` to write the dated session log and promote key findings to L3:
+- Write `context/memory/YYYY-MM-DD.md` including survey outcomes and metric counts
+- Promote architectural decisions and new conventions to `context/memory.md` with dedup IDs
+- Reference the survey file in the session log for future cycles to read at orientation
+
+### Phase VIII: Handoff
+
+1.  **Verify Exit Condition**: Confirm research/synthesis acceptance criteria met, survey saved, metrics emitted, memory written.
+2.  **Return Data**: Pass synthesized documents and context back up to the Orchestrator.
+3.  **Terminate Loop**: Explicitly state "Learning Loop Complete. Survey saved. Metrics emitted. Passing control to Orchestrator."
 
 ---
 
@@ -104,11 +165,14 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 | Phase | Name | Action Required |
 |-------|------|-----------------|
-| I | Orientation | Load context and assert readiness |
+| I | Orientation | Load context, last survey, last session log |
 | II | Synthesis | Create/modify research artifacts |
 | III | Strategic Gate | Obtain "Proceed" from User |
 | IV | Red Team Audit | Compile packet for adversary review |
-| V | Handoff | Return control to Orchestrator to begin global Closure |
+| V | Self-Assessment Survey | Answer all sections, save to retrospectives/, emit event |
+| VI | Post-Run Metrics | Run post_run_metrics.py, emit metric event |
+| VII | Memory Persistence | Session log + L3 promotion via session-memory-manager |
+| VIII | Handoff | Return control to Orchestrator |
 
 ---
 

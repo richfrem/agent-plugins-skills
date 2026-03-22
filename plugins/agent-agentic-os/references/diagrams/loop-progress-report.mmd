@@ -1,0 +1,55 @@
+sequenceDiagram
+    title Loop Progress Report — Data Flow
+
+    participant ORCH as ORCHESTRATOR
+    participant INNER as INNER_AGENT
+    participant PEER as PEER_AGENT
+    participant KERNEL as kernel.py
+    participant LEDGER as improvement-ledger.md
+    participant SURVEY as retrospectives/
+    participant REPORT as generate_report.py
+    participant CHART as progress_YYYYMMDD.png
+
+    note over ORCH: Stage 1 — Orientation
+    ORCH->>LEDGER: Read Section 1 (score trajectory for target)
+    LEDGER-->>ORCH: Prior eval scores, KEEP/DISCARD history, running best
+    ORCH->>LEDGER: Read Section 2 (unresolved survey friction items)
+    LEDGER-->>ORCH: Prior friction items + whether each was resolved
+    ORCH->>LEDGER: Read Section 3 (north star completion rate trend)
+    LEDGER-->>ORCH: Completion rate per session, trend direction
+
+    note over ORCH: Stage 2 — Execute cycle
+    ORCH->>INNER: task.assigned (strategy packet informed by ledger)
+    INNER->>KERNEL: emit friction events during work
+    INNER->>PEER: eval result via kernel bus
+    PEER->>PEER: run skill-improvement-eval independently
+    PEER-->>ORCH: eval.result (KEEP/DISCARD + score delta)
+
+    note over ORCH,PEER: Stage 4.2 — Surveys (both agents)
+    INNER->>SURVEY: Save survey_[DATE]_INNER_AGENT.md
+    PEER->>SURVEY: Save survey_[DATE]_PEER_AGENT.md
+    ORCH->>SURVEY: Save survey_[DATE]_ORCHESTRATOR.md
+
+    note over ORCH: Stage 4.6 — Test Registry Update
+    ORCH->>ORCH: Close scenario file, update registry.md row
+
+    note over ORCH: Stage 4.7 — Update Improvement Ledger
+    ORCH->>LEDGER: Append Section 1 row (date, cycle_id, target, baseline, after, delta, verdict, change_summary)
+    SURVEY-->>ORCH: Read friction items from all 3 surveys
+    ORCH->>LEDGER: Append Section 2 rows (survey_id, agent, friction_item, action, file, change, eval_delta, outcome)
+    KERNEL-->>ORCH: friction_events_total from post_run_metrics
+    ORCH->>LEDGER: Append Section 3 row (session, completion_rate, human_interventions, friction_events_total)
+    ORCH->>KERNEL: emit ledger_updated event
+
+    note over ORCH: Optional chart update (after KEEP, or on user request)
+    ORCH->>REPORT: python3 generate_report.py --project-dir ... --plugin-dir ...
+    REPORT->>LEDGER: Parse Section 1 (eval score progression)
+    REPORT->>LEDGER: Parse Section 2 (survey-to-action trace)
+    REPORT->>LEDGER: Parse Section 3 (north star metric log)
+    REPORT->>CHART: Save progress_YYYYMMDD_HHMM.png
+    REPORT-->>ORCH: Text summary (top hits by delta, completion rate trend)
+    ORCH-->>User: "Chart updated at reports/progress_[TS].png. Want to see the summary?"
+
+    note over ORCH: Next cycle orientation
+    ORCH->>LEDGER: Read again — trajectory now includes this cycle's row
+    note right of LEDGER: KEEP row: score trending up<br/>DISCARD row: this approach did not work<br/>Flat step line: try different hypothesis

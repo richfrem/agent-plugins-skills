@@ -73,6 +73,49 @@ def count_hook_errors(project_root: Path) -> int:
         return 0
 
 
+def _check_north_star_regression(project_root: Path) -> None:
+    """Read improvement-ledger.md Section 3 and emit north_star_regression event
+    if the last two sessions both show a completion-rate decline vs prior session."""
+    ledger = project_root / "context" / "memory" / "improvement-ledger.md"
+    if not ledger.exists():
+        return
+    try:
+        text = ledger.read_text(encoding="utf-8")
+        import re
+        m = re.search(r"## North Star Metric.*?\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+        if not m:
+            return
+        rows = []
+        for line in m.group(1).splitlines():
+            if not line.startswith("|"):
+                continue
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            if all(c.replace("-", "").replace(" ", "") == "" for c in cells if c):
+                continue
+            if cells and cells[0].lower() == "date":
+                continue
+            rows.append(cells)
+        if len(rows) < 2:
+            return
+        # Trend column is the last column; detect two consecutive regressions
+        # A regression is any row whose Trend value starts with '-'
+        trends = [r[-1].strip() for r in rows if r]
+        if len(trends) >= 2 and trends[-1].startswith("-") and trends[-2].startswith("-"):
+            kernel_path = project_root / "context" / "kernel.py"
+            if kernel_path.exists():
+                import subprocess
+                subprocess.run([
+                    "python3", str(kernel_path), "emit_event",
+                    "--agent", "post_run_hook",
+                    "--type", "metric",
+                    "--action", "north_star_regression",
+                    "--status", "fail",
+                    "--summary", f"Two consecutive north-star declines: {trends[-2]}, {trends[-1]}. Trigger os-learning-loop Full Loop at next session start."
+                ], capture_output=True)
+    except Exception:
+        pass  # Never crash the hook on ledger parse failure
+
+
 def main():
     target_dir = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     project_root = Path(target_dir).resolve()
@@ -94,6 +137,10 @@ def main():
                     continue
 
     hook_errors = count_hook_errors(project_root)
+
+    # Check north star regression: two consecutive session completion-rate declines
+    # -> emit a separate north_star_regression event so hooks can detect it.
+    _check_north_star_regression(project_root)
 
     metrics = {
         "time": datetime.utcnow().isoformat() + "Z",

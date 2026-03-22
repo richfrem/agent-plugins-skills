@@ -280,6 +280,35 @@ npx skills add ./plugins/agent-agentic-os --force
 
 ---
 
+## Phase 5: Self-Assessment Survey (MANDATORY)
+
+After every init run, complete the Post-Run Self-Assessment Survey
+(`references/post_run_survey.md`). Init sessions reveal what is confusing about
+onboarding — this is critical signal for improving the skill and the OS.
+
+**Count-Based Signals**: How many times did the user need clarification? How many
+interview questions needed rephrasing? How many setup steps required re-explanation?
+
+**Qualitative Friction**:
+1. Which interview question generated the most confusion or unexpected answers?
+2. Which component (CLAUDE.md, agents.json, context/, hooks) was hardest to explain?
+3. Which decision (include/exclude) was hardest to justify to the user?
+4. What one addition to the init templates would reduce friction next time?
+
+**Improvement Recommendation**: What one change to the init skill, interview flow,
+or scaffold templates should be tested before the next run?
+
+Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_agentic-os-init.md`
+
+Emit survey completion:
+```bash
+python3 context/kernel.py emit_event --agent agentic-os-setup \
+  --type learning --action survey_completed \
+  --summary "retrospectives/survey_[DATE]_[TIME]_agentic-os-init.md"
+```
+
+---
+
 ## Reference Materials
 
 For the agent running this skill:

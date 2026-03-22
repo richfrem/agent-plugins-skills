@@ -1,0 +1,73 @@
+---
+config:
+  theme: base
+---
+
+%% Event Synchronization Sequence
+%% Shows: UPSTREAM + LAB + INNER_AGENT coordinating via shared event bus
+%% Replaces the AGENT_COMMS.md CURRENT_TURN polling protocol
+
+sequenceDiagram
+  autonumber
+
+  participant UP as UPSTREAM
+  participant BUS as events.jsonl (Bus)
+  participant K as kernel.py
+  participant LAB as LAB
+  participant IA as INNER_AGENT (CLI)
+
+  Note over UP,IA: Session Start - both agents register
+
+  UP->>K: emit(agent.registered, id=UPSTREAM)
+  K->>BUS: append event
+  LAB->>K: emit(agent.registered, id=LAB)
+  K->>BUS: append event
+
+  Note over UP,IA: UPSTREAM starts dual-loop audit cycle
+
+  UP->>K: lock(skill.user-story-capture)
+  K-->>UP: lock acquired
+
+  UP->>K: emit(task.assigned, to=INNER_AGENT, payload={skill, problem})
+  K->>BUS: append event
+
+  BUS-->>IA: wakeup (subscribed: task.assigned)
+  Note over IA: Inner agent runs audit, no bus access needed
+
+  Note over LAB: LAB is NOT blocked - runs eval on another skill concurrently
+
+  LAB->>K: emit(eval.result, payload={skill: exploration-handoff, score: 1.0})
+  K->>BUS: append event
+  BUS-->>UP: notify (subscribed: eval.result)
+  Note over UP: UPSTREAM notes eval result, continues main task
+
+  IA->>K: emit(task.complete, reply_to=prev, payload={findings, rewrites})
+  K->>BUS: append event
+  BUS-->>UP: wakeup (subscribed: task.complete)
+
+  UP->>UP: apply rewrites to SKILL.md
+  UP->>K: emit(fix.applied, payload={skill, commit_sha})
+  K->>BUS: append event
+  UP->>K: unlock(skill.user-story-capture)
+
+  BUS-->>LAB: notify (subscribed: fix.applied)
+  LAB->>LAB: sync skill via npx skills add
+  LAB->>K: emit(task.assigned, to=UPSTREAM, payload={sync: complete, ready_to_eval})
+  K->>BUS: append event
+
+  BUS-->>UP: notify
+  UP->>K: emit(signal.wakeup, to=LAB, payload={assignment: run eval on user-story-capture})
+  K->>BUS: append event
+  BUS-->>LAB: wakeup signal
+
+  LAB->>LAB: run eval_runner.py
+  LAB->>K: emit(eval.result, payload={skill: user-story-capture, score: 0.875, baseline: 1.0})
+  K->>BUS: append event
+  BUS-->>UP: notify
+
+  Note over UP: Score regression detected - do not commit
+  UP->>UP: investigate diff, apply correction
+  UP->>K: emit(signal.wakeup, to=LAB, payload={assignment: re-run eval})
+  K->>BUS: append event
+
+  Note over UP,IA: Cycle continues event-driven, no polling

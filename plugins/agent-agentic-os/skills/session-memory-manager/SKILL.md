@@ -121,7 +121,21 @@ Use this template:
 - [ ] [Next steps or follow-up tasks]
 ```
 
-### Phase 3: Promote to Long-Term Memory
+### Phase 3: Preserve Test Registry Artifacts
+
+Before general promotion, handle test registry files specially:
+
+1. **`context/memory/tests/registry.md`** — never archive, never skip. This is always L3.
+   Verify it exists and the latest cycle row is CLOSED before proceeding.
+2. **Closed scenario files** (`context/memory/tests/[CYCLE_ID]_*.md`) — preserve in place
+   for 90 days, then move to `context/memory/tests/archive/`. Never delete.
+3. **Confirmed findings from test scenarios** — if the scenario file has a "Confirmed"
+   hypothesis, check whether the finding is already in `context/memory.md`. If not,
+   promote it as a fact with the cycle ID as evidence source.
+4. **Falsified hypotheses** — check `context/memory.md` for a "DO NOT RE-TEST" entry.
+   If missing, add it now to prevent future wasted cycles.
+
+### Phase 4: Promote to Long-Term Memory
 
 For each item in the session log, apply the **promote/skip decision**:
 
@@ -165,12 +179,39 @@ You MUST verify the size of the curated memory file to prevent context degradati
    - Remove these archived lines from `context/memory.md` using `Write`.
    - Ensure an archive reference log (e.g., `<!-- Archived data -> context/memory/archive/ -->`) exists at the top of `context/memory.md`.
 
-### Phase 5: Confirm with User and Release Lock
+### Phase 5: Self-Assessment Survey (MANDATORY)
 
-After writing, show a summary:
+Before releasing the lock, complete the Post-Run Self-Assessment Survey
+(`references/post_run_survey.md`). The memory manager must reflect on its own runs
+to improve the quality of what gets promoted and what gets skipped.
+
+**Count-Based Signals**: How many times were you uncertain whether to promote or skip?
+How many potential conflicts did you flag? How many dedup IDs did you assign?
+
+**Qualitative Friction**:
+1. Which promotion decision felt most uncertain?
+2. Was any fact promoted that probably should have been skipped (or vice versa)?
+3. Which part of the deduplication protocol felt most ambiguous?
+4. What one change to the session log template would improve the next run?
+
+**Improvement Recommendation**: What one change to this skill should be tested next run?
+
+Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_session-memory-manager.md`
+
+Emit survey completion:
+```bash
+python3 context/kernel.py emit_event --agent session-memory-manager \
+  --type learning --action survey_completed \
+  --summary "retrospectives/survey_[DATE]_[TIME]_session-memory-manager.md"
+```
+
+### Phase 6: Confirm with User and Release Lock
+
+After writing and survey saved, show a summary:
 ```
 [x] Session log written: context/memory/YYYY-MM-DD.md
 [x] Promoted N facts to context/memory.md
+[x] Survey saved: retrospectives/survey_[DATE]_[TIME]_session-memory-manager.md
 [ ] No archive needed (current count: N facts)
 ```
 

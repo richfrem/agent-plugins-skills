@@ -1,0 +1,50 @@
+[
+  {
+    "type": "positive",
+    "prompt": "Show me the improvement chart for the agentic-os loop. Are the eval scores trending up?"
+  },
+  {
+    "type": "positive",
+    "prompt": "Generate the progress report. I want to see how session-memory-manager is improving cycle by cycle."
+  },
+  {
+    "type": "positive",
+    "prompt": "Are we actually getting better? Show me the cycle of improvement across all the skills we've been testing."
+  },
+  {
+    "type": "positive",
+    "prompt": "Run the loop progress report and show me which survey friction items actually led to score improvements."
+  },
+  {
+    "type": "positive",
+    "prompt": "What's our autonomous completion rate trend? Graph it for me."
+  },
+  {
+    "type": "positive",
+    "prompt": "How are we doing overall? Show me the improvement data — eval scores, friction events, all of it."
+  },
+  {
+    "type": "negative",
+    "prompt": "How does the improvement tracking work? Explain the ledger to me."
+  },
+  {
+    "type": "negative",
+    "prompt": "What's the eval score for session-memory-manager right now?"
+  },
+  {
+    "type": "negative",
+    "prompt": "Run the learning loop on the skill-improvement-eval skill."
+  },
+  {
+    "type": "negative",
+    "prompt": "Show me the test registry. What hypotheses have been confirmed?"
+  },
+  {
+    "type": "edge",
+    "prompt": "The improvement ledger is empty, we haven't run any cycles yet. Can you still show me the chart?"
+  },
+  {
+    "type": "edge",
+    "prompt": "Generate the progress report but only for the exploration-cycle-plugin, not agentic-os."
+  }
+]

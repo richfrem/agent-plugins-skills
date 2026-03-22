@@ -28,30 +28,47 @@ Agent: [invokes exploration-session-brief, NOT exploration-handoff]
 
 # Exploration Handoff (Interactive Co-Authoring)
 
-> ⚠️ **STUB** — `execute.py` not yet implemented. Use the [handoff-preparer-agent](../../agents/handoff-preparer-agent.md) for the real logic.
+> **Note:** This skill runs fully interactively via Claude — no script needed. `execute.py` is a planned batch-mode convenience wrapper that hasn't been built yet, but the core skill works now. The [handoff-preparer-agent](../../agents/handoff-preparer-agent.md) provides an alternative agentic dispatch path.
 
-This skill provides a structured, 3-stage interactive workflow for synthesizing exploration artifacts into a concise Handoff Package. 
+This skill provides a structured, 3-stage interactive workflow for synthesizing exploration artifacts into a concise Handoff Package.
 
 **Important Note for Agents:** Do NOT passively run a bash script or dump a massive block of markdown. You must guide the user through the following 3 stages.
 
 ## Stage 1: Context Gathering (Routing)
-Before synthesizing the artifacts, determine the *destination* of this handoff. Ask the user:
-1. **Target Audience:** Who is this handoff for? (e.g., Engineering team building a formal spec, Executive reviewing a strategy roadmap, Operations team updating a business process).
-2. **Input Sources:** Which documents should I pull from? (e.g., session brief, prototype observations, BRD draft, etc.). Look for these in the `exploration/` directory.
+Before synthesizing anything, establish what you're working with and where it's going. Ask both questions in a single message:
 
-Wait for the user's response and read the provided source files before proceeding.
+1. **Target audience:** Who receives this handoff and what will they do with it?
+   - *Engineering team* — writing a formal spec or implementation plan
+   - *Executive or sponsor* — making a go/no-go or budget decision
+   - *Operations or process team* — updating a workflow or policy
+   - *Product or design team* — scoping a discovery sprint or prototype
+   - *Other* — describe briefly
+
+2. **Available artifacts:** Which exploration documents exist? (Check `exploration/` directory — list what you find.) Common sources: session brief, BRD draft, prototype notes, user story set, business-workflow diagrams.
+
+After the user responds: read each artifact file they identify. If a file doesn't exist, note it explicitly and ask whether to proceed without it or pause until it's available. Do not invent content for missing artifacts.
 
 ## Stage 2: Synthesis and Iterative Refinement
-Do not copy-paste the source documents. Your job is to extract the signal from the noise based on the Target Audience.
-1. **Outline First:** Propose a numbered list of the key decisions, confirmed constraints, and critical open questions that *must* be communicated.
-2. **Curate:** Ask the user: *"Does this outline accurately reflect what we confirmed during exploration? Should we promote any other findings?"*
-3. **Draft:** Draft the handoff document section by section based on their feedback.
+Your job is to extract the signal relevant to the target audience — not to copy-paste source documents.
+
+**Signal** = confirmed decisions, hard constraints, and questions that block the next phase.
+**Noise** = background context, rationale already obvious to the audience, and anything marked `[UNCONFIRMED]` in source documents.
+
+1. **Outline First:** Propose a numbered list of items that *must* be communicated to this specific audience. For each item, state whether it is a confirmed decision, a constraint, or an open question. Ask the user: *"Does this outline reflect what we confirmed? Anything missing or wrong?"*
+2. **Curate:** Apply changes. If the user promotes an `[UNCONFIRMED]` item, ask them to confirm it first before including it as fact.
+3. **Draft section by section:** For each section, write a concise draft (3–6 sentences or a short list). Cite the source artifact for any major claim (e.g., "per session brief"). Ask: *"Accurate? Anything to add or cut?"* Apply edits before moving on.
 
 ## Stage 3: Reader Testing (Consumer Validation)
-Ensure the handoff actually gives the downstream consumer what they need to succeed:
-1. **Emulate the Consumer:** If the target is an engineer writing a formal spec, predict 3 implementation questions they will ask immediately upon reading this handoff. (If the target is an executive, predict 3 ROI/Risk questions).
-2. **Surface Gaps:** Present these 3 questions to the user. "If the engineering team reads this, they will ask: X, Y, and Z."
-3. **Resolve:** Ask if we should codify the answers in the handoff document, or explicitly escalate them as `## Unresolved Ambiguity` that the execution phase must solve.
+Ensure the handoff gives the downstream consumer what they need to act:
+
+1. **Predict blockers:** Based on the target audience type, predict exactly 3 questions they will ask after reading this document that are NOT answered by it. Use audience-specific framing:
+   - *Engineering*: implementation questions ("How should we handle X edge case?", "What's the auth strategy?")
+   - *Executive/sponsor*: decision questions ("What's the fallback if this fails?", "What's the cost?")
+   - *Operations*: process questions ("Who owns step 3?", "What's the escalation path?")
+   - *Product/design*: scope questions ("What's explicitly out of scope?", "Which user type is primary?")
+
+2. **Surface gaps:** Present the 3 questions: *"If [audience] reads this, they'll immediately ask: [Q1], [Q2], [Q3]. Are these answered?"*
+3. **Resolve:** For each unanswered question, ask whether to (a) answer it inline, (b) add it to `## Unresolved Ambiguity` for the execution phase to own, or (c) confirm it's intentionally out of scope.
 
 ## Anti-Hallucination Rules
 - Do NOT invent requirements or rules that were not present in the Stage 1 input sources.
