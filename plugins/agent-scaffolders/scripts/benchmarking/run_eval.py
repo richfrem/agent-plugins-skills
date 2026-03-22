@@ -1,10 +1,54 @@
 #!/usr/bin/env python3
-"""Run trigger evaluation for a skill description.
+"""
+run_eval.py (CLI)
+=====================================
 
-Tests whether a skill's description causes Claude to trigger (read the skill)
-for a set of queries. Outputs results as JSON.
+Purpose:
+    Run trigger evaluation for a skill description to check if Claude invokes it correctly.
+    Tests whether a skill's description causes Claude to trigger (read the skill)
+    for a set of queries. Outputs results as JSON.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Meta-Execution
+
+Usage Examples:
+    python run_eval.py --eval-set set.json --skill-path my_skill/
+
+Supported Object Types:
+    - Skill directories with SKILL.md
+    - list[dict] evaluation query datasets
+
+CLI Arguments:
+    --eval-set: Path to eval set JSON file
+    --skill-path: Path to skill directory
+    --description: Override description to test instead of SKILL.md one
+    --num-workers: Number of parallel subprocess workers
+    --timeout: Timeout per evaluation query in seconds
+    --runs-per-query: Number of runs per query (for stability)
+    --trigger-threshold: Rate threshold to consider a pass
+    --model: Model backend override
+    --engine: "claude" only
+    --verbose: Print progress to stderr
+
+Input Files:
+    - eval_set.json
+    - SKILL.md
+
+Output:
+    - JSON dictionary with "results" and "summary" statistics
+
+Key Functions:
+    - run_single_query(): Inlines command with unique GUID and tracks stream deltas.
+    - run_eval(): Executes multiprocess concurrency map.
+
+Script Dependencies:
+    - utils.py (parse_skill_md)
+
+Consumed by:
+    - User (CLI)
+    - Continuous skill optimizer
+
+Credits:
+    Inspired by and adapted from Anthropic's skill-creator.
 """
 
 import argparse
@@ -267,7 +311,7 @@ def run_eval(
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run trigger evaluation for a skill description")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

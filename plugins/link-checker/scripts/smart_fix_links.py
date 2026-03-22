@@ -9,31 +9,30 @@ Purpose:
 Layer: Curate / Cli_Entry_Points
 
 Usage Examples:
-    python ./scripts/smart_fix_links.py --help
+    python3 smart_fix_links.py
 
 Supported Object Types:
     - Generic
 
 CLI Arguments:
-    (None detected)
+    None
 
 Input Files:
-    - (See code)
+    - file_inventory.json containing mapped filenames to relative paths.
 
 Output:
-    - (See code)
+    - Modified markdown files with fixed links.
 
 Key Functions:
-    - load_inventory(): Loads the file inventory JSON.
-    - calculate_relative_path(): Calculates relative path between two files.
-    - fix_links_in_file(): Scans a file for broken links and attempts to fix them using the inventory.
-    - main(): No description.
+    load_inventory(): Loads the file inventory JSON.
+    calculate_relative_path(): Calculates relative path between two files.
+    fix_links_in_file(): Scans a file for broken links and attempts to fix them using the inventory.
 
 Script Dependencies:
-    (None detected)
+    os, json, re, urllib.parse, typing
 
 Consumed by:
-    (Unknown)
+    - link-checker skill
 """
 import os
 import json
@@ -76,7 +75,7 @@ def fix_links_in_file(file_path: str, inventory: Dict[str, List[str]], root_dir:
     # Group 1: Label, Group 2: Path
     link_pattern = re.compile(r'(\[.*?\])\((.*?)\)')
     
-    def replace_link(match):
+    def replace_link(match: re.Match) -> str:
         label = match.group(1)
         original_link_path = match.group(2)
         
@@ -152,7 +151,7 @@ def fix_links_in_file(file_path: str, inventory: Dict[str, List[str]], root_dir:
         return True
     return False
 
-def main():
+def main() -> None:
     root_dir = os.getcwd()
     inventory_path = os.path.join(os.path.dirname(__file__), 'file_inventory.json')
     

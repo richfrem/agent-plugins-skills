@@ -1,11 +1,37 @@
 #!/usr/bin/env python3
 """
 scaffold_azure_agent.py
+=====================================
 
-Generates Azure AI Foundry Agent boilerplate from an existing Open Skill.
-Outputs:
-  - azure_agent.py (Python SDK Orchestrator)
-  - main.bicep (Basic Infrastructure)
+Purpose:
+    Generates Azure AI Foundry Agent boilerplate from an existing Open Skill.
+
+Layer: Meta-Execution
+
+Usage Examples:
+    python3 scaffold_azure_agent.py --skill path/to/skill
+
+Supported Object Types:
+    - Azure AI Foundry Agent boilerplate (azure_agent.py, main.bicep)
+
+CLI Arguments:
+    --skill: Path to the target skill directory.
+
+Input Files:
+    - SKILL.md in the target skill directory.
+
+Output:
+    - azure_agent.py (Python SDK Orchestrator)
+    - main.bicep (Basic Infrastructure)
+
+Key Functions:
+    - main()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - Azure Agent Scaffolder logic
 """
 
 import os
@@ -82,7 +108,7 @@ resource aiProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01-prev
 output projectConnectionString string = aiProject.properties.workspaceId
 '''
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--skill", required=True, help="Path to the target skill directory")
     args = parser.parse_args()

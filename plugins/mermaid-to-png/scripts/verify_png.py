@@ -1,24 +1,45 @@
 #!/usr/bin/env python3
 """
-verify_png.py
+verify_png.py (CLI)
 =====================================
+
 Purpose:
-    Perform a structural linting of generated PNG files to create a strict 
-    L5 Delegated Constraint Verification Loop.
+    Perform a structural linting of generated PNG files.
+    Creates a strict L5 Delegated Constraint Verification Loop.
 
-Usage:
-    python3 scripts/verify_png.py output.png
+Layer: Cli_Entry_Points
 
-Checks:
-    1. Empty file detection.
-    2. Magic Bytes signature check (does it actually start with \x89PNG?)
+Usage Examples:
+    python3 verify_png.py output.png
+
+Supported Object Types:
+    - Generic
+
+CLI Arguments:
+    png_file: Path to output PNG file.
+
+Input Files:
+    - PNG file (.png).
+
+Output:
+    - JSON summary of verification status and errors.
+
+Key Functions:
+    verify_png(): Structural verification of a PNG file.
+
+Script Dependencies:
+    json, sys, pathlib
+
+Consumed by:
+    - mermaid-to-png skill
 """
 
 import json
 import sys
 from pathlib import Path
+from typing import Dict, Any
 
-def verify_png(file_path: Path) -> dict:
+def verify_png(file_path: Path) -> Dict[str, Any]:
     if not file_path.exists():
         return {"status": "errors_found", "total_errors": 1, "error_summary": {"FileMissing": {"count": 1, "locations": ["File does not exist."]}}}
     
@@ -59,7 +80,7 @@ def verify_png(file_path: Path) -> dict:
             
     return result
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: python verify_png.py <png_file>")
         sys.exit(1)

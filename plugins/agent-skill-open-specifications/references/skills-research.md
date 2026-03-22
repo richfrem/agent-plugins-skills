@@ -105,7 +105,7 @@ The filesystem-based architecture of Skills naturally forces a 3-level "Progress
 2. **Level 2 (Instructions) - Activation:** Loaded when triggered. The `././././././././././././././././././././././././SKILL.md` body. Usually < 5k tokens. Loaded via a background bash command (`read pdf-skill/././././././././././././././././././././././././SKILL.md`).
 3. **Level 3+ (Resources & Code) - Execution:** Loaded as-needed. Arbitrary scripts or reference files (`REFERENCE.md`) referenced by Level 2. Executing scripts uses tokens only for the *output*, not the script content itself.This makes skills self-documenting, extensible, and highly portable.
 
-*See visual representation of this lifecycle in [skill-execution-flow.mmd](./skill-execution-flow.mmd)*
+*See visual representation of this lifecycle in [skill-execution-flow.mmd](../assets/diagrams/skill-execution-flow.mmd)*
 
 ## Cross-Surface Constraints
 Skills run in different environments depending on the host surface. Always plan the execution requirements correctly:

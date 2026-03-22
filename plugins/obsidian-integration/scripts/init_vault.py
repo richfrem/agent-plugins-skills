@@ -1,14 +1,47 @@
 """
-Obsidian Vault Initialization Script
+init_vault.py (CLI)
+=====================================
 
-Purpose: Bootstrap any project directory as an Obsidian Vault.
-Creates .obsidian/app.json with sensible exclusion filters for developer repos.
+Purpose:
+    Bootstrap any project directory as an Obsidian Vault.
+    Creates .obsidian/app.json with sensible exclusion filters for developer repos.
+
+Layer: Core Operations
+
+Usage Examples:
+    python3 init_vault.py --vault-root /path/to/vault
+    python3 init_vault.py --vault-root /path/to/vault --validate-only
+
+Supported Object Types:
+    - .obsidian/app.json
+
+CLI Arguments:
+    --vault-root: Root directory for the vault.
+    --exclude: Additional exclusion patterns.
+    --validate-only: Check without making changes.
+
+Input Files:
+    - Project directories containing .md files.
+
+Output:
+    - JSON results indicating initialization status.
+
+Key Functions:
+    init_vault(): Initialize an Obsidian Vault.
+    count_markdown_files(): Count .md files in the vault.
+
+Script Dependencies:
+    os, sys, json, argparse, pathlib
+
+Consumed by:
+    - obsidian-init skill
 """
 import os
 import sys
 import json
 import argparse
 from pathlib import Path
+from typing import Optional, List, Dict, Any
 
 DEFAULT_EXCLUSIONS = [
     "node_modules/",
@@ -42,7 +75,7 @@ def count_markdown_files(vault_root: Path) -> int:
     return count
 
 
-def init_vault(vault_root: Path, extra_exclusions: list = None, validate_only: bool = False) -> dict:
+def init_vault(vault_root: Path, extra_exclusions: Optional[List[str]] = None, validate_only: bool = False) -> Dict[str, Any]:
     """Initialize an Obsidian Vault at the given root."""
     vault_root = vault_root.resolve()
 
@@ -122,7 +155,7 @@ def init_vault(vault_root: Path, extra_exclusions: list = None, validate_only: b
     return result
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Initialize an Obsidian Vault")
     parser.add_argument('--vault-root', required=True, help='Root directory for the vault')
     parser.add_argument('--exclude', nargs='*', help='Additional exclusion patterns')

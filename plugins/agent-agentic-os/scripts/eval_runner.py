@@ -1,8 +1,44 @@
 #!/usr/bin/env python3
 """
-Purpose: Automated Trainer for Skill Improvement.
-Simulates Karpathy's train.py loop for Agentic OS Skills.
-Calculates objective routing accuracy from evals/evals.json.
+eval_runner.py — Automated Trainer for Skill Improvement
+======================================================
+
+Purpose:
+    Simulates Karpathy's train.py loop for Agentic OS Skills.
+    Calculates objective routing accuracy from evals/evals.json.
+
+Layer: 
+    Scripts / Optimizers
+
+Usage Examples:
+    python3 ./scripts/eval_runner.py --skill PATH_TO_SKILL.md
+    python3 ./scripts/eval_runner.py --skill PATH_TO_SKILL.md --baseline
+
+Supported Object Types:
+    - Skill files (SKILL.md)
+
+CLI Arguments:
+    --skill <path>         Target SKILL.md file to evaluate
+    --baseline             Flag toggling baseline weight saving
+    --desc <text>          Iteration label description
+    --json                 Toggle machine-readable layout toggle
+
+Input Files:
+    - Specified SKILL.md
+    - Specified skill_directory/evals/evals.json
+
+Output:
+    - Appends evaluation to skill_directory/evals/results.tsv
+
+Key Functions:
+    calculate_heuristic_score() Scans length or XML example components
+    run_routing_eval()         Multiplexes queries over triggers verifying F1/precision
+
+Script Dependencies:
+    - None (Uses standard python imports)
+
+Consumed by:
+    - Continuous skill optimizer or automated CI/CD validation nodes
 """
 
 import json
@@ -105,7 +141,7 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
 
     return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1, "details": details}
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Skill Improvement Evaluator (Trainer)")
     parser.add_argument("--skill", "--target", dest="skill", required=True,
                         help="Path to the SKILL.md to evaluate (--target is an alias for programmatic callers)")

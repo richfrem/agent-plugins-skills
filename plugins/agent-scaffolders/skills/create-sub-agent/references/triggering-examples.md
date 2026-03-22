@@ -1,1 +1,1 @@
-../../../references/create-sub-agent/triggering-examples.md
+../../../references/examples/triggering-examples.md

@@ -3,7 +3,7 @@
 This document explains the logic used by `../scripts/sync_with_inventory.py` to manage plugin lifecycles in consuming repositories. It is invoked via the **[maintain-plugins](../SKILL.md)** skill (Sync operation). The goal is to keep vendor plugins up-to-date while protecting project-specific customizations.
 
 
-![Process Diagram](cleanup_flow.mmd)
+![Process Diagram](../assets/diagrams/cleanup_flow.mmd)
 
 ## Key Concepts
 

@@ -149,20 +149,20 @@ class suppress_monolithic_md:
     """Context manager: temporarily hides the monolithic instruction file (CLAUDE.md, GEMINI.md, etc.)
     to prevent the CLI from loading massive project context per worker call.
     Restores on exit, even after crash or Ctrl+C."""
-    def __init__(self, engine: str):
+    def __init__(self, engine: str) -> None:
         self.filename = f"{engine.upper()}.md"
         if engine.lower() == "copilot":
             self.filename = ".github/copilot-instructions.md"
         self.src = Path.cwd() / self.filename
         self.bak = Path.cwd() / f".{Path(self.filename).name}.swarm_bak"
 
-    def __enter__(self):
+    def __enter__(self) -> "suppress_monolithic_md":
         if self.src.exists():
             self.src.rename(self.bak)
             logger.info(f"🔒 Temporarily hid {self.filename} (restored on exit)")
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: object) -> bool:
         if self.bak.exists():
             self.bak.rename(self.src)
             logger.info(f"🔓 Restored {self.filename}")
@@ -170,7 +170,7 @@ class suppress_monolithic_md:
 
 # ─── FILE DISCOVERY ─────────────────────────────────────────────────────────
 
-def resolve_files(args, config) -> list[str]:
+def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
     """Find files from CLI args or Job config."""
     exts = config.get("ext", [".md"])
     exts = set(e if e.startswith(".") else f".{e}" for e in exts)
@@ -378,7 +378,7 @@ def execute_worker(
 
 # ─── MAIN ───────────────────────────────────────────────────────────────────
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Professional Agent Swarm Runner")
     parser.add_argument("--job", type=Path, required=True, help="Job file (.md)")
     parser.add_argument("--resume", action="store_true", help="Resume from last checkpoint")

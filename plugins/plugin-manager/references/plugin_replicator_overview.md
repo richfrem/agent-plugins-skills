@@ -37,6 +37,6 @@ python3 ./bulk_replicator.py \
 | **Preview** | `--dry-run` | Prints what would happen without applying changes. | First-time verification |
 
 ## See Also
-- [Flow Diagram](plugin_replicator_diagram.mmd)
+- [Flow Diagram](../assets/diagrams/plugin_replicator_diagram.mmd)
 - `bulk_replicator.py` - for syncing the entire plugin suite at once
 - `maintain-plugins` skill - activate replicated plugins in agent environments

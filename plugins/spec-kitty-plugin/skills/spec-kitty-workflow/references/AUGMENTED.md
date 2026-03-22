@@ -1,1 +1,1 @@
-../../../references/spec-kitty-workflow/AUGMENTED.md
+../../spec-kitty-sync-plugin/references/AUGMENTED.md

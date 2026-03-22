@@ -1,12 +1,37 @@
 #!/usr/bin/env python3
 """
-Context Bundler Engine - ZIP Archiver
+bundle_zip.py
+=====================================
 
-A utility that reads a JSON manifest file containing a list of file paths
-and notes, and archives them into a single .zip file.
+Purpose:
+    Reads a JSON manifest file containing a list of file paths and notes, and archives them into a single .zip file.
 
-It also generates an internal `_manifest_notes.md` root file inside the zip 
-to preserve the LLM-provided context annotations for the reviewer.
+Layer: Meta-Execution
+
+Usage Examples:
+    python3 bundle_zip.py --manifest manifest.json --bundle bundle.zip
+
+Supported Object Types:
+    - ZIP bundles (bundle.zip)
+
+CLI Arguments:
+    --manifest: Path to the JSON file manifest.
+    --bundle: Output path for the bundled .zip file.
+
+Input Files:
+    - JSON manifest file.
+
+Output:
+    - Bundled .zip file.
+
+Key Functions:
+    - generate_zip_bundle()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - Context bundler workflow
 """
 
 import sys
@@ -114,7 +139,7 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
 
     print(f"✅ Context successfully bundled into -> {output_path}")
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a ZIP context bundle from a JSON manifest.")
     parser.add_argument("--manifest", required=True, type=Path, help="Path to the JSON file manifest.")
     parser.add_argument("--bundle", required=True, type=Path, help="Output path for the bundled .zip file.")

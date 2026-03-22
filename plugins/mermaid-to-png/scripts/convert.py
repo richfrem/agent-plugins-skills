@@ -43,7 +43,7 @@ Consumed by:
     - convert-mermaid (Agent Skill)
 """
 
-def convert_mermaid(input_file, output_file, scale=1, theme="default"):
+def convert_mermaid(input_file: str, output_file: str, scale: int = 1, theme: str = "default") -> None:
     """
     Converts a mermaid (.mmd/.mermaid) file to a PNG using mmdc.
     """

@@ -1,14 +1,42 @@
 #!/usr/bin/env python3
 """
-Exploration Cycle Plugin - Session Start Hook
-Checks if an exploration session brief exists. If not, emits an event 
-to suggest starting the intake process.
+session_start.py
+=====================================
+
+Purpose:
+    Checks if an exploration session brief exists. If not, emits an event to suggest starting the intake process.
+
+Layer: Hooks / Triggering
+
+Usage Examples:
+    python3 session_start.py
+
+Supported Object Types:
+    None
+
+CLI Arguments:
+    None
+
+Input Files:
+    - exploration/session-brief.md
+
+Output:
+    - Printed warning / suggested action to stdout.
+
+Key Functions:
+    None
+
+Script Dependencies:
+    - context/kernel.py (for emitting events)
+
+Consumed by:
+    - Exploration cycle hooks
 """
 import os
 import sys
 from pathlib import Path
 
-def main():
+def main() -> None:
     try:
         project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
         brief_path = Path(project_dir) / "exploration" / "session-brief.md"

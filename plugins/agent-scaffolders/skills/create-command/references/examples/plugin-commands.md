@@ -1,1 +1,1 @@
-../../../../references/create-command/examples/plugin-commands.md
+../../../../references/examples/plugin-commands.md

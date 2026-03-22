@@ -1,3 +1,41 @@
+"""
+test_parser.py (Tests)
+=====================================
+
+Purpose:
+    Unit tests for ObsidianParser extracting links, embeds, and callout generation.
+
+Layer: Tests
+
+Usage Examples:
+    python3 -m unittest plugins/obsidian-integration/scripts/obsidian-parser/tests/test_parser.py
+
+Supported Object Types:
+    - None
+
+CLI Arguments:
+    Standard unittest arguments.
+
+Input Files:
+    - None
+
+Output:
+    - Test results.
+
+Key Functions:
+    test_standard_wikilink(): Test standard wikilink extraction.
+    test_link_with_heading(): Test link with heading.
+    test_link_with_block(): Test link with block.
+    test_aliased_link(): Test aliased link.
+    test_embed_transclusion(): Test embed transclusion.
+    test_callout_generation(): Test callout generation.
+
+Script Dependencies:
+    unittest, sys, os, parser
+
+Consumed by:
+    - None
+"""
 import unittest
 import sys
 import os
@@ -8,7 +46,7 @@ from parser import ObsidianParser
 
 class TestObsidianParser(unittest.TestCase):
     
-    def test_standard_wikilink(self):
+    def test_standard_wikilink(self) -> None:
         text = "Here is a [[Standard Link]] to a note."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -17,7 +55,7 @@ class TestObsidianParser(unittest.TestCase):
         self.assertIsNone(links[0]['block'])
         self.assertIsNone(links[0]['alias'])
 
-    def test_link_with_heading(self):
+    def test_link_with_heading(self) -> None:
         text = "Check this [[Note#My Heading]] for details."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -25,7 +63,7 @@ class TestObsidianParser(unittest.TestCase):
         self.assertEqual(links[0]['heading'], "My Heading")
         self.assertIsNone(links[0]['block'])
 
-    def test_link_with_block(self):
+    def test_link_with_block(self) -> None:
         text = "This is a block transclusion [[Note#^block-123]] reference."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -33,14 +71,14 @@ class TestObsidianParser(unittest.TestCase):
         self.assertEqual(links[0]['block'], "block-123")
         self.assertIsNone(links[0]['heading'])
 
-    def test_aliased_link(self):
+    def test_aliased_link(self) -> None:
         text = "Read the [[Note Name|Display Text]] here."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
         self.assertEqual(links[0]['target'], "Note Name")
         self.assertEqual(links[0]['alias'], "Display Text")
 
-    def test_embed_transclusion(self):
+    def test_embed_transclusion(self) -> None:
         # Embeds should NOT be matched by extract_links, but should be by extract_embeds
         text = "Here is an image: ![[image.png]] and a normal [[Link]]."
         links = ObsidianParser.extract_links(text)
@@ -52,12 +90,12 @@ class TestObsidianParser(unittest.TestCase):
         self.assertEqual(len(embeds), 1)
         self.assertEqual(embeds[0]['target'], "image.png")
 
-    def test_callout_generation(self):
+    def test_callout_generation(self) -> None:
         result = ObsidianParser.create_callout('warning', 'Important Note', 'This is a warning.\nPlease read.')
         expected = "> [!warning] Important Note\n> This is a warning.\n> Please read.\n"
         self.assertEqual(result, expected)
         
-    def test_invalid_callout_type_fallback(self):
+    def test_invalid_callout_type_fallback(self) -> None:
         result = ObsidianParser.create_callout('invalid_type', 'Title', 'Content')
         # Should fallback to a standard 'note'
         self.assertTrue(result.startswith("> [!note] Title"))

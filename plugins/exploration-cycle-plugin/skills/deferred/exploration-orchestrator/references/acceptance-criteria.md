@@ -1,1 +1,1 @@
-../../../references/exploration-orchestrator/acceptance-criteria.md
+../../../exploration-orchestrator/acceptance-criteria.md

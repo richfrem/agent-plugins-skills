@@ -2,7 +2,7 @@
 
 Canonical reference for the strategy packet, correction packet, and verification protocol used by `concurrent-agent-loop` Pattern D.
 
-Diagram: [`references/diagrams/dual-loop-flow.mmd`](diagrams/dual-loop-flow.mmd)
+Diagram: [`references/diagrams/dual-loop-flow.mmd`](../assets/diagrams/dual-loop-flow.mmd)
 
 ---
 

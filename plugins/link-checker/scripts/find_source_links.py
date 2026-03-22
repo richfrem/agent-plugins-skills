@@ -9,7 +9,7 @@ Purpose:
 Layer: Curate / Utilities
 
 Usage Examples:
-    python ./scripts/find_source_links.py --help
+    python3 find_source_links.py FORM0000 --doc-path README.md
 
 Supported Object Types:
     - Generic
@@ -19,33 +19,34 @@ CLI Arguments:
     --doc-path      : The path of the document you are writing (to calculate relative links)
 
 Input Files:
-    - (See code)
+    - Documentation files for searching.
 
 Output:
-    - (See code)
+    - Printed Markdown links string to source files.
 
 Key Functions:
-    - find_files(): Finds related files for a given identifier (case-insensitive).
-    - generate_links(): Generates Markdown links relative to a start path (default: repo root).
-    - main(): No description.
+    find_files(): Finds related files for a given identifier.
+    generate_links(): Generates Markdown links relative to a start path.
 
 Script Dependencies:
-    (None detected)
+    os, argparse, sys, pathlib
 
 Consumed by:
-    (Unknown)
+    - link-checker skill
 """
 import os
 import argparse
 import sys
 from pathlib import Path
 
+from typing import Optional
+
 # Configuration
 # REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 LEGACY_ROOT = REPO_ROOT / "legacy-system"
 
-def find_files(identifier):
+def find_files(identifier: str) -> dict:
     """Finds related files for a given identifier (case-insensitive)."""
     results = {
         "md": None,
@@ -89,7 +90,7 @@ def find_files(identifier):
 
     return results
 
-def generate_links(identifier, results, start_path=None):
+def generate_links(identifier: str, results: dict, start_path: Optional[Path] = None) -> str:
     """Generates Markdown links relative to a start path (default: repo root)."""
     links = []
     
@@ -104,7 +105,7 @@ def generate_links(identifier, results, start_path=None):
         # OR better: output the string required for the standard location.
         base = REPO_ROOT / "legacy-system" / "oracle-forms-overviews" / "forms"
 
-    def make_link(label, target_path):
+    def make_link(label: str, target_path: Path) -> str:
         try:
             # Calculate logic relative to the "Overview" folder location for portability
             rel = os.path.relpath(REPO_ROOT / target_path, base)
@@ -127,7 +128,7 @@ def generate_links(identifier, results, start_path=None):
 
     return " ".join(links)
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Find source code links for an artifact.")
     parser.add_argument("identifier", help="The identifier to search for (e.g. FORM0000, EXAMPLE_LIB)")
     parser.add_argument("--doc-path", help="The path of the document you are writing (to calculate relative links)", default=None)

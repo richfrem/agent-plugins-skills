@@ -1,11 +1,41 @@
 """
-Obsidian Graph Traversal Engine
+graph_ops.py (CLI)
+=====================================
 
-Purpose: Builds an in-memory graph index from wikilinks found across vault .md files.
-Provides instant forward-link, backlink, and multi-degree connection queries.
-Integrates with obsidian-parser from WP05 for link extraction.
+Purpose:
+    Builds an in-memory graph index from wikilinks found across vault .md files.
+    Provides instant forward-link, backlink, and multi-degree connection queries.
 
-Performance target: < 2 seconds for deep queries across 1000+ notes.
+Layer: Core Operations
+
+Usage Examples:
+    python3 graph_ops.py build --vault-root /path/to/vault
+    python3 graph_ops.py forward --note "My Note" --vault-root /path/to/vault
+    python3 graph_ops.py backlinks --note "My Note" --vault-root /path/to/vault
+
+Supported Object Types:
+    - .md (Markdown notes with wikilinks)
+
+CLI Arguments:
+    Subcommands: build, forward, backlinks, connections, orphans. Run with --help for details.
+
+Input Files:
+    - .md files inside the vault.
+
+Output:
+    - JSON results indicating links or orphans.
+
+Key Functions:
+    extract_wikilinks(): Extract all wikilinks from text.
+    VaultGraph.build(): Build full graph from scratch.
+    VaultGraph.get_forward_links(): Get forward links.
+    VaultGraph.get_backlinks(): Get backlinks.
+
+Script Dependencies:
+    os, re, sys, json, time, argparse, pathlib, typing, collections
+
+Consumed by:
+    - obsidian-graph-traversal skill
 """
 import os
 import re
@@ -64,7 +94,7 @@ class VaultGraph:
     - file_mtimes:   {note_name: mtime} for incremental rebuilds
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.forward_links: Dict[str, Set[str]] = defaultdict(set)
         self.back_links: Dict[str, Set[str]] = defaultdict(set)
         self.file_mtimes: Dict[str, float] = {}
@@ -72,7 +102,7 @@ class VaultGraph:
         self.vault_root: Optional[Path] = None
         self.build_time: float = 0.0
 
-    def build(self, vault_root: Path, exclusions: List[str] = None) -> Dict[str, Any]:
+    def build(self, vault_root: Path, exclusions: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Full scan of the vault, building the graph from scratch.
         """
@@ -207,7 +237,7 @@ class VaultGraph:
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Obsidian Graph Traversal")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

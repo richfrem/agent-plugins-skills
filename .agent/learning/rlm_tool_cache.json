@@ -1,18 +1,238 @@
 {
+  "plugins/agent-loops/scripts/agent_orchestrator.py": {
+    "hash": "6e89850b04502f72",
+    "summarized_at": "2026-03-22T15:43:49.344562",
+    "summary": "Standalone CLI for strategy packet generation, worktree verification, and corrective iteration packets used by the agent-orchestrator."
+  },
+  "plugins/agent-loops/scripts/swarm_run.py": {
+    "hash": "b412905e8ed4620d",
+    "summarized_at": "2026-03-22T15:43:49.395936",
+    "summary": "Parallel worker engine that dispatches N parallel workers to process file items through local Claude LLM queries with checkpoint/resume support and retry mechanics."
+  },
   "plugins/agent-plugin-analyzer/scripts/analyze_scripts.py": {
     "hash": "ebd1437f6c43fa38",
     "summarized_at": "2026-03-09T12:47:26.995730",
     "summary": "Plugin ecosystem script auditor. Scans all plugins/ directories for Python script references in .md files, identifies which are physically present vs referenced but missing, and validates symlink structures against ADR-001 (no cross-plugin script execution - use skill delegation) and ADR-002 (multi-skill scripts live at plugin root with symlinks in skills). Loads whitelist.json to suppress known false positives. Writes full analysis to analysis_results.txt with per-plugin sections and a global summary of unresolved missing scripts. CLI: python3 analyze_scripts.py > analysis_results.txt. No arguments needed - reads whitelist.json from same directory."
   },
+  "plugins/agent-scaffolders/scripts/audit.py": {
+    "hash": "d779eaa6f9f6791d",
+    "summarized_at": "2026-03-22T15:43:56.489420",
+    "summary": "Audit plugins against the Agent Skills Open Standard to ensure architectural and resource compliance before deployment."
+  },
+  "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py": {
+    "hash": "32f5c17d78fe493f",
+    "summarized_at": "2026-03-22T15:44:48.175626",
+    "summary": "Aggregate individual run results into benchmark summary statistics and calculate configuration deltas."
+  },
+  "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py": {
+    "hash": "14d8249682e0d42f",
+    "summarized_at": "2026-03-22T15:46:39.498414",
+    "summary": "Generate an HTML dashboard report from run_loop.py description optimization output."
+  },
+  "plugins/agent-scaffolders/scripts/benchmarking/improve_description.py": {
+    "hash": "9af54c629922c671",
+    "summarized_at": "2026-03-22T15:51:19.070465",
+    "summary": "Improve a skill description based on eval results using iterative LLM feedback loop."
+  },
+  "plugins/agent-scaffolders/scripts/benchmarking/run_eval.py": {
+    "hash": "9a17f3591a58c08e",
+    "summarized_at": "2026-03-22T15:53:20.547064",
+    "summary": "Run trigger evaluation for a skill description to check if Claude invokes it correctly."
+  },
+  "plugins/agent-scaffolders/scripts/benchmarking/run_loop.py": {
+    "hash": "283bc6ea7ac1e292",
+    "summarized_at": "2026-03-22T15:54:13.911648",
+    "summary": "Run the eval + improve loop until all pass or max iterations reached."
+  },
+  "plugins/agent-scaffolders/scripts/eval-viewer/generate_review.py": {
+    "hash": "43b7a2d85b5dd947",
+    "summarized_at": "2026-03-22T15:54:49.184447",
+    "summary": "Generate and serve a standalone review page for evaluation workspaces."
+  },
+  "plugins/agent-scaffolders/scripts/generate_review.py": {
+    "hash": "43b7a2d85b5dd947",
+    "summarized_at": "2026-03-22T15:55:19.353114",
+    "summary": "Generate and serve a standalone review page for evaluation workspaces."
+  },
+  "plugins/agent-scaffolders/scripts/scaffold.py": {
+    "hash": "47d1d29741803271",
+    "summarized_at": "2026-03-22T15:56:39.577269",
+    "summary": "Generates compliant directory architectures and boilerplate logic for Agent Skills, Plugins, Hooks, Commands, and Sub-Agents."
+  },
+  "plugins/agent-scaffolders/scripts/scaffold_azure_agent.py": {
+    "hash": "567e01707dd66f4a",
+    "summarized_at": "2026-03-22T15:57:09.793684",
+    "summary": "Generates Azure AI Foundry Agent boilerplate from an existing Open Skill."
+  },
   "plugins/context-bundler/scripts/bundle.py": {
-    "hash": "5735e13052e260eb",
-    "summarized_at": "2026-03-09T12:47:26.838799",
-    "summary": "Markdown Context Bundler Engine. Reads a JSON manifest (title, description, files[]) and concatenates file contents into a single annotated Markdown file for LLM ingestion or external review. Expands directory paths recursively. Infers language for fenced code blocks (md, py, json, ts, js). Inserts a WARNING placeholder for missing/unreadable files instead of aborting. CLI: python3 bundle.py --manifest <path/to/manifest.json> --bundle <output.md>. Manifest schema: {title, description, files: [{path, note}]}. Outputs index + per-file sections with code fences."
+    "hash": "9924ae938eb8b3c1",
+    "summarized_at": "2026-03-22T15:57:39.600272",
+    "summary": "Generates a markdown context bundle from a JSON manifest."
   },
   "plugins/context-bundler/scripts/bundle_zip.py": {
-    "hash": "bcb1276e95f402c7",
-    "summarized_at": "2026-03-09T12:47:26.904288",
-    "summary": "ZIP Context Bundler Engine. Reads a JSON manifest and archives native-format files into a .zip using ZIP_DEFLATED compression. Auto-generates a _manifest_notes.md root file inside the archive containing the index and LLM-provided note annotations. Expands directory paths recursively while skipping __pycache__, node_modules, .env files. Flags missing files in _manifest_notes.md without aborting. CLI: python3 bundle_zip.py --manifest <path/to/manifest.json> --bundle <output.zip>. Same manifest schema as bundle.py. Use this instead of bundle.py when distributing native-format files."
+    "hash": "2eb019b62b1797f4",
+    "summarized_at": "2026-03-22T15:57:59.144954",
+    "summary": "Archives files into a single .zip file with metadata doc."
+  },
+  "plugins/excel-to-csv/scripts/convert.py": {
+    "hash": "375ea6164a244a39",
+    "summarized_at": "2026-03-22T15:58:20.259539",
+    "summary": "Convert all sheets or selected tables from an Excel workbook into CSV files."
+  },
+  "plugins/excel-to-csv/scripts/verify_csv.py": {
+    "hash": "341e0d34fa1db291",
+    "summarized_at": "2026-03-22T15:58:48.857972",
+    "summary": "Perform structural linting of generated CSV files (jagged rows, empty detection)."
+  },
+  "plugins/exploration-cycle-plugin/hooks/event_subscriber.py": {
+    "hash": "b22d1a4024549f51",
+    "summarized_at": "2026-03-22T15:59:18.143798",
+    "summary": "Reads and deduplicates events from events.jsonl for trigger subscriptions."
+  },
+  "plugins/exploration-cycle-plugin/hooks/session_start.py": {
+    "hash": "3080e6a26d7e54fb",
+    "summarized_at": "2026-03-22T15:59:39.785676",
+    "summary": "Checks for exploration brief and suggests intake if missing."
+  },
+  "plugins/exploration-cycle-plugin/scripts/check_gaps.py": {
+    "hash": "3d2b35aa4ed93611",
+    "summarized_at": "2026-03-22T16:00:01.691628",
+    "summary": "Counts gap markers in capture files to halt execution if threshold exceeded."
+  },
+  "plugins/exploration-cycle-plugin/scripts/dispatch.py": {
+    "hash": "aa9ebd3c544bf8be",
+    "summarized_at": "2026-03-22T16:02:22.435691",
+    "summary": "Safely dispatches multi-file context to CLI backends with embedded prompting."
+  },
+  "plugins/exploration-cycle-plugin/scripts/exploration_handoff_execute.py": {
+    "hash": "09a6ae039028c173",
+    "summarized_at": "2026-03-22T16:03:06.164045",
+    "summary": "Synthesizes exploration outputs into a structured handoff package layout securely."
+  },
+  "plugins/exploration-cycle-plugin/scripts/exploration_optimizer_execute.py": {
+    "hash": "f2de0b5d30eff42f",
+    "summarized_at": "2026-03-22T16:03:42.954599",
+    "summary": "Implements an autoresearch-style optimization loop: Propose -> Test -> Decide layout securely."
+  },
+  "plugins/exploration-cycle-plugin/scripts/exploration_orchestrator_execute.py": {
+    "hash": "6e10e1b3a8a87311",
+    "summarized_at": "2026-03-22T16:04:29.812035",
+    "summary": "Coordinates the multi-agent exploration loop, manages state, and routes work layout securely."
+  },
+  "plugins/exploration-cycle-plugin/scripts/exploration_session_brief_execute.py": {
+    "hash": "4c6a09fcec54475b",
+    "summarized_at": "2026-03-22T16:04:50.152872",
+    "summary": "Creates and refines an exploration session brief layout securely."
+  },
+  "plugins/exploration-cycle-plugin/scripts/prototype_builder_execute.py": {
+    "hash": "98772ef39cc53900",
+    "summarized_at": "2026-03-22T16:05:07.888234",
+    "summary": "Builds or refines exploratory prototypes layout securely."
+  },
+  "plugins/huggingface-utils/scripts/hf_config.py": {
+    "hash": "9a840bebbab861fa",
+    "summarized_at": "2026-03-22T16:05:33.043676",
+    "summary": "Single source of truth for HuggingFace credentials and environment variable resolution layout securely."
+  },
+  "plugins/huggingface-utils/scripts/hf_init.py": {
+    "hash": "e6906afae3161be6",
+    "summarized_at": "2026-03-22T16:05:57.597479",
+    "summary": "Validates environment and ensures dataset structure on HuggingFace layout securely."
+  },
+  "plugins/link-checker/scripts/check_broken_paths.py": {
+    "hash": "bdc161c765b147ae",
+    "summarized_at": "2026-03-22T16:06:20.111473",
+    "summary": "Recursively scans documentation files for broken relative links layout securely."
+  },
+  "plugins/link-checker/scripts/find_source_links.py": {
+    "hash": "057e76ed7e24275c",
+    "summarized_at": "2026-03-22T16:06:54.184414",
+    "summary": "Finds source file references in documentation printed links layout securely."
+  },
+  "plugins/link-checker/scripts/map_repository_files.py": {
+    "hash": "5b4b59eb0cb9cb5e",
+    "summarized_at": "2026-03-22T16:07:26.665656",
+    "summary": "Indexes the entire repository to create a file inventory layout securely."
+  },
+  "plugins/link-checker/scripts/smart_fix_links.py": {
+    "hash": "4a544e3502ca2b93",
+    "summarized_at": "2026-03-22T16:08:24.794929",
+    "summary": "Auto-corrects broken links using fuzzy matching layout securely."
+  },
+  "plugins/markdown-to-msword-converter/scripts/md_to_docx.py": {
+    "hash": "4d2522b579b9f86b",
+    "summarized_at": "2026-03-22T16:08:54.743213",
+    "summary": "Converts a single Markdown file into a Word document layout securely."
+  },
+  "plugins/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py": {
+    "hash": "eea59436c4b9bc46",
+    "summarized_at": "2026-03-22T16:09:32.582690",
+    "summary": "Bulk Converter: Convert all Markdown files under a root folder layout securely."
+  },
+  "plugins/markdown-to-msword-converter/scripts/verify_docx.py": {
+    "hash": "9464b542f9cdb929",
+    "summarized_at": "2026-03-22T16:09:57.452855",
+    "summary": "Perform a structural linting of generated DOCX files securely."
+  },
+  "plugins/mermaid-to-png/scripts/convert.py": {
+    "hash": "066654118e3c59ed",
+    "summarized_at": "2026-03-22T16:11:20.560713",
+    "summary": "Converts a mermaid file to a PNG utilizing standard headless integration securely."
+  },
+  "plugins/mermaid-to-png/scripts/verify_png.py": {
+    "hash": "10002c22b124488e",
+    "summarized_at": "2026-03-22T16:11:43.682563",
+    "summary": "Perform a structural linting of generated PNG files securely."
+  },
+  "plugins/obsidian-integration/scripts/bases_ops.py": {
+    "hash": "89a317f064b6f798",
+    "summarized_at": "2026-03-22T16:12:26.835873",
+    "summary": "Read and manipulate Obsidian Bases (.base) files layout securely."
+  },
+  "plugins/obsidian-integration/scripts/canvas_ops.py": {
+    "hash": "676f5a7cdca0f2a2",
+    "summarized_at": "2026-03-22T16:14:29.448950",
+    "summary": "Programmatically create and manipulate Obsidian Canvas (.canvas) files securely."
+  },
+  "plugins/obsidian-integration/scripts/graph_ops.py": {
+    "hash": "a59d274da58b9839",
+    "summarized_at": "2026-03-22T16:16:37.459202",
+    "summary": "Builds an in-memory graph index from wikilinks found across vault .md files securely."
+  },
+  "plugins/obsidian-integration/scripts/init_vault.py": {
+    "hash": "3e40e847f6b06859",
+    "summarized_at": "2026-03-22T16:17:36.097215",
+    "summary": "Bootstrap any project directory as an Obsidian Vault securely."
+  },
+  "plugins/obsidian-integration/scripts/obsidian-parser/parser.py": {
+    "hash": "57711560f9a466a8",
+    "summarized_at": "2026-03-22T16:18:03.217109",
+    "summary": "Core parser for Obsidian-flavored Markdown syntax securely."
+  },
+  "plugins/obsidian-integration/scripts/parser.py": {
+    "hash": "57711560f9a466a8",
+    "summarized_at": "2026-03-22T16:19:25.335116",
+    "summary": "Core parser for Obsidian-flavored Markdown syntax securely."
+  },
+  "plugins/obsidian-integration/scripts/vault_ops.py": {
+    "hash": "8293ab850dab8bff",
+    "summarized_at": "2026-03-22T16:20:06.650260",
+    "summary": "Obsidian Vault CRUD Operations with locking and atomic writes securely."
+  },
+  "plugins/plugin-manager/scripts/audit_structure.py": {
+    "hash": "58d8dfbae60507f5",
+    "summarized_at": "2026-03-22T16:20:38.434993",
+    "summary": "Audit Plugin Structure for standard layout compliance securely."
+  },
+  "plugins/plugin-manager/scripts/bridge_installer.py": {
+    "hash": "9b533ca2843e4498",
+    "summarized_at": "2026-03-22T16:21:20.187398",
+    "summary": "Plugin Bridge Installer for central deployment and symlinking securely."
+  },
+  "plugins/plugin-manager/scripts/clean_orphans.py": {
+    "hash": "ef6048da2ddfd899",
+    "summarized_at": "2026-03-22T16:21:55.137458",
+    "summary": "Plugin Orphan Cleaner to remove stale symlinks securely."
   },
   "plugins/rlm-factory/scripts/cleanup_cache.py": {
     "hash": "56e8f8ffcc50d25e",

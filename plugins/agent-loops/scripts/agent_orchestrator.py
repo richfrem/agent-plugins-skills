@@ -115,7 +115,7 @@ def read_file(path: Path) -> str:
 
 # --- Commands ---
 
-def cmd_packet(args):
+def cmd_packet(args: argparse.Namespace) -> None:
     """Generate strategy packet."""
     packet_id = args.id
     
@@ -152,7 +152,7 @@ def cmd_packet(args):
     out_file.write_text(packet)
     print(f"Packet generated: {out_file}")
 
-def cmd_verify(args):
+def cmd_verify(args: argparse.Namespace) -> None:
     """Verify worktree state."""
     print(f"Verifying {args.packet}...")
     
@@ -168,7 +168,7 @@ def cmd_verify(args):
     print("If pass: commit and move task to done.")
     print("If fail: run 'agent-orchestrator correct ...'")
 
-def cmd_correct(args):
+def cmd_correct(args: argparse.Namespace) -> None:
     """Generate correction packet."""
     packet_path = Path(args.packet)
     if not packet_path.exists():
@@ -191,7 +191,7 @@ def cmd_correct(args):
     print(f"Correction packet generated: {out_file}")
 
 
-def cmd_retro(args):
+def cmd_retro(args: argparse.Namespace) -> None:
     """Generate retrospective."""
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
     content = RETRO_TEMPLATE.format(session_id="SESSION", date=timestamp)
@@ -204,7 +204,7 @@ def cmd_retro(args):
 
 # --- Main ---
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Agent Orchestrator CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
     

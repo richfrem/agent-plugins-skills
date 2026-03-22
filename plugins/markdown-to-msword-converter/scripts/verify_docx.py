@@ -1,23 +1,43 @@
 #!/usr/bin/env python3
 """
-verify_docx.py
+verify_docx.py (CLI)
 =====================================
+
 Purpose:
-    Perform a structural linting of generated DOCX files to create a strict 
-    L5 Delegated Constraint Verification Loop.
+    Perform a structural linting of generated DOCX files.
+    Creates a strict L5 Delegated Constraint Verification Loop.
 
-Usage:
-    python3 scripts/verify_docx.py output.docx
+Layer: Cli_Entry_Points
 
-Checks:
-    1. Empty file detection.
-    2. Archive integrity (can python-docx open it?).
-    3. Content presence (are there any paragraphs?).
+Usage Examples:
+    python3 verify_docx.py output.docx
+
+Supported Object Types:
+    - Generic
+
+CLI Arguments:
+    docx_file: Path to output DOCX file.
+
+Input Files:
+    - Word document (.docx).
+
+Output:
+    - JSON summary of verification status and errors.
+
+Key Functions:
+    verify_docx(): Structural verification of a DOCX file.
+
+Script Dependencies:
+    json, sys, pathlib, python-docx
+
+Consumed by:
+    - markdown-to-msword-converter skill
 """
 
 import json
 import sys
 from pathlib import Path
+from typing import Dict, Any
 
 try:
     from docx import Document
@@ -29,7 +49,7 @@ except ImportError:
     }))
     sys.exit(1)
 
-def verify_docx(file_path: Path) -> dict:
+def verify_docx(file_path: Path) -> Dict[str, Any]:
     if not file_path.exists():
         return {"status": "errors_found", "total_errors": 1, "error_summary": {"FileMissing": {"count": 1, "locations": ["File does not exist."]}}}
     
@@ -71,7 +91,7 @@ def verify_docx(file_path: Path) -> dict:
             
     return result
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: python verify_docx.py <docx_file>")
         sys.exit(1)

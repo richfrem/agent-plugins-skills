@@ -68,7 +68,7 @@ python3 ./scripts/check_broken_paths.py --file docs/specific.md
 
 ## Architecture
 
-See [docs/link-checker-workflow.mmd](docs/link-checker-workflow.mmd) for the full
+See [docs/link-checker-workflow.mmd](assets/diagrams/link-checker-workflow.mmd) for the full
 sequence diagram.
 
 ```mermaid
@@ -79,9 +79,9 @@ graph LR
 ```
 
 Additional diagrams (from original tool):
-- [logic.mmd](docs/logic.mmd) — Internal decision logic
-- [workflow.mmd](docs/workflow.mmd) — User workflow
-- [unpacking.mmd](docs/unpacking.mmd) — Legacy unpacking flow
+- [logic.mmd](assets/diagrams/logic.mmd) — Internal decision logic
+- [workflow.mmd](assets/diagrams/workflow.mmd) — User workflow
+- [unpacking.mmd](assets/diagrams/unpacking.mmd) — Legacy unpacking flow
 
 ### Plugin Directory Structure
 ```

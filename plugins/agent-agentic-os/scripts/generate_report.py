@@ -147,7 +147,7 @@ def load_north_star(ledger_path: Path) -> pd.DataFrame:
 # Plotting — autoresearch style
 # ---------------------------------------------------------------------------
 
-def plot_skill(ax, df: pd.DataFrame, title: str) -> None:
+def plot_skill(ax: Any, df: pd.DataFrame, title: str) -> None:
     """Single skill progress chart — mirrors autoresearch analysis.ipynb."""
     if df.empty or "score" not in df.columns:
         ax.text(0.5, 0.5, "No data yet — run a loop cycle to populate results.tsv",
@@ -223,7 +223,7 @@ def plot_skill(ax, df: pd.DataFrame, title: str) -> None:
                         fontsize=7, color="#999999")
 
 
-def plot_north_star(ax, ns_df: pd.DataFrame) -> None:
+def plot_north_star(ax: Any, ns_df: pd.DataFrame) -> None:
     if ns_df.empty or "rate_num" not in ns_df.columns:
         ax.text(0.5, 0.5, "No session data yet",
                 ha="center", va="center", transform=ax.transAxes,
@@ -252,7 +252,7 @@ def plot_north_star(ax, ns_df: pd.DataFrame) -> None:
     ax.grid(True, alpha=0.2)
 
 
-def plot_friction(ax, ns_df: pd.DataFrame) -> None:
+def plot_friction(ax: Any, ns_df: pd.DataFrame) -> None:
     if ns_df.empty or "friction_events_total" not in ns_df.columns:
         ax.text(0.5, 0.5, "No friction data yet",
                 ha="center", va="center", transform=ax.transAxes,

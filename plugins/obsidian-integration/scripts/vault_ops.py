@@ -1,9 +1,41 @@
 """
-Obsidian Vault CRUD Operations
+vault_ops.py (CLI)
+=====================================
 
-Purpose: Safe Create/Read/Update/Append operations for Obsidian Vault notes.
-Implements atomic writes (T026), advisory locking (T027), concurrent edit
-detection via mtime (T028), and lossless YAML frontmatter via ruamel.yaml (T029).
+Purpose:
+    Safe Create/Read/Update/Append operations for Obsidian Vault notes.
+    Implements atomic writes, advisory locking, concurrent edit detection,
+    and lossless YAML frontmatter handling.
+
+Layer: Core Operations
+
+Usage Examples:
+    python3 vault_ops.py read --file note.md
+    python3 vault_ops.py create --file note.md --content "Hello"
+
+Supported Object Types:
+    - .md (Markdown notes with Obsidian syntax)
+
+CLI Arguments:
+    Subcommands: read, create, update, append. Run with --help for details.
+
+Input Files:
+    - .md files.
+
+Output:
+    - JSON results or status messages.
+
+Key Functions:
+    read_note(): Read a note and return its frontmatter and body.
+    create_note(): Create a new note with optional frontmatter.
+    update_note(): Update a note's body, preserving frontmatter.
+    append_to_note(): Append content to an existing note.
+
+Script Dependencies:
+    os, sys, json, argparse, tempfile, subprocess, pathlib, typing, ruamel.yaml
+
+Consumed by:
+    - obsidian-vault-crud skill
 """
 import os
 import sys
@@ -42,7 +74,7 @@ class AgentLock:
     Creates `.agent-lock` at the vault root before write batches.
     """
 
-    def __init__(self, vault_root: Path = VAULT_ROOT):
+    def __init__(self, vault_root: Path = VAULT_ROOT) -> None:
         self.lock_path = vault_root / ".agent-lock"
         self._acquired = False
 
@@ -66,18 +98,18 @@ class AgentLock:
         self._acquired = True
         return True
 
-    def release(self):
+    def release(self) -> None:
         """Release the advisory lock."""
         if self._acquired and self.lock_path.exists():
             self.lock_path.unlink()
             self._acquired = False
 
-    def __enter__(self):
+    def __enter__(self) -> "AgentLock":
         if not self.acquire():
             raise RuntimeError("Failed to acquire agent lock. Another agent is writing.")
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[type], exc_val: Optional[BaseException], exc_tb: Optional[Any]) -> bool:
         self.release()
         return False
 
@@ -272,7 +304,7 @@ def _now_iso() -> str:
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Obsidian Vault CRUD Operations")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

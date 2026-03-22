@@ -1,1 +1,1 @@
-../../CONNECTORS.md
+../../skills/audit-plugin/CONNECTORS.md

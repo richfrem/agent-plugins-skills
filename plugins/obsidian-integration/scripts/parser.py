@@ -1,3 +1,40 @@
+"""
+parser.py (CLI)
+=====================================
+
+Purpose:
+    Core parser for Obsidian-flavored Markdown syntax.
+    Extracts links, embeds, and facilitates creating callouts.
+
+Layer: Core Operations
+
+Usage Examples:
+    python3 parser.py analyze --file example.md
+    python3 parser.py callout --type info --title "Note" --text "Content"
+
+Supported Object Types:
+    - .md (Markdown notes with Obsidian syntax)
+
+CLI Arguments:
+    Subcommands: analyze, callout. Run with --help for details.
+
+Input Files:
+    - .md files.
+
+Output:
+    - JSON analysis or formatted callout block.
+
+Key Functions:
+    extract_links(): Extracts standard Obsidian links.
+    extract_embeds(): Extracts Obsidian transclusions.
+    create_callout(): Wraps content in a callout.
+
+Script Dependencies:
+    re, argparse, sys, json, typing
+
+Consumed by:
+    - obsidian-markdown-mastery skill
+"""
 import re
 import argparse
 import sys
@@ -110,7 +147,7 @@ class ObsidianParser:
             
         return '\n'.join(callout_lines) + '\n'
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Obsidian Markdown Parser")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

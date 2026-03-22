@@ -140,7 +140,7 @@ See `skills/rlm-distill-agent/SKILL.md` for the full Agent Distill protocol.
 
 ## Architecture
 
-See [rlm-factory-workflow.mmd](assets/references/diagrams/rlm-factory-workflow.mmd) for the full
+See [rlm-factory-workflow.mmd](assets/diagrams/rlm-factory-workflow.mmd) for the full
 sequence diagram.
 
 ```mermaid
@@ -152,12 +152,12 @@ graph LR
 ```
 
 Additional diagrams (in `assets/references/diagrams/`):
-- [search_process.mmd](assets/references/diagrams/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
-- [rlm-factory-architecture.mmd](assets/references/diagrams/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
-- [rlm-factory-dual-path.mmd](assets/references/diagrams/rlm-factory-dual-path.mmd) -- Super-RAG context injection
-- [rlm-factory-workflow.mmd](assets/references/diagrams/rlm-factory-workflow.mmd) -- Full distill/audit/query/cleanup lifecycle
-- [workflow.mmd](assets/references/diagrams/workflow.mmd) -- Build + query decision flow
-- [logic.mmd](assets/references/diagrams/logic.mmd) -- Install + distill + consume overview
+- [search_process.mmd](assets/diagrams/search_process.mmd) -- 3-phase search strategy (RLM -> VDB -> Grep)
+- [rlm-factory-architecture.mmd](assets/diagrams/rlm-factory-architecture.mmd) -- RLM vs Vector DB routing
+- [rlm-factory-dual-path.mmd](assets/diagrams/rlm-factory-dual-path.mmd) -- Super-RAG context injection
+- [rlm-factory-workflow.mmd](assets/diagrams/rlm-factory-workflow.mmd) -- Full distill/audit/query/cleanup lifecycle
+- [workflow.mmd](assets/diagrams/workflow.mmd) -- Build + query decision flow
+- [logic.mmd](assets/diagrams/logic.mmd) -- Install + distill + consume overview
 
 ### How It Works
 1. **Distiller** reads each file, computes a content hash
