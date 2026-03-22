@@ -17,7 +17,7 @@ Generate structured Business Requirements Documents from exploration session cap
 ## Usage
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/business-requirements-capture/scripts/execute.py \
+python3 .agents/skills/business-requirements-capture/scripts/execute.py \
   --input <file> [<file2>...] \
   --mode <brd|rules|constraints> \
   --output <output_file.md>

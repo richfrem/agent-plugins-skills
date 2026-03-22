@@ -180,6 +180,50 @@ Use `~~category` abstraction for portability across tool vendors.
 .claude/*.local.json
 ```
 
+**Resource sharing between skills and commands/agents (ADR-003):**
+
+When a plugin has BOTH skills AND commands/agents that reference the same scripts,
+assets, or references, follow this pattern so `npx skills add` works correctly:
+
+1. **If the plugin has only skills (no `commands/` or `agents/` files):** scripts, assets, and
+   references can live directly inside the skill directory. No symlinks needed.
+
+2. **If the plugin also has `commands/` or `agents/` files that reference the same scripts/assets:**
+   Those shared resources must live at the **plugin root** (e.g., `plugin-name/scripts/`), with
+   real mirrored directories inside each skill containing **file-level symlinks** pointing up to the
+   plugin root. `npx` resolves file-level symlinks at install time (copies real content). Directory-level
+   symlinks are silently dropped -- never use them.
+
+   ```
+   plugin-name/
+   ├── scripts/
+   │   └── process.py          <- canonical source (real file at plugin root)
+   ├── commands/my-command.md   <- references .agents/skills/<name>/scripts/process.py
+   └── skills/my-skill/
+       └── scripts/
+           └── process.py      -> ../../../scripts/process.py  (file-level symlink)
+   ```
+
+   Create the symlink:
+   ```bash
+   mkdir -p skills/my-skill/scripts
+   ln -s ../../../scripts/process.py skills/my-skill/scripts/process.py
+   ```
+
+3. **Script path references in SKILL.md and command/agent files must always use the installed
+   root-relative path:**
+   ```bash
+   # CORRECT -- works when agent runs from project root after npx skills add
+   python3 .agents/skills/my-skill/scripts/process.py
+
+   # WRONG -- breaks from project root
+   python3 ./process.py
+   python3 ./../scripts/process.py
+   ```
+
+See `ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md`
+for the full decision record.
+
 ---
 
 ## Phase 5: Implement Components

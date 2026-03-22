@@ -1,1 +1,1 @@
-../reference/azure-foundry-agents.md
+../../../../references/ecosystem-authoritative-sources/research/azure-foundry-agents.md

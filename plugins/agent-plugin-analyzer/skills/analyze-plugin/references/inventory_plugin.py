@@ -1,1 +1,1 @@
-../scripts/inventory_plugin.py
+../../../scripts/inventory_plugin.py

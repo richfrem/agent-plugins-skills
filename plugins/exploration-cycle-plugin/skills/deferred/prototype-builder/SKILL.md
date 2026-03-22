@@ -20,7 +20,7 @@ This skill implements the requested functionality. When invoked, you MUST execut
 
 **Usage:**
 ```bash
-python3 ${plugins}/skills/prototype-builder/scripts/execute.py --help
+python3 .agents/skills/prototype-builder/scripts/execute.py --help
 ```
 
 ## Baseline Validation

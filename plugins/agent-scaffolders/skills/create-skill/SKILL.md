@@ -109,6 +109,42 @@ skill-name/
 | Code rewritten every time -> script it | `scripts/` |
 | Documentation too large (>10k words) -> add grep patterns | `references/` with grep hints |
 
+**Plugin install context (ADR-003) -- read before placing scripts or assets:**
+
+When a skill is installed via `npx skills add`, files are copied to `.agents/skills/<skill-name>/`.
+Two rules govern where shared resources live:
+
+1. **If the plugin has only skills (no `commands/` or `agents/` files):** scripts, assets, and
+   references can live directly inside the skill directory. No symlinks needed.
+
+2. **If the plugin also has `commands/` or `agents/` files that reference the same scripts/assets:**
+   Those shared resources must live at the **plugin root** (e.g., `plugin-name/scripts/`), with
+   real mirrored directories inside the skill containing **file-level symlinks** pointing up to the
+   plugin root. npx resolves file-level symlinks at install time (copies real content). Directory-level
+   symlinks are silently dropped -- never use them.
+
+   ```
+   plugin-name/
+   ├── scripts/
+   │   └── process.py          <- canonical source (real file)
+   ├── commands/my-command.md   <- references .agents/skills/<name>/scripts/process.py
+   └── skills/my-skill/
+       └── scripts/
+           └── process.py      -> ../../../scripts/process.py  (file-level symlink)
+   ```
+
+3. **Script path references in SKILL.md must always use the installed root-relative path:**
+   ```bash
+   # CORRECT -- works when agent runs from project root
+   python3 .agents/skills/my-skill/scripts/process.py
+
+   # WRONG -- breaks from project root
+   python3 ./process.py
+   ```
+
+See `ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md`
+for the full decision record and validated test results.
+
 **Size target:** `SKILL.md` body should be 1,500-2,000 words. Over 3,000 words is a
 sign that content should be moved to `references/`. The skill-reviewer agent will flag this.
 

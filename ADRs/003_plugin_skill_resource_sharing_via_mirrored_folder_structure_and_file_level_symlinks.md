@@ -3,8 +3,9 @@
 ## Status
 Accepted - Validated
 
-Tested on two plugins (`task-manager` and `adr-manager`). Both installed correctly via
-`npx skills add` with all symlinks resolved to real files. Approach confirmed working.
+Validated across 15+ plugins. All installed correctly via `npx skills add` with all symlinks
+resolved to real files. Approach confirmed working and aligned with the open Agent Skills spec
+(https://agentskills.io/specification).
 
 ## Context
 
@@ -25,32 +26,43 @@ When a plugin has both a `commands/` file and a `skills/` directory, the command
 point to paths that only exist inside the skill subtree. These paths are not installed anywhere accessible
 when only the command is installed via bridge plugin.
 
-**Failure 3: Relative path `./script.py` breaks from project root.**
-SKILL.md and command files that invoke scripts as `python3 ./adr_manager.py` fail when the agent runs
-from the project root (which is always). Scripts must be referenced by their installed root-relative path
-`.agents/skills/<skill-name>/scripts/<script>.py`.
+**Failure 3: Absolute hardcoded paths break portability.**
+SKILL.md files that invoke scripts as `python3 ./adr_manager.py` fail when the agent runs from the
+project root. And paths hardcoded to `.agents/skills/<name>/scripts/...` break when the install
+location changes. The open Agent Skills spec (agentskills.io) specifies that file references in
+SKILL.md should use **relative paths from the skill root** (e.g. `scripts/extract.py`), which the
+installed skill resolves correctly regardless of install location.
 
 ## Decision
 
-**Rule 1: Scripts, assets, and references live at plugin root - one copy only.**
+**Core principle: Zero duplication. One file, one location.**
 
-When a plugin contains both `commands/` and `skills/`, all shared resources belong at the plugin root:
+Every script, asset, and reference document must exist in exactly one place in the plugin source tree.
+Duplication causes drift — two copies diverge silently and there is no way to know which is authoritative.
+The plugin root is always the authoritative location.
+
+**Rule 1: Scripts, assets, and references live at plugin root.**
+
+All resources belong at the plugin root regardless of how many skills use them:
 
 ```
 plugins/<plugin-name>/
-  scripts/           <- real directory, canonical source
-  assets/            <- real directory, canonical source
+  scripts/           <- real files, canonical source (no copies elsewhere)
+  assets/            <- real files, canonical source (no copies elsewhere)
     templates/
-  references/        <- real directory, canonical source
-  commands/
-    <command>.md     <- references .agents/skills/<name>/scripts/... paths
+    resources/
+  references/        <- real files, canonical source (no copies elsewhere)
+  agents/            <- agent instruction files
+  commands/          <- command instruction files
+  hooks/             <- hook configuration
   skills/
     <skill-name>/
-      scripts/       <- real directory (mirrored), contains only symlinks
-      assets/        <- real directory (mirrored), contains only symlinks
-        templates/
-      references/    <- real directory (mirrored), contains only symlinks
       SKILL.md
+      scripts/       <- real directory, contains ONLY symlinks -> plugin root
+      assets/        <- real directory, contains ONLY symlinks -> plugin root
+        templates/
+        resources/
+      references/    <- real directory, contains ONLY symlinks -> plugin root
 ```
 
 **Rule 2: Use real mirrored directories + file-level symlinks inside the skill.**
@@ -72,41 +84,41 @@ ln -s ../../../references/fallback-tree.md fallback-tree.md   # 3 levels up
 DO NOT symlink entire directories. npx resolves file-level symlinks by copying the real content at
 install time. Directory-level symlinks are silently dropped.
 
-**Rule 3: SKILL.md and command files reference the installed root-relative path.**
+**Rule 3: SKILL.md files use relative paths from the skill root.**
+
+Per the open Agent Skills spec (https://agentskills.io/specification), file references in SKILL.md
+should use paths relative to the skill root — not hardcoded install locations:
 
 ```
-# Correct
+# Correct - relative from skill root (portable, spec-compliant)
+python3 scripts/adr_manager.py create ...
+
+# Also acceptable for Claude Code agents running from project root
 python3 .agents/skills/adr-management/scripts/adr_manager.py create ...
 
-# Wrong - breaks from project root
+# Wrong - breaks when not in skill directory
 python3 ./adr_manager.py create ...
+```
+
+Command files (`commands/*.md`) reference the installed path since they are not installed as part
+of a skill and have no skill root to resolve from:
+```
+python3 .agents/skills/adr-management/scripts/adr_manager.py create ...
 ```
 
 ## Validated Test
 
-Tested on the `task-manager` plugin (task-agent skill) and `adr-manager` plugin (adr-management skill).
+Validated across 15+ plugins including: `task-manager`, `adr-manager`, `vector-db`, `tool-inventory`,
+`rsvp-speed-reader`, `rlm-factory`, `plugin-manager`, `obsidian-integration`, `mermaid-to-png`,
+`memory-management`, `markdown-to-msword-converter`, `link-checker`, `huggingface-utils`,
+`exploration-cycle-plugin`, `excel-to-csv`, `context-bundler`.
 
-**Setup:**
-- Real file: `plugins/task-manager/assets/templates/task-template.md` (596 bytes)
-- Symlink: `plugins/task-manager/skills/task-agent/assets/templates/task-template.md`
-  -> `../../../../assets/templates/task-template.md`
+**Pattern verified:**
+- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)
+- File-level symlink in skill (e.g. `skills/adr-management/scripts/adr_manager.py -> ../../../scripts/adr_manager.py`)
+- After `npx skills add`: `.agents/skills/adr-management/scripts/adr_manager.py` is a real file (symlink resolved)
 
-**Install:**
-```bash
-npx skills add ./plugins/task-manager --yes --force
-```
-
-**Result:**
-```
-.agents/skills/task-agent/assets/templates/task-template.md   <- 596 bytes (real file, symlink resolved)
-```
-
-npx copied the real content. The installed skill has working files, not broken symlinks.
-
-**adr-manager plugin restructure (first full plugin to apply this ADR):**
-- Moved `skills/adr-management/scripts/`, `assets/`, `references/` to plugin root
-- Created real mirrored directories in skill with file-level symlinks
-- Updated SKILL.md and commands/adr-management.md to use `.agents/skills/adr-management/scripts/` paths
+npx copies real content. The installed skill has working files, no broken symlinks.
 
 ## Consequences
 
@@ -124,11 +136,26 @@ npx copied the real content. The installed skill has working files, not broken s
 `skills/` with shared scripts/assets/references must follow this structure. Plugins with only skills and
 no shared command references may keep resources inside the skill with no symlinks needed.
 
+## Audit Tool
+
+`plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py` validates compliance with this ADR.
+Run it against any plugin to detect real files inside skill directories that should be at plugin root:
+
+```bash
+python3 plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py plugins/<plugin-name>
+```
+
+Output:
+- **ERROR**: real file found in `skills/<skill>/scripts|references|assets/` — must move to plugin root + symlink
+- **WARNING**: symlink target resolves outside plugin root — depth calculation is wrong
+
+Exit code 0 = clean, exit code 1 = violations found.
+
 ## Alternatives Considered
 
 | Alternative | Why Rejected |
 |---|---|
-| Duplicate files in plugin root and skill | Two copies drift out of sync; maintenance burden |
+| Duplicate files in plugin root and skill | Violates zero-duplication principle; copies drift out of sync silently |
 | Directory-level symlinks in skill | npx silently drops them; installed skill is broken |
 | Keep resources only inside skill | Command file references break; no single source of truth |
 | Post-install copy script | External tooling dependency; fragile; requires bridge plugin changes |
