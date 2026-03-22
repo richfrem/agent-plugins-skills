@@ -39,11 +39,17 @@ Use Standard Cycle only when the north star is regressing or explicitly requeste
 3. **Execution** -- INNER_AGENT reads strategy packet, does real work, emits friction events
    immediately on uncertainty or wrong syntax.
 4. **Eval** -- INNER_AGENT runs `eval_runner.py`. PEER_AGENT runs it independently. KEEP if
-   both accuracy AND F1 score >= baseline. DISCARD otherwise.
+   both accuracy AND F1 score >= baseline. DISCARD otherwise. On BASELINE verdict (first run of
+   a skill): record the score, do not apply or revert any change, proceed to step 5.
 5. **Apply verdict** -- KEEP: apply change. DISCARD: correction packet, re-assign to INNER_AGENT.
-6. **Ledger Section 1** -- ORCHESTRATOR appends one row (date, cycle ID, target, scores, verdict).
+6. **Ledger + Registry** -- ORCHESTRATOR appends one row to ledger Section 1 (date, cycle ID,
+   target, scores, verdict). Also update `context/memory/tests/registry.md` row from IN PROGRESS
+   to CLOSED-KEEP or CLOSED-DISCARD with the final score. Full scenario file fill-in is Standard
+   Cycle only.
 7. **Trigger check** -- if 3+ friction events of the same type this cycle, flag os-learning-loop
-   for Full Loop at next session start. If north star regressed 2+ sessions, trigger immediately.
+   for Full Loop at next session start. Read `context/memory/improvement-ledger.md` Section 3:
+   if the last two Trend values are both negative, emit `north_star_regression` event and trigger
+   os-learning-loop immediately (do not wait for next session).
 
 Emitting `eval.result` without completing steps 6 and 7 is an incomplete Fast Cycle.
 
