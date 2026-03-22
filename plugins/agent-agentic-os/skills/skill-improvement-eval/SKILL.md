@@ -110,6 +110,33 @@ Mentally simulate how an LLM router would interpret the frontmatter `<example>` 
 3. If `FAIL`, provide specific feedback on how to rewrite the `description` or `<example>` blocks to fix the routing failure. Return control to the caller so they can adjust and retry.
 4. If `PASS`, output `<EVAL_PASSED>`. 
 
+### Phase 5: Self-Assessment Survey (MANDATORY)
+
+After every evaluation run, complete the Post-Run Self-Assessment Survey
+(`references/post_run_survey.md`). This is how the evaluator itself improves.
+
+**Count-Based Signals**: How many times did you not know what to do next? Use wrong
+eval syntax? Miss a required check? Get redirected?
+
+**Qualitative Friction**:
+1. Which part of the eval process felt most uncertain or ambiguous?
+2. Was any eval prompt poorly scoped (too easy / too adversarial)?
+3. What would have made this eval more accurate or useful?
+4. What one change to `eval_runner.py` or the evals.json format would help most?
+
+**Improvement Recommendation**: What one change to the eval skill or eval runner
+should be tested before the next run? What evidence supports it?
+
+Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_skill-improvement-eval.md`
+
+Emit survey completion:
+```bash
+python3 context/kernel.py emit_event --agent skill-improvement-eval \
+  --type learning --action survey_completed \
+  --summary "retrospectives/survey_[DATE]_[TIME]_skill-improvement-eval.md"
+```
+
 ## Operating Principles
 - **Strict Rigor**: Do not rubber-stamp proposals. If the description is vague, it will over-trigger and break the OS. Fail it.
 - **Isolate**: Do not actually write the files. You are an evaluator only. The calling agent is responsible for the final `Write`.
+- **Self-Improve**: The survey is not optional. An evaluator that never reflects on its own accuracy is not part of the flywheel.

@@ -1,302 +1,327 @@
 #!/usr/bin/env python3
 """
-Agentic OS - Kernel Controller
-Provides atomic file locks, strict JSON schema event emitting, and state management.
+Agentic OS - Kernel v3 (dual-loop focused)
+Seven commands: acquire_lock, release_lock, emit_event, read_events,
+state_update, state_increment, claim_task (partition lock only, no registry).
+
+Deliberately minimal. Solves the dual-loop use case: one ORCHESTRATOR,
+one INNER_AGENT (or N agents claiming partitions), one laptop.
 """
-import os
-import sys
-import json
-import time
-import random
-import argparse
+import os, sys, json, time, uuid, random, argparse
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
-KERNEL_DIR = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())) / "context"
+KERNEL_DIR  = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())) / "context"
 EVENTS_FILE = KERNEL_DIR / "events.jsonl"
-LOCKS_DIR = KERNEL_DIR / ".locks"
-STATE_FILE = KERNEL_DIR / "os-state.json"
+LOCKS_DIR   = KERNEL_DIR / ".locks"
+STATE_FILE  = KERNEL_DIR / "os-state.json"
 AGENTS_FILE = KERNEL_DIR / "agents.json"
-EVENTS_MAX_SIZE = 10 * 1024 * 1024  # 10MB
-REQUIRED_EVENT_FIELDS = {"time", "agent", "type", "action"}
-ROTATE_LOCK_STALE_SECONDS = 60  # self-clean on startup if rotation lock is orphaned
+AGENTS_DIR  = KERNEL_DIR / "agents"
+EVENTS_MAX_BYTES = 10 * 1024 * 1024  # 10 MB before rotation
 
-def get_lock_timeout() -> int:
-    """Read lock_timeout_seconds from os-state.json. Default 1800 (30 min).
-    Configurable via: python3 kernel.py state_update lock_timeout_seconds 3600"""
+# Keys that cannot be overwritten via state_update (prompt injection defense)
+PROTECTED_STATE_KEYS = frozenset({"execution_mode", "hook_sample_rate"})
+
+
+# ---------------------------------------------------------------------------
+# Utilities
+# ---------------------------------------------------------------------------
+
+def _now():
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _load(path, default):
     try:
-        if STATE_FILE.exists():
-            with open(STATE_FILE, "r", encoding="utf-8") as f:
-                state = json.load(f)
-            return int(state.get("lock_timeout_seconds", 1800))
+        if Path(path).exists():
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
     except Exception:
         pass
-    return 1800
+    return default
 
 
-def validate_event_schema(event: dict) -> bool:
-    """Reject events missing required fields. Prevents malformed entries on the bus."""
-    missing = REQUIRED_EVENT_FIELDS - set(event.keys())
-    if missing:
-        print(f"[Kernel] Event rejected: missing required fields {missing}", file=sys.stderr)
-        return False
-    return True
-
-
-def cleanup_stale_rotate_lock():
-    """On kernel startup, clean an orphaned events_rotate.lock if older than 60s.
-    Prevents permanent deadlock if kernel was SIGKILLed during rotation."""
-    rotate_lock = LOCKS_DIR / "events_rotate.lock"
-    if rotate_lock.exists():
-        age = time.time() - rotate_lock.stat().st_mtime
-        if age > ROTATE_LOCK_STALE_SECONDS:
-            try:
-                # Remove PID file inside lock dir if present
-                pid_file = rotate_lock / "pid"
-                if pid_file.exists():
-                    pid_file.unlink()
-                os.rmdir(rotate_lock)
-                print(f"[Kernel] Cleared orphaned rotation lock (age {age:.0f}s)")
-            except OSError:
-                pass
-
-
-def validate_agent(agent_name):
+def _pid_alive(pid):
     try:
-        if not AGENTS_FILE.exists():
-            return False # Fail closed — no registry
-        with open(AGENTS_FILE, "r") as f:
-            registry = json.load(f)
-            if agent_name in registry.get("permitted_agents", []):
-                return True
-            print(f"Error: Unregistered agent spoofing detected: {agent_name}", file=sys.stderr)
-            return False
-    except json.JSONDecodeError:
-        print(f"Error: agents.json is malformed — rejecting agent '{agent_name}' (fail-closed)", file=sys.stderr)
+        os.kill(int(pid), 0)
+        return True
+    except ProcessLookupError:
         return False
-    except Exception as e:
-        print(f"Error: agents.json could not be read ({e}) — rejecting agent '{agent_name}' (fail-closed)", file=sys.stderr)
+    except PermissionError:
+        return True  # exists, just can't signal it
+
+
+def _is_stale(lock_path):
+    """Lease-based stale check: dead PID > expired TTL > mtime fallback."""
+    meta = _load(lock_path / "meta.json", {})
+    if meta:
+        if meta.get("pid") and not _pid_alive(meta["pid"]):
+            return True
+        if meta.get("expires_at", 0) < time.time():
+            return True
         return False
-
-def acquire_lock(lock_name):
-    """Acquires a lock atomically using os.mkdir."""
-    lock_path = LOCKS_DIR / f"{lock_name}.lock"
-    os.makedirs(LOCKS_DIR, exist_ok=True)
-    
-    # Check for stale lock first
-    lock_timeout = get_lock_timeout()
-    if lock_path.exists():
-        age = time.time() - lock_path.stat().st_mtime
-        if age > lock_timeout:
-            try:
-                os.rmdir(lock_path)
-                print(f"[Kernel] Cleared stale lock: {lock_name}")
-            except OSError:
-                pass
-        else:
-            print(f"[Kernel] Failed to acquire lock '{lock_name}' (locked by another process)", file=sys.stderr)
-            sys.exit(1)
-            
+    # Legacy lock without metadata — use mtime
     try:
-        os.mkdir(lock_path)
-        print(f"[Kernel] Lock acquired: {lock_name}")
-    except FileExistsError:
-        print(f"[Kernel] Race condition check failed. Lock '{lock_name}' already exists.", file=sys.stderr)
-        sys.exit(1)
-
-def release_lock(lock_name):
-    """Releases a lock."""
-    lock_path = LOCKS_DIR / f"{lock_name}.lock"
-    try:
-        os.rmdir(lock_path)
-        print(f"[Kernel] Lock released: {lock_name}")
+        timeout = _load(STATE_FILE, {}).get("lock_timeout_seconds", 1800)
+        return time.time() - lock_path.stat().st_mtime > timeout
     except OSError:
-        pass # Already gone or not ours
+        return True
 
-def rotate_events():
-    """Rotates events.jsonl if > 10MB."""
-    if not EVENTS_FILE.exists() or EVENTS_FILE.stat().st_size <= EVENTS_MAX_SIZE:
-        return
-        
-    archive_dir = KERNEL_DIR / "events-archive"
-    os.makedirs(archive_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    archive_file = archive_dir / f"events-{timestamp}.jsonl"
-    
+
+def _clear(lock_path):
+    """Remove all files in lock dir then rmdir."""
     try:
-        # We need an atomic lock on the events file itself to safely rotate it.
-        # This is internal to the kernel.
-        events_lock = LOCKS_DIR / "events_rotate.lock"
-        os.mkdir(events_lock)
-        # Write PID stamp so a crashed-kernel self-clean can identify orphaned locks
+        for f in Path(lock_path).iterdir():
+            f.unlink()
+        os.rmdir(lock_path)
+    except OSError:
+        pass
+
+
+def _spinlock(lock_path, timeout=30):
+    """Directory spinlock. Returns True on success."""
+    os.makedirs(LOCKS_DIR, exist_ok=True)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
         try:
-            (events_lock / "pid").write_text(str(os.getpid()), encoding="utf-8")
-        except OSError:
-            pass
-
-        try:
-            # Re-check size after acquiring lock
-            if EVENTS_FILE.exists() and EVENTS_FILE.stat().st_size > EVENTS_MAX_SIZE:
-                os.rename(EVENTS_FILE, archive_file)
-                # Inform active agents that a rotation just occurred so they don't think the bus is dead
-                maint_event = {
-                    "time": datetime.now().isoformat() + "Z",
-                    "agent": "kernel",
-                    "type": "system_maintenance",
-                    "action": "event_rotation",
-                    "status": "success",
-                    "summary": f"Rotated events to {archive_file.name}"
-                }
-                with open(EVENTS_FILE, "w", encoding="utf-8") as f:
-                    f.write(json.dumps(maint_event) + "\n")
-                print(f"[Kernel] Rotated events.jsonl to {archive_file}")
-        finally:
-            os.rmdir(events_lock)
-    except FileExistsError:
-        pass # Another process is already rotating it
-
-def emit_event(agent, type_, action, status=None, summary=None, results=None):
-    cleanup_stale_rotate_lock()
-
-    if not validate_agent(agent):
-        sys.exit(1)
-
-    rotate_events()
-
-    event = {
-        "time": datetime.now().isoformat() + "Z",
-        "agent": agent,
-        "type": type_,
-        "action": action
-    }
-    if status is not None:
-        event["status"] = status
-    if summary is not None:
-        event["summary"] = summary
-    if results is not None:
-        try:
-            event["results"] = json.loads(results) if isinstance(results, str) else results
-        except json.JSONDecodeError:
-            event["results"] = results
-
-    if not validate_event_schema(event):
-        sys.exit(1)
-
-    try:
-        # Use an atomic lock to append to events.jsonl
-        events_write_lock = LOCKS_DIR / "events_write.lock"
-        # Simple spinlock with collision jitter
-        retries = 150
-        while retries > 0:
+            os.mkdir(lock_path)
+            return True
+        except FileExistsError:
             try:
-                os.mkdir(events_write_lock)
-                break
-            except FileExistsError:
-                if time.time() - events_write_lock.stat().st_mtime > 20:
-                   try: os.rmdir(events_write_lock) 
-                   except OSError: pass
-                time.sleep(random.uniform(0.1, 0.3))
-                retries -= 1
-                
-        if retries == 0:
-            print("[Kernel] Failed to acquire events.jsonl write lock", file=sys.stderr)
+                if time.time() - Path(lock_path).stat().st_mtime > 20:
+                    _clear(lock_path)
+            except OSError:
+                pass
+            time.sleep(random.uniform(0.05, 0.15))
+    return False
+
+
+def _validate_agent(name):
+    r = _load(AGENTS_FILE, {})
+    if name in r.get("permitted_agents", []):
+        return True
+    print(f"[Kernel] Unregistered agent: {name}", file=sys.stderr)
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Commands
+# ---------------------------------------------------------------------------
+
+def acquire_lock(name, ttl=None):
+    lock = LOCKS_DIR / f"{name}.lock"
+    os.makedirs(LOCKS_DIR, exist_ok=True)
+    if lock.exists():
+        if _is_stale(lock):
+            _clear(lock)
+            print(f"[Kernel] Stale lock cleared: {name}")
+        else:
+            print(f"[Kernel] Lock busy: {name}", file=sys.stderr)
             sys.exit(1)
-            
+    try:
+        os.mkdir(lock)
+    except FileExistsError:
+        print(f"[Kernel] Race on lock: {name}", file=sys.stderr)
+        sys.exit(1)
+    effective_ttl = ttl or int(_load(STATE_FILE, {}).get("lock_timeout_seconds", 1800))
+    try:
+        meta = {"pid": os.getpid(), "acquired_at": _now(),
+                "expires_at": time.time() + effective_ttl, "ttl": effective_ttl}
+        (lock / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+    except OSError:
+        pass
+    print(f"[Kernel] Lock acquired: {name} (ttl={effective_ttl}s)")
+
+
+def release_lock(name):
+    _clear(LOCKS_DIR / f"{name}.lock")
+    print(f"[Kernel] Lock released: {name}")
+
+
+def emit_event(agent, type_, action, status=None, summary=None,
+               to=None, correlation_id=None):
+    if not _validate_agent(agent):
+        sys.exit(1)
+    # Rotate if over size limit
+    if EVENTS_FILE.exists() and EVENTS_FILE.stat().st_size > EVENTS_MAX_BYTES:
+        archive = KERNEL_DIR / "events-archive"
+        os.makedirs(archive, exist_ok=True)
+        rotate_lock = LOCKS_DIR / "events_rotate.lock"
+        try:
+            os.mkdir(rotate_lock)
+            try:
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                os.rename(EVENTS_FILE, archive / f"events-{ts}.jsonl")
+                print(f"[Kernel] Rotated events.jsonl")
+            finally:
+                _clear(rotate_lock)
+        except FileExistsError:
+            pass
+    event = {"id": str(uuid.uuid4()), "time": _now(),
+             "agent": agent, "type": type_, "action": action}
+    if to:             event["to"]             = to
+    if correlation_id: event["correlation_id"] = correlation_id
+    if status:         event["status"]         = status
+    if summary:        event["summary"]        = summary
+    write_lock = LOCKS_DIR / "events_write.lock"
+    if not _spinlock(write_lock):
+        print("[Kernel] Events write lock timeout", file=sys.stderr)
+        sys.exit(1)
+    try:
+        os.makedirs(KERNEL_DIR, exist_ok=True)
         with open(EVENTS_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(event) + "\n")
-            
-        os.rmdir(events_write_lock)
-        print(f"[Kernel] Event emitted ({type_}: {action})")
-    except Exception as e:
-        print(f"[Kernel] Event emit failed: {e}", file=sys.stderr)
+    finally:
+        _clear(write_lock)
+    print(f"[Kernel] Event emitted: {type_}:{action}" + (f" -> {to}" if to else ""))
+
+
+def read_events(agent, since=None):
+    cursor = since if since is not None else _read_cursor(agent)
+    events, lines = [], []
+    if EVENTS_FILE.exists():
+        lines = EVENTS_FILE.read_text(encoding="utf-8").splitlines()
+    if cursor > len(lines):
+        cursor = 0  # rotation happened — restart from new file
+    for line in lines[cursor:]:
+        if not line.strip():
+            continue
+        try:
+            ev = json.loads(line)
+            if ev.get("to") in (None, agent):
+                events.append(ev)
+        except json.JSONDecodeError:
+            pass
+    _write_cursor(agent, len(lines))
+    print(json.dumps(events))
+
+
+def _read_cursor(agent):
+    path = AGENTS_DIR / f"{agent}.cursor"
+    try:
+        return int(path.read_text(encoding="utf-8").strip())
+    except Exception:
+        return 0
+
+
+def _write_cursor(agent, n):
+    os.makedirs(AGENTS_DIR, exist_ok=True)
+    (AGENTS_DIR / f"{agent}.cursor").write_text(str(n), encoding="utf-8")
+
 
 def state_update(key, value):
-    """Updates a single key in the os-state.json file with a lock."""
-    state_lock = LOCKS_DIR / "state_write.lock"
-    # Simple spinlock with collision jitter
-    retries = 150
-    while retries > 0:
-        try:
-            os.makedirs(LOCKS_DIR, exist_ok=True)
-            os.mkdir(state_lock)
-            break
-        except FileExistsError:
-            if time.time() - state_lock.stat().st_mtime > 20:
-               try: os.rmdir(state_lock) 
-               except OSError: pass
-            time.sleep(random.uniform(0.1, 0.3))
-            retries -= 1
-            
-    if retries == 0:
-        print("[Kernel] Failed to acquire os-state.json write lock", file=sys.stderr)
+    if key in PROTECTED_STATE_KEYS:
+        print(f"[Kernel] Protected key: {key}", file=sys.stderr)
         sys.exit(1)
-        
+    lock = LOCKS_DIR / "state_write.lock"
+    if not _spinlock(lock):
+        print("[Kernel] State lock timeout", file=sys.stderr)
+        sys.exit(1)
     try:
-        state = {}
-        if STATE_FILE.exists():
-            try:
-                with open(STATE_FILE, "r", encoding="utf-8") as f:
-                    loaded_state = json.load(f)
-                    if isinstance(loaded_state, dict):
-                        state = loaded_state
-            except json.JSONDecodeError:
-                pass
-                
-        # Parse value if it is valid JSON
+        s = _load(STATE_FILE, {})
         try:
-            val_parsed = json.loads(value)
+            s[key] = json.loads(value)
         except (json.JSONDecodeError, TypeError):
-            val_parsed = value
-            
-        state[key] = val_parsed
-        
+            s[key] = value
+        os.makedirs(KERNEL_DIR, exist_ok=True)
         with open(STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump(state, f, indent=2)
-            
+            json.dump(s, f, indent=2)
         print(f"[Kernel] State updated: {key}")
     finally:
-        os.rmdir(state_lock)
+        _clear(lock)
+
+
+def state_increment(key):
+    if key in PROTECTED_STATE_KEYS:
+        print(f"[Kernel] Protected key: {key}", file=sys.stderr)
+        sys.exit(1)
+    lock = LOCKS_DIR / "state_write.lock"
+    if not _spinlock(lock):
+        print("[Kernel] State lock timeout", file=sys.stderr)
+        sys.exit(1)
+    try:
+        s = _load(STATE_FILE, {})
+        s[key] = int(s.get(key, 0)) + 1
+        os.makedirs(KERNEL_DIR, exist_ok=True)
+        with open(STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(s, f, indent=2)
+        print(s[key])
+    finally:
+        _clear(lock)
+
+
+def claim_task(task_id, partition, agent, ttl=300):
+    """Atomically claim a partition via directory lock. No registry — use bash wait."""
+    if not _validate_agent(agent):
+        sys.exit(1)
+    lock = LOCKS_DIR / f"task_{task_id}_p{partition}.lock"
+    os.makedirs(LOCKS_DIR, exist_ok=True)
+    if lock.exists() and _is_stale(lock):
+        _clear(lock)
+    try:
+        os.mkdir(lock)
+    except FileExistsError:
+        print("already_claimed")
+        return
+    try:
+        meta = {"pid": os.getpid(), "agent": agent, "expires_at": time.time() + ttl}
+        (lock / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+    except OSError:
+        pass
+    print("claimed")
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 def main():
-    # Self-heal orphaned rotation lock on every startup
-    if LOCKS_DIR.exists():
-        cleanup_stale_rotate_lock()
+    p = argparse.ArgumentParser(description="Agentic OS Kernel v3")
+    s = p.add_subparsers(dest="cmd", required=True)
 
-    parser = argparse.ArgumentParser(description="Agentic OS Kernel Controller")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    
-    # acquire_lock
-    lock_parser = subparsers.add_parser("acquire_lock")
-    lock_parser.add_argument("name")
-    
-    # release_lock
-    unlock_parser = subparsers.add_parser("release_lock")
-    unlock_parser.add_argument("name")
-    
-    # emit_event
-    event_parser = subparsers.add_parser("emit_event")
-    event_parser.add_argument("--agent", required=True)
-    event_parser.add_argument("--type", required=True, choices=["intent", "result", "error", "learning", "memory_promotion", "skill_update", "agent_start", "agent_stop", "metric"])
-    event_parser.add_argument("--action", required=True)
-    event_parser.add_argument("--status", choices=["success", "fail"])
-    event_parser.add_argument("--summary")
-    event_parser.add_argument("--results")
-    
-    # state_update
-    state_parser = subparsers.add_parser("state_update")
-    state_parser.add_argument("key")
-    state_parser.add_argument("value")
-    
-    args = parser.parse_args()
-    
-    if args.command == "acquire_lock":
-        acquire_lock(args.name)
-    elif args.command == "release_lock":
-        release_lock(args.name)
-    elif args.command == "emit_event":
-        emit_event(args.agent, args.type, args.action, args.status, args.summary, args.results)
-    elif args.command == "state_update":
-        state_update(args.key, args.value)
+    a = s.add_parser("acquire_lock")
+    a.add_argument("name")
+    a.add_argument("--ttl", type=int, default=None)
+
+    s.add_parser("release_lock").add_argument("name")
+
+    e = s.add_parser("emit_event")
+    e.add_argument("--agent", required=True)
+    e.add_argument("--type", required=True)
+    e.add_argument("--action", required=True)
+    e.add_argument("--status", choices=["success", "fail"])
+    e.add_argument("--summary")
+    e.add_argument("--to")
+    e.add_argument("--correlation-id")
+
+    r = s.add_parser("read_events")
+    r.add_argument("--agent", required=True)
+    r.add_argument("--since-cursor", type=int, default=None)
+
+    u = s.add_parser("state_update")
+    u.add_argument("key")
+    u.add_argument("value")
+
+    s.add_parser("state_increment").add_argument("--key", required=True)
+
+    c = s.add_parser("claim_task")
+    c.add_argument("--task-id", required=True)
+    c.add_argument("--partition", type=int, required=True)
+    c.add_argument("--agent", required=True)
+    c.add_argument("--ttl", type=int, default=300)
+
+    args = p.parse_args()
+    if args.cmd == "acquire_lock":       acquire_lock(args.name, args.ttl)
+    elif args.cmd == "release_lock":     release_lock(args.name)
+    elif args.cmd == "emit_event":       emit_event(args.agent, args.type, args.action,
+                                                    args.status, args.summary,
+                                                    args.to, args.correlation_id)
+    elif args.cmd == "read_events":      read_events(args.agent, args.since_cursor)
+    elif args.cmd == "state_update":     state_update(args.key, args.value)
+    elif args.cmd == "state_increment":  state_increment(args.key)
+    elif args.cmd == "claim_task":       claim_task(args.task_id, args.partition,
+                                                    args.agent, args.ttl)
+
 
 if __name__ == "__main__":
     main()

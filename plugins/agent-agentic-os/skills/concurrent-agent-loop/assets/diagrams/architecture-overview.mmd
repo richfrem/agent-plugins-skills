@@ -1,0 +1,97 @@
+---
+config:
+  layout: elk
+  theme: base
+---
+
+%% Concurrent Agent Loop - Architecture Overview v2
+%% Revised after 4-model red team review: Claude 4.6, Grok 4, GPT-5, Gemini 2.5 Pro
+%% Key changes: lease locks, blocking wait, cursor consumption, per-agent inboxes,
+%% guest tokens, atomic task claiming, ORCHESTRATOR failover, project-scoped bus
+
+flowchart TB
+
+  subgraph OS ["Concurrent Agent OS - Project-Scoped Address Space"]
+    direction TB
+
+    subgraph KernelLayer ["Kernel Layer - kernel.py"]
+      direction LR
+      KernelPy["kernel.py - Revised Command Set<BR>emit_event - validated append<BR>acquire_lock --ttl N - lease-based<BR>wait_for_event - blocking Python wait<BR>read_events - cursor-based delta<BR>deliver_event - route to inbox<BR>claim_task - atomic lock + registry<BR>state_increment - semaphore counter<BR>issue_guest_token - scoped TTL token<BR>claim_role - orchestrator failover"]
+      AgentReg[("agents.json<BR>Permitted agents<BR>Guest token store<BR>Role assignments")]
+      OSState[("os-state.json<BR>Task registry<BR>Semaphore counters<BR>Lock PID metadata<BR>Heartbeat timestamps")]
+    end
+
+    subgraph BusLayer ["Event Bus - L1 Hot, Project-Scoped"]
+      EventBus[("context/events.jsonl<BR>Broadcast events - kernel-gated<BR>Validated E1: zero corruption<BR>Default: project root only")]
+      Cursors[("context/agents/id.cursor<BR>Per-agent read offset<BR>O-delta reads via kernel<BR>Eliminates full-bus scan")]
+      Inboxes[("context/agents/id/inbox.jsonl<BR>Per-agent targeted inbox<BR>Kernel routes on deliver_event<BR>No agent-side filtering needed")]
+    end
+
+    subgraph LockLayer ["Lease-Based Locks"]
+      Locks[(".locks/name.lock/<BR>Metadata file: agent_id, pid<BR>acquired_at, lease_expires_at<BR>os.kill pid,0 - instant dead check<BR>Stolen on dead PID or expired lease")]
+    end
+
+    subgraph MemoryLayers ["Shared Memory - L2 and L3"]
+      direction LR
+      L2["L2: Session Logs<BR>context/memory/YYYY-MM-DD.md"]
+      L3["L3: Long-Term Memory<BR>context/memory.md<BR>Sourced facts only<BR>Each entry cites session origin"]
+    end
+
+  end
+
+  subgraph Agents ["Agent Threads - Four Roles"]
+    direction LR
+
+    subgraph ORC ["ORCHESTRATOR"]
+      ORC_Role["Persistent coordinator<BR>Assigns tasks via claim_task<BR>Owns git, drives evolution cycle<BR>Emits heartbeat every 30s"]
+      ORC_Wait["Waits via kernel.wait_for_event<BR>Python blocks internally<BR>LLM not polling the bus<BR>Validated E2: 2.17s round-trip"]
+    end
+
+    subgraph PEER ["PEER_AGENT"]
+      PEER_Role["Persistent co-session<BR>Runs evals, syncs skills<BR>Monitors ORCHESTRATOR heartbeat<BR>Can claim_role on failover"]
+      PEER_In["Reads own inbox.jsonl<BR>No bus scanning or filtering<BR>Emits heartbeat every 30s"]
+    end
+
+    subgraph IA ["INNER_AGENT - Short-lived"]
+      IA_Role["Registered or guest-token auth<BR>Acquires leased locks, short TTL<BR>Emits task.complete with partition_id<BR>Exits cleanly after done"]
+    end
+
+    subgraph WK ["WORKER - Stateless"]
+      WK_Role["No locks, no registry entry<BR>No bus access at all<BR>Returns result via file or stdout<BR>ORCHESTRATOR collects output"]
+    end
+
+  end
+
+  subgraph Schema ["Event Schema v2"]
+    SchemaBox["Required: id, time, agent, type, action<BR>Targeting: to, reply_to<BR>Grouping: correlation_id, partition_id<BR>Optional: status, summary, ttl"]
+  end
+
+  ORC_Role -- "claim_task, emit, lock" --> KernelPy
+  ORC_Wait -- "wait_for_event - Python blocks" --> KernelPy
+  PEER_Role -- "emit, read_events delta" --> KernelPy
+  PEER_In -- "reads own inbox" --> Inboxes
+  IA_Role -- "emit with guest token or registry" --> KernelPy
+
+  KernelPy -- "atomic append" --> EventBus
+  KernelPy -- "targeted routing" --> Inboxes
+  KernelPy -- "update read offset" --> Cursors
+  KernelPy -- "validates agent or token" --> AgentReg
+  KernelPy -- "task registry and semaphore" --> OSState
+  KernelPy -- "PID and lease metadata" --> Locks
+
+  EventBus -- "session-memory-manager promotes" --> L2
+  L2 -- "os-learning-loop distills" --> L3
+
+  classDef agentRole fill:#f9f0ff,stroke:#5e35b1,stroke-width:2px
+  classDef kernel fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+  classDef bus fill:#fffde7,stroke:#fbc02d,stroke-width:3px
+  classDef lock fill:#fce4ec,stroke:#c62828,stroke-width:2px
+  classDef mem fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+  classDef schema fill:#fff3e0,stroke:#e65100,stroke-width:1px
+
+  class ORC_Role,ORC_Wait,PEER_Role,PEER_In,IA_Role,WK_Role agentRole
+  class KernelPy,AgentReg,OSState kernel
+  class EventBus,Cursors,Inboxes bus
+  class Locks lock
+  class L2,L3 mem
+  class SchemaBox schema

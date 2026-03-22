@@ -1,0 +1,5 @@
+# Generated from requirements.in — do not edit directly
+# Run: pip-compile requirements.in
+matplotlib>=3.7
+numpy>=1.24
+pandas>=2.0

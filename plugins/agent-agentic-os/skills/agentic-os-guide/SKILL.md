@@ -116,3 +116,19 @@ Ask the user which aspect they need help with:
 - To orchestrate an end-to-end setup of a new environment -> run `agentic-os-setup`
 - To perform a retrospective and improve the OS -> run `os-learning-loop`
 - To add a scheduled heartbeat -> read `references/loop-scheduler.md`
+
+## Mandatory Close: Friction Signal (Every Invocation)
+
+After answering the user's question, emit a friction event for anything that was unclear,
+missing from the references, or required more turns than expected to explain:
+
+```bash
+# Only emit if friction was encountered — do not emit if explanation was clean
+python3 context/kernel.py emit_event --agent agentic-os-guide \
+  --type friction --action encountered \
+  --summary "step:[which-reference] cause:[what-was-unclear]"
+```
+
+Then answer: **What one addition to the guide references would have made this explanation
+clearer or faster?** Record the answer as a comment in the next session log or flag it
+to `os-learning-loop` if the same gap appears across multiple sessions.

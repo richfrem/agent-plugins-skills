@@ -63,6 +63,12 @@ Before starting, determine which mode to use based on context:
 
 **Default**: Use Fast Path unless the user explicitly asks to apply changes or the event stream shows 3+ friction events of the same type.
 
+**Auto-trigger condition**: If `post_run_metrics.py` (fired by the `Stop` hook) emits a
+`metric` event where `friction_events_total >= 3`, the os-learning-loop MUST run in Full
+Loop mode on the next session start — do not wait for explicit user request. Read the
+most recent retrospective surveys from `context/memory/retrospectives/` to identify the
+root cause before proposing any fix.
+
 In Fast Path mode: complete Phases 0-2, output a `FINDINGS:` block listing root causes and proposed fixes, then **stop**. Do not acquire write locks, do not run evals, do not modify files. The user can promote findings to Full Loop with "apply those changes."
 
 ## Execution Flow
@@ -79,7 +85,13 @@ Use the `Bash` tool to run:
 
 1. **Update OS State**: Run `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py state_update active_agent os-learning-loop`, `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py state_update mode reflection`, and update the `last_reflection` timestamp via `state_update`.
 2. **Lock Protocol (Full Loop only)**: If running in **Full Loop** mode, run `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py acquire_lock kernel`. If it fails, another agent is modifying this context — abort. **In Fast Path mode, skip this step entirely** — Fast Path is read-only and must not hold any write lock.
-3. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `${CLAUDE_PROJECT_DIR}/context/events.jsonl` and `${CLAUDE_PROJECT_DIR}/context/memory/hook-errors.log`.
+3. **Read Test Registry**: Use the `Read` tool to load `${CLAUDE_PROJECT_DIR}/context/memory/tests/registry.md`.
+   - Which targets have already been tested and what were the verdicts?
+   - What was the "Recommended Next Test" from the most recent closed scenario?
+   - Are there any "DO NOT RE-TEST" entries relevant to the current friction pattern?
+   - Use this to ensure proposed improvements are grounded in test history — not re-testing
+     confirmed or falsified hypotheses, and building on prior results.
+4. **Autonomous Friction Analysis**: Use the `Read` tool to examine the last 100 lines of `${CLAUDE_PROJECT_DIR}/context/events.jsonl` and `${CLAUDE_PROJECT_DIR}/context/memory/hook-errors.log`.
    - **Prioritize Metrics**: Identify events with `type: metric` where `status: failure` or where high counts of `human_rescue` are reported.
    - **Gap Identification**: Identify where agents failed, stalled, or produced `<WRITE_FAILED>` errors.
 4. **(Optional) User Augmentation**: If the user provided specific feedback ("Ask the user what went well..."), incorporate it, but do not block the analysis on user input.
@@ -108,8 +120,12 @@ Determine the layer of the OS responsible for the friction:
     - Follow the Skill Optimization Guide (`references/skill_optimization_guide.md`) to ensure high Routing Accuracy.
     - **Optimization Strategy**: Use the "Direct vs. Audit" pattern in `<example>` blocks to ensure robustness across different user phrasing.
     - **Scoped Keywords**: Ensure critical trigger words are placed in the frontmatter `description` for optimal extraction by the trainer.
-2. **Eval-Gate**: Use the `Bash` tool to run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py` on your proposed changes.
-3. **Keep/Discard**: Only present the diff to the user if the trainer returns `STATUS: KEEP` or `STATUS: BASELINE`. If it returns `STATUS: DISCARD`, you MUST revise your hypothesis (e.g., adjust keyword scoping or example diversity) and retry.
+    - **Check test registry first**: Confirm this hypothesis has not already been tested and falsified (`context/memory/tests/registry.md`). If it has, skip it and propose the next untested hypothesis.
+2. **Document the test scenario** per `references/test-registry-protocol.md` BEFORE running the eval:
+    - Write `context/memory/tests/[TIMESTAMP]_[TARGET_SLUG].md` with hypothesis, acceptance criteria, failure criteria, prior results consulted.
+    - Add IN PROGRESS row to `context/memory/tests/registry.md`.
+3. **Eval-Gate**: Use the `Bash` tool to run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py` on your proposed changes.
+4. **Keep/Discard**: Only present the diff to the user if the trainer returns `STATUS: KEEP` or `STATUS: BASELINE`. If it returns `STATUS: DISCARD`, you MUST revise your hypothesis (e.g., adjust keyword scoping or example diversity) and retry.
 4. Present the *exact* diff to the approved change. Once the user EXPLICITLY approves:
 5. **Loop Recovery Snapshot**: Before applying any Write, create a snapshot of the target file (e.g., `cp CLAUDE.md context/backups/kernel.md.pre-learning`) to provide a rollback recovery switch.
 6. Edit `CLAUDE.md` to clarify global instructions.
@@ -125,11 +141,20 @@ Before finishing any modifications:
 5. **Post-Write Verification**: After the Write, use the `Read` tool on the exact file to confirm the exact diff is correctly applied. If the expected diff is not present, output `<WRITE_FAILED>` and run `git stash pop`.
 6. **Validation Tick**: Execute a "null task" validation tick by running `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py state_update validation_tick true` to verify the kernel and environment still bootstraps without syntax or structural errors before releasing the lock.
 
-### Phase 5: Final Briefing
+### Phase 5: Test Registry Close
+
+After verification passes, close the test scenario record:
+1. Update `context/memory/tests/[TIMESTAMP]_[TARGET_SLUG].md` with Results section:
+   eval score delta, verdict, what the test did NOT cover, recommended next test.
+2. Update `context/memory/tests/registry.md` row from IN PROGRESS to CLOSED.
+3. If confirmed: promote finding to `context/memory.md` L3 with dedup ID.
+4. If falsified: add "DO NOT RE-TEST" entry to `context/memory.md`.
+
+### Phase 6: Final Briefing
 
 Summarize exactly what files were changed. Explain to the user how the OS will behave differently the next time this scenario occurs.
 
-### Phase 6: Qualitative Self-Assessment Survey
+### Phase 7: Qualitative Self-Assessment Survey
 
 Immediately after the retrospective, you MUST perform a qualitative self-assessment:
 1. Use the Post-Run Survey Template (`references/post_run_survey.md`) as your guide.
@@ -138,7 +163,7 @@ Immediately after the retrospective, you MUST perform a qualitative self-assessm
 4. **Survey Observability**: Use `Bash` to emit a survey completion event:
    `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type learning --action survey_completed --summary survey_[DATE]_[TIME].md`
 
-### Phase 7: Closure & Lock Release
+### Phase 8: Closure & Lock Release
 
 **Event Bus Publish**: Use `Bash` to emit your success result:
 `python3 ${CLAUDE_PROJECT_DIR}/context/kernel.py emit_event --agent os-learning-loop --type result --action analyze_logs --status success`

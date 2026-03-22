@@ -112,9 +112,37 @@ Once the Inner Loop signals completion, the Outer Loop must verify the results:
    - 🟢 **MINOR**: The feature works and follows architecture, but has minor naming or stylistic issues.
 2. The Outer Loop loops back to Step 4, handing the Correction Packet to the Inner Loop.
 
-### Step 7: Completion & Handoff
+### Step 7: Self-Assessment Survey (MANDATORY — Outer Loop and Inner Loop)
 
-Once all Work Packages are verified, the Dual-Loop pattern is complete. The Outer Loop terminates and returns control to the global lifecycle manager (Orchestrator) for Retrospectives and ecosystem sealing.
+Before handoff, both the Outer Loop and Inner Loop MUST each complete the Post-Run
+Self-Assessment Survey (`references/post_run_survey.md`). Answer every section in full.
+
+**Count-Based Signals**: How many times did you not know what to do next? Miss a step?
+Use wrong CLI syntax? Get redirected by a human? Total friction events?
+
+**Qualitative Friction**: Where were you most uncertain? Which step felt ambiguous?
+What was the biggest source of friction? What one change would have helped most?
+
+**Improvement Recommendation**: What one change should be tested before the next run?
+What is the target (Skill/Prompt/Script/Rule)?
+
+Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_[AGENT].md`
+
+Emit survey completion:
+```bash
+python3 context/kernel.py emit_event --agent <ROLE> \
+  --type learning --action survey_completed \
+  --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
+```
+
+If any single friction cause appears 3+ times this cycle, flag for `os-learning-loop`
+Full Loop before the next cycle begins.
+
+### Step 8: Completion & Handoff
+
+Once all Work Packages are verified and surveys saved, the Dual-Loop pattern is complete.
+The Outer Loop terminates and returns control to the global lifecycle manager (Orchestrator)
+for memory persistence via `session-memory-manager` and ecosystem sealing.
 
 ---
 
