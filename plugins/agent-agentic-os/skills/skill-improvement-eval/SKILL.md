@@ -1,8 +1,8 @@
 ---
 name: skill-improvement-eval
 description: >
-  Trigger with "evaluate this skill", "run tests on the new skill", "check if this change breaks anything", 
-  "eval the learning loop proposal", or when an agent (like `os-learning-loop`) proposes a change to an 
+  Trigger with "evaluate this skill", "run tests on the new skill", "check if this change breaks anything",
+  "eval the learning loop proposal", "measure the performance gain", or when an agent (like `os-learning-loop`) proposes a change to an
   existing skill and needs empirical validation before writing it to disk.
 
   <example>
@@ -27,7 +27,7 @@ description: >
 
   <example>
   Context: An agent is asking for general information about a skill, not evaluating a proposed change.
-  agentic-os-setup: "Can someone tell me what the os-clean-locks skill does?"
+  agentic-os-setup: "Tell me about the os-clean-locks skill."
   assistant: "It cleans up stale lock files..."
   <commentary>
   Information request, not an evaluation trigger. Do not trigger skill-improvement-eval.

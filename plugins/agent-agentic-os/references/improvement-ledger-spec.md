@@ -114,9 +114,20 @@ after the test registry update (Stage 4.6) and before long-term memory promotion
 ### Write procedure
 
 1. Read the current `context/memory/improvement-ledger.md` (use `Read` tool).
-2. Append new row(s) to the appropriate section(s) — never rewrite existing rows.
+2. Append new row(s) to the appropriate section(s) -- never rewrite existing rows.
 3. For Section 1: add one row if verdict was KEEP or DISCARD.
 4. For Section 2: add one row per survey friction item that resulted in an action this cycle.
+
+   **Section 2 grep verification (mandatory before writing each row)**:
+   The friction quote in the `Friction Quote` column must be a verbatim excerpt
+   (under 15 words) from the cited survey file. Before writing the row, run:
+   ```bash
+   grep -F "[exact friction quote]" "context/memory/retrospectives/[survey_file].md"
+   ```
+   If no match is found, the row is a protocol violation -- do not write it.
+   Paraphrases or invented quotes are not acceptable. If the survey used different
+   words to describe the friction, quote those exact words.
+
 5. For Section 3: add one row per session (written once at session close, not per cycle).
 6. Verify the append with `Read` (Post-Write Verification protocol).
 

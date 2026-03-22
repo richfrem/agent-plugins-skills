@@ -41,50 +41,69 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
     """
     Simulates routing based on keyword/description match.
     Scopes keyword extraction to the frontmatter for Phase A accuracy.
+    Returns accuracy, precision, recall, and F1 score to close the keyword-stuffing exploit:
+    a change that pads triggers (raises recall) but breaks precision scores lower on F1.
     """
-    passed = 0
     total = len(evals)
     if total == 0:
-        return {"accuracy": 0.0, "details": []}
+        return {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "details": []}
 
-    details = []
-    
     # Scoped Keyword Extraction: Extract the first frontmatter block
     frontmatter_match = re.search(r'^---\s*\n(.*?)\n---\s*\n', skill_content, re.DOTALL | re.MULTILINE)
-    routing_content = skill_content # Fallback
+    routing_content = skill_content  # Fallback
     if frontmatter_match:
         routing_content = frontmatter_match.group(1)
-        
+
     skill_keywords = set(re.findall(r'\w{4,}', routing_content.lower()))
     skill_keywords.add(skill_name.lower())
-    
+
+    passed = 0
+    true_pos = 0   # should_trigger=True  and triggered
+    false_pos = 0  # should_trigger=False and triggered
+    false_neg = 0  # should_trigger=True  and NOT triggered
+    details = []
+
     for item in evals:
         # Support both 'prompt'/'query' and 'expected'/'should_trigger'
         prompt = (item.get("prompt") or item.get("query", "")).lower()
         expected_raw = item.get("expected") or item.get("should_trigger")
-        
-        if expected_raw is True: expected = "pass"
-        elif expected_raw is False: expected = "fail"
-        else: expected = str(expected_raw).lower()
-        
+
+        if expected_raw is True:
+            expected = "pass"
+        elif expected_raw is False:
+            expected = "fail"
+        else:
+            expected = str(expected_raw).lower()
+
         # Does the prompt overlap with skill keywords?
         prompt_words = set(re.findall(r'\w{4,}', prompt))
         overlap = prompt_words.intersection(skill_keywords)
         triggers = len(overlap) > 0
-        
+
         is_correct = False
         if expected == "pass" and triggers:
             is_correct = True
+            true_pos += 1
         elif expected == "fail" and not triggers:
             is_correct = True
-            
+        elif expected == "pass" and not triggers:
+            false_neg += 1
+        elif expected == "fail" and triggers:
+            false_pos += 1
+
         if is_correct:
             passed += 1
             details.append({"prompt": prompt, "result": "CORRECT"})
         else:
-            details.append({"prompt": prompt, "result": "INCORRECT", "expected": expected, "triggered": triggers})
-            
-    return {"accuracy": passed / total, "details": details}
+            details.append({"prompt": prompt, "result": "INCORRECT",
+                            "expected": expected, "triggered": triggers})
+
+    accuracy = passed / total
+    precision = true_pos / (true_pos + false_pos) if (true_pos + false_pos) > 0 else 0.0
+    recall = true_pos / (true_pos + false_neg) if (true_pos + false_neg) > 0 else 0.0
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+
+    return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1, "details": details}
 
 def main():
     parser = argparse.ArgumentParser(description="Skill Improvement Evaluator (Trainer)")
@@ -118,31 +137,39 @@ def main():
     # 2. Run Evaluations
     heuristic = calculate_heuristic_score(content)
     routing = run_routing_eval(content, skill_name, eval_data)
-    
+
     # Final numeric score (weighted average of accuracy and structural health)
     final_score = (routing["accuracy"] * 0.7) + (heuristic["score"] * 0.3)
+    f1 = routing["f1"]
     
     # 3. Handle Persistence (results.tsv)
     results_path = skill_dir / "evals" / "results.tsv"
     os.makedirs(results_path.parent, exist_ok=True)
     
-    # Load last baseline
+    # Load last baseline (accuracy and F1 separately)
     last_score = 0.0
+    last_f1 = 0.0
     if results_path.exists():
         with open(results_path, 'r') as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
                 try:
                     last_score = float(row.get('score', 0))
+                    last_f1 = float(row.get('f1_score', 0))
                 except (ValueError, TypeError):
                     pass
 
-    # Write new entry
-    headers = ["timestamp", "score", "accuracy", "heuristic", "llm_routing_score", "status", "description"]
+    # Write new entry (repurpose llm_routing_score column as f1_score)
+    headers = ["timestamp", "score", "accuracy", "heuristic", "f1_score", "status", "description"]
     write_header = not results_path.exists()
 
-    status = "KEEP" if final_score >= last_score else "DISCARD"
-    if last_score == 0: status = "BASELINE"
+    # KEEP requires BOTH accuracy and F1 to be >= baseline to close the keyword-stuffing exploit
+    if last_score == 0:
+        status = "BASELINE"
+    elif final_score >= last_score and f1 >= last_f1:
+        status = "KEEP"
+    else:
+        status = "DISCARD"
 
     with open(results_path, 'a', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=headers, delimiter='\t')
@@ -153,7 +180,7 @@ def main():
             "score": f"{final_score:.4f}",
             "accuracy": f"{routing['accuracy']:.4f}",
             "heuristic": f"{heuristic['score']:.4f}",
-            "llm_routing_score": "N/A",  # populated by LLM judge when available
+            "f1_score": f"{f1:.4f}",
             "status": status,
             "description": args.desc
         })
@@ -164,10 +191,11 @@ def main():
         return
 
     print(f"--- Skill Evaluation: {skill_path.name} ---")
-    print(f"Routing Accuracy: {routing['accuracy']:.4f}")
-    print(f"Heuristic Health: {heuristic['score']:.4f}")
-    print(f"FINAL SCORE: {final_score:.4f} (Baseline: {last_score:.4f})")
-    print(f"STATUS: {status}")
+    print(f"Routing Accuracy : {routing['accuracy']:.4f}")
+    print(f"F1 Score         : {f1:.4f}  (precision={routing['precision']:.4f}, recall={routing['recall']:.4f})")
+    print(f"Heuristic Health : {heuristic['score']:.4f}")
+    print(f"FINAL SCORE      : {final_score:.4f} (Baseline: {last_score:.4f} / Baseline F1: {last_f1:.4f})")
+    print(f"STATUS           : {status}")
     
     if routing["accuracy"] < 1.0:
         print("\nRouting Failures:")
