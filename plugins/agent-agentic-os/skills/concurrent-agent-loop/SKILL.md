@@ -25,29 +25,47 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 > includes real work, eval against benchmark, friction tracking, agent self-assessment survey,
 > post-run metrics, and memory persistence. The OS learns from every run.
 
-## CRITICAL: What a Loop Is
+## CRITICAL: Two-Tier Loop Model
 
-The kernel (`kernel.py`) handles event routing, locks, and cursors. A loop is NOT a signal
-exchange. A complete loop cycle requires all of the following, in order:
+Every loop cycle uses one of two tiers. **Fast Cycle is the default.**
+Use Standard Cycle only when the north star is regressing or explicitly requested.
 
-1. **Orientation** — ORCHESTRATOR reads `context/memory/improvement-ledger.md` (score trajectory, survey-to-action trace, north star trend), test registry, last session log, last surveys
-2. **Test scenario documented** — ORCHESTRATOR writes scenario record to `context/memory/tests/` BEFORE emitting `task.assigned`
-3. **Execution** — INNER_AGENT reads strategy packet, does real work
-4. **Friction tracking** — agents emit `type: friction` events whenever they hit uncertainty, ambiguity, wrong CLI, or need human rescue
-5. **Eval against benchmark** — `eval_runner.py` run, score compared to `results.tsv` baseline
-6. **KEEP/DISCARD verdict** — PEER_AGENT runs `skill-improvement-eval` independently
-7. **PEER_AGENT self-assessment survey** — answered in full, saved to `context/memory/retrospectives/`
-8. **Apply improvement or correction packet** — ORCHESTRATOR acts on verdict
-9. **ORCHESTRATOR self-assessment survey** — answered in full, saved to retrospectives
-10. **Post-run metrics** — `post_run_metrics.py` run, metric event emitted to bus
-11. **Loop report written** — before/after scores, metrics, survey summaries, artifacts updated
-12. **Test registry updated** — scenario file closed with results, `registry.md` row updated, recommended next test written
-13. **Improvement ledger updated** — Section 1 eval row + Section 2 survey-action rows appended; optional chart regenerated
-14. **L2/L3 memory promotion** — `session-memory-manager` runs, facts promoted with dedup IDs
-15. **os-learning-loop trigger check** — if 3+ friction events of same type OR north star regressing 2+ sessions, trigger Full Loop
+### Fast Cycle (7 steps, ~30 min) -- default for every run
 
-Emitting `eval.result` with `score:0.9` is not a completed loop. The survey, the metrics, and
-the memory write are the loop. The signal is just coordination glue.
+1. **Orientation** -- ORCHESTRATOR reads `improvement-ledger.md` (score trend, pending Section 2
+   items) and the last registry row (what was recommended next).
+2. **Test scenario documented** -- ORCHESTRATOR writes hypothesis + acceptance criteria to
+   `context/memory/tests/[CYCLE_ID]_[TARGET].md` BEFORE emitting `task.assigned`.
+3. **Execution** -- INNER_AGENT reads strategy packet, does real work, emits friction events
+   immediately on uncertainty or wrong syntax.
+4. **Eval** -- INNER_AGENT runs `eval_runner.py`. PEER_AGENT runs it independently. KEEP if
+   both accuracy AND F1 score >= baseline. DISCARD otherwise.
+5. **Apply verdict** -- KEEP: apply change. DISCARD: correction packet, re-assign to INNER_AGENT.
+6. **Ledger Section 1** -- ORCHESTRATOR appends one row (date, cycle ID, target, scores, verdict).
+7. **Trigger check** -- if 3+ friction events of the same type this cycle, flag os-learning-loop
+   for Full Loop at next session start. If north star regressed 2+ sessions, trigger immediately.
+
+Emitting `eval.result` without completing steps 6 and 7 is an incomplete Fast Cycle.
+
+---
+
+### Standard Cycle -- adds these steps after step 5, before step 6
+
+Used when: north star completion rate declining, or explicitly requested.
+These steps are NOT required on every run:
+
+- **4.2 Surveys** -- both PEER_AGENT and ORCHESTRATOR complete Post-Run Self-Assessment Survey,
+  save to `context/memory/retrospectives/`.
+- **4.4 Session log** -- ORCHESTRATOR writes `context/memory/YYYY-MM-DD.md`.
+- **4.5 Loop report** -- write `context/memory/loop-reports/report_[CYCLE_ID].md` with baseline
+  vs result table, survey summary, artifacts updated.
+- **4.6 Test registry close** -- fill Results section of scenario file, update `registry.md`
+  row to CLOSED, write recommended next test.
+- **4.7 Ledger Section 2 + 3** -- Section 2: one row per friction item that generated a change
+  (with grep verification -- see improvement-ledger-spec.md). Section 3: north star row.
+- **4.8 Memory promotion** -- run `session-memory-manager` for L3 promotion.
+
+
 
 ---
 
