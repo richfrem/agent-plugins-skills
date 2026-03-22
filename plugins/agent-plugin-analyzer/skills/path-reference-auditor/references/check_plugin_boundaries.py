@@ -1,1 +1,1 @@
-../scripts/check_plugin_boundaries.py
+../../../scripts/check_plugin_boundaries.py

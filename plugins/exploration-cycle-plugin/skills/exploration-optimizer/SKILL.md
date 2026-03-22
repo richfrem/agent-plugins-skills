@@ -48,7 +48,7 @@ This skill implements autoresearch-style optimization for the exploration-cycle 
 
 **Usage:**
 ```bash
-python3 ${plugins}/skills/exploration-optimizer/scripts/execute.py \
+python3 .agents/skills/exploration-optimizer/scripts/execute.py \
   --target ${plugins}/skills/user-story-capture/SKILL.md \
   --eval-script .agents/skills/skill-improvement-eval/scripts/eval_runner.py \
   --goal "Improve Gherkin block accuracy" \

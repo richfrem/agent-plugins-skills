@@ -75,25 +75,37 @@ These skills automate the administration of the framework itself.
 | `/spec-kitty:merge` | Automated batch merge |
 | `/spec-kitty:status` | Show kanban board |
 
-## Architecture
+## Architecture (Workflow Provenance)
 
-This plugin acts as a formal bundle containing Workflows (Commands), Active Skills, and Rules. It abstracts upstream configuration tools into locally compliant AgentSkills that can be deployed by your ecosystem bridge.
-```
+This plugin enforces strict **Workflow Provenance** to maintain a single source of truth for all Spec-Driven Development routines.
+
+Rather than duplicating workflow files (which leads to drift and destructive overwrites), the plugin utilizes a central asset mapping architecture driven by `sync_configuration.py`. 
+
+The upstream master `*.md` files live in `.windsurf/workflows/`. When you execute `python3 scripts/sync_configuration.py`, the script:
+1. Generates master symlinks within `plugins/spec-kitty-plugin/workflows/` mapping back to the `.windsurf/workflows/` master definitions.
+2. Creates isolated nested `workflows/` symlinks within each individual `skills/*` directory.
+3. Injects a deterministic `[./workflows/spec-kitty.<feature>.md](./workflows/...)` provenance header into every compiled `SKILL.md`.
+
+This ensures that any augmented best practices or custom ecosystem strategies are inherently bundled directly into the upstream source files, eliminating the need for standalone side-files while preventing blind `.kittify` template overwrites.
+
+```text
 spec-kitty-plugin/
 ├── .claude-plugin/plugin.json
 ├── agents/
-├── assets/
-├── commands/ (14 slash command workflows)
+├── rules/ (Synced from .kittify/memory/)
+├── workflows/ (Master symlinks mapping to .windsurf/workflows/)
+├── commands/
 ├── references/
-│   ├── standard-workflow-rules.md
-│   └── spec_driven_development_policy.md
 ├── scripts/
-├── skills/
-│   ├── spec-kitty-agent/     (Lifecycle handler)
-│   ├── spec-kitty-sync-plugin/ (Install/update sync)
-│   ├── spec-kitty-workflow/  (SDD workflow SOPs)
-│   └── ... (13 auto-synced skills from CLI)
-└── README.md
+│   └── sync_configuration.py (Idempotent provenance generator)
+└── skills/
+    ├── spec-kitty-implement/
+    │   ├── SKILL.md (Auto-generated with provenance header)
+    │   └── workflows/
+    │       └── spec-kitty.implement.md -> ../../workflows/...
+    ├── spec-kitty-sync-plugin/ (Install/update sync)
+    ├── spec-kitty-workflow/  (SDD workflow SOPs)
+    └── ... (13 auto-synced skills from CLI)
 ```
 
 ## License

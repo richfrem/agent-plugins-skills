@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/sub-action-multiplexing.md
+../../../../references/patterns/sub-action-multiplexing.md

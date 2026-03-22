@@ -1,1 +1,0 @@
-../skills/spec-kitty-plan/SKILL.md

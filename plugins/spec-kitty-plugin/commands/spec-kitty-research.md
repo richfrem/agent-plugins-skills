@@ -1,1 +1,0 @@
-../skills/spec-kitty-research/SKILL.md

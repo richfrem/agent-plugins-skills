@@ -37,7 +37,7 @@ Determine the target sheet name and the output directory, then invoke the intern
 If the user mentions a table, attempt to map it to the enclosing sheet if the exact table namespace isn't supported.
 
 ```bash
-python3 ./convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "output_folder/"
+python3 .agents/skills/excel-to-csv/scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "output_folder/"
 ```
 
 ### Phase 2: Delegated Constraint Verification
@@ -45,7 +45,7 @@ python3 ./convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "out
 Immediately after generating the `.csv`, execute the verification engine:
 
 ```bash
-python3 ./verify_csv.py "output_folder/Sheet1.csv"
+python3 .agents/skills/excel-to-csv/scripts/verify_csv.py "output_folder/Sheet1.csv"
 ```
 - If the script returns `"status": "success"`, proceed to Phase 3.
 - If it returns `"status": "errors_found"`, review the JSON log. Common issues involve jagged headers or blank lines. Use bash tools (like `awk` or `sed`) to repair the `.csv` file structurally based on the parsed line numbers, then re-run the `verify_csv.py` loop until it passes.

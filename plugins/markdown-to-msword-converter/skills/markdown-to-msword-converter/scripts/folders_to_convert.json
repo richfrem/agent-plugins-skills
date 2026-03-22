@@ -1,14 +1,1 @@
-{
-	"include_root_markdown": true,
-	"folders": [
-		"Action Items",
-		"Analysis",
-		"Discovery",
-		"Financial",
-		"Opportunities",
-		"Principles",
-		"Requirements",
-		"Strategy",
-		"workshop planning"
-	]
-}
+../../../scripts/folders_to_convert.json

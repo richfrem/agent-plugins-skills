@@ -1,1 +1,1 @@
-../../../personas/security/security-auditor.md
+../../../references/orchestrator/security-auditor.md

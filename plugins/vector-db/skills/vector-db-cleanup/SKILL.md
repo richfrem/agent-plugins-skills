@@ -61,7 +61,7 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ### 1. Dry run -- show what will be removed
 
 ```bash
-python3 ./cleanup.py \
+python3 .agents/skills/vector-db-cleanup/scripts/cleanup.py \
   --profile knowledge --dry-run
 ```
 
@@ -70,21 +70,21 @@ Report: "Found N orphaned chunks from X deleted files: [list of paths]"
 ### 2. Apply -- only after confirming with user
 
 ```bash
-python3 ./cleanup.py \
+python3 .agents/skills/vector-db-cleanup/scripts/cleanup.py \
   --profile knowledge --apply
 ```
 
 ### 3. Verify store integrity (optional)
 
 ```bash
-python3 ./vector_consistency_check.py \
+python3 .agents/skills/vector-db-cleanup/scripts/vector_consistency_check.py \
   --profile knowledge
 ```
 
 ### 4. Smoke test search still works
 
 ```bash
-python3 ./query.py \
+python3 .agents/skills/vector-db-cleanup/scripts/query.py \
   "test query" --profile knowledge --limit 3
 ```
 

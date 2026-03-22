@@ -11,13 +11,13 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
 
 1. **Run inventory on self (security scanning is on by default):**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer --format json
+   python3 .agents/skills/self-audit/scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer --format json
    ```
 
 2. **Run scanner against test fixtures:**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
-   python3 ./scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
+   python3 .agents/skills/self-audit/scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
+   python3 .agents/skills/self-audit/scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
    ```
 
 3. **Validate deterministic scanner results:**

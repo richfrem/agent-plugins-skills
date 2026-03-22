@@ -3,19 +3,10 @@ name: spec-kitty-merge
 description: Merge a completed feature into the target branch and clean up worktree
 ---
 
-## Dependencies
+## 🔗 Workflow Provenance
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
----
+> **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.merge.md`](./workflows/spec-kitty.merge.md).
+> It acts as an intelligent wrapper that is continuously improved with each execution.
 
 # /spec-kitty.merge - Deterministic Merge
 

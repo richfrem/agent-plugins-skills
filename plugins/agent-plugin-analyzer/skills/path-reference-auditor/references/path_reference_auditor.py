@@ -1,1 +1,1 @@
-../scripts/path_reference_auditor.py
+../../../scripts/path_reference_auditor.py

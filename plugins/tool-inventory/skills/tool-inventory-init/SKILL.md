@@ -36,7 +36,7 @@ Initialize the semantic Tool Inventory for a new project. This is the **first-ru
 Run the automated bootstrapping script. This script will ensure `.agent/learning/rlm_profiles.json` exists and will inject a `tools` profile if it doesn't. 
 
 ```bash
-python3 ./tool_inventory_init.py
+python3 .agents/skills/tool-inventory-init/scripts/tool_inventory_init.py
 ```
 
 ### Step 2: Serial Agent Distillation

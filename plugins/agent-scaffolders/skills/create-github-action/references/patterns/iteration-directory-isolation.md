@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/iteration-directory-isolation.md
+../../../../references/patterns/iteration-directory-isolation.md

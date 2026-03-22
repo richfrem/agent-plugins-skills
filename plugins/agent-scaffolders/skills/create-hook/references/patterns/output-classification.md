@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/output-classification.md
+../../../../references/patterns/output-classification.md

@@ -16,7 +16,7 @@ Derive structured user stories and acceptance criteria from exploration session 
 ## Usage
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/user-story-capture/scripts/execute.py \
+python3 .agents/skills/user-story-capture/scripts/execute.py \
   --input <file> [<file2>...] \
   --format <standard|gherkin> \
   --output <output_file.md>

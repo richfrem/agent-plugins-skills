@@ -59,15 +59,15 @@ When executing `distiller.py`:
 
 ### 1. Assessment (Always First)
 ```bash
-python3 ./inventory.py --type legacy
+python3 .agents/skills/rlm-curator/scripts/inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read -- Fast)
 Use the **`rlm-search`** skill for all cache queries:
 ```bash
-python3 ./query_cache.py --profile plugins "search_term"
-python3 ./query_cache.py --profile tools --list
+python3 .agents/skills/rlm-curator/scripts/query_cache.py --profile plugins "search_term"
+python3 .agents/skills/rlm-curator/scripts/query_cache.py --profile tools --list
 ```
 
 ### 3. Distillation (Write)
@@ -83,12 +83,12 @@ Delegate to the `agent-loops:agent-swarm` skill, providing:
 
 #### Option B: Ollama Batch (requires Ollama running locally)
 ```bash
-python3 ./distiller.py
+python3 .agents/skills/rlm-curator/scripts/distiller.py
 ```
 
 #### Option C: Manual Agent Injection (< 5 files)
 ```bash
-python3 ./inject_summary.py \
+python3 .agents/skills/rlm-curator/scripts/inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your dense summary here..."
@@ -96,7 +96,7 @@ python3 ./inject_summary.py \
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 ./cleanup_cache.py --type legacy --apply
+python3 .agents/skills/rlm-curator/scripts/cleanup_cache.py --type legacy --apply
 ```
 
 ## Quality Guidelines

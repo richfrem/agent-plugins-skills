@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/multi-modal-routing.md
+../../../../references/patterns/multi-modal-routing.md

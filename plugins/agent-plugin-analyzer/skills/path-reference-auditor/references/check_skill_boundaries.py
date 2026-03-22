@@ -1,1 +1,1 @@
-../scripts/check_skill_boundaries.py
+../../../scripts/check_skill_boundaries.py

@@ -1,4 +1,1 @@
-# Acceptance Criteria
-
-1. Plugin correctly installs and bridges.
-2. Directories are successfully seeded.
+../../../references/spec-kitty-sync-plugin/acceptance-criteria.md
