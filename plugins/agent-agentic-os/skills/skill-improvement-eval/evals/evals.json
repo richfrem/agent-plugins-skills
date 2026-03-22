@@ -26,5 +26,13 @@
   {
     "prompt": "measure the performance gain",
     "should_trigger": true
+  },
+  {
+    "prompt": "show me the eval scores from the last cycle",
+    "should_trigger": false
+  },
+  {
+    "prompt": "check if we have a skill for session memory",
+    "should_trigger": false
   }
 ]

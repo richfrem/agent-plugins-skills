@@ -54,5 +54,13 @@
   {
     "prompt": "Save the session but delete the memory.md file.",
     "should_trigger": true
+  },
+  {
+    "prompt": "Review the session and list what could be improved next time.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Write the session notes to the pull request description.",
+    "should_trigger": false
   }
 ]
