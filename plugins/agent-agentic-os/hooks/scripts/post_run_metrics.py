@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
 Purpose: Automated Post-Run Metric Collection.
-This script scans events.jsonl to auto-populate session metrics
-and emits a final 'type: metric' (falling back to 'result') event to the Event Bus.
+Scans events.jsonl to count friction, intervention, and error events,
+then emits a 'type: metric' event to the Event Bus.
+
+Pass --correlation-id CYCLE_ID to scope counting to a single cycle only.
+When omitted (Stop hook context), all events since last metric event are counted.
 """
 
 import json
 import os
 import sys
+import argparse
 import subprocess
 from pathlib import Path
 from datetime import datetime
@@ -116,30 +120,90 @@ def _check_north_star_regression(project_root: Path) -> None:
         pass  # Never crash the hook on ledger parse failure
 
 
+def _count_events(events_log: Path, correlation_id: "str | None" = None) -> dict:
+    """
+    Count metrics from events.jsonl.
+
+    When correlation_id is provided, only events matching that cycle are counted
+    (prevents double-counting when multiple loop cycles run in the same session).
+    When absent, all events are counted (Stop hook context).
+
+    Friction subtypes mapped from action field:
+      human_rescue       -> human_interventions
+      uncertainty        -> workflow_uncertainty
+      missed_step        -> missed_steps
+      wrong_cli / error  -> cli_errors
+    """
+    counts = {
+        "human_interventions": 0,
+        "workflow_uncertainty": 0,
+        "missed_steps": 0,
+        "cli_errors": 0,
+        "friction_events_total": 0,
+    }
+    if not events_log.exists():
+        return counts
+
+    try:
+        with open(events_log, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                # Scope to cycle when correlation_id provided
+                if correlation_id and event.get("correlation_id") != correlation_id:
+                    continue
+
+                # Count status=error events (CLI errors from any agent)
+                if event.get("status") == "error":
+                    counts["cli_errors"] += 1
+
+                evt_type = event.get("type", "")
+                evt_action = event.get("action", "")
+
+                if evt_type == "friction":
+                    counts["friction_events_total"] += 1
+                    action_lower = evt_action.lower()
+                    if "human_rescue" in action_lower or "rescue" in action_lower:
+                        counts["human_interventions"] += 1
+                    elif "uncertainty" in action_lower or "unknown" in action_lower:
+                        counts["workflow_uncertainty"] += 1
+                    elif "missed_step" in action_lower or "skipped" in action_lower:
+                        counts["missed_steps"] += 1
+                    elif "wrong_cli" in action_lower or "cli_error" in action_lower:
+                        counts["cli_errors"] += 1
+    except Exception:
+        pass  # Never crash the hook - return what we have
+
+    return counts
+
+
 def main():
+    parser = argparse.ArgumentParser(
+        description="Agentic OS: Post-Run Metric Collection"
+    )
+    parser.add_argument(
+        "--correlation-id",
+        default=None,
+        help="Scope event counting to this CYCLE_ID only. "
+             "Prevents double-counting when multiple loop cycles run in one session."
+    )
+    args = parser.parse_args()
+
     target_dir = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     project_root = Path(target_dir).resolve()
     events_log = project_root / "context" / "events.jsonl"
 
-    cli_errors = 0
-    friction_events = 0
-
-    if events_log.exists():
-        with open(events_log, "r") as f:
-            for line in f:
-                try:
-                    event = json.loads(line)
-                    if event.get("status") == "error":
-                        cli_errors += 1
-                    if event.get("type") == "friction":
-                        friction_events += 1
-                except json.JSONDecodeError:
-                    continue
-
+    counts = _count_events(events_log, correlation_id=args.correlation_id)
     hook_errors = count_hook_errors(project_root)
 
     # Check north star regression: two consecutive session completion-rate declines
-    # -> emit a separate north_star_regression event so hooks can detect it.
+    # -> emit a separate north_star_regression event so the OS can detect it.
     _check_north_star_regression(project_root)
 
     metrics = {
@@ -149,22 +213,31 @@ def main():
         "action": "session_summary",
         "status": "success",
         "results": {
-            "human_interventions": 0,
-            "workflow_uncertainty": 0,
-            "missed_steps": 0,
-            "cli_errors": cli_errors,
-            "friction_events_total": friction_events,
+            "human_interventions": counts["human_interventions"],
+            "workflow_uncertainty": counts["workflow_uncertainty"],
+            "missed_steps": counts["missed_steps"],
+            "cli_errors": counts["cli_errors"],
+            "friction_events_total": counts["friction_events_total"],
             "hook_errors": hook_errors,
+            "correlation_id": args.correlation_id or "session",
             "session_id": os.environ.get("CLAUDE_SESSION_ID", "unknown")
         }
     }
 
     emit_event(project_root, metrics)
-    summary = f"--- AGENTIC OS: SESSION METRICS CAPTURED ({cli_errors} errors, {friction_events} friction events"
+
+    scope = f"cycle:{args.correlation_id}" if args.correlation_id else "full session"
+    summary = (
+        f"--- AGENTIC OS: SESSION METRICS CAPTURED ({scope}) "
+        f"human_interventions:{counts['human_interventions']} "
+        f"friction:{counts['friction_events_total']} "
+        f"cli_errors:{counts['cli_errors']}"
+    )
     if hook_errors > 0:
-        summary += f", {hook_errors} HOOK FAILURES - check context/memory/hook-errors.log"
-    summary += ") ---"
+        summary += f" HOOK_FAILURES:{hook_errors} (check context/memory/hook-errors.log)"
+    summary += " ---"
     print(summary)
+
 
 if __name__ == "__main__":
     main()
