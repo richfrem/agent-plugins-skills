@@ -43,11 +43,11 @@ This skill requires **Python 3.8+**, `pandas`, and `matplotlib`.
 
 **To install this skill's dependencies:**
 ```bash
-pip-compile ./scripts/requirements.in
-pip install -r ./scripts/requirements.txt
+pip-compile ./requirements.in
+pip install -r ./requirements.txt
 ```
 
-See `./scripts/requirements.txt` for the dependency lockfile.
+See `./requirements.txt` for the dependency lockfile.
 
 ---
 
