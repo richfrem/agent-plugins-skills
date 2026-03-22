@@ -51,7 +51,7 @@ flowchart LR
     Correct -->|Delta Fix| Receive
 ```
 
-**Reference**: [Architecture Diagram](./references/diagrams/dual_loop_architecture.mmd)
+**Reference**: [Architecture Diagram](../../assets/diagrams/dual_loop_architecture.mmd)
 
 ---
 

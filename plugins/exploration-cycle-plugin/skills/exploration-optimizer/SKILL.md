@@ -23,7 +23,7 @@ Agent: [invokes business-requirements-capture, NOT exploration-optimizer]
 </example>
 
 # Exploration Optimizer
-[See acceptance criteria](references/acceptance-criteria.md)
+[See acceptance criteria](acceptance-criteria.md)
 
 ## Discovery Phase
 Ask for:
@@ -55,7 +55,7 @@ python3 .agents/skills/exploration-optimizer/scripts/execute.py \
   --iterations 3
 ```
 
-For a concrete target-specific playbook, use [references/spec-kitty-skill-optimizer-program.md](references/spec-kitty-skill-optimizer-program.md) when optimizing the Spec-Kitty agent/workflow files themselves.
+For a concrete target-specific playbook, use [references/spec-kitty-skill-optimizer-program.md](../../references/spec-kitty-skill-optimizer-program.md) when optimizing the Spec-Kitty agent/workflow files themselves.
 
 ## Iteration Loop
 The `execute.py` script follows a disciplined loop:

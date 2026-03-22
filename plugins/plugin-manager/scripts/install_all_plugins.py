@@ -1,17 +1,39 @@
-#!/usr/bin/env python3
 """
-install_all_plugins.py (CLI)
-=====================================
+Install All Plugins (CLI)
+=========================
 
 Purpose:
     Iterates through all directories in `plugins/` and runs the `bridge_installer.py` for each one 
     to orchestrate a bulk repository update, strictly using the new .agents centralized symlink pattern.
 
+Layer: Plugin Manager / Installation
+
 Usage Examples:
-    python3 install_all_plugins.py
+    python3 plugins/plugin-manager/scripts/install_all_plugins.py
+
+Supported Object Types:
+    - None (Batch execution)
+
+CLI Arguments:
+    --dry-run: Pass --dry-run to each bridge_installer invocation.
+
+Input Files:
+    - bridge_installer.py (Subprocess script)
+
+Output:
+    - Updates local agent environments and skills-lock.json.
+
+Key Functions:
+    _compute_folder_hash(): Computes simple SHA-256 over relative files.
+    _update_lock_hashes(): Backfills hashes in skills-lock.json.
 
 Script Dependencies:
-    - bridge_installer.py
+    os, sys, argparse, subprocess, shutil, json, hashlib, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/bridge_installer.py
 """
 import os
 import sys
@@ -60,7 +82,7 @@ def _compute_folder_hash(folder: Path) -> str:
             
     return hasher.hexdigest()
 
-def _update_lock_hashes(root: Path, plugins_root: Path, dry_run: bool = False):
+def _update_lock_hashes(root: Path, plugins_root: Path, dry_run: bool = False) -> None:
     if dry_run:
         print("  [DRY RUN] Would backfill hashes in skills-lock.json")
         return
@@ -87,7 +109,7 @@ def _update_lock_hashes(root: Path, plugins_root: Path, dry_run: bool = False):
         lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
         print("  ✓ Backfilled empty hashes in skills-lock.json")
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Install all plugins via bridge_installer")
     parser.add_argument("--dry-run", action="store_true", help="Pass --dry-run to each bridge_installer invocation")
     args = parser.parse_args()

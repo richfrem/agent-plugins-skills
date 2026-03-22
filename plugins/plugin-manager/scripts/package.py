@@ -1,16 +1,45 @@
-#!/usr/bin/env python3
 """
-package.py (CLI)
-================
+Package Plugin (CLI)
+====================
+
 Purpose:
     Package a plugin directory into a distributable ZIP archive with correct
     flags for symlink preservation and artifact exclusion.
 
-Usage:
-    python3 package.py --plugin <path> [--output <dir>] [--validate-only] [--verify <zip>]
+Layer: Plugin Manager / Distribution
+
+Usage Examples:
+    python3 plugins/plugin-manager/scripts/package.py --plugin <path> [--output <dir>]
+
+Supported Object Types:
+    - zip (Archive output)
+
+CLI Arguments:
+    --plugin: Path to the plugin directory to package.
+    --skill: Package a single skill by name (requires --plugin).
+    --output: Output directory (default: ~/Desktop).
+    --validate-only: Only validate, don't package.
+    --verify: Verify an existing ZIP archive.
+
+Input Files:
+    - .claude-plugin/plugin.json (Validation source)
 
 Output:
-    <plugin-name>-v<version>.zip at the specified output directory.
+    - <plugin-name>-v<version>.zip at the specified output directory.
+
+Key Functions:
+    validate_manifest(): Validates plugin.json.
+    package_plugin(): Packages plugin into ZIP.
+    package_skill(): Packages single skill into ZIP.
+    verify_package(): Extracts and verifies ZIP.
+
+Script Dependencies:
+    argparse, json, os, re, shutil, subprocess, sys, tempfile, zipfile
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/install_all_plugins.py
 """
 
 import argparse
@@ -242,7 +271,7 @@ def verify_package(zip_path: str) -> None:
     shutil.rmtree(verify_dir)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Package a plugin for distribution")
     parser.add_argument("--plugin", help="Path to the plugin directory to package")
     parser.add_argument("--skill", help="Package a single skill by name (requires --plugin)")

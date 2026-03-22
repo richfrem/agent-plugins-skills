@@ -25,7 +25,7 @@ The **Orchestrator** assesses the incoming trigger, selects the right loop patte
 
 ### Ecosystem Context
 - **Patterns**: [`learning-loop`](../learning-loop/SKILL.md) | [`red-team-review`](../red-team-review/SKILL.md) | [`dual-loop`](../dual-loop/SKILL.md) | [`agent-swarm`](../agent-swarm/SKILL.md)
-- **Inner Loop Reference**: [`cli-agent-executor.md`](references/cli-agent-executor.md) — Persona configs for specialized CLI execution.
+- **Inner Loop Reference**: [`cli-agent-executor.md`](../../references/cli-agent-executor.md) — Persona configs for specialized CLI execution.
 
 ## Routing Decision Tree
 

@@ -234,6 +234,41 @@
     "summarized_at": "2026-03-22T16:21:55.137458",
     "summary": "Plugin Orphan Cleaner to remove stale symlinks securely."
   },
+  "plugins/plugin-manager/scripts/cleanup_targets.py": {
+    "hash": "0b1cdbc65f91178a",
+    "summarized_at": "2026-03-22T16:24:29.144351",
+    "summary": "Cleanup Target Directories to prevent stale remnants securely."
+  },
+  "plugins/plugin-manager/scripts/generate_readmes.py": {
+    "hash": "2c6e3dfd629e2356",
+    "summarized_at": "2026-03-22T16:25:25.121041",
+    "summary": "Generate Plugin READMEs safely is structured."
+  },
+  "plugins/plugin-manager/scripts/install_all_plugins.py": {
+    "hash": "fd9e3aff2b970e92",
+    "summarized_at": "2026-03-22T16:32:10.293114",
+    "summary": "Install All Plugins bulk installer setup."
+  },
+  "plugins/plugin-manager/scripts/package.py": {
+    "hash": "b7ca44bb9ad976b2",
+    "summarized_at": "2026-03-22T16:34:46.803706",
+    "summary": "Package Plugin into a distributable ZIP safely."
+  },
+  "plugins/plugin-manager/scripts/plugin_bootstrap.py": {
+    "hash": "1e92cb63570655c3",
+    "summarized_at": "2026-03-22T16:45:59.662464",
+    "summary": "Synchronize local plugin ecosystem safely with central vendor repo."
+  },
+  "plugins/plugin-manager/scripts/plugin_inventory.py": {
+    "hash": "410adf0918e124be",
+    "summarized_at": "2026-03-22T16:46:36.256763",
+    "summary": "Scans plugins directory to generate detailed JSON inventory securely."
+  },
+  "plugins/plugin-manager/scripts/sync_with_inventory.py": {
+    "hash": "8c0aab3666249b2f",
+    "summarized_at": "2026-03-22T16:47:29.760424",
+    "summary": "Sync plugins with inventory to synchronize agent envs safely."
+  },
   "plugins/rlm-factory/scripts/cleanup_cache.py": {
     "hash": "56e8f8ffcc50d25e",
     "summarized_at": "2026-03-09T12:47:26.775031",
@@ -243,5 +278,25 @@
     "hash": "d5317cc86415e575",
     "summarized_at": "2026-03-09T12:47:26.712778",
     "summary": "RLM Inventory Auditor. Compares the RLM semantic cache (rlm_tool_cache.json or rlm_summary_cache.json) against the live filesystem to produce a coverage gap report. Identifies: (1) files on disk not yet in cache (missing), (2) cache entries whose source files were deleted (stale). Exports an actionable Markdown checklist of inject_summary.py commands for each missing file. Uses rlm_config.py for manifest traversal and file collection. CLI: python3 inventory.py --profile <tools|project> [--full] [--tasks]. --full shows complete lists without truncation. --tasks exports rlm_distill_tasks_<profile>.md with pre-filled inject commands."
+  },
+  "plugins/rlm-factory/tests/test_rlm_config.py": {
+    "hash": "5cc7544f8794e24c",
+    "summarized_at": "2026-03-22T16:48:16.480472",
+    "summary": "Unit tests for RLM config loading and hash computation."
+  },
+  "plugins/rsvp-speed-reader/scripts/execute.py": {
+    "hash": "bb97b231a94faa91",
+    "summarized_at": "2026-03-22T16:49:46.121636",
+    "summary": "RSVP stream parser placeholder functionality."
+  },
+  "plugins/spec-kitty-plugin/scripts/verify_workflow_state.py": {
+    "hash": "79c702192ab8fed0",
+    "summarized_at": "2026-03-22T16:50:30.329777",
+    "summary": "Verifies SDD workflow state artifacts existence."
+  },
+  "plugins/task-manager/scripts/next_number.py": {
+    "hash": "1dec3be45d62523a",
+    "summarized_at": "2026-03-22T16:51:12.500461",
+    "summary": "Sequential Identifier Generator scanning artifact dirs."
   }
 }

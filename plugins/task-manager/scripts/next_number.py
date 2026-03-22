@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
 """
-next_number.py (CLI)
-=====================================
+Sequential Identifier Generator
+====================================
 
 Purpose:
-    Sequential Identifier Generator.
     Scans artifact directories (Specs, Tasks, ADRs, Chronicles, BRs, BWs) to find
     the next available sequence number. Prevents ID collisions.
 
@@ -13,27 +11,33 @@ Layer: Investigate / Utils
 Usage Examples:
     python3 ./scripts/next_number.py --type spec
     python3 ./scripts/next_number.py --type task
-    python3 ./scripts/next_number.py --type br
-    python3 ./scripts/next_number.py --type all
+
+Supported Object Types:
+    - None (Sequence output)
 
 CLI Arguments:
-    --type          : Artifact type (spec, task, adr, chronicle, br, bw, all)
+    --type: Artifact type (spec, task, adr, chronicle, br, bw, all).
+    --dir: Ad-hoc directory to scan for 4-digit numbers.
 
 Input Files:
     - kitty-specs/
     - tasks/
     - ADRs/
-    - legacy-system/business-rules/
-    - legacy-system/business-workflows/
 
 Output:
-    - Next available ID (e.g. "0045") to stdout
-    
+    - Next available ID (e.g. "0045") to stdout.
+
 Key Functions:
-    - main(): Scans directories using regex patterns defined in ARTIFACT_TYPES.
+    get_next_number(): Returns next available number supporting gap filling.
+    find_max_number(): Returns max number for artifact type.
+
+Script Dependencies:
+    os, re, sys, argparse, pathlib
 
 Consumed by:
     - Manual workflow execution
+Related:
+    - None
 """
 import os
 import re
@@ -182,7 +186,7 @@ def find_max_in_directory(directory: Path, pattern: str = r'(\d{3})', recursive:
     return max_num
 
 
-def show_all(project_root: Path):
+def show_all(project_root: Path) -> None:
     """Show next numbers for all artifact types."""
     print("=" * 50)
     print("NEXT AVAILABLE NUMBERS")
@@ -195,7 +199,7 @@ def show_all(project_root: Path):
         print(f"  {config['name']:30} : {next_id} (existing max: {existing})")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description='Get next available number for artifact types or arbitrary directories.',
         formatter_class=argparse.RawDescriptionHelpFormatter,

@@ -1,23 +1,40 @@
-#!/usr/bin/env python3
 """
-plugin_bootstrap.py (CLI)
-=====================================
+Plugin Bootstrap (CLI)
+======================
 
 Purpose:
     Automates the synchronization of the local plugin ecosystem with the central vendor repository.
     Handles cloning/updating the vendor source and syncing agent configurations.
 
+Layer: Plugin Manager / Initialization
+
 Usage Examples:
     python3 plugins/plugin-manager/scripts/plugin_bootstrap.py
 
+Supported Object Types:
+    - None (Automation script)
+
 CLI Arguments:
-    --repo          : Git repository URL (default: https://github.com/richfrem/agent-plugins-skills.git)
-    --vendor-dir    : Local vendor directory (default: .vendor/agent-plugins-skills)
-    --target        : Agent target for sync (default: auto)
+    --repo: Git repository URL (default: https://github.com/richfrem/agent-plugins-skills.git).
+    --vendor-dir: Local vendor directory (default: .vendor/agent-plugins-skills).
+
+Input Files:
+    - sync_with_inventory.py (Subprocess script)
+
+Output:
+    - Clones/Updates vendor repository and triggers sync.
 
 Key Functions:
-    - ensure_vendor_source(): Clones or pulls the latest vendor repository.
-    - sync_agent_configs(): Runs sync_with_inventory.py to update agent environments.
+    ensure_vendor_source(): Clones or pulls the latest vendor repository.
+    sync_agent_configs(): Runs sync_with_inventory.py to update agent environments.
+
+Script Dependencies:
+    os, sys, argparse, subprocess, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/sync_with_inventory.py
 """
 
 import os
@@ -26,7 +43,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-def run_command(cmd, cwd=None):
+def run_command(cmd: list[str], cwd: str | None = None) -> bool:
     """Utility to run a shell command and print output."""
     print(f"Executing: {' '.join(cmd)}")
     try:
@@ -36,7 +53,7 @@ def run_command(cmd, cwd=None):
         print(f"❌ Error: Command failed with exit code {e.returncode}")
         return False
 
-def ensure_vendor_source(repo_url, vendor_dir):
+def ensure_vendor_source(repo_url: str, vendor_dir: str) -> bool:
     """Ensures the vendor repository exists and is up to date."""
     vendor_path = Path(vendor_dir).resolve()
     
@@ -48,7 +65,7 @@ def ensure_vendor_source(repo_url, vendor_dir):
         print(f"🔄 Updating vendor repository at {vendor_dir}...")
         return run_command(["git", "pull"], cwd=str(vendor_path))
 
-def sync_agent_configs(script_path):
+def sync_agent_configs(script_path: Path) -> bool:
     """Runs the sync_with_inventory script."""
     print("🔗 Synchronizing agent configurations...")
     if not script_path.exists():
@@ -56,7 +73,7 @@ def sync_agent_configs(script_path):
         return False
     return run_command([sys.executable, str(script_path)])
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Plugin Bootstrap Automation")
     parser.add_argument("--repo", default="https://github.com/richfrem/agent-plugins-skills.git", help="Vendor Git repository URL")
     parser.add_argument("--vendor-dir", default=".vendor/agent-plugins-skills", help="Local vendor directory")

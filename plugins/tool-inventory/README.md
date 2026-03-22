@@ -115,7 +115,7 @@ ChromaDB is the primary truth store. JSON cache is kept for backward compatibili
 
 ## Architecture
 
-See [tool-inventory-workflow.mmd](skills/tool-inventory/references/tool-inventory-workflow.mmd).
+See [tool-inventory-workflow.mmd](assets/diagrams/tool-inventory-workflow.mmd).
 
 ```mermaid
 graph TD

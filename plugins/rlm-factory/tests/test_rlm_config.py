@@ -1,8 +1,47 @@
+"""
+Test RLM Config Unit Tests
+==========================
+
+Purpose:
+    Validates RLM Config file loading, hash computation, and cache persistence.
+
+Layer: tests / Config
+
+Usage Examples:
+    pytest plugins/rlm-factory/tests/test_rlm_config.py
+
+Supported Object Types:
+    - None (Unit testing)
+
+CLI Arguments:
+    None.
+
+Input Files:
+    - scripts/rlm_config.py (Unit under test)
+
+Output:
+    - Reports test success/failure.
+
+Key Functions:
+    test_rlm_config_initialization(): Verifies loading profiles.
+    test_compute_hash(): Verifies consistent hashing length.
+    test_load_save_cache(): Verifies cache file round-trip.
+
+Script Dependencies:
+    os, sys, json, pytest, pathlib
+
+Consumed by:
+    - None (Standalone tests)
+Related:
+    - scripts/rlm_config.py
+"""
+
 import os
 import sys
 import json
 import pytest
 from pathlib import Path
+from typing import Generator
 
 # Add the scripts directory so we can import rlm_config
 SCRIPT_DIR = Path(__file__).resolve().parent.parent / "scripts"
@@ -10,7 +49,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from rlm_config import RLMConfig, compute_hash, load_cache, save_cache, collect_files
 
 @pytest.fixture
-def mock_project(tmp_path):
+def mock_project(tmp_path: Path) -> Generator[Path, None, None]:
     """Creates a mock project structure with a profile, manifest, and cache."""
     agent_dir = tmp_path / ".agent" / "learning"
     agent_dir.mkdir(parents=True)
@@ -57,7 +96,7 @@ def mock_project(tmp_path):
         del os.environ["RLM_PROFILES_PATH"]
 
 
-def test_rlm_config_initialization(mock_project, monkeypatch):
+def test_rlm_config_initialization(mock_project: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that RLMConfig loads correctly from the mock project."""
     import rlm_config
     monkeypatch.setattr(rlm_config, "PROJECT_ROOT", mock_project)
@@ -75,7 +114,7 @@ def test_rlm_config_initialization(mock_project, monkeypatch):
     assert config.include_patterns == ["src/"]
 
 
-def test_compute_hash():
+def test_compute_hash() -> None:
     """Test that hashing produces a consistent length output."""
     h1 = compute_hash("Hello, world!")
     h2 = compute_hash("Hello, world!")
@@ -83,7 +122,7 @@ def test_compute_hash():
     assert len(h1) == 16
 
 
-def test_load_save_cache(tmp_path):
+def test_load_save_cache(tmp_path: Path) -> None:
     """Test cache persistence functions."""
     cache_path = tmp_path / "test_cache.json"
     data = {"file.py": {"summary": "test"}}

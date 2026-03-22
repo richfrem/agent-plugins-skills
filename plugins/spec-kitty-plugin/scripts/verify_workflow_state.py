@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 verify_workflow_state.py
 ========================
@@ -7,20 +6,44 @@ Purpose:
     Validates that the spec-driven development (SDD) artifacts exist 
     and are in the correct state for a given phase.
 
-Phases:
-    - specify  : Check for spec.md
-    - plan     : Check for spec.md AND plan.md
-    - tasks    : Check for spec.md, plan.md, tasks.md, and prompts in tasks/
-    - review   : Check for proof_check verification (basic check for now)
-
 Layer: Plugin / Spec-Kitty / Verification
+
+Usage Examples:
+    python3 plugins/spec-kitty-plugin/scripts/verify_workflow_state.py --feature SLUG --phase specify
+
+Supported Object Types:
+    - None (Verification)
+
+CLI Arguments:
+    --feature: Feature slug (directory name under specs/).
+    --wp: Work Package ID (e.g. WP-001).
+    --phase: specify, plan, tasks, review (Required).
+
+Input Files:
+    - spec.md, plan.md, tasks.md, tasks/WP-*.md
+
+Output:
+    - Prints verification success/failure. Exit 1 on failure.
+
+Key Functions:
+    verify_specify(): Checks for spec.md.
+    verify_plan(): Checks for plan.md.
+    verify_tasks(): Checks for tasks.md and WP prompt files.
+
+Script Dependencies:
+    sys, argparse, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - None
 """
 
 import sys
 import argparse
 from pathlib import Path
 
-def verify_specify(spec_dir: Path):
+def verify_specify(spec_dir: Path) -> bool:
     spec_md = spec_dir / "spec.md"
     if not spec_md.exists():
         print(f"❌ Verification Failed: spec.md not found in {spec_dir}")
@@ -28,7 +51,7 @@ def verify_specify(spec_dir: Path):
     print(f"✅ spec.md found.")
     return True
 
-def verify_plan(spec_dir: Path):
+def verify_plan(spec_dir: Path) -> bool:
     if not verify_specify(spec_dir): return False
     plan_md = spec_dir / "plan.md"
     if not plan_md.exists():
@@ -37,7 +60,7 @@ def verify_plan(spec_dir: Path):
     print(f"✅ plan.md found.")
     return True
 
-def verify_tasks(spec_dir: Path):
+def verify_tasks(spec_dir: Path) -> bool:
     if not verify_plan(spec_dir): return False
     tasks_md = spec_dir / "tasks.md"
     if not tasks_md.exists():
@@ -52,7 +75,7 @@ def verify_tasks(spec_dir: Path):
     print(f"✅ tasks.md and WP prompt files found.")
     return True
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Verify SDD workflow state")
     parser.add_argument("--feature", help="Feature slug (directory name under specs/)")
     parser.add_argument("--wp", help="Work Package ID (e.g. WP-001)")

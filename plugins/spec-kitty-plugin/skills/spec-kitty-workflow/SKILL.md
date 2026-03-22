@@ -90,7 +90,7 @@ Before implementing any code, you MUST generate artifacts using the CLI.
 
 ### Pre-Execution Workflow Commitment
 
-> **Visual Reference**: [`pure-spec-kitty-workflow.mmd`](./pure-spec-kitty-workflow.mmd)
+> **Visual Reference**: [`pure-spec-kitty-workflow.mmd`](../../assets/diagrams/pure-spec-kitty-workflow.mmd)
 > This diagram shows the full lifecycle including all HITL Gate nodes (red diamonds)
 > where agent execution MUST stop and wait for user approval before advancing.
 

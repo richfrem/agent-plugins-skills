@@ -41,4 +41,4 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 
 ## Diagram
 
-See: [red_team_review_loop.mmd](assets/resources/red_team_review_loop.mmd)
+See: [red_team_review_loop.mmd](../../assets/diagrams/red_team_review_loop.mmd)
