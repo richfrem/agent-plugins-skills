@@ -1,11 +1,42 @@
 #!/usr/bin/env python3
 """
-Purpose: Automated Post-Run Metric Collection.
-Scans events.jsonl to count friction, intervention, and error events,
-then emits a 'type: metric' event to the Event Bus.
+post_run_metrics.py — Post-Run Metric Collection Hook
+======================================================
 
-Pass --correlation-id CYCLE_ID to scope counting to a single cycle only.
-When omitted (Stop hook context), all events since last metric event are counted.
+Purpose:
+    Automated Post-Run Metric Collection.
+    Scans events.jsonl to count friction, intervention, and error events,
+    then emits a 'type: metric' event to the Event Bus.
+
+Layer: 
+    Hooks / Metrics
+
+Usage Examples:
+    python3 ./hooks/scripts/post_run_metrics.py
+    python3 ./hooks/scripts/post_run_metrics.py --correlation-id CYCLE_ID
+
+Supported Object Types:
+    - Metric events (JSON summary layout)
+
+CLI Arguments:
+    --correlation-id <ID>   Scope event counting to this CYCLE_ID only to avoid double-counting
+
+Input Files:
+    - context/events.jsonl
+    - context/memory/hook-errors.log
+
+Output:
+    - Appends metric dictionary to events.jsonl via kernel.py emit_event
+
+Key Functions:
+    emit_event()            Uses kernel.py to record a metric event summary row
+    _count_events()        Parses event log tallying intervention/friction counts
+
+Script Dependencies:
+    - context/kernel.py (for triggering emit_event)
+
+Consumed by:
+    - Post-run lifecycle hook integrations or orchestrator verification passes
 """
 
 import json
@@ -15,7 +46,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 
-def emit_event(project_root, event_data):
+def emit_event(project_root: Path, event_data: dict) -> None:
     """
     Uses kernel.py to emit a structured event.
     Encodes results into --summary for maximum compatibility with older kernels.
@@ -77,7 +108,7 @@ def count_hook_errors(project_root: Path) -> int:
 
 
 
-def _count_events(events_log: Path, correlation_id: "str | None" = None) -> dict:
+def _count_events(events_log: Path, correlation_id: str | None = None) -> dict:
     """
     Count metrics from events.jsonl.
 
@@ -140,7 +171,7 @@ def _count_events(events_log: Path, correlation_id: "str | None" = None) -> dict
     return counts
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Agentic OS: Post-Run Metric Collection"
     )

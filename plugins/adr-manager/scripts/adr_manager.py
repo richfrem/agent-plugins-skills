@@ -7,13 +7,40 @@ Purpose:
     Create, list, search, and view ADRs. Uses next_number.py for
     auto-incrementing IDs and the ADR template for scaffolding.
 
-Layer: Plugin / ADR-Manager
+Layer: 
+    Plugin / ADR-Manager
 
-Usage:
+Usage Examples:
     python3 ./scripts/adr_manager.py create "Title" --context "..." --decision "..." --consequences "..."
     python3 ./scripts/adr_manager.py list [--limit N]
     python3 ./scripts/adr_manager.py get N
     python3 ./scripts/adr_manager.py search "query"
+
+Supported Object Types:
+    - Architecture Decision Records (ADR)
+
+CLI Arguments:
+    create <title>          Create a new ADR with specified metadata fields
+    list [--limit <N>]      List existing ADRs with optional result count limit
+    get <number>            View a specific ADR fully by its numeric ID
+    search <query>          Search ADR bodies using exact matching keywords
+
+Input Files:
+    - templates/adr-template.md
+
+Output:
+    - ADRs/<NNN>_<title>.md
+
+Key Functions:
+    create_adr(title, ...)  Scaffolds a new decision log using auto-increment IDs
+    list_adrs()             Renders index list ordered ascending by serial ID
+    get_adr(n)              Loads detailed record for exact matched record ID
+
+Script Dependencies:
+    - next_number.py (sibling script helper indexer)
+
+Consumed by:
+    - ADR Management Skill orchestration workflows
 """
 
 import os
@@ -52,7 +79,7 @@ TEMPLATE_PATH = PLUGIN_ROOT / "templates" / "adr-template.md"
 
 
 def create_adr(title: str, context: str = "", decision: str = "", 
-               consequences: str = "", alternatives: str = "", status: str = "Proposed"):
+               consequences: str = "", alternatives: str = "", status: str = "Proposed") -> Path:
     """Create a new ADR from template."""
     ADR_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -81,7 +108,7 @@ def create_adr(title: str, context: str = "", decision: str = "",
     return filepath
 
 
-def list_adrs(limit: int = None):
+def list_adrs(limit: int | None = None) -> None:
     """List ADRs sorted by number."""
     if not ADR_DIR.exists():
         print("📂 No ADRs directory found.")
@@ -106,7 +133,7 @@ def list_adrs(limit: int = None):
         print(f"  {adr.name:40} {title}")
 
 
-def get_adr(number: int):
+def get_adr(number: int) -> None:
     """Get a specific ADR by number."""
     if not ADR_DIR.exists():
         print("❌ No ADRs directory.")
@@ -120,7 +147,7 @@ def get_adr(number: int):
     print(f"❌ ADR-{number:03d} not found.")
 
 
-def search_adrs(query: str):
+def search_adrs(query: str) -> None:
     """Search ADRs by keyword."""
     if not ADR_DIR.exists():
         print("📂 No ADRs directory.")
@@ -147,7 +174,7 @@ def search_adrs(query: str):
             print(f"  {name:40} {title}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Architecture Decision Record Manager")
     subparsers = parser.add_subparsers(dest="command")
 

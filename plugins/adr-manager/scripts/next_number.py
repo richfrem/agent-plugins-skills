@@ -182,7 +182,7 @@ def find_max_in_directory(directory: Path, pattern: str = r'(\d{3})', recursive:
     return max_num
 
 
-def show_all(project_root: Path):
+def show_all(project_root: Path) -> None:
     """Show next numbers for all artifact types."""
     print("=" * 50)
     print("NEXT AVAILABLE NUMBERS")
@@ -195,7 +195,7 @@ def show_all(project_root: Path):
         print(f"  {config['name']:30} : {next_id} (existing max: {existing})")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description='Get next available number for artifact types or arbitrary directories.',
         formatter_class=argparse.RawDescriptionHelpFormatter,
