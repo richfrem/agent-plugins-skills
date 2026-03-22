@@ -651,14 +651,14 @@
       "computedHash": "8da3b13eda61a8cbfb5235ece061ba3fee0f3f8c159350b71ca22b29ecb3706b"
     },
     "tool-inventory": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/tool-inventory",
       "sourceType": "local",
-      "computedHash": "3e41972d7f02cfe2be311d6716be44e08ad47acdf613360134b89e709de90c48"
+      "computedHash": "85efaa59c2c7258df90d47738469d3cee1467f3b7d0cb22de854d8cdccbf1ed6"
     },
     "tool-inventory-init": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/tool-inventory",
       "sourceType": "local",
-      "computedHash": "b98ce38c4dd6691caf23190c2b3cfb39f20a0967bdea52a0f20688af1eddb2dd"
+      "computedHash": "fb19c8d2ec2df9548af74d902450669374736072793fae19df437255bc27f1d3"
     },
     "user-story-capture": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -666,29 +666,29 @@
       "computedHash": "95444460edb0fa3a0a8816178cae1e121a7005f91b3c06f237e8f3236a0cc679"
     },
     "vector-db-cleanup": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/vector-db",
       "sourceType": "local",
-      "computedHash": "cc4067073f08772c6e230a8de271b032994d023f99a311cf2402770bdf932953"
+      "computedHash": "6a53b0e9bb1f4e221bb8f5fe767914f00745a7ee1205d86e9c9c337b82067dff"
     },
     "vector-db-ingest": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/vector-db",
       "sourceType": "local",
-      "computedHash": "9c1291f330bb191cc6f08564596ac75fbb168e901579b586b709b0fb2ce5d36f"
+      "computedHash": "1af0aa569ab20de8ef465f6c3d6bfca52a5b76dfeccbc40e46d9541a6be9688f"
     },
     "vector-db-init": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/vector-db",
       "sourceType": "local",
-      "computedHash": "e81be7821fd26590cfdf10c4a287296596705b71a5dc31667aa7591a1a26a5a6"
+      "computedHash": "42cd1e25791a22a57dc298bcc794eee6869bfa0622fe2a12add5b8ddaf3cc185"
     },
     "vector-db-launch": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/vector-db",
       "sourceType": "local",
-      "computedHash": "e1d10d9eb38772f2da8b9faa2cfb50ce7f17c01ec40c9e95e534f255d9514c83"
+      "computedHash": "c60fd9c60d901903a28d50aaaf997b71e4d311989b81cfdc57e6957bd597b9e6"
     },
     "vector-db-search": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/vector-db",
       "sourceType": "local",
-      "computedHash": "6b4ec7494fd85e5d61b7e357874b46a933e49755803e69682cde443b4f6e36ba"
+      "computedHash": "9896413e2072206c309954f6cd6e79e40a7f702f9e1dc2732f3ff09f5fffec0a"
     },
     "vector-db-vector-db-cleanup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
