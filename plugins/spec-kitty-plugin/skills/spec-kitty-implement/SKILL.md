@@ -112,37 +112,3 @@ spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: 
 **The Python script handles all file updates automatically - no manual editing required!**
 
 **NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
-
----
-
-## 🚀 Supplemental Best Practices (Augmented)
-
-### Worktree Discipline
-
-- **Absolute Paths Only**: When editing files in a worktree, ALWAYS use absolute paths (e.g., `/Users/.../Project_Ecosystem/.worktrees/<FEATURE>-WP01/path/to/file.py`). NEVER use relative paths, as agents frequently drift into the wrong directory.
-- **Verify Before Coding**: Before writing any code, confirm you're in the correct worktree (`pwd` and `git branch --show-current`). The branch name must match the WP you're implementing.
-- **One WP Per Worktree**: Each WP has its own isolated worktree branch. NEVER write deliverable files to the main repo root! Changes in the main repository will NOT be seen by reviewers looking at the WP worktree.
-
-### Commit Hygiene
-
-- **Stage Only Deliverables**: Stage specific deliverables (`git add path/to/file.py`). NEVER use `git add -A` or `git add .` (this captures kitty-specs changes and .gitignore noise).
-- **Commit Message Format**: Use `feat(WP##): <imperative description>`.
-- **Before Moving to Review**: The `move-task` command validates that your worktree has commits beyond main, no uncommitted changes exist, and no kitty-specs artifacts leaked into your branch.
-  - For uncommitted changes: `git commit` or `git checkout -- <file>`
-  - For kitty-specs leakage (use `--force` only if content is valid): `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP## for_review --force`
-
-### Dependency Management
-
-When a WP depends on another WP:
-1. Check that the dependency WP is already merged to main.
-2. If not merged, your worktree may be missing files — create your worktree off the dependency branch instead.
-3. Document the dependency in the WP frontmatter.
-
-### Known Failure Modes
-
-| Failure | Cause | Fix |
-|---|---|---|
-| Files written to main instead of worktree | Agent used wrong cwd | Always verify with `pwd` before editing |
-| `move-task` blocked by uncommitted changes | Forgot to commit or staged extra files | `git status` then commit or checkout |
-| `move-task` blocked by kitty-specs artifacts | Serial implementation leaked status changes | Use `--force` if content is valid |
-| Missing files from dependency WP | WP was created before dependency was merged | Rebase worktree onto main after dependency merges |

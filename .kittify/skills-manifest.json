@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "created_at": "2026-03-22T17:53:03.576798+00:00",
-  "updated_at": "2026-03-22T17:53:03.617846+00:00",
+  "created_at": "2026-03-22T20:39:59.101964+00:00",
+  "updated_at": "2026-03-22T20:39:59.143649+00:00",
   "spec_kitty_version": "2.1.1",
   "entries": [
     {
@@ -11,7 +11,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:6b41134791ce9cb1d92e46a6b2e087747c2f7888a3374e237efedbdf7e7e875f",
-      "installed_at": "2026-03-22T17:53:03.610764+00:00"
+      "installed_at": "2026-03-22T20:39:59.137165+00:00"
     },
     {
       "skill_name": "spec-kitty-constitution-doctrine",
@@ -20,7 +20,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:3f9c710ca338edd170d7da99dc47fed7a6f170ca7f15cc84470b8b0aafd40e3a",
-      "installed_at": "2026-03-22T17:53:03.610764+00:00"
+      "installed_at": "2026-03-22T20:39:59.137165+00:00"
     },
     {
       "skill_name": "spec-kitty-constitution-doctrine",
@@ -29,7 +29,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:8a9c8b20b8d9c72fd03d6e2e92ccd9e4321f2e62a5bae35e11d889de185ffddf",
-      "installed_at": "2026-03-22T17:53:03.610764+00:00"
+      "installed_at": "2026-03-22T20:39:59.137165+00:00"
     },
     {
       "skill_name": "spec-kitty-glossary-context",
@@ -38,7 +38,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:bc3b7bbe55e5351e6bae6d7eec2e398374b3c3bcb74613e26851adfa11504764",
-      "installed_at": "2026-03-22T17:53:03.612299+00:00"
+      "installed_at": "2026-03-22T20:39:59.138576+00:00"
     },
     {
       "skill_name": "spec-kitty-glossary-context",
@@ -47,7 +47,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:c402eeb84f1ee245acd5885c0e12d8f5bb35ffac5f1472f487e50c12b4cc6630",
-      "installed_at": "2026-03-22T17:53:03.612299+00:00"
+      "installed_at": "2026-03-22T20:39:59.138576+00:00"
     },
     {
       "skill_name": "spec-kitty-glossary-context",
@@ -56,7 +56,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:d2df36b399316d12d05b10b36dab19a3eb330ed9c502b9b0fa2bb35ecf8341c4",
-      "installed_at": "2026-03-22T17:53:03.612299+00:00"
+      "installed_at": "2026-03-22T20:39:59.138576+00:00"
     },
     {
       "skill_name": "spec-kitty-orchestrator-api-operator",
@@ -65,7 +65,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:a7c8fe07b6678cdeffe91c967d715b3bd47eb9b2b1682d22579adeadbbbc4fca",
-      "installed_at": "2026-03-22T17:53:03.613507+00:00"
+      "installed_at": "2026-03-22T20:39:59.139750+00:00"
     },
     {
       "skill_name": "spec-kitty-orchestrator-api-operator",
@@ -74,7 +74,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:16705fc4ec72edd34f7373e864bb37a34db76bed457bf6a9190aac64bb27cc58",
-      "installed_at": "2026-03-22T17:53:03.613507+00:00"
+      "installed_at": "2026-03-22T20:39:59.139750+00:00"
     },
     {
       "skill_name": "spec-kitty-orchestrator-api-operator",
@@ -83,7 +83,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:6566af33a35cbea51baeb899037e5743e448f85b7a33860e57502a829e089800",
-      "installed_at": "2026-03-22T17:53:03.613507+00:00"
+      "installed_at": "2026-03-22T20:39:59.139750+00:00"
     },
     {
       "skill_name": "spec-kitty-runtime-next",
@@ -92,7 +92,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:740977699361f49c17a8eb04f10086ad4fd712f87a68a9ef9e1f94bac8cf3276",
-      "installed_at": "2026-03-22T17:53:03.614832+00:00"
+      "installed_at": "2026-03-22T20:39:59.140731+00:00"
     },
     {
       "skill_name": "spec-kitty-runtime-next",
@@ -101,7 +101,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:34a832b30f2596089459a0208042efeb74027f293e1d6f4d309dd661888f1f18",
-      "installed_at": "2026-03-22T17:53:03.614832+00:00"
+      "installed_at": "2026-03-22T20:39:59.140731+00:00"
     },
     {
       "skill_name": "spec-kitty-runtime-next",
@@ -110,7 +110,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:80365f9eca8f07cd96a85aad55247707e90765caddc24037f1a60de4053df2fe",
-      "installed_at": "2026-03-22T17:53:03.614832+00:00"
+      "installed_at": "2026-03-22T20:39:59.140731+00:00"
     },
     {
       "skill_name": "spec-kitty-runtime-review",
@@ -119,7 +119,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:3ded50e30afe586c1432119c85fcd2a4444acee8be8bd5a4570f13262535bacd",
-      "installed_at": "2026-03-22T17:53:03.615881+00:00"
+      "installed_at": "2026-03-22T20:39:59.141678+00:00"
     },
     {
       "skill_name": "spec-kitty-runtime-review",
@@ -128,7 +128,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:1ade3acdab9cd2c9dcf02cab458ece5992acf571e7d16338b09d98e961d4c2a7",
-      "installed_at": "2026-03-22T17:53:03.615881+00:00"
+      "installed_at": "2026-03-22T20:39:59.141678+00:00"
     },
     {
       "skill_name": "spec-kitty-setup-doctor",
@@ -137,7 +137,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:5cfbac3359c9d9bb5ff5fac8937ec436bb82f00b22aa7d434b81c7bba82440de",
-      "installed_at": "2026-03-22T17:53:03.616835+00:00"
+      "installed_at": "2026-03-22T20:39:59.142903+00:00"
     },
     {
       "skill_name": "spec-kitty-setup-doctor",
@@ -146,7 +146,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:1bd8190189f3bb840edcb3d54cf0fe4707b6bfc1e199d4d7364250b33d3f1a41",
-      "installed_at": "2026-03-22T17:53:03.616835+00:00"
+      "installed_at": "2026-03-22T20:39:59.142903+00:00"
     },
     {
       "skill_name": "spec-kitty-setup-doctor",
@@ -155,7 +155,7 @@
       "installation_class": "shared-root-capable",
       "agent_key": "windsurf",
       "content_hash": "sha256:3ca78b84a06d00a95cca940052935a456f9f51ac397b0d1ffd22f52af550bf7e",
-      "installed_at": "2026-03-22T17:53:03.616835+00:00"
+      "installed_at": "2026-03-22T20:39:59.142903+00:00"
     }
   ]
 }

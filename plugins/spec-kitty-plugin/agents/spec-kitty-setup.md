@@ -46,7 +46,7 @@ Execute these phases in order based on the user's needs. Do not skip phases unle
 ### Phase 2: Initialization (Configuration)
 - If the project is not initialized, generate the baseline configuration:
   ```bash
-  spec-kitty init . --ai windsurf
+  spec-kitty init . --ai windsurf --force --non-interactive
   ```
 - *This populates `.windsurf/workflows` and `.kittify/config.yaml`.*
 
@@ -60,7 +60,7 @@ Execute these phases in order based on the user's needs. Do not skip phases unle
 ### Phase 4: Deploy to Agents (Agent Handoff)
 - Finally, ask the user if they would like to use the new `npx skills add` open standard to deploy these natively formatted skills to their active AI environments.
   ```bash
-  # To install just the spec-kitty plugin updates:
+  # To install just the spec-kitty plugin updates (Press 'a' then 'Enter' if prompted to select skills):
   npx skills add ./plugins/spec-kitty-plugin --force
   ```
 

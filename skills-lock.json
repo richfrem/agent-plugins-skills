@@ -574,7 +574,7 @@
     "spec-kitty-implement": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "1924601e6cda24a254ce9f593a0a8b5dea2af3d0301d1d199bc88716b8f04e91"
+      "computedHash": "3477caa02f6833be0667c3477127c01231021603ee61e6523dbc3f709bce90c4"
     },
     "spec-kitty-merge": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
@@ -606,7 +606,7 @@
     "spec-kitty-specify": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "a28310fe2c0337da1cbb590d6c2738a1d856122d263f16e0e625d9a78834067d"
+      "computedHash": "559eb8efea51bde778a449d7cf05e8028e37500fde8f2e81ca9354b67caa4805"
     },
     "spec-kitty-status": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
@@ -614,9 +614,9 @@
       "computedHash": "5ba53b5e88d4ea2472f0434a358223b315903f720db15493a9478d4e02707b69"
     },
     "spec-kitty-sync-plugin": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "c7301651f75d415d198f5db843892f836f7eb1f1cdb36e4ac742b8ab4355558d"
+      "computedHash": "3287e3a18c92937cb7dc3c7b52f313a8b974180aaa30827ce3ba04e087928a27"
     },
     "spec-kitty-tasks": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
