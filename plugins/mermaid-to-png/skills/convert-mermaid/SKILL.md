@@ -34,7 +34,7 @@ Invoke the appropriate Python converter script wrapper.
 If the user asks for "high resolution", "retina", or "HQ", set `-s` to 3 or 4.
 
 ```bash
-python3 ./convert.py -i architecture.mmd -o architecture.png -s 3
+python3 .agents/skills/convert-mermaid/scripts/convert.py -i architecture.mmd -o architecture.png -s 3
 ```
 
 ### Phase 2: Delegated Constraint Verification (L5 Pattern)
@@ -42,7 +42,7 @@ python3 ./convert.py -i architecture.mmd -o architecture.png -s 3
 Immediately after the `convert.py` wrapper finishes, execute the verification engine:
 
 ```bash
-python3 ./verify_png.py "architecture.png"
+python3 .agents/skills/convert-mermaid/scripts/verify_png.py "architecture.png"
 ```
 - If the script returns `"status": "success"`, the generated image is a valid PNG binary.
 - If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `references/fallback-tree.md`.

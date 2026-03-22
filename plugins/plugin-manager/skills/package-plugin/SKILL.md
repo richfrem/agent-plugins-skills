@@ -35,7 +35,7 @@ or sharing with other teams.
 Before packaging, verify the plugin has a valid manifest:
 
 ```bash
-python3 ./package.py \
+python3 .agents/skills/package-plugin/scripts/package.py \
   --validate-only --plugin <path-to-plugin>
 ```
 
@@ -49,7 +49,7 @@ This checks:
 ### 2. Package the Plugin
 
 ```bash
-python3 ./package.py \
+python3 .agents/skills/package-plugin/scripts/package.py \
   --plugin <path-to-plugin> --output <destination>
 ```
 
@@ -58,7 +58,7 @@ python3 ./package.py \
 ### 3. Verify the Package (Optional)
 
 ```bash
-python3 ./package.py \
+python3 .agents/skills/package-plugin/scripts/package.py \
   --verify <path-to-zip>
 ```
 

@@ -40,7 +40,7 @@ Invoke the appropriate Python converter script.
 Immediately after generating a `.docx` file (or a sample of files if bulk generating), execute the verification engine:
 
 ```bash
-python3 ./verify_docx.py "output.docx"
+python3 .agents/skills/markdown-to-msword-converter/scripts/verify_docx.py "output.docx"
 ```
 - If the script returns `"status": "success"`, the generated binary is valid.
 - If it returns `"status": "errors_found"`, review the JSON log (e.g., `ArchiveCorrupt`, `NoParagraphs`). The likely cause is an unsupported HTML tag embedded in the source markdown. Consult the `references/fallback-tree.md`.

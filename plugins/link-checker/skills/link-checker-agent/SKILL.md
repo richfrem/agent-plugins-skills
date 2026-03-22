@@ -40,21 +40,21 @@ The plugin provides three scripts that **must be run in order**:
 ### 1. Initialization (Mapping)
 **MUST** run first. The fixer depends on a current file inventory.
 ```bash
-python3 ./map_repository_files.py
+python3 .agents/skills/link-checker-agent/scripts/map_repository_files.py
 ```
 Verify: Ensure `file_inventory.json` is created.
 
 ### 2. Analysis & Repair
 Auto-resolve broken links using fuzzy filename matching.
 ```bash
-python3 ./smart_fix_links.py
+python3 .agents/skills/link-checker-agent/scripts/smart_fix_links.py
 ```
 Verify: Check console output for `Fixed:` messages.
 
 ### 3. Verification & Reporting
 Final inspection to generate a report of remaining issues.
 ```bash
-python3 ./check_broken_paths.py
+python3 .agents/skills/link-checker-agent/scripts/check_broken_paths.py
 ```
 Verify: Read `broken_links.log` for any deviations.
 

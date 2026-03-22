@@ -78,7 +78,7 @@ Wait for explicit confirmation (`yes`, `looks good`, `ok`).
 
 ### Step 1: Run Deterministic Scanner
 ```bash
-python3 ./../scripts/audit_structure.py
+python3 .agents/skills/maintain-plugins/scripts/audit_structure.py
 ```
 > For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
 
@@ -143,12 +143,12 @@ For each violation found, report with severity:
 
 #### Preview Changes (Always Run First)
 ```bash
-python3 ./../scripts/sync_with_inventory.py --dry-run
+python3 .agents/skills/maintain-plugins/scripts/sync_with_inventory.py --dry-run
 ```
 
 #### Apply Changes
 ```bash
-python3 ./../scripts/sync_with_inventory.py
+python3 .agents/skills/maintain-plugins/scripts/sync_with_inventory.py
 ```
 
 ### Post-Sync Verification
@@ -160,7 +160,7 @@ python3 ./../scripts/sync_with_inventory.py
 
 ## [README] Generate Missing Documentation
 ```bash
-python3 ./../scripts/generate_readmes.py --apply
+python3 .agents/skills/maintain-plugins/scripts/generate_readmes.py --apply
 ```
 
 ---

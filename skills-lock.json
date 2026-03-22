@@ -77,7 +77,7 @@
       "computedHash": "63383e71992b38b4056894eb4afc556c6b417d72c1f94e45b6cf16c3618ccad8"
     },
     "bridge-plugin": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
       "sourceType": "local",
       "computedHash": "cd2df254cf9cee9998e608000e0dbfddbb147911217e7ade4e3c7b103a070808"
     },
@@ -136,9 +136,9 @@
       "computedHash": "cdef7c664def2178614c91b51ce413ccd7e8232d3709654d2e235c197c1da068"
     },
     "convert-mermaid": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/mermaid-to-png",
       "sourceType": "local",
-      "computedHash": "24e5e6d262de9510d85717d0365adc73b0e220312a2f765a08411eea88116871"
+      "computedHash": "30c82c82c1f78e8138a44b6989b6a4ceb04a89e55ec046825d031337d3430547"
     },
     "copilot-cli-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -305,9 +305,9 @@
       "computedHash": "7ae64f95b99edd64fc7acb07be34cd84515dc38d7396687dcf12436803b74f86"
     },
     "link-checker-agent": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/link-checker",
       "sourceType": "local",
-      "computedHash": "792913cc8f54029e61bb7bfca84080d9aa4e27e253cb4d968b8a66ea6c9d1203"
+      "computedHash": "673c48c2114f9099a14b8040cf970977bf0655dac1565c5068fd980d4825f9dc"
     },
     "link-checker-link-checker-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -317,9 +317,9 @@
       "updatedAt": "2026-03-21T21:26:08.279800Z"
     },
     "maintain-plugins": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
       "sourceType": "local",
-      "computedHash": "6a850823d996dab45f697e2fc07ec79b387c7cdc94080859e0bc71cfad31d8eb"
+      "computedHash": "a5c7f9dc0a9d415fbfbc2735988f0a00e7ff2f24b05b21cf2f9eba30ce15fd26"
     },
     "manage-marketplace": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -327,14 +327,14 @@
       "computedHash": "6f71014f39df741d7b05e0f94dc8e4ed00d9ee1685414d8931cbdad344f9433b"
     },
     "markdown-to-msword-converter": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/markdown-to-msword-converter",
       "sourceType": "local",
-      "computedHash": "19070721c3bf887e87ba0800bf8d50baa5d7dbb316184d6d12d745b0f667d652"
+      "computedHash": "679ea5094c41d541f85f9c771218f03058b7155c3f983a3a681b1e3a46c7e08e"
     },
     "memory-management": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/memory-management",
       "sourceType": "local",
-      "computedHash": "f3f3b66873e1c7f97037145fda0c3a2ed408e48562a7c72df4f7ee2ee1dcf482"
+      "computedHash": "c7916c86dd20b3ecb8eac804f8c1f869d5fb2f69db9784bb912963ee16836b25"
     },
     "mine-plugins": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -347,34 +347,34 @@
       "computedHash": "0d5c51bb9d68577e1059f0d2213f96f0b37d7dee9f1fc4001de5d2181ae95d49"
     },
     "obsidian-bases-manager": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-integration",
       "sourceType": "local",
-      "computedHash": "3161dc7d538944e88fcdd7365fad48fae6c34b0bc983d58641bc8e322c334c05"
+      "computedHash": "f6fa4c64dfcb164c10e63c03d097e729680d1782b2050694f5d780280cb4a70e"
     },
     "obsidian-canvas-architect": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-integration",
       "sourceType": "local",
-      "computedHash": "c193edf8b01283027ac2f1aa5edf8f71fc8eb857dd9861e9e317fbfa8fdb2149"
+      "computedHash": "dab789d5d399df323a6fb4b4e6c5a4ac699857e8823f0457d907ba1c6f959da4"
     },
     "obsidian-graph-traversal": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-integration",
       "sourceType": "local",
-      "computedHash": "f83a72dab3579601dac35c69bc5b9dfbcc2a04ba002d45c5006c73911d36f539"
+      "computedHash": "eddb86cb36490f14786fff15af7017a3985dc3845ac649d8b7e13feaf6011a43"
     },
     "obsidian-init": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-integration",
       "sourceType": "local",
-      "computedHash": "f9b45f30c419e57614081e73d0d0a5299dcd74e9d0d9c31b264e80cbb9da2c9a"
+      "computedHash": "9cb92be2dab8e4c506ac19895f112943c7f06c5f9ce9bccc2ca2cd4b5a94e745"
     },
     "obsidian-markdown-mastery": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-integration",
       "sourceType": "local",
-      "computedHash": "3c7a0a92ddc9c8fadabbd196e04204d935d7d1d3c08f78807b68404830b05e58"
+      "computedHash": "4f7e0561a5bfa0a1a466b70a7ea70a6ecead86b257b94013a0594b50a0c2cdad"
     },
     "obsidian-vault-crud": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-integration",
       "sourceType": "local",
-      "computedHash": "1bdb8037da216b56889fcfc4888949ea348ef0c2c7ba9f60e13402af3e5a6143"
+      "computedHash": "906558e2de55302a45f6cc6827881530f008acb072dfe5e4f86d48e56167da57"
     },
     "ollama-launch": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/rlm-factory",
@@ -392,9 +392,9 @@
       "computedHash": "b41374d6b186557c60228ecbfa792d2418214ce4618e84a26359ecc85cad7980"
     },
     "package-plugin": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
       "sourceType": "local",
-      "computedHash": "a19599b1b41298b80d8934c1531208d15cb871f2b89d8588cf027275af010190"
+      "computedHash": "956f6ffdcd68173a17868daef147db2f7eac84f6b490fa3a74a1908d9d63d39a"
     },
     "path-reference-auditor": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -417,9 +417,9 @@
       "computedHash": "8ff42e1b224980c1feccdf3380971a3036eeafb1b81a822e1077aee3bfe9baba"
     },
     "replicate-plugin": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager",
       "sourceType": "local",
-      "computedHash": "3a6d70a90a086d8b1808f9bd5b0a78207b68b7206a65fc2b2001d0ac2fa93a55"
+      "computedHash": "189b44ba21e7de5c3d12703d1fab3acb8ed2ce54bc6a90483ed903331585b64c"
     },
     "rlm-cleanup-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/rlm-factory",
