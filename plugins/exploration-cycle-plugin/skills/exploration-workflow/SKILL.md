@@ -10,15 +10,31 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+<example>
+<commentary>User wants to run the full Phase A discovery loop on a problem.</commentary>
+User: Run the exploration workflow on this problem — we need to understand why users are abandoning the onboarding flow.
+Agent: [invokes exploration-workflow, starts Phase A: session brief → requirements capture → handoff package]
+</example>
+
+<example>
+<commentary>User asks for end-to-end guidance on the exploration cycle.</commentary>
+User: Walk me through the full Phase A exploration cycle.
+Agent: [invokes exploration-workflow, explains and guides through each phase in order]
+</example>
+
+<example>
+<commentary>BRD-only requests route to business-requirements-capture, not this skill.</commentary>
+User: Generate a BRD from our session captures.
+Agent: [invokes business-requirements-capture, NOT exploration-workflow]
+</example>
+
 # Exploration Cycle Workflow
 
 This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the Spec-Kitty engineering workflow and produces handoff packages that optionally feed into it.
 
-**Loop patterns**: Adapts the reference `agent-loops` patterns in [`temp/agent-plugins-skills/plugins/agent-loops/README.md`](../../../../temp/agent-plugins-skills/plugins/agent-loops/README.md) — especially `learning-loop` for optional solo framing sessions and `dual-loop` as the conceptual model for orchestrated documentation passes to the requirements-doc-agent sub-agent.
+**Loop patterns**: Adapts the `agent-loops` patterns (`learning-loop` for solo framing sessions, `dual-loop` for orchestrated documentation passes to the requirements-doc-agent sub-agent). These are reference patterns, not runtime dependencies — the current implementation borrows their structure without invoking those skills directly.
 
-These are **reference patterns, not runtime skill dependencies** in Phase A. The current implementation borrows their structure but does not invoke those skills directly.
-
-**Optimization discipline**: Adapts the [autoresearch](../../../../temp/autoresearch/program.md) loop — run one baseline first, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
+**Optimization discipline**: Baseline-first iteration — run one baseline, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
 
 **Visual reference**: [`exploration-cycle-workflow.mmd`](./exploration-cycle-workflow.mmd)
 

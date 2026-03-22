@@ -16,11 +16,11 @@
     "should_trigger": true
   },
   {
-    "query": "Generate a BRD from our session captures.",
+    "query": "Deploy the latest build to staging.",
     "should_trigger": false
   },
   {
-    "query": "Let's kick off a new exploration session.",
+    "query": "Check the CI pipeline status.",
     "should_trigger": false
   },
   {
@@ -28,7 +28,7 @@
     "should_trigger": false
   },
   {
-    "query": "I finished exploration — help me put together the handoff package.",
+    "query": "Refactor the login module for clarity.",
     "should_trigger": false
   },
   {

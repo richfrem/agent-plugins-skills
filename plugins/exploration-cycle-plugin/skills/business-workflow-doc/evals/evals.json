@@ -1,6 +1,6 @@
 [
   {
-    "query": "Can you map out the checkout flow based on what we've captured?",
+    "query": "Map the business process we identified in our exploration session.",
     "should_trigger": true
   },
   {
@@ -8,7 +8,7 @@
     "should_trigger": true
   },
   {
-    "query": "Create a process diagram showing the approval flow.",
+    "query": "Flowchart the approval process from the session captures.",
     "should_trigger": true
   },
   {
@@ -16,19 +16,19 @@
     "should_trigger": true
   },
   {
-    "query": "Generate a BRD from our session captures.",
+    "query": "Deploy the latest build to staging.",
     "should_trigger": false
   },
   {
-    "query": "Create user stories from the requirements.",
+    "query": "Prioritize the backlog items for next sprint.",
     "should_trigger": false
   },
   {
-    "query": "Let's kick off a new exploration session.",
+    "query": "Refactor the login module for clarity.",
     "should_trigger": false
   },
   {
-    "query": "Deploy the latest build to production.",
+    "query": "Fix the failing unit test.",
     "should_trigger": false
   }
 ]

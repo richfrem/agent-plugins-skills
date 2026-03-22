@@ -4,6 +4,24 @@ description: Evaluates and improves the exploration-cycle skills, prompts, routi
 allowed-tools: Bash, Read, Write
 ---
 
+<example>
+<commentary>User wants to evaluate and improve a specific exploration skill.</commentary>
+User: Evaluate and improve the exploration-session-brief skill using the optimization loop.
+Agent: [invokes exploration-optimizer, runs baseline-first iteration on exploration-session-brief]
+</example>
+
+<example>
+<commentary>User notices a skill feels weak and wants a systematic improvement cycle.</commentary>
+User: The exploration cycle feels slow — help me identify which skill to optimize first.
+Agent: [invokes exploration-optimizer, runs discovery phase to identify highest-impact target]
+</example>
+
+<example>
+<commentary>BRD generation routes to business-requirements-capture, not this skill.</commentary>
+User: Generate a BRD from our session captures.
+Agent: [invokes business-requirements-capture, NOT exploration-optimizer]
+</example>
+
 # Exploration Optimizer
 [See acceptance criteria](references/acceptance-criteria.md)
 

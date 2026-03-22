@@ -16,7 +16,7 @@
     "should_trigger": true
   },
   {
-    "query": "Let's kick off a new exploration session.",
+    "query": "Schedule a code review for tomorrow morning.",
     "should_trigger": false
   },
   {
@@ -28,11 +28,11 @@
     "should_trigger": false
   },
   {
-    "query": "Fix the failing auth test.",
+    "query": "Audit the database schema for compliance issues.",
     "should_trigger": false
   },
   {
-    "query": "What does the handoff skill do? Don't run it yet.",
+    "query": "Fix the failing auth test.",
     "should_trigger": false
   }
 ]
