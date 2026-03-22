@@ -1,21 +1,51 @@
 #!/usr/bin/env python3
 """
-Fix Inside-Plugin Symlink Violations
+fix_inside_plugin_symlinks.py
 =====================================
-Creates symlinks for files that skills reference inside their plugin.
-Updates references to use the symlinked paths.
 
-Strategy:
-1. Identify references that resolve inside the same plugin
-2. Create a symlink in the source directory pointing to the target
-3. Update the reference in the source file to use the symlink
+Purpose:
+    Creates local relative symlinks for files that skills reference inside 
+    their parent plugin to preserve distribution containment guarantees.
 
-Usage:
-    # Dry run - preview all changes
+Layer: Investigate / Repair
+
+Usage Examples:
     python scripts/fix_inside_plugin_symlinks.py temp/inventory.json --project . --dry-run
-
-    # Apply fixes
     python scripts/fix_inside_plugin_symlinks.py temp/inventory.json --project . --apply
+
+Supported Object Types:
+    Skill file references.
+
+CLI Arguments:
+    inventory: Path to inventory.json (Required)
+    --project: Project root (default: .)
+    --dry-run: Preview changes only (default: True if no action supplied)
+    --apply: Apply fixes on disk
+
+Input Files:
+    - inventory.json
+
+Output:
+    Console logs listing SYMLINKS and UPDATES applied.
+
+Key Functions:
+    - InsidePluginSymlinkFixer.load_inventory()
+    - InsidePluginSymlinkFixer.get_plugin_root()
+    - InsidePluginSymlinkFixer.analyze()
+    - InsidePluginSymlinkFixer.propose_fix()
+    - InsidePluginSymlinkFixer.apply_fixes()
+
+Script Dependencies:
+    - json
+    - sys
+    - argparse
+    - os
+    - subprocess
+    - platform
+    - Path (pathlib)
+
+Consumed by:
+    Static auditor repair workflows.
 """
 
 import json
@@ -28,19 +58,19 @@ from pathlib import Path
 from collections import defaultdict
 
 class InsidePluginSymlinkFixer:
-    def __init__(self, inventory_file, project_root):
+    def __init__(self, inventory_file: str | Path, project_root: str | Path) -> None:
         self.inventory_file = Path(inventory_file)
         self.project_root = Path(project_root).resolve()
         self.violations = []
         self.fixes = []
         self.skipped = []
 
-    def load_inventory(self):
+    def load_inventory(self) -> dict:
         """Load inventory.json"""
         with open(self.inventory_file, 'r') as f:
             return json.load(f)
 
-    def get_plugin_root(self, file_path):
+    def get_plugin_root(self, file_path: str) -> tuple[Path | None, str | None]:
         """Extract plugin root from path like plugins/adr-manager/skills/adr-management/file.md"""
         parts = Path(file_path).parts
         if 'plugins' in parts:
@@ -50,7 +80,7 @@ class InsidePluginSymlinkFixer:
                 return Path(*parts[:idx+2]), plugin_name
         return None, None
 
-    def analyze(self):
+    def analyze(self) -> None:
         """Find all inside-plugin violations"""
         inventory = self.load_inventory()
 
@@ -96,7 +126,7 @@ class InsidePluginSymlinkFixer:
                     'resolved_rel_to_plugin': resolved_path.relative_to(plugin_path),
                 })
 
-    def propose_fix(self, violation):
+    def propose_fix(self, violation: dict) -> dict | None:
         """Propose a fix for a violation"""
         source_file = violation['source_file']
         source_full = violation['source_full']
@@ -134,7 +164,7 @@ class InsidePluginSymlinkFixer:
             'symlink_target_abs': resolved_path,
         }
 
-    def apply_fixes(self):
+    def apply_fixes(self) -> int:
         """Apply all fixes"""
         # Group by source file to update references
         by_source = defaultdict(list)
@@ -218,7 +248,7 @@ class InsidePluginSymlinkFixer:
 
         return len(self.fixes)
 
-    def print_preview(self):
+    def print_preview(self) -> None:
         """Print preview of changes"""
         if not self.violations:
             print("[OK] No inside-plugin violations found!")
@@ -253,7 +283,7 @@ class InsidePluginSymlinkFixer:
         print(f"\n[ACTION REQUIRED]")
         print(f"  Run with --apply flag to create symlinks and update references")
 
-    def run(self, dry_run=True):
+    def run(self, dry_run: bool = True) -> int:
         """Run the fixer"""
         self.analyze()
 
@@ -264,7 +294,7 @@ class InsidePluginSymlinkFixer:
 
         return len(self.violations)
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Fix inside-plugin symlink violations')
     parser.add_argument('inventory', help='Path to inventory.json')
     parser.add_argument('--project', default='.', help='Project root')

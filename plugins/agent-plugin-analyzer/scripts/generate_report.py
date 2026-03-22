@@ -1,11 +1,44 @@
 #!/usr/bin/env python3
-"""Generate an HTML report from run_loop.py output.
+"""
+generate_report.py
+=====================================
 
-Takes the JSON output from run_loop.py and generates a visual HTML report
-showing each description attempt with check/x for each test case.
-Distinguishes between train and test queries.
+Purpose:
+    Generates an HTML report from run_loop.py description optimization logic 
+    detailing attempts and pass/fail checklist score matrixes on test cases.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Investigate / Synthesis
+
+Usage Examples:
+    python3 generate_report.py run_loop_output.json -o report.html
+    cat run_loop_output.json | python3 generate_report.py -
+
+Supported Object Types:
+    Optimizer cycle result JSON metadata.
+
+CLI Arguments:
+    input: Path to JSON output from run_loop.py (or - for stdin)
+    -o|--output: Output HTML file (default: stdout)
+    --skill-name: Skill name to include in output display title
+
+Input Files:
+    - Optimizer JSON streams.
+
+Output:
+    Visual visual HTML dashboard reporting checkpoints.
+
+Key Functions:
+    - generate_html()
+
+Script Dependencies:
+    - argparse
+    - html
+    - json
+    - sys
+    - Path (pathlib)
+
+Consumed by:
+    Human workflow reviews or visual diagnostic audits.
 """
 
 import argparse
@@ -303,7 +336,7 @@ def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") 
     return "".join(html_parts)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate HTML report from run_loop output")
     parser.add_argument("input", help="Path to JSON output from run_loop.py (or - for stdin)")
     parser.add_argument("-o", "--output", default=None, help="Output HTML file (default: stdout)")

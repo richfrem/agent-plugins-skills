@@ -1,17 +1,48 @@
 #!/usr/bin/env python3
 """
-Skill Boundary Checker
-======================
-Flags any file references that point OUTSIDE their skill directory.
+check_skill_boundaries.py
+=====================================
 
-Each skill should be self-contained. References should be:
-- Internal: ./path/within/skill
-- Not external: ../../outside/skill (bad!)
+Purpose:
+    Flags any internal file references inside a skill directory that point
+    OUTSIDE their self-contained boundaries to ensure distribution safety.
 
-Usage:
-    python3 temp/check_skill_boundaries.py temp/inventory.json --batch all
-    python3 temp/check_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management
-    python3 temp/check_skill_boundaries.py temp/inventory.json --skill adr-management
+Layer: Investigate / Codify / Audit
+
+Usage Examples:
+    python3 check_skill_boundaries.py temp/inventory.json --batch all
+    python3 check_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management
+
+Supported Object Types:
+    Skill file references.
+
+CLI Arguments:
+    inventory: Path to inventory.json (Required)
+    --project: Project root directory (default: .)
+    --skill: Skill path or name to check (default: all)
+    --batch: Batch mode all or specific skill (default: all)
+
+Input Files:
+    - inventory.json
+
+Output:
+    Console logs listing BOUNDARY VIOLATIONS.
+
+Key Functions:
+    - is_whitelisted()
+    - get_skill_root()
+    - is_reference_inside_skill()
+    - filter_references()
+
+Script Dependencies:
+    - json
+    - sys
+    - argparse
+    - re
+    - Path (pathlib)
+
+Consumed by:
+    Static auditor workflows and path reference audits.
 """
 
 import json
@@ -28,26 +59,26 @@ from pathlib import Path
 # ==============================================================================
 WHITELIST = [
     # Example absolute paths from documentation/other machines
-    "re:/Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)
-    "re:/home/.*",            # Linux absolute paths
-    "re:/tasks/.*",           # Example task paths
-    "re:/.kittify/.*",        # Example kittify runtime paths
-    "re:/[a-zA-Z]:/.*",       # Windows absolute paths (e.g. C:/...)
+    r"re:/Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)
+    r"re:/home/.*",            # Linux absolute paths
+    r"re:/tasks/.*",           # Example task paths
+    r"re:/.kittify/.*",        # Example kittify runtime paths
+    r"re:/[a-zA-Z]:/.*",       # Windows absolute paths (e.g. C:/...)
     # Example placeholder filenames used in docs
     "path/to/file.md",
     "path/to/file.py",
     "my-skill/SKILL.md",
     "my-plugin",
     # kitty-specs example paths
-    "re:.*kitty-specs/.*",
+    r"re:.*kitty-specs/.*",
     # Dead-link documentation references (files referenced in docs but never created)
-    "re:.*requirements-core\.in",     # dependency-management docs example path
-    "re:.*infinite-context-ecosystem\.mmd",  # rlm-* BLUEPRINT/research docs
-    "re:.*infinite-context-ecosystem\.png",  # same diagram, png variant
-    "re:.*Agent_Workflow_Orchestration_Design\.md",  # architecture doc never created
+    r"re:.*requirements-core\.in",     # dependency-management docs example path
+    r"re:.*infinite-context-ecosystem\.mmd",  # rlm-* BLUEPRINT/research docs
+    r"re:.*infinite-context-ecosystem\.png",  # same diagram, png variant
+    r"re:.*Agent_Workflow_Orchestration_Design\.md",  # architecture doc never created
 ]
 
-def is_whitelisted(reference):
+def is_whitelisted(reference: str) -> bool:
     """Return True if the reference matches any whitelist pattern."""
     for pattern in WHITELIST:
         if pattern.startswith("re:"):
@@ -58,7 +89,7 @@ def is_whitelisted(reference):
                 return True
     return False
 
-def get_skill_root(source_file_path):
+def get_skill_root(source_file_path: str) -> Path | None:
     """
     Extract the skill root directory from a source file path.
 
@@ -80,7 +111,7 @@ def get_skill_root(source_file_path):
 
     return None
 
-def is_reference_inside_skill(source_file, reference, project_root):
+def is_reference_inside_skill(source_file: str, reference: str, project_root: str | Path) -> tuple[bool | None, Path | None, Path | None]:
     """
     Check if a reference stays within the skill directory.
 
@@ -116,7 +147,7 @@ def is_reference_inside_skill(source_file, reference, project_root):
     except:
         return False, None, skill_root_abs
 
-def filter_references(references, skill_filter):
+def filter_references(references: list[dict], skill_filter: str) -> list[dict]:
     """Filter references by skill path or name."""
     if not skill_filter or skill_filter.lower() == 'all':
         return references
@@ -136,7 +167,7 @@ def filter_references(references, skill_filter):
 
     return filtered
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description='Skill Boundary Checker')
     parser.add_argument('inventory', help='Path to inventory.json')
     parser.add_argument('--project', default='.', help='Project root directory')

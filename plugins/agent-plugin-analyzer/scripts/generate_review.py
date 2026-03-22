@@ -1,15 +1,48 @@
 #!/usr/bin/env python3
-"""Generate and serve a review page for eval results.
+"""
+generate_review.py
+=====================================
 
-Reads the workspace directory, discovers runs (directories with outputs/),
-embeds all output data into a self-contained HTML page, and serves it via
-a tiny HTTP server. Feedback auto-saves to feedback.json in the workspace.
+Purpose:
+    Generates and serves a standalone self-contained review page dashboard 
+    using embeds of evaluation runs outputs and dynamic HTTP saves for local audits.
 
-Usage:
-    python generate_review.py <workspace-path> [--port PORT] [--skill-name NAME]
-    python generate_review.py <workspace-path> --previous-feedback /path/to/old/feedback.json
+Layer: Investigate / Synthesis
 
-No dependencies beyond the Python stdlib are required.
+Usage Examples:
+    python3 generate_review.py path/to/workspace --port 3117
+    python3 generate_review.py path/to/workspace --static report_viewer.html
+
+Supported Object Types:
+    Workspace execution bundles containing iterative output artifacts.
+
+CLI Arguments:
+    workspace: Workspace directory index.
+    --port|-p: Port to bind dashboard daemon on (default: 3117)
+    --skill-name|-n: Label prefix displayed on header items.
+    --previous-workspace: Show prior loops feedback comparison metadata.
+    --benchmark: Include benchmark result file displays.
+    --static|-s: Standalone dump without daemon server start.
+
+Input Files:
+    - workspace/* (outputs/)
+    - viewer.html (template sibling)
+
+Output:
+    Runs localhost daemon server with dynamic state synchronizations.
+
+Key Functions:
+    - generate_html()
+    - find_runs()
+    - ReviewHandler.do_GET()
+    - ReviewHandler.do_POST()
+
+Script Dependencies:
+    - argparse, json, base64, mimetypes, os, re, sys, time, webbrowser
+    - http.server.HTTPServer / BaseHTTPRequestHandler
+
+Consumed by:
+    Interactivity-driven code evaluation browser cycles.
 """
 
 import argparse
@@ -321,7 +354,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
         benchmark_path: Path | None,
         *args,
         **kwargs,
-    ):
+    ) -> None:
         self.workspace = workspace
         self.skill_name = skill_name
         self.feedback_path = feedback_path

@@ -1,16 +1,44 @@
 #!/usr/bin/env python3
 """
-Plugin Boundary Checker
-=======================
-Flags any file references that point OUTSIDE their plugin directory.
+check_plugin_boundaries.py
+=====================================
 
-Each plugin should be self-contained at the plugin root level.
-References in commands/, hooks/, etc. should stay within plugins/X/
+Purpose:
+    Flags any inside commands, hooks, or assets that point OUTSIDE their 
+    assigned plugin directory to ensure self-containment for distribution.
 
-Usage:
-    python3 temp/check_plugin_boundaries.py temp/inventory.json --batch all
-    python3 temp/check_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager
-    python3 temp/check_plugin_boundaries.py temp/inventory.json --plugin adr-manager
+Layer: Investigate / Codify / Audit
+
+Usage Examples:
+    python3 check_plugin_boundaries.py temp/inventory.json --batch all
+    python3 check_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager
+
+Supported Object Types:
+    Plugin root file references.
+
+CLI Arguments:
+    inventory: Path to inventory.json (Required)
+    --project: Project root directory (default: .)
+    --plugin: Plugin path or name to check (default: all)
+    --batch: Batch mode all or specific plugin (default: all)
+
+Input Files:
+    - inventory.json
+
+Output:
+    Console logs of BOUNDARY VIOLATIONS.
+
+Key Functions:
+    - get_plugin_root()
+    - is_reference_inside_plugin()
+    - filter_references()
+
+Script Dependencies:
+    - json
+    - Path (pathlib)
+
+Consumed by:
+    Static auditor workflows and path reference audits.
 """
 
 import json
@@ -18,7 +46,7 @@ import sys
 import argparse
 from pathlib import Path
 
-def get_plugin_root(source_file_path):
+def get_plugin_root(source_file_path: str) -> Path | None:
     """
     Extract the plugin root directory from a source file path.
 
@@ -49,7 +77,7 @@ def get_plugin_root(source_file_path):
 
     return None
 
-def is_reference_inside_plugin(source_file, reference, project_root):
+def is_reference_inside_plugin(source_file: str, reference: str, project_root: str | Path) -> tuple[bool | None, Path | None, Path | None]:
     """
     Check if a reference stays within the plugin directory.
 
@@ -78,7 +106,7 @@ def is_reference_inside_plugin(source_file, reference, project_root):
     except:
         return False, None, plugin_root_abs
 
-def filter_references(references, plugin_filter):
+def filter_references(references: list[dict], plugin_filter: str) -> list[dict]:
     """Filter references by plugin path or name."""
     if not plugin_filter or plugin_filter.lower() == 'all':
         return references
@@ -98,7 +126,7 @@ def filter_references(references, plugin_filter):
 
     return filtered
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description='Plugin Boundary Checker')
     parser.add_argument('inventory', help='Path to inventory.json')
     parser.add_argument('--project', default='.', help='Project root directory')

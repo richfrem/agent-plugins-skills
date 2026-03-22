@@ -1,20 +1,41 @@
 #!/usr/bin/env python3
 """
 auto_fix_local_links.py
-=======================
+=====================================
 
 Purpose:
     Safely rewrites hardcoded plugin execution paths in Markdown files.
-    Converts commands like:
-      python3 plugins/my-plugin/skills/my-skill/scripts/foo.py
-    Into:
-      python3 ./scripts/foo.py
-    
-    This ensures that when a user installs `my-skill` via `npx skills add`,
-    the documentation commands remain functional out of the box.
+    Converts full repository absolute paths into relative ones so commands
+    remain functional when a skill is installed via `npx skills add`.
 
-Usage:
-    python3 plugins/agent-plugin-analyzer/scripts/auto_fix_local_links.py
+Layer: Investigate / Repair / Documentation
+
+Usage Examples:
+    python3 auto_fix_local_links.py
+
+Supported Object Types:
+    Markdown files (.md, .mmd).
+
+CLI Arguments:
+    None.
+
+Input Files:
+    - Recursively discovers Markdown files inside plugins/
+
+Output:
+    - Console updates detailing rewritten counts by file.
+
+Key Functions:
+    - resolve_project_root()
+    - fix_file()
+
+Script Dependencies:
+    - os
+    - re
+    - pathlib
+
+Consumed by:
+    Static auditor workflows and pre-flight validation hooks.
 """
 
 import os
@@ -36,7 +57,7 @@ def resolve_project_root() -> Path:
     return Path.cwd()
 
 
-def fix_file(file_path: Path):
+def fix_file(file_path: Path) -> int:
     """Reads a markdown file, replaces hardcoded bash execution paths, and writes back if changed."""
     try:
         content = file_path.read_text(encoding="utf-8")
@@ -53,7 +74,7 @@ def fix_file(file_path: Path):
             fixed_lines.append(line)
             continue
             
-        def replacer(match):
+        def replacer(match: re.Match) -> str:
             cmd = match.group(1)
             target = match.group(3)
             state['replacements'] += 1
@@ -77,7 +98,7 @@ def fix_file(file_path: Path):
         file_path.write_text("\n".join(fixed_lines) + "\n", encoding="utf-8")
     return state['replacements']
 
-def main():
+def main() -> None:
     root = resolve_project_root()
     plugins_dir = root / "plugins"
     print(f"🔧 Starting auto-fix for hardcoded markdown paths in {plugins_dir}...")

@@ -1,20 +1,45 @@
 #!/usr/bin/env python3
 """
-Path Reference Auditor
-======================
-Two-phase audit:
-  Phase 1: SCAN - Find all ./references in code, populate inventory.json
-  Phase 2: VERIFY - Read inventory.json, check if each reference exists in skill
+path_reference_auditor.py
+=====================================
 
-Usage:
-    # Phase 1: Discover all references
-    python3 temp/path_reference_auditor.py --project . --phase scan
+Purpose:
+    Two-phase audit that scans codebases for internal file reference queries 
+    (like `./path/to/file`) inside agent skill environments and verifies their integrity.
 
-    # Phase 2: Verify each reference exists
-    python3 temp/path_reference_auditor.py --project . --phase verify
+Layer: Investigate / Repair
 
-    # Generate reports from verified inventory
-    python3 temp/path_reference_auditor.py --project . --phase report --report missing
+Usage Examples:
+    python3 path_reference_auditor.py --project . --phase scan
+    python3 path_reference_auditor.py --project . --phase verify
+    python3 path_reference_auditor.py --project . --phase report --report missing
+
+Supported Object Types:
+    Recursive script/markdown links queries.
+
+CLI Arguments:
+    --project: Absolute or relative project root directory. (Required)
+    --phase: Mode operation [scan, verify, report]. (Required)
+    --report: Sub-formatting report type output for the view layer.
+    --inventory: Cache dashboard metadata location pointer.
+
+Input Files:
+    - Codebase directories scan.
+    - temp/inventory.json
+
+Output:
+    Structured summary lists and populated inventory stream payloads.
+
+Key Functions:
+    - PathReferenceAuditor.phase_scan()
+    - PathReferenceAuditor.phase_verify()
+    - PathReferenceAuditor.check_reference_status()
+
+Script Dependencies:
+    - argparse, json, os, re, sys, datetime, Path (pathlib)
+
+Consumed by:
+    Static container checks post-audit verification loops.
 """
 
 import os
@@ -26,7 +51,7 @@ from pathlib import Path
 from datetime import datetime
 
 class PathReferenceAuditor:
-    def __init__(self, project_root, inventory_file='temp/inventory.json'):
+    def __init__(self, project_root: str | Path, inventory_file: str | Path = 'temp/inventory.json') -> None:
         self.project_root = Path(project_root).resolve()
         self.inventory_file = Path(inventory_file)
         self.inventory = {
@@ -55,7 +80,7 @@ class PathReferenceAuditor:
     # PHASE 1: SCAN - Find all references and populate inventory
     # ============================================================================
 
-    def find_references_in_file(self, file_path):
+    def find_references_in_file(self, file_path: str | Path) -> list[dict]:
         """Extract all path references from a single file."""
         references = []
         try:
@@ -79,7 +104,7 @@ class PathReferenceAuditor:
 
         return references
 
-    def phase_scan(self):
+    def phase_scan(self) -> None:
         """
         Phase 1: SCAN
         Walk all plugins/skills directories and find every ./reference.
@@ -131,7 +156,7 @@ class PathReferenceAuditor:
     # PHASE 2: VERIFY - Check if each reference exists in the skill
     # ============================================================================
 
-    def check_reference_status(self, source_file, reference):
+    def check_reference_status(self, source_file: str, reference: str) -> dict:
         """
         Check if a reference exists in the skill directory.
         Returns: {exists, type, path, details}
@@ -177,7 +202,7 @@ class PathReferenceAuditor:
             'resolved_path': None
         }
 
-    def phase_verify(self):
+    def phase_verify(self) -> None:
         """
         Phase 2: VERIFY
         Read inventory.json and check if each reference exists.
@@ -207,24 +232,24 @@ class PathReferenceAuditor:
     # REPORTING - Analyze verified inventory
     # ============================================================================
 
-    def get_missing_references(self):
+    def get_missing_references(self) -> list[dict]:
         """Get all missing references."""
         return [r for r in self.inventory['references'] if r['status'] and not r['status']['exists']]
 
-    def get_symlinks(self):
+    def get_symlinks(self) -> list[dict]:
         """Get all symlink references."""
         return [r for r in self.inventory['references'] if r['status'] and r['status']['type'] == 'symlink']
 
-    def get_broken_symlinks(self):
+    def get_broken_symlinks(self) -> list[dict]:
         """Get all broken symlinks."""
         return [r for r in self.inventory['references']
                 if r['status'] and r['status']['type'] == 'symlink' and r['status']['target'] == 'BROKEN']
 
-    def get_valid_references(self):
+    def get_valid_references(self) -> list[dict]:
         """Get all valid (existing) references."""
         return [r for r in self.inventory['references'] if r['status'] and r['status']['exists']]
 
-    def phase_report(self, report_type='summary'):
+    def phase_report(self, report_type: str = 'summary') -> None:
         """
         Phase 3: REPORT
         Generate analysis reports from verified inventory.
@@ -281,14 +306,14 @@ class PathReferenceAuditor:
     # PERSISTENCE
     # ============================================================================
 
-    def save_inventory(self):
+    def save_inventory(self) -> None:
         """Save inventory to JSON file."""
         self.inventory_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.inventory_file, 'w') as f:
             json.dump(self.inventory, f, indent=2)
         print(f"  [OK] Inventory saved: {self.inventory_file}")
 
-    def load_inventory(self):
+    def load_inventory(self) -> None:
         """Load inventory from JSON file."""
         if not self.inventory_file.exists():
             print(f"[ERROR] Inventory not found: {self.inventory_file}")
@@ -298,7 +323,7 @@ class PathReferenceAuditor:
             self.inventory = json.load(f)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Path Reference Auditor - 2 Phase Audit')
     parser.add_argument('--project', required=True, help='Project root directory')
     parser.add_argument('--phase', choices=['scan', 'verify', 'report'], required=True,
