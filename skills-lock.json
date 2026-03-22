@@ -7,9 +7,9 @@
       "computedHash": "97a14bcf6c85c7acb2428cb2094d8bb210de9a2c7f3824110723b3b89a6948b5"
     },
     "adr-management": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/adr-manager",
       "sourceType": "local",
-      "computedHash": "5e0dc05fd513ca0f08b55f1e79c776b9c8aebb0a0f26a66d33a56dc074673b32"
+      "computedHash": "bd308319a0c7c864a6d91f7f9d1de22a534ec66f7c57f97c0efe19fb5a5ab22b"
     },
     "agent-agentic-os-agentic-os-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -634,16 +634,16 @@
       "computedHash": "b0f460d1d690da0a44e23368accde727d53993b0c9c465fdac0a465a51e2cc66"
     },
     "task-agent": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/task-manager",
       "sourceType": "local",
-      "computedHash": "46544c348231f7802db32e7280ef63fb0724421b6326b4e50d16083749ba985f"
+      "computedHash": "c0a38dd1fa9c64a9004a21c4d891e068e766a4e0a3da4bc90b1704a4f01b4a0c"
     },
     "task-manager-task-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
-      "computedHash": "93a2b76293f066830625c3d49fde8006344d4edff22865759454df430180171d",
+      "computedHash": "",
       "installedAt": "2026-03-19T23:20:44.676309Z",
-      "updatedAt": "2026-03-21T21:26:08.958669Z"
+      "updatedAt": "2026-03-22T15:46:46.724364Z"
     },
     "todo-check": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",

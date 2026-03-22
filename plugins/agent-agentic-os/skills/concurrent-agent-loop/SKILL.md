@@ -38,20 +38,70 @@ Use Standard Cycle only when the north star is regressing or explicitly requeste
    `context/memory/tests/[CYCLE_ID]_[TARGET].md` BEFORE emitting `task.assigned`.
 3. **Execution** -- INNER_AGENT reads strategy packet, does real work, emits friction events
    immediately on uncertainty or wrong syntax.
-4. **Eval** -- INNER_AGENT runs `eval_runner.py`. PEER_AGENT runs it independently. KEEP if
-   both accuracy AND F1 score >= baseline. DISCARD otherwise. On BASELINE verdict (first run of
-   a skill): record the score, do not apply or revert any change, proceed to step 5.
+4. **Eval against baseline** -- INNER_AGENT runs `eval_runner.py`. PEER_AGENT runs it
+   independently. KEEP if both accuracy AND F1 score >= baseline. DISCARD otherwise.
+   On BASELINE verdict (first run of a skill): record the score, do not apply or revert any
+   change, proceed to step 5.
 5. **Apply verdict** -- KEEP: apply change. DISCARD: correction packet, re-assign to INNER_AGENT.
-6. **Ledger + Registry** -- ORCHESTRATOR appends one row to ledger Section 1 (date, cycle ID,
-   target, scores, verdict). Also update `context/memory/tests/registry.md` row from IN PROGRESS
-   to CLOSED-KEEP or CLOSED-DISCARD with the final score. Full scenario file fill-in is Standard
-   Cycle only.
+6. **Loop close (4 required actions -- all mandatory every Fast Cycle):**
+
+   **6a. Ledger + Registry** -- Append one row to ledger Section 1 (date, cycle ID, target,
+   scores, verdict). Update `context/memory/tests/registry.md` row to CLOSED-KEEP or
+   CLOSED-DISCARD. Full scenario file fill-in and ledger Section 2+3 are Standard Cycle only.
+
+   **6b. Survey child agents** -- INNER_AGENT and PEER_AGENT each complete the Post-Run
+   Self-Assessment Survey (`references/post_run_survey.md`), save to
+   `context/memory/retrospectives/survey_[DATE]_[TIME]_[AGENT].md`, and emit `survey_completed`.
+   Even on Fast Cycle, surveys are required -- they are the source of truth for what to improve next.
+
+   **6c. Metrics + report** -- Run `post_run_metrics.py --correlation-id "$CID"`. If this is a
+   KEEP cycle, optionally run `generate_report.py` to update the progress chart. Update
+   `temp/agent-agentic-os-review/HOW-TO-RESTART.md` in UPSTREAM with any state changes
+   (new known bugs fixed, backlog items added, what-exists status changed).
+
+   **6d. Log issues as tasks** -- Any problem, opportunity, or improvement observed this cycle
+   that is M-class or L-class (requires thought or architecture) MUST be created as a task file
+   in `tasks/backlog/` in UPSTREAM using the naming convention `NNNN-[slug].md`:
+   ```
+   # Task NNNN: [Title]
+
+   ## Objective
+   [what needs to change and why -- cite cycle ID and agent that observed it]
+
+   ## Acceptance Criteria
+   [specific, testable definition of done]
+
+   ## Notes
+   [options considered, links to backlog.md entry if one exists]
+   ```
+   S-class issues (trivial, <5 min fix) can go directly into `backlog.md` without a task file.
+   The next available task number is the highest NNNN across all lanes in `tasks/` + 1.
+   Check with: `ls tasks/backlog/ tasks/todo/ tasks/in-progress/ tasks/done/ | grep -o '^[0-9]*' | sort -n | tail -1`
+
+   **6e. ORCHESTRATOR memory ownership** -- ORCHESTRATOR is solely responsible for writing and
+   keeping current all of the following at loop close. No other agent owns these files.
+
+   | File | Location | When written |
+   |------|----------|--------------|
+   | `improvement-ledger.md` | LAB `context/memory/` | Every Fast Cycle (Section 1). Standard Cycle adds S2+S3. |
+   | `tests/registry.md` | LAB `context/memory/tests/` | Every cycle -- row updated to CLOSED. |
+   | `tests/[CID]_[TARGET].md` | LAB `context/memory/tests/` | Before emit (scenario). Results filled in on Standard Cycle. |
+   | `memory/YYYY-MM-DD.md` | LAB `context/memory/` | Standard Cycle only (session log). |
+   | `loop-reports/report_[CID].md` | LAB `context/memory/loop-reports/` | Standard Cycle only. |
+   | `memory.md` | LAB `context/` | Standard Cycle -- promoted L3 facts via session-memory-manager. |
+   | `HOW-TO-RESTART.md` | UPSTREAM `temp/agent-agentic-os-review/` | Every cycle -- reflect state changes. |
+   | `tasks/backlog/NNNN-[slug].md` | UPSTREAM `tasks/backlog/` | When M/L-class issue is observed. |
+   | `references/backlog.md` | UPSTREAM `plugins/agent-agentic-os/references/` | When any issue is observed (S/M/L). |
+   | **`SKILL.md` (this file)** | UPSTREAM `plugins/agent-agentic-os/skills/concurrent-agent-loop/` | **When applicable** -- if the loop produces a confirmed protocol improvement (step unclear, gap found, new requirement), ORCHESTRATOR updates this file before closing the cycle. Self-improvement of the loop protocol is a first-class output of every loop. |
+
+   A cycle that produces a protocol fix but does not update this SKILL.md has not fully closed.
+
 7. **Trigger check** -- if 3+ friction events of the same type this cycle, flag os-learning-loop
    for Full Loop at next session start. Read `context/memory/improvement-ledger.md` Section 3:
    if the last two Trend values are both negative, emit `north_star_regression` event and trigger
    os-learning-loop immediately (do not wait for next session).
 
-Emitting `eval.result` without completing steps 6 and 7 is an incomplete Fast Cycle.
+Emitting `eval.result` without completing steps 6a-6d and 7 is an incomplete Fast Cycle.
 
 ---
 
@@ -92,7 +142,7 @@ Do NOT use for:
 
 | Role | Responsibility |
 |------|---------------|
-| ORCHESTRATOR | Orients, writes strategy packets, applies improvements on KEEP, owns git, runs metrics, closes memory |
+| ORCHESTRATOR | Orients, writes strategy packets, applies improvements on KEEP, owns git, runs metrics, closes all memory files, updates SKILL.md when protocol improvements are found |
 | PEER_AGENT | Runs `skill-improvement-eval` independently, produces KEEP/DISCARD verdict, completes self-assessment survey |
 | INNER_AGENT | Reads strategy packet, executes work, runs `eval_runner.py`, emits friction events during work, completes self-assessment survey |
 | WORKER | Stateless subprocess, no bus, returns result via file/stdout, no survey required |

@@ -1,0 +1,1 @@
+../../../../../assets/resources/stabilizers/vector_consistency_check.md
