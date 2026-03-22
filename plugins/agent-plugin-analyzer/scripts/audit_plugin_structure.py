@@ -1,17 +1,43 @@
 #!/usr/bin/env python3
 """
 audit_plugin_structure.py
+=====================================
 
-Scans a plugin directory and flags any scripts, references, or assets that
-live inside a skill directory rather than at the plugin root.
+Purpose:
+    Scans a plugin directory and flags any scripts, references, or assets that
+    live directly inside a skill directory rather than at the plugin root.
+    Promotes consolidating assets into plugin root structures with local symlinks.
 
-These should be:
-  1. Moved to the plugin root (scripts/, references/, assets/)
-  2. Replaced with a file-level symlink inside the skill pointing to plugin root
+Layer: Investigate / Codify / Audit
 
-Usage:
-    python3 audit_plugin_structure.py <plugin-dir>
+Usage Examples:
+    python3 audit_plugin_structure.py plugins/agent-plugin-analyzer
     python3 audit_plugin_structure.py .
+
+Supported Object Types:
+    Plugin folder trees.
+
+CLI Arguments:
+    plugin-dir: Position argument for the root of the plugin directory tree.
+
+Input Files:
+    None.
+
+Output:
+    Console logs listing ERRORS (real files) and WARNINGS (broken symlinks).
+
+Key Functions:
+    - audit_plugin()
+    - _scan_dir()
+    - suggest_fix()
+
+Script Dependencies:
+    - os
+    - sys
+    - pathlib
+
+Consumed by:
+    Static auditor workflows and pre-flight validation hooks.
 """
 
 import os
@@ -63,7 +89,7 @@ def _scan_dir(
     plugin_root: Path,
     findings: list,
     depth: int = 0,
-):
+) -> None:
     for entry in sorted(directory.iterdir()):
         if entry.name.startswith(".") or entry.name in SKIP_DIRS:
             continue
@@ -101,7 +127,7 @@ def _scan_dir(
             _scan_dir(entry, skill, resource_type, plugin_root, findings, depth + 1)
 
 
-def suggest_fix(finding: dict, plugin_root: Path):
+def suggest_fix(finding: dict, plugin_root: Path) -> None:
     """Print the commands needed to fix a real-file finding."""
     rel = finding["file"]
     parts = Path(rel).parts
@@ -131,7 +157,7 @@ def suggest_fix(finding: dict, plugin_root: Path):
     print(f"  ln -s {symlink_target} {rel}")
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <plugin-dir>")
         sys.exit(1)

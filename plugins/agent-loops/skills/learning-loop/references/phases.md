@@ -1,1 +1,1 @@
-../../../references/learning-loop/phases.md
+../../../references/phases.md

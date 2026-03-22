@@ -1,20 +1,42 @@
-#!/usr/bin/env python3
 """
 Sync Plugins with Inventory
 ===========================
 
-Synchronizes the agent environments with the local `plugins/` directory.
-Implements a "Dual Inventory" approach to safely identify and clean up deleted plugins.
+Purpose:
+    Synchronizes the agent environments with the local `plugins/` directory.
+    Implements a "Dual Inventory" approach to safely identify and clean up deleted plugins.
 
-Process:
-1.  **Scan Vendor**: Generates/Reads inventory from `.vendor/agent-plugins-skills`.
-2.  **Scan Local**: Generates local inventory from `plugins/`.
-3.  **Cleanup**: Identifies plugins present in Vendor but missing from Local (User Deleted).
-    -   Removes their artifacts from .agent, .github, .gemini, .claude.
-4.  **Install**: Re-installs/Updates all plugins present in Local.
+Layer: Plugin Manager / Synchronization
 
-Usage:
-  python3 scripts/sync_with_inventory.py [--dry-run]
+Usage Examples:
+    python3 plugins/plugin-manager/scripts/sync_with_inventory.py [--dry-run]
+
+Supported Object Types:
+    - None (Synchronization)
+
+CLI Arguments:
+    --dry-run: Simulate cleanup without deleting.
+    --cleanup-only: Run cleanup analysis only, skip installation.
+
+Input Files:
+    - vendor-plugins-inventory.json (Vendor manifest)
+    - bridge_installer.py (Subprocess script)
+
+Output:
+    - Cleans or installs plugin artifacts on agent targets.
+
+Key Functions:
+    clean_plugin_artifacts(): Removes artifacts for a specific plugin.
+    run_bridge_installer(): Runs bridge installer for a plugin.
+    get_inventory_names(): Returns set of plugin names.
+
+Script Dependencies:
+    os, sys, json, shutil, argparse, subprocess, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/plugin_inventory.py
 """
 
 import os
@@ -60,7 +82,7 @@ AGENT_DIRS = {
     }
 }
 
-def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool):
+def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> None:
     """Removes artifacts for a specific plugin from all agent directories."""
     print(f"  [CLEAN] Removing artifacts for '{plugin_name}'...")
     
@@ -87,7 +109,7 @@ def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool):
                         if not dry_run:
                             f.unlink()
 
-def run_bridge_installer(plugin_path: Path):
+def run_bridge_installer(plugin_path: Path) -> None:
     """Runs the bridge installer for a specific plugin."""
     cmd = [sys.executable, str(BRIDGE_INSTALLER), "--plugin", str(plugin_path)]
     try:
@@ -96,7 +118,7 @@ def run_bridge_installer(plugin_path: Path):
     except subprocess.CalledProcessError as e:
         print(f"  [ERROR] Failed to install {plugin_path.name}: {e.stderr.decode()}")
 
-def get_inventory_names(root: Path) -> set:
+def get_inventory_names(root: Path) -> set[str]:
     """Helper to get just the set of plugin names from a root."""
     try:
         inventory = plugin_inventory.scan_plugins(root)
@@ -105,7 +127,7 @@ def get_inventory_names(root: Path) -> set:
         print(f"Error scanning {root}: {e}")
         return set()
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Sync plugins using dual-inventory.")
     parser.add_argument("--dry-run", action="store_true", help="Simulate cleanup without deleting.")
     parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup analysis only, skip installation.")

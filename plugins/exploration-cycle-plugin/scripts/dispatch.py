@@ -59,7 +59,7 @@ import sys
 MIN_OUTPUT_CHARS = 500
 
 
-def read_file(filepath):
+def read_file(filepath: str) -> str:
     """Reads a required file. Exits non-zero if missing."""
     if not os.path.exists(filepath):
         print(f"Error: Could not find required file at '{filepath}'", file=sys.stderr)
@@ -68,7 +68,7 @@ def read_file(filepath):
         return f.read().strip()
 
 
-def read_optional_file(filepath):
+def read_optional_file(filepath: str) -> str | None:
     """Reads an optional file. Returns None silently if missing."""
     if not os.path.exists(filepath):
         print(f"Info: Optional file not found, skipping: '{filepath}'")
@@ -77,7 +77,7 @@ def read_optional_file(filepath):
         return f.read().strip()
 
 
-def write_file(filepath, content):
+def write_file(filepath: str, content: str) -> None:
     """Safely writes content to a file, creating directories if needed."""
     os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
     with open(filepath, 'w', encoding='utf-8') as f:
@@ -86,7 +86,7 @@ def write_file(filepath, content):
             f.write('\n')
 
 
-def strip_leading_prose(content):
+def strip_leading_prose(content: str) -> str:
     """Strips conversational preamble before the first markdown section header.
 
     Claude CLI responses sometimes prepend a natural-language opener
@@ -107,7 +107,7 @@ def strip_leading_prose(content):
     return content
 
 
-def validate_output(content, output_path):
+def validate_output(content: str, output_path: str) -> str | None:
     """Validates CLI output before writing to disk.
 
     Strips leading prose first (conversational openers before the document
@@ -123,21 +123,21 @@ def validate_output(content, output_path):
 
     if not content or not content.strip():
         print(f"Error: CLI returned empty output — refusing to write {output_path}", file=sys.stderr)
-        return False
+        return None
     if not any(line.startswith('#') for line in content.splitlines()):
         print(f"Error: CLI output has no section headers — likely truncated or malformed, refusing to write {output_path}", file=sys.stderr)
-        return False
+        return None
     if len(content.strip()) < MIN_OUTPUT_CHARS:
         print(
             f"Error: CLI output is suspiciously short ({len(content.strip())} chars, minimum {MIN_OUTPUT_CHARS}) "
             f"— likely a stub or echo response, refusing to write {output_path}",
             file=sys.stderr,
         )
-        return False
+        return None
     return content
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Exploration Cycle CLI Dispatch Wrapper")
     parser.add_argument("--agent", required=True, help="Path to the agent markdown file")
     parser.add_argument("--context", nargs='+', default=[], help="Required context files — missing file is a fatal error")
@@ -209,6 +209,7 @@ def main():
         validated = validate_output(output_text, args.output)
         if not validated:
             sys.exit(1)
+        assert isinstance(validated, str)
 
         # 8. Write to output (use validated/trimmed content, not raw output_text)
         write_file(args.output, validated)

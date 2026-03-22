@@ -1,1 +1,1 @@
-../../../references/create-skill/skill-creator-schemas.md
+../../../references/skill-creator-schemas.md

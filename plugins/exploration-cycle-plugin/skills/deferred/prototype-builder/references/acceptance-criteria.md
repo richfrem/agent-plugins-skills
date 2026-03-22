@@ -1,1 +1,1 @@
-../../../references/prototype-builder/acceptance-criteria.md
+../../../prototype-builder/acceptance-criteria.md

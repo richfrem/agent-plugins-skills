@@ -1,1 +1,1 @@
-../../../references/tool-inventory/acceptance-criteria.md
+../acceptance-criteria.md

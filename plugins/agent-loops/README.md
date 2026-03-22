@@ -40,7 +40,7 @@ npx skills add ./plugins/agent-loops
 | **`agent-swarm`** | 4. Parallel Execution (Parallel Agent) | Partition work → dispatch to N agents across isolated workspaces → verify and merge all. |
 
 > [!TIP]
-> 📖 Read the comprehensive **[Agent Loops Pattern Guide](PATTERN_GUIDE.md)** for a deep dive into the pros, cons, and when to use each of these industry-standard architectures.
+> 📖 Read the comprehensive **[Agent Loops Pattern Guide](references/PATTERN_GUIDE.md)** for a deep dive into the pros, cons, and when to use each of these industry-standard architectures.
 
 ## How It Works
 
@@ -93,11 +93,11 @@ agent-loops/
 
 | Diagram | Shows |
 |---------|-------|
-| [agent_loops_overview.mmd](assets/resources/diagrams/agent_loops_overview.mmd) | High-level routing to all 4 patterns |
-| [learning_loop.mmd](assets/resources/diagrams/learning_loop.mmd) | Pattern 1: Simple learning |
-| [red_team_review_loop.mmd](assets/resources/diagrams/red_team_review_loop.mmd) | Pattern 2: Adversarial review |
-| [inner_outer_loop.mmd](assets/resources/diagrams/inner_outer_loop.mmd) | Pattern 3: Dual-loop handoff |
-| [agent_swarm.mmd](assets/resources/diagrams/agent_swarm.mmd) | Pattern 4: Parallel swarm |
+| [agent_loops_overview.mmd](assets/diagrams/agent_loops_overview.mmd) | High-level routing to all 4 patterns |
+| [learning_loop.mmd](assets/diagrams/learning_loop.mmd) | Pattern 1: Simple learning |
+| [red_team_review_loop.mmd](assets/diagrams/red_team_review_loop.mmd) | Pattern 2: Adversarial review |
+| [inner_outer_loop.mmd](assets/diagrams/inner_outer_loop.mmd) | Pattern 3: Dual-loop handoff |
+| [agent_swarm.mmd](assets/diagrams/agent_swarm.mmd) | Pattern 4: Parallel swarm |
 
 ## Compatible Agents
 

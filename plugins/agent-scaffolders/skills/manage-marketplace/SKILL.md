@@ -61,5 +61,5 @@ Consumers add the marketplace, then install using correct scopes:
 
 ## References & Examples
 
-- [references/marketplace-schema.md](./references/marketplace-schema.md) - Struct, vars, and strict overrides.
+- [references/marketplace-schema.md](../../references/marketplace-schema.md) - Struct, vars, and strict overrides.
 - [examples/marketplace.json](./examples/marketplace.json) - Working sample with GitHub lookup.

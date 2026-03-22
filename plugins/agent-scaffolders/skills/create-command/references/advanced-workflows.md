@@ -1,1 +1,1 @@
-../../../references/create-command/advanced-workflows.md
+../../../references/advanced-workflows.md

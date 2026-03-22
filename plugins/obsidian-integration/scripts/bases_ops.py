@@ -1,10 +1,41 @@
 """
-Obsidian Bases Manager Operations
+bases_ops.py (CLI)
+=====================================
 
-Purpose: Read and manipulate Obsidian Bases (.base) files.
-These YAML-based files define database-like views (tables, cards, grids)
-over vault notes. This module handles row appending, cell updates,
-and view config preservation using ruamel.yaml for lossless round-tripping.
+Purpose:
+    Read and manipulate Obsidian Bases (.base) files.
+    These YAML-based files define database-like views (tables, cards, grids) over vault notes.
+    This module handles row appending, cell updates, and view config preservation.
+
+Layer: Core Operations
+
+Usage Examples:
+    python3 bases_ops.py read --file example.base
+    python3 bases_ops.py append-row --file example.base --data key1=value1 key2=value2
+    python3 bases_ops.py update-cell --file example.base --row-index 0 --column Title --value "New Title"
+
+Supported Object Types:
+    - .base (YAML layouts)
+
+CLI Arguments:
+    Subcommands: read, append-row, update-cell. Run with --help for details.
+
+Input Files:
+    - .base files.
+
+Output:
+    - JSON results or modified .base files.
+
+Key Functions:
+    read_base(): Read and parse a .base file.
+    append_row(): Append a new row to a .base file.
+    update_cell(): Update a specific cell in a .base file.
+
+Script Dependencies:
+    sys, json, argparse, pathlib, ruamel.yaml
+
+Consumed by:
+    - obsidian-bases-manager skill
 """
 import sys
 import json
@@ -171,7 +202,7 @@ def update_cell(filepath: Path, row_index: int, column: str, value: Any) -> Dict
         return {"error": f"UPDATE_ERROR: {str(e)}", "file": str(filepath)}
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Obsidian Bases Manager")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

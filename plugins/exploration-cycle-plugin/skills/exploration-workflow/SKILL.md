@@ -36,7 +36,7 @@ This workflow describes the Phase A exploration cycle end-to-end. It runs indepe
 
 **Optimization discipline**: Baseline-first iteration — run one baseline, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
 
-**Visual reference**: [`exploration-cycle-workflow.mmd`](./exploration-cycle-workflow.mmd)
+**Visual reference**: [`exploration-cycle-workflow.mmd`](../../assets/diagrams/exploration-cycle-workflow.mmd)
 
 **Orchestrator agent**: [`exploration-cycle-orchestrator-agent`](../../agents/exploration-cycle-orchestrator-agent.md)
 

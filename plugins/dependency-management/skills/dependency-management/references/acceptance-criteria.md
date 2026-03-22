@@ -1,1 +1,1 @@
-../../../references/dependency-management/acceptance-criteria.md
+../acceptance-criteria.md

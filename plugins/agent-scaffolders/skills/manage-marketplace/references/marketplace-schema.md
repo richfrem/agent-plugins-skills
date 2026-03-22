@@ -1,1 +1,1 @@
-../../../references/manage-marketplace/marketplace-schema.md
+../../../references/marketplace-schema.md

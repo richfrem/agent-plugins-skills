@@ -209,7 +209,7 @@ Given that feature description, do this:
    - `<feature_dir>/spec.md` (already created, may be empty/template-filled)
    - `<feature_dir>/meta.json` (already created with feature identity metadata)
 
-   The software-dev spec template is bundled at `./templates/spec-template.md`.
+   The software-dev spec template is bundled at `.kittify/missions/software-dev/templates/spec-template.md`.
 
 5. Update `<feature_dir>/meta.json` only when needed:
    - Keep identity fields from `create-feature` unchanged (`feature_number`, `slug`, `feature_slug`, `created_at`, `target_branch`).

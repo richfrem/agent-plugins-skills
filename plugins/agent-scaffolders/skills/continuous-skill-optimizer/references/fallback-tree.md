@@ -1,1 +1,1 @@
-../../../references/continuous-skill-optimizer/fallback-tree.md
+../fallback-tree.md

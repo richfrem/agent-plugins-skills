@@ -1,1 +1,1 @@
-../../../../references/create-command/examples/plugin-features-reference.md
+../plugin-features-reference.md

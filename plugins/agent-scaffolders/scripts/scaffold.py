@@ -1,8 +1,3 @@
-import argparse
-import os
-import json
-import re
-
 """
 scaffold.py (CLI)
 =====================================
@@ -50,7 +45,12 @@ Consumed by:
     - Agent Scaffolders logic (create-plugin, create-skill, etc.)
 """
 
-def create_plugin(name, path, iteration=None):
+import argparse
+import os
+import json
+import re
+
+def create_plugin(name: str, path: str, iteration: int | None = None) -> None:
     if not re.match(r'^[a-z0-9-]+$', name):
         print(f"Error: Plugin name '{name}' must contain only lowercase letters, numbers, and hyphens.")
         return
@@ -79,7 +79,7 @@ def create_plugin(name, path, iteration=None):
         f.write("{\\n  \"languageServers\": {}\\n}\\n")
     
     # Helper function to read a template
-    def get_template(filename):
+    def get_template(filename: str) -> str | None:
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
         if os.path.exists(template_path):
             with open(template_path, "r") as f:
@@ -133,7 +133,7 @@ def create_plugin(name, path, iteration=None):
         
     print(f"Success: Plugin '{name}' scaffolded at {full_path}")
 
-def create_skill(name, path, description, iteration=None):
+def create_skill(name: str, path: str, description: str, iteration: int | None = None) -> None:
     if not re.match(r'^[a-z0-9-]+$', name):
         print(f"Error: Skill name '{name}' must contain only lowercase letters, numbers, and hyphens.")
         return
@@ -162,7 +162,7 @@ def create_skill(name, path, description, iteration=None):
     os.makedirs(test_dir, exist_ok=True)
     
     # 1. Standard Skill Frontend
-    def get_template(filename):
+    def get_template(filename: str) -> str | None:
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
         if os.path.exists(template_path):
             with open(template_path, "r") as f:
@@ -237,7 +237,7 @@ def create_skill(name, path, description, iteration=None):
 
     print(f"Success: Skill '{name}' scaffolded at {skill_dir}")
 
-def create_hook(event, path, action_type):
+def create_hook(event: str, path: str, action_type: str) -> None:
     import pathlib
     resolved_path = pathlib.Path(path).resolve()
     if not (resolved_path / ".claude-plugin").exists():
@@ -278,7 +278,7 @@ def create_hook(event, path, action_type):
         
     print(f"Success: Hook appended to {hooks_file}")
 
-def create_sub_agent(name, path, desc):
+def create_sub_agent(name: str, path: str, desc: str) -> None:
     if not re.match(r'^[a-z0-9-]+$', name):
         print(f"Error: Sub-agent name '{name}' must contain only lowercase letters, numbers, and hyphens.")
         return
@@ -288,7 +288,7 @@ def create_sub_agent(name, path, desc):
     full_path = os.path.join(path, f"{name}.md")
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
     
-    def get_template(filename):
+    def get_template(filename: str) -> str | None:
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
         if os.path.exists(template_path):
             with open(template_path, "r") as f:
@@ -309,7 +309,7 @@ def create_sub_agent(name, path, desc):
         
     print(f"Success: Sub-agent saved to {full_path}")
 
-def create_command(name, path, desc):
+def create_command(name: str, path: str, desc: str) -> None:
     if not re.match(r'^[a-z0-9-]+$', name):
         print(f"Error: Command name '{name}' must contain only lowercase letters, numbers, and hyphens.")
         return
@@ -319,7 +319,7 @@ def create_command(name, path, desc):
     full_path = os.path.join(path, f"{name}.md")
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
     
-    def get_template(filename):
+    def get_template(filename: str) -> str | None:
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
         if os.path.exists(template_path):
             with open(template_path, "r") as f:
@@ -340,7 +340,7 @@ def create_command(name, path, desc):
         
     print(f"Success: Command saved to {full_path}")
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Agent Ecosystem Scaffolder CLI")
     parser.add_argument("--type", choices=["plugin", "skill", "hook", "sub-agent", "command", "mcp"], required=True, help="Type of resource to scaffold")
     parser.add_argument("--name", required=True, help="Name of the resource")

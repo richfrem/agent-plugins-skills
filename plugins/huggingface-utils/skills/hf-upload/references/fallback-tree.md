@@ -1,1 +1,1 @@
-../../../references/hf-upload/fallback-tree.md
+../fallback-tree.md

@@ -1,1 +1,1 @@
-../../../references/analyze-plugin/security-checks.md
+../../../references/security-checks.md

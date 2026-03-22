@@ -1,1 +1,1 @@
-../../../../references/create-command/examples/simple-commands.md
+../../../../references/examples/simple-commands.md

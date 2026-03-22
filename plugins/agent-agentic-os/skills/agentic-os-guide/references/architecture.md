@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/architecture.md
+../../../references/architecture.md

@@ -1,1 +1,1 @@
-../../../references/ollama-launch/acceptance-criteria.md
+../acceptance-criteria.md

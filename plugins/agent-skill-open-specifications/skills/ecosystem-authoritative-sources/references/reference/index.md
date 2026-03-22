@@ -1,1 +1,1 @@
-../../../../references/ecosystem-authoritative-sources/reference/index.md
+../index.md

@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/acceptance-criteria.md
+../acceptance-criteria.md

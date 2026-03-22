@@ -1,1 +1,1 @@
-../../../references/audit-plugin-l5/architecture.md
+../../../references/architecture.md

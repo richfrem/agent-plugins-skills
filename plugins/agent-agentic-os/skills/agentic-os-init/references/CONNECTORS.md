@@ -1,1 +1,1 @@
-../../../references/agentic-os-init/CONNECTORS.md
+../CONNECTORS.md

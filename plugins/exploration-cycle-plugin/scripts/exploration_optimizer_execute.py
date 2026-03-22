@@ -1,7 +1,49 @@
 #!/usr/bin/env python3
 """
-Exploration Optimizer - Iteration Engine
-Implements an autoresearch-style loop: Propose -> Test -> Decide.
+exploration_optimizer_execute.py
+=====================================
+
+Purpose:
+    Implements an autoresearch-style optimization loop: Propose -> Test -> Decide.
+    Optimizes skills based on routing and artifact quality evaluations.
+
+Layer: Execution / Optimization
+
+Usage Examples:
+    python3 exploration_optimizer_execute.py --target skill.md --eval-script eval.py --goal "improve clarity"
+
+Supported Object Types:
+    SKILL.md files
+
+CLI Arguments:
+    --target: Path to the skill file to optimize.
+    --eval-script: Path to eval_runner.py.
+    --goal: Optimization goal.
+    --iterations: Number of iterations.
+    --ledger: Path to results TSV.
+    --dispatch-script: Enabling artifact quality eval.
+    --scenario-brief: Canonical session brief for eval.
+    --check-gaps-script: Counting gap markers in output.
+
+Input Files:
+    - Target skill.md file
+    - scenario brief
+
+Output:
+    - Updated skill file.
+    - Updated ledger results TSV.
+
+Key Functions:
+    run_eval(): Runs routing evaluation.
+    run_artifact_eval(): Runs artifact quality evaluation.
+    propose_change(): Proposes optimization changes.
+    main(): Coordinates the optimization loop.
+
+Script Dependencies:
+    os, sys, argparse, subprocess, json, shutil, re, pathlib, datetime
+
+Consumed by:
+    - Exploration cycle orchestrator
 """
 import argparse
 import re
@@ -13,7 +55,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
-def run_eval(eval_script, target):
+def run_eval(eval_script: Path, target: Path) -> float:
     """Runs the routing/structural evaluation script and returns the score."""
     try:
         cmd = [sys.executable, str(eval_script), "--target", str(target), "--json"]
@@ -25,7 +67,14 @@ def run_eval(eval_script, target):
         return -1.0
 
 
-def run_artifact_eval(dispatch_script, target_skill, scenario_brief, check_gaps_script, artifact_output, timeout=180):
+def run_artifact_eval(
+    dispatch_script: Path,
+    target_skill: Path,
+    scenario_brief: Path,
+    check_gaps_script: Path,
+    artifact_output: Path,
+    timeout: int = 180,
+) -> float:
     """Artifact quality eval: runs the skill against a canonical scenario and counts gaps.
 
     Score = 1.0 - (gap_count / 10), floored at 0.0.
@@ -90,7 +139,7 @@ def run_artifact_eval(dispatch_script, target_skill, scenario_brief, check_gaps_
         Path(artifact_output).unlink(missing_ok=True)
         return -1.0
 
-def propose_change(target, goal, timeout=120):
+def propose_change(target: Path, goal: str, timeout: int = 120) -> str | None:
     """Uses copilot-cli to propose a single change to the target file."""
     try:
         prompt = f"""
@@ -113,7 +162,7 @@ FILE CONTENT:
         print(f"Error proposing change: {e}", file=sys.stderr)
         return None
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Exploration Optimizer Engine")
     parser.add_argument("--target", required=True, help="Path to the skill file to optimize")
     parser.add_argument("--eval-script", required=True, help="Path to eval_runner.py (routing/structural score)")
@@ -161,13 +210,17 @@ def main():
     artifact_fail_streak = [0]  # mutable counter accessible inside closure
     MAX_ARTIFACT_FAILURES = 3
 
-    def combined_score(skill_path):
+    def combined_score(skill_path: Path) -> float:
         """Blended score: 30% routing/structural, 70% artifact quality (if enabled)."""
         routing = run_eval(eval_script, skill_path)
         if routing < 0:
             return -1.0
         if not artifact_eval_enabled:
             return routing
+        assert dispatch_script is not None
+        assert scenario_brief is not None
+        assert check_gaps_script is not None
+        assert artifact_output is not None
         artifact = run_artifact_eval(
             dispatch_script, skill_path, scenario_brief, check_gaps_script, artifact_output
         )

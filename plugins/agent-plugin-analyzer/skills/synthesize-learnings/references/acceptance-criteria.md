@@ -1,1 +1,1 @@
-../../../references/synthesize-learnings/acceptance-criteria.md
+../acceptance-criteria.md

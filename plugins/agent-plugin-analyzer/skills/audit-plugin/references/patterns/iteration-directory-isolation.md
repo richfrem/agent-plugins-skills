@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/iteration-directory-isolation.md
+../../../../references/patterns/iteration-directory-isolation.md

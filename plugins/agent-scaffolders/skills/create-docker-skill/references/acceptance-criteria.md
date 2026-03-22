@@ -1,1 +1,1 @@
-../../../references/create-docker-skill/acceptance-criteria.md
+../acceptance-criteria.md

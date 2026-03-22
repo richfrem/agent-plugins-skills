@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/npx-skills.md
+../../../references/npx-skills.md

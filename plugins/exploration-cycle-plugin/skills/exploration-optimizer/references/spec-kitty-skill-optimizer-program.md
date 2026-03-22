@@ -1,1 +1,1 @@
-../../../references/exploration-optimizer/spec-kitty-skill-optimizer-program.md
+../../../references/spec-kitty-skill-optimizer-program.md

@@ -1,9 +1,42 @@
 """
-Obsidian Canvas Architect Operations
+canvas_ops.py (CLI)
+=====================================
 
-Purpose: Programmatically create and manipulate Obsidian Canvas (.canvas) files
-using JSON Canvas Spec 1.0. Enables agents to generate visual flowcharts,
-architecture diagrams, and planning boards with nodes and edges.
+Purpose:
+    Programmatically create and manipulate Obsidian Canvas (.canvas) files.
+    Uses JSON Canvas Spec 1.0. Enables agents to generate visual flowcharts,
+    architecture diagrams, and planning boards with nodes and edges.
+
+Layer: Core Operations
+
+Usage Examples:
+    python3 canvas_ops.py read --file example.canvas
+    python3 canvas_ops.py create --file example.canvas
+    python3 canvas_ops.py add-node --file example.canvas --type text --text "Node Content"
+
+Supported Object Types:
+    - .canvas (JSON layout)
+
+CLI Arguments:
+    Subcommands: read, create, add-node, add-edge. Run with --help for details.
+
+Input Files:
+    - .canvas files.
+
+Output:
+    - JSON results or modified .canvas files.
+
+Key Functions:
+    read_canvas(): Read and parse a .canvas file.
+    create_canvas(): Create a new empty canvas.
+    add_node(): Add a node to an existing canvas.
+    add_edge(): Add an edge between nodes.
+
+Script Dependencies:
+    sys, json, uuid, argparse, pathlib, os
+
+Consumed by:
+    - obsidian-canvas-architect skill
 """
 import sys
 import json
@@ -193,7 +226,7 @@ def add_node(filepath: Path, node_type: str, x: int = 0, y: int = 0,
 
 def add_edge(filepath: Path, from_node: str, to_node: str,
              from_side: str = "right", to_side: str = "left",
-             label: str = None) -> Dict[str, Any]:
+             label: Optional[str] = None) -> Dict[str, Any]:
     """Add a directional edge between two nodes."""
     if not filepath.exists():
         return {"error": f"File not found: {filepath}"}
@@ -240,7 +273,7 @@ def add_edge(filepath: Path, from_node: str, to_node: str,
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Obsidian Canvas Architect")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

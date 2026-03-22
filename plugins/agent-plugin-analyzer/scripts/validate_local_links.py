@@ -1,17 +1,40 @@
 #!/usr/bin/env python3
 """
 validate_local_links.py
-=======================
+=====================================
 
 Purpose:
     Ensures that all plugins adhere to the Local-First Symlink Architecture.
-    Validates that:
-    1. Every skill folder has the required symlinks pointing UP to the plugin root.
-    2. No .py, .md, or .mmd file contains hardcoded references to 'plugins/' 
-       that would break when a skill is installed via `npx skills add`.
+    Validates containing skills required symlinks pointing UP to the plugin root 
+    and verifies no hardcoded string references point outside of expected boundaries.
 
-Usage:
-    python3 plugins/agent-plugin-analyzer/scripts/validate_local_links.py
+Layer: Repair / Integrity
+
+Usage Examples:
+    python3 validate_local_links.py
+
+Supported Object Types:
+    Plugins with symlinks inside skill directories.
+
+CLI Arguments:
+    None.
+
+Input Files:
+    - Codebase plugins/ directories search.
+
+Output:
+    Structured summary checklist lists to stdout regarding link creation corrections.
+
+Key Functions:
+    - resolve_project_root()
+    - scaffold_missing_symlinks()
+    - scan_hardcoded_paths()
+
+Script Dependencies:
+    - os, re, pathlib (Path), typing (List, Dict, Tuple)
+
+Consumed by:
+    Static continuous integration post-validation links checks.
 """
 
 import os
@@ -118,7 +141,7 @@ def scan_hardcoded_paths(root: Path) -> List[Tuple[str, int, str]]:
 
     return violations
 
-def main():
+def main() -> None:
     root = resolve_project_root()
     print(f"🔍 Analyzing Symlink Architecture starting from: {root}\n")
     

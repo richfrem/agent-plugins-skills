@@ -1,13 +1,40 @@
-#!/usr/bin/env python3
 """
 Generate Plugin READMEs
 =======================
 
-Generates a standardized README.md for plugins that are missing one.
-Extracts description from .claude-plugin/plugin.json or SKILL.md.
+Purpose:
+    Generates a standardized README.md for plugins that are missing one.
+    Extracts description from .claude-plugin/plugin.json or SKILL.md.
 
-Usage:
-    python3 plugins/plugin-manager/skills/plugin-manager/scripts/generate_readmes.py [--apply]
+Layer: Plugin Manager / Documentation
+
+Usage Examples:
+    python3 plugins/plugin-manager/scripts/generate_readmes.py [--apply]
+
+Supported Object Types:
+    - None (Filesystem lookup)
+
+CLI Arguments:
+    --apply: Apply changes.
+
+Input Files:
+    - .claude-plugin/plugin.json (Description source)
+    - SKILL.md (Fallback description source)
+
+Output:
+    - Creates README.md files for plugins.
+
+Key Functions:
+    get_plugin_description(): Extracts description from manifest or skill.
+    generate_readme(): Generates README template.
+
+Script Dependencies:
+    sys, json, argparse, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/generate_readmes.py
 """
 
 import sys
@@ -46,7 +73,7 @@ def get_plugin_description(plugin_path: Path) -> str:
                         
     return "No description provided."
 
-def generate_readme(plugin_path: Path, description: str, apply: bool):
+def generate_readme(plugin_path: Path, description: str, apply: bool) -> None:
     readme_path = plugin_path / "README.md"
     
     if readme_path.exists():
@@ -77,7 +104,7 @@ This plugin is automatically loaded by the Agent Environment.
     else:
         print("   (Dry run - use --apply to create)")
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Plugin READMEs")
     parser.add_argument("--apply", action="store_true", help="Apply changes")
     args = parser.parse_args()

@@ -1,1 +1,1 @@
-../../../references/analyze-plugin/analysis-framework.md
+../../../references/analysis-framework.md

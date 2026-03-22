@@ -2,17 +2,35 @@
 """
 verify_csv.py
 =====================================
+
 Purpose:
-    Perform a structural linting of generated CSV files to create a strict 
-    L5 Delegated Constraint Verification Loop.
+    Perform a structural linting of generated CSV files to create a strict L5 Delegated Constraint Verification Loop.
 
-Usage:
-    python3 scripts/verify_csv.py output.csv
+Layer: Data Processing Utilities
 
-Checks:
-    1. Empty file detection.
-    2. Jagged rows (row columns > header columns).
-    3. Trailing commas.
+Usage Examples:
+    python3 verify_csv.py output.csv
+
+Supported Object Types:
+    - CSV files (.csv)
+
+CLI Arguments:
+    file_path: Path to the CSV file.
+
+Input Files:
+    - CSV file to verify.
+
+Output:
+    - JSON report detailing any errors found (JaggedRow, EmptyFile, etc.).
+
+Key Functions:
+    - verify_csv()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - Excel explicitly to CSV conversion workflow
 """
 
 import csv
@@ -72,7 +90,7 @@ def verify_csv(file_path: Path) -> dict:
             
     return result
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: python verify_csv.py <csv_file>")
         sys.exit(1)

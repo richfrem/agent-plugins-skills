@@ -1,1 +1,1 @@
-../../../references/rsvp-reading/fallback-tree.md
+../fallback-tree.md

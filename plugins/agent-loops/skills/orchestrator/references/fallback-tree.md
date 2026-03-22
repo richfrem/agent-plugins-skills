@@ -1,1 +1,1 @@
-../../../references/orchestrator/fallback-tree.md
+../fallback-tree.md

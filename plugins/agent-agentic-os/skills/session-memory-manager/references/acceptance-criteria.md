@@ -1,1 +1,1 @@
-../../../references/session-memory-manager/acceptance-criteria.md
+../acceptance-criteria.md

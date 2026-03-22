@@ -1,10 +1,44 @@
-"""Improve a skill description based on eval results.
+"""
+improve_description.py
+=====================================
 
-Takes eval results (from run_eval.py) and generates an improved description
-by calling `claude -p` as a subprocess (same auth pattern as run_eval.py —
-uses the session's Claude Code auth, no separate ANTHROPIC_API_KEY needed).
+Purpose:
+    Improve a skill description iteratively derived from eval test fail vectors 
+    utilizing background solver model engines.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Repair / Synthesis
+
+Usage Examples:
+    python3 improve_description.py --eval-results results.json --skill-path path/to -v
+    python3 improve_description.py --eval-results results.json --skill-path path/to --engine copilot
+
+Supported Object Types:
+    Evaluative diagnostics streams.
+
+CLI Arguments:
+    --eval-results: Evaluated diagnostic summary stream JSON. (Required)
+    --skill-path: Skill components root. (Required)
+    --history: Preceded attempts cache.
+    --model: Overrides target controller model.
+    --engine: solver dispatch backend selector (claude / copilot)
+    --verbose: Standard stream stream dump verboses.
+
+Input Files:
+    - eval_results.json
+    - SKILL.md
+
+Output:
+    JSON string holding alternative description hypothesis.
+
+Key Functions:
+    - improve_description()
+    - _call_model()
+
+Script Dependencies:
+    - argparse, json, os, re, subprocess, sys, Path (pathlib)
+
+Consumed by:
+    Continual optimization description solvers.
 """
 
 import argparse
@@ -214,7 +248,7 @@ Please respond with only the new description text in <new_description> tags, not
     return description
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Improve a skill description based on eval results")
     parser.add_argument("--eval-results", required=True, help="Path to eval results JSON (from run_eval.py)")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

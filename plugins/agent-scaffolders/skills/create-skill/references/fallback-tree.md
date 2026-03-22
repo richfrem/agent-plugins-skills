@@ -1,1 +1,1 @@
-../../../references/create-skill/fallback-tree.md
+../fallback-tree.md

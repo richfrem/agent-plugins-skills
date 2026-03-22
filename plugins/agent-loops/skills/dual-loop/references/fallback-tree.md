@@ -1,1 +1,1 @@
-../../../references/dual-loop/fallback-tree.md
+../fallback-tree.md

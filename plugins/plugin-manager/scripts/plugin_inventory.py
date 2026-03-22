@@ -1,16 +1,45 @@
-#!/usr/bin/env python3
 """
 Plugin Inventory Generator
 ==========================
 
-Scans a plugins directory and generates a detailed JSON inventory of available plugins.
-Extracts metadata from:
-1. .claude-plugin/plugin.json (Best source)
-2. SKILL.md frontmatter (Fallback)
-3. README.md (Last resort)
+Purpose:
+    Scans a plugins directory and generates a detailed JSON inventory of available plugins.
+    Extracts metadata from:
+    1. .claude-plugin/plugin.json (Best source)
+    2. SKILL.md frontmatter (Fallback)
+    3. README.md (Last resort)
 
-Usage:
-  python3 plugin_inventory.py [--root <project_root>] [--output <file.json>]
+Layer: Plugin Manager / Inventory
+
+Usage Examples:
+    python3 plugins/plugin-manager/scripts/plugin_inventory.py [--root <project_root>] [--output <file.json>]
+
+Supported Object Types:
+    - json (Inventory output)
+
+CLI Arguments:
+    --root: Project root directory containing plugins/.
+    --output: Output JSON file path.
+
+Input Files:
+    - .claude-plugin/plugin.json (Metadata source)
+    - SKILL.md (Fallback)
+    - README.md (Fallback)
+
+Output:
+    - Writes a JSON array of plugin objects.
+
+Key Functions:
+    extract_metadata(): Extracts name and description from plugin directory.
+    scan_plugins(): Scans plugins and returns list.
+
+Script Dependencies:
+    os, sys, json, yaml, argparse, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/sync_with_inventory.py
 """
 
 import os
@@ -20,7 +49,7 @@ import yaml  # Requires PyYAML or simple parsing
 import argparse
 from pathlib import Path
 
-def parse_frontmatter(file_path):
+def parse_frontmatter(file_path: Path) -> str | None:
     """Simple YAML frontmatter parser to avoid external dependencies if possible."""
     try:
         content = file_path.read_text(encoding='utf-8')
@@ -85,7 +114,7 @@ def extract_metadata(plugin_dir: Path) -> dict:
                 
     return metadata
 
-def scan_plugins(root: Path) -> list:
+def scan_plugins(root: Path) -> list[dict]:
     plugins_dir = root / "plugins"
     if not plugins_dir.exists():
         print(f"Error: Plugins directory not found at {plugins_dir}", file=sys.stderr)
@@ -103,7 +132,7 @@ def scan_plugins(root: Path) -> list:
             
     return inventory
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate plugin inventory.")
     parser.add_argument("--root", default=".", help="Project root directory containing plugins/")
     parser.add_argument("--output", help="Output JSON file path")

@@ -1,1 +1,1 @@
-../../../references/gemini-cli-agent/acceptance-criteria.md
+../acceptance-criteria.md

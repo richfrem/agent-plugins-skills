@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/conditional-step-inclusion.md
+../../../../references/patterns/conditional-step-inclusion.md

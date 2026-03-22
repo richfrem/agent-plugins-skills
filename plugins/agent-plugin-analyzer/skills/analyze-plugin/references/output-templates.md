@@ -1,1 +1,1 @@
-../../../references/analyze-plugin/output-templates.md
+../../../references/output-templates.md

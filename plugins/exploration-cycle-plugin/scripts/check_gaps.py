@@ -1,17 +1,37 @@
 #!/usr/bin/env python3
 """
 check_gaps.py
-=============
-Counts [NEEDS HUMAN INPUT] markers in one or more capture files.
-Exits non-zero if the count exceeds the threshold, halting the dispatch chain.
+=====================================
 
-Usage:
+Purpose:
+    Counts [NEEDS HUMAN INPUT] markers in one or more capture files and exits non-zero if threshold exceeded.
+
+Layer: Analysis / Verification
+
+Usage Examples:
     python3 check_gaps.py --files exploration/captures/brd-draft.md --threshold 3
-    python3 check_gaps.py --files a.md b.md c.md --threshold 3
 
-Exit codes:
-    0  — gap count is within threshold, safe to continue
-    1  — gap count exceeds threshold, stop and refine the session brief
+Supported Object Types:
+    - Markdown files (.md)
+
+CLI Arguments:
+    --files: Capture files to check.
+    --threshold: Max allowed gap markers (default: 3).
+
+Input Files:
+    - Target files to check for gaps.
+
+Output:
+    - Printed gap counts and status.
+
+Key Functions:
+    - count_gaps()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - Exploration cycle dispatch chain
 """
 
 import argparse
@@ -21,7 +41,7 @@ import sys
 MARKER = "[NEEDS HUMAN INPUT]"
 
 
-def count_gaps(filepaths):
+def count_gaps(filepaths: list[str]) -> tuple[int, dict[str, int]]:
     total = 0
     per_file = {}
     missing = []
@@ -40,7 +60,7 @@ def count_gaps(filepaths):
     return total, per_file
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Gap marker checker for exploration captures")
     parser.add_argument("--files", nargs="+", required=True, help="Capture files to check")
     parser.add_argument("--threshold", type=int, default=3, help="Max allowed gap markers (default: 3)")

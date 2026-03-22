@@ -52,7 +52,7 @@ def sanitize_sheet_name(name: str) -> str:
     return name[:120]
 
 
-def convert_excel_to_csv(excel_path: Path, out_dir: Path, sheets=None, write_empty=False, encoding="utf-8-sig") -> dict:
+def convert_excel_to_csv(excel_path: Path, out_dir: Path, sheets: str | None = None, write_empty: bool = False, encoding: str = "utf-8-sig") -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     
     target_names = [s.strip() for s in sheets.split(",")] if sheets else None
@@ -160,7 +160,7 @@ def convert_excel_to_csv(excel_path: Path, out_dir: Path, sheets=None, write_emp
     return summary
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Convert Excel workbook sheets to CSV files")
     parser.add_argument("--excel", "-e", required=True, help="Path to the Excel workbook (.xlsx).")
     parser.add_argument("--outdir", "-o", default=".", help="Output directory for CSV files (default: .)")

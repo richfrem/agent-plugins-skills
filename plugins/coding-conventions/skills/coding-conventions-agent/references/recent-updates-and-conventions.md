@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/recent-updates-and-conventions.md
+../../../references/recent-updates-and-conventions.md

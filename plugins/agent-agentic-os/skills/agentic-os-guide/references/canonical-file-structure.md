@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/canonical-file-structure.md
+../../../references/canonical-file-structure.md

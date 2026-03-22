@@ -1,1 +1,1 @@
-../../../references/synthesize-learnings/improvement-mapping.md
+../../../references/improvement-mapping.md

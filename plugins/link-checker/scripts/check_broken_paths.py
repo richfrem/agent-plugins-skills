@@ -9,7 +9,8 @@ Purpose:
 Layer: Curate / Cli_Entry_Points
 
 Usage Examples:
-    python ./scripts/check_broken_paths.py --help
+    python3 check_broken_paths.py .
+    python3 check_broken_paths.py --file README.md
 
 Supported Object Types:
     - Generic
@@ -19,21 +20,20 @@ CLI Arguments:
     --file          : Specific file to check. If provided, only this file is scanned.
 
 Input Files:
-    - (See code)
+    - Documentation files (.md, .txt, .json, .markdown, .mmd)
 
 Output:
-    - (See code)
+    - Log file containing broken links report printed message.
 
 Key Functions:
-    - find_files(): Recursively finds files with specific extensions, excluding noise directories.
-    - check_broken_links(): Checks for broken relative links in a specific file.
-    - main(): No description.
+    find_files(): Recursively finds files with specific extensions.
+    check_broken_links(): Checks for broken relative links in a specific file.
 
 Script Dependencies:
-    (None detected)
+    os, re, argparse, urllib.parse, typing
 
 Consumed by:
-    (Unknown)
+    - link-checker skill
 """
 import os
 import re
@@ -130,7 +130,7 @@ def check_broken_links(file_path: str) -> List[str]:
 
     return broken_links
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Check for broken file paths in the repository.")
     parser.add_argument("target_dir", nargs="?", default=os.getcwd(), help="Directory to scan (defaults to current working directory)")
     parser.add_argument("--file", help="Specific file to check. If provided, only this file is scanned.")

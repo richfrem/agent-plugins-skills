@@ -1,1 +1,1 @@
-../../../references/maintain-plugins/cleanup_process.md
+../../../references/cleanup_process.md

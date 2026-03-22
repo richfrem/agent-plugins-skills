@@ -1,1 +1,1 @@
-../../../references/tool-inventory/fallback-tree.md
+../fallback-tree.md

@@ -1,7 +1,46 @@
-"""Markdown -> Word (.docx) converter.
+"""
+md_to_docx.py (CLI)
+=====================================
 
-Converts a single Markdown file into a Word document using `python-docx`.
-Includes best-effort support for headings, lists, tables, quotes, and hyperlinks.
+Purpose:
+    Markdown -> Word (.docx) converter.
+    Converts a single Markdown file into a Word document using `python-docx`.
+    Includes best-effort support for headings, lists, tables, quotes, and hyperlinks.
+
+Layer: Cli_Entry_Points
+
+Usage Examples:
+    python3 md_to_docx.py input.md --output output.docx
+
+Supported Object Types:
+    - Generic
+
+CLI Arguments:
+    input: Path to source Markdown file.
+    --output, -o: Path to output DOCX file.
+
+Input Files:
+    - Markdown files (.md).
+
+Output:
+    - Word document (.docx).
+
+Key Functions:
+    strip_inline_markdown(): Remove common inline markdown formatting.
+    strip_text_markdown_only(): Remove inline markdown formatting.
+    resolve_word_link_target(): Resolve a Markdown link target to a Word-friendly external hyperlink target.
+    normalize_link_label(): Normalize visible link text for Word output.
+    add_hyperlink(): Add an external hyperlink run to a paragraph.
+    add_markdown_runs(): Add markdown runs and hyperlinks to a paragraph.
+    is_table_line(): Check if a line is a table line.
+    parse_table(): Parse a table from lines starting at a given index.
+    convert_markdown_to_docx(): Main conversion logic.
+
+Script Dependencies:
+    argparse, os, re, pathlib, urllib.parse, python-docx
+
+Consumed by:
+    - markdown-to-msword-converter skill
 """
 
 import argparse
@@ -9,6 +48,7 @@ import os
 import re
 from pathlib import Path
 from urllib.parse import quote, unquote
+from typing import Any
 
 
 LINK_PATTERN = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
@@ -122,7 +162,7 @@ def normalize_link_label(label: str) -> str:
     return stripped
 
 
-def add_hyperlink(paragraph, text: str, url: str) -> None:
+def add_hyperlink(paragraph: Any, text: str, url: str) -> None:
     """Add an external hyperlink run to a paragraph.
 
     Uses python-docx's underlying OOXML APIs to create a relationship and
@@ -160,7 +200,7 @@ def add_hyperlink(paragraph, text: str, url: str) -> None:
     paragraph._p.append(hyperlink)
 
 
-def add_markdown_runs(paragraph, text: str, source_md: Path) -> None:
+def add_markdown_runs(paragraph: Any, text: str, source_md: Path) -> None:
     last = 0
     for match in LINK_PATTERN.finditer(text):
         before = text[last:match.start()]

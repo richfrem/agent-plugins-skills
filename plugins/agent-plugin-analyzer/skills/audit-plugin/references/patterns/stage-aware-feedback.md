@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/stage-aware-feedback.md
+../../../../references/patterns/stage-aware-feedback.md

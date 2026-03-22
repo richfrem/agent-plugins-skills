@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/fallback-tree.md
+../../../references/fallback-tree.md

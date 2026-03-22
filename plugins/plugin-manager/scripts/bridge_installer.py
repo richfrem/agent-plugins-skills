@@ -1,15 +1,46 @@
-#!/usr/bin/env python3
 """
-bridge_installer.py (CLI)
-=====================================
+Bridge Installer (CLI)
+=====================
 
 Purpose:
     Installs Agent Plugins into .agents/ central repository natively 
     and symlinks them across locally installed agent platforms 
     (mimicking the behavior of npx skills add --force).
 
+Layer: Plugin Manager / Installation
+
 Usage Examples:
-    python3 bridge_installer.py --plugin <path>
+    python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
+
+Supported Object Types:
+    - None (Filesystem operations)
+
+CLI Arguments:
+    --plugin: Path to plugin directory (Required)
+    --dry-run: Preview actions without writing files
+
+Input Files:
+    - .claude-plugin/plugin.json (Manifest reader)
+
+Output:
+    - Creates symlinks and updates skills-lock.json
+
+Key Functions:
+    _is_pointer_file(): Checks if file is a pointer.
+    _copy_resolving_pointers(): Copies resolving pointers.
+    _symlink_or_copy(): Symlinks or copies fallback.
+    _write_toml_command(): Writes TOML command wrapper.
+    deploy_commands(): Deploys commands.
+    deploy_agents(): Deploys agents.
+    deploy_rules(): Deploys rules.
+    write_project_lock(): Writes project lockfile.
+    provision_central_and_symlink(): Provisions central and symlinks.
+
+Script Dependencies:
+    os, sys, shutil, json, argparse, datetime, pathlib
+
+Consumed by:
+    - None (Standalone script)
 """
 
 import os
@@ -161,7 +192,7 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
             print(f"    X Failed for {env_name}: {e}")
             return False
 
-def _write_toml_command(md_file: Path, dest_toml: Path, plugin_name: str, flat: str, dry_run: bool, root: Path):
+def _write_toml_command(md_file: Path, dest_toml: Path, plugin_name: str, flat: str, dry_run: bool, root: Path) -> None:
     if dry_run:
         print(f"  [DRY RUN] write TOML cmd: {dest_toml.relative_to(root)}")
         return
@@ -196,7 +227,7 @@ prompt = \"\"\"
 
 
 def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
-                    root: Path, dry_run: bool = False):
+                    root: Path, dry_run: bool = False) -> None:
     commands_dir = plugin_path / "commands"
     if not commands_dir.exists():
         return
@@ -249,7 +280,7 @@ def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
 
 
 def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
-                  root: Path, dry_run: bool = False):
+                  root: Path, dry_run: bool = False) -> None:
     """Deploy agent .md files to IDE-native agents directories (e.g. .claude/agents/)."""
     agents_dir_src = plugin_path / "agents"
     if not agents_dir_src.exists():
@@ -287,7 +318,7 @@ def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
 
 
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
-                 root: Path, dry_run: bool = False):
+                 root: Path, dry_run: bool = False) -> None:
     rules_dir = plugin_path / "rules"
     if not rules_dir.exists():
         return
@@ -335,7 +366,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                     print(f"  [DRY RUN] append rule to {relative_path}")
 
 def write_project_lock(plugin_path: Path, metadata: dict,
-                       installed_skills: list[str], root: Path, dry_run: bool = False):
+                       installed_skills: list[str], root: Path, dry_run: bool = False) -> None:
     if dry_run:
         print(f"  [DRY RUN] skip writing to skills-lock.json ({len(installed_skills)} skills)")
         return
@@ -367,7 +398,7 @@ def write_project_lock(plugin_path: Path, metadata: dict,
     print(f"  ✓ Updated skills-lock.json ({len(installed_skills)} skills)")
 
 
-def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str], dry_run: bool = False):
+def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str], dry_run: bool = False) -> list[str]:
     root = Path.cwd()
     plugin_name = metadata.get("name", plugin_path.name)
     
@@ -500,7 +531,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
     return installed_skills
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Plugin Bridge Installer (.agents symlinking)")
     parser.add_argument("--plugin", required=True, help="Path to plugin directory")
     parser.add_argument("--dry-run", action="store_true", help="Preview all actions without writing any files or symlinks")

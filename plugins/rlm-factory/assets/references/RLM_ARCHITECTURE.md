@@ -51,14 +51,14 @@ plugins/
 ### Sequence Diagram: Tool Enrichment Flow
 The following diagram illustrates how adding/updating a tool automatically enriches the inventory description via the RLM Feedback Loop.
 
-![RLM Enrichment Flow](./diagrams/rlm_tool_enrichment_flow.mmd)
+![RLM Enrichment Flow](../diagrams/rlm_tool_enrichment_flow.mmd)
 
 *(See `docs/diagrams/rlm/rlm_tool_enrichment_flow.mmd` for source)*
 
 ### Sequence Diagram: Late Binding Flow
 The following diagram illustrates how the Agent "discovers" tools just-in-time using the Skill and RLM Query.
 
-![RLM Late Binding Flow](./diagrams/rlm_late_binding_flow.mmd)
+![RLM Late Binding Flow](../diagrams/rlm_late_binding_flow.mmd)
 
 *(See `docs/diagrams/rlm/rlm_late_binding_flow.mmd` for source)*
 

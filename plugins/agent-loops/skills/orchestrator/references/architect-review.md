@@ -1,1 +1,1 @@
-../../../references/orchestrator/architect-review.md
+../../../references/architect-review.md

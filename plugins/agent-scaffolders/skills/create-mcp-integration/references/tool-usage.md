@@ -1,1 +1,1 @@
-../../../references/create-mcp-integration/tool-usage.md
+../../../references/tool-usage.md

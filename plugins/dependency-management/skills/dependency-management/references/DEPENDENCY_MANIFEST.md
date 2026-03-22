@@ -1,1 +1,1 @@
-../../../references/dependency-management/DEPENDENCY_MANIFEST.md
+../../../references/DEPENDENCY_MANIFEST.md

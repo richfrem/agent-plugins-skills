@@ -1,1 +1,1 @@
-../../../references/synthesize-learnings/fallback-tree.md
+../fallback-tree.md

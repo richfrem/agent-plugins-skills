@@ -1,1 +1,1 @@
-../../../references/audit-plugin-l5/fallback-tree.md
+../fallback-tree.md

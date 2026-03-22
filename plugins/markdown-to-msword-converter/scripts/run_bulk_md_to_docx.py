@@ -1,8 +1,53 @@
+"""
+run_bulk_md_to_docx.py (CLI)
+=====================================
+
+Purpose:
+    Bulk Converter: Convert all Markdown files under a root folder by calling md_to_docx.py.
+
+Layer: Cli_Entry_Points
+
+Usage Examples:
+    python3 run_bulk_md_to_docx.py --root . --config folders_to_convert.json
+
+Supported Object Types:
+    - Generic
+
+CLI Arguments:
+    --root: Root path to scan for .md files.
+    --config: Path to folders JSON config file.
+    --overwrite: Overwrite existing .docx files.
+    --dry-run: Show planned conversions only.
+    --exclude: Additional folder names to exclude.
+    --python-exe: Python executable used for converter calls.
+
+Input Files:
+    - folders_to_convert.json containing scope configuration.
+    - Markdown files (.md).
+
+Output:
+    - Word documents (.docx) generated via md_to_docx.py.
+
+Key Functions:
+    find_repo_root(): Locate the repository root.
+    should_skip(): Check if a path should be skipped.
+    find_markdown_files(): Find markdown files recursively.
+    load_folder_config(): Load bulk conversion scope config from JSON.
+    find_markdown_files_from_config(): Find markdown files according to config.
+
+Script Dependencies:
+    argparse, json, subprocess, sys, pathlib
+
+Consumed by:
+    - markdown-to-msword-converter skill
+"""
+
 import argparse
 import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Dict, Any, List
 
 
 DEFAULT_EXCLUDES = {
@@ -38,7 +83,7 @@ def find_markdown_files(root: Path, excludes: set[str]) -> list[Path]:
     return sorted(files)
 
 
-def load_folder_config(config_path: Path) -> dict:
+def load_folder_config(config_path: Path) -> Dict[str, Any]:
     """Load bulk conversion scope config from JSON file."""
     if not config_path.exists() or not config_path.is_file():
         raise FileNotFoundError(f"Folder config file not found: {config_path}")
@@ -61,7 +106,7 @@ def load_folder_config(config_path: Path) -> dict:
     }
 
 
-def find_markdown_files_from_config(repo_root: Path, excludes: set[str], config: dict) -> list[Path]:
+def find_markdown_files_from_config(repo_root: Path, excludes: set[str], config: Dict[str, Any]) -> List[Path]:
     """Find markdown files only within configured folders and optional repo root."""
     files: set[Path] = set()
 

@@ -1,15 +1,47 @@
 #!/usr/bin/env python3
-"""Generate and serve a review page for eval results.
+"""
+generate_review.py (CLI/Dashboard)
+=====================================
 
-Reads the workspace directory, discovers runs (directories with outputs/),
-embeds all output data into a self-contained HTML page, and serves it via
-a tiny HTTP server. Feedback auto-saves to feedback.json in the workspace.
+Purpose:
+    Generate and serve a standalone review page for evaluation workspaces.
+    Discovers run outputs, embeds all data into an HTML template, and serves via tiny HTTP server.
+    Feedback auto-saves to feedback.json inside the workspace.
 
-Usage:
+Layer: User Interface/Dashboard
+
+Usage Examples:
     python generate_review.py <workspace-path> [--port PORT] [--skill-name NAME]
-    python generate_review.py <workspace-path> --previous-feedback /path/to/old/feedback.json
 
-No dependencies beyond the Python stdlib are required.
+Supported Object Types:
+    - Eval workspace directories containing outputs/ Subdirectories
+
+CLI Arguments:
+    workspace: Path to review workspace
+    --port, -p: Server port override (default 3117)
+    --skill-name, -n: Name override for dashboard header
+    --previous-workspace: Show comparisons against previous iterations
+    --benchmark: Path to benchmark.json results
+    --static, -s: Write standalone HTML file instead of serving
+
+Input Files:
+    - Workspace directories
+    - feedback.json (read/write)
+    - benchmark.json
+
+Output:
+    - HTML standalone review dashboard
+    - feedback.json append commits
+
+Key Functions:
+    - find_runs(): Scans nested directories for evaluation artifacts.
+    - generate_html(): Binds variables into viewer.html scripts.
+
+Script Dependencies:
+    - http.server, base64, mimetypes, webbrowser, functools
+
+Consumed by:
+    - User (Browser)
 """
 
 import argparse
@@ -321,7 +353,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
         benchmark_path: Path | None,
         *args,
         **kwargs,
-    ):
+    ) -> None:
         self.workspace = workspace
         self.skill_name = skill_name
         self.feedback_path = feedback_path

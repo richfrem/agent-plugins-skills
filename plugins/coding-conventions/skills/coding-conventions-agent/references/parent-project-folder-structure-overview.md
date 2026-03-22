@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/parent-project-folder-structure-overview.md
+../../../references/parent-project-folder-structure-overview.md

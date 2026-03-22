@@ -1,15 +1,37 @@
 #!/usr/bin/env python3
 """
-Context Bundler Engine
+bundle.py
+=====================================
 
-A simple utility that reads a JSON manifest file containing a list of
-file paths and notes, and concatenates their contents into a single
-Markdown artifact suitable for LLM context ingestion.
+Purpose:
+    Reads a JSON manifest file containing a list of file paths and notes, and concatenates their contents into a single Markdown artifact suitable for LLM context ingestion.
 
-Creates technical bundles of code, design, and documentation for external 
-review or context sharing. Use when you need to package multiple project 
-files into a single Markdown file while preserving folder hierarchy and 
-providing contextual notes for each file.
+Layer: Meta-Execution
+
+Usage Examples:
+    python3 bundle.py --manifest manifest.json --bundle bundle.md
+
+Supported Object Types:
+    - Markdown bundles (bundle.md)
+
+CLI Arguments:
+    --manifest: Path to the JSON file manifest.
+    --bundle: Output path for the bundled Markdown file.
+
+Input Files:
+    - JSON manifest file.
+
+Output:
+    - Bundled Markdown file.
+
+Key Functions:
+    - generate_bundle()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - Context bundler workflow
 """
 
 import sys
@@ -140,7 +162,7 @@ def generate_bundle(manifest_path: Path, output_path: Path) -> None:
 
     print(f"✅ Context successfully bundled into -> {output_path}")
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a markdown context bundle from a JSON manifest.")
     parser.add_argument("--manifest", required=True, type=Path, help="Path to the JSON file manifest.")
     parser.add_argument("--bundle", required=True, type=Path, help="Output path for the bundled Markdown file.")

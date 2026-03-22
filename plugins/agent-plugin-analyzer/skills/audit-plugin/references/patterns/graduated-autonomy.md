@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/graduated-autonomy.md
+../../../../references/patterns/graduated-autonomy.md

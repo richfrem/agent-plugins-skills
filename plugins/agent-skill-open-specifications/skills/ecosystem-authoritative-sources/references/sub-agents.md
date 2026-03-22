@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/sub-agents.md
+../../../references/sub-agents.md

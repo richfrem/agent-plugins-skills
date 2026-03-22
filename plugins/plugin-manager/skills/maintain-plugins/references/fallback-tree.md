@@ -1,1 +1,1 @@
-../../../references/maintain-plugins/fallback-tree.md
+../fallback-tree.md

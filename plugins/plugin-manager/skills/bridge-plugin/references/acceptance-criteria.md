@@ -1,1 +1,1 @@
-../../../references/bridge-plugin/acceptance-criteria.md
+../acceptance-criteria.md

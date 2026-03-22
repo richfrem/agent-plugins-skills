@@ -1,1 +1,1 @@
-../../../references/spec-kitty-sync-plugin/acceptance-criteria.md
+../../../references/acceptance-criteria.md

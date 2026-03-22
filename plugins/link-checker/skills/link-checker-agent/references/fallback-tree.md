@@ -1,1 +1,1 @@
-../../../references/link-checker-agent/fallback-tree.md
+../fallback-tree.md

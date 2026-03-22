@@ -1,1 +1,1 @@
-../../../references/memory-management/fallback-tree.md
+../fallback-tree.md

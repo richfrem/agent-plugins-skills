@@ -1,1 +1,1 @@
-../../../references/create-command/testing-strategies.md
+../../../references/testing-strategies.md

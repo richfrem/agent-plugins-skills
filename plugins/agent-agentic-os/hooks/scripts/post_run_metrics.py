@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 
-def emit_event(project_root, event_data):
+def emit_event(project_root: Path, event_data: dict) -> None:
     """
     Uses kernel.py to emit a structured event.
     Encodes results into --summary for maximum compatibility with older kernels.
@@ -140,7 +140,7 @@ def _count_events(events_log: Path, correlation_id: "str | None" = None) -> dict
     return counts
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Agentic OS: Post-Run Metric Collection"
     )

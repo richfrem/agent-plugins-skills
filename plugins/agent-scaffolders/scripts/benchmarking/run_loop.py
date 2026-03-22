@@ -1,11 +1,67 @@
 #!/usr/bin/env python3
-"""Run the eval + improve loop until all pass or max iterations reached.
+"""
+run_loop.py (CLI)
+=====================================
 
-Combines run_eval.py and improve_description.py in a loop, tracking history
-and returning the best description found. Supports train/test split to prevent
-overfitting.
+Purpose:
+    Run the eval + improve loop until all pass or max iterations reached.
+    Combines run_eval.py and improve_description.py in an automated keep-discard loop,
+    tracking history and returning the best description found.
+    Supports train/test split to prevent overfitting.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Meta-Execution
+
+Usage Examples:
+    python run_loop.py --eval-set set.json --skill-path my_skill/
+
+Supported Object Types:
+    - Skill directories with SKILL.md
+    - list[dict] evaluation datasets
+
+CLI Arguments:
+    --eval-set: Path to eval set JSON file
+    --skill-path: Path to skill directory
+    --description: Override starting description override
+    --num-workers: Number of parallel workers
+    --timeout: Timeout per query in seconds
+    --max-iterations: Max improvement iterations
+    --runs-per-query: Number of runs per query (for stability)
+    --trigger-threshold: Rate threshold to consider a pass
+    --holdout: Fraction of eval set to hold out for testing (0 to disable)
+    --model: Default backend model override
+    --eval-model: Evaluator backend model override
+    --improve-model: Optimizer backend model override
+    --eval-engine: "claude" only
+    --improve-engine: "claude" or "copilot"
+    --verbose: Enable thinking prints to stderr
+    --report: HTML generation path ("auto", "none")
+    --results-dir: Save folder path for artifact persistence
+
+Input Files:
+    - eval_set.json
+    - SKILL.md
+
+Output:
+    - HTML Report files
+    - results.tsv running tracking
+    - Json results summary
+
+Key Functions:
+    - split_eval_set(): Stratified divider dataset creator.
+    - run_loop(): Coordinates backends with automated keep/discard logic gates.
+
+Script Dependencies:
+    - generate_report.py
+    - improve_description.py
+    - run_eval.py
+    - utils.py
+
+Consumed by:
+    - User (CLI)
+    - Continuous skill optimizer
+
+Credits:
+    Inspired by and adapted from Anthropic's skill-creator.
 """
 
 import argparse
@@ -245,7 +301,7 @@ def run_loop(
         iteration_timings.append(timing_entry)
 
         if verbose:
-            def print_eval_stats(label, results, elapsed):
+            def print_eval_stats(label: str, results: list[dict], elapsed: float) -> None:
                 pos = [r for r in results if r["should_trigger"]]
                 neg = [r for r in results if not r["should_trigger"]]
                 tp = sum(r["triggers"] for r in pos)
@@ -398,7 +454,7 @@ def run_loop(
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run eval + improve loop")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

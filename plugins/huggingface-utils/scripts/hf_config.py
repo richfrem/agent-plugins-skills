@@ -1,18 +1,38 @@
 """
-HuggingFace Configuration & Environment Utilities
+hf_config.py
+=====================================
 
-Purpose: Single source of truth for HuggingFace credentials, repo IDs, and
-environment variable resolution. All HF-consuming plugins import from here.
+Purpose:
+    Single source of truth for HuggingFace credentials, repo IDs, and environment variable resolution.
+    All HF-consuming plugins import from here.
 
-Required .env variables:
-    HUGGING_FACE_USERNAME     - HF username
-    HUGGING_FACE_TOKEN        - API token (via env or ~/.zshrc)
-    HUGGING_FACE_REPO         - Model repo name
-    HUGGING_FACE_DATASET_PATH - Dataset repo name
+Layer: Infrastructure / Configuration
 
-Optional:
-    HUGGING_FACE_TAGS         - Comma-separated discovery tags for dataset card
-    SOUL_VALENCE_THRESHOLD    - Moral/emotional charge filter (default: -0.7)
+Usage Examples:
+    python3 hf_config.py
+
+Supported Object Types:
+    None
+
+CLI Arguments:
+    None
+
+Input Files:
+    - .env file for credentials
+
+Output:
+    - JSON string printed containing configuration validation status.
+
+Key Functions:
+    get_hf_config(): Resolves and returns HFConfig.
+    validate_config(): Returns status report of configuration.
+
+Script Dependencies:
+    os, sys, json, logging, pathlib, typing, dataclasses
+
+Consumed by:
+    - hf-init skill
+    - upload.py
 """
 import os
 import sys
@@ -186,7 +206,7 @@ def validate_config() -> dict:
         return {"status": "invalid", "error": str(e)}
 
 
-def main():
+def main() -> None:
     """CLI entry point for config validation."""
     result = validate_config()
     print(json.dumps(result, indent=2))

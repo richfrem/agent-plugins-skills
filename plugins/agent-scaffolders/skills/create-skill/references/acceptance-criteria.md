@@ -1,1 +1,1 @@
-../../../references/create-skill/acceptance-criteria.md
+../acceptance-criteria.md

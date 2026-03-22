@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/pre-execution-workflow-commitment-diagram.md
+../../../../references/patterns/pre-execution-workflow-commitment-diagram.md

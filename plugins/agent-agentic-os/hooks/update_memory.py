@@ -1,10 +1,41 @@
 #!/usr/bin/env python3
 """
-Agentic OS - Memory Update Hook
-Called via PostToolUse and SessionStart hooks.
-Creates or appends to a dated session log in context/memory/YYYY-MM-DD.md
-on file writes, unless the file is volatile (MEMORY.md, status.md).
-Fails silently so as not to crash the agent session.
+update_memory.py — Memory Update Hook
+======================================================
+
+Purpose:
+    Called via PostToolUse and SessionStart hooks.
+    Creates or appends to a dated session log in context/memory/YYYY-MM-DD.md
+    on file writes, unless the file is volatile (MEMORY.md, status.md).
+
+Layer: 
+    Hooks / Lifecycle
+
+Usage Examples:
+    Called automatically by agent runner hooks interface with sys.argv[1] JSON payload
+
+Supported Object Types:
+    - Event payloads (SessionStart, PostToolUse)
+
+CLI Arguments:
+    sys.argv[1]             JSON payload describing tool triggers or start contexts
+
+Input Files:
+    - context/os-state.json
+    - context/events.jsonl
+
+Output:
+    - Appends events inside context/events.jsonl via direct lock appends
+
+Key Functions:
+    _check_execution_gate() Determines lightweight vs heavy mode execution paths
+    main()                  Main controller multiplexing hooks into audit items
+
+Script Dependencies:
+    - None (Uses standard python imports)
+
+Consumed by:
+    - SessionStart or PostToolUse hook dispatch wrappers
 """
 import os
 import sys
@@ -44,7 +75,7 @@ def _check_execution_gate() -> bool:
     return True
 
 
-def main():
+def main() -> None:
     if not _check_execution_gate():
         return
 

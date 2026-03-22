@@ -1,1 +1,1 @@
-../../../references/analyze-plugin/pattern-catalog.md
+../../../references/pattern-catalog.md

@@ -1,1 +1,1 @@
-../../../references/create-agentic-workflow/agent-types.md
+../../../references/agent-types.md

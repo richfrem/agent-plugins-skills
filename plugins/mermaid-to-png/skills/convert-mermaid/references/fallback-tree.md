@@ -1,1 +1,1 @@
-../../../references/convert-mermaid/fallback-tree.md
+../fallback-tree.md

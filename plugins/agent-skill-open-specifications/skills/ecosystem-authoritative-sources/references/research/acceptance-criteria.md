@@ -1,1 +1,1 @@
-../../../../references/ecosystem-authoritative-sources/research/acceptance-criteria.md
+../acceptance-criteria.md

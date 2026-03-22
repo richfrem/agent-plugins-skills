@@ -1,1 +1,1 @@
-../../../references/exploration-optimizer/acceptance-criteria.md
+../acceptance-criteria.md

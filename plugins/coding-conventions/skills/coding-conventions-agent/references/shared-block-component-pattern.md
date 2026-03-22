@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/shared-block-component-pattern.md
+../../../references/shared-block-component-pattern.md

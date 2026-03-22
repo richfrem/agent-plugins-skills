@@ -1,1 +1,1 @@
-../../../references/create-agentic-workflow/acceptance-criteria.md
+../acceptance-criteria.md

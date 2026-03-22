@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/chained-commands.md
+../../../../references/patterns/chained-commands.md

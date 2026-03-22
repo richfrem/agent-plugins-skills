@@ -1,1 +1,1 @@
-../../../references/excel-to-csv/acceptance-criteria.md
+../acceptance-criteria.md

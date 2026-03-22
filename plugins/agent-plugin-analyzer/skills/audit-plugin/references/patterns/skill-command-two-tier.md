@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/skill-command-two-tier.md
+../../../../references/patterns/skill-command-two-tier.md

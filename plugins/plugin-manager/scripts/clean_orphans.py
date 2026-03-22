@@ -1,19 +1,39 @@
-#!/usr/bin/env python3
 """
 Plugin Orphan Cleaner
 =====================
 
-Scans agent directories for artifacts belonging to plugins that no longer exist
-in the source `plugins/` directory.
+Purpose:
+    Scans agent directories for artifacts belonging to plugins that no longer exist
+    in the source `plugins/` directory to prevent stale symlinks.
 
-Target Directories:
-- .agent/workflows, .agent/skills, .agent/rules
-- .github/prompts, .github/skills, .github/rules
-- .gemini/commands, .gemini/skills, .gemini/rules
-- .claude/commands, .claude/skills, .claude/rules
+Layer: Plugin Manager / Maintenance
 
-Usage:
-  python3 plugins/plugin-manager/scripts/clean_orphans.py [--dry-run]
+Usage Examples:
+    python3 plugins/plugin-manager/scripts/clean_orphans.py [--dry-run]
+
+Supported Object Types:
+    - None (Filesystem lookup)
+
+CLI Arguments:
+    --dry-run: Print what would be deleted without deleting.
+
+Input Files:
+    - None (Scans agent directories)
+
+Output:
+    - Status messages and deletions.
+
+Key Functions:
+    get_active_plugins(): Returns a set of active plugin names.
+    clean_directory(): Scans a directory and removes items not belonging to active plugins.
+
+Script Dependencies:
+    os, sys, shutil, argparse, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - scripts/cleanup_targets.py
 """
 
 import os
@@ -65,7 +85,7 @@ AGENT_DIRS = {
     ]
 }
 
-def get_active_plugins(root: Path):
+def get_active_plugins(root: Path) -> set[str]:
     """Returns a set of active plugin names from the plugins/ directory."""
     plugins_dir = root / "plugins"
     if not plugins_dir.exists():
@@ -90,7 +110,7 @@ def get_active_plugins(root: Path):
 
     return active_plugins
 
-def clean_directory(target_dir: Path, active_plugins: set, dry_run: bool):
+def clean_directory(target_dir: Path, active_plugins: set[str], dry_run: bool) -> None:
     """Scans a directory and removes items not belonging to active plugins.
     Items listed in PROTECTED_NAMES are never deleted."""
     if not target_dir.exists():
@@ -120,7 +140,7 @@ def clean_directory(target_dir: Path, active_plugins: set, dry_run: bool):
                     if not dry_run:
                         item.unlink()
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Clean orphaned plugin artifacts.")
     parser.add_argument("--dry-run", action="store_true", help="Print what would be deleted without deleting.")
     args = parser.parse_args()

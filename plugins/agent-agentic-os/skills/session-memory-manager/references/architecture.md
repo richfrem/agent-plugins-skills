@@ -1,1 +1,1 @@
-../../../references/session-memory-manager/architecture.md
+../../../references/architecture.md

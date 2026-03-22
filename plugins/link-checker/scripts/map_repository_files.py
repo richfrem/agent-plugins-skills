@@ -9,29 +9,28 @@ Purpose:
 Layer: Curate / Cli_Entry_Points
 
 Usage Examples:
-    python ./scripts/map_repository_files.py --help
+    python3 map_repository_files.py
 
 Supported Object Types:
     - Generic
 
 CLI Arguments:
-    (None detected)
+    None
 
 Input Files:
-    - (See code)
+    None
 
 Output:
-    - (See code)
+    - file_inventory.json containing mapped filenames to relative paths.
 
 Key Functions:
-    - generate_file_map(): Scans the directory structure and maps filenames to their relative paths.
-    - main(): No description.
+    generate_file_map(): Scans the directory structure and maps filenames to their relative paths.
 
 Script Dependencies:
-    (None detected)
+    os, json, typing
 
 Consumed by:
-    (Unknown)
+    - link-checker skill
 """
 import os
 import json
@@ -74,7 +73,7 @@ def generate_file_map(root_dir: str) -> Dict[str, List[str]]:
             
     return file_map
 
-def main():
+def main() -> None:
     root_dir = os.getcwd()
     file_map = generate_file_map(root_dir)
     

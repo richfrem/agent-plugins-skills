@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/github-agentic-workflows.md
+../../../references/github-agentic-workflows.md

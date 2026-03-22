@@ -82,8 +82,8 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 | Does the workflow require complex knowledge gathering from multiple sources? | **Graduated Source-Attributed Knowledge Elicitation** | `graduated-source-attributed-elicitation.md` |
 | Is there a risk that the user will be overwhelmed by technical file-path/YAML minutiae? | **Dual-Register Communication Enforcement** | `dual-register-communication-enforcement.md` |
 | Should the command point the user to the next logical step in a workflow?| **Chained Command Invocation**| `chained-command-invocation.md` |
-| Do the commands require configuration that is tedious to supply on every run? | [Persistent Plugin Configuration](persistent-plugin-configuration.md) |
-| Does the workflow happen in recurring, time-bounded periods where the previous output is the next input? | [Cyclical State Propagation Contract](cyclical-state-propagation-contract.md) |
+| Do the commands require configuration that is tedious to supply on every run? | [Persistent Plugin Configuration](patterns/persistent-plugin-configuration.md) |
+| Does the workflow happen in recurring, time-bounded periods where the previous output is the next input? | [Cyclical State Propagation Contract](patterns/cyclical-state-propagation-contract.md) |
 | Should the generated artifact structurally record its own procedural history? | **Artifact-Embedded Execution Audit Trail** | `artifact-embedded-execution-audit-trail.md` |
 | Does the skill require orchestrating against an external SDK or schema that updates frequently? | **Dynamic Specification Fetching** | `dynamic-specification-fetching.md` |
 | Does the command generate randomized or chaotic output that a user might want to exactly replicate later? | **Explicit Seed-Anchored Determinism** | `explicit-seed-anchored-determinism.md` |

@@ -1,1 +1,1 @@
-../../../references/continuous-skill-optimizer/CONNECTORS.md
+../CONNECTORS.md

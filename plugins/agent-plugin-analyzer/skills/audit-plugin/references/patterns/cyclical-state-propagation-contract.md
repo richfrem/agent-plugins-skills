@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/cyclical-state-propagation-contract.md
+../../../../references/patterns/cyclical-state-propagation-contract.md

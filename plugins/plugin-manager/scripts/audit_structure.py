@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Audit Plugin Structure
 ======================
@@ -11,9 +10,29 @@ Purpose:
 
 Layer: Plugin Manager / Structure Validation
 
-Usage:
+Usage Examples:
     python3 plugins/plugin-manager/scripts/audit_structure.py
 
+Supported Object Types:
+    - None (Filesystem scan)
+
+CLI Arguments:
+    None.
+
+Input Files:
+    - None (Scans plugins/ directory)
+
+Output:
+    - Status messages and error reports.
+
+Key Functions:
+    audit_plugin(): Audits structure of a single plugin.
+
+Script Dependencies:
+    sys, pathlib
+
+Consumed by:
+    - None (Standalone script)
 Related:
     - plugins/agent-skill-open-specifications/skills/ecosystem-standards/SKILL.md
       → For a deeper LLM-driven content audit (YAML frontmatter, anti-patterns,
@@ -42,7 +61,9 @@ TOP_LEVEL_SCRIPTS_EXEMPT = {
     'plugin-manager', 
 }
 
-def audit_plugin(plugin_path: Path):
+from typing import List, Tuple
+
+def audit_plugin(plugin_path: Path) -> Tuple[List[str], List[str]]:
     errors = []
     warnings = []
     
@@ -88,7 +109,7 @@ def audit_plugin(plugin_path: Path):
 
     return errors, warnings
 
-def main():
+def main() -> None:
     print(f"🏗️  Auditing Plugin Structure in {PLUGINS_DIR}...\n")
     
     results = {}

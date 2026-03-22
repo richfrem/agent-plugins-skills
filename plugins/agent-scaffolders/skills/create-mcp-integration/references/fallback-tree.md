@@ -1,1 +1,1 @@
-../../../references/create-mcp-integration/fallback-tree.md
+../fallback-tree.md

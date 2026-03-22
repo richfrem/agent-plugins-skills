@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/artifact-state-interrogative-routing.md
+../../../../references/patterns/artifact-state-interrogative-routing.md

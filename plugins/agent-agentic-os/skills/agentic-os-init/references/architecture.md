@@ -1,1 +1,1 @@
-../../../references/agentic-os-init/architecture.md
+../../../references/architecture.md

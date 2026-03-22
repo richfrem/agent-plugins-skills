@@ -79,7 +79,7 @@ AGENTS_DIR = "agents"
 SETTINGS_DIR = "settings"
 
 
-def classify_file(filepath, relpath):
+def classify_file(filepath: str, relpath: str) -> str:
     """Classify a file by its type based on name, extension, and location."""
     basename = os.path.basename(filepath)
     _, ext = os.path.splitext(basename)
@@ -112,7 +112,7 @@ def classify_file(filepath, relpath):
     return "other"
 
 
-def count_lines(filepath):
+def count_lines(filepath: str) -> int:
     """Count lines in a text file. Returns -1 for binary files."""
     try:
         with open(filepath, "r", encoding="utf-8", errors="strict") as f:
@@ -121,7 +121,7 @@ def count_lines(filepath):
         return -1
 
 
-def detect_issues(filepath, relpath, file_type, line_count):
+def detect_issues(filepath: str, relpath: str, file_type: str, line_count: int) -> list[str]:
     """Detect Open Standards compliance issues."""
     issues = []
     basename = os.path.basename(filepath)
@@ -152,7 +152,7 @@ CREDENTIAL_PATTERNS = [
     (r"Bearer\s+[a-zA-Z0-9\-\._~+/]{15,}", "Bearer token"),
 ]
 
-def run_security_scan(filepath, file_type, relpath):
+def run_security_scan(filepath: str, file_type: str, relpath: str) -> list[str]:
     """Run deterministic security checks on files."""
     findings = []
     
@@ -197,7 +197,7 @@ def run_security_scan(filepath, file_type, relpath):
 
 # ── Plugin Inventory ──────────────────────────────────────────────────
 
-def inventory_directory(path, run_security=True):
+def inventory_directory(path: str, run_security: bool = True) -> tuple[list[dict], list[str], list[str]]:
     """Walk a directory and inventory all files."""
     files = []
     all_issues = []
@@ -234,7 +234,7 @@ def inventory_directory(path, run_security=True):
     return files, all_issues, all_security
 
 
-def detect_missing_components(path, files):
+def detect_missing_components(path: str, files: list[dict]) -> list[str]:
     """Check for commonly expected components that are missing."""
     warnings = []
     paths = {f["path"] for f in files}
@@ -276,7 +276,7 @@ def detect_missing_components(path, files):
 
 # ── Output Formatters ─────────────────────────────────────────────────
 
-def format_json(files, issues, warnings, path, security_findings=None):
+def format_json(files: list[dict], issues: list[str], warnings: list[str], path: str, security_findings: list[str] | None = None) -> str:
     """Output as structured JSON."""
     summary = {
         "plugin_path": path,
@@ -297,7 +297,7 @@ def format_json(files, issues, warnings, path, security_findings=None):
     return json.dumps(summary, indent=2)
 
 
-def format_markdown(files, issues, warnings, path, security_findings=None):
+def format_markdown(files: list[dict], issues: list[str], warnings: list[str], path: str, security_findings: list[str] | None = None) -> str:
     """Output as readable markdown."""
     lines = [f"# Plugin Inventory: {os.path.basename(path)}\n"]
 
@@ -344,7 +344,7 @@ def format_markdown(files, issues, warnings, path, security_findings=None):
     return "\n".join(lines)
 
 
-def format_checklist(files, issues, warnings, path, security_findings=None):
+def format_checklist(files: list[dict], issues: list[str], warnings: list[str], path: str, security_findings: list[str] | None = None) -> str:
     """Output as markdown checklist with one checkbox per file, grouped by parent directory."""
     lines = [f"# Plugin Review Checklist: {os.path.basename(path)}\n"]
 
@@ -384,7 +384,7 @@ def format_checklist(files, issues, warnings, path, security_findings=None):
 
 # ── Main ──────────────────────────────────────────────────────────────
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Inventory plugin files with classification and compliance checks."
     )

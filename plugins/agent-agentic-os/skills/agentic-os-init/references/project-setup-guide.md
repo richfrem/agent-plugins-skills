@@ -1,1 +1,1 @@
-../../../references/agentic-os-init/project-setup-guide.md
+../../../references/project-setup-guide.md

@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/explicit-seed-anchored-determinism.md
+../../../../references/patterns/explicit-seed-anchored-determinism.md

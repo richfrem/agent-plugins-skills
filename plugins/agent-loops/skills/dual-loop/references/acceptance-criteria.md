@@ -1,1 +1,1 @@
-../../../references/dual-loop/acceptance-criteria.md
+../acceptance-criteria.md

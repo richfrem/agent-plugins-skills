@@ -1,39 +1,51 @@
 #!/usr/bin/env python3
 """
-Aggregate individual run results into benchmark summary statistics.
+aggregate_benchmark.py (CLI)
+=====================================
 
-Reads grading.json files from run directories and produces:
-- run_summary with mean, stddev, min, max for each metric
-- delta between with_skill and without_skill configurations
+Purpose:
+    Aggregate individual run results into benchmark summary statistics.
+    Reads grading.json files from run directories and produces:
+    - run_summary with mean, stddev, min, max for each metric
+    - delta between with_skill and without_skill configurations
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Meta-Execution
 
-Usage:
+Usage Examples:
     python aggregate_benchmark.py <benchmark_dir>
 
-Example:
-    python aggregate_benchmark.py benchmarks/2026-01-15T10-30-00/
+Supported Object Types:
+    - Benchmark run folders (eval-N)
+    - Legacy layouts with runs/ subdirectory
 
-The script supports two directory layouts:
+CLI Arguments:
+    benchmark_dir: Path to the benchmark directory
+    --skill-name: Name of the skill being benchmarked
+    --skill-path: Path to the skill being benchmarked
+    --output: Output path for benchmark.json
 
-    Workspace layout (from skill-creator iterations):
-    <benchmark_dir>/
-    └── eval-N/
-        ├── with_skill/
-        │   ├── run-1/grading.json
-        │   └── run-2/grading.json
-        └── without_skill/
-            ├── run-1/grading.json
-            └── run-2/grading.json
+Input Files:
+    - grading.json
+    - timing.json
 
-    Legacy layout (with runs/ subdirectory):
-    <benchmark_dir>/
-    └── runs/
-        └── eval-N/
-            ├── with_skill/
-            │   └── run-1/grading.json
-            └── without_skill/
-                └── run-1/grading.json
+Output:
+    - benchmark.json
+    - benchmark.md
+
+Key Functions:
+    - calculate_stats(): Calculate aggregates for a list of values.
+    - load_run_results(): Load run results from benchmark directory.
+    - aggregate_results(): Aggregate run results into summary statistics.
+
+Script Dependencies:
+    - argparse, json, math, sys, datetime, pathlib
+
+Consumed by:
+    - User (CLI)
+    - Continuous skill optimizer
+
+Credits:
+    Inspired by and adapted from Anthropic's skill-creator.
 """
 
 import argparse
@@ -337,7 +349,7 @@ def generate_markdown(benchmark: dict) -> str:
     return "\n".join(lines)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Aggregate benchmark run results into summary statistics"
     )

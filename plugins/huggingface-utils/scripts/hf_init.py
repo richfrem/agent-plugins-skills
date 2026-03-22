@@ -1,20 +1,36 @@
 """
-HuggingFace Init Script
+hf_init.py
+=====================================
 
-Purpose: Validates environment, tests API connectivity, ensures dataset structure
-and card exist on HuggingFace Hub. Run this once per project onboarding.
+Purpose:
+    Validates environment, tests API connectivity, and ensures dataset structure on HF.
 
-Token setup:
-    macOS:  Add to ~/.zshrc   → export HUGGING_FACE_TOKEN=hf_xxxxx
-    WSL:    Add to Windows env → WSLENV=HUGGING_FACE_TOKEN/u
-    Linux:  Add to ~/.bashrc  → export HUGGING_FACE_TOKEN=hf_xxxxx
+Layer: Execution / Initialization
 
-    The token should NEVER go in .env (which is committed).
+Usage Examples:
+    python3 hf_init.py
+    python3 hf_init.py --validate-only
 
-Project-level vars go in .env:
-    HUGGING_FACE_USERNAME=<your-username>
-    HUGGING_FACE_REPO=<your-model-repo>
-    HUGGING_FACE_DATASET_PATH=<your-dataset-repo>
+Supported Object Types:
+    None
+
+CLI Arguments:
+    --validate-only: Validate without making changes.
+
+Input Files:
+    - .env file for credentials
+
+Output:
+    - JSON string printed containing initialization status report.
+
+Key Functions:
+    full_init(): Run full HF initialization sequence.
+
+Script Dependencies:
+    sys, json, asyncio, argparse, pathlib, hf_config
+
+Consumed by:
+    - hf-init skill
 """
 import sys
 import json
@@ -67,7 +83,7 @@ async def full_init(validate_only: bool = False) -> dict:
     return result
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="HuggingFace Init")
     parser.add_argument("--validate-only", action="store_true", help="Validate without making changes")
     args = parser.parse_args()

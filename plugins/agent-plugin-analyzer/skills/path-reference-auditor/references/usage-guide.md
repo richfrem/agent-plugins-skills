@@ -1,1 +1,1 @@
-../../../references/path-reference-auditor/usage-guide.md
+../../../references/usage-guide.md

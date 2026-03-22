@@ -1,29 +1,42 @@
 #!/usr/bin/env python3
 """
 event_subscriber.py
-===================
-Reads events.jsonl and prints any unprocessed events matching a given action.
-Marks processed events by writing their content-hash IDs to a sidecar file so
-they are not re-surfaced on the next hook invocation.
+=====================================
 
-Two separate time windows:
-  --since        How recent an event must be to be considered (recency filter).
-  --dedup-window How long a processed event ID is remembered in the sidecar (dedup TTL).
+Purpose:
+    Reads events.jsonl and prints any unprocessed events matching a given action.
+    Marks processed events by writing their content-hash IDs to a sidecar file so
+    they are not re-surfaced on the next hook invocation.
 
-The sidecar is pruned on every read: entries older than --dedup-window are dropped.
-This keeps the file bounded without breaking dedup for long-running sessions.
+Layer: Hooks / Triggering
 
-Usage (from a hook or script):
+Usage Examples:
     python3 hooks/event_subscriber.py --action suggest_intake --since 300 --dedup-window 3600
 
-Arguments:
-    --action        The event action string to match (required)
-    --since         Only consider events emitted within the last N seconds (default: 300)
-    --dedup-window  Remember processed event IDs for N seconds (default: 3600)
+Supported Object Types:
+    - Events (.jsonl)
 
-Exit codes:
-    0 — matched events found and printed
-    1 — no matching events (or events file absent)
+CLI Arguments:
+    --action: The event action string to match.
+    --since: Only consider events emitted within the last N seconds (default: 300).
+    --dedup-window: Remember processed event IDs for N seconds (default: 3600).
+
+Input Files:
+    - events.jsonl
+
+Output:
+    - Printed matched events.
+
+Key Functions:
+    - event_id()
+    - load_processed()
+    - save_processed()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    - Exploration cycle hooks
 """
 
 import argparse
@@ -58,7 +71,7 @@ def load_processed(dedup_cutoff_ts: float) -> set:
         return set()
 
 
-def save_processed(id_ts_map: dict):
+def save_processed(id_ts_map: dict) -> None:
     PROCESSED_FILE.write_text(json.dumps(id_ts_map))
 
 
@@ -69,7 +82,7 @@ def _parse_ts(ts_str: str) -> float:
         return 0.0
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Exploration Cycle kernel event subscriber")
     parser.add_argument("--action", required=True, help="Event action to match (e.g. suggest_intake)")
     parser.add_argument("--since", type=int, default=300,

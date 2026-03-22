@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/mandatory-counterfactual-scenario-templating.md
+../../../../references/patterns/mandatory-counterfactual-scenario-templating.md

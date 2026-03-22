@@ -1,1 +1,1 @@
-../../../references/obsidian-bases-manager/acceptance-criteria.md
+../acceptance-criteria.md

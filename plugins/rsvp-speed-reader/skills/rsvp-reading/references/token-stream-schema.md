@@ -1,1 +1,1 @@
-../../../references/rsvp-reading/token-stream-schema.md
+../../../references/token-stream-schema.md

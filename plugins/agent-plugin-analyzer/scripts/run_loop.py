@@ -1,11 +1,59 @@
 #!/usr/bin/env python3
-"""Run the eval + improve loop until all pass or max iterations reached.
+"""
+run_loop.py (CLI)
+=====================================
 
-Combines run_eval.py and improve_description.py in a loop, tracking history
-and returning the best description found. Supports train/test split to prevent
-overfitting.
+Purpose:
+    Runs the evaluation and improvement loop for skill descriptions iteratively.
+    Combines run_eval.py and improve_description.py in a single loop to track 
+    scores and return the best found description candidate.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Investigate / Optimization / Execution
+
+Usage Examples:
+    python3 run_loop.py --eval-set eval_set.json --skill-path plugins/agent-plugin-analyzer/skills/audit-plugin
+    python3 run_loop.py --eval-set set.json --skill-path path/to/skill --max-iterations 10
+
+Supported Object Types:
+    Optimizer execution benchmarks.
+
+CLI Arguments:
+    --eval-set: Path to eval set JSON file (Required)
+    --skill-path: Path to skill directory (Required)
+    --description: Override starting description 
+    --num-workers: Number of parallel workers (default: 10)
+    --timeout: Timeout per query in seconds (default: 30)
+    --max-iterations: Max improvement iterations (default: 5)
+    --runs-per-query: Number of runs per query (default: 3)
+    --trigger-threshold: Trigger rate threshold (default: 0.5)
+    --holdout: Fraction of eval set to hold out for testing (default: 0.4)
+    --eval-model: Model with evaluation backend
+    --improve-model: Model with improvement backend
+    --verbose: Print progress to stderr
+    --report: Generate HTML report path (default: auto)
+    --results-dir: Save all outputs to a timestamped subdirectory
+
+Input Files:
+    - eval_set.json (Required)
+    - SKILL.md (Inside skill path)
+
+Output:
+    - JSON results format via stdout.
+    - Live HTML report page dashboards.
+    - results.tsv metric logging.
+
+Key Functions:
+    - run_loop()
+    - split_eval_set()
+
+Script Dependencies:
+    - generate_report
+    - improve_description
+    - run_eval
+    - utils
+
+Consumed by:
+    trigger evaluation benchmarks, continuous-skill-optimizer.
 """
 
 import argparse
@@ -245,7 +293,7 @@ def run_loop(
         iteration_timings.append(timing_entry)
 
         if verbose:
-            def print_eval_stats(label, results, elapsed):
+            def print_eval_stats(label: str, results: list[dict], elapsed: float) -> None:
                 pos = [r for r in results if r["should_trigger"]]
                 neg = [r for r in results if not r["should_trigger"]]
                 tp = sum(r["triggers"] for r in pos)
@@ -398,7 +446,7 @@ def run_loop(
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run eval + improve loop")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

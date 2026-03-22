@@ -1,1 +1,1 @@
-../../../references/create-mcp-integration/authentication.md
+../../../references/authentication.md

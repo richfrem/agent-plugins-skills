@@ -1,1 +1,1 @@
-../../../references/create-hook/fallback-tree.md
+../fallback-tree.md

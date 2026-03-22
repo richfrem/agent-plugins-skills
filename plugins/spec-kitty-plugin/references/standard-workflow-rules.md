@@ -2,7 +2,7 @@
 
 > **Status:** MANDATORY
 > **Enforcement:** Strict
-> **Visual Guide:** [Standard Workflow Diagram](diagrams/standard-spec-kitty-workflow.mmd)
+> **Visual Guide:** [Standard Workflow Diagram](../assets/diagrams/standard-spec-kitty-workflow.mmd)
 
 ## Context
 This project utilizes a **Spec-Work-Package (WP)** workflow powered by `spec-kitty`. The "Standard Workflow" relies on **Worktree Isolation** and **Automated Batch Merging**.

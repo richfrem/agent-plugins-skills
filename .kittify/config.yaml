@@ -4,6 +4,6 @@ agents:
   available:
   - windsurf
   selection:
-    preferred_implementer: windsurf
-    preferred_reviewer: windsurf
+    preferred_implementer:
+    preferred_reviewer:
   auto_commit: true

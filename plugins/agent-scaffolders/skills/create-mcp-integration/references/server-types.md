@@ -1,1 +1,1 @@
-../../../references/create-mcp-integration/server-types.md
+../../../references/server-types.md

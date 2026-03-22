@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/UIUX_styling_guidelines_and_guidance.md
+../../../references/UIUX_styling_guidelines_and_guidance.md

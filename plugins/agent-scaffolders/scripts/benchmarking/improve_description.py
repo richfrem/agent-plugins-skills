@@ -1,10 +1,50 @@
-"""Improve a skill description based on eval results.
+"""
+improve_description.py (CLI)
+=====================================
 
-Takes eval results (from run_eval.py) and generates an improved description
-by calling `claude -p` as a subprocess (same auth pattern as run_eval.py —
-uses the session's Claude Code auth, no separate ANTHROPIC_API_KEY needed).
+Purpose:
+    Improve a skill description based on eval results using iterative LLM feedback.
+    Takes eval results (from run_eval.py) and generates an improved description
+    by calling `claude -p` (or `copilot -p`) as a subprocess.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Layer: Meta-Execution
+
+Usage Examples:
+    python improve_description.py --eval-results results.json --skill-path my_skill/
+
+Supported Object Types:
+    - Agent Skill directories with SKILL.md
+    - Evaluation results dictionary structure
+
+CLI Arguments:
+    --eval-results: Path to eval results JSON
+    --skill-path: Path to skill directory
+    --history: Path to previous attempts history JSON
+    --model: Backend model override
+    --engine: "claude" or "copilot"
+    --verbose: Enable thinking prints to stderr
+
+Input Files:
+    - eval_results.json
+    - history.json
+    - SKILL.md
+
+Output:
+    - JSON dictionary with "description" and "history"
+
+Key Functions:
+    - _call_model(): Direct invocation of CLI model backend.
+    - improve_description(): Generates optimization prompt and parses description.
+
+Script Dependencies:
+    - utils.py (parse_skill_md)
+
+Consumed by:
+    - User (CLI)
+    - Continuous skill optimizer
+
+Credits:
+    Inspired by and adapted from Anthropic's skill-creator.
 """
 
 import argparse
@@ -214,7 +254,7 @@ Please respond with only the new description text in <new_description> tags, not
     return description
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Improve a skill description based on eval results")
     parser.add_argument("--eval-results", required=True, help="Path to eval results JSON (from run_eval.py)")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

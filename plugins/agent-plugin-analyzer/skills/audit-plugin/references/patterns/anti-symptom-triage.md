@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/anti-symptom-triage.md
+../../../../references/patterns/anti-symptom-triage.md

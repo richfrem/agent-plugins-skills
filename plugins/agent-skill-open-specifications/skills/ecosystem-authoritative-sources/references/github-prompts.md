@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/github-prompts.md
+../../../references/github-prompts.md

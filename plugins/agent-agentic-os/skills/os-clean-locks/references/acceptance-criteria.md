@@ -1,1 +1,1 @@
-../../../references/os-clean-locks/acceptance-criteria.md
+../acceptance-criteria.md

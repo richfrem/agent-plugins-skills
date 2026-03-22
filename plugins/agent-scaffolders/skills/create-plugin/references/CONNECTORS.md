@@ -1,1 +1,1 @@
-../../../references/create-plugin/CONNECTORS.md
+../CONNECTORS.md

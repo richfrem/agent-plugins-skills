@@ -1,1 +1,1 @@
-../../../references/create-hook/acceptance-criteria.md
+../acceptance-criteria.md

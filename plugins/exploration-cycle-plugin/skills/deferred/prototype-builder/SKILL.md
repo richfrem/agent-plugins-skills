@@ -6,8 +6,8 @@ allowed-tools: Bash, Read, Write
 
 # Prototype Builder (Interactive Co-Authoring)
 
-> ⚠️ **STUB** — `execute.py` not yet implemented. Use the [prototype-companion-agent](../../agents/prototype-companion-agent.md) for the real logic.
-[See acceptance criteria](references/acceptance-criteria.md)
+> ⚠️ **STUB** — `execute.py` not yet implemented. Use the [prototype-companion-agent](../../../agents/prototype-companion-agent.md) for the real logic.
+[See acceptance criteria](../../prototype-builder/acceptance-criteria.md)
 
 ## Discovery Phase
 <!-- Add questions here to gather requirements, or remove section if fully autonomous -->

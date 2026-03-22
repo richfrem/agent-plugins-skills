@@ -21,8 +21,8 @@ allowed-tools: Bash, Read, Write
 
 # Exploration Orchestrator (Interactive Selection)
 
-> ⚠️ **STUB** — `execute.py` not yet implemented. Use the [exploration-cycle-orchestrator-agent](../../agents/exploration-cycle-orchestrator-agent.md) for the real logic.
-[See acceptance criteria](references/acceptance-criteria.md)
+> ⚠️ **STUB** — `execute.py` not yet implemented. Use the [exploration-cycle-orchestrator-agent](../../../agents/exploration-cycle-orchestrator-agent.md) for the real logic.
+[See acceptance criteria](../../exploration-orchestrator/acceptance-criteria.md)
 
 ## Discovery Phase
 <!-- Add questions here to gather requirements, or remove section if fully autonomous -->
