@@ -1,1 +1,0 @@
-../../scripts/verify_workflow_state.py

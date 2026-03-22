@@ -537,9 +537,9 @@
       "computedHash": "41706db69bab1fb49093c51821fc1669b153dcb79c12b3773da13819c30f76e4"
     },
     "spec-kitty-accept": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "74668053fc6c4675b3cc001e68ea7b26c426f2d43321c9b7e4e8133c79d080f7"
+      "computedHash": "6b9b4cfa4cb073a8fae1f9ac354bbaf8426999229aec45cc1c3db5ac54503094"
     },
     "spec-kitty-agent": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -547,54 +547,54 @@
       "computedHash": "2e7b807d0939b4bca105495a5f1c85a01dfe3d2a0bc2b333659630ece7ebc337"
     },
     "spec-kitty-analyze": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "867cfea20bc90a0bd19c31522f2d6c558f7489d7deb94182dfb12f8da61ac87d"
+      "computedHash": "7c322a8e0a18f3d468b3e8148fe1000599a07b5417fdcf990489249ad812f6ac"
     },
     "spec-kitty-checklist": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "f405cb2aa1cf3f368396078cde93f2e4545f9728df3da4abf606f4d1822bf3b9"
+      "computedHash": "1d1f602d160de0f61993c560e16bc314bdf602029fb00e8c3fb9bc3e79e3e0cb"
     },
     "spec-kitty-clarify": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "6f39dfc44571ab118fbb5ebb2cce5ce798d11d87529d2eca2cfd0fe99cfc72ef"
+      "computedHash": "385a992bf3b60183051e61e8bea4c829da2cb73d5ee17b7484211ff84264d6ed"
     },
     "spec-kitty-constitution": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "f58409f88675a3ac87fa8cde25db90f69ab65e453412862bc6f04e23b72033d7"
+      "computedHash": "cf9ab0f88483bef3d256aa8884f9cc995cd59c0b878fc12c3c80a7598f43f7ac"
     },
     "spec-kitty-dashboard": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "026d6be9b22b6a356ec760279d5371667784fce59d16a43d19c37cb288b466ee"
+      "computedHash": "e956dd8303256706fc9e4f6945790129e25eaf3d683ad7432c04c0764c6e0103"
     },
     "spec-kitty-implement": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "97b985c4a3f754368ab50ab5e538a5c0610b2751e50522780b7eaa6c976a5f51"
+      "computedHash": "1924601e6cda24a254ce9f593a0a8b5dea2af3d0301d1d199bc88716b8f04e91"
     },
     "spec-kitty-merge": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "7dd21d052a5e610ee9acbf9870113982025383df45596a7ed85fea9ad7522374"
+      "computedHash": "b202e30e5f098183dbad82b46973e92da454d78068568c923d6b99bdd46bbcd5"
     },
     "spec-kitty-plan": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "abbfc6d05bc0656842fa2c735778d1ca748c0788088f14bbcf90c9a291998630"
+      "computedHash": "431a2e928ca65ecdd6442b3e0087d97bccfde8c9bd7a57154fcf5f3a3295f616"
     },
     "spec-kitty-research": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "5e5ce7c1acf814600c6826d1bc4a3f72b461fe829b071ebffc9e6b5be1b138f4"
+      "computedHash": "50896df319b1945195bfcf71b83c80ca545725231a8ec32cfac95f246327d607"
     },
     "spec-kitty-review": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "fd81f484bfaa86cc5f40a64608d6896a2fb3e03b7417f10d60ef565386f994fc"
+      "computedHash": "2f966ea3e62920bfa1fdefcac7907a194795364b082d9f757bae5e7cd547ae87"
     },
     "spec-kitty-spec-kitty-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -604,14 +604,14 @@
       "updatedAt": "2026-03-21T21:26:08.910370Z"
     },
     "spec-kitty-specify": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "567aecd16c41b07b51063a60168d43653d741d3bed2ea4f7e0340ad87c9a7d22"
+      "computedHash": "a28310fe2c0337da1cbb590d6c2738a1d856122d263f16e0e625d9a78834067d"
     },
     "spec-kitty-status": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "f0916f8e699512065bba275615675c00b6d422084a177c7622b5eaa0373dd5f2"
+      "computedHash": "5ba53b5e88d4ea2472f0434a358223b315903f720db15493a9478d4e02707b69"
     },
     "spec-kitty-sync-plugin": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -619,14 +619,29 @@
       "computedHash": "c7301651f75d415d198f5db843892f836f7eb1f1cdb36e4ac742b8ab4355558d"
     },
     "spec-kitty-tasks": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "fb9a03f6da678a4229db3825725222b312144403323f0fc25ddaa339ecc38303"
+      "computedHash": "0d855b7a9a4b934fd91ec55851db66f34216c36c6527b89c2ba6379d9e7b057d"
+    },
+    "spec-kitty-tasks-finalize": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
+      "sourceType": "local",
+      "computedHash": "d8b25ee8ab9d1dea68bd81e998f6987112129f2fd93f178d9de49863d1881c05"
+    },
+    "spec-kitty-tasks-outline": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
+      "sourceType": "local",
+      "computedHash": "c30a5b1cee32cf4ef777dae598c4803a9d99764edb9d6e34599a13c6ee357c31"
+    },
+    "spec-kitty-tasks-packages": {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
+      "sourceType": "local",
+      "computedHash": "ece9663020139e01c45b6f174b9f9cf8b42a06bf31ede7cfad0b9d4449f03a87"
     },
     "spec-kitty-workflow": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin",
       "sourceType": "local",
-      "computedHash": "03cda8fab81f90216c0852f29f81f7f0e578853746fbf1adc4dab85055621b50"
+      "computedHash": "b60c766a55f864e995b24205174962f93e02fd43e5f69d17d57d619f4afdd9fd"
     },
     "synthesize-learnings": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-plugin-analyzer",
