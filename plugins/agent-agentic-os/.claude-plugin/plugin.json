@@ -22,7 +22,8 @@
         "skills/os-clean-locks/SKILL.md",
         "skills/skill-improvement-eval/SKILL.md",
         "skills/todo-check/SKILL.md",
-        "skills/concurrent-agent-loop/SKILL.md"
+        "skills/concurrent-agent-loop/SKILL.md",
+        "skills/loop-progress-report/SKILL.md"
     ],
     "agents": [
         "agents/agentic-os-setup.md",
