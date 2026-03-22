@@ -3,19 +3,10 @@ name: spec-kitty-specify
 description: Create or update the feature specification from a natural language feature
 ---
 
-## Dependencies
+## 🔗 Workflow Provenance
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
----
+> **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.specify.md`](./workflows/spec-kitty.specify.md).
+> It acts as an intelligent wrapper that is continuously improved with each execution.
 
 # /spec-kitty.specify - Create Feature Specification
 
@@ -44,6 +35,49 @@ $ARGUMENTS
 ```
 
 You **MUST** consider the user input before proceeding (if not empty).
+
+## Branch Strategy Confirmation (MANDATORY)
+
+Before discovery, resolve branch intent through the Python helper, not by probing git directly:
+
+```bash
+spec-kitty agent feature branch-context --json
+```
+
+If the user already told you the intended landing branch, pass it explicitly:
+
+```bash
+spec-kitty agent feature branch-context --json --target-branch <intended-branch>
+```
+
+Parse the JSON and, in your next reply, explicitly tell the user:
+
+- Current branch at workflow start: `current_branch`
+- Default planning/base branch if you create the feature right now: `planning_base_branch`
+- Final merge target for completed changes: `merge_target_branch`
+- Whether `branch_matches_target` is true or false
+- If that is not the intended landing branch, stop and ask which branch should receive this feature before you run `create-feature`
+
+Never talk generically about `main` or "the default branch". Name the actual branch values from the helper JSON. Do not shell out to git for this prompt.
+
+## DO NOT
+
+- Do not mix functional, non-functional, and constraint requirements in one list.
+- Do not emit requirements without stable IDs (`FR-###`, `NFR-###`, `C-###`).
+- Do not leave requirement status fields empty.
+- Do not write non-functional requirements without measurable thresholds.
+- Do not proceed to planning with unresolved requirement quality checklist failures.
+
+## Constitution Context Bootstrap (required)
+
+Before discovery questions, load constitution context for this action:
+
+```bash
+spec-kitty constitution context --action specify --json
+```
+
+- If JSON `mode` is `bootstrap`, treat JSON `text` as the initial governance context and consult referenced docs as needed.
+- If JSON `mode` is `compact`, proceed with concise governance context.
 
 ## Discovery Gate (mandatory)
 
@@ -156,39 +190,46 @@ Given that feature description, do this:
    - `result`: "success" or error message
    - `feature`: Feature number and slug (e.g., "014-checkout-upsell-flow")
    - `feature_dir`: Absolute path to the feature directory inside the main repo
+   - `current_branch`: the branch you started from
    - `target_branch` / `base_branch`: deterministic branch contract for downstream commands
+   - `planning_base_branch` / `merge_target_branch`: explicit landing-branch aliases
+   - `branch_strategy_summary`: human-readable summary of the branch contract
 
    Parse these values for use in subsequent steps. All file paths are absolute.
 
    **IMPORTANT**: You must only ever run this command once. The JSON is provided in the terminal output - always refer to it to get the actual paths you're looking for.
+   Immediately restate the branch contract to the user after parsing the JSON:
+   - Current branch at start
+   - Intended planning/base branch
+   - Final merge target for later changes
+   - Whether that matches the user's intended landing branch
 3. **Stay in the main repository**: No worktree is created during specify.
 
 4. Read the files created by `create-feature`:
    - `<feature_dir>/spec.md` (already created, may be empty/template-filled)
    - `<feature_dir>/meta.json` (already created with feature identity metadata)
 
-   The software-dev spec template is bundled at `.kittify/missions/software-dev/templates/spec-template.md`.
+   The software-dev spec template is bundled at `./templates/spec-template.md`.
 
 5. Update `<feature_dir>/meta.json` only when needed:
    - Keep identity fields from `create-feature` unchanged (`feature_number`, `slug`, `feature_slug`, `created_at`, `target_branch`).
+   - Keep `target_branch` aligned to the value from `create-feature --json` output. Never hardcode `main`.
    - Ensure `friendly_name` matches the confirmed title.
    - Ensure `mission` is correct.
    - Optionally add/update `source_description`.
    - Ensure `vcs` exists (`"git"` default).
 
-   Expected `meta.json` shape (preserve existing values unless explicitly changed):
-
+   Example `meta.json` schema (identity fields that must be present explicitly):
    ```json
    {
-     "feature_number": "014",
-     "slug": "014-checkout-upsell-flow",
-     "feature_slug": "014-checkout-upsell-flow",
-     "created_at": "2026-03-06T12:34:56Z",
-     "target_branch": "main",
-     "friendly_name": "Checkout Upsell Flow",
+     "feature_number": "042",
+     "slug": "my-feature",
+     "feature_slug": "042-my-feature",
+     "friendly_name": "My Feature",
      "mission": "software-dev",
-     "source_description": "optional source summary",
-     "vcs": "git"
+     "target_branch": "main",
+     "vcs": "git",
+     "created_at": "2026-01-01T00:00:00+00:00"
    }
    ```
 
@@ -204,7 +245,8 @@ Given that feature description, do this:
       * Record any interim assumption in the Assumptions section
       * Prioritize clarifications by impact: scope > outcomes > risks/security > user experience > technical details
     - Fill User Scenarios & Testing section (ERROR if no clear user flow can be determined)
-    - Generate Functional Requirements (each requirement must be testable)
+    - Generate separated requirement tables: Functional (`FR-###`), Non-Functional (`NFR-###`), and Constraints (`C-###`)
+    - Ensure each requirement entry has a status value and testable wording
     - Define Success Criteria (measurable, technology-agnostic outcomes)
     - Identify Key Entities (if data involved)
 
@@ -232,6 +274,10 @@ Given that feature description, do this:
       
       - [ ] No [NEEDS CLARIFICATION] markers remain
       - [ ] Requirements are testable and unambiguous
+      - [ ] Requirement types are separated (Functional / Non-Functional / Constraints)
+      - [ ] IDs are unique across FR-###, NFR-###, and C-### entries
+      - [ ] All requirement rows include a non-empty Status value
+      - [ ] Non-functional requirements include measurable thresholds
       - [ ] Success criteria are measurable
       - [ ] Success criteria are technology-agnostic (no implementation details)
       - [ ] All acceptance scenarios are defined
@@ -248,7 +294,7 @@ Given that feature description, do this:
       
       ## Notes
       
-      - Items marked incomplete require spec updates before `/spec-kitty.clarify` or `/spec-kitty.plan`
+      - Items marked incomplete require spec updates before `/spec-kitty.plan`
       ```
    
    b. **Run Validation Check**: Review the spec against each checklist item:
@@ -286,7 +332,7 @@ Given that feature description, do this:
    
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-9. Report completion with feature directory, spec file path, checklist results, and readiness for the next phase (`/spec-kitty.clarify` or `/spec-kitty.plan`).
+9. Report completion with feature directory, spec file path, checklist results, and readiness for the next phase (`/spec-kitty.plan`).
 
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 

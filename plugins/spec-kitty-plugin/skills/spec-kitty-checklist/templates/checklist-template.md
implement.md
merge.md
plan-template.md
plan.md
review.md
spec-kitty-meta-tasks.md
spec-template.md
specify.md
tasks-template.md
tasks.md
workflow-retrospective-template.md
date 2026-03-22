@@ -1,0 +1,12 @@
+../../../assets/templates/checklist-template.md
+implement.md
+merge.md
+plan-template.md
+plan.md
+review.md
+spec-kitty-meta-tasks.md
+spec-template.md
+specify.md
+tasks-template.md
+tasks.md
+workflow-retrospective-template.md

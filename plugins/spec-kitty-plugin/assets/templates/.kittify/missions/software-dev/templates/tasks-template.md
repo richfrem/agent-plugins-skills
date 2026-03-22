@@ -1,0 +1,1 @@
+../../../../../../../../.kittify/missions/software-dev/templates/tasks-template.md

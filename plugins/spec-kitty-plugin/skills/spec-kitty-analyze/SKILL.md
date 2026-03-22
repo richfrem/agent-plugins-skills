@@ -3,19 +3,10 @@ name: spec-kitty-analyze
 description: Perform a non-destructive cross-artifact consistency and quality analysis
 ---
 
-## Dependencies
+## 🔗 Workflow Provenance
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
----
+> **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.analyze.md`](./workflows/spec-kitty.analyze.md).
+> It acts as an intelligent wrapper that is continuously improved with each execution.
 
 ## User Input
 
@@ -33,7 +24,7 @@ Identify inconsistencies, duplications, ambiguities, and underspecified items ac
 
 **STRICTLY READ-ONLY**: Do **not** modify any files. Output a structured analysis report. Offer an optional remediation plan (user must explicitly approve before any follow-up editing commands would be invoked manually).
 
-**Constitution Authority**: The project constitution (`/.kittify/memory/constitution.md`) is **non-negotiable** within this analysis scope. Constitution conflicts are automatically CRITICAL and require adjustment of the spec, plan, or tasks—not dilution, reinterpretation, or silent ignoring of the principle. If a principle itself needs to change, that must occur in a separate, explicit constitution update outside `/analyze`.
+**Constitution Authority**: The project constitution (`/constitution/constitution.md`) is **non-negotiable** within this analysis scope. Constitution conflicts are automatically CRITICAL and require adjustment of the spec, plan, or tasks—not dilution, reinterpretation, or silent ignoring of the principle. If a principle itself needs to change, that must occur in a separate, explicit constitution update outside `/analyze`.
 
 ## Execution Steps
 
@@ -76,7 +67,7 @@ Load only the minimal necessary context from each artifact:
 
 **From constitution:**
 
-- Load `/.kittify/memory/constitution.md` for principle validation
+- Load `/constitution/constitution.md` for principle validation
 
 ### 3. Build Semantic Models
 

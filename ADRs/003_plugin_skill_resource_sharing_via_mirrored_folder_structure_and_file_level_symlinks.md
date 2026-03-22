@@ -132,6 +132,15 @@ npx copies real content. The installed skill has working files, no broken symlin
 - Symlink depth must be calculated carefully per directory level (file count is low, manageable)
 - Adding a new shared file requires: add to plugin root dir + add symlink in skill dir (two steps)
 
+**Additional benefit: mirrored structure preserves relative path correctness.**
+
+When the plugin root and skill directories share the same folder/subfolder structure for `references/`,
+`assets/`, and `scripts/`, the relative paths embedded inside skill content files (e.g. SKILL.md
+referencing `references/diagrams/foo.mmd`) remain valid both in the plugin source tree and after
+`npx skills add` installs the skill. The symlinks inside the skill mirror the same depth as the real
+files at plugin root, so any relative reference that works at plugin root also works from the skill
+root without modification.
+
 **Applies to all future plugins with shared resources.** Any plugin that has both `commands/` and
 `skills/` with shared scripts/assets/references must follow this structure. Plugins with only skills and
 no shared command references may keep resources inside the skill with no symlinks needed.

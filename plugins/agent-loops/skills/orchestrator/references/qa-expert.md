@@ -1,1 +1,1 @@
-../../../personas/quality-testing/qa-expert.md
+../../../references/orchestrator/qa-expert.md

@@ -3,19 +3,10 @@ name: spec-kitty-tasks
 description: Generate grouped work packages with actionable subtasks and matching
 ---
 
-## Dependencies
+## 🔗 Workflow Provenance
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
----
+> **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.tasks.md`](./workflows/spec-kitty.tasks.md).
+> It acts as an intelligent wrapper that is continuously improved with each execution.
 
 # /spec-kitty.tasks - Generate Work Packages
 
@@ -66,39 +57,39 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
-## Location Check (0.11.0+)
+## Context Resolution (0.11.0+)
 
-Before proceeding, verify you are in the planning repository:
+Before proceeding, resolve canonical command context:
 
-1. Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks` from the repository root and capture:
-   - `target_branch` / `base_branch`
-   - `TARGET_BRANCH` / `BASE_BRANCH` (uppercase aliases)
-   - `feature_dir`, `artifact_files`, `artifact_dirs`
-
-   Treat this JSON as canonical branch context for this command. Do not read `meta.json` to infer branch expectations.
-
-**Check your current branch:**
 ```bash
-git branch --show-current
+spec-kitty agent context resolve --action tasks --json
 ```
 
-**Expected output:** the value from `TARGET_BRANCH` (typically `main` or `2.x`)
-**If you see a feature branch:** You're in the wrong place. Return to the target branch:
-```bash
-cd $(git rev-parse --show-toplevel)
-git checkout "$TARGET_BRANCH"
-```
+Treat the resolver JSON as canonical for:
+- `feature_slug`
+- `feature_dir`
+- `current_branch`
+- `target_branch`
+- `planning_base_branch`
+- `merge_target_branch`
+- `branch_matches_target`
+- exact follow-up commands (`check_prerequisites`, `finalize_tasks`)
 
-Work packages are generated directly in `kitty-specs/###-feature/` and committed to the target branch. Worktrees are created later when implementing each work package.
+Prompts do not rediscover feature context. Commands do.
 
 ## Outline
 
-1. **Setup**: Use the previously captured `check-prerequisites` JSON. Capture:
+1. **Setup**: Run the exact `check_prerequisites` command returned by the resolver and capture:
    - `feature_dir`
    - `artifact_files` / `artifact_dirs` (if present)
    - `available_docs`
+   - `current_branch`
    - `target_branch` / `base_branch`
+   - `planning_base_branch` / `merge_target_branch`
+   - `branch_matches_target`
    All paths must be absolute.
+
+   If `branch_matches_target` is false, stop and tell the user the checkout is on the wrong planning branch instead of probing git manually in the prompt.
 
    **CRITICAL**: The command returns JSON with `feature_dir` as an ABSOLUTE path (e.g., `/Users/robert/Code/new_specify/kitty-specs/001-feature-name`).
    It also returns `runtime_vars.now_utc_iso` (`NOW_UTC_ISO`) for deterministic timestamp fields.
@@ -116,17 +107,17 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
    - ❌ `feature_dir/tasks/planned/WP01-slug.md` (WRONG - no subdirectories!)
    - ❌ `WP01-slug.md` (wrong directory)
 
-2. **Load design documents** from `feature_dir` (only those present):
+3. **Load design documents** from `feature_dir` (only those present):
    - **Required**: plan.md (tech architecture, stack), spec.md (user stories & priorities)
    - **Optional**: data-model.md (entities), contracts/ (API schemas), research.md (decisions), quickstart.md (validation scenarios)
    - Scale your effort to the feature: simple UI tweaks deserve lighter coverage, multi-system releases require deeper decomposition.
 
-3. **Derive fine-grained subtasks** (IDs `T001`, `T002`, ...):
+4. **Derive fine-grained subtasks** (IDs `T001`, `T002`, ...):
    - Parse plan/spec to enumerate concrete implementation steps, tests (only if explicitly requested), migrations, and operational work.
    - Capture prerequisites, dependencies, and parallelizability markers (`[P]` means safe to parallelize per file/concern).
    - Maintain the subtask list internally; it feeds the work-package roll-up and the prompts.
 
-4. **Roll subtasks into work packages** (IDs `WP01`, `WP02`, ...):
+5. **Roll subtasks into work packages** (IDs `WP01`, `WP02`, ...):
 
    **IDEAL WORK PACKAGE SIZE** (most important guideline):
    - **Target: 3-7 subtasks per WP** (results in 200-500 line prompts)
@@ -151,7 +142,7 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
    - Name with succinct goal (e.g., "User Story 1 – Real-time chat happy path")
    - Record metadata: priority, success criteria, risks, dependencies, included subtasks
 
-5. **Write `tasks.md`** using the bundled tasks template (`.kittify/missions/software-dev/templates/tasks-template.md`):
+6. **Write `tasks.md`** using the bundled tasks template (`.kittify/missions/software-dev/templates/tasks-template.md`):
    - **Location**: Write to `feature_dir/tasks.md` (use the absolute feature_dir path from step 1)
    - Populate the Work Package sections (setup, foundational, per-story, polish) with the `WPxx` entries
    - Under each work package include:
@@ -161,7 +152,7 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
      - Parallel opportunities, dependencies, and risks
    - Preserve the checklist style so implementers can mark progress
 
-6. **Generate prompt files (one per work package)**:
+7. **Generate prompt files (one per work package)**:
    - **CRITICAL PATH RULE**: All work package files MUST be created in a FLAT `feature_dir/tasks/` directory, NOT in subdirectories!
    - Correct structure: `feature_dir/tasks/WPxx-slug.md` (flat, no subdirectories)
    - WRONG (do not create): `feature_dir/tasks/planned/`, `feature_dir/tasks/doing/`, or ANY lane subdirectories
@@ -173,8 +164,9 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
      - Derive a kebab-case slug from the title; filename: `WPxx-slug.md`
      - Full path example: `feature_dir/tasks/WP01-create-html-page.md` (use ABSOLUTE path from feature_dir variable)
      - Use the bundled task prompt template (`.kittify/missions/software-dev/templates/task-prompt-template.md`) to capture:
-     - Frontmatter with `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, history entry
+     - Frontmatter with `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, `planning_base_branch`, `merge_target_branch`, `branch_strategy`, and history entry
        - Objective, context, detailed guidance per subtask
+       - A Branch Strategy section that repeats the planning branch, final merge target, and notes that the actual `base_branch` may later differ for stacked WPs during `/spec-kitty.implement`
        - Test strategy (only if requested)
        - Definition of Done, risks, reviewer guidance
      - Update `tasks.md` to reference the prompt filename
@@ -184,7 +176,7 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
 
    **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `spec-kitty agent tasks move-task`.
 
-7. **Finalize tasks with dependency parsing and commit**:
+8. **Finalize tasks with dependency parsing and commit**:
    After generating all WP prompt files, run the finalization command to:
    - Parse dependencies from tasks.md
    - Update WP frontmatter with dependencies field
@@ -193,11 +185,12 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
 
    **CRITICAL**: Run this command from repo root:
    ```bash
-   spec-kitty agent feature finalize-tasks --json
+   spec-kitty agent feature finalize-tasks --json --feature <feature-slug>
    ```
 
    This step is MANDATORY for workspace-per-WP features. Without it:
    - Dependencies won't be in frontmatter
+   - Branching-strategy metadata won't be normalized into every WP prompt
    - Requirement refs won't be validated/normalized
    - Agents won't know which --base flag to use
    - Tasks won't be committed to target branch
@@ -209,7 +202,7 @@ Work packages are generated directly in `kitty-specs/###-feature/` and committed
    - Other dirty files shown by 'git status' (templates, config) are UNRELATED
    - Verify using the commit_hash from JSON output, not by running git add/commit again
 
-8. **Report**: Provide a concise outcome summary:
+9. **Report**: Provide a concise outcome summary:
    - Path to `tasks.md`
    - Work package count and per-package subtask tallies
    - **Average prompt size** (estimate lines per WP)
@@ -254,20 +247,23 @@ The WP prompt must show the correct command so agents don't branch from the wron
 
 ## Requirement Reference Mapping (MANDATORY)
 
-`finalize-tasks` validates requirement coverage from `tasks.md`. Each WP section must include a requirement mapping line in this format:
+After creating all WP sections and prompt files, register requirement mappings using the CLI.
+The CLI validates each ref against spec.md and writes `requirement_refs` directly into each
+WP file's YAML frontmatter — no sidecar files needed.
 
-```markdown
-### Requirement Refs
-- FR-001, FR-007
+**Batch mode (recommended)** — register all WP mappings at once:
+```bash
+spec-kitty agent tasks map-requirements --batch '{"WP01":["FR-001","FR-002"],"WP02":["FR-003","FR-004"]}' --json
 ```
 
-or
-
-```markdown
-**Requirements Refs**: FR-001, FR-007
+**Individual mode** — register one WP at a time:
+```bash
+spec-kitty agent tasks map-requirements --wp WP01 --refs FR-001,FR-002 --json
 ```
 
-Do not rely on WP frontmatter alone for requirement mapping; keep the canonical mapping in `tasks.md`.
+The response includes a coverage summary showing which FRs are still unmapped. Keep calling
+until `unmapped_functional` is empty. Default mode unions new refs with existing ones in
+frontmatter. Use `--replace` to overwrite a WP's refs (e.g., to correct a bad mapping).
 
 ## Work Package Sizing Guidelines (CRITICAL)
 
@@ -389,11 +385,17 @@ Do not rely on WP frontmatter alone for requirement mapping; keep the canonical 
 
 ## Step-by-Step Process
 
-### Step 1: Setup
+### Step 1: Detect Feature Context
 
-Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks` and capture `feature_dir`.
+Resolve the feature slug from explicit user direction, current branch, or current directory path.
 
-### Step 2: Load Design Documents
+If ambiguous, run `check-prerequisites` once without `--feature`, parse the JSON candidate list, and select one explicit feature slug.
+
+### Step 2: Setup
+
+Run `spec-kitty agent feature check-prerequisites --json --paths-only --include-tasks --feature <feature-slug>` and capture `feature_dir`.
+
+### Step 3: Load Design Documents
 
 Read from `feature_dir`:
 - spec.md (required)
@@ -402,13 +404,13 @@ Read from `feature_dir`:
 - research.md (optional)
 - contracts/ (optional)
 
-### Step 3: Derive ALL Subtasks
+### Step 4: Derive ALL Subtasks
 
 Create complete list of subtasks with IDs T001, T002, etc.
 
 **Don't worry about count yet - capture EVERYTHING needed.**
 
-### Step 4: Group into Work Packages
+### Step 5: Group into Work Packages
 
 **SIZING ALGORITHM**:
 
@@ -444,7 +446,7 @@ For each cohesive unit of work:
 - WP02: Add logging (2 subtasks, ~120 lines)
   - ✓ Merge into: WP01: Infrastructure Setup (4 subtasks, ~220 lines)
 
-### Step 5: Write tasks.md
+### Step 6: Write tasks.md
 
 Create work package sections with:
 - Summary (goal, priority, test criteria)
@@ -454,7 +456,7 @@ Create work package sections with:
 - Dependencies
 - **Estimated prompt size** (e.g., "~400 lines")
 
-### Step 6: Generate WP Prompt Files
+### Step 7: Generate WP Prompt Files
 
 For each WP, generate `feature_dir/tasks/WPxx-slug.md` using the template.
 
@@ -468,9 +470,9 @@ For each WP, generate `feature_dir/tasks/WPxx-slug.md` using the template.
 - Estimated lines: 200-500? ✓ | 500-700? ⚠️ | 700+? ❌ SPLIT
 - Can implement in one session? ✓ | Multiple sessions needed? ❌ SPLIT
 
-### Step 7: Finalize Tasks
+### Step 8: Finalize Tasks
 
-Run `spec-kitty agent feature finalize-tasks --json` to:
+Run the resolver-returned `finalize_tasks` command to:
 - Parse dependencies
 - Update frontmatter
 - Validate (cycles, invalid refs)
@@ -479,7 +481,7 @@ Run `spec-kitty agent feature finalize-tasks --json` to:
 **DO NOT run git commit after this** - finalize-tasks commits automatically.
 Check JSON output for "commit_created": true and "commit_hash" to verify.
 
-### Step 8: Report
+### Step 9: Report
 
 Provide summary with:
 - WP count and subtask tallies

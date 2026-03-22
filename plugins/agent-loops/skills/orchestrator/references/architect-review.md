@@ -1,1 +1,1 @@
-../../../personas/quality-testing/architect-review.md
+../../../references/orchestrator/architect-review.md

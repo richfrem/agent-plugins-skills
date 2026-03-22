@@ -1,0 +1,1 @@
+../../../../../../../../.kittify/missions/research/templates/data-model-template.md

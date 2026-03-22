@@ -1,0 +1,1 @@
+../../../../../assets/templates/.kittify/missions/software-dev/templates/spec-template.md

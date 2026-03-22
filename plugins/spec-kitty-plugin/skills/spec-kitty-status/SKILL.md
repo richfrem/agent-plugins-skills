@@ -3,19 +3,10 @@ name: spec-kitty-status
 description: Display kanban board status showing work package progress across lanes (planned/doing/for_review/done).
 ---
 
-## Dependencies
+## 🔗 Workflow Provenance
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
----
+> **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.status.md`](./workflows/spec-kitty.status.md).
+> It acts as an intelligent wrapper that is continuously improved with each execution.
 
 ## Status Board
 

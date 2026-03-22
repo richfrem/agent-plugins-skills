@@ -60,3 +60,13 @@ plugins/**/temp/
 claude-skills-temp/
 .agent/
 .agents/
+.kittify/constitution/context-state.json
+.kittify/constitution/directives.yaml
+.kittify/constitution/governance.yaml
+.kittify/constitution/metadata.yaml
+.kittify/constitution/references.yaml
+.kittify/dossiers/
+.kittify/events/
+.kittify/merge-state.json
+.kittify/runtime/
+.kittify/workspaces/

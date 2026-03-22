@@ -1,0 +1,1 @@
+../../../.windsurf/workflows/spec-kitty.dashboard.md

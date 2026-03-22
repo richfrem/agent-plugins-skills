@@ -29,8 +29,8 @@ You are an active administrator for the **Spec-Driven Development** framework. T
 
 ## Visual References
 
-- **Update flow**: See `sync-plugin-flow.mmd`
-- **Initial install flow**: See `init-install-flow.mmd`
+- **Update flow**: See `references/diagrams/sync-plugin-flow.mmd`
+- **Initial install flow**: See `references/diagrams/init-install-flow.mmd`
 
 ## Execution Protocol
 

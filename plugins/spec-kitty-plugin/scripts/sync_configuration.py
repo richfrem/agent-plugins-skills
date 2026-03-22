@@ -26,23 +26,23 @@ from pathlib import Path
 from typing import NoReturn
 
 # Paths
-PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent.parent
-PLUGIN_ROOT = Path(__file__).parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+PLUGIN_ROOT = Path(__file__).parent.parent
 
 # Sources
 WORKFLOWS_SOURCE_DIR = PROJECT_ROOT / ".windsurf/workflows"
 RULES_SOURCE_DIR = PROJECT_ROOT / ".kittify/memory"
 AGENTS_RULES_SRC = PROJECT_ROOT / ".kittify/AGENTS.md"
-TEMPLATES_SOURCE_DIR = PROJECT_ROOT / ".kittify/missions/research/command-templates"
+TEMPLATES_SOURCE_DIR = PROJECT_ROOT / ".kittify/missions"
 
 # Destinations
 WORKFLOWS_DEST_DIR = PLUGIN_ROOT / "skills"
 RULES_DEST_DIR = PLUGIN_ROOT / "rules"
-TEMPLATES_DEST_DIR = PLUGIN_ROOT / "templates"
+TEMPLATES_DEST_DIR = PLUGIN_ROOT / "assets" / "templates"
+WORKFLOWS_PLUGIN_DIR = PLUGIN_ROOT / "workflows"
 
 # Legacy Cleanup
 LEGACY_COMMANDS_DIR = PLUGIN_ROOT / "commands"
-LEGACY_WORKFLOWS_DIR = PLUGIN_ROOT / "workflows"
 
 def sync_workflows() -> None:
     """Syncs workflow files from Windsurf source to plugin commands."""
@@ -52,6 +52,16 @@ def sync_workflows() -> None:
 
     print(f"🔄 Syncing workflows from {WORKFLOWS_SOURCE_DIR} to {WORKFLOWS_DEST_DIR}...")
     WORKFLOWS_DEST_DIR.mkdir(parents=True, exist_ok=True)
+    WORKFLOWS_PLUGIN_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 1. Sync Base Workflows to Plugin Root as Master Symlinks
+    for src_file in WORKFLOWS_SOURCE_DIR.glob("*.md"):
+        dest_file = WORKFLOWS_PLUGIN_DIR / src_file.name
+        rel_target = os.path.relpath(src_file, dest_file.parent)
+        
+        if dest_file.is_symlink() or dest_file.exists():
+            dest_file.unlink()
+        dest_file.symlink_to(rel_target)
 
     count = 0
     for src_file in WORKFLOWS_SOURCE_DIR.glob("*.md"):
@@ -92,10 +102,30 @@ def sync_workflows() -> None:
         # Generate formal SKILL.md
         skill_md_path = skill_dir / "SKILL.md"
         
+        # Create local skill symlink inside the specific skill workflows directory
+        skill_workflows_dir = skill_dir / "workflows"
+        skill_workflows_dir.mkdir(parents=True, exist_ok=True)
+        skill_symlink = skill_workflows_dir / src_file.name
+        rel_asset_target = os.path.relpath(WORKFLOWS_PLUGIN_DIR / src_file.name, skill_symlink.parent)
+        
+        # Cleanup old direct symlink if it exists
+        legacy_root_symlink = skill_dir / src_file.name
+        if legacy_root_symlink.is_symlink() or legacy_root_symlink.exists():
+            legacy_root_symlink.unlink()
+        
+        if skill_symlink.is_symlink() or skill_symlink.exists():
+            skill_symlink.unlink()
+        skill_symlink.symlink_to(rel_asset_target)
+        
         new_content = f"""---
 name: {skill_name.replace(".", "-")}
 description: {description}
 ---
+
+## 🔗 Workflow Provenance
+
+> **Source**: This skill augments the baseline workflow located at [`./workflows/{src_file.name}`](./workflows/{src_file.name}).
+> It acts as an intelligent wrapper that is continuously improved with each execution.
 
 {body_content}"""
 
@@ -104,9 +134,7 @@ description: {description}
 
     print(f"   ✅ Generated {count} skills.")
 
-    if LEGACY_WORKFLOWS_DIR.exists():
-        print(f"🗑️  Removing legacy workflows dir: {LEGACY_WORKFLOWS_DIR}")
-        shutil.rmtree(LEGACY_WORKFLOWS_DIR)
+    # Note: Legacy workflows directory is now actively used as the master symlink folder
         
     if LEGACY_COMMANDS_DIR.exists():
         print(f"🗑️  Removing legacy commands dir: {LEGACY_COMMANDS_DIR}")
@@ -137,12 +165,26 @@ def sync_rules() -> None:
     # 3. Sync Templates
     template_count = 0
     if TEMPLATES_SOURCE_DIR.exists():
-        for src_file in TEMPLATES_SOURCE_DIR.glob("*.md"):
-            dest_file = TEMPLATES_DEST_DIR / src_file.name
-            shutil.copy2(src_file, dest_file)
+        for src_file in TEMPLATES_SOURCE_DIR.rglob("*.md"):
+            rel_path = src_file.relative_to(PROJECT_ROOT)
+            dest_file = TEMPLATES_DEST_DIR / rel_path
+            
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            rel_target = os.path.relpath(src_file, dest_file.parent)
+            
+            if dest_file.is_symlink():
+                if os.readlink(dest_file) != rel_target:
+                    dest_file.unlink()
+                    dest_file.symlink_to(rel_target)
+            elif dest_file.exists():
+                dest_file.unlink()
+                dest_file.symlink_to(rel_target)
+            else:
+                dest_file.symlink_to(rel_target)
+                
             template_count += 1
             
-    print(f"   ✅ Synced {template_count} templates.")
+    print(f"   ✅ Synced {template_count} template symlinks.")
 
 def main() -> None:
     print("🚀 Synchronizing Spec-Kitty configurations...")

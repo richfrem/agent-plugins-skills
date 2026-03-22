@@ -2,6 +2,8 @@ vcs:
   type: git
 agents:
   available:
-  - copilot
-  - claude
   - windsurf
+  selection:
+    preferred_implementer: windsurf
+    preferred_reviewer: windsurf
+  auto_commit: true

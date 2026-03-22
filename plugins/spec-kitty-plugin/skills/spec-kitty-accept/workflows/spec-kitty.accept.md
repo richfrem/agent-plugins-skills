@@ -1,0 +1,1 @@
+../../../workflows/spec-kitty.accept.md

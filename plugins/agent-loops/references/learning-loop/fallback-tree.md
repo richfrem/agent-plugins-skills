@@ -1,0 +1,17 @@
+# Procedural Fallback Tree: Learning Loop
+
+## 1. Context Snapshot Is Missing
+If during Phase I (Orientation) the agent cannot find the expected `snapshot.md` or session state file:
+- **Action**: Do not invent context. Ask the user if this is a fresh project (in which case, create the initial orientation docs) or if the state file is located elsewhere. Do not proceed to Synthesis without establishing the baseline.
+
+## 2. User Denies "Proceed" at Strategic Gate
+If during Phase III (HITL) the user rejects the architectural findings or proposed strategy:
+- **Action**: Backtrack to Phase II (Synthesis). Ask the user for specific directional constraints, rewrite the research artifacts, and present the new findings at the Strategic Gate again.
+
+## 3. Red Team Auditor Subagent Fails to Boot
+If during Phase IV the attempt to spawn an adversarial CLI subagent (e.g., via `claude-cli-agent`) fails due to auth or pathing issues:
+- **Action**: Provide the context bundle directly to the User in the chat and ask them to perform the Red Team Review manually. Do not bypass the audit phase just because the subagent failed.
+
+## 4. Forced Premature Exit
+If the user abruptly says "stop" or "end session here":
+- **Action**: Immediately jump to Phase V (Completion & Handoff). Compile whatever partial synthesis exists, issue the Orchestrator handoff statement, and terminate. Never leave a session completely unsealed without attempting a graceful handoff.
