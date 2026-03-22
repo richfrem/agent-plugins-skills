@@ -32,11 +32,9 @@ Agent: [invokes business-requirements-capture, NOT exploration-workflow]
 
 This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the Spec-Kitty engineering workflow and produces handoff packages that optionally feed into it.
 
-**Loop patterns**: Adapts the reference `agent-loops` patterns in [`temp/agent-plugins-skills/plugins/agent-loops/README.md`](../../../../temp/agent-plugins-skills/plugins/agent-loops/README.md) — especially `learning-loop` for optional solo framing sessions and `dual-loop` as the conceptual model for orchestrated documentation passes to the requirements-doc-agent sub-agent.
+**Loop patterns**: Adapts the `agent-loops` patterns (`learning-loop` for solo framing sessions, `dual-loop` for orchestrated documentation passes to the requirements-doc-agent sub-agent). These are reference patterns, not runtime dependencies — the current implementation borrows their structure without invoking those skills directly.
 
-These are **reference patterns, not runtime skill dependencies** in Phase A. The current implementation borrows their structure but does not invoke those skills directly.
-
-**Optimization discipline**: Adapts the [autoresearch](../../../../temp/autoresearch/program.md) loop — run one baseline first, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
+**Optimization discipline**: Baseline-first iteration — run one baseline, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
 
 **Visual reference**: [`exploration-cycle-workflow.mmd`](./exploration-cycle-workflow.mmd)
 

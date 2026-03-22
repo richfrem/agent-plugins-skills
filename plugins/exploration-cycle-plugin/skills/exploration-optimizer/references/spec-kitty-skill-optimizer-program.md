@@ -13,13 +13,13 @@ To set up a new optimization run, work with the user to:
 1. **Agree on a run tag**: propose a tag based on today's date (e.g. `mar14`). The branch `skillopt/<tag>` must not already exist.
 2. **Create the branch**: `git checkout -b skillopt/<tag>` from current master.
 3. **Read the in-scope files** (all 4 must be read before starting):
-   - `temp/agent-plugins-skills/plugins/spec-kitty-plugin/agents/spec-kitty-agent.md` — standalone agent card (compact)
-   - `temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md` — full lifecycle + bridge sync skill
-   - `temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md` — workflow SOP (main editable target)
-   - `temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd` — lifecycle diagram
+   - `plugins/spec-kitty-plugin/agents/spec-kitty-agent.md` — standalone agent card (compact)
+   - `plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md` — full lifecycle + bridge sync skill
+   - `plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md` — workflow SOP (main editable target)
+   - `plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd` — lifecycle diagram
 4. **Read the fixed reference files** (DO NOT modify):
-   - `temp/agent-plugins-skills/plugins/agent-plugin-analyzer/skills/analyze-plugin/references/maturity-model.md` — scoring rubric
-   - `temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-agent/references/` — AUGMENTED.md files and known-good behavior
+   - `plugins/agent-plugin-analyzer/skills/analyze-plugin/references/maturity-model.md` — scoring rubric
+   - `plugins/spec-kitty-plugin/skills/spec-kitty-agent/references/` — AUGMENTED.md files and known-good behavior
 5. **Initialize skill-results.tsv**: Create it with just the header row. The baseline score is established in the first iteration.
 6. **Confirm and go**.
 
@@ -231,20 +231,20 @@ Each iteration (read → change → score) takes roughly 2–5 minutes. In an ov
 After the human reviews and approves the accumulated improvements on the `skillopt/<tag>` branch, sync the improved files back to the master plugin location:
 
 ```bash
-cp temp/agent-plugins-skills/plugins/spec-kitty-plugin/agents/spec-kitty-agent.md \
+cp plugins/spec-kitty-plugin/agents/spec-kitty-agent.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/agents/spec-kitty-agent.md
 
-cp temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md \
+cp plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md
 
-cp temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd \
+cp plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd
 
-cp temp/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md \
+cp plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md
 ```
 
 Then redeploy:
 ```bash
-npx skills add ./temp/agent-plugins-skills/plugins/spec-kitty-plugin --force
+npx skills add ./plugins/spec-kitty-plugin --force
 ```
