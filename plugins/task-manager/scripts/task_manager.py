@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-task_manager.py — Lightweight Kanban Task Manager
+Lightweight Kanban Task Manager
 ==================================================
 
 Purpose:
@@ -10,14 +9,39 @@ Purpose:
 
 Layer: Plugin / Task-Manager
 
-Usage:
+Usage Examples:
     python3 ./scripts/task_manager.py create "Fix login bug" --lane todo
     python3 ./scripts/task_manager.py list
-    python3 ./scripts/task_manager.py list --lane in-progress
-    python3 ./scripts/task_manager.py move 3 in-progress
-    python3 ./scripts/task_manager.py get 3
-    python3 ./scripts/task_manager.py search "login"
     python3 ./scripts/task_manager.py board
+
+Supported Object Types:
+    - None (Kanban operations)
+
+CLI Arguments:
+    create Title: Create task.
+    list: List tasks.
+    move ID Lane: Move task.
+    get ID: View task.
+    search Query: Search task.
+    board: View kanban board.
+
+Input Files:
+    - templates/task-template.md (Template)
+
+Output:
+    - Prints lists, boards, and create responses.
+
+Key Functions:
+    cmd_create(): Creates task file in lane.
+    cmd_move(): Moves task file to new lane dir.
+
+Script Dependencies:
+    os, sys, re, argparse, pathlib
+
+Consumed by:
+    - Manual workflow execution
+Related:
+    - scripts/next_number.py
 """
 
 import os
@@ -83,7 +107,7 @@ def _find_task(tasks_dir: Path, task_number: int) -> Optional[Tuple[Path, str]]:
     return None
 
 
-def _get_all_tasks(tasks_dir: Path, lane_filter: str = None) -> List[Tuple[Path, str, int, str]]:
+def _get_all_tasks(tasks_dir: Path, lane_filter: Optional[str] = None) -> List[Tuple[Path, str, int, str]]:
     """Get all tasks as (filepath, lane, number, title). Optionally filter by lane."""
     tasks = []
     lanes = [lane_filter] if lane_filter else VALID_LANES
@@ -104,7 +128,7 @@ def _get_all_tasks(tasks_dir: Path, lane_filter: str = None) -> List[Tuple[Path,
 # ─── Commands ────────────────────────────────────────
 
 def cmd_create(tasks_dir: Path, title: str, lane: str = "todo",
-               objective: str = "", acceptance: str = ""):
+               objective: str = "", acceptance: str = "") -> None:
     """Create a new task in the specified lane."""
     if lane not in VALID_LANES:
         print(f"❌ Invalid lane '{lane}'. Must be: {', '.join(VALID_LANES)}")
@@ -132,7 +156,7 @@ def cmd_create(tasks_dir: Path, title: str, lane: str = "todo",
     print(f"   Path: {filepath}")
 
 
-def cmd_list(tasks_dir: Path, lane: str = None):
+def cmd_list(tasks_dir: Path, lane: Optional[str] = None) -> None:
     """List tasks, optionally filtered by lane."""
     tasks = _get_all_tasks(tasks_dir, lane)
     if not tasks:
@@ -146,7 +170,7 @@ def cmd_list(tasks_dir: Path, lane: str = None):
         print(f"  {icon} #{num:04d} {title:40} [{task_lane}]")
 
 
-def cmd_get(tasks_dir: Path, task_number: int):
+def cmd_get(tasks_dir: Path, task_number: int) -> None:
     """Print the full content of a specific task."""
     result = _find_task(tasks_dir, task_number)
     if not result:
@@ -159,7 +183,7 @@ def cmd_get(tasks_dir: Path, task_number: int):
     print(filepath.read_text(encoding='utf-8'))
 
 
-def cmd_move(tasks_dir: Path, task_number: int, new_lane: str, note: str = None):
+def cmd_move(tasks_dir: Path, task_number: int, new_lane: str, note: Optional[str] = None) -> None:
     """Move a task from one lane to another."""
     if new_lane not in VALID_LANES:
         print(f"❌ Invalid lane '{new_lane}'. Must be: {', '.join(VALID_LANES)}")
@@ -190,7 +214,7 @@ def cmd_move(tasks_dir: Path, task_number: int, new_lane: str, note: str = None)
     print(f"   Path: {new_path}")
 
 
-def cmd_search(tasks_dir: Path, query: str):
+def cmd_search(tasks_dir: Path, query: str) -> None:
     """Search task contents by keyword."""
     query_lower = query.lower()
     results = []
@@ -211,7 +235,7 @@ def cmd_search(tasks_dir: Path, query: str):
             print(f"  {icon} #{num:04d} {title:40} [{lane}]")
 
 
-def cmd_board(tasks_dir: Path):
+def cmd_board(tasks_dir: Path) -> None:
     """Print kanban board view."""
     print(f"\n{'='*60}")
     print(f"  📋 KANBAN BOARD")
@@ -241,7 +265,7 @@ def cmd_board(tasks_dir: Path):
     print(f"{'='*60}\n")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Lightweight Kanban Task Manager")
     parser.add_argument("--dir", default=None, help="Root tasks directory (default: tasks/)")
     subparsers = parser.add_subparsers(dest="command")

@@ -1,18 +1,39 @@
-#!/usr/bin/env python3
 """
 Audit Plugin Inventory
 ======================
 
-Audits the `plugins/tool_inventory.json` against the actual file system to ensure all
-scripts in `plugins/` are registered.
+Purpose:
+    Audits the `tools/tool_inventory.json` against the actual file system to ensure all
+    scripts in `plugins/` are registered.
 
-Checks for:
-1. Missing Scripts: Files in `plugins/` not in inventory.
-2. Orphan Entries: Inventory entries pointing to non-existent files.
-3. RLM Sync: Checks if tools are present in the RLM cache.
+Layer: Plugin / Tool-Inventory / Audit
 
-Usage:
-    python3 ./scripts/audit_plugins.py
+Usage Examples:
+    python3 plugins/tool-inventory/scripts/audit_plugins.py
+
+Supported Object Types:
+    - None (Audit report)
+
+CLI Arguments:
+    None.
+
+Input Files:
+    - tools/tool_inventory.json (Registration source)
+    - .agent/learning/rlm_tool_cache.json (RLM Sync source)
+
+Output:
+    - Prints audit metrics to stdout. Exit 1 on issues.
+
+Key Functions:
+    main(): Orchestrates directory scan and set calculations.
+
+Script Dependencies:
+    sys, json, os, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - None
 """
 
 import sys
@@ -26,13 +47,13 @@ PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent
 INVENTORY_PATH = PROJECT_ROOT / "tools" / "tool_inventory.json"
 RLM_CACHE_PATH = PROJECT_ROOT / ".agent" / "learning" / "rlm_tool_cache.json"
 
-def load_json(path):
+def load_json(path: Path) -> dict:
     if not path.exists():
         return {}
     with open(path, 'r') as f:
         return json.load(f)
 
-def main():
+def main() -> None:
     print(f"🔍 Auditing Plugin Inventory...")
     print(f"   Project Root: {PROJECT_ROOT}")
     print(f"   Inventory:    {INVENTORY_PATH}")

@@ -1,19 +1,40 @@
-#!/usr/bin/env python3
 """
-../../scripts/generate_tools_manifest.py
-====================================
+Generate Tools Manifest
+======================
+
 Purpose:
-    Scans the plugins/ directory and generates a flat JSON manifest
+    Scans the `plugins/` directory and generates a flat JSON manifest
     of all executable scripts (.py, .js, .sh) organized by plugin name.
 
 Layer: Curate / Discovery
 
-Usage:
-    python3 ./scripts/generate_tools_manifest.py
-    python3 ./scripts/generate_tools_manifest.py --output plugins/tools_manifest.json
+Usage Examples:
+    python3 plugins/tool-inventory/scripts/generate_tools_manifest.py
+    python3 plugins/tool-inventory/scripts/generate_tools_manifest.py --output plugins/tools_manifest.json
+
+Supported Object Types:
+    - None (JSON generator)
+
+CLI Arguments:
+    --output: Output path relative to project root.
+
+Input Files:
+    - None (Directory scan)
 
 Output:
-    - plugins/tools_manifest.json (default)
+    - `plugins/tools_manifest.json` (Json list of discovered scripts)
+
+Key Functions:
+    extract_purpose(): Extracts Purpose: from Python docstrings.
+    main(): Orchestrates directory traversal.
+
+Script Dependencies:
+    json, argparse, ast, pathlib, datetime
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - None
 """
 import json
 import argparse
@@ -57,7 +78,7 @@ def extract_purpose(file_path: Path) -> str:
     return ""
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a tool manifest from plugins/")
     parser.add_argument("--output", default="plugins/tools_manifest.json", help="Output path")
     args = parser.parse_args()

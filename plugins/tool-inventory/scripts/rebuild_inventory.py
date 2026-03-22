@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
 """
-rebuild_inventory.py
-====================
-Scans the plugins directory and rebuilds plugins/tool_inventory.json from scratch.
+rebuild_inventory.py (CLI)
+=====================================
+
+Purpose:
+    Scans the plugins directory and rebuilds plugins/tool_inventory.json from scratch.
+
+Layer:
+    Curate / Inventory
+
+Usage Examples:
+    python3 plugins/tool-inventory/scripts/rebuild_inventory.py
+
+Supported Object Types:
+    - Generic Python/JS script files
+
+Input Files:
+    - plugins/ directory (scans for scripts)
+
+Output:
+    - plugins/tool_inventory.json (rebuilt from scratch)
+
+Key Functions:
+    - rebuild: Main execution routine for rebuilding the inventory.
+
+Script Dependencies:
+    - plugins/tool-inventory/scripts/manage_tool_inventory.py
 """
+
 import sys
 import os
 from pathlib import Path
 
-# Setup paths
-SCRIPT_DIR = Path(__file__).parent.resolve()
-# This script is at plugins/tool-inventory/skills/tool-inventory/scripts/rebuild_inventory.py
-# Root is 5 levels up
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.append(str(PROJECT_ROOT))
-
-# Import InventoryManager
-try:
-    from plugins.tool_inventory.scripts.manage_tool_inventory import InventoryManager
-except ImportError:
-    # Try relative import if package structure fails
-    sys.path.append(str(SCRIPT_DIR))
-    from manage_tool_inventory import InventoryManager
-
-def rebuild():
+def rebuild() -> None:
     inventory_path = PROJECT_ROOT / "tools" / "tool_inventory.json"
     
     # Backup existing if it exists

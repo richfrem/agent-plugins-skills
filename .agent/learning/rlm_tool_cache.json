@@ -298,5 +298,30 @@
     "hash": "1dec3be45d62523a",
     "summarized_at": "2026-03-22T16:51:12.500461",
     "summary": "Sequential Identifier Generator scanning artifact dirs."
+  },
+  "plugins/task-manager/scripts/task_manager.py": {
+    "hash": "1ab6c80a1e2dd949",
+    "summarized_at": "2026-03-22T16:52:02.184538",
+    "summary": "Lightweight Kanban Task Manager backed by markdown."
+  },
+  "plugins/tool-inventory/scripts/audit_plugins.py": {
+    "hash": "7973cbf0a9d3033e",
+    "summarized_at": "2026-03-22T16:52:39.037148",
+    "summary": "Audits tool_inventory.json against filesystem."
+  },
+  "plugins/tool-inventory/scripts/fix_inventory_paths.py": {
+    "hash": "4a9caab837525d97",
+    "summarized_at": "2026-03-22T16:53:52.047017",
+    "summary": "Updates tool_inventory.json paths to new structure."
+  },
+  "plugins/tool-inventory/scripts/generate_tools_manifest.py": {
+    "hash": "4b33d1e660131910",
+    "summarized_at": "2026-03-22T16:56:44.540363",
+    "summary": "Scans plugins/ and generates a flat JSON manifest of executable scripts."
+  },
+  "plugins/tool-inventory/scripts/manage_tool_inventory.py": {
+    "hash": "376f111475db8764",
+    "summarized_at": "2026-03-22T16:57:46.196432",
+    "summary": "Comprehensive manager for Tool Inventories. Supports list, add, update, remove, search, audit, and generate operations."
   }
 }
