@@ -1,1 +1,0 @@
-../azure-foundry-agents.md
