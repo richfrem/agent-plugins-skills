@@ -1,1 +1,1 @@
-../../../references/create-hook/migration.md
+../../../references/migration.md

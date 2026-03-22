@@ -1,1 +1,1 @@
-../../../references/create-sub-agent/system-prompt-design.md
+../../../references/system-prompt-design.md

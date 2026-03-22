@@ -1,1 +1,1 @@
-../../../references/audit-plugin-l5/CONNECTORS.md
+../CONNECTORS.md

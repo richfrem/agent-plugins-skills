@@ -1,1 +1,1 @@
-../../../references/create-github-action/fallback-tree.md
+../fallback-tree.md

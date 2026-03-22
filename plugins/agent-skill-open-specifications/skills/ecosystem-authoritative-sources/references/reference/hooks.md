@@ -1,1 +1,1 @@
-../../../../references/ecosystem-authoritative-sources/reference/hooks.md
+../hooks.md

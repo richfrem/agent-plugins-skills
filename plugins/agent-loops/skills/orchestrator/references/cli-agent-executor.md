@@ -1,1 +1,1 @@
-../../../references/orchestrator/cli-agent-executor.md
+../../../references/cli-agent-executor.md

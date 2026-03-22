@@ -1,1 +1,1 @@
-../../../references/concurrent-agent-loop/dual-loop.md
+../../../references/dual-loop.md

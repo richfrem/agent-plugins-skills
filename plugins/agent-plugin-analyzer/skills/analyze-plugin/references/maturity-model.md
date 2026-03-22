@@ -1,1 +1,1 @@
-../../../references/analyze-plugin/maturity-model.md
+../../../references/maturity-model.md

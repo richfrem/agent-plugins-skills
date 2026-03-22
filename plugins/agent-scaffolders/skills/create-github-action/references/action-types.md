@@ -1,1 +1,1 @@
-../../../references/create-github-action/action-types.md
+../../../references/action-types.md

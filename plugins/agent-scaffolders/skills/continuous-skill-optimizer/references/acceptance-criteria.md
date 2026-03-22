@@ -1,1 +1,1 @@
-../../../references/continuous-skill-optimizer/acceptance-criteria.md
+../acceptance-criteria.md

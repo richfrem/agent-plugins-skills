@@ -1,1 +1,1 @@
-../../../references/dependency-management/fallback-tree.md
+../fallback-tree.md

@@ -1,1 +1,1 @@
-../../../references/create-command/fallback-tree.md
+../fallback-tree.md

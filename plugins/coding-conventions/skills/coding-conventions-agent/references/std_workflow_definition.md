@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/std_workflow_definition.md
+../../../references/std_workflow_definition.md

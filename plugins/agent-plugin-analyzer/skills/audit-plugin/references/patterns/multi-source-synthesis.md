@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/multi-source-synthesis.md
+../../../../references/patterns/multi-source-synthesis.md

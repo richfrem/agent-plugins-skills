@@ -1,1 +1,1 @@
-../../../references/obsidian-vault-crud/acceptance-criteria.md
+../acceptance-criteria.md

@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/CONNECTORS.md
+../CONNECTORS.md

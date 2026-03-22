@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/highly-procedural-fallback-trees.md
+../../../../references/patterns/highly-procedural-fallback-trees.md

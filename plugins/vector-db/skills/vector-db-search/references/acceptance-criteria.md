@@ -1,1 +1,1 @@
-../../../references/vector-db-search/acceptance-criteria.md
+../acceptance-criteria.md

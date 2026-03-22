@@ -1,1 +1,1 @@
-../../../references/spec-kitty-workflow/acceptance-criteria.md
+../../../references/acceptance-criteria.md

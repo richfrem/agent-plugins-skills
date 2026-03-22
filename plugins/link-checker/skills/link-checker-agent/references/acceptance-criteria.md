@@ -1,1 +1,1 @@
-../../../references/link-checker-agent/acceptance-criteria.md
+../acceptance-criteria.md

@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/project-folder-structure-guidance.md
+../../../references/project-folder-structure-guidance.md

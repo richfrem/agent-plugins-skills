@@ -1,1 +1,1 @@
-../../../references/bridge-plugin/agent_bridge_overview.md
+../../../references/agent_bridge_overview.md

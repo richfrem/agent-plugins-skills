@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/multi-dimensional-tone.md
+../../../../references/patterns/multi-dimensional-tone.md

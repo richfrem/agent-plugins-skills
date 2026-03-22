@@ -1,1 +1,1 @@
-../../../references/markdown-to-msword-converter/fallback-tree.md
+../fallback-tree.md

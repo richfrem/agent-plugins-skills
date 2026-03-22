@@ -1,1 +1,1 @@
-../../../references/create-command/frontmatter-reference.md
+../../../references/frontmatter-reference.md

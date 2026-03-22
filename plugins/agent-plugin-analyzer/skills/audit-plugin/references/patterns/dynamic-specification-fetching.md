@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/dynamic-specification-fetching.md
+../../../../references/patterns/dynamic-specification-fetching.md

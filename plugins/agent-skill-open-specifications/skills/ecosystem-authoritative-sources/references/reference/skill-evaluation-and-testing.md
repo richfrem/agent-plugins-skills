@@ -1,1 +1,1 @@
-../../../../references/ecosystem-authoritative-sources/reference/skill-evaluation-and-testing.md
+../skill-evaluation-and-testing.md

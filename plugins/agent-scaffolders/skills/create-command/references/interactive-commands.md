@@ -1,1 +1,1 @@
-../../../references/create-command/interactive-commands.md
+../../../references/interactive-commands.md

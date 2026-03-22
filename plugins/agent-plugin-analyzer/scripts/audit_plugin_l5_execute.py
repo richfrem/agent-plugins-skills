@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+"""
+audit_plugin_l5_execute.py
+=====================================
+
+Purpose:
+    Executes standard L5 audits on given plugins securely.
+
+Layer: Investigate / Codify
+
+Usage:
+    python3 audit_plugin_l5_execute.py
+"""
+
 import argparse
 import sys
 

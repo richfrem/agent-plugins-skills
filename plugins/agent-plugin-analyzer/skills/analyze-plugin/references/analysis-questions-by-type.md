@@ -1,1 +1,1 @@
-../../../references/analyze-plugin/analysis-questions-by-type.md
+../../../references/analysis-questions-by-type.md

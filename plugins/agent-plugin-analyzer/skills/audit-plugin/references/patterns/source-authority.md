@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/source-authority.md
+../../../../references/patterns/source-authority.md

@@ -1,1 +1,1 @@
-../../../references/create-agentic-workflow/fallback-tree.md
+../fallback-tree.md

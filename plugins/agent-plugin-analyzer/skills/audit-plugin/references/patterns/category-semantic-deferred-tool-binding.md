@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/category-semantic-deferred-tool-binding.md
+../../../../references/patterns/category-semantic-deferred-tool-binding.md

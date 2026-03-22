@@ -1,1 +1,1 @@
-../../../references/ecosystem-standards/fallback-tree.md
+../fallback-tree.md

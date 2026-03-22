@@ -1,1 +1,1 @@
-../../../references/zip-bundling/acceptance-criteria.md
+../acceptance-criteria.md

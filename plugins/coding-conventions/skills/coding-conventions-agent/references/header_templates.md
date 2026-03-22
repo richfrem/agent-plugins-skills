@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/header_templates.md
+../../../references/header_templates.md

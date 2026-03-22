@@ -1,1 +1,1 @@
-../../../references/rsvp-reading/acceptance-criteria.md
+../acceptance-criteria.md

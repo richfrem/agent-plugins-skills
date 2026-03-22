@@ -1,1 +1,1 @@
-../../../references/memory-management/acceptance-criteria.md
+../acceptance-criteria.md

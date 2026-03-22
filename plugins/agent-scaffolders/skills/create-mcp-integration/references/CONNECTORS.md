@@ -1,1 +1,1 @@
-../../../references/create-mcp-integration/CONNECTORS.md
+../CONNECTORS.md

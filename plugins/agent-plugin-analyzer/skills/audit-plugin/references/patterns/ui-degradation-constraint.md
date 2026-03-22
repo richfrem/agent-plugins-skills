@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/ui-degradation-constraint.md
+../../../../references/patterns/ui-degradation-constraint.md

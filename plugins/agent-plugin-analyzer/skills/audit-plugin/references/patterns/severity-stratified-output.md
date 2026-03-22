@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/severity-stratified-output.md
+../../../../references/patterns/severity-stratified-output.md

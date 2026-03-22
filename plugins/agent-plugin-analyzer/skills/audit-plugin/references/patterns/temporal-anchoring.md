@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/temporal-anchoring.md
+../../../../references/patterns/temporal-anchoring.md

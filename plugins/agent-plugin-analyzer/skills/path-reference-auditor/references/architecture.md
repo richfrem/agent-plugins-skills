@@ -1,1 +1,1 @@
-../../../references/path-reference-auditor/architecture.md
+../../../references/architecture.md

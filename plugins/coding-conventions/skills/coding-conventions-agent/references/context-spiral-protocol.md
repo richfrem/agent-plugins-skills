@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/context-spiral-protocol.md
+../../../references/context-spiral-protocol.md

@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/anti-pattern-vaccination.md
+../../../../references/patterns/anti-pattern-vaccination.md

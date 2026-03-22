@@ -1,1 +1,1 @@
-../../../references/synthesize-learnings/open-recommendations.md
+../../../references/open-recommendations.md

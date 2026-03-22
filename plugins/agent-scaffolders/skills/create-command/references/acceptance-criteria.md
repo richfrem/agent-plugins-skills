@@ -1,1 +1,1 @@
-../../../references/create-command/acceptance-criteria.md
+../acceptance-criteria.md

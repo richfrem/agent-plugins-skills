@@ -1,1 +1,1 @@
-../../../references/obsidian-bases-manager/fallback-tree.md
+../fallback-tree.md

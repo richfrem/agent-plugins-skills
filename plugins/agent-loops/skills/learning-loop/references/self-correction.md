@@ -1,1 +1,1 @@
-../../../references/learning-loop/self-correction.md
+../../../references/self-correction.md

@@ -1,1 +1,1 @@
-../../../references/agent-swarm/fallback-tree.md
+../fallback-tree.md

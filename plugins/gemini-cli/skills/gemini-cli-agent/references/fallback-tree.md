@@ -1,1 +1,1 @@
-../../../references/gemini-cli-agent/fallback-tree.md
+../fallback-tree.md

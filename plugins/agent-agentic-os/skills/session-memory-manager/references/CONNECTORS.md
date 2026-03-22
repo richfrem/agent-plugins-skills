@@ -1,1 +1,1 @@
-../../../references/session-memory-manager/CONNECTORS.md
+../CONNECTORS.md

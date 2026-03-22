@@ -1,1 +1,1 @@
-../../../references/create-stateful-skill/fallback-tree.md
+../fallback-tree.md

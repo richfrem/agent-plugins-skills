@@ -1,1 +1,1 @@
-../../../references/vector-db-search/fallback-tree.md
+../fallback-tree.md

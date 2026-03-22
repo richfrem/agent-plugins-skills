@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/SECRETS_CONFIGURATION.md
+../../../references/SECRETS_CONFIGURATION.md

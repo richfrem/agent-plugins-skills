@@ -1,1 +1,1 @@
-../../../references/tool-inventory/tool_discovery_enforcement_policy.md
+../../../references/tool_discovery_enforcement_policy.md

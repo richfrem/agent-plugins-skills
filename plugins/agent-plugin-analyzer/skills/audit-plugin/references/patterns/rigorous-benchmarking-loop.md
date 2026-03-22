@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/rigorous-benchmarking-loop.md
+../../../../references/patterns/rigorous-benchmarking-loop.md

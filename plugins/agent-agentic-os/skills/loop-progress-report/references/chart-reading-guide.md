@@ -1,1 +1,1 @@
-../../../references/loop-progress-report/chart-reading-guide.md
+../../../references/chart-reading-guide.md

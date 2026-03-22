@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/asynchronous-benchmark-metric-capture.md
+../../../../references/patterns/asynchronous-benchmark-metric-capture.md

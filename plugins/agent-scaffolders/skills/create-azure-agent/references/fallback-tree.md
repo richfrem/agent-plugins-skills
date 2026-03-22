@@ -1,1 +1,1 @@
-../../../references/create-azure-agent/fallback-tree.md
+../fallback-tree.md

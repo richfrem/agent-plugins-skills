@@ -1,1 +1,1 @@
-../../../references/replicate-plugin/fallback-tree.md
+../fallback-tree.md

@@ -1,1 +1,1 @@
-../../../references/orchestrator/qa-expert.md
+../../../references/qa-expert.md

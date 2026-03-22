@@ -1,1 +1,1 @@
-../../../references/task-agent/acceptance-criteria.md
+../acceptance-criteria.md

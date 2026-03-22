@@ -1,1 +1,1 @@
-../../../references/create-hook/advanced.md
+../../../references/advanced.md

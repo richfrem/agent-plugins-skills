@@ -1,1 +1,1 @@
-../../../references/rlm-init/acceptance-criteria.md
+../acceptance-criteria.md

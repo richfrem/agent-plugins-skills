@@ -1,1 +1,1 @@
-../../../references/convert-mermaid/reference.md
+../../../references/reference.md

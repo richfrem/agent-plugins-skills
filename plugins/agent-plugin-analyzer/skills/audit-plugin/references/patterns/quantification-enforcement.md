@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/quantification-enforcement.md
+../../../../references/patterns/quantification-enforcement.md

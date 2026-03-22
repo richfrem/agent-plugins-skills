@@ -1,1 +1,1 @@
-../../../../references/ecosystem-authoritative-sources/reference/workflows.md
+../workflows.md

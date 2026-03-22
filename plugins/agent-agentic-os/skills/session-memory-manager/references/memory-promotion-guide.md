@@ -1,1 +1,1 @@
-../../../references/session-memory-manager/memory-promotion-guide.md
+../../../references/memory-promotion-guide.md

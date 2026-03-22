@@ -1,1 +1,1 @@
-../../../references/create-mcp-integration/acceptance-criteria.md
+../acceptance-criteria.md

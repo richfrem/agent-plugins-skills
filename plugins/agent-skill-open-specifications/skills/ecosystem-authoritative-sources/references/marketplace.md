@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/marketplace.md
+../../../references/marketplace.md

@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/file-namespace-and-class-naming-conventions.md
+../../../references/file-namespace-and-class-naming-conventions.md

@@ -1,1 +1,1 @@
-../../../../references/create-command/examples/SKILL.md
+../SKILL.md

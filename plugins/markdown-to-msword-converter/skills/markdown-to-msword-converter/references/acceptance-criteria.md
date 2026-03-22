@@ -1,1 +1,1 @@
-../../../references/markdown-to-msword-converter/acceptance-criteria.md
+../acceptance-criteria.md

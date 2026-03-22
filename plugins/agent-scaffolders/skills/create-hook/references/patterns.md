@@ -1,1 +1,1 @@
-../../../references/create-hook/patterns.md
+../../../references/patterns.md

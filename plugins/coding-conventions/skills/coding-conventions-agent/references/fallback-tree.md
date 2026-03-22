@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/fallback-tree.md
+../fallback-tree.md

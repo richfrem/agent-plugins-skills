@@ -1,1 +1,1 @@
-../../../../references/audit-plugin/patterns/passive-style-injection-payload.md
+../../../../references/patterns/passive-style-injection-payload.md

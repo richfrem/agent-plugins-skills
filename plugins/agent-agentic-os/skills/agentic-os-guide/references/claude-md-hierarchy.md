@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/claude-md-hierarchy.md
+../../../references/claude-md-hierarchy.md

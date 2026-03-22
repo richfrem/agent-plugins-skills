@@ -1,1 +1,1 @@
-../../../references/obsidian-canvas-architect/fallback-tree.md
+../fallback-tree.md

@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/namespace-standardization.md
+../../../references/namespace-standardization.md

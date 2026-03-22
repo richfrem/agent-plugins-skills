@@ -1,1 +1,1 @@
-../../../references/red-team-review/fallback-tree.md
+../fallback-tree.md

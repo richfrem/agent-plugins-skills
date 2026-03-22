@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/memory-hygiene.md
+../../../references/memory-hygiene.md

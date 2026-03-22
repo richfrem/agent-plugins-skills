@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/loop-scheduler.md
+../../../references/loop-scheduler.md

@@ -1,1 +1,1 @@
-../../../references/hf-init/acceptance-criteria.md
+../acceptance-criteria.md

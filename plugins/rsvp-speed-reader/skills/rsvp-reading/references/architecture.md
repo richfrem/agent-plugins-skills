@@ -1,1 +1,1 @@
-../../../references/rsvp-reading/architecture.md
+../../../references/architecture.md

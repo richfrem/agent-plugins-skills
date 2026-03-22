@@ -1,1 +1,1 @@
-../../../references/zip-bundling/fallback-tree.md
+../fallback-tree.md

@@ -1,1 +1,1 @@
-../../../references/ecosystem-authoritative-sources/plugins.md
+../../../references/plugins.md

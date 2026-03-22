@@ -337,7 +337,7 @@ def generate_markdown(benchmark: dict) -> str:
     return "\n".join(lines)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Aggregate benchmark run results into summary statistics"
     )

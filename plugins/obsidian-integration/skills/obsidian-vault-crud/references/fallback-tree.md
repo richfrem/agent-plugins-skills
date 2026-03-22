@@ -1,1 +1,1 @@
-../../../references/obsidian-vault-crud/fallback-tree.md
+../fallback-tree.md

@@ -1,1 +1,1 @@
-../../../references/agentic-os-guide/sub-agents-and-hooks.md
+../../../references/sub-agents-and-hooks.md

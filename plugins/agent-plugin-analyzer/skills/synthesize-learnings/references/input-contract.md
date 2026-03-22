@@ -1,1 +1,1 @@
-../../../references/synthesize-learnings/input-contract.md
+../../../references/input-contract.md

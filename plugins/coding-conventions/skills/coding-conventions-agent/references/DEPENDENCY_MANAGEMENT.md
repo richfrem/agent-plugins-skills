@@ -1,1 +1,1 @@
-../../../references/coding-conventions-agent/DEPENDENCY_MANAGEMENT.md
+../../../references/DEPENDENCY_MANAGEMENT.md
