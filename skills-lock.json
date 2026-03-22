@@ -131,9 +131,9 @@
       "computedHash": "f4aadd62a55f7c2a85440ab53bcdd083fbe2e889a622d76e6cdaf1a282268c8d"
     },
     "continuous-skill-optimizer": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders/skills/continuous-skill-optimizer",
       "sourceType": "local",
-      "computedHash": "cdef7c664def2178614c91b51ce413ccd7e8232d3709654d2e235c197c1da068"
+      "computedHash": "414fd8d434f0d91c277950e044495ab84e272e87a01a329bb565f63131ea3eff"
     },
     "convert-mermaid": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/mermaid-to-png",
@@ -163,9 +163,9 @@
       "computedHash": "f5fa2154038e8b58eddfe502d0726a9e9d36116c1475dd9b7c9ddfd2a9df96a1"
     },
     "create-command": {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders/skills/create-command",
       "sourceType": "local",
-      "computedHash": "76933a73532a0b23a34f98c3e2387ebf8e0f61e1ca222fc50974d1319eba92b7"
+      "computedHash": "17d8a46d0b07d7e3612b6a50959461601f3384b08b82c47fa29c88198691971f"
     },
     "create-docker-skill": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
