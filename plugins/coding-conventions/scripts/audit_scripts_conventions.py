@@ -50,18 +50,21 @@ def check_script(filepath: str) -> bool:
     has_header = '"""' in header_chunk or "Purpose:" in header_chunk or "purpose:" in header_chunk
     
     missing_hints = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("def "):
-            if "(" in stripped and ")" in stripped:
-                if "->" not in stripped:
-                    missing_hints.append("return type")
-                params = stripped[stripped.find("(")+1:stripped.rfind(")")]
-                for p in params.split(","):
-                    p = p.strip()
-                    if p and p not in ["self", "cls"] and ":" not in p:
-                        if not p.startswith("*"):
-                            missing_hints.append(f"param '{p}'")
+    import ast
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            tree = ast.parse(f.read(), filename=filepath)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                func_name = node.name
+                if node.returns is None:
+                    missing_hints.append(f"return type on '{func_name}'")
+                for arg in node.args.args:
+                    if arg.arg not in ["self", "cls"] and arg.annotation is None:
+                        missing_hints.append(f"param '{arg.arg}' on '{func_name}'")
+    except Exception as e:
+        # File is empty or has syntax issues
+        pass
 
     status = "✅" if has_header and not missing_hints else "❌"
     if status == "❌":

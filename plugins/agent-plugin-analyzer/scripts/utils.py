@@ -1,6 +1,38 @@
-"""Shared utilities for skill-creator scripts.
+#!/usr/bin/env python3
+"""
+utils.py (Module)
+=====================================
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Purpose:
+    Shared utilities for skill-creator and analyzer scripts. 
+    Provides functions for parsing SKILL.md and metadata structures in plugins.
+
+Layer: Investigate / Core / Support
+
+Usage Examples:
+    from utils import parse_skill_md
+    name, desc, content = parse_skill_md(Path("path/to/skill_dir"))
+
+Supported Object Types:
+    Parsed SKILL.md data structures.
+
+CLI Arguments:
+    None (Module Import)
+
+Input Files:
+    - SKILL.md (Via function call)
+
+Output:
+    Tuple constants extracted from file contents.
+
+Key Functions:
+    - parse_skill_md()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    run_eval.py, audit_plugin_structure.py, trigger evaluation benchmarks.
 """
 
 from pathlib import Path

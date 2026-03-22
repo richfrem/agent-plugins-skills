@@ -1,13 +1,42 @@
+#!/usr/bin/env python3
 """
-assert_audit.py — Programmatic regression assertions for self-audit scanner results.
+assert_audit.py (CLI)
+=====================================
 
-Reads the JSON output of inventory_plugin.py and asserts expected counts for known
-test fixtures (gold-standard, flawed, self). Exits non-zero on assertion failure.
+Purpose:
+    Programmatic regression assertions for self-audit scanner results.
+    Reads the JSON output of inventory_plugin.py and asserts expected counts 
+    for known test fixtures. Exits non-zero on assertion failure.
 
-Usage:
+Layer: Investigate / Audit / Regression
+
+Usage Examples:
     python3 assert_audit.py --fixture flawed --json-output scan_output.json
     python3 assert_audit.py --fixture gold --json-output scan_output.json
     python3 assert_audit.py --fixture self --json-output scan_output.json
+
+Supported Object Types:
+    Scanner auditing reports.
+
+CLI Arguments:
+    --fixture: Which fixture to assert (flawed | gold | self) (Required)
+    --json-output: Path to the JSON scanner output file (Required)
+
+Input Files:
+    - scan_output.json (From inventory_plugin.py)
+
+Output:
+    Standard output containing PASS/FAIL metrics. Exits non-zero on failure.
+
+Key Functions:
+    - load_json()
+    - assert_fixture()
+
+Script Dependencies:
+    None
+
+Consumed by:
+    auditor regression tests.
 """
 
 import argparse

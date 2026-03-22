@@ -42,7 +42,7 @@ import os
 import json
 import glob
 
-def audit_plugin(plugin_path):
+def audit_plugin(plugin_path: str) -> bool:
     print(f"Auditing Plugin at: {plugin_path}")
     plugin_name = os.path.basename(os.path.normpath(plugin_path))
     errors = []

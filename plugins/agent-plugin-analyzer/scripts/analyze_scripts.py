@@ -92,7 +92,7 @@ def _find_script_usages(plugin_path: Path, physical_py_files: List[Path]) -> Dic
             
     return skill_usage
 
-def _print_adr001_violations(symlink_py_files: List[Path], plugin_path: Path):
+def _print_adr001_violations(symlink_py_files: List[Path], plugin_path: Path) -> None:
     """Detects and prints any symlink pointing completely outside the local plugin root."""
     cross_plugin_symlinks: List[Path] = []
     str_plugin_path = str(plugin_path.resolve())
@@ -118,7 +118,7 @@ def _print_script_analysis(
     skill_usage: Dict[str, Dict[str, Any]], 
     physical_py_files: List[Path], 
     symlink_py_files: List[Path]
-):
+) -> None:
     """Outputs the detailed structural breakdown for a specific unique script."""
     script_data = skill_usage.get(script_name, {"skills": set(), "physically_exists": False})
     uses: Set[str] = script_data.get("skills", set())

@@ -4,18 +4,41 @@ audit_plugin_l5_execute.py
 =====================================
 
 Purpose:
-    Executes standard L5 audits on given plugins securely.
+    Executes standard L5 Red Team audits on given agent plugins to rigorously 
+    verify compliance against the 39-point pattern matrix framework.
 
-Layer: Investigate / Codify
+Layer: Investigate / Codify / Audit
 
-Usage:
-    python3 audit_plugin_l5_execute.py
+Usage Examples:
+    python3 audit_plugin_l5_execute.py --example audit_target_dir
+
+Supported Object Types:
+    L5 audit validations.
+
+CLI Arguments:
+    --example: Example dummy argument placeholder.
+
+Input Files:
+    None.
+
+Output:
+    Console standard log messages.
+
+Key Functions:
+    - main()
+
+Script Dependencies:
+    - argparse
+    - sys
+
+Consumed by:
+    audit-plugin-l5 hooks and continuous verification pipelines.
 """
 
 import argparse
 import sys
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.")
     # Add your arguments here
     parser.add_argument("--example", help="Example argument")
