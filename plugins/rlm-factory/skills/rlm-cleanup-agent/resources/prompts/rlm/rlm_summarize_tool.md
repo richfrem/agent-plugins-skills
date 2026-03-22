@@ -1,0 +1,1 @@
+../../../../../assets/resources/prompts/rlm/rlm_summarize_tool.md

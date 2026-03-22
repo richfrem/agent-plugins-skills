@@ -58,14 +58,14 @@ If any are missing, ask for them before proceeding.
 
 ### Step 1: Parse the Document
 ```bash
-python3 ./parse_document.py \
+python3 .agents/skills/rsvp-reading/scripts/parse_document.py \
   --input <file_path> \
   --output /tmp/rsvp_words.json
 ```
 
 ### Step 2: Generate Token Stream
 ```bash
-python3 ./orp_engine.py \
+python3 .agents/skills/rsvp-reading/scripts/orp_engine.py \
   --input /tmp/rsvp_words.json \
   --wpm <wpm> \
   --output <output_path>
