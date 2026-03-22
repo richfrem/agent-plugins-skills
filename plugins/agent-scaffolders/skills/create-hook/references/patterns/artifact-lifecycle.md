@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/artifact-lifecycle.md
+../../../../references/patterns/artifact-lifecycle.md

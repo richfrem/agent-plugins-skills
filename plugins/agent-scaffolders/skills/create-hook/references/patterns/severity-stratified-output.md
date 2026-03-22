@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/severity-stratified-output.md
+../../../../references/patterns/severity-stratified-output.md

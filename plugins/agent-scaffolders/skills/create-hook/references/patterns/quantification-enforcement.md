@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/quantification-enforcement.md
+../../../../references/patterns/quantification-enforcement.md

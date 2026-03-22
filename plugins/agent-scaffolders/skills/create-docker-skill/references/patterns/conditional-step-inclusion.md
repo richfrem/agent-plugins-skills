@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/conditional-step-inclusion.md
+../../../../references/patterns/conditional-step-inclusion.md

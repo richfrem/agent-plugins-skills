@@ -1,3 +1,1 @@
-# continuous-skill-optimizer Connectors Map
-
-Map abstract `~~category` tool requirements to exact system dependencies here to keep the plugin portable.
+../../../references/continuous-skill-optimizer/CONNECTORS.md

@@ -1,1 +1,1 @@
-../../../../../agent-skill-open-specifications/references/patterns/graduated-autonomy.md
+../../../../references/patterns/graduated-autonomy.md
