@@ -54,7 +54,7 @@ import hashlib
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent 
+PROJECT_ROOT = Path.cwd()
 PLUGINS_ROOT = PROJECT_ROOT / "plugins"
 
 INSTALLER_SCRIPT = SCRIPT_DIR / "bridge_installer.py"
@@ -111,6 +111,41 @@ def _update_lock_hashes(root: Path, plugins_root: Path, dry_run: bool = False) -
         lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
         print("  ✓ Backfilled empty hashes in skills-lock.json")
 
+
+def _flush_agent_skill_links(root: Path, dry_run: bool = False) -> None:
+    """Remove symlinks/junctions from all agent skills dirs before flushing .agents/.
+    Without this, deleting .agents/skills/ leaves orphaned broken junctions in
+    .agent/skills/, .claude/skills/, etc. that the installer can't clean up later
+    because broken junctions have .exists()=False and .is_symlink()=False on Windows.
+    """
+    skills_dirs = [
+        root / ".agent" / "skills",
+        root / ".claude" / "skills",
+        root / ".gemini" / "skills",
+        root / ".github" / "skills",
+        root / ".azure" / "skills",
+    ]
+    for skills_dir in skills_dirs:
+        if not skills_dir.exists():
+            continue
+        for entry in skills_dir.iterdir():
+            is_link = (
+                entry.is_symlink()
+                or os.path.islink(str(entry))
+                or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry))
+            )
+            if is_link:
+                if dry_run:
+                    print(f"  [DRY RUN] Would remove link: {entry.relative_to(root)}")
+                else:
+                    try:
+                        entry.unlink()
+                    except Exception:
+                        try:
+                            os.rmdir(entry)
+                        except Exception as e:
+                            print(f"  Warning: could not remove {entry.name}: {e}")
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Install all plugins via bridge_installer")
     parser.add_argument("--dry-run", action="store_true", help="Pass --dry-run to each bridge_installer invocation")
@@ -133,45 +168,30 @@ def main() -> None:
         sys.exit(1)
 
     print(f"🚀 Starting Local Batch Installation mimicking `npx skills add ./plugins/`...")
-    print("Flushing old .agents/ source block to ensure a clean central repo before symlinking...")
-    target_agents_repo = Path.cwd() / ".agents"
-    if not args.dry_run:
-        if target_agents_repo.exists():
-            shutil.rmtree(target_agents_repo, ignore_errors=True)
-    else:
-        print("  [DRY RUN] Would delete .agents/")
-    
+
     plugins_processed = 0
     plugins_failed = 0
-    
+
     # Iterate over all directories in plugins/
     for plugin_dir in sorted(plugins_root.iterdir()):
         if not plugin_dir.is_dir():
             continue
-            
+
         # Skip special directories
         if plugin_dir.name.startswith(".") or plugin_dir.name.startswith("__"):
             continue
         if plugin_dir.name in ["node_modules", "venv", "env"]:
             continue
-            
+
         print(f"\n📦 Installing Component: {plugin_dir.name}")
-        
+
         try:
-            # We use subprocess to isolate execution and ensure clean state per plugin
-            cmd = [
-                sys.executable, 
-                str(INSTALLER_SCRIPT),
-                "--plugin", str(plugin_dir),
-                # No --target: bridge_installer auto-detects from existing directories
-            ]
-            
-            if args.dry_run:
-                cmd.append("--dry-run")
-            
+            # We use subprocess to isolate execution and ensure clean state per plugin.
+            extra = ["--dry-run"] if args.dry_run else []
+            cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin_dir)] + extra
             subprocess.run(cmd, check=True, text=True)
             plugins_processed += 1
-            
+
         except subprocess.CalledProcessError as e:
             print(f"❌ Failed to install {plugin_dir.name}")
             plugins_failed += 1
