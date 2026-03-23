@@ -29,7 +29,7 @@ This repository is a published Claude Code marketplace. Add it once and install 
 
 To browse and install interactively, run `/plugin` and go to the **Discover** tab — all 27 plugins from this marketplace will be listed there. Run `/reload-plugins` after installing to activate without restarting.
 
-### Option 2: npx skills CLI (cross-agent)
+### Option 2: npx skills CLI (Mac / Linux, cross-agent)
 
 Use the `npx skills` CLI to install directly into any agent environment. It auto-detects installed agents (Claude Code, GitHub Copilot, Gemini, Cursor, and 30+ others) and wires everything up natively.
 
@@ -46,34 +46,50 @@ npx skills add richfrem/agent-plugins-skills/plugins/spec-kitty-plugin
 npx skills update
 ```
 
-### Installing Locally (For Contributors / Local Dev)
-
-If you are developing or modifying plugins locally, you can install them directly from the local filesystem instead of pulling from GitHub.
-
 > [!WARNING]
-> When testing local changes to a skill, `npx` may cache previous symlinks or encounter folder lock issues when overwriting. Before reinstalling your local changes, you **must remove the existing destination folders** first.
+> **Windows users: do not use `npx skills add` with this repository.**
+> This repo uses Git symlinks inside skill directories. On Windows, Git checks out symlinks
+> as plain text files containing the relative path string. The `npx` installer copies the
+> text file as-is instead of following the symlink — resulting in broken one-line pointer
+> files in `.agents/` that Python cannot execute.
+> **Use the Bridge Installer (Option 3) instead.**
 
+### Option 3: Bridge Installer (Windows — works everywhere)
+
+The Bridge Installer is a pure-Python alternative to `npx` that understands Windows Git pointer files. It resolves symlink pointers at install time, writes real hard copies into `.agents/`, and creates Junctions (Windows) or symlinks (Mac/Linux) into each agent environment.
+
+**First install** — run once from the cloned repo root:
 ```bash
-# First, remove the existing agent skills folder to prevent caching/lock issues
-
-# remove a specific skill first check list 
-npx skills list
-
-#remove a specific skill 
-npx skills remove skill-name
-
-# Remove all skills from all agents
-rm -rf .agents/
-npx skills remove --all -y
-
-# Install a specific local plugin
-npx skills add ./plugins/rlm-factory --force
-
-# Install the entire local plugins directory
-npx skills add ./plugins/ --force
+python plugins/plugin-manager/scripts/install_all_plugins.py
 ```
 
-> **Why this works**: each plugin in `plugins/` contains a `SKILL.md` following the [open agent skills standard](https://skills.sh/docs). The CLI reads it and configures your IDE automatically.
+**Subsequent installs / consuming projects** — once installed, invoke directly from `.agents/`:
+```bash
+# Reinstall / update all core plugins
+python .agents/skills/bridge-plugin/scripts/install_all_plugins.py
+
+# Add plugins from a second source without touching existing installs
+python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
+
+# Preview without writing anything
+python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --dry-run
+```
+
+No Node.js required. No symlink permission issues. Installs are additive — running against multiple plugin directories merges them cleanly.
+
+### Installing Locally (For Contributors / Local Dev)
+
+After cloning, install the full plugin ecosystem from source:
+
+```bash
+# Install everything
+python plugins/plugin-manager/scripts/install_all_plugins.py
+
+# Install a single plugin
+python plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/rlm-factory
+```
+
+To update after making local changes, re-run the same command — the installer overwrites existing entries and skips any files currently locked by your IDE.
 
 Browse all available plugins and their install status at:
 **[skills.sh/richfrem/agent-plugins-skills](https://skills.sh/richfrem/agent-plugins-skills)**
