@@ -10,12 +10,14 @@ Layer: Plugin Manager / Installation
 
 Usage Examples:
     python3 plugins/plugin-manager/scripts/install_all_plugins.py
+    python3 plugins/plugin-manager/scripts/install_all_plugins.py --plugins-dir "temp/agent-plugins-skills/plugins"
 
 Supported Object Types:
     - None (Batch execution)
 
 CLI Arguments:
     --dry-run: Pass --dry-run to each bridge_installer invocation.
+    --plugins-dir: Optional path to a specific plugins folder to install from.
 
 Input Files:
     - bridge_installer.py (Subprocess script)
@@ -112,7 +114,13 @@ def _update_lock_hashes(root: Path, plugins_root: Path, dry_run: bool = False) -
 def main() -> None:
     parser = argparse.ArgumentParser(description="Install all plugins via bridge_installer")
     parser.add_argument("--dry-run", action="store_true", help="Pass --dry-run to each bridge_installer invocation")
+    parser.add_argument("--plugins-dir", type=str, help="Optional path to the plugins folder to install from (defaults to the project's plugins/ directory)")
     args = parser.parse_args()
+
+    plugins_root = Path(args.plugins_dir).resolve() if args.plugins_dir else PLUGINS_ROOT
+    if not plugins_root.exists() or not plugins_root.is_dir():
+        print(f"❌ Error: Plugins source directory not found at {plugins_root}")
+        sys.exit(1)
 
     tag = " [DRY RUN]" if args.dry_run else ""
     print(f"\n{'='*80}")
@@ -137,7 +145,7 @@ def main() -> None:
     plugins_failed = 0
     
     # Iterate over all directories in plugins/
-    for plugin_dir in sorted(PLUGINS_ROOT.iterdir()):
+    for plugin_dir in sorted(plugins_root.iterdir()):
         if not plugin_dir.is_dir():
             continue
             
@@ -171,7 +179,7 @@ def main() -> None:
             print(f"❌ Unexpected error installing {plugin_dir.name}: {e}")
             plugins_failed += 1
 
-    _update_lock_hashes(Path.cwd(), PLUGINS_ROOT, args.dry_run)
+    _update_lock_hashes(Path.cwd(), plugins_root, args.dry_run)
 
     print("\n" + "="*50)
     print(f"Batch Installation into .agents/ Complete")
