@@ -53,8 +53,38 @@ This skill provides comprehensive information and reference guides about the con
 
 Because of the Progressive Disclosure architecture, you should selectively read the reference files below only when you need detailed information on that specific topic.
 
-## Installation (`npx skills`)
-This ecosystem uses the universal `npx skills` CLI to install, update, and manage plugins across all supported agents (Claude Code, Copilot, Gemini CLI, etc).
+## Installation
+
+### Claude Plugin Marketplace (Claude Code native — verified 2.1.81+)
+Repos with a `.claude-plugin/marketplace.json` at the root can be registered as a marketplace:
+```
+/plugin marketplace add owner/repo
+/plugin install <plugin-name>
+```
+Claude Code fetches from the default branch. The `marketplace.json` must be merged to `main` before consumers can install.
+
+`/plugin install <name>` opens an **interactive Plugins panel** (not plain stdout) showing plugin details and a scope picker (user / project / local). The command returns no terminal output — UI renders in the panel.
+
+**Source types in marketplace.json:**
+- Relative path (same-repo monorepo): `"source": "./plugins/my-plugin"` — resolved from repo root
+- Git subdirectory (sparse clone): `"source": { "type": "git-subdir", "url": "...", "subdir": "..." }`
+- npm package: `"source": { "type": "npm", "package": "@scope/pkg", "version": "^1.0.0" }`
+- Non-GitHub git: `"source": { "type": "url", "url": "...", "ref": "main" }`
+
+**`strict` field:** `true` = plugin's own `plugin.json` wins; `false` = marketplace entry is the full definition (no plugin.json needed).
+
+**Validation before publishing:** `/plugin validate .` or `claude plugin validate .`
+
+**Team/enterprise distribution (`.claude/settings.json`):**
+- `extraKnownMarketplaces` — auto-register marketplace for the whole team
+- `enabledPlugins` — default-enable specific plugins for all team members
+- `strictKnownMarketplaces: true` — lock to approved marketplaces only (enterprise)
+- `CLAUDE_CODE_PLUGIN_SEED_DIR` env var — pre-populate plugins in containers/CI
+
+Note: `/plugin marketplace browse` returns no content in 2.1.81 — use `/plugin help` to discover available subcommands.
+
+### `npx skills` CLI (cross-agent)
+Universal CLI to install across all supported agents (Claude Code, Copilot, Gemini CLI, etc).
 
 **Quick Reference:**
 *   **Install from GitHub:** `npx skills add <user>/<repo>`
