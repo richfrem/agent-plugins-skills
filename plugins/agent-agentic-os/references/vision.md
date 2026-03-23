@@ -10,16 +10,18 @@ This document captures architectural direction for the next evolution of the Age
 ## Table of Contents
 
 1. [Current State](#current-state)
-2. [Core Architectural Shift: Adapter Pattern](#core-architectural-shift-adapter-pattern)
-3. [The OS Paradigm: What Exists and Where It Goes](#the-os-paradigm-what-exists-and-where-it-goes)
-4. [Context Orchestrator (Enterprise Grade)](#context-orchestrator-enterprise-grade)
-5. [Security Sentinels (Critical Gap)](#security-sentinels-critical-gap)
-6. [Zero Trust for Agents, Skills, Prompts, and Hooks](#zero-trust-for-agents-skills-prompts-and-hooks)
-7. [Explicit Scope Declaration Model](#explicit-scope-declaration-model)
-8. [Agent Authentication: Ephemeral JWT Tokens](#agent-authentication-ephemeral-jwt-tokens-per-approved-action)
-9. [5-Layer Proxy Architecture](#5-layer-proxy-architecture)
-10. [Session Behavioral Intelligence (The Missing Layer)](#session-behavioral-intelligence-the-missing-layer)
-11. [Near-Term Priorities](#near-term-priorities)
+2. [Competitive Landscape and Industry Direction](#competitive-landscape-and-industry-direction)
+3. [Academic Research Validation](#academic-research-validation)
+4. [Core Architectural Shift: Adapter Pattern](#core-architectural-shift-adapter-pattern)
+5. [The OS Paradigm: What Exists and Where It Goes](#the-os-paradigm-what-exists-and-where-it-goes)
+6. [Context Orchestrator (Enterprise Grade)](#context-orchestrator-enterprise-grade)
+7. [Security Sentinels (Critical Gap)](#security-sentinels-critical-gap)
+8. [Zero Trust for Agents, Skills, Prompts, and Hooks](#zero-trust-for-agents-skills-prompts-and-hooks)
+9. [Explicit Scope Declaration Model](#explicit-scope-declaration-model)
+10. [Agent Authentication: Ephemeral JWT Tokens](#agent-authentication-ephemeral-jwt-tokens-per-approved-action)
+11. [5-Layer Proxy Architecture](#5-layer-proxy-architecture)
+12. [Session Behavioral Intelligence (The Missing Layer)](#session-behavioral-intelligence-the-missing-layer)
+13. [Near-Term Priorities](#near-term-priorities)
 
 ---
 
@@ -32,6 +34,141 @@ The agentic-os is a local runtime with:
 - Single-machine scope
 
 It works well for solo developer use. The constraint is that the subsystems are not swappable — you get the built-in memory and event bus or nothing.
+
+---
+
+## Competitive Landscape and Industry Direction
+
+> Note: This section captures the industry direction as of early 2026. The space is moving fast and specific product claims should be verified against current sources.
+
+The "Agentic OS" concept has moved from academic research to active industry investment. The trend is clear even if no single leader has emerged.
+
+### Hyperscalers
+
+**Microsoft** is the most visible: Pavan Davuluri (President, Windows and Devices) announced Windows 11 is being redesigned as an agentic OS. Windows Copilot Plus PCs use on-device models (Phi Silica), "Recall" screenshot history, and agentic workflows to manage files across applications. Early reception was poor - Recall's privacy implications triggered a backlash that delayed the rollout. The ambition to make the OS itself the agent harness is clear; the execution is early.
+
+**NVIDIA** is building backend infrastructure: Vera Rubin platform and BlueField-4 STX storage are designed for long-context AI-native computing. The NVIDIA Agent Toolkit (OpenShell) targets self-evolving agents with persistent memory.
+
+**Apple** has taken a quieter path with App Intents and Apple Intelligence - formalizing how apps expose actions to agent orchestration. More constrained than Windows but more reliable in execution.
+
+### Enterprise Platforms
+
+**PwC** launched an "AI Agent Operating System" in March 2025 - positioned as a switchboard for cross-platform orchestration across cloud providers (AWS, Oracle), integrating commercial models. It is an integration/governance layer, not a true OS-level primitive.
+
+**Amdocs** has built an agentic OS (aOS) specifically for telecom/enterprise, designed to run on top of existing OSS/BSS stacks.
+
+**Kore.ai** focuses on end-to-end enterprise agentic platforms with multi-agent orchestration.
+
+**Xebia** and others offer similar "agentic OS platform" products - essentially enterprise agent orchestration layers.
+
+### Memory-Specialized Frameworks
+
+This is the most technically interesting category because memory is the hardest unsolved problem:
+
+- **Letta (formerly MemGPT)**: OS-inspired memory management; agents control their own memory (RAM vs. disk) enabling "unlimited" context via paging
+- **Mem0**: Standalone adaptive memory layer for personalization across agents and sessions
+- **Zep / Graphiti**: Temporal knowledge graphs tracking how entities and preferences change over time
+
+These frameworks are directly relevant to the Agentic OS plugin's memory adapter vision - they are the swappable backends that should eventually plug in.
+
+### Academic Prototypes
+
+- **AIOS**: LLM Agent OS from academia with a three-layer architecture; 2.1x faster execution via unified system calls
+- **KAOS**: Built on Kylin OS, introduces management-role agents for resource scheduling
+- **AgentStore**: "App store" for heterogeneous agents, improved OSWorld benchmark from 11% to 24%
+- **Eliza**: Blockchain-integrated Agent OS for decentralized security
+
+### The Security Gap at Scale
+
+The competitive landscape creates a critical secondary concern: every major player is building agent skill/plugin repositories. OpenFang, AIOS, AgencyOS, NemoClaw, and the commercial platforms all aggregate third-party agent skills at scale. Anthropic's official Claude plugin marketplace has 100+ plugins as of early 2026. SkillsMP.com indexed 571,000+ SKILL.md files by March 2026.
+
+**This is the browser extension problem at AI scale.** Browser extension stores spent years allowing credential-stealing and adware extensions before implementing meaningful review. Agent skill repositories carrying Manchurian Candidates - skills that behave normally in testing but activate malicious behavior under specific triggers, or that encode payloads in innocuous artifacts like image EXIF data - represent the same attack surface pattern with higher blast radius per compromised install.
+
+The industry is in the "chaos of duplicated bespoke solutions" phase Koubaa describes in his research. The window to establish security norms before the first major incident is open now. It will close once a high-profile attack forces reactive policy.
+
+---
+
+## Academic Research Validation
+
+Two papers from 2025-2026 independently validate the architectural direction of this vision and provide formal frameworks worth incorporating. Full summaries are in `references/research/`.
+
+### Koubaa (TechRxiv, Sept 2025): Agent-OS Blueprint
+
+Koubaa proposes a five-layer Agent-OS architecture (Kernel -> Resource+Service -> Agent Runtime -> Orchestration -> User) with Agent Contracts as portable machine-readable specifications. The paper is positioned as an "architectural North Star" - not a system realizable today, but a requirements-driven blueprint for the next decade.
+
+**Validates:**
+- The OS metaphor (kernel/RAM/disk/daemons) is the right framing for agent infrastructure
+- Memory adapter pattern is necessary (FR2 requires pluggable backends: vector stores, KV caches, relational DBs)
+- Zero-trust microkernel is the right security architecture
+- Agent Contracts align with combining `plugin.json` + Explicit Scope Declarations
+
+**Original contribution to incorporate - Latency Classes:**
+
+Koubaa formalizes three latency classes as first-class OS scheduling primitives:
+
+| Class | Definition | Use Cases | SLO Targets |
+|-------|-----------|-----------|-------------|
+| **HRT** (Hard Real-Time) | Any deadline miss = system failure | Robotics, safety-critical control loops | 1-20 ms slices; jitter <= 5 ms; 0 deadline misses |
+| **SRT** (Soft Real-Time) | Occasional misses tolerable; user-perceived responsiveness critical | Chat assistants, screen copilots, live captioning | First-token 150-300 ms; full-turn 0.8-1.2 s |
+| **DT** (Delay-Tolerant) | No hard deadline; maximize throughput per unit cost | Overnight batch analytics, report generation | 60-120 s acceptable; cost-per-token optimized |
+
+For the Agentic OS plugin: interactive user-facing agents are SRT class; background daemons (`os-learning-loop`, `os-health-check`) are DT class. Classifying skills and agents by latency class enables smarter scheduling and better resource allocation.
+
+### Sharma (Authorea, Feb 2026): AOS as Agentic Control Plane
+
+Sharma's paper is more systems-engineering-grounded. It maps AOS onto real Linux and Windows primitives and provides concrete implementation paths. The most important contribution is the Separation of Planes and Four Architectural Invariants.
+
+**Separation of Planes (core safety property):**
+
+```
+REASONING PLANE (untrusted)
+  Probabilistic inference, planning, strategy selection.
+  Outputs are PROPOSALS, not commands.
+         |
+         v proposed actions
+POLICY PLANE
+  Authorization, risk checks, budget controls.
+  DENY BY DEFAULT where ambiguous.
+  Produces auditable decisions with reason codes.
+         |
+         v authorized actions
+EXECUTION PLANE (trusted)
+  Deterministic tool invocation, system calls, side effects.
+  Enforces policy decisions deterministically.
+  Runs in least-privilege environments.
+```
+
+This separation is what the Agentic OS plugin's `PreToolUse` hooks implement partially. The key insight: treat all LLM reasoning outputs as untrusted proposals subject to deterministic policy evaluation before any side effect occurs.
+
+**Four Architectural Invariants (non-negotiable):**
+
+These are the minimum viable security contract for any AOS:
+
+1. No side-effecting action is executed without a deterministic policy decision of "allow."
+2. All policy outcomes (allow, deny, defer) are recorded in an append-only audit record prior to rescheduling.
+3. Scheduling decisions depend only on observable state and budgets, not on internal reasoning tokens.
+4. Underlying OS remains the sole mediator of hardware resources.
+
+Current plugin compliance:
+- Invariant 1: Partially implemented via `PreToolUse` hooks
+- Invariant 2: `events.jsonl` partially implements this; missing policy decision reason codes
+- Invariant 3: Not formally implemented
+- Invariant 4: Assumed but not enforced
+
+**Four Memory Classes:**
+
+Sharma provides a formal decomposition that maps cleanly to the plugin's existing architecture:
+
+| Memory Class | Plugin Component | Gap |
+|-------------|-----------------|-----|
+| Ephemeral context | Active context window | None - cleared each session |
+| Durable agent memory | `context/memory.md` (L3) + session logs (L2) | Missing versioning and formal retention policy |
+| Retrieved knowledge | Skills loaded via progressive disclosure | Missing provenance/integrity metadata |
+| Execution records | `context/events.jsonl` | Missing policy reason codes per event |
+
+**Integration Model Recommendation:**
+
+Sharma evaluates four integration models. The plugin currently implements Model 1 (user-space runtime with hooks). This is the right starting point. The near-term path is Model 2 (selective OS-level enforcement via eBPF/LSM for enterprise deployments). The long-term path is Model 3 (distributed control plane), which aligns with the Context Orchestrator concept in this vision.
 
 ---
 
@@ -836,3 +973,8 @@ Agent SIEM is the infrastructure that doesn't exist yet but will become critical
 - `references/dual-loop.md` — loop architecture
 - `assets/diagrams/event-bus-architecture.mmd` — current event bus diagram
 - `assets/diagrams/agentic-os-memory-subsystem.mmd` — current memory diagram
+
+### Research
+
+- `references/research/koubaa-2025-agent-os-blueprint.md` — summary of Koubaa (TechRxiv, Sept 2025): five-layer Agent-OS architecture, Agent Contracts, HRT/SRT/DT latency classes
+- `references/research/sharma-2026-aos-control-plane.md` — summary of Sharma (Authorea, Feb 2026): Separation of Planes, Four Architectural Invariants, Linux/Windows AOS mapping
