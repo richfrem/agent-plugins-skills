@@ -4,7 +4,37 @@ cleanup.py (CLI)
 =====================================
 
 Purpose:
-    Removes stale chunk entries for files that have been deleted or renamed on disk.
+    Removes stale chunk entries for files that have been deleted or renamed
+    on disk, keeping the ChromaDB vector store in sync with the filesystem.
+
+Layer: Curate / Vector-DB
+
+Usage Examples:
+    python3 plugins/vector-db/scripts/cleanup.py
+    python3 plugins/vector-db/scripts/cleanup.py --profile knowledge
+
+Supported Object Types:
+    - ChromaDB chunk entries
+
+CLI Arguments:
+    --profile    Vector DB profile name to use (e.g. knowledge)
+
+Input Files:
+    - vector_profiles.json (resolved via VectorConfig)
+
+Output:
+    - Deletes stale chunks from the active ChromaDB collection
+
+Key Functions:
+    - run_cleanup: Scans collection metadata and deletes chunks for missing files.
+    - main: CLI entry point; loads config and delegates to run_cleanup.
+
+Script Dependencies:
+    - plugins/vector-db/scripts/vector_config.py
+    - plugins/vector-db/scripts/operations.py
+
+Consumed by:
+    - vector-db-cleanup skill
 """
 
 import sys
@@ -84,7 +114,7 @@ def run_cleanup(cortex: VectorDBOperations) -> int:
     return len(stale_ids)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Clean up stale chunks in Vector DB")
     parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., knowledge)")
     args = parser.parse_args()

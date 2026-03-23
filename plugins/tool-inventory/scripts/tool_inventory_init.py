@@ -1,18 +1,45 @@
 #!/usr/bin/env python3
 """
-Tool Inventory Setup (Librarian Bootstrapper)
-=============================================
+tool_inventory_init.py (CLI)
+=====================================
 
 Purpose:
-    Provides an automated, non-interactive wrapper around the `rlm-init` logic,
-    expressly tailoring a semantic cache profile specifically for "tools". This script
-    acts as the first-run configuration generator, creating the necessary manifests
-    and profile entries without requiring QA prompt loops.
+    Automated, non-interactive bootstrapper for the Tool Inventory semantic
+    cache. Creates the RLM profile, manifest, and cache file without requiring
+    QA prompt loops, acting as the first-run configuration generator for tools.
 
 Layer: Curate / Inventories
 
-Usage:
-    python3 ./scripts/tool_inventory_init.py
+Usage Examples:
+    python3 plugins/tool-inventory/scripts/tool_inventory_init.py
+
+Supported Object Types:
+    - RLM profile JSON
+    - RLM manifest JSON
+    - RLM tool cache JSON
+
+CLI Arguments:
+    (None - all paths resolved automatically)
+
+Input Files:
+    - .agent/learning/rlm_profiles.json (read/updated)
+
+Output:
+    - .agent/learning/rlm_profiles.json
+    - .agent/learning/rlm_tools_manifest.json
+    - .agent/learning/rlm_tool_cache.json
+
+Key Functions:
+    - configure_profile: Injects the 'tools' profile into rlm_profiles.json.
+    - configure_manifest: Generates the tools manifest file.
+    - initialize_cache: Creates an empty baseline cache if one does not exist.
+    - main: Orchestrates the full bootstrap sequence.
+
+Script Dependencies:
+    - Standard library only
+
+Consumed by:
+    - tool-inventory skill (first-run setup step)
 """
 
 import sys
@@ -39,12 +66,12 @@ def load_json(path: Path) -> dict:
         print(f"❌ Error parsing {path}: {e}")
         return {}
 
-def save_json(path: Path, data: dict):
+def save_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
         
-def configure_profile():
+def configure_profile() -> None:
     print(f"🔍 Configuring RLM Tools Profile in {PROFILES_PATH}...")
     
     profiles_data = load_json(PROFILES_PATH)
@@ -74,7 +101,7 @@ def configure_profile():
         save_json(PROFILES_PATH, profiles_data)
         print(f"✅ Created profile '{TOOLS_PROFILE_NAME}' in {PROFILES_PATH}.")
 
-def configure_manifest():
+def configure_manifest() -> None:
     print(f"🔍 Generating Inventory Manifest at {MANIFEST_PATH}...")
     
     if MANIFEST_PATH.exists():
@@ -99,7 +126,7 @@ def configure_manifest():
         save_json(MANIFEST_PATH, manifest_data)
         print(f"✅ Created explicit tools manifest at {MANIFEST_PATH}.")
 
-def initialize_cache():
+def initialize_cache() -> None:
     print(f"🔍 Ensuring empty cache exists at {CACHE_PATH}...")
     
     if CACHE_PATH.exists():
@@ -108,7 +135,7 @@ def initialize_cache():
         save_json(CACHE_PATH, {})
         print(f"✅ Created baseline cache file at {CACHE_PATH}.")
         
-def main():
+def main() -> None:
     print("====================================")
     print(" LIBRARIAN TOOL-INVENTORY BOOTSTRAP")
     print("====================================")

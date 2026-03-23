@@ -1,7 +1,7 @@
 flowchart TD
     subgraph Initialization [Step 1: Unpacking]
         Bundle(tool-bundle.md) -- Agent Extracts --> Scripts
-        Scripts[ingest.py\n./query.py\ncleanup.py]
+        Scripts[../scripts/ingest.py\n../scripts/query.py\n../scripts/cleanup.py]
         Bundle -- Extract --> Config[.env Template]
         Scripts --> Install{Install Deps}
         Install -- "pip install" --> Venv[(Python Env)]
@@ -9,7 +9,7 @@ flowchart TD
     end
 
     subgraph Ingestion [Step 2: Build Memory]
-        Env --> Ingest[ingest.py]
+        Env --> Ingest[../scripts/ingest.py]
         Ingest -- "Read" --> Markdown[Docs / Code]
         Ingest -- "Read Context" --> RLM[(RLM Cache)]
         RLM -. "Inject Summary" .-> Ingest

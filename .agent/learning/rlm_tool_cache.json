@@ -338,5 +338,45 @@
     "hash": "04dc2f0d03b2201e",
     "summarized_at": "2026-03-22T18:24:33.391465",
     "summary": "Embedded ChromaDB vector store wrapper for tool discovery; provides upsert, search, list, and import-from-JSON operations over tool summaries."
+  },
+  "plugins/tool-inventory/scripts/tool_inventory_init.py": {
+    "hash": "74317de5874e016b",
+    "summarized_at": "2026-03-22T18:25:28.696475",
+    "summary": "Bootstraps the Tool Inventory semantic cache by creating the RLM profile, tools manifest, and empty cache file non-interactively."
+  },
+  "plugins/vector-db/scripts/cleanup.py": {
+    "hash": "9ace081694bce693",
+    "summarized_at": "2026-03-22T18:26:51.313209",
+    "summary": "Removes stale ChromaDB chunk entries for files deleted or renamed on disk, keeping the vector store in sync with the filesystem."
+  },
+  "plugins/vector-db/scripts/ingest.py": {
+    "hash": "4831885e39b89399",
+    "summarized_at": "2026-03-22T18:26:51.389778",
+    "summary": "Ingests repository files into the ChromaDB vector store by chunking and embedding documents using the configured vector profile."
+  },
+  "plugins/vector-db/scripts/ingest_code_shim.py": {
+    "hash": "ccaac3982ac54f2b",
+    "summarized_at": "2026-03-22T18:26:51.455252",
+    "summary": "Shim script that bridges the code ingestion pipeline into the ChromaDB vector store for semantic search indexing."
+  },
+  "plugins/vector-db/scripts/init.py": {
+    "hash": "60dedf2585bdccfb",
+    "summarized_at": "2026-03-22T18:26:51.515788",
+    "summary": "Initializes the vector database profile configuration and creates the ChromaDB collection if it does not exist."
+  },
+  "plugins/vector-db/scripts/operations.py": {
+    "hash": "22c245fa4c29cd48",
+    "summarized_at": "2026-03-22T18:26:51.585219",
+    "summary": "Core ChromaDB operations class providing upsert, query, delete, and collection management for the vector-db plugin."
+  },
+  "plugins/vector-db/scripts/query.py": {
+    "hash": "1ebd2da72bdeb84b",
+    "summarized_at": "2026-03-22T18:26:51.647625",
+    "summary": "CLI tool for semantic search queries against the ChromaDB vector store using the configured vector profile."
+  },
+  "plugins/vector-db/scripts/vector_config.py": {
+    "hash": "7a3c66f3dd57fb18",
+    "summarized_at": "2026-03-22T18:26:51.707086",
+    "summary": "Loads and validates vector database profile configuration from vector_profiles.json for use by all vector-db scripts."
   }
 }
