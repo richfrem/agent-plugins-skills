@@ -1,0 +1,225 @@
+{
+  "name": "richfrem-agent-plugins-skills",
+  "description": "A curated collection of AI agent plugins and skills for Claude Code — covering spec-driven development, memory management, context bundling, multi-agent orchestration, CLI sub-agents, and more.",
+  "owner": {
+    "name": "Richard Fremmerlid"
+  },
+  "plugins": [
+    {
+      "name": "spec-kitty",
+      "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine — the flagship workflow plugin for AI-assisted feature development.",
+      "source": "./plugins/spec-kitty-plugin",
+      "strict": true,
+      "category": "workflow",
+      "tags": ["sdd", "workflow", "kanban", "worktree", "bridge"]
+    },
+    {
+      "name": "task-manager",
+      "description": "Lightweight kanban task board — directory-backed with zero dependencies. Enforces Kanban Sovereignty constraints preventing manual task file edits.",
+      "source": "./plugins/task-manager",
+      "strict": true,
+      "category": "workflow",
+      "tags": ["tasks", "kanban", "todo", "project-management"]
+    },
+    {
+      "name": "adr-manager",
+      "description": "ADR management skill for generating architecture decisions, documenting design rationale, and maintaining the decision record log.",
+      "source": "./plugins/adr-manager",
+      "strict": true,
+      "category": "workflow",
+      "tags": ["adr", "architecture", "decisions", "documentation"]
+    },
+    {
+      "name": "exploration-cycle-plugin",
+      "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
+      "source": "./plugins/exploration-cycle-plugin",
+      "strict": true,
+      "category": "workflow",
+      "tags": ["exploration", "discovery", "requirements", "prototype", "user-stories"]
+    },
+    {
+      "name": "agent-agentic-os",
+      "description": "Canonical reference and operational guide for the Agentic OS pattern. Covers CLAUDE.md hierarchy, persistent context layers, memory management, session bootstrapping, and hooks-based auto-learning.",
+      "source": "./plugins/agent-agentic-os",
+      "strict": true,
+      "category": "agent-infrastructure",
+      "tags": ["agentic-os", "agent-harness", "claude-md", "context-management", "memory-management"]
+    },
+    {
+      "name": "agent-loops",
+      "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic.",
+      "source": "./plugins/agent-loops",
+      "strict": true,
+      "category": "agent-infrastructure",
+      "tags": ["orchestrator", "learning-loop", "dual-loop", "agent-swarm", "red-team", "multi-agent"]
+    },
+    {
+      "name": "agent-scaffolders",
+      "description": "Meta-plugin containing ecosystem generation primitives. Scaffolding for agent skills, plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
+      "source": "./plugins/agent-scaffolders",
+      "strict": true,
+      "category": "agent-infrastructure",
+      "tags": ["scaffolder", "plugin-generator", "skill-generator", "agent-tooling"]
+    },
+    {
+      "name": "plugin-manager",
+      "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync, cross-repo plugin replication, and Universal Bridge Installation.",
+      "source": "./plugins/plugin-manager",
+      "strict": true,
+      "category": "agent-infrastructure",
+      "tags": ["orchestration", "sync", "maintenance", "installer", "bridge", "deployment"]
+    },
+    {
+      "name": "agent-plugin-analyzer",
+      "description": "Systematically analyze agent plugins and skills to extract design patterns, architectural decisions, and reusable techniques. Translates analysis into concrete improvement recommendations.",
+      "source": "./plugins/agent-plugin-analyzer",
+      "strict": true,
+      "category": "analysis",
+      "tags": ["plugin-analyzer", "pattern-extraction", "security-audit", "maturity-model"]
+    },
+    {
+      "name": "coding-conventions",
+      "description": "Coding standards, documentation conventions, and header templates for Python, TypeScript/JavaScript, and C#/.NET.",
+      "source": "./plugins/coding-conventions",
+      "strict": true,
+      "category": "analysis",
+      "tags": ["coding", "conventions", "standards", "documentation", "headers"]
+    },
+    {
+      "name": "dependency-management",
+      "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends.",
+      "source": "./plugins/dependency-management",
+      "strict": true,
+      "category": "analysis",
+      "tags": ["dependencies", "pip-compile", "python", "requirements", "security"]
+    },
+    {
+      "name": "link-checker",
+      "description": "Quality assurance agent for documentation link integrity. Checks, fixes, and audits documentation links across a repository using a deterministic Map-Fix-Verify workflow.",
+      "source": "./plugins/link-checker",
+      "strict": true,
+      "category": "analysis",
+      "tags": ["links", "documentation", "validation", "auto-repair", "markdown"]
+    },
+    {
+      "name": "agent-skill-open-specifications",
+      "description": "Authoritative reference documentation and execution skills for the Agent Skills and Claude Plugin ecosystem standards.",
+      "source": "./plugins/agent-skill-open-specifications",
+      "strict": true,
+      "category": "analysis",
+      "tags": ["ecosystem-specs", "plugin-standards", "skill-standards", "authoritative-reference"]
+    },
+    {
+      "name": "context-bundler",
+      "description": "Bundle source files and documentation into single-file LLM context packages (Markdown or ZIP archives) for portable AI agent distribution.",
+      "source": "./plugins/context-bundler",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["bundler", "context", "llm", "packaging", "agent-tools"]
+    },
+    {
+      "name": "rlm-factory",
+      "description": "Recursive Language Model factory — distill repository files into semantic summaries using Ollama for instant context retrieval.",
+      "source": "./plugins/rlm-factory",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["rlm", "summarization", "ollama", "context", "memory", "ledger"]
+    },
+    {
+      "name": "vector-db",
+      "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
+      "source": "./plugins/vector-db",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["vector-db", "chromadb", "semantic-search", "rag", "embeddings"]
+    },
+    {
+      "name": "tool-inventory",
+      "description": "Manage tool registries with embedded ChromaDB for semantic tool discovery — self-contained with vendored RLM scripts.",
+      "source": "./plugins/tool-inventory",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["tools", "inventory", "chromadb", "semantic-search", "registry"]
+    },
+    {
+      "name": "memory-management",
+      "description": "Tiered memory system for cognitive continuity across agent sessions. Manages hot cache and deep storage with configurable promotion/demotion rules.",
+      "source": "./plugins/memory-management",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["memory", "context", "cognitive-continuity", "tiered-storage", "session-management"]
+    },
+    {
+      "name": "claude-cli",
+      "description": "Claude CLI sub-agent system for persona-based analysis. Pipes large contexts to Anthropic models for security audits, architecture reviews, and QA analysis.",
+      "source": "./plugins/claude-cli",
+      "strict": true,
+      "category": "cli-agents",
+      "tags": ["claude", "anthropic", "cli", "sub-agent", "persona", "security-audit"]
+    },
+    {
+      "name": "gemini-cli",
+      "description": "Gemini CLI sub-agent system for persona-based analysis. Pipes large contexts to Google Gemini models for security audits, architecture reviews, and QA analysis.",
+      "source": "./plugins/gemini-cli",
+      "strict": true,
+      "category": "cli-agents",
+      "tags": ["gemini", "google-gemini", "cli", "sub-agent", "persona", "security-audit"]
+    },
+    {
+      "name": "copilot-cli",
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Pipes large contexts to GitHub Copilot models for security audits, architecture reviews, and QA analysis.",
+      "source": "./plugins/copilot-cli",
+      "strict": true,
+      "category": "cli-agents",
+      "tags": ["copilot", "github-copilot", "cli", "sub-agent", "persona", "security-audit"]
+    },
+    {
+      "name": "excel-to-csv",
+      "description": "Convert Excel files (entire workbooks or specific worksheets/tables) into CSV format. Includes L5 Delegated Constraint Verification for strict artifact linting.",
+      "source": "./plugins/excel-to-csv",
+      "strict": true,
+      "category": "conversion",
+      "tags": ["excel", "csv", "conversion", "data", "l5-verified"]
+    },
+    {
+      "name": "markdown-to-msword-converter",
+      "description": "Convert Markdown files to MS Word (.docx) documents. Includes L5 Delegated Constraint Verification for strict binary artifact linting.",
+      "source": "./plugins/markdown-to-msword-converter",
+      "strict": true,
+      "category": "conversion",
+      "tags": ["markdown", "docx", "msword", "convert", "word", "document"]
+    },
+    {
+      "name": "mermaid-to-png",
+      "description": "Convert Mermaid diagrams (.mmd) into high-resolution PNG images via headless Puppeteer.",
+      "source": "./plugins/mermaid-to-png",
+      "strict": true,
+      "category": "conversion",
+      "tags": ["mermaid", "diagrams", "png", "convert", "visualization", "puppeteer"]
+    },
+    {
+      "name": "obsidian-integration",
+      "description": "Obsidian Agent Integration Suite — vault operations, markdown parsing, canvas creation, graph traversal, and bases management for AI-assisted Obsidian workflows.",
+      "source": "./plugins/obsidian-integration",
+      "strict": true,
+      "category": "integrations",
+      "tags": ["obsidian", "vault", "knowledge-graph", "markdown", "canvas", "pkm"]
+    },
+    {
+      "name": "huggingface-utils",
+      "description": "HuggingFace integration utilities for Soul persistence — validates credentials, manages dataset structure, and provides upload primitives with exponential backoff.",
+      "source": "./plugins/huggingface-utils",
+      "strict": true,
+      "category": "integrations",
+      "tags": ["huggingface", "hf-hub", "soul-persistence", "upload", "dataset"]
+    },
+    {
+      "name": "rsvp-speed-reader",
+      "description": "Converts documents into word-by-word RSVP token streams with ORP alignment for speed reading. Supports .txt, .md, .pdf, and .docx input files.",
+      "source": "./plugins/rsvp-speed-reader",
+      "strict": true,
+      "category": "integrations",
+      "tags": ["rsvp", "speed-reading", "documents", "pdf", "docx"]
+    }
+  ]
+}

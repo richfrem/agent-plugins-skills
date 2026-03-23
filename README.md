@@ -16,9 +16,25 @@ Instead of keeping documentation trapped in disparate folders, this site serves 
 
 ## Installation
 
-Use the `npx skills` CLI to install plugins directly into your agent environment. It auto-detects installed agents (Claude Code, GitHub Copilot, Gemini, Cursor, and 30+ others) and wires everything up natively.
+### Option 1: Claude Plugin Marketplace (Claude Code native)
 
-### Installing from GitHub
+This repository is a published Claude Code marketplace. Add it once and install any plugin by name:
+
+```bash
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install context-bundler
+/plugin install spec-kitty
+/plugin install rlm-factory
+```
+
+To browse and install interactively:
+```bash
+/plugin marketplace browse richfrem/agent-plugins-skills
+```
+
+### Option 2: npx skills CLI (cross-agent)
+
+Use the `npx skills` CLI to install directly into any agent environment. It auto-detects installed agents (Claude Code, GitHub Copilot, Gemini, Cursor, and 30+ others) and wires everything up natively.
 
 ```bash
 # Install all plugins from this repo
