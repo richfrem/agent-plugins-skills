@@ -1,8 +1,8 @@
-# Agent Agentic OS
+# Agent Harness & Learning Layer (formerly Agentic OS)
 
-A developer harness that gives your AI agent **persistent memory**, a **self-improvement loop**, and **multi-agent coordination** — working together as a system rather than as isolated primitives.
+A developer harness that gives your AI agent **persistent memory**, a **feedback and learning loop**, and **multi-agent coordination** — working together as a system rather than as isolated primitives.
 
-> **Complementary to native Claude Code**: Anthropic now ships auto-memory, native hooks, and subagent coordination. What it doesn't ship: a structured memory hierarchy above the 200-line limit, an eval-gated improvement loop that prevents regressions, or a multi-agent event bus with mutex semantics. This plugin provides those three things as a coherent system. See [`SUMMARY.md`](./SUMMARY.md) for full context.
+> **Positioning:** Anthropic now ships auto-memory, native hooks, and subagent coordination natively. This plugin is an **opinionated discipline layer** on top of those primitives. It provides a structured memory hierarchy, a continuous improvement pipeline for your prompts, and a multi-agent event bus. See [`SUMMARY.md`](./SUMMARY.md) for full context and known limitations.
 
 ---
 
@@ -22,9 +22,9 @@ This plugin provides a system for that.
 
 Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `session-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Dedup IDs, conflict detection, and size limits prevent the memory from drifting into contradiction over hundreds of sessions.
 
-### Self-Improvement Loop (Eval-Gated)
+### Continuous Improvement Loop (The Learning Layer)
 
-This is the differentiator. Not just memory - an improvement loop that **refuses to apply changes that don't pass an objective eval**. The eval is the gating mechanism, not the reporting mechanism:
+This is the system's core differentiator: a feedback control system for agent workflows. It doesn't just manage memory—it continuously improves the instructions the model receives based on objective evaluation. 
 
 ```
 Session runs
@@ -36,17 +36,19 @@ Session runs
   -> next session runs with better instructions
 ```
 
+> **⚠️ Experimental Warning (Round 2 Red-Team findings):** The current eval gate relies on a keyword-overlap heuristic, which risks over-optimizing for keyword bloat (Goodhart's Law). Furthermore, the loop operates without an isolated validation environment (shadow mode). Treat the `auto-apply` zone with caution and perform manual reviews of changes to your `SKILL.md` files until semantic embedding evaluations are fully integrated.
+
 A test registry prevents re-testing falsified hypotheses — improvements accumulate without repeating dead ends. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
 
-### Multi-Agent Coordination
+### Agent Signaling and Turn Management
 
-Three coordination patterns built into the system:
+Three simple signaling patterns built into the system:
 
-**Inner/outer loop** - outer supervisor sets goals and reviews results; inner worker executes and writes to the shared event bus. Context flows through shared memory, not tight coupling.
+**Inner/outer loop** - outer supervisor sets goals and reviews results; inner worker executes and signals completion in the shared event log. Context flows through shared memory, not tight coupling.
 
-**Background + foreground** - background daemons (`os-learning-loop`, `os-health-check`) run asynchronously with mutex locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
+**Background + foreground** - background agents (`os-learning-loop`, `os-health-check`) run asynchronously with simple execution locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
 
-**Sequential agent handoff** - Agent A writes structured output to the event bus. Agent B reads the bus to pick up where A left off. Agents are swappable because they coordinate through the shared bus, not through each other.
+**Sequential agent handoff** - Agent A writes structured output to the event log. Agent B reads the log to pick up where A left off. Agents coordinate their turns through the simple shared log, not through each other.
 
 ---
 
@@ -124,8 +126,8 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 | `agentic-os-init` | Scaffolds a new OS environment via discovery interview |
 | `session-memory-manager` | Deduplicates and promotes session facts to long-term memory |
 | `skill-improvement-eval` | Scores proposed skill patches against objective evals before applying |
-| `os-clean-locks` | Removes stale mutex locks that block agent execution |
-| `concurrent-agent-loop` | Coordinates multiple parallel agents through the shared event bus |
+| `os-clean-locks` | Removes stale execution locks that block agent execution |
+| `concurrent-agent-loop` | Coordinates parallel agents through the shared event log |
 | `loop-progress-report` | Generates improvement metrics from eval history |
 | `todo-check` | Audits files for unresolved TODO items |
 
@@ -140,7 +142,7 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 ### Hooks
 
 `hooks/hooks.json` registers hooks:
-- `post_run_metrics.py` - captures session errors and friction events to the event bus automatically
+- `post_run_metrics.py` - captures session errors and friction events to the event log automatically
 - `update_memory.py` - triggers memory promotion after significant sessions
 
 ### Commands
@@ -164,9 +166,9 @@ CONTEXT WINDOW (RAM - finite, cleared every session)
 DISK (context/ folder - persistent across sessions)
   context/memory.md          <- L3 long-term curated facts
   context/memory/YYYY-MM-DD.md  <- L2 session logs
-  context/events.jsonl       <- event bus / audit log
+  context/events.jsonl       <- event log / audit trail
   context/os-state.json      <- system registry
-  context/.locks/            <- mutex locks
+  context/.locks/            <- execution locks
 
 SKILLS (loaded into RAM only when triggered)
   skills/*/SKILL.md          <- full body stays on disk until invoked
