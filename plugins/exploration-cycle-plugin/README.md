@@ -1,6 +1,6 @@
 # Exploration Cycle Plugin
 
-Exploration-cycle plugin for the non-linear discovery mode described in [ADR-001](../../ADRs/001_augment_spec_kitty_with_exploration_cycle.md) and the architecture docs under [architecture](README.md).
+Exploration-cycle plugin for the non-linear discovery mode. See the Design References section below for architecture documentation.
 
 ## Purpose
 
@@ -144,13 +144,12 @@ Do NOT list plugin components in `.claude-plugin/plugin.json`; Claude auto-disco
 
 ## Design References
 
-- [Exploration cycle architecture](../../architecture/exploration-cycle-architecture.md)
-- [Exploration cycle spec](../../architecture/exploration-cycle-spec.md)
-- [ADR-001](../../ADRs/001_augment_spec_kitty_with_exploration_cycle.md)
+- [Plugin architecture reference](references/architecture.md)
+- [Plugin references](references/)
 
 ## Dependencies and Related Plugins
 
-**agent-loops**: The orchestration patterns (learning-loop, dual-loop, orchestrator) in this plugin are sourced from the reference clone under [`temp/agent-plugins-skills/plugins/agent-loops/README.md`](README.md) rather than rebuilt here. Review that README and [`PATTERN_GUIDE.md`](../../temp/agent-plugins-skills/plugins/agent-loops/PATTERN_GUIDE.md) before designing new agent coordination in this plugin.
+**agent-loops**: The orchestration patterns (learning-loop, dual-loop, orchestrator) in this plugin are documented locally in `references/` as standalone pattern overviews. See `references/learning-loop-architecture.md` and `references/dual-loop-architecture.md` before designing new agent coordination in this plugin.
 
 - Phase A is inspired by `learning-loop` for optional solo framing and by `dual-loop` for requirements capture passes
 - Phase C orchestration should adapt `agent-loops/skills/orchestrator` or `agent-loops/skills/dual-loop` — do not invent a new routing layer
