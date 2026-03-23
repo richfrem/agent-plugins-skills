@@ -1,1 +1,1 @@
-../../../../references/create-hook/examples/validate-bash.sh
+../../../../scripts/validate-bash.sh

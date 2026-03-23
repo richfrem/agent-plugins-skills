@@ -1,1 +1,1 @@
-../../../references/continuous-skill-optimizer/architecture.md
+../../../../../.agents/skills/manage-marketplace/references/architecture.md

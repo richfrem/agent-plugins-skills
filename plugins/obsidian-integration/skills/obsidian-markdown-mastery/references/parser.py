@@ -1,1 +1,1 @@
-../../../references/obsidian-markdown-mastery/parser.py
+../../../scripts/parser.py

@@ -1,1 +1,1 @@
-../../../../assets/workflows/spec-kitty.merge.md
+../../../../../../.agents/skills/spec-kitty-merge/workflows/spec-kitty.merge.md

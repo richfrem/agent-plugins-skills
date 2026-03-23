@@ -1,1 +1,0 @@
-../../../references/spec-kitty-specify-AUGMENTED.md

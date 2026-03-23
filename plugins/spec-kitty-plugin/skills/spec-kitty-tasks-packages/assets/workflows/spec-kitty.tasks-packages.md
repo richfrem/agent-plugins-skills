@@ -1,1 +1,1 @@
-../../../../assets/workflows/spec-kitty.tasks-packages.md
+../../../../../../.agents/skills/spec-kitty-tasks-packages/workflows/spec-kitty.tasks-packages.md

@@ -1,0 +1,1 @@
+../../../assets/templates/plan-template.md

@@ -1,1 +1,1 @@
-../../../../assets/workflows/spec-kitty.implement.md
+../../../../../../.agents/skills/spec-kitty-implement/workflows/spec-kitty.implement.md

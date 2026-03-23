@@ -1,1 +1,1 @@
-../../../../references/ecosystem-authoritative-sources/research/skills_vision_analysis.md
+../../../../references/research/skills_vision_analysis.md

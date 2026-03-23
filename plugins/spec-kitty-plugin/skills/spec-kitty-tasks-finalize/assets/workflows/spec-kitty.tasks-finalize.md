@@ -1,1 +1,1 @@
-../../../../assets/workflows/spec-kitty.tasks-finalize.md
+../../../../../../.agents/skills/spec-kitty-tasks-finalize/workflows/spec-kitty.tasks-finalize.md
