@@ -1,1 +1,1 @@
-../../../references/architect-review.md
+../../../personas/quality-testing/architect-review.md

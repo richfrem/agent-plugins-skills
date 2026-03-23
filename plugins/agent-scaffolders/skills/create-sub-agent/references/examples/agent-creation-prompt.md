@@ -1,1 +1,1 @@
-../../../../references/create-sub-agent/examples/agent-creation-prompt.md
+../../../../references/examples/agent-creation-prompt.md

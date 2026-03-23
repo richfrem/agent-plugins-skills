@@ -1,1 +1,1 @@
-../../../references/skill-improvement-eval/acceptance-criteria.md
+../../os-clean-locks/acceptance-criteria.md

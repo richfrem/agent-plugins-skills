@@ -1,1 +1,1 @@
-../../../../references/create-sub-agent/examples/complete-agent-examples.md
+../../../../references/examples/complete-agent-examples.md

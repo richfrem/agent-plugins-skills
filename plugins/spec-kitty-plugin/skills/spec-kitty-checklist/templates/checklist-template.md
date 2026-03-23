@@ -1,0 +1,1 @@
+../../../assets/templates/checklist-template.md

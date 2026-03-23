@@ -1,1 +1,0 @@
-../../../references/spec-kitty-plan-AUGMENTED.md

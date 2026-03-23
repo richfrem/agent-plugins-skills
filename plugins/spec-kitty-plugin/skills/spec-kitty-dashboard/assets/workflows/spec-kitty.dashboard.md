@@ -1,1 +1,1 @@
-../../../../assets/workflows/spec-kitty.dashboard.md
+../../../../../../.agents/skills/spec-kitty-dashboard/workflows/spec-kitty.dashboard.md

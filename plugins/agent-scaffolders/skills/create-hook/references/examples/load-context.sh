@@ -1,1 +1,1 @@
-../../../../references/create-hook/examples/load-context.sh
+../../../../scripts/load-context.sh

@@ -1,1 +1,1 @@
-../../../../assets/workflows/spec-kitty.constitution.md
+../../../../../../.agents/skills/spec-kitty-constitution/workflows/spec-kitty.constitution.md

@@ -1,1 +1,1 @@
-../../../references/skill-improvement-eval/optimizer-engine-patterns.md
+../../../../../.agents/skills/skill-improvement-eval/references/optimizer-engine-patterns.md

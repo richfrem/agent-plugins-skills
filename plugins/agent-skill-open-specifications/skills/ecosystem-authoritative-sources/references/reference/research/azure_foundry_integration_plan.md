@@ -1,1 +1,1 @@
-../../../../../references/ecosystem-authoritative-sources/reference/research/azure_foundry_integration_plan.md
+../../../../../references/research/azure_foundry_integration_plan.md
