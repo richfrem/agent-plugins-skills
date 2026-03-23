@@ -1,8 +1,8 @@
 # Agent Harness & Learning Layer (formerly Agentic OS)
 
-A developer harness that gives your AI agent **persistent memory**, a **feedback and learning loop**, and **multi-agent coordination** — working together as a system rather than as isolated primitives.
+A developer harness that gives your AI agent **persistent memory**, a **feedback and learning loop**, and **cross-IDE orchestration** — helping solo developers coordinate workflows and continuously improve skills with every execution across multiple environments (VS Code, Cursor, Windsurf, Copilot).
 
-> **Positioning:** Anthropic now ships auto-memory, native hooks, and subagent coordination natively. This plugin is an **opinionated discipline layer** on top of those primitives. It provides a structured memory hierarchy, a continuous improvement pipeline for your prompts, and a multi-agent event bus. See [`SUMMARY.md`](./SUMMARY.md) for full context and known limitations.
+> **Positioning:** Anthropic now ships auto-memory, native hooks, and subagent coordination natively. This plugin is not an operating system, but rather an **opinionated discipline layer** on top of those primitives. It provides a structured memory hierarchy, continuous workflow improvement, and an event log for cross-platform agent signaling. See [`SUMMARY.md`](./SUMMARY.md) for full context and known limitations.
 
 ---
 
