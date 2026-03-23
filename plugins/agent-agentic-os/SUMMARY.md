@@ -1,14 +1,14 @@
-# Agentic OS: Summary
+# Agent Harness: Summary
 
 ## What This Is
 
-A developer harness that gives your agent three things working together as a system:
+A pragmatic developer harness that gives your agent three things working together:
 
 1. **Structured memory hierarchy** - agents carry forward what they learned in previous sessions with deduplication, conflict detection, and size management above native auto-memory limits.
-2. **Continuous improvement loop** - skills and instructions learn from session friction through a feedback control system. It evaluates patches before applying them using a metric-based gate.
-3. **Agent signaling** - multiple agents use a common event log with simple execution locks to coordinate turns and signal task completions.
+2. **Continuous improvement loop** - skills and workflows learn from session friction and improve with every execution. It leverages a feedback control system with a metric-based gate.
+3. **Cross-IDE orchestration** - a shared event log with simple execution locks allows solo developers to comfortably orchestrate things across multiple IDEs (Cursor, VS Code, Windsurf) while preventing collisions.
 
-Claude Code ships auto-memory, native hooks, and subagent coordination. This plugin provides an **opinionated discipline layer** on top of those primitives.
+Claude Code ships auto-memory, native hooks, and subagent coordination. This plugin provides an **opinionated discipline layer** on top of those primitives to connect different workspaces.
 
 ## Who This Is For
 
