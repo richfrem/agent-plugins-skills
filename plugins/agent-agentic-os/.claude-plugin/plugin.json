@@ -1,7 +1,7 @@
 {
     "name": "agent-agentic-os",
-    "version": "1.4.0",
-    "description": "Developer harness for persistent agent memory, multi-agent coordination, and continuous self-improvement loops. Agents carry context across sessions. Skills improve automatically on every run through an instruction-level reinforcement + supervised learning cycle. A bridge tool for developer workflows until frontier labs ship native agentic OS primitives.",
+    "version": "1.4.1",
+    "description": "The improvement layer above what Claude Code ships natively. Provides structured memory hierarchy above the 200-line auto-memory limit, an eval-gated skill improvement loop, and multi-agent event bus coordination. For developers running long-horizon, multi-session, multi-agent workflows who need these patterns as a coherent system rather than isolated primitives.",
     "author": {
         "name": "Richard Fremmerlid"
     },

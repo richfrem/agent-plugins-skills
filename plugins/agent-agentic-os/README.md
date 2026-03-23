@@ -2,13 +2,13 @@
 
 A developer harness that gives your AI agent **persistent memory**, a **self-improvement loop**, and **multi-agent coordination** — working together as a system rather than as isolated primitives.
 
-> **Transitional tool**: Frontier labs are building native agentic OS capabilities into their platforms. This plugin fills the gap for developers who need these patterns now, and serves as a working reference for what those platforms will need to get right. See [`SUMMARY.md`](./SUMMARY.md) for full context.
+> **Complementary to native Claude Code**: Anthropic now ships auto-memory, native hooks, and subagent coordination. What it doesn't ship: a structured memory hierarchy above the 200-line limit, an eval-gated improvement loop that prevents regressions, or a multi-agent event bus with mutex semantics. This plugin provides those three things as a coherent system. See [`SUMMARY.md`](./SUMMARY.md) for full context.
 
 ---
 
 ## The Problem
 
-LLMs are stateless. Every session starts from scratch. Most developers paper over this with manual CLAUDE.md maintenance and repeated context-setting. That breaks down when you have multiple agents, background loops, and workflows that span days.
+Claude Code ships persistent memory. What it gives you is a 200-line `MEMORY.md` with no structured deduplication, no promotion logic, and no eval gate. That works for a few sessions. It breaks down when you have multiple agents, background loops, and workflows that span days or weeks where the quality of what gets remembered directly affects the quality of every future session.
 
 The harder problem: coordination. How does the background improvement agent share what it learned with the foreground session? How does an outer-loop supervisor pass context to an inner-loop worker? How do two agents write to shared memory without corrupting it?
 
@@ -18,13 +18,13 @@ This plugin provides a system for that.
 
 ## What It Does
 
-### Persistent Memory Across Sessions
+### Structured Memory Hierarchy
 
-Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `session-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Agents don't rediscover what they already learned.
+Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `session-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Dedup IDs, conflict detection, and size limits prevent the memory from drifting into contradiction over hundreds of sessions.
 
-### Self-Improvement Loop (Instruction-Level Learning)
+### Self-Improvement Loop (Eval-Gated)
 
-This is the differentiator. Not just memory - a reinforcement + supervised learning cycle that improves the instructions the model receives, not the model itself:
+This is the differentiator. Not just memory - an improvement loop that **refuses to apply changes that don't pass an objective eval**. The eval is the gating mechanism, not the reporting mechanism:
 
 ```
 Session runs
@@ -32,11 +32,11 @@ Session runs
   -> os-learning-loop mines the event log
   -> proposes patches to SKILL.md files and CLAUDE.md
   -> skill-improvement-eval scores the patch against evals/evals.json
-  -> patch committed only if objective score improves
+  -> patch applied ONLY if objective score improves
   -> next session runs with better instructions
 ```
 
-Skills measurably improve over runs. The plugin applies this loop to its own skills - it is a live lab as much as a tool.
+A test registry prevents re-testing falsified hypotheses — improvements accumulate without repeating dead ends. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
 
 ### Multi-Agent Coordination
 
@@ -47,6 +47,17 @@ Three coordination patterns built into the system:
 **Background + foreground** - background daemons (`os-learning-loop`, `os-health-check`) run asynchronously with mutex locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
 
 **Sequential agent handoff** - Agent A writes structured output to the event bus. Agent B reads the bus to pick up where A left off. Agents are swappable because they coordinate through the shared bus, not through each other.
+
+---
+
+## Who This Is For
+
+Developers running **long-horizon, multi-session workflows** — projects where Claude Code runs across days or weeks, with multiple agents that need to build on each other's context.
+
+This is NOT for:
+- Single-session tasks (native auto-memory is sufficient)
+- Enterprise multi-machine deployments (see `references/vision.md`)
+- Framework-agnostic portability requirements
 
 ---
 
@@ -128,8 +139,8 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 
 ### Hooks
 
-`hooks/hooks.json` registers two hooks:
-- `post_run_metrics.py` - captures session errors and friction events to the event bus automatically, without human intervention
+`hooks/hooks.json` registers hooks:
+- `post_run_metrics.py` - captures session errors and friction events to the event bus automatically
 - `update_memory.py` - triggers memory promotion after significant sessions
 
 ### Commands

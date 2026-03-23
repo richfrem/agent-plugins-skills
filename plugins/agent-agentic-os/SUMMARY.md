@@ -4,23 +4,21 @@
 
 A developer harness that gives your agent three things working together as a system:
 
-1. **Persistent memory** - agents carry forward what they learned in previous sessions instead of rediscovering it every time
-2. **Improvement loops** - skills, instructions, and CLAUDE.md files get measurably better on every run through a reinforcement + supervised learning cycle at the instruction layer
-3. **Multi-agent coordination** - multiple agents share a common memory bus and event log so they build on each other's work rather than running in isolation
+1. **Structured memory hierarchy** - agents carry forward what they learned in previous sessions with deduplication, conflict detection, and size management above the 200-line native auto-memory limit
+2. **Eval-gated improvement loops** - skills, instructions, and CLAUDE.md files get measurably better on every run through a reinforcement + supervised learning cycle that refuses to apply changes that don't pass an objective eval
+3. **Multi-agent coordination** - multiple agents share a common memory bus and event log with mutex semantics so they build on each other's work rather than running in isolation
 
-This is not an enterprise product. It is a developer-grade lab tool that demonstrates patterns the industry is converging on. Frontier labs are expected to absorb these capabilities into their platforms natively - this fills the gap in the meantime and provides a working reference for what those platforms will need to get right.
+Claude Code ships auto-memory, native hooks, and subagent coordination. What it doesn't ship: a structured memory hierarchy above 200 lines, an improvement loop that eval-gates patches before applying them, or a multi-agent event bus with mutex semantics. This plugin provides those three things.
 
-## The Gap It Fills
+## Who This Is For
 
-LLMs are stateless. Every session starts from scratch unless you deliberately carry context forward. Most developers handle this informally - copying notes into CLAUDE.md, re-explaining decisions to the agent, re-running the same setup steps. That works for a few sessions. It breaks down when you have multiple agents, background loops, and workflows that span days or weeks.
+Developers running **long-horizon, multi-session workflows** — projects where Claude Code runs across days or weeks, multiple agents share context, and the quality of what gets remembered and improved directly affects every future session.
 
-The problem isn't just memory. It's coordination: how does the background improvement agent share what it learned with the foreground session agent? How does the outer-loop supervisor pass context to the inner-loop worker? How do you prevent two agents writing to the same memory file at the same time from corrupting it?
-
-This plugin provides a system for that - not just primitives you assemble yourself.
+Not for single-session tasks (native auto-memory is enough), enterprise multi-machine deployments, or framework-agnostic portability requirements.
 
 ## The Self-Improvement Loop (The Differentiator)
 
-Many tools add memory to agents. Fewer implement an improvement loop. This one runs a reinforcement + supervised learning cycle at the **instruction level** - not training model weights, but continuously improving the instructions the model receives.
+Many tools add memory to agents. Fewer implement an improvement loop. This one runs a reinforcement + supervised learning cycle at the **instruction level** - not training model weights, but continuously improving the instructions the model receives — with a key property other systems lack: **the eval is the gating mechanism, not the reporting mechanism**.
 
 How it works:
 
@@ -29,13 +27,15 @@ Session runs -> errors and friction captured to events.jsonl
              -> os-learning-loop mines the event log
              -> proposes patches to SKILL.md files and CLAUDE.md
              -> skill-improvement-eval scores the patch against evals/evals.json
-             -> patch kept only if objective score improves
+             -> patch kept ONLY if objective score improves
              -> next session inherits better instructions
 ```
 
-The validator (`eval_runner.py`) is the supervised part: changes must pass an objective benchmark before they are applied. The loop is the reinforcement part: friction in use generates the training signal. Together they create an improvement flywheel that runs without human intervention.
+A **test registry** prevents re-testing falsified hypotheses - the system records what was tried and what didn't work so improvement cycles don't repeat dead ends. This is absent from comparable systems.
 
-The Agentic OS plugin applies this loop to its own skills. The plugin improves itself using the same mechanism it teaches. That makes it a live lab: observing how it works here is directly applicable to any project that installs it.
+The validator (`eval_runner.py`) is the supervised part: changes must pass an objective benchmark before they are applied. The loop is the reinforcement part: friction in use generates the training signal.
+
+The Agentic OS plugin applies this loop to its own skills. The plugin improves itself using the same mechanism it teaches — a live demonstration, not documentation.
 
 ## Multi-Agent Coordination Patterns
 
@@ -55,7 +55,7 @@ What makes this a system and not just primitives: all three patterns share the s
 - **File system is the backend** - no databases, no message queues, no external dependencies
 - **No scale requirements** - if you need multi-machine coordination or high-throughput event streaming, this is not the tool; see `references/vision.md` for what that would require
 - **Academic/research quality** - deliberate. The goal is clarity of implementation, not production hardening
-- **Explicitly transitional** - Microsoft, Apple, NVIDIA, and the frontier labs (Anthropic, OpenAI, Google) are building native agentic OS capabilities. Some of these will ship within months. This plugin demonstrates what they need to get right; it is not trying to compete with what they will build
+- **Complementary to native Claude Code** - Anthropic has shipped auto-memory, hooks, and subagent coordination. This plugin adds the structured memory hierarchy, eval-gated improvement loop, and event bus coordination on top of those native primitives — not competing with them
 
 ## How It Works: The OS Analogy
 
