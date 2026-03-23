@@ -27,10 +27,7 @@ This repository is a published Claude Code marketplace. Add it once and install 
 /plugin install rlm-factory
 ```
 
-To browse and install interactively:
-```bash
-/plugin marketplace browse richfrem/agent-plugins-skills
-```
+To browse and install interactively, run `/plugin` and go to the **Discover** tab — all 27 plugins from this marketplace will be listed there. Run `/reload-plugins` after installing to activate without restarting.
 
 ### Option 2: npx skills CLI (cross-agent)
 
