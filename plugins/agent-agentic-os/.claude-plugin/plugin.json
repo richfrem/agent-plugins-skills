@@ -1,7 +1,7 @@
 {
     "name": "agent-agentic-os",
     "version": "1.4.0",
-    "description": "Canonical reference and operational guide for the Agentic OS / Agent Harness pattern. Covers CLAUDE.md hierarchy, persistent context layers, memory management, session bootstrapping, hooks-based auto-learning, and the /loop scheduler pattern.",
+    "description": "Developer harness for persistent agent memory, multi-agent coordination, and continuous self-improvement loops. Agents carry context across sessions. Skills improve automatically on every run through an instruction-level reinforcement + supervised learning cycle. A bridge tool for developer workflows until frontier labs ship native agentic OS primitives.",
     "author": {
         "name": "Richard Fremmerlid"
     },

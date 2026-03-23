@@ -5,6 +5,8 @@
 
 This document captures architectural direction for the next evolution of the Agentic OS plugin — moving from a tightly coupled local runtime toward a composable, backend-swappable agent infrastructure layer.
 
+> **Purpose of this document**: The plugin is intentionally a developer-grade, single-machine, file-system-backed tool. This vision doc is not a product roadmap for scaling it up. It is a catalog of what enterprise and hyperscaler solutions (Microsoft, Apple, NVIDIA, Anthropic, OpenAI) will have to solve as they absorb these patterns at platform scale — and where the plugin's current constraints would need to evolve to serve those contexts. Read it as research notes, not a spec.
+
 ---
 
 ## Table of Contents

@@ -1,222 +1,198 @@
-# Agent Agentic OS Plugin
+# Agent Agentic OS
 
-> **Executive Summary**: For a conceptual overview of the architecture, OS analogy deep-dive, and key differentiators from a traditional operating system, read [`SUMMARY.md`](./SUMMARY.md) first.
+A developer harness that gives your AI agent **persistent memory**, a **self-improvement loop**, and **multi-agent coordination** — working together as a system rather than as isolated primitives.
 
-## Purpose
+> **Transitional tool**: Frontier labs are building native agentic OS capabilities into their platforms. This plugin fills the gap for developers who need these patterns now, and serves as a working reference for what those platforms will need to get right. See [`SUMMARY.md`](./SUMMARY.md) for full context.
 
-`plugins/agent-agentic-os` is the canonical operational reference for the **Agentic OS / Agent Harness** pattern.
+---
 
-LLMs are stateless functions. `CLAUDE.md` is the only file loaded into every conversation by default. The Agentic OS pattern turns this constraint into a full OS metaphor: your `CLAUDE.md` files are the kernel, `context/` is persistent RAM, `skills/` is the standard library, and `/loop` is your cron daemon.
+## The Problem
 
-This plugin teaches agents how to:
-- Understand and navigate the full CLAUDE.md hierarchy (global -> org -> project -> local)
-- Structure and maintain the `context/` folder (soul, user prefs, dated memory logs)
-- Use `.claude/agents/`, `.claude/hooks/`, and `.claude/commands/` effectively
-- Run background scheduled tasks with `/loop` and `heartbeat.md`
-- Bootstrap new sessions via `START_HERE.md` and `MEMORY.md`
-- Manage memory hygiene: when to write, promote, archive, and expire
+LLMs are stateless. Every session starts from scratch. Most developers paper over this with manual CLAUDE.md maintenance and repeated context-setting. That breaks down when you have multiple agents, background loops, and workflows that span days.
+
+The harder problem: coordination. How does the background improvement agent share what it learned with the foreground session? How does an outer-loop supervisor pass context to an inner-loop worker? How do two agents write to shared memory without corrupting it?
+
+This plugin provides a system for that.
+
+---
+
+## What It Does
+
+### Persistent Memory Across Sessions
+
+Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `session-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Agents don't rediscover what they already learned.
+
+### Self-Improvement Loop (Instruction-Level Learning)
+
+This is the differentiator. Not just memory - a reinforcement + supervised learning cycle that improves the instructions the model receives, not the model itself:
+
+```
+Session runs
+  -> errors and friction logged to events.jsonl
+  -> os-learning-loop mines the event log
+  -> proposes patches to SKILL.md files and CLAUDE.md
+  -> skill-improvement-eval scores the patch against evals/evals.json
+  -> patch committed only if objective score improves
+  -> next session runs with better instructions
+```
+
+Skills measurably improve over runs. The plugin applies this loop to its own skills - it is a live lab as much as a tool.
+
+### Multi-Agent Coordination
+
+Three coordination patterns built into the system:
+
+**Inner/outer loop** - outer supervisor sets goals and reviews results; inner worker executes and writes to the shared event bus. Context flows through shared memory, not tight coupling.
+
+**Background + foreground** - background daemons (`os-learning-loop`, `os-health-check`) run asynchronously with mutex locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
+
+**Sequential agent handoff** - Agent A writes structured output to the event bus. Agent B reads the bus to pick up where A left off. Agents are swappable because they coordinate through the shared bus, not through each other.
+
+---
+
+## Scope
+
+- **Developer tool, single machine** - designed and tested for solo developer use
+- **No external dependencies** - file system only, standard library Python
+- **Academic/research quality** - clarity of implementation over production hardening
+- **Not enterprise scale** - for multi-machine coordination or high-throughput streaming, see `references/vision.md`
+
+---
 
 ## Installation
 
-### Option 1: From a Marketplace (Recommended)
-If this plugin is listed in a marketplace catalog, add the marketplace first then install:
+### From the Marketplace (Recommended)
 ```bash
-/plugin marketplace add <marketplace-url>
-/plugin install agent-agentic-os
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/agent-agentic-os
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only (portable, works with all agents)
-npx skills add richfrem/agent-plugins-skills --path plugins/agent-agentic-os
-
-# Full plugin (Claude Code native - skills + commands + agents + hooks)
 /plugin marketplace add richfrem/agent-plugins-skills
 /plugin install agent-agentic-os
 ```
 
-### Option 3: Local Development Checkout
+### From GitHub Directly
 ```bash
-# Skills only
-npx skills add ./plugins/agent-agentic-os
+# Full plugin (Claude Code)
+/plugin marketplace add richfrem/agent-plugins-skills
+/plugin install agent-agentic-os
 
-# Full plugin
+# Skills only (portable, works with Claude, Copilot, Gemini CLI)
+npx skills add richfrem/agent-plugins-skills --path plugins/agent-agentic-os
+```
+
+### Local Development
+```bash
 /plugin marketplace add ./
 /plugin install agent-agentic-os
 ```
 
-**Note:** This plugin installs with **standard library only** (no external dependencies). See `requirements.txt` for details.
+---
 
-## Supervised Learning & Improvement Loop (Karpathy Parity)
+## Quick Start
 
-The Agentic OS implements a rigorous, objective self-improvement loop inspired by Andrej Karpathy's `autoresearch`:
+After installation, ask your agent:
 
-- **Objective Metrics (The Trainer)**: `skill-improvement-eval` uses `eval_runner.py` to calculate routing accuracy against a fixed validation set (`evals/evals.json`). A change is only kept if it improves the objective score.
-- **Persistent Benchmarking**: All evaluation results are recorded in `evals/results.tsv` (commit, score, status), establishing a clear baseline for every skill.
-- **Autonomous Supervision**: The `post_run_metrics.py` hook automatically captures session errors and friction events, emitting them to the Event Bus (`events.jsonl`) without human intervention.
-- **Optimization Strategy**: Agents should follow the [Skill Optimization Guide](references/skill_optimization_guide.md) to achieve high routing accuracy through scoped keywords and diversity in `<example>` blocks.
+```
+"Set up an agentic OS for this project"
+```
 
-## Part of the Triad
+The `agentic-os-setup` agent runs a discovery interview and scaffolds the environment. Then:
 
-| Plugin | Role |
-|--------|------|
-| `agent-skill-open-specifications` | Spec - what ecosystem artifacts are |
-| `agent-scaffolders` | Factory - how to create them |
-| **`agent-agentic-os`** | **Operations - how to run the environment** |
+```bash
+/os-loop      # run improvement retrospective after a session
+/os-memory    # manually trigger memory promotion
+/os-init      # re-initialize or repair the environment
+```
+
+---
 
 ## Plugin Components
 
 ### Skills
 
-- **`agentic-os-guide`**: Master reference skill. The full anatomy of the Agentic OS pattern - all layers and their interactions.
-- **`agentic-os-init`**: The core execution script and interview framework to scaffold a new OS environment.
-- **`session-memory-manager`**: Operational skill for managing memory hygiene across sessions.
-- **`os-clean-locks`**: System administration utility to cleanly remove stale agent locks and prevent deadlocks.
-- **`skill-improvement-eval`**: QA evaluation engine mimicking Anthropic's benchmark suites to rigorously gate self-modifying autonomous behaviors.
+| Skill | Purpose |
+|-------|---------|
+| `agentic-os-guide` | Full reference: all layers, interactions, and patterns explained |
+| `agentic-os-init` | Scaffolds a new OS environment via discovery interview |
+| `session-memory-manager` | Deduplicates and promotes session facts to long-term memory |
+| `skill-improvement-eval` | Scores proposed skill patches against objective evals before applying |
+| `os-clean-locks` | Removes stale mutex locks that block agent execution |
+| `concurrent-agent-loop` | Coordinates multiple parallel agents through the shared event bus |
+| `loop-progress-report` | Generates improvement metrics from eval history |
+| `todo-check` | Audits files for unresolved TODO items |
 
 ### Agents
 
-- **`agentic-os-setup`**: A persistent conversational architect that wraps the `agentic-os-init` skill to guide users through discovery, component planning, and post-init CLAUDE.md filling.
-- **`os-learning-loop`**: The continuous improvement engine. Performs post-session retrospectives to identify friction points and writes permanent updates to skills and memory conventions.
+| Agent | Purpose |
+|-------|---------|
+| `agentic-os-setup` | Conversational setup guide; runs the init interview |
+| `os-learning-loop` | Post-session retrospective; mines friction, proposes and validates skill patches |
+| `os-health-check` | System diagnostics; inspects event log, memory state, lock status |
 
-## Kernel Architecture (v10+)
+### Hooks
 
-The OS operates on a centralized Python-based event bus (`context/kernel.py`) instead of relying solely on reactive filesystem reads:
-- **Event Bus (`events.jsonl`)**: All agents publish their intents, results, and errors to the event bus using strict JSON schemas.
-- **Atomic Concurrency**: The kernel uses atomic locks (`os.mkdir()`) to prevent race conditions during memory promotion or learning cycles.
-- **Agent Registry**: Security validation via `agents.json` ensures only whitelisted sub-agents can mutate the OS state.
+`hooks/hooks.json` registers two hooks:
+- `post_run_metrics.py` - captures session errors and friction events to the event bus automatically, without human intervention
+- `update_memory.py` - triggers memory promotion after significant sessions
 
-## Directory Structure
+### Commands
 
-```text
-agent-agentic-os
-│   ├── .claude-plugin/
-│   │   └── plugin.json
-│   ├── CONNECTORS.md
-│   ├── README.md
-│   ├── SUMMARY.md
-│   ├── agent-agentic-os-architecture.mmd
-│   ├── agents/
-│   │   ├── agentic-os-setup.md
-│   │   ├── os-health-check.md
-│   │   └── os-learning-loop.md
-│   ├── commands/
-│   │   ├── os-init.md
-│   │   ├── os-loop.md
-│   │   └── os-memory.md
-│   ├── hooks/
-│   │   ├── hooks.json
-│   │   ├── update_memory.py
-│   │   └── scripts/
-│   │       └── post_run_metrics.py
-│   ├── lsp.json
-│   ├── references/
-│   │   ├── anthropic-official-docs.md
-│   │   ├── metrics.md
-│   │   ├── post_run_survey.md
-│   │   ├── skill_optimization_guide.md
-│   │   ├── status-file-spec.md
-│   │   └── diagrams/
-│   │       ├── agentic-os-loop-lifecycle.mmd / .png
-│   │       ├── agentic-os-memory-subsystem.mmd / .png
-│   │       ├── agentic-os-overview.mmd / .png
-│   │       ├── agentic-os-structure.mmd / .png
-│   │       ├── agentic-os-system-architecture.mmd / .png
-│   │       └── event-bus-architecture.mmd
-│   ├── requirements.in
-│   └── skills/
-│       ├── agentic-os-guide/
-│       │   ├── CONNECTORS.md
-│       │   ├── SKILL.md
-│       │   ├── agentic-os-guide-flow.mmd
-│       │   ├── evals/
-│       │   │   ├── evals.json
-│       │   │   └── results.tsv
-│       │   └── references/
-│       │       ├── acceptance-criteria.md
-│       │       ├── architecture.md
-│       │       ├── canonical-file-structure.md
-│       │       ├── claude-md-hierarchy.md
-│       │       ├── context-folder-patterns.md
-│       │       ├── loop-scheduler.md
-│       │       ├── memory-hygiene.md
-│       │       └── sub-agents-and-hooks.md
-│       ├── agentic-os-init/
-│       │   ├── CONNECTORS.md
-│       │   ├── SKILL.md
-│       │   ├── agentic-os-init-flow.mmd
-│       │   ├── evals/
-│       │   │   ├── evals.json
-│       │   │   └── results.tsv
-│       │   ├── references/
-│       │   │   ├── acceptance-criteria.md
-│       │   │   ├── architecture.md
-│       │   │   └── project-setup-guide.md
-│       │   ├── runtime/
-│       │   │   ├── agents.json        <- kernel agent permit list
-│       │   │   └── kernel.py          <- atomic lock + event bus controller
-│       │   ├── scripts/
-│       │   │   └── init_agentic_os.py
-│       │   └── templates/
-│       ├── os-clean-locks/
-│       │   ├── SKILL.md
-│       │   ├── evals/
-│       │   │   └── evals.json
-│       │   └── references/
-│       │       └── acceptance-criteria.md
-│       ├── session-memory-manager/
-│       │   ├── CONNECTORS.md
-│       │   ├── SKILL.md
-│       │   ├── evals/
-│       │   │   ├── evals.json
-│       │   │   └── results.tsv
-│       │   ├── references/
-│       │   │   ├── acceptance-criteria.md
-│       │   │   ├── architecture.md
-│       │   │   └── memory-promotion-guide.md
-│       │   └── session-memory-manager-flow.mmd
-│       ├── skill-improvement-eval/
-│       │   ├── SKILL.md
-│       │   ├── evals/
-│       │   │   └── evals.json
-│       │   ├── references/
-│       │   │   ├── acceptance-criteria.md
-│       │   │   └── optimizer-engine-patterns.md
-│       │   └── scripts/
-│       │       └── eval_runner.py
-│       └── todo-check/
-│           ├── SKILL.md
-│           ├── evals/
-│           │   └── evals.json
-│           └── scripts/
-│               └── check_todos.py
+| Command | Purpose |
+|---------|---------|
+| `/os-init` | Initialize or repair the OS environment |
+| `/os-loop` | Run the improvement loop retrospective |
+| `/os-memory` | Manually run memory management |
+
+---
+
+## Architecture
+
+The OS metaphor explains the design: the context window is finite RAM. Every byte consumed by infrastructure is a byte unavailable for actual work. The architecture is built around that constraint.
+
+```
+CONTEXT WINDOW (RAM - finite, cleared every session)
+  Always present: skill metadata headers, CLAUDE.md, soul.md, user.md
+
+DISK (context/ folder - persistent across sessions)
+  context/memory.md          <- L3 long-term curated facts
+  context/memory/YYYY-MM-DD.md  <- L2 session logs
+  context/events.jsonl       <- event bus / audit log
+  context/os-state.json      <- system registry
+  context/.locks/            <- mutex locks
+
+SKILLS (loaded into RAM only when triggered)
+  skills/*/SKILL.md          <- full body stays on disk until invoked
+
+HOOKS (fire on every tool call)
+  PreToolUse                 <- inspect, block, or log before execution
+  PostToolUse                <- audit results, capture metrics
 ```
 
-## Architecture Visualizations
+For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY.md`](./SUMMARY.md).
 
-### 1. Conceptual OS Structure
-How the `agent-agentic-os` concepts map logically to a standard operating system.
-![Agentic OS Logical Architecture](./references/diagrams/agentic-os-overview.png)
+### Architecture Diagrams
 
-### 2. Physical Plugin Architecture
-How the individual data layers, processes, and hooks inside this code repository interact.
-![Agentic OS Plugin Architecture](./references/diagrams/agentic-os-structure.png)
+| Diagram | Description |
+|---------|-------------|
+| ![Overview](./assets/diagrams/agentic-os-overview.png) | Conceptual OS structure |
+| ![Structure](./assets/diagrams/agentic-os-structure.png) | Physical plugin architecture |
+| ![Loop lifecycle](./assets/diagrams/agentic-os-loop-lifecycle.png) | Improvement loop sequence |
+| ![Memory subsystem](./assets/diagrams/agentic-os-memory-subsystem.png) | Memory promotion flowchart |
 
-### 3. Loop Lifecycle
-Sequence mapping how the scheduled `/loop` cron interacts with the status queue and triggers internal handlers.
-![Agentic OS Loop Architecture](./references/diagrams/agentic-os-loop-lifecycle.png)
+---
 
-### 4. Memory Promotion Subsystem
-Flowchart portraying how raw logs are transitioned from short-term memory arrays to clean L3 curated rulesets.
-![Agentic OS Memory Architecture](./references/diagrams/agentic-os-memory-subsystem.png)
+## Part of the Plugin Triad
+
+| Plugin | Role |
+|--------|------|
+| `agent-skill-open-specifications` | Spec - what ecosystem artifacts are |
+| `agent-scaffolders` | Factory - how to create them |
+| **`agent-agentic-os`** | **Operations - how to run and improve the environment** |
+
+---
 
 ## Key References
 
-- [Executive Summary & OS Analogy](./SUMMARY.md) — conceptual architecture, analogy table, and key differentiators
-- [Anthropic CLAUDE.md documentation](https://docs.anthropic.com/en/docs/claude-code/memory)
+- [`SUMMARY.md`](./SUMMARY.md) - scope, architecture, OS analogy, how-to
+- [`references/vision.md`](./references/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
+- [`references/dual-loop.md`](./references/dual-loop.md) - inner/outer loop coordination patterns
+- [`references/memory-hygiene.md`](./references/memory-hygiene.md) - when to write, promote, archive, and expire
+- [Anthropic CLAUDE.md docs](https://docs.anthropic.com/en/docs/claude-code/memory)
 - [Anthropic /loop scheduler](https://docs.anthropic.com/en/docs/claude-code/loop)
-- [Agent Skills Open Standard](https://agentskills.io)
