@@ -271,6 +271,22 @@ Shortcuts: `/plugin market` = `/plugin marketplace`, `rm` = `remove`.
 
 ---
 
+## SkillsMP.com (Open SKILL.md Ecosystem Marketplace)
+
+[skillsmp.com](https://skillsmp.com) auto-indexes open-source SKILL.md skills from GitHub daily.
+
+### Requirements to Get Indexed
+1. Public GitHub repo with `SKILL.md` files containing `name` + `description` frontmatter
+2. Add GitHub topic tags: `claude-skills` and/or `claude-code-skill`
+3. Wait up to 24 hours for the daily sync
+
+> **TODO: CHECK INDEXING** - Topics added to `richfrem/agent-plugins-skills` on 2026-03-22. Verify at skillsmp.com after 2026-03-23.
+
+### Watch Out
+Skills at `plugins/<plugin>/skills/<skill>/SKILL.md` (4 levels deep) may not be crawled. If not indexed after first sync, add a top-level `skills/` directory mirroring the skill folders.
+
+---
+
 ## References & Examples
 
 - [references/marketplace-schema.md](../../references/marketplace-schema.md) - Struct, vars, and strict overrides.
