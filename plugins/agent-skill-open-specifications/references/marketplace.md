@@ -158,6 +158,40 @@ Plugin commands are namespaced: a plugin named `commit-commands` exposes `/commi
 
 ---
 
+## SkillsMP.com (Open SKILL.md Ecosystem Marketplace)
+
+[skillsmp.com](https://skillsmp.com) is an independent marketplace (not affiliated with Anthropic) that auto-indexes open-source agent skills from GitHub. As of March 2026 it has 571,626+ skills and is growing exponentially.
+
+### How to Get Indexed
+
+1. **SKILL.md files** with `name` and `description` frontmatter (you have these)
+2. **Public GitHub repo** (already public)
+3. **GitHub topic tags** — add `claude-skills` and/or `claude-code-skill` to the repo's About section
+4. **Wait for daily sync** — indexer runs once per day
+
+> **TODO: CHECK INDEXING** - Topics `claude-skills`, `claude-code-skill`, `claude-plugins`, `agentic-os` were added to `richfrem/agent-plugins-skills` on 2026-03-22. Check skillsmp.com after 2026-03-23 to confirm skills are indexed.
+
+### Known Limitation
+
+Skills buried at `plugins/<plugin>/skills/<skill>/SKILL.md` (4 levels deep) may not be discovered if the crawler only recurses 2-3 levels. The Anthropic official repo uses `skills/<skill>/SKILL.md` (2 levels). If not indexed after the first sync, consider adding a top-level `skills/` directory.
+
+### API (Read-Only)
+
+```bash
+# Keyword search
+curl -X GET "https://skillsmp.com/api/v1/skills/search?q=your-query" \
+  -H "Authorization: Bearer sk_live_your_api_key"
+
+# AI semantic search
+curl -X GET "https://skillsmp.com/api/v1/skills/ai-search?q=your-query" \
+  -H "Authorization: Bearer sk_live_your_api_key"
+```
+
+- 500 requests/day per API key
+- No submission endpoint — discovery only via GitHub topics + daily sync
+
+---
+
 ## Release Channels Pattern
 
 Point two marketplace entries at different `ref` values of the same repo:
