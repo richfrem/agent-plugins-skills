@@ -1,46 +1,60 @@
 # Plugin Manager
 
-> [!NOTE]
-> **Partially superseded by `npx skills`.**
-> `npx skills` auto-detects your agent environment and installs all plugins natively.
-> This plugin is now primarily a **local development tool** for contributors who need to:
-> - Deploy modifications directly from local source
-> - Sync local plugins to multiple IDEs simultaneously
-> - Copy or replicate source code to entirely separate project repositories
-
 **The Universal Orchestration Hub for Your Plugin Ecosystem**
 
 The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and bridges standard plugins for use in many compatible agent environments (allowing you to write your core plugin logic once and deploy it across a wide variety of tools), and easily distributes source plugins to other project repos.
 
 ---
 
+## Why `npx skills` Was Replaced on Windows
+
+`npx skills add` works correctly on **Mac and Linux** where Git creates real OS-level symlinks. This repository uses symlinks inside skill directories (e.g. `bridge-plugin/scripts/install_all_plugins.py` points back to the canonical source in `plugins/plugin-manager/scripts/`).
+
+On **Windows**, Git checks out symlinks as plain text files containing the relative path string (e.g. `../../../scripts/install_all_plugins.py`). The `npx` installer uses Node.js `cp({ dereference: true })` which detects real symlinks and copies the target — but on Windows it sees a text file and copies the literal path string. The result is a `.agents/` folder full of one-line text files that Python cannot execute.
+
+The **Bridge Installer** solves this by reading those text pointer files at install time, following the relative path back to the real Python source, and writing a proper hard copy into `.agents/`. No symlinks. No `npx`. No Node.js dependency. Works identically on all platforms.
+
+---
+
 ## Installation
 
-### Option 1: From a Marketplace (Recommended)
+### Option 1: From a Marketplace (Claude Code native)
 ```bash
-/plugin marketplace add <marketplace-url>
-/plugin install plugin-manager
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/plugin-manager
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/plugin-manager
-
-# Full plugin (Claude Code native)
 /plugin marketplace add richfrem/agent-plugins-skills
 /plugin install plugin-manager
 ```
 
-### Option 3: Local Development Checkout
+### Option 2: Mac / Linux — `npx skills` (cross-agent, skills only)
 ```bash
-npx skills add ./plugins/plugin-manager
+# Skills only — works correctly on Mac/Linux where Git creates real symlinks
+npx skills add richfrem/agent-plugins-skills --path plugins/plugin-manager
 ```
-For full deployment (skills + commands + rules + hooks), use the `bridge-plugin` skill after checkout.
+
+> [!WARNING]
+> **Windows users:** do not use `npx skills add` with this repository. Git for Windows
+> checks out symlinks as text files and `npx` will install broken one-line pointer files
+> instead of executable Python. Use the Bridge Installer below instead.
+
+### Option 3: Bridge Installer (Recommended for Windows — works everywhere)
+
+After cloning or installing this plugin, run the batch installer from the project root:
+
+```bash
+# Install all plugins from the core plugins/ directory
+python .agents/skills/bridge-plugin/scripts/install_all_plugins.py
+
+# Install from an additional plugins directory (additive — does not wipe existing installs)
+python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
+
+# Dry run to preview without writing
+python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --dry-run
+```
+
+The installer:
+- Reads pointer files, resolves them to real source, and writes hard copies into `.agents/skills/`
+- Creates Windows Junctions (or symlinks on Mac/Linux) from `.agent/skills/` and `.claude/skills/` into `.agents/`
+- Is **additive** — running it against a second plugins directory merges without touching existing installs
+- Runs correctly from its own installed location in `.agents/` — no `plugins/` source tree required in consuming projects
 
 ## 🌐 Supported Targets
 
