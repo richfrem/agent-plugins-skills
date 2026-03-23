@@ -1,27 +1,54 @@
 #!/usr/bin/env python3
 """
-tool_chroma.py — Embedded ChromaDB wrapper for tool-inventory plugin
-=====================================================================
+tool_chroma.py (CLI)
+=====================================
 
 Purpose:
-    Dedicated vector store for tool discovery. Provides semantic search
-    over tool summaries without requiring Ollama or external services.
+    Dedicated ChromaDB vector store for tool discovery. Provides semantic
+    search over tool summaries without requiring Ollama or external services.
 
-Layer: Plugin / Tool-Inventory
+Layer: Curate / Tool-Inventory
 
-Usage:
-    # As a library (imported by manage_tool_inventory.py)
+Usage Examples:
+    # As a library
     from tool_chroma import ToolChroma
     tc = ToolChroma()
-    tc.upsert("plugins/example_script.py", "CLI router for all ecosystem commands", {"category": "orchestrator"})
+    tc.upsert("plugins/example_script.py", "CLI router", {"category": "orchestrator"})
     results = tc.search("distiller", n=5)
 
     # As a CLI
-    python3 ./scripts/tool_chroma.py
-    python3 ./scripts/tool_chroma.py stats
-    python3 ./scripts/tool_chroma.py search "query cache"
-    python3 ./scripts/tool_chroma.py list
-    python3 ./scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
+    python3 plugins/tool-inventory/scripts/tool_chroma.py stats
+    python3 plugins/tool-inventory/scripts/tool_chroma.py search "query cache"
+    python3 plugins/tool-inventory/scripts/tool_chroma.py list
+    python3 plugins/tool-inventory/scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
+
+Supported Object Types:
+    - Tool Inventory JSON / RLM cache entries
+
+CLI Arguments:
+    stats            - Show collection statistics
+    list             - List all entries
+    search <query>   - Semantic search, optional -n for result count
+    import-json      - Import from rlm_tool_cache.json
+
+Input Files:
+    - .agent/learning/rlm_tool_cache.json (for import-json command)
+
+Output:
+    - Persistent ChromaDB collection at plugins/tool-inventory/data/chroma/
+
+Key Functions:
+    - ToolChroma.__init__: Initializes ChromaDB persistent client.
+    - ToolChroma.upsert: Adds or updates a tool entry.
+    - ToolChroma.search: Semantic search over tool summaries.
+    - ToolChroma.import_from_json: Bulk import from RLM cache file.
+    - main: CLI dispatcher.
+
+Script Dependencies:
+    - chromadb (pip install chromadb)
+
+Consumed by:
+    - manage_tool_inventory.py (optional semantic search feature)
 """
 
 import os
@@ -43,7 +70,7 @@ COLLECTION_NAME = "tool_summaries"
 class ToolChroma:
     """Thin wrapper around ChromaDB for tool-specific semantic search."""
 
-    def __init__(self, persist_dir: str = None):
+    def __init__(self, persist_dir: Optional[str] = None) -> None:
         """Initialize ChromaDB client with persistent storage."""
         try:
             import chromadb
@@ -178,7 +205,7 @@ class ToolChroma:
 # CLI Interface
 # ============================================================
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Tool ChromaDB Manager")
     subparsers = parser.add_subparsers(dest="command")
 

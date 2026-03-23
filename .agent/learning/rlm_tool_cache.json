@@ -323,5 +323,20 @@
     "hash": "376f111475db8764",
     "summarized_at": "2026-03-22T16:57:46.196432",
     "summary": "Comprehensive manager for Tool Inventories. Supports list, add, update, remove, search, audit, and generate operations."
+  },
+  "plugins/tool-inventory/scripts/rebuild_inventory.py": {
+    "hash": "46065b5bb9ee09c4",
+    "summarized_at": "2026-03-22T17:03:20.756253",
+    "summary": "Scans the plugins directory and rebuilds tool_inventory.json from scratch by registering all Python/JS/shell scripts."
+  },
+  "plugins/tool-inventory/scripts/sync_inventory_descriptions.py": {
+    "hash": "669e0020fcfffea3",
+    "summarized_at": "2026-03-22T17:05:59.710630",
+    "summary": "Backfills Tool Inventory descriptions by syncing purpose fields from the RLM cache into tool_inventory.json."
+  },
+  "plugins/tool-inventory/scripts/tool_chroma.py": {
+    "hash": "04dc2f0d03b2201e",
+    "summarized_at": "2026-03-22T18:24:33.391465",
+    "summary": "Embedded ChromaDB vector store wrapper for tool discovery; provides upsert, search, list, and import-from-JSON operations over tool summaries."
   }
 }

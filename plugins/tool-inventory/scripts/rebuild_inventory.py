@@ -32,6 +32,23 @@ import sys
 import os
 from pathlib import Path
 
+# Setup paths
+SCRIPT_DIR = Path(__file__).parent.resolve()
+# This script is at plugins/tool-inventory/scripts/rebuild_inventory.py
+# Root is 5 levels up
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
+
+# Import InventoryManager
+try:
+    from plugins.tool_inventory.scripts.manage_tool_inventory import InventoryManager
+except ImportError:
+    # Try relative import if package structure fails
+    sys.path.append(str(SCRIPT_DIR))
+    from manage_tool_inventory import InventoryManager  # type: ignore
+
+
 def rebuild() -> None:
     inventory_path = PROJECT_ROOT / "tools" / "tool_inventory.json"
     

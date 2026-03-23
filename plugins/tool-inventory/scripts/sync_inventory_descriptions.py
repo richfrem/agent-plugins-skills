@@ -1,20 +1,40 @@
 #!/usr/bin/env python3
 """
-sync_inventory_descriptions.py
-==============================
+sync_inventory_descriptions.py (CLI)
+=====================================
 
 Purpose:
-    One-time (or periodic) hygiene script to backfill Tool Inventory descriptions 
+    One-time (or periodic) hygiene script to backfill Tool Inventory descriptions
     using the high-quality 'purpose' fields from the RLM Cache.
-    
-    This effectively "hydrates" the manual inventory with LLM-generated insights.
+    Effectively hydrates the manual inventory with LLM-generated insights.
 
-Usage:
-    python ./scripts/sync_inventory_descriptions.py
+Layer: Curate / Inventory
 
-Dependencies:
-    - ../../scripts/manage_tool_inventory.py
+Usage Examples:
+    python3 plugins/tool-inventory/scripts/sync_inventory_descriptions.py
+
+Supported Object Types:
+    - Tool Inventory JSON entries
+
+CLI Arguments:
+    (None - paths are resolved automatically)
+
+Input Files:
     - .agent/learning/rlm_tool_cache.json
+    - tool_inventory.json
+
+Output:
+    - Updated tool_inventory.json (descriptions backfilled from RLM cache)
+
+Key Functions:
+    - main: Loads cache and inventory, syncs descriptions, reports results.
+
+Script Dependencies:
+    - plugins/tool-inventory/scripts/manage_tool_inventory.py
+    - .agent/learning/rlm_tool_cache.json
+
+Consumed by:
+    - Manual hygiene runs / CI pipeline
 """
 
 import sys
@@ -34,7 +54,7 @@ except ImportError:
     # Fallback to absolute path if running from project root
     from plugins.tool_inventory.scripts.manage_tool_inventory import InventoryManager
 
-def main():
+def main() -> None:
     # Cache and Inventory paths
     cache_path = PROJECT_ROOT / ".agent/learning/rlm_tool_cache.json"
     inventory_path = PROJECT_ROOT / "tool_inventory.json"
