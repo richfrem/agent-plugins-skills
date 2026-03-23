@@ -53,8 +53,18 @@ This skill provides comprehensive information and reference guides about the con
 
 Because of the Progressive Disclosure architecture, you should selectively read the reference files below only when you need detailed information on that specific topic.
 
-## Installation (`npx skills`)
-This ecosystem uses the universal `npx skills` CLI to install, update, and manage plugins across all supported agents (Claude Code, Copilot, Gemini CLI, etc).
+## Installation
+
+### Claude Plugin Marketplace (Claude Code native — verified 2.1.81+)
+Repos with a `.claude-plugin/marketplace.json` at the root can be registered as a marketplace:
+```
+/plugin marketplace add owner/repo
+/plugin install <plugin-name>
+```
+Claude Code fetches from the default branch. The `marketplace.json` must be merged to `main` before consumers can install.
+
+### `npx skills` CLI (cross-agent)
+Universal CLI to install across all supported agents (Claude Code, Copilot, Gemini CLI, etc).
 
 **Quick Reference:**
 *   **Install from GitHub:** `npx skills add <user>/<repo>`

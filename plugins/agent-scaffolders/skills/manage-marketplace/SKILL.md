@@ -32,9 +32,9 @@ To create a new marketplace:
 
 To add entries to your marketplace `plugins` list:
 1.  Define the **`name`** (kebab-case).
-2.  Specify the **`source`** Type:
-    - **Relative path**: `"./plugins/my-plugin-folder"` (Warning: Only works if the marketplace is installed via Git clone or local path, not direct URL).
-    - **GitHub**: `{"source": "github", "repo": "owner/repo", "ref": "branch", "sha": "commit-sha"}`
+2.  Specify the **`source`** as a relative path from the repo root:
+    - **Relative path (verified working)**: `"./plugins/my-plugin-folder"`
+    - This works when Claude Code fetches the marketplace from GitHub — the path is resolved relative to the repo root, not the `.claude-plugin/` directory.
 3.  Set **`strict`** to `true` to let the plugin's own manifest control definition lookup.
 
 > **💡 Plugin Author Note**: When writing hooks or server configs, use `${CLAUDE_PLUGIN_ROOT}` (read-only install path) and `${CLAUDE_PLUGIN_DATA}` (persistent state directory) instead of absolute host paths.
@@ -43,16 +43,24 @@ To add entries to your marketplace `plugins` list:
 
 ## Step 3: Distribution
 
-### Independent hosting
-1. Commit `.claude-plugin/marketplace.json` to a Git repo.
-2. Share absolute Git or HTTPS URL.
-3. Users run: `/plugin marketplace add <URL>`
+### Publishing to GitHub (verified — Claude Code 2.1.81+)
+1. Create `.claude-plugin/marketplace.json` at the **repo root** (not inside a subdirectory).
+2. Commit and push to the default branch (`main`).
+3. Claude Code fetches from the default branch — the PR must be merged before consumers can install.
+
+Consumers register the marketplace with:
+```
+/plugin marketplace add owner/repo
+```
+Example: `/plugin marketplace add richfrem/agent-plugins-skills`
+
+On success, Claude Code responds: `Successfully added marketplace: <name>`
 
 ---
 
 ## Step 4: Install Plugins (Consumer)
 
-Consumers add the marketplace, then install using correct scopes:
+After adding the marketplace, install any listed plugin by name:
 - `/plugin install <name>` (Global **`user`** scope)
 - `/plugin install <name> --scope project` (Team shared)
 - `/plugin install <name> --scope local` (Machine local)
