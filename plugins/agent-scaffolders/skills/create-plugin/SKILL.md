@@ -163,7 +163,10 @@ Only `name` is truly required. `name` must be kebab-case. Version follows semver
 }
 ```
 
-**If plugin has MCP integrations, create `../../CONNECTORS.md`:**
+**Plugins must be self-contained (ADR-004).** No cross-plugin script dependencies.
+Any script needed by this plugin must be copied into `plugin-name/scripts/`.
+
+**If plugin has MCP tool integrations, create `../../CONNECTORS.md`:**
 ```markdown
 # Connectors
 
@@ -172,7 +175,9 @@ Only `name` is truly required. `name` must be kebab-case. Version follows semver
 | ~~crm | Salesforce, HubSpot | outreach-skill |
 | ~~source-control | GitHub, GitLab | pr-review-agent |
 ```
-Use `~~category` abstraction for portability across tool vendors.
+Use `~~category` abstraction for portability across MCP tool vendors.
+CONNECTORS.md is ONLY for external MCP tool categories -- never for plugin-to-plugin
+script dependencies.
 
 **Add to `.gitignore`:**
 ```gitignore

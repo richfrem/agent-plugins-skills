@@ -116,7 +116,7 @@ CATEGORY_EMOJIS = {
 # -----------------------------------------------------------------------------
 
 class InventoryManager:
-    def __init__(self, inventory_path: Path):
+    def __init__(self, inventory_path: Path) -> None:
         self.inventory_path = inventory_path.resolve()
         self.root_dir = self._determine_root()
         self.data = self._load()
@@ -138,7 +138,7 @@ class InventoryManager:
         with open(self.inventory_path, 'r', encoding='utf-8') as f:
             return json.load(f)
 
-    def save(self):
+    def save(self) -> None:
         """Save JSON data."""
         # Update metadata
         if "metadata" not in self.data:
@@ -149,7 +149,7 @@ class InventoryManager:
             json.dump(self.data, f, indent=2, ensure_ascii=False)
         print(f"✅ Saved inventory to {self.inventory_path}")
 
-    def _trigger_distillation(self, tool_path: str):
+    def _trigger_distillation(self, tool_path: str) -> None:
         """
         Signals the RLM Distiller that a specific tool needs semantic synchronization.
         Instead of directly executing cross-plugin scripts, it outputs a prompt 
@@ -159,7 +159,7 @@ class InventoryManager:
         print(f"   🚨 ACTION REQUIRED: Please execute the 'rlm-curator' skill")
         print(f"      to distill semantics and update the rlm tool cache.")
 
-    def add_tool(self, tool_path: str, category: str = None, description: str = None):
+    def add_tool(self, tool_path: str, category: Optional[str] = None, description: Optional[str] = None) -> None:
         """Register a tool in the inventory."""
         full_path = self.root_dir / tool_path
         if not full_path.exists():
@@ -232,7 +232,7 @@ class InventoryManager:
         # Trigger RLM Update
         self._trigger_distillation(tool_path)
 
-    def list_tools(self):
+    def list_tools(self) -> None:
         """Print all tools."""
         print(f"\n📂 Inventory: {self.inventory_path}")
         
@@ -252,7 +252,7 @@ class InventoryManager:
                 count += 1
         print(f"\nTotal Tools: {count}")
 
-    def audit(self):
+    def audit(self) -> None:
         """Check for missing files and untracked scripts."""
         print(f"🔍 Auditing inventory against filesystem root: {self.root_dir}")
         
@@ -298,7 +298,7 @@ class InventoryManager:
         else:
             print("✅ No untracked files found.")
 
-    def search(self, keyword: str):
+    def search(self, keyword: str) -> None:
         """Search for tools by keyword in name, path, or description."""
         keyword_lower = keyword.lower()
         results = []
@@ -344,7 +344,7 @@ class InventoryManager:
             print(f"     Description: {r.get('description', 'N/A')[:100]}")
             print()
 
-    def update_tool(self, tool_path: str, new_desc: str = None, new_path: str = None, mark_compliant: bool = False, suppress_distillation: bool = False):
+    def update_tool(self, tool_path: str, new_desc: Optional[str] = None, new_path: Optional[str] = None, mark_compliant: bool = False, suppress_distillation: bool = False) -> None:
         """Update description or path of an existing tool."""
         
         # Generic Multi-Stack Traversal
@@ -404,7 +404,7 @@ class InventoryManager:
         
 
 
-    def remove_tool(self, tool_path: str):
+    def remove_tool(self, tool_path: str) -> None:
         """Remove a tool from the inventory."""
         
         # Generic Multi-Stack Traversal
@@ -447,7 +447,7 @@ class InventoryManager:
         # Trigger Cache Removal
         self._remove_from_cache(tool_path)
 
-    def _remove_from_cache(self, tool_path: str):
+    def _remove_from_cache(self, tool_path: str) -> None:
         """Signals that the RLM Tool Cache needs a janitor scan."""
         print(f"🔄 RLM Cache Cleanup Required for removed tool: {tool_path}")
         print(f"   🚨 ACTION REQUIRED: Please execute the 'rlm-cleanup-agent' skill")
@@ -871,7 +871,7 @@ Key Functions:
         self.mark_compliant(tool_path)
         return True
 
-    def reset_compliance(self):
+    def reset_compliance(self) -> None:
         """
         Resets compliance status for ALL tools in the inventory.
         Sets status='needs_review' and clears last_updated.
@@ -976,7 +976,7 @@ Key Functions:
             
         print(f"✅ Removed {len(to_remove)} tools.")
 
-    def reset_inventory(self):
+    def reset_inventory(self) -> None:
         """
         Clears all script entries from the inventory while keeping metadata.
         """
@@ -991,7 +991,7 @@ Key Functions:
         self.save()
         print("✅ Inventory reset successfully.")
 
-    def sync_from_cache(self, cache_path: str = ".agent/learning/rlm_tool_cache.json"):
+    def sync_from_cache(self, cache_path: str = ".agent/learning/rlm_tool_cache.json") -> None:
         """
         Populates tool descriptions from the RLM tool cache.
         """
@@ -1005,7 +1005,7 @@ Key Functions:
 
         updated_count = 0
         
-        def process_node(node):
+        def process_node(node: Any) -> None:
             nonlocal updated_count
             if isinstance(node, list):
                 for entry in node:
@@ -1043,7 +1043,7 @@ Key Functions:
         else:
             print("ℹ️ No matching tools found in cache to enrich.")
 
-    def summarize_missing(self, cache_path: str = ".agent/learning/rlm_tool_cache.json"):
+    def summarize_missing(self, cache_path: str = ".agent/learning/rlm_tool_cache.json") -> None:
         """
         Identify tools missing from cache and trigger RLM distillation.
         """
@@ -1055,7 +1055,7 @@ Key Functions:
         
         missing_paths = []
         
-        def collect_missing(node):
+        def collect_missing(node: Any) -> None:
             if isinstance(node, list):
                 for entry in node:
                     if isinstance(entry, dict) and 'path' in entry:
@@ -1090,7 +1090,7 @@ Key Functions:
 # Documentation Generator (The "View" Layer)
 # -----------------------------------------------------------------------------
 
-def generate_markdown(manager: InventoryManager, output_path: Path):
+def generate_markdown(manager: InventoryManager, output_path: Path) -> None:
     """Generate Markdown documentation from the Inventory Manager data."""
     
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
@@ -1179,7 +1179,7 @@ def extract_docstring(file_path: Path) -> str:
 # Main
 # -----------------------------------------------------------------------------
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Manage Tool Inventories (Global & Local)")
     
     # Global args

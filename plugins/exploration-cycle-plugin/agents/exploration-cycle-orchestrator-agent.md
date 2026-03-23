@@ -16,7 +16,7 @@ tools: ["Bash", "Read", "Write"]
 
 This agent orchestrates Phase A of the exploration cycle.
 
-- **Patterns used**: [`learning-loop`](../../agent-loops/skills/learning-loop/SKILL.md) for solo sessions, [`dual-loop`](../../agent-loops/skills/dual-loop/SKILL.md) when delegating capture passes to the requirements-doc-agent
+- **Patterns used**: [`learning-loop`](../references/learning-loop-architecture.md) for solo sessions, [`dual-loop`](../references/dual-loop-architecture.md) when delegating capture passes to the requirements-doc-agent
 - **Sub-agents dispatched**: [`requirements-doc-agent`](requirements-doc-agent.md) via Copilot CLI — cheap model, no git access, called many times per session
 - **Skill reference**: [`exploration-workflow`](../skills/exploration-workflow/SKILL.md)
 - **Independent of Spec-Kitty**: this cycle produces a handoff package that _may_ feed Spec-Kitty, but does not require it

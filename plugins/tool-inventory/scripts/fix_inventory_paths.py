@@ -1,13 +1,38 @@
-#!/usr/bin/env python3
 """
 Fix Inventory Paths
 ===================
 
-Updates plugins/tool_inventory.json to reflect the new plugin structure:
-plugins/<plugin>/scripts/X -> plugins/<plugin>/skills/<skill>/scripts/X
+Purpose:
+    Updates `tools/tool_inventory.json` to reflect the plugin structure updates:
+    `plugins/<plugin>/scripts/X` -> `plugins/<plugin>/skills/<skill>/scripts/X`
 
-Usage:
-    python3 ./scripts/fix_inventory_paths.py [--apply]
+Layer: Plugin / Tool-Inventory / Maintenance
+
+Usage Examples:
+    python3 plugins/tool-inventory/scripts/fix_inventory_paths.py [--apply]
+
+Supported Object Types:
+    - None (JSON modifier)
+
+CLI Arguments:
+    --apply: Save changes to disk.
+
+Input Files:
+    - tools/tool_inventory.json (Registration source)
+
+Output:
+    - Modifies `tools/tool_inventory.json` in-place when `--apply` is set.
+
+Key Functions:
+    get_new_path(): Calculates new paths based on SKILL_MAPPINGS.
+
+Script Dependencies:
+    json, sys, argparse, pathlib
+
+Consumed by:
+    - None (Standalone script)
+Related:
+    - None
 """
 
 import json
@@ -63,7 +88,7 @@ def get_new_path(old_path: Path) -> Path:
         
     return old_path
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Fix Inventory Paths")
     parser.add_argument("--apply", action="store_true", help="Apply changes")
     args = parser.parse_args()

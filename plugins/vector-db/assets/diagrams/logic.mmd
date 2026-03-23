@@ -1,7 +1,7 @@
 flowchart TD
     subgraph Initialization [Step 1: Unpacking]
         Bundle(tool-bundle.md) -- Agent Extracts --> Scripts
-        Scripts[ingest.py\n./query.py\ncleanup.py]
+        Scripts[../../scripts/ingest.py\n../../scripts/query.py\n../../scripts/cleanup.py]
         Bundle -- Extract --> Config[.env Template]
         Scripts --> Install{Install Deps}
         Install -- "pip install" --> Venv[(Python Env)]
@@ -19,7 +19,7 @@ flowchart TD
     end
 
     subgraph Retrieval [Step 3: Access Memory]
-        Chroma --> Query[../scripts/query.py]
+        Chroma --> Query[../../scripts/query.py]
         User((User)) -- "Natural Language" --> Query
         Query -- "Ranked Results" --> User
     end

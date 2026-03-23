@@ -1,11 +1,11 @@
 # Procedural Fallback Tree: Link Checker Agent
 
 ## 1. file_inventory.json Missing When Fixer Runs
-If `./../scripts/smart_fix_links.py` is invoked but `file_inventory.json` does not exist:
-- **Action**: HALT. Do NOT run the fixer with a missing inventory. Run `../scripts/map_repository_files.py` first and verify `file_inventory.json` is created before retrying.
+If `scripts/smart_fix_links.py` is invoked but `file_inventory.json` does not exist:
+- **Action**: HALT. Do NOT run the fixer with a missing inventory. Run `scripts/map_repository_files.py` first and verify `file_inventory.json` is created before retrying.
 
 ## 2. Fixer Reports Ambiguous Match (Multiple Candidates)
-If `./../scripts/smart_fix_links.py` finds multiple files matching a broken link's basename:
+If `scripts/smart_fix_links.py` finds multiple files matching a broken link's basename:
 - **Action**: Do NOT silently pick one. Report all candidates to the user with their full relative paths. Ask the user to specify the correct target. Never auto-select when ambiguous.
 
 ## 3. check_broken_paths.py Reports Remaining Broken Links After Fix
