@@ -162,6 +162,6 @@ Every summary should answer: **"Why does this file exist and what does it do?"**
 
 ## After Init
 
-- Use [`rlm-distill-agent`](../rlm-distill-agent/SKILL.md) for ongoing cache updates
-- Use [`rlm-curator`](../rlm-curator/SKILL.md) for querying, auditing, and cleanup
+- Use [`rlm-distill-agent`](../skills/rlm-distill-agent/SKILL.md) for ongoing cache updates
+- Use [`rlm-curator`](../skills/rlm-curator/SKILL.md) for querying, auditing, and cleanup
 - Cache files should be `.gitignore`d if they contain project-specific summaries

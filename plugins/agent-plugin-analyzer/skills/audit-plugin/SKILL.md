@@ -44,9 +44,8 @@ Establish the plugin root:
 
 ## Step 2: Run plugin-validator Agent
 
-> **Cross-plugin dependency**: The `plugin-validator` agent used in this step is defined in the
-> `agent-scaffolders` plugin, not this plugin. It must be installed for this step to work.
-> See `CONNECTORS.md` for the dependency declaration and fallback instructions.
+> **Note**: The `plugin-validator` agent is defined in `agent-scaffolders`. If not installed,
+> skip this step and rely on the component scripts in Step 3 and manual checks in Step 4.
 
 Trigger the `plugin-validator` agent for comprehensive validation:
 
@@ -86,7 +85,7 @@ After plugin-validator, run targeted scripts for detailed checks:
 
 **Validate each agent file:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/validate-agent.sh agents/my-agent.md
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-agent.sh agents/my-agent.md
 ```
 Checks: frontmatter structure, required fields (name/description/model/color), name format
 (3-50 chars, lowercase + hyphens), description has `<example>` blocks, system prompt
@@ -94,7 +93,7 @@ length (minimum 20 chars, recommended 500-3,000).
 
 **Validate hooks.json schema:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/validate-hook-schema.sh hooks/hooks.json
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-hook-schema.sh hooks/hooks.json
 ```
 Checks: JSON syntax, valid event names, each hook has `matcher` + `hooks` array,
 hook type is `command` or `prompt`, command hooks reference existing scripts with
@@ -102,7 +101,7 @@ hook type is `command` or `prompt`, command hooks reference existing scripts wit
 
 **Test a hook script directly:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/test-hook.sh \
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/test-hook.sh \
   --hook hooks/scripts/validate.sh \
   --event PreToolUse \
   --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
@@ -110,7 +109,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/test-hook.sh \
 
 **Lint hook scripts for common issues:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/hook-linter.sh hooks/
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/hook-linter.sh hooks/
 ```
 
 ---

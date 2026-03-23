@@ -85,7 +85,6 @@ If the script is unavailable, manually enumerate:
    - `references/*.md` → Reference material (progressive disclosure)
    - `scripts/*.py` → Executable scripts
    - `README.md` → Plugin documentation
-   - `CONNECTORS.md` → Connector abstractions
    - `plugin.json` → Plugin manifest
    - `*.json` → Configuration (MCP, hooks, etc.)
    - `*.yaml` / `*.yml` → Pipeline/config data
@@ -107,7 +106,6 @@ Evaluate the plugin's architectural decisions:
 | **Component Ratios** | Skills vs commands vs scripts — what's the balance? |
 | **Naming Patterns** | Are names descriptive? Follow kebab-case? Use gerund form? |
 | **README Quality** | Does it have a file tree? Usage examples? Architecture diagram? |
-| **CONNECTORS.md** | Does it use `~~category` connector abstraction for tool-agnosticism? |
 | **Standalone vs Supercharged** | Can it work without MCP tools? What's enhanced with them? |
 
 ### Phase 3: Content Analysis
