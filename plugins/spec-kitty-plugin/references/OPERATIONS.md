@@ -1,7 +1,7 @@
 # Spec Kitty Dual Tri Bridge: Operations Guide
 
 > **Status**: Active
-> **Policy**: [ADR-0032 Dual Tri Bridge Architecture](ADRs/0032-dual-tri-bridge-architecture.md)
+> **Policy**: ADR-0032 Dual Tri Bridge Architecture
 
 ## 1. Overview
 The **Dual Tri Bridge** system ensures that the **Antigravity Agent** configuration (`.agent/`) serves as the Single Source of Truth for:

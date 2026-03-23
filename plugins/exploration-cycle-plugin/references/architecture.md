@@ -1,10 +1,6 @@
 # Exploration Cycle Plugin Architecture Reference
 
-This plugin is the implementation boundary for the exploration-cycle system described in:
-
-- [architecture/exploration-cycle-architecture.md](../../../architecture/exploration-cycle-architecture.md)
-- [architecture/exploration-cycle-spec.md](../../../architecture/exploration-cycle-spec.md)
-- [ADRs/001_augment_spec_kitty_with_exploration_cycle.md](../../../ADRs/001_augment_spec_kitty_with_exploration_cycle.md)
+This plugin is the implementation boundary for the exploration-cycle system. The architecture and spec documents are maintained within this plugin's `references/` directory.
 
 ## Intent
 

@@ -201,4 +201,4 @@ When a Learning Loop runs inside a Dual-Loop session:
 
 **Key rule**: The Inner Loop does NOT run Learning Loop phases. All cognitive continuity is the Outer Loop's responsibility.
 
-**Cross-reference**: [dual-loop SKILL](../dual-loop/SKILL.md)
+**Cross-reference**: [dual-loop SKILL](dual-loop-skill.md)

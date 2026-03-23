@@ -12,7 +12,7 @@ Plugins must follow a strict root-level structure:
 - `.claude-plugin/plugin.json`: The manifest (must only contain `plugin.json`).
 - `README.md`: Included as a best practice. It is highly recommended to contain a text-based file tree structure (using `├──` and `└──`) detailing the components inside the plugin and their purpose.
 
-*See visual representation in [plugin-architecture.mmd](diagrams/plugin-architecture.mmd)*
+*See visual representation in [plugin-architecture.mmd](../assets/diagrams/plugin-architecture.mmd)*
 
 ## Component Details
 - **Skills (`skills/` prefix):** Directories containing a `././SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).
