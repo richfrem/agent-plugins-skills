@@ -56,6 +56,10 @@ Example: `/plugin marketplace add richfrem/agent-plugins-skills`
 
 On success, Claude Code responds: `Successfully added marketplace: <name>`
 
+**Known non-working subcommands (Claude Code 2.1.81):**
+- `/plugin marketplace browse` — returns no content, not a supported subcommand
+- Use `/plugin help` to discover what subcommands are available in your version
+
 ---
 
 ## Step 4: Install Plugins (Consumer)

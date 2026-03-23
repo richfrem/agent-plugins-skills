@@ -62,6 +62,7 @@ Repos with a `.claude-plugin/marketplace.json` at the root can be registered as 
 /plugin install <plugin-name>
 ```
 Claude Code fetches from the default branch. The `marketplace.json` must be merged to `main` before consumers can install.
+Note: `/plugin marketplace browse` returns no content in 2.1.81 — use `/plugin help` to discover available subcommands.
 
 ### `npx skills` CLI (cross-agent)
 Universal CLI to install across all supported agents (Claude Code, Copilot, Gemini CLI, etc).
