@@ -772,3 +772,1737 @@ Any operation that:
 - **NEVER** abandon a feature without acceptance + retrospective.
 
 **Version**: 4.0 | **Ratified**: 2026-03-05
+
+<!-- plugin: resources / application_documentation_policy -->
+---
+trigger: always_on
+---
+
+# Application Documentation Policy
+
+> **Effective Date:** 2026-01-17
+> **Related Standards:** 
+> *   [Application Overview Strategy](plugins/legacy system/resources/tasks/done/0032-application-overview-strategy.md)
+> *   [Application Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/outputs/application-overview-template.md)
+> *   [Expert Persona](plugins/legacy system/resources/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
+> *   [Architecture Diagram](plugins/legacy system/resources/docs/diagrams/architecture/legacy-oracle-architecture.mmd) - Reference for system structure
+> *   **Subtask Prompts:** [Menu Analysis](plugins/legacy system/resources/tools/ai-resources/prompts/analysis/subtasks/Menu_Analysis_Prompt.md) | [Dependency Analysis](plugins/legacy system/resources/tools/ai-resources/prompts/analysis/subtasks/Dependency_Analysis_Prompt.md) | [Role Identification](plugins/legacy system/resources/tools/ai-resources/prompts/analysis/subtasks/Role_Identification_Prompt.md)
+
+## 0. Human Overrides
+**Rule File:** [std_human_overrides.md](plugins/legacy system/resources/rules/human_overrides_policy.md)
+
+## 1. Knowledge Retrieval (MANDATORY - DO THIS FIRST)
+
+> [!IMPORTANT]
+> **BEFORE** analyzing code or creating documentation, you MUST search the knowledge base.
+
+### Step 1: Search RLM Cache
+Search for existing summaries of the application or related forms:
+```bash
+# Search RLM cache for relevant terms
+grep -i "JCS\|application\|your-search-term" plugins/legacy system/resources/learning/rlm_summary_cache.json
+```
+
+### Step 2: Search Vector DB (Semantic Search)
+Run semantic search to find conceptually related documents:
+```bash
+python plugins/vector-db/scripts/query.py "application overview JCS court services"
+```
+
+### Step 3: Review Found Documents
+If the RLM/Vector search finds relevant documents, **READ THEM** before proceeding:
+- If existing analysis is sufficient, **reference it** instead of duplicating
+- If existing analysis is partial, **extend it** rather than creating new files
+- Only create new documents when the topic is genuinely novel
+
+### Step 4: Distill New Work
+After creating documentation, update the knowledge base:
+```bash
+python plugins/rlm-factory/scripts/distiller.py --file path/to/new/file.md
+```
+
+## 2. Documentation Structure
+
+### 1.1 File Location
+All application overviews must be stored in:
+`legacy-system/applications/[Acronym]-Application-Overview.md`
+
+### 1.2 Naming Convention
+*   **Format:** `[Acronym]-Application-Overview.md` (e.g., `FIS2-Application-Overview.md`).
+
+## 3. Extraction Process (Application-Specific Subtasks)
+
+### Subtask A: Menu Analysis
+### Subtask A: Menu Analysis
+**Objective:** Document the navigational structure from legacy configuration.
+
+**Checklist:**
+- [ ] **Tabular Format**: List `Menu Item`, `Screen Label`, and `Roles`.
+- [ ] **Role Linking**: Ensure all listed roles are linked using Smart Linking syntax.
+
+**Formatting:**
+
+*   **Structure**: See "Scope Distinction" below.
+
+### 1.3 Scope Distinction (App Overview vs Main Menu)
+*   **Application Overview (`*-Application-Overview.md`)**:
+    *   **Purpose**: Master document defining high-level purpose, user roles, key modules, and integration strategy.
+    *   **Content**: Business context, comprehensive role lists, key workflows.
+*   **Main Menu Form (`*M0000-Overview.md`)**:
+    *   **Purpose**: Technical implementation of the menu form itself.
+    *   **Content**: `SecureDisableButtons` logic, internal flag management.
+    *   **Constraint**: Must explicitly link back to Application Overview. Avoid duplicating module lists.
+
+### Subtask B: Dependency Analysis
+**Rule File:** [std_validated_dependencies.md](plugins/legacy system/resources/rules/validated_dependencies_policy.md)
+*   **Query**: `form_relationships.csv`.
+*   **Verify**: Trace calls from Main Menu.
+
+### Subtask C: Role Identification
+**Rule File:** [std_security_access.md](plugins/legacy system/resources/rules/security_access_policy.md)
+*   **Inventory Check**: Validate against `roles_inventory.json`.
+*   **Classification**: Active vs Legacy.
+
+### Subtask D: Content Assembly
+1.  **Application Profile:** Code, Name, Users, Entry Point
+2.  **Functional Modules:** Group forms by purpose
+3.  **Integration Points:** Document cross-application connections
+4.  **Security Model:** Summarize access control patterns
+
+## 4. Reference Data Sources (CRITICAL)
+
+> [!IMPORTANT]
+> Use `legacy-system/reference-data/` to validate all entries.
+
+| File | Purpose | How to Use |
+|------|---------|------------|
+| **`dependency_map.json`** | Core graph structure | Look up Form IDs to find connections |
+| **`roles_inventory.json`** | Valid Role Names | Validate user roles (Active vs Legacy) |
+| **`form_relationships.csv`** | Form Dependencies | Source for Validated Dependencies table |
+
+## 5. Tooling Reference
+
+The following tools **MUST** be used during the enrichment process:
+*   **Link Enrichment:** `scripts/documentation/enrich_links.py` - Run after updates
+*   **Link Generation:** `scripts/documentation/find_source_links.py` - Locates source files and builds links
+
+## 4. Anti-Patterns (DO NOT DO)
+
+> [!CAUTION]
+> The following shortcuts are PROHIBITED:
+
+1. **Stub updating only** - Adding just a NOTE without analyzing the source
+2. **Copying existing content without verification**
+3. **Missing dependency links** - All forms listed must be linked
+4. **Ignoring Legacy Roles** - Deprecated roles MUST be listed in their own section
+5. **Incomplete Menus** - Must include ALL menu items, not just top 10
+
+## 5. Quality Checklist
+
+Before marking an application as complete:
+
+- [ ] Validated Main Menu Form structure
+- [ ] Confirmed all Menu Items are listed
+- [ ] Verified Roles against Inventory
+- [ ] Linked all Dependencies
+- [ ] Run enrich_links.py after updates
+
+## 6. Mandatory Post-Analysis Updates
+
+## Discovered Candidates
+If application analysis reveals business rules or workflows:
+
+```bash
+# Add BR candidate (Application-Level Rule)
+python3 tools/investigate/search/priority_candidates.py --add-br --form APP_ID --desc "App-level rule" --priority P2
+
+# Add Workflow
+python3 tools/investigate/search/priority_candidates.py --add-bw --form APP_ID --desc "End-to-end workflow" --priority P2
+```
+
+## Post-Processing (Single File Operations)
+Always update the knowledge base after editing:
+
+```bash
+# 1. Enrich links
+python3 scripts/documentation/enrich_links_v2.py --file path/to/file.md
+
+# 2. Distill to RLM (Summary)
+python3 plugins/rlm-factory/scripts/distiller.py --file path/to/file.md
+
+# 3. Ingest to Vector DB
+python3 plugins/vector-db/scripts/ingest.py --file path/to/file.md
+```
+
+## 7. Continuous Improvement
+*   Updates to this policy must be reflected in the [Transformation Process](plugins/legacy system/resources/ORACLE_FORMS_AI_ENRICHMENT_PROCESS.md).
+*   New patterns discovered should be added to the [Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/outputs/application-overview-template.md).
+
+<!-- plugin: resources / business_rule_documentation_policy -->
+# Business Rule Documentation Policy
+
+> **Effective Date:** 2026-01-17
+> **Related Standards:** 
+> *   [Business Rule Strategy](plugins/legacy system/resources/tasks/done/0030-business-rule-extraction-strategy.md)
+> *   [Business Rule Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/outputs/business-rule-template.md)
+> *   [Expert Persona](plugins/legacy system/resources/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
+> *   [Architecture Diagram](plugins/legacy system/resources/docs/diagrams/architecture/legacy-oracle-architecture.mmd) - Reference for system structure
+> *   **Subtask Prompts:** [Logic Extraction](plugins/legacy system/resources/tools/ai-resources/prompts/analysis/subtasks/Logic_Extraction_Prompt.md)
+
+## 0. Human Overrides
+**Rule File:** [std_human_overrides.md](plugins/legacy system/resources/rules/standards/std_human_overrides.md)
+
+## 1. Knowledge Retrieval
+**Mandatory Protocol:**
+1.  **Search Existing Rules (Multiple Variants)**: 
+    ```bash
+    python plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py "keyword"
+    ```
+    *   **Requirement**: Run multiple searches using different keywords (e.g., synonyms, technical terms, error codes) to ensure no existing rule is missed (e.g., search 'unique', then 'duplicate', then 'key'). Do NOT rely on a single search.
+2.  **Review RLM Cache**: 
+    - Run `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle --target [ID]` to see if rules were already summarized in the RLM cache.
+    - Check for descriptions matching your logic.
+3.  **Search RAG Database**: 
+    ```bash
+    python plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py query "keyword context"
+    ```
+    - This searches the vector database for semantically similar rules or documentation.
+
+(Standard Knowledge Retrieval applies: RLM, Vector DB search).
+
+## 2. The Definition
+A **Business Rule** is a logic statement that defines or constrains some aspect of the business. It is intended to assert business structure or to control or influence the behavior of the business.
+
+**Examples:**
+*   **Valid:** "An accused person under 18 must be processed as a Young Offender."
+*   **Invalid:** "The textbox background turns red on error." (This is UI logic).
+
+## 3. Hybrid Discovery Strategy
+
+### Discovery Techniques
+- **XML Mining**: Use `xml_miner.py` to find declarative properties (`Required`, `FormatMask`).
+- **Trigger Analysis**: Use `search_plsql.py` to search `WHEN-VALIDATE-ITEM`, `PRE-INSERT`, `PRE-UPDATE` for PL/SQL logic.
+- **Reachability**: Ensure the code is not "Dead" (Reachability > 0.5).
+
+### Classification
+| Type | ID Prefix | Description | Example |
+|---|---|---|---|
+| **Business Rule** | BR | Atomic logic, validation, calculation. | "Date must be in future", "Role X cannot see Y". |
+| **Workflow** | BW | High-level process, state transitions. | "Submission Lifecycle", "Intake Process". |
+| | | | |
+| **Note**: IDs must be generated sequentially using the tool. Never guess an ID. |
+| **Mandatory Protocol (ZERO TOLERANCE)**: |
+| 1. **Search**: `python plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py "term"` to find existing. |
+| 2. **Register**: `python plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py ...` to get the next ID. |
+| 3. **Verify**: Ensure the file was created with the tool-assigned ID. |
+| **PROHIBITED**: Never manually create a file (e.g., `write_to_file "BR-0099..."`). This bypasses the registry and causes duplicates.
+
+## 4. Documentation Structure
+
+### 4.1 File Location
+All business rules must be stored in:
+`legacy-system/business-rules/BR-NNNN-short-title.md`
+
+### 4.2 Naming Convention
+*   **Prefix:** `BR-`
+*   **Sequence (NNNN):** 4-digit zero-padded number (e.g., 0001, 0015).
+*   **Title:** Kebab-case, lowercase description.
+
+## 5. Extraction Process
+1.  **Analyze**: Use `Form_Complete_Analysis_Prompt.md` and `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle`.
+2.  **Filter**: Separate Business Logic from UI Logic.
+3.  **Cross-Reference**: Check for existing BRs.
+4.  **Create/Link**: Create distinct BR document and link from Overview.
+
+### ❌ Common Mistakes (PROHIBITED):
+1. **Referencing BR without reading it** - You assumed BR-0010 was "sitting day validation" but it's actually "Auto-Accept Logic" for a different form.
+2. **Inventing rule names like "Access Level Validation"** - Rule IDs must be BR-XXXX format from the registry.
+3. **Not searching with multiple keywords** - One search is not enough. Search synonyms.
+4. **Assuming existing overview BR references are correct** - Previous documentation may have errors. Verify.
+
+### ✅ If No BR Exists for the Logic:
+
+> [!CRITICAL]
+> **After searching and finding no existing BR, you MUST assess whether to register new rules.**
+
+If you find validation logic but no existing BR covers it:
+
+#### Step 1: Classify the Logic
+| Classification | Criteria | Action |
+|----------------|----------|--------|
+| **P1 (Critical)** | Security, data integrity, legal compliance | **MUST register** via `plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py --priority P1` |
+| **P2 (Major)** | Core business constraints, workflow controls, external integrations | **SHOULD register** via `plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py --priority P2` |
+| **P3 (Minor)** | UI behavior, field defaults, simple validations | **MAY register** or document as form-level validation |
+
+#### Step 2: Take Action
+- **If P1 or P2**: Run `plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py --source [FORM_ID] --description "..." --priority [P1/P2] --type br`
+- **If P3 and simple**: Document as "Form-Level Validation" table only
+
+#### Step 3: Update Overview
+After registering, update the overview's Business Rules table to reference the new BR-XXXX.
+
+## 6. Reference Data Sources (CRITICAL)
+
+> [!IMPORTANT]
+> Use `legacy-system/reference-data/` to validate all entries.
+
+| File | Purpose | How to Use |
+|------|---------|------------|
+| **`dependency_map.json`** | Core graph structure | Trace logic across forms |
+| **`roles_inventory.json`** | Valid Role Names | Validate roles in access rules |
+| **`granular_sql/tables/`** | Database Constraints | Validate data integrity rules against DDL |
+| **`pll_inventory.json`** | Shared Logic | Identify if rule is centralized in PLL |
+
+## 7. Tooling Reference
+
+The following tools **MUST** be used during the enrichment process:
+*   **Unified Discovery**: `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle` - Runs miners & gathering
+*   **Logic Density:** `tools/investigate/search/lds_scorer.py` - Prioritize work
+*   **Reachability:** `tools/investigate/search/reachability.py` - Filter dead code
+*   **Link Enrichment:** `scripts/documentation/enrich_links.py` - Run after updates
+*   **Code Search:** `findPLSQLTermAttributeKeyword.py` - Verify logic across multiple files
+
+## 6. Anti-Patterns (DO NOT DO)
+
+> [!CAUTION]
+> The following shortcuts are PROHIBITED:
+
+1. **Documenting UI as Business Rules** - "Button X is blue" is NOT a business rule.
+2. **Duplicating Rules** - Always check if `BR-NNNN` exists before creating a new one.
+3. **Missing Source Traceability** - Every rule must link back to the Form/Trigger where it was found.
+4. **Vague Definitions** - A rule must be precise and testable.
+5. **Ignoring Shared Logic** - Failing to check if a rule is actually in a PLL (Global) vs Form (Local).
+6. **Ignoring Consumers** - Failing to list the Forms/Reports that *consume* or *enforce* the rule (The Impact Radius).
+
+## 7. Quality Checklist
+
+Before marking a rule as complete:
+
+- [ ] Rule ID matches filename
+- [ ] Logic separated from UI mechanics
+- [ ] Source forms/triggers explicitly linked (Definition)
+- [ ] Known Consumers (Affected Forms) listed (Impact)
+- [ ] Related Data Elements (Tables/Columns) listed
+- [ ] Run enrich_links.py after updates
+
+## 8. Mandatory Post-Analysis Updates
+
+### 8.1 Update Inventories
+After creating or modifying a business rule, run:
+```bash
+python scripts/inventory/business_rules_inventory_manager.py
+python scripts/inventory/build_master_collection.py --full
+```
+
+### 8.2 Update ai_analysis_tracking.json
+Mark the source form as analyzed.
+
+### 8.3 Flag Follow-Up Work in TODO.md
+If the rule seems contradictory or obsolete, flag it for human review.
+
+## 9. Continuous Improvement
+*   Updates to this policy must be reflected in the [Transformation Process](plugins/legacy system/resources/ORACLE_FORMS_AI_ENRICHMENT_PROCESS.md).
+
+
+<!-- plugin: resources / business_workflow_documentation_policy -->
+# Business Workflow Documentation Policy
+
+> **Effective Date:** 2026-01-17
+> **Related Standards:** 
+> *   [Business Workflow Strategy](plugins/legacy system/resources/tasks/done/0031-business-workflow-strategy.md)
+> *   [Workflow Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/meta/workflow-definition-template.md)
+> *   [Expert Persona](plugins/legacy system/resources/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md) - Apply this role when analyzing
+> *   [Architecture Diagram](plugins/legacy system/resources/docs/diagrams/architecture/legacy-oracle-architecture.mmd) - Reference for system structure
+> *   **Subtask Prompts:** [State Transition](plugins/legacy system/resources/tools/ai-resources/prompts/analysis/subtasks/State_Transition_Prompt.md) | [Workflow Tracing](plugins/legacy system/resources/tools/ai-resources/prompts/analysis/subtasks/Workflow_Tracing_Prompt.md)
+
+## CLI Quick Reference
+```bash
+# Get next available BW number
+python tools/business-rule-extraction/plugins/adr-manager/scripts/next_number.py --type bw
+# Output: BW-0003
+
+# Create workflow document from template
+python tools/codify/documentation/overview_manager.py --id BW-0003-workflow-name --type workflow --create
+
+# Create and sync to RLM + Vector DB
+python tools/codify/documentation/overview_manager.py --id BW-0003-workflow-name --type workflow --create --sync
+
+# View all next available numbers
+python tools/business-rule-extraction/plugins/adr-manager/scripts/next_number.py --type all
+```
+
+
+## 0. Human Overrides
+**Rule File:** [std_human_overrides.md](plugins/legacy system/resources/rules/human_overrides_policy.md)
+
+## 1. Knowledge Retrieval
+**Mandatory Sequence:**
+1.  **RLM Cache Search**
+2.  **Vector DB Search**
+3.  **Deep Code Search** (e.g. `CALL_FORM` tracing)
+
+See [std_business_rules.md](plugins/legacy system/resources/rules/business_rule_documentation_policy.md) or Form Policy for CLI commands.
+
+### Step 4: Document Findings
+Create or update workflow documentation using the [Workflow Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/meta/workflow-definition-template.md).
+
+### Step 5: Post-Processing
+(Standard RLM/Enrichment apply).
+
+## 2. Documentation Structure
+
+### 1.1 File Location
+All business workflows must be stored in:
+`legacy-system/business-workflows/BW-NNNN-short-title.md`
+
+### 1.2 Naming Convention
+*   **Prefix:** `BW-`
+*   **ID:** 4-digit sequence (0001, 0002...)
+*   **Format:** `BW-NNNN-kebab-cased-title.md`
+
+## 2. Extraction Process
+
+### 2.1 Logic Trace
+1.  **Identify Process:** Look for chains of form calls (`CALL_FORM`) or status lifecycle transitions (`BLD` -> `SUB`).
+2.  **Extract:** Create a new `BW-NNNN` file using the Template.
+3.  **Link:** Reference involved Forms and Rules.
+
+### 2.2 Metadata Requirements
+*   **Trigger:** What starts the workflow?
+*   **Actors:** Roles involved.
+*   **Steps:** Sequential list of actions.
+*   **Outcomes:** Success/Failure states.
+
+## 3. Tooling Reference
+
+The following tools **MUST** be used during the enrichment process:
+*   **Link Enrichment:** `scripts/documentation/enrich_links.py` - Run after updates
+*   **Link Generation:** `scripts/documentation/find_source_links.py` - Locates source files and builds links
+
+## 4. Anti-Patterns (DO NOT DO)
+
+> [!CAUTION]
+> The following shortcuts are PROHIBITED:
+
+1. **Stub updating only** - Adding just a NOTE without analyzing the source
+2. **Copying existing content without verification**
+3. **Missing visual flows** - Workflows MUST have a Mermaid diagram
+4. **Generic descriptions** - "Process data" is not acceptable
+5. **Ignoring roles** - Must specify WHO performs the action
+
+## 5. Quality Checklist
+
+Before marking a workflow as complete:
+
+- [ ] Reviewed source forms for `CALL_FORM` chains
+- [ ] Created Mermaid Sequence Diagram
+- [ ] List all Actors/Roles involved
+- [ ] Linked referenced Business Rules (`[[BR-NNNN]]`)
+- [ ] Run enrich_links.py after updates
+
+## 6. Mandatory Post-Analysis Updates
+
+### 6.1 Update Inventories
+After creating or modifying a workflow, run:
+```bash
+python scripts/inventory/business_workflows_inventory_manager.py
+python scripts/inventory/build_master_collection.py --full
+```
+
+### 6.2 Update ai_analysis_tracking.json (If applicable)
+
+### 6.3 Flag Follow-Up Work in TODO.md
+If complex logic requires deeper investigation or stakeholder validation, add to `TODO.md`.
+
+## 7. Continuous Improvement
+*   Updates to this policy must be reflected in the [Transformation Process](plugins/legacy system/resources/ORACLE_FORMS_AI_ENRICHMENT_PROCESS.md).
+*   New patterns discovered should be added to the [Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/meta/workflow-definition-template.md).
+
+
+<!-- plugin: resources / context_first_analysis_policy -->
+# Standard: Context-First Analysis Workflow
+`plugins/spec-kitty/docs/diagrams/workflows/context-first-analysis.mmd` (Simplified)
+`plugins/spec-kitty/docs/diagrams/workflows/context-first-analysis-detailed.mmd` (Detailed)
+
+## 1. Objective
+Ensure every analysis session starts with **Rigorous, Constructed Context**, preventing hallucinations and ensuring all project standards are active.
+
+## 2. The 5-Phase Protocol
+
+### Phase 1: Initialize
+**Command:** `/context-bundler_init --target [ID] --type [TYPE]`
+
+Actions performed by CLI:
+1. Load `plugins/context-bundler/resources/base-manifests/base-[TYPE]-file-manifest.json`
+2. Query RLM Cache for summaries
+3. Query `dependency_map.json` for dependencies
+4. Auto-add source & dependency files
+5. Write `tools/context-bundler/file-manifest.json`
+6. Generate `temp/context-bundles/[ID]_context.md`
+
+### Phase 2: Review Context
+**Command:** `view_file temp/context-bundles/[ID]_context.md`
+
+Check:
+- [ ] Source files (MD/XML) present?
+- [ ] Key dependencies listed?
+- [ ] RLM summaries included?
+- [ ] Template & Policy in bundle?
+
+### Phase 3: Augment (if gaps found)
+If context is incomplete:
+1. `/context-bundler_add --file [PATH]`
+2. Add **only** missing files identified
+3. Regenerate: `/context-bundler_bundle`
+4. Loop back to Phase 2
+
+**Max iterations:** 3 (then escalate to human)
+
+### Phase 4: Execute Deep Dive
+Once context is complete:
+1. Execute `[TYPE]_Analysis_Prompt.md` (via specialized analysis workflow)
+2. Follow `[TYPE]_documentation_policy.md`
+3. Apply all `std_*.md` standards
+4. Register BRs: `/legacy-system-business-rules_codify-business-rule`
+
+### Phase 5: Post-Process
+1. `/legacy-system-oracle-forms_curate-enrich-links --file [DOC]`
+2. `/legacy-system-oracle-forms_curate-audit-log --id [ID]`
+3. `/rlm-factory_distill --file [DOC]`
+4. `/inventory-manager_curate-inventories`
+
+## 3. Key Principle
+> **⛔ NEVER** read `rlm_summary_cache.json` directly.
+> **✅ ALWAYS** use CLI commands or context bundles to access intelligence.
+
+---
+
+## 4. ⚠️ CRITICAL: Zero-Tolerance Anti-Patterns
+
+> [!CRITICAL]
+> **The following shortcuts are PROHIBITED. Violation breaks the workflow and produces incorrect documentation.**
+
+### ❌ DO NOT:
+1. **Skip the bundle/context command** - Running post-processing without first gathering context produces shallow documentation.
+2. **Mark forms as "Analyzed" after only running post-processing** - Post-processing is Step 5, not the entire workflow.
+3. **Invent BR references without searching first** - ALWAYS run `/legacy-system-business-rules_investigate-business-rule` BEFORE referencing or creating any BR-XXXX.
+4. **Reference BR-XXXX IDs without verifying the rule matches** - Read the BR file to confirm the logic matches what you found.
+5. **Rush through multiple forms** - Each form requires the full 5-phase process. Quality over quantity.
+
+### ✅ CORRECT Workflow (Every Form):
+```bash
+1. /context-bundler_init --target [ID]   # Gather context
+2. view_file existing-overview           # Check what exists
+3. view_file source-markdown             # Deep dive source
+4. /legacy-system-business-rules_investigate-business-rule "keyword" # Search
+5. Update/enhance overview               # Document findings
+6. /legacy-system-oracle-forms_curate-enrich-links # Post-process
+7. /legacy-system-oracle-forms_curate-audit-log    # Update tracking
+```
+
+### Hallmarks of Rushed/Incorrect Work:
+- Overview has no changes but marked as "analyzed"
+- BR references point to unrelated rules
+- No source code was actually viewed
+- Post-processing ran but no content changes
+
+
+
+<!-- plugin: resources / database_object_documentation_policy -->
+# Oracle Database Object Documentation Policy V2
+
+> **Effective Date:** 2026-01-18
+> **Related Standards:**
+> *   [Business Rules Standard](plugins/legacy system/resources/rules/business_rule_documentation_policy.md)
+> *   [Placeholder Creation](plugins/legacy system/resources/rules/database_object_documentation_policy.md)
+> *   [Smart Linking](plugins/legacy system/resources/rules/smart_linking_policy.md)
+
+## 0. Human Overrides: The Single Source of Truth
+**Rule File:** [std_human_overrides.md](plugins/legacy system/resources/rules/human_overrides_policy.md)
+> [!CRITICAL]
+> **ALWAYS check `legacy-system/human-overrides/` before documenting.**
+
+## 1. Overview
+
+This policy governs the documentation of **ALL** Oracle Database objects:
+- **Tables** → Store data, enforce constraints
+- **Views** → Abstract queries, derived data
+- **Packages** → Grouped procedures/functions, core business logic
+- **Procedures** → Transaction processing, data manipulation
+- **Functions** → Calculations, transformations
+- **Types** → Custom data structures, collections
+- **Triggers** → Automated event-driven logic (audit, validation, integration)
+
+> [!IMPORTANT]
+> Database Packages often contain the **MOST CRITICAL business logic** of the system.
+> They MUST be analyzed for Business Rules and Workflows with the same rigor as Forms.
+
+## 2. Object Type Reference
+
+| Type | Source Location | Template | Output Directory |
+|---|---|---|---|
+| Tables | `oracle-database/Tables/*.sql` | `db-table-template.md` | `database-overviews/tables/` |
+| Views | `oracle-database/Views/*.sql` | `db-table-template.md` | `database-overviews/views/` |
+| Packages | `oracle-database/source/Packages/*.sql` | `db-package-template.md` | `database-overviews/packages/` |
+| Procedures | `oracle-database/Procedures/*.sql` | `db-procedure-template.md` | `database-overviews/procedures/` |
+| Functions | `oracle-database/Functions/*.sql` | `db-procedure-template.md` | `database-overviews/functions/` |
+| Types | `oracle-database/Types/*.sql` | `db-type-template.md` | `database-overviews/types/` |
+| Triggers | `oracle-database/Triggers/*.sql` | `db-trigger-template.md` | `database-overviews/triggers/` |
+
+## 3. CLI Quick Reference
+```bash
+# Batch Processing (Recommended)
+python scripts/documentation/batch_process_db_objects.py --type all
+
+# Single Object
+python tools/codify/documentation/overview_manager.py --id OBJECT_NAME --type db_table --create
+
+# Enrichment
+python scripts/documentation/enrich_links_v2.py
+```
+
+---
+
+## 4. Documentation Standards by Type
+
+### A. Tables & Views
+**Template:** `db-table-template.md`
+**Focus:** Data model, relationships, constraints as business rules
+
+#### Required Sections
+1. Object Information (Name, Schema, Source)
+2. Purpose
+3. Columns (Name, Type, Nullable, Description)
+4. Constraints → **Business Rules**
+5. Indexes
+6. Relationships (Parent/Child tables)
+7. Used By (Forms/Reports)
+8. Business Rules Enforced
+
+#### Business Rule Discovery
+- **CHECK Constraints** → `BR-XXXX` (Validation Rule)
+- **NOT NULL** → `BR-XXXX` (Required Field Rule)
+- **Foreign Keys** → Document relationships
+- **Unique Constraints** → `BR-XXXX` (Uniqueness Rule)
+
+---
+
+### B. Packages (CRITICAL)
+**Template:** `db-package-template.md`
+**Focus:** API surface, business logic, workflows
+
+#### Required Sections
+1. Object Information
+2. Purpose
+3. **Contains** (Member Procedures, Functions, Types)
+4. **Business Rules Discovered**
+5. **Workflows Discovered**
+6. Error Handling
+7. Dependencies
+8. Called By
+9. Security/Roles
+10. Modernization Notes
+
+#### Business Rule Discovery
+**Rule File:** [std_business_rules.md](plugins/legacy system/resources/rules/business_rule_documentation_policy.md)
+
+Scan for these patterns:
+```sql
+-- Validation (Business Rule)
+IF condition THEN 
+    RAISE_APPLICATION_ERROR(-20xxx, 'Message');
+END IF;
+
+-- State Transition (Workflow)
+UPDATE table SET status = 'NEW_STATE' WHERE ...;
+
+-- Access Control (Security Rule)
+IF NOT pkg_security.has_role('ROLE_NAME') THEN ...;
+
+-- Calculation (Business Rule)
+v_total := v_quantity * v_price * (1 - v_discount);
+```
+
+---
+
+### C. Procedures & Functions
+**Template:** `db-procedure-template.md`
+**Focus:** Signature, logic, callers
+
+#### Required Sections
+1. Object Information (Must link to Parent Package if applicable)
+2. Purpose
+3. Signature
+4. Parameters
+5. Return Value (Functions)
+6. Business Logic
+7. Dependencies (Downstream - Tables/Views/Packages)
+8. Called By (Upstream - Forms/Packages)
+9. Business Rules Implemented
+10. Error Handling
+
+---
+
+### D. Types
+**Template:** `db-type-template.md`
+**Focus:** Data structure definition, usage context
+
+#### Required Sections
+1. Object Information
+2. Purpose
+3. Type Definition (SQL)
+4. Attributes (Object Types)
+5. Methods (Object Types)
+6. Collection Details (if applicable)
+7. Used By
+8. Modernization Notes (TypeScript/Java mapping)
+
+---
+
+### E. Triggers
+**Template:** `db-trigger-template.md`
+**Focus:** Event handling, audit trails, data integrity enforcement
+
+#### Required Sections
+1. Object Information (Name, Schema, Trigger Type)
+2. Purpose
+3. **Triggering Event** (BEFORE/AFTER, INSERT/UPDATE/DELETE)
+4. **Target Table**
+5. Trigger Logic (PL/SQL summary)
+6. Business Rules Implemented
+7. Dependencies (Packages called, Tables affected)
+8. Audit/Journal Info (if audit trigger)
+9. Performance Notes
+10. Modernization Notes
+
+#### Business Rule Discovery
+- **Audit Triggers** → Document fields tracked
+- **Validation Triggers** → `BR-XXXX` (Data Integrity)
+- **State Change Triggers** → `BW-XXXX` (Workflow events)
+- **Integration Triggers** → Document external system interactions (DEMS, CCD)
+
+---
+
+## 5. Business Rules & Workflows (Shared Standard)
+
+### Discovery Checklist
+1.  **Check Existing Rules**: `legacy-system/business-rules/`
+2.  **Search Inventory**: Grep `master_object_collection.json`
+3.  **DO NOT CREATE DUPLICATES**. Link to existing BR-XXXX IDs.
+
+### Classification
+*   **P1 (Critical)**: Security, Data Integrity, Legal Compliance
+*   **P2 (Major)**: Core business logic, key validations
+*   **P3 (Minor)**: Default values, formatting
+
+### Registration
+**Rule File:** [std_placeholder_creation.md](plugins/legacy system/resources/rules/database_object_documentation_policy.md)
+When BR/BW discovered, create placeholder file immediately.
+
+---
+
+## 6. Context Gathering Workflow (MANDATORY)
+
+> [!CRITICAL]
+> **RLM FIRST PROTOCOL**
+> You MUST execute the following verification steps **BEFORE** reading raw source code.
+> Failing to check existing context leads to duplicate work and hallucinated rules.
+
+### For Each Object (Table, View, Proc, Package, Trigger):
+
+1.  **Initialize Smart Context**:
+    ```bash
+    python plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py init --target [OBJECT_NAME] --type [TYPE]
+    ```
+    *(where TYPE is table, view, package, procedure, trigger)*
+
+2.  **Review Bundle**:
+    - Open `temp/context-bundles/[NAME]_context.md`.
+    - Check RLM Summary and Dependencies.
+
+3.  **Check Existing Overview**:
+    - Verify if an overview file already exists in `database-overviews/`.
+    - `cat` the file to read manual annotations.
+
+4.  **Parse Source SQL**: Only AFTER context implies gaps.
+5.  **Identify Business Rules**:
+    - Use `plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py "term"` to match against existing inventory.
+    - Register new candidates via `plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py`.
+
+---
+
+## 7. Post-Processing
+
+1. Run `enrich_links_v2.py` for smart linking
+2. Create BR/BW placeholders for discovered rules
+3. Update `master_object_collection.json` with new artifacts
+4. Update RLM cache
+5. Update Vector DB
+
+---
+
+## 8. Tooling Reference
+
+| Tool | Purpose |
+|---|---|
+| `batch_process_db_objects.py` | Generate all overviews |
+| `doc_manager.py` | Single object processing |
+| `enrich_links_v2.py` | Smart link resolution |
+| `build_master_collection.py` | Inventory management |
+
+
+<!-- plugin: resources / documentation_granularity_policy -->
+---
+trigger: always_on
+---
+
+# Documentation Granularity & Execution Standard
+**JUSTIN Modernization Project**
+
+## 1. Objective
+Ensures that all analysis and documentation tasks are executed with maximum fidelity, traceability, and "ground truth" verification. High-level summaries are insufficient; granular subtasks are mandatory.
+
+## 2. Granular Task Management
+Every documentation task created via `/maintenance-task` or manual markdown must follow the **Subtask Hierarchy**.
+
+### 2.1 Pattern: Phase -> Subtask
+Tasks must not simply list "Phase 1: Setup". They must list actionable, verifiable checkpoints:
+*   **Subtask 1.1**: Initialize Context Manifest (`plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py`).
+*   **Subtask 1.2**: Generate context bundle (`plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle`).
+*   **Subtask 1.3**: Validate bundle content (Ensure raw source and existing docs are present).
+
+### 2.2 Verifiable Checkboxes
+- Use `[ ]` for pending tasks.
+- Use `[/]` for in-progress tasks (running background commands).
+- Use `[x]` for completed tasks.
+- **Never** mark a high-level phase as done if any subtask is incomplete.
+
+## 3. Mandatory Intelligence Sync
+Documentation in this repository is not just "human readable"; it feeds the Agent's context.
+
+### 3.1 RLM Distillation
+Every time an Overview or Business Rule is created/modified, you MUST run:
+```bash
+python plugins/rlm-factory/scripts/distiller.py --file [FILE_PATH]
+```
+This updates the LLM-optimized summary cache.
+
+### 3.2 Vector DB Ingestion
+Every technical source (SQL dumps, XML-MD) and human-written documentation MUST be ingested:
+```bash
+wsl python3 plugins/vector-db/scripts/ingest.py --file [FILE_PATH]
+```
+This enables semantic "RAG" search for future analysis.
+
+### 3.3 Inventory Rebuilding
+After creating new artifacts, rebuild the master object collection:
+```bash
+python scripts/inventory/build_master_collection.py --full
+```
+
+## 4. Human Review & Quality Gate
+The "Human-in-the-loop" is a mandatory firewall before state changes.
+
+### 4.1 The Approval Gate
+Before executing any `git commit` or `git push` for finalized documentation:
+1.  **Draft Approval**: Present the updated documentation link (Overviews).
+2.  **Checklist Approval**: Present the Granular Checklist showing all completed subtasks.
+3.  **Wait for Confirm**: Do not move files to `tasks/done/` without explicit user approval.
+4.  **Post-Merge Cleanup**: AFTER the PR is merged:
+    - **Step 4.1**: **CRITICAL**: Confirm with the USER that the Pull Request (PR) and Merge are complete. Do NOT proceed until you have explicit confirmation.
+    - **Step 4.2**: Pull the latest `main` (`git pull origin main`) and switch to it.
+    - **Step 4.3**: Delete the local and remote feature branch.
+
+## 5. Continuous Improvement (The Optimizer)
+Reflect on every task:
+- **Tooling Gaps**: If you had to manually extract data, update the corresponding tool or create a new one.
+- **Rule Updates**: If a standard was ambiguous, update the `plugins/legacy system/resources/rules/`.
+- **Diagram Updates**: Keep process diagrams (`.mmd`) in sync with workflow changes.
+
+## 6. Ground Truth Verification
+- **Distrust Summaries**: Always verify against the raw PL/SQL source or XML-MD.
+- **Verify Infrastructure**: If a package or table is referenced but not in the codebase, use `sqlplus` to extract it from the database immediately. Do not guess.
+
+## 7. Task Content & Artifact Linking
+To facilitate efficient Human Review, every analysis task file MUST include a **"Review Items"** section.
+
+### 7.1 Mandatory Links
+- **Temporary Context Bundle**: Provide the absolute or relative path to the generated bundle (e.g., `temp/context-bundles/[ID]_context.md`). This allows the user to see the "Ground Truth" the Agent used for analysis.
+- **Final Artifacts**: Provide direct links to all new or modified documentation (e.g., `[Overview Page](plugins/legacy system/resources/docs/modernization/overview.md)`).
+- **Sub-Tasks**: Phases and Sub-tasks MUST match the specific workflow (e.g., `codify-library` or `codify-form`) but with specific filenames where possible.
+
+### 7.2 Verification Protocol
+The Agent must present these links to the USER during the **Human Review Gate** (Phase 6).
+
+
+<!-- plugin: resources / form_documentation_policy -->
+---
+trigger: always_on
+---
+
+# Oracle Forms Documentation Policy V2
+
+> **Effective Date:** 2026-01-18
+> **Related Standards:**
+> *   [Process Standard](plugins/legacy system/resources/ORACLE_FORMS_AI_ENRICHMENT_PROCESS.md)
+> *   [Overview Template](plugins/legacy system/resources/plugins/legacy system/resources/templates/outputs/form-overview-template.md)
+> *   [Expert Persona](plugins/legacy system/resources/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
+
+## 0. Human Overrides: The Single Source of Truth
+**Rule File:** [std_human_overrides.md](plugins/legacy system/resources/rules/human_overrides_policy.md)
+**Rule File:** [std_context_first_analysis.md](plugins/legacy system/resources/rules/context_first_analysis_policy.md)
+> [!CRITICAL]
+> **ALWAYS check `legacy-system/human-overrides/` before documenting.**
+> Information in `human-overrides` supersedes all code analysis.
+
+## 0.1 Pre-Analysis: Task & Planning
+*   **Task Creation**: Create a task file (e.g., `tasks/todo/NNNN-analyze-target.md`) defining the scope and subtasks. See [task_creation.md](plugins/legacy system/resources/rules/task_creation.md).
+*   **Review Existing**: Check if an Overview file already exists to avoid overwriting manual enhancements.
+
+## 1. Knowledge Retrieval
+
+> [!CRITICAL]
+> **READ RLM SUMMARIES FIRST** before viewing raw source files.
+> The RLM cache contains LLM-generated summaries that provide instant context.
+> Only dive into source code if gaps exist in the cached summary.
+
+### Step 1: Run Context Initialization (Smart Bundle)
+**Primary Tool:** `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py init --target [ID] --type form`
+
+> [!CRITICAL]
+> **STRICT PROHIBITION:**
+> **NEVER** use `cat` on `rlm_summary_cache.json`.
+> **ALWAYS** use the CLI command below.
+
+This single command initializes your context:
+1.  **Resets Manifest**: Loads the Base Form Manifest.
+2.  **Consults Intelligence**: Adds RLM cache and dependencies.
+3.  **Generates Bundle**: Creates `temp/context-bundles/[ID]_context.md`.
+
+### Step 2: Review Generated Context
+**BEFORE viewing source markdown/XML**, review the generated bundle:
+- File: `temp/context-bundles/[ID]_context.md`
+- Check: Does it contain the Form interactions? The dependencies?
+- Check: `legacy-system/oracle-forms-overviews/forms/[ID]-Overview.md` (if exists)
+
+**Context Validity Loop**:
+- If `[ID]_context.md` is missing critical files (e.g., a specific config file), you MUST **Augment** the manifest (`tools/context-bundler/file-manifest.json`) and re-run `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle` manually.
+- Only proceed when you have a **Complete Context**.
+
+### Step 3: Deep Source Review (Only If Needed)
+Only proceed to view raw source files if:
+- RLM cache is empty/missing for this artifact
+- Specific technical details are needed (trigger code, exact parameters)
+- Business rule verification requires line-level inspection
+
+**Deep Dive Tools** (when RLM is insufficient):
+*   **Vector Search**: `plugins/vector-db/scripts/query.py "concept"`
+*   **Deep Code Search**: `python tools/investigate/search/search_plsql.py --file [PATH] --term "TERM"`
+*   **Reachability**: `reachability.py --target [ID]`
+
+## 2. Documentation Standards (Mandatory Deep Dives)
+Conduct specific rigorous analysis for each section of the template, following these standards:
+
+### A. Access & Security
+**Rule File:** [std_security_access.md](plugins/legacy system/resources/rules/security_access_policy.md)
+*   Validate Active Roles against Inventory.
+*   Identify Legacy Roles.
+*   Document Code-Level Restrictions.
+
+### B. Validated Dependencies
+**Rule File:** [std_validated_dependencies.md](plugins/legacy system/resources/rules/validated_dependencies_policy.md)
+*   Distrust CSVs validation; verify via Code (`CALL_FORM`).
+*   Distinguish Active vs Conditional vs Inactive.
+
+### C. Business Rules & Workflows
+**Rule File:** [std_business_rules.md](plugins/legacy system/resources/rules/business_rule_documentation_policy.md)
+
+### 1. Discovery & Verification (CRITICAL)
+Before creating ANY new business rule, follow the **Mandatory 3-Step Protocol**:
+
+**Step 1: Search Existing Rules (CLI)**
+```bash
+python "plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py" "keyword"
+```
+
+**Step 2: Review RLM Cache (CLI Bundle)**
+Run `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle --target [ID]` and check the RLM Summary. Does it already describe this rule?
+
+**Step 3: Semantic Search (RAG)**
+```bash
+python plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py query "keyword context"
+```
+
+**Outcome:**
+- **Match Found**: Use the existing `BR-XXXX` ID.
+- **No Match**: Register a new rule via CLI.
+  ```bash
+  python "plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py" --source [ID] --description "..." --priority P2
+  ```
+This creates a new file in `legacy-system/business-rules/BR-XXXX-slug.md`.
+
+> **⚠️ DO NOT** invent IDs like `BR-JCSE0013-001`. Always use the sequential BR-XXXX format from the folder.
+
+### 2. Mine, Classify, and Register Candidates
+*   **Mine**: Extract logic from triggers/PLSQL (use XML-MD source).
+*   **Classify**: Decide if it's a Business Rule (BR) or Workflow (BW).
+*   **Register**: YOU MUST USE `"plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py"`. Do not manually create files.
+    *   Command: `python "plugins/legacy system/inventory-manager/skills/inventory-manager/scripts/business_rules_inventory_manager.py" --source [ID] --description "..."`
+
+### 3. Assign Priorities
+| Priority | Criteria | Examples |
+|----------|----------|----------|
+| **P1 (Critical)** | Security, Data Integrity, Legal Compliance | Role checks, YCJA sealing, audit logging |
+| **P2 (Major)** | Core business logic, key validations | Required field checks, status transitions |
+| **P3 (Minor)** | UI behavior, default values | Field enablement, date formatting |
+
+**Rule File:** [std_placeholder_creation.md](plugins/legacy system/resources/rules/database_object_documentation_policy.md)
+*   When BR/BW discovered, create placeholder file if not exists.
+*   Ensures links resolve and inventory stays complete.
+
+### D. Technical Implementation
+**Rule File:** [std_technical_implementation.md](plugins/legacy system/resources/rules/technical_implementation_policy.md)
+*   Link Source Artifacts (FMB/XML).
+*   List Attached Libraries.
+
+### E. Application Menus (App Overviews Only)
+**Rule File:** [std_application_menus.md](plugins/legacy system/resources/rules/menu_documentation_policy.md)
+
+### F. Smart Linking
+**Rule File:** [std_smart_linking.md](plugins/legacy system/resources/rules/smart_linking_policy.md)
+*   Use `enrich_links_v2.py` to enforce syntax.
+
+### H. QA & Template Completion
+**Rule File:** [std_qa_template_completion.md](plugins/legacy system/resources/rules/qa_template_completion_policy.md)
+*   Must pass the "Template Verification Checklist" before completion.
+*   All sections from the template MUST be present (even if "None Detected").
+
+## 3. Tooling Reference
+
+### Environment Requirements
+| Tool | Environment | Notes |
+|------|-------------|-------|
+| `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle` | Windows or WSL | Primary discovery tool |
+| `enrich_links_v2.py` | Windows or WSL | Link enrichment |
+| `distiller.py` (RLM) | Windows or WSL | Uses Ollama API (lightweight) |
+| `ingest.py` (Vector DB) | **WSL Only** | Requires `chromadb`, `torch` |
+| `query.py` (Vector DB) | **WSL Only** | Requires `chromadb` |
+
+> **Note:** Vector DB tools must be run from WSL with `.venv` activated:
+> ```bash
+> source .venv/bin/activate
+> python plugins/vector-db/scripts/ingest.py --file [PATH]
+> ```
+
+### Tool Commands
+*   **BR Inventory Rebuild** (after creating new BRs):
+    ```bash
+    python scripts/inventory/business_rules_inventory_manager.py
+    python scripts/inventory/build_master_collection.py --full
+    ```
+*   **Enrichment** (after inventory rebuilt):
+    ```bash
+    python scripts/documentation/enrich_links_v2.py --file [PATH]
+    ```
+*   **Discovery (Recommended)**: `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle --target [ID]`
+*   **RLM Distill**: `plugins/rlm-factory/scripts/distiller.py --file [PATH]`
+*   **Vector Ingest**: `plugins/vector-db/scripts/ingest.py --file [PATH]` (WSL only)
+
+## 4. Analysis Tracking
+Update `legacy-system/reference-data/ai_analysis_tracking.json` after every Deep Dive.
+
+**Mandatory Command:**
+```bash
+python scripts/documentation/update_analysis_tracking.py [FORM_ID] --notes "Brief summary of analysis"
+```
+*   This ensures the "Last Analyzed" timestamp is current.
+*   This feeds the `summarize_unanalyzed_forms.py` report invoked by humans.
+
+## 5. Continuous Evolution
+If you identify gaps in tools, templates, or prompts during analysis:
+1.  **Reflect**: Is this a one-off or a systemic issue?
+2.  **Improve**:
+    *   **Templates**: Update `plugins/legacy system/resources/templates/` if sections are consistently missing or redundant.
+    *   **Prompts**: Refine `tools/ai-resources/prompts/` if the agent (you) consistently misses instructions.
+    *   **Policies**: Update `plugins/legacy system/resources/rules/` if the standard is unclear.
+    *   **Checklists**: Update `tools/ai-resources/checklists/` if steps are missing.
+
+---
+
+## 6. ⚠️ Quality Gates (MANDATORY)
+
+> [!CRITICAL]
+> **A form is NOT "analyzed" until ALL of the following are true.**
+
+### Pre-Completion Checklist:
+- [ ] **Context gathered** - `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle --target [ID]` was run
+- [ ] **Source code viewed** - At least the Form Markdown was reviewed (not just the overview)
+- [ ] **BR verification** - If BRs are referenced, the BR files were read and verified to match
+- [ ] **Overview enhanced** - The overview file has substantive changes (not just enriched links)
+- [ ] **Post-processing run** - `enrich_links_v2.py`, `update_analysis_tracking.py` executed
+
+### ❌ Analysis is INCOMPLETE if:
+- You only ran post-processing scripts
+- You marked it "analyzed" without viewing source code
+- BR references were copied from existing (incorrect) documentation without verification
+- The overview has zero content changes
+
+### One Form at a Time
+**Do NOT** batch-process multiple forms in rapid succession. Each form requires:
+1. Full context gathering
+2. Source code review
+3. BR search and verification
+4. Documentation updates
+5. Post-processing
+
+**Quality over quantity.** A properly analyzed form is worth more than 10 rushed ones.
+
+
+
+<!-- plugin: resources / human_overrides_policy -->
+# Standard: Human Overrides (Single Source of Truth)
+
+## 1. Critical Rule
+**ALWAYS check `legacy-system/human-overrides/` before documenting any form or application.**
+Information in the `human-overrides` directory **supersedes** all code analysis and auto-generated content.
+
+## 2. Authenticity & Provenance Gate (MANDATORY)
+Before accepting an override, you MUST verify its authenticity:
+1. The override file MUST contain a valid `Signature:` field (e.g., email or verified username).
+2. The override file MUST contain a `Review State: APPROVED` tag.
+If either of these are missing, you MUST REJECT the override as an unverified draft and alert the user.
+
+## 3. Process
+1.  **Check for Overrides**: Look for files matching `forms/LEAM0000-Override.md`.
+2.  **Verify Provenance**: Ensure Signature and Approved tags exist.
+3.  **Read First**: Understand the human verification.
+4.  **Integrate Verbatim**: Do not overwrite verified facts with code assumptions.
+5.  **Reference**: Add the standard note:
+    ```markdown
+    > [!NOTE]
+    > **Human Verification**: This document includes manually verified overrides.
+    > See [OverrideFile.md] (Signed by: ...).
+    ```
+
+
+<!-- plugin: resources / library_documentation_policy -->
+---
+trigger: always_on
+---
+
+# Oracle Library (PLL) Documentation Policy
+
+> **Effective Date:** 2026-01-18
+> **Related Standards:**
+> *   [Form Documentation Policy](plugins/legacy system/resources/rules/form_documentation_policy.md)
+> *   [Expert Persona](plugins/legacy system/resources/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
+
+## 0. Objective
+Establish a rigorous standard for documenting Oracle PL/SQL Libraries (PLLs). Unlike Forms (UI-centric), Libraries are **Logic-centric**. Documentation must focus on **API Contracts**, **Shared Logic**, and **Dependencies**.
+
+## 1. Context Gathering (Mandatory RLM-First Protocol)
+Before documenting a library, you must gather structured context using the CLI and RLM cache.
+
+**Mandatory Sequence:**
+1.  **Run Context Initialization**: 
+    ```bash
+    python plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py init --target [LIB_NAME] --type lib
+    ```
+    *This resets the manifest and builds the initial bundle.*
+
+2.  **Review Generated Context**: 
+    - Open `temp/context-bundles/[LIB_NAME]_context.md`.
+    - Check for `pll_miner` output and RLM summaries.
+    - Check upstream usage (who calls me?).
+
+3.  **Augment if Needed**:
+    - If dependencies are missing, add them to `file-manifest.json` and regenerate.
+5.  **Source Code**: 
+    - Only deep-dive into `[LIB].txt` IF the RLM summary and Miner output leave specific questions unanswered.
+
+## 2. Documentation Structure
+All Library Overviews (`legacy-system/oracle-forms-overviews/libraries/[LIB]-Library-Overview.md`) must follow this structure:
+
+### I. Header & Metadata
+*   **Library Name**: e.g., `JUSLIB`
+*   **Purpose**: One sentence summary (e.g., "General Utilities shared across all JUSTIN applications").
+*   **Status**: `Active` or `Deprecated`.
+
+### II. API Specification (The Contract)
+List **ALL** packages, procedures, and functions exposed by the library.
+*   **Format**: Table (Sort Alphabetically or by Package).
+*   **Columns**: 
+    1.  `Unit Name` (Hyperlinked to Source `../../oracle-forms-markdown/pll/[LIB].md#unit-name`)
+    2.  `Type` (Procedure/Function)
+    3.  `Description` (Brief summary)
+*   **Source Truth**: Derived from `pll_miner.py` "PublicAPI" output.
+*   **Requirement**: Must be exhaustive (Table of Contents style).
+
+### III. Global State Management
+Document any `GLOBAL` variables read or written.
+*   **Recommendation**: Group variables by functionality (e.g., `AG$ALERT_*`, `JUS$_*`) if numerous.
+*   **Critical**: Identify if the library is a "State Manager" (sets globals) or "Consumer" (reads globals).
+
+### IV. Dependencies
+*   **Called Forms**: Does it launch other screens? (`CALL_FORM`)
+*   **DB Packages**: Does it wrap database logic?
+
+### V. Usage Analysis (Who calls me?)
+*   List top consumer forms/applications.
+*   *Source*: Dependency Map (Upstream).
+
+### VI. Modernization & Migration Notes
+*   Map the Forms-specific pattern (e.g., "Global-based Modals") to its modern equivalent (e.g., "UI Component Library").
+*   Identify complex logic needing Unit Tests.
+
+## 3. Classification & Complexity
+Rate the library complexity:
+*   **Core (High)**: `JUSLIB`, `AGLIB`, `RCCLIB`. (Used system-wide, critical infrastructure).
+*   **Domain (Medium)**: `RCC_LIB3`, `JRSLIB`. (Application specific logic).
+*   **Utility (Low)**: `D2KWUTIL`. (Technical wrappers).
+
+## 4. Quality Assurance
+*   [ ] **API Completeness**: Are major procedures listed?
+*   [ ] **State Check**: Are GLOBAL variable interactions documented?
+*   [ ] **Linkage**: Are links to Overview files compliant with `enrich_links.py`?
+
+## 5. Tooling
+*   **Discovery**: `python plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle --target [LIB_NAME]` (Runs pll_miner)
+*   **Enrichment**: `python scripts/documentation/enrich_links_v2.py`
+
+## 6. Execution & Verification (MANDATORY)
+To prevent "high-level" skipped steps, every library documentation task MUST include a granular per-phase Implementation Plan.
+
+### Mandatory Task Lifecycle:
+1.  **Draft Task**: Use `/maintenance-task` but manually expand the Implementation Plan into granular sub-steps (e.g., "Subtask 1.1: Context Bundle", "Subtask 1.2: Check for missing SQL dumps").
+2.  **Intelligence Sync**: NO task is "Done" until the following are executed and verified:
+    *   **RLM Distill**: `python plugins/rlm-factory/scripts/distiller.py --file [PATH]`
+    *   **Vector Ingest**: `wsl python3 plugins/vector-db/scripts/ingest.py --file [PATH]` (for both Overview and any new Source artifacts).
+    *   **Tracking Log**: `python scripts/documentation/update_analysis_tracking.py [ID]`
+3.  **Verification**: The checklist must show `[x]` for all sub-steps before moving the file to `tasks/done/`.
+
+
+<!-- plugin: resources / menu_documentation_policy -->
+---
+trigger: always_on
+---
+
+# Oracle Menu Documentation Policy V2
+
+> **Effective Date:** 2026-01-18
+> **Related Standards:**
+> *   [Form Documentation Policy](plugins/legacy system/resources/rules/form_documentation_policy.md)
+> *   [Expert Persona](plugins/legacy system/resources/tools/ai-resources/prompts/personas/Oracle_Forms_Expert_System_Prompt.md)
+
+## 0. Objective
+Standardize the documentation of Oracle Menus (`.mmb`/`.mmx`). Menus define the navigation structure and security access points of the application. Unlike simple navigation, Oracle Menus often contain significant routing logic and state management.
+
+## 1. Context Gathering
+Before documenting a menu, gather:
+*   **Source XML**: `legacy-system/oracle-forms/XML/[ID]_mmb.xml`
+*   **Associated App**: Which application uses this menu? (e.g., `RccM0000` is for RCC).
+
+## 2. Documentation Structure
+All Menu Overviews (`legacy-system/oracle-forms-overviews/menus/[ID]-Menu-Overview.md`) must follow this structure:
+
+### I. Header & Metadata
+*   **Menu ID**: e.g., `POSMENU`
+*   **Link**: Path to source XML.
+
+### II. Roles
+List roles defined in the menu module itself. Note if RBAC is handled here or externally.
+
+### III. Menu Hierarchy (The Navigation Tree)
+Visualize the full structure of the menu.
+*   **Format**: Indented List.
+*   **Separators**: Render as horizontal rules (`---`) to denote grouping.
+*   **Properties to Include**:
+    *   **Label**: The text user sees.
+    *   **Target (Smart Link)**: If item opens a form, it MUST be linked: `(Opens: [FORM_ID])`.
+    *   **Logic Snippet**: If extracting custom PL/SQL (e.g., `Update_Status`), show brief command.
+    *   **Roles**: If item is restricted to specific roles, list them: `(Roles: CLERK, ADMIN)`.
+
+### IV. Logic & Commands
+Document significant PL/SQL logic and Program Units attached to the menu.
+*   **Program Units**: Full code blocks for procedures defined in the menu (e.g., `Run_Report`).
+*   **Heuristics**: If command is hidden (triggered via `ItemClick('CODE')`), you MUST resolve the `CODE` to its destination (Form/Report) using regex or lookups.
+
+### V. Dependencies
+*   **Attached Libraries**: Link to `.pll` or `.xml` sources.
+*   **Called Forms**: List of dependencies derived from the hierarchy.
+
+### VI. Modernization Insights (Expert Analysis)
+Provide specific guidance for migrating this menu to a modern web stack (React/Next.js).
+*   **Navigation Pattern**: Sidebar vs Top Nav vs Mega Menu (based on item count).
+*   **State Management**: Identify `HIDEMODULEITEMS` or similar logic that implies dynamic state visibility.
+*   **RBAC Strategy**: How map Oracle Roles to Identity Provider scopes.
+
+## 3. Tooling
+*   **Mining**: Use `plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py bundle` (Runs menu_miner).
+*   **Batch Processing**: `batch_process_menus.py` applies heuristics to extract targets from obscure commands.
+*   **Enrichment**: `enrich_links_v2.py` ensures Smart Links resolve.
+
+
+<!-- plugin: resources / qa_template_completion_policy -->
+---
+trigger: always_on
+---
+
+# Standard: QA Template Completion
+
+**Status**: Mandatory
+**Applies To**: All `Overview` Documents (Forms, Reports, Libraries)
+
+## Requirement
+Every section defined in the official templates (e.g., `form-overview-template.md`) MUST be present and populated in the final artifact. Leaving sections blank or removing them without justification is strictly prohibited.
+
+## Verification Checklist
+Before marking any document as "Remediated" or "Complete":
+
+1.  **Header Metadata**: Check Title, Source Document Link.
+2.  **Purpose**: Ensure a clear, non-technical summary exists.
+3.  **Navigation**: All entry points (Caller Forms, Menus) are listed.
+4.  **Security**:
+    *   Associated Roles listing (Active only).
+    *   Fine-Grained checks (Code restrictions).
+5.  **Validated Dependencies**: Table present with "Active/Conditional" status.
+6.  **Business Logic**:
+    *   "Discovered Business Rules" section populated.
+    *   Links to `business-rules/BR-XXXX.md` are valid.
+7.  **Technical Implementation**:
+    *   Libraries (PLL) listed.
+    *   Database Packages listed.
+    *   Source Code link present.
+
+## Handling "None"
+If a section genuinely has no content (e.g., a form calls no other forms):
+*   **DO NOT** remove the section.
+*   **DO** mark it explicitly: "None Detected" or "No external dependencies found."
+
+
+<!-- plugin: resources / report_documentation_policy -->
+
+# Oracle Report Documentation Policy
+
+> **Effective Date:** 2026-01-18
+> **Related Standards:**
+> *   [Form Documentation Policy](plugins/legacy system/resources/rules/form_documentation_policy.md)
+
+## 0. Objective
+Standardize the documentation of Oracle Reports (RDF/XML). Reports are data-centric artifacts where the **SQL Query** and **Layout Logic** are the critical components.
+
+## 1. Context Gathering (Mandatory RLM-First Protocol)
+
+> [!CRITICAL]
+> **RLM FIRST PROTOCOL**
+> You MUST execute the following verification steps **BEFORE** reading raw XML source.
+> RLM summaries exist for these objects. Do not waste them.
+
+**Mandatory Sequence:**
+**Mandatory Sequence:**
+1.  **Initialize Context**:
+    ```bash
+    python plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py init --target [REPORT_ID] --type report
+    ```
+2.  **Review Bundle**:
+    - Open `temp/context-bundles/[ID]_context.md`.
+    - Check for RLM Summary and `report_miner` output.
+3.  **Check Callers**:
+    - Use `dependency_map.json` to find calling forms.
+
+## 2. Documentation Structure
+All Report Overviews (`legacy-system/oracle-forms-overviews/reports/[ID]-Report-Overview.md`) must follow this structure:
+
+### I. Header & Metadata
+*   **Report ID**: e.g., `RCCR0100`
+*   **Title/Name**: Derived from the Report Module Name or Title property.
+*   **Purpose**: Brief description.
+
+### II. Data Sources (SQL)
+The core of any report is its data query.
+*   **Format**: SQL Code Block.
+*   **Requirement**: Extract the main query from `dataSource` elements.
+*   **Groups**: List the data groups (Master/Detail relationships).
+
+### III. Parameters
+List all user parameters defined in the report.
+*   **Format**: Table.
+*   **Columns**: `Name`, `Datatype`, `Default Value`, `Description/Label`.
+
+### IV. Triggers & Program Units
+Document PL/SQL logic embedded in the report.
+*   **Report Triggers**: `Before Report`, `After Report`, `Between Pages`.
+*   **Format Triggers**: Field-level conditional formatting logic.
+*   **Formulas**: Document calculated fields (CF_*) and their logic.
+
+### V. Layout & Design
+*   **Orientation**: Portrait/Landscape.
+*   **Sections**: Header, Main, Trailer.
+
+### VI. Dependencies (Smart Linking)
+*   **Attached Libraries**: List all `.pll` files. Wrap in brackets and UPPERCASE (e.g., `[AGLIB]`).
+*   **Database Objects**: List tables/views/packages used in queries. Wrap in brackets (e.g., `[JUSTIN_AGENCIES]`).
+
+## 3. Tooling
+*   **Mining**: Use `python tools/investigate/miners/report_miner.py [XML_FILE]` to extract structured metadata.
+*   **Enrichment**: Run `python scripts/documentation/enrich_links_v2.py` to resolve links.
+
+
+<!-- plugin: resources / rlm_legacy_system_distillation_policy -->
+---
+trigger: manual
+---
+
+# Knowledge Sync Rule (RLM + Vector DB)
+
+## Core Principle
+
+**Every file change = immediate single-file sync.**
+
+Do NOT wait to batch updates. When you create or modify a documentation file, immediately sync that ONE file to both caches. This prevents stale knowledge and eliminates big-bang rebuilds.
+
+```bash
+# Right after creating/editing a file:
+python plugins/rlm-factory/scripts/distiller.py --file docs/ADRs/014-ai-assisted-prototyping.md
+python plugins/vector-db/scripts/ingest.py --file docs/ADRs/014-ai-assisted-prototyping.md
+```
+
+## Trigger Conditions
+
+Run sync when you have created or modified files in:
+- `docs/` - ADRs, guides, analysis documents
+- `legacy-system/` - Form overviews, business rules
+- `tools/` - Tool documentation (READMEs)
+- `plugins/legacy system/resources/` - Rules, workflows, prompts
+
+---
+
+## Prerequisites
+
+### Start Ollama (Required for RLM)
+RLM distillation requires Ollama to be running. In a **separate WSL terminal**:
+```bash
+ollama serve
+```
+
+Then verify the model is available:
+```bash
+ollama list  # Should show granite3.2:8b or similar
+```
+
+If the model isn't installed:
+```bash
+ollama pull granite3.2:8b
+```
+
+---
+
+## Part 1: RLM Distillation
+
+### Quick Update (Specific Folders)
+```bash
+# WSL terminal - activate venv first
+source .venv/bin/activate
+# Update specific folders
+python plugins/rlm-factory/scripts/distiller.py --target docs/ADRs
+python plugins/rlm-factory/scripts/distiller.py --target docs/oracle-forms-visualizer
+python plugins/rlm-factory/scripts/distiller.py --target tools/context-bundler
+python plugins/rlm-factory/scripts/distiller.py --target plugins/legacy system/resources/rules
+```
+
+### Full Rebuild (All Default Targets)
+```bash
+python plugins/rlm-factory/scripts/distiller.py
+```
+
+### Single File Update
+```bash
+python plugins/rlm-factory/scripts/distiller.py --file docs/ADRs/014-ai-assisted-prototyping.md
+```
+
+### Check Coverage
+```bash
+python plugins/rlm-factory/scripts/inventory.py
+```
+
+---
+
+## Part 2: Vector DB Incremental Ingest
+
+### Incremental Folder Update (Recommended)
+```bash
+# Ingest specific folders incrementally (no purge)
+python plugins/vector-db/scripts/ingest.py --folder docs/ADRs
+python plugins/vector-db/scripts/ingest.py --folder docs/oracle-forms-visualizer
+python plugins/vector-db/scripts/ingest.py --folder tools/context-bundler
+python plugins/vector-db/scripts/ingest.py --folder plugins/legacy system/resources/rules
+```
+
+### Single File Ingest
+```bash
+python plugins/vector-db/scripts/ingest.py --file docs/ADRs/014-ai-assisted-prototyping.md
+```
+
+### Check Stats
+```bash
+python plugins/vector-db/scripts/query.py --stats
+```
+
+### Full Rebuild (Only if necessary)
+```bash
+# WARNING: Purges and rebuilds entire index (~10 min)
+python plugins/vector-db/scripts/ingest.py --full
+```
+
+---
+
+## Post-Creation Checklist
+
+After creating documentation files:
+- [ ] Run `distiller.py --target <folder>` for RLM updates
+- [ ] Run `ingest.py --folder <folder>` for Vector DB updates
+- [ ] Verify with `inventory.py` and `query.py --stats`
+
+## Example: Today's Session
+
+After adding multiple ADRs and docs:
+```bash
+# RLM updates
+python plugins/rlm-factory/scripts/distiller.py --target docs/ADRs --target docs/oracle-forms-visualizer --target tools/context-bundler --target plugins/legacy system/resources/rules
+
+# Vector DB updates (incremental)
+python plugins/vector-db/scripts/ingest.py --folder docs/ADRs
+python plugins/vector-db/scripts/ingest.py --folder docs/oracle-forms-visualizer
+python plugins/vector-db/scripts/ingest.py --folder tools/context-bundler
+python plugins/vector-db/scripts/ingest.py --folder plugins/legacy system/resources/rules
+```
+
+## AI Agent Automation Note
+
+After creating multiple files in a single session, **always** provide the user with both commands:
+
+```
+To sync the knowledge caches with today's changes, run:
+
+# RLM Cache
+python plugins/rlm-factory/scripts/distiller.py --target docs/ADRs --target docs/oracle-forms-visualizer
+
+# Vector DB
+python plugins/vector-db/scripts/ingest.py --folder docs/ADRs
+python plugins/vector-db/scripts/ingest.py --folder docs/oracle-forms-visualizer
+```
+
+---
+
+## Cache Locations
+
+| Cache | Location | Size |
+|-------|----------|------|
+| RLM | `plugins/legacy system/resources/learning/rlm_summary_cache.json` | ~200KB |
+| Vector DB | `~/plugins/legacy system/resources/learning/chroma_db/` | ~50MB |
+
+Both should be kept in sync. RLM updates are fast (~1s/file). Vector DB is slower (~2-5s/file) but enables semantic search.
+
+<!-- plugin: resources / security_access_policy -->
+---
+trigger: always_on
+---
+
+# Standard: Access & Security Documentation
+
+## 1. Objective
+To document who can access the form, what roles they use, and what specific restrictions apply, ensuring alignment with the authoritative Security Inventory.
+
+## 2. Checklist
+- [ ] **Identify Active Roles**:
+    - Query associated menus mmb for the target form (or its parent menu).
+    - Map technical application roles
+- [ ] **Verify Against Inventory (CRITICAL)**:
+    - You **MUST** verify every role against `legacy-system/reference-data/inventories/roles_inventory.json`.
+    - **Use the CLI**: `python "plugins/legacy system/legacy-system-roles/skills/legacy-system-roles/scripts/split_roles.py" [ROLE_NAME]`
+    - **Active**: If the CLI returns `✅ ACTIVE`.
+    - **Legacy**: If the CLI returns `⚠️ LEGACY`.
+- [ ] **Document Roles**:
+    - Place Active Roles in the **Active Roles** table (Linked).
+    - Place Legacy Roles in the **Legacy / Deprecated Roles** table (Unlinked).
+- [ ] **Exhaustive Access Table**:
+    - For Application Overviews, create a table of all menu items and their roles.
+- [ ] **Code-Level Restrictions**:
+    - Check `PRE-FORM` or `WHEN-NEW-FORM-INSTANCE` triggers for `GLOBAL.KEY_ROLE` checks.
+    - Document any hardcoded `IF User = 'SCOTT' THEN ...` logic.
+
+## 3. Role Validator Algorithm
+1.  **Main Menu Check**: Query  associated mmbs for the Application's Main Menu Form.
+2.  **Breadth-First Traversal**: Identify direct descendant forms and query their roles.
+3.  **Verification**: For every discovered role, run `python "plugins/legacy system/legacy-system-roles/skills/legacy-system-roles/scripts/split_roles.py"`.
+4.  **Consolidation**: Merge unique roles into the Overview, segregated by status.
+
+## 4. Output Format (Mandatory)
+You MUST use this exact structure for the "User Roles" section. Do not list roles as a simple bulleted list.
+
+### User Roles
+
+#### Active Roles
+Roles verified in the current security inventory.
+
+| Application | Allowed Roles |
+| :--- | :--- |
+| **[App Code]** | **[ROLE_NAME] (Reference Missing: role_name.md)** |
+
+#### Legacy / Deprecated Roles
+Roles referenced in legacy documentation but **NOT** present in the `roles_inventory.json`.
+
+| Application | Allowed Roles |
+| :--- | :--- |
+| **[App Code]** | `LEGACY_ROLE` |
+
+> [!CRITICAL]
+> **Orphaned Role Rule**: If you cannot find a role in `legacy-system/justin-roles/`, you **MUST** place it in the "Legacy / Deprecated Roles" table. Do not simple omit it.
+
+
+<!-- plugin: resources / smart_linking_policy -->
+# Standard: Smart Linking Syntax
+
+## 1. Objective
+To maintain a consistent, machine-readable linking structure that allows the RLM and visualizer to navigate the knowledge graph.
+
+## 2. Syntax Rules
+- **Form Reference**: `[FormID] (Reference Missing: overview)` `[[xml-md]]` `[[xml]]`
+- **Role Reference**: `[ROLE_NAME] (Reference Missing: role.md)`
+- **File Reference**: `[Filename] (Reference Missing: path)`
+
+## 3. Automation
+- **Enrichment Script**: `scripts/documentation/enrich_links_v2.py`
+    - Parses `(Reference Missing: ...)` markers.
+    - Resolves them against `master_object_collection.json`.
+    - Updates the file with valid relative links.
+- **Source Link Script**: `scripts/documentation/find_source_links.py` creates the initial block.
+
+## 4. Usage
+- **ALWAYS** use the script to generate links initially.
+- **NEVER** manually create relative paths unless you are 100% sure of the target location.
+- **VERIFY** target exists before linking (e.g., `ls path/to/target`).
+- **ALWAYS** run the enrichment script after editing a file to fix broken/missing links.
+
+
+<!-- plugin: resources / technical_implementation_policy -->
+# Standard: Technical Implementation & Linking
+
+## 1. Objective
+To provide direct traceability between the high-level documentation and the low-level source artifacts (FMB, XML, Code).
+
+## 2. Checklist
+- [ ] **Source Links**:
+    - Run `py scripts/documentation/find_source_links.py <ID>` to generate correct paths.
+    - Format: `[FormName] [[xml-md]] (...) [[xml]] (...)`.
+- [ ] **Attached Libraries**:
+    - List all libraries found in the `AttachedLibrary` section of the Form XML.
+    - Link them using the standard format (e.g., `[JUSLIB]`).
+- [ ] **Database Objects**:
+    - If recognized (e.g., PL/SQL Packages), link them.
+
+## 3. Link Verification
+- Verify that `[[xml]]` links point to valid `legacy-system/oracle-forms/XML/...` files.
+- Verify that `[[xml-md]]` links point to valid `legacy-system/oracle-forms-markdown/XML/...` files.
+- Use `scripts/documentation/enrich_links_v2.py` to auto-repair/enhance links where possible.
+
+## 4. Output Format
+```markdown
+## Technical Implementation
+*   **Form Module**: [RCCE0147.fmb] [[MD]] [[XML]]
+*   **Libraries Attached**:
+    *   [RCC_LIB3] [[XML]]
+    *   [ITSLIB] [[XML]]
+```
+
+
+<!-- plugin: resources / validated_dependencies_policy -->
+# Standard: Validated Dependencies
+
+## 1. Objective
+To map inter-object dependencies (Forms, Reports, Packages, Tables, etc.), distinguishing between active, code-enforced calls and potential false positives from legacy data.
+
+## 2. Primary Tools
+
+### 2.1 Dependency Analysis CLI (Recommended)
+```bash
+# Get all dependencies for an object (downstream + upstream)
+python tools/investigate/search/dependencies.py --target JASE0020 --deep --json
+
+# Trace to parent applications
+python tools/investigate/search/dependencies.py --target JASE0020 --applications
+```
+
+**Output includes:**
+- `downstream`: Objects called BY the target (Tables, Packages, Forms, Reports, etc.)
+- `callers`: Objects that CALL the target
+- `FilePath`: Source file location for each dependency
+
+### 2.2 Object Type Lookup
+```bash
+# Get object type and path from Master Collection
+python tools/investigate/search/search_collection.py --target JUSTIN_QUERY --json
+python tools/investigate/search/search_collection.py --target JASE0020 --type-only
+```
+
+### 2.3 Static Dependency Map
+- **File**: `legacy-system/reference-data/inventories/dependency_map.json`
+- **Generated by**: `python tools/curate/inventories/generate_dependency_map.py`
+- **Contains**: 5000+ objects with 36,000+ relationships
+
+## 3. Verification Checklist
+
+- [ ] **Run Dependency Analysis**:
+    - Use `dependencies.py --target [ID] --deep` to get comprehensive dependency list.
+    - Review both `downstream` (what I call) and `callers` (who calls me).
+
+- [ ] **Verify Key Dependencies (Distrust and Verify)**:
+    - For critical dependencies, confirm in source code.
+    - Search for `CALL_FORM`, `OPEN_FORM`, `PKG.PROC`, `FROM TABLE`.
+    - If in `dependency_map.json` but not in code → **Unverified**.
+
+- [ ] **Classify Status**:
+    - **Active**: Confirmed by code or `dependency_map.json`.
+    - **Conditional**: Logic exists (e.g., `IF :Global.Role = 'X'`).
+    - **Deprecated**: Commented out or unreachable code.
+
+- [ ] **Populate Table**:
+    - Fill the "Validated Dependencies" table in the Overview.
+    - Use the `--json` output to get accurate FilePath references.
+
+## 4. Dependency Categories
+
+The following categories are tracked in `dependency_map.json`:
+
+| Category | Description |
+|----------|-------------|
+| **Tables** | Database tables referenced |
+| **Views** | Database views referenced |
+| **Packages** | Database packages called |
+| **Procedures** | Standalone procedures called |
+| **Functions** | Standalone functions called |
+| **PLLs** | Attached PL/SQL libraries |
+| **Forms** | Forms called via CALL_FORM, OPEN_FORM |
+| **Reports** | Reports called via RUN_PRODUCT |
+| **Menus** | Menu modules attached |
+| **ObjectLibraries** | OLBs inherited from |
+| **Triggers** | Database triggers on tables used |
+| **Sequences** | Sequences used (NEXTVAL) |
+| **Types** | User-defined types referenced |
+| **ExternalCalls** | PKG.PROC style calls |
+| **Inheritance** | Parent forms/OLBs subclassed |
+
+## 5. Formatting (Overview Table)
+
+| Target | Type | Description | Status / Logic |
+| :--- | :--- | :--- | :--- |
+| **`LEAE0070`** | FORM | LEA Availability | **Active**: Called via Button X |
+| **`JUSTIN_QUERY`** | DB_PACKAGE | Query utilities | **Active**: Used for lookups |
+| **`JUSTIN_APPEARANCES`** | TABLE | Appearances data | **Active**: SELECT/INSERT |
+
+## 6. Legacy Reference (Deprecated)
+
+The following sources are now superseded by `dependency_map.json`:
+- `legacy-system/reference-data/collections/combined-relationships/form_relationships.csv`
+- Manual XML/Markdown searching (use `dependencies.py --deep` instead)
+
