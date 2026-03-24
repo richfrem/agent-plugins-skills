@@ -91,12 +91,12 @@ Instead of:
 
 Use the provided scripts to compile the JSON manifest into a target `output.md` file:
 
-- **Option A (Simple/Recursive Bundling):** Use `plugins/context-bundler/scripts/bundle.py`. This script handles reading the manifest, walking directories recursively, and applying the standard markdown bundle formatting.
+- **Option A (Simple/Recursive Bundling):** Use `./scripts/bundle.py`. This script handles reading the manifest, walking directories recursively, and applying the standard markdown bundle formatting.
   ```bash
-  python plugins/context-bundler/scripts/bundle.py --manifest path/to/manifest.json --bundle path/to/output.md
+  python ./scripts/bundle.py --manifest path/to/manifest.json --bundle path/to/output.md
   ```
 
-- **Option B (Advanced Manifest Management):** Use `plugins/context-bundler/scripts/manifest_manager.py` if you need to perform intelligent context bundling and manifest manipulation.
+- **Option B (Advanced Manifest Management):** Use `./scripts/manifest_manager.py` if you need to perform intelligent context bundling and manifest manipulation.
 
 ## Best Practices & Anti-Patterns
 1. **Self-Contained Functionality:** The output file must contain 100% of the context required for a secondary agent to operate without needing to run terminal commands.
