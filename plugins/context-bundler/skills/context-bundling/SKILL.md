@@ -87,48 +87,16 @@ Instead of:
 **Agent failure pattern to avoid**: Agents frequently expand directory references into exhaustive file lists in the manifest, then fail mid-bundle because the file list is too long. Use the directory path shorthand instead.
 
 ### 3. Generate the Markdown Bundle
-Use your native tools (Read or Bash) to read the contents of each file listed in the manifest and compile them into a target `output.md` file.
+**CRITICAL:** DO NOT write your own Python scripts or bash loops to create the bundle. You MUST use the provided tooling. The scripts handle recursive directories, missing files, and markdown formatting automatically.
 
-For directory entries: use `find <dir> -type f` (or equivalent) to enumerate files, then read each one. Sort by path for consistent ordering.
+Use the provided scripts to compile the JSON manifest into a target `output.md` file:
 
-The final bundle format must follow this structure:
+- **Option A (Simple/Recursive Bundling):** Use `plugins/context-bundler/scripts/bundle.py`. This script handles reading the manifest, walking directories recursively, and applying the standard markdown bundle formatting.
+  ```bash
+  python plugins/context-bundler/scripts/bundle.py --manifest path/to/manifest.json --bundle path/to/output.md
+  ```
 
-```markdown
-# [Bundle Title]
-**Description:** [Description]
-
-## Index
-1. `docs/architecture.md` - Primary design document
-2. `src/main.py` - Core implementation logic
-
----
-
-## File: `docs/architecture.md`
-> Note: Primary design document
-
-\`\`\`markdown
-... file contents ...
-\`\`\`
-
----
-
-## File: `src/main.py`
-> Note: Core implementation logic
-
-\`\`\`python
-... file contents ...
-\`\`\`
-```
-
-## Conditional Step Inclusion & Error Handling
-If a file requested in the manifest does not exist or raises a permissions error:
-1. Do **not** abort the entire bundle.
-2. In the final `output.md`, insert a placeholder explicitly declaring the failure:
-   ```markdown
-   ## File: `missing/file.py`
-   > NOT INCLUDED: The file was not found or could not be read.
-   ```
-3. Proceed bundling the remaining valid files.
+- **Option B (Advanced Manifest Management):** Use `plugins/context-bundler/scripts/manifest_manager.py` if you need to perform intelligent context bundling and manifest manipulation.
 
 ## Best Practices & Anti-Patterns
 1. **Self-Contained Functionality:** The output file must contain 100% of the context required for a secondary agent to operate without needing to run terminal commands.
