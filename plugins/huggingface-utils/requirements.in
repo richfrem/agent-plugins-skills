@@ -3,3 +3,7 @@
 # Install: pip install -r requirements.txt
 
 huggingface_hub>=0.20.0
+
+# Security Overrides
+requests>=2.32.2
+Pygments>=2.17.2
