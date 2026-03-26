@@ -1,1 +1,1 @@
-../../../scripts/requirements.txt
+../../scripts/requirements.txt
