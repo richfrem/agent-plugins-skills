@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/artifact-lifecycle.md
