@@ -22,3 +22,5 @@ python-frontmatter
 # Security Overrides
 protobuf>=6.33.5
 langchain-core>=1.2.11
+
+langgraph>=0.2.71
