@@ -10,10 +10,26 @@ Purpose:
 Layer: Plugin Manager / Installation
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-pluginF
-    
+    python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
+
     # install plugin in a different repo e.g. context-bundler specifically
     python <full install path>\agent-plugins-skills\plugins\plugin-manager\scripts\bridge_installer.py --plugin <full install path>\agent-plugins-skills\plugins\context-bundler
+
+Platform Command Mapping (commands/ vs workflows/):
+    Plugin source always uses commands/ as the canonical folder name.
+    The installer maps this to the correct platform-specific directory at install time:
+
+        Source folder:   plugin/commands/*.md
+        ─────────────────────────────────────────────────────────
+        .agents/         → workflows/<plugin>_<cmd>.md  (canonical)
+        .agent/          → workflows/<plugin>_<cmd>.md  (Antigravity)
+        .claude/         → commands/<plugin>_<cmd>.md   (Claude Code)
+        .gemini/         → commands/<plugin>_<cmd>.toml (Gemini CLI, TOML-wrapped)
+        .github/         → prompts/<plugin>_<cmd>.prompt.md (GitHub Copilot)
+
+    This means the same source file appears under "workflows/" on Antigravity
+    but under "commands/" on Claude Code — by design. Never rename the source
+    folder to match any single platform.
 
 Supported Object Types:
     - None (Filesystem operations)
