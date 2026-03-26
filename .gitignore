@@ -58,8 +58,8 @@ plugins/**/temp/
 
 .knowledge_vector_data/
 claude-skills-temp/
-.agent/
-.agents/
+# .agent/
+# .agents/
 .kittify/constitution/context-state.json
 .kittify/constitution/directives.yaml
 .kittify/constitution/governance.yaml
