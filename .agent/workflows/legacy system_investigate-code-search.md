@@ -1,1 +1,0 @@
-../../.agents/workflows/legacy system_investigate-code-search.md

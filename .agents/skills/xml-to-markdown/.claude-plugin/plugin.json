@@ -1,8 +1,0 @@
-{
-  "name": "xml-to-markdown",
-  "description": "Converts Oracle XML exports into structured markdown documentation artifacts.",
-  "version": "1.0.0",
-  "author": {
-    "name": "Richard Fremmerlid"
-  }
-}

@@ -41,11 +41,15 @@ import os
 import sys
 import argparse
 
-# Force UTF-8 output on Windows to avoid UnicodeEncodeError with emoji in print()
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+# Force UTF-8 output on Windows if possible
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 import subprocess
 import shutil
@@ -65,7 +69,7 @@ def _compute_folder_hash(folder: Path) -> str:
     file_list = []
     
     for root_dir, dirs, files in os.walk(folder):
-        # Skip hidden dirs and known noise
+        # Filter directories in-place to control walk recursion
         dirs[:] = [d for d in dirs if not d.startswith('.') 
                    and d not in ('node_modules', '__pycache__')]
         for f in files:

@@ -1,1 +1,0 @@
-../../.agents/workflows/legacy system_codify-db-trigger.md

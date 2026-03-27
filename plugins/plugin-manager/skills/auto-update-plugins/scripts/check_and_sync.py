@@ -57,10 +57,12 @@ def _compute_folder_hash(folder: Path) -> str:
 
     for root_dir, dirs, files in os.walk(folder):
         # Filter directories in-place to control walk recursion
-        dirs[:] = [
+        filtered = [
             d for d in dirs
             if not d.startswith(".") and d not in ("node_modules", "__pycache__")
         ]
+        dirs.clear()
+        dirs.extend(filtered)
         for f in files:
             file_list.append(Path(root_dir) / f)
 
@@ -117,12 +119,22 @@ def main() -> None:
         "--dry-run", action="store_true",
         help="Print what would happen without making changes."
     )
+    parser.add_argument(
+        "--source", help="Only sync a specific source by name."
+    )
     args = parser.parse_args()
 
     sources = _load_sources()
     if not sources:
         # Silently exit if no subscription file found - project may not use this system.
         return
+
+    # Filter sources if --source is provided
+    if args.source:
+        sources = [s for s in sources if s.get("name") == args.source]
+        if not sources:
+            print(f"  [auto-sync] No source found with name '{args.source}'")
+            return
 
     sync_state = _load_sync_state()
     any_synced = False
