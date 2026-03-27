@@ -148,8 +148,15 @@ def main() -> None:
             continue
 
         source_root = Path(source_root_str)
-        plugins_path = source_root / plugins_subdir
-        installer_path = source_root / installer_subpath
+        plugins_path = Path(os.path.expandvars(str(source_root / plugins_subdir)))
+        
+        # Resolve installer (supports absolute paths with env vars like $AGENT_PLUGINS_SKILLS_DIR)
+        raw_installer = str(installer_subpath)
+        if raw_installer.startswith("/") or "$" in raw_installer:
+            installer_path = Path(os.path.expandvars(raw_installer))
+        else:
+            installer_path = source_root / installer_subpath
+
 
         if not plugins_path.exists():
             print(
