@@ -71,7 +71,7 @@ This skill produces the same chart for agentic-os and exploration-cycle-plugin i
 | Source | Content |
 |--------|---------|
 | `context/memory/improvement-ledger.md` | Eval score progression (Section 1), survey-to-action trace (Section 2), north star metric (Section 3) |
-| `plugins/*/skills/*/evals/results.tsv` | Per-skill detailed eval score history (supplement to ledger) |
+| `.agents/skills/*/evals/results.tsv` | Per-skill detailed eval score history (supplement to ledger) |
 
 The improvement ledger is the primary source. It is written at every loop close (Stage 4.7
 of concurrent-agent-loop). See `references/improvement-ledger-spec.md` for the format.
@@ -108,7 +108,7 @@ Do not run the report script on an empty ledger — it will produce an empty cha
 ### Phase 2: Run the report
 
 ```bash
-PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)/plugins/agent-agentic-os}"
+PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)/.agents/skills/agent-agentic-os}"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
 python3 "${PLUGIN_DIR}/skills/loop-progress-report/scripts/generate_report.py" \

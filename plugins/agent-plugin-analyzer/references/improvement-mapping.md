@@ -33,7 +33,7 @@ Changes here improve our ability to analyze future plugins.
 | **Any Pattern** | `skills/analyze-plugin/references/pattern-catalog.md` | Register the new pattern so it is recognized in future scans. |
 | **Analysis Gap** | `skills/analyze-plugin/SKILL.md` | Add new checks to Phase 3 (Content Analysis). |
 
-## Target 4: Domain Plugins (legacy system)
+## Target 4: Domain Plugins (oracle-legacy-system-analysis)
 
 Changes here apply knowledge-work patterns to our primary engineering domain.
 

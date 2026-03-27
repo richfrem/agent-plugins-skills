@@ -32,7 +32,7 @@ python3 .agents/skills/business-workflow-doc/scripts/generate_workflow.py \
 
 ```bash
 cat exploration/session-brief.md exploration/captures/brd-draft.md \
-  | copilot -p "$(cat plugins/exploration-cycle-plugin/agents/requirements-doc-agent.md)" \
+  | copilot -p "$(cat .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md)" \
     "Mode: workflow-map. Generate a Mermaid flowchart diagram of the core business process described in this context. Use a flowchart TD layout. Label each step clearly. Include decision nodes for branches and validation gates." \
   > exploration/captures/workflow-map.md
 ```

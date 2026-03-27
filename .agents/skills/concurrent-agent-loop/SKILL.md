@@ -91,8 +91,8 @@ Use Standard Cycle only when the north star is regressing or explicitly requeste
    | `memory.md` | LAB `context/` | Standard Cycle -- promoted L3 facts via session-memory-manager. |
    | `HOW-TO-RESTART.md` | UPSTREAM `temp/agent-agentic-os-review/` | Every cycle -- reflect state changes. |
    | `tasks/backlog/NNNN-[slug].md` | UPSTREAM `tasks/backlog/` | When M/L-class issue is observed. |
-   | `references/backlog.md` | UPSTREAM `plugins/agent-agentic-os/references/` | When any issue is observed (S/M/L). |
-   | **`SKILL.md` (this file)** | UPSTREAM `plugins/agent-agentic-os/skills/concurrent-agent-loop/` | **When applicable** -- if the loop produces a confirmed protocol improvement (step unclear, gap found, new requirement), ORCHESTRATOR updates this file before closing the cycle. Self-improvement of the loop protocol is a first-class output of every loop. |
+   | `references/backlog.md` | UPSTREAM `references/` | When any issue is observed (S/M/L). |
+   | **`SKILL.md` (this file)** | UPSTREAM `.agents/skills/concurrent-agent-loop/` | **When applicable** -- if the loop produces a confirmed protocol improvement (step unclear, gap found, new requirement), ORCHESTRATOR updates this file before closing the cycle. Self-improvement of the loop protocol is a first-class output of every loop. |
 
    A cycle that produces a protocol fix but does not update this SKILL.md has not fully closed.
 

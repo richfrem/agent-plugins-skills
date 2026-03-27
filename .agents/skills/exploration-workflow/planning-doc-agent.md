@@ -44,7 +44,7 @@ Pre-drafts `spec.md` from the handoff package. Output goes to staging — not di
 
 ```bash
 python3 .agents/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/planning-doc-agent.md \
+  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/handoff/exploration-handoff.md \
   --instruction "Mode: spec-draft. Pre-draft a spec.md from this exploration handoff. Follow Spec-Kitty spec format. Mark any gap with [NEEDS HUMAN INPUT]. Output to staging only." \
   --output exploration/planning-drafts/spec-draft.md
@@ -56,7 +56,7 @@ Pre-drafts `plan.md` with high-level phases and work package hints from the hand
 
 ```bash
 python3 .agents/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/planning-doc-agent.md \
+  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/handoff/exploration-handoff.md \
   --instruction "Mode: plan-draft. Pre-draft a plan.md with phases and WP hints from this handoff. Mark any gap with [NEEDS HUMAN INPUT]." \
   --output exploration/planning-drafts/plan-draft.md
@@ -68,7 +68,7 @@ Generates a first-pass work package outline (WP stubs) from the spec and plan dr
 
 ```bash
 python3 .agents/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/planning-doc-agent.md \
+  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/planning-drafts/spec-draft.md exploration/planning-drafts/plan-draft.md \
   --instruction "Mode: tasks-outline. Generate a WP outline from these drafts. Use WP-XX format. Stubs only — do not fabricate scope." \
   --output exploration/planning-drafts/tasks-outline.md
@@ -80,7 +80,7 @@ When the spec-kitty engineering cycle encounters unresolved ambiguity, use this 
 
 ```bash
 python3 .agents/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/planning-doc-agent.md \
+  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context "" \
   --instruction "CONTEXT: [describe the ambiguity]. Mode: re-entry-scope. Identify the exploration gap. Suggest exploration type (spike / brownfield). Draft a session brief." \
   --output exploration/session-brief-reentry-$(date +%Y%m%d).md

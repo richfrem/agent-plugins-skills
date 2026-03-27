@@ -23,7 +23,7 @@ See `../../requirements.txt` for the dependency lockfile (currently empty — st
 This skill abstracts the execution of the L5 Enterprise Red Team Auditor. By using this skill, you trigger an uncompromising architecture and security review against the 39-point pattern matrix.
 
 ## Discovery Phase
-Before executing this skill, ensure you know the exact path or name of the plugin you wish to audit (e.g., `plugins/legacy system/xml-to-markdown`).
+Before executing this skill, ensure you know the exact path or name of the plugin you wish to audit (e.g., `plugins/oracle-legacy-system-analysis/xml-to-markdown`).
 
 ## Execution
 This skill delegates immediately to the `l5-red-team-auditor` sub-agent.

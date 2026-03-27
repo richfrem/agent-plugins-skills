@@ -37,7 +37,7 @@ summary, and inject it into the ledger via `inject_summary.py`.
 
 **First-time setup or missing profile?** Run the `rlm-init` skill first:
 ```bash
-# See: plugins/rlm-factory/skills/rlm-init/SKILL.md
+# See: .agents/skills/rlm-init/SKILL.md
 # Creates rlm_profiles.json, manifest, and empty cache
 ```
 
@@ -62,7 +62,7 @@ and what are its key components/functions?"* in one dense sentence.
 ```bash
 python3 ./scripts/inject_summary.py \
   --profile project \
-  --file plugins/example/skills/my-skill/SKILL.md \
+  --file .agents/skills/my-skill/SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."
 ```
 
@@ -99,7 +99,7 @@ python3 ./scripts/swarm_run.py \
   --resume --workers 5
 ```
 
-See `plugins/agent-loops/skills/agent-swarm/SKILL.md` for full swarm configuration options.
+See `.agents/skills/agent-swarm/SKILL.md` for full swarm configuration options.
 
 ## Quality Standard for Summaries
 

@@ -103,7 +103,7 @@ rg "def query" ../../ --type py
 
 | Component | Value |
 |:----------|:------|
-| **Plugin** | `plugins/rlm-factory/` |
+| **Plugin** | `.agents/skills/` (rlm-curator, rlm-search, rlm-init, rlm-distill-agent) |
 | **Skill (write)** | `skills/rlm-curator/` -- distill, inject, audit, cleanup |
 | **Skill (read)** | `skills/rlm-search/` -- query the ledger |
 | **Skill (Phase 1 search)** | `rlm-factory:rlm-search` |
@@ -116,7 +116,7 @@ rg "def query" ../../ --type py
 
 | Component | Value |
 |:----------|:------|
-| **Plugin** | `plugins/vector-db/` |
+| **Plugin** | `.agents/skills/` (vector-db-search, vector-db-ingest, vector-db-launch, vector-db-init) |
 | **Skill** | `skills/vector-db-agent/` -- ingest, query, operations |
 | **Skill (Phase 2 search)** | `vector-db:vector-db-search` |
 | **Skill (ingest files)** | `vector-db:vector-db-ingest` |
@@ -128,7 +128,7 @@ rg "def query" ../../ --type py
 
 | Component | Value |
 |:----------|:------|
-| **Plugin** | `plugins/obsidian-integration/` |
+| **Plugin** | `.agents/skills/` (obsidian-vault-crud, obsidian-init, obsidian-canvas-architect, obsidian-graph-traversal) |
 | **Skill: vault setup** | `skills/obsidian-init/` -- prerequisites, `.obsidian/` config, exclusion filters |
 | **Skill: read/write notes** | `obsidian-integration:obsidian-vault-crud` -- atomic create/read/update/append |
 | **Skill: CRUD operations** | `obsidian-integration:obsidian-vault-crud` |

@@ -21,7 +21,7 @@ You are invoked via CLI after a prototype session. The piped input is the curren
 
 ```bash
 python3 .agents/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/prototype-companion-agent.md \
+  --agent .agents/skills/exploration-cycle-plugin-prototype-companion-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Mode: prototype-observations. Capture implied requirements and edge cases from the prototype session." \
   --output exploration/captures/prototype-notes.md

@@ -57,10 +57,12 @@ def _compute_folder_hash(folder: Path) -> str:
 
     for root_dir, dirs, files in os.walk(folder):
         # Filter directories in-place to control walk recursion
-        dirs[:] = [
+        filtered = [
             d for d in dirs
             if not d.startswith(".") and d not in ("node_modules", "__pycache__")
         ]
+        dirs.clear()
+        dirs.extend(filtered)
         for f in files:
             file_list.append(Path(root_dir) / f)
 
