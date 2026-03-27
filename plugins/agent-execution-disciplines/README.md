@@ -1,6 +1,16 @@
 # Agent Execution Disciplines
 
-Execution discipline skills ported from the superpowers project (github.com/obra/superpowers),
+> **Acknowledgement and Attribution**
+> The skills in this plugin are directly inspired by and ported from the
+> **[Superpowers](https://github.com/obra/superpowers)** project by
+> **[Jesse Vincent (obra)](https://github.com/obra)**.
+> The original work established the core execution discipline philosophy
+> (Iron Laws, Red-Green-Refactor enforcement, evidence-before-claims) that
+> makes these skills effective. All credit for the foundational concepts belongs
+> to Jesse. This plugin adapts and integrates those ideas into the
+> `agent-plugins-skills` ecosystem. Please star and study the original repo.
+
+Execution discipline skills ported from [obra/superpowers](https://github.com/obra/superpowers),
 adapted to work alongside `agent-agentic-os` and `exploration-cycle-plugin`.
 
 This plugin houses universal workflow enforcement skills: verification, testing, debugging,
