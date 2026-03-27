@@ -103,6 +103,12 @@ Determine the layer of the OS responsible for the friction:
 - **RAM (`context/`)**: Outdated or conflicting facts in `memory.md`, or the `soul.md` persona needs adjusting.
 - **Stdlib (`skills/`)**: A skill failed, lacked edge-case handling, had a bad description (undertriggering), or a new skill needs to be created.
 
+**Friction event type `false_completion_claim`**: If events.jsonl contains 2+ events of
+this type in a session, trigger the `verification-before-completion` skill (from the
+`agent-execution-disciplines` plugin) and note it in the retrospective survey. This event
+fires when an agent claims completion, success, or correctness without running a verification
+command first.
+
 ### Phase 3: Action Execution (The objective Research Loop)
 
 **SANDBOX PROTECTION RULE**: The learning loop can PROPOSE changes, but the following files **must not be auto-edited without explicit, manual user approval** for every single modification:

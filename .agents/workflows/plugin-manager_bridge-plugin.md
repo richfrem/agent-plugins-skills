@@ -82,6 +82,12 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 > **Commands naming:** Nested command folders are flattened to snake_case.
 > `commands/ops/restart.md` → `<plugin>_ops_restart.md`
 
+> **`commands/` vs `workflows/` naming:** The plugin source folder is always
+> named `commands/`. The installer maps it to each platform's own directory
+> name at install time — `workflows/` on Antigravity/`.agents/`, `commands/`
+> on Claude Code, `commands/` (TOML) on Gemini, `prompts/` on GitHub Copilot.
+> Never rename the source folder to match any single platform.
+
 ---
 
 ## npx skills Compatibility

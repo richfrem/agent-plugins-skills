@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/anti-pattern-vaccination.md

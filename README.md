@@ -14,6 +14,22 @@ Instead of keeping documentation trapped in disparate folders, this site serves 
 
 ---
 
+## Core Philosophy: Transitional Architectures & Decoupled Skills
+
+This repository is built upon a pragmatic acceptance of the current AI engineering landscape: **the ecosystem changes weekly, and workflows that were revolutionary six months ago are obsolete today.**
+
+Because we cannot control the capabilities natively supported by frontier models (Anthropic, OpenAI, etc.), frameworks like `spec-kitty`, `agent-agentic-os`, `superpowers`, and `agent-execution-disciplines` are fundamentally treated as **Transitional Architectures**. They exist to bridge the gap between what we need agents to do today (memory management, git worktree isolation, multi-agent orchestration, execution safety) and what the native SDKs currently lack.
+
+**The Ultimate Prediction (The Death of Custom Plumbing):**
+We anticipate that frontier models will inevitably subsume the "low-level plumbing"—native memory persistence, environment loops, strict TDD execution disciplines, and secure workflow orchestration. When massive engineering teams (Anthropic, Google, GitHub) harden these execution safety limits through millions of repetitions, large swaths of current architectures like `agent-execution-disciplines` and `spec-kitty` will be happily discarded. 
+
+**Skills are Applications; the SDK is the OS:**
+Therefore, the defining purpose of this repository is to **strictly decouple business logic (Skills) from the underlying agent execution.** Individual skills, or tightly bundled **suites of related plugins**, must function like applications running on top of an Operating System. Just as an Office suite shouldn't care how the OS manages its memory, our skill suites shouldn't care whether they are being executed by Spec-Kitty, Superpowers, or a future native Claude API.
+
+By isolating our domain-specific skills from the transient plumbing today, we ensure that developers do not get locked into any single framework. When the frontier models finally release their native hardened orchestration engines, our decoupled "applications" will drop into them seamlessly without needing a rewrite. 
+
+---
+
 ## Installation
 
 ### Option 1: Claude Plugin Marketplace (Claude Code native)

@@ -12,6 +12,25 @@ Layer: Plugin Manager / Installation
 Usage Examples:
     python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
 
+    # install plugin in a different repo e.g. context-bundler specifically
+    python <full install path>\agent-plugins-skills\plugins\plugin-manager\scripts\bridge_installer.py --plugin <full install path>\agent-plugins-skills\plugins\context-bundler
+
+Platform Command Mapping (commands/ vs workflows/):
+    Plugin source always uses commands/ as the canonical folder name.
+    The installer maps this to the correct platform-specific directory at install time:
+
+        Source folder:   plugin/commands/*.md
+        ─────────────────────────────────────────────────────────
+        .agents/         → workflows/<plugin>_<cmd>.md  (canonical)
+        .agent/          → workflows/<plugin>_<cmd>.md  (Antigravity)
+        .claude/         → commands/<plugin>_<cmd>.md   (Claude Code)
+        .gemini/         → commands/<plugin>_<cmd>.toml (Gemini CLI, TOML-wrapped)
+        .github/         → prompts/<plugin>_<cmd>.prompt.md (GitHub Copilot)
+
+    This means the same source file appears under "workflows/" on Antigravity
+    but under "commands/" on Claude Code — by design. Never rename the source
+    folder to match any single platform.
+
 Supported Object Types:
     - None (Filesystem operations)
 
@@ -127,20 +146,25 @@ def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
         if item.is_dir():
             _copy_resolving_pointers(item, dst_item)
         elif item.is_file():
-            if _is_pointer_file(item):
-                # Resolve the pointer relative to the file's location
-                rel_target = item.read_text(encoding="utf-8").strip()
-                real_src = (item.parent / rel_target).resolve()
-                if real_src.exists():
-                    if real_src.is_dir():
-                        shutil.copytree(real_src, dst_item, dirs_exist_ok=True)
+            try:
+                if _is_pointer_file(item):
+                    # Resolve the pointer relative to the file's location
+                    rel_target = item.read_text(encoding="utf-8").strip()
+                    real_src = (item.parent / rel_target).resolve()
+                    if real_src.exists():
+                        if real_src.is_dir():
+                            shutil.copytree(real_src, dst_item, dirs_exist_ok=True)
+                        else:
+                            shutil.copy2(real_src, dst_item)
                     else:
-                        shutil.copy2(real_src, dst_item)
+                        # Pointer target missing — copy the pointer as-is (best effort)
+                        shutil.copy2(item, dst_item)
                 else:
-                    # Pointer target missing — copy the pointer as-is (best effort)
                     shutil.copy2(item, dst_item)
-            else:
-                shutil.copy2(item, dst_item)
+            except PermissionError:
+                # File is locked by another process (e.g. IDE has it open) — skip,
+                # the existing installed copy remains in place.
+                print(f"    ! Skipped locked file: {dst_item.name}")
 
 
 def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
@@ -149,16 +173,29 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
         print(f"  [DRY RUN] symlink {link_path.relative_to(root)} -> {src.relative_to(root)}")
         return True
 
-    # Clean existing
-    if link_path.exists() or link_path.is_symlink():
-        is_link = link_path.is_symlink() or os.path.islink(link_path) or (hasattr(os.path, 'isjunction') and os.path.isjunction(link_path))
+    # Clean existing — use lexists so broken junctions/symlinks (target gone) are also detected.
+    # On Windows, a broken junction has .exists()=False and .is_symlink()=False, so we must
+    # also check os.path.lexists() and os.path.isjunction() to avoid skipping stale entries.
+    _is_broken_or_exists = (
+        link_path.exists()
+        or link_path.is_symlink()
+        or os.path.lexists(str(link_path))
+        or (hasattr(os.path, 'isjunction') and os.path.isjunction(link_path))
+    )
+    if _is_broken_or_exists:
+        is_link = (link_path.is_symlink() or os.path.islink(str(link_path))
+                   or (hasattr(os.path, 'isjunction') and os.path.isjunction(link_path)))
         if link_path.is_dir() and not is_link:
             shutil.rmtree(link_path)
         else:
             try:
                 link_path.unlink()
             except PermissionError:
-                os.rmdir(link_path)
+                try:
+                    os.rmdir(link_path)
+                except PermissionError:
+                    print(f"    ! Skipped locked entry: {link_path.name}")
+                    return False
 
     try:
         rel = os.path.relpath(src, link_path.parent)

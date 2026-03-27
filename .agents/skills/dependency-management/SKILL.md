@@ -25,11 +25,19 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 ---
 # Dependency Management
 
-## Core Rules
-
-1. **Never `pip install <pkg>` directly.** All changes flow through `.in` → `pip-compile` → `.txt`.
-2. **Always commit both `.in` and `.txt` together.** The `.in` is human intent; the `.txt` is the machine-verified lockfile.
 3. **One runtime per service.** Each isolated service owns its own `./requirements.txt` lockfile.
+
+## Plugin & Skill Script Architecture (Hub-and-Spoke)
+
+1. **DRY in source - Hub-and-Spoke.** One canonical script file lives at `plugins/<plugin-name>/scripts/`. Skills that need it use a file-level symlink in their own `scripts/` directory pointing back to the root (`ln -s ../../../scripts/foo.py`).
+2. **File-level symlinks only.** Never symlink entire directories. `npx skills add` and `bridge_installer.py` only resolve individual file-level symlinks. Directory-level symlinks are silently dropped by `npx`.
+3. **Self-contained at install.** The installer (`bridge_installer.py` or `npx skills add`) resolves all symlinks to physical copies when deploying to `.agents/`. This ensures every skill is independently runnable regardless of the source mono-repo's presence.
+4. **Windows Compatibility.** The `bridge_installer.py` uses a 3-tier strategy for Windows:
+   - **Symlink** (if Developer Mode is on)
+   - **Junction** (fallback for directory-level logic, though file-level is preferred)
+   - **Full Copy** (ultimate fallback)
+   This resolution ensures the Hub-and-Spoke pattern works cross-platform.
+5. **No Cross-Plugin Script Execution.** A skill should never execute `python ../../other-plugin/scripts/foo.py`. If a cross-plugin capability is needed, use **Agent Skill Delegation**: instruct the Agent to invoke the target skill via the conversation layer. In the mono-repo source, cross-plugin file-level symlinks are acceptable for shared logic that the installer will then resolve.
 
 ## Repository Layout (Example)
 
