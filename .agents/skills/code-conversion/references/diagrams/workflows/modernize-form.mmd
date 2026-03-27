@@ -1,0 +1,85 @@
+---
+config:
+  theme: base
+---
+flowchart TB
+ subgraph subGraph0["Universal Entry Point"]
+        P0_Plan@{ label: "Step 0: Strategy Phase<br><b style='color:#FF8C00'>/agent-orchestrator_plan</b>" }
+        P1_Req@{ label: "Command: <b style='color:#1E90FF'>/code-conversion_modernize-form</b> [FormID]" }
+  end
+ subgraph subGraph1["Technical Inputs"]
+        In_Base@{ label: "Core Inputs" }
+  end
+ subgraph subGraph2["Phase 1: Modernization Intelligence"]
+        P3_Init@{ label: "Step 2: Initialize Smart Context<br><b style='color:#1E90FF'>/context-bundler_init</b> --type form" }
+        P3_Review@{ label: "Step 3: Review Context" }
+        P3_Gap{"Context Complete?"}
+        P3_Edit["Step 4: Augment Context"]
+        P3_Rebundle@{ label: "Step 4b: Regenerate Bundle<br><b style='color:#1E90FF'>/context-bundler_bundle</b>" }
+  end
+ subgraph subGraph_P2["Phase 2: Mining & Logic Discovery (Multi-Pass)"]
+        direction TB
+        P3_Mine@{ label: "Pass 1: Blocks → Data Contracts<br><b style='color:#1E90FF'>plugins/legacy system/legacy-system-oracle-forms/skills/legacy-system-oracle-forms/scripts/xml_miner.py</b> --target [ID]" }
+        P3_Pass2@{ label: "Pass 2: Triggers → Custom Hooks<br><b style='color:#1E90FF'>plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py</b> --pattern WHEN-|KEY-" }
+        P3_Pass3@{ label: "Pass 3: UI Layout → Component Hierarchy<br><b style='color:#1E90FF'>plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py</b> --pattern Canvas|Window|TabPage" }
+        P3_Pass4@{ label: "Pass 4: Navigation → Routing<br><b style='color:#1E90FF'>plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py</b> --pattern CALL_FORM|OPEN_FORM" }
+        P3_Pass5@{ label: "Pass 5: Security → Auth Guards<br><b style='color:#1E90FF'>plugins/legacy system/legacy-system-database/skills/legacy-system-database/scripts/search_plsql.py</b> --pattern GLOBAL." }
+  end
+ subgraph subGraph3["Phase 3: Sandbox Setup (Infrastructure)"]
+        P4_Init["Step 6: Initialize Sandbox Structure<br>sandbox/ui/src/pages, sandbox/api"]
+        P4_Verify@{ label: "Step 7: Verify Intelligence Bundle<br><b style='color:#1E90FF'>plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py list</b>" }
+        P4_Deps["Step 8: Standard Dependencies<br>@bcgov/design-tokens"]
+  end
+ subgraph subGraph4["Phase 4: Implementation (Code & Design)"]
+        P5_CSS["Step 12: Ensure Index CSS Alignment"]
+        P5_Page@{ label: "Step 13: Create Form Page Component<br>[FormID].tsx" }
+        P5_QA["Step 13b: Quality Assurance (Gap Analysis)"]
+        P5_Router["Step 14: Register Form in Router (App.tsx)"]
+        P5_Approval{"User Approval?"}
+  end
+ subgraph subGraph5["Phase 5: Run & Iterate"]
+        P6_Install["Step 15: npm install"]
+        P6_Run@{ label: "Step 16: npm run dev<br>http://localhost:3030/" }
+        P6_Compare["Compare with Legacy Screenshots"]
+  end
+ subgraph subGraph6["Phase 6: Documentation Feedback"]
+        P7_Update@{ label: "Step 17: Update Form Overview<br><b style='color:#1E90FF'>/legacy-system-oracle-forms_curate-enrich-links</b>" }
+        P7_Distill@{ label: "Step 18: Distill RLM<br><b style='color:#1E90FF'>/rlm-factory_distill</b>" }
+        P7_Track@{ label: "Step 19: Update Analysis Log<br><b style='color:#1E90FF'>/inventory-manager_curate-inventories</b>" }
+  end
+ subgraph subGraph7["Phase 7: Feature Completion (Deterministic Closure Protocol)"]
+        P8_Review@{ label: "Step 20: Review WPs<br><b style='color:#1E90FF'>/spec-kitty.review</b>" }
+        P8_Accept@{ label: "Step 21: Accept Feature<br><b style='color:#1E90FF'>/spec-kitty.accept</b> --mode local" }
+        P8_Retro@{ label: "Step 22: Retrospective (MANDATORY)<br><b style='color:#FF8C00'>/spec-kitty_retrospective</b>" }
+        P8_Merge@{ label: "Step 23: Merge from Main Repo<br><b style='color:#1E90FF'>/spec-kitty.merge</b> --feature slug<br>(Context: MAIN Repo Root ONLY)" }
+        P8_PostVerify@{ label: "Step 24: Post-Merge Verify<br>git worktree list, git branch" }
+        P8_IntelSync@{ label: "Step 25: Intelligence Sync<br>RLM/Vector Update" }
+        P8_End["Feature Done (Clean Repo)"]
+  end
+    P0_Plan --> P1_Req
+    P1_Req --> P3_Init
+    In_Base --> P3_Init
+    P3_Init --> P3_Review
+    P3_Review --> P3_Gap
+    P3_Gap -- No: Augment --> P3_Edit
+    P3_Edit --> P3_Rebundle
+    P3_Rebundle -->|recursion| P3_Review
+    P3_Gap -- Yes: Ready --> P3_Mine
+    P3_Mine --> P3_Pass2 --> P3_Pass3 --> P3_Pass4 --> P3_Pass5 --> P4_Init
+    P4_Init --> P4_Verify --> P4_Deps --> P5_CSS
+    P5_CSS --> P5_Page --> P5_QA --> P5_Router --> P5_Approval
+    P5_Approval -- No --> P5_Page
+    P5_Approval -- Yes --> P6_Install
+    P6_Install --> P6_Run --> P6_Compare --> P7_Update
+    P7_Update --> P7_Distill --> P7_Track --> P8_Review
+    P8_Review --> P8_Accept --> P8_Retro --> P8_Merge --> P8_PostVerify --> P8_IntelSync --> P8_End
+
+    P1_Req@{ shape: rect}
+    In_Base@{ shape: rect}
+    P3_Init@{ shape: rect}
+    P3_Review@{ shape: rect}
+    P3_Rebundle@{ shape: rect}
+    style P1_Req fill:#90EE90
+    style P8_End fill:#90EE90
+    style P5_Page fill:#FFD700
+    style P8_Retro fill:#FFD700

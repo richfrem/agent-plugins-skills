@@ -1,0 +1,68 @@
+classDiagram
+    %% Entry Points (Scripts)
+    class FormsScript["convert-forms-xml-to-markdown.js"] {
+        +main(args)
+        +processFile(filePath)
+    }
+    class ReportsScript["convert-report-xml-to-markdown.js"] {
+        +main(args)
+        +processFile(filePath)
+    }
+    class PllScript["convert-pll-to-markdown.js"] {
+        +main(args)
+        +processFile(filePath)
+    }
+
+    %% Base Logic
+    class BaseProcessor {
+        +process(xmlData)
+        +writeMarkdown(content)
+        <<Abstract>>
+    }
+    class BaseReportElementProcessor {
+        +process(element)
+        +getChildren()
+        <<Abstract>>
+    }
+
+    %% Components
+    class FormsElementProcessor["elementProcessor.js"] {
+        +process(node)
+        +getTriggers()
+    }
+    class ReportProcessorRegistry {
+        +getProcessor(tagName)
+    }
+
+    %% Concrete Implementations
+    class ReportElementProcessors["Report Elements (80+)"] {
+        +DataSourceProcessor
+        +RepeatingFrameProcessor
+        +SQLQueryProcessor
+        +...
+    }
+    
+    class FormsElementProcessors["Forms Elements (40+)"] {
+        +BlockProcessor
+        +ItemProcessor
+        +TriggerProcessor
+        +...
+    }
+
+    %% Relationships - Entry to Base
+    FormsScript --> BaseProcessor : Extends/Uses
+    PllScript --> BaseProcessor : Extends/Uses
+    
+    %% Relationships - Reports Logic
+    ReportsScript --> ReportProcessorRegistry : 1. Lookup Processor
+    ReportProcessorRegistry --> BaseReportElementProcessor : 2. Return Instance
+    BaseReportElementProcessor <|-- ReportElementProcessors : Inheritance
+
+    %% Relationships - Forms Logic
+    FormsScript --> FormsElementProcessor : Delegator
+    FormsElementProcessor --> FormsElementProcessors : Dispatches
+
+    %% Notes
+    note for FormsScript "Input: .xml (FMB/MMB/OLB)<br>Args: --file, --batch, --out"
+    note for ReportsScript "Input: .xml (Report)<br>Args: --file, --batch, --out"
+    note for PllScript "Input: .txt (PLL Dump)<br>Args: --file, --batch, --out"

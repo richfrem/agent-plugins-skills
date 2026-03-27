@@ -1,0 +1,1053 @@
+{
+  "meta": {
+    "totalElements": 78,
+    "generatedAt": "2026-01-24T19:46:18.715Z"
+  },
+  "complexity": [
+    {
+      "name": "afterPageHtmlEscape",
+      "level": 0,
+      "count": 282,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "anchor",
+      "level": 0,
+      "count": 123,
+      "children": [],
+      "attributes": [
+        "childEdgePercent",
+        "childEdgeType",
+        "collapseVertically",
+        "parentEdgePercent",
+        "parentEdgeType",
+        "parentObjectName"
+      ]
+    },
+    {
+      "name": "attachedLibrary",
+      "level": 0,
+      "count": 240,
+      "children": [],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "beforeFormHtmlEscape",
+      "level": 0,
+      "count": 282,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "beforePageHtmlEscape",
+      "level": 0,
+      "count": 297,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "beforeReportHtmlEscape",
+      "level": 0,
+      "count": 282,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "binaryData",
+      "level": 0,
+      "count": 69,
+      "children": [],
+      "attributes": [
+        "dataId",
+        "encoding"
+      ]
+    },
+    {
+      "name": "characterMode",
+      "level": 0,
+      "count": 10,
+      "children": [],
+      "attributes": [
+        "suppressPreviewerTitle"
+      ]
+    },
+    {
+      "name": "color",
+      "level": 0,
+      "count": 2,
+      "children": [],
+      "attributes": [
+        "displayName",
+        "index",
+        "value"
+      ]
+    },
+    {
+      "name": "comment",
+      "level": 0,
+      "count": 107,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "cond",
+      "level": 0,
+      "count": 18,
+      "children": [],
+      "attributes": [
+        "column",
+        "conjunction",
+        "exception",
+        "highValue",
+        "lowValue",
+        "name"
+      ]
+    },
+    {
+      "name": "dataDescriptor",
+      "level": 0,
+      "count": 7688,
+      "children": [],
+      "attributes": [
+        "descriptiveExpression",
+        "expression",
+        "oracleDatatype",
+        "order",
+        "precision",
+        "scale"
+      ]
+    },
+    {
+      "name": "dataItemPrivate",
+      "level": 0,
+      "count": 7688,
+      "children": [],
+      "attributes": [
+        "adtName",
+        "displayWithParentColumn",
+        "parentColumn",
+        "schemaName"
+      ]
+    },
+    {
+      "name": "displayInfo",
+      "level": 0,
+      "count": 3539,
+      "children": [],
+      "attributes": [
+        "height",
+        "width",
+        "x",
+        "y"
+      ]
+    },
+    {
+      "name": "filter",
+      "level": 0,
+      "count": 10,
+      "children": [],
+      "attributes": [
+        "numberOfRecords",
+        "plsqlFilter",
+        "type"
+      ]
+    },
+    {
+      "name": "font",
+      "level": 0,
+      "count": 17429,
+      "children": [],
+      "attributes": [
+        "bold",
+        "face",
+        "italic",
+        "size",
+        "textColor",
+        "underline"
+      ]
+    },
+    {
+      "name": "formatVisualSettings",
+      "level": 0,
+      "count": 13,
+      "children": [],
+      "attributes": [
+        "borderPattern",
+        "fillForegroundColor",
+        "fillPattern"
+      ]
+    },
+    {
+      "name": "geometryInfo",
+      "level": 0,
+      "count": 17857,
+      "children": [],
+      "attributes": [
+        "height",
+        "width",
+        "x",
+        "y"
+      ]
+    },
+    {
+      "name": "layoutPrivate",
+      "level": 0,
+      "count": 57,
+      "children": [],
+      "attributes": [
+        "maxNumOfHorizontalBodyPages",
+        "maxNumOfVerticalBodyPages"
+      ]
+    },
+    {
+      "name": "link",
+      "level": 0,
+      "count": 91,
+      "children": [],
+      "attributes": [
+        "childColumn",
+        "childQuery",
+        "condition",
+        "parentColumn",
+        "parentGroup",
+        "sqlClause"
+      ]
+    },
+    {
+      "name": "location",
+      "level": 0,
+      "count": 782,
+      "children": [],
+      "attributes": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "name": "pageNavigationHtmlEscape",
+      "level": 0,
+      "count": 282,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "pageNumbering",
+      "level": 0,
+      "count": 391,
+      "children": [],
+      "attributes": [
+        "header",
+        "incrementBy",
+        "main",
+        "resetAt",
+        "startAt",
+        "trailer"
+      ]
+    },
+    {
+      "name": "plsqlStatement",
+      "level": 0,
+      "count": 3,
+      "children": [],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "point",
+      "level": 0,
+      "count": 1015,
+      "children": [],
+      "attributes": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "name": "reportPrivate",
+      "level": 0,
+      "count": 297,
+      "children": [],
+      "attributes": [
+        "charPromptMaySplit",
+        "charPromptMustSplit",
+        "defaultReportType",
+        "isCustomName",
+        "minFieldResizeRate",
+        "minFontPoints",
+        "sectionTitle",
+        "templateName",
+        "versionFlags2"
+      ]
+    },
+    {
+      "name": "reportWebSettings",
+      "level": 0,
+      "count": 296,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "rulers",
+      "level": 0,
+      "count": 309,
+      "children": [],
+      "attributes": [
+        "gridSpacing",
+        "numberOfSnapPoints"
+      ]
+    },
+    {
+      "name": "select",
+      "level": 0,
+      "count": 633,
+      "children": [],
+      "attributes": [
+        "canParse"
+      ]
+    },
+    {
+      "name": "selectStatement",
+      "level": 0,
+      "count": 101,
+      "children": [],
+      "attributes": [
+        "hideFirstColumn"
+      ]
+    },
+    {
+      "name": "string",
+      "level": 0,
+      "count": 10620,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "textSettings",
+      "level": 0,
+      "count": 7370,
+      "children": [],
+      "attributes": [
+        "justify",
+        "spacing"
+      ]
+    },
+    {
+      "name": "textSource",
+      "level": 0,
+      "count": 3061,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "validValue",
+      "level": 0,
+      "count": 10,
+      "children": [],
+      "attributes": [
+        "value"
+      ]
+    },
+    {
+      "name": "visualSettings",
+      "level": 0,
+      "count": 5526,
+      "children": [],
+      "attributes": [
+        "dash",
+        "fillBackgroundColor",
+        "fillForegroundColor",
+        "fillPattern",
+        "hideBottomBorder",
+        "hideLeftBorder",
+        "hideRightBorder",
+        "hideTopBorder",
+        "lineBackgroundColor",
+        "lineForegroundColor",
+        "linePattern",
+        "lineWidth"
+      ]
+    },
+    {
+      "name": "webSettings",
+      "level": 0,
+      "count": 27,
+      "children": [],
+      "attributes": [
+        "containHTMLTags"
+      ]
+    },
+    {
+      "name": "webSource",
+      "level": 0,
+      "count": 297,
+      "children": [],
+      "attributes": []
+    },
+    {
+      "name": "xmlSettings",
+      "level": 0,
+      "count": 800,
+      "children": [],
+      "attributes": [
+        "xmlPrologType",
+        "xmlTag"
+      ]
+    },
+    {
+      "name": "advancedLayout",
+      "level": 1,
+      "count": 5701,
+      "children": [
+        "anchor"
+      ],
+      "attributes": [
+        "basePrintingOn",
+        "formatTrigger",
+        "keepWithAnchoringObject",
+        "printObjectOnPage"
+      ]
+    },
+    {
+      "name": "colorPalette",
+      "level": 1,
+      "count": 2,
+      "children": [
+        "color"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "dataItem",
+      "level": 1,
+      "count": 984,
+      "children": [
+        "dataDescriptor",
+        "dataItemPrivate",
+        "xmlSettings"
+      ],
+      "attributes": [
+        "breakOrder",
+        "columnFlags",
+        "columnOrder",
+        "datatype",
+        "defaultHeight",
+        "defaultLabel",
+        "defaultWidth",
+        "fileFormat",
+        "inputMask",
+        "name",
+        "oracleDatatype",
+        "valueIfNull",
+        "width"
+      ]
+    },
+    {
+      "name": "formatException",
+      "level": 1,
+      "count": 21,
+      "children": [
+        "cond",
+        "font",
+        "formatVisualSettings"
+      ],
+      "attributes": [
+        "label"
+      ]
+    },
+    {
+      "name": "formula",
+      "level": 1,
+      "count": 660,
+      "children": [
+        "comment",
+        "displayInfo",
+        "xmlSettings"
+      ],
+      "attributes": [
+        "breakOrder",
+        "columnFlags",
+        "datatype",
+        "defaultHeight",
+        "defaultLabel",
+        "defaultWidth",
+        "name",
+        "precision",
+        "source",
+        "valueIfNull",
+        "width"
+      ]
+    },
+    {
+      "name": "function",
+      "level": 1,
+      "count": 295,
+      "children": [
+        "textSource"
+      ],
+      "attributes": [
+        "name",
+        "returnType",
+        "type"
+      ]
+    },
+    {
+      "name": "matrix",
+      "level": 1,
+      "count": 1,
+      "children": [
+        "geometryInfo"
+      ],
+      "attributes": [
+        "horizontalFrame",
+        "name",
+        "verticalFrame",
+        "xProductGroup"
+      ]
+    },
+    {
+      "name": "placeholder",
+      "level": 1,
+      "count": 88,
+      "children": [
+        "comment",
+        "displayInfo",
+        "xmlSettings"
+      ],
+      "attributes": [
+        "columnFlags",
+        "datatype",
+        "defaultHeight",
+        "defaultLabel",
+        "defaultWidth",
+        "name",
+        "precision",
+        "valueIfNull",
+        "valueIfNullFormatMask",
+        "width"
+      ]
+    },
+    {
+      "name": "points",
+      "level": 1,
+      "count": 1015,
+      "children": [
+        "point"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "reportHtmlEscapes",
+      "level": 1,
+      "count": 297,
+      "children": [
+        "afterPageHtmlEscape",
+        "beforeFormHtmlEscape",
+        "beforePageHtmlEscape",
+        "beforeReportHtmlEscape",
+        "pageNavigationHtmlEscape"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "staticValues",
+      "level": 1,
+      "count": 10,
+      "children": [
+        "validValue"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "summary",
+      "level": 1,
+      "count": 133,
+      "children": [
+        "displayInfo",
+        "xmlSettings"
+      ],
+      "attributes": [
+        "columnFlags",
+        "compute",
+        "defaultHeight",
+        "defaultLabel",
+        "defaultWidth",
+        "function",
+        "name",
+        "precision",
+        "productOrder",
+        "reset",
+        "source",
+        "valueIfNull",
+        "valueIfNullFormatMask",
+        "width"
+      ]
+    },
+    {
+      "name": "systemParameter",
+      "level": 1,
+      "count": 199,
+      "children": [
+        "comment"
+      ],
+      "attributes": [
+        "display",
+        "initialValue",
+        "name"
+      ]
+    },
+    {
+      "name": "textSegment",
+      "level": 1,
+      "count": 7370,
+      "children": [
+        "font",
+        "string"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "arc",
+      "level": 2,
+      "count": 6,
+      "children": [
+        "geometryInfo",
+        "points",
+        "visualSettings"
+      ],
+      "attributes": [
+        "isClosed",
+        "name"
+      ]
+    },
+    {
+      "name": "conditionalFormat",
+      "level": 2,
+      "count": 21,
+      "children": [
+        "formatException"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "group",
+      "level": 2,
+      "count": 638,
+      "children": [
+        "dataItem",
+        "displayInfo",
+        "filter",
+        "formula",
+        "placeholder",
+        "summary",
+        "xmlSettings"
+      ],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "image",
+      "level": 2,
+      "count": 69,
+      "children": [
+        "advancedLayout",
+        "binaryData",
+        "geometryInfo",
+        "points",
+        "visualSettings"
+      ],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "line",
+      "level": 2,
+      "count": 285,
+      "children": [
+        "advancedLayout",
+        "geometryInfo",
+        "points",
+        "visualSettings"
+      ],
+      "attributes": [
+        "arrow",
+        "name",
+        "stretchWithFrame"
+      ]
+    },
+    {
+      "name": "listOfValues",
+      "level": 2,
+      "count": 111,
+      "children": [
+        "selectStatement",
+        "staticValues"
+      ],
+      "attributes": [
+        "restrictToList"
+      ]
+    },
+    {
+      "name": "polyline",
+      "level": 2,
+      "count": 2,
+      "children": [
+        "geometryInfo",
+        "points",
+        "visualSettings"
+      ],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "programUnits",
+      "level": 2,
+      "count": 295,
+      "children": [
+        "function"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "rectangle",
+      "level": 2,
+      "count": 45,
+      "children": [
+        "advancedLayout",
+        "comment",
+        "geometryInfo",
+        "points",
+        "visualSettings"
+      ],
+      "attributes": [
+        "name",
+        "templateSection"
+      ]
+    },
+    {
+      "name": "roundedRectangle",
+      "level": 2,
+      "count": 2,
+      "children": [
+        "geometryInfo",
+        "points",
+        "visualSettings"
+      ],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "dataSource",
+      "level": 3,
+      "count": 293,
+      "children": [
+        "comment",
+        "displayInfo",
+        "group",
+        "plsqlStatement",
+        "select"
+      ],
+      "attributes": [
+        "maxRows",
+        "name"
+      ]
+    },
+    {
+      "name": "dimension",
+      "level": 3,
+      "count": 1,
+      "children": [
+        "group"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "generalLayout",
+      "level": 3,
+      "count": 5618,
+      "children": [
+        "conditionalFormat"
+      ],
+      "attributes": [
+        "horizontalElasticity",
+        "pageBreakAfter",
+        "pageBreakBefore",
+        "pageProtect",
+        "verticalElasticity"
+      ]
+    },
+    {
+      "name": "userParameter",
+      "level": 3,
+      "count": 294,
+      "children": [
+        "comment",
+        "listOfValues"
+      ],
+      "attributes": [
+        "datatype",
+        "defaultHeight",
+        "defaultWidth",
+        "display",
+        "initialValue",
+        "inputMask",
+        "label",
+        "name",
+        "precision",
+        "validationTrigger",
+        "width"
+      ]
+    },
+    {
+      "name": "crossProduct",
+      "level": 4,
+      "count": 1,
+      "children": [
+        "dimension",
+        "displayInfo",
+        "summary"
+      ],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "field",
+      "level": 4,
+      "count": 1837,
+      "children": [
+        "advancedLayout",
+        "comment",
+        "font",
+        "generalLayout",
+        "geometryInfo",
+        "pageNumbering",
+        "visualSettings"
+      ],
+      "attributes": [
+        "alignment",
+        "formatMask",
+        "minWidowLines",
+        "name",
+        "pageNumber",
+        "source",
+        "spacing",
+        "templateSection",
+        "visible"
+      ]
+    },
+    {
+      "name": "text",
+      "level": 4,
+      "count": 1656,
+      "children": [
+        "advancedLayout",
+        "comment",
+        "generalLayout",
+        "geometryInfo",
+        "points",
+        "textSegment",
+        "textSettings",
+        "visualSettings",
+        "webSettings"
+      ],
+      "attributes": [
+        "minWidowLines",
+        "name",
+        "pageNumber",
+        "rotationAngle",
+        "templateSection"
+      ]
+    },
+    {
+      "name": "data",
+      "level": 5,
+      "count": 295,
+      "children": [
+        "crossProduct",
+        "dataSource",
+        "formula",
+        "link",
+        "placeholder",
+        "summary",
+        "systemParameter",
+        "userParameter"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "parameterForm",
+      "level": 5,
+      "count": 201,
+      "children": [
+        "field",
+        "rulers",
+        "text"
+      ],
+      "attributes": [
+        "height",
+        "pages",
+        "width"
+      ]
+    },
+    {
+      "name": "repeatingFrame",
+      "level": 1000,
+      "count": 905,
+      "children": [
+        "advancedLayout",
+        "field",
+        "frame",
+        "generalLayout",
+        "geometryInfo",
+        "image",
+        "line",
+        "rectangle",
+        "repeatingFrame",
+        "text",
+        "visualSettings",
+        "webSettings"
+      ],
+      "attributes": [
+        "columnMode",
+        "horizSpaceBetweenFrames",
+        "maxRecordsPerPage",
+        "minWidowRecords",
+        "name",
+        "printDirection",
+        "source",
+        "vertSpaceBetweenFrames"
+      ]
+    },
+    {
+      "name": "frame",
+      "level": 1001,
+      "count": 987,
+      "children": [
+        "advancedLayout",
+        "arc",
+        "comment",
+        "field",
+        "frame",
+        "generalLayout",
+        "geometryInfo",
+        "image",
+        "line",
+        "polyline",
+        "rectangle",
+        "repeatingFrame",
+        "text",
+        "visualSettings",
+        "webSettings"
+      ],
+      "attributes": [
+        "name"
+      ]
+    },
+    {
+      "name": "body",
+      "level": 1002,
+      "count": 808,
+      "children": [
+        "arc",
+        "field",
+        "frame",
+        "image",
+        "line",
+        "location",
+        "matrix",
+        "rectangle",
+        "repeatingFrame",
+        "text"
+      ],
+      "attributes": [
+        "height",
+        "width"
+      ]
+    },
+    {
+      "name": "margin",
+      "level": 1002,
+      "count": 179,
+      "children": [
+        "field",
+        "frame",
+        "image",
+        "line",
+        "rectangle",
+        "repeatingFrame",
+        "roundedRectangle",
+        "text"
+      ],
+      "attributes": []
+    },
+    {
+      "name": "section",
+      "level": 1003,
+      "count": 297,
+      "children": [
+        "body",
+        "margin"
+      ],
+      "attributes": [
+        "height",
+        "heightInChar",
+        "name",
+        "orientation",
+        "verticalPanelPerPage",
+        "width",
+        "widthInChar"
+      ]
+    },
+    {
+      "name": "layout",
+      "level": 1004,
+      "count": 297,
+      "children": [
+        "layoutPrivate",
+        "rulers",
+        "section"
+      ],
+      "attributes": [
+        "panelPrintOrder"
+      ]
+    },
+    {
+      "name": "report",
+      "level": 1005,
+      "count": 297,
+      "children": [
+        "attachedLibrary",
+        "characterMode",
+        "colorPalette",
+        "comment",
+        "data",
+        "layout",
+        "parameterForm",
+        "programUnits",
+        "reportHtmlEscapes",
+        "reportPrivate",
+        "reportWebSettings",
+        "webSource",
+        "xmlSettings"
+      ],
+      "attributes": [
+        "DTDVersion",
+        "afterParameterFormTrigger",
+        "afterReportTrigger",
+        "beforeParameterFormTrigger",
+        "beforeReportTrigger",
+        "betweenPagesTrigger",
+        "name",
+        "previewerTitle"
+      ]
+    }
+  ]
+}

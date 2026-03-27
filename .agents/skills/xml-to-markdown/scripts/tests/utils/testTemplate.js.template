@@ -1,0 +1,20 @@
+const { process{Element} } = require('../../src/processors/elements/{element}Processor');
+const { runElementTest } = require('../../src/utils/test/testUtils');
+
+/**
+ * Test suite for the {Element} Processor
+ * 
+ * Tests the processing of Oracle Forms {Element} elements using the test-data/{element}.xml file
+ * which contains various configurations and edge cases:
+ * - Basic {element} properties
+ * - {element} relationships
+ * - Edge cases and error handling
+ */
+describe('{Element} Processor', () => {
+    const getAttributes = (element) => element.$ || {};
+    const log = console.log;
+
+    test('Process {element} test data', async () => {
+        await runElementTest('{Element}', process{Element}, getAttributes, log);
+    });
+}); 

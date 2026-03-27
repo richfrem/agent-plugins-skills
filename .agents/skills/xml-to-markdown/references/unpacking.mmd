@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant User
+    participant Agent
+    participant FileSystem
+    
+    User->>Agent: Unpack xml-to-markdown bundle
+    Agent->>FileSystem: Create tools/standalone/xml-to-markdown/
+    Agent->>FileSystem: Extract package.json
+    Agent->>FileSystem: Extract src/ and subdirectories
+    Agent->>FileSystem: Extract README.md & prompt.md
+    
+    User->>Agent: Run Installation
+    Agent->>FileSystem: cd tools/standalone/xml-to-markdown
+    Agent->>FileSystem: npm install
+    FileSystem-->>Agent: node_modules/ created
+    
+    User->>Agent: Verify
+    Agent->>FileSystem: node src/convert-forms-xml-to-markdown.js --help
+    FileSystem-->>Agent: Returns Help Text
+    Agent-->>User: Verification Complete

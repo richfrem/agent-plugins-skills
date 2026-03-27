@@ -1,0 +1,1 @@
+../../.agents/workflows/legacy system_investigate-role.md

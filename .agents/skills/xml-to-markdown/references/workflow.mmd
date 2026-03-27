@@ -1,0 +1,19 @@
+flowchart TD
+    Start([User Has Legacy Export]) --> Check{Determine Type}
+    
+    Check -- "XML (Forms/Menu/OLB)" --> Forms[Convert Form]
+    Forms --> CmdForms[/"node src/convert-forms-xml-to-markdown.js --file [path/to/file.xml]"/]
+    CmdForms -- "Output: [output_dir]/[module].md" --> Docs[(Markdown)]
+    
+    Check -- "XML (Reports)" --> Reports[Convert Report]
+    Reports --> CmdReports[/"node src/convert-report-xml-to-markdown.js --file [path/to/report.xml]"/]
+    CmdReports -- "Output: [output_dir]/[report].md" --> Docs
+    
+    Check -- "TXT (Library)" --> Libs[Convert Library]
+    Libs --> CmdLibs[/"node src/convert-pll-to-markdown.js --file [path/to/lib.txt]"/]
+    CmdLibs -- "Output: [output_dir]/[lib].md" --> Docs
+    
+    Docs --> Validate{Check Output}
+    Validate -- Errors --> Debug[Verbose Mode]
+    Debug --> CmdDebug[/"--verbose"/]
+    Validate -- OK --> Done([Analysis Ready])

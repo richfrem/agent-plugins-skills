@@ -1,0 +1,1 @@
+../../.agents/workflows/legacy system_curate-inventories.md

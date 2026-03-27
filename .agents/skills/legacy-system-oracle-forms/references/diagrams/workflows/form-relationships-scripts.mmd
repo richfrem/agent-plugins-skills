@@ -1,0 +1,29 @@
+---
+config:
+  theme: default
+---
+%% Form Relationship & Dependency Mapping Pipeline
+%% Generates the 'dependency_map.json' used by the Agent
+%% Source: tools/form-relationships/scripts/
+
+flowchart TD
+    subgraph "Step 1: Code Inventory (Static Analysis)"
+        Src[("Oracle Forms Code")] --> JS["search_for_open_form_references.py"]
+        JS --> Regex["RegExpMatchFunctions:<br>- matchCallForm<br>- matchOpenForm<br>- matchRunProduct"]
+        Regex --> CSV2["form_relationships.csv"]
+    end
+
+    subgraph "Step 3: Master Mapping"
+        CSV3 --> Py2["scripts/inventory/generate_dependency_map.py"]
+        Py2 --> JSON["legacy-system/reference-data/inventories/dependency_map.json"]
+    end
+
+    subgraph "Consumption (Agent Tools)"
+        JSON --> Dep["/legacy-system-database_investigate-code-search"]
+        JSON --> Reach["/legacy-system-oracle-forms_investigate-lineage"]
+        Dep & Reach --> CLI["Agent Context"]
+    end
+
+    style JSON fill:#90EE90
+    style Py1 fill:#FFD700
+    style Py2 fill:#FFD700

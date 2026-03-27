@@ -1,0 +1,66 @@
+---
+config:
+  theme: base
+---
+flowchart TB
+ subgraph subGraph_P0["Phase 0: Prerequisites"]
+        P0_Git@{ label: "Step 1: Git Branch Check<br><b style='color:#1E90FF'>git branch</b><br><i>(Check task branch)</i>" }
+  end
+ subgraph subGraph0["Universal Entry Point"]
+        P0_Plan@{ label: "Step 0: Strategy Phase<br><b style='color:#FF8C00'>/agent-orchestrator_plan</b>" }
+        P1_Req@{ label: "Command: <b style=\"color:#1E90FF\">/legacy-system-roles_codify-role</b> [ID]<br>OR <b style=\"color:#1E90FF\">/legacy-system-roles_investigate-role</b>" }
+  end
+ subgraph subGraph1["Initialization Inputs"]
+    direction LR
+    In_Base@{ label: "Core Inputs:<br>- <b style=\"color:#1E90FF\">roles_inventory.json</b><br>- Source: Form Code (GLOBAL.ROLE)<br>- Source: MenuConfig Menu Rules" }
+  end
+ subgraph subGraph2["Phase 1: Discovery & Mining"]
+        P3_Init@{ label: "Step 2: Inventory Verify<br><b style=\"color:#1E90FF\">plugins/legacy system/legacy-system-roles/skills/legacy-system-roles/scripts/split_roles.py</b>" }
+        P3_Mine@{ label: "Step 3: Deep Search<br><b style=\"color:#1E90FF\">plugins/legacy system/legacy-system-roles/skills/legacy-system-roles/scripts/search_button_rules.py</b> (CSV Tools)<br><b style=\"color:#1E90FF\">plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py</b> (RLM)<br><b style=\"color:#1E90FF\">plugins/vector-db/skills/vector-db-agent/scripts/query.py</b> (Vector)" }
+        P3_Status{"Status?"}
+  end
+ subgraph subGraph_Spiral["Phase 1b: Recursive Context Spiral"]
+    direction TB
+        S_Init@{ label: "Step 4: Init Role Context<br><b style='color:#1E90FF'>/context-bundler_init</b> --type role" }
+        S_Check{"Context Complete?"}
+        S_Add["<b style='color:#1E90FF'>Add Dependencies</b>"]
+        S_Bundle@{ label: "Regenerate Bundle<br><b style='color:#1E90FF'>/context-bundler_bundle</b>" }
+        S_Review["Review Bundle"]
+  end
+ subgraph subGraph_Scribe["Phase 2: Scribe (Documentation)"]
+        P4_Fill["Step 5: Fill Template<br>(ROLE_TEMPLATE)"]
+        P4_QA@{ label: "Step 6: QA & Compliance<br><b style='color:#1E90FF'>plugins/legacy system/legacy-doc-gen/skills/legacy-doc-gen/scripts/audit_template_compliance.py</b>" }
+  end
+ subgraph subGraph3["Phase 3: Intelligence Sync"]
+        P5_Link@{ label: "Step 7: Enrich Links<br><b style=\"color:#1E90FF\">/legacy-system-oracle-forms_curate-enrich-links</b>" }
+        P5_Track@{ label: "Step 8: Inventory Update<br><b style=\"color:#1E90FF\">/inventory-manager_curate-inventories</b>" }
+        P5_Ingest["Step 9: Vector Ingest<br><b style='color:#1E90FF'>/vector-db_ingest</b>"]
+        P5_End["End Cycle"]
+  end
+
+    P0_Git --> P1_Req
+    P0_Plan --> P1_Req
+    P1_Req --> P3_Init
+    In_Base --> P3_Init
+    P3_Init --> P3_Mine
+    P3_Mine --> P3_Status
+    P3_Status -- Active/Legacy --> S_Init
+    P3_Status -- Unknown --> P5_End
+    S_Init --> S_Check
+    S_Check -- No: Missing Files --> S_Add
+    S_Add --> S_Bundle --> S_Review --> S_Check
+    S_Check -- Yes: Complete --> P4_Fill
+    P4_Fill --> P4_QA
+    P4_QA -- Fail --> P4_Fill
+    P4_QA -- Pass --> P5_Link
+    P5_Link --> P5_Track
+    P5_Track --> P5_Ingest
+    P5_Ingest --> P5_End
+
+    P1_Req@{ shape: rect}
+    In_Base@{ shape: rect}
+    P3_Init@{ shape: rect}
+    P3_Mine@{ shape: rect}
+    style P1_Req fill:#90EE90
+    style S_Bundle fill:#FFD700
+    style P5_End fill:#90EE90

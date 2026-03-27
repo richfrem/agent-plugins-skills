@@ -1,0 +1,65 @@
+flowchart LR
+    subgraph Sources [Legacy Binaries]
+        direction TB
+        FMB[.fmb Forms]
+        MMB[.mmb Menus]
+        OLB[.olb Object Libs]
+        PLL[.pll PL/SQL Libs]
+        RDF[.rdf Reports]
+    end
+
+    subgraph Oracle [Oracle Utilities]
+        direction TB
+        F2X[frmf2xml]
+        CMP[frmcmp_batch]
+        RWC[rwconverter]
+    end
+
+    subgraph Intermediates [Intermediate Formats]
+        direction TB
+        XML_F[Form XML]
+        XML_M[Menu XML]
+        XML_O[Lib XML]
+        TXT_P[PLL Text]
+        XML_R[Report XML]
+    end
+
+    subgraph Converter [XML-to-Markdown Tool]
+        direction TB
+        ScriptF[convert-forms-xml-to-markdown.js]
+        ScriptP[convert-pll-to-markdown.js]
+        ScriptR[convert-report-xml-to-markdown.js]
+    end
+
+    subgraph Outputs [Markdown Documentation]
+        direction TB
+        MD_F[outputs/XML/]
+        MD_P[outputs/pll/]
+        MD_R[outputs/reports/]
+    end
+
+    %% Flow: Binaries to Utilities
+    FMB --> F2X
+    MMB --> F2X
+    OLB --> F2X
+    PLL --> CMP
+    RDF --> RWC
+
+    %% Flow: Utilities to Intermediates
+    F2X --> XML_F
+    F2X --> XML_M
+    F2X --> XML_O
+    CMP --> TXT_P
+    RWC --> XML_R
+
+    %% Flow: Intermediates to Scripts
+    XML_F --> ScriptF
+    XML_M --> ScriptF
+    XML_O --> ScriptF
+    TXT_P --> ScriptP
+    XML_R --> ScriptR
+
+    %% Flow: Scripts to Markdown
+    ScriptF --> MD_F
+    ScriptP --> MD_P
+    ScriptR --> MD_R

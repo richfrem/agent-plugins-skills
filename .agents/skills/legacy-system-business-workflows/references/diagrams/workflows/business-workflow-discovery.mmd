@@ -1,0 +1,98 @@
+---
+config:
+  theme: base
+---
+flowchart TB
+ subgraph subGraph0["Universal Entry Point"]
+        P0_Plan@{ label: "Step 0: Strategy Phase<br><b style='color:#FF8C00'>/agent-orchestrator_plan</b>" }
+  end
+ subgraph subGraph0["Trigger (User Intent)"]
+        P1_Req@{ label: "Command: <b style=\"color:#1E90FF\">/legacy-system-business-workflows_codify-business-workflow</b> [ID]<br>OR <b style=\"color:#1E90FF\">/legacy-system-business-workflows_investigate-business-workflow</b>" }
+  end
+ subgraph subGraph1["Initialization Inputs"]
+    direction LR
+        In_Base@{ label: "Core Inputs:<br>- <b style=\"color:#1E90FF\">workflow_candidates.json</b><br>- Source: Form Navigation (CALL_FORM)<br>- Intel: master_object_collection.json" }
+  end
+ subgraph subGraph2["Phase 1: Discovery & Context"]
+        P3_Init@{ label: "Step 2: Search Existing<br><b style=\"color:#1E90FF\">/legacy-system-business-workflows_investigate-business-workflow --search</b><br><i>(Prevent Duplicates)</i>" }
+        P3_Scan@{ label: "Step 3a: Confirmation Search<br><b style=\"color:#1E90FF\">/rlm-factory_query</b> (RLM)<br><b style=\"color:#1E90FF\">/vector-db_query</b> (Vector)<br>Step 3b: Scan Candidates" }
+        P3_Gap{"Already Exists?"}
+        P3_Link["Link to Existing"]
+  end
+ subgraph subGraph_Spiral["Phase 1b: Recursive Context Spiral"]
+    direction TB
+        S_Init@{ label: "Step 3b: Init Topic Context<br><b style='color:#1E90FF'>/context-bundler_init</b>" }
+        S_Check{"Context Complete?"}
+        S_Add["<b style='color:#1E90FF'>/context-bundler_add</b><br><i>(Add Forms/Libs/Miners)</i>"]
+        S_Bundle@{ label: "Regenerate Bundle<br><b style='color:#1E90FF'>/context-bundler_bundle</b>" }
+        S_Review["Review Bundle"]
+  end
+ subgraph subGraph_P2["Phase 2: Decision Matrix"]
+    direction TB
+        P3_Outcomes{"Review Outcome"}
+        P3_Update["<b>Outcome A: Update</b><br><i>(Workflow Exists)</i>"]
+        P3_Create["<b>Outcome B: Create</b><br><i>(New Logic)</i>"]
+        P3_Stop["<b>Outcome C: No Logic</b><br><i>(Stop & Ask)</i>"]
+        P3_Merge["<b>Outcome D: Consolidate</b><br><i>(Duplicates Found)</i>"]
+  end
+ subgraph subGraph3["Phase 3: Codification"]
+        P4_Trace@{ label: "Step 5: Trace Flow<br><b style=\"color:#1E90FF\">/investigate-lineage</b>" }
+        P4_Logic["Step 6: Map State Transitions"]
+  end
+ subgraph subGraph_Scribe["Phase 4: Scribe (Documentation)"]
+        P4_Fill["Step 7: Fill Template<br>(BW_TEMPLATE)"]
+        P4_QA@{ label: "Step 7b: QA & Compliance<br><b style='color:#1E90FF'>audit_template_compliance.py</b>" }
+  end
+ subgraph Closure["Feature Completion (Deterministic Closure Protocol)"]
+        direction TB
+        CL_Review@{ label: "Review WPs<br><b style='color:#1E90FF'>/spec-kitty.review</b>" }
+        CL_Accept@{ label: "Accept Feature<br><b style='color:#1E90FF'>/spec-kitty.accept</b>" }
+        CL_Retro@{ label: "Retrospective (MANDATORY)<br><b style='color:#FF8C00'>/spec-kitty_retrospective</b>" }
+        CL_Merge@{ label: "Merge from Main Repo<br><b style='color:#1E90FF'>/spec-kitty.merge</b> --feature slug" }
+        CL_PostVerify@{ label: "Post-Merge Verify<br>git worktree list, git branch" }
+        CL_IntelSync@{ label: "Intelligence Sync<br>RLM/Vector Update" }
+        CL_End["Feature Done (Clean Repo)"]
+  end
+ subgraph subGraph5["Phase 6: Continuous Evolution"]
+        P6_Reflect{"Self-Reflection"}
+        P6_Impl["Implement Improvements"]
+  end
+    P0_Plan --> P1_Req
+    P1_Req --> P3_Init
+    In_Base --> P3_Init
+    P3_Init --> P3_Scan
+    P3_Scan --> P3_Gap
+    P3_Gap -- Found --> P3_Link
+    P3_Gap -- Not Found --> S_Init
+    S_Init --> S_Check
+    S_Check -- No: New Leads --> S_Add
+    S_Add --> S_Bundle --> S_Review --> S_Check
+    S_Check -- Yes: Complete --> P3_Outcomes
+    P3_Outcomes -- Matches Existing --> P3_Update
+    P3_Outcomes -- New Logic --> P3_Create
+    P3_Outcomes -- Multiples Found --> P3_Merge
+    P3_Outcomes -- No Evidence --> P3_Stop
+    P3_Create --> P4_Trace
+    P3_Update --> P4_Trace
+    
+    P3_Merge -.-> CL_End
+    P3_Stop -.-> CL_End
+    P4_Trace --> P4_Logic
+    P4_Logic --> P4_Fill
+    P4_Fill --> P4_QA
+    P4_QA -- Fail --> P4_Logic
+    P4_QA -- Pass --> CL_Review
+    CL_Review --> CL_Accept --> CL_Retro --> CL_Merge --> CL_PostVerify --> CL_IntelSync --> CL_End
+    CL_End --> P6_Reflect
+    P6_Reflect -- Improve --> P6_Impl
+    P6_Impl --> P0_Plan
+
+    P1_Req@{ shape: rect}
+    In_Base@{ shape: rect}
+    P3_Init@{ shape: rect}
+    P3_Scan@{ shape: rect}
+    P4_Trace@{ shape: rect}
+    style P1_Req fill:#90EE90
+    style S_Bundle fill:#FFD700
+    style P5_End fill:#90EE90
+    style P6_Impl fill:#E6E6FA

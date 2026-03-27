@@ -1,0 +1,68 @@
+---
+config:
+  theme: base
+---
+flowchart TB
+ subgraph Legend["ADR-0019: Separation of Concerns"]
+        L1["<b style='color:#E6E6FA'>/legacy-system-oracle-forms_investigate-olb</b> = Reusable Analysis"]
+        L2["<b style='color:#90EE90'>/legacy-system-oracle-forms_codify-olb</b> = Documentation Output"]
+  end
+ subgraph subGraph0["Universal Entry Point"]
+        P0_Plan@{ label: "Step 0: Strategy Phase<br><b style='color:#FF8C00'>/agent-orchestrator_plan</b>" }
+        P1_Codify@{ label: "Command: <b style='color:#32CD32'>/legacy-system-oracle-forms_codify-olb</b> [OLBName]" }
+  end
+ subgraph Investigate["<b>/legacy-system-oracle-forms_investigate-olb</b>"]
+        direction TB
+        subgraph Phase1["Phase 1: Context Initialization"]
+            P3_Init@{ label: "Step 1: Initialize Smart Context<br><b style='color:#1E90FF'>/context-bundler_init</b> --type olb" }
+            P3_Locate@{ label: "Step 2: Locate OLB XML" }
+            P3_Review@{ label: "Step 3: Review Context" }
+        end
+        subgraph Phase2["Phase 2: Recursive Context Spiral"]
+            P3_Gap{"Context Complete?"}
+            P3_Edit["Add Consumers"]
+            P3_Rebundle@{ label: "Regenerate Bundle<br><b style='color:#1E90FF'>/context-bundler_bundle</b>" }
+        end
+        subgraph Phase3["Phase 3: Mining"]
+            P3_Mine@{ label: "Step 4: Run OLB Miner<br><b style='color:#1E90FF'>olb_miner.py</b> --file [PATH]" }
+            P3_Extract["Extracts:<br>SmartClasses | VA | ObjectGroups | Triggers"]
+        end
+        subgraph Phase4["Phase 4: Verification"]
+            P3_Dep@{ label: "Dependency Check<br><b style='color:#1E90FF'>plugins/legacy system/dependency-analysis/skills/dependency-analysis/scripts/dependencies.py</b>" }
+            P3_Check["Context Completeness<br>✓ XML ✓ SmartClasses ✓ Consumers"]
+        end
+  end
+ subgraph CodifyOutput["<b>/legacy-system-oracle-forms_codify-olb</b> Output Phase"]
+        direction TB
+        P4_Fill["Step: Fill Template"]
+        P5_Distill@{ label: "Distill RLM<br><b style='color:#1E90FF'>/rlm-factory_distill</b>" }
+        P5_Inv@{ label: "Rebuild Inventory<br><b style='color:#1E90FF'>/inventory-manager_curate-inventories</b>" }
+        P5_Doc["Output: [ID]-OLB-Overview.md"]
+  end
+    P0_Plan --> P1_Codify
+    P1_Codify --> P3_Init
+    P3_Init --> P3_Locate --> P3_Review --> P3_Gap
+    P3_Gap -- "No: Augment" --> P3_Edit --> P3_Rebundle --> P3_Review
+    P3_Gap -- "Yes: Ready" --> P3_Mine
+    P3_Mine --> P3_Extract --> P3_Dep --> P3_Check
+
+ subgraph Closure["Feature Completion (Deterministic Closure Protocol)"]
+        direction TB
+        CL_Review@{ label: "Review WPs<br><b style='color:#1E90FF'>/spec-kitty.review</b>" }
+        CL_Accept@{ label: "Accept Feature<br><b style='color:#1E90FF'>/spec-kitty.accept</b>" }
+        CL_Retro@{ label: "Retrospective (MANDATORY)<br><b style='color:#FF8C00'>/spec-kitty_retrospective</b>" }
+        CL_Merge@{ label: "Merge from Main Repo<br><b style='color:#1E90FF'>/spec-kitty.merge</b> --feature slug" }
+        CL_PostVerify@{ label: "Post-Merge Verify<br>git worktree list, git branch" }
+        CL_IntelSync@{ label: "Intelligence Sync<br>RLM/Vector Update" }
+        CL_End["Feature Done (Clean Repo)"]
+  end
+    P3_Check --> P4_Fill
+    P4_Fill --> P5_Distill --> P5_Inv --> P5_Doc
+    P5_Doc --> CL_Review
+    CL_Review --> CL_Accept --> CL_Retro --> CL_Merge --> CL_PostVerify --> CL_IntelSync --> CL_End
+
+    style P1_Codify fill:#90EE90
+    style Investigate fill:#E6E6FA
+    style P5_Doc fill:#90EE90
+    style CL_Retro fill:#FFD700
+    style CL_End fill:#90EE90
