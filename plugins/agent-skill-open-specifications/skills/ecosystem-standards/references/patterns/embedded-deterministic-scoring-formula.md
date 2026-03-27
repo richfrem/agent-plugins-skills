@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/embedded-deterministic-scoring-formula.md

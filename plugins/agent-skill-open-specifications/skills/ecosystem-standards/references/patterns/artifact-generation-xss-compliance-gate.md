@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/artifact-generation-xss-compliance-gate.md
