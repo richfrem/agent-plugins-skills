@@ -3,6 +3,8 @@ name: requesting-code-review
 description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
 ---
 
+> **Source:** Ported from [obra/superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://github.com/obra). Adapted for the `agent-plugins-skills` ecosystem. Original concepts and Iron Laws credit belongs to Jesse.
+
 # Requesting Code Review
 
 Dispatch the `code-reviewer` agent to catch issues before they cascade. The reviewer gets precisely
