@@ -1,0 +1,10 @@
+{
+  "mode": "idle",
+  "active_agent": null,
+  "last_reflection": null,
+  "memory_gc_due": false,
+  "loop_status": "standby",
+  "execution_mode": "standard",
+  "hook_sample_rate": 1,
+  "lock_timeout_seconds": 1800
+}

@@ -1,0 +1,1 @@
+../../.agents/workflows/tool-inventory_tool-inventory-init.md

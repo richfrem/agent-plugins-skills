@@ -1,0 +1,15 @@
+{
+    "version": 2,
+    "default_profile": "knowledge",
+    "profiles": {
+        "knowledge": {
+            "description": "General documentation and project knowledge.",
+            "manifest": ".agent/learning/vector_knowledge_manifest.json",
+            "child_collection": "child_chunks_v5",
+            "parent_collection": "parent_documents_v5",
+            "chroma_data_path": ".vector_data",
+            "chroma_host": "127.0.0.1",
+            "chroma_port": 8110
+        }
+    }
+}

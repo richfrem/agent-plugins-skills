@@ -1,0 +1,17 @@
+{
+    "name": "agent-plugin-analyzer",
+    "version": "2.1.0",
+    "description": "Systematically analyze agent plugins and skills to extract design patterns, architectural decisions, and reusable techniques. Translates raw analysis into concrete improvement recommendations.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "plugin-analyzer",
+        "pattern-extraction",
+        "security-audit",
+        "maturity-model",
+        "skill-analysis"
+    ]
+}

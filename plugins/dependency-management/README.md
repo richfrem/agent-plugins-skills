@@ -29,6 +29,15 @@ npx skills add richfrem/agent-plugins-skills --path plugins/dependency-managemen
 npx skills add ./plugins/dependency-management
 ```
 
+### Option 4: Local Bridge Install (full plugin — skills + rules)
+
+Use the `bridge-plugin` skill (also in this repo) to deploy the full plugin
+into another local project, including skills, rules, commands, and hooks not
+covered by `npx skills`.
+
+See the [bridge-plugin skill](../plugin-manager/skills/bridge-plugin/SKILL.md)
+for full installation instructions.
+
 ## Core Rules
 1. No manual `pip install` — use `.in` → `pip-compile` → `.txt`
 2. Commit `.in` + `.txt` together

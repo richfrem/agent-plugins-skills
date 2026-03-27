@@ -1,0 +1,1 @@
+../../.agents/workflows/plugin-manager_install.md

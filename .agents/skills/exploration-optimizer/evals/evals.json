@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Evaluate and improve the exploration-session-brief skill.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run an optimization loop on our exploration workflow to find what to improve.",
+    "should_trigger": true
+  },
+  {
+    "query": "The exploration cycle feels slow — help me identify which skill to optimize first.",
+    "should_trigger": true
+  },
+  {
+    "query": "Iterate on the business-requirements-capture prompts to improve BRD quality.",
+    "should_trigger": true
+  },
+  {
+    "query": "Generate a BRD from our session captures.",
+    "should_trigger": false
+  },
+  {
+    "query": "Refactor the login module for clarity.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create user stories from the BRD.",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy the latest build to production.",
+    "should_trigger": false
+  }
+]

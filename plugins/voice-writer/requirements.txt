@@ -1,0 +1,3 @@
+# voice-writer skill requirements
+# Standard library only — no external packages needed.
+# Run: pip-compile requirements.in && pip install -r requirements.txt

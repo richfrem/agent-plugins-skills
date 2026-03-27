@@ -1,14 +1,20 @@
 # ADR-001: Cross-Plugin Script Dependencies
 
 ## Status
-Proposed
+Accepted
 
 ## Context
-Historically within the `agent-plugins-skills` ecosystem, we have solved cross-plugin capabilities by directly executing another plugin's python scripts via relative paths or deep symlinks. For example, `tool-inventory` running `python ../../rlm-factory/scripts/distiller.py`. 
+Within the `agent-plugins-skills` monorepo, a single Plugin often needs logic that another Plugin has already implemented. Historically this was solved by directly executing another plugin's python scripts via relative paths or deep symlinks -- for example, `tool-inventory` running `python ../../rlm-factory/scripts/distiller.py`.
 
 This tight coupling violates separation of concerns and breaks plugin encapsulation. It causes fragile dependencies (e.g., if a directory structure changes, the symlink breaks), makes it impossible to cleanly export or replicate a single plugin in isolation, and causes generic logic analyzers to throw false positives when scanning plugin directories.
 
-We need a standardized architectural principle that governs how independent plugins share functionality without resorting to brittle file-path executions.
+The ecosystem now operates on a **3-layer principle**:
+
+1. **Source repo (dev time) - DRY**: One canonical file per resource, no duplication. Cross-plugin sharing in source is done via file-level symlinks. The mono-repo has all plugins present, so cross-plugin symlinks resolve correctly during development.
+2. **Deploy time - Self-contained**: The bridge installer (`bridge_installer.py`) and `npx skills add` resolve all file-level symlinks to physical copies when installing into `.agents/`. Each installed skill is fully self-contained regardless of what other plugins are present.
+3. **Runtime - Agent-orchestrated**: When a skill needs a capability from another plugin at runtime, it instructs the Agent to invoke that plugin's skill via the conversation layer -- not by calling scripts directly.
+
+This combination eliminates both code duplication in source AND fragile runtime dependencies.
 
 ## Decision
 **We will utilize Agent Skill Delegation instead of direct cross-plugin script execution.**
@@ -22,13 +28,19 @@ Implementation Rules:
 
 ## Consequences
 **Positive:**
-- Perfect plugin encapsulation (plugins can be exported standalone).
-- Eradicates brittle relative paths and deep symlinks.
-- Eliminates code duplication (no "vendoring" scripts into multiple plugins).
+- Perfect plugin encapsulation at deploy time (each installed skill runs standalone).
+- DRY is maintained in the source repo -- no script is duplicated; cross-plugin file-level symlinks in source are resolved to physical copies at install time by the bridge installer and npx.
+- Eradicates brittle relative paths and deep symlinks in deployed artifacts.
+- Agent-level delegation keeps runtime coordination flexible and loosely coupled.
 
 **Negative:**
-- Requires the Agent to orchestrate the step between the two tools, which may cost one additional inference cycle.
-- Demands refactoring existing CLI tools to return prompts for the LLM rather than attempting to auto-invoke secondary scripts.
+- Agent-layer orchestration between plugins costs one additional inference cycle compared to a direct script call.
+- Cross-plugin symlinks in source require both plugins to be present locally to resolve correctly during development (guaranteed in this mono-repo; only an issue if plugins are checked out in isolation).
+
+## Related ADRs
+- **ADR-002**: Governs within-plugin multi-skill script sharing (Hub-and-Spoke pattern).
+- **ADR-003**: Governs file-level symlink structure within a plugin (file-level only, never directory-level).
+- **ADR-004**: Governs self-containment mandate for the installed artifact; migration guide for removing legacy CONNECTORS.md cross-plugin dependencies.
 
 ## Alternatives Considered
 - **Script Vendoring**: Copying required scripts (e.g. `distiller.py`) directly into every plugin that needs it. Rejected due to extreme code duplication and high maintenance burden.
