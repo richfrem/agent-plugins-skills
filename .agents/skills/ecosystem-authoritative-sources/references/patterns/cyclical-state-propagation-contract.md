@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/cyclical-state-propagation-contract.md

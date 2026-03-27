@@ -9,8 +9,8 @@ description: >
   memory persistence, and os-learning-loop trigger if friction threshold crossed.
   Four coordination topologies: turn-signal, fan-out, request-reply, dual-loop (Pattern D).
 status: active
-trigger: concurrent agents, shared event bus, multi-agent coordination, turn signal, fan-out,
-  parallel agents shared state, event-driven agents, agent threads, kernel event bus,
+trigger: concurrent agents, shared event log, parallel agents, turn signal, fan-out,
+  request-reply, background task shared state, event-driven agents, agent threads, kernel event bus,
   cross-session coordination, replace AGENT_COMMS, concurrent skill audit, claim task,
   inner agent, orchestrator peer agent, worker agent, continuous improvement loop,
   eval benchmark, self-assessment survey, post-run survey, friction events, metrics,
@@ -157,7 +157,7 @@ ${CLAUDE_PROJECT_DIR}/context/
   agents.json                          <- permitted agent registry
   os-state.json                        <- shared counters and state
   agents/<id>.cursor                   <- per-agent read cursor (line-count)
-  .locks/                              <- per-resource mutex directories
+  .locks/                              <- per-resource execution lock directories
   memory/YYYY-MM-DD.md                 <- session log written at every loop close
   memory/retrospectives/               <- per-agent self-assessment surveys
     survey_[DATE]_[TIME]_[AGENT].md    <- one file per agent per cycle

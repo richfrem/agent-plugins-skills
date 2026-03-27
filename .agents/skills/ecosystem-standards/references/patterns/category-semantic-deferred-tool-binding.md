@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/category-semantic-deferred-tool-binding.md

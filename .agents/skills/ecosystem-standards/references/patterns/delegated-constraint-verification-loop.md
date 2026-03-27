@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/delegated-constraint-verification-loop.md
