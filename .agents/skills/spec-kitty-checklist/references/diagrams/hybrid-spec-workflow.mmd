@@ -1,0 +1,75 @@
+graph TD
+    User([User/Agent])
+    Constitution[["🏛️ Constitution"]]
+
+    User -->|"1. Request:<br/>/agent-orchestrator_plan"| TypeCheck{Work Type?}
+    
+    TypeCheck -->|Standard Flow<br/>e.g. /legacy-system-oracle-forms_codify-form| StandardFlow[Standard Flow]
+    TypeCheck -->|Custom Flow<br/>e.g. New Feature| CustomFlow[Custom Flow]
+    
+    %% Spec-Kitty 6-Step Lifecycle (Aligned with Official Flow)
+    subgraph SpecKitty ["🐱 Spec-Kitty: From Idea to Production in 6 Steps"]
+        direction LR
+        A["📝 Specify<br/>Plan What"]
+        B["🎯 Plan<br/>Plan How"]
+        C["📋 Tasks<br/>WPs"]
+        D["⚡ Implement<br/>Execute SOPs"]
+        E["🔍 Review<br/>Acceptance"]
+        F["🚀 Merge<br/>Closure"]
+        
+        A --> B
+        B --> C
+        C --> D
+        D --> E
+        E --> F
+    end
+    
+    StandardFlow --> A
+    CustomFlow --> A
+    
+    %% Constitution governs all
+    Constitution -.->|"Governs all"| SpecKitty
+    
+    %% Phase Commands Mapping
+    subgraph Commands ["Command Reference"]
+        direction TB
+        Cmd1["spec-kitty specify<br/>or /spec-kitty.specify"]
+        Cmd2["spec-kitty plan<br/>or /spec-kitty.plan"]
+        Cmd3["spec-kitty tasks<br/>or /spec-kitty.tasks"]
+        Cmd4["spec-kitty implement<br/>or /legacy-system-oracle-forms_* SOPs"]
+        Cmd5["spec-kitty accept<br/>+ /spec-kitty_retrospective"]
+        Cmd6["spec-kitty merge"]
+    end
+    
+    A -.-> Cmd1
+    B -.-> Cmd2
+    C -.-> Cmd3
+    D -.-> Cmd4
+    E -.-> Cmd5
+    F -.-> Cmd6
+    
+    %% Factory Operations (Called during Implement)
+    subgraph FactoryOps ["Factory Operations (Domain SOPs)"]
+        C_Form[/legacy-system-oracle-forms_codify-form/]
+        C_DB[/legacy-system-database_codify-db-*//]
+        C_Logic[/legacy-system-business-rules_codify-*//]
+        C_Report[/legacy-system-oracle-forms_codify-report/]
+    end
+    
+    D -.->|Standard Tasks| FactoryOps
+    
+    F --> Done([Done])
+    
+    %% Styling (Matching official spec-kitty colors)
+    style User fill:#fff,stroke:#333
+    style Constitution fill:#ff9999,stroke:#333,stroke-width:3px
+    style TypeCheck fill:#FFD700,stroke:#333
+    style A fill:#e1f5ff,stroke:#333
+    style B fill:#e1f5ff,stroke:#333
+    style C fill:#fff3e0,stroke:#333
+    style D fill:#f3e5f5,stroke:#333
+    style E fill:#e8f5e9,stroke:#333
+    style F fill:#fce4ec,stroke:#333
+    style StandardFlow fill:#90EE90,stroke:#333
+    style CustomFlow fill:#87CEEB,stroke:#333
+    style SpecKitty fill:#fafafa,stroke:#ff69b4,stroke-width:2px

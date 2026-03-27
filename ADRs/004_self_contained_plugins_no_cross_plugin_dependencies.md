@@ -32,25 +32,31 @@ and has no runtime enforcement.
 
 **Plugins and skills must be self-contained.**
 
-1. **No cross-plugin script paths.** Any script a plugin needs must live in that
-   plugin's own `scripts/` directory. If the same script is needed by multiple plugins,
-   each plugin gets its own copy.
+1. **No cross-plugin script paths in deployed skills.** Any script a skill executes
+   must be present in that plugin's own `scripts/` directory at install time.
 
-2. **Copy, don't symlink across plugins.** When a script originates in another plugin,
-   copy it into the target plugin's `scripts/` folder. Update all path references to
-   use `${CLAUDE_PLUGIN_ROOT}/scripts/<script>`.
+2. **Source repo DRY via cross-plugin file-level symlinks.** In the mono-repo source,
+   prefer a file-level symlink pointing to the canonical script rather than duplicating
+   it. The bridge installer and `npx skills add` resolve these symlinks to physical
+   copies when installing into `.agents/` -- so the installed skill is self-contained
+   even if the source uses a symlink. See ADR-003 for the validated symlink resolution
+   rules (file-level only; directory-level symlinks are dropped by npx).
 
-3. **Skills access plugin scripts via file-level symlinks** per ADR-003. The canonical
+3. **When duplication is unavoidable** (e.g. a plugin that will be distributed
+   independently via npx without relying on the full mono-repo), copy the canonical
+   script into the target plugin's `scripts/` folder and update all path references
+   to use `${CLAUDE_PLUGIN_ROOT}/scripts/<script>`.
+
+4. **Skills access plugin scripts via file-level symlinks** per ADR-003. The canonical
    script lives at `plugin-name/scripts/script.py`. Skills that need it get a file-level
    symlink at `skills/skill-name/scripts/script.py -> ../../../scripts/script.py`.
 
-4. **CONNECTORS.md is for MCP tool categories only.** Use `CONNECTORS.md` exclusively
+5. **CONNECTORS.md is for MCP tool categories only.** Use `CONNECTORS.md` exclusively
    to map `~~category` abstractions to concrete MCP tool implementations. Do not use it
    to declare plugin-to-plugin dependencies.
 
-5. **Empty CONNECTORS.md template files must be deleted.** A CONNECTORS.md that contains
-   only the scaffold header ("Map abstract `~~category` tool requirements...") with no
-   actual entries provides no value and creates noise.
+6. **Empty CONNECTORS.md template files must be deleted.** A CONNECTORS.md that contains
+   only the scaffold header with no actual entries provides no value and creates noise.
 
 ## Migration Steps for Existing Cross-Plugin References
 
@@ -69,9 +75,12 @@ For each CONNECTORS.md that declares a cross-plugin script dependency:
 
 ## Consequences
 
-- Plugins are fully portable and installable independently
+- Plugins are fully portable and installable independently at deploy time
 - No silent runtime failures due to missing sibling plugins
-- Scripts may be duplicated across plugins - this is intentional and acceptable
+- In the mono-repo source, DRY is maintained via cross-plugin file-level symlinks;
+  physical copies only exist in `.agents/` after the installer resolves them
+- Scripts may be physically duplicated across plugins only when a plugin is distributed
+  independently of the mono-repo -- this is intentional and acceptable in that case
 - `CONNECTORS.md` files are now rare and only appear when a plugin integrates
   external MCP tools requiring category abstraction
 

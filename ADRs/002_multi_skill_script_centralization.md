@@ -1,7 +1,7 @@
 # ADR-002: Multi-Skill Script Centralization
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 Within the `agent-plugins-skills` monorepo, a single Plugin often contains multiple distinct Skills (e.g., the `plugin-manager` plugin contains `maintain-plugins`, `replicate-plugin`, and `bridge-plugin` skills). 
@@ -22,10 +22,17 @@ We need a standardized architectural rule defining exactly where Python scripts 
 - Enforces strict DRY (Don't Repeat Yourself) within a plugin's boundary.
 - All CLI commands and execution strings across `SKILL.md` workflows remain perfectly uniform and localized (`python ./scripts/foo.py`), oblivious to whether the script is physical or a symlink to the root repo.
 - The `plugins/<plugin-name>/scripts/` folder serves as a clear "shared library" for internal capability logic.
+- **Installer resolution guarantee**: Both `npx skills add` and `bridge_installer.py` resolve file-level symlinks at install time, so consumers in `.agents/skills/<name>/scripts/` always execute real physical files. The bridge installer uses a 3-tier resolution strategy:
+  1. **True symlink** (Linux, macOS, Windows with Developer Mode enabled) via `os.symlink()`
+  2. **NTFS Junction point** (Windows without Developer Mode, directories only) -- logged as `Symlinked (Junction)`
+  3. **Full copy fallback** if both symlink and junction fail -- returns `symlinkFailed=True`, equivalent to npx skills behavior
+
+  This means the Hub-and-Spoke pattern is platform-safe by design.
 
 **Negative:**
 - Generating a new shared script requires a structural setup step to wire the relative symlinks into the consuming `skills/` directories.
 - Move/Rename refactoring requires careful attention to avoid breaking the relative symlinks.
+- On Windows without Developer Mode, junction points behave differently from true symlinks for broken-link detection. The installer handles this via `os.path.lexists()` and `os.path.isjunction()` checks, but local manual symlink creation on Windows requires extra care.
 
 ## Alternatives Considered
 - **Code Duplication**: Keeping physical copies of scripts in every skill that needs them. Rejected because bug fixes are easily missed across the duplicate copies.

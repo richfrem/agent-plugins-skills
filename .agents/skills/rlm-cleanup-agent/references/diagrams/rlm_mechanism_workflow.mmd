@@ -1,0 +1,66 @@
+---
+config:
+  layout: dagre
+  theme: base
+---
+
+%% Name: Recursive Language Model (RLM) Workflow with Safety
+%% Description: Visualizes the Bounded MapReduce strategy: Context Decomposition -> Recursive Execution (with Depth Limit) -> Accumulation -> Synthesis.
+%% Location: docs/architecture_diagrams/workflows/rlm_mechanism_workflow.mmd
+
+flowchart TB
+    subgraph ContextEnv ["External Context Environment"]
+        direction TB
+        BigDoc["Large Corpus / File"]
+        Chunk1["Chunk 1"]
+        ChunkN["Chunk N"]
+        
+        BigDoc -.->|Split| Chunk1
+        BigDoc -.->|Split| ChunkN
+    end
+
+    subgraph RootAgent ["Root Agent (Manager)"]
+        direction TB
+        Goal["/rlm-factory_distill Task"]
+        Planner["Splitting Logic"]
+        Synthesizer["Final Synthesis"]
+        FailureHandler["Failure Handling"]
+        
+        Goal --> Planner
+    end
+
+    subgraph RecursiveLayer ["Recursive Execution (with Guardrails)"]
+        direction TB
+        SubCall1["Sub-Call 1"]
+        SubCallN["Sub-Call N"]
+        
+        DepthCheck{"Depth < 3?"}
+    end
+
+    subgraph MemoryBuffer ["Accumulation Variables"]
+        direction TB
+        ResultsList["List: [Summaries]"]
+    end
+
+    %% Flow Relationships
+    Planner -- "Spawn" --> DepthCheck
+    
+    DepthCheck -- "YES" --> SubCall1
+    DepthCheck -- "YES" --> SubCallN
+    DepthCheck -- "NO / MAX DEPTH" --> FailureHandler
+
+    Chunk1 -- "Read" --> SubCall1
+    ChunkN -- "Read" --> SubCallN
+
+    SubCall1 -- "Return Insight" --> ResultsList
+    SubCallN -- "Return Insight" --> ResultsList
+    
+    FailureHandler -- "Log Warning &<br>Return Partial" --> ResultsList
+
+    ResultsList --> Synthesizer
+    Synthesizer --> FinalOutput["Final Answer<br>(Deterministic)"]
+
+    style RootAgent fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style RecursiveLayer fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style FailureHandler fill:#ffcdd2,stroke:#c62828,stroke-width:2px
+    style DepthCheck fill:#ffecb3,stroke:#ff6f00,stroke-width:2px

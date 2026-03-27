@@ -1,0 +1,131 @@
+graph TD
+    subgraph AOS["agent-agentic-os"]
+        direction TB
+        AOS_HOOK["SessionStart + PostToolUse + Stop hooks"]
+        AOS_KERNEL["kernel.py - event bus + lock manager"]
+        AOS_EVENTS["context/events.jsonl - audit log"]
+        AOS_MEM_L1["L1 context window - active session"]
+        AOS_MEM_L2["L2 context/memory/YYYY-MM-DD.md - session logs"]
+        AOS_MEM_L3["L3 context/memory.md - curated long-term"]
+        AOS_MEMMAN["session-memory-manager skill - dedup + promote"]
+        AOS_LOOP["os-learning-loop agent - mine friction propose patches"]
+        AOS_EVAL["skill-improvement-eval - KEEP or DISCARD gate"]
+        AOS_EVALS["evals.json + results.tsv - baseline registry"]
+        AOS_LEDGER["improvement-ledger.md - longitudinal scores"]
+        AOS_CONCURRENT["concurrent-agent-loop - 4 coordination topologies"]
+        AOS_DUAL["dual-loop pattern - ORCHESTRATOR + INNER_AGENT + PEER_AGENT"]
+        AOS_HEALTH["os-health-check agent - system diagnostics"]
+        AOS_METRICS["post_run_metrics.py - friction event counter"]
+        AOS_GUIDE["agentic-os-guide + references - progressive disclosure docs"]
+
+        AOS_HOOK --> AOS_KERNEL
+        AOS_KERNEL --> AOS_EVENTS
+        AOS_EVENTS --> AOS_MEM_L2
+        AOS_MEM_L2 --> AOS_MEMMAN
+        AOS_MEMMAN --> AOS_MEM_L3
+        AOS_MEMMAN --> AOS_MEM_L1
+        AOS_EVENTS --> AOS_LOOP
+        AOS_LOOP --> AOS_EVAL
+        AOS_EVAL --> AOS_EVALS
+        AOS_EVALS --> AOS_LEDGER
+        AOS_CONCURRENT --> AOS_DUAL
+        AOS_DUAL --> AOS_KERNEL
+        AOS_METRICS --> AOS_EVENTS
+        AOS_HEALTH --> AOS_EVENTS
+    end
+
+    subgraph ECP["exploration-cycle-plugin"]
+        direction TB
+        ECP_HOOK["SessionStart hook - check for session brief"]
+        ECP_INTAKE["intake-agent - classify session type"]
+        ECP_BRIEF["exploration/session-brief.md - session framing"]
+        ECP_ORCH["exploration-cycle-orchestrator-agent"]
+        ECP_DISPATCH["dispatch.py - safe CLI subprocess wrapper"]
+        ECP_REQDOC["requirements-doc-agent - cheap model 5 capture modes"]
+        ECP_CAPTURES["exploration/captures/ - BRD + stories + workflow + proto notes"]
+        ECP_HANDOFF["exploration-handoff skill - audience-targeted synthesis"]
+        ECP_PLANNING["planning-doc-agent - optional spec-kitty bridge"]
+        ECP_OPT["exploration-optimizer skill - baseline-first iteration"]
+        ECP_EVALS["evals/results.tsv - 12+ real iteration records"]
+        ECP_AUDIT["business-rule-audit-agent - verify rules vs prototype"]
+        ECP_REFS["dual-loop + learning-loop architecture references"]
+
+        ECP_HOOK --> ECP_BRIEF
+        ECP_INTAKE --> ECP_BRIEF
+        ECP_BRIEF --> ECP_ORCH
+        ECP_ORCH --> ECP_DISPATCH
+        ECP_DISPATCH --> ECP_REQDOC
+        ECP_REQDOC --> ECP_CAPTURES
+        ECP_CAPTURES --> ECP_HANDOFF
+        ECP_CAPTURES --> ECP_AUDIT
+        ECP_HANDOFF --> ECP_PLANNING
+        ECP_OPT --> ECP_EVALS
+    end
+
+    subgraph SP["superpowers"]
+        direction TB
+        SP_HOOK["SessionStart hook - inject using-superpowers content"]
+        SP_PLATFORM["Platform detection - Claude Code vs Cursor vs Gemini vs Codex"]
+        SP_INJECT["additionalContext injection - skills loaded at session start"]
+        SP_BRAIN["brainstorming skill - HARD-GATE before any code"]
+        SP_GIT["using-git-worktrees skill - isolation + gitignore safety"]
+        SP_PLAN["writing-plans skill - bite-sized tasks + TDD steps"]
+        SP_SUBAGENT["subagent-driven-development - fresh subagent per task"]
+        SP_EXEC["executing-plans - batch execution with checkpoints"]
+        SP_PARALLEL["dispatching-parallel-agents - one agent per domain"]
+        SP_IMPL["implementer-prompt.md - implementer subagent"]
+        SP_SPEC_REV["spec-reviewer-prompt.md - spec compliance reviewer"]
+        SP_QUAL_REV["code-quality-reviewer-prompt.md - quality reviewer"]
+        SP_FINAL_REV["code-reviewer agent - final review of full implementation"]
+        SP_REQ_REV["requesting-code-review skill"]
+        SP_REC_REV["receiving-code-review skill - pushback protocol"]
+        SP_TDD["test-driven-development - RED GREEN REFACTOR Iron Law"]
+        SP_DEBUG["systematic-debugging - 4-phase root cause first"]
+        SP_VERIFY["verification-before-completion - no claims without evidence"]
+        SP_FINISH["finishing-a-development-branch - merge PR keep discard"]
+        SP_WRITE_SK["writing-skills - TDD for documentation"]
+        SP_TESTS["tests/claude-code/ - integration tests for skills"]
+        SP_TOOLMAP["codex-tools.md + gemini-tools.md - cross-platform mapping"]
+
+        SP_HOOK --> SP_PLATFORM
+        SP_PLATFORM --> SP_INJECT
+        SP_INJECT --> SP_BRAIN
+        SP_BRAIN --> SP_GIT
+        SP_GIT --> SP_PLAN
+        SP_PLAN --> SP_SUBAGENT
+        SP_PLAN --> SP_EXEC
+        SP_SUBAGENT --> SP_IMPL
+        SP_IMPL --> SP_SPEC_REV
+        SP_SPEC_REV --> SP_QUAL_REV
+        SP_QUAL_REV --> SP_REQ_REV
+        SP_SUBAGENT --> SP_FINAL_REV
+        SP_FINAL_REV --> SP_FINISH
+        SP_PARALLEL --> SP_IMPL
+        SP_WRITE_SK --> SP_TESTS
+        SP_TOOLMAP --> SP_INJECT
+    end
+
+    subgraph SHARED["Shared Patterns - All Three"]
+        direction LR
+        P_SKILL["SKILL.md with YAML frontmatter - trigger descriptions + examples"]
+        P_AGENTS["agents/*.md - named sub-agent definitions"]
+        P_REFS["references/ - progressive disclosure docs"]
+        P_EVALS["evals/results.tsv - evaluation records"]
+    end
+
+    subgraph GAPS["Capability Gaps - What Each Plugin Lacks"]
+        direction TB
+        G_AOS["agent-agentic-os lacks: brainstorm plan execute review TDD verification worktree"]
+        G_ECP["exploration-cycle lacks: memory persistence eval gate code review TDD execution verification"]
+        G_SP["superpowers lacks: persistent memory self-improvement loop multi-agent locking exploration capture"]
+    end
+
+    AOS_EVENTS -.->|"kernel.py event bus\nif present"| ECP_HOOK
+    ECP_PLANNING -.->|"optional bridge\nif spec-kitty installed"| SPECK["spec-kitty SDD lifecycle\nexternal"]
+    SP_HOOK -.->|"no shared state\nstateless sessions"| G_SP
+
+    style AOS fill:#e8f4f8,stroke:#2196F3
+    style ECP fill:#f3f8e8,stroke:#4CAF50
+    style SP fill:#fef8e8,stroke:#FF9800
+    style SHARED fill:#f8f0fe,stroke:#9C27B0
+    style GAPS fill:#fee8e8,stroke:#F44336

@@ -1,0 +1,75 @@
+---
+config:
+  layout: elk
+  theme: base
+---
+stateDiagram
+  direction LR
+  state Inventory {
+    direction TB
+    [*] --> RunScript
+    RunScript --> ClassifyFiles
+    ClassifyFiles --> SecurityScan
+    SecurityScan --> GenerateChecklist
+    GenerateChecklist --> [*]
+  }
+  state Structure {
+    direction TB
+    [*] --> EvalLayout
+    EvalLayout --> EvalDisclosure
+    EvalDisclosure --> EvalRatios
+    EvalRatios --> ScoreDimensions
+    ScoreDimensions --> [*]
+  }
+  state Content {
+    direction TB
+    [*] --> LoadQuestions
+    LoadQuestions --> AnalyzeSkills
+    AnalyzeSkills --> AnalyzeCommands
+    AnalyzeCommands --> AnalyzeRefs
+    AnalyzeRefs --> AnalyzeScripts
+    AnalyzeScripts --> AnalyzeInteraction
+    AnalyzeInteraction --> [*]
+  }
+  state Patterns {
+    direction TB
+    [*] --> LoadCatalog
+    LoadCatalog --> MatchKnown
+    MatchKnown --> DetectNovel
+    DetectNovel --> CheckDedup
+    CheckDedup --> SetConfidence
+    SetConfidence --> DocumentFindings
+    DocumentFindings --> [*]
+  }
+  state Security {
+    direction TB
+    [*] --> RunP0Checks
+    RunP0Checks --> RunStructuralChecks
+    RunStructuralChecks --> CheckLLMVectors
+    CheckLLMVectors --> ApplyContextSeverity
+    ApplyContextSeverity --> FlagFindings
+    FlagFindings --> [*]
+  }
+  state Synthesis {
+    direction TB
+    [*] --> AssignMaturity
+    AssignMaturity --> ScoreDims
+    ScoreDims --> CalcOverall
+    CalcOverall --> GenerateReport
+    GenerateReport --> MapToTargets
+    MapToTargets --> UpdateCatalog
+    UpdateCatalog --> [*]
+  }
+  [*] --> Inventory
+  Inventory --> Structure
+  Structure --> Content
+  Content --> Patterns
+  Patterns --> Security
+  Security --> Synthesis
+  Synthesis --> [*]
+  Inventory: Phase 1 - Inventory + Security Scan
+  Structure: Phase 2 - Structure Analysis
+  Content: Phase 3 - Content + Interaction Analysis
+  Patterns: Phase 4 - Pattern Extraction + Governance
+  Security: Phase 5 - Anti-Pattern + Security Detection
+  Synthesis: Phase 6 - Synthesis + Maturity Scoring

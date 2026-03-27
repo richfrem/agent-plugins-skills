@@ -1,0 +1,18 @@
+{
+  "name": "voice-writer",
+  "version": "0.1.0",
+  "description": "Transform AI-generated or over-polished writing into authentic human voice. Supports voice profile calibration so the agent learns your specific style.",
+  "author": {
+    "name": "Richard Fremmerlid"
+  },
+  "repository": "https://github.com/richfrem/agent-plugins-skills",
+  "license": "MIT",
+  "keywords": [
+    "writing",
+    "humanize",
+    "voice",
+    "tone",
+    "ai-patterns",
+    "content"
+  ]
+}

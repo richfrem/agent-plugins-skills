@@ -1,0 +1,1 @@
+../../.agents/workflows/agent-plugin-analyzer_self-audit.md
