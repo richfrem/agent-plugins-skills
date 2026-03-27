@@ -3,3 +3,6 @@
 # Install: pip install -r requirements.txt
 
 huggingface_hub>=0.20.0
+
+# Pygments
+pygments>=2.19.2

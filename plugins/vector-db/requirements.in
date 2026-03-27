@@ -26,3 +26,9 @@ sentence-transformers
 # Security Overrides
 protobuf>=6.33.5
 langchain-core>=1.2.11
+
+# Requests
+requests>=2.33.0
+
+# Pygments
+pygments>=2.19.2

@@ -5,7 +5,8 @@
 #   3. pip install -r scripts/rlm_factory/requirements.txt
 
 # HTTP client for Ollama API
-requests
+requests>=2.33.0
+
 
 # Environment configuration
 # python-dotenv removed - now using JSON profiles
