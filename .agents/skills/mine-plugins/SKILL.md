@@ -102,7 +102,7 @@ Invoke the `synthesize-learnings` skill to produce targeted recommendations for:
 1. `agent-scaffolders` — template and scaffold improvements
 2. `agent-skill-open-specifications` — standards and spec updates
 3. `agent-plugin-analyzer` — self-improvement of this analyzer
-4. Domain plugins (e.g., `legacy system`) — transferable patterns for legacy code analysis
+4. Domain plugins (e.g., `oracle-legacy-system-analysis`) — transferable patterns for legacy code analysis
 
 ### Step 6: Deliver Report
 

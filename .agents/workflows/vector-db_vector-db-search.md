@@ -48,7 +48,7 @@ returns insufficient results.
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
 
-If connection refused: run `vector-db-launch` skill (`plugins/vector-db/skills/vector-db-launch/SKILL.md`).
+If connection refused: run `vector-db-launch` skill (`.agents/skills/vector-db-launch/SKILL.md`).
 For first-time setup: run `vector-db-init` skill (`scripts/init.py`).
 
 ### 2. Select Profile and Search

@@ -3,7 +3,7 @@
 To ensure `synthesize-learnings` correctly closes the virtuous cycle loop, it must pass the following criteria when evaluated against a raw plugin analysis report.
 
 ## 1. Actionable Recommendations
-Every recommendation generated must specify a direct, concrete change to be made to one of the four targets (`agent-scaffolders`, `agent-skill-open-specifications`, `agent-plugin-analyzer`, or `legacy system`). Recommendations must be testable (e.g., "Add the ~category connector abstraction to the create-skill template").
+Every recommendation generated must specify a direct, concrete change to be made to one of the four targets (`agent-scaffolders`, `agent-skill-open-specifications`, `agent-plugin-analyzer`, or `oracle-legacy-system-analysis`). Recommendations must be testable (e.g., "Add the ~category connector abstraction to the create-skill template").
 
 ## 2. Proper Categorization
 Extracted patterns must be correctly mapped using the defined categories (Structural, Content, Execution, Integration, Quality, Meta, Domain).

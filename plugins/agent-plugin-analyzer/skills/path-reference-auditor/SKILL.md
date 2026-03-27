@@ -31,7 +31,7 @@ Complete path reference audit system for plugins and skills. Ensures all `./file
 ## What This Skill Does
 
 Validates that file references in plugins and skills are:
-- **Skill-local**: References in `plugins/X/skills/Y/` stay within `Y/`
+- **Skill-local**: References in `.agents/skills/Y/` stay within `Y/`
 - **Plugin-local**: References in `plugins/X/` (root level) stay within `X/`
 - **Resolvable**: All `./` paths point to actual files (or symlinks)
 
@@ -90,7 +90,7 @@ python3 scripts/check_skill_boundaries.py temp/inventory.json --skill adr-manage
 
 Example violation:
 ```
-FILE: plugins/adr-manager/skills/adr-management/SKILL.md:45
+FILE: .agents/skills/adr-management/SKILL.md:45
   REF: ../../templates/adr-template.md  ❌ OUTSIDE SKILL
   FIX: Create symlink inside skill
 ```
@@ -198,7 +198,7 @@ cp -r plugins/agent-plugin-analyzer /path/to/target/plugins/
 
 Then run from project root:
 ```bash
-python3 plugins/agent-plugin-analyzer/skills/path-reference-auditor/./path_reference_auditor.py --project . --phase scan
+python3 .agents/skills/path-reference-auditor/./path_reference_auditor.py --project . --phase scan
 ```
 
 ---
@@ -206,15 +206,15 @@ python3 plugins/agent-plugin-analyzer/skills/path-reference-auditor/./path_refer
 ## Core Principles
 
 ### Skill Boundary Rule
-All file references **inside** `plugins/X/skills/Y/` must resolve **within** `Y/`.
+All file references **inside** `.agents/skills/Y/` must resolve **within** `Y/`.
 
 **Valid:**
-- `./scripts/tool.py` → `plugins/X/skills/Y/scripts/tool.py` ✅
-- `./references/guide.md` → `plugins/X/skills/Y/references/guide.md` ✅
+- `./scripts/tool.py` → `.agents/skills/Y/scripts/tool.py` ✅
+- `./references/guide.md` → `.agents/skills/Y/references/guide.md` ✅
 
 **Invalid:**
 - `../../templates/file.md` → `plugins/X/templates/file.md` (outside skill) ❌
-- `../other-skill/file.md` → `plugins/X/skills/other-skill/file.md` (sibling skill) ❌
+- `../other-skill/file.md` → `.agents/skills/other-skill/file.md` (sibling skill) ❌
 
 **Fix:** Create symlink inside the skill:
 ```bash
@@ -227,7 +227,7 @@ All file references **inside** `plugins/X/` (root level, non-skill files) must r
 
 **Valid:**
 - `./commands/file.md` → `plugins/X/commands/file.md` ✅
-- `./skills/Y/SKILL.md` → `plugins/X/skills/Y/SKILL.md` ✅
+- `./skills/Y/SKILL.md` → `.agents/skills/Y/SKILL.md` ✅
 
 **Invalid:**
 - `../other-plugin/file.md` → `plugins/other-plugin/file.md` (sibling plugin) ❌

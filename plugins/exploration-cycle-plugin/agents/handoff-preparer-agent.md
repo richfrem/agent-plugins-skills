@@ -21,7 +21,7 @@ You are invoked via CLI with all capture documents piped as input:
 
 ```bash
 python3 .agents/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/handoff-preparer-agent.md \
+  --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
   --context exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
   --optional-context exploration/captures/issues-opportunities.md exploration/captures/prototype-notes.md exploration/captures/business-rule-audit.md \
   --instruction "Synthesize all exploration captures into a structured handoff package. If a business rule audit is present, include its Unresolved Drifts section as a top-level risk section." \

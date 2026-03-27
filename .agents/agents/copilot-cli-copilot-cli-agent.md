@@ -136,7 +136,7 @@ For benchmark loops that call Copilot as the improvement backend, apply the same
 | Business | product-manager | Product strategy |
 | Specialization | api-documenter, documentation-expert | Technical writing |
 
-All personas in: `plugins/personas/`
+All personas are documented in the table above. Load the persona prompt file from your CLI plugin's `agents/` directory.
 
 ## 🔄 Recommended Audit Loop
 1. **Red Team** (Security Auditor) → find exploits

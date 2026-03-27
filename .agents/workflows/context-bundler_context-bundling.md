@@ -80,7 +80,7 @@ Instead of:
 ```json
 { "path": "plugins/agent-agentic-os/README.md", "note": "..." },
 { "path": "plugins/agent-agentic-os/SUMMARY.md", "note": "..." },
-{ "path": "plugins/agent-agentic-os/skills/agentic-os-guide/SKILL.md", "note": "..." },
+{ "path": ".agents/skills/agentic-os-guide/SKILL.md", "note": "..." },
 ...
 ```
 

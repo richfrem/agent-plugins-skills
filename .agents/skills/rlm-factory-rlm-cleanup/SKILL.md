@@ -27,7 +27,7 @@ its file no longer exists or has moved. Running this regularly keeps the ledger 
 
 ## Prerequisites
 
-**Profile not configured?** Run `rlm-init` skill first: `plugins/rlm-factory/skills/rlm-init/SKILL.md`
+**Profile not configured?** Run `rlm-init` skill first: `.agents/skills/rlm-init/SKILL.md`
 
 ## When to Run
 

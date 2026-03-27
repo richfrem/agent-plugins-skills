@@ -43,7 +43,7 @@ are community conventions built on top of these primitives (not Anthropic-offici
 
 For bootstrapping Agentic OS in a project, use the `agentic-os-init` skill:
 ```
-plugins/agent-agentic-os/skills/agentic-os-init/SKILL.md
+.agents/skills/agentic-os-init/SKILL.md
 ```
 
 # The Library

@@ -38,7 +38,7 @@ python3 .agents/skills/task-agent/scripts/task_manager.py <command>
 ```
 
 **Do NOT use** `./task_manager.py` (relative to script dir — breaks from project root) or
-`plugins/task-manager/skills/task-agent/scripts/task_manager.py` (plugin source — not the
+`.agents/skills/task-agent/scripts/task_manager.py` (plugin source — not the
 installed copy, may be out of sync if bridge-plugin was run).
 
 ## Architectural Constraints (Kanban Sovereignty)

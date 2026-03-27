@@ -56,7 +56,7 @@ Improvements to this analyzer plugin itself.
 - Framework gaps — phases that need refinement
 - New anti-patterns to add to the detection checklist
 
-### Target 4: Domain Plugins (e.g., `legacy system`)
+### Target 4: Domain Plugins (e.g., `oracle-legacy-system-analysis`)
 Improvements to the primary domain plugins in this repository — especially the legacy Oracle Forms/DB analysis plugins.
 
 **What to look for:**

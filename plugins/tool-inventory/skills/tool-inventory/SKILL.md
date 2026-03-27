@@ -31,7 +31,7 @@ This skill combines **Tool Discovery** (finding tools) and **Inventory Managemen
 
 | Script | Role | Dependencies |
 |:---|:---|:---|
-| `manage_tool_inventory.py` | **The Registry** — CRUD on plugins/tool_inventory.json | Triggers RLM distllation |
+| `manage_tool_inventory.py` | **The Registry** - CRUD on `tool_inventory.json` | Triggers RLM distillation |
 | `audit_plugins.py` | **The Auditor** — Verify inventory consistency | Filesystem check |
 
 > **Note**: For Semantic Search, Distillation, Cache Querying, and Cleanup, you **MUST** use the respective scripts inside the `rlm-curator` skill provided by the `rlm-factory` plugin.
@@ -47,7 +47,7 @@ The ecosystem contains hundreds of scripts. You are fundamentally incapable of h
 **ALWAYS** use the semantic query tools hooked up to `ChromaDB` (`tool_chroma.py search`) to discover tooling.
 
 ### ❌ WRONG: Manual Registry Edits
-**NEVER** manually edit `plugins/tool_inventory.json` using raw standard tools. 
+**NEVER** manually edit `tool_inventory.json` using raw standard tools.
 
 ### ✅ CORRECT: Database CRUD
 **ALWAYS** use `manage_tool_inventory.py` for registry CRUD operations. Only the CLI is permissioned to alter the inventory state safely.
@@ -64,7 +64,7 @@ When executing a search in `ChromaDB`:
 
 ### 1. Register New Tools
 ```bash
-python3 .agents/skills/tool-inventory/scripts/manage_tool_inventory.py add --path plugins/new_script_example.txt
+python3 .agents/skills/tool-inventory/scripts/manage_tool_inventory.py add --path scripts/new_script_example.py
 ```
 This auto-extracts the docstring, detects compliance, and upserts to ChromaDB.
 
