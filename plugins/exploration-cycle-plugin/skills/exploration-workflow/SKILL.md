@@ -38,7 +38,51 @@ This workflow describes the Phase A exploration cycle end-to-end. It runs indepe
 
 **Visual reference**: [`exploration-cycle-workflow.mmd`](../../assets/diagrams/exploration-cycle-workflow.mmd)
 
-**Orchestrator agent**: [`exploration-cycle-orchestrator-agent`](../../agents/exploration-cycle-orchestrator-agent.md)
+**Inline Phase A workflow diagram** (machine-readable for agent routing):
+
+```dot
+digraph exploration_workflow_phase_a {
+  rankdir=TB;
+  node [shape=box, style="rounded,filled", fillcolor=white, fontname=Helvetica];
+  edge [fontname=Helvetica, fontsize=10];
+
+  node [shape=ellipse] Start [label="Session Trigger"];
+
+  Phase0  [label="Phase 0: Intake\nintake-agent classifies session type\n(greenfield / brownfield / re-entry spike)\nwrites exploration/session-brief.md"];
+  HG0     [label="Human Gate:\nbrief clear and confirmed?", shape=diamond, fillcolor=lightyellow];
+  Phase1  [label="Phase 1: Requirements Capture\ndual-loop via CLI (cheap model, many passes)\npass1: problem-framing\npass2: BRD draft\npass2b: workflow diagram (if process flow)\npass3: user stories\npass4: issues + opportunities (optional)"];
+  GapCheck [label="check_gaps.py after each pass\n(non-zero exit halts the chain)", shape=diamond, fillcolor=lightyellow];
+  HG1     [label="Human Gate:\nreview full capture set", shape=diamond, fillcolor=lightyellow];
+  Phase2  [label="Phase 2: Prototype (optional)\nprototype-companion-agent via CLI\noutput: exploration/captures/prototype-notes.md"];
+  Phase2b [label="Phase 2b: Business Rule Audit\nbusiness-rule-audit-agent via CLI\nautput: exploration/captures/business-rule-audit.md\nHard stop: resolve all Unresolved Drifts"];
+  HG2     [label="Human Gate:\nall drifts resolved?", shape=diamond, fillcolor=lightyellow];
+  Phase3  [label="Phase 3: Narrowing Gate\n5-check readiness table\n(problem, shape, constraints, risks, unknowns)"];
+  NarrowOK [label="ready for handoff?", shape=diamond, fillcolor=lightyellow];
+  MoreCapture [label="Run another capture pass\nor targeted spike", style=dashed];
+  Phase4  [label="Phase 4: Handoff\nhandoff-preparer-agent via CLI\noutput: exploration/handoff/exploration-handoff.md"];
+  Phase5  [label="Phase 5: Planning Drafts (optional)\nspec-kitty plugin only\nplanning-doc-agent: spec-draft, plan-draft, tasks-outline\nHuman approves before any spec-kitty CLI"];
+  End     [label="Handoff package ready\nor planning drafts staged", shape=ellipse];
+
+  Start -> Phase0 -> HG0;
+  HG0 -> Phase1 [label="confirmed"];
+  HG0 -> Phase0 [label="unclear", style=dashed];
+  Phase1 -> GapCheck;
+  GapCheck -> Phase1 [label="gaps found", style=dashed];
+  GapCheck -> HG1 [label="clean"];
+  HG1 -> Phase2 [label="prototype needed"];
+  HG1 -> Phase3 [label="no prototype"];
+  Phase2 -> Phase2b -> HG2;
+  HG2 -> Phase3 [label="resolved"];
+  HG2 -> Phase2b [label="drifts remain", style=dashed];
+  Phase3 -> NarrowOK;
+  NarrowOK -> Phase4 [label="ready"];
+  NarrowOK -> MoreCapture [label="not ready", style=dashed];
+  MoreCapture -> Phase1 [style=dashed];
+  Phase4 -> Phase5 [label="spec-kitty present"];
+  Phase4 -> End [label="standalone"];
+  Phase5 -> End;
+}
+```
 
 ---
 

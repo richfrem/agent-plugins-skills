@@ -32,6 +32,31 @@ Use Standard Cycle only when the north star is regressing or explicitly requeste
 
 ### Fast Cycle (7 steps, ~30 min) -- default for every run
 
+```dot
+digraph fast_cycle {
+  rankdir=TB;
+  node [shape=box, style="rounded,filled", fillcolor=white, fontname=Helvetica];
+  edge [fontname=Helvetica, fontsize=10];
+
+  Orientation [label="1. Orientation\nRead: ledger, registry, last survey, friction patterns"];
+  Scenario    [label="2. Document Test Scenario\nWrite hypothesis + AC to tests/ BEFORE emitting loop.start"];
+  Execution   [label="3. Execute\nINNER_AGENT reads packet, does work, emits friction events immediately"];
+  Eval        [label="4. Eval Against Baseline\nINNER_AGENT + PEER_AGENT run eval_runner.py independently\nKEEP if both accuracy AND F1 >= baseline"];
+  Verdict     [label="KEEP / DISCARD?", shape=diamond, fillcolor=lightyellow];
+  Apply       [label="5a. Apply (KEEP)\nApply change to canonical skill or artifact"];
+  Correction  [label="5b. Correction Packet (DISCARD)\nWrite correction-{CID}.md (CRITICAL/MODERATE/MINOR)\nRe-assign to INNER_AGENT"];
+  LoopClose   [label="6. Loop Close -- all 4 required, no exceptions\n6a: ledger + registry row  6b: surveys (all agents)\n6c: metrics + report       6d: log M/L-class issues as tasks"];
+  Trigger     [label="7. Trigger Check\n3+ same-type friction events this cycle?\nFlag os-learning-loop for Full Loop on next session start"];
+
+  Orientation -> Scenario -> Execution -> Eval -> Verdict;
+  Verdict -> Apply      [label="KEEP"];
+  Verdict -> Correction [label="DISCARD"];
+  Apply -> LoopClose;
+  Correction -> Execution [label="re-cycle", style=dashed];
+  LoopClose -> Trigger;
+}
+```
+
 1. **Orientation** -- ORCHESTRATOR reads `improvement-ledger.md` (score trend, pending Section 2
    items) and the last registry row (what was recommended next).
 2. **Test scenario documented** -- ORCHESTRATOR writes hypothesis + acceptance criteria to

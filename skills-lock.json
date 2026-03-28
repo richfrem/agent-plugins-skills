@@ -37,9 +37,9 @@
     "agent-execution-disciplines-code-reviewer": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "b2f56d055034742a204e53f2dfebf00569be7594f05b98aab951f9b792076571",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "agent-loops-orchestrator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -437,9 +437,9 @@
     "finishing-a-development-branch": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "037c56822411e8561df9d6025036a073b7352e9d76669f413649995c64c60dd5",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "flawed-skill": {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
@@ -664,9 +664,9 @@
     "requesting-code-review": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "ef8c91e6b51d867b680fd361807862232f6d7aed6f923d902a5ab9eb1e39dcbe",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "rlm-cleanup-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -967,9 +967,9 @@
     "systematic-debugging": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "6ccd694bc10f5323d3ed56447494b475263b7493b7e46624c8148cd6be258004",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "task-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -988,9 +988,9 @@
     "test-driven-development": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "0622ae100aa445a2b724be7cffcaf0439d22d0ab2e2e69a67af3e7c8d728a9d8",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "todo-check": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1023,9 +1023,9 @@
     "using-git-worktrees": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "74026d48693e4e85520825a2c21b1b4ec5c35e4901713e061567ee4188fcd9cc",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "vector-db-cleanup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1079,9 +1079,9 @@
     "verification-before-completion": {
       "source": "agent-execution-disciplines",
       "sourceType": "local",
-      "computedHash": "f04c3e05939d822b2b7a29d6d9c2382b93e79789fef61bbc44284baa3aa413d7",
+      "computedHash": "",
       "installedAt": "2026-03-27T16:11:13.243816Z",
-      "updatedAt": "2026-03-27T21:14:32.327220Z"
+      "updatedAt": "2026-03-28T00:54:43.606012Z"
     },
     "zip-bundling": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
