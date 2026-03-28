@@ -22,22 +22,21 @@ While many tools add memory to agents, fewer implement a true feedback control s
 
 How it works:
 
-```
+```text
 Session runs -> errors and friction captured to events.jsonl
-             -> os-learning-loop mines the event log
-             -> proposes patches to SKILL.md files and CLAUDE.md
-             -> skill-improvement-eval scores the patch against evals/evals.json
-             -> patch kept ONLY if objective score improves
+             -> os-learning-loop (The Spec) proposes a single-variable patch to a SKILL.md (The Target)
+             -> eval_runner.py (The Headless Evaluator) scores it against static evals/evals.json fixtures
+             -> if DISCARD, agent automatically reverts via `git reset --hard`
+             -> if KEEP, the improved instruction is retained for the next session
 ```
 
 A **test registry** prevents re-testing falsified hypotheses so improvement cycles don't repeat dead ends.
 
-**⚠️ Current Safety Limits:** The improvement loop is powerful but experimental. Red-team reviews have identified critical limits in the current architecture:
-1. **Keyword Heuristic Vulnerability:** The evaluation currently uses a keyword-overlap heuristic, which naturally incentivizes the agent to stuff keywords into descriptions, which may degrade routing precision over time.
-2. **Missing Baseline Floor:** For the eval gate to work, skills must have an established baseline in `results.tsv`.
-3. **No Shadow Mode Validation:** Changes happen directly in the developer's workspace without parallel 'shadow' evaluation environments.
+> **Note on Architecture:** The system strictly implements the **Karpathy 3-File Autoresearch Framework**. This replaces earlier experimental proxy heuristics with a rigorous headless evaluation relying purely on `eval_runner.py` and static `evals.json`. Subjective "LLM mental testing" is strictly prohibited to combat "Agent Dementia" (Goodhart's Law).
 
-The validator (`eval_runner.py`) provides the supervised part: changes should pass an objective benchmark before they are applied. The loop is the reinforcement part: friction in use generates the training signal.
+**⚠️ Current Safety Limits:** While the keyword bloat issue is solved by headless baseline testing, the loop still operates directly in the developer's workspace without a heavily isolated sandbox mode. The agent's strict `git reset --hard` mandate mitigates risk, but it is not a true parallel shadow execution environment.
+
+The validator (`eval_runner.py`) provides the supervised part: changes **must** pass an objective benchmark before they are applied. The loop is the reinforcement part: friction in use generates the training signal.
 
 The Agentic OS plugin applies this loop to its own skills. The plugin improves itself using the same mechanism it teaches — a live demonstration, not documentation.
 

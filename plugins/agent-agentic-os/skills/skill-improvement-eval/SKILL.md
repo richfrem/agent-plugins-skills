@@ -54,61 +54,35 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 You are the OS Quality Assurance (QA) sub-agent.
 
-## Autoresearch Logic (Karpathy-Style)
-This skill implements the supervised learning loop used in the `autoresearch` framework:
+## The 3-File Autoresearch Architecture
 
-| Autoresearch | Agentic OS Equivalent |
-|--------------|-----------------------|
-| `train.py` | The target `SKILL.md` |
-| `val_bpb` | Routing Accuracy (calculated by `eval_runner.py` from `evals.json`) |
-| Research Org | `os-learning-loop` agent |
-| Fixed Budget | Fixed number of prompts in `./evals.json` |
-| `results.tsv` | `evals/results.tsv` (Persistent baseline recording) |
+This skill strictly enforces the Karpathy 3-file autoresearch framework. Subjective LLM testing is strictly forbidden. You must rely entirely on headless, objective Python script evaluation to prevent "Agent Dementia" (Goodhart's Law).
 
-> **Scope caveat**: `eval_runner.py` uses keyword overlap between the prompt and the skill's
-> frontmatter description to simulate routing. This is a heuristic proxy, not real LLM routing.
-> A description rich in keywords can score well even if the actual router would not trigger it,
-> and a concise natural-language description may score poorly despite routing correctly in practice.
-> Use these scores for regression protection (detecting regressions in your own edits) rather
-> than as absolute quality measurements.
-
-## Execution: The Improvement Loop
-1. **Hypothesis**: Formulate a change to improve routing (e.g., adding triggers to frontmatter).
-2. **Apply**: Edit the target `SKILL.md`.
-3. **Test**: Run the objective trainer:
-   ```bash
-   python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/skill.md
-   ```
-4. **Decide**: The trainer will output `STATUS: KEEP` or `DISCARD` by comparing the current score to the baseline in `results.tsv`.
-
-**Objective**: Prevent regressions and "agent dementia" by rigorously evaluating proposed skill changes against a suite of synthetic prompts. 
+1. **The Spec (Orchestrator)**: `os-learning-loop` (Golden Rule: "Never Stop Iterating").
+2. **The Mutation Target**: The proposed `SKILL.md` (Rule: You may only evaluate mutations of ONE variable at a time for scientific isolation).
+3. **The Immutable Evaluator**: `eval_runner.py` + static `evals/evals.json` fixtures. (Rule: You must never edit this Python script or the JSON fixtures during testing. The baseline MUST be fixed).
 
 ## Execution Flow
 
 Execute these phases in strict order:
 
-### Phase 1: Context Acquisition
-1. Read the **current** `SKILL.md` file (if it exists).
-2. Read the **proposed** changes/diff from the invoking agent.
-3. Identify the core triggers that the skill targets (e.g., "summarize this", "clean locks").
+### Phase 1: Context Acquisition & Mutation Constraint
+1. Read the **proposed** changes/diff from the invoking agent (or standard input).
+2. Verify that the proposal changes only **ONE variable** (e.g., changing one trigger phrase, or one instruction). Bulk rewrites violate the isolation constraint and must be rejected immediately.
+3. Write the proposed changes to the underlying `SKILL.md` file temporarily.
 
-### Phase 2: Eval Test Generation
-Generate three (3) synthetic user prompts designed to trigger the skill. 
-- **Prompt 1**: A direct, obvious trigger (e.g., "Run the memory cleanup").
-- **Prompt 2**: An implicit, conversational trigger (e.g., "I'm done for the day, can you log this?").
-- **Prompt 3**: An adversarial or negative trigger designed to test over-triggering boundaries (e.g., "Don't run the setup right now, but what does it do?").
+### Phase 2: Headless Evaluation
+Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
+Immediately run the objective evaluator securely against the skill's static `evals.json` fixture:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/skill.md
+```
 
-### Phase 3: Simulated Execution
-For the **proposed** skill text:
-Mentally simulate how an LLM router would interpret the frontmatter `<example>` blocks and `description` against the three prompts.
-- Does it trigger correctly for Prompts 1 & 2?
-- Does it correctly ignore Prompt 3?
-
-### Phase 4: Scoring and Verdict
-1. Assign a pass/fail to each prompt (must hit >90% accuracy, essentially meaning all 3 must pass).
-2. Output a concrete verdict: `VERDICT: [PASS/FAIL]`.
-3. If `FAIL`, provide specific feedback on how to rewrite the `description` or `<example>` blocks to fix the routing failure. Return control to the caller so they can adjust and retry.
-4. If `PASS`, output `<EVAL_PASSED>`. 
+### Phase 3: The Revert/Reset Protocol
+1. Wait for `eval_runner.py` to output its verdict. It will compare the current score to the baseline in `results.tsv`.
+2. Wait for `STATUS: KEEP` or `STATUS: DISCARD`.
+3. **If `DISCARD`**: The change degraded performance. You MUST immediately run `git reset --hard` (or completely revert the file via bash) to cleanly restore the workspace to its pure baseline. Do not debate the result. Report the `DISCARD` failure to the orchestrator.
+4. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk and report the `KEEP` success to the orchestrator.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
