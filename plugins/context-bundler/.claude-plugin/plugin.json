@@ -1,6 +1,6 @@
 {
     "name": "context-bundler",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "Bundle source files and documentation into single-file LLM context packages (Markdown or ZIP archives) for portable AI agent distribution.",
     "author": {
         "name": "Richard Fremmerlid"
@@ -12,6 +12,7 @@
         "context",
         "llm",
         "packaging",
+        "red-team-review",
         "agent-tools"
     ]
 }

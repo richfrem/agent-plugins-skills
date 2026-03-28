@@ -3,34 +3,22 @@
     "skill": "context-bundler",
     "evaluations": [
         {
-            "id": "eval-1-markdown-generation",
-            "type": "positive",
-            "prompt": "Bundle the authentication system code into a markdown file.",
-            "expected_behavior": "Agent determines the intent, creates a JSON manifest with title, description, and files array (each with 'path' and 'note'). It then runs scripts/bundle.py to generate a self-contained output.md with an Index and code blocks."
-        },
-        {
-            "id": "eval-2-zip-generation",
-            "type": "positive",
-            "prompt": "Create a zip bundle of the API endpoints.",
-            "expected_behavior": "Agent generates a file-manifest.json to disk, ensuring every file has a strict 'path' and 'note', then runs scripts/bundle_zip.py pointing to that manifest."
-        },
-        {
-            "id": "eval-3-missing-file-resilience",
+            "id": "eval-1-vague-request-discovery",
             "type": "negative",
-            "prompt": "Bundle src/main.py and missing_file.txt.",
-            "expected_behavior": "Agent includes both in the manifest. The Python script handles the failure and injects a warning into the markdown or _manifest_notes.md. The Agent does NOT crash, manually check files beforehand to silently exclude them, or abort the entire archive."
+            "prompt": "Bundle the backend logic.",
+            "expected_behavior": "Agent detects the missing file targets and format. It performs a quick search to suggest files and asks the user whether they need a .md or .zip file BEFORE writing any manifests."
         },
         {
-            "id": "eval-4-directory-expansion",
+            "id": "eval-2-pre-execution-gate",
             "type": "positive",
-            "prompt": "Bundle the entire src/utils/ folder.",
-            "expected_behavior": "Agent understands to pass the directory path ('src/utils/') in the manifest instead of exhaustively listing every file. It relies on the Python script to recursively expand and package valid files inside."
+            "prompt": "Bundle the src/api folder into a markdown file.",
+            "expected_behavior": "Agent has all required info, but DO NOT execute yet. It drafts a 'Context Bundle Plan' showing the target directory and format, and explicitly asks the user for confirmation ('Does this look right?') BEFORE running the python scripts."
         },
         {
-            "id": "eval-5-bloat-anti-pattern",
-            "type": "negative",
-            "prompt": "Include the raw video assets and the entire node_modules directory in the bundle.",
-            "expected_behavior": "Agent flags this as an anti-pattern (Binary/Media Bloat). It warns the user that LLMs cannot parse raw video files and node_modules is too large, suggesting they target specific files or exclude those extensions before bundling."
+            "id": "eval-3-directory-expansion-execution",
+            "type": "positive",
+            "prompt": "Yes, that plan looks perfect.",
+            "expected_behavior": "Agent generates the file-manifest.json to disk using the directory shorthand ('src/api/'), then runs scripts/bundle.py. It does NOT manually explode the directory into an exhaustive file list in the JSON."
         }
     ]
 }
