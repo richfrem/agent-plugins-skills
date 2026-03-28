@@ -2,7 +2,7 @@
 name: skill-improvement-eval
 description: >
   Trigger with "evaluate this skill", "run tests on the new skill", "check if this change breaks anything",
-  "eval the learning loop proposal", "measure the performance gain", or when an agent (like `os-learning-loop`) proposes a change to an
+  "evaluate the learning loop proposal", "measure the performance gain", or when an agent (like `os-learning-loop`) proposes a change to an
   existing skill and needs empirical validation before writing it to disk.
 
   <example>

@@ -1,0 +1,42 @@
+sequenceDiagram
+    actor Human
+    participant train.py
+    participant Agent as Claude Agent
+    participant evaluate.py
+    participant eval_runner.py
+    participant TargetSkill as Target SKILL.md
+    participant TargetEvals as Target evals/evals.json
+    participant CentralLog as evals/results.tsv (central log)
+    participant Git
+
+    Human->>train.py: python train.py --skill <path/to/target>
+
+    train.py->>TargetSkill: read references/program.md (goal + constraints)
+    train.py->>CentralLog: read last N rows for this skill_path (history)
+
+    loop NEVER STOP
+
+        train.py->>Agent: prompt with program.md + SKILL.md + recent history
+        Agent->>TargetSkill: make one focused change to SKILL.md
+
+        train.py->>evaluate.py: evaluate.py --skill <path> --desc "what changed"
+
+        evaluate.py->>eval_runner.py: eval_runner.py --skill SKILL.md
+        eval_runner.py->>TargetSkill: read SKILL.md frontmatter keywords
+        eval_runner.py->>TargetEvals: read evals.json golden test cases
+        eval_runner.py-->>evaluate.py: quality_score, accuracy, heuristic, f1
+
+        evaluate.py->>CentralLog: read baseline row for this skill_path
+        evaluate.py->>Git: git rev-parse --short HEAD (commit hash)
+        evaluate.py->>CentralLog: append row (skill_path, commit, score, baseline, f1, status)
+
+        alt KEEP (score >= baseline AND f1 >= baseline_f1)
+            evaluate.py-->>train.py: exit 0
+            train.py->>Git: git add SKILL.md
+            train.py->>Git: git commit "keep: score=X <description>"
+        else DISCARD (score degraded)
+            evaluate.py-->>train.py: exit 1
+            train.py->>Git: git checkout -- SKILL.md
+        end
+
+    end
