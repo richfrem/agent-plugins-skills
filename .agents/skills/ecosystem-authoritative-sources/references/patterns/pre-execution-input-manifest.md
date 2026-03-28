@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/pre-execution-input-manifest.md

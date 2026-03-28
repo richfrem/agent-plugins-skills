@@ -1,0 +1,49 @@
+graph TD
+    %% Nodes - Feature Level (Start)
+    Start(("Start Feature<br>(Start)"))
+    Specify["fa:fa-file-alt Specify Feature<br>(Cmd: spec-kitty specify)"]
+    Plan["fa:fa-map Plan & Tasks<br>(Cmd: spec-kitty plan / tasks)"]
+    
+    %% Nodes - WP Level (Loop)
+    subgraph WP_Loop["WP Execution Loop (Repeated per WP)"]
+        Implement["fa:fa-tools Start WP<br>(Cmd: spec-kitty implement WP-xx)<br>(Creates: .worktrees/WP-xx)"]
+        Code["fa:fa-code Code & Test<br>(Context: Inside Worktree)"]
+        Commit["fa:fa-save Git Commit (Local)<br>(git commit -m 'feat...')"]
+        MoveReview["fa:fa-arrow-right Move to Review<br>(Cmd: spec-kitty tasks update WP-xx --lane for_review)"]
+        Review["fa:fa-glasses Review WP<br>(Cmd: spec-kitty review WP-xx)<br>(Moves to 'Done')"]
+    end
+
+    %% Nodes - Feature Level (End)
+    subgraph Completion["Feature Completion"]
+        Accept["fa:fa-check-double Accept Feature<br>(Cmd: spec-kitty accept)<br>(Verifies All WPs Done)"]
+        Merge["fa:fa-magic Spec-Kitty Merge (Automated)<br>(Cmd: spec-kitty merge)<br>(Context: Main Repo Root)<br>• Auto-Merges WPs<br>• Auto-Removes Worktrees<br>• Optional: Push"]
+        End(("Feature Done<br>(Clean Repo)"))
+    end
+
+    %% Flow
+    Start --> Specify
+    Specify --> Plan
+    Plan --> Implement
+    
+    %% Loop Logic
+    Implement -->|cd .worktrees/WP-xx| Code
+    Code --> Commit
+    Commit --> MoveReview
+    MoveReview --> Review
+    
+    %% Iterate or Finish
+    Review -->|Next WP?| Implement
+    Review -->|All WPs Done?| Accept
+    
+    %% Finalization
+    Accept --> Merge
+    Merge --> End
+
+    %% Styles
+    classDef feature fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef wp fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
+    classDef done fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+
+    class Specify,Plan feature;
+    class Implement,Code,Commit,MoveReview,Review wp;
+    class Accept,Merge,End done;

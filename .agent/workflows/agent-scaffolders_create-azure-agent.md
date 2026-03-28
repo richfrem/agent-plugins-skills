@@ -1,0 +1,1 @@
+../../.agents/workflows/agent-scaffolders_create-azure-agent.md

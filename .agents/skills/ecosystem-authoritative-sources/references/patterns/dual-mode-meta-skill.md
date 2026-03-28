@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/dual-mode-meta-skill.md
