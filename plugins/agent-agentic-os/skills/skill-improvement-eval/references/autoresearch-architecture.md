@@ -7,130 +7,63 @@
 
 ## Purpose
 
-`skill-improvement-eval` is a general-purpose evaluation SERVICE. It can run the Karpathy autoresearch loop against ANY skill in the ecosystem. The architecture must support evaluating many different target skills without mixing their data or coupling the service to any one target.
+`skill-improvement-eval` is a general-purpose evaluation SERVICE. It can run the Karpathy autoresearch loop against ANY skill in the ecosystem. The scripts live here. The data lives with each target skill.
 
 ---
 
 ## Karpathy 3-Component Mapping
 
-The autoresearch pattern has three required components. Every file in this system maps to exactly one of them.
-
-| Karpathy Component | File | Purpose | Lives in |
+| Karpathy Component | File | Purpose | Location |
 |---|---|---|---|
 | **1. The Spec** | | | |
-| | `references/program.md` | Defines the optimization goal, what is locked, NEVER STOP directive. Human-authored once before the loop starts. One per target skill. | **Target skill** |
+| | `program.md` | Optimization goal, what is locked, NEVER STOP directive. Written once by human before loop starts. | `<target-skill>/references/program.md` |
 | **2. The Mutation Target** | | | |
-| | `SKILL.md` | The only file the agent changes each iteration. Contains trigger language being optimized. | **Target skill** |
-| | `evals/evals.json` | Golden test cases defining correct routing. Read by the evaluator to score SKILL.md. Never written to. | **Target skill** |
+| | `SKILL.md` | The only file the agent changes each iteration. The trigger language being optimized. | `<target-skill>/SKILL.md` |
 | **3. The Evaluator** | | Locked. Agent must never modify any part of this component. | |
-| | `scripts/eval_runner.py` | Metric producer. Given a SKILL.md and its evals.json, computes quality_score, accuracy, heuristic, f1. Pure scorer — outputs numbers, writes nothing. Usable standalone outside the loop. | **Evaluation service** |
-| | `scripts/evaluate.py` | Loop gate. Calls eval_runner to get score. Reads baseline from results.tsv. Compares score and f1 to baseline. Writes one row to results.tsv. Exits 0 (KEEP) or 1 (DISCARD). Loop-specific only. | **Evaluation service** |
-| | `evals/results.tsv` | Evaluator memory. Central log across all target skills (identified by skill_path column). evaluate.py reads it to know the baseline; writes to it to record each result. Without this the loop cannot answer "is this better?" | **Evaluation service** — `skill-improvement-eval/evals/results.tsv`. Target skills do NOT get their own results file. |
+| | `eval_runner.py` | Metric producer. Reads SKILL.md + evals.json, computes quality_score / accuracy / heuristic / f1. Pure scorer — outputs numbers only, writes nothing. | `skill-improvement-eval/scripts/eval_runner.py` |
+| | `evaluate.py` | Loop gate. Calls eval_runner. Reads baseline from results.tsv. Compares score and f1. Writes one row to results.tsv. Exits 0 (KEEP) or 1 (DISCARD). | `skill-improvement-eval/scripts/evaluate.py` |
+| | `evals.json` | Test prompts with expected trigger outcomes (true/false). The input eval_runner scores SKILL.md against. Written once by human. Never modified during loop. | `<target-skill>/evals/evals.json` |
+| | `results.tsv` | Scoring history for this skill. One row per evaluation run. evaluate.py reads it for baseline; writes to it after each run. | `<target-skill>/evals/results.tsv` |
 | **+ Loop Orchestrator** | | Not in Karpathy's original 3 — required to make the loop autonomous. | |
-| | `scripts/train.py` | Drives iterations: reads program.md, calls agent to mutate SKILL.md, calls evaluate.py, handles KEEP/DISCARD git operations, loops forever. **MISSING — not yet built.** | **Evaluation service** |
-
-
----
-
-## Two Roles, Clearly Separated
-
-| Role | Owner | What it contains |
-|---|---|---|
-| **Evaluation Service** | `skill-improvement-eval` | The scoring engine, loop orchestrator, central results log |
-| **Target Skill** | any skill being optimized | Its own SKILL.md, its own golden test cases, its own loop spec |
-
-The service reads from target skills. It never writes into them.
+| | `train.py` | Drives iterations: reads program.md, calls agent to mutate SKILL.md, calls evaluate.py, handles KEEP/DISCARD git operations, loops forever. **MISSING — not yet built.** | `skill-improvement-eval/scripts/train.py` |
 
 ---
 
-## File Matrix
+## Summary: Who Owns What
 
-### Evaluation Service Files
-Live in `plugins/agent-agentic-os/skills/skill-improvement-eval/`
+| Owned by | Files |
+|---|---|
+| **skill-improvement-eval** (scripts only) | `eval_runner.py`, `evaluate.py`, `train.py` |
+| **Each target skill** (all data) | `SKILL.md`, `evals/evals.json`, `evals/results.tsv`, `references/program.md` |
 
-| File | Location | Purpose | Mutable during loop |
-|---|---|---|---|
-| `SKILL.md` | skill root | Trigger instructions for this skill itself | NO |
-| `eval_runner.py` | `scripts/` | General scorer: reads target SKILL.md + target evals.json, outputs quality_score, accuracy, heuristic, f1 | NO - locked |
-| `evaluate.py` | `scripts/` | Locked evaluator: calls eval_runner, reads baseline from central log, exits 0 (KEEP) or 1 (DISCARD) | NO - locked |
-| `train.py` | `scripts/` | Loop orchestrator: reads program.md, calls agent to mutate target SKILL.md, calls evaluate.py, handles KEEP/DISCARD, loops forever | NO - locked |
-| `evals/evals.json` | `evals/` | Routing test cases for THIS skill's own trigger (meta-eval only) | NO |
-| `evals/results.tsv` | `evals/` | **Central log of every evaluation run by this service, across all target skills** | YES - appended per run |
-
-### Target Skill Files
-Live in `plugins/<plugin>/skills/<skill>/`
-
-| File | Location | Purpose | Mutable during loop |
-|---|---|---|---|
-| `SKILL.md` | skill root | **THE MUTATION TARGET** - the only file the agent changes | YES - loop body |
-| `evals/evals.json` | `evals/` | Golden test cases for this skill's routing accuracy | NO - locked, read-only |
-| `references/program.md` | `references/` | Loop spec: what to optimize, what is locked, NEVER STOP | NO - set before loop starts |
+The evaluation service owns no data. It only provides the tooling. Every target skill owns its own spec, test cases, mutation target, and scoring history.
 
 ---
 
-## Central Results Log Schema
+## results.tsv Schema
 
-`evals/results.tsv` in the evaluation service — one row per evaluation run, across all target skills:
+Lives at `<target-skill>/evals/results.tsv`. One row per evaluation run for that skill.
 
 | Column | Description |
 |---|---|
 | `timestamp` | ISO datetime of the run |
 | `commit` | git short hash at time of run |
-| `skill_path` | relative path to the target SKILL.md being evaluated |
 | `score` | final quality_score (0.0 - 1.0) |
-| `baseline` | score of the BASELINE row for this skill |
+| `baseline` | score of the first BASELINE row |
 | `accuracy` | routing accuracy component |
 | `heuristic` | structural health component |
 | `f1` | F1 score (prevents keyword-stuffing) |
 | `status` | BASELINE / KEEP / DISCARD |
 | `description` | what was changed this iteration |
 
-The `skill_path` column is what makes this multi-skill capable — every row is identifiable to its target.
-
----
-
-## What Lives Where: Decision Rules
-
-**If a file is part of the scoring/orchestration infrastructure** → lives in the service (`skill-improvement-eval/scripts/`)
-
-**If a file defines what "correct" means for a specific skill** → lives in the target skill (`<skill>/evals/evals.json`)
-
-**If a file specifies the optimization goal for a specific skill** → lives in the target skill (`<skill>/references/program.md`)
-
-**If a file records evaluation history** → lives in the service central log (`skill-improvement-eval/evals/results.tsv`), identified by `skill_path` column
-
-**The service never writes into target skill directories.**
-
----
-
-## The Missing Piece: train.py
-
-`eval_runner.py` = Karpathy's `prepare.py` (scorer)
-`evaluate.py` = Karpathy's `benchmark.mjs` (locked evaluator wrapper)
-`train.py` = **MISSING** — the loop orchestrator
-
-`train.py` is what makes the loop autonomous. It:
-
-1. Takes a target skill path as argument
-2. Reads the target skill's `references/program.md` for goal and constraints
-3. Calls the agent (Claude CLI) with context: program.md + current SKILL.md + last N rows from central log for this skill
-4. Agent makes one focused change to SKILL.md
-5. Calls `evaluate.py --skill <path>`
-6. If exit 0 (KEEP): `git add SKILL.md && git commit`
-7. If exit 1 (DISCARD): `git checkout -- SKILL.md`
-8. Loops (NEVER STOP until interrupted)
-
-Without `train.py`, the loop requires a human to drive each iteration manually. With it, the loop runs overnight unattended.
-
 ---
 
 ## Current State vs Target State
 
-| Item | Current state | Target state |
+| File | Current state | Target state |
 |---|---|---|
-| `eval_runner.py` | Writes to target skill's evals/results.tsv | Writes to central log with skill_path column |
-| `evaluate.py` | Calls eval_runner twice, writes own results.tsv | Single call, reads/writes central log only |
+| `eval_runner.py` | Writes to target skill's evals/results.tsv (correct location, wrong ownership — it should not write, evaluate.py should) | Pure scorer, outputs only, writes nothing |
+| `evaluate.py` | Calls eval_runner twice, writes to separate autoresearch/results.tsv | Single call to eval_runner, writes to target skill's evals/results.tsv |
 | `train.py` | Does not exist | Loop orchestrator calling Claude CLI |
-| `evals/results.tsv` | Self-eval rows only, legacy column names | Central log for all target skills |
-| `autoresearch/results.tsv` | Separate loop ledger (wrong) | Deleted - merged into central log |
-| `program.md` | In this skill's references/ (wrong for other targets) | In each TARGET skill's references/ |
+| `autoresearch/results.tsv` | Separate loop ledger (wrong — duplicate of evals/results.tsv) | Deleted |
+| `program.md` | In skill-improvement-eval/references/ | In each target skill's references/ |
