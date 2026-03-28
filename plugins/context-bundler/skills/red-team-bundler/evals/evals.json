@@ -3,22 +3,22 @@
     "skill": "red-team-bundler",
     "evaluations": [
         {
-            "id": "eval-1-prompt-generation-and-ordering",
+            "id": "eval-1-discovery-interview",
             "type": "positive",
-            "prompt": "Prepare a red team review for the authentication logic.",
-            "expected_behavior": "Agent creates a temp/red-team-review-authentication directory, writes a strict security auditor prompt to prompt.md, and crucially places prompt.md as the VERY FIRST item in the file-manifest.json before bundling."
-        },
-        {
-            "id": "eval-2-vague-target-clarification",
-            "type": "negative",
             "prompt": "Create a red team bundle.",
-            "expected_behavior": "Agent detects the missing topic/target and asks the user what specific module or feature needs to be reviewed before attempting to create directories or prompts."
+            "expected_behavior": "Agent detects the missing topic, threat model, and format. It pauses to ask the user targeted discovery questions before creating any directories, writing files, or assuming the threat vector."
         },
         {
-            "id": "eval-3-execution-and-handoff",
+            "id": "eval-2-pre-execution-gate",
             "type": "positive",
-            "prompt": "Red team review for the payment gateway.",
-            "expected_behavior": "Agent successfully generates the final markdown payload in the temp directory and provides clear instructions to the user on how to copy/paste it into an external LLM."
+            "prompt": "Prepare a red team review for the authentication logic focusing on OWASP vulnerabilities for ChatGPT.",
+            "expected_behavior": "Agent has all required information but DO NOT execute yet. It drafts a 'Red Team Bundle Plan' including the target, format, proposed persona prompt, and proposed files. It explicitly asks the user for confirmation ('Does this look right?') BEFORE running the python scripts or writing to disk."
+        },
+        {
+            "id": "eval-3-execution-and-ordering",
+            "type": "positive",
+            "prompt": "Yes, that plan looks perfect. Go ahead.",
+            "expected_behavior": "Agent creates the temp/red-team-review-[topic] directory, writes the agreed prompt to prompt.md, places prompt.md as the VERY FIRST item in the file-manifest.json, successfully delegates to the correct bundler script based on the format, and provides handoff instructions."
         }
     ]
 }

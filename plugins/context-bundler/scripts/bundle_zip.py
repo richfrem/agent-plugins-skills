@@ -2,88 +2,124 @@
 """
 bundle_zip.py
 =====================================
-
-Purpose:
-    Reads a JSON manifest file containing a list of file paths and notes, and archives them into a single .zip file.
-
-Layer: Meta-Execution
-
-Usage Examples:
-    python3 bundle_zip.py --manifest manifest.json --bundle bundle.zip
-
-Supported Object Types:
-    - ZIP bundles (bundle.zip)
-
-CLI Arguments:
-    --manifest: Path to the JSON file manifest.
-    --bundle: Output path for the bundled .zip file.
-
-Input Files:
-    - JSON manifest file.
-
-Output:
-    - Bundled .zip file.
-
-Key Functions:
-    - generate_zip_bundle()
-
-Script Dependencies:
-    None
-
-Consumed by:
-    - Context bundler workflow
+Purpose: Reads a JSON manifest file and archives targets into a .zip file.
+[v2.1] Adds manifest 'excludes', large-file tracking, and cumulative tokens.
 """
 
 import sys
 import json
 import argparse
 import zipfile
+import fnmatch
 from pathlib import Path
 from datetime import datetime
 
+MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB safety limit for ZIPs
+
+def load_gitignore_patterns(project_root: Path) -> list:
+    patterns = ['.git', '__pycache__', 'node_modules', '.env', '*.zip']
+    gi_path = project_root / '.gitignore'
+    if gi_path.exists():
+        try:
+            with open(gi_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        patterns.append(line)
+        except Exception:
+            pass
+    return patterns
+
+def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
+    try:
+        rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
+    except ValueError:
+        return False
+
+    for pattern in patterns:
+        clean_pattern = pattern.strip('/')
+        if (fnmatch.fnmatch(rel_path, clean_pattern) or 
+            fnmatch.fnmatch(rel_path, f"{clean_pattern}/*") or 
+            fnmatch.fnmatch(rel_path, f"*/{clean_pattern}/*") or 
+            fnmatch.fnmatch(rel_path, f"*/{clean_pattern}")):
+            return True
+    return False
+
 def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
     try:
-        with open(manifest_path, 'r') as f:
+        with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = json.load(f)
     except Exception as e:
-        print(f"Error loading manifest '{manifest_path}': {e}")
+        print(f"❌ Error loading manifest '{manifest_path}': {e}")
         sys.exit(1)
 
     title = manifest.get('title', 'Context Bundle')
     description = manifest.get('description', '')
     files = manifest.get('files', [])
 
-    if not files:
-        print(f"Warning: Manifest '{manifest_path}' contains no files.")
-
-    # Always write from the project root
     project_root = Path.cwd()
+    ignore_patterns = load_gitignore_patterns(project_root)
+    ignore_patterns.extend(manifest.get('excludes', []))
 
     resolved_files = []
-    # Identify explicit files and recursively expand any subdirectories passed to us
+    total_tokens = 0
+    valid_file_count = 0
+
+    print("🔍 Scanning directories and estimating tokens...")
+
     for entry in files:
         path_str = entry.get('path', '')
         note = entry.get('note', '')
         actual_path = project_root / path_str
         
         if actual_path.is_dir():
-            print(f"Expanding directory branch: {path_str}")
             for file_path in actual_path.rglob('*'):
-                if file_path.is_file() and not file_path.name.startswith('.'):
-                    if '__pycache__' in file_path.parts or 'node_modules' in file_path.parts or '.env' in file_path.name:
+                if file_path.is_file() and not is_ignored(file_path, project_root, ignore_patterns):
+                    rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
+                    
+                    if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
+                        resolved_files.append({'path': rel_path, 'note': note, 'too_large': True})
                         continue
+
+                    tokens = None
                     try:
-                        rel_path = str(file_path.relative_to(project_root))
-                    except ValueError:
-                        rel_path = str(file_path)
+                        with open(file_path, 'r', encoding='utf-8') as peek:
+                            tokens = len(peek.read()) // 4
+                            total_tokens += tokens
+                    except UnicodeDecodeError:
+                        pass 
+                        
                     resolved_files.append({
                         'path': rel_path,
-                        'note': f"{note} (from {path_str})" if note else f"from {path_str}"
+                        'actual_path': file_path,
+                        'note': f"{note} (from {path_str})" if note else f"from {path_str}",
+                        'tokens': tokens
                     })
+                    valid_file_count += 1
         else:
-            resolved_files.append(entry)
+            if not actual_path.exists():
+                resolved_files.append({'path': path_str, 'note': note, 'missing': True})
+            elif not is_ignored(actual_path, project_root, ignore_patterns):
+                if actual_path.stat().st_size > MAX_FILE_SIZE_BYTES:
+                    resolved_files.append({'path': path_str, 'note': note, 'too_large': True})
+                    continue
 
-    # Begin assembling the "_manifest_notes.md" documentation body
+                tokens = None
+                try:
+                    with open(actual_path, 'r', encoding='utf-8') as peek:
+                        tokens = len(peek.read()) // 4
+                        total_tokens += tokens
+                except UnicodeDecodeError:
+                    pass
+                    
+                resolved_files.append({
+                    'path': path_str,
+                    'actual_path': actual_path,
+                    'note': note,
+                    'tokens': tokens
+                })
+                valid_file_count += 1
+
     manifest_doc = [
         f"# {title}",
         f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
@@ -91,62 +127,62 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
     ]
     if description:
         manifest_doc.extend([description, ""])
+
+    manifest_doc.extend([
+        "### 📊 Bundle Metadata",
+        f"- **Total Files:** {valid_file_count}",
+        f"- **Estimated Tokens (Text Files Only):** ~{total_tokens:,}",
+        "",
+        "## 📑 Index",
+        ""
+    ])
     
-    manifest_doc.extend(["## Index", ""])
-    
-    missing_files = []
-    
-    # Check paths and build the index
+    cumulative_tokens = 0
     for idx, entry in enumerate(resolved_files, 1):
         path_str = entry.get('path', '')
         note = entry.get('note', '')
         
-        listing = f"{idx}. `{path_str}`"
-        if note:
-            listing += f" - {note}"
-        manifest_doc.append(listing)
-        
-        actual_path = project_root / path_str
-        if not actual_path.exists():
-            missing_files.append(path_str)
+        if entry.get('missing'):
+            manifest_doc.append(f"{idx}. ❌ `{path_str}` - *FILE NOT FOUND*")
+        elif entry.get('too_large'):
+            manifest_doc.append(f"{idx}. ⚠️ `{path_str}` - *[Skipped: Exceeds 50MB Archive Limit]*")
+        else:
+            tokens = entry.get('tokens')
+            if tokens is not None:
+                cumulative_tokens += tokens
+                token_str = f" ({tokens:,} tokens | {cumulative_tokens:,} total)"
+            else:
+                token_str = " ([Binary Data])"
+                
+            listing = f"{idx}. `{path_str}`{token_str}"
+            if note:
+                listing += f" - {note}"
+            manifest_doc.append(listing)
 
     manifest_doc.extend(["", "---", ""])
-    
-    if missing_files:
-        print(f"Warning: {len(missing_files)} files listed in manifest were not found.")
-        manifest_doc.append("> [!WARNING] The following files were listed in the manifest but missing from the disk during generation:\n")
-        for missing in missing_files:
-            manifest_doc.append(f"> - `{missing}`")
-        manifest_doc.extend(["", "---", ""])
 
-    # Actually compress everything
-    print(f"Archiving files into {output_path}...")
+    print(f"📦 Archiving files into {output_path}...")
     try:
         with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # 1. Archive the payload files
             for entry in resolved_files:
+                if entry.get('missing') or entry.get('too_large'): continue
+                
                 path_str = entry.get('path', '')
-                actual_path = project_root / path_str
-                if actual_path.exists():
+                actual_path = entry.get('actual_path')
+                if actual_path and actual_path.exists():
                     zipf.write(actual_path, arcname=path_str)
 
-            # 2. Finally inject the dynamic manifest documentation
             zipf.writestr('_manifest_notes.md', '\n'.join(manifest_doc))
             
     except Exception as e:
-        print(f"Failed to generate ZIP archive: {e}")
+        print(f"❌ Failed to generate ZIP archive: {e}")
         sys.exit(1)
 
-    print(f"✅ Context successfully bundled into -> {output_path}")
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a ZIP context bundle from a JSON manifest.")
-    parser.add_argument("--manifest", required=True, type=Path, help="Path to the JSON file manifest.")
-    parser.add_argument("--bundle", required=True, type=Path, help="Output path for the bundled .zip file.")
-    
-    args = parser.parse_args()
-    
-    generate_zip_bundle(args.manifest, args.bundle)
+    print(f"✅ ZIP successfully bundled into -> {output_path}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Generate a ZIP context bundle from a JSON manifest.")
+    parser.add_argument("--manifest", required=True, type=Path, help="Path to the JSON manifest.")
+    parser.add_argument("--bundle", required=True, type=Path, help="Output path for the .zip file.")
+    args = parser.parse_args()
+    generate_zip_bundle(args.manifest, args.bundle)

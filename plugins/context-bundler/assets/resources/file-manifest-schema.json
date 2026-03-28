@@ -12,6 +12,13 @@
             "type": "string",
             "description": "Optional description included at the top of the bundle."
         },
+        "excludes": {
+            "type": "array",
+            "description": "Optional list of glob patterns to exclude from recursive directory bundling (e.g., ['*.svg', 'tests/*']).",
+            "items": {
+                "type": "string"
+            }
+        },
         "files": {
             "type": "array",
             "description": "List of files to include in the bundle. IMPORTANT: The first file MUST be the prompt/instruction file.",
@@ -20,7 +27,7 @@
                 "properties": {
                     "path": {
                         "type": "string",
-                        "description": "Relative path to the file to include."
+                        "description": "Relative path to the file or directory to include."
                     },
                     "note": {
                         "type": "string",
