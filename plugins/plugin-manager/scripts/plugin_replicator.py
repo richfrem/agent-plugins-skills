@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-Plugin Replicator
-=================
+plugin_replicator.py
+=====================================
+Purpose: Safely installs or updates a plugin in a target repository.
+[v2.0] Implements a Local Ledger to track and prune orphaned files (ghost artifacts) during updates.
 
 Replicates a plugin from a source directory to a destination directory.
 Supports additive-update mode (default) and clean-sync mode (--clean).
@@ -39,131 +41,116 @@ Examples:
         --dest /Users/richardfremmerlid/Projects/Project_Sanctuary/plugins/rlm-factory \\
         --link
 """
-
+import os
 import sys
+import json
 import shutil
-import platform
 import argparse
 from pathlib import Path
 
+LEDGER_FILENAME = "plugin_ledger.json"
 
-def replicate_plugin(
-    source: Path,
-    dest: Path,
-    use_link: bool = False,
-    clean: bool = False,
-    dry_run: bool = False,
-) -> bool:
-    """
-    Replicate a plugin directory from source to dest.
+def load_ledger(agents_dir: Path) -> dict:
+    """Loads the installation ledger tracking which files belong to which plugin."""
+    ledger_path = agents_dir / LEDGER_FILENAME
+    if ledger_path.exists():
+        try:
+            with open(ledger_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not read ledger at {ledger_path}: {e}")
+    return {}
 
-    Args:
-        source:   Absolute path to source plugin directory.
-        dest:     Absolute path to destination directory (will be created if missing).
-        use_link: Create a symlink instead of copying.
-        clean:    Remove dest files/dirs that no longer exist in source.
-        dry_run:  Print actions without applying them.
+def save_ledger(agents_dir: Path, ledger_data: dict) -> None:
+    """Saves the updated installation ledger."""
+    ledger_path = agents_dir / LEDGER_FILENAME
+    agents_dir.mkdir(parents=True, exist_ok=True)
+    with open(ledger_path, 'w', encoding='utf-8') as f:
+        json.dump(ledger_data, f, indent=2)
 
-    Returns:
-        True on success, False on error.
-    """
-    prefix = "[DRY RUN] " if dry_run else ""
+def safely_remove_path(target_path: Path):
+    """Deletes a file or directory if it exists."""
+    if not target_path.exists():
+        return
+    try:
+        if target_path.is_symlink() or target_path.is_file():
+            target_path.unlink()
+        elif target_path.is_dir():
+            shutil.rmtree(target_path)
+        print(f"  🧹 Pruned orphaned artifact: {target_path.name}")
+    except Exception as e:
+        print(f"  ❌ Failed to remove {target_path}: {e}")
 
-    if not source.exists():
-        print(f"❌ Source not found: {source}")
-        return False
+def replicate_plugin(plugin_name: str, source_dir: Path, target_repo: Path):
+    print(f"\n🚀 Starting installation for: {plugin_name}")
+    
+    # 1. Define standard paths
+    target_agents_dir = target_repo / ".agents"
+    target_plugins_dir = target_agents_dir / "plugins" / plugin_name
+    target_skills_dir = target_agents_dir / "skills"
+    
+    # Ensure target directories exist
+    target_plugins_dir.mkdir(parents=True, exist_ok=True)
+    target_skills_dir.mkdir(parents=True, exist_ok=True)
 
-    # --- Symlink mode: simple and always live ---
-    if use_link:
-        if dest.exists() or dest.is_symlink():
-            print(f"{prefix}🧹 Removing existing: {dest}")
-            if not dry_run:
-                dest.unlink() if dest.is_symlink() else shutil.rmtree(dest)
-        print(f"{prefix}🔗 Linking: {dest} -> {source}")
-        if not dry_run:
-            try:
-                dest.symlink_to(source, target_is_directory=True)
-            except Exception as e:
-                print(f"❌ Symlink failed: {e}")
-                if platform.system() == "Windows":
-                    print("👉 Windows tip: run as Administrator or enable Developer Mode.")
-                return False
-        print(f"✅ Linked.")
-        return True
+    # 2. Load the Ledger
+    ledger = load_ledger(target_agents_dir)
+    plugin_state = ledger.get(plugin_name, {"folders": [], "skills": []})
+    
+    # 3. Analyze the incoming payload to see what WE are about to install
+    incoming_skills = []
+    source_skills_dir = source_dir / "skills"
+    if source_skills_dir.exists():
+        incoming_skills = [d.name for d in source_skills_dir.iterdir() if d.is_dir()]
 
-    # --- Copy/update mode ---
-    dest.mkdir(parents=True, exist_ok=True)
+    # 4. Prune Ghost Artifacts (The Cleanup Phase)
+    print("🔍 Checking for orphaned files from previous installations...")
+    old_skills = plugin_state.get("skills", [])
+    
+    for old_skill in old_skills:
+        if old_skill not in incoming_skills:
+            # The skill existed in the old version, but isn't in the new version. KILL IT.
+            orphan_path = target_skills_dir / old_skill
+            safely_remove_path(orphan_path)
 
-    # Step 1: Copy new/updated files from source -> dest
-    copied: int = 0
-    skipped: int = 0
-    for src_file in source.rglob("*"):
-        rel = src_file.relative_to(source)
-        dst_file = dest / rel
-        if src_file.is_dir():
-            if not dry_run:
-                dst_file.mkdir(parents=True, exist_ok=True)
-            continue
-        # Copy if missing or source is newer
-        if not dst_file.exists() or src_file.stat().st_mtime > dst_file.stat().st_mtime:
-            print(f"{prefix}  copy  {rel}")
-            if not dry_run:
-                dst_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src_file, dst_file)
-            copied += 1
-        else:
-            skipped += 1
+    # 5. Install the new payload
+    print(f"📦 Copying plugin core to {target_plugins_dir}...")
+    
+    # Wipe the core plugin directory to ensure a clean slate there
+    if target_plugins_dir.exists():
+        shutil.rmtree(target_plugins_dir)
+    shutil.copytree(source_dir, target_plugins_dir, ignore=shutil.ignore_patterns('.git', 'node_modules', '__pycache__'))
 
-    print(f"  {copied} files updated, {skipped} up-to-date.")
+    # Hard-copy skills into the global .agents/skills/ directory
+    if incoming_skills:
+        print(f"🔗 Deploying {len(incoming_skills)} skills...")
+        for skill_name in incoming_skills:
+            src_skill = source_skills_dir / skill_name
+            dest_skill = target_skills_dir / skill_name
+            
+            # Wipe existing skill if updating
+            if dest_skill.exists():
+                shutil.rmtree(dest_skill)
+            
+            shutil.copytree(src_skill, dest_skill)
+            print(f"  ✅ Installed skill: {skill_name}")
 
-    # Step 2: If --clean, remove dest files/dirs no longer in source
-    if clean:
-        removed: int = 0
-        for dst_item in list(dest.rglob("*")):
-            rel = dst_item.relative_to(dest)
-            src_item = source / rel
-            if not src_item.exists():
-                print(f"{prefix}  clean {rel}")
-                if not dry_run:
-                    if dst_item.is_dir():
-                        shutil.rmtree(dst_item, ignore_errors=True)
-                    else:
-                        dst_item.unlink(missing_ok=True)
-                removed += 1
-        if removed:
-            print(f"  {removed} stale items removed (--clean).")
-
-    print(f"✅ Done: {source.name} -> {dest}")
-    return True
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Replicate a plugin from source to destination.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument("--source", required=True, help="Source plugin directory path")
-    parser.add_argument("--dest",   required=True, help="Destination directory path")
-    parser.add_argument("--link",    action="store_true", help="Symlink instead of copy")
-    parser.add_argument("--clean",   action="store_true", help="Remove dest files missing from source")
-    parser.add_argument("--dry-run", action="store_true", dest="dry_run",
-                        help="Preview changes without applying them")
-
-    args = parser.parse_args()
-    source = Path(args.source).resolve()
-    dest   = Path(args.dest).resolve()
-
-    print(f"🚀 Plugin Replicator")
-    print(f"   Source : {source}")
-    print(f"   Dest   : {dest}")
-    print(f"   Mode   : {'symlink' if args.link else 'copy'}"
-          f"{' + clean' if args.clean else ''}"
-          f"{' [DRY RUN]' if args.dry_run else ''}")
-    print()
-
-    success = replicate_plugin(source, dest, args.link, args.clean, args.dry_run)
-    sys.exit(0 if success else 1)
-
+    # 6. Update and Save the Ledger
+    ledger[plugin_name] = {
+        "installed_at": datetime.now().isoformat(),
+        "skills": incoming_skills
+    }
+    save_ledger(target_agents_dir, ledger)
+    
+    print(f"🎉 Successfully installed/updated '{plugin_name}' and updated the ledger!")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Replicate a plugin to a target repository with ledger tracking.")
+    parser.add_argument("--plugin-name", required=True, help="Name of the plugin being installed.")
+    parser.add_argument("--source-dir", required=True, type=Path, help="Path to the source plugin directory.")
+    parser.add_argument("--target-repo", required=True, type=Path, help="Path to the target repository root.")
+    
+    args = parser.parse_args()
+    
+    from datetime import datetime # Imported here for the ledger timestamp
+    replicate_plugin(args.plugin_name, args.source_dir, args.target_repo)
