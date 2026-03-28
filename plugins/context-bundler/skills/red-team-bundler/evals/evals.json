@@ -1,0 +1,24 @@
+{
+    "plugin": "context-bundler",
+    "skill": "red-team-bundler",
+    "evaluations": [
+        {
+            "id": "eval-1-prompt-generation-and-ordering",
+            "type": "positive",
+            "prompt": "Prepare a red team review for the authentication logic.",
+            "expected_behavior": "Agent creates a temp/red-team-review-authentication directory, writes a strict security auditor prompt to prompt.md, and crucially places prompt.md as the VERY FIRST item in the file-manifest.json before bundling."
+        },
+        {
+            "id": "eval-2-vague-target-clarification",
+            "type": "negative",
+            "prompt": "Create a red team bundle.",
+            "expected_behavior": "Agent detects the missing topic/target and asks the user what specific module or feature needs to be reviewed before attempting to create directories or prompts."
+        },
+        {
+            "id": "eval-3-execution-and-handoff",
+            "type": "positive",
+            "prompt": "Red team review for the payment gateway.",
+            "expected_behavior": "Agent successfully generates the final markdown payload in the temp directory and provides clear instructions to the user on how to copy/paste it into an external LLM."
+        }
+    ]
+}
