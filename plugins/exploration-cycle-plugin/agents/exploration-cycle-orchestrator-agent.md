@@ -38,30 +38,78 @@ This agent orchestrates Phase A of the exploration cycle.
 
 ```
 Is this a solo framing or research session (no output needed yet)?
-  └─ YES → Use learning-loop pattern: read brief, explore, iterate in context
+  └─ YES -> Use learning-loop pattern: read brief, explore, iterate in context
 
 Does the session need structured requirements captured as artifacts?
-  └─ YES → Use dual-loop: dispatch requirements-doc-agent via CLI, many passes
+  └─ YES -> Use dual-loop: dispatch requirements-doc-agent via CLI, many passes
 
 Does the session context describe a multi-step process, approval flow, or state machine?
-  └─ YES → Use business-workflow-doc skill to generate a Mermaid diagram
+  └─ YES -> Use business-workflow-doc skill to generate a Mermaid diagram
 
 Did the user just run a prototype session?
-  └─ YES → Dispatch prototype-companion-agent via CLI for observation capture
+  └─ YES -> Dispatch prototype-companion-agent via CLI for observation capture
 
 Does the session have a captured BRD and a generated prototype?
-  └─ YES → Dispatch business-rule-audit-agent via CLI to verify logic compliance
+  └─ YES -> Dispatch business-rule-audit-agent via CLI to verify logic compliance
 
 Is the exploration narrowed enough for a downstream spec or planning update?
-  └─ YES → Dispatch handoff-preparer-agent via CLI
+  └─ YES -> Dispatch handoff-preparer-agent via CLI
 
-[OPTIONAL — only if spec-kitty plugin present]
+[OPTIONAL -- only if spec-kitty plugin present]
 Is the user transitioning into the spec-kitty engineering cycle (quantum double diamond)?
-  └─ YES → Dispatch planning-doc-agent via CLI (3 draft modes in sequence)
+  └─ YES -> Dispatch planning-doc-agent via CLI (3 draft modes in sequence)
 
-[OPTIONAL — only if spec-kitty plugin present]
+[OPTIONAL -- only if spec-kitty plugin present]
 Is this invocation triggered from within the spec-kitty engineering cycle (unresolved ambiguity)?
-  └─ YES → Dispatch planning-doc-agent in re-entry-scope mode → new session brief → restart Phase 0
+  └─ YES -> Dispatch planning-doc-agent in re-entry-scope mode -> new session brief -> restart Phase 0
+```
+
+**Routing decision tree** (machine-readable digraph):
+
+```dot
+digraph orchestrator_routing {
+  rankdir=TB;
+  node [shape=diamond, style="rounded,filled", fillcolor=lightyellow, fontname=Helvetica, fontsize=10];
+  edge [fontname=Helvetica, fontsize=9];
+
+  node [shape=ellipse, fillcolor=white] Invoke [label="Invocation"];
+
+  Q1 [label="Solo framing?\nno output needed yet?"];
+  Q2 [label="Need structured\nrequirements captured?"];
+  Q3 [label="Multi-step process,\napproval flow, or state machine?"];
+  Q4 [label="Post-prototype\nsession?"];
+  Q5 [label="BRD ready +\nprototype done?"];
+  Q6 [label="Narrow enough\nfor handoff?"];
+  Q7 [label="spec-kitty present +\ndouble diamond?"];
+  Q8 [label="Triggered from\nspec-kitty cycle?"];
+
+  node [shape=box, fillcolor="#d4edda"];
+  LearningLoop [label="learning-loop pattern\n(solo: read brief, explore, iterate)"];
+  DualLoop     [label="Dispatch requirements-doc-agent\n(dual-loop, many focused CLI passes)"];
+  WorkflowDoc  [label="business-workflow-doc skill\n(Mermaid diagram generation)"];
+  Prototype    [label="Dispatch prototype-companion-agent\n(observation capture)"];
+  Audit        [label="Dispatch business-rule-audit-agent\n(logic drift detection)"];
+  Handoff      [label="Dispatch handoff-preparer-agent\n(synthesis + Reader Testing)"];
+  PlanningDraft [label="Dispatch planning-doc-agent\n(spec-draft, plan-draft, tasks-outline)"];
+  Reentry      [label="Dispatch planning-doc-agent\n(re-entry-scope mode)\nrestart Phase 0 with new brief"];
+
+  Invoke -> Q1;
+  Q1 -> LearningLoop [label="YES"];
+  Q1 -> Q2 [label="NO"];
+  Q2 -> DualLoop [label="YES"];
+  Q2 -> Q3 [label="NO"];
+  Q3 -> WorkflowDoc [label="YES"];
+  Q3 -> Q4 [label="NO"];
+  Q4 -> Prototype [label="YES"];
+  Q4 -> Q5 [label="NO"];
+  Q5 -> Audit [label="YES"];
+  Q5 -> Q6 [label="NO"];
+  Q6 -> Handoff [label="YES"];
+  Q6 -> Q7 [label="NO"];
+  Q7 -> PlanningDraft [label="YES"];
+  Q7 -> Q8 [label="NO"];
+  Q8 -> Reentry [label="YES"];
+}
 ```
 
 ## CLI Dispatch Pattern (Requirements Documentation)

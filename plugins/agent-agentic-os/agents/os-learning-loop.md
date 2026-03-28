@@ -122,6 +122,23 @@ command first.
 3. Factual observation only — not a rule, policy, or architectural decision
 4. `execution_mode` is `"standard"` or `"lightweight"` (never `"strict"`)
 
+**MANDATORY RED-SCENARIO GATE** (applies to ALL new skills and ALL skill patches):
+
+Before designing any change, you MUST:
+
+1. **Generate a RED scenario** -- a concrete user prompt or agent situation that currently
+   produces wrong behavior WITHOUT the proposed skill or patch present.
+2. **State the observed failure** in one sentence: what specific step does the agent skip,
+   violate, or get wrong?
+3. **State the acceptance criterion**: what specific behavior proves the patch works?
+
+A proposal that skips the RED scenario MUST be discarded. The eval gate (`skill-improvement-eval`)
+measures keyword overlap -- a skill that scores well on eval but skips the RED scenario may
+route correctly by accident without actually fixing the observed failure mode (Goodhart's Law).
+
+The RED scenario + observed failure become the primary `<example>` block in the new SKILL.md,
+following the methodology in `skills/writing-skills/SKILL.md`.
+
 1. Design and propose a specific change based on identified friction.
     - Follow the Skill Optimization Guide (`references/skill_optimization_guide.md`) to ensure high Routing Accuracy.
     - **Optimization Strategy**: Use the "Direct vs. Audit" pattern in `<example>` blocks to ensure robustness across different user phrasing.

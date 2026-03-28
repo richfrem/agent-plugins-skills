@@ -84,7 +84,7 @@ from typing import Dict, Any, Optional
 # Plugin-aware path resolution
 # =====================================================
 current_dir = Path(__file__).parent.resolve()
-    plugin_root = current_dir.parent.resolve()  # skill root
+plugin_root = current_dir.parent.resolve()  # skill root
 
 # Detect project root: walk up from plugin looking for .git or .agent
 def _find_project_root() -> str:

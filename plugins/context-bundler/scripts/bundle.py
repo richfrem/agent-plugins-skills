@@ -25,7 +25,7 @@ Output:
     - Bundled Markdown file.
 
 Key Functions:
-    - generate_bundle()
+    - bundle_files()
 
 Script Dependencies:
     None
@@ -40,7 +40,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-def generate_bundle(manifest_path: Path, output_path: Path) -> None:
+def bundle_files(manifest_path: Path, output_path: Path) -> None:
     try:
         with open(manifest_path, 'r') as f:
             manifest = json.load(f)

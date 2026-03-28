@@ -1,53 +1,41 @@
 # Context Bundler Plugin 📦
 
-Bundle source files and documentation into single-file Markdown or compressed ZIP context packages
-for portable AI agent distribution.
+Bundle source files and documentation into single-file Markdown or compressed ZIP context packages for portable AI agent distribution.
 
 ## Installation
 
-### Option 1: From a Marketplace (Recommended)
+### Option 1: Claude Code Plugin (Recommended)
 ```bash
 /plugin marketplace add <marketplace-url>
 /plugin install context-bundler
 ```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/context-bundler
-```
 
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/context-bundler
+### Option 2: Standalone Skill via NPX (For Agentic OS / Local Agents)
+When using `npx skills add`, the system will download a self-contained hard copy of the skill folder directly into your local project's `.agents/skills/context-bundler/` directory.
 
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install context-bundler
-```
-
-### Option 3: Local Development Checkout
 ```bash
-npx skills add ./plugins/context-bundler
+# From GitHub
+npx skills add richfrem/agent-plugins-skills --path plugins/context-bundler/skills/context-bundler
+
+# From Local Development Checkout
+npx skills add ./plugins/context-bundler/skills/context-bundler
 ```
 
 ### Prerequisites
-- **Claude Code** ≥ 1.0.33
-- **Python** ≥ 3.8 (for scripts)
-
-### Verify Installation
-After loading the plugin, ask Claude to bundle some specific files to verify the `context-bundling` skill is correctly invoked.
+- **Claude Code** ≥ 1.0.33 (if using as a full plugin)
+- **Python** ≥ 3.8 (for local script execution)
 
 ---
 
 ## Usage Guide
 
-The Context Bundler operates purely through autonomous skills.
+The Context Bundler operates purely through autonomous agent skills.
 
-When you need to bundle technical context for export to another agent, simply tell Claude:
->"Bundle the backend services and their documentation into a single markdown file using the context-bundler specification."
+When you need to bundle technical context for export to another agent or human review, simply ask your agent:
+> "Bundle the backend services and their documentation into a single markdown file using the context bundler."
 > "Package this entire module into a ZIP file using the context bundler so I can share it with another agent."
 
-Claude will:
+The agent will:
 1. Generate an internal `file-manifest.json` describing the targets.
 2. Compile exactly those files into a highly compressed, annotated `.md` or `.zip` artifact perfectly structured for LLM ingestion.
 
@@ -67,8 +55,8 @@ Claude will:
       "note": "Implementation logic"
     },
     {
-      "path": "scripts",
-      "note": "You can provide directories to recursively bundle all text files inside."
+      "path": "scripts/",
+      "note": "You can provide directories (ending in /) to recursively bundle all valid files inside."
     }
   ]
 }
@@ -76,29 +64,26 @@ Claude will:
 
 ### Skills (Auto-Invoked)
 
-- **`context-bundling`** — Claude automatically uses this skill when tasks involve
-  bundling, packaging, or distributing files into a single `.md` file. It enforces standard ordering
-  (identity → manifest → docs → code) and dependency checking.
-
-- **`zip-bundling`** — Explicitly archives the targeted files into their native formats wrapped in a portable `.zip` container. It automatically injects a `_manifest_notes.md` file root index so LLM context annotations are preserved.
+- **`context-bundler`** — The agent automatically uses this unified skill when tasks involve bundling, packaging, or distributing files. It dynamically determines whether to generate a single `.md` file (enforcing standard ordering and dependency checking) or archive the files into a portable `.zip` container (injecting a `_manifest_notes.md` root index so LLM context annotations are preserved) based on your request.
 
 ---
 
-### Plugin Directory Structure
-```
+### Architecture & Portability
+To ensure maximum portability when installed as a standalone skill via `npx` (which creates a hard copy in the `.agents/` directory), the required execution scripts and assets are symmetrically linked or copied directly inside the skill folder itself.
+
+```text
 context-bundler/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin identity & metadata
-├── skills/
-│   ├── context-bundling/
-│   │   └── SKILL.md             # The markdown bundling protocol
-│   └── zip-bundling/
-│       └── SKILL.md             # The ZIP archiving protocol
-├── scripts/
-│   ├── bundle.py                # Markdown concatenator
-│   └── bundle_zip.py            # ZIP archiver
-├── file-manifest.json           # Example schematic
-└── README.md
+│   └── plugin.json
+├── scripts/                     # Original plugin-level scripts
+├── assets/                      # Original plugin-level assets
+└── skills/
+    └── context-bundler/         # 🎯 Target for `npx skills add`
+        ├── SKILL.md             # The unified bundling protocol
+        ├── evals/
+        │   └── evals.json
+        ├── scripts/             # Hard copy/symlink of execution engines
+        └── assets/              # Hard copy/symlink of schema resources
 ```
 
 ---
