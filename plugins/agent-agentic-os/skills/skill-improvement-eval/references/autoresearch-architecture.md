@@ -25,7 +25,7 @@ The autoresearch pattern has three required components. Every file in this syste
 | **3. The Evaluator** | | Locked. Agent must never modify any part of this component. | |
 | | `scripts/eval_runner.py` | Metric producer. Given a SKILL.md and its evals.json, computes quality_score, accuracy, heuristic, f1. Pure scorer — outputs numbers, writes nothing. Usable standalone outside the loop. | **Evaluation service** |
 | | `scripts/evaluate.py` | Loop gate. Calls eval_runner to get score. Reads baseline from results.tsv. Compares score and f1 to baseline. Writes one row to results.tsv. Exits 0 (KEEP) or 1 (DISCARD). Loop-specific only. | **Evaluation service** |
-| | `evals/results.tsv` | Evaluator memory. Central log across all target skills (identified by skill_path column). evaluate.py reads it to know the baseline; writes to it to record each result. Without this the loop cannot answer "is this better?" | **Evaluation service** |
+| | `evals/results.tsv` | Evaluator memory. Central log across all target skills (identified by skill_path column). evaluate.py reads it to know the baseline; writes to it to record each result. Without this the loop cannot answer "is this better?" | **Evaluation service** — `skill-improvement-eval/evals/results.tsv`. Target skills do NOT get their own results file. |
 | **+ Loop Orchestrator** | | Not in Karpathy's original 3 — required to make the loop autonomous. | |
 | | `scripts/train.py` | Drives iterations: reads program.md, calls agent to mutate SKILL.md, calls evaluate.py, handles KEEP/DISCARD git operations, loops forever. **MISSING — not yet built.** | **Evaluation service** |
 
