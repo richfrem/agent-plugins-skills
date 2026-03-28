@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/stage-aware-feedback.md

@@ -1,0 +1,38 @@
+[
+  {
+    "query": "I finished my exploration session, help me write the handoff package.",
+    "should_trigger": true
+  },
+  {
+    "query": "Synthesize our session captures into a handoff for the engineering team.",
+    "should_trigger": true
+  },
+  {
+    "query": "Prepare a handoff document from all our exploration artifacts.",
+    "should_trigger": true
+  },
+  {
+    "query": "We're done exploring — let's produce the handoff for the spec authors.",
+    "should_trigger": true
+  },
+  {
+    "query": "Schedule a code review for tomorrow morning.",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate a BRD from our captures.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create Gherkin acceptance criteria for these stories.",
+    "should_trigger": false
+  },
+  {
+    "query": "Audit the database schema for compliance issues.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing auth test.",
+    "should_trigger": false
+  }
+]

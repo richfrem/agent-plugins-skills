@@ -1,0 +1,1 @@
+../../.agents/workflows/plugin-manager_cleanup.md

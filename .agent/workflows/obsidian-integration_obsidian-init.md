@@ -1,0 +1,1 @@
+../../.agents/workflows/obsidian-integration_obsidian-init.md

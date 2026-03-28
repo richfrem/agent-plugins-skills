@@ -1,0 +1,14 @@
+{
+    "schema_version": "1.0",
+    "permitted_agents": [
+        "agentic-os-setup",
+        "os-learning-loop",
+        "session-memory-manager",
+        "os-health-check",
+        "os-clean-locks",
+        "skill-improvement-eval",
+        "post_run_hook",
+        "background-hook",
+        "system"
+    ]
+}
