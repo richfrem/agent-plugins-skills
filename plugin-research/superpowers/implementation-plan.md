@@ -1,9 +1,8 @@
 # Implementation Plan: Superpowers Hybrid Integration
 
-**Branch:** feat/superpowers-hybrid-integration (merged to main via PR #129)
+**Branch:** feat/superpowers-hybrid-integration
 **Decision:** Option C - Hybrid (see `decision.md`)
 **Execution guide:** `quick-wins.md`
-**Status:** COMPLETE - all phases done
 
 ---
 
@@ -21,17 +20,17 @@
 
 **Goal:** One canonical home for all ported superpowers execution skills.
 
-- [x] `plugin.json` -- not used in this ecosystem; `lsp.json` serves that role
-- [x] Create `plugins/agent-execution-disciplines/README.md`
-- [x] Create `plugins/agent-execution-disciplines/skills/` directory structure
-- [x] Create `plugins/agent-execution-disciplines/agents/` directory
-- [x] Create `plugins/agent-execution-disciplines/references/` (for shared refs)
-- [x] Create `plugins/agent-execution-disciplines/scripts/` (for shared scripts)
-- [x] Port `superpowers/skills/verification-before-completion/SKILL.md`
-  - [x] SKILL.md in `skills/verification-before-completion/`
-  - [x] Add friction event type `false_completion_claim` note in agent-agentic-os `agents/os-learning-loop.md`
-- [x] `tools_manifest.json` is auto-generated -- skipped (find-polluter.sh picked up on next regen)
-- [x] Run `bridge_installer.py --dry-run` -- CLEAN: all 6 skills + code-reviewer agent resolve
+- [ ] Create `plugins/agent-execution-disciplines/plugin.json`
+- [ ] Create `plugins/agent-execution-disciplines/README.md`
+- [ ] Create `plugins/agent-execution-disciplines/skills/` directory structure
+- [ ] Create `plugins/agent-execution-disciplines/agents/` directory
+- [ ] Create `plugins/agent-execution-disciplines/references/` (for shared refs)
+- [ ] Create `plugins/agent-execution-disciplines/scripts/` (for shared scripts)
+- [ ] Port `superpowers/skills/verification-before-completion/SKILL.md`
+  - [ ] SKILL.md in `skills/verification-before-completion/`
+  - [ ] Add friction event type `false_completion_claim` note in agent-agentic-os `agents/os-learning-loop.md`
+- [ ] Register plugin in `plugins/tool_inventory.json`
+- [ ] Run `bridge_installer.py --dry-run` to verify structure is clean
 
 ---
 
@@ -40,27 +39,28 @@
 All skills land in `plugins/agent-execution-disciplines/`.
 
 ### QW3: Systematic Debugging
-- [x] Port `superpowers/skills/systematic-debugging/SKILL.md`
-- [x] Copy reference files to plugin root: `root-cause-tracing.md`, `defense-in-depth.md`, `condition-based-waiting.md`
-- [x] Copy script: `find-polluter.sh` in plugin scripts + skill scripts dir
-- [x] File-level symlinks in skill dir -> plugin root (ADR-003)
-- [ ] Add `debugging_without_root_cause` friction event note in agent-agentic-os -- deferred
+- [ ] Port `superpowers/skills/systematic-debugging/SKILL.md`
+- [ ] Copy reference files to plugin root: `root-cause-tracing.md`, `defense-in-depth.md`, `condition-based-waiting.md`
+- [ ] Copy script to plugin root: `find-polluter.sh`
+- [ ] Create file-level symlinks in skill dir -> plugin root (ADR-003)
+- [ ] Add `debugging_without_root_cause` friction event note in agent-agentic-os
 
 ### QW4: Test-Driven Development
-- [x] Port `superpowers/skills/test-driven-development/SKILL.md`
-- [x] Copy `testing-anti-patterns.md` to plugin root references
-- [x] File-level symlink in skill dir -> plugin root (ADR-003)
-- [ ] Register evals in `skills/test-driven-development/evals/evals.json` -- deferred (requires baseline session)
+- [ ] Port `superpowers/skills/test-driven-development/SKILL.md`
+- [ ] Copy `testing-anti-patterns.md` to plugin root
+- [ ] Create file-level symlink in skill dir -> plugin root (ADR-003)
+- [ ] Register evals in `skills/test-driven-development/evals/evals.json`
 
 ### QW5: Git Worktree Management
-- [x] Port `superpowers/skills/using-git-worktrees/SKILL.md` (spec-kitty .worktrees/ convention noted)
-- [x] Port `superpowers/skills/finishing-a-development-branch/SKILL.md`
-- [ ] Add prose cross-reference in `agent-agentic-os/skills/agentic-os-guide/SKILL.md` -- deferred
+- [ ] Port `superpowers/skills/using-git-worktrees/SKILL.md`
+  - [ ] Adapt: respect spec-kitty's `.worktrees/` convention
+- [ ] Port `superpowers/skills/finishing-a-development-branch/SKILL.md`
+- [ ] Add prose cross-reference in `agent-agentic-os/skills/agentic-os-guide/SKILL.md`
 
 ### QW6: Code Review
-- [x] Port `superpowers/skills/requesting-code-review/SKILL.md`
-- [x] Port `superpowers/agents/code-reviewer.md` to `agents/`
-- [x] Deep kernel event bus integration deferred (see decision.md Out of Scope)
+- [ ] Port `superpowers/skills/requesting-code-review/SKILL.md`
+- [ ] Port `superpowers/agents/code-reviewer.md` to `agents/`
+- [ ] Note: deep kernel event bus integration deferred (see decision.md Out of Scope)
 
 ---
 
@@ -68,16 +68,16 @@ All skills land in `plugins/agent-execution-disciplines/`.
 
 **Goal:** POSIX-safe bash wrapper around Python kernel, no replacement of Python logic.
 
-- [x] Read current `plugins/agent-agentic-os/hooks/` structure
-- [x] Identify the current session-start / update_memory trigger mechanism
-- [x] Write new bash wrapper (`hooks/session-start.sh`) with:
-  - [x] Platform detection (`CURSOR_PLUGIN_ROOT` / `CLAUDE_PLUGIN_ROOT` / fallback)
-  - [x] Trigger guard: fire only on `startup|clear|compact`, skip `--resume` (60s recency check)
-  - [x] `printf` instead of heredoc (avoids bash 5.3+ hang -- superpowers RELEASE-NOTES v5.0.3 #572)
-  - [x] Platform-conditional `hookSpecificOutput` key
-  - [x] Passes resolved `PLUGIN_ROOT` to existing Python orchestrator as arg
-- [ ] Test dry-run: verify no double-injection on `--resume` -- deferred (requires live session)
-- [ ] Test live: verify memory injection fires correctly on fresh session -- deferred (requires live session)
+- [ ] Read current `plugins/agent-agentic-os/hooks/` structure
+- [ ] Identify the current session-start / update_memory trigger mechanism
+- [ ] Write new bash wrapper with:
+  - [ ] Platform detection (`CURSOR_PLUGIN_ROOT` / `CLAUDE_PLUGIN_ROOT` / fallback)
+  - [ ] Trigger guard: fire only on `startup|clear|compact`, skip `--resume`
+  - [ ] `printf` instead of heredoc (avoids bash 5.3+ hang)
+  - [ ] Platform-conditional `hookSpecificOutput` key
+  - [ ] Passes resolved `PLUGIN_ROOT` to existing Python orchestrator as arg
+- [ ] Test dry-run: verify no double-injection on `--resume`
+- [ ] Test live: verify memory injection fires correctly on fresh session
 
 ---
 
@@ -85,12 +85,10 @@ All skills land in `plugins/agent-execution-disciplines/`.
 
 **Goal:** Inline Graphviz dot diagrams in the three most complex richfrem skills.
 
-- [x] Add digraph block to `agent-agentic-os/skills/concurrent-agent-loop/SKILL.md`
-  (Fast Cycle 7-step workflow with KEEP/DISCARD decision branching)
-- [x] Embed Phase A workflow diagram in `exploration-cycle-plugin/skills/exploration-workflow/SKILL.md`
-  (inline digraph replaces external .mmd reference; all phases + human gates shown)
-- [x] Add routing decision tree diagram to `exploration-cycle-plugin/agents/exploration-cycle-orchestrator-agent.md`
-  (digraph + original ASCII block retained)
+- [ ] Add digraph block to `agent-agentic-os/skills/concurrent-agent-loop/SKILL.md`
+  (Fast Cycle and Standard Cycle workflows)
+- [ ] Embed Phase A workflow diagram in `exploration-cycle-plugin/skills/exploration-workflow/SKILL.md`
+- [ ] Add routing decision tree diagram to `agent-agentic-os/agents/exploration-cycle-orchestrator-agent.md`
 
 ---
 
@@ -98,36 +96,37 @@ All skills land in `plugins/agent-execution-disciplines/`.
 
 **Goal:** RED-scenario verification gate for skill authoring in agent-agentic-os.
 
-- [x] Port `superpowers/skills/writing-skills/SKILL.md` into `plugins/agent-agentic-os/skills/writing-skills/`
-  - [x] Adapt: `skill-improvement-eval` as the GREEN verification step
-  - [x] Adapt: autoresearch eval format (evals.json + results.tsv) for longitudinal tracking
-- [x] Add RED-scenario gate (MANDATORY) to `agents/os-learning-loop.md` Phase 3:
-  before any skill proposal, generate RED scenario + observed failure + acceptance criterion
+- [ ] Port `superpowers/skills/writing-skills/SKILL.md` into `plugins/agent-agentic-os/skills/`
+  - [ ] Adapt: use `skill-improvement-eval` infrastructure as the GREEN verification step
+  - [ ] Adapt: use autoresearch eval format already established in agent-agentic-os
+- [ ] Add RED-scenario gate requirement to `agents/os-learning-loop.md`:
+  before proposing any skill patch, generate one RED scenario and verify GREEN behavior
 
 ---
 
 ## Phase 6: Final Verification and Commit
 
-- [x] Run `bridge_installer.py --dry-run --plugin plugins/agent-execution-disciplines` -- CLEAN
-- [ ] Run `bridge_installer.py --plugin plugins/agent-execution-disciplines` -- pending user approval
-- [ ] Verify all 6+ new skills appear in `.agents/skills/` -- pending install
-- [ ] Run plugin structure auditor -- deferred
-- [ ] Commit all changes -- pending user approval
-- [ ] Push -- pending user approval
+- [ ] Run `bridge_installer.py --dry-run --plugin plugins/agent-execution-disciplines`
+- [ ] Run `bridge_installer.py --plugin plugins/agent-execution-disciplines`
+- [ ] Verify all 6+ new skills appear in `.agents/skills/`
+- [ ] Run `plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py plugins/agent-execution-disciplines`
+  and confirm exit code 0 (no ADR violations)
+- [ ] Commit all changes on `feat/superpowers-hybrid-integration`
+- [ ] Ready to push (user approval required before push)
 
 ---
 
 ## Summary
 
-| Phase | What | Quick Win | Status |
+| Phase | What | Quick Win | Effort |
 |---|---|---|---|
-| 0 | Decision + planning | - | DONE |
-| 1 | Scaffold plugin + verification | QW1 | DONE |
-| 2a | Systematic debugging | QW3 | DONE |
-| 2b | TDD enforcement | QW4 | DONE |
-| 2c | Git worktree management | QW5 | DONE |
-| 2d | Code review | QW6 | DONE |
-| 3 | Harden SessionStart hook | QW2 | DONE |
-| 4 | Embed diagrams | QW7 | DONE |
-| 5 | Writing-skills TDD methodology | QW8 | DONE |
-| 6 | Audit + commit | - | Pending approval |
+| 0 | Decision + planning | - | Done |
+| 1 | Scaffold plugin + verification | QW1 | Small |
+| 2a | Systematic debugging | QW3 | Small |
+| 2b | TDD enforcement | QW4 | Small |
+| 2c | Git worktree management | QW5 | Small |
+| 2d | Code review | QW6 | Medium |
+| 3 | Harden SessionStart hook | QW2 | Small |
+| 4 | Embed diagrams | QW7 | Small |
+| 5 | Writing-skills TDD methodology | QW8 | Medium |
+| 6 | Audit + commit | - | Small |
