@@ -1,1 +1,0 @@
-../../.agents/workflows/spec-kitty_spec-kitty-clarify.md

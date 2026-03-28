@@ -1,15 +1,38 @@
 ---
-name: {name}
-description: {description}
-argument-hint: "[optional arguments]"
----
+name: {{ name }}
+description: {{ description }}
+{% if argument_hint %}argument-hint: "{{ argument_hint }}"
+{% endif %}allowed-tools:
+{% for tool in allowed_tools | default(['Read(*)']) %}  - {{ tool }}
+{% endfor %}disable-model-invocation: {{ disable_model_invocation | default('true') }}
+{% if user_invocable == false %}user-invocable: false
+{% endif %}{% if model %}model: {{ model }}
+{% endif %}{% if effort %}effort: {{ effort }}
+{% endif %}{% if max_tokens %}maxTokens: {{ max_tokens }}
+{% endif %}{% if isolation %}isolation: {{ isolation }}
+{% endif %}{% if hooks %}hooks:
+{{ hooks | indent(2) }}
+{% endif %}---
 
-# {name} Command
+{{ description }}
 
-You are executing a specialized slash command logic path.
-Your primary directive is: {description}
+## Inputs
 
-## Instructions
-1. Parse the `$ARGUMENTS` passed to this command.
-2. Execute the required functionality using system tools.
-3. Respond concisely.
+{% if argument_hint %}- `$ARGUMENTS` — {{ argument_hint }}
+{% else %}- No arguments. Operates on current context.
+{% endif %}
+
+## Steps
+
+1. [Step one — what Claude should do first]
+2. [Step two]
+3. [Step three]
+
+## Output
+
+[Describe exactly what Claude should return — format, structure, level of detail]
+
+## Edge Cases
+
+- If `$ARGUMENTS` is empty or invalid: [how to handle]
+- If required files are missing: [how to handle]

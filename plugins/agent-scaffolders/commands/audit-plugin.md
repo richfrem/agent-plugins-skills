@@ -1,29 +1,8 @@
 ---
 name: audit-plugin
-description: >
-  This skill should be used when the user asks to "audit a plugin", "validate my plugin",
-  "check plugin structure", "verify plugin is correct", "validate ././././././././././././plugin.json", "check if
-  my plugin is compliant", "review plugin components", or mentions plugin validation or
-  structure compliance. Also trigger proactively after the user creates or modifies any
-  plugin component (commands, agents, skills, hooks, ././././././././././././plugin.json). Use this skill even
-  when the user says "check my work" or "make sure this is right" in a plugin context.
-  Do NOT use this for auditing individual skills only (use skill-reviewer for that).
-disable-model-invocation: false
+description: Validate a plugin's structure, components, and security
+argument-hint: "[plugin-path]"
 allowed-tools: Bash, Read, Write, Glob, Grep
----
-
-## Dependencies
-
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `../requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
 ---
 
 # Plugin Auditor
@@ -214,8 +193,31 @@ description: >
 
 ---
 
+---
+
+## Post-Audit Verification
+
+After making any changes, verify commands are correctly discovered:
+
+1. Run `/reload-plugins` to pick up changes without restarting Claude Code
+2. Run `/context` to verify no skills are excluded by the character budget
+   - If skills are excluded: set `SLASH_COMMAND_TOOL_CHAR_BUDGET=200000` in your environment
+3. Run `/help` and confirm commands appear with the correct namespace (`/plugin-name:command`)
+4. Test one command end-to-end: `/plugin-name:command-name test-argument`
+5. Run `/doctor` if commands still don't appear — it reports discovery failures
+
+**If a command is missing after reload:**
+```
+[ ] YAML frontmatter valid? `name` field present? No tabs, no missing closing ---?
+[ ] Plugin namespace correct? Use /plugin-name:command, not /command.
+[ ] macOS + .claude/commands/ bug? Migrate to .claude/skills/ or a local plugin.
+[ ] Character budget? Run /context to check.
+```
+
+---
+
 ## Next Actions
 - **Fix gaps**: Run `create-skill`, `create-command`, or `create-hook` to add missing components
-- **Improve skills**: Run `skill-reviewer` on each skill for trigger optimization
+- **Improve skills**: Run `skill-reviewer` on each skill for trigger optimisation
 - **Upgrade to L5**: Run `audit-plugin-l5` for advanced red-team structural audit
 - **Package**: Run `package-plugin` to create a distributable ZIP

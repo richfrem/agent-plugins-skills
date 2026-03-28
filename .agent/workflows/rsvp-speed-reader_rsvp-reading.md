@@ -1,1 +1,0 @@
-../../.agents/workflows/rsvp-speed-reader_rsvp-reading.md

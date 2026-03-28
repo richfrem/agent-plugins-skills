@@ -1,1 +1,0 @@
-../../.agents/workflows/agent-plugin-analyzer_mine-plugins.md

@@ -1,68 +1,32 @@
 ---
 name: create-docker-skill
-description: Interactive initialization script that generates a compliant Agent Skill containing pre-flight environment checks, subprocess execution scaffolding, and a security-override config. Use when authoring new workflow routines that depend on external containerized runtimes (e.g., Docker, Nextflow, HPC).
+description: Scaffold an agent skill with Docker runtime support
+argument-hint: "[skill-name]"
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+Follow the `create-docker-skill` skill workflow to scaffold a compliant agent skill
+that depends on containerized runtimes (Docker, Nextflow, HPC).
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+## Inputs
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+- `$ARGUMENTS` — optional skill name or use-case description. Omit to start with discovery.
 
-See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Steps
 
----
-# Dockerized Skill Scaffold Generator
+1. If `$ARGUMENTS` provides a skill name, use it to seed the discovery phase
+2. Follow the create-docker-skill phased workflow: determine container runtime and
+   workflow type, gather environment check requirements, design pre-flight validation
+   and subprocess execution scaffolding, then generate the skill directory
+3. Report the created skill path and Docker environment setup instructions
 
-You are tasked with generating a new Agent Skill resource using our deterministic backend scaffolding pipeline, specifically tailored for **Containerized Computational Workloads** (like bioinformatics, deep learning, or local db spinning).
+## Output
 
-## Execution Steps
+Skill directory with `SKILL.md` containing pre-flight environment checks, subprocess
+execution patterns, security-override config, and Docker-aware error handling.
 
-### 1. Requirements & Design Phase
-Ask the user what specific external container or pipeline orchestrator is being targeted.
-**Core Questions:**
-- **Skill Name**: Must be descriptive, kebab-case. 
-- **Trigger Description**: What exactly triggers this? Write in third person.
-- **Dependencies**: What external binaries are required on the host? (e.g., `docker`, `nextflow`, `nvidia-smi`).
-- **Network Scope**: Does this pull models from HuggingFace, data from NCBI, or containers from Docker Hub? (Required for the security whitelist).
+## Edge Cases
 
-### 2. Scaffold the Infrastructure
-Execute the deterministic `scripts/scaffold.py` script to generate the compliant physical directories:
-```bash
-python3 ./../scripts/scaffold.py --type skill --name <requested-name> --path <destination-directory> --desc "<short-description>"
-```
-
-### 3. Generate Pre-Flight Checker Script
-Instead of a generic `execute.py`, generate a robust `scripts/check_environment.py` (referencing the required binaries).
-The script MUST explicitly verify the Docker daemon is running or the required orchestrator is present in PATH before ever attempting to execute work.
-
-### 4. Generate Security Override Manifest
-Because container orchestration fundamentally requires `subprocess` calls and often network fetches, this skill will fail deterministic security Phase 5 P0 checks unless whitelisted.
-Use file writing tools to inject a `security_override.json` at the root of the new skill:
-```json
-{
-  "justification": "Docker container orchestration requires host subprocess execution and image registry network calls.",
-  "whitelisted_calls": ["subprocess.run", "requests", "urllib"]
-}
-```
-
-### 5. Finalize `SKILL.md`
-Populate the `SKILL.md` ensuring the flow forces the AI to run `scripts/check_environment.py` FIRST before ever attempting the containerized workload.
-
-### 6. Iteration Governance (Autoresearch-Compatible)
-If this dockerized skill will be tuned iteratively, require:
-1. Baseline-first measurement.
-2. Single-hypothesis iteration steps.
-3. Keep/discard decisions with explicit rollback on regressions.
-4. Crash/timeout logging to preserve failure learnings.
-5. Persistent experiment ledger in `evals/results.tsv`.
-
-## Next Actions
-- **Continuous Improvement**: Run `./scripts/run_loop.py --results-dir evals/experiments` to tune trigger quality over iterations.
-- **Review Loop**: Run `scripts/generate_review.py` to inspect run quality and failure patterns.
-- **Audit**: Offer to run `audit-plugin` to validate the generated artifacts.
+- If `$ARGUMENTS` is empty: begin with discovery — do not assume Docker is available
+- If Docker is not installed in the target environment: generate graceful degradation
+- If the workflow uses HPC or Nextflow instead of Docker: adapt scaffolding accordingly
