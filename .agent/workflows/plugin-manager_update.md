@@ -1,1 +1,0 @@
-../../.agents/workflows/plugin-manager_update.md

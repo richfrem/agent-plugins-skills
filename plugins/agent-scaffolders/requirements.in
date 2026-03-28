@@ -1,0 +1,8 @@
+# agent-scaffolders requirements
+# Run: pip-compile requirements.in
+#
+# Most scripts in this plugin use the standard library only.
+# The azure scaffolder (scaffold_azure_agent.py) requires:
+
+azure-ai-projects
+azure-identity

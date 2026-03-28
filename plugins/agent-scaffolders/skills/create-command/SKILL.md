@@ -82,9 +82,14 @@ Extract from context first. Ask only what is unclear.
    - **Multi-component**: Coordinates skills, agents, and scripts in a workflow
 
 3. **Where should it live?**
-   - `.claude/commands/` -- project commands (shared with team, shown as "(project)")
-   - `~/.claude/commands/` -- personal commands (all projects, shown as "(user)")
-   - `plugin-name/commands/` -- plugin commands (distributed with plugin, shown as "(plugin-name)")
+   - `.claude/skills/<name>/SKILL.md` -- **recommended** for new work (supports supporting files,
+     cross-agent portability, inline hooks). The directory name becomes the slash command.
+   - `.claude/commands/<name>.md` -- flat file, still works, simpler but no supporting files.
+     **Note**: confirmed macOS discovery bug (GitHub #13906) with `.claude/commands/` in
+     some Claude Code versions. Prefer `skills/` or a local plugin for reliability.
+   - `~/.claude/skills/<name>/SKILL.md` -- personal commands available in all projects
+   - `plugin-name/skills/<name>/SKILL.md` -- distributed with plugin, namespaced as
+     `/plugin-name:<name>` -- **always use the full namespaced form in agent files**
 
 4. **Does it need arguments?** Use `$ARGUMENTS` (all as one string) or `$1`, `$2` (positional).
 
@@ -184,32 +189,48 @@ Review results and report findings by severity.
 
 ## Step 3: Scaffold and Write
 
-### Directory and file creation
+### Default scaffold: `skills/` directory (recommended)
 ```bash
-# Project command
-mkdir -p .claude/commands
-touch .claude/commands/<name>.md
+# Project command (as skill directory)
+mkdir -p .claude/skills/<name>
+touch .claude/skills/<name>/SKILL.md
+# optionally: mkdir -p .claude/skills/<name>/evals
+# optionally: touch .claude/skills/<name>/acceptance-criteria.md
 
 # Personal command
-mkdir -p ~/.claude/commands
-touch ~/.claude/commands/<name>.md
+mkdir -p ~/.claude/skills/<name>
+touch ~/.claude/skills/<name>/SKILL.md
 
-# Plugin command (namespaced)
-mkdir -p plugin-name/commands/<category>
-touch plugin-name/commands/<category>/<name>.md
+# Plugin command (namespaced as /plugin-name:<name>)
+mkdir -p plugin-name/skills/<name>
+touch plugin-name/skills/<name>/SKILL.md
 ```
 
-### YAML frontmatter quick reference
+### Simple mode: flat `.md` file (still supported)
+```bash
+mkdir -p .claude/commands
+touch .claude/commands/<name>.md
+```
+Use for one-liner prompts with no supporting files. For anything more complex, prefer
+the `skills/` directory so you can add `references/`, `evals/`, and inline hooks later.
 
-| Field | Purpose | Example |
-|-------|---------|---------|
-| `description` | Text in `/help` (keep under 60 chars) | `description: Review PR for issues` |
-| `argument-hint` | Autocomplete hint | `argument-hint: [pr-number] [env]` |
-| `allowed-tools` | Restrict tool access | `allowed-tools: Read, Bash(git:*)` |
-| `model` | Override model | `model: haiku` |
-| `disable-model-invocation` | Block programmatic calls | `disable-model-invocation: true` |
+### YAML frontmatter complete reference
 
-No frontmatter is needed for simple commands -- omit the `---` block entirely.
+| Field | Purpose | Default | Example |
+|-------|---------|---------|---------|
+| `name` | **Required.** Slash command name. Kebab-case. | — | `name: deploy` |
+| `description` | Text in `/help`. Hard limit 1024 chars. Keep under 150 words. | — | `description: Deploy to target env.` |
+| `argument-hint` | Autocomplete hint for arguments | — | `argument-hint: "[env: dev\|staging\|prod]"` |
+| `allowed-tools` | Restrict tool access (least privilege) | All | `allowed-tools: Read(*), Bash(git *)` |
+| `disable-model-invocation` | `true` = user-only, blocks auto-invoke | `false` | `disable-model-invocation: true` |
+| `user-invocable` | `false` = background knowledge, not user-typed | `true` | `user-invocable: false` |
+| `model` | Override model for this command | session default | `model: claude-haiku-4-5-20251001` |
+| `effort` | Override effort level | `medium` | `effort: low` |
+| `maxTokens` | Cap token budget for this command | model default | `maxTokens: 4096` |
+| `hooks` | Inline hooks scoped to this skill's lifetime | — | see create-hook |
+| `isolation` | Run in isolated git worktree | `none` | `isolation: worktree` |
+
+No frontmatter is needed for the simplest commands -- omit the `---` block entirely.
 
 ### Argument handling rules
 - `$ARGUMENTS` -- all user-supplied text as one string (use for simple single-arg commands)
@@ -312,21 +333,35 @@ Deploy application to $1 environment using version $2...
 
 **Checklist:**
 - [ ] Command body written as instructions TO Claude (not messages to user)
-- [ ] `description` is clear and under 60 chars
+- [ ] `name` field present (required — without it the command silently fails to register)
+- [ ] `description` clear, under 150 words, hard limit 1024 chars
 - [ ] `argument-hint` documents all arguments
 - [ ] `allowed-tools` restricts to only what's needed
-- [ ] `$ARGUMENTS` / `$1` / `$2` used correctly with defaults for missing args
-- [ ] `@file` references use valid paths (test they exist)
-- [ ] Bash commands are safe and use `Bash(cmd:*)` not `Bash(*)` where possible
+- [ ] `$ARGUMENTS` used for single-arg commands; `$1`/`$2` for multiple distinct args
+- [ ] `@file` references use valid paths
+- [ ] Bash commands scoped: `Bash(git *)` not `Bash(*)` where possible
 - [ ] Plugin commands use `${CLAUDE_PLUGIN_ROOT}` not hardcoded paths
-- [ ] Command file is in the correct location (`.claude/commands/` etc.)
-- [ ] Restart Claude Code after adding new commands
+- [ ] Plugin commands referenced from agents/skills use **full namespaced form**: `/plugin-name:command`
+- [ ] Command is in `skills/` directory (preferred) or `commands/` (flat, simple only)
 
 **Test the command:**
 ```
-> /command-name arg1 arg2
+/command-name arg1 arg2
 ```
-Verify arguments expand correctly and Claude follows the instructions as intended.
+
+**If the command isn't showing up, work through this in order:**
+```
+[ ] 1. YAML syntax: open SKILL.md, check frontmatter manually.
+        `---` markers must be on their own lines, no leading spaces.
+[ ] 2. name field: must be present.
+[ ] 3. Plugin namespace: if installed as plugin, use /plugin-name:command not /command.
+[ ] 4. Scope: is it in ~/.claude/skills/ (always) or .claude/skills/ (this project only)?
+[ ] 5. Budget: run /context -- are skills excluded? Fix: SLASH_COMMAND_TOOL_CHAR_BUDGET=200000
+[ ] 6. Platform: macOS + .claude/commands/ has a known bug (#13906). Migrate to skills/.
+[ ] 7. Reload: run /reload-plugins after editing.
+[ ] 8. Health: run /doctor for failures.
+[ ] 9. Verify: run /help -- does the command appear with correct namespace?
+```
 
 **Run audit:**
 ```

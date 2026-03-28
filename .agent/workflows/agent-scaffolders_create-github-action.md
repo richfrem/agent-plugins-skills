@@ -1,1 +1,0 @@
-../../.agents/workflows/agent-scaffolders_create-github-action.md

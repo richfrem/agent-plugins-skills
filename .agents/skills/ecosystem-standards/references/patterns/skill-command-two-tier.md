@@ -1,1 +1,0 @@
-﻿../../../../references/patterns/skill-command-two-tier.md
