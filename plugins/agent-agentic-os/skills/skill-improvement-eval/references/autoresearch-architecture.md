@@ -11,6 +11,27 @@
 
 ---
 
+## Karpathy 3-Component Mapping
+
+The autoresearch pattern has three required components. Every file in this system maps to exactly one of them.
+
+| Karpathy Component | Role | Our Implementation | Lives in |
+|---|---|---|---|
+| **1. The Spec** (`program.md`) | Defines the goal, constraints, locked files, NEVER STOP directive. Human-authored once before the loop starts. | `references/program.md` | **Target skill** — each skill being optimized owns its own spec |
+| **2. The Mutation Target** | The single file the agent is allowed to change each iteration. | `SKILL.md` | **Target skill** — the trigger language being optimized |
+| **3. The Evaluator** (`evaluate.py`) | Locked scorer. Produces a single numeric metric. Agent must never modify it. | `scripts/evaluate.py` (calls `scripts/eval_runner.py`) | **Evaluation service** — one evaluator for all target skills |
+
+**Supporting files that enable the loop (not Karpathy's original 3, but required here):**
+
+| File | Purpose | Lives in |
+|---|---|---|
+| `scripts/eval_runner.py` | The scoring engine called by evaluate.py. Reads target SKILL.md + target evals.json, outputs quality_score, accuracy, heuristic, f1. | **Evaluation service** |
+| `scripts/train.py` | Loop orchestrator (MISSING). Drives iterations: calls agent, calls evaluate.py, handles KEEP/DISCARD, loops. Equivalent to Karpathy's `claude --dangerously-skip-permissions` CLI call. | **Evaluation service** |
+| `evals/evals.json` | Golden test cases defining correct routing for the target skill. Read by eval_runner. | **Target skill** |
+| `evals/results.tsv` | Central experiment ledger. One row per iteration across all target skills, identified by skill_path. | **Evaluation service** |
+
+---
+
 ## Two Roles, Clearly Separated
 
 | Role | Owner | What it contains |
