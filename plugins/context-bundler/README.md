@@ -66,6 +66,8 @@ The agent will:
 
 - **`context-bundler`** — The agent automatically uses this unified skill when tasks involve bundling, packaging, or distributing files. It dynamically determines whether to generate a single `.md` file (enforcing standard ordering and dependency checking) or archive the files into a portable `.zip` container (injecting a `_manifest_notes.md` root index so LLM context annotations are preserved) based on your request.
 
+- **`red-team-bundler`** — Automates the preparation of targeted security and architecture review packages. It generates a strict auditor prompt, gathers the relevant code, and compiles a single Markdown artifact optimized for external LLM evaluation.
+
 ---
 
 ### Architecture & Portability
@@ -82,6 +84,10 @@ context-bundler/
         ├── SKILL.md             # The unified bundling protocol
         ├── evals/
         │   └── evals.json
+        ├── scripts/             # Hard copy/symlink of execution engines
+        └── assets/              # Hard copy/symlink of schema resources
+    └── red-team-bundler/        # 🕵️‍♂️ Red Team specific protocol
+        ├── SKILL.md
         ├── scripts/             # Hard copy/symlink of execution engines
         └── assets/              # Hard copy/symlink of schema resources
 ```
