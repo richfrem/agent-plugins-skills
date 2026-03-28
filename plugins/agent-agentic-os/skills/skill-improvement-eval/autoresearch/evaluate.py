@@ -99,7 +99,9 @@ def get_f1_from_runner() -> float:
             last = row
     if last:
         try:
-            return float(last.get("f1_score", 0))
+            # Column may be named f1_score (new) or llm_routing_score (legacy)
+            val = last.get("f1_score") or last.get("llm_routing_score", 0)
+            return float(val)
         except (ValueError, TypeError):
             return 0.0
     return 0.0

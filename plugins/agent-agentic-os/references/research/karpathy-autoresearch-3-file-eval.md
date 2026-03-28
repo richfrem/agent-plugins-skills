@@ -105,6 +105,91 @@ The scarce skill is no longer writing the code; the scarce skill is now **knowin
 > As Garry Tan said:
 > *"The bottleneck isn't compute. It's your `program.md`."*
 
+---
+
+## 🔬 Real-World Implementation: Skill Optimization (2026-03-28)
+
+This section documents how the 3-file architecture was applied to optimize agent skill files (SKILL.md) in this plugin ecosystem.
+
+### The Setup
+
+**What is being optimized:** A SKILL.md file that teaches an agent when to trigger the `skill-improvement-eval` skill.
+
+**Why this works:** A skill file's trigger language is a mutation target with a clear objective metric — keyword routing accuracy against golden test cases.
+
+### Mapping to the 3-File Architecture
+
+| Karpathy concept | This implementation |
+|---|---|
+| `program.md` (spec) | `autoresearch/program.md` inside each target skill |
+| Mutation target (`train.py`) | `SKILL.md` — the agent rewrites trigger language and examples |
+| Locked evaluator (`prepare.py`) | `autoresearch/evaluate.py` — calls `eval_runner.py`, never touched by agent |
+| `results.tsv` ledger | `autoresearch/results.tsv` — one row per iteration (commit, score, baseline, status) |
+
+### The Metric
+
+```
+quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)
+```
+
+- `routing_accuracy`: fraction of golden prompts correctly routed via keyword overlap with frontmatter
+- `heuristic_score`: structural check (has `<example>` blocks, min content length)
+- KEEP requires: `score >= baseline AND f1 >= baseline_f1` (dual condition prevents keyword-stuffing)
+
+This is DETERMINISTIC — no LLM calls. Same SKILL.md always produces the same score.
+
+### The Loop in One Iteration
+
+```
+Agent reads program.md
+    -> edits SKILL.md (one change: add example, reword trigger phrase, remove ambiguous keyword)
+    -> python autoresearch/evaluate.py --desc "what I changed"
+    -> evaluate.py calls eval_runner.py, parses {"quality_score": N}
+    -> compares to baseline in autoresearch/results.tsv
+    -> writes row: timestamp | commit | score | baseline | f1 | KEEP/DISCARD
+    -> exits 0 (KEEP) or 1 (DISCARD)
+Agent: if KEEP -> git commit; if DISCARD -> git checkout -- SKILL.md
+Repeat (NEVER STOP)
+```
+
+### The Two-Layer Discovery Step
+
+Before building the loop, a separate assessment skill (`eval-autoresearch-fit`) scores every skill on four dimensions to decide if a loop is worth building:
+
+1. **Objectivity** — can the outcome be captured as a single number from shell?
+2. **Execution Speed** — how fast does one iteration run?
+3. **Frequency of Use** — how often is the skill triggered?
+4. **Potential Utility** — what is the downstream impact of optimizing it?
+
+Skills scoring 32-40 (HIGH) get loops built immediately. 24-31 (MEDIUM) after addressing barriers. Below 24 — skip.
+
+This mirrors Karpathy's prerequisite check: "If you can't write a deterministic evaluator, don't start the loop."
+
+### What "Locked" Actually Prevents
+
+Without locking `evaluate.py`, an agent would inevitably:
+- Rewrite the scoring function to return 1.0 for any input (Goodhart's Law)
+- Remove hard test cases from `evals.json` to inflate accuracy
+- Lower the KEEP threshold to make every run succeed
+
+The lock on the evaluator is what makes the metric trustworthy. The agent's ONLY lever is the mutation target.
+
+### Directory Layout
+
+```
+plugins/<plugin>/skills/<skill>/
+  SKILL.md                       <- mutation target (agent edits this each loop)
+  evals/evals.json               <- locked: golden test cases
+  scripts/eval_runner.py         <- locked: the scoring engine
+  autoresearch/
+    program.md                   <- spec (goal, constraints, NEVER STOP)
+    evaluate.py                  <- locked evaluator (agent never touches this)
+    eval_runner.py -> ../scripts <- symlink for visibility
+    results.tsv                  <- experiment ledger
+```
+
+---
+
 ## ⚠️ Where AutoResearch Fails
 
 This architecture is not magic; it has rigid anti-patterns:
