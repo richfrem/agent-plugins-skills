@@ -24,19 +24,18 @@ Every session writes structured logs to `context/events.jsonl` and `context/memo
 
 ### Continuous Improvement Loop (The Learning Layer)
 
-This is the system's core differentiator: a feedback control system for agent workflows. It doesn't just manage memory—it continuously improves the instructions the model receives based on objective evaluation. 
+This is the system's core differentiator: a feedback control system for agent workflows. It doesn't just manage memory—it continuously improves the instructions the model receives based on objective evaluation using the **Karpathy 3-File Autoresearch Architecture**.
 
-```
+```text
 Session runs
   -> errors and friction logged to events.jsonl
-  -> os-learning-loop mines the event log
-  -> proposes patches to SKILL.md files and CLAUDE.md
-  -> skill-improvement-eval scores the patch against evals/evals.json
-  -> patch applied ONLY if objective score improves
-  -> next session runs with better instructions
+  -> os-learning-loop (The Spec) proposes a single-variable patch to a SKILL.md (The Target)
+  -> eval_runner.py (The Headless Evaluator) scores it against static evals/evals.json fixtures
+  -> if DISCARD, agent automatically reverts via `git reset --hard`
+  -> if KEEP, the improved instruction is retained for the next session
 ```
 
-> **⚠️ Experimental Warning (Round 2 Red-Team findings):** The current eval gate relies on a keyword-overlap heuristic, which risks over-optimizing for keyword bloat (Goodhart's Law). Furthermore, the loop operates without an isolated validation environment (shadow mode). Treat the `auto-apply` zone with caution and perform manual reviews of changes to your `SKILL.md` files until semantic embedding evaluations are fully integrated.
+The loop relies strictly on this headless evaluation without subjective 'mental' testing from LLMs, actively defeating "Agent Dementia" (Goodhart's Law) and subjective routing bias.
 
 A test registry prevents re-testing falsified hypotheses — improvements accumulate without repeating dead ends. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
 

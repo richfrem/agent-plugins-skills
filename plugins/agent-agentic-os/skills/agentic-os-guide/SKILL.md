@@ -65,6 +65,7 @@ full operating system metaphor.
 | Shell | `.claude/commands/` slash commands |
 | Cron | `/loop` + `heartbeat.md` scheduled background tasks |
 | Boot | `START_HERE.md` + `MEMORY.md` bootstrap on session start |
+| Autoresearch Loop | `skill-improvement-eval` + `improvement-ledger.md` |
 
 ## Execution Flow
 
@@ -76,6 +77,7 @@ Execute these phases in order. Do not skip phases. This skill uses **Progressive
 4. For sub-agents, hooks, auto-memory -> read `references/sub-agents-and-hooks.md`
 5. For memory hygiene (write/promote/archive rules) -> read `references/memory-hygiene.md`
 6. For the full canonical directory tree -> read `references/canonical-file-structure.md`
+7. For the self-improving OS flywheel and 3-file autoresearch framework -> read `references/research/optimizer-engine-patterns.md` and `references/research/karpathy-autoresearch-3-file-eval.md`
 
 ## Quick Orientation
 
