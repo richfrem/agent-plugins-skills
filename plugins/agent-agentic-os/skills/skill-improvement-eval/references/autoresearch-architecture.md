@@ -15,34 +15,20 @@
 
 The autoresearch pattern has three required components. Every file in this system maps to exactly one of them.
 
-| Karpathy Component | Role | Our Implementation | Lives in |
+| Karpathy Component | File | Purpose | Lives in |
 |---|---|---|---|
-| **1. The Spec** (`program.md`) | Defines the goal, constraints, locked files, NEVER STOP directive. Human-authored once before the loop starts. | `references/program.md` | **Target skill** — each skill being optimized owns its own spec |
-| **2. The Mutation Target** | The single file the agent is allowed to change each iteration. | `SKILL.md` | **Target skill** — the trigger language being optimized |
-| **3. The Evaluator** | Locked. Produces a single numeric metric AND records whether the change is an improvement. Agent must never modify any part of this component. | `scripts/evaluate.py` + `scripts/eval_runner.py` + `evals/results.tsv` | **Evaluation service** — shared across all target skills |
+| **1. The Spec** | | | |
+| | `references/program.md` | Defines the optimization goal, what is locked, NEVER STOP directive. Human-authored once before the loop starts. One per target skill. | **Target skill** |
+| **2. The Mutation Target** | | | |
+| | `SKILL.md` | The only file the agent changes each iteration. Contains trigger language being optimized. | **Target skill** |
+| | `evals/evals.json` | Golden test cases defining correct routing. Read by the evaluator to score SKILL.md. Never written to. | **Target skill** |
+| **3. The Evaluator** | | Locked. Agent must never modify any part of this component. | |
+| | `scripts/eval_runner.py` | Metric producer. Given a SKILL.md and its evals.json, computes quality_score, accuracy, heuristic, f1. Pure scorer — outputs numbers, writes nothing. Usable standalone outside the loop. | **Evaluation service** |
+| | `scripts/evaluate.py` | Loop gate. Calls eval_runner to get score. Reads baseline from results.tsv. Compares score and f1 to baseline. Writes one row to results.tsv. Exits 0 (KEEP) or 1 (DISCARD). Loop-specific only. | **Evaluation service** |
+| | `evals/results.tsv` | Evaluator memory. Central log across all target skills (identified by skill_path column). evaluate.py reads it to know the baseline; writes to it to record each result. Without this the loop cannot answer "is this better?" | **Evaluation service** |
+| **+ Loop Orchestrator** | | Not in Karpathy's original 3 — required to make the loop autonomous. | |
+| | `scripts/train.py` | Drives iterations: reads program.md, calls agent to mutate SKILL.md, calls evaluate.py, handles KEEP/DISCARD git operations, loops forever. **MISSING — not yet built.** | **Evaluation service** |
 
-### Evaluator Component: Three Parts
-
-The evaluator is not a single file — it is three parts working together:
-
-| Part | File | Responsibility |
-|---|---|---|
-| **Metric producer** | `scripts/eval_runner.py` | Pure scorer. Given a target SKILL.md and its evals.json, computes quality_score, accuracy, heuristic, f1. Outputs numbers only. Writes nothing. |
-| **Loop gate** | `scripts/evaluate.py` | Reads baseline from results.tsv. Calls eval_runner. Compares score to baseline. Writes one row to results.tsv. Exits 0 (KEEP) or 1 (DISCARD). |
-| **Evaluator memory** | `evals/results.tsv` | Central log across all target skills. evaluate.py reads it to know the baseline; writes to it to record the result. Without this, the loop cannot answer "is this better?" |
-
-Both scripts are needed because the responsibilities are distinct:
-- `eval_runner.py` answers: "what is the score of this SKILL.md?"
-- `evaluate.py` answers: "should the loop keep or discard this change?"
-
-`eval_runner.py` can also be used standalone outside any loop context (one-off scoring). `evaluate.py` is loop-specific only.
-
-**Supporting file that enables the loop (not Karpathy's original 3, but required here):**
-
-| File | Purpose | Lives in |
-|---|---|---|
-| `scripts/train.py` | Loop orchestrator (MISSING). Drives iterations: calls agent to mutate SKILL.md, calls evaluate.py, handles KEEP/DISCARD, loops. Equivalent to Karpathy's `claude --dangerously-skip-permissions` CLI call. | **Evaluation service** |
-| `evals/evals.json` | Golden test cases defining correct routing for the target skill. Read by eval_runner. Never written to. | **Target skill** |
 
 ---
 
