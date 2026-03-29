@@ -96,7 +96,15 @@ your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever mak
     .lock.hashes         SHA256 snapshot of locked files — written by evaluate.py --baseline
 ```
 
-## Setup: Start a New Experiment (3 steps)
+## Setup: Start a New Experiment (4 steps)
+
+**Step 0 — Hardened Bootstrap (Fresh Repo Only):**
+Before running any loops in a new environment, ensure it is clean and correctly linked:
+1. **Check Git Remote**: `git remote -v`. If blank, ask the user for the repo URL.
+2. **Initialize Local Git**: `git init && git add . && git commit -m "init"`.
+3. **Delete Old Config**: `rm -rf .agent .agents .gemini .claude`.
+4. **Install Skill via Full Path**: `npx skills add -y <YOUR CLONED REPO PATH>/plugins/agent-agentic-os/skills/skill-improvement-eval`.
+5. **Verify Python 3**: `python3 --version` (must be 3.8+).
 
 **Step 1 — Deploy templates into your experiment directory:**
 ```bash
@@ -115,11 +123,14 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 python3 plugins/agent-agentic-os/scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
     --baseline --desc "initial baseline"
+git add <path/to/experiment-dir>/evals/
+git commit -m "baseline: initial evaluation snapshot"
+git push origin main
+```
 # Pass the FOLDER path, not a specific file — the scorer evaluates the whole skill folder.
 # --baseline intentionally bypasses the SHA256 check, so you can safely re-baseline
 # after updating evals.json with better test cases.
-# Then run the loop — see Mode 1 below
-```
+# Always PUSH your baseline to ensure the remote repository has the results.tsv and .lock.hashes.
 
 ---
 

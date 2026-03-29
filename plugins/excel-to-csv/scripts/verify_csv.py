@@ -61,16 +61,23 @@ def verify_csv(file_path: Path) -> dict:
             except StopIteration:
                 return {"status": "errors_found", "total_errors": 1, "error_summary": {"NoHeaders": {"count": 1, "locations": ["File has no headers."]}}}
             
+            if len(headers) != len(set(headers)):
+                errors["DuplicateHeader"] = [h for h in headers if headers.count(h) > 1]
+                total_errors += len(errors["DuplicateHeader"])
+            
             for i, row in enumerate(reader, start=2):
-                if len(row) > header_count:
-                    errors["JaggedRow"].append(f"Row {i} has {len(row)} columns, expected {header_count}")
+                if len(row) != header_count:
+                    err_name = "JaggedRow" if len(row) > header_count else "RowCountMismatch"
+                    errors[err_name].append(f"Row {i} has {len(row)} columns, expected {header_count}")
                     total_errors += 1
                 
-                # Check for explicit blank trailing commas
-                if len(row) > 0 and row[-1].strip() == "":
-                    # While standard CSV allows empty fields, excessive trailing commas usually signify parsing issues.
-                    # We flag it as an Info/Warning, but count it towards errors for strictness in generation.
-                    pass 
+                for col_idx, cell in enumerate(row):
+                    try:
+                        cell.encode('ascii')
+                    except UnicodeEncodeError:
+                        if "NonAscii" not in errors: errors["NonAscii"] = []
+                        errors["NonAscii"].append(f"Row {i}, Col {col_idx} contains non-ASCII characters.")
+                        total_errors += 1
 
     except Exception as e:
         return {"status": "errors_found", "total_errors": 1, "error_summary": {"ParsingError": {"count": 1, "locations": [str(e)]}}}

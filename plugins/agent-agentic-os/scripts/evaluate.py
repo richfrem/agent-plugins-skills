@@ -55,13 +55,24 @@ LOCKED_FILES = [HERE / "evaluate.py", HERE / "eval_runner.py"]
 LOCK_HASHES_FILENAME = ".lock.hashes"
 
 
-def check_locked_files(skill_root: Path, evals_json: Path) -> None:
+def check_locked_files(skill_root: Path, evals_json: Path, results_tsv: Path) -> None:
     """Abort if any locked files have uncommitted modifications.
 
     Relying on the agent to obey 'Locked:' in program.md is not enough.
     An agent in a deep loop will eventually rewrite evaluate.py to always
     return exit 0. This check turns convention into a runtime guarantee.
+
+    NOTE: Skipped on fresh installs (no baseline yet). A baseline cannot
+    exist before the locked files are committed, so checking git-status
+    before the first --baseline run would always false-abort on npx installs.
     """
+    # Skip integrity check if no baseline exists yet — the scripts are freshly
+    # installed and haven't been committed. Once --baseline is run and the
+    # snapshot is saved, this check activates on all subsequent iterations.
+    lock_hashes_path = results_tsv.parent / LOCK_HASHES_FILENAME
+    if not lock_hashes_path.exists():
+        return  # Pre-baseline: no snapshot to guard against yet
+
     to_check = LOCKED_FILES + [evals_json]
     try:
         repo_root_result = subprocess.run(
@@ -262,7 +273,7 @@ def main() -> None:
 
     locked_files_to_hash = LOCKED_FILES + [evals_json]
 
-    check_locked_files(skill_root, evals_json)
+    check_locked_files(skill_root, evals_json, results_tsv)
     # Skip SHA256 snapshot check when re-baselining — the baseline run itself
     # overwrites .lock.hashes, so blocking it creates a deadlock when evals.json
     # has been intentionally updated. (Issue 6 fix, field-tested in round 1.)

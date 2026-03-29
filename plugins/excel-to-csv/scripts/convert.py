@@ -98,9 +98,14 @@ def convert_excel_to_csv(excel_path: Path, out_dir: Path, sheets: str | None = N
         
         if sheet_name not in loaded_sheets:
             try:
-                # Always load without headers so slicing by exact row indices matches openpyxl (1-indexed mapping)
-                df = pd.read_excel(excel_path, sheet_name=sheet_name, engine="openpyxl", header=None)
+                # Select engine based on extension
+                engine = "openpyxl" if excel_path.suffix.lower() == ".xlsx" else "xlrd"
+                df = pd.read_excel(excel_path, sheet_name=sheet_name, engine=engine, header=None)
                 loaded_sheets[sheet_name] = df
+            except ImportError:
+                print(f"Error: Missing dependency for {excel_path.suffix} files. Please install '{engine}' (e.g., pip install {engine}).", file=sys.stderr)
+                summary["skipped"].append(sheet_name)
+                continue
             except Exception as e:
                 print(f"Error reading sheet '{sheet_name}' from {excel_path}: {e}", file=sys.stderr)
                 summary["skipped"].append(target)
@@ -154,6 +159,8 @@ def convert_excel_to_csv(excel_path: Path, out_dir: Path, sheets: str | None = N
             continue
 
         out_path = out_dir / f"{sanitize_sheet_name(target)}.csv"
+        # Round floats to 10 decimal places to eliminate common .xlsx floating point artifacts
+        df2 = df2.round(10)
         df2.to_csv(out_path, index=False, encoding=encoding)
         summary["written"].append(str(out_path))
 
