@@ -111,8 +111,9 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 **Step 3 — Establish baseline and start the loop:**
 ```bash
 python plugins/agent-agentic-os/scripts/evaluate.py \
-    --skill <path/to/experiment-dir>/<mutation-target> \
+    --skill <path/to/experiment-dir> \
     --baseline --desc "initial baseline"
+# Pass the FOLDER path, not a specific file — the scorer evaluates the whole skill folder.
 # Then run the loop — see Mode 1 below
 ```
 
@@ -176,17 +177,16 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
 
 **Q1 — What are you evaluating?**
-Ask for the path to the mutation target file.
+Ask for the path to the skill folder (the directory containing SKILL.md). The mutation target
+per iteration can be any file within that folder — SKILL.md, a script, a reference doc, etc.
 
-- A `SKILL.md` (fully supported — routing accuracy from frontmatter keywords + structural heuristic)
-- A specific file within a skill folder (`.py` script, config, etc.) — evaluate.py accepts any file,
-  but `eval_runner.py` scoring is currently optimized for SKILL.md targets. Non-frontmatter files
-  return accuracy=0.0 and receive SKILL.md-specific heuristic penalties (missing example tags).
-  Effective optimization via the metric is only reliable for SKILL.md targets in the current version.
+- **Agent skill folder** (fully supported): `eval_runner.py` scores the whole folder holistically:
+  routing accuracy from SKILL.md frontmatter keywords, structural heuristic per agentskills.io spec
+  (name format, description length, `<example>` blocks, `scripts/*.py` py_compile, empty reference check).
+- **Non-skill folders**: the agentskills.io heuristic will score poorly for targets without SKILL.md
+  frontmatter. The architectural path for other target types is a per-experiment `eval_runner.py` template.
 
-> **Architectural note**: To score a whole skill folder (SKILL.md + scripts + requirements), the
-> agent can mutate any file per iteration while evaluate.py re-scores the folder's SKILL.md each
-> time. Point `--skill` at the SKILL.md; tell the agent the mutation target is the script to change.
+If not provided: "What skill folder do you want to optimize? Give me the path to the folder."
 
 If not provided: "What file do you want to optimize? Give me the path to the file being mutated."
 
@@ -262,10 +262,10 @@ The agent drives N iterations against a target skill. Start with:
 ```
 The agent will:
 1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python plugins/agent-agentic-os/scripts/init_autoresearch.py --skill <target-path>` first.
-2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path>/SKILL.md --baseline`
+2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive):
    - Make one focused change to `SKILL.md`
-   - Run `python3 scripts/evaluate.py --skill <path>/SKILL.md --desc "what changed"`
+   - Run `python3 scripts/evaluate.py --skill <path/to/skill-folder> --desc "what changed"`
    - exit 0 (KEEP): `git add SKILL.md && git commit -m "keep: score=X <desc>"`
    - exit 1 (DISCARD): `git checkout -- <path>/SKILL.md`
 
@@ -291,7 +291,7 @@ Execute these phases in strict order:
 Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
 Run the loop gate against the target skill. It calls `eval_runner.py` internally and compares against the baseline:
 ```bash
-python3 scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
+python3 scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
 ```
 `eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 
