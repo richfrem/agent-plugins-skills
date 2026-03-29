@@ -25,4 +25,5 @@ The link-checker skill must meet the following criteria to be considered operati
 ## 5. Report (Step 5)
 - [ ] `scripts/05_report_unfixable_links.py` generates `unfixable_links_report.md` grouping remaining broken links by source file.
 - [ ] Report distinguishes `MISSING` (no candidates) from `AMBIGUOUS` (multiple candidates).
-- [ ] Reports "No broken links found" when `broken_links.json` is empty or all issues were resolved in Step 4.
+- [ ] When `remaining_broken_links.json` exists (written by Step 4), Step 5 uses it as input — not the raw `broken_links.json` — so fixed links do not appear in the report.
+- [ ] Reports "No broken links found" when the input file is empty (all issues resolved).

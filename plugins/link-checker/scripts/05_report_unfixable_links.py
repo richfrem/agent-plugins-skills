@@ -24,8 +24,15 @@ def main() -> None:
     parser.add_argument("--output", default="unfixable_links_report.md", help="Output Markdown report name")
     args = parser.parse_args()
 
+    # Prefer remaining_broken_links.json (post-fix output from Step 4) if present and
+    # the caller didn't explicitly override --input. This ensures the report reflects
+    # the actual post-fix state, not the stale pre-fix audit.
+    if args.input == 'broken_links.json' and os.path.exists('remaining_broken_links.json'):
+        args.input = 'remaining_broken_links.json'
+        print("Using remaining_broken_links.json (post-fix output from Step 4).")
+
     if not os.path.exists(args.input):
-        print(f"Error: {args.input} not found. Run Step 3 first.")
+        print(f"Error: {args.input} not found. Run Step 3 (and optionally Step 4) first.")
         return
 
     with open(args.input, 'r', encoding='utf-8') as f:

@@ -72,8 +72,8 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
     valid_file_count = 0
     missing_files = []
 
-    # Track real filesystem paths to avoid duplicating symlinked content
-    seen_real_paths: set = set()
+    # Track real filesystem paths → first-encountered rel_path to avoid duplicating symlinked content
+    seen_real_paths: dict = {}
 
     print("🔍 Resolving files and calculating token budgets...")
 
@@ -95,17 +95,14 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
 
                 # Deduplication: if real path already seen, record as symlink reference only
                 if real_path in seen_real_paths:
-                    # Find which earlier path had the same real content
-                    real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
-                        if Path(real_path).is_relative_to(project_root) else real_path
                     resolved_files.append({
                         'path': rel_path,
                         'note': note,
-                        'symlink_to': real_rel,
+                        'symlink_to': seen_real_paths[real_path],
                     })
                     continue
 
-                seen_real_paths.add(real_path)
+                seen_real_paths[real_path] = rel_path
 
                 if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
                     resolved_files.append({'path': rel_path, 'note': note, 'too_large': True})
@@ -141,16 +138,14 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
                 is_symlink = actual_path.is_symlink()
 
                 if real_path in seen_real_paths:
-                    real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
-                        if Path(real_path).is_relative_to(project_root) else real_path
                     resolved_files.append({
                         'path': path_str,
                         'note': note,
-                        'symlink_to': real_rel,
+                        'symlink_to': seen_real_paths[real_path],
                     })
                     continue
 
-                seen_real_paths.add(real_path)
+                seen_real_paths[real_path] = path_str
 
                 if actual_path.stat().st_size > MAX_FILE_SIZE_BYTES:
                     resolved_files.append({'path': path_str, 'note': note, 'too_large': True})

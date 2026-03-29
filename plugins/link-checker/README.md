@@ -38,20 +38,12 @@ The autonomous agent executes a strict **5-Step Pipeline**: **Inventory → Extr
 ```bash
 cd /path/to/your/repo
 
-# Step 1: Build file inventory
-python3 ./scripts/01_build_file_inventory.py
-
-# Step 2: Extract all link references
-python3 ./scripts/02_extract_link_references.py
-
-# Step 3: Audit — identify broken links
-python3 ./scripts/03_audit_broken_links.py
-
-# Step 4: Auto-fix unique matches (preview first)
-python3 ./scripts/04_autofix_unique_links.py --dry-run
-python3 ./scripts/04_autofix_unique_links.py --backup
-
-# Step 5: Report remaining unfixable links
+# Full pipeline (one-liner)
+python3 ./scripts/01_build_file_inventory.py && \
+python3 ./scripts/02_extract_link_references.py && \
+python3 ./scripts/03_audit_broken_links.py && \
+python3 ./scripts/04_autofix_unique_links.py --dry-run && \
+python3 ./scripts/04_autofix_unique_links.py --backup && \
 python3 ./scripts/05_report_unfixable_links.py
 ```
 

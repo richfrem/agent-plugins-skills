@@ -15,13 +15,15 @@ flowchart TD
         Extractor -- Parse --> Refs[(link_references.json)]
     end
 
-    subgraph Logic [Stage 4: Auditing]
+    subgraph Audit [Stage 4: Auditing]
         Inv --> Auditor[03_audit_broken_links.py]
         Refs --> Auditor
         Auditor -- Cross-Ref --> Broken[(broken_links.json)]
     end
 
-    subgraph Action [Stage 5: Remediation — Sequential]
-        Broken --> Fixer[04_autofix_unique_links.py]
-        Fixer -- Remaining issues --> Reporter[05_report_unfixable_links.py]
+    subgraph Remediation [Stage 5: Remediation]
+        Fixer[04_autofix_unique_links.py]
+        Fixer -- remaining_broken_links.json --> Reporter[05_report_unfixable_links.py]
     end
+
+    Broken --> Fixer

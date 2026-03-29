@@ -8,9 +8,15 @@ Purpose:
     This is Phase 4 of the Link Checker pipeline.
     Reads broken_links.json (from Step 3) to target only files with known broken links.
     Falls back to a full repo walk if broken_links.json is not present.
+    After fixing, writes remaining_broken_links.json so Step 5 reflects post-fix state.
 
 Usage:
     python3 04_autofix_unique_links.py --root . [--dry-run] [--backup]
+
+Scope:
+    Only fixes markdown links [label](path) and image links ![alt](path).
+    Code path references (e.g. './config.json' in .py or .js files) are audited
+    by Step 3 but are intentionally NOT modified by this script.
 """
 import os
 import json
@@ -18,13 +24,26 @@ import re
 import shutil
 import argparse
 from urllib.parse import unquote
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Any
 
 
 def calculate_relative_path(start_file: str, target_abs_path: str) -> str:
     """Calculates relative path from start_file to target_abs_path."""
     start_dir = os.path.dirname(start_file)
     return os.path.relpath(target_abs_path, start_dir).replace('\\', '/')
+
+
+def lookup_basename(inventory: Dict[str, List[str]], basename: str) -> List[str]:
+    """
+    Returns inventory candidates for basename.
+    Tries an exact match first, then falls back to a case-insensitive search
+    for compatibility with case-insensitive filesystems (macOS, Windows).
+    """
+    candidates = inventory.get(basename, [])
+    if not candidates:
+        lower = basename.lower()
+        candidates = next((v for k, v in inventory.items() if k.lower() == lower), [])
+    return candidates
 
 
 def fix_links_in_file(
@@ -38,6 +57,7 @@ def fix_links_in_file(
     Scans a file for broken markdown and image links and attempts to fix them
     if a unique basename match exists in the inventory.
     Handles both standard links [label](path) and image links ![alt](path).
+    Skips links inside backtick (```) and tilde (~~~) fenced code blocks.
     """
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -72,12 +92,12 @@ def fix_links_in_file(
         if os.path.exists(os.path.join(file_dir, clean_link)):
             return match.group(0)
 
-        # It's broken — look up by basename
+        # It's broken — look up by basename (case-insensitive fallback)
         basename = os.path.basename(clean_link)
         if not basename or basename.lower() == 'readme.md':
             return match.group(0)
 
-        candidates = inventory.get(basename, [])
+        candidates = lookup_basename(inventory, basename)
 
         # Only fix if the match is UNIQUE
         if len(candidates) == 1:
@@ -94,13 +114,16 @@ def fix_links_in_file(
 
         return match.group(0)
 
-    # Process line-by-line to skip code blocks
+    # Process line-by-line to skip fenced code blocks (both ``` and ~~~)
     lines = content.splitlines(keepends=True)
     processed_lines = []
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith('```'):
+        # Fence delimiter: always append as-is and toggle state
+        if stripped.startswith(('```', '~~~')):
             in_code_block = not in_code_block
+            processed_lines.append(line)
+            continue
         if in_code_block:
             processed_lines.append(line)
         else:
@@ -117,18 +140,31 @@ def fix_links_in_file(
     return fix_count
 
 
-def collect_files_from_broken_links(
-    broken_links_path: str, root_dir: str
-) -> Optional[Set[str]]:
+def write_remaining_broken_links(
+    broken_list: List[Dict[str, Any]], root_dir: str, output_path: str
+) -> int:
     """
-    Reads broken_links.json to get the targeted set of files that need fixing.
-    Returns None if the file doesn't exist (triggers fallback full-walk mode).
+    Re-checks each item in broken_list against the filesystem.
+    Writes items that are still broken to output_path.
+    Returns the count of remaining broken links.
     """
-    if not os.path.exists(broken_links_path):
-        return None
-    with open(broken_links_path, 'r', encoding='utf-8') as f:
-        broken_list: List[Dict[str, Any]] = json.load(f)
-    return {os.path.join(root_dir, item['source_file']) for item in broken_list}
+    remaining = []
+    for item in broken_list:
+        source_abs = os.path.join(root_dir, item['source_file'])
+        source_dir = os.path.dirname(source_abs)
+        link_path = item['link']
+        clean = unquote(link_path.split('#')[0])
+        if link_path.startswith('/'):
+            target = os.path.join(root_dir, clean.lstrip('/'))
+        else:
+            target = os.path.normpath(os.path.join(source_dir, clean))
+        if not os.path.exists(target):
+            remaining.append(item)
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(remaining, f, indent=2)
+
+    return len(remaining)
 
 
 def main() -> None:
@@ -148,31 +184,43 @@ def main() -> None:
         return
 
     with open(inventory_path, 'r', encoding='utf-8') as f:
-        inventory = json.load(f)
+        inventory: Dict[str, List[str]] = json.load(f)
 
     print(f"Repairing links in {root_dir} (Dry-run: {args.dry_run})...")
 
-    # Prefer targeted mode: only visit files flagged by the auditor in Step 3
-    files_to_fix = collect_files_from_broken_links(args.broken_links, root_dir)
-
-    if files_to_fix is not None:
-        print(f"Targeting {len(files_to_fix)} file(s) from broken_links.json.")
-        file_iter = sorted(f for f in files_to_fix if f.endswith(('.md', '.markdown')))
+    # Load broken_links.json once — used both for targeted file selection and post-fix re-check
+    broken_list: List[Dict[str, Any]] = []
+    has_broken_links_json = os.path.exists(args.broken_links)
+    if has_broken_links_json:
+        with open(args.broken_links, 'r', encoding='utf-8') as f:
+            broken_list = json.load(f)
+        files_to_fix: List[str] = sorted(
+            {os.path.join(root_dir, item['source_file']) for item in broken_list
+             if item['source_file'].endswith(('.md', '.markdown'))}
+        )
+        print(f"Targeting {len(files_to_fix)} file(s) from {args.broken_links}.")
     else:
         print("Warning: broken_links.json not found — falling back to full repo walk.")
         print("Run Step 3 first for targeted, efficient fixing.")
-        file_iter = []
+        files_to_fix = []
         for walk_root, dirs, files in os.walk(root_dir):
             dirs[:] = [d for d in dirs if d not in {'.git', 'node_modules', '.venv', '.next', 'bin', 'obj'}]
             for filename in files:
                 if filename.endswith(('.md', '.markdown')):
-                    file_iter.append(os.path.join(walk_root, filename))
+                    files_to_fix.append(os.path.join(walk_root, filename))
 
     total_fixed = 0
-    for file_path in file_iter:
+    for file_path in files_to_fix:
         total_fixed += fix_links_in_file(file_path, inventory, root_dir, args.dry_run, args.backup)
 
     print(f"{'Would have fixed' if args.dry_run else 'Fixed'} {total_fixed} link(s).")
+
+    # After a real fix run, write remaining_broken_links.json so Step 5 has accurate post-fix data
+    if not args.dry_run and has_broken_links_json:
+        remaining_path = 'remaining_broken_links.json'
+        remaining_count = write_remaining_broken_links(broken_list, root_dir, remaining_path)
+        print(f"Wrote {remaining_path}: {remaining_count} link(s) still need manual review.")
+        print("Step 5 will use this file automatically.")
 
 
 if __name__ == "__main__":

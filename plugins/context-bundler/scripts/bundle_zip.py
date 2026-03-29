@@ -71,8 +71,8 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
     total_tokens = 0
     valid_file_count = 0
 
-    # Track real filesystem paths to avoid archiving duplicate symlinked content
-    seen_real_paths: set = set()
+    # Track real filesystem paths → first-encountered rel_path to avoid archiving duplicate symlinked content
+    seen_real_paths: dict = {}
 
     print("🔍 Scanning directories and estimating tokens...")
 
@@ -94,16 +94,14 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
 
                 # Deduplication: record as symlink reference, do not archive again
                 if real_path in seen_real_paths:
-                    real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
-                        if Path(real_path).is_relative_to(project_root) else real_path
                     resolved_files.append({
                         'path': rel_path,
                         'note': note,
-                        'symlink_to': real_rel,
+                        'symlink_to': seen_real_paths[real_path],
                     })
                     continue
 
-                seen_real_paths.add(real_path)
+                seen_real_paths[real_path] = rel_path
 
                 if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
                     resolved_files.append({'path': rel_path, 'note': note, 'too_large': True})
@@ -138,16 +136,14 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
                 is_symlink = actual_path.is_symlink()
 
                 if real_path in seen_real_paths:
-                    real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
-                        if Path(real_path).is_relative_to(project_root) else real_path
                     resolved_files.append({
                         'path': path_str,
                         'note': note,
-                        'symlink_to': real_rel,
+                        'symlink_to': seen_real_paths[real_path],
                     })
                     continue
 
-                seen_real_paths.add(real_path)
+                seen_real_paths[real_path] = path_str
 
                 if actual_path.stat().st_size > MAX_FILE_SIZE_BYTES:
                     resolved_files.append({'path': path_str, 'note': note, 'too_large': True})

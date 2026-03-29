@@ -88,7 +88,8 @@ def main() -> None:
             # Skip the output files from this pipeline (prevents false positives on re-runs)
             if filename in {
                 'file_inventory.json', 'link_references.json',
-                'broken_links.log', 'broken_links.json', 'unfixable_links_report.md',
+                'broken_links.log', 'broken_links.json',
+                'remaining_broken_links.json', 'unfixable_links_report.md',
             }:
                 continue
                 
