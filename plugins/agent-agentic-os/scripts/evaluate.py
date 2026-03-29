@@ -18,8 +18,10 @@ Usage (run from the plugin root or any directory):
     python scripts/evaluate.py --target <path/to/mutation-target> --desc "what changed"
     python scripts/evaluate.py --skill <path/to/mutation-target> --baseline
 
-    --skill and --target are aliases. The target can be any file type:
-    SKILL.md, a .py script, a config, a math definition file, etc.
+    --skill and --target are aliases. evaluate.py accepts any file as input,
+    but eval_runner.py scoring is optimized for SKILL.md targets (YAML frontmatter
+    + <example> tags). Non-SKILL.md targets score accuracy=0.0 and receive heuristic
+    penalties for missing SKILL.md structure — see eval_runner.py Known Limitations.
 
 Karpathy mapping:
     This file = prepare.py (gate logic half)

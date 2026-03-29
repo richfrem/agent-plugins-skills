@@ -176,10 +176,17 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
 
 **Q1 — What are you evaluating?**
-Ask for the path to the mutation target file. It can be any file type:
-- A `SKILL.md` (most common — routing accuracy + heuristic scored)
-- A `.py` script (scored against its own evals.json if present, otherwise heuristics only)
-- Anything with a clear metric (config, model weights descriptor, math definition, etc.)
+Ask for the path to the mutation target file.
+
+- A `SKILL.md` (fully supported — routing accuracy from frontmatter keywords + structural heuristic)
+- A specific file within a skill folder (`.py` script, config, etc.) — evaluate.py accepts any file,
+  but `eval_runner.py` scoring is currently optimized for SKILL.md targets. Non-frontmatter files
+  return accuracy=0.0 and receive SKILL.md-specific heuristic penalties (missing example tags).
+  Effective optimization via the metric is only reliable for SKILL.md targets in the current version.
+
+> **Architectural note**: To score a whole skill folder (SKILL.md + scripts + requirements), the
+> agent can mutate any file per iteration while evaluate.py re-scores the folder's SKILL.md each
+> time. Point `--skill` at the SKILL.md; tell the agent the mutation target is the script to change.
 
 If not provided: "What file do you want to optimize? Give me the path to the file being mutated."
 
