@@ -101,9 +101,25 @@ Default metric: `quality_score = (routing_accuracy * 0.7) + (heuristic * 0.3)` w
 Ask only if the user wants to weight things differently or has a specific concern (e.g. "I only care about false positives → precision matters most").
 If not specified: use the default metric, no need to ask.
 
-**Q5 — (Loop mode only) Does a baseline exist?**
+**Q5 — (Loop mode only) Does `evals.json` exist?**
+Check `<target-skill>/evals/evals.json`.
+- If exists: show the number of test cases. Scoring will use routing accuracy + heuristic.
+- If missing: "No evals.json found. Without test cases, scoring falls back to heuristics only (structural checks, no routing accuracy). Do you want to add test cases before starting, or proceed with heuristics-only scoring?"
+  - If heuristics-only: continue but note the limitation in the confirm block.
+  - If user wants to add test cases: pause and help write `evals.json` before proceeding.
+
+**Q6 — (Loop mode only) Does `program.md` exist?**
+Check `<target-skill>/references/program.md`.
+- If exists: read it and show the goal to the user. Confirm it still reflects what they want to optimize.
+- If missing: "No program.md found. This file defines the optimization goal and which files are locked. Without it the agent has no spec to follow. Would you like me to write one now?"
+  - If yes: ask the user two questions to draft it:
+    1. "What is the goal? (e.g. maximize routing accuracy, minimize false positives, reach score 0.95)"
+    2. "Which files should be locked (never edited by the agent)? Default: evaluate.py, eval_runner.py, evals/evals.json"
+  - Write `<target-skill>/references/program.md` from their answers before proceeding.
+
+**Q7 — (Loop mode only) Does a baseline exist?**
 Check `<target-skill>/evals/results.tsv` for a BASELINE row.
-- If baseline exists: show the current baseline score and f1, confirm before starting.
+- If baseline exists: show the last BASELINE score and f1, plus how many iterations have already run and the most recent score.
 - If no baseline: "No baseline found. I'll establish one before starting the loop."
 
 **After intake — confirm the plan before executing:**
@@ -112,7 +128,10 @@ Target:     plugins/.../my-skill/SKILL.md
 Mode:       Loop (autoresearch)
 Iterations: 20  (or: until quality_score >= 0.95  |  or: NEVER STOP)
 Metric:     quality_score (default) with F1 guard
-Baseline:   0.8444 / f1=0.8333  (or: will establish)
+evals.json: 9 test cases  (or: MISSING — heuristics only)
+program.md: exists — goal: maximize quality_score  (or: will write)
+Baseline:   score=0.8444 / f1=0.8333  (or: will establish)
+History:    14 iterations run, last score=0.8444 (3 KEEP, 2 DISCARD since baseline)
 
 Proceed?
 ```
