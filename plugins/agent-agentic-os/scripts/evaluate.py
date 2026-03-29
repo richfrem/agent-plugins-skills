@@ -1,24 +1,31 @@
 #!/usr/bin/env python3
 """
-evaluate.py -- LOCKED autoresearch evaluator for skill-improvement-eval
-=======================================================================
+evaluate.py -- Locked loop gate for the autoresearch loop
+==========================================================
 
 Purpose:
-    Runs eval_runner.py against ../SKILL.md, compares score to the baseline
-    row in autoresearch/results.tsv, records the result, and exits 0 (KEEP)
-    or 1 (DISCARD).
+    Single responsibility: "Should the loop keep or discard this change?"
 
-    DO NOT MODIFY THIS FILE. It is the locked evaluator for the autoresearch
-    loop. Only ../SKILL.md is the mutation target.
+    Calls eval_runner.py once (--json), reads the last BASELINE row from
+    <target-skill>/evals/results.tsv, compares score and f1, appends one row
+    to that same TSV, then exits 0 (KEEP) or 1 (DISCARD).
 
-Usage:
-    python autoresearch/evaluate.py
-    python autoresearch/evaluate.py --desc "what you changed"
-    python autoresearch/evaluate.py --baseline   # record as new baseline
+    DO NOT MODIFY THIS FILE. It is the locked evaluator. Only the target
+    SKILL.md is the mutation target.
 
-Run from the skill root:
-    cd plugins/agent-agentic-os/skills/skill-improvement-eval
-    python autoresearch/evaluate.py --desc "added second example block"
+Usage (run from the plugin root or any directory):
+    python scripts/evaluate.py --skill <path/to/SKILL.md>
+    python scripts/evaluate.py --skill <path/to/SKILL.md> --desc "what changed"
+    python scripts/evaluate.py --skill <path/to/SKILL.md> --baseline
+
+Karpathy mapping:
+    This file = prepare.py (gate logic half)
+    eval_runner.py = prepare.py (metric producer half)
+    SKILL.md = train.py (mutation target)
+
+KEEP condition: score >= baseline_score AND f1 >= baseline_f1
+    Dual guard prevents keyword-stuffing exploit (padding triggers raises
+    recall but drops precision, so F1 falls even as accuracy rises).
 """
 
 import argparse
@@ -29,33 +36,32 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# evaluate.py lives at plugins/agent-agentic-os/scripts/evaluate.py
 HERE = Path(__file__).parent.resolve()
-SKILL_ROOT = HERE.parent
-SKILL_MD = SKILL_ROOT / "SKILL.md"
-EVAL_RUNNER = SKILL_ROOT / "scripts" / "eval_runner.py"
-RESULTS_TSV = HERE / "results.tsv"
-HEADERS = ["timestamp", "commit", "score", "baseline", "f1", "status", "description"]
+EVAL_RUNNER = HERE / "eval_runner.py"
+
+HEADERS = ["timestamp", "commit", "score", "baseline", "accuracy", "heuristic", "f1", "status", "description"]
 
 
-def get_commit() -> str:
+def get_commit(cwd: Path) -> str:
     """Return short git commit hash, or 'uncommitted' if not in a repo."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
             capture_output=True, text=True, check=True,
-            cwd=SKILL_ROOT
+            cwd=cwd
         )
         return result.stdout.strip()
     except subprocess.CalledProcessError:
         return "uncommitted"
 
 
-def run_eval_runner() -> dict:
-    """Call eval_runner.py --json and return parsed JSON output."""
+def run_eval_runner(skill_md: Path) -> dict:
+    """Call eval_runner.py --json once and return all metric fields."""
     result = subprocess.run(
-        [sys.executable, str(EVAL_RUNNER), "--skill", str(SKILL_MD), "--json"],
+        [sys.executable, str(EVAL_RUNNER), "--skill", str(skill_md), "--json"],
         capture_output=True, text=True,
-        cwd=SKILL_ROOT
+        cwd=skill_md.parent
     )
     if result.returncode != 0:
         print(f"ERROR: eval_runner.py failed:\n{result.stderr}", file=sys.stderr)
@@ -67,50 +73,38 @@ def run_eval_runner() -> dict:
         sys.exit(2)
 
 
-def load_baseline() -> tuple[float, float]:
-    """Return (baseline_score, baseline_f1) from the first BASELINE row, or (0.0, 0.0)."""
-    if not RESULTS_TSV.exists():
+def load_baseline(results_tsv: Path) -> tuple[float, float]:
+    """Return (baseline_score, baseline_f1) from the LAST BASELINE row, or (0.0, 0.0)."""
+    if not results_tsv.exists():
         return 0.0, 0.0
-    with open(RESULTS_TSV, newline="") as f:
+    last_baseline: dict | None = None
+    with open(results_tsv, newline="") as f:
         reader = csv.DictReader(f, delimiter="\t")
         for row in reader:
             if row.get("status") == "BASELINE":
-                try:
-                    return float(row["score"]), float(row.get("f1", 0))
-                except (ValueError, KeyError):
-                    return 0.0, 0.0
-    return 0.0, 0.0
-
-
-def get_f1_from_runner() -> float:
-    """Run eval_runner in verbose mode to get f1 score from evals/results.tsv."""
-    subprocess.run(
-        [sys.executable, str(EVAL_RUNNER), "--skill", str(SKILL_MD), "--desc", "_f1_probe"],
-        capture_output=True, text=True,
-        cwd=SKILL_ROOT
-    )
-    evals_results = SKILL_ROOT / "evals" / "results.tsv"
-    if not evals_results.exists():
-        return 0.0
-    with open(evals_results, newline="") as f:
-        reader = csv.DictReader(f, delimiter="\t")
-        last = None
-        for row in reader:
-            last = row
-    if last:
+                last_baseline = row
+    if last_baseline is None:
+        return 0.0, 0.0
+    try:
+        score = float(last_baseline.get("score", 0))
+        # Support both "f1" (new schema) and "llm_routing_score" (legacy)
+        f1_raw = last_baseline.get("f1") or last_baseline.get("llm_routing_score") or "0"
         try:
-            # Column may be named f1_score (new) or llm_routing_score (legacy)
-            val = last.get("f1_score") or last.get("llm_routing_score", 0)
-            return float(val)
+            f1 = float(f1_raw)
         except (ValueError, TypeError):
-            return 0.0
-    return 0.0
+            f1 = 0.0
+        return score, f1
+    except (ValueError, KeyError):
+        return 0.0, 0.0
 
 
-def write_row(commit: str, score: float, baseline: float, f1: float, status: str, desc: str) -> None:
-    """Append a row to autoresearch/results.tsv."""
-    write_header = not RESULTS_TSV.exists()
-    with open(RESULTS_TSV, "a", newline="") as f:
+def write_row(results_tsv: Path, commit: str, score: float, baseline: float,
+              accuracy: float, heuristic: float, f1: float,
+              status: str, desc: str) -> None:
+    """Append one row to <target-skill>/evals/results.tsv."""
+    results_tsv.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not results_tsv.exists()
+    with open(results_tsv, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=HEADERS, delimiter="\t")
         if write_header:
             writer.writeheader()
@@ -119,6 +113,8 @@ def write_row(commit: str, score: float, baseline: float, f1: float, status: str
             "commit": commit,
             "score": f"{score:.4f}",
             "baseline": f"{baseline:.4f}",
+            "accuracy": f"{accuracy:.4f}",
+            "heuristic": f"{heuristic:.4f}",
             "f1": f"{f1:.4f}",
             "status": status,
             "description": desc,
@@ -126,17 +122,32 @@ def write_row(commit: str, score: float, baseline: float, f1: float, status: str
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Locked autoresearch evaluator")
+    parser = argparse.ArgumentParser(description="Locked autoresearch loop gate")
+    parser.add_argument(
+        "--skill", required=True,
+        help="Path to the target SKILL.md (e.g. skills/my-skill/SKILL.md)"
+    )
     parser.add_argument("--desc", default="iteration", help="Description for results.tsv")
     parser.add_argument("--baseline", action="store_true", help="Record this run as the new baseline")
     args = parser.parse_args()
 
-    commit = get_commit()
-    data = run_eval_runner()
-    score = float(data["quality_score"])
+    skill_md = Path(args.skill).resolve()
+    if not skill_md.exists():
+        print(f"ERROR: SKILL.md not found at {skill_md}", file=sys.stderr)
+        sys.exit(2)
 
-    baseline_score, baseline_f1 = load_baseline()
-    f1 = get_f1_from_runner()
+    skill_root = skill_md.parent
+    results_tsv = skill_root / "evals" / "results.tsv"
+
+    commit = get_commit(skill_root)
+    data = run_eval_runner(skill_md)
+
+    score = float(data["quality_score"])
+    accuracy = float(data.get("accuracy", 0.0))
+    heuristic = float(data.get("heuristic", 0.0))
+    f1 = float(data.get("f1", 0.0))
+
+    baseline_score, baseline_f1 = load_baseline(results_tsv)
 
     if args.baseline or baseline_score == 0.0:
         status = "BASELINE"
@@ -145,13 +156,12 @@ def main() -> None:
     else:
         status = "DISCARD"
 
-    write_row(commit, score, baseline_score, f1, status, args.desc)
+    write_row(results_tsv, commit, score, baseline_score, accuracy, heuristic, f1, status, args.desc)
 
-    print(f"score={score:.4f}  baseline={baseline_score:.4f}  f1={f1:.4f}  STATUS: {status}")
-    print(f"commit={commit}  desc={args.desc!r}")
+    print(f"score={score:.4f}  baseline={baseline_score:.4f}  f1={f1:.4f}  baseline_f1={baseline_f1:.4f}  STATUS: {status}")
+    print(f"commit={commit}  skill={skill_md.parent.name}  desc={args.desc!r}")
 
     if status == "DISCARD":
-        print("-> git checkout -- ../SKILL.md")
         sys.exit(1)
 
 

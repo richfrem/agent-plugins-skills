@@ -1,4 +1,0 @@
-timestamp	commit	score	baseline	f1	status	description
-2026-03-28T15:36:43.605614	abeb626	0.8444	0.0000	0.0000	BASELINE	baseline commit abeb626
-2026-03-28T15:38:39.079710	abeb626	0.8444	0.8444	0.8333	BASELINE	baseline re-run with f1 fix
-2026-03-28T15:39:13.683670	abeb626	0.8444	0.8444	0.8333	KEEP	replace eval->evaluate in trigger phrase to fix false positive

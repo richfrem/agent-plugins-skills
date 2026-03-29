@@ -1,19 +1,16 @@
-timestamp	score	accuracy	heuristic	llm_routing_score	status	description
-2026-03-22T00:56:32.090370	0.8833	0.8333	1.0000	N/A	BASELINE	T01 baseline - no changes, establishing routing accuracy baseline
-2026-03-22T00:56:47.890165	0.8833	0.8333	1.0000	N/A	KEEP	T01 baseline - PEER_AGENT independent verification
-2026-03-22T01:06:48.601434	1.0000	1.0000	1.0000	N/A	KEEP	T02 fix: removed 'what' keyword from frontmatter example 3
-2026-03-22T01:06:55.341360	1.0000	1.0000	1.0000	N/A	KEEP	T02 PEER_AGENT independent verification
-2026-03-22T01:08:22.818537	0.9000	0.8571	1.0000	N/A	DISCARD	T03 PEER_AGENT independent verification
-2026-03-22T01:11:35.342253	0.9000	0.8571	1.0000	N/A	DISCARD	T03 coverage expansion: added measure-performance-gain positive trigger test
-2026-03-22T01:12:57.966679	1.0000	1.0000	1.0000	N/A	KEEP	T04 fix: added measure-performance-gain to frontmatter triggers
-2026-03-22T01:12:58.590055	1.0000	1.0000	1.0000	N/A	KEEP	T04 PEER_AGENT independent verification
-2026-03-22T01:18:01.877531	1.0000	1.0000	1.0000	1.0000	KEEP	Manual iteration
-2026-03-22T01:21:18.087958	1.0000	1.0000	1.0000	1.0000	KEEP	Manual iteration
-2026-03-28T15:36:43.549278	0.8444	0.7778	1.0000	0.8333	DISCARD	Manual iteration
-2026-03-28T15:36:43.599838	0.8444	0.7778	1.0000	0.8333	KEEP	_f1_probe
-2026-03-28T15:38:23.861879	0.8444	0.7778	1.0000	0.8333	KEEP	_test_probe
-2026-03-28T15:38:39.023516	0.8444	0.7778	1.0000	0.8333	KEEP	Manual iteration
-2026-03-28T15:38:39.074773	0.8444	0.7778	1.0000	0.8333	KEEP	_f1_probe
-2026-03-28T15:39:13.630206	0.8444	0.7778	1.0000	0.8333	KEEP	Manual iteration
-2026-03-28T15:39:13.678780	0.8444	0.7778	1.0000	0.8333	KEEP	_f1_probe
-2026-03-28T15:39:19.965661	0.8444	0.7778	1.0000	0.8333	KEEP	debug
+timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
+2026-03-22T00:56:32.090370	N/A	0.8833	0.0000	0.8333	1.0000	N/A	BASELINE	T01 baseline - no changes, establishing routing accuracy baseline
+2026-03-22T00:56:47.890165	N/A	0.8833	0.8833	0.8333	1.0000	N/A	KEEP	T01 baseline - PEER_AGENT independent verification
+2026-03-22T01:06:48.601434	N/A	1.0000	0.8833	1.0000	1.0000	N/A	KEEP	T02 fix: removed 'what' keyword from frontmatter example 3
+2026-03-22T01:06:55.341360	N/A	1.0000	0.8833	1.0000	1.0000	N/A	KEEP	T02 PEER_AGENT independent verification
+2026-03-22T01:08:22.818537	N/A	0.9000	0.8833	0.8571	1.0000	N/A	DISCARD	T03 PEER_AGENT independent verification
+2026-03-22T01:11:35.342253	N/A	0.9000	0.8833	0.8571	1.0000	N/A	DISCARD	T03 coverage expansion: added measure-performance-gain positive trigger test
+2026-03-22T01:12:57.966679	N/A	1.0000	0.8833	1.0000	1.0000	N/A	KEEP	T04 fix: added measure-performance-gain to frontmatter triggers
+2026-03-22T01:12:58.590055	N/A	1.0000	0.8833	1.0000	1.0000	N/A	KEEP	T04 PEER_AGENT independent verification
+2026-03-22T01:18:01.877531	N/A	1.0000	0.8833	1.0000	1.0000	1.0000	KEEP	Manual iteration
+2026-03-22T01:21:18.087958	N/A	1.0000	0.8833	1.0000	1.0000	1.0000	KEEP	Manual iteration
+2026-03-28T15:36:43.549278	N/A	0.8444	1.0000	0.7778	1.0000	0.8333	DISCARD	Manual iteration
+2026-03-28T15:38:39.023516	N/A	0.8444	1.0000	0.7778	1.0000	0.8333	KEEP	Manual iteration
+2026-03-28T15:39:13.630206	N/A	0.8444	1.0000	0.7778	1.0000	0.8333	KEEP	Manual iteration
+2026-03-28T18:32:10.761661	e451710	0.8444	0.8833	0.7778	1.0000	0.8333	BASELINE	post-fix baseline
+2026-03-28T18:32:55.220015	e451710	0.8444	0.8444	0.7778	1.0000	0.8333	KEEP	verify fixes: single call, last baseline, correct tsv

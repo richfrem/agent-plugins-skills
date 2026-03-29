@@ -1,53 +1,47 @@
 #!/usr/bin/env python3
 """
-eval_runner.py — Automated Trainer for Skill Improvement
-======================================================
+eval_runner.py — Pure skill scorer for the autoresearch loop
+============================================================
 
 Purpose:
-    Simulates Karpathy's train.py loop for Agentic OS Skills.
-    Calculates objective routing accuracy from evals/evals.json.
+    Reads SKILL.md frontmatter keywords and evals/evals.json, computes
+    quality_score / accuracy / heuristic / f1. Writes nothing to disk.
+    This is the metric producer in the Karpathy autoresearch pattern.
 
-Layer: 
-    Scripts / Optimizers
+    Single responsibility: answer "What is the score of this SKILL.md?"
+    All KEEP/DISCARD decisions and TSV writes belong in evaluate.py.
 
-Usage Examples:
-    python3 ./scripts/eval_runner.py --skill PATH_TO_SKILL.md
-    python3 ./scripts/eval_runner.py --skill PATH_TO_SKILL.md --baseline
-
-Supported Object Types:
-    - Skill files (SKILL.md)
+Usage:
+    python3 eval_runner.py --skill PATH_TO_SKILL.md
+    python3 eval_runner.py --skill PATH_TO_SKILL.md --json
 
 CLI Arguments:
-    --skill <path>         Target SKILL.md file to evaluate
-    --baseline             Flag toggling baseline weight saving
-    --desc <text>          Iteration label description
-    --json                 Toggle machine-readable layout toggle
+    --skill <path>   Target SKILL.md file to evaluate
+    --json           Output machine-readable JSON with all metric fields
+
+Output (--json):
+    {"quality_score": N, "accuracy": N, "f1": N, "heuristic": N}
+
+Output (default):
+    Human-readable score report printed to stdout
 
 Input Files:
-    - Specified SKILL.md
-    - Specified skill_directory/evals/evals.json
-
-Output:
-    - Appends evaluation to skill_directory/evals/results.tsv
+    - Specified SKILL.md (frontmatter keywords extracted for routing)
+    - <skill_dir>/evals/evals.json (test prompts with expected trigger outcomes)
 
 Key Functions:
-    calculate_heuristic_score() Scans length or XML example components
-    run_routing_eval()         Multiplexes queries over triggers verifying F1/precision
-
-Script Dependencies:
-    - None (Uses standard python imports)
+    calculate_heuristic_score()  Structural health check (examples, length)
+    run_routing_eval()           Keyword routing accuracy + F1 score
 
 Consumed by:
-    - Continuous skill optimizer or automated CI/CD validation nodes
+    - evaluate.py (autoresearch loop gate, via --json)
+    - CI/CD validation, standalone manual scoring
 """
 
 import json
-import os
 import sys
 import argparse
 import re
-import csv
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -142,111 +136,64 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
     return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1, "details": details}
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Skill Improvement Evaluator (Trainer)")
+    parser = argparse.ArgumentParser(description="Pure skill scorer — writes nothing to disk")
     parser.add_argument("--skill", "--target", dest="skill", required=True,
-                        help="Path to the SKILL.md to evaluate (--target is an alias for programmatic callers)")
-    parser.add_argument("--baseline", action="store_true", help="Record result as baseline")
-    parser.add_argument("--desc", default="Manual iteration", help="Description for results.tsv")
+                        help="Path to the SKILL.md to evaluate")
     parser.add_argument("--json", action="store_true", dest="json_output",
-                        help="Output machine-readable JSON: {\"quality_score\": N} for optimizer callers")
+                        help="Output machine-readable JSON with all metric fields")
 
     args = parser.parse_args()
     skill_path = Path(args.skill).resolve()
     skill_dir = skill_path.parent
-    
+
     if not skill_path.exists():
-        print(f"Error: Skill not found at {skill_path}")
+        print(f"Error: Skill not found at {skill_path}", file=sys.stderr)
         sys.exit(1)
-        
+
     content = skill_path.read_text()
-    skill_name = skill_path.parent.name # Assumes standard skill folder structure
-    
-    # 1. Load Evals
+    skill_name = skill_dir.name
+
+    # Load evals
     evals_path = skill_dir / "evals" / "evals.json"
     if not evals_path.exists():
-        print(f"Warning: No evals.json found at {evals_path}. Using fallback heuristics only.")
+        print(f"Warning: No evals.json found at {evals_path}. Using heuristics only.", file=sys.stderr)
         eval_data = []
     else:
-        with open(evals_path, 'r') as f:
+        with open(evals_path, "r") as f:
             eval_data = json.load(f)
-            
-    # 2. Run Evaluations
+
+    # Score
     heuristic = calculate_heuristic_score(content)
     routing = run_routing_eval(content, skill_name, eval_data)
-
-    # Final numeric score (weighted average of accuracy and structural health)
-    final_score = (routing["accuracy"] * 0.7) + (heuristic["score"] * 0.3)
+    quality_score = (routing["accuracy"] * 0.7) + (heuristic["score"] * 0.3)
     f1 = routing["f1"]
-    
-    # 3. Handle Persistence (results.tsv)
-    results_path = skill_dir / "evals" / "results.tsv"
-    os.makedirs(results_path.parent, exist_ok=True)
-    
-    # Load last baseline (accuracy and F1 separately)
-    last_score = 0.0
-    last_f1 = 0.0
-    if results_path.exists():
-        with open(results_path, 'r') as f:
-            reader = csv.DictReader(f, delimiter='\t')
-            for row in reader:
-                try:
-                    last_score = float(row.get('score', 0))
-                    last_f1 = float(row.get('f1_score', 0))
-                except (ValueError, TypeError):
-                    pass
 
-    # Write new entry (repurpose llm_routing_score column as f1_score)
-    headers = ["timestamp", "score", "accuracy", "heuristic", "f1_score", "status", "description"]
-    write_header = not results_path.exists()
-
-    # KEEP requires BOTH accuracy and F1 to be >= baseline to close the keyword-stuffing exploit
-    if last_score == 0:
-        status = "BASELINE"
-    elif final_score >= last_score and f1 >= last_f1:
-        status = "KEEP"
-    else:
-        status = "DISCARD"
-
-    with open(results_path, 'a', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=headers, delimiter='\t')
-        if write_header:
-            writer.writeheader()
-        writer.writerow({
-            "timestamp": datetime.now().isoformat(),
-            "score": f"{final_score:.4f}",
-            "accuracy": f"{routing['accuracy']:.4f}",
-            "heuristic": f"{heuristic['score']:.4f}",
-            "f1_score": f"{f1:.4f}",
-            "status": status,
-            "description": args.desc
-        })
-
-    # Machine-readable output for programmatic callers (execute.py --json)
     if args.json_output:
-        print(json.dumps({"quality_score": final_score}))
+        print(json.dumps({
+            "quality_score": quality_score,
+            "accuracy": routing["accuracy"],
+            "f1": f1,
+            "heuristic": heuristic["score"],
+        }))
         return
 
     print(f"--- Skill Evaluation: {skill_path.name} ---")
     print(f"Routing Accuracy : {routing['accuracy']:.4f}")
     print(f"F1 Score         : {f1:.4f}  (precision={routing['precision']:.4f}, recall={routing['recall']:.4f})")
     print(f"Heuristic Health : {heuristic['score']:.4f}")
-    print(f"FINAL SCORE      : {final_score:.4f} (Baseline: {last_score:.4f} / Baseline F1: {last_f1:.4f})")
-    print(f"STATUS           : {status}")
-    
+    print(f"FINAL SCORE      : {quality_score:.4f}")
+
     if routing["accuracy"] < 1.0:
         print("\nRouting Failures:")
         for d in routing["details"]:
             if d["result"] == "INCORRECT":
                 trigger_msg = "triggered when it shouldn't" if d["triggered"] else "failed to trigger"
-                print(f"- {d['prompt']}: {trigger_msg}")
+                print(f"  - {d['prompt']}: {trigger_msg}")
 
     if heuristic["score"] < 1.0:
         print("\nStructural Recommendations:")
-        for f in heuristic["feedback"]:
-            print(f"- {f}")
-    
-    if status in ["KEEP", "BASELINE"] and final_score > 0.7:
-        print("\n<EVAL_PASSED>")
+        for fb in heuristic["feedback"]:
+            print(f"  - {fb}")
 
 if __name__ == "__main__":
     main()
