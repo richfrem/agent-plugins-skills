@@ -17,6 +17,7 @@ Supported Object Types:
 
 CLI Arguments:
     --dry-run: Pass --dry-run to each bridge_installer invocation.
+    --install-rules: Pass --install-rules to each bridge_installer invocation (rules not installed by default).
     --plugins-dir: Optional path to a specific plugins folder to install from.
 
 Input Files:
@@ -153,6 +154,7 @@ def _flush_agent_skill_links(root: Path, dry_run: bool = False) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Install all plugins via bridge_installer")
     parser.add_argument("--dry-run", action="store_true", help="Pass --dry-run to each bridge_installer invocation")
+    parser.add_argument("--install-rules", action="store_true", help="Pass --install-rules to each bridge_installer invocation (rules not installed by default)")
     parser.add_argument("--plugins-dir", type=str, help="Optional path to the plugins folder to install from (defaults to the project's plugins/ directory)")
     args = parser.parse_args()
 
@@ -192,6 +194,8 @@ def main() -> None:
         try:
             # We use subprocess to isolate execution and ensure clean state per plugin.
             extra = ["--dry-run"] if args.dry_run else []
+            if args.install_rules:
+                extra.append("--install-rules")
             cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin_dir)] + extra
             subprocess.run(cmd, check=True, text=True)
             plugins_processed += 1

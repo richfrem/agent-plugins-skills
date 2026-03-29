@@ -28,11 +28,20 @@ In early versions of Agentic environments (such as older versions of Claude Code
 - Putting a file at `.claude/commands/review.md` would automatically create the `/review` slash command for the user to invoke.
   
 **The Merge into Agent Skills:**
-Custom slash commands have since been merged into the [Agent Skills standard](https://agentskills.io). 
+Custom slash commands have since been merged into the [Agent Skills standard](https://agentskills.io).
 - Legacy `.claude/commands/` files continue to execute seamlessly.
-- **Location Nuance:** Skills can actually be deployed in both the `skills/` and `commands/` directories. 
-  - If a skill is placed in `commands/`, it explicitly allows you to invoke it manually via a `/` slash-command in the agent UI as a shortcut.
-  - If placed in `skills/`, it relies more on autonomous discovery via the LLM reading the `description` frontmatter.
+- **Location Nuance:** Skills can be deployed in both the `skills/` and `commands/` directories.
+  - If placed in `skills/`, the directory name becomes the slash command AND the skill triggers
+    autonomously via the LLM reading the `description` frontmatter. **This is the recommended
+    location for new slash commands in Claude Code.**
+  - If a skill is placed in `commands/`, it explicitly allows manual invocation via a `/`
+    slash-command, but relies less on autonomous discovery.
+  - **macOS discovery bug (#13906):** `.claude/commands/` has a known discovery issue in some
+    Claude Code versions on macOS. Prefer `.claude/skills/<name>/SKILL.md` or a local plugin
+    for reliable slash command registration.
+  - In a plugin, any `skills/<name>/SKILL.md` entry is deployed to `.claude/skills/<name>/`
+    and automatically namespaced as `/plugin-name:name` — functioning as both a proactive
+    skill and an explicitly invocable slash command.
 
 ## Antigravity Rules and Workflows
 For platforms like **Antigravity** (Google Deepmind's agent framework), these repeatable systems are officially documented as **Rules** and **Workflows**.

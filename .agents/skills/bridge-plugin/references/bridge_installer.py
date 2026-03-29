@@ -37,6 +37,7 @@ Supported Object Types:
 CLI Arguments:
     --plugin: Path to plugin directory (Required)
     --dry-run: Preview actions without writing files
+    --install-rules: Also install rules (disabled by default)
 
 Input Files:
     - .claude-plugin/plugin.json (Manifest reader)
@@ -101,9 +102,7 @@ DETECTABLE_AGENTS = {
         "skills": ".gemini/skills",
         "commands": ".gemini/commands",
         "rules": None,
-        "rules_append_target": "GEMINI.md",
         "hooks": None,
-        "rules_mode": "append",
         "commands_format": "toml",
     },
     ".github": {
@@ -435,7 +434,7 @@ def write_project_lock(plugin_path: Path, metadata: dict,
     print(f"  ✓ Updated skills-lock.json ({len(installed_skills)} skills)")
 
 
-def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str], dry_run: bool = False) -> list[str]:
+def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list[str], dry_run: bool = False, install_rules: bool = False) -> list[str]:
     root = Path.cwd()
     plugin_name = metadata.get("name", plugin_path.name)
     
@@ -556,7 +555,8 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
             
     deploy_commands(plugin_path, plugin_name, targets, root, dry_run)
-    deploy_rules(plugin_path, plugin_name, targets, root, dry_run)
+    if install_rules:
+        deploy_rules(plugin_path, plugin_name, targets, root, dry_run)
     deploy_agents(plugin_path, plugin_name, targets, root, dry_run)
     
     # MCP merge (future -- log intent for now)
@@ -572,6 +572,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Plugin Bridge Installer (.agents symlinking)")
     parser.add_argument("--plugin", required=True, help="Path to plugin directory")
     parser.add_argument("--dry-run", action="store_true", help="Preview all actions without writing any files or symlinks")
+    parser.add_argument("--install-rules", action="store_true", help="Also install rules (disabled by default)")
     args = parser.parse_args()
 
     plugin_path = Path(args.plugin).resolve()
@@ -594,7 +595,7 @@ def main() -> None:
     if args.dry_run:
         print(">>> DRY RUN MODE <<<")
 
-    installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run)
+    installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run, args.install_rules)
     write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
     
 if __name__ == "__main__":

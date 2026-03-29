@@ -76,7 +76,7 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 | `commands/*.md` | `.agent/workflows/<plugin>_<cmd>.md` | `.claude/commands/<plugin>_<cmd>.md` | `.gemini/commands/<plugin>_<cmd>.toml` | `.github/prompts/<plugin>_<cmd>.prompt.md` |
 | `rules/` | `.agent/rules/<plugin>_<rule>.md` | Appended → `CLAUDE.md` | Appended → `GEMINI.md` | Appended → `.github/copilot-instructions.md` |
 | `hooks/hooks.json` | *(ignored)* | `.claude/hooks/<plugin>-hooks.json` | *(ignored)* | *(ignored)* |
-| `agents/*.md` | `.agent/skills/<plugin>-<agent>/` wrapper | `.claude/skills/<plugin>-<agent>/` wrapper | `.gemini/skills/<plugin>-<agent>/` wrapper | `.github/skills/<plugin>-<agent>/` wrapper |
+| `agents/*.md` | `.agent/skills/<plugin>-<agent>/` wrapper | `.claude/agents/<plugin>-<agent>.md` (native) | `.gemini/skills/<plugin>-<agent>/` wrapper | `.github/skills/<plugin>-<agent>/` wrapper |
 | `.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` |
 
 > **Commands naming:** Nested command folders are flattened to snake_case.
@@ -87,6 +87,18 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 > name at install time — `workflows/` on Antigravity/`.agents/`, `commands/`
 > on Claude Code, `commands/` (TOML) on Gemini, `prompts/` on GitHub Copilot.
 > Never rename the source folder to match any single platform.
+
+> **`skills/` as slash commands (Claude Code):** In Claude Code, any `skills/<name>/SKILL.md`
+> entry in a plugin is deployed to `.claude/skills/<name>/` and automatically functions as
+> both a proactive skill AND a namespaced slash command (`/plugin-name:name`). This is the
+> **preferred** pattern for new commands — use `commands/` as thin wrappers that delegate
+> to skills. The installer handles both paths independently; no special flag needed.
+
+> **`agents/` dual deployment (Claude Code):** For Claude Code (which has a native agents
+> directory), agents are deployed directly to `.claude/agents/<plugin>-<agent>.md` via
+> `deploy_agents()`. For environments without native agents support (Antigravity, Gemini,
+> GitHub), the installer wraps each agent file as a skill directory under
+> `.agent/skills/<plugin>-<agent>/SKILL.md`. Both paths run on every install.
 
 ---
 
@@ -301,6 +313,10 @@ DETECTABLE_AGENTS = {
         "hooks": None,
         "rules_mode": "append",
         "commands_format": "toml",
+        # Note: TOML wrapper reads only the first `description:` line from frontmatter.
+        # Single-line descriptions (e.g. `description: Deploy a skill`) work correctly.
+        # Old multi-line YAML `>` blocks truncated to `>` — use single-line descriptions
+        # in plugin commands/ files for correct Gemini wrapping.
     },
     ".github": {
         "name": "github",

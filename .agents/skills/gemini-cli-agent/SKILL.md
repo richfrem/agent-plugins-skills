@@ -55,7 +55,7 @@ gemini -p "Analyze this log" < large.log > analysis.md
 The CLI runs in a **separate context** — no access to agent tools or memory.
 - **Add**: "Do NOT use tools. Do NOT search filesystem."
 - Ensure prompt + piped input contain 100% of necessary context.
-- **Model Selection**: Gemini supports the `-m <model>` flag (e.g., `-m gemini-2.5-pro` or `-m gemini-2.5-flash`).
+- **Model Selection**: Gemini supports the `-m <model>` flag (e.g., `-m gemini-3.1-pro-preview`, `-m gemini-2.5-pro`, or alias `-m flash-lite`).
 
 ### 3. Output to File
 Always redirect output to a file (`> output.md`), then review with `view_file`.
