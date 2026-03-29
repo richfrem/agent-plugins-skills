@@ -62,7 +62,32 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 2. **The Mutation Target**: The proposed `SKILL.md` (Rule: You may only evaluate mutations of ONE variable at a time for scientific isolation).
 3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + static `evals/evals.json` fixtures. (Rule: You must never edit these scripts or the JSON fixtures during testing. The baseline MUST be fixed).
 
-## Execution Flow
+## Two Modes
+
+### Mode 1: Autoresearch Loop (overnight autonomous improvement)
+The agent drives N iterations against a target skill. Start with:
+```
+"Run the autoresearch loop on <path/to/target-skill> for N iterations"
+```
+The agent will:
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP)
+2. Establish a baseline if none exists: `python3 scripts/evaluate.py --skill <path>/SKILL.md --baseline`
+3. Loop N times (default: run until told to stop per NEVER STOP directive):
+   - Make one focused change to `SKILL.md`
+   - Run `python3 scripts/evaluate.py --skill <path>/SKILL.md --desc "what changed"`
+   - exit 0 (KEEP): `git add SKILL.md && git commit -m "keep: score=X <desc>"`
+   - exit 1 (DISCARD): `git checkout -- <path>/SKILL.md`
+
+To cap iterations, the human specifies: "run 10 iterations" or "run until score reaches 0.95".
+The NEVER STOP directive in `program.md` means the loop has no built-in termination — only a human stop or a target threshold ends it.
+
+### Mode 2: Single-shot QA (validate a proposed change)
+Another agent proposes a change → this skill validates it → KEEP or DISCARD.
+Phases below describe this mode.
+
+---
+
+## Execution Flow (Mode 2)
 
 Execute these phases in strict order:
 
