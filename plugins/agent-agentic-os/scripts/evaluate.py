@@ -14,14 +14,19 @@ Purpose:
     SKILL.md is the mutation target.
 
 Usage (run from the plugin root or any directory):
-    python scripts/evaluate.py --skill <path/to/SKILL.md>
-    python scripts/evaluate.py --skill <path/to/SKILL.md> --desc "what changed"
-    python scripts/evaluate.py --skill <path/to/SKILL.md> --baseline
+    python scripts/evaluate.py --skill <path/to/mutation-target>
+    python scripts/evaluate.py --target <path/to/mutation-target> --desc "what changed"
+    python scripts/evaluate.py --skill <path/to/mutation-target> --baseline
+
+    --skill and --target are aliases. evaluate.py accepts any file as input,
+    but eval_runner.py scoring is optimized for SKILL.md targets (YAML frontmatter
+    + <example> tags). Non-SKILL.md targets score accuracy=0.0 and receive heuristic
+    penalties for missing SKILL.md structure — see eval_runner.py Known Limitations.
 
 Karpathy mapping:
     This file = prepare.py (gate logic half)
     eval_runner.py = prepare.py (metric producer half)
-    SKILL.md = train.py (mutation target)
+    <mutation-target> = train.py (SKILL.md, .py, config, or any file type)
 
 KEEP condition: score >= baseline_score AND f1 >= baseline_f1
     Dual guard prevents keyword-stuffing exploit (padding triggers raises
@@ -161,12 +166,12 @@ def get_commit(cwd: Path) -> str:
         return "uncommitted"
 
 
-def run_eval_runner(skill_md: Path) -> dict:
-    """Call eval_runner.py --json once and return all metric fields."""
+def run_eval_runner(skill_root: Path) -> dict:
+    """Call eval_runner.py --json once with the skill folder and return all metric fields."""
     result = subprocess.run(
-        [sys.executable, str(EVAL_RUNNER), "--skill", str(skill_md), "--json"],
+        [sys.executable, str(EVAL_RUNNER), "--skill", str(skill_root), "--json"],
         capture_output=True, text=True,
-        cwd=skill_md.parent
+        cwd=skill_root,
     )
     if result.returncode != 0:
         print(f"ERROR: eval_runner.py failed:\n{result.stderr}", file=sys.stderr)
@@ -229,19 +234,25 @@ def write_row(results_tsv: Path, commit: str, score: float, baseline: float,
 def main() -> None:
     parser = argparse.ArgumentParser(description="Locked autoresearch loop gate")
     parser.add_argument(
-        "--skill", required=True,
-        help="Path to the target SKILL.md (e.g. skills/my-skill/SKILL.md)"
+        "--skill", "--target", dest="skill", required=True,
+        help="Path to the skill folder (or any file within it for backward compat)"
     )
     parser.add_argument("--desc", default="iteration", help="Description for results.tsv")
     parser.add_argument("--baseline", action="store_true", help="Record this run as the new baseline")
     args = parser.parse_args()
 
-    skill_md = Path(args.skill).resolve()
-    if not skill_md.exists():
-        print(f"ERROR: SKILL.md not found at {skill_md}", file=sys.stderr)
+    target = Path(args.skill).resolve()
+
+    # Accept skill folder path OR a file path within the skill (backward compat)
+    if target.is_dir():
+        skill_root = target
+    else:
+        skill_root = target.parent
+
+    if not skill_root.exists():
+        print(f"ERROR: Skill folder not found at {skill_root}", file=sys.stderr)
         sys.exit(2)
 
-    skill_root = skill_md.parent
     results_tsv = skill_root / "evals" / "results.tsv"
     evals_json = skill_root / "evals" / "evals.json"
 
@@ -251,7 +262,7 @@ def main() -> None:
     check_sha256_hashes(results_tsv, locked_files_to_hash)
 
     commit = get_commit(skill_root)
-    data = run_eval_runner(skill_md)
+    data = run_eval_runner(skill_root)
 
     score = float(data["quality_score"])
     accuracy = float(data.get("accuracy", 0.0))
@@ -275,17 +286,18 @@ def main() -> None:
         save_lock_hashes(results_tsv, locked_files_to_hash)
 
     print(f"score={score:.4f}  baseline={baseline_score:.4f}  f1={f1:.4f}  baseline_f1={baseline_f1:.4f}  STATUS: {status}")
-    print(f"commit={commit}  skill={skill_md.parent.name}  desc={args.desc!r}")
+    print(f"commit={commit}  skill={skill_root.name}  desc={args.desc!r}")
 
     if status == "DISCARD":
-        # Forcefully revert the mutation — do not rely on the agent to do cleanup.
-        # An LLM in a long loop will eventually forget or hallucinate a successful revert.
+        # Revert the entire skill folder — the mutation target may be any file within it
+        # (SKILL.md, a script, a reference doc). Reverting '.' from skill_root restores
+        # all tracked files in the folder and subdirectories to HEAD.
         revert = subprocess.run(
-            ["git", "checkout", "--", str(skill_md)],
-            capture_output=True, text=True, cwd=skill_root
+            ["git", "checkout", "--", "."],
+            capture_output=True, text=True, cwd=skill_root,
         )
         if revert.returncode == 0:
-            print(f"-> reverted: {skill_md.name}")
+            print(f"-> reverted: {skill_root.name}/")
         else:
             print(f"WARNING: git checkout failed: {revert.stderr.strip()}", file=sys.stderr)
         sys.exit(1)

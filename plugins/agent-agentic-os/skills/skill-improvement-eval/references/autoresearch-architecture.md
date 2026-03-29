@@ -130,6 +130,16 @@ Lives at `<experiment-dir>/evals/results.tsv`.
 
 ---
 
+## v3 Changes (Fixed)
+
+| Item | v2 State | v3 Fix |
+|---|---|---|
+| `eval_runner.py` scope | Scored a single SKILL.md file | Scores the entire skill folder (SKILL.md + scripts/ + references/) |
+| Heuristic spec | Internal convention only (`<example>` tags + length) | Enforces agentskills.io spec: name format, description length, folder-name match, scripts py_compile, empty reference check |
+| Hard fail rules | Frontmatter malformed | Frontmatter malformed + name invalid + description empty — all return score=0.0 |
+| DISCARD revert scope | `git checkout -- SKILL.md` (single file) | `git checkout -- .` from skill_root (entire folder) |
+| evaluate.py `--skill` | Required SKILL.md file path | Accepts skill folder path (primary) OR any file within the skill (backward compat) |
+
 ## v2 Changes (Fixed)
 
 | Item | v1 Bug | v2 Fix |
@@ -150,4 +160,6 @@ Lives at `<experiment-dir>/evals/results.tsv`.
 |---|---|---|
 | Meta-circular risk | Medium | This skill is used to improve itself. The lock check and hash snapshot reduce this but cannot fully prevent an agent from modifying non-target files in clever ways. |
 | Keyword-overlap is a proxy | Medium | The metric measures keyword overlap, not actual agent routing. A high score does not guarantee correct production routing. |
-| SHA256 scope | Low | Hash check detects modified-then-committed locked files, but a committed-then-restored attack (modify → commit → restore → commit) still passes. |
+| SHA256 scope | Low | Hash check detects modified-then-committed locked files, but a committed-then-restored attack (modify -> commit -> restore -> commit) still passes. |
+| Heuristic is skill-folder specific | Low | `calculate_heuristic_score()` follows the agentskills.io spec (YAML frontmatter, name/description rules, `<example>` tags, scripts/ py_compile). If the mutation target is not an agent skill folder, these checks will produce low or 0.0 heuristic scores. The architectural path for non-skill targets is a per-experiment `eval_runner.py` template. |
+| REPLACE placeholder risk | High | `init_autoresearch.py` scaffolds `evals.json` with placeholder prompts. If the operator does not replace them before `--baseline`, the evaluator will score keyword overlap against "REPLACE", producing a meaningless baseline. There is no runtime check that placeholders have been filled. |
