@@ -1,27 +1,35 @@
 ---
 name: skill-improvement-eval
 description: >
-  Trigger with "evaluate this skill", "run tests on the new skill", "check if this change breaks anything",
-  "evaluate the learning loop proposal", "measure the performance gain", or when an agent (like `os-learning-loop`) proposes a change to an
-  existing skill and needs empirical validation before writing it to disk.
+  Trigger with "evaluate this skill", "run the autoresearch loop on", "run tests on the new skill",
+  "check if this change breaks anything", "evaluate the learning loop proposal",
+  "measure the performance gain", "optimize this skill", "improve this skill autonomously",
+  or when an agent (like `os-learning-loop`) proposes a change to an existing skill and needs
+  empirical validation before writing it to disk.
 
   <example>
-  Context: `os-learning-loop` just proposed a fix to a broken skill.
-  os-learning-loop:
-  <Bash>
-  cat << 'EOF' > test-eval-diff.md
-  - <Bash> old_command </Bash>
-  + <Bash> new_command </Bash>
-  EOF
-  </Bash>
-  <commentary>The learning loop dumps its diff into a temp file to be analyzed by the QA agent process.</commentary>
+  Context: User wants to start an autonomous improvement loop on a skill.
+  user: "Run the autoresearch loop on plugins/agent-agentic-os/skills/os-health-check for 20 iterations"
+  assistant: [triggers skill-improvement-eval, runs Phase 0 intake to confirm target, metrics, and iteration cap]
+  <commentary>
+  Explicit loop request with target path and iteration count — go straight to intake confirmation then Mode 1.
+  </commentary>
   </example>
 
   <example>
-  Context: os-learning-loop has a proposed skill edit and needs validation before writing.
+  Context: User wants to optimize a skill but hasn't specified details.
+  user: "Optimize the commit skill"
+  assistant: [triggers skill-improvement-eval, runs Phase 0 intake interview to gather target path, mode, metrics, iterations]
+  <commentary>
+  Incomplete request — run the intake interview before starting any loop.
+  </commentary>
+  </example>
+
+  <example>
+  Context: `os-learning-loop` has a proposed skill edit and needs validation before writing.
   assistant: [autonomously] "Before I apply this description change to session-memory-manager, I'll run skill-improvement-eval to confirm routing accuracy doesn't regress."
   <commentary>
-  Implicit audit trigger -- agent self-gates on the evaluator before any skill write. No user prompt required.
+  Implicit audit trigger -- agent self-gates on the evaluator before any skill write. Mode 2 single-shot QA.
   </commentary>
   </example>
 
@@ -33,6 +41,7 @@ description: >
   Information request, not an evaluation trigger. Do not trigger skill-improvement-eval.
   </commentary>
   </example>
+argument-hint: "[path/to/SKILL.md or skill-name] [--iterations N] [--until-score 0.95]"
 allowed-tools: Bash, Read, Write
 ---
 
@@ -61,6 +70,56 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 1. **The Spec**: `references/program.md` in the target skill (Golden Rule: "Never Stop Iterating").
 2. **The Mutation Target**: The proposed `SKILL.md` (Rule: You may only evaluate mutations of ONE variable at a time for scientific isolation).
 3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + static `evals/evals.json` fixtures. (Rule: You must never edit these scripts or the JSON fixtures during testing. The baseline MUST be fixed).
+
+## Phase 0: Intake Interview
+
+Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
+
+**Q1 — What are you evaluating?**
+Ask for the path to the target file. It can be:
+- A `SKILL.md` (most common — routing accuracy + heuristic scored)
+- A `.py` script (heuristic-only scoring unless custom evals.json exists)
+- A skill name (resolve the path from the plugins directory)
+
+If not provided: "What skill or file do you want to evaluate or optimize? Please give me the path or name."
+
+**Q2 — What mode?**
+- **Loop mode**: autonomous iterative improvement (agent proposes changes, scores them, loops)
+- **QA mode**: validate one specific proposed change only
+
+If the user said "optimize", "improve", "run the loop" → Loop mode.
+If the user said "check this change", "validate", "evaluate this diff" → QA mode.
+If unclear: "Do you want me to run an autonomous improvement loop, or validate a specific proposed change?"
+
+**Q3 — (Loop mode only) How many iterations?**
+Default: NEVER STOP (runs until you tell it to stop).
+Options: a fixed count ("10 iterations"), a score threshold ("until quality_score >= 0.95"), or open-ended.
+If not specified: "How many iterations should I run? Or should I run until a target score — e.g. stop when quality_score reaches 0.95?"
+
+**Q4 — (Loop mode only) What metrics matter?**
+Default metric: `quality_score = (routing_accuracy * 0.7) + (heuristic * 0.3)` with F1 guard.
+Ask only if the user wants to weight things differently or has a specific concern (e.g. "I only care about false positives → precision matters most").
+If not specified: use the default metric, no need to ask.
+
+**Q5 — (Loop mode only) Does a baseline exist?**
+Check `<target-skill>/evals/results.tsv` for a BASELINE row.
+- If baseline exists: show the current baseline score and f1, confirm before starting.
+- If no baseline: "No baseline found. I'll establish one before starting the loop."
+
+**After intake — confirm the plan before executing:**
+```
+Target:     plugins/.../my-skill/SKILL.md
+Mode:       Loop (autoresearch)
+Iterations: 20  (or: until quality_score >= 0.95  |  or: NEVER STOP)
+Metric:     quality_score (default) with F1 guard
+Baseline:   0.8444 / f1=0.8333  (or: will establish)
+
+Proceed?
+```
+
+Do not start the loop or any evaluation until the user confirms.
+
+---
 
 ## Two Modes
 
