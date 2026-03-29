@@ -29,17 +29,20 @@ Scores each skill 0-40 across four dimensions (objectivity, execution speed, fre
 > Example location (this is one possible placement — not a required path):
 > `plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/`
 
-### Layer 2: The Loop (autoresearch/ inside the target skill)
+### Layer 2: The Loop (scaffolded inside the target skill)
 
 The actual autonomous optimization loop, scaffolded inside the target skill once it scores HIGH or MEDIUM.
 
 ```
 <SKILLPATH>/
-  autoresearch/
-    program.md    <- the spec
-    evaluate.py   <- locked evaluator
-    results.tsv   <- experiment ledger
+  references/
+    program.md            <- the spec (goal, locked files, NEVER STOP)
+  evals/
+    evals.json            <- test prompts (locked during loop)
+    results.tsv           <- loop ledger (one row per iteration)
 ```
+
+The shared evaluation scripts (`evaluate.py`, `eval_runner.py`) live in the plugin's `scripts/` directory and are reused across all target skills.
 
 ---
 
@@ -53,33 +56,33 @@ The actual autonomous optimization loop, scaffolded inside the target skill once
 
 ```
 <SKILLPATH>/
-  SKILL.md                          <- MUTATION TARGET: agent edits only this file
-  scripts/eval_runner.py            <- scoring engine (keyword routing + heuristics)
-  evals/evals.json                  <- golden test cases (locked during loop)
-  evals/results.tsv                 <- eval_runner's own output log
-  autoresearch/
-    program.md                      <- THE SPEC: goal, constraints, NEVER STOP
-    evaluate.py                     <- LOCKED EVALUATOR: runs scorer, records KEEP/DISCARD
-    eval_runner.py -> ../scripts/   <- symlink for visibility (not a separate file)
-    results.tsv                     <- loop experiment ledger (one row per iteration)
+  SKILL.md                     <- MUTATION TARGET: agent edits only this file
+  evals/evals.json             <- test prompts (locked during loop)
+  evals/results.tsv            <- loop ledger (one row per iteration)
+  references/program.md        <- THE SPEC: goal, locked files, NEVER STOP
+
+<plugin-root>/scripts/
+  eval_runner.py               <- PURE SCORER: reads SKILL.md + evals.json, outputs JSON
+  evaluate.py                  <- LOCKED GATE: calls scorer, reads baseline, writes TSV row, exits 0/1
 ```
 
 ### How One Loop Iteration Works
 
 ```
-1. Agent reads autoresearch/program.md (goal: maximize quality_score)
+1. Agent reads <SKILLPATH>/references/program.md (goal: maximize quality_score)
 2. Agent edits SKILL.md (one focused change per iteration)
-3. Agent runs: python autoresearch/evaluate.py --desc "what I changed"
+3. Agent runs: python scripts/evaluate.py --skill <SKILLPATH>/SKILL.md --desc "what I changed"
 4. evaluate.py:
-     a. Calls scripts/eval_runner.py --skill SKILL.md --json
-     b. Parses {"quality_score": 0.8444}
-     c. Reads baseline from autoresearch/results.tsv (first BASELINE row)
-     d. Compares score and f1 against baseline
-     e. Writes row to autoresearch/results.tsv: timestamp, commit, score, baseline, f1, KEEP/DISCARD
-     f. Exits 0 (KEEP) or 1 (DISCARD)
-5. KEEP:    git add <SKILLPATH>/SKILL.md && git commit -m "keep: score=X <description>"
-6. DISCARD: git checkout -- <SKILLPATH>/SKILL.md
-7. Repeat (NEVER STOP)
+     a. Checks locked files not modified (git status guard)
+     b. Calls eval_runner.py --skill SKILL.md --json (single call)
+     c. Parses {"quality_score": N, "accuracy": N, "f1": N, "heuristic": N}
+     d. Reads baseline from <SKILLPATH>/evals/results.tsv (last BASELINE row)
+     e. Compares score AND f1 against baseline (dual guard)
+     f. Writes one row to <SKILLPATH>/evals/results.tsv
+     g. DISCARD: runs git checkout -- SKILL.md, exits 1
+     h. KEEP: exits 0
+5. KEEP:    agent runs git add SKILL.md && git commit -m "keep: score=X <description>"
+6. Repeat (NEVER STOP)
 ```
 
 ### The Metric (skill-improvement-eval specific)
@@ -111,20 +114,20 @@ When applying this pattern to any skill, map the files as follows:
 | File | Role | Who touches it |
 |---|---|---|
 | `<SKILLPATH>/SKILL.md` | Mutation target — the only file the agent changes | Agent (loop body only) |
-| `<SKILLPATH>/evals/evals.json` | Golden test cases | Nobody during the loop (locked) |
-| `<SKILLPATH>/scripts/eval_runner.py` | Scoring engine | Nobody during the loop (locked) |
-| `<SKILLPATH>/autoresearch/program.md` | Spec: goal, constraints, NEVER STOP | Human (written once before loop starts) |
-| `<SKILLPATH>/autoresearch/evaluate.py` | Locked evaluator: runs scorer, writes KEEP/DISCARD | Nobody (locked) |
-| `<SKILLPATH>/autoresearch/results.tsv` | Loop experiment ledger | `evaluate.py` (appends one row per iteration) |
+| `<SKILLPATH>/evals/evals.json` | Test prompts with expected trigger outcomes | Nobody during the loop (locked) |
+| `<SKILLPATH>/evals/results.tsv` | Loop ledger — one row per iteration | `evaluate.py` (appends only) |
+| `<SKILLPATH>/references/program.md` | Spec: goal, locked files, NEVER STOP | Human (written once before loop starts) |
+| `<plugin-root>/scripts/eval_runner.py` | Pure scorer: reads SKILL.md + evals.json, outputs JSON | Nobody during the loop (locked) |
+| `<plugin-root>/scripts/evaluate.py` | Loop gate: calls scorer, reads baseline, exits 0/1, reverts on DISCARD | Nobody (locked) |
 
 ---
 
 ## What "Locked" Means in Practice
 
-`autoresearch/program.md` declares which files are locked:
+`references/program.md` declares which files are locked:
 
 ```
-Locked: autoresearch/evaluate.py, evals/evals.json, scripts/eval_runner.py
+Locked: scripts/evaluate.py, scripts/eval_runner.py, evals/evals.json
 ```
 
 Without these locks, an agent would inevitably:
@@ -138,18 +141,16 @@ The lock on the evaluator is what makes the metric trustworthy. The agent's only
 
 ## The Loop vs The Evals (Easy to Confuse)
 
-| | `evals/evals.json` | `autoresearch/evaluate.py` |
+| | `evals/evals.json` | `scripts/evaluate.py` |
 |---|---|---|
-| **Purpose** | Tests whether the skill TRIGGERS correctly | Measures how GOOD the SKILL.md instructions are |
+| **Purpose** | Test prompts with expected trigger outcomes | Loop gate: scores SKILL.md and decides KEEP/DISCARD |
 | **Run by** | CI / `run_eval.py` | The autoresearch loop agent |
 | **Mutable** | NO (locked during loop) | NO (locked evaluator) |
-| **Output** | Pass/fail per trigger scenario | A single quality_score float |
+| **Output** | Pass/fail per trigger scenario | exit 0 (KEEP) or exit 1 (DISCARD) |
 
-`evals.json` defines WHAT to test. `evaluate.py` uses it AS the benchmark.
+`evals.json` defines WHAT to test. `evaluate.py` calls `eval_runner.py` to score against it.
 
-There are also two `results.tsv` files — different things:
-- `evals/results.tsv` — eval_runner's own log, written on every eval_runner call
-- `autoresearch/results.tsv` — the loop ledger, one row per agent iteration
+There is one `results.tsv` per target skill — `<target-skill>/evals/results.tsv` — written only by `evaluate.py`, one row per loop iteration.
 
 ---
 
@@ -162,17 +163,17 @@ Karpathy autoresearch pattern
 eval-autoresearch-fit skill       <- "is this skill worth looping on?"
     | scores HIGH or MEDIUM
     v
-scaffold autoresearch/ inside <SKILLPATH>
+scaffold inside <SKILLPATH>
     |
-    +-- program.md    (spec: what to optimize, what is locked, NEVER STOP)
-    +-- evaluate.py   (locked evaluator: runs scorer, records KEEP/DISCARD)
-    +-- results.tsv   (ledger: one row per iteration)
+    +-- references/program.md    (spec: goal, locked files, NEVER STOP)
+    +-- evals/evals.json         (test prompts — locked)
+    +-- evals/results.tsv        (ledger: one row per iteration)
     |
     v
 Agent loop:
     edit <SKILLPATH>/SKILL.md
-    -> python autoresearch/evaluate.py
-    -> KEEP: git commit | DISCARD: git checkout
+    -> python scripts/evaluate.py --skill <SKILLPATH>/SKILL.md
+    -> KEEP: git commit | DISCARD: evaluate.py reverts automatically
     -> repeat forever
 ```
 

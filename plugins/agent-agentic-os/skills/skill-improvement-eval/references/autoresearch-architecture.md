@@ -77,25 +77,24 @@ Lives at `<target-skill>/evals/results.tsv`.
 
 ---
 
-## Current State vs Target State
+## v2 Changes (Fixed)
 
-Confirmed by red-team reviews (Gemini, Grok).
+All items below were identified by red-team review (Gemini, Grok) and fixed in v2.
 
-| File | Current state | Target state |
+| Item | v1 Bug | v2 Fix |
 |---|---|---|
-| `eval_runner.py` | Writes to `evals/results.tsv` on every call. `--json` flag outputs only `quality_score`, not f1. | Pure scorer. Writes nothing. `--json` outputs all fields: `{"quality_score": N, "accuracy": N, "f1": N, "heuristic": N}` |
-| `evaluate.py` | Calls eval_runner twice (once `--json` for score, once probe for f1). Reads first BASELINE row (bug — f1 guard disabled). Writes to `autoresearch/results.tsv`. | Single call to eval_runner. Reads LAST BASELINE row. Writes one row to `<target-skill>/evals/results.tsv`. Exits 0 (KEEP) or 1 (DISCARD). |
-| `evaluate.py` lock | Enforced by convention in program.md only | Runtime hash check at startup — aborts with error if `evaluate.py` or `eval_runner.py` have been modified since baseline |
-| `autoresearch/results.tsv` | Separate duplicate ledger | Deleted — one ledger in `<target-skill>/evals/results.tsv` |
-| `evals/results.tsv` (in skill-improvement-eval) | Self-eval rows + noisy probe rows (`_f1_probe`, `debug`) | Only rows written by evaluate.py. No probe rows. First corrupted BASELINE row (f1=0.0) removed. |
-| `program.md` | In `skill-improvement-eval/references/` | In each target skill's `references/` |
+| `eval_runner.py` purity | Wrote to TSV on every call; `--json` only output `quality_score` | Pure scorer — writes nothing; `--json` outputs all four fields |
+| `evaluate.py` baseline read | Read first BASELINE row (f1=0.0 corrupted — F1 guard disabled) | Reads last BASELINE row; F1 guard active |
+| `evaluate.py` double call | Called eval_runner twice per iteration (probe rows) | Single call; no probe rows |
+| `evaluate.py` lock enforcement | Convention only (program.md) | Runtime `git status` check at startup — aborts if locked files modified |
+| `evaluate.py` DISCARD revert | Agent responsible for `git checkout` (unreliable in long loops) | `evaluate.py` runs `git checkout -- SKILL.md` before `sys.exit(1)` |
+| `evaluate.py` frontmatter fallback | Silently fell back to full file body if frontmatter malformed (stuffing exploit) | Fails hard — returns accuracy=0.0 if frontmatter missing or malformed |
+| Ledger location | `autoresearch/results.tsv` (deleted duplicate) | `<target-skill>/evals/results.tsv` |
+| Probe row pollution | `_f1_probe`, `debug` rows in evals/results.tsv | Cleaned; only real iteration rows remain |
 
-## Known Risks
+## Known Risks (Remaining)
 
 | Risk | Severity | Description |
 |---|---|---|
-| Baseline F1 guard disabled | Critical | `load_baseline()` reads first BASELINE row. First row has f1=0.0 (corrupted). F1 guard never triggers. Fix: read LAST BASELINE row. |
-| Double evaluator call | High | `evaluate.py` calls eval_runner twice per iteration, creating noisy probe rows in results.tsv |
-| eval_runner.py not pure | High | Writes side effects to results.tsv on every call, violating single responsibility |
-| Meta-circular risk | Medium | This skill is being used to improve itself. Requires stricter safeguards on what the agent is allowed to change |
-| Weak lock enforcement | Medium | Only program.md convention prevents agent from editing evaluate.py. No runtime check. |
+| Meta-circular risk | Medium | This skill is used to improve itself. The lock check and frontmatter guard reduce this but cannot fully prevent an agent from modifying non-SKILL.md files in clever ways. |
+| git status lock check scope | Low | Runtime check detects uncommitted modifications to locked files, but cannot detect modifications that were committed between iterations. A SHA256-at-baseline approach would close this gap fully. |

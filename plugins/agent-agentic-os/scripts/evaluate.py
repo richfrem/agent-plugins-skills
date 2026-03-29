@@ -42,6 +42,49 @@ EVAL_RUNNER = HERE / "eval_runner.py"
 
 HEADERS = ["timestamp", "commit", "score", "baseline", "accuracy", "heuristic", "f1", "status", "description"]
 
+# Files the loop must never modify — checked at startup
+LOCKED_FILES = [HERE / "evaluate.py", HERE / "eval_runner.py"]
+
+
+def check_locked_files(skill_root: Path, evals_json: Path) -> None:
+    """Abort if any locked files have uncommitted modifications.
+
+    Relying on the agent to obey 'Locked:' in program.md is not enough.
+    An agent in a deep loop will eventually rewrite evaluate.py to always
+    return exit 0. This check turns convention into a runtime guarantee.
+    """
+    to_check = LOCKED_FILES + [evals_json]
+    try:
+        repo_root_result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, check=True, cwd=skill_root
+        )
+        repo_root = Path(repo_root_result.stdout.strip())
+    except subprocess.CalledProcessError:
+        return  # Not a git repo — skip check
+
+    modified = []
+    for f in to_check:
+        if not f.exists():
+            continue
+        try:
+            rel = f.relative_to(repo_root)
+        except ValueError:
+            continue
+        result = subprocess.run(
+            ["git", "status", "--porcelain", str(rel)],
+            capture_output=True, text=True, cwd=repo_root
+        )
+        if result.stdout.strip():
+            modified.append(str(rel))
+
+    if modified:
+        print("ERROR: Locked files have been modified — aborting.", file=sys.stderr)
+        for m in modified:
+            print(f"  modified: {m}", file=sys.stderr)
+        print("Restore them with: git checkout -- <file>", file=sys.stderr)
+        sys.exit(3)
+
 
 def get_commit(cwd: Path) -> str:
     """Return short git commit hash, or 'uncommitted' if not in a repo."""
@@ -138,6 +181,9 @@ def main() -> None:
 
     skill_root = skill_md.parent
     results_tsv = skill_root / "evals" / "results.tsv"
+    evals_json = skill_root / "evals" / "evals.json"
+
+    check_locked_files(skill_root, evals_json)
 
     commit = get_commit(skill_root)
     data = run_eval_runner(skill_md)
@@ -162,6 +208,16 @@ def main() -> None:
     print(f"commit={commit}  skill={skill_md.parent.name}  desc={args.desc!r}")
 
     if status == "DISCARD":
+        # Forcefully revert the mutation — do not rely on the agent to do cleanup.
+        # An LLM in a long loop will eventually forget or hallucinate a successful revert.
+        revert = subprocess.run(
+            ["git", "checkout", "--", str(skill_md)],
+            capture_output=True, text=True, cwd=skill_root
+        )
+        if revert.returncode == 0:
+            print(f"-> reverted: {skill_md.name}")
+        else:
+            print(f"WARNING: git checkout failed: {revert.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
 
 

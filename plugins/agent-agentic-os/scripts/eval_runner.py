@@ -78,11 +78,14 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
     if total == 0:
         return {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "details": []}
 
-    # Scoped Keyword Extraction: Extract the first frontmatter block
+    # Scoped Keyword Extraction: frontmatter only — fail hard if malformed.
+    # If the agent breaks the YAML delimiters, scoring returns 0.0 rather than
+    # silently falling back to the full file body (which would reward the exploit).
     frontmatter_match = re.search(r'^---\s*\n(.*?)\n---\s*\n', skill_content, re.DOTALL | re.MULTILINE)
-    routing_content = skill_content  # Fallback
-    if frontmatter_match:
-        routing_content = frontmatter_match.group(1)
+    if not frontmatter_match:
+        return {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0,
+                "details": [{"error": "FRONTMATTER_MISSING_OR_MALFORMED"}]}
+    routing_content = frontmatter_match.group(1)
 
     skill_keywords = set(re.findall(r'\w{4,}', routing_content.lower()))
     skill_keywords.add(skill_name.lower())
