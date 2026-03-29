@@ -1,27 +1,27 @@
 sequenceDiagram
     actor Human
 
-    box rgba(200, 200, 200, 0.2) Karpathy: program.md
-        participant Spec as references/program.md
+    box rgba(200, 200, 200, 0.2) 1. Goal & Boundaries
+        participant Spec as references/program.md<br/>(Karpathy: program.md)
     end
 
-    box rgba(100, 150, 255, 0.15) Karpathy: implied loop (agent IS the orchestrator)
-        participant Agent as Claude Agent
+    box rgba(100, 150, 255, 0.15) 2. Execution & Agency
+        participant Agent as Claude Agent<br/>(Karpathy: implied loop — agent IS the orchestrator)
     end
 
-    box rgba(255, 200, 100, 0.15) Karpathy: train.py
-        participant Target as SKILL.md
+    box rgba(255, 200, 100, 0.15) 3. Mutable Target
+        participant Target as SKILL.md<br/>(Karpathy: train.py)
     end
 
-    box rgba(255, 100, 100, 0.1) Karpathy: prepare.py (split into two)
-        participant Grader as eval_runner.py
-        participant Gate as evaluate.py
-        participant Tests as evals/evals.json
+    box rgba(255, 100, 100, 0.1) 4. Scoring & Gatekeeping
+        participant Grader as eval_runner.py<br/>(Karpathy: prepare.py — metric producer)
+        participant Gate as evaluate.py<br/>(Karpathy: prepare.py — loop gate)
+        participant Tests as evals/evals.json<br/>(Karpathy: test inputs)
     end
 
-    box rgba(200, 200, 200, 0.2) Karpathy: results.tsv (owned by target skill)
-        participant Ledger as target-skill/evals/results.tsv
-        participant Git as Git
+    box rgba(200, 200, 200, 0.2) 5. State & Memory
+        participant Ledger as target-skill/evals/results.tsv<br/>(Karpathy: results.tsv — owned by target skill)
+        participant Git as Git Version Control
     end
 
     Human->>Agent: "Run the autoresearch loop on target-skill"
