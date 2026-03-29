@@ -1,0 +1,42 @@
+graph LR
+    subgraph Logical["Logical Role"]
+        F_Spec["1. Goal & Boundaries<br/>Defines rules & constraints"]
+        F_Engine["2. Execution & Agency<br/>Drives the autonomous loop"]
+        F_Target["3. Mutable Target<br/>The artifact being improved"]
+        F_Judge["4. Scoring & Gatekeeping<br/>Tests & decides keep/revert"]
+        F_Ledger["5. State & Memory<br/>Historical log of attempts"]
+    end
+
+    subgraph Karpathy["Karpathy Original"]
+        K_Spec["program.md"]
+        K_Engine["Implied loop<br/>(conceptual only)"]
+        K_Target["train.py<br/>(code as target)"]
+        K_Judge["prepare.py<br/>(monolithic eval)"]
+        K_Ledger["results.tsv"]
+    end
+
+    subgraph Ours["Our Implementation"]
+        Y_Spec["references/program.md<br/>(per target skill)"]
+        Y_Engine["Claude Agent<br/>(IS the loop orchestrator)"]
+        Y_Target["SKILL.md<br/>(markdown skill definition)"]
+        Y_Judge["eval_runner.py (metric producer)<br/>+ evaluate.py (loop gate)<br/>+ evals/evals.json (test prompts)"]
+        Y_Ledger["target-skill/evals/results.tsv<br/>(owned by each target skill)"]
+    end
+
+    F_Spec    -.->|" "| K_Spec    -.->|"Matches"| Y_Spec
+    F_Engine  -.->|" "| K_Engine  -.->|"Agent IS the loop"| Y_Engine
+    F_Target  -.->|" "| K_Target  -.->|"Code -> Markdown"| Y_Target
+    F_Judge   -.->|" "| K_Judge   -.->|"Split: score / gate"| Y_Judge
+    F_Ledger  -.->|" "| K_Ledger  -.->|"Per-skill, not central"| Y_Ledger
+
+    style Y_Engine fill:#2d3748,stroke:#4fd1c5,stroke-width:2px,color:#fff
+    style Y_Target fill:#2d3748,stroke:#f6ad55,stroke-width:2px,color:#fff
+    style Y_Judge  fill:#2d3748,stroke:#fc8181,stroke-width:2px,color:#fff
+    style Y_Spec   fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#fff
+    style Y_Ledger fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#fff
+
+    style K_Spec   fill:#f8f9fa,stroke:#cbd5e1,stroke-width:1px
+    style K_Engine fill:#f8f9fa,stroke:#cbd5e1,stroke-width:1px
+    style K_Target fill:#f8f9fa,stroke:#cbd5e1,stroke-width:1px
+    style K_Judge  fill:#f8f9fa,stroke:#cbd5e1,stroke-width:1px
+    style K_Ledger fill:#f8f9fa,stroke:#cbd5e1,stroke-width:1px

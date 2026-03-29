@@ -1,42 +1,57 @@
 sequenceDiagram
     actor Human
-    participant Agent as Claude Agent (loop orchestrator)
-    participant ProgramMD as references/program.md
-    participant TargetSkill as <target-skill>/SKILL.md
-    participant EvaluatePY as scripts/evaluate.py (locked)
-    participant EvalRunnerPY as scripts/eval_runner.py (locked)
-    participant TargetEvals as <target-skill>/evals/evals.json (locked)
-    participant TargetLog as <target-skill>/evals/results.tsv
-    participant Git
 
-    Human->>Agent: "Run the autoresearch loop on <target-skill>"
+    box rgba(200, 200, 200, 0.2) Karpathy: program.md
+        participant Spec as references/program.md
+    end
 
-    Agent->>ProgramMD: read program.md (goal + locked files + NEVER STOP)
-    Agent->>TargetSkill: read current SKILL.md
-    Agent->>TargetLog: read recent rows (scoring history)
+    box rgba(100, 150, 255, 0.15) Karpathy: implied loop (agent IS the orchestrator)
+        participant Agent as Claude Agent
+    end
+
+    box rgba(255, 200, 100, 0.15) Karpathy: train.py
+        participant Target as SKILL.md
+    end
+
+    box rgba(255, 100, 100, 0.1) Karpathy: prepare.py (split into two)
+        participant Grader as eval_runner.py
+        participant Gate as evaluate.py
+        participant Tests as evals/evals.json
+    end
+
+    box rgba(200, 200, 200, 0.2) Karpathy: results.tsv (owned by target skill)
+        participant Ledger as target-skill/evals/results.tsv
+        participant Git as Git
+    end
+
+    Human->>Agent: "Run the autoresearch loop on target-skill"
+
+    Agent->>Spec: read program.md (goal + locked files + NEVER STOP)
+    Agent->>Target: read current SKILL.md
+    Agent->>Ledger: read recent rows (scoring history)
 
     loop NEVER STOP
 
-        Agent->>TargetSkill: make one focused change to SKILL.md
+        Agent->>Target: make one focused change to SKILL.md
 
-        Agent->>EvaluatePY: python evaluate.py --skill <path> --desc "what changed"
+        Agent->>Gate: python evaluate.py --skill path/to/SKILL.md --desc "what changed"
 
-        EvaluatePY->>EvalRunnerPY: eval_runner.py --skill SKILL.md --json
-        EvalRunnerPY->>TargetSkill: read SKILL.md frontmatter keywords
-        EvalRunnerPY->>TargetEvals: read evals.json test prompts
-        EvalRunnerPY-->>EvaluatePY: {"quality_score": N, "accuracy": N, "f1": N, "heuristic": N}
+        Gate->>Grader: eval_runner.py --skill SKILL.md --json
+        Grader->>Target: read SKILL.md frontmatter keywords
+        Grader->>Tests: read evals.json test prompts
+        Grader-->>Gate: {"quality_score", "accuracy", "f1", "heuristic"}
 
-        EvaluatePY->>TargetLog: read last BASELINE row (score + f1)
-        EvaluatePY->>Git: git rev-parse --short HEAD (commit hash)
-        EvaluatePY->>TargetLog: append row (timestamp, commit, score, baseline, accuracy, heuristic, f1, status, description)
+        Gate->>Ledger: read last BASELINE row (score + f1)
+        Gate->>Git: git rev-parse --short HEAD
+        Gate->>Ledger: append row (timestamp, commit, score, baseline, accuracy, heuristic, f1, status, desc)
 
         alt KEEP (score >= baseline AND f1 >= baseline_f1)
-            EvaluatePY-->>Agent: exit 0
-            Agent->>Git: git add <target-skill>/SKILL.md
-            Agent->>Git: git commit "keep: score=X <description>"
-        else DISCARD (score degraded or f1 dropped)
-            EvaluatePY-->>Agent: exit 1
-            Agent->>Git: git checkout -- <target-skill>/SKILL.md
+            Gate-->>Agent: exit 0
+            Agent->>Git: git add SKILL.md
+            Agent->>Git: git commit "keep: score=X description"
+        else DISCARD (score or f1 dropped)
+            Gate-->>Agent: exit 1
+            Agent->>Git: git checkout -- SKILL.md
         end
 
     end
