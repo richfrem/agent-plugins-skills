@@ -30,6 +30,7 @@ KEEP condition: score >= baseline_score AND f1 >= baseline_f1
 
 import argparse
 import csv
+import hashlib
 import json
 import subprocess
 import sys
@@ -44,6 +45,9 @@ HEADERS = ["timestamp", "commit", "score", "baseline", "accuracy", "heuristic", 
 
 # Files the loop must never modify — checked at startup
 LOCKED_FILES = [HERE / "evaluate.py", HERE / "eval_runner.py"]
+
+# Name of the SHA256 snapshot file saved alongside results.tsv at baseline time
+LOCK_HASHES_FILENAME = ".lock.hashes"
 
 
 def check_locked_files(skill_root: Path, evals_json: Path) -> None:
@@ -83,6 +87,64 @@ def check_locked_files(skill_root: Path, evals_json: Path) -> None:
         for m in modified:
             print(f"  modified: {m}", file=sys.stderr)
         print("Restore them with: git checkout -- <file>", file=sys.stderr)
+        sys.exit(3)
+
+
+def _sha256(path: Path) -> str:
+    """Return hex SHA256 of a file's contents."""
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def save_lock_hashes(results_tsv: Path, files_to_hash: list[Path]) -> None:
+    """Snapshot SHA256 hashes of locked files next to results.tsv.
+
+    Called once when --baseline is recorded.  The snapshot is later compared
+    on every loop iteration by check_sha256_hashes(), closing the gap where
+    a committed (not just dirty) modification to evaluate.py or eval_runner.py
+    would silently pass the git-status check.
+    """
+    hashes: dict[str, str] = {}
+    for f in files_to_hash:
+        if f.exists():
+            hashes[str(f)] = _sha256(f)
+    lock_hashes_path = results_tsv.parent / LOCK_HASHES_FILENAME
+    with open(lock_hashes_path, "w") as fh:
+        json.dump(hashes, fh, indent=2)
+    print(f"-> lock hashes written to {lock_hashes_path.name} ({len(hashes)} files)")
+
+
+def check_sha256_hashes(results_tsv: Path, files_to_hash: list[Path]) -> None:
+    """Abort if any locked file has changed since the baseline snapshot.
+
+    Complements check_locked_files(): that function catches uncommitted edits
+    (git status); this function catches modifications that were *committed*
+    between loop iterations — the gap left open by the git-status approach.
+
+    Silently skips if .lock.hashes does not yet exist (pre-baseline run).
+    """
+    lock_hashes_path = results_tsv.parent / LOCK_HASHES_FILENAME
+    if not lock_hashes_path.exists():
+        return  # No snapshot yet — baseline not yet established
+
+    with open(lock_hashes_path) as fh:
+        saved: dict[str, str] = json.load(fh)
+
+    tampered: list[str] = []
+    for f in files_to_hash:
+        key = str(f)
+        if key in saved and f.exists():
+            if _sha256(f) != saved[key]:
+                tampered.append(key)
+
+    if tampered:
+        print("ERROR: Locked files have changed since baseline snapshot (SHA256 mismatch) — aborting.", file=sys.stderr)
+        for t in tampered:
+            print(f"  tampered: {t}", file=sys.stderr)
+        print(f"Restore with: git checkout <baseline-commit> -- <file>", file=sys.stderr)
         sys.exit(3)
 
 
@@ -183,7 +245,10 @@ def main() -> None:
     results_tsv = skill_root / "evals" / "results.tsv"
     evals_json = skill_root / "evals" / "evals.json"
 
+    locked_files_to_hash = LOCKED_FILES + [evals_json]
+
     check_locked_files(skill_root, evals_json)
+    check_sha256_hashes(results_tsv, locked_files_to_hash)
 
     commit = get_commit(skill_root)
     data = run_eval_runner(skill_md)
@@ -203,6 +268,11 @@ def main() -> None:
         status = "DISCARD"
 
     write_row(results_tsv, commit, score, baseline_score, accuracy, heuristic, f1, status, args.desc)
+
+    if status == "BASELINE":
+        # Snapshot locked file hashes alongside results.tsv so subsequent runs can
+        # detect committed modifications (not just dirty-working-tree changes).
+        save_lock_hashes(results_tsv, locked_files_to_hash)
 
     print(f"score={score:.4f}  baseline={baseline_score:.4f}  f1={f1:.4f}  baseline_f1={baseline_f1:.4f}  STATUS: {status}")
     print(f"commit={commit}  skill={skill_md.parent.name}  desc={args.desc!r}")

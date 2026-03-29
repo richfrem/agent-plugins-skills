@@ -184,8 +184,25 @@ python3 scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
 
 ### Phase 3: The Revert/Reset Protocol
 1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD).
-2. **If `DISCARD`**: The change degraded performance. You MUST immediately run `git checkout -- path/to/SKILL.md` to cleanly restore the file. Do not debate the result. Report the `DISCARD` failure to the orchestrator.
-3. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk and report the `KEEP` success to the orchestrator.
+2. **If `DISCARD`**: `evaluate.py` already ran `git checkout -- SKILL.md` automatically before exiting 1. Verify the file is restored (read its frontmatter). Report the `DISCARD` failure to the orchestrator with the score delta.
+3. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk, proceed to Phase 4.
+
+### Phase 4: Commit & Report
+1. **If `KEEP`**: Commit the accepted change immediately — do not batch multiple KEEPs into one commit.
+   ```bash
+   git add path/to/SKILL.md
+   git commit -m "keep: score=<score> f1=<f1> <desc>"
+   ```
+2. **If `DISCARD`** (already reverted in Phase 3): Report the failure scores:
+   ```
+   DISCARD: score=<score> (baseline=<baseline>, delta=<delta>)  f1=<f1> (baseline_f1=<baseline_f1>)
+   desc: <what was tried>
+   ```
+3. In both cases, append a one-line summary to the loop ledger if you're in Mode 1:
+   ```
+   Iteration <N>: <KEEP|DISCARD>  score=<X>  delta=<+/-Y>  f1=<Z>  — <desc>
+   ```
+4. If a target score threshold was set (e.g. `--until-score 0.95`) and `status == KEEP`: check whether `score >= threshold`. If yes, stop the loop and notify the user.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
