@@ -14,43 +14,49 @@ sequenceDiagram
     end
 
     box rgba(255, 100, 100, 0.1) 4. Scoring & Gatekeeping
-        participant Grader as eval_runner.py<br/>(Karpathy: prepare.py — metric producer)
-        participant Gate as evaluate.py<br/>(Karpathy: prepare.py — loop gate)
-        participant Tests as evals/evals.json<br/>(Karpathy: test inputs)
+        participant GitManager as evaluate.py<br/>(Git Manager)
+        participant Grader as eval_runner.py<br/>(Karpathy: prepare.py)
+        participant Tests as evals/evals.json<br/>(Golden Tests)
     end
 
     box rgba(200, 200, 200, 0.2) 5. State & Memory
-        participant Ledger as target-skill/evals/results.tsv<br/>(Karpathy: results.tsv — owned by target skill)
+        participant Ledger as target-skill/evals/results.tsv<br/>(Karpathy: results.tsv)
         participant Git as Git Version Control
     end
 
+    %% --- Initialization ---
     Human->>Agent: "Run the autoresearch loop on target-skill"
 
-    Agent->>Spec: read program.md (goal + locked files + NEVER STOP)
-    Agent->>Target: read current SKILL.md
-    Agent->>Ledger: read recent rows (scoring history)
+    Agent->>Spec: read rules, goal & constraints
+    Agent->>Ledger: read last N rows for this target (history)
 
+    %% --- The Evolutionary Loop ---
     loop NEVER STOP
 
-        Agent->>Target: make one focused change to SKILL.md
+        %% Step 1: Mutate
+        Agent->>Target: make one focused mutation to SKILL.md
 
-        Agent->>Gate: python evaluate.py --skill path/to/SKILL.md --desc "what changed"
+        %% Step 2: Handoff to Gatekeeper
+        Agent->>GitManager: python evaluate.py --skill SKILL.md --desc "mutation summary"
 
-        Gate->>Grader: eval_runner.py --skill SKILL.md --json
-        Grader->>Target: read SKILL.md frontmatter keywords
-        Grader->>Tests: read evals.json test prompts
-        Grader-->>Gate: {"quality_score", "accuracy", "f1", "heuristic"}
+        %% Step 3: Agnostic Evaluation
+        GitManager->>Grader: python eval_runner.py --skill SKILL.md --json
+        Grader->>Target: load mutated skill logic
+        Grader->>Tests: load test prompts & expected trigger outcomes
+        Grader-->>GitManager: {"quality_score", "accuracy", "f1", "heuristic"}
 
-        Gate->>Ledger: read last BASELINE row (score + f1)
-        Gate->>Git: git rev-parse --short HEAD
-        Gate->>Ledger: append row (timestamp, commit, score, baseline, accuracy, heuristic, f1, status, desc)
+        %% Step 4: Record State
+        GitManager->>Ledger: read last BASELINE row (score + f1)
+        GitManager->>Git: git rev-parse --short HEAD (get current commit hash)
+        GitManager->>Ledger: append row (commit, score, baseline, accuracy, heuristic, f1, status)
 
+        %% Step 5: The Evolutionary Decision
         alt KEEP (score >= baseline AND f1 >= baseline_f1)
-            Gate-->>Agent: exit 0
+            GitManager-->>Agent: exit 0 (Improvement validated)
             Agent->>Git: git add SKILL.md
-            Agent->>Git: git commit "keep: score=X description"
-        else DISCARD (score or f1 dropped)
-            Gate-->>Agent: exit 1
+            Agent->>Git: git commit -m "keep: score=X description"
+        else DISCARD (score or f1 degraded)
+            GitManager-->>Agent: exit 1 (Degradation detected)
             Agent->>Git: git checkout -- SKILL.md
         end
 
