@@ -105,8 +105,299 @@ The scarce skill is no longer writing the code; the scarce skill is now **knowin
 > As Garry Tan said:
 > *"The bottleneck isn't compute. It's your `program.md`."*
 
+---
+
+## 🔬 Real-World Implementation: Skill Optimization (2026-03-28)
+
+This section documents how the 3-file architecture was applied to optimize agent skill files (SKILL.md) in this plugin ecosystem.
+
+### The Setup
+
+**What is being optimized:** A SKILL.md file that teaches an agent when to trigger the `skill-improvement-eval` skill.
+
+**Why this works:** A skill file's trigger language is a mutation target with a clear objective metric — keyword routing accuracy against golden test cases.
+
+### Mapping to the 3-File Architecture
+
+| Karpathy concept | This implementation |
+|---|---|
+| `program.md` (spec) | `autoresearch/program.md` inside each target skill |
+| Mutation target (`train.py`) | `SKILL.md` — the agent rewrites trigger language and examples |
+| Locked evaluator (`prepare.py`) | `autoresearch/evaluate.py` — calls `eval_runner.py`, never touched by agent |
+| `results.tsv` ledger | `autoresearch/results.tsv` — one row per iteration (commit, score, baseline, status) |
+
+### The Metric
+
+```
+quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)
+```
+
+- `routing_accuracy`: fraction of golden prompts correctly routed via keyword overlap with frontmatter
+- `heuristic_score`: structural check (has `<example>` blocks, min content length)
+- KEEP requires: `score >= baseline AND f1 >= baseline_f1` (dual condition prevents keyword-stuffing)
+
+This is DETERMINISTIC — no LLM calls. Same SKILL.md always produces the same score.
+
+### The Loop in One Iteration
+
+```
+Agent reads program.md
+    -> edits SKILL.md (one change: add example, reword trigger phrase, remove ambiguous keyword)
+    -> python autoresearch/evaluate.py --desc "what I changed"
+    -> evaluate.py calls eval_runner.py, parses {"quality_score": N}
+    -> compares to baseline in autoresearch/results.tsv
+    -> writes row: timestamp | commit | score | baseline | f1 | KEEP/DISCARD
+    -> exits 0 (KEEP) or 1 (DISCARD)
+Agent: if KEEP -> git commit; if DISCARD -> git checkout -- SKILL.md
+Repeat (NEVER STOP)
+```
+
+### The Two-Layer Discovery Step
+
+Before building the loop, a separate assessment skill (`eval-autoresearch-fit`) scores every skill on four dimensions to decide if a loop is worth building:
+
+1. **Objectivity** — can the outcome be captured as a single number from shell?
+2. **Execution Speed** — how fast does one iteration run?
+3. **Frequency of Use** — how often is the skill triggered?
+4. **Potential Utility** — what is the downstream impact of optimizing it?
+
+Skills scoring 32-40 (HIGH) get loops built immediately. 24-31 (MEDIUM) after addressing barriers. Below 24 — skip.
+
+This mirrors Karpathy's prerequisite check: "If you can't write a deterministic evaluator, don't start the loop."
+
+### What "Locked" Actually Prevents
+
+Without locking `evaluate.py`, an agent would inevitably:
+- Rewrite the scoring function to return 1.0 for any input (Goodhart's Law)
+- Remove hard test cases from `evals.json` to inflate accuracy
+- Lower the KEEP threshold to make every run succeed
+
+The lock on the evaluator is what makes the metric trustworthy. The agent's ONLY lever is the mutation target.
+
+### Directory Layout
+
+```
+plugins/<plugin>/skills/<skill>/
+  SKILL.md                       <- mutation target (agent edits this each loop)
+  evals/evals.json               <- locked: golden test cases
+  scripts/eval_runner.py         <- locked: the scoring engine
+  autoresearch/
+    program.md                   <- spec (goal, constraints, NEVER STOP)
+    evaluate.py                  <- locked evaluator (agent never touches this)
+    eval_runner.py -> ../scripts <- symlink for visibility
+    results.tsv                  <- experiment ledger
+```
+
+---
+
 ## ⚠️ Where AutoResearch Fails
 
 This architecture is not magic; it has rigid anti-patterns:
 - **Subjective "Better":** It fails at brand design, UI/UX aesthetics, strategic pricing, or anything where "better" is a human judgment call. The loop demands **objective metrics**. If success is subjective, the agent will optimize in random directions.
 - **Goodhart’s Law:** If you supply a flawed or incomplete metric, the agent will confidently and ruthlessly optimize the wrong thing.
+
+---
+
+## 📖 How We Actually Built It: Full Tour of `skill-improvement-eval`
+
+This section is a complete annotated walkthrough of the first autoresearch loop built in this repo, warts and all. It is intended as a learning reference — connecting every file back to the Karpathy concepts above.
+
+---
+
+### What We Are Optimizing (and Why)
+
+We are optimizing the trigger language in a SKILL.md file. A SKILL.md tells an agent:
+- **When** to trigger this skill (the `description:` frontmatter block with example prompts)
+- **What** to do once triggered (the body instructions)
+
+The autoresearch loop only touches the first part — the trigger language. This is purely a prompt-engineering optimization problem with a measurable outcome.
+
+**Why this is a valid Karpathy target:**
+- Clear metric: routing accuracy is a number (0.0 to 1.0)
+- Automated evaluation: keyword overlap against golden test cases, no LLM call needed
+- One editable file: SKILL.md
+
+---
+
+### Every File in `skill-improvement-eval` and What It Does
+
+```
+plugins/agent-agentic-os/skills/skill-improvement-eval/
+```
+
+#### `SKILL.md`
+**Role:** Mutation target — the ONLY file the agent changes during the loop.
+
+Contains the YAML frontmatter `description:` block with trigger phrases and `<example>` blocks. The routing evaluator extracts keywords from the frontmatter to decide if a prompt should trigger this skill.
+
+The agent’s job: rewrite the trigger language so the routing evaluator routes all 9 golden prompts correctly (5 should trigger, 4 should not).
+
+---
+
+#### `evals/evals.json`
+**Role:** The golden test set — LOCKED during the loop.
+
+9 prompts with `should_trigger: true/false`. These define ground truth. The loop is meaningless without these staying fixed.
+
+```json
+{"prompt": "evaluate this skill", "should_trigger": true}
+{"prompt": "what is the weather?", "should_trigger": false}
+```
+
+If the agent could edit this file, it could remove hard cases and inflate accuracy. That is why it is locked.
+
+---
+
+#### `scripts/eval_runner.py`
+**Role:** The scoring engine — LOCKED during the loop.
+
+Called by `autoresearch/evaluate.py`. Does two things:
+
+1. **Routing eval** (`run_routing_eval`): extracts keywords from the SKILL.md frontmatter, checks each golden prompt for keyword overlap, computes accuracy / precision / recall / F1.
+
+2. **Heuristic check** (`calculate_heuristic_score`): checks that SKILL.md has at least 2 `<example>` blocks and is above minimum length.
+
+Final score formula:
+```
+quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)
+```
+
+With `--json` flag: prints `{"quality_score": 0.8444}` and exits.
+Without `--json` flag: prints a human-readable report AND appends a row to `evals/results.tsv`.
+
+**Important side effect:** every call to `eval_runner.py` (with or without `--json`) appends a row to `evals/results.tsv`. See "Known Issues" below.
+
+---
+
+#### `evals/results.tsv`
+**Role:** eval_runner’s own log of every run.
+
+Columns: `timestamp | score | accuracy | heuristic | llm_routing_score | status | description`
+
+Note: the column called `llm_routing_score` is actually F1 score (legacy name from when this file was written). This confused the initial autoresearch evaluate.py which looked for `f1_score` and got 0 instead.
+
+**This file is NOT the autoresearch ledger.** It is eval_runner’s own output. The autoresearch ledger is in `autoresearch/results.tsv`.
+
+---
+
+#### `autoresearch/program.md`
+**Role:** The spec — equivalent to Karpathy’s `program.md`.
+
+Tells the loop agent:
+- What to maximize (quality_score)
+- Which file to mutate (../SKILL.md — only this file)
+- Which files are locked (evaluate.py, evals/evals.json, scripts/eval_runner.py)
+- NEVER STOP
+
+This is the human-authored constraint document. Once written, it does not change for the duration of the experiment.
+
+---
+
+#### `autoresearch/evaluate.py`
+**Role:** The locked evaluator — equivalent to Karpathy’s `prepare.py` / `benchmark.mjs`.
+
+The loop agent NEVER modifies this file. It:
+
+1. Calls `scripts/eval_runner.py --skill ../SKILL.md --json` and parses `{"quality_score": N}`
+2. Reads the first BASELINE row from `autoresearch/results.tsv` to get `(baseline_score, baseline_f1)`
+3. Calls `eval_runner.py` a second time (without `--json`) to read the F1 score from `evals/results.tsv`
+4. Decides: KEEP if `score >= baseline AND f1 >= baseline_f1`, else DISCARD
+5. Appends a row to `autoresearch/results.tsv`
+6. Exits 0 (KEEP) or 1 (DISCARD) so the calling agent knows what to do
+
+Run from the skill root:
+```bash
+python autoresearch/evaluate.py --desc "what you changed"
+python autoresearch/evaluate.py --baseline   # record a new baseline
+```
+
+---
+
+#### `autoresearch/eval_runner.py`
+**Role:** Symlink to `../scripts/eval_runner.py`.
+
+Just for visibility — so someone standing in the `autoresearch/` directory can see what the evaluator uses, without hunting through parent directories.
+
+---
+
+#### `autoresearch/results.tsv`
+**Role:** The experiment ledger — the autoresearch loop’s own record.
+
+Columns: `timestamp | commit | score | baseline | f1 | status | description`
+
+One row per call to `autoresearch/evaluate.py`. The first row with `status=BASELINE` anchors all future comparisons.
+
+Current state (2026-03-28):
+```
+baseline commit abeb626: score=0.8444, f1=0.8333
+```
+
+---
+
+#### `evals.json` (skill root)
+**Role:** Symlink to `evals/evals.json`. Exists for legacy convenience. Not used by the loop.
+
+---
+
+### The Complete Data Flow
+
+```
+Agent edits SKILL.md
+        |
+        v
+python autoresearch/evaluate.py --desc "my change"
+        |
+        +--[call 1]--> scripts/eval_runner.py --skill SKILL.md --json
+        |                   |
+        |                   +--> reads SKILL.md frontmatter keywords
+        |                   +--> matches against evals/evals.json prompts
+        |                   +--> writes row to evals/results.tsv   <-- side effect
+        |                   +--> prints {"quality_score": 0.8444}
+        |
+        +--[reads]--> autoresearch/results.tsv (first BASELINE row)
+        |                   baseline_score=0.8444, baseline_f1=0.8333
+        |
+        +--[call 2]--> scripts/eval_runner.py --skill SKILL.md --desc "_f1_probe"
+        |                   |
+        |                   +--> writes another row to evals/results.tsv  <-- side effect
+        |                   +--> (output captured, not printed)
+        |
+        +--[reads]--> evals/results.tsv (last row, column llm_routing_score = f1)
+        |
+        +--> KEEP/DISCARD decision
+        +--> appends row to autoresearch/results.tsv
+        +--> exits 0 (KEEP) or 1 (DISCARD)
+                |
+        KEEP:   git add SKILL.md && git commit -m "keep: score=X <description>"
+        DISCARD: git checkout -- SKILL.md
+```
+
+---
+
+### Known Issues and What to Ask About
+
+**Issue 1: eval_runner.py is called twice per iteration**
+`evaluate.py` calls `eval_runner.py` once with `--json` to get the quality_score, then calls it again without `--json` to extract the F1 from `evals/results.tsv`. This means every autoresearch iteration adds 2 noisy rows to `evals/results.tsv` (the skill’s primary eval log).
+
+The root cause: `eval_runner.py` with `--json` only outputs `quality_score`, not F1. A cleaner fix would be to output both in the JSON: `{"quality_score": 0.84, "f1": 0.83}`. But that requires modifying `eval_runner.py`, which is locked during the loop.
+
+**Issue 2: Two results.tsv files that look similar**
+- `evals/results.tsv` — eval_runner’s own log, written on every eval_runner call
+- `autoresearch/results.tsv` — the loop ledger, one row per agent iteration
+
+These are different things. `evals/results.tsv` is the skill’s eval history. `autoresearch/results.tsv` is the optimization experiment ledger. The column `llm_routing_score` in `evals/results.tsv` is actually F1 (legacy naming from before F1 was added).
+
+**Issue 3: Baseline required separate re-run**
+The first `--baseline` call produced `f1=0.0000` because the column name lookup bug (Issue 1 + wrong column name). After fixing the column name in `evaluate.py`, the baseline was re-run. There are now two BASELINE rows in `autoresearch/results.tsv`. `evaluate.py` uses the FIRST BASELINE row for comparisons, so the second re-run baseline (with correct f1) is the one that matters — but `load_baseline()` returns the FIRST row it finds. This is a latent bug: the first BASELINE row has f1=0.0, which means the f1 guard is currently disabled.
+
+---
+
+### The Baseline Numbers
+
+| file | what it tracks | baseline |
+|---|---|---|
+| `autoresearch/results.tsv` row 1 | Loop experiment (first baseline, f1 bug) | score=0.8444, f1=0.0000 |
+| `autoresearch/results.tsv` row 2 | Loop experiment (re-run after fix) | score=0.8444, f1=0.8333 |
+| `evals/results.tsv` | eval_runner history | last score=0.8444, f1=0.8333 |
+
+The loop currently compares against row 1 (f1=0.0), meaning the F1 guard is off. To fix: either delete row 1, or modify `load_baseline()` to use the LAST BASELINE row instead of the first.

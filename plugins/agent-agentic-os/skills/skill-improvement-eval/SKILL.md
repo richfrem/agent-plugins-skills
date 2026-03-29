@@ -1,27 +1,35 @@
 ---
 name: skill-improvement-eval
 description: >
-  Trigger with "evaluate this skill", "run tests on the new skill", "check if this change breaks anything",
-  "eval the learning loop proposal", "measure the performance gain", or when an agent (like `os-learning-loop`) proposes a change to an
-  existing skill and needs empirical validation before writing it to disk.
+  Trigger with "evaluate this skill", "run the autoresearch loop on", "run tests on the new skill",
+  "check if this change breaks anything", "evaluate the learning loop proposal",
+  "measure the performance gain", "optimize this skill", "improve this skill autonomously",
+  or when an agent (like `os-learning-loop`) proposes a change to an existing skill and needs
+  empirical validation before writing it to disk.
 
   <example>
-  Context: `os-learning-loop` just proposed a fix to a broken skill.
-  os-learning-loop:
-  <Bash>
-  cat << 'EOF' > test-eval-diff.md
-  - <Bash> old_command </Bash>
-  + <Bash> new_command </Bash>
-  EOF
-  </Bash>
-  <commentary>The learning loop dumps its diff into a temp file to be analyzed by the QA agent process.</commentary>
+  Context: User wants to start an autonomous improvement loop on a skill.
+  user: "Run the autoresearch loop on plugins/agent-agentic-os/skills/os-health-check for 20 iterations"
+  assistant: [triggers skill-improvement-eval, runs Phase 0 intake to confirm target, metrics, and iteration cap]
+  <commentary>
+  Explicit loop request with target path and iteration count — go straight to intake confirmation then Mode 1.
+  </commentary>
   </example>
 
   <example>
-  Context: os-learning-loop has a proposed skill edit and needs validation before writing.
+  Context: User wants to optimize a skill but hasn't specified details.
+  user: "Optimize the commit skill"
+  assistant: [triggers skill-improvement-eval, runs Phase 0 intake interview to gather target path, mode, metrics, iterations]
+  <commentary>
+  Incomplete request — run the intake interview before starting any loop.
+  </commentary>
+  </example>
+
+  <example>
+  Context: `os-learning-loop` has a proposed skill edit and needs validation before writing.
   assistant: [autonomously] "Before I apply this description change to session-memory-manager, I'll run skill-improvement-eval to confirm routing accuracy doesn't regress."
   <commentary>
-  Implicit audit trigger -- agent self-gates on the evaluator before any skill write. No user prompt required.
+  Implicit audit trigger -- agent self-gates on the evaluator before any skill write. Mode 2 single-shot QA.
   </commentary>
   </example>
 
@@ -33,6 +41,7 @@ description: >
   Information request, not an evaluation trigger. Do not trigger skill-improvement-eval.
   </commentary>
   </example>
+argument-hint: "[path/to/SKILL.md or skill-name] [--iterations N] [--until-score 0.95]"
 allowed-tools: Bash, Read, Write
 ---
 
@@ -58,11 +67,105 @@ You are the OS Quality Assurance (QA) sub-agent.
 
 This skill strictly enforces the Karpathy 3-file autoresearch framework. Subjective LLM testing is strictly forbidden. You must rely entirely on headless, objective Python script evaluation to prevent "Agent Dementia" (Goodhart's Law).
 
-1. **The Spec (Orchestrator)**: `os-learning-loop` (Golden Rule: "Never Stop Iterating").
+1. **The Spec**: `references/program.md` in the target skill (Golden Rule: "Never Stop Iterating").
 2. **The Mutation Target**: The proposed `SKILL.md` (Rule: You may only evaluate mutations of ONE variable at a time for scientific isolation).
-3. **The Immutable Evaluator**: `eval_runner.py` + static `evals/evals.json` fixtures. (Rule: You must never edit this Python script or the JSON fixtures during testing. The baseline MUST be fixed).
+3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + static `evals/evals.json` fixtures. (Rule: You must never edit these scripts or the JSON fixtures during testing. The baseline MUST be fixed).
 
-## Execution Flow
+## Phase 0: Intake Interview
+
+Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
+
+**Q1 — What are you evaluating?**
+Ask for the path to the target file. It can be:
+- A `SKILL.md` (most common — routing accuracy + heuristic scored)
+- A `.py` script (heuristic-only scoring unless custom evals.json exists)
+- A skill name (resolve the path from the plugins directory)
+
+If not provided: "What skill or file do you want to evaluate or optimize? Please give me the path or name."
+
+**Q2 — What mode?**
+- **Loop mode**: autonomous iterative improvement (agent proposes changes, scores them, loops)
+- **QA mode**: validate one specific proposed change only
+
+If the user said "optimize", "improve", "run the loop" → Loop mode.
+If the user said "check this change", "validate", "evaluate this diff" → QA mode.
+If unclear: "Do you want me to run an autonomous improvement loop, or validate a specific proposed change?"
+
+**Q3 — (Loop mode only) How many iterations?**
+Default: NEVER STOP (runs until you tell it to stop).
+Options: a fixed count ("10 iterations"), a score threshold ("until quality_score >= 0.95"), or open-ended.
+If not specified: "How many iterations should I run? Or should I run until a target score — e.g. stop when quality_score reaches 0.95?"
+
+**Q4 — (Loop mode only) What metrics matter?**
+Default metric: `quality_score = (routing_accuracy * 0.7) + (heuristic * 0.3)` with F1 guard.
+Ask only if the user wants to weight things differently or has a specific concern (e.g. "I only care about false positives → precision matters most").
+If not specified: use the default metric, no need to ask.
+
+**Q5 — (Loop mode only) Does `evals.json` exist?**
+Check `<target-skill>/evals/evals.json`.
+- If exists: show the number of test cases. Scoring will use routing accuracy + heuristic.
+- If missing: "No evals.json found. Without test cases, scoring falls back to heuristics only (structural checks, no routing accuracy). Do you want to add test cases before starting, or proceed with heuristics-only scoring?"
+  - If heuristics-only: continue but note the limitation in the confirm block.
+  - If user wants to add test cases: pause and help write `evals.json` before proceeding.
+
+**Q6 — (Loop mode only) Does `program.md` exist?**
+Check `<target-skill>/references/program.md`.
+- If exists: read it and show the goal to the user. Confirm it still reflects what they want to optimize.
+- If missing: "No program.md found. This file defines the optimization goal and which files are locked. Without it the agent has no spec to follow. Would you like me to write one now?"
+  - If yes: ask the user two questions to draft it:
+    1. "What is the goal? (e.g. maximize routing accuracy, minimize false positives, reach score 0.95)"
+    2. "Which files should be locked (never edited by the agent)? Default: evaluate.py, eval_runner.py, evals/evals.json"
+  - Write `<target-skill>/references/program.md` from their answers before proceeding.
+
+**Q7 — (Loop mode only) Does a baseline exist?**
+Check `<target-skill>/evals/results.tsv` for a BASELINE row.
+- If baseline exists: show the last BASELINE score and f1, plus how many iterations have already run and the most recent score.
+- If no baseline: "No baseline found. I'll establish one before starting the loop."
+
+**After intake — confirm the plan before executing:**
+```
+Target:     plugins/.../my-skill/SKILL.md
+Mode:       Loop (autoresearch)
+Iterations: 20  (or: until quality_score >= 0.95  |  or: NEVER STOP)
+Metric:     quality_score (default) with F1 guard
+evals.json: 9 test cases  (or: MISSING — heuristics only)
+program.md: exists — goal: maximize quality_score  (or: will write)
+Baseline:   score=0.8444 / f1=0.8333  (or: will establish)
+History:    14 iterations run, last score=0.8444 (3 KEEP, 2 DISCARD since baseline)
+
+Proceed?
+```
+
+Do not start the loop or any evaluation until the user confirms.
+
+---
+
+## Two Modes
+
+### Mode 1: Autoresearch Loop (overnight autonomous improvement)
+The agent drives N iterations against a target skill. Start with:
+```
+"Run the autoresearch loop on <path/to/target-skill> for N iterations"
+```
+The agent will:
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP)
+2. Establish a baseline if none exists: `python3 scripts/evaluate.py --skill <path>/SKILL.md --baseline`
+3. Loop N times (default: run until told to stop per NEVER STOP directive):
+   - Make one focused change to `SKILL.md`
+   - Run `python3 scripts/evaluate.py --skill <path>/SKILL.md --desc "what changed"`
+   - exit 0 (KEEP): `git add SKILL.md && git commit -m "keep: score=X <desc>"`
+   - exit 1 (DISCARD): `git checkout -- <path>/SKILL.md`
+
+To cap iterations, the human specifies: "run 10 iterations" or "run until score reaches 0.95".
+The NEVER STOP directive in `program.md` means the loop has no built-in termination — only a human stop or a target threshold ends it.
+
+### Mode 2: Single-shot QA (validate a proposed change)
+Another agent proposes a change → this skill validates it → KEEP or DISCARD.
+Phases below describe this mode.
+
+---
+
+## Execution Flow (Mode 2)
 
 Execute these phases in strict order:
 
@@ -73,16 +176,33 @@ Execute these phases in strict order:
 
 ### Phase 2: Headless Evaluation
 Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
-Immediately run the objective evaluator securely against the skill's static `evals.json` fixture:
+Run the loop gate against the target skill. It calls `eval_runner.py` internally and compares against the baseline:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/skill.md
+python3 scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
 ```
+`eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 
 ### Phase 3: The Revert/Reset Protocol
-1. Wait for `eval_runner.py` to output its verdict. It will compare the current score to the baseline in `results.tsv`.
-2. Wait for `STATUS: KEEP` or `STATUS: DISCARD`.
-3. **If `DISCARD`**: The change degraded performance. You MUST immediately run `git reset --hard` (or completely revert the file via bash) to cleanly restore the workspace to its pure baseline. Do not debate the result. Report the `DISCARD` failure to the orchestrator.
-4. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk and report the `KEEP` success to the orchestrator.
+1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD).
+2. **If `DISCARD`**: `evaluate.py` already ran `git checkout -- SKILL.md` automatically before exiting 1. Verify the file is restored (read its frontmatter). Report the `DISCARD` failure to the orchestrator with the score delta.
+3. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk, proceed to Phase 4.
+
+### Phase 4: Commit & Report
+1. **If `KEEP`**: Commit the accepted change immediately — do not batch multiple KEEPs into one commit.
+   ```bash
+   git add path/to/SKILL.md
+   git commit -m "keep: score=<score> f1=<f1> <desc>"
+   ```
+2. **If `DISCARD`** (already reverted in Phase 3): Report the failure scores:
+   ```
+   DISCARD: score=<score> (baseline=<baseline>, delta=<delta>)  f1=<f1> (baseline_f1=<baseline_f1>)
+   desc: <what was tried>
+   ```
+3. In both cases, append a one-line summary to the loop ledger if you're in Mode 1:
+   ```
+   Iteration <N>: <KEEP|DISCARD>  score=<X>  delta=<+/-Y>  f1=<Z>  — <desc>
+   ```
+4. If a target score threshold was set (e.g. `--until-score 0.95`) and `status == KEEP`: check whether `score >= threshold`. If yes, stop the loop and notify the user.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
