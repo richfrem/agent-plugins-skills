@@ -1,7 +1,8 @@
 # Autoresearch Architecture
 
 **Reference:** `references/research/karpathy-autoresearch-3-file-eval.md`
-**Diagram:** `references/diagrams/autoresearch-loop.mmd`
+**Sequence Diagram:** `references/diagrams/autoresearch-loop.mmd`
+**Mapping Diagram:** `references/diagrams/mapping-karpathy-to-skill-improvement-eval.mmd`
 
 ---
 

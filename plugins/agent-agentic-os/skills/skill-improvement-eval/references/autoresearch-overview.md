@@ -1,6 +1,8 @@
 # Autoresearch Overview: Applying the Karpathy Loop to Skills
 
 **Reference:** `<repo-root>/plugins/agent-agentic-os/references/research/karpathy-autoresearch-3-file-eval.md`
+**Sequence Diagram:** `references/diagrams/autoresearch-loop.mmd`
+**Mapping Diagram:** `references/diagrams/mapping-karpathy-to-skill-improvement-eval.mmd`
 
 ---
 

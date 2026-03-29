@@ -58,9 +58,9 @@ You are the OS Quality Assurance (QA) sub-agent.
 
 This skill strictly enforces the Karpathy 3-file autoresearch framework. Subjective LLM testing is strictly forbidden. You must rely entirely on headless, objective Python script evaluation to prevent "Agent Dementia" (Goodhart's Law).
 
-1. **The Spec (Orchestrator)**: `os-learning-loop` (Golden Rule: "Never Stop Iterating").
+1. **The Spec**: `references/program.md` in the target skill (Golden Rule: "Never Stop Iterating").
 2. **The Mutation Target**: The proposed `SKILL.md` (Rule: You may only evaluate mutations of ONE variable at a time for scientific isolation).
-3. **The Immutable Evaluator**: `eval_runner.py` + static `evals/evals.json` fixtures. (Rule: You must never edit this Python script or the JSON fixtures during testing. The baseline MUST be fixed).
+3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + static `evals/evals.json` fixtures. (Rule: You must never edit these scripts or the JSON fixtures during testing. The baseline MUST be fixed).
 
 ## Execution Flow
 
@@ -73,16 +73,16 @@ Execute these phases in strict order:
 
 ### Phase 2: Headless Evaluation
 Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
-Immediately run the objective evaluator securely against the skill's static `evals.json` fixture:
+Run the loop gate against the target skill. It calls `eval_runner.py` internally and compares against the baseline:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py --skill path/to/skill.md
+python3 scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
 ```
+`eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 
 ### Phase 3: The Revert/Reset Protocol
-1. Wait for `eval_runner.py` to output its verdict. It will compare the current score to the baseline in `results.tsv`.
-2. Wait for `STATUS: KEEP` or `STATUS: DISCARD`.
-3. **If `DISCARD`**: The change degraded performance. You MUST immediately run `git reset --hard` (or completely revert the file via bash) to cleanly restore the workspace to its pure baseline. Do not debate the result. Report the `DISCARD` failure to the orchestrator.
-4. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk and report the `KEEP` success to the orchestrator.
+1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD).
+2. **If `DISCARD`**: The change degraded performance. You MUST immediately run `git checkout -- path/to/SKILL.md` to cleanly restore the file. Do not debate the result. Report the `DISCARD` failure to the orchestrator.
+3. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk and report the `KEEP` success to the orchestrator.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
