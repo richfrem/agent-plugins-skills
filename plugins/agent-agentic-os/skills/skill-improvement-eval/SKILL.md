@@ -59,9 +59,68 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 ---
 
+# Quick Start — Zero Context Guide
+
+> Read this first. Everything below assumes you've completed these steps.
+
+## What This Skill Does
+
+`skill-improvement-eval` is a stateless evaluation engine. It contains:
+- **Scripts** that score and gate iterations (`evaluate.py`, `eval_runner.py`, `init_autoresearch.py`)
+- **Templates** — starter files you copy into whatever you want to optimize
+
+It does NOT contain your experiment's results, history, or rules. Those live with your target.
+
+## What Lives Where
+
+```
+skill-improvement-eval/                        <-- the evaluation ENGINE (this skill)
+  scripts/
+    evaluate.py          Loop gate: scores, KEEP/DISCARD, reverts, exits 0/1
+    eval_runner.py       Pure scorer: reads target + evals.json, outputs JSON metrics
+    init_autoresearch.py Scaffold tool: copies templates into your experiment dir
+  assets/templates/autoresearch/               <-- TEMPLATES (master copies, never edit directly)
+    program.md.template  Spec: goal, locked files, NEVER STOP
+    evals.json.template  Test prompts: what inputs should/should not trigger your target
+    results.tsv.template Schema header for the loop ledger
+
+your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever makes sense)
+  <mutation-target>      The file being mutated each iteration (SKILL.md, .py, etc.)
+  references/
+    program.md           Deployed from template — your rules, your goal (edit this)
+  evals/
+    evals.json           Deployed from template — your test prompts (edit this)
+    results.tsv          Deployed from template, then written by evaluate.py each run
+    .lock.hashes         SHA256 snapshot of locked files — written by evaluate.py --baseline
+```
+
+## Setup: Start a New Experiment (3 steps)
+
+**Step 1 — Deploy templates into your experiment directory:**
+```bash
+python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+    --experiment-dir <path/to/your-experiment-dir> \
+    --mutation-target SKILL.md   # or any filename being mutated
+```
+This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv` in your experiment dir. Templates stay untouched.
+
+**Step 2 — Edit the deployed files:**
+- `references/program.md` — fill in the Notes section: what are you optimizing, target score, max iterations
+- `evals/evals.json` — replace the `REPLACE` placeholders with real test inputs and `should_trigger` values
+
+**Step 3 — Establish baseline and start the loop:**
+```bash
+python plugins/agent-agentic-os/scripts/evaluate.py \
+    --skill <path/to/experiment-dir>/<mutation-target> \
+    --baseline --desc "initial baseline"
+# Then run the loop — see Mode 1 below
+```
+
+---
+
 # Skill Improvement Evaluator
 
-You are the OS Quality Assurance (QA) sub-agent. You are a **stateless evaluation engine**. You own no loop state, no experiment memory, and no program spec. All of that lives exclusively inside the TARGET skill's directory.
+You are the OS Quality Assurance (QA) sub-agent. You are a **stateless evaluation engine**. You own no loop state, no experiment memory, and no program spec. All of that lives exclusively inside the TARGET experiment's directory.
 
 ## Ownership Boundary (Critical)
 

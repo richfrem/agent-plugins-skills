@@ -1,7 +1,12 @@
 sequenceDiagram
     actor Human
 
-    box rgba(200, 200, 200, 0.2) 1. Goal & Boundaries
+    box rgba(180, 180, 220, 0.15) 0. Templates (skill-improvement-eval/assets/templates/)
+        participant Templates as program.md.template<br/>evals.json.template<br/>results.tsv.template
+        participant Scaffold as init_autoresearch.py
+    end
+
+    box rgba(200, 200, 200, 0.2) 1. Goal & Boundaries (experiment-dir)
         participant Spec as references/program.md<br/>(Karpathy: program.md)
     end
 
@@ -9,55 +14,81 @@ sequenceDiagram
         participant Agent as Claude Agent<br/>(Karpathy: implied loop — agent IS the orchestrator)
     end
 
-    box rgba(255, 200, 100, 0.15) 3. Mutable Target
-        participant Target as SKILL.md<br/>(Karpathy: train.py)
+    box rgba(255, 200, 100, 0.15) 3. Mutable Target (experiment-dir)
+        participant Target as mutation-target<br/>(SKILL.md, .py, etc.)<br/>(Karpathy: train.py)
     end
 
     box rgba(255, 100, 100, 0.1) 4. Scoring & Gatekeeping
-        participant GitManager as evaluate.py<br/>(Git Manager)
-        participant Grader as eval_runner.py<br/>(Karpathy: prepare.py)
-        participant Tests as evals/evals.json<br/>(Golden Tests)
+        participant GitManager as evaluate.py<br/>(Git Manager — locked)
+        participant Grader as eval_runner.py<br/>(Karpathy: prepare.py — locked)
+        participant Tests as experiment-dir/evals/evals.json<br/>(Golden Tests — locked)
     end
 
-    box rgba(200, 200, 200, 0.2) 5. State & Memory
-        participant Ledger as target-skill/evals/results.tsv<br/>(Karpathy: results.tsv)
+    box rgba(200, 200, 200, 0.2) 5. State & Memory (experiment-dir)
+        participant Ledger as evals/results.tsv<br/>(Karpathy: results.tsv)
+        participant Hashes as evals/.lock.hashes<br/>(SHA256 snapshot)
         participant Git as Git Version Control
     end
 
-    %% --- Initialization ---
-    Human->>Agent: "Run the autoresearch loop on target-skill"
+    %% --- SETUP (run once before the loop) ---
+    Note over Human,Scaffold: SETUP — run once before starting the loop
 
-    Agent->>Spec: read rules, goal & constraints
-    Agent->>Ledger: read last N rows for this target (history)
+    Human->>Scaffold: python init_autoresearch.py<br/>--experiment-dir path --mutation-target file
+    Scaffold->>Templates: read program.md.template, evals.json.template, results.tsv.template
+    Scaffold-->>Spec: write rendered references/program.md
+    Scaffold-->>Tests: write rendered evals/evals.json
+    Scaffold-->>Ledger: write results.tsv header row
+
+    Human->>Spec: edit Notes section (goal, target score, what to optimize)
+    Human->>Tests: replace REPLACE placeholders with real test prompts
+
+    Human->>GitManager: python evaluate.py --skill <target> --baseline
+    GitManager->>Grader: score current target (pre-loop state)
+    Grader-->>GitManager: {"quality_score", "accuracy", "f1", "heuristic"}
+    GitManager->>Ledger: write BASELINE row
+    GitManager->>Hashes: write SHA256 of evaluate.py, eval_runner.py, evals.json
 
     %% --- The Evolutionary Loop ---
+    Note over Human,Git: LOOP — NEVER STOP (until human interrupt or target score reached)
+
+    Human->>Agent: "Run the autoresearch loop on <experiment-dir>"
+
+    Agent->>Spec: read rules, goal & constraints
+    Agent->>Ledger: read last N rows for history
+
     loop NEVER STOP
 
         %% Step 1: Mutate
-        Agent->>Target: make one focused mutation to SKILL.md
+        Agent->>Target: make one focused mutation (one variable at a time)
 
         %% Step 2: Handoff to Gatekeeper
-        Agent->>GitManager: python evaluate.py --skill SKILL.md --desc "mutation summary"
+        Agent->>GitManager: python evaluate.py --skill <target> --desc "mutation summary"
 
-        %% Step 3: Agnostic Evaluation
-        GitManager->>Grader: python eval_runner.py --skill SKILL.md --json
-        Grader->>Target: load mutated skill logic
-        Grader->>Tests: load test prompts & expected trigger outcomes
+        %% Step 3: Lock check
+        GitManager->>Git: git status --porcelain (check locked files not dirty)
+        GitManager->>Hashes: compare SHA256 of locked files vs baseline snapshot
+        Note right of GitManager: exit 3 if any locked file<br/>was modified since baseline
+
+        %% Step 4: Score
+        GitManager->>Grader: python eval_runner.py --skill <target> --json
+        Grader->>Target: load mutated target content
+        Grader->>Tests: load test prompts & expected outcomes
         Grader-->>GitManager: {"quality_score", "accuracy", "f1", "heuristic"}
 
-        %% Step 4: Record State
+        %% Step 5: Record State
         GitManager->>Ledger: read last BASELINE row (score + f1)
-        GitManager->>Git: git rev-parse --short HEAD (get current commit hash)
+        GitManager->>Git: git rev-parse --short HEAD (current commit hash)
         GitManager->>Ledger: append row (commit, score, baseline, accuracy, heuristic, f1, status)
 
-        %% Step 5: The Evolutionary Decision
-        alt KEEP (score >= baseline AND f1 >= baseline_f1)
-            GitManager-->>Agent: exit 0 (Improvement validated)
-            Agent->>Git: git add SKILL.md
-            Agent->>Git: git commit -m "keep: score=X description"
-        else DISCARD (score or f1 degraded)
-            GitManager-->>Agent: exit 1 (Degradation detected)
-            Agent->>Git: git checkout -- SKILL.md
+        %% Step 6: The Evolutionary Decision
+        alt KEEP (round(score,4) >= round(baseline,4) AND round(f1,4) >= round(baseline_f1,4))
+            GitManager-->>Agent: exit 0 (improvement validated)
+            Agent->>Git: git add <target>
+            Agent->>Git: git commit -m "keep: score=X f1=Y description"
+        else DISCARD (score or f1 below baseline)
+            GitManager->>Git: git checkout -- <target>  [evaluate.py reverts automatically]
+            GitManager-->>Agent: exit 1 (degradation detected — target already reverted)
+            Note right of Agent: agent reports score delta,<br/>does NOT run git checkout again
         end
 
     end
