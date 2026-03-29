@@ -57,6 +57,8 @@ pip install -r ./requirements.txt
 
 See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
+> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python3`.
+
 ---
 
 # Quick Start — Zero Context Guide
@@ -98,7 +100,7 @@ your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever mak
 
 **Step 1 — Deploy templates into your experiment directory:**
 ```bash
-python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+python3 plugins/agent-agentic-os/scripts/init_autoresearch.py \
     --experiment-dir <path/to/your-experiment-dir> \
     --mutation-target SKILL.md   # or any filename being mutated
 ```
@@ -110,10 +112,12 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 
 **Step 3 — Establish baseline and start the loop:**
 ```bash
-python plugins/agent-agentic-os/scripts/evaluate.py \
+python3 plugins/agent-agentic-os/scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
     --baseline --desc "initial baseline"
 # Pass the FOLDER path, not a specific file — the scorer evaluates the whole skill folder.
+# --baseline intentionally bypasses the SHA256 check, so you can safely re-baseline
+# after updating evals.json with better test cases.
 # Then run the loop — see Mode 1 below
 ```
 
@@ -215,7 +219,7 @@ If not specified: "How many iterations? Or run until a target score — e.g. sto
 Check `<experiment-dir>/evals/evals.json`.
 - If exists: show the number of test cases.
 - If missing: "No evals.json found. I'll scaffold it from the template — you'll need to replace the placeholder test cases before the loop starts."
-  Run: `python plugins/agent-agentic-os/scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
+  Run: `python3 plugins/agent-agentic-os/scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
   Then pause for the user to fill in the test cases.
 
 **Q6 — (Loop mode only) Does `program.md` exist?**
@@ -261,7 +265,7 @@ The agent drives N iterations against a target skill. Start with:
 "Run the autoresearch loop on <path/to/target-skill> for N iterations"
 ```
 The agent will:
-1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python plugins/agent-agentic-os/scripts/init_autoresearch.py --skill <target-path>` first.
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python3 plugins/agent-agentic-os/scripts/init_autoresearch.py --skill <target-path>` first.
 2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive):
    - Make one focused change to `SKILL.md`

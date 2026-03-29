@@ -1,6 +1,8 @@
 # Quickstart: How to Run an Optimization Loop on Any Skill
 
-> **Prerequisite:** The target skill folder must be inside a git repository.
+> **Prerequisites:**
+> - The target skill folder must be inside a **git repository**. Run `git init && git add . && git commit -m "init"` first if needed.
+> - **Python 3.8+** must be available as `python3`.
 
 You only need two things:
 1. A copy of the **target skill folder** you want to improve.
@@ -9,7 +11,7 @@ You only need two things:
 ## 1. Scaffold the Experiment (One-Time)
 
 ```bash
-python .agents/skills/skill-improvement-eval/scripts/init_autoresearch.py \
+python3 .agents/skills/skill-improvement-eval/scripts/init_autoresearch.py \
     --experiment-dir .agents/skills/your-target-skill \
     --mutation-target SKILL.md
 ```
@@ -34,12 +36,14 @@ Replace every `REPLACE` placeholder with real test prompts and correct `should_t
 ## 3. Establish the Baseline
 
 ```bash
-python .agents/skills/skill-improvement-eval/scripts/evaluate.py \
+python3 .agents/skills/skill-improvement-eval/scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --baseline \
     --desc "initial baseline"
 ```
 *This records the starting score and creates the SHA256 lock snapshot (.lock.hashes).*
+
+> **Note:** If you later update `evals.json` to add better test cases, you can safely re-run with `--baseline` again. The `--baseline` flag intentionally bypasses the SHA256 check so you can re-baseline without being blocked.
 
 ## 4. Run the Autonomous Loop
 
@@ -47,7 +51,7 @@ Your main agent (or os-learning-loop) repeatedly runs:
 
 ```bash
 # Example single iteration
-python .agents/skills/skill-improvement-eval/scripts/evaluate.py \
+python3 .agents/skills/skill-improvement-eval/scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --desc "improved trigger phrasing for edge case X"
 ```

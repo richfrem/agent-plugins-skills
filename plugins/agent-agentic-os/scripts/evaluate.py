@@ -174,7 +174,11 @@ def run_eval_runner(skill_root: Path) -> dict:
         cwd=skill_root,
     )
     if result.returncode != 0:
-        print(f"ERROR: eval_runner.py failed:\n{result.stderr}", file=sys.stderr)
+        print(f"ERROR: eval_runner.py failed (exit {result.returncode}):", file=sys.stderr)
+        if result.stderr.strip():
+            print(result.stderr.strip(), file=sys.stderr)
+        if result.stdout.strip():
+            print("stdout:", result.stdout.strip(), file=sys.stderr)
         sys.exit(2)
     try:
         return json.loads(result.stdout.strip())
@@ -259,7 +263,11 @@ def main() -> None:
     locked_files_to_hash = LOCKED_FILES + [evals_json]
 
     check_locked_files(skill_root, evals_json)
-    check_sha256_hashes(results_tsv, locked_files_to_hash)
+    # Skip SHA256 snapshot check when re-baselining — the baseline run itself
+    # overwrites .lock.hashes, so blocking it creates a deadlock when evals.json
+    # has been intentionally updated. (Issue 6 fix, field-tested in round 1.)
+    if not args.baseline:
+        check_sha256_hashes(results_tsv, locked_files_to_hash)
 
     commit = get_commit(skill_root)
     data = run_eval_runner(skill_root)
