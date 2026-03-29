@@ -1,42 +1,42 @@
 sequenceDiagram
     actor Human
-    participant train.py
-    participant Agent as Claude Agent
-    participant evaluate.py
-    participant eval_runner.py
-    participant TargetSkill as Target SKILL.md
-    participant TargetEvals as Target evals/evals.json
-    participant CentralLog as evals/results.tsv (central log)
+    participant Agent as Claude Agent (loop orchestrator)
+    participant ProgramMD as references/program.md
+    participant TargetSkill as <target-skill>/SKILL.md
+    participant EvaluatePY as scripts/evaluate.py (locked)
+    participant EvalRunnerPY as scripts/eval_runner.py (locked)
+    participant TargetEvals as <target-skill>/evals/evals.json (locked)
+    participant TargetLog as <target-skill>/evals/results.tsv
     participant Git
 
-    Human->>train.py: python train.py --skill <path/to/target>
+    Human->>Agent: "Run the autoresearch loop on <target-skill>"
 
-    train.py->>TargetSkill: read references/program.md (goal + constraints)
-    train.py->>CentralLog: read last N rows for this skill_path (history)
+    Agent->>ProgramMD: read program.md (goal + locked files + NEVER STOP)
+    Agent->>TargetSkill: read current SKILL.md
+    Agent->>TargetLog: read recent rows (scoring history)
 
     loop NEVER STOP
 
-        train.py->>Agent: prompt with program.md + SKILL.md + recent history
         Agent->>TargetSkill: make one focused change to SKILL.md
 
-        train.py->>evaluate.py: evaluate.py --skill <path> --desc "what changed"
+        Agent->>EvaluatePY: python evaluate.py --skill <path> --desc "what changed"
 
-        evaluate.py->>eval_runner.py: eval_runner.py --skill SKILL.md
-        eval_runner.py->>TargetSkill: read SKILL.md frontmatter keywords
-        eval_runner.py->>TargetEvals: read evals.json golden test cases
-        eval_runner.py-->>evaluate.py: quality_score, accuracy, heuristic, f1
+        EvaluatePY->>EvalRunnerPY: eval_runner.py --skill SKILL.md --json
+        EvalRunnerPY->>TargetSkill: read SKILL.md frontmatter keywords
+        EvalRunnerPY->>TargetEvals: read evals.json test prompts
+        EvalRunnerPY-->>EvaluatePY: {"quality_score": N, "accuracy": N, "f1": N, "heuristic": N}
 
-        evaluate.py->>CentralLog: read baseline row for this skill_path
-        evaluate.py->>Git: git rev-parse --short HEAD (commit hash)
-        evaluate.py->>CentralLog: append row (skill_path, commit, score, baseline, f1, status)
+        EvaluatePY->>TargetLog: read last BASELINE row (score + f1)
+        EvaluatePY->>Git: git rev-parse --short HEAD (commit hash)
+        EvaluatePY->>TargetLog: append row (timestamp, commit, score, baseline, accuracy, heuristic, f1, status, description)
 
         alt KEEP (score >= baseline AND f1 >= baseline_f1)
-            evaluate.py-->>train.py: exit 0
-            train.py->>Git: git add SKILL.md
-            train.py->>Git: git commit "keep: score=X <description>"
-        else DISCARD (score degraded)
-            evaluate.py-->>train.py: exit 1
-            train.py->>Git: git checkout -- SKILL.md
+            EvaluatePY-->>Agent: exit 0
+            Agent->>Git: git add <target-skill>/SKILL.md
+            Agent->>Git: git commit "keep: score=X <description>"
+        else DISCARD (score degraded or f1 dropped)
+            EvaluatePY-->>Agent: exit 1
+            Agent->>Git: git checkout -- <target-skill>/SKILL.md
         end
 
     end
