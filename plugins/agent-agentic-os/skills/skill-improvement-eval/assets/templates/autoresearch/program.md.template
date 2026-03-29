@@ -1,17 +1,17 @@
-# Optimization Program: {{SKILL_NAME}}
+# Optimization Program: {{EXPERIMENT_NAME}}
 
 Goal: maximize `quality_score` (higher is better, max 1.0).
 
 Formula: `quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)`
 
-- `routing_accuracy`: fraction of evals.json prompts correctly routed via keyword
-  overlap against SKILL.md frontmatter only
-- `heuristic_score`: structural health check (example tags, description length)
+- `routing_accuracy`: fraction of evals.json prompts correctly matched against
+  the mutation target's content (frontmatter only for SKILL.md; full content otherwise)
+- `heuristic_score`: structural health check (varies by target type)
 - KEEP requires: `score >= baseline AND f1 >= baseline_f1`
-  (dual guard prevents keyword-stuffing: padding triggers raises recall but drops
-  precision, so F1 falls even as accuracy appears to rise)
+  (dual guard prevents metric gaming: padding increases recall but drops precision/F1)
 
-Mutation target: `SKILL.md` — you may ONLY edit this file each iteration.
+Mutation target: `{{MUTATION_TARGET}}` — you may ONLY edit this file each iteration.
+One focused change per iteration. No bulk rewrites.
 
 Locked (never modify during the loop):
 - `{{PLUGIN_ROOT}}/scripts/evaluate.py`
@@ -19,10 +19,10 @@ Locked (never modify during the loop):
 - `evals/evals.json`
 
 How to run one iteration:
-1. Edit `SKILL.md` (one focused change per iteration)
-2. `python {{PLUGIN_ROOT}}/scripts/evaluate.py --skill {{SKILL_PATH}}/SKILL.md --desc "what you changed"`
-3. If KEEP (exit 0): `git add SKILL.md && git commit -m "keep: score=X <description>"`
-4. If DISCARD (exit 1): evaluate.py already reverted SKILL.md automatically
+1. Edit `{{MUTATION_TARGET}}` (one focused change)
+2. `python {{PLUGIN_ROOT}}/scripts/evaluate.py --skill {{EXPERIMENT_PATH}}/{{MUTATION_TARGET}} --desc "what you changed"`
+3. If KEEP (exit 0): `git add {{MUTATION_TARGET}} && git commit -m "keep: score=X <description>"`
+4. If DISCARD (exit 1): evaluate.py already reverted `{{MUTATION_TARGET}}` automatically
 
 NEVER STOP. Run until manually interrupted or target score is reached.
 
@@ -30,7 +30,7 @@ NEVER STOP. Run until manually interrupted or target score is reached.
 
 ## Notes (fill in before starting the loop)
 
-- **Target score**: <!-- e.g. 0.95 or leave blank for NEVER STOP -->
-- **Max iterations**: <!-- e.g. 50 or leave blank for NEVER STOP -->
-- **Baseline established**: <!-- date + commit hash, filled by evaluate.py --baseline -->
-- **What to optimize**: <!-- e.g. "trigger phrase coverage", "reduce false positives" -->
+- **What is being optimized**: <!-- e.g. skill trigger phrase coverage, function accuracy, config tuning -->
+- **Target score**: <!-- e.g. 0.95, or leave blank for NEVER STOP -->
+- **Max iterations**: <!-- e.g. 50, or leave blank for NEVER STOP -->
+- **Baseline established**: <!-- date + commit hash, filled in by evaluate.py --baseline -->
