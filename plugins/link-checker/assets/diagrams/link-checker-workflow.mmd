@@ -1,54 +1,26 @@
-sequenceDiagram
-    participant User as User / Agent
-    participant Mapper as map_repository_files.py
-    participant Inventory as file_inventory.json
-    participant Fixer as smart_fix_links.py
-    participant Docs as Markdown Files
-    participant Inspector as check_broken_paths.py
-    participant Log as broken_links.log
-
-    Note over User, Log: Phase 1: Map (Index Repository)
-
-    User->>Mapper: /link-checker:map
-    Mapper->>Mapper: os.walk() entire repo
-    Mapper->>Mapper: Exclude .git, node_modules, .venv
-    Mapper->>Inventory: Write {filename: [paths...]}
-    Mapper-->>User: ✅ Mapped N unique filenames
-
-    Note over User, Log: Phase 2: Fix (Auto-Repair)
-
-    User->>Fixer: /link-checker:fix
-    Fixer->>Inventory: Load file map
-    loop For each .md file
-        Fixer->>Docs: Read content
-        Fixer->>Fixer: Find [text](broken/path) links
-        alt Link target exists
-            Fixer->>Fixer: Skip (valid)
-        else Link broken
-            Fixer->>Fixer: Extract basename
-            Fixer->>Inventory: Lookup basename
-            alt Unique match
-                Fixer->>Docs: Rewrite link with correct path
-                Fixer-->>User: Fixed: file → new/path
-            else Ambiguous (multiple matches)
-                Fixer-->>User: ⚠️ Ambiguous: skip for manual review
-            else Not found
-                Fixer->>Docs: Mark as (Reference Missing)
-            end
-        end
+flowchart TD
+    subgraph Discovery [Phase 1: Setup]
+        Start([Start Scan]) --> Mapper[01_build_file_inventory.py]
+        Mapper -- \"Analyzes repo files\" --> Inv[(file_inventory.json)]
     end
-    Fixer-->>User: ✅ Modified N files
 
-    Note over User, Log: Phase 3: Verify (Final Audit)
-
-    User->>Inspector: /link-checker:check
-    loop For each doc file
-        Inspector->>Docs: Read content
-        Inspector->>Inspector: Check all [text](path) links
-        Inspector->>Inspector: Check src/href attributes
-        alt Link broken
-            Inspector->>Log: FILE: path → [MISSING] link
-        end
+    subgraph Extraction [Phase 2: Identification]
+        Inv --> Extractor[02_extract_link_references.py]
+        Extractor -- \"Finds all text links\" --> Refs[(link_references.json)]
     end
-    Inspector->>Log: Write full report
-    Inspector-->>User: ✅ Scanned N files, found M broken refs
+
+    subgraph Analysis [Phase 3: Auditing]
+        Refs --> Auditor[03_audit_broken_links.py]
+        Auditor -- \"Identifies broken refs\" --> Log[broken_links.log]
+        Auditor --> Json[broken_links.json]
+    end
+
+    subgraph Repair [Phase 4: Fixing]
+        Json --> Fixer[04_autofix_unique_links.py]
+        Fixer -- \"Applies unique fixes\" --> ModDocs[Modified Files]
+    end
+
+    subgraph Finalize [Phase 5: Reporting]
+        ModDocs --> Reporter[05_report_unfixable_links.py]
+        Reporter -- \"Summarizes gaps\" --> Report[unfixable_links_report.md]
+    end

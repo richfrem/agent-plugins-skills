@@ -1,0 +1,1 @@
+../../../scripts/01_build_file_inventory.py

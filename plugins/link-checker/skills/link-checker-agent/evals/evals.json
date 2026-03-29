@@ -3,28 +3,46 @@
     "skill": "link-checker-agent",
     "evaluations": [
         {
-            "id": "eval-1-map-before-fix",
+            "id": "eval-1-inventory-before-fix",
             "type": "negative",
             "prompt": "Fix all the broken links in the documentation.",
-            "expected_behavior": "Agent runs map_repository_files.py FIRST and verifies file_inventory.json is created before running smart_fix_links.py. It does NOT run the fixer without a current inventory."
+            "expected_behavior": "Agent runs 01_build_file_inventory.py FIRST and verifies file_inventory.json is created, then 02_extract_link_references.py, then 03_audit_broken_links.py before running 04_autofix_unique_links.py. It does NOT run the fixer without a current inventory and audit."
         },
         {
-            "id": "eval-2-full-map-fix-verify-sequence",
+            "id": "eval-2-full-5-step-sequence",
             "type": "positive",
             "prompt": "Run a full link audit and repair on this repository.",
-            "expected_behavior": "Agent runs all three steps in order: (1) map_repository_files.py, (2) smart_fix_links.py, (3) check_broken_paths.py. After each step, it verifies the expected output (file_inventory.json, Fixed: messages, broken_links.log) before proceeding."
+            "expected_behavior": "Agent runs all five steps in order: (1) 01_build_file_inventory.py, (2) 02_extract_link_references.py, (3) 03_audit_broken_links.py, (4) 04_autofix_unique_links.py --dry-run then without --dry-run, (5) 05_report_unfixable_links.py. After each step it verifies the expected output file exists before proceeding."
         },
         {
             "id": "eval-3-review-before-commit",
             "type": "positive",
             "prompt": "The fix script ran and changed some files. Should I commit them?",
-            "expected_behavior": "Agent insists on reviewing the diff before committing. It runs git diff (or equivalent) and presents the changes to the user for approval. It does NOT auto-commit link fixes."
+            "expected_behavior": "Agent insists on reviewing the diff before committing. It runs 'git diff' (or equivalent) and presents the changes to the user for approval. It does NOT auto-commit link fixes."
         },
         {
             "id": "eval-4-stale-inventory",
             "type": "edge-case",
             "prompt": "Run the link fixer. I ran the mapper yesterday.",
-            "expected_behavior": "Agent checks the mtime of file_inventory.json. If it was generated before the most recent file changes in the repo, it warns that the inventory may be stale and recommends re-running the mapper before fixing."
+            "expected_behavior": "Agent checks the mtime of file_inventory.json. If it was generated before the most recent file changes in the repo, it warns that the inventory may be stale and recommends re-running 01_build_file_inventory.py before fixing."
+        },
+        {
+            "id": "eval-5-clean-repo-no-broken-links",
+            "type": "positive",
+            "prompt": "Audit the links in this repository.",
+            "expected_behavior": "Agent runs the full pipeline. When broken_links.json is empty (no broken links found), it reports success and does NOT proceed to run the fixer. It presents the clean result to the user."
+        },
+        {
+            "id": "eval-6-ambiguous-match-no-autofix",
+            "type": "negative",
+            "prompt": "There are broken links that match multiple files.",
+            "expected_behavior": "Agent does NOT auto-select a candidate when multiple files share the same basename. It reports all candidates with their full relative paths to the user and awaits explicit instruction before making any changes."
+        },
+        {
+            "id": "eval-7-dry-run-before-write",
+            "type": "positive",
+            "prompt": "Fix broken links but show me what will change first.",
+            "expected_behavior": "Agent runs 04_autofix_unique_links.py --dry-run first, presents the proposed changes, then asks for confirmation before running without --dry-run. It does not skip the preview step."
         }
     ]
 }

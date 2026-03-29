@@ -3,9 +3,12 @@
 bundle.py
 =====================================
 Purpose: Reads a JSON manifest file and concatenates contents into a single Markdown artifact.
+[v2.2] Adds symlink deduplication: symlinked files whose real path was already included are
+       noted in the index but their content is NOT repeated.
 [v2.1] Adds manifest 'excludes', 5MB large-file safety, cumulative tokens, and expanded lang map.
 """
 
+import os
 import sys
 import json
 import argparse
@@ -15,8 +18,9 @@ from datetime import datetime
 
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB safety limit
 
+
 def load_gitignore_patterns(project_root: Path) -> list:
-    patterns = ['.git', '__pycache__', 'node_modules', '.env'] 
+    patterns = ['.git', '__pycache__', 'node_modules', '.env']
     gi_path = project_root / '.gitignore'
     if gi_path.exists():
         try:
@@ -29,6 +33,7 @@ def load_gitignore_patterns(project_root: Path) -> list:
             pass
     return patterns
 
+
 def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
     try:
         rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
@@ -37,12 +42,13 @@ def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
 
     for pattern in patterns:
         clean_pattern = pattern.strip('/')
-        if (fnmatch.fnmatch(rel_path, clean_pattern) or 
-            fnmatch.fnmatch(rel_path, f"{clean_pattern}/*") or 
-            fnmatch.fnmatch(rel_path, f"*/{clean_pattern}/*") or 
-            fnmatch.fnmatch(rel_path, f"*/{clean_pattern}")):
+        if (fnmatch.fnmatch(rel_path, clean_pattern) or
+                fnmatch.fnmatch(rel_path, f"{clean_pattern}/*") or
+                fnmatch.fnmatch(rel_path, f"*/{clean_pattern}/*") or
+                fnmatch.fnmatch(rel_path, f"*/{clean_pattern}")):
             return True
     return False
+
 
 def bundle_files(manifest_path: Path, output_path: Path) -> None:
     try:
@@ -55,7 +61,7 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
     title = manifest.get('title', 'Context Bundle')
     description = manifest.get('description', '')
     files = manifest.get('files', [])
-    
+
     # Merge .gitignore with manifest-specific excludes
     project_root = Path.cwd()
     ignore_patterns = load_gitignore_patterns(project_root)
@@ -66,57 +72,107 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
     valid_file_count = 0
     missing_files = []
 
+    # Track real filesystem paths to avoid duplicating symlinked content
+    seen_real_paths: set = set()
+
     print("🔍 Resolving files and calculating token budgets...")
 
     for entry in files:
         path_str = entry.get('path', '')
         note = entry.get('note', '')
         actual_path = project_root / path_str
-        
-        if actual_path.is_dir():
-            for file_path in actual_path.rglob('*'):
-                if file_path.is_file() and not is_ignored(file_path, project_root, ignore_patterns):
-                    rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
-                    
-                    if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
-                        resolved_files.append({'path': rel_path, 'note': note, 'too_large': True})
-                        continue
 
-                    try:
-                        with open(file_path, 'r', encoding='utf-8') as peek:
-                            content = peek.read()
-                            tokens = len(content) // 4
-                            total_tokens += tokens
-                            
-                        resolved_files.append({
-                            'path': rel_path,
-                            'note': f"{note} (from {path_str})" if note else f"from {path_str}",
-                            'tokens': tokens,
-                            'content': content
-                        })
-                        valid_file_count += 1
-                    except UnicodeDecodeError:
-                        resolved_files.append({'path': rel_path, 'note': note, 'binary': True})
+        if actual_path.is_dir():
+            for file_path in sorted(actual_path.rglob('*')):
+                if not file_path.is_file():
+                    continue
+                if is_ignored(file_path, project_root, ignore_patterns):
+                    continue
+
+                rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
+                real_path = os.path.realpath(file_path)
+                is_symlink = file_path.is_symlink()
+
+                # Deduplication: if real path already seen, record as symlink reference only
+                if real_path in seen_real_paths:
+                    # Find which earlier path had the same real content
+                    real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
+                        if Path(real_path).is_relative_to(project_root) else real_path
+                    resolved_files.append({
+                        'path': rel_path,
+                        'note': note,
+                        'symlink_to': real_rel,
+                    })
+                    continue
+
+                seen_real_paths.add(real_path)
+
+                if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
+                    resolved_files.append({'path': rel_path, 'note': note, 'too_large': True})
+                    continue
+
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as peek:
+                        content = peek.read()
+                        tokens = len(content) // 4
+                        total_tokens += tokens
+
+                    file_note = f"{note} (from {path_str})" if note else f"from {path_str}"
+                    if is_symlink:
+                        real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
+                            if Path(real_path).is_relative_to(project_root) else real_path
+                        file_note = f"{file_note} [symlink → {real_rel}]" if file_note else f"[symlink → {real_rel}]"
+
+                    resolved_files.append({
+                        'path': rel_path,
+                        'note': file_note,
+                        'tokens': tokens,
+                        'content': content,
+                    })
+                    valid_file_count += 1
+                except UnicodeDecodeError:
+                    resolved_files.append({'path': rel_path, 'note': note, 'binary': True})
         else:
             if not actual_path.exists():
                 missing_files.append(path_str)
                 resolved_files.append({'path': path_str, 'note': note, 'missing': True})
             elif not is_ignored(actual_path, project_root, ignore_patterns):
+                real_path = os.path.realpath(actual_path)
+                is_symlink = actual_path.is_symlink()
+
+                if real_path in seen_real_paths:
+                    real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
+                        if Path(real_path).is_relative_to(project_root) else real_path
+                    resolved_files.append({
+                        'path': path_str,
+                        'note': note,
+                        'symlink_to': real_rel,
+                    })
+                    continue
+
+                seen_real_paths.add(real_path)
+
                 if actual_path.stat().st_size > MAX_FILE_SIZE_BYTES:
                     resolved_files.append({'path': path_str, 'note': note, 'too_large': True})
                     continue
-                    
+
                 try:
                     with open(actual_path, 'r', encoding='utf-8') as peek:
                         content = peek.read()
                         tokens = len(content) // 4
                         total_tokens += tokens
-                        
+
+                    file_note = note
+                    if is_symlink:
+                        real_rel = str(Path(real_path).relative_to(project_root)).replace('\\', '/') \
+                            if Path(real_path).is_relative_to(project_root) else real_path
+                        file_note = f"{note} [symlink → {real_rel}]" if note else f"[symlink → {real_rel}]"
+
                     resolved_files.append({
                         'path': path_str,
-                        'note': note,
+                        'note': file_note,
                         'tokens': tokens,
-                        'content': content
+                        'content': content,
                     })
                     valid_file_count += 1
                 except UnicodeDecodeError:
@@ -125,7 +181,7 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
     with open(output_path, 'w', encoding='utf-8') as out:
         out.write(f"# {title}\n")
         out.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-        
+
         if description:
             out.write(f"{description}\n\n")
 
@@ -141,13 +197,15 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
         for idx, entry in enumerate(resolved_files, 1):
             path_str = entry.get('path', '')
             note = entry.get('note', '')
-            
+
             if entry.get('missing'):
                 out.write(f"{idx}. ❌ `{path_str}` - *FILE NOT FOUND*\n")
             elif entry.get('binary'):
                 out.write(f"{idx}. 🗜️ `{path_str}` - *[Binary File Skipped]*\n")
             elif entry.get('too_large'):
                 out.write(f"{idx}. ⚠️ `{path_str}` - *[Skipped: Exceeds 5MB Limit]*\n")
+            elif entry.get('symlink_to'):
+                out.write(f"{idx}. 🔗 `{path_str}` - *[Symlink — content already included from `{entry['symlink_to']}`]*\n")
             else:
                 tokens = entry.get('tokens', 0)
                 cumulative_tokens += tokens
@@ -168,13 +226,13 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
         }
 
         for entry in resolved_files:
-            if entry.get('missing') or entry.get('binary') or entry.get('too_large'):
+            if entry.get('missing') or entry.get('binary') or entry.get('too_large') or entry.get('symlink_to'):
                 continue
-                
+
             path_str = entry.get('path', '')
             note = entry.get('note', '')
             content = entry.get('content', '')
-            
+
             out.write(f"## File: `{path_str}`\n")
             if note:
                 out.write(f"> Note: {note}\n\n")
@@ -190,11 +248,12 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
                 out.write(f"```{lang}\n")
                 out.write(content if content.endswith('\n') else content + '\n')
                 out.write("```\n\n")
-            
+
             out.write("---\n\n")
 
     print(f"✅ Context successfully bundled into -> {output_path}")
     print(f"📊 Processed {valid_file_count} files (~{total_tokens:,} tokens).")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a markdown context bundle from a JSON manifest.")

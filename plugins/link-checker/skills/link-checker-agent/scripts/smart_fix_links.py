@@ -1,1 +1,0 @@
-../../../scripts/smart_fix_links.py

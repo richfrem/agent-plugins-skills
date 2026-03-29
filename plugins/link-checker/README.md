@@ -1,7 +1,7 @@
 # Link Checker Plugin 🔗
 
 Validate and auto-repair broken documentation links across your repository using
-file inventory mapping and fuzzy matching.
+file inventory mapping and unique-basename matching.
 
 ## Installation
 
@@ -26,7 +26,7 @@ With native plugins enabled, your agent autonomously detects the task and execut
 
 ## Usage Guide
 
-The autonomous agent executes a strict 3-Step Protocol: **Order matters: Map → Fix → Verify**
+The autonomous agent executes a strict **5-Step Pipeline**: **Inventory → Extract → Audit → Fix → Report**
 
 ### Tell your agent:
 ```text
@@ -38,68 +38,77 @@ The autonomous agent executes a strict 3-Step Protocol: **Order matters: Map →
 ```bash
 cd /path/to/your/repo
 
-# Step 1: Map
-python3 ./scripts/map_repository_files.py
+# Step 1: Build file inventory
+python3 ./scripts/01_build_file_inventory.py
 
-# Step 2: Fix
-python3 ./scripts/smart_fix_links.py
+# Step 2: Extract all link references
+python3 ./scripts/02_extract_link_references.py
 
-# Step 3: Check
-python3 ./scripts/check_broken_paths.py
-python3 ./scripts/check_broken_paths.py --file docs/specific.md
+# Step 3: Audit — identify broken links
+python3 ./scripts/03_audit_broken_links.py
+
+# Step 4: Auto-fix unique matches (preview first)
+python3 ./scripts/04_autofix_unique_links.py --dry-run
+python3 ./scripts/04_autofix_unique_links.py --backup
+
+# Step 5: Report remaining unfixable links
+python3 ./scripts/05_report_unfixable_links.py
 ```
 
 ### How the Fixer Works
 
-1. Scans `.md` files for `[text](broken/path)` patterns
+1. Scans `.md` files for `[text](broken/path)` and `![alt](broken/image)` patterns
 2. Extracts the basename from broken paths
 3. Looks up the basename in `file_inventory.json`
 4. **Unique match** → rewrites with correct relative path
 5. **Ambiguous** (multiple files with same name) → skips with warning
-6. **Not found** → marks as `(Reference Missing: filename)`
+6. **Not found** → left as-is; appears in `unfixable_links_report.md`
 
 ### Safety Features
-- Only modifies files with actual broken links
+- Use `--dry-run` to preview all changes before any file is modified
+- Use `--backup` to create `.bak` copies before modifying files
+- Only modifies files listed in `broken_links.json` (from Step 3)
 - Skips `README.md` basename matches (too ambiguous across repos)
 - Preserves anchor fragments (`#section`)
+- Skips links inside fenced code blocks
 - Excludes `.git`, `node_modules`, `.venv`, `bin`, `obj` from scanning
 
 ---
 
 ## Architecture
 
-See [docs/link-checker-workflow.mmd](assets/diagrams/link-checker-workflow.mmd) for the full
-sequence diagram.
+See [workflow diagram](assets/diagrams/workflow.mmd) for the full 5-step flow.
 
 ```mermaid
 graph LR
-    A["Map 🗺️"] -->|file_inventory.json| B["Fix 🔧"]
-    B -->|Modified .md files| C["Check ✅"]
-    C -->|broken_links.log| D[Review]
+    A["Inventory 🗺️"] -->|file_inventory.json| B["Extract 📋"]
+    B -->|link_references.json| C["Audit 🔍"]
+    C -->|broken_links.json| D["Fix 🔧"]
+    D -->|Modified .md files| E["Report 📄"]
+    E -->|unfixable_links_report.md| F[Review]
 ```
 
-Additional diagrams (from original tool):
+Additional diagrams:
 - [logic.mmd](assets/diagrams/logic.mmd) — Internal decision logic
 - [workflow.mmd](assets/diagrams/workflow.mmd) — User workflow
-- [unpacking.mmd](assets/diagrams/unpacking.mmd) — Legacy unpacking flow
+- [link-checker-workflow.mmd](assets/diagrams/link-checker-workflow.mmd) — Full sequence diagram
 
 ### Plugin Directory Structure
 ```
 link-checker/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin identity
+├── scripts/
+│   ├── 01_build_file_inventory.py   # The Mapper
+│   ├── 02_extract_link_references.py # The Extractor
+│   ├── 03_audit_broken_links.py     # The Auditor
+│   ├── 04_autofix_unique_links.py   # The Fixer
+│   └── 05_report_unfixable_links.py # The Reporter
 ├── skills/
 │   └── link-checker-agent/
 │       ├── SKILL.md             # Auto-invoked QA skill
-│       ├── scripts/
-│       │   ├── map_repository_files.py  # The Mapper
-│       │   ├── smart_fix_links.py       # The Fixer
-│       │   └── check_broken_paths.py    # The Inspector
-│       └── references/
-│           ├── link-checker-workflow.mmd  # Sequence diagram
-│           ├── logic.mmd                  # Internal logic
-│           ├── workflow.mmd               # User workflow
-│           └── unpacking.mmd             # Legacy flow
+│       ├── scripts/             # Symlinks → ../../scripts/
+│       └── references/          # Symlinks → ../../references/
 └── README.md
 ```
 
@@ -113,4 +122,3 @@ MIT
 
 ### Skills
 - `link-checker-agent`
-
