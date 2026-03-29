@@ -262,7 +262,7 @@ def main() -> None:
 
     if args.baseline or baseline_score == 0.0:
         status = "BASELINE"
-    elif score >= baseline_score and f1 >= baseline_f1:
+    elif round(score, 4) >= round(baseline_score, 4) and round(f1, 4) >= round(baseline_f1, 4):
         status = "KEEP"
     else:
         status = "DISCARD"

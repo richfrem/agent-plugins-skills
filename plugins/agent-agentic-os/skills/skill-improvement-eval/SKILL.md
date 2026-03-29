@@ -59,31 +59,139 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 ---
 
+# Quick Start — Zero Context Guide
+
+> Read this first. Everything below assumes you've completed these steps.
+
+## What This Skill Does
+
+`skill-improvement-eval` is a stateless evaluation engine. It contains:
+- **Scripts** that score and gate iterations (`evaluate.py`, `eval_runner.py`, `init_autoresearch.py`)
+- **Templates** — starter files you copy into whatever you want to optimize
+
+It does NOT contain your experiment's results, history, or rules. Those live with your target.
+
+## What Lives Where
+
+```
+skill-improvement-eval/                        <-- the evaluation ENGINE (this skill)
+  scripts/
+    evaluate.py          Loop gate: scores, KEEP/DISCARD, reverts, exits 0/1
+    eval_runner.py       Pure scorer: reads target + evals.json, outputs JSON metrics
+    init_autoresearch.py Scaffold tool: copies templates into your experiment dir
+  assets/templates/autoresearch/               <-- TEMPLATES (master copies, never edit directly)
+    program.md.template  Spec: goal, locked files, NEVER STOP
+    evals.json.template  Test prompts: what inputs should/should not trigger your target
+    results.tsv.template Schema header for the loop ledger
+
+your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever makes sense)
+  <mutation-target>      The file being mutated each iteration (SKILL.md, .py, etc.)
+  references/
+    program.md           Deployed from template — your rules, your goal (edit this)
+  evals/
+    evals.json           Deployed from template — your test prompts (edit this)
+    results.tsv          Deployed from template, then written by evaluate.py each run
+    .lock.hashes         SHA256 snapshot of locked files — written by evaluate.py --baseline
+```
+
+## Setup: Start a New Experiment (3 steps)
+
+**Step 1 — Deploy templates into your experiment directory:**
+```bash
+python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+    --experiment-dir <path/to/your-experiment-dir> \
+    --mutation-target SKILL.md   # or any filename being mutated
+```
+This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv` in your experiment dir. Templates stay untouched.
+
+**Step 2 — Edit the deployed files:**
+- `references/program.md` — fill in the Notes section: what are you optimizing, target score, max iterations
+- `evals/evals.json` — replace the `REPLACE` placeholders with real test inputs and `should_trigger` values
+
+**Step 3 — Establish baseline and start the loop:**
+```bash
+python plugins/agent-agentic-os/scripts/evaluate.py \
+    --skill <path/to/experiment-dir>/<mutation-target> \
+    --baseline --desc "initial baseline"
+# Then run the loop — see Mode 1 below
+```
+
+---
+
 # Skill Improvement Evaluator
 
-You are the OS Quality Assurance (QA) sub-agent.
+You are the OS Quality Assurance (QA) sub-agent. You are a **stateless evaluation engine**. You own no loop state, no experiment memory, and no program spec. All of that lives exclusively inside the TARGET experiment's directory.
+
+## Ownership Boundary (Critical)
+
+### What skill-improvement-eval owns (permanent, version-controlled with this skill)
+
+| What | Location |
+|---|---|
+| Scoring scripts | `plugins/agent-agentic-os/scripts/evaluate.py`, `eval_runner.py` |
+| Scaffold script | `plugins/agent-agentic-os/scripts/init_autoresearch.py` |
+| program.md **template** | `skills/skill-improvement-eval/assets/templates/autoresearch/program.md.template` |
+| evals.json **template** | `skills/skill-improvement-eval/assets/templates/autoresearch/evals.json.template` |
+| results.tsv **template** | `skills/skill-improvement-eval/assets/templates/autoresearch/results.tsv.template` |
+
+### What lives with the target (deployed per experiment, most appropriate location)
+
+The mutation target can be a SKILL.md, a Python script, a config file, or anything
+with a clear metric. All experiment state deploys alongside the target — not here.
+
+| What | Location |
+|---|---|
+| program.md (rendered from template) | `<experiment-dir>/references/program.md` |
+| evals.json (rendered from template) | `<experiment-dir>/evals/evals.json` |
+| results.tsv (loop ledger) | `<experiment-dir>/evals/results.tsv` |
+| .lock.hashes (SHA256 snapshot) | `<experiment-dir>/evals/.lock.hashes` |
+
+Where `<experiment-dir>` is the directory most natural to the target:
+- Evaluating a skill → the skill's own directory (e.g. `plugins/my-plugin/skills/my-skill/`)
+- Evaluating a Python module → the module's project directory
+- Evaluating a config or model → wherever that experiment lives
+
+**Deploy the templates to a new experiment:**
+```bash
+python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+    --experiment-dir <path/to/experiment-dir> \
+    --mutation-target SKILL.md   # or any filename being mutated
+# Creates: <experiment-dir>/references/program.md  (rendered)
+# Creates: <experiment-dir>/evals/evals.json        (rendered)
+# Creates: <experiment-dir>/evals/results.tsv       (schema header)
+```
+
+You MUST read the spec from `<experiment-dir>/references/program.md`. You MUST NOT fall back to any `program.md` inside your own (`skill-improvement-eval`) directory. The `skill-improvement-eval/evals/` folder only exists for the meta-circular case where this skill is being evaluated as its own target.
 
 ## The 3-File Autoresearch Architecture
 
-This skill strictly enforces the Karpathy 3-file autoresearch framework. Subjective LLM testing is strictly forbidden. You must rely entirely on headless, objective Python script evaluation to prevent "Agent Dementia" (Goodhart's Law).
+This skill strictly enforces the Karpathy 3-file autoresearch framework. Subjective LLM testing is strictly forbidden. You must rely entirely on headless, objective Python script evaluation to prevent Goodhart's Law exploitation.
 
-1. **The Spec**: `references/program.md` in the target skill (Golden Rule: "Never Stop Iterating").
-2. **The Mutation Target**: The proposed `SKILL.md` (Rule: You may only evaluate mutations of ONE variable at a time for scientific isolation).
-3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + static `evals/evals.json` fixtures. (Rule: You must never edit these scripts or the JSON fixtures during testing. The baseline MUST be fixed).
+1. **The Spec**: `<target-skill>/references/program.md` — owned by the target, never by you.
+2. **The Mutation Target**: `<target-skill>/SKILL.md` — one variable per iteration, no bulk rewrites.
+3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + `<target-skill>/evals/evals.json` (locked fixtures).
 
 ## Phase 0: Intake Interview
 
 Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
 
 **Q1 — What are you evaluating?**
-Ask for the path to the target file. It can be:
+Ask for the path to the mutation target file. It can be any file type:
 - A `SKILL.md` (most common — routing accuracy + heuristic scored)
-- A `.py` script (heuristic-only scoring unless custom evals.json exists)
-- A skill name (resolve the path from the plugins directory)
+- A `.py` script (scored against its own evals.json if present, otherwise heuristics only)
+- Anything with a clear metric (config, model weights descriptor, math definition, etc.)
 
-If not provided: "What skill or file do you want to evaluate or optimize? Please give me the path or name."
+If not provided: "What file do you want to optimize? Give me the path to the file being mutated."
 
-**Q2 — What mode?**
+**Q2 — Where should the experiment files live?**
+The experiment directory is where `references/program.md`, `evals/evals.json`, `evals/results.tsv`, and `evals/.lock.hashes` will be deployed. Each experiment gets its own isolated directory — never shared across targets.
+
+- If the target is a SKILL.md → the skill's own directory is the natural experiment dir.
+- If the target is a Python file or other → ask: "Where should I store the program spec and eval fixtures for this experiment? (e.g. the folder containing the file, or a dedicated experiment subdirectory)"
+
+Confirm: "Experiment files will be stored at `<experiment-dir>/references/` and `<experiment-dir>/evals/` — is that right?"
+
+**Q3 — What mode?**
 - **Loop mode**: autonomous iterative improvement (agent proposes changes, scores them, loops)
 - **QA mode**: validate one specific proposed change only
 
@@ -91,47 +199,45 @@ If the user said "optimize", "improve", "run the loop" → Loop mode.
 If the user said "check this change", "validate", "evaluate this diff" → QA mode.
 If unclear: "Do you want me to run an autonomous improvement loop, or validate a specific proposed change?"
 
-**Q3 — (Loop mode only) How many iterations?**
-Default: NEVER STOP (runs until you tell it to stop).
+**Q4 — (Loop mode only) How many iterations?**
+Default: NEVER STOP (runs until told to stop).
 Options: a fixed count ("10 iterations"), a score threshold ("until quality_score >= 0.95"), or open-ended.
-If not specified: "How many iterations should I run? Or should I run until a target score — e.g. stop when quality_score reaches 0.95?"
-
-**Q4 — (Loop mode only) What metrics matter?**
-Default metric: `quality_score = (routing_accuracy * 0.7) + (heuristic * 0.3)` with F1 guard.
-Ask only if the user wants to weight things differently or has a specific concern (e.g. "I only care about false positives → precision matters most").
-If not specified: use the default metric, no need to ask.
+If not specified: "How many iterations? Or run until a target score — e.g. stop when quality_score reaches 0.95?"
 
 **Q5 — (Loop mode only) Does `evals.json` exist?**
-Check `<target-skill>/evals/evals.json`.
-- If exists: show the number of test cases. Scoring will use routing accuracy + heuristic.
-- If missing: "No evals.json found. Without test cases, scoring falls back to heuristics only (structural checks, no routing accuracy). Do you want to add test cases before starting, or proceed with heuristics-only scoring?"
-  - If heuristics-only: continue but note the limitation in the confirm block.
-  - If user wants to add test cases: pause and help write `evals.json` before proceeding.
+Check `<experiment-dir>/evals/evals.json`.
+- If exists: show the number of test cases.
+- If missing: "No evals.json found. I'll scaffold it from the template — you'll need to replace the placeholder test cases before the loop starts."
+  Run: `python plugins/agent-agentic-os/scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
+  Then pause for the user to fill in the test cases.
 
 **Q6 — (Loop mode only) Does `program.md` exist?**
-Check `<target-skill>/references/program.md`.
-- If exists: read it and show the goal to the user. Confirm it still reflects what they want to optimize.
-- If missing: "No program.md found. This file defines the optimization goal and which files are locked. Without it the agent has no spec to follow. Would you like me to write one now?"
-  - If yes: ask the user two questions to draft it:
-    1. "What is the goal? (e.g. maximize routing accuracy, minimize false positives, reach score 0.95)"
-    2. "Which files should be locked (never edited by the agent)? Default: evaluate.py, eval_runner.py, evals/evals.json"
-  - Write `<target-skill>/references/program.md` from their answers before proceeding.
+Check `<experiment-dir>/references/program.md`.
+- If exists: read it and show the goal. Confirm it still reflects what the user wants to optimize.
+- If missing: "No program.md found. I'll scaffold it from the standard template:"
+  ```bash
+  python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+      --experiment-dir <experiment-dir> \
+      --mutation-target <filename>
+  ```
+  Then open `<experiment-dir>/references/program.md` and fill in the Notes section. Do NOT hand-write it — always generate from the template for consistent locked-files list and formula.
 
 **Q7 — (Loop mode only) Does a baseline exist?**
-Check `<target-skill>/evals/results.tsv` for a BASELINE row.
-- If baseline exists: show the last BASELINE score and f1, plus how many iterations have already run and the most recent score.
+Check `<experiment-dir>/evals/results.tsv` for a BASELINE row.
+- If baseline exists: show the last BASELINE score and f1, iterations run, most recent score.
 - If no baseline: "No baseline found. I'll establish one before starting the loop."
 
-**After intake — confirm the plan before executing:**
+**After intake — confirm before executing:**
 ```
-Target:     plugins/.../my-skill/SKILL.md
-Mode:       Loop (autoresearch)
-Iterations: 20  (or: until quality_score >= 0.95  |  or: NEVER STOP)
-Metric:     quality_score (default) with F1 guard
-evals.json: 9 test cases  (or: MISSING — heuristics only)
-program.md: exists — goal: maximize quality_score  (or: will write)
-Baseline:   score=0.8444 / f1=0.8333  (or: will establish)
-History:    14 iterations run, last score=0.8444 (3 KEEP, 2 DISCARD since baseline)
+Target file:    plugins/.../my-skill/SKILL.md
+Experiment dir: plugins/.../my-skill/         (program.md + evals live here)
+Mode:           Loop (autoresearch)
+Iterations:     20  (or: until quality_score >= 0.95  |  or: NEVER STOP)
+Metric:         quality_score (default) with F1 guard
+evals.json:     9 test cases  (or: MISSING — scaffold and fill before proceeding)
+program.md:     exists — goal: maximize quality_score  (or: will scaffold)
+Baseline:       score=0.8444 / f1=0.8333  (or: will establish)
+History:        14 iterations, last score=0.8444 (3 KEEP, 2 DISCARD since baseline)
 
 Proceed?
 ```
@@ -148,8 +254,8 @@ The agent drives N iterations against a target skill. Start with:
 "Run the autoresearch loop on <path/to/target-skill> for N iterations"
 ```
 The agent will:
-1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP)
-2. Establish a baseline if none exists: `python3 scripts/evaluate.py --skill <path>/SKILL.md --baseline`
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python plugins/agent-agentic-os/scripts/init_autoresearch.py --skill <target-path>` first.
+2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path>/SKILL.md --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive):
    - Make one focused change to `SKILL.md`
    - Run `python3 scripts/evaluate.py --skill <path>/SKILL.md --desc "what changed"`
@@ -221,14 +327,9 @@ eval syntax? Miss a required check? Get redirected?
 **Improvement Recommendation**: What one change to the eval skill or eval runner
 should be tested before the next run? What evidence supports it?
 
-Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_skill-improvement-eval.md`
+Save to: `temp/retrospectives/survey_[YYYYMMDD]_[HHMM]_skill-improvement-eval.md`
 
-Emit survey completion:
-```bash
-python3 context/kernel.py emit_event --agent skill-improvement-eval \
-  --type learning --action survey_completed \
-  --summary "retrospectives/survey_[DATE]_[TIME]_skill-improvement-eval.md"
-```
+(`temp/` is the canonical scratch directory for this repo — do not write survey files to the project root or to `context/memory/`.)
 
 ## Operating Principles
 - **Strict Rigor**: Do not rubber-stamp proposals. If the description is vague, it will over-trigger and break the OS. Fail it.

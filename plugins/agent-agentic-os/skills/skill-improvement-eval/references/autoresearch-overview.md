@@ -1,6 +1,7 @@
-# Autoresearch Overview: Applying the Karpathy Loop to Skills
+# Autoresearch Overview: Applying the Karpathy Loop to Any Target
 
-**Reference:** `<repo-root>/plugins/agent-agentic-os/references/research/karpathy-autoresearch-3-file-eval.md`
+**Reference:** `references/research/karpathy-autoresearch-3-file-eval.md`
+**Architecture:** `references/autoresearch-architecture.md`
 **Sequence Diagram:** `references/diagrams/autoresearch-loop.mmd`
 **Mapping Diagram:** `references/diagrams/mapping-karpathy-to-skill-improvement-eval.mmd`
 
@@ -8,149 +9,163 @@
 
 ## The Big Picture
 
-Karpathy's autoresearch pattern says: if you have a single objective metric, an automated evaluator, and one mutable file, you can run an autonomous overnight loop to optimize anything.
+Karpathy's autoresearch pattern says: if you have a single objective metric, an
+automated evaluator, and one mutable file, you can run an autonomous overnight loop
+to optimize anything.
 
-This document describes how that pattern is applied to **skill files** (SKILL.md) in the plugin ecosystem — using `skill-improvement-eval` as the concrete worked example.
-
-The goal: can an agent iteratively improve how reliably a skill triggers and performs, without any human in the loop, scored entirely by code?
+This system applies that pattern to any target — a skill definition, a Python module,
+a config, a scoring function. The evaluator scripts live in `skill-improvement-eval`.
+All experiment state (spec, test prompts, history) deploys into the target's own directory.
 
 ---
 
-## Two-Layer System
-
-There are two distinct roles:
+## Two Layers
 
 ### Layer 1: Assessment (eval-autoresearch-fit)
 
-A one-time scoring pass that answers: "Is this skill worth running through the Karpathy loop?"
+A one-time scoring pass that answers: "Is this target worth running through the loop?"
+Scores each candidate 0-40 across four dimensions and outputs HIGH / MEDIUM / LOW / NOT_VIABLE.
+This does NOT run the loop — it decides whether a loop is worth building.
 
-Scores each skill 0-40 across four dimensions (objectivity, execution speed, frequency, utility) and outputs a verdict (HIGH / MEDIUM / LOW / NOT_VIABLE). This skill does NOT run the loop — it decides whether a loop is worth building.
+### Layer 2: The Loop (scaffolded inside the target)
 
-> Example location (this is one possible placement — not a required path):
-> `plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/`
-
-### Layer 2: The Loop (scaffolded inside the target skill)
-
-The actual autonomous optimization loop, scaffolded inside the target skill once it scores HIGH or MEDIUM.
-
-```
-<SKILLPATH>/
-  references/
-    program.md            <- the spec (goal, locked files, NEVER STOP)
-  evals/
-    evals.json            <- test prompts (locked during loop)
-    results.tsv           <- loop ledger (one row per iteration)
-```
-
-The shared evaluation scripts (`evaluate.py`, `eval_runner.py`) live in the plugin's `scripts/` directory and are reused across all target skills.
+The actual autonomous optimization loop, scaffolded once you decide to proceed.
 
 ---
 
-## Concrete Example: skill-improvement-eval
+## Template vs Deployed Copy
 
-> **Note:** The paths below are for `skill-improvement-eval` specifically.
-> When applying this pattern to a different skill, replace the skill path throughout.
-> Example skill root: `plugins/agent-agentic-os/skills/skill-improvement-eval/`
-
-### Directory Layout
+The evaluator owns three master templates. You NEVER edit templates directly.
+`init_autoresearch.py` reads them, fills in `{{PLACEHOLDERS}}`, and writes rendered
+copies into your experiment directory.
 
 ```
-<SKILLPATH>/
-  SKILL.md                     <- MUTATION TARGET: agent edits only this file
-  evals/evals.json             <- test prompts (locked during loop)
-  evals/results.tsv            <- loop ledger (one row per iteration)
-  references/program.md        <- THE SPEC: goal, locked files, NEVER STOP
-
-<plugin-root>/scripts/
-  eval_runner.py               <- PURE SCORER: reads SKILL.md + evals.json, outputs JSON
-  evaluate.py                  <- LOCKED GATE: calls scorer, reads baseline, writes TSV row, exits 0/1
+TEMPLATES (master, in skill-improvement-eval — never edit)
+  assets/templates/autoresearch/program.md.template
+  assets/templates/autoresearch/evals.json.template
+  assets/templates/autoresearch/results.tsv.template
+        |
+        |  init_autoresearch.py --experiment-dir <path> --mutation-target <file>
+        v
+DEPLOYED COPIES (in your experiment dir — edit these)
+  <experiment-dir>/references/program.md    <-- fill in Notes section
+  <experiment-dir>/evals/evals.json         <-- replace REPLACE placeholders
+  <experiment-dir>/evals/results.tsv        <-- header only; evaluate.py appends rows
+  <experiment-dir>/evals/.lock.hashes       <-- written by evaluate.py --baseline
 ```
 
-### How One Loop Iteration Works
+---
+
+## Directory Layout (Generic)
 
 ```
-1. Agent reads <SKILLPATH>/references/program.md (goal: maximize quality_score)
-2. Agent edits SKILL.md (one focused change per iteration)
-3. Agent runs: python scripts/evaluate.py --skill <SKILLPATH>/SKILL.md --desc "what I changed"
-4. evaluate.py:
-     a. Checks locked files not modified (git status guard)
-     b. Calls eval_runner.py --skill SKILL.md --json (single call)
-     c. Parses {"quality_score": N, "accuracy": N, "f1": N, "heuristic": N}
-     d. Reads baseline from <SKILLPATH>/evals/results.tsv (last BASELINE row)
-     e. Compares score AND f1 against baseline (dual guard)
-     f. Writes one row to <SKILLPATH>/evals/results.tsv
-     g. DISCARD: runs git checkout -- SKILL.md, exits 1
-     h. KEEP: exits 0
-5. KEEP:    agent runs git add SKILL.md && git commit -m "keep: score=X <description>"
-6. Repeat (NEVER STOP)
+skill-improvement-eval/                      THE EVALUATOR
+  scripts/
+    evaluate.py                              Loop gate (locked)
+    eval_runner.py                           Pure scorer (locked)
+    init_autoresearch.py                     Template deployer
+  assets/templates/autoresearch/             Master templates
+    program.md.template
+    evals.json.template
+    results.tsv.template
+
+<experiment-dir>/                            YOUR EXPERIMENT
+  <mutation-target>                          The file mutated each iteration
+  references/
+    program.md                               Spec: goal, locked files, NEVER STOP
+  evals/
+    evals.json                               Test prompts (locked during loop)
+    results.tsv                              Loop ledger (one row per iteration)
+    .lock.hashes                             SHA256 snapshot of locked files at baseline
 ```
 
-### The Metric (skill-improvement-eval specific)
+**Examples of `<experiment-dir>` for different target types:**
+- Evaluating a skill → the skill's own directory: `plugins/my-plugin/skills/my-skill/`
+- Evaluating a Python module → the project dir containing the module
+- General experiment → a dedicated experiment folder anywhere in the repo
+
+---
+
+## Concrete Example: skill-improvement-eval (Meta-Circular Case)
+
+> The skill evaluating itself. This is legitimate — the loop can optimize
+> skill-improvement-eval's own SKILL.md trigger phrases.
+
+```
+<experiment-dir> = plugins/agent-agentic-os/skills/skill-improvement-eval/
+<mutation-target> = SKILL.md
+```
+
+Baseline: score=0.9100, f1=1.0000 (established 2026-03-29)
+
+---
+
+## How One Loop Iteration Works
+
+```
+Step 0: SETUP (run once before the loop)
+  python scripts/init_autoresearch.py \
+      --experiment-dir <experiment-dir> \
+      --mutation-target <filename>
+  # Edit references/program.md (goal, target score)
+  # Edit evals/evals.json (real test prompts)
+  python scripts/evaluate.py --skill <experiment-dir>/<target> --baseline
+
+Step 1: Agent reads <experiment-dir>/references/program.md
+        (goal, locked files, NEVER STOP)
+
+Step 2: Agent edits <mutation-target> (ONE focused change per iteration)
+
+Step 3: Agent runs evaluate.py:
+        python scripts/evaluate.py \
+            --skill <experiment-dir>/<mutation-target> \
+            --desc "what I changed"
+
+Step 4: evaluate.py internally:
+        a. check_locked_files()    -- abort if locked files dirty (git status)
+        b. check_sha256_hashes()   -- abort if locked files changed since baseline
+        c. eval_runner.py --json   -- score: {quality_score, accuracy, f1, heuristic}
+        d. load_baseline()         -- last BASELINE row from results.tsv
+        e. compare score AND f1    -- dual guard prevents keyword-stuffing
+        f. write row to results.tsv
+        g. if KEEP: exit 0  |  if DISCARD: git checkout -- <target>, exit 1
+
+Step 5: KEEP  -> agent: git add <target> && git commit -m "keep: score=X <desc>"
+        DISCARD -> evaluate.py already reverted; agent reports score delta
+
+Step 6: Repeat (NEVER STOP)
+```
+
+---
+
+## The Metric
 
 ```
 quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)
 ```
 
-- `routing_accuracy`: fraction of `evals.json` prompts correctly routed via keyword overlap against SKILL.md frontmatter
-- `heuristic_score`: structural health check (has `<example>` blocks, minimum content length)
-- KEEP requires: `score >= baseline AND f1 >= baseline_f1`
-  - Dual condition prevents keyword-stuffing exploits (padding triggers raises recall but drops F1)
-
-### Baseline (established 2026-03-28, commit abeb626)
-
-| metric | value |
-|---|---|
-| score | 0.8444 |
-| f1 | 0.8333 |
-| commit | abeb626 |
-| status | BASELINE |
+- `routing_accuracy`: fraction of `evals.json` prompts correctly matched against the
+  target's content (frontmatter only for SKILL.md; full content otherwise)
+- `heuristic_score`: structural health check (varies by target type)
+- KEEP requires: `round(score, 4) >= round(baseline, 4) AND round(f1, 4) >= round(baseline_f1, 4)`
+  - Dual condition prevents keyword-stuffing (padding raises recall but drops F1)
+  - Round-to-4dp prevents false DISCARD from floating-point precision
 
 ---
 
 ## File Roles (Generic)
 
-When applying this pattern to any skill, map the files as follows:
-
 | File | Role | Who touches it |
 |---|---|---|
-| `<SKILLPATH>/SKILL.md` | Mutation target — the only file the agent changes | Agent (loop body only) |
-| `<SKILLPATH>/evals/evals.json` | Test prompts with expected trigger outcomes | Nobody during the loop (locked) |
-| `<SKILLPATH>/evals/results.tsv` | Loop ledger — one row per iteration | `evaluate.py` (appends only) |
-| `<SKILLPATH>/references/program.md` | Spec: goal, locked files, NEVER STOP | Human (written once before loop starts) |
-| `<plugin-root>/scripts/eval_runner.py` | Pure scorer: reads SKILL.md + evals.json, outputs JSON | Nobody during the loop (locked) |
-| `<plugin-root>/scripts/evaluate.py` | Loop gate: calls scorer, reads baseline, exits 0/1, reverts on DISCARD | Nobody (locked) |
-
----
-
-## What "Locked" Means in Practice
-
-`references/program.md` declares which files are locked:
-
-```
-Locked: scripts/evaluate.py, scripts/eval_runner.py, evals/evals.json
-```
-
-Without these locks, an agent would inevitably:
-- Rewrite `evaluate.py` to return 1.0 for any input (Goodhart's Law)
-- Delete hard test cases from `evals.json` to inflate accuracy
-- Lower the KEEP threshold so every run passes
-
-The lock on the evaluator is what makes the metric trustworthy. The agent's only lever is SKILL.md.
-
----
-
-## The Loop vs The Evals (Easy to Confuse)
-
-| | `evals/evals.json` | `scripts/evaluate.py` |
-|---|---|---|
-| **Purpose** | Test prompts with expected trigger outcomes | Loop gate: scores SKILL.md and decides KEEP/DISCARD |
-| **Run by** | CI / `run_eval.py` | The autoresearch loop agent |
-| **Mutable** | NO (locked during loop) | NO (locked evaluator) |
-| **Output** | Pass/fail per trigger scenario | exit 0 (KEEP) or exit 1 (DISCARD) |
-
-`evals.json` defines WHAT to test. `evaluate.py` calls `eval_runner.py` to score against it.
-
-There is one `results.tsv` per target skill — `<target-skill>/evals/results.tsv` — written only by `evaluate.py`, one row per loop iteration.
+| `assets/templates/autoresearch/*.template` | Master templates — never edited directly | `init_autoresearch.py` reads; human never edits |
+| `<experiment-dir>/references/program.md` | Loop spec — goal, locked files, NEVER STOP | Human fills in after deploy; agent reads |
+| `<experiment-dir>/<mutation-target>` | The file being optimized | Agent edits (one change per iteration) |
+| `<experiment-dir>/evals/evals.json` | Test prompts (locked during loop) | Human fills in after deploy; nobody during loop |
+| `<experiment-dir>/evals/results.tsv` | Loop ledger — one row per iteration | `evaluate.py` appends |
+| `<experiment-dir>/evals/.lock.hashes` | SHA256 snapshot of locked files | `evaluate.py --baseline` writes; `evaluate.py` reads each run |
+| `scripts/eval_runner.py` | Pure scorer: reads target + evals.json, outputs metrics | `evaluate.py` calls; nobody else |
+| `scripts/evaluate.py` | Loop gate: calls scorer, reads baseline, writes ledger, exits 0/1 | Agent calls; nobody modifies |
+| `scripts/init_autoresearch.py` | Template deployer: renders + copies templates to experiment dir | Human runs once before loop |
 
 ---
 
@@ -160,21 +175,26 @@ There is one `results.tsv` per target skill — `<target-skill>/evals/results.ts
 Karpathy autoresearch pattern
     |
     v
-eval-autoresearch-fit skill       <- "is this skill worth looping on?"
+eval-autoresearch-fit skill        <- "is this target worth looping on?"
     | scores HIGH or MEDIUM
     v
-scaffold inside <SKILLPATH>
+Setup: init_autoresearch.py
     |
-    +-- references/program.md    (spec: goal, locked files, NEVER STOP)
-    +-- evals/evals.json         (test prompts — locked)
-    +-- evals/results.tsv        (ledger: one row per iteration)
+    +-- <experiment-dir>/references/program.md    (rendered from template)
+    +-- <experiment-dir>/evals/evals.json         (rendered from template, fill in prompts)
+    +-- <experiment-dir>/evals/results.tsv        (schema header from template)
+    |
+    v
+Baseline: evaluate.py --baseline   <- establishes score anchor + writes .lock.hashes
     |
     v
 Agent loop:
-    edit <SKILLPATH>/SKILL.md
-    -> python scripts/evaluate.py --skill <SKILLPATH>/SKILL.md
+    read program.md
+    -> edit <mutation-target>
+    -> python evaluate.py --skill <experiment-dir>/<mutation-target>
     -> KEEP: git commit | DISCARD: evaluate.py reverts automatically
     -> repeat forever
-```
 
-The bottleneck is not running the loop. The bottleneck is `program.md`: knowing what to measure and setting the right constraints.
+Templates stay in skill-improvement-eval/assets/templates/ — untouched.
+All experiment state lives in <experiment-dir> — isolated per target.
+```
