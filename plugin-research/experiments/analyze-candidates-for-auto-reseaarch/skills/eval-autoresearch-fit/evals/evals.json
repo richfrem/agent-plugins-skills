@@ -1,42 +1,30 @@
-{
-  "plugin": "experiment-analyze-candidates",
-  "skill": "eval-autoresearch-fit",
-  "evaluations": [
-    {
-      "id": "eval-1-single-skill-high-viability",
-      "type": "positive",
-      "prompt": "Evaluate autoresearch fit for plugins/agent-execution-disciplines/skills/verification-before-completion",
-      "expected_behavior": "Agent reads SKILL.md, scores all 4 dimensions, proposes a concrete 3-file architecture with a shell command evaluator, and outputs a structured assessment with a HIGH or MEDIUM verdict."
-    },
-    {
-      "id": "eval-2-single-skill-low-viability",
-      "type": "positive",
-      "prompt": "Score this skill for karpathy loop: plugins/agent-agentic-os/skills/session-memory-manager",
-      "expected_behavior": "Agent identifies that 'semantic density' is hard to measure deterministically, notes the LLM-as-judge requirement as a barrier, and outputs a LOW or MEDIUM verdict with specific Goodhart risk flagged."
-    },
-    {
-      "id": "eval-3-batch-mode",
-      "type": "positive",
-      "prompt": "Run batch evaluation using plugin-research/experiments/analyze-candidates-for-auto-reseaarch/summary-ranked-skills.json, start with the top 3",
-      "expected_behavior": "Agent reads the JSON, processes the first 3 skills in viability order, outputs structured assessments for each, then pauses and asks if the user wants to continue with the next batch."
-    },
-    {
-      "id": "eval-4-skill-not-found",
-      "type": "edge-case",
-      "prompt": "Evaluate autoresearch fit for skill: systematic-debugging",
-      "expected_behavior": "Agent cannot find the skill by direct path, searches plugins/ directory by name, reports the found path (plugins/agent-execution-disciplines/skills/systematic-debugging), then proceeds with the evaluation."
-    },
-    {
-      "id": "eval-5-rejects-subjective-metric",
-      "type": "negative",
-      "prompt": "Is the writing-skills skill a good autoresearch candidate?",
-      "expected_behavior": "Agent correctly identifies that writing quality is fundamentally subjective, scores Objectivity at 1-3/10, flags Goodhart risk prominently, and outputs NOT VIABLE with a clear explanation that style and tone cannot be deterministically scored."
-    },
-    {
-      "id": "eval-6-proposes-proxy-metric",
-      "type": "edge-case",
-      "prompt": "Evaluate autoresearch fit for plugins/agent-execution-disciplines/skills/systematic-debugging",
-      "expected_behavior": "Agent notes the skill is semi-subjective (scoring debugging quality is hard) but proposes a concrete proxy metric (e.g., number of tool reads before finding intentionally planted bug), acknowledges this is an approximation, and outputs MEDIUM with the proxy metric proposal."
-    }
-  ]
-}
+[
+  {
+    "prompt": "Evaluate autoresearch fit for plugins/agent-execution-disciplines/skills/verification-before-completion",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Score this skill for karpathy loop: plugins/agent-agentic-os/skills/session-memory-manager",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run batch evaluation using plugin-research/experiments/analyze-candidates-for-auto-reseaarch/summary-ranked-skills.json, start with the top 3",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Evaluate autoresearch fit for skill: systematic-debugging",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Is the writing-skills skill a good autoresearch candidate?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "What's the weather like in Victoria today?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run a system health check",
+    "should_trigger": false
+  }
+]
