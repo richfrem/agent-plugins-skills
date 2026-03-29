@@ -1,1 +1,0 @@
-../../../scripts/check_broken_paths.py

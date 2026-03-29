@@ -1,15 +1,62 @@
 # Quickstart: How to Run an Optimization Loop on Any Skill
 
-> **Prerequisite:** The target skill folder must be inside a git repository.
+> **Prerequisites:**
+> - The target skill folder must be inside a **git repository**. Run `git init && git add . && git commit -m "init"` first if needed.
+> - **Python 3.8+** must be available as `python3`.
 
 You only need two things:
 1. A copy of the **target skill folder** you want to improve.
 2. The **skill-improvement-eval** engine (the stateless evaluator).
 
+## 0. Fresh Repo? Hardened Bootstrap (Do This First)
+
+> Skip this section if you already have `skill-improvement-eval` installed and a git repo initialized.
+
+Before running any loops, ensure the environment is clean and correctly linked. Follow these steps exactly:
+
+1. **Check Git Remote**:
+   ```bash
+   git remote -v
+   ```
+   If the remote is blank, **stop and ask the user** for the repository URL (e.g., `https://github.com/richfrem/test-skill-eval-loop`).
+
+2. **Initialize Local Git** (if not already a repo):
+   ```bash
+   git init && git add . && git commit -m "init"
+   ```
+
+3. **Delete Old Config (Clean Slate)**:
+   Ensure no stale metadata blocks the new installation:
+   ```bash
+   rm -rf .agent .agents .gemini .claude
+   ```
+
+4. **Install Skill via Full Path**:
+   Use the absolute path to this skill source to ensure you get the latest fixes:
+   ```bash
+   npx skills add -y <YOUR CLONED REPO PATH>/plugins/agent-agentic-os/skills/skill-improvement-eval
+   ```
+   > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and respond to prompts manually. You will see a list of agent environments; press **Enter** to accept defaults.
+
+5. **Final Seed & Push**:
+   Confirm everything is staged and push to the remote:
+   ```bash
+   git add . && git commit -m "seed: hardened bootstrap"
+   git push origin main
+   ```
+
+6. **Verify Python 3**:
+   Ensure `python3` is available (v3.8+).
+   ```bash
+   python3 --version
+   ```
+
+---
+
 ## 1. Scaffold the Experiment (One-Time)
 
 ```bash
-python .agents/skills/skill-improvement-eval/scripts/init_autoresearch.py \
+python3 .agents/skills/skill-improvement-eval/scripts/init_autoresearch.py \
     --experiment-dir .agents/skills/your-target-skill \
     --mutation-target SKILL.md
 ```
@@ -34,12 +81,17 @@ Replace every `REPLACE` placeholder with real test prompts and correct `should_t
 ## 3. Establish the Baseline
 
 ```bash
-python .agents/skills/skill-improvement-eval/scripts/evaluate.py \
+python3 .agents/skills/skill-improvement-eval/scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --baseline \
     --desc "initial baseline"
+git add .agents/skills/your-target-skill/evals/
+git commit -m "baseline: initial evaluation snapshot"
+git push origin main
 ```
-*This records the starting score and creates the SHA256 lock snapshot (.lock.hashes).*
+*This records the starting score, creates the SHA256 snapshot, and PUSHES the state to the remote repository so future agents can see the baseline.*
+
+> **Note:** If you later update `evals.json` to add better test cases, you can safely re-run with `--baseline` again. The `--baseline` flag intentionally bypasses the SHA256 check so you can re-baseline without being blocked.
 
 ## 4. Run the Autonomous Loop
 
@@ -47,7 +99,7 @@ Your main agent (or os-learning-loop) repeatedly runs:
 
 ```bash
 # Example single iteration
-python .agents/skills/skill-improvement-eval/scripts/evaluate.py \
+python3 .agents/skills/skill-improvement-eval/scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --desc "improved trigger phrasing for edge case X"
 ```

@@ -1,1 +1,0 @@
-../../../scripts/map_repository_files.py

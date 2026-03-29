@@ -249,7 +249,20 @@ def run_routing_eval(skill_content: str, skill_name: str, evals: List[Dict[str, 
         }
     routing_content = frontmatter_text
 
-    skill_keywords = set(re.findall(r'\w{4,}', routing_content.lower()))
+    # Scoped keyword extraction: description field only.
+    # Using the entire frontmatter causes false positives from unrelated fields
+    # (e.g., argument-hint, allowed-tools, exclusion-keywords) and allows
+    # exclusion keyword lists to paradoxically become positive triggers.
+    # Prefer explicit 'keywords:' list if present, otherwise extract from
+    # 'description:' field text only.
+    explicit_keywords_raw = _extract_field(frontmatter_text, "keywords")
+    if explicit_keywords_raw:
+        # Parse YAML list items (lines starting with '-')
+        kw_lines = [l.strip().lstrip('- ').strip() for l in explicit_keywords_raw.splitlines() if l.strip()]
+        skill_keywords = set(w.lower() for kw in kw_lines for w in re.findall(r'\w{4,}', kw))
+    else:
+        description = _extract_field(frontmatter_text, "description")
+        skill_keywords = set(re.findall(r'\w{4,}', description.lower()))
     skill_keywords.add(skill_name.lower())
 
     passed = 0
@@ -348,7 +361,13 @@ def main() -> None:
         eval_data: List[Dict[str, Any]] = []
     else:
         with open(evals_path, "r") as f:
-            eval_data = json.load(f)
+            raw = json.load(f)
+        # Support both flat list and dict-wrapped schemas
+        # e.g., {"evaluations": [...]} or {"scenarios": [...]}
+        if isinstance(raw, dict):
+            eval_data = raw.get("evaluations") or raw.get("scenarios") or []
+        else:
+            eval_data = raw
 
     # Score
     heuristic = calculate_heuristic_score(skill_dir, content)

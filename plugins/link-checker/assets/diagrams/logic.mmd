@@ -1,23 +1,29 @@
 flowchart TD
-    subgraph Initialization [Step 1: Indexing]
-        Repo[Repository Files] --> Mapper[../scripts/map_repository_files.py]
-        Mapper -- Walks Directory Tree --> Inventory[(file_inventory.json)]
-        note1[Creates a JSON map of all filenames]
-        note1 -.- Mapper
+    subgraph Input [Stage 1: Documentation]
+        Doc1[MD Files]
+        Doc2[Source Files]
+        Doc3[Asset References]
     end
-    
-    subgraph Repair [Step 2: Auto-Correction]
-        Inventory --> Fixer[../scripts/smart_fix_links.py]
-        Markdown[Docs / Markdown] --> Fixer
-        Fixer -- Fuzzy Match Filenames --> UpdatedDocs[Updated Markdown]
-        note2[Replaces broken paths with valid ones from Inventory]
-        note2 -.- Fixer
+
+    subgraph Discovery [Stage 2: Inventory]
+        Mapper[01_build_file_inventory.py]
+        Mapper -- Index --> Inv[(file_inventory.json)]
     end
-    
-    subgraph Verification [Step 3: Validation]
-        UpdatedDocs --> Checker[../scripts/check_broken_paths.py]
-        Checker -- Scans for 404s --> Log[broken_links.log]
-        Checker --> Console[Console Output]
-        note3[Reports any remaining dead links]
-        note3 -.- Checker
+
+    subgraph Extraction [Stage 3: Parsing]
+        Extractor[02_extract_link_references.py]
+        Extractor -- Parse --> Refs[(link_references.json)]
     end
+
+    subgraph Audit [Stage 4: Auditing]
+        Inv --> Auditor[03_audit_broken_links.py]
+        Refs --> Auditor
+        Auditor -- Cross-Ref --> Broken[(broken_links.json)]
+    end
+
+    subgraph Remediation [Stage 5: Remediation]
+        Fixer[04_autofix_unique_links.py]
+        Fixer -- remaining_broken_links.json --> Reporter[05_report_unfixable_links.py]
+    end
+
+    Broken --> Fixer

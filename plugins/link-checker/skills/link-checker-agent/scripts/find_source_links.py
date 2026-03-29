@@ -1,1 +1,0 @@
-../../../scripts/find_source_links.py
