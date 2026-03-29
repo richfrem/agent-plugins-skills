@@ -14,14 +14,17 @@ Purpose:
     SKILL.md is the mutation target.
 
 Usage (run from the plugin root or any directory):
-    python scripts/evaluate.py --skill <path/to/SKILL.md>
-    python scripts/evaluate.py --skill <path/to/SKILL.md> --desc "what changed"
-    python scripts/evaluate.py --skill <path/to/SKILL.md> --baseline
+    python scripts/evaluate.py --skill <path/to/mutation-target>
+    python scripts/evaluate.py --target <path/to/mutation-target> --desc "what changed"
+    python scripts/evaluate.py --skill <path/to/mutation-target> --baseline
+
+    --skill and --target are aliases. The target can be any file type:
+    SKILL.md, a .py script, a config, a math definition file, etc.
 
 Karpathy mapping:
     This file = prepare.py (gate logic half)
     eval_runner.py = prepare.py (metric producer half)
-    SKILL.md = train.py (mutation target)
+    <mutation-target> = train.py (SKILL.md, .py, config, or any file type)
 
 KEEP condition: score >= baseline_score AND f1 >= baseline_f1
     Dual guard prevents keyword-stuffing exploit (padding triggers raises
@@ -229,8 +232,8 @@ def write_row(results_tsv: Path, commit: str, score: float, baseline: float,
 def main() -> None:
     parser = argparse.ArgumentParser(description="Locked autoresearch loop gate")
     parser.add_argument(
-        "--skill", required=True,
-        help="Path to the target SKILL.md (e.g. skills/my-skill/SKILL.md)"
+        "--skill", "--target", dest="skill", required=True,
+        help="Path to the mutation target file (SKILL.md, .py, config, etc.)"
     )
     parser.add_argument("--desc", default="iteration", help="Description for results.tsv")
     parser.add_argument("--baseline", action="store_true", help="Record this run as the new baseline")
@@ -238,7 +241,7 @@ def main() -> None:
 
     skill_md = Path(args.skill).resolve()
     if not skill_md.exists():
-        print(f"ERROR: SKILL.md not found at {skill_md}", file=sys.stderr)
+        print(f"ERROR: Target file not found at {skill_md}", file=sys.stderr)
         sys.exit(2)
 
     skill_root = skill_md.parent

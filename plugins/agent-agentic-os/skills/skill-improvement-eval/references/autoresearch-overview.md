@@ -145,7 +145,8 @@ quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)
 ```
 
 - `routing_accuracy`: fraction of `evals.json` prompts correctly matched against the
-  target's content (frontmatter only for SKILL.md; full content otherwise)
+  target's frontmatter keywords. Non-SKILL.md targets (no frontmatter) return
+  accuracy=0.0 — only heuristic_score contributes to quality_score for those targets.
 - `heuristic_score`: structural health check (varies by target type)
 - KEEP requires: `round(score, 4) >= round(baseline, 4) AND round(f1, 4) >= round(baseline_f1, 4)`
   - Dual condition prevents keyword-stuffing (padding raises recall but drops F1)
