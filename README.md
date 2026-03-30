@@ -9,7 +9,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Gemini CLI / Antigravity** (`.gemini/`, `.agent/`)
 - **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations
 
-**120 skills** across **30 plugins** — all maintained from a single hub-and-spoke source tree.
+**118 production skills** across **30 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -89,7 +89,19 @@ Skills that score HIGH on the autoresearch viability rubric (objectivity + speed
 mutate SKILL.md → evaluate.py → exit 0 (KEEP) or exit 1 (DISCARD) → repeat
 ```
 
-The `plugin-research/experiments/` directory contains the full ecosystem fitness assessment — 120 skills ranked by autoresearch loop viability. See [`eval-autoresearch-fit`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/SKILL.md).
+**Ecosystem Fitness Sweep v1 is complete** — all 116/120 production skills scored for autoresearch viability. Results:
+
+| Verdict | Count | Loop Type breakdown |
+|---|---|---|
+| HIGH | 9 | DETERMINISTIC: 41 · LLM_IN_LOOP: 59 · HYBRID: 16 |
+| MEDIUM | 52 | |
+| LOW | 42 | |
+| NOT_VIABLE | 13 | |
+
+Full ranked list: [`summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
+Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-report.md`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/autoresearch-opportunities-report.md)
+
+**First live autoresearch loop**: `agent-execution-disciplines/verification-before-completion` (35/40 HIGH) — golden task set + `evaluate.py` scaffolded, ready to run.
 
 ### Hub-and-Spoke ADR
 
@@ -97,7 +109,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (120 skills)
+## Plugin Ecosystem (118 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -135,12 +147,12 @@ Routing architecture unifying state management across complex agent executions w
 
 Behavioural guardrails enforcing best practices on every coding session.
 
-- [`verification-before-completion`](plugins/agent-execution-disciplines/skills/verification-before-completion/SKILL.md) — forces shell verification before claiming completion *(autoresearch score: 35/40 HIGH)*
+- [`verification-before-completion`](plugins/agent-execution-disciplines/skills/verification-before-completion/SKILL.md) — forces shell verification before claiming completion *(35/40 HIGH — **autoresearch loop live**, see `autoresearch/`)*
 - [`test-driven-development`](plugins/agent-execution-disciplines/skills/test-driven-development/SKILL.md) — RED-GREEN-REFACTOR compliance *(35/40 HIGH)*
-- [`using-git-worktrees`](plugins/agent-execution-disciplines/skills/using-git-worktrees/SKILL.md) — isolated worktree sandboxing *(33/40 HIGH)*
-- [`systematic-debugging`](plugins/agent-execution-disciplines/skills/systematic-debugging/SKILL.md) — structured root cause analysis
-- [`finishing-a-development-branch`](plugins/agent-execution-disciplines/skills/finishing-a-development-branch/SKILL.md) — safe git branch lifecycle
-- [`requesting-code-review`](plugins/agent-execution-disciplines/skills/requesting-code-review/SKILL.md) — structured review request protocol
+- [`using-git-worktrees`](plugins/agent-execution-disciplines/skills/using-git-worktrees/SKILL.md) — isolated worktree sandboxing *(33/40 HIGH — best DETERMINISTIC first loop candidate)*
+- [`systematic-debugging`](plugins/agent-execution-disciplines/skills/systematic-debugging/SKILL.md) — structured root cause analysis *(22/40 LOW)*
+- [`finishing-a-development-branch`](plugins/agent-execution-disciplines/skills/finishing-a-development-branch/SKILL.md) — safe git branch lifecycle *(16/40 LOW)*
+- [`requesting-code-review`](plugins/agent-execution-disciplines/skills/requesting-code-review/SKILL.md) — structured review request protocol *(28/40 MEDIUM)*
 
 ### Agent Scaffolders — Boilerplate Generators
 
@@ -158,9 +170,10 @@ Structured audit framework for assessing plugin architectural maturity and compl
 
 - [`l5-red-team-auditor`](plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/SKILL.md) — 39-point L5 maturity matrix audit
 - [`audit-plugin`](plugins/agent-plugin-analyzer/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-plugin-analyzer/skills/audit-plugin-l5/SKILL.md)
-- [`analyze-plugin`](plugins/agent-plugin-analyzer/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-plugin-analyzer/skills/self-audit/SKILL.md)
+- [`analyze-plugin`](plugins/agent-plugin-analyzer/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-plugin-analyzer/skills/self-audit/SKILL.md) *(32/40 HIGH)*
 - [`mine-skill`](plugins/agent-plugin-analyzer/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-plugin-analyzer/skills/mine-plugins/SKILL.md)
 - [`path-reference-auditor`](plugins/agent-plugin-analyzer/skills/path-reference-auditor/SKILL.md) · [`synthesize-learnings`](plugins/agent-plugin-analyzer/skills/synthesize-learnings/SKILL.md)
+- [`eval-autoresearch-fit`](plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md) — score any skill for Karpathy autoresearch loop viability; update `summary-ranked-skills.json` *(25/40 MEDIUM)*
 
 ### CLI Sub-Agents — Isolated Model Contexts
 
@@ -318,29 +331,47 @@ Automatically draft and syndicate Architecture Decision Records.
 
 ---
 
-## Active Experiments
+## Completed Experiments
 
-### Ecosystem Fitness Sweep v1 (`temp/ecosystem-fitness-sweep-v1/`)
+### Ecosystem Fitness Sweep v1 — COMPLETE (`temp/ecosystem-fitness-sweep-v1/`)
 
-Scoring all 120 skills for **Karpathy autoresearch loop viability** using GPT-5 mini via Copilot CLI.
-Each skill scored on: objectivity (can a shell command measure it?), execution speed, frequency of use, and potential utility.
+Scored all 116/120 production skills for **Karpathy autoresearch loop viability** using GPT-5 mini via Copilot CLI.
+Each skill scored on: objectivity (can a shell command measure it?), execution speed, frequency of use, and potential utility (max 40).
 
-Results written to: [`plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
+**Top HIGH candidates:**
 
-Morning report: `python3 plugin-research/experiments/.../scripts/update_ranked_skills.py --morning-report`
+| Rank | Skill | Score | Loop |
+|---|---|---|---|
+| 1 | agent-execution-disciplines/verification-before-completion | 35/40 | LLM_IN_LOOP |
+| 2 | agent-execution-disciplines/test-driven-development | 35/40 | LLM_IN_LOOP |
+| 3 | coding-conventions/coding-conventions-agent | 34/40 | HYBRID |
+| 4 | agent-execution-disciplines/using-git-worktrees | 33/40 | DETERMINISTIC |
+| 5 | spec-kitty-plugin/spec-kitty-status | 33/40 | DETERMINISTIC |
+| 6 | agent-agentic-os/os-eval-runner | 32/40 | DETERMINISTIC |
+
+Full ranked results: [`summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
+Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-report.md`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/autoresearch-opportunities-report.md)
+
+Regenerate report:
+```bash
+python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/scripts/update_ranked_skills.py \
+  --json-path plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json \
+  --morning-report
+```
 
 ---
 
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (30 plugins, 120 skills)
+plugins/                    ← upstream source (30 plugins, 118 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
       SKILL.md              ← skill definition (mutation target for autoresearch loops)
       evals/evals.json      ← routing evaluation suite (should_trigger boolean schema)
       evals/results.tsv     ← per-experiment score history
+      autoresearch/         ← optional: evaluate.py + golden task set for improvement loops
       scripts/              ← file-level symlinks → ../../scripts/
     scripts/                ← canonical scripts (shared via symlinks, never duplicated)
     agents/                 ← sub-agent .md definitions
@@ -362,4 +393,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*120 skills · 30 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops*
+*118 production skills · 30 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops*

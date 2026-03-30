@@ -1034,26 +1034,6 @@
       "eval_count": 1
     },
     {
-      "plugin": "experiment-analyze-candidates",
-      "skill": "eval-autoresearch-fit",
-      "objectivity_score": 6,
-      "execution_speed_score": 7,
-      "frequency_of_use_score": 5,
-      "potential_utility_score": 8,
-      "total_autoresearch_viability": 26,
-      "eval_verdict": "MEDIUM",
-      "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python evaluate_assessments.py --golden assets/resources/golden-assessments.json --model claude-haiku-4-5",
-      "mutation_target": "SKILL.md",
-      "key_barriers": [
-        "Circular dependency: improving the skill requires external ground truth; 4 evaluated skills form seed of golden set but need 10+ for reliable correlation",
-        "Spearman rank correlation requires enough sample size to be meaningful"
-      ],
-      "eval_notes": "Self-evaluation. This is the meta-evaluator of the ecosystem. Already have 4 ground-truth assessments (verification-before-completion=HIGH, context-bundling=MEDIUM, business-requirements-capture=LOW, coding-conventions=HIGH). Grow golden set to 10+ before running the improvement loop.",
-      "status": "EVALUATED",
-      "eval_date": "2026-03-28"
-    },
-    {
       "plugin": "agent-agentic-os",
       "skill": "os-skill-improvement",
       "objectivity_score": 8,
@@ -1282,6 +1262,28 @@
       "eval_notes": "The skill can be made into a deterministic 3-file loop by adding a headless evaluator (pytest-based) and a single-file mutation target, but currently neither tests nor evaluate.py exist. Once a binary unit-test metric and a single editable target file are defined, iterations would be fast and automatable.",
       "eval_date": "2026-03-30",
       "eval_count": 2
+    },
+    {
+      "plugin": "agent-plugin-analyzer",
+      "skill": "eval-autoresearch-fit",
+      "objectivity_score": 7,
+      "execution_speed_score": 5,
+      "frequency_of_use_score": 4,
+      "potential_utility_score": 9,
+      "total_autoresearch_viability": 25,
+      "eval_verdict": "MEDIUM",
+      "loop_type": "LLM_IN_LOOP",
+      "evaluator_command": "python plugins/agent-agentic-os/scripts/evaluate.py --skill plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md --json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
+      "mutation_target": "plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md",
+      "key_barriers": [
+        "Scoring itself requires LLM judgment \u2014 non-deterministic by nature",
+        "Batch mode (108 skills) takes 2-3 hours; per-skill speed is acceptable but sweep speed is slow"
+      ],
+      "eval_notes": "Self-scored by Claude Sonnet 4.6. Objectivity 7: output JSON is structured but requires LLM to produce the scores. Speed 5: ~25s per skill via Copilot CLI. Frequency 4: used for periodic ecosystem sweeps and when new skills are added, not daily. Utility 9: directly governs which skills receive autoresearch investment \u2014 highest-leverage decision support in the ecosystem. The routing eval loop (SKILL.md improvement) is immediately runnable via the existing evaluate.py gate.",
+      "proposed_benchmark_metric": "quality_score (0.0-1.0) from eval_runner.py: routing_accuracy * 0.7 + heuristic_score * 0.3. Dual guard: score >= baseline AND f1 >= baseline_f1.",
+      "status": "EVALUATED",
+      "eval_date": "2026-03-30",
+      "eval_count": 1
     },
     {
       "plugin": "spec-kitty-plugin",
