@@ -61,7 +61,7 @@ def sync_workflows() -> None:
         
         if dest_file.is_symlink() or dest_file.exists():
             dest_file.unlink()
-        dest_file.symlink_to(rel_target)
+        shutil.copy2(src_file, dest_file)
 
     count = 0
     for src_file in WORKFLOWS_SOURCE_DIR.glob("*.md"):
@@ -115,7 +115,7 @@ def sync_workflows() -> None:
         
         if skill_symlink.is_symlink() or skill_symlink.exists():
             skill_symlink.unlink()
-        skill_symlink.symlink_to(rel_asset_target)
+        shutil.copy2(WORKFLOWS_PLUGIN_DIR / src_file.name, skill_symlink)
         
         new_content = f"""---
 name: {skill_name.replace(".", "-")}
@@ -175,12 +175,7 @@ def sync_rules() -> None:
             if dest_file.is_symlink():
                 if os.readlink(dest_file) != rel_target:
                     dest_file.unlink()
-                    dest_file.symlink_to(rel_target)
-            elif dest_file.exists():
-                dest_file.unlink()
-                dest_file.symlink_to(rel_target)
-            else:
-                dest_file.symlink_to(rel_target)
+                shutil.copy2(src_file, dest_file)
                 
             template_count += 1
             

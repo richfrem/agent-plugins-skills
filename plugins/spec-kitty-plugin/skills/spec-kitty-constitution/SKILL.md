@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-constitution
-description: Generate or update the project constitution from a structured interview.
+description: A standard Spec-Kitty workflow routine.
 ---
 
 ## 🔗 Workflow Provenance
@@ -8,6 +8,7 @@ description: Generate or update the project constitution from a structured inter
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.constitution.md`](./workflows/spec-kitty.constitution.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
+<!-- spec-kitty-command-version: 3.0.0 -->
 # /spec-kitty.constitution - Interview + Compile Constitution
 
 ## User Input
@@ -17,6 +18,8 @@ $ARGUMENTS
 ```
 
 You **MUST** consider the user input before proceeding (if not empty).
+
+**In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**
 
 ## Command Contract
 

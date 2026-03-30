@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-tasks-packages
-description: Generate individual WP prompt files (tasks/WP*.md) from the task outline in tasks.md.
+description: A standard Spec-Kitty workflow routine.
 ---
 
 ## 🔗 Workflow Provenance
@@ -8,6 +8,7 @@ description: Generate individual WP prompt files (tasks/WP*.md) from the task ou
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.tasks-packages.md`](./workflows/spec-kitty.tasks-packages.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
+<!-- spec-kitty-command-version: 3.0.0 -->
 # /spec-kitty.tasks-packages - Generate Work Package Files
 
 **Version**: 0.12.0+
@@ -19,9 +20,11 @@ This step assumes `tasks.md` already exists with complete WP definitions.
 
 ---
 
-## 📍 WORKING DIRECTORY: Stay in planning repository
+## 📍 WORKING DIRECTORY: Stay in the project root checkout
 
-**IMPORTANT**: This step works in the planning repository. NO worktrees created.
+**IMPORTANT**: This step works in the project root checkout. NO worktrees created.
+
+**In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**
 
 ## User Input
 
@@ -60,10 +63,11 @@ For each work package defined in `tasks.md`:
 1. Derive a kebab-case slug from the title
 2. Filename: `WPxx-slug.md` (e.g., `WP01-create-html-page.md`)
 3. Full path: `feature_dir/tasks/WP01-create-html-page.md`
-4. Use the bundled task prompt template (`.kittify/missions/software-dev/templates/task-prompt-template.md`)
+4. Follow the WP prompt template structure below (**do NOT write instructions to read a template file from `.kittify/`**)
 5. Include frontmatter with:
    - `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, history entry
    - `requirement_refs` array from the WP's `Requirement Refs` line in `tasks.md`
+   - `owned_files`, `authoritative_surface`, `execution_mode` (required ownership fields)
 6. Include in body:
    - Objective, context, detailed guidance per subtask
    - Test strategy (only if requested)
@@ -87,12 +91,21 @@ lane: "planned"
 dependencies: ["WP01"]  # From tasks.md
 requirement_refs: ["FR-001", "NFR-001"]  # From tasks.md Requirement Refs
 subtasks: ["T001", "T002"]
+owned_files: ["src/api/**"]
+authoritative_surface: "src/api/"
+execution_mode: "code_change"
 ---
 ```
 
 Include the correct implementation command:
 - No dependencies: `spec-kitty implement WP01`
 - With dependencies: `spec-kitty implement WP02 --base WP01`
+
+**Ownership rules**:
+- `owned_files`: List of glob patterns for files this WP touches — no two WPs may overlap.
+- `authoritative_surface`: Path prefix that must be a prefix of at least one `owned_files` entry.
+- `execution_mode`: `"code_change"` for source code changes, `"planning_artifact"` for kitty-specs docs.
+- Agents working on a WP must not modify files outside their `owned_files` list.
 
 ### 5. Self-Check
 
@@ -105,7 +118,7 @@ After generating each prompt:
 
 After completing this step:
 - `feature_dir/tasks/WP*.md` prompt files exist for all work packages
-- Each has proper frontmatter with `work_package_id`, `lane`, `dependencies`
+- Each has proper frontmatter with `work_package_id`, `lane`, `dependencies`, `owned_files`, `authoritative_surface`, `execution_mode`
 - `tasks.md` references all prompt filenames
 
 **Next step**: `spec-kitty next --agent <name>` will advance to finalization.

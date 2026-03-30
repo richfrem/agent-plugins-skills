@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-research
-description: Run the Phase 0 research workflow to scaffold research artifacts before task planning.
+description: A standard Spec-Kitty workflow routine.
 ---
 
 ## 🔗 Workflow Provenance
@@ -8,15 +8,14 @@ description: Run the Phase 0 research workflow to scaffold research artifacts be
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.research.md`](./workflows/spec-kitty.research.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
+<!-- spec-kitty-command-version: 3.0.0 -->
 **Path reference rule:** When you mention directories or files, provide either the absolute path or a path relative to the project root (for example, `kitty-specs/<feature>/tasks/`). Never refer to a folder by name alone.
 
-
-*Path: `.kittify/templates/commands/research.md`*
-
+**In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**
 
 ## Location Pre-flight Check
 
-**BEFORE PROCEEDING:** Verify you are working in the primary repository checkout.
+**BEFORE PROCEEDING:** Verify you are working in the project root checkout.
 
 ```bash
 pwd
@@ -24,17 +23,17 @@ git branch --show-current
 ```
 
 **Expected output:**
-- `pwd`: Should end with `primary repository checkout` (or similar primary repository checkout)
+- `pwd`: Should end with your project root directory path
 - Branch: Should show your feature branch name like `001-feature-name` (NOT `main`)
 
-**If you see the main branch or main repository path:**
+**If you see the main branch or the wrong directory path:**
 
 ⛔ **STOP - You are in the wrong location!**
 
-This command creates research artifacts in your feature directory. You must be in the primary repository checkout.
+This command creates research artifacts in your feature directory. You must be in the project root checkout.
 
 **Correct the issue:**
-1. Navigate to your primary repository checkout: `cd primary repository checkout`
+1. Navigate to your project root checkout: `cd /path/to/project/root`
 2. Verify you're on the correct feature branch: `git branch --show-current`
 3. Then run this research command again
 
@@ -50,7 +49,7 @@ When you run `spec-kitty research`, the following files are generated in your fe
 - **research/evidence-log.csv** – Sources and findings audit trail
 - **research/source-register.csv** – Reference tracking for all sources
 
-**Location**: All files go in `kitty-specs/001-feature-name/`
+**Location**: All files go in `kitty-specs/<feature-slug>/`
 
 ---
 
@@ -75,7 +74,7 @@ Create `research.md`, `data-model.md`, and supporting CSV stubs based on the act
 
 ## What to do
 
-1. You should already be in the correct primary repository checkout (verified above with pre-flight check).
+1. You should already be in the correct project root checkout (verified above with pre-flight check).
 2. Run `spec-kitty research` to generate the mission-specific research artifacts. (Add `--force` only when it is acceptable to overwrite existing drafts.)
 3. Open the generated files and fill in the required content:
    - `research.md` – capture decisions, rationale, and supporting evidence.

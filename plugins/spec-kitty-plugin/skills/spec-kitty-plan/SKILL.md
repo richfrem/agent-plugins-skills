@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-plan
-description: Execute the implementation planning workflow using the plan template
+description: A standard Spec-Kitty workflow routine.
 ---
 
 ## 🔗 Workflow Provenance
@@ -8,25 +8,28 @@ description: Execute the implementation planning workflow using the plan templat
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.plan.md`](./workflows/spec-kitty.plan.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
+<!-- spec-kitty-command-version: 3.0.0 -->
 # /spec-kitty.plan - Create Implementation Plan
 
 **Version**: 0.11.0+
 
-## 📍 WORKING DIRECTORY: Stay in planning repository
+## 📍 WORKING DIRECTORY: Stay in the project root checkout
 
-**IMPORTANT**: Plan works in the planning repository. NO worktrees created.
+**IMPORTANT**: Plan works in the project root checkout. NO worktrees created.
 
 ```bash
 # Run from project root (same directory as /spec-kitty.specify):
 # You should already be here if you just ran /spec-kitty.specify
 
 # Creates:
-# - kitty-specs/###-feature/plan.md → In planning repository
+# - kitty-specs/###-feature/plan.md → In project root checkout
 # - Commits to target branch
 # - NO worktrees created
 ```
 
-**Do NOT cd anywhere**. Stay in the planning repository root.
+**Do NOT cd anywhere**. Stay in the project root checkout root.
+
+**In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**
 
 ## User Input
 
@@ -59,7 +62,7 @@ spec-kitty constitution context --action plan --json
 
 ## Location Check (0.11.0+)
 
-This command runs in the **planning repository**, not in a worktree.
+This command runs in the **project root checkout**, not in a worktree.
 
 - Resolve branch context from deterministic JSON output, not from `meta.json` inspection:
   - Run `spec-kitty agent feature setup-plan --feature <feature-slug> --json`
