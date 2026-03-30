@@ -574,7 +574,7 @@ python3 "$KERNEL_PY" emit_event \
 python3 "${CLAUDE_PROJECT_DIR}/context/kernel.py" emit_event \
   --agent post_run_hook --type intent --action session_summary
 
-python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"
+python3 scripts/post_run_metrics.py
 ```
 
 This emits a `type: metric` event with:
@@ -740,7 +740,7 @@ python3 "$KERNEL_PY" emit_event \
 
 **Optional: update progress chart** (run after every KEEP cycle, or on user request):
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/os-improvement-report/scripts/generate_report.py" \
+python3 scripts/generate_report.py \
   --project-dir "${CLAUDE_PROJECT_DIR}" \
   --plugin-dir "${CLAUDE_PLUGIN_ROOT}"
 ```
@@ -847,6 +847,6 @@ Surveys compared — if both agents report same confusion point, os-learning-loo
 - [os-improvement-report SKILL](../os-improvement-report/SKILL.md) - generate progress chart from improvement ledger
 - [improvement-ledger-spec.md](../../references/improvement-ledger-spec.md) - ledger format, Section 1/2/3 writing protocol
 - [post_run_survey.md](../../references/post_run_survey.md) - self-assessment survey template (all sections mandatory)
-- [post_run_metrics.py](../../hooks/scripts/post_run_metrics.py) - automated metric collection script
+- [post_run_metrics.py](scripts/post_run_metrics.py) - automated metric collection script
 - [metrics.md](../../references/metrics.md) - North Star metric definition and review cadence
-- [kernel.py](../os-init/runtime/kernel.py) - v3 kernel: seven commands, ~200 lines
+- [kernel.py](scripts/kernel.py) - v3 kernel: seven commands, ~200 lines
