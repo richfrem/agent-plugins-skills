@@ -10,7 +10,7 @@ description: >
   user: "/os-clean-locks"
   assistant:
   <Bash>
-  rm context/.locks/*.lock
+  rm -r context/.locks/
   python3 context/kernel.py state_update active_agent os-clean-locks
   </Bash>
   </example>
@@ -62,10 +62,10 @@ If kernel.py does not exist, skip this step.
 2. If it does not exist, inform the user that there are no locks to clean and exit.
 
 ### Phase 2: Lock Discovery
-1. Use the `Bash` tool to list all `.lock` files in `context/.locks/` (e.g., `ls -la context/.locks/*.lock`).
+1. Use the `Bash` tool to list all lock directories in `context/.locks/` (e.g., `ls -la context/.locks/`).
 
 ### Phase 3: Lock Removal
-1. For each `.lock` file found, safely delete it using the `Bash` tool (e.g., `rm context/.locks/skill.lock`).
+1. For each `.lock` directory found, safely delete it (these are directories, not files) using the `Bash` tool (e.g., `rm -r context/.locks/skill.lock/`).
 2. **Update OS State** (if kernel.py is available): Run `python3 context/kernel.py state_update active_agent os-clean-locks` and `python3 context/kernel.py state_update locks_cleared true`. Skip this step if `context/kernel.py` does not exist.
 
 ### Phase 4: Final Briefing

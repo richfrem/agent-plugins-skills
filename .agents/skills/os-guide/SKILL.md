@@ -67,6 +67,22 @@ full operating system metaphor.
 | Boot | `START_HERE.md` + `MEMORY.md` bootstrap on session start |
 | Autoresearch Loop | `os-eval-runner` + `improvement-ledger.md` |
 
+## Skill Categories (Mental Model)
+
+| Category | Skill | One-liner |
+|---|---|---|
+| **Orchestration** | `os-improvement-loop` | Multi-agent concurrent loop: ORCHESTRATOR + PEER + INNER |
+| **Evaluation** | `os-eval-runner` | Autoresearch eval engine — scores and gates SKILL.md iterations |
+| **Evaluation** | `os-eval-lab-setup` | Bootstraps isolated lab repos for eval runs |
+| **Evaluation** | `os-eval-backport` | Reviews lab results, applies approved changes to master |
+| **Mutation** | `os-skill-improvement` | RED-GREEN-REFACTOR routing accuracy improvement |
+| **Memory** | `os-memory-manager` | Session log writing, L2→L3 promotion, deduplication |
+| **Reporting** | `os-improvement-report` | Progress charts from results.tsv + improvement ledger |
+| **Bootstrap** | `os-init` | Deploys kernel.py, agents.json, flywheel files to new project |
+| **Utility** | `os-clean-locks` | Clears stale `.locks/` directories after agent crash |
+
+Agents (not skills): `os-learning-loop` (trigger/diagnostic), `os-health-check` (liveness), `agentic-os-setup` (bootstrap interview)
+
 ## Execution Flow
 
 Execute these phases in order. Do not skip phases. This skill uses **Progressive Disclosure**. Load only what you need:
@@ -118,6 +134,13 @@ Every significant work session — especially eval runs, skill edits, backports,
 loop completions — must close through this two-phase protocol. **Do not consider a session
 complete without running both phases.**
 
+> **Session Lifecycle Invariant**: The OUTER loop (`os-improvement-loop`) owns session
+> lifecycle. INNER loops (`os-eval-runner`, `os-skill-improvement`) never close a session.
+> A session is incomplete until Phase 6 is executed. `os-learning-loop` (agent) is the
+> trigger/diagnostic layer that feeds both flywheels — it detects friction and identifies
+> targets; `os-improvement-loop` (skill) is the execution protocol the agents follow once
+> a target is identified.
+
 ```
 Work → Backport/Ship → Phase 6: Capture → Phase 7: Improve
 ```
@@ -146,6 +169,7 @@ Where it writes:
 - `context/memory/YYYY-MM-DD.md` — dated session log (git-tracked, not temp/)
 - `context/memory.md` — promoted long-term facts with dedup IDs
 - Agent's native `MEMORY.md` system — cross-session feedback entries
+- Survey save path rule: lab/eval sessions write surveys to `temp/retrospectives/`; loop sessions (os-improvement-loop) write to `context/memory/retrospectives/`. post_run_metrics.py only scans `context/memory/retrospectives/` — lab surveys are not counted in loop metrics.
 
 ### Phase 7: Continuous Skill Improvement (os-skill-improvement)
 
@@ -164,7 +188,7 @@ If any skill mis-triggered, failed to trigger, or scored below 0.90 on eval:
 
 Apply the improvement filter — only invoke if:
 - A skill failed to route correctly during the session
-- An eval score was below threshold (< 0.90 quality, < 0.85 F1)
+- An eval score was below threshold (< 0.90 quality_score, or accuracy/F1 below the established baseline in results.tsv)
 - A trigger description was found to be too broad or too narrow
 - A new `<example>` block or keyword was identified that would close a routing gap
 
