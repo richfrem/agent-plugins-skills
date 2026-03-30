@@ -184,6 +184,7 @@ digraph fast_cycle {
 - [ ] Registry row updated to CLOSED (`tests/registry.md`)
 - [ ] At least one survey saved (`context/memory/retrospectives/`)
 - [ ] Metrics run (`post_run_metrics.py --correlation-id "$CID"`)
+- [ ] Claude auto-memory reviewed and updated if warranted (`memory/MEMORY.md`) — see 4.9
 - [ ] `loop.close` event emitted
 
 Missing any item = incomplete cycle. Do not start the next cycle until the checklist is done.
@@ -777,6 +778,42 @@ Run `os-memory-manager` to evaluate session log entries for L3 promotion:
 - Ephemeral state -> SKIP
 - System facts, architectural decisions, new conventions -> PROMOTE with dedup ID
 - Use `<SUPERSEDE old_id=NNN>` if overwriting a prior fact
+
+### 4.9 Update Claude Auto-Memory (MEMORY.md)
+
+After `os-memory-manager` runs, review the session for facts worth persisting in Claude's
+**cross-session auto-memory** (`memory/MEMORY.md` in the project memory directory).
+
+This is distinct from `os-memory-manager` (which promotes facts into `context/memory.md`
+inside the lab). Auto-memory persists across all future conversations — it is the agent's
+durable long-term knowledge about the user, project, and working patterns.
+
+**What belongs here** (not in os-memory-manager):
+- New non-obvious user preferences or feedback on how to collaborate
+- Structural decisions made this session (e.g. skill moved, plugin renamed, pattern adopted)
+- Surprising findings that should inform future sessions (e.g. sweep results, failed approaches)
+- Project state changes that will be non-obvious next session
+
+**What does NOT belong here** (use os-memory-manager instead, or skip):
+- Code patterns, file paths, architecture derivable by reading the repo
+- Temporary/ephemeral task state
+- Anything already in CLAUDE.md
+
+**Procedure:**
+1. Read `memory/MEMORY.md` — check for stale entries that need updating
+2. For each non-obvious fact worth preserving: write a new memory file or update an existing one
+3. Add/update pointer in `memory/MEMORY.md`
+
+**Checklist — ask before closing:**
+- [ ] Did the user give explicit or implicit feedback on my approach? → `feedback_*.md`
+- [ ] Were structural decisions made (skills moved, plugins renamed, patterns adopted)? → `project_*.md`
+- [ ] Were there surprising findings that will matter next session? → `project_*.md` or `feedback_*.md`
+- [ ] Did I learn anything about what the user values or how they work? → `user_*.md`
+
+If all four answers are "no", skip this step. Otherwise, update memory before emitting `loop.close`.
+
+> **Note**: The most common omission is feedback memory — if the user corrected an approach or
+> confirmed a non-obvious choice worked, that should be saved. Watch for it.
 
 ### 4.10 os-learning-loop Trigger Check
 
