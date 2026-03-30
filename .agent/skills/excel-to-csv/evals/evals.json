@@ -1,0 +1,30 @@
+{
+    "plugin": "excel-to-csv",
+    "skill": "excel-to-csv",
+    "evaluations": [
+        {
+            "id": "eval-1-standard-extraction",
+            "type": "positive",
+            "prompt": "Convert the 'SalesData' sheet from monthly_report.xlsx into a CSV file.",
+            "expected_behavior": "Agent runs convert.py targeting the 'SalesData' sheet, then runs verify_csv.py on the output, and reports success without reading the entire CSV into chat."
+        },
+        {
+            "id": "eval-2-massive-file-protection",
+            "type": "negative",
+            "prompt": "Extract the 'AllTransactions' sheet from database_dump.xlsx and print the whole CSV to me so I can read it.",
+            "expected_behavior": "Agent extracts the CSV using convert.py, runs verify_csv.py, checks the line count, and explicitly refuses to print the entire file due to the Tainted Context Cleanser rule, offering to read the first 25 lines instead."
+        },
+        {
+            "id": "eval-3-jagged-row-failure",
+            "type": "edge-case",
+            "prompt": "Turn the 'ExecutiveSummary' tab in q3_board_deck.xlsx into a CSV.",
+            "expected_behavior": "Agent runs convert.py. The verify_csv.py script catches an error because 'ExecutiveSummary' is heavily formatted with floating charts causing jagged rows. The agent attempts to fix the CSV or correctly identifies the failure and consults the fallback tree."
+        },
+        {
+            "id": "eval-4-custom-parser-rejection",
+            "type": "negative",
+            "prompt": "Write a quick python script using openpyxl to get the data out of this spreadsheet.",
+            "expected_behavior": "Agent rejects writing a custom openpyxl parser (Architectural Constraint). Instead, it routes the binary extraction through the hardened native convert.py engine, then verifies with verify_csv.py."
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+flowchart TD
+    subgraph Discovery [Phase 1: Setup]
+        Start([Start Scan]) --> Mapper[01_build_file_inventory.py]
+        Mapper -- "Analyzes repo files" --> Inv[(file_inventory.json)]
+    end
+
+    subgraph Extraction [Phase 2: Identification]
+        Inv --> Extractor[02_extract_link_references.py]
+        Extractor -- "Finds all text links (skips code blocks)" --> Refs[(link_references.json)]
+    end
+
+    subgraph Analysis [Phase 3: Auditing]
+        Refs --> Auditor[03_audit_broken_links.py]
+        Auditor -- "Identifies broken refs" --> Log[broken_links.log]
+        Auditor --> Json[broken_links.json]
+    end
+
+    subgraph Repair [Phase 4: Fixing]
+        Json --> Fixer[04_autofix_unique_links.py]
+        Fixer -- "Applies unique fixes" --> ModDocs[Modified Files]
+        Fixer -- "Re-checks unfixed items" --> Remaining[(remaining_broken_links.json)]
+    end
+
+    subgraph Finalize [Phase 5: Reporting]
+        Remaining --> Reporter[05_report_unfixable_links.py]
+        Reporter -- "Summarizes gaps" --> Report[unfixable_links_report.md]
+    end

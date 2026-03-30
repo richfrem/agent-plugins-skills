@@ -1,1 +1,0 @@
-../../.agents/workflows/plugin-manager_maintain-plugins.md

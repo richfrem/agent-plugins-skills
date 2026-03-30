@@ -1,0 +1,19 @@
+{
+    "name": "plugin-manager",
+    "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync (install + cleanup orphans), cross-repo plugin replication, and Universal Bridge Installation to adapt standard plugins to 30+ target environments (GitHub Copilot, Gemini, Cursor, Roo, etc).",
+    "version": "2.0.0",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "orchestration",
+        "sync",
+        "maintenance",
+        "ecosystem",
+        "installer",
+        "bridge",
+        "deployment"
+    ]
+}

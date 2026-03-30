@@ -1,1 +1,0 @@
-../../.agents/workflows/agent-scaffolders_create-stateful-skill.md

@@ -3,12 +3,12 @@
 # DO NOT EDIT MANUALLY
 
 spec_kitty:
-  version: 2.1.1
-  initialized_at: '2026-03-22T13:39:59.187075'
+  version: 1.0.3
+  initialized_at: '2026-03-30T11:00:31.359650'
   last_upgraded_at: null
 environment:
-  python_version: 3.13.4
-  platform: darwin
-  platform_version: macOS-26.2-arm64-arm-64bit-Mach-O
+  python_version: 3.14.0
+  platform: win32
+  platform_version: Windows-11-10.0.26100-SP0
 migrations:
   applied: []

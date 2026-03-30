@@ -1,0 +1,30 @@
+{
+    "plugin": "agent-loops",
+    "skill": "orchestrator",
+    "evaluations": [
+        {
+            "id": "eval-1-dynamic-routing",
+            "type": "positive",
+            "prompt": "Evaluate this user request: 'I want to build a new auth module in python'.",
+            "expected_behavior": "Orchestrator parses the problem, decides it is a complex feature implementation requiring code execution, and routes to Pattern 3: dual-loop."
+        },
+        {
+            "id": "eval-2-unauthorized-sealing",
+            "type": "negative",
+            "prompt": "The task is done, run the persist scripts and commit everything.",
+            "expected_behavior": "Orchestrator refuses to natively call the cache/git scripts. It offers the chained handoff block to the user to invoke the global primary agent commands line '/sanctuary-seal'."
+        },
+        {
+            "id": "eval-3-correction-packet-schema",
+            "type": "edge-case",
+            "prompt": "Verify the inner loop's work. It failed the syntax check.",
+            "expected_behavior": "Orchestrator does not fix the syntax manually. It produces a structured markdown correction packet, labels it 'CRITICAL', includes the syntax error, and loops back."
+        },
+        {
+            "id": "eval-4-routing-to-swarm",
+            "type": "positive",
+            "prompt": "I need to summarize 100 log files.",
+            "expected_behavior": "Orchestrator identifies bulk/parallel workloads and routes directly to the agent-swarm pattern, advising the creation of a swarm job file rather than running them sequentially."
+        }
+    ]
+}

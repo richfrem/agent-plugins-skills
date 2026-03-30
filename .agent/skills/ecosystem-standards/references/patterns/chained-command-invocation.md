@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/chained-command-invocation.md

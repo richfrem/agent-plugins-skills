@@ -1,0 +1,22 @@
+{
+  "title": "Context Bundler Source Code",
+  "description": "The complete source code, execution scripts, and documentation for the consolidated context-bundler plugin.",
+  "files": [
+    {
+      "path": "README.md",
+      "note": "Primary documentation and setup instructions"
+    },
+    {
+      "path": "file-manifest.json",
+      "note": "The generic JSON schema example"
+    },
+    {
+      "path": "skills/context-bundler/",
+      "note": "The consolidated core skill definition and evaluation criteria (recursive)"
+    },
+    {
+      "path": "scripts/",
+      "note": "The core bundling engines for both Markdown and ZIP formats, plus manifest management utilities (recursive)"
+    }
+  ]
+}

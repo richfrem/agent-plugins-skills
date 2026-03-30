@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/persistent-plugin-configuration.md

@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/iteration-directory-isolation.md
