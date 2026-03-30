@@ -137,7 +137,7 @@ measures keyword overlap -- a skill that scores well on eval but skips the RED s
 route correctly by accident without actually fixing the observed failure mode (Goodhart's Law).
 
 The RED scenario + observed failure become the primary `<example>` block in the new SKILL.md,
-following the methodology in `skills/os-skill-authoring/SKILL.md`.
+following the methodology in `skills/os-skill-improvement/SKILL.md`.
 
 1. Design and propose a specific change based on identified friction.
     - Follow the Skill Optimization Guide (`references/skill_optimization_guide.md`) to ensure high Routing Accuracy.

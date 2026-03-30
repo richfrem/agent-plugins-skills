@@ -132,6 +132,87 @@ Report to the user:
 - Which changes were rejected and why
 - Suggested follow-up (run another eval round, update evals, improve test fixtures)
 
+---
+
+## Phase 6: Capture Learnings (Mandatory)
+
+Every completed backport session produces knowledge worth preserving. Two destinations, two scopes:
+
+### 6a: Dated Session Log (project-level, via os-memory-manager)
+
+Check whether the Agentic OS is initialized in the master repo:
+```bash
+ls context/kernel.py 2>/dev/null && echo "OS present" || echo "OS absent"
+```
+
+**If OS is present** — delegate to `os-memory-manager` to write the dated session log:
+```
+Invoke os-memory-manager to write a session log for the eval backport session just completed.
+Include: skill optimized, baseline vs final score, files backported, changes rejected and why,
+and any snags or non-obvious findings from the run log or self-assessment survey.
+```
+This writes to `context/memory/YYYY-MM-DD.md` — tracked in git, not gitignored like `temp/`.
+
+**If OS is absent** — write the session log directly:
+```bash
+mkdir -p context/memory
+```
+File: `context/memory/YYYY-MM-DD.md` using this template:
+```markdown
+# Session Log: YYYY-MM-DD — Eval Backport: <skill-name>
+
+## What Was Done
+- Optimized <skill> from score <baseline> → <final> over <N> iterations
+- Backported: [list of accepted files and what changed]
+- Rejected: [list with reasons]
+
+## Snags Encountered
+- [Any errors, workarounds, or unexpected behaviors from the run log]
+
+## Key Decisions
+- [Any ADAPT choices — what was changed from the lab version and why]
+
+## Open Items
+- [ ] [Follow-up rounds, coverage gaps, improvements to evals or skill]
+```
+
+### 6b: Persistent Memory (agent-level, native MEMORY.md system)
+
+Apply a **non-obvious filter** before writing anything. Ask:
+> "Would a future agent following the eval workflow get burned by not knowing this?"
+
+Write a memory entry **only if** the session produced at least one of:
+- A snag that blocked the run (exit codes, path errors, schema mismatches)
+- A scoring footgun (e.g. keywords: field disabling description scanning)
+- A non-obvious architectural insight about the eval engine
+- A reusable ADAPT pattern (lab change that needed adjustment for master context)
+
+**Skip** memory promotion for:
+- Routine score improvements with no surprises
+- Changes that are self-evident from the diff
+- Anything already covered in an existing memory entry
+
+If the filter passes, write to the agent's memory directory using the `feedback` type:
+```
+File: memory/feedback_eval_<skill-name>_<topic>.md
+---
+name: feedback_eval_<skill-name>_<topic>
+description: <one-line hook for MEMORY.md index>
+type: feedback
+---
+<rule/finding>
+
+**Why:** <what happened that surfaced this>
+**How to apply:** <when this matters in future eval runs>
+```
+Then add a pointer line to `MEMORY.md`.
+
+### 6c: Promote to context/memory.md (if OS present)
+
+If the OS is initialized and the non-obvious filter passed, also ask `os-memory-manager` to promote the finding as a long-term fact to `context/memory.md` with a deduplication ID.
+
+---
+
 ### Master Source Mapping Reference
 
 | Lab file | Master source |

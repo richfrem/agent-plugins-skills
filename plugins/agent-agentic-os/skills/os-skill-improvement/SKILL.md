@@ -1,23 +1,24 @@
 ---
-name: os-skill-authoring
+name: os-skill-improvement
 version: 1.0.0
 description: >
-  TDD-for-documentation methodology for authoring and improving agent skills.
-  Apply when creating a new SKILL.md, proposing a patch to an existing skill, or
-  improving trigger descriptions. Uses the RED-GREEN-REFACTOR cycle:
-  (1) run a baseline scenario WITHOUT the skill to observe the failure,
-  (2) write the skill to address the specific failure (GREEN),
-  (3) refactor to close loopholes identified by os-eval-runner.
-  Always run a RED scenario BEFORE writing a new skill -- never skip the baseline.
+  Continuously improves an existing agent skill based on eval results using the
+  RED-GREEN-REFACTOR cycle. Apply when a skill's routing accuracy is low, trigger
+  descriptions need sharpening, or os-eval-runner scores are below target.
+  (1) run a RED baseline to observe the failure mode,
+  (2) apply a focused patch and verify with os-eval-runner (GREEN),
+  (3) refactor to close loopholes until score meets threshold.
   Integrates with os-eval-runner as the objective eval gate.
-trigger: write a skill, author a skill, create a new skill, improve a skill description,
-  update a skill trigger, fix routing accuracy, skill authoring, writing skills,
-  skill template, tdd for documentation, new skill, skill patch, improve triggers,
-  route a skill, routing precision, skill creation guide, how to write a skill
+  NOT for scaffolding new skills — use create-skill (agent-scaffolders) for that.
+trigger: improve a skill, improve skill routing, fix routing accuracy, skill is not triggering,
+  skill triggers too often, improve trigger description, update a skill trigger, skill patch,
+  improve triggers, route a skill, routing precision, fix skill description, skill scoring low,
+  eval score low, skill improvement, continuous skill improvement, refactor skill triggers,
+  tdd for documentation, skill not routing correctly
 allowed-tools: Read, Write, Edit, Bash
 ---
 
-# Writing Skills: TDD-for-Documentation
+# Skill Continuous Improvement: RED-GREEN-REFACTOR
 
 Adapts the RED-GREEN-REFACTOR cycle from software testing to skill authoring.
 The key insight: a skill is a testable contract. The failure to follow the contract
@@ -237,8 +238,29 @@ improve what it cannot measure.
 
 ## References
 
-- [os-eval-runner](../../autoresearch-improvement/skills/os-eval-runner/SKILL.md) -- eval_runner.py, KEEP/DISCARD logic (now in `autoresearch-improvement` plugin)
+- [os-eval-runner](../os-eval-runner/SKILL.md) -- eval_runner.py, KEEP/DISCARD logic
 - [skill_optimization_guide.md](../../references/skill_optimization_guide.md) -- routing accuracy patterns
 - [os-learning-loop agent](../../agents/os-learning-loop.md) -- how the loop uses this skill
 - [test-registry-protocol.md](../../references/test-registry-protocol.md) -- how to document test scenarios
 - [improvement-ledger-spec.md](../../references/improvement-ledger-spec.md) -- longitudinal tracking format
+
+---
+
+## Cross-Plugin Relationship
+
+> ⚠️ **Cross-Plugin Boundary** — `os-skill-improvement` is part of the **`agent-agentic-os`** plugin.
+> If you arrived here from `create-skill` (agent-scaffolders plugin), that skill handles
+> *filesystem scaffolding*. This skill handles *content quality and routing accuracy*.
+> They are complementary — scaffolding first, then authoring quality gate.
+>
+> **`create-skill`** is in a separate plugin and is NOT a dependency of this skill.
+> To use both together, install both plugins:
+> ```bash
+> npx skills add agent-scaffolders    # scaffolding executor
+> npx skills add agent-agentic-os     # TDD methodology + eval runner
+> ```
+
+**How they work together:**
+1. `create-skill` (agent-scaffolders) — runs the discovery interview, creates the directory, writes starter files
+2. `os-skill-improvement` (this skill) — takes the scaffolded skill and drives the RED-GREEN-REFACTOR quality cycle
+3. `os-eval-runner` (agent-agentic-os) — provides the objective eval gate used in step 2
