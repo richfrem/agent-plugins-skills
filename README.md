@@ -9,7 +9,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Gemini CLI / Antigravity** (`.gemini/`, `.agent/`)
 - **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations
 
-**118 production skills** across **30 plugins** — all maintained from a single hub-and-spoke source tree.
+**120 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -119,7 +119,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (118 skills)
+## Plugin Ecosystem (120 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -226,6 +226,10 @@ Autonomous discovery loop for idea framing, business requirements, user stories,
 - [`business-requirements-capture`](plugins/exploration-cycle-plugin/skills/business-requirements-capture/SKILL.md) · [`business-workflow-doc`](plugins/exploration-cycle-plugin/skills/business-workflow-doc/SKILL.md)
 - [`user-story-capture`](plugins/exploration-cycle-plugin/skills/user-story-capture/SKILL.md) · [`exploration-handoff`](plugins/exploration-cycle-plugin/skills/exploration-handoff/SKILL.md)
 - [`exploration-optimizer`](plugins/exploration-cycle-plugin/skills/exploration-optimizer/SKILL.md)
+
+*Deferred (scaffolded, not yet active):*
+- [`exploration-orchestrator`](plugins/exploration-cycle-plugin/skills/deferred/exploration-orchestrator/SKILL.md) — full-cycle orchestrator coordinating discovery agents end-to-end
+- [`prototype-builder`](plugins/exploration-cycle-plugin/skills/deferred/prototype-builder/SKILL.md) — builds exploratory prototypes to make ambiguous product direction concrete
 
 ### Feature-Driven Engineering — Spec Kitty Suite
 
@@ -374,7 +378,7 @@ python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (30 plugins, 118 skills)
+plugins/                    ← upstream source (29 plugins, 120 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -403,4 +407,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*118 production skills · 30 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops*
+*120 skills · 29 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops*
