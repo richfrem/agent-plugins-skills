@@ -95,7 +95,8 @@ description: >
   - Lead with the primary use case, not the skill name
   - Include 2-3 <example> blocks: one standard use, one adversarial (when NOT to trigger),
     one edge case
-  - Use scoped keywords -- specific terms that only appear in this skill's domain
+  - Use specific vocabulary in the description text — terms that only appear in this skill's domain
+  - NEVER add a `keywords:` YAML field — it disables description scanning entirely (known footgun — see os-eval-runner Troubleshooting)
   - Avoid generic verbs (do, run, execute) as primary triggers -- they appear everywhere
 trigger: comma-separated, specific trigger phrases that ONLY appear in this skill's context
 allowed-tools: Read, Write, Edit, Bash   # list only what the skill actually needs

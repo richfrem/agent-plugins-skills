@@ -65,6 +65,16 @@ There are **two distinct flywheels** operating at different scopes. Do not confl
 - The OUTER loop asks: *"Is the OS improvement process itself working correctly?"*
 - The INNER loop asks: *"Does this specific skill route and execute correctly?"*
 
+**`os-learning-loop` vs `os-improvement-loop`:** `os-learning-loop` (agent) is the
+trigger/diagnostic layer — it analyzes friction events, identifies improvement targets,
+and decides which flywheel to invoke. `os-improvement-loop` (skill) is the execution
+protocol that agents follow once a target has been identified. Do not conflate them.
+
+**Session Lifecycle Invariant**: The OUTER loop owns session lifecycle. INNER loop work
+(`os-eval-runner`, `os-skill-improvement`) never closes a session. A session is incomplete
+until Phase 6 (os-memory-manager) is executed. An INNER loop that completes without running
+Phase 6/7 has silently discarded its learnings.
+
 Each flywheel has its own eval targets, its own memory artifacts, and its own close protocol.
 A session that runs INNER loop work must still close through the OUTER loop's Phase 6/7
 (os-memory-manager + os-skill-improvement) to persist learnings and harden OS-level routing.
@@ -168,6 +178,15 @@ digraph fast_cycle {
    | **`SKILL.md` (this file)** | UPSTREAM `.agents/skills/os-improvement-loop/` | **When applicable** -- if the loop produces a confirmed protocol improvement (step unclear, gap found, new requirement), ORCHESTRATOR updates this file before closing the cycle. Self-improvement of the loop protocol is a first-class output of every loop. |
 
    A cycle that produces a protocol fix but does not update this SKILL.md has not fully closed.
+
+**Cycle Completion Checklist** — a Fast Cycle is complete only when ALL of these exist:
+- [ ] Ledger Section 1 row appended (`improvement-ledger.md`)
+- [ ] Registry row updated to CLOSED (`tests/registry.md`)
+- [ ] At least one survey saved (`context/memory/retrospectives/`)
+- [ ] Metrics run (`post_run_metrics.py --correlation-id "$CID"`)
+- [ ] `loop.close` event emitted
+
+Missing any item = incomplete cycle. Do not start the next cycle until the checklist is done.
 
 7. **Trigger check** -- if 3+ friction events of the same type this cycle, flag os-learning-loop
    for Full Loop at next session start. Read `context/memory/improvement-ledger.md` Section 3:
