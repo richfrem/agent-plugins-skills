@@ -25,16 +25,42 @@ Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplin
 
 ## Installation
 
-### Option 1: Claude Plugin Marketplace (Claude Code native)
+> [!IMPORTANT]
+> **Start here — fresh clone or first-time setup.** Agent environment directories (`.agents/`, `.claude/`, `.agent/`, `.gemini/`) are **not committed** to this repo. After cloning, they will be empty. Run the bridge installer below to deploy all plugins before using any skills or agents.
+
+### Step 1: Clone and deploy (all platforms)
+
+Requires **Python 3.8+** — no other dependencies.
 
 ```bash
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install agent-agentic-os
-/plugin install context-bundler
-/plugin install spec-kitty
+git clone https://github.com/richfrem/agent-plugins-skills.git
+cd agent-plugins-skills
+
+# Deploy all plugins to .agents/, .claude/, .agent/, .gemini/
+python plugins/plugin-manager/scripts/install_all_plugins.py
 ```
 
-### Option 2: npx skills CLI (Mac / Linux, cross-agent)
+That's it. All 30 plugins and 118 skills will be deployed and ready.
+
+```bash
+# Preview what will be installed without writing any files
+python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run
+```
+
+### Step 2: Update (after a git pull)
+
+Once installed, the bridge-plugin skill is available in `.agents/` and can update itself:
+
+```bash
+git pull
+python plugins/plugin-manager/scripts/install_all_plugins.py
+```
+
+> The installer is idempotent — safe to re-run at any time. It uses `skills-lock.json` to skip unchanged plugins.
+
+---
+
+### Alternative: npx skills CLI (Mac / Linux only)
 
 ```bash
 # Install all plugins
@@ -42,29 +68,13 @@ npx skills add richfrem/agent-plugins-skills
 
 # Install a single plugin
 npx skills add richfrem/agent-plugins-skills/plugins/agent-agentic-os
-npx skills add richfrem/agent-plugins-skills/plugins/rlm-factory
 
 # Update all installed skills
 npx skills update
 ```
 
 > [!WARNING]
-> **Windows users: do not use `npx skills add`** — this repo uses Git symlinks that Windows checks out as plain-text pointer files. Use the Bridge Installer (Option 3) instead.
-
-### Option 3: Bridge Installer (Windows + universal)
-
-Pure-Python alternative that resolves symlinks at install time and writes hard copies into `.agents/`:
-
-```bash
-# First install (from repo root)
-python plugins/plugin-manager/scripts/install_all_plugins.py
-
-# Subsequent updates
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py
-
-# Preview without writing
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --dry-run
-```
+> **Windows users: do not use `npx skills add`** — Git symlinks check out as plain-text pointer files on Windows. Use the Python installer above instead.
 
 Browse all plugins: **[skills.sh/richfrem/agent-plugins-skills](https://skills.sh/richfrem/agent-plugins-skills)**
 
