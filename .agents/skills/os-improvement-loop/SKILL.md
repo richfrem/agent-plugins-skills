@@ -25,6 +25,54 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 > includes real work, eval against benchmark, friction tracking, agent self-assessment survey,
 > post-run metrics, and memory persistence. The OS learns from every run.
 
+---
+
+## Dual-Flywheel Architecture
+
+There are **two distinct flywheels** operating at different scopes. Do not conflate them.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  OUTER FLYWHEEL — OS Self-Improvement (this skill)       │
+│                                                          │
+│  os-improvement-loop evaluates and improves the OS       │
+│  workflows, protocols, agent coordination patterns,      │
+│  and this SKILL.md itself.                               │
+│                                                          │
+│  Target: the OS machinery — ledgers, surveys, kernel,    │
+│  event bus, loop protocol.                               │
+│  Eval gate: ORCHESTRATOR + PEER_AGENT run eval_runner.py │
+│  on the OS skill being patched.                          │
+│  Self-improvement: ORCHESTRATOR updates this SKILL.md    │
+│  when a confirmed protocol fix is found.                 │
+└────────────────────┬────────────────────────────────────┘
+                     │ spawns / governs
+┌────────────────────▼────────────────────────────────────┐
+│  INNER FLYWHEEL — Individual Skill Improvement           │
+│                                                          │
+│  os-eval-runner + os-skill-improvement evaluate and      │
+│  improve a specific target SKILL.md (routing accuracy,   │
+│  trigger descriptions, example blocks).                  │
+│                                                          │
+│  Target: a single skill's description and routing.       │
+│  Eval gate: os-eval-runner scores the target skill.      │
+│  Improvement: os-skill-improvement runs RED-GREEN-REFACTOR│
+│  until score ≥ threshold.                                │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key distinction:**
+- The OUTER loop asks: *"Is the OS improvement process itself working correctly?"*
+- The INNER loop asks: *"Does this specific skill route and execute correctly?"*
+
+Each flywheel has its own eval targets, its own memory artifacts, and its own close protocol.
+A session that runs INNER loop work must still close through the OUTER loop's Phase 6/7
+(os-memory-manager + os-skill-improvement) to persist learnings and harden OS-level routing.
+
+See `assets/diagrams/improvement-flywheel.mmd` for the full visual.
+
+---
+
 ## CRITICAL: Two-Tier Loop Model
 
 Every loop cycle uses one of two tiers. **Fast Cycle is the default.**
@@ -192,9 +240,16 @@ ${CLAUDE_PROJECT_DIR}/context/
 
 Companion skills (all required for a complete loop):
 - `dual-loop` — strategy packet format, correction packet protocol, verification
-- `os-eval-runner` — eval_runner.py, KEEP/DISCARD logic, results.tsv baseline
+- `os-eval-lab-setup` — bootstrap experiment dirs (deploys program.md, evals.json, results.tsv); use **before** running any eval cycle on a new target
+- `os-eval-runner` — eval_runner.py (pure scorer), evaluate.py (loop gate with KEEP/DISCARD exit codes), results.tsv baseline; the canonical eval engine
 - `os-memory-manager` — session log template, L2/L3 promotion, deduplication
 - `os-learning-loop` — root cause analysis, Full Loop improvement, auto-patching skills
+
+> **Cross-Plugin Boundary** — `os-eval-lab-setup` and `os-eval-runner` are part of the
+> **`agent-agentic-os` plugin** (same plugin as this skill). If not already installed:
+> ```bash
+> npx skills add agent-agentic-os
+> ```
 
 ---
 
@@ -246,8 +301,18 @@ print(json.dumps(hits[0]) if hits else '')
 
 **Goal**: Every agent orients before any work begins. No agent starts cold.
 
+> **New target?** Before running any eval cycle on a target skill for the first time, use
+> `os-eval-lab-setup` to bootstrap the experiment dir. This deploys:
+> - `evals/evals.json` — test prompts with `should_trigger` boolean schema (REQUIRED — legacy
+>   `expected_behavior` string fields score 0.0 and will destroy accuracy)
+> - `evals/results.tsv` — baseline ledger (written when you run `evaluate.py --baseline`)
+> - `references/program.md` — your optimization goal, target score, and max iterations
+>
+> Without this setup, `evaluate.py` will fail with exit code 2 (missing experiment structure).
+
 1. **ORCHESTRATOR reads (in order):**
-   - `context/memory/improvement-ledger.md` — eval score trajectory per skill, survey-to-action trace, north star trend
+   - `context/memory/improvement-ledger.md` — cross-session OS-level trajectory per skill, survey-to-action trace, north star trend
+   - `<target-experiment-dir>/evals/results.tsv` — per-experiment baseline and iteration history (written by os-eval-runner's evaluate.py); this is the authoritative score history for the specific target being improved
    - `context/memory/tests/registry.md` — what has been tested, what was recommended next
    - `context/memory.md` (L3 long-term facts)
    - Last session log: `context/memory/YYYY-MM-DD.md`
@@ -382,11 +447,26 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 1. **Read the strategy packet** at the path in the event summary.
 2. **Execute the assigned work** — edit target skill, workflow doc, or artifact.
 3. **Emit friction events immediately** when hitting uncertainty, wrong syntax, or needing help.
-4. **Run eval_runner.py:**
+4. **Run the eval engine** using the os-eval-runner canonical scripts.
+   The experiment dir must have been bootstrapped by `os-eval-lab-setup` first
+   (deploys `evals/evals.json` with `should_trigger` boolean schema, `evals/results.tsv`,
+   and `references/program.md`).
+
+   **Option A — pure scorer** (get JSON metrics, decide KEEP/DISCARD manually):
    ```bash
-   python3 "${CLAUDE_PLUGIN_ROOT}/skills/os-eval-runner/scripts/eval_runner.py" \
-     --skill path/to/target/SKILL.md
+   python3 scripts/eval_runner.py --skill path/to/target/
+   # Pass the FOLDER path, not a file. Output: JSON with accuracy + F1 scores.
    ```
+
+   **Option B — loop gate** (evaluate.py returns exit 0=KEEP, 1=DISCARD automatically):
+   ```bash
+   python3 scripts/evaluate.py --skill path/to/target/
+   # Exit 0 = KEEP (accuracy AND F1 >= baseline). Exit 1 = DISCARD. Exit 2 = path error.
+   # Exit 3 = tampered env (.lock.hashes mismatch) — delete .lock.hashes, re-run --baseline.
+   ```
+   See `os-eval-runner` Troubleshooting section for exit code reference, keywords footgun,
+   and 4-character word floor.
+
 5. If DISCARD: revert edit, note failure in output file, emit `task.complete --status fail`.
 6. Write output to `handoffs/out-${CID}.md`.
 7. **Complete the Post-Run Self-Assessment Survey** (see Stage 4.2).
@@ -397,8 +477,15 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 Every time PEER_AGENT receives `signal.wakeup` for eval, it MUST:
 
 1. **Read the INNER_AGENT output file** at the path in the wakeup summary.
-2. **Run `os-eval-runner`** independently — not read the score from the event.
-3. Compare score to baseline in `results.tsv`. DISCARD if same or lower.
+2. **Run `evaluate.py` independently** — do NOT read the score from the INNER_AGENT event.
+   Use `evaluate.py` (loop gate) for KEEP/DISCARD; it compares against `results.tsv` baseline
+   automatically and returns exit code 0=KEEP or 1=DISCARD.
+   ```bash
+   python3 scripts/evaluate.py --skill path/to/target/
+   # Note: PEER_AGENT runs this from its OWN session independently.
+   ```
+3. DISCARD if exit code 1. Note: `results.tsv` is the authoritative per-experiment baseline
+   (written by os-eval-runner). The improvement-ledger.md tracks cross-cycle OS-level trajectory.
 4. **Complete the Post-Run Self-Assessment Survey** (see Stage 4.2).
 5. Emit `eval.result` with KEEP/DISCARD verdict, score delta, and survey path:
    ```bash
