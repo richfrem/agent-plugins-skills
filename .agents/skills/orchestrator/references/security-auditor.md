@@ -1,1 +1,0 @@
-../../../personas/security/security-auditor.md

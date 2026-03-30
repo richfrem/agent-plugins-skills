@@ -1,1 +1,0 @@
-﻿../../../../references/patterns/asynchronous-benchmark-metric-capture.md
