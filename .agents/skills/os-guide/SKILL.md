@@ -112,6 +112,81 @@ Ask the user which aspect they need help with:
 4. **Continuous Improvement** (retrospectives, skill updates) -> invoke `os-learning-loop` agent
 5. **Troubleshooting** (context not loading, skills not triggering) -> read `references/claude-md-hierarchy.md` for scope precedence
 
+## The Improvement Flywheel (Mandatory Close Protocol)
+
+Every significant work session — especially eval runs, skill edits, backports, and agent
+loop completions — must close through this two-phase protocol. **Do not consider a session
+complete without running both phases.**
+
+```
+Work → Backport/Ship → Phase 6: Capture → Phase 7: Improve
+```
+
+### Phase 6: Capture Learnings (os-memory-manager)
+
+> ⚠️ **Cross-Plugin Boundary** — `os-memory-manager` is part of `agent-agentic-os`.
+> Install: `npx skills add agent-agentic-os`
+
+After any backport, eval run, or skill change:
+
+```
+Invoke os-memory-manager to write a dated session log and promote non-obvious
+findings to long-term memory. Apply the non-obvious filter:
+- CAPTURE: snags, footguns, scoring behaviors, architectural decisions, ADAPT patterns
+- SKIP: routine score improvements, changes self-evident from the diff
+```
+
+What to capture:
+- What was accomplished and what changed
+- Any errors, workarounds, or unexpected behaviors encountered
+- Key decisions and why (especially ACCEPT/ADAPT/REJECT rationale from backports)
+- Open items and follow-up rounds
+
+Where it writes:
+- `context/memory/YYYY-MM-DD.md` — dated session log (git-tracked, not temp/)
+- `context/memory.md` — promoted long-term facts with dedup IDs
+- Agent's native `MEMORY.md` system — cross-session feedback entries
+
+### Phase 7: Continuous Skill Improvement (os-skill-improvement)
+
+> ⚠️ **Cross-Plugin Boundary** — `os-skill-improvement` is part of `agent-agentic-os`.
+> Install: `npx skills add agent-agentic-os`
+
+After memory is captured, check whether any skill's routing or trigger accuracy was
+found to be weak during the session:
+
+```
+If any skill mis-triggered, failed to trigger, or scored below 0.90 on eval:
+→ Invoke os-skill-improvement on that skill
+→ Run RED-GREEN-REFACTOR to harden the description and trigger phrases
+→ Run os-eval-runner to verify the score improvement before committing
+```
+
+Apply the improvement filter — only invoke if:
+- A skill failed to route correctly during the session
+- An eval score was below threshold (< 0.90 quality, < 0.85 F1)
+- A trigger description was found to be too broad or too narrow
+- A new `<example>` block or keyword was identified that would close a routing gap
+
+Skip if:
+- All skills routed correctly and eval scores held
+- The session was purely additive (new files, no existing skill changes)
+
+### The Full Flywheel
+
+```
+1. Work / Eval Run / Backport
+2. os-eval-backport     → ACCEPT/ADAPT/REJECT each change, apply to master
+3. os-memory-manager    → Session log + promote non-obvious findings (Phase 6)
+4. os-skill-improvement → Harden any skill whose routing was found weak (Phase 7)
+5. Commit + push        → Close the loop in git history
+```
+
+This flywheel is what makes the OS self-improving. Skipping Phase 6 or 7 means
+knowledge evaporates at session end and skill quality drifts.
+
+---
+
 ## Next Actions
 
 - For memory write/promote/archive decisions -> invoke `os-memory-manager`
