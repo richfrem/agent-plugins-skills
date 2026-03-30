@@ -1,8 +1,9 @@
 ---
 name: link-checker-agent
 description: >
-  Quality assurance agent for documentation link integrity. Auto-invoked when tasks
-  involve checking, fixing, or auditing documentation links across a repository.
+  Specialized Quality Assurance Operator for documentation link integrity and scans.
+  Automatically handles automated link validation, auditing, fixing, and repairing broken documentation
+  links and docs paths across repositories, with guidance on when to commit changes.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -25,6 +26,9 @@ The plugin provides a numbered suite of scripts that **must be run in order**:
 | 5 | `05_report_unfixable_links.py` | **The Reporter** — generates a structured review of remaining issues |
 
 ## 📂 Execution Protocol
+
+> **Script path note**: All scripts are at `scripts/` relative to the skill root (symlinked from the plugin's canonical `scripts/` directory). Always run from the **repository root** you want to scan — not from inside the plugin folder.
+
 
 ### Quick Reference: Full Pipeline (one-liner)
 ```bash
@@ -58,7 +62,13 @@ python3 scripts/04_autofix_unique_links.py --dry-run
 python3 scripts/04_autofix_unique_links.py --backup
 ```
 
-Step 4 writes `remaining_broken_links.json` after running — this contains only the links that could NOT be auto-fixed.
+Step 4 writes `remaining_broken_links.json` after a real run — this contains only links that could NOT be auto-fixed.
+**Note:** `--dry-run` does NOT write `remaining_broken_links.json`. If you run Step 5 after a dry-run only, it will fall back to `broken_links.json` and show pre-fix data — Step 5 will print a notice explaining this.
+
+Optional: Re-run Step 3 after fixing to independently verify improvements:
+```bash
+python3 scripts/03_audit_broken_links.py
+```
 
 ### 4. Final Reporting
 Generate the human-review report. Step 5 automatically uses `remaining_broken_links.json` if present (post-fix state), falling back to `broken_links.json` otherwise.
@@ -78,6 +88,42 @@ Review: Open `unfixable_links_report.md` to see items requiring manual intervent
 ## 📖 Progressive Disclosure
 For detailed standards on what constitutes a "broken link" and common pathing pitfalls, see:
 [Link Checking Standards](references/link-checker-standards.md)
+
+<example>
+Context: User wants to audit all links in the current documentation.
+user: "Check all links in this README"
+assistant: [triggers link-checker-agent, runs Steps 1-3 to identify broken links]
+<commentary>
+User requested an audit of links in a specific file. The agent maps the repo, extracts links, and performs the audit.
+</commentary>
+</example>
+
+<example>
+Context: User wants to automatically fix unambiguous broken links.
+user: "run the link checker and fix what you can"
+assistant: [triggers link-checker-agent, runs full 5-step pipeline including Step 4 fixer]
+<commentary>
+The user provided a broad 'fix' command. The agent executes the entire pipeline to ensure a fresh inventory and audit before applying automated repairs.
+</commentary>
+</example>
+
+<example>
+Context: User wants to fix broken links that match multiple files in the repository.
+user: "Correct the broken links to setup.md"
+assistant: [identifies multiple files: docs/guide/setup.md and docs/api/setup.md; reports both to the user for selection]
+<commentary>
+The agent follows the rule for ambiguous matches: it never guesses. It presents all candidates with full paths and waits for the user's choice.
+</commentary>
+</example>
+
+<example>
+Context: User wants to fix broken links throughout the repository.
+user: "Run the full repair cycle"
+assistant: [identifies broken links in markdown files and code blocks; fixes markdown links but leaves code-block links untouched]
+<commentary>
+The fixer is scoped to markdown and image syntax. Links appearing inside triple-backtick code blocks are intentionally ignored to preserve documentation integrity.
+</commentary>
+</example>
 
 ---
 *Maintained by the Agentic OS Quality Team*

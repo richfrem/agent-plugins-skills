@@ -19,8 +19,9 @@ The link-checker skill must meet the following criteria to be considered operati
 - [ ] `scripts/04_autofix_unique_links.py` reads `broken_links.json` to target only affected files (not a full repo walk).
 - [ ] Correctly fixes both standard links `[label](path)` and image links `![alt](path)`.
 - [ ] Only rewrites links with a **unique** basename match in the inventory; skips ambiguous and missing entries.
-- [ ] `--dry-run` prints proposed changes without modifying any files.
+- [ ] `--dry-run` prints proposed changes without modifying any files and does NOT write `remaining_broken_links.json`.
 - [ ] `--backup` creates `.bak` copies before modifying files.
+- [ ] After a real (non-dry-run) fix, writes `remaining_broken_links.json` containing only items that are still broken after fixes were applied.
 
 ## 5. Report (Step 5)
 - [ ] `scripts/05_report_unfixable_links.py` generates `unfixable_links_report.md` grouping remaining broken links by source file.

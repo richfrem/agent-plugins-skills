@@ -1,0 +1,42 @@
+{
+  "skill": "os-improvement-loop",
+  "version": "0.1.0-draft",
+  "evals": [
+    {
+      "input": "coordinate two Claude sessions to audit skills in parallel without blocking each other",
+      "expected": "positive"
+    },
+    {
+      "input": "replace our AGENT_COMMS.md turn-flip protocol with an event bus signal",
+      "expected": "positive"
+    },
+    {
+      "input": "set up a shared event bus so multiple agents can coordinate without polling files",
+      "expected": "positive"
+    },
+    {
+      "input": "run 3 skill audits concurrently using fan-out to inner agents",
+      "expected": "positive"
+    },
+    {
+      "input": "agents as threads sharing memory with kernel locks and event synchronization",
+      "expected": "positive"
+    },
+    {
+      "input": "how do I bake sourdough bread with a long fermentation schedule",
+      "expected": "negative"
+    },
+    {
+      "input": "generate a monthly budget spreadsheet in Excel",
+      "expected": "negative"
+    },
+    {
+      "input": "write unit tests for a React component using Jest",
+      "expected": "negative"
+    },
+    {
+      "input": "analyze the git log for recent changes to the main branch",
+      "expected": "negative"
+    }
+  ]
+}

@@ -58,7 +58,7 @@ Use the `Bash` tool to run:
 `python3 context/kernel.py emit_event --agent os-health-check --type result --action scan_metrics --status success --summary "Metrics compiled"`
 
 2. **Lock Release Protocol**: Execute `python3 context/kernel.py release_lock monitor` to release the acquired lock.
-3. Present the metrics to the user. Recommend running `os-clean-locks` or `session-memory-manager` if health metrics indicate deadlock or bloated state.
+3. Present the metrics to the user. Recommend running `os-clean-locks` or `os-memory-manager` if health metrics indicate deadlock or bloated state.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 

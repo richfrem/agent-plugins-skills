@@ -33,7 +33,7 @@ description: >
 model: inherit
 color: cyan
 tools: ["Bash", "Read", "Write"]
-skills: ["agentic-os-init"]
+skills: ["os-init"]
 ---
 
 # Agentic OS Setup Orchestrator
@@ -70,7 +70,7 @@ assistant: "I will now run the `init_agentic_os.py` script to generate the OS ha
 ### Phase 3: Scaffold Iteration
 - Execute the configuration by invoking the init script:
   - Run `PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"`
-  - Run `python3 ${PLUGIN_DIR}/skills/agentic-os-init/scripts/init_agentic_os.py`
+  - Run `python3 ${PLUGIN_DIR}/skills/os-init/scripts/init_agentic_os.py`
   - Ensure the output `hooks.json` maps correctly to the internal `update_memory.py` hook.
 
 ### Phase 4: Verification & Guidance

@@ -96,8 +96,8 @@ Update `registry.md` row to CLOSED with verdict.
 
 | Cycle ID | Target | Date | Hypothesis | Status | Verdict |
 |----------|--------|------|------------|--------|---------|
-| cycle-20260321-001 | session-memory-manager | 2026-03-21 | Phase 5 survey addition improves routing | CLOSED | KEEP |
-| cycle-20260321-002 | skill-improvement-eval | 2026-03-21 | Adversarial prompt coverage gap | IN PROGRESS | - |
+| cycle-20260321-001 | os-memory-manager | 2026-03-21 | Phase 5 survey addition improves routing | CLOSED | KEEP |
+| cycle-20260321-002 | os-eval-runner | 2026-03-21 | Adversarial prompt coverage gap | IN PROGRESS | - |
 ```
 
 ---
@@ -128,7 +128,7 @@ packet, answer these questions from the registry:
 
 ## Promotion Rules
 
-The test registry is NOT ephemeral. Do not skip it in `session-memory-manager`.
+The test registry is NOT ephemeral. Do not skip it in `os-memory-manager`.
 
 - `registry.md` index row -> always preserved (never archived, always in L3)
 - CLOSED scenario files -> preserved in `context/memory/tests/` for 90 days, then
