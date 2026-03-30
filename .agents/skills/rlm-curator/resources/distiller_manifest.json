@@ -1,7 +1,0 @@
-{
-    "description": "Minimal configuration for RLM Distillation",
-    "include": [
-        "README.md"
-    ],
-    "exclude": []
-}

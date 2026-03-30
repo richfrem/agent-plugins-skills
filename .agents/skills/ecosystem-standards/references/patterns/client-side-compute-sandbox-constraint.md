@@ -1,1 +1,0 @@
-﻿../../../../references/patterns/client-side-compute-sandbox-constraint.md
