@@ -1,1 +1,0 @@
-﻿../../../../references/patterns/temporal-anchoring.md

@@ -1,1 +1,0 @@
-../../../.windsurf/workflows/spec-kitty.analyze.md

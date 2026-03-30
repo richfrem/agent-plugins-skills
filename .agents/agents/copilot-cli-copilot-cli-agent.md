@@ -1,1 +1,0 @@
-../skills/copilot-cli-agent/SKILL.md
