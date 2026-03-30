@@ -2686,30 +2686,6 @@
       "eval_count": 1
     },
     {
-      "plugin": "exploration-cycle-plugin",
-      "skill": "exploration-orchestrator",
-      "objectivity_score": 0,
-      "execution_speed_score": 0,
-      "frequency_of_use_score": 0,
-      "potential_utility_score": 0,
-      "total_autoresearch_viability": 0,
-      "proposed_benchmark_metric": "TODO: Define metric",
-      "justification": "TODO: Needs evaluation",
-      "status": "PENDING"
-    },
-    {
-      "plugin": "exploration-cycle-plugin",
-      "skill": "prototype-builder",
-      "objectivity_score": 0,
-      "execution_speed_score": 0,
-      "frequency_of_use_score": 0,
-      "potential_utility_score": 0,
-      "total_autoresearch_viability": 0,
-      "proposed_benchmark_metric": "TODO: Define metric",
-      "justification": "TODO: Needs evaluation",
-      "status": "PENDING"
-    },
-    {
       "plugin": "agent-agentic-os",
       "skill": "os-clean-locks",
       "objectivity_score": 9,
@@ -2732,6 +2708,32 @@
       "proposed_benchmark_metric": "None. Requires human reading.",
       "justification": "Absolutely completely subjective tone mapping. Auto-optimizing this breaks it.",
       "status": "SKIPPED"
+    },
+    {
+      "plugin": "exploration-cycle-plugin",
+      "skill": "exploration-orchestrator",
+      "objectivity_score": 0,
+      "execution_speed_score": 0,
+      "frequency_of_use_score": 0,
+      "potential_utility_score": 0,
+      "total_autoresearch_viability": 0,
+      "proposed_benchmark_metric": "TODO: Define metric",
+      "justification": "TODO: Needs evaluation",
+      "status": "SKIPPED",
+      "eval_notes": "Skill lives under skills/deferred/ \u2014 intentionally deferred, not production-ready. Skipped by ecosystem fitness sweep."
+    },
+    {
+      "plugin": "exploration-cycle-plugin",
+      "skill": "prototype-builder",
+      "objectivity_score": 0,
+      "execution_speed_score": 0,
+      "frequency_of_use_score": 0,
+      "potential_utility_score": 0,
+      "total_autoresearch_viability": 0,
+      "proposed_benchmark_metric": "TODO: Define metric",
+      "justification": "TODO: Needs evaluation",
+      "status": "SKIPPED",
+      "eval_notes": "Skill lives under skills/deferred/ \u2014 intentionally deferred, not production-ready. Skipped by ecosystem fitness sweep."
     }
   ]
 }
