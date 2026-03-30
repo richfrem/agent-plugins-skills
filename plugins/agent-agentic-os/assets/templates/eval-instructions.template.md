@@ -31,8 +31,9 @@
 
 2. **Initialize Local Git** (if not already a repo):
    ```bash
-   git init && git add . && git commit -m "init: {{SKILL_NAME}} eval sandbox"
+   git init && git branch -M main && git add . && git commit -m "init: {{SKILL_NAME}} eval sandbox"
    ```
+   > `git branch -M main` ensures the branch is named `main` regardless of the system default (some systems default to `master`), which prevents `git push origin main` from failing later.
 
 3. **Delete Old Config (Clean Slate)**:
    ```bash
@@ -111,6 +112,15 @@ python3 .agents/skills/os-eval-runner/scripts/init_autoresearch.py \
     --mutation-target {{MUTATION_TARGET}}
 ```
 
+> ⚠️ **Standalone Installation Snag:** If this fails with a `FileNotFoundError` or `TemplateNotFound` error referencing a `skills/os-eval-runner/` nested path, the script's `TEMPLATES_DIR` is resolving against the full plugin repo layout instead of the installed location. Patch it:
+> ```python
+> # In .agents/skills/os-eval-runner/scripts/init_autoresearch.py
+> # Change TEMPLATES_DIR to use HERE.parent (script-relative resolution):
+> HERE = Path(__file__).resolve().parent
+> TEMPLATES_DIR = HERE.parent / "assets" / "templates" / "autoresearch"
+> ```
+> This makes path resolution agnostic to whether the skill is installed standalone or inside the full plugin tree.
+
 This creates:
 - `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/references/program.md`
 - `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json`
@@ -132,6 +142,18 @@ cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
 - ❌ Negative: prompts that should NOT trigger this skill
 
 Aim for at least 10 test cases with a good mix. **Tell the user when ready to review before proceeding.**
+
+> ⚠️ **Schema Requirement:** Every test case **must** include a `"should_trigger"` boolean field (`true` or `false`). The eval engine uses this field to calculate accuracy. The legacy `"expected_behavior"` string field is ignored by the scorer and will result in a 0% accuracy baseline.
+>
+> **Correct schema:**
+> ```json
+> { "prompt": "...", "should_trigger": true }
+> { "prompt": "...", "should_trigger": false }
+> ```
+> **Wrong (legacy, will break scoring):**
+> ```json
+> { "prompt": "...", "expected_behavior": "should trigger" }
+> ```
 
 ---
 

@@ -54,16 +54,11 @@ from pathlib import Path
 HERE = Path(__file__).parent.resolve()
 PLUGIN_ROOT = HERE.parent
 
-# All templates live in os-eval-runner/assets/templates/ — scoped to the
-# evaluation skill, not at plugin root, so they are not confused with other assets.
-TEMPLATES_DIR = (
-    PLUGIN_ROOT
-    / "skills"
-    / "os-eval-runner"
-    / "assets"
-    / "templates"
-    / "autoresearch"
-)
+# Templates live at assets/templates/autoresearch/ relative to the script's
+# parent directory (the skill root). Using HERE.parent makes this agnostic
+# to whether the skill is installed standalone (.agents/skills/os-eval-runner/)
+# or inside the full plugin tree (plugins/agent-agentic-os/skills/os-eval-runner/).
+TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"
 
 
 def _load_template(name: str) -> str:
