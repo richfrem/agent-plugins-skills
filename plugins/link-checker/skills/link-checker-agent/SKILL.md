@@ -26,6 +26,9 @@ The plugin provides a numbered suite of scripts that **must be run in order**:
 
 ## 📂 Execution Protocol
 
+> **Script path note**: All scripts are at `scripts/` relative to the skill root (symlinked from the plugin's canonical `scripts/` directory). Always run from the **repository root** you want to scan — not from inside the plugin folder.
+
+
 ### Quick Reference: Full Pipeline (one-liner)
 ```bash
 python3 scripts/01_build_file_inventory.py && \
@@ -58,7 +61,13 @@ python3 scripts/04_autofix_unique_links.py --dry-run
 python3 scripts/04_autofix_unique_links.py --backup
 ```
 
-Step 4 writes `remaining_broken_links.json` after running — this contains only the links that could NOT be auto-fixed.
+Step 4 writes `remaining_broken_links.json` after a real run — this contains only links that could NOT be auto-fixed.
+**Note:** `--dry-run` does NOT write `remaining_broken_links.json`. If you run Step 5 after a dry-run only, it will fall back to `broken_links.json` and show pre-fix data — Step 5 will print a notice explaining this.
+
+Optional: Re-run Step 3 after fixing to independently verify improvements:
+```bash
+python3 scripts/03_audit_broken_links.py
+```
 
 ### 4. Final Reporting
 Generate the human-review report. Step 5 automatically uses `remaining_broken_links.json` if present (post-fix state), falling back to `broken_links.json` otherwise.

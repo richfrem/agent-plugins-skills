@@ -132,12 +132,12 @@ Before designing any change, you MUST:
    violate, or get wrong?
 3. **State the acceptance criterion**: what specific behavior proves the patch works?
 
-A proposal that skips the RED scenario MUST be discarded. The eval gate (`skill-improvement-eval`)
+A proposal that skips the RED scenario MUST be discarded. The eval gate (`os-eval-runner`)
 measures keyword overlap -- a skill that scores well on eval but skips the RED scenario may
 route correctly by accident without actually fixing the observed failure mode (Goodhart's Law).
 
 The RED scenario + observed failure become the primary `<example>` block in the new SKILL.md,
-following the methodology in `skills/writing-skills/SKILL.md`.
+following the methodology in `skills/os-skill-authoring/SKILL.md`.
 
 1. Design and propose a specific change based on identified friction.
     - Follow the Skill Optimization Guide (`references/skill_optimization_guide.md`) to ensure high Routing Accuracy.
@@ -147,7 +147,7 @@ following the methodology in `skills/writing-skills/SKILL.md`.
 2. **Document the test scenario** per `references/test-registry-protocol.md` BEFORE running the eval:
     - Write `context/memory/tests/[TIMESTAMP]_[TARGET_SLUG].md` with hypothesis, acceptance criteria, failure criteria, prior results consulted.
     - Add IN PROGRESS row to `context/memory/tests/registry.md`.
-3. **Eval-Gate**: Use the `Bash` tool to run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/skill-improvement-eval/scripts/eval_runner.py` on your proposed changes.
+3. **Eval-Gate**: Use the `Bash` tool to run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/os-eval-runner/scripts/eval_runner.py` on your proposed changes.
 4. **Keep/Discard**: Only present the diff to the user if the trainer returns `STATUS: KEEP` or `STATUS: BASELINE`. If it returns `STATUS: DISCARD`, you MUST revise your hypothesis (e.g., adjust keyword scoping or example diversity) and retry.
 4. Present the *exact* diff to the approved change. Once the user EXPLICITLY approves:
 5. **Loop Recovery Snapshot**: Before applying any Write, create a snapshot of the target file (e.g., `cp CLAUDE.md context/backups/kernel.md.pre-learning`) to provide a rollback recovery switch.

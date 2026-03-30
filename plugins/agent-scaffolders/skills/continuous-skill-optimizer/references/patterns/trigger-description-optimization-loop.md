@@ -1,1 +1,0 @@
-../../../../references/patterns/trigger-description-optimization-loop.md

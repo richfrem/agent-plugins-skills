@@ -34,6 +34,9 @@ The autonomous agent executes a strict **5-Step Pipeline**: **Inventory → Extr
 "Move docs/auth.md to docs/api/auth.md and run the link checker."
 ```
 
+### Script Location
+Scripts live at `./scripts/` in the plugin root. When installed via `npx skills add` or symlinked into an agent environment, they are available at `scripts/` relative to the skill directory. Always run from the **repository root** you want to scan.
+
 ### Direct CLI Usage (without an Agent)
 ```bash
 cd /path/to/your/repo

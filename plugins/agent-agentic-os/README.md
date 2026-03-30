@@ -20,7 +20,7 @@ This plugin provides a system for that.
 
 ### Structured Memory Hierarchy
 
-Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `session-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Dedup IDs, conflict detection, and size limits prevent the memory from drifting into contradiction over hundreds of sessions.
+Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `os-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Dedup IDs, conflict detection, and size limits prevent the memory from drifting into contradiction over hundreds of sessions.
 
 ### Continuous Improvement Loop (The Learning Layer)
 
@@ -121,13 +121,16 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 
 | Skill | Purpose |
 |-------|---------|
-| `agentic-os-guide` | Full reference: all layers, interactions, and patterns explained |
-| `agentic-os-init` | Scaffolds a new OS environment via discovery interview |
-| `session-memory-manager` | Deduplicates and promotes session facts to long-term memory |
-| `skill-improvement-eval` | Scores proposed skill patches against objective evals before applying |
+| `os-guide` | Full reference: all layers, interactions, and patterns explained |
+| `os-init` | Scaffolds a new OS environment via discovery interview |
+| `os-memory-manager` | Deduplicates and promotes session facts to long-term memory |
+| `os-eval-runner` | Scores proposed skill patches against objective evals before applying |
+| `os-eval-lab-setup` | Bootstraps the testing arena for a specific skill |
+| `os-eval-backport` | Exports test results back to an external ledger |
 | `os-clean-locks` | Removes stale execution locks that block agent execution |
-| `concurrent-agent-loop` | Coordinates parallel agents through the shared event log |
-| `loop-progress-report` | Generates improvement metrics from eval history |
+| `os-improvement-loop` | Orchestrates the autonomous testing and fixing loop |
+| `os-improvement-report` | Generates improvement metrics from eval history |
+| `os-skill-authoring` | Applies Test-Driven Development logic to agent instructions |
 | `todo-check` | Audits files for unresolved TODO items |
 
 ### Agents

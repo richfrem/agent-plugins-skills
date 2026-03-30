@@ -128,7 +128,10 @@ def clean_directory(target_dir: Path, active_plugins: set[str], dry_run: bool) -
             if item.name not in active_plugins:
                 print(f"  [ORPHAN DIR]  {item.name}")
                 if not dry_run:
-                    shutil.rmtree(item)
+                    if item.is_symlink():
+                        item.unlink()
+                    else:
+                        shutil.rmtree(item)
 
         # Files (Workflows/Prompts/Toml): {plugin_name}_{command}.* prefix expected.
         elif item.is_file():

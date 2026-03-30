@@ -30,7 +30,7 @@ This document captures architectural direction for the next evolution of the Age
 ## Current State
 
 The agentic-os is a local runtime with:
-- File-based session memory (`session-memory-manager`)
+- File-based session memory (`os-memory-manager`)
 - JSON/JSONL event bus (flat files, polling-based)
 - Tightly coupled subsystems (memory, loops, hooks baked in)
 - Single-machine scope
@@ -193,7 +193,7 @@ Each adapter has a default local implementation and can be replaced with a riche
 ## Memory Adapter
 
 ### Current
-`session-memory-manager` — flat markdown files, single session scope.
+`os-memory-manager` — flat markdown files, single session scope.
 
 ### Swappable Backends
 
@@ -258,7 +258,7 @@ Simple task files. No kanban, no cross-agent visibility.
 |---|---|
 | learning-loop (default) | Single agent retrospective |
 | dual-loop | Inner agent + outer supervisor |
-| concurrent-agent-loop | Parallel agent fan-out |
+| os-improvement-loop | Parallel agent fan-out |
 | custom | Domain-specific loop logic |
 
 ---
@@ -277,7 +277,7 @@ Most of the swappable backends already exist as plugins in this repo:
 - `memory-management` — tiered memory
 - `vector-db` — semantic retrieval
 - `rlm-factory` — long-term distillation
-- `dual-loop`, `concurrent-agent-loop`, `learning-loop` — loop patterns
+- `dual-loop`, `os-improvement-loop`, `learning-loop` — loop patterns
 
 The work is not building new plugins — it is defining the adapter interfaces and wiring the existing plugins in.
 
@@ -340,7 +340,7 @@ The most fundamental departure from traditional operating systems:
 
 > A conventional OS is a static artifact — Windows does not rewrite its own kernel based on how you used it today. The Agentic OS does.
 
-Every session, `os-learning-loop` observes failures, repeated friction, and patterns in the event log, then proposes and applies patches to the system's own skill instructions and `CLAUDE.md`. Using a Karpathy-style research loop, `skill-improvement-eval` validates each proposed change with `eval_runner` before it is committed. Over time, the OS becomes measurably better at the specific workflows of the project it lives in.
+Every session, `os-learning-loop` observes failures, repeated friction, and patterns in the event log, then proposes and applies patches to the system's own skill instructions and `CLAUDE.md`. Using a Karpathy-style research loop, `os-eval-runner` validates each proposed change with `eval_runner` before it is committed. Over time, the OS becomes measurably better at the specific workflows of the project it lives in.
 
 **Vision extensions:**
 
@@ -951,7 +951,7 @@ Agent SIEM is the infrastructure that doesn't exist yet but will become critical
 1. Define the memory adapter interface — wire `memory-management` plugin as swappable default
 2. Define the event bus adapter interface — JSON files default, Redis next tier
 3. Document the adapter contract so third-party plugins can implement it
-4. Update `agentic-os-init` to accept adapter config at init time
+4. Update `os-init` to accept adapter config at init time
 
 ### Security
 5. Define explicit scope declarations in SKILL.md and plugin.json schema

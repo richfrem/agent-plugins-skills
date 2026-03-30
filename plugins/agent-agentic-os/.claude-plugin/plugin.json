@@ -16,14 +16,14 @@
         "session-management"
     ],
     "skills": [
-        "skills/agentic-os-guide/SKILL.md",
-        "skills/agentic-os-init/SKILL.md",
-        "skills/session-memory-manager/SKILL.md",
+        "skills/os-guide/SKILL.md",
+        "skills/os-init/SKILL.md",
+        "skills/os-memory-manager/SKILL.md",
         "skills/os-clean-locks/SKILL.md",
-        "skills/skill-improvement-eval/SKILL.md",
+        "skills/os-eval-runner/SKILL.md",
         "skills/todo-check/SKILL.md",
-        "skills/concurrent-agent-loop/SKILL.md",
-        "skills/loop-progress-report/SKILL.md"
+        "skills/os-improvement-loop/SKILL.md",
+        "skills/os-improvement-report/SKILL.md"
     ],
     "agents": [
         "agents/agentic-os-setup.md",

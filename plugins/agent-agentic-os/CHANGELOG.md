@@ -20,7 +20,7 @@ All notable changes to `agent-agentic-os` are documented here.
 - **post_run_metrics.py**: Added `count_hook_errors()` that reads `context/memory/hook-errors.log`; hook error count included in Stop-hook summary line and in the emitted metric event (`results.hook_errors`). Failures are now visible at session end.
 
 ### Memory Schema (Issue: freeform drift)
-- **session-memory-manager/SKILL.md**: Added Option B — structured JSONL format (`context/memory.jsonl`) as an alternative to freeform markdown. Benefits: unambiguous deduplication by `id`, machine-queryable, easier `<SUPERSEDE>` enforcement.
+- **os-memory-manager/SKILL.md**: Added Option B — structured JSONL format (`context/memory.jsonl`) as an alternative to freeform markdown. Benefits: unambiguous deduplication by `id`, machine-queryable, easier `<SUPERSEDE>` enforcement.
 
 ### Backlog (architectural, deferred to v2.0)
 - `temp/backlog/agentic-os-backlog-kernel-split.md` — split `kernel.py` into `lock_manager`, `event_bus`, `state_manager`
@@ -41,13 +41,13 @@ All notable changes to `agent-agentic-os` are documented here.
 - **init_agentic_os.py**: `--global` flag now prints a note reminding users to manually `@import` or wire `context/kernel.py` into `~/.claude/CLAUDE.md`.
 - **init_agentic_os.py**: Both `load_template()` and `copy_runtime_file()` now prefer `CLAUDE_PLUGIN_ROOT` env var (set by Claude Code and `npx skills add`) before falling back to `Path(__file__)` resolution. Fixes path breakage on Windows and symlinked npx installs.
 - **hooks/hooks.json**: Fixed from flat format to Anthropic-spec nested format (`hooks -> EventName -> [{matcher, hooks: [{type, command}]}]`).
-- **agentic-os-init/templates/HOOKS_JSON.json**: Was empty `{"hooks": []}`. Now ships with `SessionStart`, `PostToolUse`, and `Stop` hooks so fresh installs get auto-memory wiring.
+- **os-init/templates/HOOKS_JSON.json**: Was empty `{"hooks": []}`. Now ships with `SessionStart`, `PostToolUse`, and `Stop` hooks so fresh installs get auto-memory wiring.
 - **agents/os-health-check.md**: Removed `Write` from tool list; health check is read-only.
 - **agent-agentic-os-architecture.mmd**: Removed stale `mcp.json` node.
 
 ### Improvements
-- **session-memory-manager/SKILL.md**: Added `<SUPERSEDE old_id=NNN>` audit marker requirement when a promoted fact supersedes an existing memory entry.
-- **session-memory-manager/SKILL.md**: Archive policy changed from `wc -l > 500` (unreliable on Windows CRLF) to `wc -c > 50000` bytes.
+- **os-memory-manager/SKILL.md**: Added `<SUPERSEDE old_id=NNN>` audit marker requirement when a promoted fact supersedes an existing memory entry.
+- **os-memory-manager/SKILL.md**: Archive policy changed from `wc -l > 500` (unreliable on Windows CRLF) to `wc -c > 50000` bytes.
 - **os-clean-locks/SKILL.md**: Added Phase 0 (intent emit) and Phase 4 (result emit) Event Bus hooks.
 - **eval_runner.py**: Added `llm_routing_score` column to `results.tsv` (value `N/A`; reserved for future LLM judge integration).
 - **references/diagrams/**: Removed 5 binary PNG files; `.mmd` source files retained.
@@ -55,15 +55,15 @@ All notable changes to `agent-agentic-os` are documented here.
 
 ### Evals
 - **os-clean-locks/evals/evals.json**: Created (was the only skill without evals). 6 positive triggers, 3 negatives.
-- **session-memory-manager/evals/evals.json**: Normalized to standard `{prompt, should_trigger: bool}` schema.
-- **skill-improvement-eval/evals/evals.json**: Normalized schema and added 3 additional entries matching SKILL.md triggers.
+- **os-memory-manager/evals/evals.json**: Normalized to standard `{prompt, should_trigger: bool}` schema.
+- **os-eval-runner/evals/evals.json**: Normalized schema and added 3 additional entries matching SKILL.md triggers.
 
 ### Routing / Trigger Quality
-- **skill-improvement-eval/SKILL.md**: Added scope caveat documenting that `eval_runner.py` uses keyword-heuristic routing, not real LLM routing.
-- **agentic-os-guide/SKILL.md**: Added 2 `<example>` blocks (including 1 implicit/audit trigger).
-- **agentic-os-init/SKILL.md**: Added 3 `<example>` blocks (including 1 implicit/audit trigger).
+- **os-eval-runner/SKILL.md**: Added scope caveat documenting that `eval_runner.py` uses keyword-heuristic routing, not real LLM routing.
+- **os-guide/SKILL.md**: Added 2 `<example>` blocks (including 1 implicit/audit trigger).
+- **os-init/SKILL.md**: Added 3 `<example>` blocks (including 1 implicit/audit trigger).
 - **todo-check/SKILL.md**: Added 1 implicit/audit `<example>` block.
-- **skill-improvement-eval/SKILL.md**: Added 1 implicit/audit `<example>` block.
+- **os-eval-runner/SKILL.md**: Added 1 implicit/audit `<example>` block.
 - **os-clean-locks/SKILL.md**: Added 1 implicit/audit `<example>` block.
 - **agents/os-learning-loop.md**: Added 1 implicit/audit `<example>` block (proactive friction detection from event stream).
 
@@ -74,7 +74,7 @@ All notable changes to `agent-agentic-os` are documented here.
 - **agents/os-health-check.md**: Removed unnecessary `Write` tool.
 - **agent-agentic-os-architecture.mmd**: Removed stale `mcp.json` reference node.
 - **os-clean-locks/evals/evals.json**: Created initial eval suite.
-- **session-memory-manager/evals/evals.json**: Schema normalized.
-- **skill-improvement-eval/evals/evals.json**: Schema normalized.
+- **os-memory-manager/evals/evals.json**: Schema normalized.
+- **os-eval-runner/evals/evals.json**: Schema normalized.
 
 ## [1.0.0] - Initial release

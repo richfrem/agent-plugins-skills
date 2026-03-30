@@ -1,0 +1,38 @@
+[
+  {
+    "prompt": "evaluate this skill",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run tests on the new skill",
+    "should_trigger": true
+  },
+  {
+    "prompt": "check if this change breaks anything",
+    "should_trigger": true
+  },
+  {
+    "prompt": "eval the learning loop proposal",
+    "should_trigger": true
+  },
+  {
+    "prompt": "what is the weather?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "deploy to production",
+    "should_trigger": false
+  },
+  {
+    "prompt": "measure the performance gain",
+    "should_trigger": true
+  },
+  {
+    "prompt": "show me the eval scores from the last cycle",
+    "should_trigger": false
+  },
+  {
+    "prompt": "check if we have a skill for session memory",
+    "should_trigger": false
+  }
+]
