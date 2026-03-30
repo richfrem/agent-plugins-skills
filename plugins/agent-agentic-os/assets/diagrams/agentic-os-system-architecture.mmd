@@ -6,9 +6,12 @@ config:
 ---
 flowchart TB
  subgraph Libraries["Standard Library (skills<br>)"]
-        Guide["agentic-os-guide"]
-        Init["agentic-os-init"]
-        MemManager["session-memory-manager"]
+        Guide["os-guide"]
+        Init["os-init"]
+        MemManager["os-memory-manager"]
+        EvalRunner["os-eval-runner"]
+        EvalBackport["os-eval-backport"]
+        SkillImprove["os-skill-improvement"]
   end
  subgraph Processes["Processes (agents<br>)"]
         SetupAgent["agentic-os-setup"]
@@ -38,6 +41,8 @@ flowchart TB
     LoopAgent -- Triggers --> MemManager
     UpdateMem -- Appends event on Write --> MemLog
     MemManager -- Promotes facts to --> LT_Mem
+    EvalRunner -- Scores skill changes --> MemLog
+    EvalBackport -- Approved changes --> LT_Mem
 
      CLAUDE_MD:::kernel
      SetupAgent:::process

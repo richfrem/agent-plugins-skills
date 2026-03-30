@@ -1,0 +1,46 @@
+flowchart TD
+    classDef workNode fill:#dbeafe,stroke:#93c5fd,stroke-width:1px,color:#1e3a8a
+    classDef evalNode fill:#fef3c7,stroke:#fcd34d,stroke-width:1px,color:#78350f
+    classDef memNode fill:#dcfce7,stroke:#86efac,stroke-width:1px,color:#14532d
+    classDef improveNode fill:#f3e8ff,stroke:#d8b4fe,stroke-width:1px,color:#581c87
+    classDef gateNode fill:#fee2e2,stroke:#fca5a5,stroke-width:1px,color:#7f1d1d
+    classDef commitNode fill:#fce7f3,stroke:#f9a8d4,stroke-width:1px,color:#831843
+
+    Work["<b>Work / Eval Run / Skill Edit</b><br>Any significant session activity"]:::workNode
+
+    Backport["<b>os-eval-backport</b><br>Review lab results<br>ACCEPT / ADAPT / REJECT<br>Apply approved changes to master"]:::evalNode
+
+    MemGate{"Non-obvious<br>finding?"}:::gateNode
+
+    Phase6["<b>Phase 6 — os-memory-manager</b><br>Write dated session log<br>→ context/memory/YYYY-MM-DD.md<br>Promote facts to context/memory.md<br>Write feedback to MEMORY.md"]:::memNode
+
+    SkipMem["Skip — routine change,<br>self-evident from diff"]:::gateNode
+
+    ImprovGate{"Routing weakness<br>or score &lt; 0.90?"}:::gateNode
+
+    Phase7["<b>Phase 7 — os-skill-improvement</b><br>RED scenario → GREEN patch<br>Eval gate via os-eval-runner<br>REFACTOR until score ≥ threshold"]:::improveNode
+
+    SkipImprove["Skip — all skills<br>routed correctly"]:::gateNode
+
+    Commit["<b>Commit + Push</b><br>Close loop in git history"]:::commitNode
+
+    Work --> Backport
+    Backport --> MemGate
+    MemGate -->|"Yes — snag / footgun<br>/ architectural decision"| Phase6
+    MemGate -->|No| SkipMem
+    Phase6 --> ImprovGate
+    SkipMem --> ImprovGate
+    ImprovGate -->|Yes| Phase7
+    ImprovGate -->|No| SkipImprove
+    Phase7 --> Commit
+    SkipImprove --> Commit
+    Commit -->|"Next session"| Work
+
+    subgraph CrossPlugin ["Cross-Plugin Dependencies (npx skills add agent-agentic-os)"]
+        direction LR
+        CP1["os-eval-runner<br>eval gate scorer"]:::evalNode
+        CP2["os-eval-backport<br>lab → master handoff"]:::evalNode
+        CP3["os-memory-manager<br>session log + promotion"]:::memNode
+        CP4["os-skill-improvement<br>routing quality loop"]:::improveNode
+        CP1 ~~~ CP2 ~~~ CP3 ~~~ CP4
+    end

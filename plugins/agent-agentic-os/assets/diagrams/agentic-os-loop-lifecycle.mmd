@@ -3,7 +3,8 @@ sequenceDiagram
     participant LoopAgent as os-learning-loop
     participant Status as context/status.md
     participant Logs as context/memory (L2)
-    participant MemMan as session-memory-manager
+    participant MemMan as os-memory-manager
+    participant SkillImprove as os-skill-improvement
     participant LTMem as context/memory.md (L3)
 
     Note over Scheduler, LTMem: Autonomous Background Heartbeat
@@ -24,8 +25,15 @@ sequenceDiagram
     MemMan->>LTMem: Write New Architectural Rule
     MemMan->>Logs: Archive Log File
     deactivate MemMan
-    
+
+    Note over LoopAgent, SkillImprove: Phase 7 — Skill Improvement Gate
+    LoopAgent->>SkillImprove: Any skill routing weakness found?
+    activate SkillImprove
+    SkillImprove->>SkillImprove: RED scenario → eval gate → REFACTOR
+    SkillImprove-->>LoopAgent: KEEP/DISCARD + score delta
+    deactivate SkillImprove
+
     LoopAgent->>Status: Update Timestamp & modify Queue
-    
+
     deactivate LoopAgent
     Scheduler->>Scheduler: Sleep until next tick

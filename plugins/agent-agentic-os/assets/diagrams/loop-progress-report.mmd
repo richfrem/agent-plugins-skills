@@ -22,7 +22,7 @@ sequenceDiagram
     ORCH->>INNER: task.assigned (strategy packet informed by ledger)
     INNER->>KERNEL: emit friction events during work
     INNER->>PEER: eval result via kernel bus
-    PEER->>PEER: run skill-improvement-eval independently
+    PEER->>PEER: run os-eval-runner independently
     PEER-->>ORCH: eval.result (KEEP/DISCARD + score delta)
 
     note over ORCH,PEER: Stage 4.2 — Surveys (both agents)

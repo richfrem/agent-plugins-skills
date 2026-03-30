@@ -79,7 +79,7 @@ flowchart TB
   KernelPy -- "task registry and semaphore" --> OSState
   KernelPy -- "PID and lease metadata" --> Locks
 
-  EventBus -- "session-memory-manager promotes" --> L2
+  EventBus -- "os-memory-manager promotes" --> L2
   L2 -- "os-learning-loop distills" --> L3
 
   classDef agentRole fill:#f9f0ff,stroke:#5e35b1,stroke-width:2px
