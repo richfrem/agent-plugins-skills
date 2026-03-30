@@ -134,15 +134,11 @@ Present proposed changes to the user in diff format before applying them.
 #### 3b.4: Protected Files Checklist & Escalation Taxonomy
 
 Before completing the sync, verify these files were NOT deleted or corrupted:
-- `.agent/rules/constitution.md` (symlinked from `.kittify/memory/`)
-- `.agent/rules/standard-workflow-rules.md`
-- `.agent/rules/01_PROCESS/*` (policy files)
-- `.agent/rules/02_OPERATIONS/*`
-- `.agent/rules/03_TECHNICAL/*`
+- `./rules/constitution.md` 
+- `./references/standard-workflow-rules.md`
 
 ```bash
-test -f .agent/rules/constitution.md && echo "constitution OK" || echo "MISSING!"
-ls .agent/rules/01_PROCESS/ .agent/rules/02_OPERATIONS/ .agent/rules/03_TECHNICAL/ 2>/dev/null | head -20
+test -f ./rules/constitution.md && echo "constitution OK" || echo "MISSING!"
 ```
 
 **Escalation Taxonomy (Missing Data Response)**

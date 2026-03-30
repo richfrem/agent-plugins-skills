@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-analyze
-description: Perform a non-destructive cross-artifact consistency and quality analysis
+description: A standard Spec-Kitty workflow routine.
 ---
 
 ## 🔗 Workflow Provenance
@@ -8,6 +8,7 @@ description: Perform a non-destructive cross-artifact consistency and quality an
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.analyze.md`](./workflows/spec-kitty.analyze.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
+<!-- spec-kitty-command-version: 3.0.0 -->
 ## User Input
 
 ```text
@@ -15,6 +16,8 @@ $ARGUMENTS
 ```
 
 You **MUST** consider the user input before proceeding (if not empty).
+
+**In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**
 
 ## Goal
 

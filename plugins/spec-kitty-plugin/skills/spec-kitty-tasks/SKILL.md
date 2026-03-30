@@ -1,6 +1,6 @@
 ---
 name: spec-kitty-tasks
-description: Generate grouped work packages with actionable subtasks and matching
+description: A standard Spec-Kitty workflow routine.
 ---
 
 ## 🔗 Workflow Provenance
@@ -8,6 +8,7 @@ description: Generate grouped work packages with actionable subtasks and matchin
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.tasks.md`](./workflows/spec-kitty.tasks.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
+<!-- spec-kitty-command-version: 3.0.0 -->
 # /spec-kitty.tasks - Generate Work Packages
 
 **Version**: 0.11.0+
@@ -30,24 +31,26 @@ description: Generate grouped work packages with actionable subtasks and matchin
 
 ---
 
-## 📍 WORKING DIRECTORY: Stay in planning repository
+## 📍 WORKING DIRECTORY: Stay in the project root checkout
 
-**IMPORTANT**: Tasks works in the planning repository. NO worktrees created.
+**IMPORTANT**: Tasks works in the project root checkout. NO worktrees created.
 
 ```bash
 # Run from project root (same directory as /spec-kitty.plan):
 # You should already be here if you just ran /spec-kitty.plan
 
 # Creates:
-# - kitty-specs/###-feature/tasks/WP01-*.md → In planning repository
-# - kitty-specs/###-feature/tasks/WP02-*.md → In planning repository
+# - kitty-specs/###-feature/tasks/WP01-*.md → In project root checkout
+# - kitty-specs/###-feature/tasks/WP02-*.md → In project root checkout
 # - Commits ALL to target branch
 # - NO worktrees created
 ```
 
-**Do NOT cd anywhere**. Stay in the planning repository root.
+**Do NOT cd anywhere**. Stay in the project root checkout root.
 
 **Worktrees created later**: After tasks are generated, use `spec-kitty implement WP##` to create workspace for each WP.
+
+**In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**
 
 ## User Input
 
@@ -91,12 +94,11 @@ Prompts do not rediscover feature context. Commands do.
 
    If `branch_matches_target` is false, stop and tell the user the checkout is on the wrong planning branch instead of probing git manually in the prompt.
 
-   **CRITICAL**: The command returns JSON with `feature_dir` as an ABSOLUTE path (e.g., `/Users/robert/Code/new_specify/kitty-specs/001-feature-name`).
-   It also returns `runtime_vars.now_utc_iso` (`NOW_UTC_ISO`) for deterministic timestamp fields.
+   **CRITICAL**: The command returns JSON with `feature_dir` as an ABSOLUTE path. It also returns `runtime_vars.now_utc_iso` (`NOW_UTC_ISO`) for deterministic timestamp fields.
 
    **YOU MUST USE THIS PATH** for ALL subsequent file operations. Example:
    ```
-   feature_dir = "/Users/robert/Code/new_specify/kitty-specs/001-a-simple-hello"
+   feature_dir = "/path/to/project/kitty-specs/001-a-simple-hello"
    tasks.md location: feature_dir + "/tasks.md"
    prompt location: feature_dir + "/tasks/WP01-slug.md"
    ```
@@ -142,7 +144,7 @@ Prompts do not rediscover feature context. Commands do.
    - Name with succinct goal (e.g., "User Story 1 – Real-time chat happy path")
    - Record metadata: priority, success criteria, risks, dependencies, included subtasks
 
-6. **Write `tasks.md`** using the bundled tasks template (`.kittify/missions/software-dev/templates/tasks-template.md`):
+6. **Write `tasks.md`** following the tasks template structure defined below in this prompt (**do NOT write instructions to read a template file from `.kittify/`**):
    - **Location**: Write to `feature_dir/tasks.md` (use the absolute feature_dir path from step 1)
    - Populate the Work Package sections (setup, foundational, per-story, polish) with the `WPxx` entries
    - Under each work package include:
@@ -163,8 +165,8 @@ Prompts do not rediscover feature context. Commands do.
    - For each work package:
      - Derive a kebab-case slug from the title; filename: `WPxx-slug.md`
      - Full path example: `feature_dir/tasks/WP01-create-html-page.md` (use ABSOLUTE path from feature_dir variable)
-     - Use the bundled task prompt template (`.kittify/missions/software-dev/templates/task-prompt-template.md`) to capture:
-     - Frontmatter with `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, `planning_base_branch`, `merge_target_branch`, `branch_strategy`, and history entry
+     - Follow the WP prompt template structure defined below in this prompt (**do NOT write instructions to read a template file from `.kittify/`**) to capture:
+     - Frontmatter with `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, `planning_base_branch`, `merge_target_branch`, `branch_strategy`, `owned_files`, `authoritative_surface`, `execution_mode`, and history entry
        - Objective, context, detailed guidance per subtask
        - A Branch Strategy section that repeats the planning branch, final merge target, and notes that the actual `base_branch` may later differ for stacked WPs during `/spec-kitty.implement`
        - Test strategy (only if requested)
@@ -174,7 +176,19 @@ Prompts do not rediscover feature context. Commands do.
    - **MAXIMUM PROMPT SIZE**: 700 lines per WP (10 subtasks max)
    - **If prompts are >700 lines**: Split the WP - it's too large
 
-   **IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location. Agents can change lanes by editing the `lane:` field directly or using `spec-kitty agent tasks move-task`.
+   **IMPORTANT**: All WP files live in flat `tasks/` directory.
+
+   **OWNERSHIP METADATA (required by finalize-tasks)**:
+   Each WP MUST declare these fields in frontmatter. If omitted, the finalizer infers them (often incorrectly, causing validation failures):
+   - `execution_mode`: Either `"code_change"` (source code) or `"planning_artifact"` (kitty-specs docs)
+   - `owned_files`: List of glob patterns for files this WP touches. Example: `["src/myapp/auth/**", "tests/myapp/test_auth.py"]`
+   - `authoritative_surface`: Path prefix that must be a prefix of at least one owned_files entry. Example: `"src/myapp/auth/"`
+
+   **Ownership rules**:
+   - No two WPs may have overlapping `owned_files`.
+   - Use specific paths, not broad globs like `src/**`.
+   - Agents working on a WP must not modify files outside their `owned_files` list.
+   - Run `spec-kitty agent feature finalize-tasks --validate-only --json` to check ownership before committing.
 
 8. **Finalize tasks with dependency parsing and commit**:
    After generating all WP prompt files, run the finalization command to:
@@ -490,34 +504,6 @@ Provide summary with:
 - Parallelization opportunities
 - MVP scope
 - Next command
-
-## Dependency Detection (0.11.0+)
-
-**Parse dependencies from tasks.md structure**:
-
-The LLM should analyze tasks.md for dependency relationships:
-- Explicit phrases: "Depends on WP##", "Dependencies: WP##"
-- Phase grouping: Phase 2 WPs typically depend on Phase 1
-- Default to empty if unclear
-
-**Generate dependencies in WP frontmatter**:
-
-Each WP prompt file MUST include a `dependencies` field:
-```yaml
----
-work_package_id: "WP02"
-title: "Build API"
-lane: "planned"
-dependencies: ["WP01"]  # Generated from tasks.md
-subtasks: ["T001", "T002"]
----
-```
-
-**Include the correct implementation command**:
-- No dependencies: `spec-kitty implement WP01`
-- With dependencies: `spec-kitty implement WP02 --base WP01`
-
-The WP prompt must show the correct command so agents don't branch from the wrong base.
 
 ## ⚠️ Common Mistakes to Avoid
 
