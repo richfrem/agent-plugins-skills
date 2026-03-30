@@ -23,11 +23,14 @@ flowchart TB
 
     subgraph Skills["Standard Library skills/"]
         direction TB
-        S1["<b>agentic-os-guide.md</b><br>Deep dive references &amp; architecture docs"]:::blueNode
-        S2["<b>agentic-os-init.py</b><br>Procedural Python scaffolding script"]:::blueNode
-        S3["<b>session-memory-manager.py</b><br>Garbage collector resolving L2/L3 conflicts"]:::blueNode
-        S1 ~~~ S2
-        S2 ~~~ S3
+        S1["<b>os-guide</b><br>Deep dive references &amp; architecture docs"]:::blueNode
+        S2["<b>os-init</b><br>Procedural Python scaffolding script"]:::blueNode
+        S3["<b>os-memory-manager</b><br>Garbage collector resolving L2/L3 conflicts"]:::blueNode
+        S4["<b>os-eval-runner</b><br>Autoresearch eval loop — scores SKILL.md changes"]:::blueNode
+        S5["<b>os-eval-lab-setup</b><br>Scaffolds isolated eval lab in test repo"]:::blueNode
+        S6["<b>os-eval-backport</b><br>Reviews lab results, applies approved changes to master"]:::blueNode
+        S7["<b>os-skill-improvement</b><br>RED-GREEN-REFACTOR routing accuracy improvement"]:::blueNode
+        S1 ~~~ S2 ~~~ S3 ~~~ S4 ~~~ S5 ~~~ S6 ~~~ S7
     end
 
     subgraph Hooks["System Telemetry hooks/"]

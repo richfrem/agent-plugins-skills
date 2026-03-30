@@ -37,7 +37,7 @@ def load_template(filename: str) -> str:
 
 
 def copy_runtime_file(filename: str) -> str:
-    """Load a runtime file from skills/os-init/runtime/.
+    """Load a runtime file from scripts/ (canonical location) or skills/os-init/runtime/ (legacy fallback).
     Tries CLAUDE_PLUGIN_ROOT env var first (set by Claude Code and npx skills),
     then falls back to path-relative resolution for direct script invocation."""
     env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
@@ -45,14 +45,20 @@ def copy_runtime_file(filename: str) -> str:
         plugin_root = Path(env_root).resolve()
     else:
         plugin_root = Path(__file__).resolve().parent.parent.parent.parent
-    runtime_path = plugin_root / "skills" / "os-init" / "runtime" / filename
 
-    if not runtime_path.exists():
-        print(f"Error: Runtime file {filename} not found at {runtime_path}", file=sys.stderr)
-        print("This typically happens if the script is run outside the plugin directory structure.", file=sys.stderr)
-        sys.exit(1)
+    # Canonical location: scripts/ at plugin root
+    canonical_path = plugin_root / "scripts" / filename
+    if canonical_path.exists():
+        return canonical_path.read_text(encoding="utf-8")
 
-    return runtime_path.read_text(encoding="utf-8")
+    # Legacy fallback: skills/os-init/runtime/ (symlink to scripts/)
+    legacy_path = plugin_root / "skills" / "os-init" / "runtime" / filename
+    if legacy_path.exists():
+        return legacy_path.read_text(encoding="utf-8")
+
+    print(f"Error: Runtime file {filename} not found at {canonical_path} or {legacy_path}", file=sys.stderr)
+    print("This typically happens if the script is run outside the plugin directory structure.", file=sys.stderr)
+    sys.exit(1)
 
 # ---------------------------------------------------------------------------
 # Core helpers
