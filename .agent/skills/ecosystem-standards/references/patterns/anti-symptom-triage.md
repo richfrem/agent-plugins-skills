@@ -1,0 +1,1 @@
+﻿../../../../references/patterns/anti-symptom-triage.md

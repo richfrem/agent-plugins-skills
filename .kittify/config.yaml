@@ -3,7 +3,3 @@ vcs:
 agents:
   available:
   - windsurf
-  selection:
-    preferred_implementer:
-    preferred_reviewer:
-  auto_commit: true

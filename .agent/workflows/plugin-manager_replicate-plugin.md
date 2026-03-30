@@ -1,1 +1,0 @@
-../../.agents/workflows/plugin-manager_replicate-plugin.md

@@ -1,0 +1,70 @@
+[
+  {
+    "prompt": "coordinate two Claude sessions to audit skills in parallel without blocking each other",
+    "should_trigger": true
+  },
+  {
+    "prompt": "replace our AGENT_COMMS.md turn-flip protocol with an event bus signal",
+    "should_trigger": true
+  },
+  {
+    "prompt": "set up a shared event bus so multiple agents can coordinate without polling files",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run 3 skill audits concurrently using fan-out to inner agents",
+    "should_trigger": true
+  },
+  {
+    "prompt": "agents as threads sharing memory with kernel locks and event synchronization",
+    "should_trigger": true
+  },
+  {
+    "prompt": "concurrent agents shared event log parallel sessions turn signal",
+    "should_trigger": true
+  },
+  {
+    "prompt": "orchestrator assigns tasks to inner agents using claim_task on the kernel bus",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run a dual-loop: outer supervisor sets goals, inner agent executes and signals completion",
+    "should_trigger": true
+  },
+  {
+    "prompt": "PEER_AGENT runs eval independently then emits verdict back to ORCHESTRATOR",
+    "should_trigger": true
+  },
+  {
+    "prompt": "continuous improvement loop where every cycle evals against baseline with KEEP or DISCARD",
+    "should_trigger": true
+  },
+  {
+    "prompt": "how do I bake sourdough bread with a long fermentation schedule",
+    "should_trigger": false
+  },
+  {
+    "prompt": "generate a monthly budget spreadsheet in Excel",
+    "should_trigger": false
+  },
+  {
+    "prompt": "write unit tests for a React component using Jest",
+    "should_trigger": false
+  },
+  {
+    "prompt": "run the learning loop to reflect on what we did this session",
+    "should_trigger": false
+  },
+  {
+    "prompt": "evaluate this skill and improve its routing accuracy",
+    "should_trigger": false
+  },
+  {
+    "prompt": "write a memory log of what we learned today",
+    "should_trigger": false
+  },
+  {
+    "prompt": "check the agent health status and report any stale locks",
+    "should_trigger": false
+  }
+]

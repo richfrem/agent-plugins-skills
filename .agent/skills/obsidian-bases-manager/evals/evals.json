@@ -1,0 +1,24 @@
+{
+    "plugin": "obsidian-integration",
+    "skill": "obsidian-bases-manager",
+    "evaluations": [
+        {
+            "id": "eval-1-view-config-preserved",
+            "type": "positive",
+            "prompt": "Add a new row to the 'Projects.base' database with name='NewProject' status='Active'.",
+            "expected_behavior": "Agent runs bases_ops.py append-row. The view configuration (columns, filters, sorts) is unchanged after the operation. Only the data section is modified."
+        },
+        {
+            "id": "eval-2-ruamel-yaml-used",
+            "type": "positive",
+            "prompt": "Update a cell in a Base file that has complex YAML formatting.",
+            "expected_behavior": "Agent uses ruamel.yaml exclusively to preserve comments and formatting. The file round-trips identically except for the changed cell value."
+        },
+        {
+            "id": "eval-3-malformed-yaml-error",
+            "type": "edge-case",
+            "prompt": "Update a cell in a Base file that has been manually corrupted.",
+            "expected_behavior": "Script detects malformed YAML and reports a clean error with the line number. Agent does NOT attempt auto-repair. Asks user to restore the .base file from backup."
+        }
+    ]
+}

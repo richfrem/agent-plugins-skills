@@ -1,0 +1,22 @@
+flowchart TD
+    Start([User Needs Link Fixes]) --> Step1[01: Build File Inventory]
+    Step1 --> Cmd1[/\"python 01_build_file_inventory.py\"/]
+    Cmd1 -- \"Maps filename -> paths\" --> Inv[file_inventory.json]
+    
+    Inv --> Step2[02: Extract Link References]
+    Step2 --> Cmd2[/\"python 02_extract_link_references.py\"/]
+    Cmd2 -- \"Finds all link/path strings (with lines)\" --> Refs[link_references.json]
+    
+    Refs --> Step3[03: Audit Broken Links]
+    Step3 --> Cmd3[/\"python 03_audit_broken_links.py\"/]
+    Cmd3 -- \"Cross-refs Step 1 & 2\" --> Log[broken_links.log/json]
+    
+    Log --> Step4[04: Auto-Fix Unique Links]
+    Step4 --> Cmd4[/\"python 04_autofix_unique_links.py\"/]
+    Cmd4 -- \"Repairs unambiguous matches\" --> Fixed{Fixed?}
+    
+    Fixed --> Step5[05: Report Unfixable Links]
+    Step5 --> Cmd5[/\"python 05_report_unfixable_links.py\"/]
+    Cmd5 -- \"Groups remaining gaps\" --> Report[unfixable_links_report.md]
+    
+    Report --> Clean([Review & Done])

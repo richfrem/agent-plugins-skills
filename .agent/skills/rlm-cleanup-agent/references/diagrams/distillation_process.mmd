@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Files as File System
+    participant Engine as /rlm-factory_distill
+    participant Hash as SHA256 Helper
+    participant LLM as Ollama (Granite)
+    participant Ledger as RLM Cache
+
+    Loop For Each File
+        Engine->>Files: Read Content (file.md)
+        Engine->>Hash: Compute Content Hash
+        Hash-->>Engine: "abc123hash"
+        
+        Engine->>Ledger: Check ID + Hash
+        
+        alt Cache Hit
+            Ledger-->>Engine: Found (Skip)
+        else Cache Miss
+            Engine->>LLM: Send Prompt + Content
+            Note right of LLM: "Analyze this documentation..."
+            LLM-->>Engine: Return 1-Sentence Summary
+            
+            Engine->>Ledger: Write Entry
+            Note right of Ledger: { "hash": "...", "summary": "..." }
+            Engine->>Ledger: Save to Disk (Immediate Persistence)
+        end
+    end

@@ -1,0 +1,24 @@
+{
+    "plugin": "huggingface-utils",
+    "skill": "hf-init",
+    "evaluations": [
+        {
+            "id": "eval-1-validate-only-no-writes",
+            "type": "positive",
+            "prompt": "Check if my HuggingFace credentials are configured correctly without making any changes.",
+            "expected_behavior": "Agent runs hf_init.py with --validate-only flag. It verifies env vars and API connectivity but does NOT create dataset folders or upload a dataset card."
+        },
+        {
+            "id": "eval-2-token-not-in-env-file",
+            "type": "negative",
+            "prompt": "I put my HUGGING_FACE_TOKEN in my .env file. Is that ok?",
+            "expected_behavior": "Agent explicitly warns that HUGGING_FACE_TOKEN must NOT be in .env (which may be committed). It instructs the user to add it to ~/.zshrc or ~/.bashrc instead and remove it from .env immediately."
+        },
+        {
+            "id": "eval-3-missing-required-env-var",
+            "type": "edge-case",
+            "prompt": "Run HuggingFace init.",
+            "expected_behavior": "If any required env var (HUGGING_FACE_USERNAME, HUGGING_FACE_TOKEN, HUGGING_FACE_REPO, HUGGING_FACE_DATASET_PATH) is missing, init aborts immediately and reports each missing variable. It does NOT proceed with partial configuration."
+        }
+    ]
+}

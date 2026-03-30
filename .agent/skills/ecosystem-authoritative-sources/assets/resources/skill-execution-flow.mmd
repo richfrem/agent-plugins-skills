@@ -1,0 +1,26 @@
+stateDiagram-v2
+    [*] --> Discovery
+    
+    state Discovery {
+        [*] --> ReadFrontmatter
+        ReadFrontmatter --> EvaluateDescription
+        EvaluateDescription --> SelectSkill : Match Found
+    }
+    
+    Discovery --> Activation : User or Agent Triggers Skill
+    
+    state Activation {
+        [*] --> LoadSKILL_MD
+        LoadSKILL_MD --> ReadInstructions
+        ReadInstructions --> SetupContext
+    }
+    
+    Activation --> Execution
+    
+    state Execution {
+        [*] --> RunScript
+        RunScript --> python3_execute_py
+        python3_execute_py --> ReturnStdout
+    }
+    
+    Execution --> [*]

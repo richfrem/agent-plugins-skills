@@ -1,0 +1,45 @@
+{
+  "skill": "agentic-os-guide",
+  "description": "Tests for correct trigger routing of the agentic-os-guide skill",
+  "positive": [
+    {
+      "id": "pos-001",
+      "prompt": "How do I set up an Agentic OS for my project?",
+      "expected": "trigger"
+    },
+    {
+      "id": "pos-002",
+      "prompt": "What is the agent harness pattern and how does CLAUDE.md hierarchy work?",
+      "expected": "trigger"
+    },
+    {
+      "id": "pos-003",
+      "prompt": "Explain the context/ folder structure - what goes in soul.md vs user.md?",
+      "expected": "trigger"
+    },
+    {
+      "id": "pos-004",
+      "prompt": "How do I set up /loop and heartbeat.md for scheduled agent tasks?",
+      "expected": "trigger"
+    },
+    {
+      "id": "pos-005",
+      "prompt": "What is the difference between MEMORY.md and context/memory.md?",
+      "expected": "trigger"
+    }
+  ],
+  "negative": [
+    {
+      "id": "neg-001",
+      "prompt": "Create a new skill for me using the scaffolder",
+      "expected": "no-trigger",
+      "note": "Should route to create-skill in agent-scaffolders"
+    },
+    {
+      "id": "neg-002",
+      "prompt": "How do I write a SKILL.md file that follows the open standard?",
+      "expected": "no-trigger",
+      "note": "Should route to ecosystem-authoritative-sources"
+    }
+  ]
+}
