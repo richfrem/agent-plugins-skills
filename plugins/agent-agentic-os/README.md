@@ -130,7 +130,7 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 | `os-clean-locks` | Removes stale execution locks that block agent execution |
 | `os-improvement-loop` | Orchestrates the autonomous testing and fixing loop |
 | `os-improvement-report` | Generates improvement metrics from eval history |
-| `os-skill-authoring` | Applies Test-Driven Development logic to agent instructions |
+| `os-skill-improvement` | Applies Test-Driven Development logic to agent instructions |
 | `todo-check` | Audits files for unresolved TODO items |
 
 ### Agents
