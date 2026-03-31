@@ -216,4 +216,4 @@ description: >
 - **Fix gaps**: Run `create-skill`, `create-command`, or `create-hook` to add missing components
 - **Improve skills**: Run `skill-reviewer` on each skill for trigger optimization
 - **Upgrade to L5**: Run `audit-plugin-l5` for advanced red-team structural audit
-- **Package**: Run `package-plugin` to create a distributable ZIP
+- **Distribute**: Push to GitHub — users install via `plugin_add.py richfrem/agent-plugins-skills`

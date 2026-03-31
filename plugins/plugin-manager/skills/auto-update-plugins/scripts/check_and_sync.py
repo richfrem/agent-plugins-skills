@@ -3,35 +3,52 @@ check_and_sync.py
 =================
 
 Purpose:
-    Pull-based auto-sync script for consumer projects. Reads plugin-sources.json
-    at the project root, resolves env var paths, computes source hashes, and runs
-    install_all_plugins.py for any source that has changed since the last sync.
+    GitHub-native pull-based auto-sync script for consumer projects.
+    Reads plugin-sources.json at the project root, checks the latest commit
+    SHA from the GitHub API for each source repo, and runs plugin_add.py
+    when upstream changes are detected.
 
     Designed to be called from a SessionStart hook on every agent session start.
-    Costs nothing (no LLM tokens) and is a no-op if nothing has changed.
+    The SHA check is a single lightweight API call (~1 KB). The full clone +
+    install only runs when there is an actual upstream change.
+
+    No local clone of the source repo required.
 
 Usage:
     python3 .agents/scripts/check_and_sync.py
-    python3 .agents/scripts/check_and_sync.py --force   # ignore hash cache, always sync
+    python3 .agents/scripts/check_and_sync.py --force   # ignore SHA cache, always sync
     python3 .agents/scripts/check_and_sync.py --dry-run # print what would happen
+    python3 .agents/scripts/check_and_sync.py --source agent-plugins-skills
 
 Layer: Plugin Manager / Consumer Auto-Sync
 
 Input Files:
     - plugin-sources.json (project root) - subscription declarations
-    - .agents/plugin-sync-state.json     - local hash cache (auto-created)
+    - .agents/plugin-sync-state.json     - local SHA cache (auto-created)
 
 Output:
     - Updated .agents/ skills and agent environments if source changed.
-    - Updated .agents/plugin-sync-state.json with new hashes.
+    - Updated .agents/plugin-sync-state.json with new commit SHAs.
+
+plugin-sources.json format:
+    {
+      "sources": [
+        {
+          "name": "agent-plugins-skills",
+          "github": "richfrem/agent-plugins-skills",
+          "plugins": "all"                             // or ["spec-kitty-plugin", ...]
+        }
+      ]
+    }
 """
 
 import os
 import sys
 import json
-import hashlib
 import argparse
 import subprocess
+import urllib.request
+import urllib.error
 from pathlib import Path
 
 # Force UTF-8 output on Windows if possible
@@ -49,38 +66,43 @@ PROJECT_ROOT = Path.cwd()
 SOURCES_FILE = PROJECT_ROOT / "plugin-sources.json"
 SYNC_STATE_FILE = PROJECT_ROOT / ".agents" / "plugin-sync-state.json"
 
+# Resolve plugin_add.py — find it relative to this script or walk up from cwd
+def _find_plugin_add() -> Path | None:
+    # Try relative to this script's location (when deployed in .agents/scripts/)
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent / "plugins/plugin-manager/scripts/plugin_add.py",
+        PROJECT_ROOT / "plugins/plugin-manager/scripts/plugin_add.py",
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    return None
 
-def _compute_folder_hash(folder: Path) -> str:
-    """Compute a deterministic SHA-256 hash over all files in a folder."""
-    hasher = hashlib.sha256()
-    file_list = []
 
-    for root_dir, dirs, files in os.walk(folder):
-        # Filter directories in-place to control walk recursion
-        filtered = [
-            d for d in dirs
-            if not d.startswith(".") and d not in ("node_modules", "__pycache__")
-        ]
-        dirs.clear()
-        dirs.extend(filtered)
-        for f in files:
-            file_list.append(Path(root_dir) / f)
-
-    file_list.sort(key=lambda p: str(p.relative_to(folder)))
-
-    for f in file_list:
-        try:
-            rel_path = str(f.relative_to(folder)).replace("\\", "/")
-            hasher.update(rel_path.encode("utf-8"))
-            hasher.update(f.read_bytes())
-        except Exception:
-            pass
-
-    return hasher.hexdigest()
+def _fetch_latest_sha(owner_repo: str) -> str | None:
+    """
+    Fetch the latest commit SHA for the default branch from GitHub API.
+    Returns None if unreachable or rate-limited.
+    """
+    url = f"https://api.github.com/repos/{owner_repo}/commits?per_page=1"
+    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github.v3+json",
+                                               "User-Agent": "check_and_sync/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if isinstance(data, list) and data:
+                return data[0].get("sha", "")
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            print(f"  [auto-sync] GitHub rate limit hit — skipping SHA check for '{owner_repo}'.")
+        else:
+            print(f"  [auto-sync] GitHub API error {e.code} for '{owner_repo}'.")
+    except Exception:
+        print(f"  [auto-sync] GitHub unreachable — skipping sync for '{owner_repo}'.")
+    return None
 
 
 def _load_sync_state() -> dict:
-    """Load the local hash cache. Returns empty dict if not found."""
     if SYNC_STATE_FILE.exists():
         try:
             return json.loads(SYNC_STATE_FILE.read_text(encoding="utf-8"))
@@ -90,13 +112,11 @@ def _load_sync_state() -> dict:
 
 
 def _save_sync_state(state: dict) -> None:
-    """Persist the local hash cache."""
     SYNC_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     SYNC_STATE_FILE.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
 
 
 def _load_sources() -> list:
-    """Load and validate plugin-sources.json."""
     if not SOURCES_FILE.exists():
         return []
     try:
@@ -109,11 +129,11 @@ def _load_sources() -> list:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Auto-sync plugins from registered source repos."
+        description="Auto-sync plugins from registered GitHub source repos."
     )
     parser.add_argument(
         "--force", action="store_true",
-        help="Ignore hash cache and always sync all sources."
+        help="Ignore SHA cache and always sync all sources."
     )
     parser.add_argument(
         "--dry-run", action="store_true",
@@ -126,75 +146,64 @@ def main() -> None:
 
     sources = _load_sources()
     if not sources:
-        # Silently exit if no subscription file found - project may not use this system.
+        # Silently exit if no subscription file found.
         return
 
-    # Filter sources if --source is provided
     if args.source:
         sources = [s for s in sources if s.get("name") == args.source]
         if not sources:
             print(f"  [auto-sync] No source found with name '{args.source}'")
             return
 
+    plugin_add = _find_plugin_add()
+    if not plugin_add:
+        print("  [auto-sync] ERROR: plugin_add.py not found. "
+              "Run `python plugins/plugin-manager/scripts/plugin_add.py` manually.")
+        return
+
     sync_state = _load_sync_state()
     any_synced = False
 
     for source in sources:
         name = source.get("name", "unknown")
-        env_var = source.get("env", "")
-        plugins_subdir = source.get("plugins_subdir", "plugins")
-        installer_subpath = source.get(
-            "installer_subpath",
-            "plugins/plugin-manager/scripts/install_all_plugins.py"
-        )
+        owner_repo = source.get("github", "")
+        plugins_selection = source.get("plugins", "all")
 
-        # Resolve the source path from env var
-        source_root_str = os.environ.get(env_var, "")
-        if not source_root_str:
-            print(
-                f"  [auto-sync] Skipping '{name}': env var ${env_var} is not set. "
-                f"Add it to your .zshrc or Windows User Environment Variables."
-            )
+        if not owner_repo or "/" not in owner_repo:
+            print(f"  [auto-sync] Skipping '{name}': missing or invalid 'github' field "
+                  f"(expected 'owner/repo').")
             continue
 
-        source_root = Path(source_root_str)
-        plugins_path = source_root / plugins_subdir
-        installer_path = source_root / installer_subpath
-
-        if not plugins_path.exists():
-            print(
-                f"  [auto-sync] Skipping '{name}': plugins folder not found "
-                f"at {plugins_path}"
-            )
+        # Fetch latest SHA from GitHub
+        latest_sha = _fetch_latest_sha(owner_repo)
+        if latest_sha is None:
+            # Unreachable — skip gracefully
             continue
 
-        if not installer_path.exists():
-            print(
-                f"  [auto-sync] Skipping '{name}': installer not found "
-                f"at {installer_path}"
-            )
+        cached_sha = sync_state.get(name, {}).get("sha", "")
+
+        if latest_sha == cached_sha and not args.force:
+            print(f"  [auto-sync] '{name}' is up to date (sha: {latest_sha[:8]}…).")
             continue
 
-        # Compute hash and compare
-        current_hash = _compute_folder_hash(plugins_path)
-        cached_hash = sync_state.get(name, {}).get("hash", "")
-
-        if current_hash == cached_hash and not args.force:
-            print(f"  [auto-sync] '{name}' is up to date. No changes detected.")
-            continue
-
-        # Source has changed - run installer
+        # Upstream changed — run plugin_add.py
         if args.dry_run:
-            print(
-                f"  [auto-sync] [DRY RUN] Would sync '{name}' from {plugins_path}"
-            )
+            print(f"  [auto-sync] [DRY RUN] Would sync '{name}' from github:{owner_repo}")
             continue
 
-        print(f"  [auto-sync] Changes detected in '{name}'. Syncing...")
+        print(f"  [auto-sync] Changes detected in '{name}' "
+              f"({cached_sha[:8] if cached_sha else 'new'} → {latest_sha[:8]}). Syncing...")
+
+        cmd = [sys.executable, str(plugin_add), owner_repo, "--all", "-y"]
+        # If specific plugins requested (not "all"), we can't filter via CLI yet —
+        # fall back to --all and note it. Future: add --plugin filter to plugin_add.py.
+        if plugins_selection != "all" and isinstance(plugins_selection, list):
+            print(f"  [auto-sync] Note: installing all plugins from '{name}' "
+                  f"(per-plugin filtering not yet supported in non-interactive mode).")
+
         try:
-            cmd = [sys.executable, str(installer_path), "--plugins-dir", str(plugins_path)]
-            result = subprocess.run(cmd, check=True, text=True, capture_output=False)
-            sync_state[name] = {"hash": current_hash}
+            subprocess.run(cmd, check=True, text=True)
+            sync_state[name] = {"sha": latest_sha, "github": owner_repo}
             any_synced = True
             print(f"  [auto-sync] '{name}' sync complete.")
         except subprocess.CalledProcessError as e:

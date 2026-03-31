@@ -1,1 +1,0 @@
-../../../references/plugin_replicator_overview.md

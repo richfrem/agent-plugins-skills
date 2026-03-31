@@ -1,30 +1,51 @@
 # Plugin Manager
 
-**The Universal Orchestration Hub for Your Plugin Ecosystem**
+**Universal Cross-Platform Plugin Installer — Works Everywhere `npx skills` Cannot**
 
-The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and bridges standard plugins for use in many compatible agent environments (allowing you to write your core plugin logic once and deploy it across a wide variety of tools), and easily distributes source plugins to other project repos.
+The **Plugin Manager** is the cross-agent, cross-platform orchestration hub for your plugin ecosystem. Where `npx skills add` installs skills only and the Claude `/plugin` marketplace is Claude-specific, `plugin_add.py` installs **full plugins** (skills + agents + commands + hooks) directly from GitHub — on any OS, for any agent.
 
 ---
 
-## Why `npx skills` Was Replaced on Windows
+## Why This Exists: The Three-Tool Landscape
 
-`npx skills add` works correctly on **Mac and Linux** where Git creates real OS-level symlinks. This repository uses symlinks inside skill directories (e.g. `plugin-installer/scripts/install_all_plugins.py` points back to the canonical source in `plugins/plugin-manager/scripts/`).
+| Tool | Platform | Installs | GitHub source |
+|---|---|---|---|
+| `npx skills add` | Mac/Linux only (symlink issue on Windows) | Skills only | ✓ `owner/repo` |
+| `/plugin marketplace add` | Claude Code only | Full plugins | ✓ `owner/repo` |
+| **`plugin_add.py`** ★ | **All platforms** (Windows, Mac, Linux) | **Full plugins** (skills + agents + commands + hooks) | ✓ `owner/repo` |
 
-On **Windows**, Git checks out symlinks as plain text files containing the relative path string (e.g. `../../../scripts/install_all_plugins.py`). The `npx` installer uses Node.js `cp({ dereference: true })` which detects real symlinks and copies the target — but on Windows it sees a text file and copies the literal path string. The result is a `.agents/` folder full of one-line text files that Python cannot execute.
-
-The **Bridge Installer** solves this by reading those text pointer files at install time, following the relative path back to the real Python source, and writing a proper hard copy into `.agents/`. No symlinks. No `npx`. No Node.js dependency. Works identically on all platforms.
+> `plugin_add.py` is the cross-platform, cross-agent equivalent of `npx skills add` — but for full plugins, not just skills.
 
 ---
 
 ## Installation
 
-### Option 1: From a Marketplace (Claude Code native)
+### Option 1: Interactive TUI — from GitHub (Recommended)
+
+No clone required. Auto-downloads, shows a plugin picker, installs selected plugins.
+
+```bash
+# Interactive picker — browse and select which plugins to install
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
+
+# Install everything non-interactively
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
+
+# Preview without writing any files
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --dry-run
+```
+
+> Inspired by the [`npx skills add`](https://skills.sh) UX from [Vercel Labs](https://github.com/vercel-labs/skills). Re-implemented in pure Python stdlib for cross-platform compatibility and full-plugin deployment.
+
+### Option 2: From a Marketplace (Claude Code only)
+
 ```bash
 /plugin marketplace add richfrem/agent-plugins-skills
 /plugin install plugin-manager
 ```
 
-### Option 2: Mac / Linux — `npx skills` (cross-agent, skills only)
+### Option 3: `npx skills` (Mac/Linux, skills only)
+
 ```bash
 # Skills only — works correctly on Mac/Linux where Git creates real symlinks
 npx skills add richfrem/agent-plugins-skills --path plugins/plugin-manager
@@ -33,74 +54,29 @@ npx skills add richfrem/agent-plugins-skills --path plugins/plugin-manager
 > [!WARNING]
 > **Windows users:** do not use `npx skills add` with this repository. Git for Windows
 > checks out symlinks as text files and `npx` will install broken one-line pointer files
-> instead of executable Python. Use the Bridge Installer below instead.
-
-### Option 3: Bridge Installer (Recommended for Windows — works everywhere)
-
-After cloning or installing this plugin, run the batch installer from the project root:
-
-```bash
-# Install all plugins from the core plugins/ directory
-python .agents/skills/plugin-installer/scripts/install_all_plugins.py
-
-# Install from an additional plugins directory (additive — does not wipe existing installs)
-python .agents/skills/plugin-installer/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
-
-# Dry run to preview without writing
-python .agents/skills/plugin-installer/scripts/install_all_plugins.py --dry-run
-```
-
-The installer:
-- Reads pointer files, resolves them to real source, and writes hard copies into `.agents/skills/`
-- Creates Windows Junctions (or symlinks on Mac/Linux) from `.agents/skills/` and `.claude/skills/` into `.agents/`
-- Is **additive** — running it against a second plugins directory merges without touching existing installs
-- Runs correctly from its own installed location in `.agents/` — no `plugins/` source tree required in consuming projects
-
-## 🌐 Supported Targets
-
-The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `plugin-installer` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
-
-**Popular Examples:**
-| Target | Command Syntax | Default Directory (Created Automatically) |
-|---|---|---|
-| **Claude Code** | `--target claude` | `.claude/` |
-| **GitHub Copilot** | `--target github` | `.github/` |
-| **Google Gemini** | `--target gemini` | `.gemini/` |
-| **Antigravity** | `--target antigravity` | `.agents/` |
-| **Cursor** | `--target cursor` | `.cursor/` |
-
-> *A user or agent can extend this to any target IDE or CLI (e.g., `roo`, `openhands`, `cline`, `trae`).*
-
-**Additional Prominent IDEs/Agents (Dynamically Supported):**
-Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, Command Code, Continue, Cortex Code, Crush, Droid, Goose, Junie, iFlow CLI, Kiko Code, Kiro CLI, Kode, Mistral Vibe, Mux, Pi, Qoder, Qwen Code, Roo Code, Trae CN, ZenCoder, Neovate, Pochi, Adal.
+> instead of executable Python. Use `plugin_add.py` instead.
 
 ---
 
-## Dependencies
+## Why `plugin_add.py` Works on Windows
 
-The `plugin-installer` skill requires `PyYAML`:
+`npx skills add` fails on Windows because Git checks out symlinks as plain text files (e.g. `../../../scripts/install_all_plugins.py`). Node.js `cp({ dereference: true })` detects real symlinks and copies the target on Mac/Linux — but on Windows it sees a text file and copies the literal path string, leaving broken installs.
 
-```bash
-pip install -r requirements.txt
-# or: pip install PyYAML
-```
+`plugin_add.py` solves this by reading those pointer files at install time, following the relative path back to the real Python source, and writing a proper hard copy into `.agents/`. **No symlinks. No npm. No Node.js dependency.** Works identically on all platforms.
 
-## Quick Start: Deploy Local Source
+---
 
-Ensure your plugin is situated inside `plugins/<name>`, then run the bridge installer to scaffold the target environment rules and commands.
+## 🌐 Supported Targets
 
-**Single Plugin:**
-```bash
-python3 ././scripts/plugin_installer.py --plugin plugins/my-plugin
-```
-> The installer automatically detects existing agent directories (e.g. `.agents/`, `.claude/`). No `--target` argument is needed or accepted.
+The Plugin Manager deploys to `.agents/` as the universal canonical store, then symlinks to:
 
-**Sync Everything / All Plugins:**
-```bash
-python3 ././scripts/update_agent_system.py
-```
+| Agent Environment | Directory |
+|---|---|
+| **Universal / All agents** | `.agents/` |
+| **Claude Code** | `.claude/` |
+| **Azure AI** | `.azure/` |
 
-> For step-by-step control, invoke the `maintain-plugins` skill.
+> Antigravity, GitHub Copilot, and Gemini CLI all read directly from `.agents/` — no per-agent symlinks needed.
 
 ---
 
@@ -108,9 +84,9 @@ python3 ././scripts/update_agent_system.py
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Map, install, and translate components to target envs | `plugin_installer.py`, `install_all_plugins.py` |
-| **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs | `sync_with_inventory.py`, `audit_structure.py` |
-| **[replicate-plugin](skills/replicate-plugin/SKILL.md)** | Copy or link plugin source code to other project repos | `plugin_replicator.py`, `bulk_replicator.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Default: `plugin_add.py` interactive TUI; also `plugin_installer.py` for single-plugin CI installs | `plugin_add.py`, `bridge_installer.py` |
+| **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs, clean orphans | `sync_with_inventory.py`, `audit_structure.py` |
+| **[auto-update-plugins](skills/auto-update-plugins/SKILL.md)** | SessionStart hook that auto-syncs from GitHub sources on every session | `check_and_sync.py` |
 
 ---
 
@@ -120,23 +96,22 @@ python3 ././scripts/update_agent_system.py
 | :--- | :--- |
 | `/plugin-manager:update` | Sync all plugins to local agent environments (`.agents/`, `.claude/` etc.) |
 | `/plugin-manager:cleanup` | Remove orphaned artifacts from deleted plugins in agent environments |
-| `/plugin-manager:install` | Replicate a specific plugin from this repo to a target project's `plugins/` |
+| `/plugin-manager:install` | Install a specific plugin from GitHub or local path |
 
 ---
 
 ## Component Mapping Matrix
 
-The installer intelligently translates plugin components into the specific directories and formats expected by the target IDE.
+The installer intelligently deploys plugin components to the correct directories for each agent:
 
-| Target Environment | `commands/*.md` | `skills/` | `agents/*.md` | `rules/` | `hooks/hooks.json` |
-|-------------------|----------------|-----------|---------------|----------|-------------------|
-| **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `./CLAUDE.md` | `hooks/<plugin>-hooks.json` |
-| **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `.github/copilot-instructions.md` | *(Ignored)* |
-| **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* |
-| **Antigravity** (`.agents/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agents/rules/` | *(Ignored)* |
-| **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* |
+| Component | `.agents/` (canonical) | Claude Code `.claude/` |
+|-----------|------------------------|------------------------|
+| `skills/*/` | `skills/<name>/` | `skills/<name>/` (symlinked) |
+| `agents/*.md` | `agents/<plugin>-<name>.md` | `agents/<plugin>-<name>.md` (symlinked) |
+| `commands/*.md` | `workflows/<plugin>_<cmd>.md` | `commands/<plugin>_<cmd>.md` (symlinked) |
+| `hooks/hooks.json` | `hooks/<plugin>-hooks.json` | `hooks/<plugin>-hooks.json` (symlinked) |
 
-> **Note on Commands:** When writing command logic, you can use nested folders (`commands/ops/restart.md`). The bridge automatically flattens these into a snake_case format (`ops_restart.md`) to remain compatible with IDEs that don't support deeply nested slash-commands. Gemini targets are wrapped in TOML automatically.
+> **Note on Commands:** Nested command folders (`commands/ops/restart.md`) are flattened to snake_case (`plugin_ops_restart.md`) for IDE compatibility.
 
 ---
 
@@ -150,18 +125,16 @@ plugin-manager/
 ├── commands/
 │   ├── update.md       <- Sync all plugins to local agent environments
 │   ├── cleanup.md      <- Clean orphaned agent artifacts
-│   └── install.md      <- Replicate a plugin to another project
+│   └── install.md      <- Install a plugin from GitHub or local path
 ├── scripts/
-│   ├── update_agent_system.py   <- Master orchestrator
-│   ├── sync_with_inventory.py   <- Agent env sync + cleanup
-│   ├── plugin_installer.py      <- Core translation/routing logic
-│   ├── install_all_plugins.py   <- Batch bridge loop processor
-│   ├── audit_structure.py       <- Structural audit
-│   ├── plugin_replicator.py     <- Single plugin copy (--source/--dest/--clean)
-│   ├── bulk_replicator.py       <- Bulk plugin copy
-│   └── generate_readmes.py      <- README scaffolding
+│   ├── plugin_add.py          <- Interactive TUI installer (default, GitHub-native)
+│   ├── bridge_installer.py    <- Core deploy logic (single plugin)
+│   ├── install_all_plugins.py <- Batch install loop
+│   ├── sync_with_inventory.py <- Agent env sync + orphan cleanup
+│   ├── audit_structure.py     <- Structural audit
+│   └── generate_readmes.py    <- README scaffolding
 └── skills/
     ├── plugin-installer/
     ├── maintain-plugins/
-    └── replicate-plugin/
+    └── auto-update-plugins/
 ```

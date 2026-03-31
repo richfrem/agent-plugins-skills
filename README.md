@@ -4,10 +4,8 @@
 
 A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks:
 
-- **Claude Code** (`.claude/`)
-- **GitHub Copilot** (`.github/`)
-- **Gemini CLI / Antigravity** (`.gemini/`, `.agent/`)
-- **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations
+- **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
+- *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
 **120 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
 
@@ -26,7 +24,7 @@ Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplin
 ## Installation
 
 > [!IMPORTANT]
-> **Start here — fresh clone or first-time setup.** Agent environment directories (`.agents/`, `.claude/`, `.agent/`, `.gemini/`) are **not committed** to this repo. After cloning, they will be empty. Run the bridge installer below to deploy all plugins before using any skills or agents.
+> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to this repo. After cloning, it will be empty. Run the bridge installer below to deploy all plugins before using any skills or agents.
 
 ### Step 1: Clone and deploy (all platforms)
 
@@ -36,47 +34,71 @@ Requires **Python 3.8+** — no other dependencies.
 git clone https://github.com/richfrem/agent-plugins-skills.git
 cd agent-plugins-skills
 
-# Deploy all plugins to .agents/, .claude/, .agent/, .gemini/
-python plugins/plugin-manager/scripts/install_all_plugins.py
+# Interactive plugin picker — choose which plugins to install
+python plugins/plugin-manager/scripts/plugin_add.py
 ```
 
-That's it. All 30 plugins and 118 skills will be deployed and ready.
+The interactive TUI (inspired by `npx skills add` from [Vercel Labs skills CLI](https://skills.sh)) lets you browse all 29 plugins, select with space, search with `/`, and confirm. Full plugin deployment: skills + agents + commands + hooks.
 
 ```bash
+# Install everything non-interactively (no prompts)
+python plugins/plugin-manager/scripts/plugin_add.py --all -y
+
+# Or install from GitHub directly (auto-clones, then prompts)
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
+
 # Preview what will be installed without writing any files
-python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run
+python plugins/plugin-manager/scripts/plugin_add.py --dry-run
 ```
 
 ### Step 2: Update (after a git pull)
 
-Once installed, the plugin-installer skill is available in `.agents/` and can update itself:
-
 ```bash
 git pull
-python plugins/plugin-manager/scripts/install_all_plugins.py
+python plugins/plugin-manager/scripts/plugin_add.py --all -y
 ```
 
-> The installer is idempotent — safe to re-run at any time. It uses `skills-lock.json` to skip unchanged plugins.
+> The installer is idempotent — safe to re-run at any time.
 
 ---
 
-### Alternative: npx skills CLI (Mac / Linux only)
+### Alternative: Claude Code Native Marketplace (Claude Code only)
+
+If you are using Claude Code (2.1.81+), you can add this repository as a native marketplace and install plugins without leaving the terminal:
+
+```text
+# Add this repository to your known marketplaces
+/plugin marketplace add richfrem/agent-plugins-skills
+
+# Open the interactive TUI to browse, discover, and install plugins
+/plugin
+
+# Or install a specific plugin directly
+/plugin install <plugin-name>
+```
+
+### Alternative: npx skills CLI (Mac / Linux, skills only)
+
+> [!NOTE]
+> **`npx skills add` installs skills only** — no commands, agents, or hooks. It also only works correctly on Mac/Linux (Git symlinks check out as plain-text files on Windows). For full plugin deployment on any platform, use `plugin_add.py` above.
 
 ```bash
-# Install all plugins
+# Install all skills (skills only — no agents, commands, or hooks)
 npx skills add richfrem/agent-plugins-skills
-
-# Install a single plugin
-npx skills add richfrem/agent-plugins-skills/plugins/agent-agentic-os
 
 # Update all installed skills
 npx skills update
 ```
 
-> [!WARNING]
-> **Windows users: do not use `npx skills add`** — Git symlinks check out as plain-text pointer files on Windows. Use the Python installer above instead.
-
 Browse all plugins: **[skills.sh/richfrem/agent-plugins-skills](https://skills.sh/richfrem/agent-plugins-skills)**
+
+### Installer Comparison
+
+| Method | Platform | Full Plugin | GitHub source | Notes |
+|---|---|---|---|---|
+| `plugin_add.py` ★ | **All** (Win/Mac/Linux) | ✅ skills + agents + commands + hooks | ✅ `owner/repo` | Recommended default |
+| `/plugin` marketplace | Claude Code only | ✅ full | ✅ | Native Claude TUI |
+| `npx skills add` | Mac/Linux only | ❌ skills only | ✅ | No Python required |
 
 ---
 
@@ -281,7 +303,7 @@ Authoritative suite for ecosystem health, synchronization, and artifact bootstra
 
 - [`plugin-installer`](plugins/plugin-manager/skills/plugin-installer/SKILL.md) — local symlink deployment from source to agent environments
 - [`auto-update-plugins`](plugins/plugin-manager/skills/auto-update-plugins/SKILL.md) — pull-based sync via SessionStart hook
-- [`maintain-plugins`](plugins/plugin-manager/skills/maintain-plugins/SKILL.md) · [`package-plugin`](plugins/plugin-manager/skills/package-plugin/SKILL.md)
+- [`maintain-plugins`](plugins/plugin-manager/skills/maintain-plugins/SKILL.md)
 - [`replicate-plugin`](plugins/plugin-manager/skills/replicate-plugin/SKILL.md)
 
 ### RLM Factory — Reverse Language Modeling
@@ -394,8 +416,6 @@ plugins/                    ← upstream source (29 plugins, 120 skills)
 .agents/                    ← deployed skill copies (bridge installer output)
   skills/
   agents/
-
-.claude/agents/             ← symlinks → .agents/agents/ (Claude Code routing)
 
 plugin-research/            ← experiments and autoresearch infrastructure
   experiments/
