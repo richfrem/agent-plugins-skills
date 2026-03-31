@@ -1,1 +1,0 @@
-../skills/plugin-installer/SKILL.md
