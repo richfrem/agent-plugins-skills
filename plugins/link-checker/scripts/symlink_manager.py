@@ -28,6 +28,12 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Literal
 
+# Ensure Unicode output works on Windows terminals that default to cp1252
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
