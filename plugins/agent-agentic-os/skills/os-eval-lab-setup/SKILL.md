@@ -162,3 +162,29 @@ Report to the user:
 
 When the run completes, use the `os-eval-backport` skill in this repo to review and
 apply approved changes back to master sources.
+
+---
+
+## What to Expect: Meta-Circular Improvement
+
+When `os-eval-runner` is installed as a peer in the lab repo alongside the target skill,
+the improvement loop may propose changes to `os-eval-runner` itself — its SKILL.md, scripts,
+or evals — in addition to the target skill. **This is expected and welcome**, not a bug.
+
+Why it happens: the agent can read all installed skills and proposes the highest-leverage
+change it can find, regardless of which skill it's in. The lab copy of `os-eval-runner`
+is a safe mutation target because:
+
+- It's a physical copy, not a symlink to master
+- `evaluate.py` still gates every change — including changes to `eval_runner.py` itself
+- `os-eval-backport` review is the gate before any change reaches the canonical source
+
+**At backport review:** treat changes to `os-eval-runner` files with extra scrutiny —
+the evaluator modifying its own scoring logic is high-leverage. Verify the change doesn't
+introduce a scoring bias that inflates future KEEP rates. See `os-eval-backport` SKILL.md
+for the review checklist.
+
+This pattern is structurally equivalent to what Meta-Harness (Lee et al., arXiv:2603.28052)
+calls "harness self-improvement": the outer loop discovers improvements to the evaluation
+machinery itself, not just the target. The backport gate is the Pareto review that
+controls what flows to production.
