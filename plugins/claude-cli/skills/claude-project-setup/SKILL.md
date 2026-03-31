@@ -30,7 +30,7 @@ Ask the user the following questions. Collect all answers before proceeding. Do 
 6. **Existing config**: Does a `CLAUDE.md` or `.claude/` already exist? If yes, should we optimize the existing one or start fresh?
 7. **Rule domains**: Are there specific coding domains that need scoped rules? (e.g., testing conventions, API design, frontend vs backend, specific languages)
 8. **Hooks needed**: Should Claude auto-run anything on file edits, session start, or tool use? (e.g., auto-format, auto-lint, session sync scripts)
-9. **Agent environments**: Which agent IDEs are active in this repo? (Claude Code, Antigravity/.agent/, Copilot/.github/) — used to calibrate what to put in `.claude/` vs. other rule locations.
+9. **Agent environments**: Which agent IDEs are active in this repo? (Claude Code, Antigravity/.agents/, Copilot/.github/) — used to calibrate what to put in `.claude/` vs. other rule locations.
 
 ---
 

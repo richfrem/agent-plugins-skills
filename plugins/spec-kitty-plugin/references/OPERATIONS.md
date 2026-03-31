@@ -10,7 +10,7 @@ The **Dual Tri Bridge** system ensures that the **Antigravity Agent** configurat
 3.  **VS Code Copilot** (Contextual Assistance)
 
 ## 2. Synchronization
-When you modify any Rule (`.agent/rules/*.md`) or Workflow (`.agent/workflows/*.md`), you must run the bridge script to propagate changes to Gemini and Copilot.
+When you modify any Rule (`.agent/rules/*.md`) or Workflow (`.agents/workflows/*.md`), you must run the bridge script to propagate changes to Gemini and Copilot.
 
 ### Project Memory Strategy (Copilot)
 The Bridge ensures Copilot has access to project memory (like Constitution) through two methods:

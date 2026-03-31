@@ -24,7 +24,7 @@ There is one bridge:
 
 | Environment | Config Directory | Format |
 |-------------|-----------------|--------|
-| Antigravity | `.agent/` | Markdown workflows + rules |
+| Antigravity | `.agents/` | Markdown workflows + rules |
 | Claude Code | `.claude/` | Markdown commands |
 | Gemini CLI | `.gemini/` | TOML + Markdown |
 | GitHub Copilot | `.github/` | Prompt files |

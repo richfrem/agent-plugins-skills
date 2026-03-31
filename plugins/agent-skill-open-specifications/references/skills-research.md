@@ -184,7 +184,7 @@ To use an Agent Skill within a GitHub Action:
 For platforms like **Antigravity** (Google Deepmind's agent framework), the open standard for Agent Skills is natively supported with a few platform-specific nuances:
 
 ### Skill Locations & Scopes
-- **Workspace Skills:** `<workspace-root>/.agent/skills/<skill-folder>/` (Great for project-specific workflows, testing tools).
+- **Workspace Skills:** `<workspace-root>/.agents/skills/<skill-folder>/` (Great for project-specific workflows, testing tools).
 - **Global Skills:** `~/.gemini/antigravity/skills/<skill-folder>/` (Personal utilities, general-purpose routines to use across all workspaces).
 
 ### Frontmatter Nuances

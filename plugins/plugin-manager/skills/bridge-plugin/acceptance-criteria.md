@@ -15,7 +15,7 @@
 - **[FAILED]**: Pointer files are parsed as Markdown, causing parser errors or creating malformed target files.
 
 ## 4. Rule Merging and Deployment
-- **[PASSED]**: Instructions in `plugins/<name>/rules/` are mapped dynamically. If the context requires monolithic rules (like Copilot instructions or Anthropic `CLAUDE.md`), the bridge creates/appends sections using the `<!-- BEGIN RULES -->` tags. For Antigravity, rules are kept separate in `.agent/rules/`.
+- **[PASSED]**: Instructions in `plugins/<name>/rules/` are mapped dynamically. If the context requires monolithic rules (like Copilot instructions or Anthropic `CLAUDE.md`), the bridge creates/appends sections using the `<!-- BEGIN RULES -->` tags. For Antigravity, rules are kept separate in `.agents/rules/`.
 - **[FAILED]**: Rule append logic corrupts the root file, inserts rules inside JSON arrays instead of Markdown tags, or fails to clean up old rules before appending new ones.
 
 ## 5. Lock File Management

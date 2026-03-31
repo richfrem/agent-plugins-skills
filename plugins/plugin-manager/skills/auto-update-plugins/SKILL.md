@@ -137,7 +137,7 @@ Add a `SessionStart` hook to the consumer project so `check_and_sync.py` fires
 automatically on every agent session start.
 
 If the project already has a `SessionStart` hook, append this call to it.
-If not, create `.agent/hooks/session_start.sh`:
+If not, create `.agents/hooks/session_start.sh`:
 
 ```bash
 #!/usr/bin/env bash
@@ -157,7 +157,7 @@ For Claude Code specifically, register the hook in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash .agent/hooks/session_start.sh"
+            "command": "bash .agents/hooks/session_start.sh"
           }
         ]
       }

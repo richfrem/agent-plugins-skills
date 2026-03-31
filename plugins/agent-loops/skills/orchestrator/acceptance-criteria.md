@@ -1,6 +1,6 @@
 # Agent Orchestrator Acceptance Criteria
 
-To pass Open Standard certification, the `agent-orchestrator` plugin must dynamically instantiate hierarchical loops independently of global `.agent/` state tracking directories.
+To pass Open Standard certification, the `agent-orchestrator` plugin must dynamically instantiate hierarchical loops independently of global `.agents/` state tracking directories.
 
 ## Core Rules
 1. Must natively execute the `./agent_orchestrator.py` script directly without legacy slash-command wrappers.

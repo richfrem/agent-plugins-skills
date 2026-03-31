@@ -3,7 +3,7 @@ name: bridge-plugin
 description: >-
   Installs plugin components (skills, commands/workflows, rules, hooks, MCP)
   into the .agents/ central store and symlinks them to detected agent
-  environments (.agent/, .claude/, .github/, .gemini/). Use this skill when
+  environments (.agents/, .claude/, .github/, .gemini/). Use this skill when
   deploying a local plugin to agent environments, adding a new plugin to the
   ecosystem, or reconciling bridge-installed skills with the npx skills
   lock file. Trigger when a user says "bridge", "install plugin", "deploy
@@ -48,14 +48,14 @@ This skill deploys plugin components to agent environments using the
 ```
 plugins/<plugin>/
   skills/          → .agents/skills/<skill>/        (canonical copy)
-                     .agent/skills/<skill>           → symlink (Antigravity)
+                     .agents/skills/<skill>           → symlink (Antigravity)
                      .claude/skills/<skill>          → symlink (Claude Code)
   commands/        → .agents/workflows/<plugin>_<cmd>.md  (canonical copy)
-                     .agent/workflows/<plugin>_<cmd>.md   → symlink
+                     .agents/workflows/<plugin>_<cmd>.md   → symlink
                      .claude/commands/<plugin>_<cmd>.md   → symlink
                      .gemini/commands/<plugin>_<cmd>.toml → (TOML-wrapped)
   rules/           → .agents/rules/<plugin>_<rule>.md     (canonical copy)
-                     .agent/rules/<plugin>_<rule>.md      → symlink
+                     .agents/rules/<plugin>_<rule>.md      → symlink
                      CLAUDE.md                            → appended
   hooks/hooks.json → .agents/hooks/<plugin>-hooks.json   (canonical copy)
                      .claude/hooks/<plugin>-hooks.json    → symlink (Claude only)
@@ -70,13 +70,13 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 
 ## Component Mapping Matrix
 
-| Component | `.agent/` (Antigravity) | `.claude/` (Claude Code) | `.gemini/` (Gemini) | `.github/` (Copilot) |
+| Component | `.agents/` (Antigravity) | `.claude/` (Claude Code) | `.gemini/` (Gemini) | `.github/` (Copilot) |
 |-----------|------------------------|--------------------------|---------------------|----------------------|
-| `skills/` | `.agent/skills/<n>` → symlink | `.claude/skills/<n>` → symlink | `.gemini/skills/<n>` → symlink | `.github/skills/<n>` → symlink |
-| `commands/*.md` | `.agent/workflows/<plugin>_<cmd>.md` | `.claude/commands/<plugin>_<cmd>.md` | `.gemini/commands/<plugin>_<cmd>.toml` | `.github/prompts/<plugin>_<cmd>.prompt.md` |
-| `rules/` | `.agent/rules/<plugin>_<rule>.md` | Appended → `CLAUDE.md` | Appended → `GEMINI.md` | Appended → `.github/copilot-instructions.md` |
+| `skills/` | `.agents/skills/<n>` → symlink | `.claude/skills/<n>` → symlink | `.gemini/skills/<n>` → symlink | `.github/skills/<n>` → symlink |
+| `commands/*.md` | `.agents/workflows/<plugin>_<cmd>.md` | `.claude/commands/<plugin>_<cmd>.md` | `.gemini/commands/<plugin>_<cmd>.toml` | `.github/prompts/<plugin>_<cmd>.prompt.md` |
+| `rules/` | `.agents/rules/<plugin>_<rule>.md` | Appended → `CLAUDE.md` | Appended → `GEMINI.md` | Appended → `.github/copilot-instructions.md` |
 | `hooks/hooks.json` | *(ignored)* | `.claude/hooks/<plugin>-hooks.json` | *(ignored)* | *(ignored)* |
-| `agents/*.md` | `.agent/skills/<plugin>-<agent>/` wrapper | `.claude/agents/<plugin>-<agent>.md` (native) | `.gemini/skills/<plugin>-<agent>/` wrapper | `.github/skills/<plugin>-<agent>/` wrapper |
+| `agents/*.md` | `.agents/skills/<plugin>-<agent>/` wrapper | `.claude/agents/<plugin>-<agent>.md` (native) | `.gemini/skills/<plugin>-<agent>/` wrapper | `.github/skills/<plugin>-<agent>/` wrapper |
 | `.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` |
 
 > **Commands naming:** Nested command folders are flattened to snake_case.
@@ -98,7 +98,7 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 > directory), agents are deployed directly to `.claude/agents/<plugin>-<agent>.md` via
 > `deploy_agents()`. For environments without native agents support (Antigravity, Gemini,
 > GitHub), the installer wraps each agent file as a skill directory under
-> `.agent/skills/<plugin>-<agent>/SKILL.md`. Both paths run on every install.
+> `.agents/skills/<plugin>-<agent>/SKILL.md`. Both paths run on every install.
 
 ---
 
@@ -146,14 +146,14 @@ not tracked by `npx skills`.
 `existsSync(~/.gemini/antigravity)` (global install path). The bridge detects
 it locally via `(root / ".agent").exists()`. Both are correct for their scope.
 
-**Skills dir:** `.agent/skills/<skill-name>/` — a full skill folder containing
+**Skills dir:** `.agents/skills/<skill-name>/` — a full skill folder containing
 `SKILL.md` and supporting files, symlinked from `.agents/skills/<skill-name>/`.
 
 **Global skills dir:** `~/.gemini/antigravity/skills/`
 
-**Commands land in:** `.agent/workflows/` as Markdown files.
+**Commands land in:** `.agents/workflows/` as Markdown files.
 
-**Rules land in:** `.agent/rules/` as individual Markdown files (not appended
+**Rules land in:** `.agents/rules/` as individual Markdown files (not appended
 to a monolithic context file, unlike Claude/Gemini).
 
 **Hooks:** Not supported by Antigravity — ignored silently.
@@ -219,7 +219,7 @@ python ./bridge_installer.py \
 Before running the bridge, verify:
 
 1. Plugin path exists and has `./plugin.json`
-2. At least one of `.agent/`, `.claude/`, `.github/`, `.gemini/` exists
+2. At least one of `.agents/`, `.claude/`, `.github/`, `.gemini/` exists
    (do NOT create these automatically — if missing, print the exact `mkdir`
    command and wait for user confirmation)
 3. No `--target auto` is used anywhere in the call chain
@@ -233,10 +233,10 @@ State exactly what will happen:
 - **Plugin**: plugins/my-plugin (v1.2.0)
 - **Components**:
   - 2 skills → .agents/skills/ + symlinks
-  - 3 commands → .agent/workflows/, .claude/commands/
-  - 1 rules file → .agent/rules/, appended to CLAUDE.md
+  - 3 commands → .agents/workflows/, .claude/commands/
+  - 1 rules file → .agents/rules/, appended to CLAUDE.md
   - hooks.json → .claude/hooks/
-- **Detected environments**: antigravity (.agent/), claude (.claude/)
+- **Detected environments**: antigravity (.agents/), claude (.claude/)
 - **Lock file**: will update skills-lock.json
 
 > Proceed? (yes to run live, no to dry-run first)
@@ -289,9 +289,9 @@ at project root. Each entry carries the component routing for that environment:
 DETECTABLE_AGENTS = {
     ".agent": {
         "name": "antigravity",
-        "skills": ".agent/skills",
-        "commands": ".agent/workflows",   # Markdown, prefixed plugin_cmd
-        "rules": ".agent/rules",          # Individual .md files
+        "skills": ".agents/skills",
+        "commands": ".agents/workflows",   # Markdown, prefixed plugin_cmd
+        "rules": ".agents/rules",          # Individual .md files
         "hooks": None,                    # Not supported
         "rules_mode": "files",            # vs "append" for Claude/Gemini
     },

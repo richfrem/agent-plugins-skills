@@ -120,7 +120,7 @@ def _update_lock_hashes(root: Path, plugins_root: Path, dry_run: bool = False) -
 def _flush_agent_skill_links(root: Path, dry_run: bool = False) -> None:
     """Remove symlinks/junctions from all agent skills dirs before flushing .agents/.
     Without this, deleting .agents/skills/ leaves orphaned broken junctions in
-    .agent/skills/, .claude/skills/, etc. that the installer can't clean up later
+    .agents/skills/, .claude/skills/, etc. that the installer can't clean up later
     because broken junctions have .exists()=False and .is_symlink()=False on Windows.
     """
     skills_dirs = [

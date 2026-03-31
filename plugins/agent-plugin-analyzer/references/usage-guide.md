@@ -11,7 +11,7 @@ python3 ./path_reference_auditor.py --project . --phase scan
 ```
 
 **What it does:**
-- Walks all `plugins/`, `.agents/skills/`, `.agent/skills/`, `.claude/skills/` directories
+- Walks all `plugins/`, `.agents/skills/`,  `.claude/skills/` directories
 - Finds every `./reference` pattern in `.py`, `.md`, `.mmd`, `.json`, `.sh` files
 - Extracts file path, line number, reference string
 - Saves to `inventory.json` (raw, unverified)

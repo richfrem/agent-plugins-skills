@@ -6,8 +6,8 @@ This bundle contains the complete toolset for the "Universal Bridge" capability 
 ## Contents
 The bundle includes files for the following directories:
 1.  `plugins/bridge/` - The core Python scripts and documentation.
-2.  `.agent/skills/spec-kitty-bridge/` - The skill definition for AI agents.
-3.  `.agent/workflows/utilities/` - The user-facing workflow trigger.
+2.  `.agents/skills/spec-kitty-bridge/` - The skill definition for AI agents.
+3.  `.agents/workflows/utilities/` - The user-facing workflow trigger.
 
 ## Instructions for AI Agent
 

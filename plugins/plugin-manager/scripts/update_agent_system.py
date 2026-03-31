@@ -12,7 +12,7 @@ Architecture Notes:
   - Step 1 runs sync_configuration.py which converts .windsurf/workflows ->
     plugins/spec-kitty-plugin/commands/ (the auto-generated layer).
   - Step 2 runs install_all_plugins.py which deploys ALL plugins (including
-    the freshly synced spec-kitty-plugin) to .agent/, .claude/, .gemini/, .github/.
+    the freshly synced spec-kitty-plugin) to .agents/, .claude/, .gemini/, .github/.
   - The old Kernel/Skill-sync scripts (speckit_system_bridge.py, sync_skills.py)
     have been superseded by the plugin bridge architecture.
 
@@ -63,7 +63,7 @@ def main() -> None:
     run_step("Spec-Kitty Workflow Sync", SPEC_KITTY_SYNC)
 
     # Step 2: Install All Plugins (Plugin Commands/Skills/Rules -> Agent Envs)
-    # Deploys all plugins/ to .agent/, .claude/, .gemini/, .github/
+    # Deploys all plugins/ to .agents/, .claude/, .gemini/, .github/
     run_step("Plugin Installation (All Targets)", PLUGIN_INSTALLER)
 
     print("\n🎉 SYSTEM UPDATE COMPLETE")

@@ -778,7 +778,7 @@ class InventoryManager:
 
         # 3. Render Template
         # Load template
-        template_path = self.root_dir / ".agent/templates" / template_name
+        template_path = self.root_dir / ".agents/templates" / template_name
         if not template_path.exists():
             # Fallback inline template
             template = '''#!/usr/bin/env python3
