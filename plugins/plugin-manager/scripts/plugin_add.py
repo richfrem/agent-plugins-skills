@@ -225,20 +225,57 @@ def _multiselect(title: str, items: list[dict]) -> list[dict]:
 # ---------------------------------------------------------------------------
 # GitHub clone helpers
 # ---------------------------------------------------------------------------
-def _is_github_shorthand(source: str) -> bool:
-    """owner/repo style with no path separators other than one /."""
+def _is_github_source(source: str) -> bool:
+    """Return True if source looks like a GitHub reference (owner/repo or URL)."""
+    if os.path.exists(source):
+        return False
+    if source.startswith("http://") or source.startswith("https://") or source.startswith("git@"):
+        return True
+    # owner/repo[/optional/subpath]
     parts = source.strip("/").split("/")
-    return (
-        len(parts) == 2
-        and not source.startswith("http")
-        and not source.startswith("git@")
-        and not os.path.exists(source)
-    )
+    return len(parts) >= 2 and not source.startswith(".")
+
+
+def _parse_github_source(source: str) -> tuple[str, str | None]:
+    """
+    Parse a GitHub source string into (owner/repo, optional_subpath).
+
+    Supports:
+      anthropics/claude-plugins-official                  → ("anthropics/claude-plugins-official", None)
+      anthropics/claude-plugins-official/plugins          → ("anthropics/claude-plugins-official", "plugins")
+      anthropics/knowledge-work-plugins/engineering       → ("anthropics/knowledge-work-plugins", "engineering")
+      https://github.com/anthropics/claude-plugins-official/tree/main/plugins
+                                                          → ("anthropics/claude-plugins-official", "plugins")
+    """
+    s = source.strip("/")
+
+    # Strip full GitHub URLs
+    for prefix in ("https://github.com/", "http://github.com/", "github.com/"):
+        if s.startswith(prefix):
+            s = s[len(prefix):]
+            break
+
+    # Strip git@ URLs: git@github.com:owner/repo.git
+    if s.startswith("git@github.com:"):
+        s = s[len("git@github.com:"):].removesuffix(".git")
+
+    # Strip GitHub web tree noise: owner/repo/tree/BRANCH/subpath → owner/repo/subpath
+    parts = s.rstrip(".git").split("/")
+    if len(parts) >= 4 and parts[2] == "tree":
+        # parts: [owner, repo, "tree", branch, ...subpath]
+        owner_repo = f"{parts[0]}/{parts[1]}"
+        subpath = "/".join(parts[4:]) or None
+        return owner_repo, subpath
+
+    # Plain owner/repo[/subpath]
+    owner_repo = f"{parts[0]}/{parts[1]}"
+    subpath = "/".join(parts[2:]) or None
+    return owner_repo, subpath
 
 
 def _clone_repo(owner_repo: str, dest: Path) -> Path:
     url = f"https://github.com/{owner_repo}.git"
-    print(f"\n  {cyan('Source:')} https://github.com/{owner_repo}.git")
+    print(f"\n  {cyan('Source:')} https://github.com/{owner_repo}")
     print(f"  {dim('Cloning repository...')}", flush=True)
     result = subprocess.run(
         ["git", "clone", "--depth=1", url, str(dest)],
@@ -254,41 +291,80 @@ def _clone_repo(owner_repo: str, dest: Path) -> Path:
 # ---------------------------------------------------------------------------
 # Plugin discovery
 # ---------------------------------------------------------------------------
-def _discover_plugins(plugins_root: Path) -> list[dict]:
-    """Walk plugins_root and return metadata for each plugin directory."""
-    plugins = []
-    if not plugins_root.is_dir():
+def _has_plugin_manifest(path: Path) -> bool:
+    """Return True if a directory looks like a valid plugin."""
+    return (
+        (path / ".claude-plugin" / "plugin.json").exists()
+        or (path / "plugin.json").exists()
+        or (path / "skills").is_dir()
+    )
+
+
+def _read_plugin_meta(p: Path) -> dict:
+    """Build a plugin metadata dict from a directory."""
+    meta = {"name": p.name, "description": "", "path": p, "version": ""}
+    for manifest_rel in [".claude-plugin/plugin.json", "plugin.json"]:
+        manifest = p / manifest_rel
+        if manifest.exists():
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+                meta["description"] = data.get("description", "")
+                meta["version"] = data.get("version", "")
+                meta["name"] = data.get("name", p.name)
+            except Exception:
+                pass
+            break
+    if not meta["description"]:
+        skills_dir = p / "skills"
+        n = len(list(skills_dir.iterdir())) if skills_dir.is_dir() else 0
+        meta["description"] = f"{n} skill{'s' if n != 1 else ''}" if n else ""
+    return meta
+
+
+def _discover_plugins(search_root: Path) -> list[dict]:
+    """
+    Discover plugins under search_root using a three-tier waterfall:
+
+    1. If search_root has a plugins/ subdirectory → scan that (classic monorepo layout).
+    2. Otherwise scan search_root itself for subdirs that look like plugins
+       (root-level flat layout, e.g. anthropics/knowledge-work-plugins).
+    3. If search_root itself has a .claude-plugin/plugin.json → treat it as a
+       single plugin (e.g. pointing directly at a plugin subdir).
+    """
+    SKIP = frozenset({"node_modules", "venv", "env", ".venv", "__pycache__", ".git"})
+
+    def _scan_dir(root: Path) -> list[dict]:
+        plugins = []
+        for p in sorted(root.iterdir()):
+            if not p.is_dir() or p.name.startswith(".") or p.name.startswith("__"):
+                continue
+            if p.name in SKIP:
+                continue
+            plugins.append(_read_plugin_meta(p))
         return plugins
 
-    for p in sorted(plugins_root.iterdir()):
-        if not p.is_dir() or p.name.startswith(".") or p.name.startswith("__"):
-            continue
-        if p.name in ("node_modules", "venv", "env"):
-            continue
+    if not search_root.is_dir():
+        return []
 
-        meta = {"name": p.name, "description": "", "path": p, "version": ""}
-        # Try .claude-plugin/plugin.json first, then plugin.json
-        for manifest_rel in [".claude-plugin/plugin.json", "plugin.json"]:
-            manifest = p / manifest_rel
-            if manifest.exists():
-                try:
-                    data = json.loads(manifest.read_text(encoding="utf-8"))
-                    meta["description"] = data.get("description", "")
-                    meta["version"] = data.get("version", "")
-                    meta["name"] = data.get("name", p.name)
-                except Exception:
-                    pass
-                break
+    # Tier 1: classic plugins/ subdir
+    plugins_subdir = search_root / "plugins"
+    if plugins_subdir.is_dir():
+        return _scan_dir(plugins_subdir)
 
-        # Fallback description: count skills
-        if not meta["description"]:
-            skills_dir = p / "skills"
-            n = len(list(skills_dir.iterdir())) if skills_dir.is_dir() else 0
-            meta["description"] = f"{n} skill{'s' if n != 1 else ''}" if n else ""
+    # Tier 2: root-level dirs that look like plugins (flat layout)
+    root_plugins = [_read_plugin_meta(p)
+                    for p in sorted(search_root.iterdir())
+                    if p.is_dir() and not p.name.startswith(".")
+                    and p.name not in SKIP
+                    and _has_plugin_manifest(p)]
+    if root_plugins:
+        return root_plugins
 
-        plugins.append(meta)
+    # Tier 3: the directory itself is a single plugin
+    if _has_plugin_manifest(search_root):
+        return [_read_plugin_meta(search_root)]
 
-    return plugins
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -336,32 +412,40 @@ def main():
     temp_dir = None
     plugins_root: Path
 
-    if args.source and _is_github_shorthand(args.source):
-        _print_banner(args.source)
+    if args.source and _is_github_source(args.source):
+        owner_repo, subpath = _parse_github_source(args.source)
+        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
         temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
-        repo_root = _clone_repo(args.source, temp_dir / args.source.replace("/", "_"))
-        plugins_root = repo_root / "plugins"
+        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
+        # If a subpath was specified, descend into it; otherwise use repo root
+        plugins_root = repo_root / subpath if subpath else repo_root
     elif args.source:
         source_path = Path(args.source).resolve()
         _print_banner(str(source_path))
-        plugins_root = source_path / "plugins" if (source_path / "plugins").is_dir() else source_path
+        plugins_root = source_path
     else:
-        # Default: find this repo's plugins/ relative to the project root
-        # Walk up from cwd until we find a plugins/ directory
+        # Default: find this repo's root relative to cwd
         cwd = Path.cwd()
         candidate = cwd
         for _ in range(4):
-            if (candidate / "plugins").is_dir():
+            if (candidate / "plugins").is_dir() or (candidate / ".claude-plugin").is_dir():
                 break
             candidate = candidate.parent
-        plugins_root = candidate / "plugins"
+        plugins_root = candidate
         _print_banner(str(candidate))
 
-    if not plugins_root.is_dir():
-        print(red(f"  Error: plugins directory not found at {plugins_root}"))
-        if temp_dir and temp_dir.exists():
-            shutil.rmtree(temp_dir, ignore_errors=True)
-        sys.exit(1)
+    # .claude/ auto-init for fresh projects
+    project_root = Path.cwd()
+    if not (project_root / ".claude").exists() and not args.dry_run:
+        print()
+        print(yellow("  No .claude/ directory found in this project."))
+        try:
+            answer = input(f"  Initialize .claude/ for Claude Code integration? [{green('Y')}/n] ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
+        if answer in ("", "y", "yes"):
+            (project_root / ".claude").mkdir(exist_ok=True)
+            print(f"  {green('✓')} Created .claude/ — Claude Code symlinks will be activated")
 
     # ------------------------------------------------------------------
     # Discover plugins
@@ -465,7 +549,7 @@ def main():
     print()
 
     if not args.dry_run and success_count:
-        print(f"  {dim('Tip:')} Run {cyan('npx skills update')} to sync the skills lock file.")
+        print(f"  {dim('Tip:')} Run {cyan('git add .agents/ .claude/')} to track installed plugins.")
         print(f"  {dim('Tip:')} Restart your agent to pick up new commands and hooks.")
         print()
 
