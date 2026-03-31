@@ -352,6 +352,14 @@ in Phase 2.1 captures overnight learnings only — it does not trigger a full OS
 survey, or kernel-level protocol review. The `overnight-summary` event in Phase 2.5 signals
 the OUTER flywheel that new learnings are available for its next session.
 
+**Lab repo vs master-adjacent runs:**
+The Hard Safety Rule ("INNER flywheel only — one target SKILL.md") applies when this agent
+runs in or adjacent to the master `agent-plugins-skills` repo. In a **lab repo** (bootstrapped
+by `os-eval-lab-setup`) the loop may naturally mutate `os-eval-runner` files alongside the
+target skill — that is expected behavior in lab context and is gated safely by `os-eval-backport`
+review before anything returns to master. This agent does not need to be run in lab repos;
+`os-eval-lab-setup` + a standalone Claude Code session is the preferred lab pattern.
+
 ---
 
 ## Emergency Stop Conditions
