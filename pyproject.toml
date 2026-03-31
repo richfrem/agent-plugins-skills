@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-plugins"
+version = "0.1.0"
+description = "Universal cross-platform plugin installer for agentic ecosystems."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
+
+[project.scripts]
+plugin-add = "bootstrap:main"
+
+[tool.setuptools]
+py-modules = ["bootstrap"]

@@ -24,41 +24,53 @@ Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplin
 ## Installation
 
 > [!IMPORTANT]
-> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to this repo. After cloning, it will be empty. Run the bridge installer below to deploy all plugins before using any skills or agents.
+> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty. Run the installer below to deploy all plugins before using any skills or agents.
 
-### Step 1: Clone and deploy (all platforms)
+### Initial Installation (Bootstrapping)
 
-Requires **Python 3.8+** — no other dependencies.
+These commands are for consumers who want to add plugins seamlessly *without* cloning the repo.
+
+#### Option 1: `uvx` — Modern Python Standard (Recommended)
+
+If you have [uv](https://docs.astral.sh/uv/) installed (the modern Python package manager), you get instantaneous, isolated installations exactly like `npx`, but natively cross-platform without Node.js.
+
+```bash
+# Interactive picker
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+
+# Install everything non-interactively (no prompts)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
+
+# Preview what will be installed without writing any files
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
+```
+
+#### Option 2: Fallback Bootstrap (Zero Tooling Assumptions)
+
+If you don't use `uv`, you can install purely using standard Python tooling without cloning the repo.
+
+**Mac / Linux:**
+```bash
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
+```
+**Windows (PowerShell):**
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
+```
+
+### Subsequent Installations
+
+Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same command to add new plugins later. There is no local state to manage outside of your `.agents/` folder.
+
+#### Option 3: Full Local Clone (For Developers)
+
+If you want to maintain a Git repo for debugging instead of using the remote bootstrappers:
 
 ```bash
 git clone https://github.com/richfrem/agent-plugins-skills.git
 cd agent-plugins-skills
-
-# Interactive plugin picker — choose which plugins to install
 python plugins/plugin-manager/scripts/plugin_add.py
 ```
-
-The interactive TUI (inspired by `npx skills add` from [Vercel Labs skills CLI](https://skills.sh)) lets you browse all 29 plugins, select with space, search with `/`, and confirm. Full plugin deployment: skills + agents + commands + hooks.
-
-```bash
-# Install everything non-interactively (no prompts)
-python plugins/plugin-manager/scripts/plugin_add.py --all -y
-
-# Or install from GitHub directly (auto-clones, then prompts)
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
-
-# Preview what will be installed without writing any files
-python plugins/plugin-manager/scripts/plugin_add.py --dry-run
-```
-
-### Step 2: Update (after a git pull)
-
-```bash
-git pull
-python plugins/plugin-manager/scripts/plugin_add.py --all -y
-```
-
-> The installer is idempotent — safe to re-run at any time.
 
 ---
 
@@ -96,7 +108,8 @@ Browse all plugins: **[skills.sh/richfrem/agent-plugins-skills](https://skills.s
 
 | Method | Platform | Full Plugin | GitHub source | Notes |
 |---|---|---|---|---|
-| `plugin_add.py` ★ | **All** (Win/Mac/Linux) | ✅ skills + agents + commands + hooks | ✅ `owner/repo` | Recommended default |
+| `uvx` ★ | **All** (Win/Mac/Linux) | ✅ skills + agents + commands + hooks | ✅ `owner/repo` | Recommended default |
+| `bootstrap.py` | **All** (Win/Mac/Linux) | ✅ full | ✅ `owner/repo` | Zero-dependency fallback |
 | `/plugin` marketplace | Claude Code only | ✅ full | ✅ | Native Claude TUI |
 | `npx skills add` | Mac/Linux only | ❌ skills only | ✅ | No Python required |
 
