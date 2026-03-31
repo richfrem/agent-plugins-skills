@@ -48,6 +48,17 @@ EVAL_RUNNER = HERE / "eval_runner.py"
 
 HEADERS = ["timestamp", "commit", "score", "baseline", "accuracy", "heuristic", "f1", "status", "description"]
 
+# Supported primary metrics and their KEEP logic.
+# Each entry: (metric_key_in_data, guard_key_in_data_or_None)
+# KEEP requires: primary >= baseline_primary AND (guard >= baseline_guard if guard exists)
+METRIC_OPTIONS = {
+    "quality_score": ("quality_score", "f1"),       # default: quality gate + F1 anti-stuffing guard
+    "f1":            ("f1",            None),        # optimize F1 directly
+    "precision":     ("precision",     "recall"),    # optimize precision, guard on recall floor
+    "recall":        ("recall",        "precision"), # optimize recall, guard on precision floor
+    "heuristic":     ("heuristic",     None),        # structural quality only
+}
+
 # Files the loop must never modify — checked at startup
 LOCKED_FILES = [HERE / "evaluate.py", HERE / "eval_runner.py"]
 
@@ -312,6 +323,13 @@ def main() -> None:
     )
     parser.add_argument("--desc", default="iteration", help="Description for results.tsv")
     parser.add_argument("--baseline", action="store_true", help="Record this run as the new baseline")
+    parser.add_argument(
+        "--primary-metric", dest="primary_metric", default="quality_score",
+        choices=list(METRIC_OPTIONS.keys()),
+        help="Which metric to optimize (default: quality_score). "
+             "Options: quality_score, f1, precision, recall, heuristic. "
+             "KEEP requires primary >= baseline; guard metric (if any) must not regress."
+    )
     args = parser.parse_args()
 
     target = Path(args.skill).resolve()
@@ -345,25 +363,47 @@ def main() -> None:
     accuracy = float(data.get("accuracy", 0.0))
     heuristic = float(data.get("heuristic", 0.0))
     f1 = float(data.get("f1", 0.0))
+    precision = float(data.get("precision", 0.0))
+    recall = float(data.get("recall", 0.0))
+
+    # Map every metric name to its current value for generic KEEP logic
+    metric_values = {
+        "quality_score": score,
+        "f1": f1,
+        "precision": precision,
+        "recall": recall,
+        "heuristic": heuristic,
+    }
 
     baseline_score, baseline_f1 = load_baseline(results_tsv)
+    # For non-default metrics the baseline row still stores quality_score in the score column.
+    # We use the same column as anchor for the primary metric when it IS quality_score, and
+    # fall back to the stored f1 as a second axis for any metric that doesn't have its own
+    # baseline column yet. This keeps backward compatibility — existing results.tsv files work.
+    primary_key, guard_key = METRIC_OPTIONS[args.primary_metric]
+    primary_value = metric_values[primary_key]
+    primary_baseline = baseline_score  # always stored in the score column
 
     if args.baseline or baseline_score == 0.0:
         status = "BASELINE"
-    elif round(score, 4) >= round(baseline_score, 4) and round(f1, 4) >= round(baseline_f1, 4):
-        status = "KEEP"
     else:
-        status = "DISCARD"
+        primary_ok = round(primary_value, 4) >= round(primary_baseline, 4)
+        guard_ok = True
+        if guard_key:
+            guard_value = metric_values[guard_key]
+            guard_baseline = baseline_f1 if guard_key == "f1" else 0.0
+            guard_ok = round(guard_value, 4) >= round(guard_baseline, 4)
+        status = "KEEP" if (primary_ok and guard_ok) else "DISCARD"
 
-    write_row(results_tsv, commit, score, baseline_score, accuracy, heuristic, f1, status, args.desc)
-    write_trace(results_tsv, skill_root, score, baseline_score, status, args.desc, data)
+    write_row(results_tsv, commit, primary_value, primary_baseline, accuracy, heuristic, f1, status, args.desc)
+    write_trace(results_tsv, skill_root, primary_value, primary_baseline, status, args.desc, data)
 
     if status == "BASELINE":
         # Snapshot locked file hashes alongside results.tsv so subsequent runs can
         # detect committed modifications (not just dirty-working-tree changes).
         save_lock_hashes(results_tsv, locked_files_to_hash)
 
-    print(f"score={score:.4f}  baseline={baseline_score:.4f}  f1={f1:.4f}  baseline_f1={baseline_f1:.4f}  STATUS: {status}")
+    print(f"metric={args.primary_metric}  score={primary_value:.4f}  baseline={primary_baseline:.4f}  f1={f1:.4f}  STATUS: {status}")
     print(f"commit={commit}  skill={skill_root.name}  desc={args.desc!r}")
 
     if status == "DISCARD":
