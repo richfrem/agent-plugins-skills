@@ -115,7 +115,7 @@ def sync_workflows() -> None:
         
         if skill_symlink.is_symlink() or skill_symlink.exists():
             skill_symlink.unlink()
-        shutil.copy2(WORKFLOWS_PLUGIN_DIR / src_file.name, skill_symlink)
+        os.symlink(rel_asset_target, skill_symlink)
         
         new_content = f"""---
 name: {skill_name.replace(".", "-")}
@@ -170,13 +170,9 @@ def sync_rules() -> None:
             dest_file = TEMPLATES_DEST_DIR / rel_path
             
             dest_file.parent.mkdir(parents=True, exist_ok=True)
-            rel_target = os.path.relpath(src_file, dest_file.parent)
-            
-            if dest_file.is_symlink():
-                if os.readlink(dest_file) != rel_target:
-                    dest_file.unlink()
-                shutil.copy2(src_file, dest_file)
-                
+            if dest_file.is_symlink() or dest_file.exists():
+                dest_file.unlink()
+            shutil.copy2(src_file, dest_file)
             template_count += 1
             
     print(f"   ✅ Synced {template_count} template symlinks.")
