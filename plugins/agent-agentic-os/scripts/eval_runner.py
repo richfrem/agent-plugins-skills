@@ -531,6 +531,8 @@ def main() -> None:
         print(json.dumps({
             "quality_score": quality_score,
             "accuracy": routing["accuracy"],
+            "precision": routing["precision"],
+            "recall": routing["recall"],
             "f1": f1,
             "heuristic": heuristic["score"],
             "routing_detail": routing.get("routing_detail", []),

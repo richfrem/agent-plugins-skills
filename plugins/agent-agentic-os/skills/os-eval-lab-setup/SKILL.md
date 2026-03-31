@@ -65,6 +65,38 @@ Default: `<skill-name>-round1`.
 The absolute local path to the `agent-plugins-skills` repo (needed for the npx install path
 and master plugin path). Default: ask the user or detect from context.
 
+**Q7 — What are you optimizing for? (primary metric)**
+
+Present these options and ask the user to pick one:
+
+| Option | Metric | KEEP condition | Best when |
+|---|---|---|---|
+| `quality_score` (default) | `routing_accuracy × 0.7 + heuristic × 0.3` | score ≥ baseline AND f1 ≥ baseline | General SKILL.md improvement |
+| `f1` | F1 score | f1 ≥ baseline | Routing balance — both precision and recall matter equally |
+| `precision` | Routing precision | precision ≥ baseline | Skill is over-triggering (too many false positives) |
+| `recall` | Routing recall | recall ≥ baseline | Skill is under-triggering (missing true positives) |
+| `heuristic` | Structural health score | heuristic ≥ baseline | Routing is already good; fixing structural/doc issues |
+
+If the user is unsure: diagnose first — run `eval_runner.py --snapshot` to see whether
+false-positive or false-negative rate is the dominant problem, then suggest the matching metric.
+
+Default: `quality_score` if the user has no preference.
+
+**Q8 — What optimization strategy? (how much context the proposer sees)**
+
+Present these options:
+
+| Strategy | Proposer sees | Token cost | Best when |
+|---|---|---|---|
+| `scores-only` | results.tsv rows (score history) | ~0.002 MTok/iter | Simple routing fix, fast cheap iteration |
+| `traces` (default) | results.tsv + last 3 trace files | ~0.1 MTok/iter | Most cases — enough signal without high cost |
+| `full` | results.tsv + ALL trace files | ~1–10 MTok/iter | Complex structural failures needing causal diagnosis |
+
+The strategy is written into `program.md` as an instruction to the proposer. It does not change
+`evaluate.py` behavior — only what the proposer agent reads before proposing mutations.
+
+Default: `traces` unless the user specifies otherwise.
+
 **Confirm before proceeding:**
 ```
 Lab repo:          /path/to/lab-repo
@@ -72,6 +104,8 @@ Plugin (master):   plugins/<plugin-name>  →  /abs/path/agent-plugins-skills/pl
 Skill:             <skill-name>
 GitHub remote:     https://github.com/...
 Round label:       <label>
+Primary metric:    quality_score  (or: f1 / precision / recall / heuristic)
+Strategy:          traces         (or: scores-only / full)
 ```
 
 ---

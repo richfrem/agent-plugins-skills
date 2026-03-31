@@ -216,6 +216,20 @@ The experiment directory is where `references/program.md`, `evals/evals.json`, `
 
 Confirm: "Experiment files will be stored at `<experiment-dir>/references/` and `<experiment-dir>/evals/` — is that right?"
 
+**Q2b — What metric are you optimizing?**
+
+Every skill has a different failure mode — pick the metric that matches:
+
+| Metric | Flag | KEEP condition | Use when |
+|---|---|---|---|
+| `quality_score` | *(default)* | score ≥ baseline AND f1 ≥ baseline | General improvement |
+| `f1` | `--primary-metric f1` | f1 ≥ baseline | Both precision AND recall matter |
+| `precision` | `--primary-metric precision` | precision ≥ baseline, recall doesn't regress | Skill fires too often (false positives) |
+| `recall` | `--primary-metric recall` | recall ≥ baseline, precision doesn't regress | Skill misses inputs (false negatives) |
+| `heuristic` | `--primary-metric heuristic` | heuristic ≥ baseline | Routing correct; improve structure/docs |
+
+Not sure which? Run `eval_runner.py --snapshot` first — it reports fp/fn rates and recommends PRECISION or RECALL focus.
+
 **Q3 — What mode?**
 - **Loop mode**: autonomous iterative improvement (agent proposes changes, scores them, loops)
 - **QA mode**: validate one specific proposed change only
@@ -283,7 +297,7 @@ The agent will:
 2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive):
    - Make one focused change to `SKILL.md`
-   - Run `python3 scripts/evaluate.py --skill <path/to/skill-folder> --desc "what changed"`
+   - Run `python3 scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"`
    - exit 0 (KEEP): `git add SKILL.md && git commit -m "keep: score=X <desc>"`
    - exit 1 (DISCARD): `git checkout -- <path>/SKILL.md`
 
