@@ -10,13 +10,13 @@ args:
 
 # Update Agent System
 
-Runs the master sync to update plugins and redeploy all agent capabilities.
+Runs the master sync to update all plugins and redeploy capabilities to all agent environments.
 
 ```bash
 if [ "${dry_run}" = "true" ]; then
-    python3 ./scripts/sync_with_inventory.py --dry-run
+    python3 ./plugins/plugin-manager/scripts/plugin_add.py --all -y --dry-run
 else
-    python3 ./scripts/update_agent_system.py
+    python3 ./plugins/plugin-manager/scripts/plugin_add.py --all -y
 fi
 ```
 

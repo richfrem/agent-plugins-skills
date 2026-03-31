@@ -1,45 +1,26 @@
 ---
 description: >-
-  Replicate a specific plugin from this project's plugins/ folder to a target
-  project, then activate it in the target's agent environments.
+  Install a specific plugin natively into the local agent environments from either
+  the remote registry or local plugins folder.
 args:
   plugin_name:
-    description: "The name of the plugin to replicate (e.g., rlm-factory)."
+    description: "The name of the plugin to install (e.g., rlm-factory). Leave blank for interactive TUI."
     type: string
-    required: true
-  dest:
-    description: "Absolute path to the target project's plugins/ folder."
-    type: string
-    required: true
+    required: false
 ---
 
-# Install Plugin to Target
+# Install Plugin
 
-Copies a plugin from this repo's `plugins/` to a target project's `plugins/` folder, then activates it in that project's agent environments.
+Installs a plugin into the local `.agents/` directory (and other agent environments).
 
 ```bash
-PLUGIN_NAME="${plugin_name}"
-SOURCE_PATH="$(pwd)/plugins/$PLUGIN_NAME"
-TARGET_PLUGINS="${dest}"
-DEST_PATH="$TARGET_PLUGINS/$PLUGIN_NAME"
-
-# Validate source plugin exists
-if [ ! -d "$SOURCE_PATH" ]; then
-    echo "Error: Plugin '$PLUGIN_NAME' not found in plugins/."
-    echo "Available plugins:"
-    ls plugins/
-    exit 1
+if [ -n "${plugin_name}" ]; then
+    # Headless install
+    python ./plugins/plugin-manager/scripts/plugin_add.py "${plugin_name}" -y
+else
+    # Interactive picker
+    python ./plugins/plugin-manager/scripts/plugin_add.py
 fi
-
-# Replicate source -> dest (additive update)
-python3 ./scripts/plugin_replicator.py \
-  --source "$SOURCE_PATH" \
-  --dest "$DEST_PATH"
-
-# Activate in target's agent environments
-echo "Activating plugin in target project..."
-cd "$TARGET_PLUGINS/.." && python3 ./scripts/sync_with_inventory.py
 ```
 
-> To also remove deleted files, add `--clean` to the `plugin_replicator.py` call.
-> To replicate all plugins at once, use `/plugin-manager:update` or `bulk_replicator.py`.
+> To install everything, use the `/plugin-manager:update` command.

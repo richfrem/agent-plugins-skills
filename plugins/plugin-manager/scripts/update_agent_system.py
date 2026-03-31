@@ -50,8 +50,8 @@ def run_step(name: str, script_path: Path, args: list = []) -> None:
 
 def main() -> None:
     print("\n" + "="*80)
-    print("⚠️  DEPRECATION NOTICE: This script is partially superseded by `npx skills`.")
-    print("For standard syncing to agents, use: `npx skills update`")
+    print("⚠️  DEPRECATION NOTICE: This script is partially superseded by `uvx`.")
+    print("For standard syncing to agents, use: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add . --all -y`")
     print("This script remains for legacy custom syncing and structural audits.")
     print("="*80 + "\n")
 

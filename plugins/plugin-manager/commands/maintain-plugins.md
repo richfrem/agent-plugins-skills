@@ -1,1 +1,0 @@
-../skills/maintain-plugins/SKILL.md
