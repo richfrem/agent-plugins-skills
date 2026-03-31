@@ -94,6 +94,9 @@ your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever mak
     evals.json           Deployed from template — your test prompts (edit this)
     results.tsv          Deployed from template, then written by evaluate.py each run
     .lock.hashes         SHA256 snapshot of locked files — written by evaluate.py --baseline
+    traces/              Per-iteration diagnostic JSON — written by evaluate.py each run
+      iter_001_KEEP_score0.87.json    mutation diff + per-input routing verdicts
+      iter_002_DISCARD_score0.71.json failure_reason for each incorrect routing
 ```
 
 ## Setup: Start a New Experiment (4 steps)
@@ -471,6 +474,26 @@ The heuristic engine applies soft penalties for missing structure (e.g. -0.30 fo
 
 ### .lock.hashes and path portability
 `.lock.hashes` currently uses absolute paths. If the skill folder is moved between environments or machines, the baseline hashes will mismatch and trigger exit 3. Re-establish the baseline with `--baseline` after any move.
+
+### Re-baseline required after upgrading evaluate.py or eval_runner.py
+Both scripts are SHA256-locked. If you pull an upstream update to either script, existing `.lock.hashes` files will mismatch and trigger exit 3. Fix:
+```bash
+python3 plugins/agent-agentic-os/scripts/evaluate.py \
+    --skill <experiment-dir> --baseline --desc "re-baseline after script upgrade"
+git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evaluate.py upgrade"
+```
+
+### Reading traces to diagnose DISCARD iterations
+```bash
+# Find all false positives across recent traces
+grep -h "false positive" evals/traces/iter_*.json | sort | uniq -c | sort -rn
+
+# Show full routing detail for a specific DISCARD
+cat evals/traces/iter_002_DISCARD_score0.71.json | python3 -m json.tool
+
+# Show the mutation diff for a DISCARD
+python3 -c "import json; d=json.load(open('evals/traces/iter_002_DISCARD_score0.71.json')); print(d['mutation_diff'])"
+```
 
 ---
 

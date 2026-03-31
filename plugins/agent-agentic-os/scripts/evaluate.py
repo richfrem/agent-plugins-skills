@@ -246,6 +246,64 @@ def write_row(results_tsv: Path, commit: str, score: float, baseline: float,
         })
 
 
+def write_trace(results_tsv: Path, skill_root: Path, score: float, baseline_score: float,
+                status: str, desc: str, metrics: dict) -> None:
+    """Write a per-iteration diagnostic trace JSON to evals/traces/.
+
+    Enables the proposer to grep/cat raw per-input routing failures and mutation
+    diffs — the key Meta-Harness finding (Lee et al., arXiv:2603.28052) that
+    produces +15 accuracy points over scores-only access.
+
+    Called after write_row() so the iteration count from results.tsv is accurate.
+    Called before git revert so the diff reflects the mutation that was evaluated.
+    Skipped for BASELINE rows (no mutation diff to record).
+    """
+    if status == "BASELINE":
+        return
+
+    traces_dir = results_tsv.parent / "traces"
+    traces_dir.mkdir(exist_ok=True)
+
+    # Iteration number = data rows in results.tsv (excluding header and BASELINE rows)
+    iteration = 0
+    try:
+        with open(results_tsv, newline="") as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            iteration = sum(1 for r in reader if r.get("status") in ("KEEP", "DISCARD"))
+    except Exception:
+        pass
+
+    # Capture mutation diff (before revert)
+    mutation_diff = ""
+    try:
+        diff_result = subprocess.run(
+            ["git", "diff", "HEAD", "--", "."],
+            capture_output=True, text=True, cwd=skill_root,
+        )
+        mutation_diff = diff_result.stdout[:4000]  # cap at 4KB
+    except Exception:
+        pass
+
+    trace = {
+        "iteration": iteration,
+        "verdict": status,
+        "score": round(score, 4),
+        "baseline_score": round(baseline_score, 4),
+        "delta": round(score - baseline_score, 4),
+        "desc": desc,
+        "mutation_diff": mutation_diff,
+        "routing_detail": metrics.get("routing_detail", []),
+        "heuristic_detail": metrics.get("heuristic_detail", []),
+        "timestamp": datetime.now().isoformat(),
+    }
+
+    trace_filename = f"iter_{iteration:03d}_{status}_score{score:.2f}.json"
+    try:
+        (traces_dir / trace_filename).write_text(json.dumps(trace, indent=2))
+    except Exception as e:
+        print(f"WARNING: could not write trace file: {e}", file=sys.stderr)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Locked autoresearch loop gate")
     parser.add_argument(
@@ -298,6 +356,7 @@ def main() -> None:
         status = "DISCARD"
 
     write_row(results_tsv, commit, score, baseline_score, accuracy, heuristic, f1, status, args.desc)
+    write_trace(results_tsv, skill_root, score, baseline_score, status, args.desc, data)
 
     if status == "BASELINE":
         # Snapshot locked file hashes alongside results.tsv so subsequent runs can
