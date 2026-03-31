@@ -1,6 +1,7 @@
 # Autoresearch Overview: Applying the Karpathy Loop to Any Target
 
 **Reference:** `references/research/karpathy-autoresearch-3-file-eval.md`
+**Related research:** `references/research/meta-harness-lee-2026.md` (arXiv:2603.28052)
 **Architecture:** `references/autoresearch-architecture.md`
 **Sequence Diagram:** `references/diagrams/autoresearch-loop.mmd`
 **Mapping Diagram:** `references/diagrams/mapping-karpathy-to-os-eval-runner.mmd`
