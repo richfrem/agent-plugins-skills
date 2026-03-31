@@ -25,7 +25,7 @@ In **Quick Win 1**, you recommended:
 
 Putting a skill into two plugins is completely unnecessary. Remember: once an end-user installs plugins into their project's `.agents/` directory, **all skills become globally accessible to the agent in that repository.** There is ZERO purpose in duplicating a skill across multiple plugins to try to "guarantee access"—if it's installed once, the agent has it.
 
-The richfrem ecosystem uses a sophisticated installer (`bridge_installer.py` / `npx skills add`) that allows us to maintain strict DRY in the mono-repo source while producing self-contained artifacts at deploy time.
+The richfrem ecosystem uses a sophisticated installer (`plugin_installer.py` / `npx skills add`) that allows us to maintain strict DRY in the mono-repo source while producing self-contained artifacts at deploy time.
 
 ### The Correct Architectural Approach
 We do **not** duplicate skills across plugins. If `verification-before-completion` is a universal skill required by both the OS and the Exploration cycle, the correct implementation path is:
@@ -66,5 +66,5 @@ This is exactly why we need the Superpowers execution rules. They act as a harde
 
 Please ingest this feedback and recalibrate your mental model of the `agent-plugins-skills` repository:
 1. Read **ADR-002**, **ADR-003**, and **ADR-004** to fully understand the Hub-and-Spoke and File-Level Symlink resolution architecture.
-2. Understand that "Copy" only happens at *install time* via the `bridge_installer.py`. In the source tree, we use file-level symlinks to maintain strict DRY.
+2. Understand that "Copy" only happens at *install time* via the `plugin_installer.py`. In the source tree, we use file-level symlinks to maintain strict DRY.
 3. Review your `quick-wins.md` and propose a refactored implementation plan for importing the `superpowers` skills that strictly obeys the zero-duplication ADRs *and* respects the boundary with Spec-Kitty.

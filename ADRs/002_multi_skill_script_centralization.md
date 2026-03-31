@@ -22,7 +22,7 @@ We need a standardized architectural rule defining exactly where Python scripts 
 - Enforces strict DRY (Don't Repeat Yourself) within a plugin's boundary.
 - All CLI commands and execution strings across `SKILL.md` workflows remain perfectly uniform and localized (`python ./scripts/foo.py`), oblivious to whether the script is physical or a symlink to the root repo.
 - The `plugins/<plugin-name>/scripts/` folder serves as a clear "shared library" for internal capability logic.
-- **Installer resolution guarantee**: Both `npx skills add` and `bridge_installer.py` resolve file-level symlinks at install time, so consumers in `.agents/skills/<name>/scripts/` always execute real physical files. The bridge installer uses a 3-tier resolution strategy:
+- **Installer resolution guarantee**: Both `npx skills add` and `plugin_installer.py` resolve file-level symlinks at install time, so consumers in `.agents/skills/<name>/scripts/` always execute real physical files. The bridge installer uses a 3-tier resolution strategy:
   1. **True symlink** (Linux, macOS, Windows with Developer Mode enabled) via `os.symlink()`
   2. **NTFS Junction point** (Windows without Developer Mode, directories only) -- logged as `Symlinked (Junction)`
   3. **Full copy fallback** if both symlink and junction fail -- returns `symlinkFailed=True`, equivalent to npx skills behavior

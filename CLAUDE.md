@@ -29,7 +29,7 @@ python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run
 ### Add/Update a Single Plugin
 
 ```bash
-python plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/<plugin-name>
+python plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/<plugin-name>
 ```
 
 ### Regenerate the Autoresearch Fitness Report
@@ -109,7 +109,7 @@ All ecosystem management lives in `plugins/plugin-manager/scripts/`:
 | Script | Purpose |
 |---|---|
 | `install_all_plugins.py` | Bulk bridge-install all plugins |
-| `bridge_installer.py` | Install a single plugin |
+| `plugin_installer.py` | Install a single plugin |
 | `update_agent_system.py` | Pull-based sync for installed environments |
 | `clean_orphans.py` | Remove artifacts for deleted plugins |
 | `audit_structure.py` | Validate plugin directory structure |
@@ -124,4 +124,4 @@ Use the scaffolding skills rather than hand-rolling structure:
 - `/agent-scaffolders:create-skill` — skill scaffold with evals.json, references/, acceptance-criteria.md
 - `/agent-scaffolders:audit-plugin` — validate structure after scaffolding
 
-After scaffolding, run `bridge_installer.py` to deploy.
+After scaffolding, run `plugin_installer.py` to deploy.

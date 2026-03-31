@@ -31,7 +31,7 @@
   - [x] SKILL.md in `skills/verification-before-completion/`
   - [x] Add friction event type `false_completion_claim` note in agent-agentic-os `agents/os-learning-loop.md`
 - [x] `tools_manifest.json` is auto-generated -- skipped (find-polluter.sh picked up on next regen)
-- [x] Run `bridge_installer.py --dry-run` -- CLEAN: all 6 skills + code-reviewer agent resolve
+- [x] Run `plugin_installer.py --dry-run` -- CLEAN: all 6 skills + code-reviewer agent resolve
 
 ---
 
@@ -108,8 +108,8 @@ All skills land in `plugins/agent-execution-disciplines/`.
 
 ## Phase 6: Final Verification and Commit
 
-- [x] Run `bridge_installer.py --dry-run --plugin plugins/agent-execution-disciplines` -- CLEAN
-- [ ] Run `bridge_installer.py --plugin plugins/agent-execution-disciplines` -- pending user approval
+- [x] Run `plugin_installer.py --dry-run --plugin plugins/agent-execution-disciplines` -- CLEAN
+- [ ] Run `plugin_installer.py --plugin plugins/agent-execution-disciplines` -- pending user approval
 - [ ] Verify all 6+ new skills appear in `.agents/skills/` -- pending install
 - [ ] Run plugin structure auditor -- deferred
 - [ ] Commit all changes -- pending user approval

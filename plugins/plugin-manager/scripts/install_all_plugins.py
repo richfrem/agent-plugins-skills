@@ -3,7 +3,7 @@ Install All Plugins (CLI)
 =========================
 
 Purpose:
-    Iterates through all directories in `plugins/` and runs the `bridge_installer.py` for each one 
+    Iterates through all directories in `plugins/` and runs the `plugin_installer.py` for each one 
     to orchestrate a bulk repository update, strictly using the new .agents centralized symlink pattern.
 
 Layer: Plugin Manager / Installation
@@ -21,7 +21,7 @@ CLI Arguments:
     --plugins-dir: Optional path to a specific plugins folder to install from.
 
 Input Files:
-    - bridge_installer.py (Subprocess script)
+    - plugin_installer.py (Subprocess script)
 
 Output:
     - Updates local agent environments and skills-lock.json.
@@ -36,7 +36,7 @@ Script Dependencies:
 Consumed by:
     - None (Standalone script)
 Related:
-    - scripts/bridge_installer.py
+    - scripts/plugin_installer.py
 """
 import os
 import sys
@@ -62,7 +62,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = Path.cwd()
 PLUGINS_ROOT = PROJECT_ROOT / "plugins"
 
-INSTALLER_SCRIPT = SCRIPT_DIR / "bridge_installer.py"
+INSTALLER_SCRIPT = SCRIPT_DIR / "plugin_installer.py"
 
 def _compute_folder_hash(folder: Path) -> str:
     """Matches npx skills computeSkillFolderHash simple SHA-256 over relative files."""

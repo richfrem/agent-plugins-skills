@@ -13,7 +13,7 @@ This installs the skills from this plugin.
 For complete access to all components, use the plugin-installer skill:
 ```bash
 # Use the plugin-installer skill to deploy all components
-# python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/rsvp-speed-reader
+# python ./plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/rsvp-speed-reader
 ```
 
 ## What is RSVP Speed Reading?

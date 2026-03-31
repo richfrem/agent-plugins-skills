@@ -81,4 +81,4 @@ Consult these files to understand the bridge deployment rules:
 
 ### 2. Available Scripts
 *   `sync_configuration.py` — The core synchronization engine that translates local workflows into Open Standard skills. Usage: `python3 ./sync_configuration.py`.
-*   `bridge_installer.py` — Executes the installation scripts connecting local folders to central `.agents/` stores. Use only in tandem with verified sync output.
+*   `plugin_installer.py` — Executes the installation scripts connecting local folders to central `.agents/` stores. Use only in tandem with verified sync output.

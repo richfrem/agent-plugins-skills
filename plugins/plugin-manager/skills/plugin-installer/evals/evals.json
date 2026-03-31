@@ -12,7 +12,7 @@
             "id": "eval-2-single-plugin-bridge",
             "type": "positive",
             "prompt": "Bridge the rlm-factory plugin to my Gemini CLI setup.",
-            "expected_behavior": "Agent runs bridge_installer.py with --plugin plugins/rlm-factory. Does NOT use any --target flag. Output confirms files written to .agents/ and symlinked to active environments."
+            "expected_behavior": "Agent runs plugin_installer.py with --plugin plugins/rlm-factory. Does NOT use any --target flag. Output confirms files written to .agents/ and symlinked to active environments."
         },
         {
             "id": "eval-3-all-plugins-sync",

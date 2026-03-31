@@ -47,7 +47,7 @@ Script: audit_structure.py
   3. Only used by 1 skill. Physically exists ONLY in that skill (maintain-plugins)? No
      -> Found in: ['scripts/audit_structure.py', 'skills/maintain-plugins/scripts/audit_structure.py']
 
-Script: bridge_installer.py
+Script: plugin_installer.py
   1. Exists physically in plugin: Yes (3 location(s))
      -> Exists at pluginroot/scripts: Yes
   2. Used by skills: plugin-installer, maintain-plugins

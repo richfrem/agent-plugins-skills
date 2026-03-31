@@ -30,9 +30,9 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 ## Plugin & Skill Script Architecture (Hub-and-Spoke)
 
 1. **DRY in source - Hub-and-Spoke.** One canonical script file lives at `plugins/<plugin-name>/scripts/`. Skills that need it use a file-level symlink in their own `scripts/` directory pointing back to the root (`ln -s ../../../scripts/foo.py`).
-2. **File-level symlinks only.** Never symlink entire directories. `npx skills add` and `bridge_installer.py` only resolve individual file-level symlinks. Directory-level symlinks are silently dropped by `npx`.
-3. **Self-contained at install.** The installer (`bridge_installer.py` or `npx skills add`) resolves all symlinks to physical copies when deploying to `.agents/`. This ensures every skill is independently runnable regardless of the source mono-repo's presence.
-4. **Windows Compatibility.** The `bridge_installer.py` uses a 3-tier strategy for Windows:
+2. **File-level symlinks only.** Never symlink entire directories. `npx skills add` and `plugin_installer.py` only resolve individual file-level symlinks. Directory-level symlinks are silently dropped by `npx`.
+3. **Self-contained at install.** The installer (`plugin_installer.py` or `npx skills add`) resolves all symlinks to physical copies when deploying to `.agents/`. This ensures every skill is independently runnable regardless of the source mono-repo's presence.
+4. **Windows Compatibility.** The `plugin_installer.py` uses a 3-tier strategy for Windows:
    - **Symlink** (if Developer Mode is on)
    - **Junction** (fallback for directory-level logic, though file-level is preferred)
    - **Full Copy** (ultimate fallback)

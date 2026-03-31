@@ -28,7 +28,7 @@ Before building deployment tools, we must define how Azure Foundry fits into our
 
 ### Phase 2: Update the Bridge (`plugin-installer` Skill)
 Our current ecosystem has bridging capabilities to take a skill and deploy it to a specific environment (e.g., `.github/agents`, Claude Code).
-*   **Action:** Enhance the `plugin-installer` skill (and its underlying python scripts like `bridge_installer.py` of the `plugin-installer` plugin) to recognize `azure-foundry` as a target environment.
+*   **Action:** Enhance the `plugin-installer` skill (and its underlying python scripts like `plugin_installer.py` of the `plugin-installer` plugin) to recognize `azure-foundry` as a target environment.
 *   **Content:** The bridge should be able to read a `/skills` directory and output the necessary foundational code (e.g., Python SDK snippets or Bicep templates) required to instantiate those skills as Azure Foundry Agents.
 
 ### Phase 3: Create a Dedicated Scaffolder (`create-azure-agent` Skill)

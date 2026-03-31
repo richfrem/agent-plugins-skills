@@ -816,7 +816,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python ./bridge_installer.py --plugin plugins/my-plugin --non-interactive --yes >/dev/null 2>&1 && find .agents -type f | wc -l",
+      "evaluator_command": "python ./plugin_installer.py --plugin plugins/my-plugin --non-interactive --yes >/dev/null 2>&1 && find .agents -type f | wc -l",
       "mutation_target": "skills-lock.json",
       "key_barriers": [
         "Installer requires explicit human confirmation by design (not headless)",

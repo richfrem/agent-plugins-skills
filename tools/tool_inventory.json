@@ -1229,25 +1229,25 @@
         "header_style": "basic"
       },
       {
-        "name": "bridge_installer.py",
-        "path": "plugins/plugin-manager/scripts/bridge_installer.py",
-        "description": "bridge_installer.py (CLI)",
+        "name": "plugin_installer.py",
+        "path": "plugins/plugin-manager/scripts/plugin_installer.py",
+        "description": "plugin_installer.py (CLI)",
         "last_updated": "2026-03-09T13:17:41.022733",
         "compliance_status": "compliant",
         "header_style": "extended"
       },
       {
-        "name": "bridge_installer.py",
-        "path": "plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py",
-        "description": "bridge_installer.py (CLI)",
+        "name": "plugin_installer.py",
+        "path": "plugins/plugin-manager/skills/plugin-installer/scripts/plugin_installer.py",
+        "description": "plugin_installer.py (CLI)",
         "last_updated": "2026-03-09T13:17:41.028263",
         "compliance_status": "compliant",
         "header_style": "extended"
       },
       {
-        "name": "bridge_installer.py",
-        "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/bridge_installer.py",
-        "description": "bridge_installer.py (CLI)",
+        "name": "plugin_installer.py",
+        "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/plugin_installer.py",
+        "description": "plugin_installer.py (CLI)",
         "last_updated": "2026-03-09T13:17:41.037331",
         "compliance_status": "compliant",
         "header_style": "extended"
