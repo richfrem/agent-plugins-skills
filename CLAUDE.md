@@ -18,7 +18,7 @@ This is the **upstream source monorepo** for a cross-platform library of reusabl
 python plugins/plugin-manager/scripts/install_all_plugins.py
 
 # Subsequent updates
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py
 
 # Dry run preview
 python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run

@@ -8,7 +8,7 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and
 
 ## Why `npx skills` Was Replaced on Windows
 
-`npx skills add` works correctly on **Mac and Linux** where Git creates real OS-level symlinks. This repository uses symlinks inside skill directories (e.g. `bridge-plugin/scripts/install_all_plugins.py` points back to the canonical source in `plugins/plugin-manager/scripts/`).
+`npx skills add` works correctly on **Mac and Linux** where Git creates real OS-level symlinks. This repository uses symlinks inside skill directories (e.g. `plugin-installer/scripts/install_all_plugins.py` points back to the canonical source in `plugins/plugin-manager/scripts/`).
 
 On **Windows**, Git checks out symlinks as plain text files containing the relative path string (e.g. `../../../scripts/install_all_plugins.py`). The `npx` installer uses Node.js `cp({ dereference: true })` which detects real symlinks and copies the target — but on Windows it sees a text file and copies the literal path string. The result is a `.agents/` folder full of one-line text files that Python cannot execute.
 
@@ -41,13 +41,13 @@ After cloning or installing this plugin, run the batch installer from the projec
 
 ```bash
 # Install all plugins from the core plugins/ directory
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py
 
 # Install from an additional plugins directory (additive — does not wipe existing installs)
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
 
 # Dry run to preview without writing
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --dry-run
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py --dry-run
 ```
 
 The installer:
@@ -58,7 +58,7 @@ The installer:
 
 ## 🌐 Supported Targets
 
-The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `bridge-plugin` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
+The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `plugin-installer` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
 
 **Popular Examples:**
 | Target | Command Syntax | Default Directory (Created Automatically) |
@@ -78,7 +78,7 @@ Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, C
 
 ## Dependencies
 
-The `bridge-plugin` skill requires `PyYAML`:
+The `plugin-installer` skill requires `PyYAML`:
 
 ```bash
 pip install -r requirements.txt
@@ -108,7 +108,7 @@ python3 ././scripts/update_agent_system.py
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[bridge-plugin](skills/bridge-plugin/SKILL.md)** | Map, install, and translate components to target envs | `bridge_installer.py`, `install_all_plugins.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Map, install, and translate components to target envs | `bridge_installer.py`, `install_all_plugins.py` |
 | **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs | `sync_with_inventory.py`, `audit_structure.py` |
 | **[replicate-plugin](skills/replicate-plugin/SKILL.md)** | Copy or link plugin source code to other project repos | `plugin_replicator.py`, `bulk_replicator.py` |
 
@@ -161,7 +161,7 @@ plugin-manager/
 │   ├── bulk_replicator.py       <- Bulk plugin copy
 │   └── generate_readmes.py      <- README scaffolding
 └── skills/
-    ├── bridge-plugin/
+    ├── plugin-installer/
     ├── maintain-plugins/
     └── replicate-plugin/
 ```

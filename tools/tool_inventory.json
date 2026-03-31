@@ -1238,7 +1238,7 @@
       },
       {
         "name": "bridge_installer.py",
-        "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/bridge_installer.py",
+        "path": "plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py",
         "description": "bridge_installer.py (CLI)",
         "last_updated": "2026-03-09T13:17:41.028263",
         "compliance_status": "compliant",
@@ -1310,7 +1310,7 @@
       },
       {
         "name": "install_all_plugins.py",
-        "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/install_all_plugins.py",
+        "path": "plugins/plugin-manager/skills/plugin-installer/scripts/install_all_plugins.py",
         "description": "install_all_plugins.py (CLI)",
         "last_updated": "2026-03-09T13:17:41.027130",
         "compliance_status": "compliant",

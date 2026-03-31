@@ -118,7 +118,7 @@
       "installedAt": "2026-03-27T16:11:14.650371Z",
       "updatedAt": "2026-03-30T17:58:29.490947Z"
     },
-    "bridge-plugin": {
+    "plugin-installer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "d88feea08f535c98ea7bda155f12a3de6d00182814bff749e4e09b0385c5c4c0",

@@ -1,5 +1,5 @@
 ---
-name: bridge-plugin
+name: plugin-installer
 description: >-
   Installs plugin components (skills, commands/workflows, rules, hooks, MCP)
   into the .agents/ central store and symlinks them to detected agent

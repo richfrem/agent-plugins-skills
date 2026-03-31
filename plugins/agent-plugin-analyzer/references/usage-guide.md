@@ -113,10 +113,10 @@ Flag references in plugin root that point OUTSIDE the plugin.
 python3 ./check_plugin_boundaries.py inventory.json --batch all
 
 # Single plugin (by name)
-python3 ./check_plugin_boundaries.py inventory.json --plugin bridge-plugin
+python3 ./check_plugin_boundaries.py inventory.json --plugin plugin-installer
 
 # Single plugin (by path)
-python3 ./check_plugin_boundaries.py inventory.json --plugin plugins/bridge-plugin
+python3 ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-installer
 ```
 
 **Example violation:**

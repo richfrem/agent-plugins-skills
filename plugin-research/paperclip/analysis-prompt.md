@@ -143,7 +143,7 @@ Do a direct side-by-side comparison of:
 | Scaffolding method | scaffold.py + SKILL.md instructions | ? |
 | Output format | Markdown plugin structure | ? |
 | Validation | audit-plugin + ecosystem-standards | ? |
-| Distribution | npx skills / bridge-plugin | ? |
+| Distribution | npx skills / plugin-installer | ? |
 | Plugin SDK | Not applicable | TypeScript SDK |
 
 And the same for the agent creators:

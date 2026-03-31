@@ -13,6 +13,6 @@ This document outlines how files from the **Source of Truth** (Plugins & Project
 | :--- | :--- | :--- | :--- |
 | **Project Rules** | `.agent/rules/*.md` | `spec-kitty-sync-plugin` skill | Concatenation (Constitution Top + Rule Block) |
 | **Project Workflows** | `.windsurf/workflows/*.md` | `spec-kitty-sync-plugin` skill | Actor Swapping + Command Patching |
-| **Plugin Commands** | `plugins/*/commands/*.md` | `bridge-plugin` skill (`plugin-manager`) | TOML Wrapping (Gemini) / Actor Swapping |
-| **Plugin Skills** | `plugins/*/skills/*/` | `bridge-plugin` skill (`plugin-manager`) | Target Directory Projection |
-| **Plugin Resources** | `plugins/*/resources/` | `bridge-plugin` skill (`plugin-manager`) | Contextual Linking |
+| **Plugin Commands** | `plugins/*/commands/*.md` | `plugin-installer` skill (`plugin-manager`) | TOML Wrapping (Gemini) / Actor Swapping |
+| **Plugin Skills** | `plugins/*/skills/*/` | `plugin-installer` skill (`plugin-manager`) | Target Directory Projection |
+| **Plugin Resources** | `plugins/*/resources/` | `plugin-installer` skill (`plugin-manager`) | Contextual Linking |

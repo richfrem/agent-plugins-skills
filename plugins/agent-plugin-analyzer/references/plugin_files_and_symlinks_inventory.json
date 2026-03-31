@@ -2380,10 +2380,10 @@
     "is_symlink": false
   },
   {
-    "name": "bridge-plugin.md",
-    "path": "plugins/plugin-manager/commands/bridge-plugin.md",
+    "name": "plugin-installer.md",
+    "path": "plugins/plugin-manager/commands/plugin-installer.md",
     "is_symlink": true,
-    "target": "../skills/bridge-plugin/SKILL.md",
+    "target": "../skills/plugin-installer/SKILL.md",
     "is_broken": false
   },
   {
@@ -2409,8 +2409,8 @@
     "is_symlink": false
   },
   {
-    "name": "bridge-plugin",
-    "path": "plugins/plugin-manager/skills/bridge-plugin",
+    "name": "plugin-installer",
+    "path": "plugins/plugin-manager/skills/plugin-installer",
     "is_symlink": false
   },
   {
@@ -2671,117 +2671,117 @@
   },
   {
     "name": "requirements.txt",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/requirements.txt",
+    "path": "plugins/plugin-manager/skills/plugin-installer/requirements.txt",
     "is_symlink": true,
     "target": "../../requirements.txt",
     "is_broken": false
   },
   {
     "name": "acceptance-criteria.md",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/acceptance-criteria.md",
+    "path": "plugins/plugin-manager/skills/plugin-installer/acceptance-criteria.md",
     "is_symlink": false
   },
   {
     "name": "plugin.json",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/plugin.json",
+    "path": "plugins/plugin-manager/skills/plugin-installer/plugin.json",
     "is_symlink": true,
     "target": "../../.claude-plugin/plugin.json",
     "is_broken": false
   },
   {
     "name": "SKILL.md",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/SKILL.md",
+    "path": "plugins/plugin-manager/skills/plugin-installer/SKILL.md",
     "is_symlink": false
   },
   {
     "name": "evals",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/evals",
+    "path": "plugins/plugin-manager/skills/plugin-installer/evals",
     "is_symlink": false
   },
   {
     "name": "references",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references",
     "is_symlink": false
   },
   {
     "name": "scripts",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/scripts",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts",
     "is_symlink": false
   },
   {
     "name": "evals.json",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/evals/evals.json",
+    "path": "plugins/plugin-manager/skills/plugin-installer/evals/evals.json",
     "is_symlink": false
   },
   {
     "name": "install_all_plugins.py",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references/install_all_plugins.py",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/install_all_plugins.py",
     "is_symlink": true,
     "target": "../scripts/install_all_plugins.py",
     "is_broken": false
   },
   {
     "name": "acceptance-criteria.md",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references/acceptance-criteria.md",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/acceptance-criteria.md",
     "is_symlink": true,
     "target": "../acceptance-criteria.md",
     "is_broken": false
   },
   {
     "name": "agent_bridge_diagram.mmd",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references/agent_bridge_diagram.mmd",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/agent_bridge_diagram.mmd",
     "is_symlink": true,
     "target": "../../../../assets/diagrams/agent_bridge_diagram.mmd",
     "is_broken": true
   },
   {
     "name": "ecosystem_system_bridge.mmd",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references/ecosystem_system_bridge.mmd",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/ecosystem_system_bridge.mmd",
     "is_symlink": true,
     "target": "../../../../assets/diagrams/ecosystem_system_bridge.mmd",
     "is_broken": true
   },
   {
     "name": "bridge_installer.py",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references/bridge_installer.py",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/bridge_installer.py",
     "is_symlink": true,
     "target": "../scripts/bridge_installer.py",
     "is_broken": false
   },
   {
     "name": "agent_bridge_overview.md",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/references/agent_bridge_overview.md",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/agent_bridge_overview.md",
     "is_symlink": true,
     "target": "../../../references/agent_bridge_overview.md",
     "is_broken": false
   },
   {
     "name": "install_all_plugins.py",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/install_all_plugins.py",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/install_all_plugins.py",
     "is_symlink": true,
     "target": "../../../scripts/install_all_plugins.py",
     "is_broken": false
   },
   {
     "name": "bridge_installer.py",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/bridge_installer.py",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py",
     "is_symlink": true,
     "target": "../../../scripts/bridge_installer.py",
     "is_broken": false
   },
   {
     "name": "__pycache__",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/__pycache__",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/__pycache__",
     "is_symlink": false
   },
   {
     "name": "plugin_inventory.cpython-314.pyc",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/__pycache__/plugin_inventory.cpython-314.pyc",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/__pycache__/plugin_inventory.cpython-314.pyc",
     "is_symlink": false
   },
   {
     "name": "bridge_installer.cpython-314.pyc",
-    "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/__pycache__/bridge_installer.cpython-314.pyc",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/__pycache__/bridge_installer.cpython-314.pyc",
     "is_symlink": false
   },
   {

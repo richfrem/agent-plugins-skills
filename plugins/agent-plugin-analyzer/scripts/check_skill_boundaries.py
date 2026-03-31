@@ -97,8 +97,8 @@ def get_skill_root(source_file_path: str) -> Path | None:
       plugins/adr-manager/skills/adr-management/SKILL.md
        plugins/adr-manager/skills/adr-management/
 
-      .agents/skills/bridge-plugin/SKILL.md
-       .agents/skills/bridge-plugin/
+      .agents/skills/plugin-installer/SKILL.md
+       .agents/skills/plugin-installer/
     """
     parts = Path(source_file_path).parts
 

@@ -209,5 +209,5 @@ of its consumers.
 ## Related Skills
 
 - `replicate-plugin` - Manual one-off copy of a plugin to a single target.
-- `bridge-plugin` - Install plugins from `.agents/` into agent environments.
+- `plugin-installer` - Install plugins from `.agents/` into agent environments.
 - `maintain-plugins` - Health check, orphan cleanup, and ecosystem audit.

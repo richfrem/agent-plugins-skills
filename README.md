@@ -49,7 +49,7 @@ python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run
 
 ### Step 2: Update (after a git pull)
 
-Once installed, the bridge-plugin skill is available in `.agents/` and can update itself:
+Once installed, the plugin-installer skill is available in `.agents/` and can update itself:
 
 ```bash
 git pull
@@ -279,7 +279,7 @@ Bi-directional sync translating codebase folders into Graph Vaults inside Obsidi
 
 Authoritative suite for ecosystem health, synchronization, and artifact bootstrapping.
 
-- [`bridge-plugin`](plugins/plugin-manager/skills/bridge-plugin/SKILL.md) — local symlink deployment from source to agent environments
+- [`plugin-installer`](plugins/plugin-manager/skills/plugin-installer/SKILL.md) — local symlink deployment from source to agent environments
 - [`auto-update-plugins`](plugins/plugin-manager/skills/auto-update-plugins/SKILL.md) — pull-based sync via SessionStart hook
 - [`maintain-plugins`](plugins/plugin-manager/skills/maintain-plugins/SKILL.md) · [`package-plugin`](plugins/plugin-manager/skills/package-plugin/SKILL.md)
 - [`replicate-plugin`](plugins/plugin-manager/skills/replicate-plugin/SKILL.md)

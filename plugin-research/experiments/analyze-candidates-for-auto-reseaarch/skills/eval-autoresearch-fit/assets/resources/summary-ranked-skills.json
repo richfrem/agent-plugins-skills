@@ -805,7 +805,7 @@
     },
     {
       "plugin": "plugin-manager",
-      "skill": "bridge-plugin",
+      "skill": "plugin-installer",
       "objectivity_score": 6,
       "execution_speed_score": 9,
       "frequency_of_use_score": 6,
@@ -822,7 +822,7 @@
         "Installer requires explicit human confirmation by design (not headless)",
         "Installer mutates many files/dirs (symlinks, .agents/, .mcp.json, CLAUDE.md) rather than a single editable file"
       ],
-      "eval_notes": "The bridge-plugin is conceptually automatable with a deterministic filesystem metric (files written), but its design intentionally requires human confirmation and performs multi-file mutations. Removing interactive gating and restricting mutations to a single tracked artifact (or wrapping outputs into a single manifest) would raise viability significantly.",
+      "eval_notes": "The plugin-installer is conceptually automatable with a deterministic filesystem metric (files written), but its design intentionally requires human confirmation and performs multi-file mutations. Removing interactive gating and restricting mutations to a single tracked artifact (or wrapping outputs into a single manifest) would raise viability significantly.",
       "eval_date": "2026-03-30",
       "eval_count": 2
     },

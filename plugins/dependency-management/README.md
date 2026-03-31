@@ -31,11 +31,11 @@ npx skills add ./plugins/dependency-management
 
 ### Option 4: Local Bridge Install (full plugin — skills + rules)
 
-Use the `bridge-plugin` skill (also in this repo) to deploy the full plugin
+Use the `plugin-installer` skill (also in this repo) to deploy the full plugin
 into another local project, including skills, rules, commands, and hooks not
 covered by `npx skills`.
 
-See the [bridge-plugin skill](../plugin-manager/skills/bridge-plugin/SKILL.md)
+See the [plugin-installer skill](../plugin-manager/skills/plugin-installer/SKILL.md)
 for full installation instructions.
 
 ## Core Rules

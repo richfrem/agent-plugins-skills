@@ -54,12 +54,12 @@ def get_plugin_root(source_file_path: str) -> Path | None:
 
     Examples (PLUGIN LEVEL - check these):
       plugins/adr-manager/commands/adr-management.md  plugins/adr-manager/
-      plugins/bridge-plugin/hooks/hooks.json  plugins/bridge-plugin/
+      plugins/plugin-installer/hooks/hooks.json  plugins/plugin-installer/
       plugins/adr-manager/.claude-plugin/plugin.json  plugins/adr-manager/
 
     Examples (SKILL LEVEL - ignore these):
       plugins/adr-manager/skills/adr-management/SKILL.md  None (skip)
-      .agents/skills/bridge-plugin/SKILL.md  None (skip)
+      .agents/skills/plugin-installer/SKILL.md  None (skip)
     """
     parts = Path(source_file_path).parts
 

@@ -26,9 +26,9 @@ Before building deployment tools, we must define how Azure Foundry fits into our
 *   **Action:** Add a new reference file: `.././././azure-foundry-agents.md`.
 *   **Content:** Document how `././././././././././SKILL.md` maps to the `instructions` parameter, how MCP tools are declared, and the strict adherence to the 128-tool limit requiring multi-agent orchestration. This serves as the ground truth for any scripts we write later.
 
-### Phase 2: Update the Bridge (`bridge-plugin` Skill)
+### Phase 2: Update the Bridge (`plugin-installer` Skill)
 Our current ecosystem has bridging capabilities to take a skill and deploy it to a specific environment (e.g., `.github/agents`, Claude Code).
-*   **Action:** Enhance the `bridge-plugin` skill (and its underlying python scripts like `bridge_installer.py` of the `bridge-plugin` plugin) to recognize `azure-foundry` as a target environment.
+*   **Action:** Enhance the `plugin-installer` skill (and its underlying python scripts like `bridge_installer.py` of the `plugin-installer` plugin) to recognize `azure-foundry` as a target environment.
 *   **Content:** The bridge should be able to read a `/skills` directory and output the necessary foundational code (e.g., Python SDK snippets or Bicep templates) required to instantiate those skills as Azure Foundry Agents.
 
 ### Phase 3: Create a Dedicated Scaffolder (`create-azure-agent` Skill)

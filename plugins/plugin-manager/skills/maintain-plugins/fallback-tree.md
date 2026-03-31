@@ -13,7 +13,7 @@ If a project-specific plugin (not in the vendor list) is missing after a sync op
 
 ## 3. Agent Config Directory Missing
 If `./../scripts/sync_with_inventory.py` reports a target directory (`.agents/`, `.gemini/`, etc.) does not exist:
-- **Action**: Do NOT create the directory manually. Report to the user that the agent environment has not been initialized. Suggest running the `bridge-plugin` skill from `plugin-manager` to initialize the environment first.
+- **Action**: Do NOT create the directory manually. Report to the user that the agent environment has not been initialized. Suggest running the `plugin-installer` skill from `plugin-manager` to initialize the environment first.
 
 ## 4. Audit Script Unavailable
 If `../scripts/audit_structure.py` cannot be found or exits with a non-zero code:

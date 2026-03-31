@@ -1,4 +1,4 @@
-# Acceptance Criteria: bridge-plugin
+# Acceptance Criteria: plugin-installer
 
 **Purpose**: Verify the Universal System Bridger executes and maps components accurately to appropriate agent environments.
 
