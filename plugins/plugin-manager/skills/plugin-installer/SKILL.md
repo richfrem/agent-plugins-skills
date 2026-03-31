@@ -3,10 +3,11 @@ name: plugin-installer
 description: >-
   Installs plugin components (skills, commands/workflows, rules, hooks, MCP)
   into the .agents/ central store and symlinks them to agent environments that
-  require it (.claude/). Use this skill when deploying a local plugin to agent
-  environments, adding a new plugin to the ecosystem, or reconciling
-  bridge-installed skills with the npx skills lock file. Trigger when a user
-  says "install plugin", "deploy plugin", or "sync plugin to agents".
+  require it (.claude/). DEFAULT method: run plugin_add.py for an interactive
+  TUI that supports local and GitHub owner/repo installs. Use plugin_installer.py
+  for scripted/CI single-plugin installs. Trigger when a user says "install
+  plugin", "deploy plugin", "add plugin", "install from GitHub", or "sync
+  plugin to agents".
 allowed-tools: Bash, Write, Read
 ---
 
@@ -31,14 +32,26 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 This skill deploys plugin components to agent environments using the
 `.agents/` central store + symlink pattern. It is the **full-stack** installer:
 
-| Installer | Skills | Commands | Rules | Hooks | MCP |
-|-----------|--------|----------|-------|-------|-----|
-| `npx skills add` | ✓ | ✗ | ✗ | ✗ | ✗ |
-| `plugin_installer.py` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Installer | Skills | Commands | Rules | Hooks | MCP | GitHub source |
+|-----------|--------|----------|-------|-------|-----|---------------|
+| `npx skills add` | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ (owner/repo) |
+| `plugin_add.py` ★ **default** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ (owner/repo) |
+| `plugin_installer.py` | ✓ | ✓ | ✓ | ✓ | ✓ | local only |
 
-> **Use `npx skills add`** for pure skill distribution to end users.
-> **Use `plugin_installer.py`** when you need commands, rules, hooks, or MCP
-> configs deployed alongside skills — or when developing locally.
+> **Use `npx skills add`** for pure skill distribution to end users (no Python required).
+> **Use `plugin_add.py`** (★ recommended default) for an interactive TUI that works like `npx skills add` but installs full plugins — including commands, agents, rules, and hooks. Accepts a GitHub `owner/repo` shorthand and auto-clones before installing.
+> **Use `plugin_installer.py`** directly for scripted/CI single-plugin installs.
+
+---
+
+## Attribution
+
+The `plugin_add.py` interactive TUI (multiselect, arrow-key navigation, fuzzy search, `owner/repo` GitHub shorthand, temp-clone-then-install flow) is inspired by the **`npx skills add`** command from the **Vercel Labs `skills` CLI**:
+
+- GitHub: <https://github.com/vercel-labs/skills>
+- Marketplace: <https://skills.sh>
+
+This implementation re-creates those UX patterns in **pure Python stdlib** (no npm, no external packages) so they work on Windows without symlink issues and operate at the **plugin** level rather than individual SKILL.md files.
 
 ---
 
@@ -152,7 +165,25 @@ npx skills remove skill-name
 > This installs **skills only**. Commands, rules, hooks, and MCP are not
 > deployed. For full plugin deployment, use `plugin_installer.py` below.
 
-### Full Deployment: `plugin_installer.py` (skills + commands + rules + hooks)
+### Full Deployment: `plugin_add.py` (interactive TUI — recommended)
+
+The recommended way to install full plugins interactively. Inspired by the `npx skills add` UX from [Vercel Labs skills CLI](https://skills.sh).
+
+```bash
+# Interactive plugin picker — current repo
+python plugins/plugin-manager/scripts/plugin_add.py
+
+# Install from any GitHub repo (auto-clones, then lets you pick plugins)
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
+
+# Install everything non-interactively
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
+
+# Dry-run preview
+python plugins/plugin-manager/scripts/plugin_add.py --dry-run
+```
+
+### Single Plugin: `plugin_installer.py` (scripted / CI)
 
 **Before reinstalling local changes**, flush stale artifacts:
 ```bash
@@ -292,13 +323,9 @@ DETECTABLE_AGENTS = {
 
 ## When NOT to Use This Skill
 
-- **End-user consumption from remote repo** — use `npx skills add` instead;
-  it's simpler, has no Python dependency, and handles 30+ agents natively
-- **Replicating plugin source to another project** — use `replicate-plugin`
+- **End-user consumption from remote repo** — use `plugin_add.py owner/repo` (auto-clones + interactive TUI) or `npx skills add` (skills only, no Python required)
 - **Auditing plugin structure** — use `maintain-plugins`
 
 ## Related Skills
 
 - `maintain-plugins` — structural audits, sync, orphan cleanup, README generation
-- `replicate-plugin` — copy plugin source between local project repositories
-- `package-plugin` — package a plugin into a distributable ZIP archive

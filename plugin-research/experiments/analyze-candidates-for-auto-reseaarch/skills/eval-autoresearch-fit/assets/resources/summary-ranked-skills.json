@@ -529,29 +529,6 @@
       "eval_count": 2
     },
     {
-      "plugin": "plugin-manager",
-      "skill": "package-plugin",
-      "objectivity_score": 10,
-      "execution_speed_score": 10,
-      "frequency_of_use_score": 2,
-      "potential_utility_score": 7,
-      "total_autoresearch_viability": 29,
-      "proposed_benchmark_metric": "Binary metric: 1 if validate+package completes and produces a non-empty zip at the expected path, 0 on failure.",
-      "justification": "TODO: Needs evaluation",
-      "status": "EVALUATED",
-      "eval_verdict": "MEDIUM",
-      "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/package-plugin/scripts/package.py --plugin plugins/my-plugin --output /tmp/my-plugin.zip && test -s /tmp/my-plugin.zip && echo 1 || echo 0",
-      "mutation_target": ".agents/skills/package-plugin/scripts/package.py",
-      "key_barriers": [
-        "No fixed, canonical plugin directory is specified for headless runs\u2014loop needs a stable, bundled plugin source to package each iteration",
-        "Binary success hides correctness of subtle flags (symlink preservation, exclusions); evaluator may miss regressions in packaging semantics"
-      ],
-      "eval_notes": "The packaging skill yields a clear binary success/failure that a shell command can verify, enabling a deterministic loop. Major obstacles are selecting a stable plugin input and ensuring the single-number metric captures nuanced packaging semantics (symlink/exclude correctness).",
-      "eval_date": "2026-03-30",
-      "eval_count": 2
-    },
-    {
       "plugin": "rlm-factory",
       "skill": "rlm-search",
       "objectivity_score": 2,

@@ -2,9 +2,8 @@
   "sources": [
     {
       "name": "agent-plugins-skills",
-      "env": "AGENT_PLUGINS_SKILLS_DIR",
-      "plugins_subdir": "plugins",
-      "installer_subpath": "plugins/plugin-manager/scripts/install_all_plugins.py"
+      "github": "richfrem/agent-plugins-skills",
+      "plugins": "all"
     }
   ]
 }
