@@ -22,12 +22,9 @@ Platform Command Mapping (commands/ vs workflows/):
         Source folder:   plugin/commands/*.md
         ─────────────────────────────────────────────────────────
         .agents/         → workflows/<plugin>_<cmd>.md  (canonical)
-        .agents/          → workflows/<plugin>_<cmd>.md  (Antigravity)
         .claude/         → commands/<plugin>_<cmd>.md   (Claude Code)
-        .gemini/         → commands/<plugin>_<cmd>.toml (Gemini CLI, TOML-wrapped)
-        .github/         → prompts/<plugin>_<cmd>.prompt.md (GitHub Copilot)
 
-    This means the same source file appears under "workflows/" on Antigravity
+    This means the same source file appears under "workflows/" on .agents/
     but under "commands/" on Claude Code — by design. Never rename the source
     folder to match any single platform.
 
@@ -77,16 +74,15 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-# The standard recognized agent configurations in your IDE workspace.
+# Agent environments that require their own directory layout alongside .agents/.
+#
+# Antigravity, Gemini CLI, and GitHub Copilot have all adopted the standard
+# .agents/ install path — they read skills, workflows, and rules directly from
+# there. No per-agent symlinks are needed for those platforms anymore; the
+# canonical .agents/ copy is sufficient. As agents converge on .agents/ as the
+# standard, this list shrinks. Only environments that still require a separate
+# directory tree (Claude Code, Azure) remain here.
 DETECTABLE_AGENTS = {
-    ".agent": {
-        "name": "antigravity",
-        "skills": ".agents/skills",
-        "commands": ".agents/workflows",
-        "rules": ".agents/rules",
-        "hooks": None,
-        "rules_mode": "files",
-    },
     ".claude": {
         "name": "claude",
         "skills": ".claude/skills",
@@ -96,24 +92,6 @@ DETECTABLE_AGENTS = {
         "rules_append_target": "CLAUDE.md",
         "hooks": ".claude/hooks",
         "rules_mode": "append",
-    },
-    ".gemini": {
-        "name": "gemini",
-        "skills": ".gemini/skills",
-        "commands": ".gemini/commands",
-        "rules": None,
-        "hooks": None,
-        "commands_format": "toml",
-    },
-    ".github": {
-        "name": "github",
-        "skills": ".github/skills",
-        "commands": ".github/prompts",
-        "rules": None,
-        "rules_append_target": ".github/copilot-instructions.md",
-        "hooks": None,
-        "rules_mode": "append",
-        "commands_ext": ".prompt.md",
     },
     ".azure": {
         "name": "azure",
@@ -228,40 +206,6 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
             print(f"    X Failed for {env_name}: {e}")
             return False
 
-def _write_toml_command(md_file: Path, dest_toml: Path, plugin_name: str, flat: str, dry_run: bool, root: Path) -> None:
-    if dry_run:
-        print(f"  [DRY RUN] write TOML cmd: {dest_toml.relative_to(root)}")
-        return
-        
-    content = md_file.read_text(encoding="utf-8")
-    
-    # Very basic frontmatter parser
-    description = ""
-    body = content
-    if content.startswith("---"):
-        parts = content.split("---", 2)
-        if len(parts) >= 3:
-            fm = parts[1]
-            body = parts[2].strip()
-            for line in fm.splitlines():
-                if line.startswith("description:"):
-                    description = line.replace("description:", "", 1).strip()
-                    # Strip basic quotes
-                    if description.startswith('"') and description.endswith('"'):
-                        description = description[1:-1]
-                    elif description.startswith("'") and description.endswith("'"):
-                        description = description[1:-1]
-
-    toml_content = f"""command = "{plugin_name}:{flat}"
-description = "{description}"
-prompt = \"\"\"
-{body}
-\"\"\"
-"""
-    dest_toml.write_text(toml_content, encoding="utf-8")
-    print(f"    -> Wrapped TOML for gemini: {dest_toml.relative_to(root)}")
-
-
 def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
                     root: Path, dry_run: bool = False) -> None:
     commands_dir = plugin_path / "commands"
@@ -303,16 +247,8 @@ def deploy_commands(plugin_path: Path, plugin_name: str, targets: list[str],
             if not dry_run:
                 cmd_dir.mkdir(parents=True, exist_ok=True)
 
-            fmt = config.get("commands_format")
-            ext = config.get("commands_ext", ".md")
-
-            if fmt == "toml":
-                # Parse frontmatter, wrap in TOML
-                _write_toml_command(cmd_file, cmd_dir / f"{dest_name}.toml",
-                                    plugin_name, flat, dry_run, root)
-            else:
-                target_link = cmd_dir / f"{dest_name}{ext}"
-                _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+            target_link = cmd_dir / f"{dest_name}.md"
+            _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
 
 
 def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
