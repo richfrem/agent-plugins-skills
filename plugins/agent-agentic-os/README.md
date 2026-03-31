@@ -1,8 +1,12 @@
 # Agent Harness & Learning Layer (formerly Agentic OS)
 
-A developer harness that gives your AI agent **persistent memory**, a **feedback and learning loop**, and **cross-IDE orchestration** — helping solo developers coordinate workflows and continuously improve skills with every execution across multiple environments (VS Code, Cursor, Windsurf, Copilot).
+A developer **meta-harness** that gives your AI agent **persistent memory**, a **self-improving feedback loop**, and **cross-IDE orchestration** — helping solo developers coordinate workflows and continuously improve skills with every execution across multiple environments (VS Code, Cursor, Windsurf, Copilot).
 
-> **Positioning:** Anthropic now ships auto-memory, native hooks, and subagent coordination natively. This plugin is not an operating system, but rather an **opinionated discipline layer** on top of those primitives. It provides a structured memory hierarchy, continuous workflow improvement, and an event log for cross-platform agent signaling. See [`SUMMARY.md`](./SUMMARY.md) for full context and known limitations.
+A *harness* controls what information a model sees at each step: prompting, context management, memory retrieval, and tool orchestration. A *meta-harness* adds an outer loop that searches over and improves the harness itself. This plugin is both: the memory and coordination layer is the harness; the `os-eval-runner` + `os-improvement-loop` flywheel is the meta-layer that evolves the harness's own skills and protocols continuously.
+
+This architecture is independently validated by Meta-Harness (Lee et al., arXiv:2603.28052, 2026), which demonstrates that code-space search over harness definitions — using an LLM proposer with access to prior candidates and evaluation traces — outperforms hand-designed harnesses by significant margins across benchmarks. See [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) for the full analysis.
+
+> **Positioning:** Anthropic now ships auto-memory, native hooks, and subagent coordination natively. This plugin is not an operating system, but rather an **opinionated discipline layer** on top of those primitives — a structured meta-harness for solo developer workflows. See [`SUMMARY.md`](./SUMMARY.md) for full context and known limitations.
 
 ---
 
@@ -22,22 +26,28 @@ This plugin provides a system for that.
 
 Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `os-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Dedup IDs, conflict detection, and size limits prevent the memory from drifting into contradiction over hundreds of sessions.
 
-### Continuous Improvement Loop (The Learning Layer)
+### Continuous Improvement Loop (The Meta-Harness Layer)
 
-This is the system's core differentiator: a feedback control system for agent workflows. It doesn't just manage memory—it continuously improves the instructions the model receives based on objective evaluation using the **Karpathy 3-File Autoresearch Architecture**.
+This is the system's core differentiator: a two-flywheel feedback control system that continuously improves the instructions the model receives based on objective evaluation.
 
 ```text
-Session runs
-  -> errors and friction logged to events.jsonl
-  -> os-learning-loop (The Spec) proposes a single-variable patch to a SKILL.md (The Target)
-  -> eval_runner.py (The Headless Evaluator) scores it against static evals/evals.json fixtures
-  -> if DISCARD, agent automatically reverts via `git reset --hard`
-  -> if KEEP, the improved instruction is retained for the next session
+INNER flywheel (os-eval-runner + os-skill-improvement + os-nightly-evolver):
+  Session runs
+    -> errors and friction logged to events.jsonl
+    -> os-learning-loop proposes a single-variable patch to a SKILL.md (The Target)
+    -> eval_runner.py scores it against locked evals/evals.json fixtures (The Headless Evaluator)
+    -> if DISCARD: auto-reverted via git checkout; if KEEP: retained for the next session
+
+OUTER flywheel (os-improvement-loop):
+  Runs between sessions
+    -> reviews patterns across many inner iterations
+    -> proposes improvements to OS-level protocols and memory hygiene rules
+    -> os-nightly-evolver runs the INNER flywheel unattended overnight via Gemini CLI
 ```
 
-The loop relies strictly on this headless evaluation without subjective 'mental' testing from LLMs, actively defeating "Agent Dementia" (Goodhart's Law) and subjective routing bias.
+The loop relies strictly on headless evaluation — no subjective LLM "mental" testing — defeating Goodhart's Law. A test registry prevents re-testing falsified hypotheses. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
 
-A test registry prevents re-testing falsified hypotheses — improvements accumulate without repeating dead ends. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
+**Research basis:** This architecture implements the [Karpathy 3-file autoresearch pattern](./skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md) and is structurally equivalent to the Meta-Harness outer-loop described in [Lee et al., arXiv:2603.28052 (2026)](../../plugin-research/meta-harness/summary.md) — which independently validates that code-space search over harness definitions, gated by objective evaluation, produces improvements that text-space optimizers cannot reach. The key open enhancement (raw execution trace access for the proposer) is documented in [`plugin-research/meta-harness/implementation-plan.md`](../../plugin-research/meta-harness/implementation-plan.md).
 
 ### Agent Signaling and Turn Management
 
@@ -209,5 +219,7 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 - [`references/vision.md`](./references/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
 - [`references/dual-loop.md`](./references/dual-loop.md) - inner/outer loop coordination patterns
 - [`references/memory-hygiene.md`](./references/memory-hygiene.md) - when to write, promote, archive, and expire
+- [`skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md`](./skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md) - foundational 3-file autoresearch pattern
+- [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) - Meta-Harness paper analysis, artifact code review, and enhancement implementation plan (Lee et al., arXiv:2603.28052, 2026)
 - [Anthropic CLAUDE.md docs](https://docs.anthropic.com/en/docs/claude-code/memory)
 - [Anthropic /loop scheduler](https://docs.anthropic.com/en/docs/claude-code/loop)
