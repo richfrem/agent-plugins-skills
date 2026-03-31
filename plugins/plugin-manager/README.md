@@ -8,7 +8,7 @@ The **Plugin Manager** maintains a healthy local plugin ecosystem. It adapts and
 
 ## Why `npx skills` Was Replaced on Windows
 
-`npx skills add` works correctly on **Mac and Linux** where Git creates real OS-level symlinks. This repository uses symlinks inside skill directories (e.g. `bridge-plugin/scripts/install_all_plugins.py` points back to the canonical source in `plugins/plugin-manager/scripts/`).
+`npx skills add` works correctly on **Mac and Linux** where Git creates real OS-level symlinks. This repository uses symlinks inside skill directories (e.g. `plugin-installer/scripts/install_all_plugins.py` points back to the canonical source in `plugins/plugin-manager/scripts/`).
 
 On **Windows**, Git checks out symlinks as plain text files containing the relative path string (e.g. `../../../scripts/install_all_plugins.py`). The `npx` installer uses Node.js `cp({ dereference: true })` which detects real symlinks and copies the target — but on Windows it sees a text file and copies the literal path string. The result is a `.agents/` folder full of one-line text files that Python cannot execute.
 
@@ -41,24 +41,24 @@ After cloning or installing this plugin, run the batch installer from the projec
 
 ```bash
 # Install all plugins from the core plugins/ directory
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py
 
 # Install from an additional plugins directory (additive — does not wipe existing installs)
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py --plugins-dir path/to/other/plugins
 
 # Dry run to preview without writing
-python .agents/skills/bridge-plugin/scripts/install_all_plugins.py --dry-run
+python .agents/skills/plugin-installer/scripts/install_all_plugins.py --dry-run
 ```
 
 The installer:
 - Reads pointer files, resolves them to real source, and writes hard copies into `.agents/skills/`
-- Creates Windows Junctions (or symlinks on Mac/Linux) from `.agent/skills/` and `.claude/skills/` into `.agents/`
+- Creates Windows Junctions (or symlinks on Mac/Linux) from `.agents/skills/` and `.claude/skills/` into `.agents/`
 - Is **additive** — running it against a second plugins directory merges without touching existing installs
 - Runs correctly from its own installed location in `.agents/` — no `plugins/` source tree required in consuming projects
 
 ## 🌐 Supported Targets
 
-The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `bridge-plugin` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
+The Plugin Manager acts as a **Universal Translator**. Provide the name of any target system, and the internal `plugin-installer` will dynamically create a corresponding `.{target}` configuration folder (e.g., `--target cursor` builds `.cursor/`).
 
 **Popular Examples:**
 | Target | Command Syntax | Default Directory (Created Automatically) |
@@ -66,7 +66,7 @@ The Plugin Manager acts as a **Universal Translator**. Provide the name of any t
 | **Claude Code** | `--target claude` | `.claude/` |
 | **GitHub Copilot** | `--target github` | `.github/` |
 | **Google Gemini** | `--target gemini` | `.gemini/` |
-| **Antigravity** | `--target antigravity` | `.agent/` |
+| **Antigravity** | `--target antigravity` | `.agents/` |
 | **Cursor** | `--target cursor` | `.cursor/` |
 
 > *A user or agent can extend this to any target IDE or CLI (e.g., `roo`, `openhands`, `cline`, `trae`).*
@@ -78,7 +78,7 @@ Amp, Codex, Gemini CLI, Kimi Code CLI, Opencode, Augment, Openclaw, Codebuddy, C
 
 ## Dependencies
 
-The `bridge-plugin` skill requires `PyYAML`:
+The `plugin-installer` skill requires `PyYAML`:
 
 ```bash
 pip install -r requirements.txt
@@ -93,7 +93,7 @@ Ensure your plugin is situated inside `plugins/<name>`, then run the bridge inst
 ```bash
 python3 ././scripts/bridge_installer.py --plugin plugins/my-plugin
 ```
-> The installer automatically detects existing agent directories (e.g. `.agent/`, `.claude/`). No `--target` argument is needed or accepted.
+> The installer automatically detects existing agent directories (e.g. `.agents/`, `.claude/`). No `--target` argument is needed or accepted.
 
 **Sync Everything / All Plugins:**
 ```bash
@@ -108,7 +108,7 @@ python3 ././scripts/update_agent_system.py
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[bridge-plugin](skills/bridge-plugin/SKILL.md)** | Map, install, and translate components to target envs | `bridge_installer.py`, `install_all_plugins.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Map, install, and translate components to target envs | `bridge_installer.py`, `install_all_plugins.py` |
 | **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs | `sync_with_inventory.py`, `audit_structure.py` |
 | **[replicate-plugin](skills/replicate-plugin/SKILL.md)** | Copy or link plugin source code to other project repos | `plugin_replicator.py`, `bulk_replicator.py` |
 
@@ -118,7 +118,7 @@ python3 ././scripts/update_agent_system.py
 
 | Command | Purpose |
 | :--- | :--- |
-| `/plugin-manager:update` | Sync all plugins to local agent environments (`.agent/`, `.claude/` etc.) |
+| `/plugin-manager:update` | Sync all plugins to local agent environments (`.agents/`, `.claude/` etc.) |
 | `/plugin-manager:cleanup` | Remove orphaned artifacts from deleted plugins in agent environments |
 | `/plugin-manager:install` | Replicate a specific plugin from this repo to a target project's `plugins/` |
 
@@ -133,7 +133,7 @@ The installer intelligently translates plugin components into the specific direc
 | **Claude Code** (`.claude/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `./CLAUDE.md` | `hooks/<plugin>-hooks.json` |
 | **GitHub Copilot** (`.github/`) | `prompts/*.prompt.md` | `skills/` | `skills/<plugin>/agents/` | Appended to `.github/copilot-instructions.md` | *(Ignored)* |
 | **Google Gemini** (`.gemini/`) | `commands/*.toml` | `skills/` | `skills/<plugin>/agents/` | Appended to `./GEMINI.md` | *(Ignored)* |
-| **Antigravity** (`.agent/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agent/rules/` | *(Ignored)* |
+| **Antigravity** (`.agents/`) | `workflows/*.md` | `skills/` | `skills/<plugin>/agents/` | `.agents/rules/` | *(Ignored)* |
 | **Universal Generic** (`.<target>/`) | `commands/*.md` | `skills/` | `skills/<plugin>/agents/` | `.<target>/rules/` | *(Ignored)* |
 
 > **Note on Commands:** When writing command logic, you can use nested folders (`commands/ops/restart.md`). The bridge automatically flattens these into a snake_case format (`ops_restart.md`) to remain compatible with IDEs that don't support deeply nested slash-commands. Gemini targets are wrapped in TOML automatically.
@@ -161,7 +161,7 @@ plugin-manager/
 │   ├── bulk_replicator.py       <- Bulk plugin copy
 │   └── generate_readmes.py      <- README scaffolding
 └── skills/
-    ├── bridge-plugin/
+    ├── plugin-installer/
     ├── maintain-plugins/
     └── replicate-plugin/
 ```

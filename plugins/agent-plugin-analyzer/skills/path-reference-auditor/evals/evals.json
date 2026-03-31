@@ -42,7 +42,7 @@
       "id": "eval-7-single-plugin-test",
       "type": "positive",
       "prompt": "Quickly test a single plugin without scanning all plugins.",
-      "expected_behavior": "Agent runs check_plugin_boundaries.py inventory.json --plugin bridge-plugin, which filters inventory to only that plugin and reports violations. Completes quickly for fast development testing."
+      "expected_behavior": "Agent runs check_plugin_boundaries.py inventory.json --plugin plugin-installer, which filters inventory to only that plugin and reports violations. Completes quickly for fast development testing."
     },
     {
       "id": "eval-8-symlink-detection",

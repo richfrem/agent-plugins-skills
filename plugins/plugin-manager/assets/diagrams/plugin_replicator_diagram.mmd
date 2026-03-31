@@ -14,7 +14,7 @@ flowchart LR
 
     subgraph Activation ["Activate in Consumer Project"]
         PM["plugin-maintenance sync\n(sync_with_inventory.py)"]
-        AE[".agent/ .claude/\n.gemini/ .github/"]
+        AE[".agents/ .claude/\n.gemini/ .github/"]
     end
 
     SP -->|"single plugin"| PR

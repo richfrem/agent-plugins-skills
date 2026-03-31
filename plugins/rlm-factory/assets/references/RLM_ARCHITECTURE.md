@@ -34,7 +34,7 @@ The Distiller pushes the generated "Purpose" back into the Tool Inventory, ensur
 
 ### Directory Structure
 ```text
-.agent/
+.agents/
 ├── skills/
 │   └── tool_discovery/  # The Meta-Skill
 ├── learning/

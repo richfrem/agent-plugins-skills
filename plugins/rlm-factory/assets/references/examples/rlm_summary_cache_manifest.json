@@ -1,13 +1,10 @@
 {
     "description": "Project Sanctuary documentation, protocols, ADRs, workflows, and knowledge.",
     "include": [
-        ".agent/git_safety_rules.md",
-        ".agent/git_workflow_policy.md",
         ".agent/learning/",
         ".agent/learning/audit_prompts.md",
-        ".agent/mcp_commit_guide.md",
         ".agent/rules/",
-        ".agent/workflows/",
+        ".agents/workflows/",
         "00_CHRONICLE/",
         "01_PROTOCOLS/",
         "04_THE_FORTRESS/",

@@ -38,7 +38,7 @@ PULL (run from the consumer project):
   /agent-plugins-skills/plugins/X  ->  plugins/X
 ```
 
-After replicating, run `maintain-plugins` Sync in the target project to activate plugins in `.agent/`, `.claude/`, `.gemini/` etc.
+After replicating, run `maintain-plugins` Sync in the target project to activate plugins in `.agents/`, `.claude/`, `.gemini/` etc.
 
 
 ## References
@@ -123,4 +123,4 @@ python3 .agents/skills/replicate-plugin/scripts/bulk_replicator.py \
 - **Active development**: Use `--link` to work from source and test in target instantly.
 
 ## Next Actions
-After replicating, run `maintain-plugins` Sync in the target project to activate the plugins in `.agent/`, `.claude/`, `.gemini/` etc.
+After replicating, run `maintain-plugins` Sync in the target project to activate the plugins in `.agents/`, `.claude/`, `.gemini/` etc.

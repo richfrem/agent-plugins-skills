@@ -22,7 +22,7 @@ Platform Command Mapping (commands/ vs workflows/):
         Source folder:   plugin/commands/*.md
         ─────────────────────────────────────────────────────────
         .agents/         → workflows/<plugin>_<cmd>.md  (canonical)
-        .agent/          → workflows/<plugin>_<cmd>.md  (Antigravity)
+        .agents/          → workflows/<plugin>_<cmd>.md  (Antigravity)
         .claude/         → commands/<plugin>_<cmd>.md   (Claude Code)
         .gemini/         → commands/<plugin>_<cmd>.toml (Gemini CLI, TOML-wrapped)
         .github/         → prompts/<plugin>_<cmd>.prompt.md (GitHub Copilot)
@@ -81,9 +81,9 @@ if hasattr(sys.stderr, "reconfigure"):
 DETECTABLE_AGENTS = {
     ".agent": {
         "name": "antigravity",
-        "skills": ".agent/skills",
-        "commands": ".agent/workflows",
-        "rules": ".agent/rules",
+        "skills": ".agents/skills",
+        "commands": ".agents/workflows",
+        "rules": ".agents/rules",
         "hooks": None,
         "rules_mode": "files",
     },

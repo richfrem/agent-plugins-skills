@@ -70,4 +70,4 @@ While *Rules* provide context, **Workflows** provide a structured sequence of st
 - **Execution:** Invoked directly as slash commands (e.g., `/workflow-name`). Workflows can also recursively call *other* workflows by including instructions like "Call /workflow-2".
 
 ## Convergence
-Whether checking `.agent/workflows/[name].md` for Antigravity, or parsing `.claude/skills/[name]/SKILL.md` for Claude Code, the end goal is identical: **providing agents with reusable, deterministically structured procedural knowledge so they don't have to guess how your environment operates.**
+Whether checking `.agents/workflows/[name].md` for Antigravity, or parsing `.claude/skills/[name]/SKILL.md` for Claude Code, the end goal is identical: **providing agents with reusable, deterministically structured procedural knowledge so they don't have to guess how your environment operates.**

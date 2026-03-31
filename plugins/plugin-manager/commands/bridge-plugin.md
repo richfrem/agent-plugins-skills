@@ -1,1 +1,1 @@
-../skills/bridge-plugin/SKILL.md
+../skills/plugin-installer/SKILL.md

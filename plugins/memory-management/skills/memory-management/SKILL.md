@@ -110,7 +110,7 @@ rg "def query" ../../ --type py
 | **Skill (write/inject)** | `rlm-factory:rlm-curator` |
 | **Skill (audit coverage)** | `rlm-factory:rlm-curator` |
 | **Skill (shared config)** | `rlm-factory:rlm-curator` |
-| **Cache files** | `.agent/learning/rlm_summary_cache.json` (docs), `.agent/learning/rlm_tool_cache.json` (tools) |
+| **Cache files** | `.agents/learning/rlm_summary_cache.json` (docs), `.agents/learning/rlm_tool_cache.json` (tools) |
 
 ### `vector-db` -- Vector Store (Tier 3)
 

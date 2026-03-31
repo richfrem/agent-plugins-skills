@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Within the `agent-plugins-skills` monorepo, a single Plugin often contains multiple distinct Skills (e.g., the `plugin-manager` plugin contains `maintain-plugins`, `replicate-plugin`, and `bridge-plugin` skills). 
+Within the `agent-plugins-skills` monorepo, a single Plugin often contains multiple distinct Skills (e.g., the `plugin-manager` plugin contains `maintain-plugins`, `replicate-plugin`, and `plugin-installer` skills). 
 
 Historically, scripts that were shared across multiple skills within the *same* plugin were duplicated, or scattered randomly inside one skill's directory while other skills reached across internal boundaries to execute them. This caused maintenance headaches (updating a script required updating multiple copies) and broke the logical boundary of the consuming skills.
 

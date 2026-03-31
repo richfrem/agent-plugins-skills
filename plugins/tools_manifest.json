@@ -395,13 +395,13 @@
         },
         {
           "name": "bridge_installer.py",
-          "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/bridge_installer.py",
+          "path": "plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py",
           "purpose": "",
           "type": "python"
         },
         {
           "name": "install_all_plugins.py",
-          "path": "plugins/plugin-manager/skills/bridge-plugin/scripts/install_all_plugins.py",
+          "path": "plugins/plugin-manager/skills/plugin-installer/scripts/install_all_plugins.py",
           "purpose": "",
           "type": "python"
         },

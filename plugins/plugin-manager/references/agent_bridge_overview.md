@@ -5,7 +5,7 @@
 
 ## Overview
 
-The `bridge-plugin` skill translates plugins from a common format into the specific structure expected by each agent environment. It reads from `plugins/` and writes to the agent-specific directories.
+The `plugin-installer` skill translates plugins from a common format into the specific structure expected by each agent environment. It reads from `plugins/` and writes to the agent-specific directories.
 
 There is one bridge:
 
@@ -24,7 +24,7 @@ There is one bridge:
 
 | Environment | Config Directory | Format |
 |-------------|-----------------|--------|
-| Antigravity | `.agent/` | Markdown workflows + rules |
+| Antigravity | `.agents/` | Markdown workflows + rules |
 | Claude Code | `.claude/` | Markdown commands |
 | Gemini CLI | `.gemini/` | TOML + Markdown |
 | GitHub Copilot | `.github/` | Prompt files |

@@ -69,7 +69,7 @@ BRIDGE_INSTALLER = PROJECT_ROOT / "plugins/plugin-manager/scripts/bridge_install
 
 AGENT_DIRS = {
     "antigravity": {
-        "dirs": [".agent/workflows", ".agent/skills", ".agent/rules"],
+        "dirs": [".agents/workflows", ".agents/skills", ".agents/rules"],
     },
     "github": {
         "dirs": [".github/prompts", ".github/skills", ".github/rules"],

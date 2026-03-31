@@ -3,7 +3,7 @@
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/spec-kitty.plan` command. See `.agent/workflows/spec-kitty.plan.md` for the execution workflow.
+**Note**: This template is filled in by the `/spec-kitty.plan` command. See `.agents/workflows/spec-kitty.plan.md` for the execution workflow.
 
 ## Summary
 
@@ -120,7 +120,7 @@ docs/
     ├── [new_doc].md
     └── [updated_doc].md
 
-.agent/templates/
+.agents/templates/
 └── [template].md
 ```
 

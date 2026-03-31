@@ -20,17 +20,17 @@ The **Bridge System** acts as the "Universal Adapter," projecting plugin capabil
 This skill ensures the Project Constitution and Core workflows are synchronized across all agents.
 1.  **Constitution Positioning**: Pulls `docs/constitution.md` (Version 4.2) and projects it to the TOP of all agent configuration files (e.g., `GEMINI.md`, `CLAUDE.md`).
 2.  **Rule Integration**: Injects project-specific rules (`.agent/rules/`) into a dedicated block within the agent configurations, ensuring NO constitution duplication in the synced block.
-3.  **Core Workflows**: Projects master workflows from `.windsurf/workflows/` to `.agent/workflows/spec-kitty/`.
+3.  **Core Workflows**: Projects master workflows from `.windsurf/workflows/` to `.agents/workflows/spec-kitty/`.
 
-### B. Plugin Bridge Installer (`bridge-plugin` skill in `plugin-manager`)
+### B. Plugin Bridge Installer (`plugin-installer` skill in `plugin-manager`)
 This skill manages the installation of standalone plugins into agent environments.
-1.  **Command Projection**: Maps `plugins/*/commands/*.md` to plugin-specific subdirectories (e.g., `.agent/workflows/{plugin}/`, `.claude/commands/`).
-2.  **Skill Integration**: Copies `plugins/*/skills/` to the canonical agent skills directory (`.agent/skills/`).
+1.  **Command Projection**: Maps `plugins/*/commands/*.md` to plugin-specific subdirectories (e.g., `.agents/workflows/{plugin}/`, `.claude/commands/`).
+2.  **Skill Integration**: Copies `plugins/*/skills/` to the canonical agent skills directory (`.agents/skills/`).
 3.  **Transformation**: Performs actor swapping and agent-specific wrapping (e.g., Gemini TOML).
 
 ## 4. Automation & Workflows
 -   **Usage (Rules/SDD)**: Trigger the `spec-kitty-sync-plugin` skill to sync project rules and constitution across agents.
--   **Usage (Plugins)**: Trigger the `bridge-plugin` skill (in `plugin-manager`) to install a specific plugin into agent environments.
+-   **Usage (Plugins)**: Trigger the `plugin-installer` skill (in `plugin-manager`) to install a specific plugin into agent environments.
 -   **Batch Install**: Trigger `maintain-plugins` skill to install all plugins at once.
 
 ## 5. Visual Representation

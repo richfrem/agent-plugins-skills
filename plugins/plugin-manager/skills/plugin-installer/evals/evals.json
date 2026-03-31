@@ -1,6 +1,6 @@
 {
     "plugin": "plugin-manager",
-    "skill": "bridge-plugin",
+    "skill": "plugin-installer",
     "evaluations": [
         {
             "id": "eval-1-auto-detection",

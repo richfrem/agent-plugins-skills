@@ -97,7 +97,7 @@ Universal CLI to install across all supported agents (Claude Code, Copilot, Gemi
 ## Table of Contents
 To read any of the reference guides, use your file system tools to `cat` or `view` the relevant file.
 
-*   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills/` (and equivalents like `.agent/skills/` and `.github/skills/`). Custom agents deployed as Skills are stored here as `<plugin>-<agent>/SKILL.md`.
+*   **Agent Skills**: Definition, lifecycle, progressive disclosure, and constraints of `.claude/skills/` (and equivalents like `.agents/skills/` and `.github/skills/`). Custom agents deployed as Skills are stored here as `<plugin>-<agent>/SKILL.md`.
     *   [reference/skills.md](../../references/skills-research.md)
     *   [reference/diagrams/skill-execution-flow.mmd](../../assets/diagrams/skill-execution-flow.mmd)
 *   **Claude Plugins**: Specification for the `.claude-plugin` architecture, manifest setup, and distribution.

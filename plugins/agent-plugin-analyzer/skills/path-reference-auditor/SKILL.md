@@ -103,7 +103,7 @@ Flags references in plugin root level that point OUTSIDE the plugin.
 python3 scripts/check_plugin_boundaries.py temp/inventory.json --batch all
 
 # Single plugin (fast testing)
-python3 scripts/check_plugin_boundaries.py temp/inventory.json --plugin bridge-plugin
+python3 scripts/check_plugin_boundaries.py temp/inventory.json --plugin plugin-installer
 ```
 
 Example violation:
@@ -184,7 +184,7 @@ Then run from the skill directory:
 python3 scripts/path_reference_auditor.py --project . --phase scan
 ```
 
-### Option 2: Install Full Plugin (bridge-plugin)
+### Option 2: Install Full Plugin (plugin-installer)
 
 For developers who want all agent-plugin-analyzer skills + commands + hooks:
 

@@ -64,9 +64,9 @@ PROTECTED_NAMES = {
 
 AGENT_DIRS = {
     "antigravity": [
-        ".agent/workflows",
-        ".agent/skills",
-        ".agent/rules"
+        ".agents/workflows",
+        ".agents/skills",
+        ".agents/rules"
     ],
     "github": [
         ".github/prompts",

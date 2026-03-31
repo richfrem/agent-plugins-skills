@@ -20,7 +20,7 @@ Usage Examples:
     python3 plugins/tool-inventory/scripts/tool_chroma.py stats
     python3 plugins/tool-inventory/scripts/tool_chroma.py search "query cache"
     python3 plugins/tool-inventory/scripts/tool_chroma.py list
-    python3 plugins/tool-inventory/scripts/tool_chroma.py import-json .agent/learning/rlm_tool_cache.json
+    python3 plugins/tool-inventory/scripts/tool_chroma.py import-json .agents/learning/rlm_tool_cache.json
 
 Supported Object Types:
     - Tool Inventory JSON / RLM cache entries
@@ -32,7 +32,7 @@ CLI Arguments:
     import-json      - Import from rlm_tool_cache.json
 
 Input Files:
-    - .agent/learning/rlm_tool_cache.json (for import-json command)
+    - .agents/learning/rlm_tool_cache.json (for import-json command)
 
 Output:
     - Persistent ChromaDB collection at plugins/tool-inventory/data/chroma/

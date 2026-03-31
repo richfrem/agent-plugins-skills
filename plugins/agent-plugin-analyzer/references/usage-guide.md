@@ -11,7 +11,7 @@ python3 ./path_reference_auditor.py --project . --phase scan
 ```
 
 **What it does:**
-- Walks all `plugins/`, `.agents/skills/`, `.agent/skills/`, `.claude/skills/` directories
+- Walks all `plugins/`, `.agents/skills/`,  `.claude/skills/` directories
 - Finds every `./reference` pattern in `.py`, `.md`, `.mmd`, `.json`, `.sh` files
 - Extracts file path, line number, reference string
 - Saves to `inventory.json` (raw, unverified)
@@ -113,10 +113,10 @@ Flag references in plugin root that point OUTSIDE the plugin.
 python3 ./check_plugin_boundaries.py inventory.json --batch all
 
 # Single plugin (by name)
-python3 ./check_plugin_boundaries.py inventory.json --plugin bridge-plugin
+python3 ./check_plugin_boundaries.py inventory.json --plugin plugin-installer
 
 # Single plugin (by path)
-python3 ./check_plugin_boundaries.py inventory.json --plugin plugins/bridge-plugin
+python3 ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-installer
 ```
 
 **Example violation:**

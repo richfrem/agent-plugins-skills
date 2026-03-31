@@ -1,20 +1,20 @@
 flowchart TD
     subgraph Sources [1. Sources of Truth]
-        A[.agent/rules] -->|Project Rules| B{"spec-kitty-plugin:spec-kitty-sync-plugin"}
+        A[.agents/rules] -->|Project Rules| B{"spec-kitty-plugin:spec-kitty-sync-plugin"}
         W[.windsurf/workflows] -->|Master SDD| B
-        P[plugins/*] -->|Capabilities| C{"plugin-manager:bridge-plugin"}
+        P[plugins/*] -->|Capabilities| C{"plugin-manager:plugin-installer"}
     end
 
     subgraph Sync [2. Bridge Sync & Install]
         B -->|Universal Sync| D[Agent Config Headers]
-        B -->|Workflow Sync| E[.agent/workflows/spec-kitty/]
+        B -->|Workflow Sync| E[.agents/workflows/spec-kitty/]
         
         C -->|Command Projection| F[Agent Command Dirs]
-        C -->|Skill/Resource Sync| G[.agent/skills/ & plugins/]
+        C -->|Skill/Resource Sync| G[.agents/skills/ & plugins/]
     end
 
     subgraph Targets [3. Agent Environments]
-        D & E & F & G --> H[.agent/ Antigravity]
+        D & E & F & G --> H[.agents/ Antigravity]
         D & F --> I[.claude/ Claude]
         D & F --> J[.gemini/ Gemini]
         D & F --> K[.github/ Copilot]

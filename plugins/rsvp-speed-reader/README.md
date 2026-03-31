@@ -10,9 +10,9 @@ npx skills add ./plugins/rsvp-speed-reader
 This installs the skills from this plugin.
 
 ### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the bridge-plugin skill:
+For complete access to all components, use the plugin-installer skill:
 ```bash
-# Use the bridge-plugin skill to deploy all components
+# Use the plugin-installer skill to deploy all components
 # python ./plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/rsvp-speed-reader
 ```
 
