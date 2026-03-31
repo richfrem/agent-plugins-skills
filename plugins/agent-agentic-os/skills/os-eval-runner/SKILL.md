@@ -398,7 +398,34 @@ git diff <baseline-commit> HEAD --name-only  # all files changed since baseline
 # The master uses symlinks — only update the canonical source file.
 ```
 
-**6. Commit to master:**
+**6. Two-gate confirmation before applying to master:**
+
+Do not apply any change to master until both gates are cleared:
+
+**Gate 1 — Machine:** `evaluate.py` exited 0 (score ≥ baseline AND f1 ≥ baseline_f1). Confirm from `results.tsv`.
+
+**Gate 2 — Three-perspective diff commentary** (write this before editing master files):
+```
+BACKPORT REVIEW: iter_NNN — "<desc>"
+Score delta: +0.07 (0.82 → 0.89)
+
+Test engineer view:
+  Which eval inputs changed verdict? [list them]
+  Are these the inputs we were targeting, or collateral?
+
+Routing precision view:
+  What similar-but-wrong request could now trigger this skill?
+
+Regression view:
+  Do any other installed skills have overlapping keywords with this change?
+  grep -r "<new keyword>" .agents/skills/*/SKILL.md
+```
+
+For **unattended** (`os-nightly-evolver`) runs: write this commentary to
+`temp/retrospectives/backport_[YYYYMMDD]_iter_NNN.md` and flag for human review
+before applying. Do not auto-apply to master from unattended runs.
+
+**7. Commit to master:**
 ```bash
 cd /path/to/agent-plugins-skills
 git add plugins/<plugin>/...

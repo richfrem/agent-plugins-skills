@@ -68,6 +68,55 @@ The RED scenario is the evidence that the skill is needed. Without it:
 
 ---
 
+## Required: Skill State Snapshot (before any mutation)
+
+Before proposing any change in an active improvement loop, run:
+```bash
+python3 plugins/agent-agentic-os/scripts/eval_runner.py \
+    --skill <experiment-dir> \
+    --snapshot
+```
+
+This tells you: current score, iteration history, false-positive vs false-negative rate, and
+the dominant problem type (PRECISION or RECALL). If the snapshot shows PRECISION (too many
+false positives), do not add more keywords — that makes it worse. If it shows RECALL, do not
+add adversarial examples without also adding trigger phrases.
+
+If `--snapshot` is not yet available (pre-Enhancement-2), read `evals/results.tsv` directly
+for score trend and `evals/traces/` for the most recent DISCARD's per-input detail.
+
+---
+
+## Required: Hypothesis Block (before any mutation)
+
+Before editing any file, output a hypothesis block. If you cannot fill all 5 fields from
+trace data or eval history, read more traces before proposing. Mutations without a grounded
+hypothesis are exploratory noise — not systematic improvement.
+
+```
+HYPOTHESIS:
+  Failure mode: [exact input that triggered incorrectly + the incorrect verdict]
+  Root cause:   [which specific keyword, phrase, or missing example caused it]
+  Change:       [one sentence — add/remove/modify WHAT in SKILL.md]
+  Effect:       [which specific eval inputs should flip from wrong → correct]
+  Risk:         [which inputs might regress — name them specifically]
+```
+
+**Acceptable example:**
+```
+HYPOTHESIS:
+  Failure mode: "audit all hyperlinks in markdown files" triggered (should_trigger=false)
+  Root cause:   keyword 'audit' in description matched this unrelated request
+  Change:       Remove 'audit'; replace with 'broken-link audit' (compound, more specific)
+  Effect:       iter_002 false positive should no longer trigger
+  Risk:         "audit my symlink manifest" (iter_006, should_trigger=true) may also stop triggering
+```
+
+**Not acceptable** — do not write mutations based on vague hypotheses like "description too
+vague, improve it." That produces random mutations and early plateau.
+
+---
+
 ## Phase 1: Frontier (What failure does this skill fix?)
 
 Before writing a single line of SKILL.md:
