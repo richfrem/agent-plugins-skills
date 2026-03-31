@@ -154,63 +154,88 @@ not tracked by `npx skills`.
 
 ## Usage
 
-### Standard: `npx skills` (skills only)
+### Bootstrapped (no clone required): `uvx` ★ Recommended
 ```bash
-# Install all skills from remote repo
-npx skills add richfrem/agent-plugins-skills
+# Interactive TUI from any GitHub repo
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
-# Install a single plugin's skills
-npx skills add richfrem/agent-plugins-skills/plugins/my-plugin
+# Install from Anthropic official plugins (has plugins/ subdir)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add anthropics/claude-plugins-official
 
-# Update all tracked skills
-npx skills update
+# Install from flat-layout repo (no plugins/ dir — auto-discovered)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add anthropics/knowledge-work-plugins
 
-# Remove a skill
-npx skills remove skill-name
+# Install all non-interactively
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
 ```
 
-> This installs **skills only**. Commands, rules, hooks, and MCP are not
-> deployed. For full plugin deployment, use `plugin_installer.py` below.
+### Full Deployment: `plugin_add.py` (interactive TUI)
 
-### Full Deployment: `plugin_add.py` (interactive TUI — recommended)
+The recommended local invocation. Supports the same GitHub source syntax as `uvx`.
 
-The recommended way to install full plugins interactively. Inspired by the `npx skills add` UX from [Vercel Labs skills CLI](https://skills.sh).
+#### Source Format
+
+`plugin_add.py` accepts a flexible `owner/repo[/subpath]` source:
+
+| Source Format | What Happens |
+|---|---|
+| `richfrem/agent-plugins-skills` | Clone repo, auto-detect `plugins/` dir |
+| `anthropics/claude-plugins-official/plugins` | Clone repo, use `plugins/` subpath directly |
+| `anthropics/knowledge-work-plugins` | Clone repo, no `plugins/` dir — scans root for plugin-shaped dirs |
+| `anthropics/knowledge-work-plugins/engineering` | Clone repo, drill into `engineering/` as a single plugin |
+| `https://github.com/org/repo/tree/main/plugins` | Full GitHub URL — `tree/main/` is stripped automatically |
+| `/local/path/to/repo` | Local clone — same discovery waterfall |
+
+#### Plugin Discovery Waterfall
+
+When a repo root is resolved, plugins are found via three-tier fallback:
+
+1. **Classic monorepo** — `plugins/` subdir exists → scan its children
+2. **Flat layout** — No `plugins/` dir → scan root-level dirs that have `.claude-plugin/plugin.json` or `skills/`
+3. **Single plugin** — The pointed-to directory itself has `.claude-plugin/plugin.json` → treat as one plugin
 
 ```bash
 # Interactive plugin picker — current repo
 python plugins/plugin-manager/scripts/plugin_add.py
 
-# Install from any GitHub repo (auto-clones, then lets you pick plugins)
+# Install from remote GitHub repo (any layout)
 python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
 
-# Install everything non-interactively
+# Install specific subpath
+python plugins/plugin-manager/scripts/plugin_add.py anthropics/knowledge-work-plugins/engineering
+
+# Full GitHub URL (tree/main/ stripped automatically)
+python plugins/plugin-manager/scripts/plugin_add.py https://github.com/anthropics/claude-plugins-official/tree/main/plugins
+
+# Install all non-interactively
 python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
 
 # Dry-run preview
 python plugins/plugin-manager/scripts/plugin_add.py --dry-run
 ```
 
-### Single Plugin: `plugin_installer.py` (scripted / CI)
+#### Fresh Project: `.claude/` Auto-Init
 
-**Before reinstalling local changes**, flush stale artifacts:
-```bash
-rm -rf .agents/ && npx skills remove --all -y
+If no `.claude/` directory exists in the target project, `plugin_add.py` will prompt:
+
 ```
+  No .claude/ directory found in this project.
+  Initialize .claude/ for Claude Code integration? [Y/n]
+```
+
+Answering `Y` (default) creates `.claude/` so Claude Code symlinks are activated during installation. Answering `n` skips it — only `.agents/` (the canonical store) will be populated.
+
+### Single Plugin: `bridge_installer.py` (scripted / CI)
 
 **Install a single plugin:**
 ```bash
-python ./plugin_installer.py \
+python ./plugins/plugin-manager/scripts/bridge_installer.py \
   --plugin plugins/my-plugin
-```
-
-**Install all plugins:**
-```bash
-python ./install_all_plugins.py
 ```
 
 **Dry run (preview only, no writes):**
 ```bash
-python ./plugin_installer.py \
+python ./plugins/plugin-manager/scripts/bridge_installer.py \
   --plugin plugins/my-plugin --dry-run
 ```
 
@@ -277,12 +302,16 @@ STOP immediately. Ask the user to specify the exact environment name
 (`antigravity`, `claude`, `gemini`, `github`). Never run with `--target auto`.
 
 ### 5. Symlink failed (Windows)
-Log `symlinkFailed: true`. Fall back to directory copy for that agent.
-Warn: "On Windows, enable Developer Mode for symlink support."
+Log `symlinkFailed: true`. Fallback chain:
+1. `os.symlink()` — true symlink (needs Developer Mode)
+2. `mklink /J` for dirs / `mklink /H` for files — no Developer Mode needed
+3. `shutil.copy2()` — plain copy (last resort, no live sync)
+
+Warn: "On Windows, enable Developer Mode for true symlink support."
 
 ### 6. Lock file write failed
 Log the error but do not abort the install. Warn the user that
-`npx skills list/check/update` may not reflect this installation.
+installed skills may not be tracked in `skills-lock.json`.
 
 ---
 
