@@ -32,15 +32,22 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 This skill deploys plugin components to agent environments using the
 `.agents/` central store + symlink pattern. It is the **full-stack** installer:
 
-| Installer | Skills | Commands | Rules | Hooks | MCP | GitHub source |
-|-----------|--------|----------|-------|-------|-----|---------------|
-| `npx skills add` | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ (owner/repo) |
-| `plugin_add.py` ★ **default** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ (owner/repo) |
-| `plugin_installer.py` | ✓ | ✓ | ✓ | ✓ | ✓ | local only |
+| Installer | Features | Requires Local Clone? | Recommended For |
+|-----------|----------|-----------------------|-----------------|
+| `uvx` ★ **default** | Full interactive TUI | No (runs from GitHub) | Everyone using `uv` |
+| `bootstrap.py` | Full interactive TUI | No (downloads in-memory) | End users without `uv` |
+| `npx skills add` | Skills only | No (runs from GitHub) | Mac/Linux users wanting only skills |
+| `plugin_add.py` | Full interactive TUI | Yes | Local developers debugging the installer |
 
-> **Use `npx skills add`** for pure skill distribution to end users (no Python required).
-> **Use `plugin_add.py`** (★ recommended default) for an interactive TUI that works like `npx skills add` but installs full plugins — including commands, agents, rules, and hooks. Accepts a GitHub `owner/repo` shorthand and auto-clones before installing.
-> **Use `plugin_installer.py`** directly for scripted/CI single-plugin installs.
+> **Use `uvx`** (★ recommended default) for an interactive TUI that works exactly like `npx skills add` but installs full plugins without requiring Node.js.
+> **Use the `bootstrap.py` curl pipeline** if you do not have `uv` installed.
+> **Use `plugin_add.py`** directly for scripted/CI single-plugin installs from a local clone.
+
+## Initial vs Subsequent Installs
+
+There is no difference between an initial install and a subsequent install from the consumer's perspective. Because `uvx` and `bootstrap.py` execute ephemerally, they are inherently stateless tooling. 
+
+You do not need to "install the installer". Just run the `uvx` or `curl` command whenever you need to add or update a plugin. The state is strictly kept inside your `.agents/` repository.
 
 ---
 

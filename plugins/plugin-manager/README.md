@@ -18,43 +18,53 @@ The **Plugin Manager** is the cross-agent, cross-platform orchestration hub for 
 
 ---
 
-## Installation
+## Initial Installation (Bootstrapping)
 
-### Option 1: Interactive TUI — from GitHub (Recommended)
+These commands are for consumers who want to add plugins seamlessly *without* cloning the repo.
 
-No clone required. Auto-downloads, shows a plugin picker, installs selected plugins.
+### Option 1: `uvx` — Modern Python Standard (Recommended)
+
+If you have [uv](https://docs.astral.sh/uv/) installed (the modern Python package manager), you get instantaneous, isolated installations exactly like `npx`, but natively cross-platform without Node.js.
 
 ```bash
-# Interactive picker — browse and select which plugins to install
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
+# Interactive picker
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
 # Install everything non-interactively
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
 
 # Preview without writing any files
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --dry-run
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
 ```
 
-> Inspired by the [`npx skills add`](https://skills.sh) UX from [Vercel Labs](https://github.com/vercel-labs/skills). Re-implemented in pure Python stdlib for cross-platform compatibility and full-plugin deployment.
+### Option 2: Fallback Bootstrap (Zero Tooling Assumptions)
 
-### Option 2: From a Marketplace (Claude Code only)
+If you don't use `uv`, you can install purely using standard Python tooling without cloning the repo.
+
+**Mac / Linux:**
+```bash
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
+```
+**Windows (PowerShell):**
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
+```
+
+### Option 3: Claude Code Marketplace (Claude Code only)
 
 ```bash
 /plugin marketplace add richfrem/agent-plugins-skills
 /plugin install plugin-manager
 ```
 
-### Option 3: `npx skills` (Mac/Linux, skills only)
+## Subsequent Installations
 
+Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same command to add new plugins later. There is no local state to manage outside of your `.agents/` folder.
+
+If you chose to **clone the repo locally** instead of using the remote bootstrappers, run:
 ```bash
-# Skills only — works correctly on Mac/Linux where Git creates real symlinks
-npx skills add richfrem/agent-plugins-skills --path plugins/plugin-manager
+python plugins/plugin-manager/scripts/plugin_add.py
 ```
-
-> [!WARNING]
-> **Windows users:** do not use `npx skills add` with this repository. Git for Windows
-> checks out symlinks as text files and `npx` will install broken one-line pointer files
-> instead of executable Python. Use `plugin_add.py` instead.
 
 ---
 
