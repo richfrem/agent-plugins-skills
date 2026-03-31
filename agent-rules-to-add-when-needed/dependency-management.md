@@ -5,7 +5,7 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 
 ## 🐍 Python Dependency Rules (Summary)
 
-**Full workflow details → `.agents/skills/dependency-management/SKILL.md` (installed locally via `bridge_installer.py`)**
+**Full workflow details → `.agents/skills/dependency-management/SKILL.md` (installed locally via `plugin_installer.py`)**
 
 ### Non-Negotiables
 1. **No manual `pip install`** — all changes go through `.in` → `pip-compile` → `.txt`.

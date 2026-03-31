@@ -20,7 +20,7 @@ npx skills add richfrem/agent-plugins-skills --path plugins/agent-scaffolders
 ```bash
 npx skills add ./plugins/agent-scaffolders
 # or
-python plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/agent-scaffolders
+python plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/agent-scaffolders
 ```
 
 ---

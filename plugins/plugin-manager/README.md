@@ -91,7 +91,7 @@ Ensure your plugin is situated inside `plugins/<name>`, then run the bridge inst
 
 **Single Plugin:**
 ```bash
-python3 ././scripts/bridge_installer.py --plugin plugins/my-plugin
+python3 ././scripts/plugin_installer.py --plugin plugins/my-plugin
 ```
 > The installer automatically detects existing agent directories (e.g. `.agents/`, `.claude/`). No `--target` argument is needed or accepted.
 
@@ -108,7 +108,7 @@ python3 ././scripts/update_agent_system.py
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Map, install, and translate components to target envs | `bridge_installer.py`, `install_all_plugins.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Map, install, and translate components to target envs | `plugin_installer.py`, `install_all_plugins.py` |
 | **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs | `sync_with_inventory.py`, `audit_structure.py` |
 | **[replicate-plugin](skills/replicate-plugin/SKILL.md)** | Copy or link plugin source code to other project repos | `plugin_replicator.py`, `bulk_replicator.py` |
 
@@ -154,7 +154,7 @@ plugin-manager/
 ├── scripts/
 │   ├── update_agent_system.py   <- Master orchestrator
 │   ├── sync_with_inventory.py   <- Agent env sync + cleanup
-│   ├── bridge_installer.py      <- Core translation/routing logic
+│   ├── plugin_installer.py      <- Core translation/routing logic
 │   ├── install_all_plugins.py   <- Batch bridge loop processor
 │   ├── audit_structure.py       <- Structural audit
 │   ├── plugin_replicator.py     <- Single plugin copy (--source/--dest/--clean)

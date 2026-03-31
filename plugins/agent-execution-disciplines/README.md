@@ -45,7 +45,7 @@ can reference these by name without cross-plugin script dependencies.
 
 ```bash
 # Full deployment (skills + any commands/rules/hooks)
-python ./bridge_installer.py --plugin plugins/agent-execution-disciplines
+python ./plugin_installer.py --plugin plugins/agent-execution-disciplines
 
 # Skills only via npx
 npx skills add richfrem/agent-plugins-skills/plugins/agent-execution-disciplines

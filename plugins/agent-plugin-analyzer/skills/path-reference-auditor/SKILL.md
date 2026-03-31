@@ -190,7 +190,7 @@ For developers who want all agent-plugin-analyzer skills + commands + hooks:
 
 ```bash
 # From project root, use the bridge installer
-python3 ./scripts/bridge_installer.py plugins/agent-plugin-analyzer
+python3 ./scripts/plugin_installer.py plugins/agent-plugin-analyzer
 
 # Or manually
 cp -r plugins/agent-plugin-analyzer /path/to/target/plugins/

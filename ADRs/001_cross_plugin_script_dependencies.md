@@ -11,7 +11,7 @@ This tight coupling violates separation of concerns and breaks plugin encapsulat
 The ecosystem now operates on a **3-layer principle**:
 
 1. **Source repo (dev time) - DRY**: One canonical file per resource, no duplication. Cross-plugin sharing in source is done via file-level symlinks. The mono-repo has all plugins present, so cross-plugin symlinks resolve correctly during development.
-2. **Deploy time - Self-contained**: The bridge installer (`bridge_installer.py`) and `npx skills add` resolve all file-level symlinks to physical copies when installing into `.agents/`. Each installed skill is fully self-contained regardless of what other plugins are present.
+2. **Deploy time - Self-contained**: The bridge installer (`plugin_installer.py`) and `npx skills add` resolve all file-level symlinks to physical copies when installing into `.agents/`. Each installed skill is fully self-contained regardless of what other plugins are present.
 3. **Runtime - Agent-orchestrated**: When a skill needs a capability from another plugin at runtime, it instructs the Agent to invoke that plugin's skill via the conversation layer -- not by calling scripts directly.
 
 This combination eliminates both code duplication in source AND fragile runtime dependencies.

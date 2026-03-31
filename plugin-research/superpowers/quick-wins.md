@@ -4,7 +4,7 @@
 > All implementation paths comply with ADR-002 (hub-and-spoke scripts),
 > ADR-003 (zero duplication / file-level symlinks only), and ADR-004
 > (self-contained plugins at deploy time, cross-plugin symlinks in source).
-> "Copy" only happens at install time via bridge_installer.py / npx skills add.
+> "Copy" only happens at install time via plugin_installer.py / npx skills add.
 
 ---
 
@@ -36,7 +36,7 @@ any cross-plugin symlinks at all.
 
 Bridge-install the new plugin:
 ```bash
-python ./bridge_installer.py --plugin plugins/agent-execution-disciplines
+python ./plugin_installer.py --plugin plugins/agent-execution-disciplines
 ```
 
 Also add a line to `agents/os-learning-loop.md` Phase 2: friction events of type

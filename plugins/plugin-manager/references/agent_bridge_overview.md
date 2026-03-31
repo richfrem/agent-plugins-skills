@@ -11,7 +11,7 @@ There is one bridge:
 
 **Plugin Bridge**
 - **Source**: `plugins/` (any plugin directory)
-- **Tool**: `bridge_installer.py`
+- **Tool**: `plugin_installer.py`
 - **Responsibility**:
   - Installs **Skills** into agent skill/workflow directories
   - Deploys **Commands** as agent-specific slash commands
@@ -35,7 +35,7 @@ There is one bridge:
 
 ### Install a single plugin
 ```bash
-python ./bridge_installer.py \
+python ./plugin_installer.py \
   --plugin plugins/<plugin-name>
 ```
 

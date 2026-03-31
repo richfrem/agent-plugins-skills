@@ -30,7 +30,7 @@
             "script.py": "example provided",
             "shared.py": "example provided",
             "shared_util.py": "example provided",
-            "bridge_installer.py": "example provided"
+            "plugin_installer.py": "example provided"
         },
         "claude-cli": {},
         "coding-conventions": {

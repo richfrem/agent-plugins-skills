@@ -2336,8 +2336,8 @@
     "is_symlink": false
   },
   {
-    "name": "bridge_installer.py",
-    "path": "plugins/plugin-manager/scripts/bridge_installer.py",
+    "name": "plugin_installer.py",
+    "path": "plugins/plugin-manager/scripts/plugin_installer.py",
     "is_symlink": false
   },
   {
@@ -2651,10 +2651,10 @@
     "is_broken": false
   },
   {
-    "name": "bridge_installer.py",
-    "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/bridge_installer.py",
+    "name": "plugin_installer.py",
+    "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/plugin_installer.py",
     "is_symlink": true,
-    "target": "../../../scripts/bridge_installer.py",
+    "target": "../../../scripts/plugin_installer.py",
     "is_broken": false
   },
   {
@@ -2742,10 +2742,10 @@
     "is_broken": true
   },
   {
-    "name": "bridge_installer.py",
-    "path": "plugins/plugin-manager/skills/plugin-installer/references/bridge_installer.py",
+    "name": "plugin_installer.py",
+    "path": "plugins/plugin-manager/skills/plugin-installer/references/plugin_installer.py",
     "is_symlink": true,
-    "target": "../scripts/bridge_installer.py",
+    "target": "../scripts/plugin_installer.py",
     "is_broken": false
   },
   {
@@ -2763,10 +2763,10 @@
     "is_broken": false
   },
   {
-    "name": "bridge_installer.py",
-    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py",
+    "name": "plugin_installer.py",
+    "path": "plugins/plugin-manager/skills/plugin-installer/scripts/plugin_installer.py",
     "is_symlink": true,
-    "target": "../../../scripts/bridge_installer.py",
+    "target": "../../../scripts/plugin_installer.py",
     "is_broken": false
   },
   {

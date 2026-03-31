@@ -34,10 +34,10 @@ This skill deploys plugin components to agent environments using the
 | Installer | Skills | Commands | Rules | Hooks | MCP |
 |-----------|--------|----------|-------|-------|-----|
 | `npx skills add` | ✓ | ✗ | ✗ | ✗ | ✗ |
-| `bridge_installer.py` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `plugin_installer.py` | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 > **Use `npx skills add`** for pure skill distribution to end users.
-> **Use `bridge_installer.py`** when you need commands, rules, hooks, or MCP
+> **Use `plugin_installer.py`** when you need commands, rules, hooks, or MCP
 > configs deployed alongside skills — or when developing locally.
 
 ---
@@ -94,7 +94,7 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 
 ## npx skills Compatibility
 
-`bridge_installer.py` writes to the `npx skills` lock file after installation
+`plugin_installer.py` writes to the `npx skills` lock file after installation
 so that `npx skills list`, `check`, and `update` remain aware of
 bridge-installed skills.
 
@@ -124,7 +124,7 @@ bridge-installed skills.
 }
 ```
 
-After running `bridge_installer.py`, each installed skill must be written to
+After running `plugin_installer.py`, each installed skill must be written to
 the appropriate lock file. Skills only — commands, rules, hooks, and MCP are
 not tracked by `npx skills`.
 
@@ -150,9 +150,9 @@ npx skills remove skill-name
 ```
 
 > This installs **skills only**. Commands, rules, hooks, and MCP are not
-> deployed. For full plugin deployment, use `bridge_installer.py` below.
+> deployed. For full plugin deployment, use `plugin_installer.py` below.
 
-### Full Deployment: `bridge_installer.py` (skills + commands + rules + hooks)
+### Full Deployment: `plugin_installer.py` (skills + commands + rules + hooks)
 
 **Before reinstalling local changes**, flush stale artifacts:
 ```bash
@@ -161,7 +161,7 @@ rm -rf .agents/ && npx skills remove --all -y
 
 **Install a single plugin:**
 ```bash
-python ./bridge_installer.py \
+python ./plugin_installer.py \
   --plugin plugins/my-plugin
 ```
 
@@ -172,7 +172,7 @@ python ./install_all_plugins.py
 
 **Dry run (preview only, no writes):**
 ```bash
-python ./bridge_installer.py \
+python ./plugin_installer.py \
   --plugin plugins/my-plugin --dry-run
 ```
 

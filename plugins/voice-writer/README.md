@@ -24,7 +24,7 @@ Roo Code, and any other agent that supports the Agent Skills open standard.
 
 ```bash
 # From the agent-plugins-skills project root:
-python ./bridge_installer.py --plugin plugins/voice-writer
+python ./plugin_installer.py --plugin plugins/voice-writer
 
 # Or install all plugins at once:
 python ./install_all_plugins.py

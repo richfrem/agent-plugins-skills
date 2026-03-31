@@ -162,7 +162,7 @@ At startup, the custom agent parses the YAML frontmatter of every discovered ski
 *Note: The `location` parameter is crucial for Filesystem-based agents so they know exactly what path to `cat` or `read`.*
 
 ## GitHub Ecosystem Integration
-The GitHub ecosystem leverages the Agent Skills open standard across multiple distinct surfaces. Because GitHub fully embraces the open format, the `agent-bridge` (`bridge_installer.py`) maps your standard plugin `skills/` directly into `.github/skills/` without requiring any translation or schema changes.
+The GitHub ecosystem leverages the Agent Skills open standard across multiple distinct surfaces. Because GitHub fully embraces the open format, the `agent-bridge` (`plugin_installer.py`) maps your standard plugin `skills/` directly into `.github/skills/` without requiring any translation or schema changes.
 
 ### 1. Copilot Native Support (IDE & Chat)
 GitHub Copilot natively loads skills to improve its performance in specialized tasks during interactive conversational development (for Copilot coding agent, GitHub Copilot CLI, and VS Code Insiders).
