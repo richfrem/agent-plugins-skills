@@ -111,16 +111,44 @@ def _is_pointer_file(path: Path) -> bool:
         return False
 
 
+# Directories that should never be copied into .agents/skills/ — runtime
+# artifacts and dependency caches that are large, irrelevant to agents, and
+# would cause multi-minute installs (e.g. xml-to-markdown's node_modules).
+COPY_EXCLUDE_DIRS = frozenset({
+    "node_modules",
+    "venv",
+    ".venv",
+    "env",
+    ".env",
+    "__pycache__",
+    ".git",
+    ".hg",
+    ".svn",
+    "dist",
+    "build",
+    ".next",
+    ".nuxt",
+    "coverage",
+    ".nyc_output",
+})
+
+
 def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
     """Recursively copy src_dir to dst_dir.
     Pointer files (single-line '../...' paths) are resolved to their real target
     so the installed copy in .agents/ is fully self-contained and works in any
     consuming project that has no plugins/ source tree.
+
+    Directories listed in COPY_EXCLUDE_DIRS (node_modules, venv, __pycache__,
+    .git, dist, etc.) are silently skipped — they are runtime artifacts that
+    are large, irrelevant to agent operation, and would cause very slow installs.
     """
     dst_dir.mkdir(parents=True, exist_ok=True)
     for item in src_dir.iterdir():
         dst_item = dst_dir / item.name
         if item.is_dir():
+            if item.name in COPY_EXCLUDE_DIRS:
+                continue  # skip heavy runtime artifact dirs (node_modules, venv, etc.)
             _copy_resolving_pointers(item, dst_item)
         elif item.is_file():
             try:
@@ -417,47 +445,12 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                     _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
                     
     # 4. Standalone Agents:
-    #    - For IDEs with native agents/ dirs (e.g. Claude): deploy .md files directly there.
-    #    - For IDEs without native agents/ dirs (e.g. Antigravity): wrap in a SKILL.md wrapper.
-    agents_dir_src = plugin_path / "agents"
-    if agents_dir_src.exists():
-        # Targets WITHOUT a native agents dir get the skill-wrapper treatment
-        non_native_agent_targets = [
-            t for t in targets
-            if not DETECTABLE_AGENTS.get(t, {}).get("agents")
-        ]
-
-        for agent_file in agents_dir_src.glob("*.md"):
-            agent_name = agent_file.stem
-            final_name = plugin_name if plugin_name.endswith(agent_name) else f"{plugin_name}-{agent_name}"
-
-            dest = central_skills / final_name
-            if not dry_run:
-                dest.mkdir(parents=True, exist_ok=True)
-                for opt_dir in ["scripts", "references", "assets", "evals"]:
-                    (dest / opt_dir).mkdir(exist_ok=True)
-                shutil.copy2(agent_file, dest / "SKILL.md")
-                print(f"  ✓ Universal central copy (Agent Wrapper): {dest.relative_to(root)}")
-            else:
-                print(f"  [DRY RUN] Universal central copy (Agent Wrapper): .agents/skills/{final_name}")
-
-            installed_skills.append(final_name)
-
-            for target_dir_name in non_native_agent_targets:
-                config = DETECTABLE_AGENTS.get(target_dir_name)
-                if not config or not config.get("skills"):
-                    continue
-
-                ide_dir = root / target_dir_name
-                if not ide_dir.exists():
-                    continue
-
-                ide_skills = root / config["skills"]
-                if not dry_run:
-                    ide_skills.mkdir(parents=True, exist_ok=True)
-
-                target_symlink = ide_skills / final_name
-                _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
+    #    Agents are flat .md files with YAML frontmatter (name, description, tools, model, etc.)
+    #    per the Anthropic subagents spec. They are NOT SKILL.md wrappers.
+    #    All platforms (Claude, Antigravity, Gemini, Copilot) read agents from
+    #    .agents/agents/ as the canonical store. Claude Code additionally gets a
+    #    symlink at .claude/agents/ via deploy_agents() below.
+    #    No skill-wrapper duplication is performed here.
 
     # 5. Native Hooks (e.g. for PreToolUse, Subagent events)
     hooks_file = plugin_path / "hooks" / "hooks.json"
