@@ -1,0 +1,44 @@
+{
+  "evals": [
+    {
+      "input": "my symlinks are showing up as text files after git pull on Windows",
+      "should_trigger": true
+    },
+    {
+      "input": "how do I create a symlink that works on both Mac and Windows",
+      "should_trigger": true
+    },
+    {
+      "input": "git clone fails with File name too long on symlinks",
+      "should_trigger": true
+    },
+    {
+      "input": "broken symlinks after switching from macOS to Windows",
+      "should_trigger": true
+    },
+    {
+      "input": "create a junction point on Windows instead of symlink",
+      "should_trigger": true
+    },
+    {
+      "input": "symlink_manager.py diagnose says Developer Mode is disabled",
+      "should_trigger": true
+    },
+    {
+      "input": "restore symlinks from manifest after git reset --hard",
+      "should_trigger": true
+    },
+    {
+      "input": "fix broken documentation links in the repo",
+      "should_trigger": false
+    },
+    {
+      "input": "audit all hyperlinks in markdown files",
+      "should_trigger": false
+    },
+    {
+      "input": "check if URLs in README are still valid",
+      "should_trigger": false
+    }
+  ]
+}
