@@ -132,7 +132,6 @@ COPY_EXCLUDE_DIRS = frozenset({
     ".nyc_output",
 })
 
-
 def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
     """Recursively copy src_dir to dst_dir.
     Pointer files (single-line '../...' paths) are resolved to their real target
@@ -211,17 +210,29 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
         print(f"    -> Symlinked for {env_name}: {link_path.relative_to(root)}")
         return True
     except (OSError, NotImplementedError):
-        if os.name == 'nt' and src.is_dir():
+        if os.name == 'nt':
             import subprocess
-            try:
-                subprocess.run(["cmd", "/c", "mklink", "/J", str(link_path), str(src)],
-                               check=True, capture_output=True)
-                print(f"    -> Symlinked (Junction) for {env_name}: {link_path.relative_to(root)}")
-                return True
-            except Exception:
-                pass
+            if src.is_dir():
+                # Directories: Junction Point (no Developer Mode required)
+                try:
+                    subprocess.run(["cmd", "/c", "mklink", "/J", str(link_path), str(src)],
+                                   check=True, capture_output=True)
+                    print(f"    -> Symlinked (Junction) for {env_name}: {link_path.relative_to(root)}")
+                    return True
+                except Exception:
+                    pass
+            else:
+                # Files: Hardlink via mklink /H (no Developer Mode required)
+                # Per symlink-manager skill: dirs→Junction, files→Hardlink on Windows.
+                try:
+                    subprocess.run(["cmd", "/c", "mklink", "/H", str(link_path), str(src)],
+                                   check=True, capture_output=True)
+                    print(f"    -> Hardlinked for {env_name}: {link_path.relative_to(root)}")
+                    return True
+                except Exception:
+                    pass
 
-        # Windows fallback: copy instead of symlink
+        # Final fallback: plain copy (no sync on update, but functional)
         try:
             if src.is_dir():
                 shutil.copytree(src, link_path, dirs_exist_ok=True)
