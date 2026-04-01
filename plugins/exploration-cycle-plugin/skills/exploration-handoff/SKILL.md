@@ -48,6 +48,15 @@ Before synthesizing anything, establish what you're working with and where it's 
 
 After the user responds: read each artifact file they identify. If a file doesn't exist, note it explicitly and ask whether to proceed without it or pause until it's available. Do not invent content for missing artifacts.
 
+## Stage 1.5: Risk & Rigor Assessment
+Before synthesis, perform a mandatory risk assessment to determine the "Rigor Tier" for the downstream execution phase:
+
+- **Tier 1 (Low Risk)**: Internal R&D, limited data. Lightweight, self-assessed development cycle.
+- **Tier 2 (Moderate Risk)**: Internal data, standard tools. Requires security team review, mandatory red teaming, and context sanitization.
+- **Tier 3 (High Risk)**: PII/Sensitive data, high-privilege tools (Bash). Mandatory full `spec-kitty` engineering cycle with architectural hardening (e.g., **Countermind** SBL, **Pro2Guard** sidecar enforcement).
+
+Ask the user to categorize the project based on these tiers and document the result in the handoff package.
+
 ## Stage 2: Synthesis and Iterative Refinement
 Your job is to extract the signal relevant to the target audience — not to copy-paste source documents.
 

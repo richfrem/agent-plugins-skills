@@ -1,0 +1,61 @@
+flowchart TB
+    Start([Idea, need, problem, objective]) --> Phase0
+
+    %% --- PROCESS 1: THE EXPLORATION LOOP (Scouting Party) ---
+    subgraph Diamond1 [Diamond 1:<BR> <B>exploration-cycle-plugin</B><BR>Exploration Loop]
+        direction TB
+        Phase0[intake-agent<BR>Skill: exploration-session-brief] --> Phase1[Requirements Capture<BR>Script: dispatch.py CLI passes]
+        
+        %% Documentation Sub-agents
+        subgraph Documentation [The Scribes]
+            Pass1[Agent: requirements-doc-agent<BR>Mode: problem-framing]
+            Pass2[Agent: requirements-doc-agent<BR>Mode: business-requirements]
+            Pass3[Skill: user-story-capture]
+        end
+
+        %% UI & Vision Prototyping
+        subgraph Design [The Jam Session]
+            Phase2[Skill: prototype-builder]
+            Phase2 --> Companion[Agent: prototype-companion<BR>Capture Implied Req]
+        end
+
+        Phase1 --> Pass1
+        Pass1 --> Pass2
+        Pass2 --> Pass3
+        Phase1 --> Phase2
+        
+        Companion --> Audit[Agent: business-rule-audit-agent<BR>Logic Drift Check]
+    end
+
+    %% --- THE TRANSITION: RISK & RIGOR GATE ---
+    subgraph Transition [Handoff & Risk Gate]
+        direction TB
+        Audit --> NarrowGate{Narrowing Gate<BR>Script: check_gaps.py}
+        NarrowGate -->|Not Ready| Phase1
+        NarrowGate -->|Ready| TierGate{Skill: exploration-handoff<BR>Rigor Tier Assessment}
+    end
+
+    %% --- PROCESS 2: THE ENGINEERING CYCLE (The Factory / Black Box) ---
+    subgraph Diamond2 [Diamond 2: Engineering Cycle]
+        direction TB
+        TierGate -->|High Rigor| BlackBox[Engineering 'Black Box'<BR>spec-kitty / spec-kit]
+        TierGate -->|Low Rigor| Agile[Agile / Lightweight<BR>Dev Cycle]
+        
+        BlackBox --> Solidify[Solidification:<BR>Specs & Work Packages]
+        Solidify --> Implementation[Production-Grade Build]
+    end
+
+    %% --- BIDIRECTIONAL RE-ENTRY ---
+    Implementation -.->|Unknown Unknown Found| ReEntry[Agent: planning-doc-agent<BR>Mode: re-entry-scope]
+    ReEntry -.->|New Session Brief| Phase0
+
+    %% Final Output
+    Implementation --> Done([Fast by Default, Safe by Design])
+
+    %% Styles
+    style Start fill:#f3f4f6,stroke:#374151
+    style Diamond1 fill:#e0f2fe,stroke:#0369a1,stroke-width:2px
+    style Transition fill:#fff7ed,stroke:#c2410c,stroke-width:2px
+    style Diamond2 fill:#f0fdf4,stroke:#15803d,stroke-width:2px
+    style Done fill:#fef3c7,stroke:#d97706,stroke-width:3px
+    style ReEntry fill:#fee2e2,stroke:#b91c1c,stroke-dasharray: 5 5
