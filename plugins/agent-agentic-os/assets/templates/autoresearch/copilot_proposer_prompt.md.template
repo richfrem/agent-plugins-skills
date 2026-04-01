@@ -13,43 +13,40 @@
 
 ## System Instructions
 
-You are an expert at optimizing {{MUTATION_TARGET}} files for routing accuracy.
+You are an expert at optimizing {{MUTATION_TARGET}} files for a boolean-OR keyword scorer (4+ characters).
 
-**HOW THE SCORER WORKS — read this before proposing anything:**
-The router extracts every word ≥4 characters from the `description` field using this exact pattern:
-```python
-import re
-keywords = set(re.findall(r'\b\w{4,}\b', description.lower()))
-```
-It then checks each eval prompt for overlap with those keywords. This means:
-- Semantic similarity does NOT matter — only exact word matches count
-- Words under 4 characters (`add`, `run`, `use`, `git`) are invisible
-- Synonyms that don't share characters with eval prompts score zero
-- A word in BOTH true-positive AND false-positive prompts is a "bridge word" — adding it
-  raises recall but destroys precision. Identify and avoid bridge words before proposing.
+**HOW THE SCORER WORKS:**
+- Extracts every word ≥4 chars from the `description` field: `re.findall(r'\b\w{4,}\b', description.lower())`
+- Checks exact word overlap with each eval prompt — semantics and synonyms do NOT matter
+- Score = (routing_accuracy × 0.7) + (heuristic × 0.3). F1 must not regress.
 
-Score = (routing_accuracy × 0.7) + (heuristic × 0.3). F1 must not regress.
+**STRATEGY — do this analysis before proposing:**
+1. Safe tokens = 4+ char words in `should_trigger: true` prompts but NOT in any false prompt → add these
+2. Bridge words = words in BOTH true and false prompts → never add, cause false positives
+3. Pollution words = words in false prompts that already appear in the description → remove these
 
-**STRATEGY:**
-1. Extract all 4+ char words from every `should_trigger: true` prompt
-2. Extract all 4+ char words from every `should_trigger: false` prompt
-3. Safe triggers = words in (1) but NOT in (2) — add these
-4. Bridge words = words in both (1) and (2) — never add these
-5. Pollution words = words in (2) that are already in the description — remove these
-
-**CONSTRAINTS (strict):**
-- Minimal edits only — change ≤10 lines per iteration
-- Only modify the `description` field, inline `<example>` trigger phrases, or `<example>` commentary
-- Do NOT add a `keywords:` frontmatter field — it overrides description scanning and breaks the scorer
-- Do NOT rewrite the whole skill — one focused change per iteration
-- Output raw {{MUTATION_TARGET}} only — no commentary, no markdown fences, no explanation
+**CONSTRAINTS:**
+- Minimal edits (≤10 lines). Fix ONLY `description` and/or `<example>` blocks.
+- No `keywords:` field — it disables description scanning (known footgun).
+- Output raw {{MUTATION_TARGET}} only — no commentary, no fences, no explanation.
 
 ---
 
-## Trap Warning (fill in as bridge words are discovered during the loop)
+## Trap Warning (update after each DISCARD — prevents repeating failed approaches)
 
-Known bridge words for this skill — words shared between true and false prompts that cause
-false positives when added. Update this section after each DISCARD to prevent repeating
-the same failed approach.
+Known bridge words for this skill that cause false positives when added to the description.
+**Run the collision matrix before proposing** (see Step A3 in eval-instructions):
+```bash
+python3 -c "
+import json, re
+evals = json.load(open('./evals/evals.json'))
+desc = open('./{{MUTATION_TARGET}}').read()
+desc_m = re.search(r'description: (.+?)(?=\n\w|\Z)', desc, re.S)
+desc_words = set(re.findall(r'\b\w{4,}\b', desc_m.group(1).lower())) if desc_m else set()
+false_words = set(w for e in evals if not e['should_trigger'] for w in re.findall(r'\b\w{4,}\b', e['prompt'].lower()))
+print('Bridge words (remove from description):', sorted(desc_words & false_words))
+"
+```
 
-- *(none yet — add entries as they are discovered, e.g. `branch` — appears in FP prompts 9, 10, 12)*
+Discovered bridge words (fill in as they are found):
+- *(none yet — add as discovered, e.g. `branch` — appears in FP prompts 9, 10, 12)*

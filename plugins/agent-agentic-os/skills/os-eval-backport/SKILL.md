@@ -125,7 +125,31 @@ git commit -m "backport(<plugin>): <summary of accepted changes>"
 
 ---
 
-## Phase 5: Close the Loop
+## Phase 5: Interrogate the Lab Agent (Before Closing)
+
+If the lab agent is still running or recently completed, ask it targeted questions to surface
+operational knowledge that won't appear in diffs or logs. This is how eval infrastructure
+improves — the agent that ran the loop has first-hand friction data the backport reviewer can't see.
+
+Ask the user to relay these questions (or ask directly if in the same session):
+
+**Always ask:**
+1. "Which steps in eval-instructions.md were unclear, missing, or caused you to improvise?"
+2. "What exact text did you add to `copilot_proposer_prompt.md` when you did second-order mutations? Paste the full evolved file."
+3. "Did the Step A3 trace scan work as written? Was it useful or too noisy?"
+
+**Ask if the loop stalled:**
+4. "When you used Step B.2 (web research or Copilot brainstorm), what did you search for and what was the result?"
+5. "What bridge words did you discover? Add them to the Trap Warning section if not already there."
+
+**Ask if the environment was reset mid-run:**
+6. "What happened to the baseline state? Was the Cold Start protocol sufficient to recover?"
+
+Incorporate any new operational findings into the relevant templates and skills before Phase 6.
+
+---
+
+## Phase 5b: Close the Loop
 
 Report to the user:
 - Which files were updated in master

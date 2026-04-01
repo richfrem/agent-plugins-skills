@@ -37,6 +37,21 @@ Recover state immediately and resume:
 3. **Resume from the next iteration** — do NOT re-run baseline, do NOT re-scaffold. Continue the loop.
 4. **Log the restart** in the run log with a `[RESTART]` entry and timestamp before continuing.
 
+**Cold Start (environment wiped — `.lock.hashes` missing):**
+If the eval environment was fully reset and `.lock.hashes` is gone, do NOT re-run a fresh baseline — that would overwrite the score history. Instead restore from git:
+```bash
+# Find the last baseline commit
+git log --oneline -- ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | grep -i baseline | head -3
+
+# Restore baseline artifacts from that commit
+git checkout <baseline-commit> -- ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/.lock.hashes
+git checkout <baseline-commit> -- ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv
+
+# Verify restored baseline score
+tail -3 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv
+```
+Resume the loop from the next iteration number. Only re-baseline if the `.lock.hashes` commit cannot be found.
+
 ---
 
 ## ⚠️ Autonomy Directive — NO INTERRUPTIONS During the Loop
@@ -324,6 +339,11 @@ Use your web search tool to find real-world context for the skill's domain. Sear
 Extract candidate trigger words from what you find, cross-check them against `evals.json`
 for overlap risk, then incorporate the most distinctive ones into the next mutation.
 
+> **Note:** Synonym hunting often fails for action-oriented skills — real-world docs tend to
+> use the same trapped keywords. If web research yields nothing distinctive, pivot to
+> **Negative Exclusion**: run the collision matrix (Step A3) and focus on *removing* bridge
+> words from the description rather than adding new trigger words.
+
 **Option 2 — Ask Copilot for strategy ideas (not a mutation):**
 Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
 ```bash
@@ -371,6 +391,15 @@ temp/retrospectives/survey_[YYYYMMDD]_[HHMM]_{{ROUND_LABEL}}.md
 ```
 {{MASTER_PLUGIN_PATH}}
 ```
+
+**Backport Package — what to include vs exclude:**
+
+| Include | Exclude |
+|:---|:---|
+| Final `{{MUTATION_TARGET}}` (if improved) | `evals/results.tsv` (experiment ledger) |
+| Evolved `references/copilot_proposer_prompt.md` (if substantially improved) | `evals/traces/` (per-iteration diagnostics) |
+| `references/program.md` (if goal/notes are useful to future runs) | `evals/.lock.hashes` (environment-specific) |
+| Self-assessment survey | Round-specific log files |
 
 After the run, the reviewing agent will:
 1. Read your run log and self-assessment
