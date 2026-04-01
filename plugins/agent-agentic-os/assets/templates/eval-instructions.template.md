@@ -199,6 +199,16 @@ Aim for at least 10 test cases with a good mix. **Tell the user when ready to re
 > ```json
 > { "prompt": "...", "expected_behavior": "should trigger" }
 > ```
+>
+> ⚠️ **Eval quality — avoid the keyword trap:** The router uses boolean-OR keyword matching.
+> Before finalizing your eval suite, check each `should_trigger: true` prompt for "bridge words" —
+> words that also appear in `should_trigger: false` prompts. If ALL 4+ char words in a true-positive
+> prompt also appear in false-positive prompts, that prompt can never be satisfied without causing a
+> false positive. This creates a mathematical ceiling that no description edit can break.
+>
+> **Fix:** Make adversarial false-positive prompts more conceptual and less keyword-overlapping.
+> For example, prefer `"Explain why I would use a git worktree"` over `"What is a git worktree?"`
+> — the former shares fewer action-oriented keywords with true-positive prompts.
 
 ---
 
