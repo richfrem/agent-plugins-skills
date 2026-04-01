@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+description: Use when starting development tasks that need isolation from current workspace or before executing implementation plans - creates independent git worktrees with smart directory selection. Good for simultaneously working on things, or when you need to add a worktree.
 ---
 
 > **Source:** Ported from [obra/superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://github.com/obra). Adapted for the `agent-plugins-skills` ecosystem. Original concepts and Iron Laws credit belongs to Jesse.
@@ -168,19 +168,27 @@ Ready to implement <feature-name>
 
 ## Example Workflow
 
-```
+<example>
+I need to work on auth task. Add a git worktree.
+
+[Check .worktrees/ - exists]
+[Determine path: .worktrees/auth]
+[git worktree add .worktrees/auth -b task/auth]
+</example>
+
+<example>
 I'm using the using-git-worktrees skill to set up an isolated workspace.
 
 [Check .worktrees/ - exists]
 [Verify ignored - git check-ignore confirms .worktrees/ is ignored]
-[Create worktree: git worktree add .worktrees/auth -b feature/auth]
+[Add worktree: git worktree add .worktrees/auth -b task/auth]
 [Run npm install]
 [Run npm test - 47 passing]
 
 Worktree ready at /path/to/project/.worktrees/auth
 Tests passing (47 tests, 0 failures)
-Ready to implement auth feature
-```
+Ready to implement auth task
+</example>
 
 ## Red Flags
 
