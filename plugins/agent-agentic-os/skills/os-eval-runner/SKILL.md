@@ -97,6 +97,7 @@ your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever mak
     traces/              Per-iteration diagnostic JSON — written by evaluate.py each run
       iter_001_KEEP_score0.87.json    mutation diff + per-input routing verdicts
       iter_002_DISCARD_score0.71.json failure_reason for each incorrect routing
+      milestone_025.md   Milestone summary — written every 25 iterations by generate_milestone.py
 ```
 
 ## Setup: Start a New Experiment (4 steps)
@@ -496,6 +497,30 @@ python3 plugins/agent-agentic-os/scripts/evaluate.py \
     --skill <experiment-dir> --baseline --desc "re-baseline after script upgrade"
 git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evaluate.py upgrade"
 ```
+
+### Milestone summaries for long runs (25+ iterations)
+
+For runs exceeding 25 iterations, generate a milestone summary to preserve distant history context:
+
+```bash
+# Write a milestone if iteration count is a multiple of 25 (auto-check)
+python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+    --experiment-dir <path/to/experiment-dir>
+
+# Force-write a milestone at any iteration count
+python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+    --experiment-dir <path/to/experiment-dir> --force
+
+# Custom interval (e.g. every 10 iterations)
+python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+    --experiment-dir <path/to/experiment-dir> --every 10
+```
+
+Output: `evals/traces/milestone_NNN.md` — score trajectory, top KEEPs, worst DISCARDs,
+recurring false-positive inputs, dominant problem type, and recommended focus.
+
+The proposer should read milestone summaries for distant history and raw traces for recent
+iterations. This prevents the loop from losing context on early experiments as trace count grows.
 
 ### Reading traces to diagnose DISCARD iterations
 ```bash
