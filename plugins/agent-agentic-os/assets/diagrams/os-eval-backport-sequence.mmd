@@ -1,0 +1,68 @@
+%%{init: {'theme': 'default'}}%%
+sequenceDiagram
+    autonumber
+    actor User
+    participant BR as os-eval-backport<br/>(Backport Reviewer)
+    participant LAB as Lab Repo<br/>(test-&lt;plugin&gt;-eval)
+    participant MASTER as Master Repo<br/>(agent-plugins-skills)
+    participant LABAGENT as Lab Agent<br/>(os-eval-runner session)
+    participant MEM as os-memory-manager<br/>(if OS present)
+
+    User->>BR: Trigger: "backport the eval results"<br/>"review what the eval agent changed"
+    BR->>User: Phase 0 — Intake<br/>Q1: lab repo path?<br/>Q2: master plugin path?<br/>Q3: baseline commit SHA?
+    User->>BR: Provide paths + baseline SHA
+
+    Note over BR: Confirm intake block displayed
+
+    BR->>LAB: Phase 1 — Read Run Log<br/>cat temp/logs/*.md<br/>cat temp/retrospectives/survey_*.md
+    LAB-->>BR: Final score, KEEP/DISCARD count,<br/>errors, next-step recommendations
+
+    BR->>LAB: Phase 2 — Get Full Diff<br/>git log --oneline &lt;baseline&gt;..HEAD<br/>git diff &lt;baseline&gt; HEAD --name-only<br/>git diff &lt;baseline&gt; HEAD
+    LAB-->>BR: Changed files + full diff:<br/>SKILL.md, evals.json,<br/>copilot_proposer_prompt.md,<br/>evaluate.py (if patched)
+
+    Note over BR: Annotate each file:<br/>what / why / generalizes?
+
+    BR->>User: Phase 3 — Assessment Table<br/>ACCEPT / ADAPT / REJECT / REVIEW<br/>per changed file
+    User->>BR: Approve or revise
+
+    loop For each ACCEPT or ADAPT
+        BR->>MASTER: Phase 4 — Apply Change<br/>Read current master file first<br/>(may have diverged from lab)
+        Note over MASTER: Targeted edits only<br/>plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md<br/>plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json
+        BR->>MASTER: git add + commit<br/>"backport(&lt;plugin&gt;): &lt;summary&gt;"
+    end
+
+    BR->>User: Phase 5 — Interrogate Lab Agent<br/>Please relay these questions (or I'll ask directly):
+    User->>LABAGENT: 1. Which eval-instructions steps caused improvisation?<br/>2. Paste evolved copilot_proposer_prompt.md<br/>3. Did Step A3 trace scan work as written?
+
+    alt Loop stalled (3+ DISCARDs)
+        User->>LABAGENT: 4. What did web research / Copilot brainstorm find?<br/>5. What bridge words discovered?
+        LABAGENT-->>User: Bridge words, search queries, results
+    end
+
+    alt Environment reset mid-run
+        User->>LABAGENT: 6. Was Cold Start protocol sufficient?<br/>(restore .lock.hashes from git baseline commit)
+        LABAGENT-->>User: Cold start experience / gaps
+    end
+
+    LABAGENT-->>User: Evolved copilot_proposer_prompt.md content,<br/>friction points, bridge words found
+    User->>BR: Relay lab agent responses
+
+    Note over BR: Incorporate findings →<br/>eval-instructions.template.md<br/>copilot_proposer_prompt.md.template<br/>os-eval-runner/SKILL.md
+
+    BR->>User: Phase 5b — Close the Loop<br/>Files updated in master<br/>Changes rejected + reasons<br/>Suggested follow-up actions
+
+    BR->>MEM: Phase 6a — Session Log<br/>os-memory-manager: write context/memory/YYYY-MM-DD.md<br/>(skill, baseline→final, iterations, backported, rejected, snags)
+    MEM-->>BR: Log written
+
+    Note over BR: Phase 6b — Non-obvious filter:<br/>"Would future agent get burned without this?"
+
+    alt Filter passes (footgun / snag / insight / ADAPT pattern)
+        BR->>MASTER: Write memory/feedback_eval_&lt;skill&gt;_&lt;topic&gt;.md<br/>Update MEMORY.md index
+        alt OS present
+            BR->>MEM: Phase 6c — Promote to context/memory.md<br/>with deduplication ID
+        end
+    else Routine / self-evident
+        Note over BR: Skip memory entry
+    end
+
+    BR->>User: Done — backport session complete
