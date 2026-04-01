@@ -276,6 +276,38 @@ Other second-order mutations if the loop stalls for 5+ consecutive DISCARDs:
 - **`references/program.md`** — clarify the goal or locked-files list if it has become ambiguous
 - **`copilot-cli-agent/SKILL.md`** — if the proposer skill description is missing patterns you rely on
 
+### Step B.2: Creativity Unblocking (when out of ideas)
+
+If you have exhausted obvious mutation angles and DISCARDs keep repeating, try these before
+giving up:
+
+**Option 1 — Web research:**
+Use your web search tool to find real-world context for the skill's domain. Search for:
+- How users actually phrase requests for this capability (forum posts, docs, issue titles)
+- Related tools or concepts that share vocabulary with the skill
+- Common synonyms or alternative framings you haven't tried
+
+Extract candidate trigger words from what you find, cross-check them against `evals.json`
+for overlap risk, then incorporate the most distinctive ones into the next mutation.
+
+**Option 2 — Ask Copilot for strategy ideas (not a mutation):**
+Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
+```bash
+copilot -p "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF
+keyword scorer (4+ char words, exact match only, no semantics).
+
+Current score: <score>. Stuck on this failure: <failure_type> — <summary>.
+Strategies already tried: <list briefly>.
+
+Suggest 3 distinct strategies I haven't tried yet. Do NOT rewrite the skill.
+Output a numbered list of strategy ideas only." > /tmp/strategy-ideas.md
+cat /tmp/strategy-ideas.md
+```
+Read the ideas, pick the most promising one, then run the normal Step B mutation call
+with that strategy embedded in the failure analysis line.
+
+Log both options in the run log under `[CREATIVITY UNBLOCK]` before proceeding.
+
 ### Step C: Eval Gate
 ```bash
 python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
