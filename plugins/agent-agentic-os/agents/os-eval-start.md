@@ -95,10 +95,12 @@ git worktree add ../eval-<skill-name>-worktree main
 cd ../eval-<skill-name>-worktree
 ```
 
-### 2A.2 Install eval engine if not present
+### 2A.2 Install eval engine and Copilot CLI if not present
 ```bash
 ls .agents/skills/os-eval-runner/scripts/evaluate.py 2>/dev/null || \
-  npx skills add -y /path/to/agent-plugins-skills/plugins/agent-agentic-os/skills/os-eval-runner
+  npx skills add -y $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-runner
+ls .agents/skills/copilot-cli-agent/SKILL.md 2>/dev/null || \
+  npx skills add -y $APS_ROOT/plugins/copilot-cli/skills/copilot-cli-agent
 ```
 
 ### 2A.3 Scaffold evals if missing
@@ -197,11 +199,12 @@ rsync -aL --exclude='__pycache__' \
   $LAB_PATH/$PLUGIN_NAME/
 ```
 
-### 2B.5 Install eval engine
+### 2B.5 Install eval engine and Copilot CLI
 ```bash
 npx skills add -y $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-runner
+npx skills add -y $APS_ROOT/plugins/copilot-cli/skills/copilot-cli-agent
 ```
-If `-y` crashes: run without it and press Enter.
+If `-y` crashes: run without it and press Enter. Both are required — os-eval-runner gates iterations, copilot-cli-agent proposes mutations.
 
 ### 2B.6 Generate eval-instructions.md
 
