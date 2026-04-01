@@ -96,6 +96,7 @@ def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> N
     references_dir = experiment_dir / "references"
     evals_dir = experiment_dir / "evals"
     program_md = references_dir / "program.md"
+    copilot_prompt_md = references_dir / "copilot_proposer_prompt.md"
     evals_json = evals_dir / "evals.json"
     results_tsv = evals_dir / "results.tsv"
 
@@ -120,6 +121,7 @@ def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> N
             created.append(str(dest.relative_to(experiment_dir)))
 
     _write_or_skip(program_md, _render(_load_template("program.md.template"), template_vars))
+    _write_or_skip(copilot_prompt_md, _render(_load_template("copilot_proposer_prompt.md.template"), template_vars))
     _write_or_skip(evals_json, _render(_load_template("evals.json.template"), template_vars))
     _write_or_skip(results_tsv, _load_template("results.tsv.template"))  # no vars in header
 
