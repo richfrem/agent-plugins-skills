@@ -153,11 +153,13 @@ rsync -aL --exclude='__pycache__' \
   <lab-repo>/<plugin-folder-name>/
 ```
 
-### 1d. Install the eval engine
+### 1d. Install the eval engine and Copilot CLI skill
 ```bash
 npx skills add -y <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner
+npx skills add -y <APS_ROOT>/plugins/copilot-cli/skills/copilot-cli-agent
 ```
 > If `-y` crashes: run without it and press Enter to accept defaults.
+> Both skills are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
 
 ### 1e. Seed commit and push
 ```bash

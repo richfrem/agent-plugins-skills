@@ -54,11 +54,13 @@ The ONLY permitted interruption: a fatal error (Python not found, git not initia
    rm -rf .agent .agents .gemini .claude
    ```
 
-4. **Install the Evaluation Engine**:
+4. **Install the Evaluation Engine and Copilot CLI**:
    ```bash
    npx skills add -y {{SKILL_EVAL_SOURCE}}
+   npx skills add -y {{APS_ROOT}}/plugins/copilot-cli/skills/copilot-cli-agent
    ```
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.
+   > Both are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
 
 5. **Final Seed & Push**:
    ```bash
@@ -205,12 +207,26 @@ cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | python3 
 ```
 
 ### Step B: Propose Mutation via Copilot CLI
+
+> ⚠️ **MANDATORY**: You MUST run the `copilot` bash command below. Do NOT self-propose.
+> Do NOT use the copilot-cli-agent skill. Execute the command and pipe output to disk.
+
 ```bash
+# Verify copilot CLI is available
+which copilot || (echo "ERROR: copilot CLI not found — halt" && exit 1)
+
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} /tmp/current-skill.md
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json /tmp/current-evals.json
 
 copilot -p "
 You are an expert at optimizing Claude Code SKILL.md files for routing accuracy.
+
+HOW THE SCORER WORKS (critical — read this first):
+The evaluation engine extracts words of 4+ characters from the SKILL.md 'description' field
+and checks for exact word overlap with each eval prompt. Semantic similarity does NOT help —
+only shared words matter. Synonyms that don't share characters with eval prompts score zero.
+Words under 4 characters are invisible to the scorer.
+Score = (routing_accuracy * 0.7) + (heuristic * 0.3). F1 must not regress.
 
 CURRENT SKILL FILE:
 $(cat /tmp/current-skill.md)
@@ -221,18 +237,23 @@ $(cat /tmp/current-evals.json)
 SPECIFIC ISSUE TO FIX:
 <INSERT_FAILURE_TYPE>: <INSERT_1_SENTENCE_FAILURE_SUMMARY>
 
+STRATEGY:
+- Find words (4+ chars) in should_trigger=true prompts but NOT in should_trigger=false prompts — safe triggers.
+- Find words in should_trigger=false prompts that appear in the current description — remove them.
+
 CONSTRAINTS:
-- Make MINIMAL edits only (target <= 10 changed lines)
+- Minimal edits only (<=10 changed lines)
 - Fix ONLY the 'description' field and/or <example> blocks
-- Do NOT change YAML frontmatter name or allowed-tools
-- Do NOT add a 'keywords:' YAML field (disables description scanning — known footgun)
-- Output ONLY the fully rewritten SKILL.md content. No markdown fences. No commentary.
+- Do NOT add a 'keywords:' field (disables description scanning — known footgun)
+- Output ONLY the fully rewritten SKILL.md. No markdown fences. No commentary.
 " > /tmp/proposed-skill.md
 
-cp /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
+# Verify non-empty and changed before applying
+[ -s /tmp/proposed-skill.md ] || echo "ERROR: empty output — re-prompt with 'try a different approach'"
+diff -q /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} > /dev/null && \
+  echo "WARNING: identical to current — re-prompt" || \
+  cp /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
 ```
-
-If `/tmp/proposed-skill.md` is empty or identical to the current file, re-prompt with "try a different approach".
 
 ### Step C: Eval Gate
 ```bash
