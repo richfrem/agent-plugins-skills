@@ -296,11 +296,29 @@ The agent drives N iterations against a target skill. Start with:
 The agent will:
 1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python3 plugins/agent-agentic-os/scripts/init_autoresearch.py --skill <target-path>` first.
 2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
-3. Loop N times (default: run until told to stop per NEVER STOP directive):
-   - Make one focused change to `SKILL.md`
-   - Run `python3 scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"`
-   - exit 0 (KEEP): `git add SKILL.md && git commit -m "keep: score=X <desc>"`
-   - exit 1 (DISCARD): `git checkout -- <path>/SKILL.md`
+3. Loop N times (default: run until told to stop per NEVER STOP directive). Each iteration:
+
+   **Step A — Classify failure:** Read the latest row in `<skill>/evals/results.tsv` and the most recent trace file in `<skill>/evals/traces/`. Identify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
+
+   **Step B — Propose via CLI (preferred) or self:** Delegate the mutation to an external CLI proposer for cheap, fast iteration:
+   ```bash
+   cp <skill>/SKILL.md /tmp/current-skill.md
+   cp <skill>/evals/evals.json /tmp/current-evals.json
+   copilot -p "You are an expert at optimizing Claude Code SKILL.md routing accuracy.
+   CURRENT SKILL: $(cat /tmp/current-skill.md)
+   EVALS: $(cat /tmp/current-evals.json)
+   ISSUE: <failure_type>: <one-sentence summary>
+   CONSTRAINTS: minimal edits (≤10 lines), fix description/examples only, no 'keywords:' field, output raw SKILL.md only." > /tmp/proposed-skill.md
+   cp /tmp/proposed-skill.md <skill>/SKILL.md
+   ```
+   Use `gemini` instead of `copilot` if specified. Fall back to self-proposing only if neither CLI is available. If the proposed file is identical to current, re-prompt with "try a different approach".
+
+   **Step C — Eval gate:**
+   ```bash
+   python3 scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
+   ```
+   - exit 0 (KEEP): `git add . && git commit -m "keep: score=X <desc>" && git push origin main`
+   - exit 1 (DISCARD): already auto-reverted, move to next iteration silently
 
 To cap iterations, the human specifies: "run 10 iterations" or "run until score reaches 0.95".
 The NEVER STOP directive in `program.md` means the loop has no built-in termination — only a human stop or a target threshold ends it.
