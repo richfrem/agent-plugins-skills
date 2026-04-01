@@ -1,0 +1,82 @@
+%%{init: {'theme': 'default', 'flowchart': {'curve': 'linear'}}}%%
+flowchart TD
+    START([Start: Backport Triggered]) --> P0
+
+    subgraph P0["Phase 0 — Intake"]
+        P0A[Q1: Lab repo path?] --> P0B[Q2: Master plugin path?]
+        P0B --> P0C[Q3: Baseline commit SHA?]
+        P0C --> P0D[Confirm: repo / plugin / commit]
+    end
+
+    P0D --> P1
+
+    subgraph P1["Phase 1 — Read Run Log & Self-Assessment"]
+        P1A[ls temp/logs/] --> P1B[ls temp/retrospectives/]
+        P1B --> P1C[Note: final score, KEEP vs DISCARD count, errors, next-step recommendations]
+    end
+
+    P1C --> P2
+
+    subgraph P2["Phase 2 — Get Full Diff"]
+        P2A[git log baseline..HEAD] --> P2B[git diff --name-only]
+        P2B --> P2C[git diff full output]
+        P2C --> P2D[Annotate each changed file: what changed, why, generalizes?]
+    end
+
+    P2D --> P3
+
+    subgraph P3["Phase 3 — Structured Assessment"]
+        P3A[Build ACCEPT / ADAPT / REJECT / REVIEW table] --> P3B{User approves?}
+        P3B -- No, revise --> P3A
+        P3B -- Yes --> P4
+    end
+
+    subgraph P4["Phase 4 — Apply Approved Changes"]
+        P4A[Read current master file] --> P4B[Apply targeted edits — no blind paste]
+        P4B --> P4C[Verify result]
+        P4C --> P4D[git add + commit: backport/plugin: summary]
+    end
+
+    P4 --> P5
+
+    subgraph P5["Phase 5 — Interrogate the Lab Agent"]
+        P5A["Always ask:<BR>1. Which steps in eval-instructions were unclear?<BR>2. Paste evolved copilot_proposer_prompt.md<BR>3. Was Step A3 trace scan useful?"] --> P5B{Loop stalled?}
+        P5B -- Yes --> P5C["4. What did web research find?<BR>5. What bridge words discovered?"]
+        P5B -- No --> P5D{Environment reset mid-run?}
+        P5C --> P5D
+        P5D -- Yes --> P5E[6. Was Cold Start protocol sufficient?]
+        P5D -- No --> P5F[Incorporate findings into templates/skills]
+        P5E --> P5F
+    end
+
+    P5F --> P5b
+
+    subgraph P5b["Phase 5b — Close the Loop"]
+        P5bA[Report: files updated in master] --> P5bB[Report: changes rejected + why]
+        P5bB --> P5bC[Suggest follow-up: next eval round / evals coverage / test fixtures]
+    end
+
+    P5bC --> P6
+
+    subgraph P6["Phase 6 — Capture Learnings (Mandatory)"]
+        P6A{OS initialized<BR>in master repo?} -- Yes --> P6B[Delegate to os-memory-manager:<BR>write dated session log]
+        P6A -- No --> P6C[Write context/memory/YYYY-MM-DD.md directly]
+        P6B --> P6D[Non-obvious filter:<BR>would future agent get burned<BR>without this?]
+        P6C --> P6D
+        P6D -- Passes --> P6E[Write feedback memory file<BR>Update MEMORY.md index]
+        P6D -- Routine / self-evident --> P6F[Skip memory entry]
+        P6E --> P6G{OS present?}
+        P6G -- Yes --> P6H[os-memory-manager: promote to<BR>context/memory.md with dedup ID]
+        P6G -- No --> P6I([Done])
+        P6F --> P6I
+        P6H --> P6I
+    end
+
+    style P0 fill:#e8f4f8,stroke:#4a9eca
+    style P1 fill:#f0f8e8,stroke:#5a9e4a
+    style P2 fill:#f8f4e8,stroke:#ca9a4a
+    style P3 fill:#f8e8e8,stroke:#ca4a4a
+    style P4 fill:#e8e8f8,stroke:#4a4aca
+    style P5 fill:#f8e8f8,stroke:#9a4aca
+    style P5b fill:#e8f8f8,stroke:#4acaca
+    style P6 fill:#f8f8e8,stroke:#9a9a4a

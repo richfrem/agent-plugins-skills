@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-description: Use when starting development tasks that need isolation from current workspace or before executing implementation plans - creates independent git worktrees with smart directory selection. Good for simultaneously working on things, or when you need to add a worktree.
+description: Use when starting development tasks that need isolation from current workspace or before executing implementation plans - creates independent git worktrees with smart directory selection. Good for simultaneously working on things, or when you need to add a worktree, and more.
 ---
 
 > **Source:** Ported from [obra/superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://github.com/obra). Adapted for the `agent-plugins-skills` ecosystem. Original concepts and Iron Laws credit belongs to Jesse.
@@ -169,7 +169,7 @@ Ready to implement <feature-name>
 ## Example Workflow
 
 <example>
-I need to work on auth task. Add a git worktree.
+I need to work on auth task. Set up a git worktree.
 
 [Check .worktrees/ - exists]
 [Determine path: .worktrees/auth]
@@ -177,7 +177,7 @@ I need to work on auth task. Add a git worktree.
 </example>
 
 <example>
-I'm using the using-git-worktrees skill to set up an isolated workspace.
+I'm using the using-git-worktrees skill to set up a separate workspace.
 
 [Check .worktrees/ - exists]
 [Verify ignored - git check-ignore confirms .worktrees/ is ignored]
@@ -215,3 +215,4 @@ Ready to implement auth task
 **spec-kitty integration:** When using spec-kitty's SDD lifecycle, this skill complements
 the `.worktrees/` convention already established. The ORCHESTRATOR owns git operations
 (merge, cleanup); INNER_AGENT work packages each get isolated worktrees via this skill.
+It replaces the standard `git checkout` workflow with an isolated `git worktree` workflow.
