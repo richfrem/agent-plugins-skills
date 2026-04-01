@@ -1,75 +1,95 @@
 %%{init: {'theme': 'default', 'flowchart': {'curve': 'linear'}}}%%
 flowchart TD
-    START([Start: Backport Triggered]) --> P0
+    START([os-eval-backport triggered\nvia SKILL.md routing]) --> P0
 
     subgraph P0["Phase 0 — Intake"]
-        P0A[Q1: Lab repo path?] --> P0B[Q2: Master plugin path?]
-        P0B --> P0C[Q3: Baseline commit SHA?]
-        P0C --> P0D[Confirm: repo / plugin / commit]
+        P0A[Q1: Lab repo path\ne.g. ~/Projects/test-&lt;plugin&gt;-eval] --> P0B
+        P0B[Q2: Master plugin path\ne.g. plugins/agent-execution-disciplines] --> P0C
+        P0C["Q3: Baseline commit SHA\ngit log --oneline in lab repo\nlook for 'baseline:' commit"] --> P0D
+        P0D["Confirm block:\nLab repo: /path/to/test-repo\nMaster plugin: plugins/&lt;plugin&gt;\nBaseline commit: &lt;sha&gt;"]
     end
 
     P0D --> P1
 
     subgraph P1["Phase 1 — Read Run Log & Self-Assessment"]
-        P1A[ls temp/logs/] --> P1B[ls temp/retrospectives/]
-        P1B --> P1C[Note: final score, KEEP vs DISCARD count, errors, next-step recommendations]
+        P1A["ls &lt;lab-repo&gt;/temp/logs/\nls &lt;lab-repo&gt;/temp/retrospectives/\ne.g. survey_YYYYMMDD_HHMM_&lt;skill&gt;.md"] --> P1B
+        P1B["Note: final score vs baseline\nKEEP vs DISCARD count\nerrors / workarounds\nagent's next-step recommendation"]
     end
 
-    P1C --> P2
+    P1B --> P2
 
     subgraph P2["Phase 2 — Get Full Diff"]
-        P2A[git log baseline..HEAD] --> P2B[git diff --name-only]
-        P2B --> P2C[git diff full output]
-        P2C --> P2D[Annotate each changed file: what changed, why, generalizes?]
+        P2A["git log --oneline &lt;baseline&gt;..HEAD\ngit diff &lt;baseline&gt; HEAD --name-only\ngit diff &lt;baseline&gt; HEAD"] --> P2B
+        P2B["Key files to watch:\nskills/&lt;skill&gt;/SKILL.md\nskills/&lt;skill&gt;/evals/evals.json\nreferences/copilot_proposer_prompt.md\n.agents/skills/os-eval-runner/ (if patched)\nscripts/*.py"] --> P2C
+        P2C[Annotate each: what changed / why from log / generalizes to master?]
     end
 
-    P2D --> P3
+    P2C --> P3
 
     subgraph P3["Phase 3 — Structured Assessment"]
-        P3A[Build ACCEPT / ADAPT / REJECT / REVIEW table] --> P3B{User approves?}
+        P3A["Build verdict table:\nFile | Change summary | Verdict | Reason\n\nACCEPT — apply verbatim\nADAPT — apply with modifications\nREJECT — do not apply\nREVIEW — needs closer inspection"] --> P3B
+        P3B{User approves table?}
         P3B -- No, revise --> P3A
         P3B -- Yes --> P4
     end
 
     subgraph P4["Phase 4 — Apply Approved Changes"]
-        P4A[Read current master file] --> P4B[Apply targeted edits — no blind paste]
-        P4B --> P4C[Verify result]
-        P4C --> P4D[git add + commit: backport/plugin: summary]
+        P4A["1. Read current master file\n   plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md"] --> P4B
+        P4B["2. Targeted edits only\n   never paste full file contents\n   master may have diverged from lab copy"] --> P4C
+        P4C[3. Verify result] --> P4D
+        P4D["4. git add + commit\n   backport(&lt;plugin&gt;): &lt;summary&gt;"]
     end
 
     P4 --> P5
 
     subgraph P5["Phase 5 — Interrogate the Lab Agent"]
-        P5A["Always ask:<BR>1. Which steps in eval-instructions were unclear?<BR>2. Paste evolved copilot_proposer_prompt.md<BR>3. Was Step A3 trace scan useful?"] --> P5B{Loop stalled?}
-        P5B -- Yes --> P5C["4. What did web research find?<BR>5. What bridge words discovered?"]
-        P5B -- No --> P5D{Environment reset mid-run?}
+        P5A["Always ask (relay to user or ask in same session):\n1. Which steps in eval-instructions.md were unclear / caused improvisation?\n2. Paste full evolved references/copilot_proposer_prompt.md\n3. Did Step A3 trace scan work? Useful or too noisy?"] --> P5B
+        P5B{Loop stalled\n3+ DISCARDs?}
+        P5B -- Yes --> P5C["4. What did web research or Copilot brainstorm find?\n5. What bridge words discovered?\n   → Add to Trap Warning in copilot_proposer_prompt.md"]
+        P5B -- No --> P5D
         P5C --> P5D
-        P5D -- Yes --> P5E[6. Was Cold Start protocol sufficient?]
-        P5D -- No --> P5F[Incorporate findings into templates/skills]
+        P5D{Environment reset\nmid-run?}
+        P5D -- Yes --> P5E["6. Cold Start protocol sufficient?\n   (restore .lock.hashes from git baseline)"]
+        P5D -- No --> P5F
         P5E --> P5F
+        P5F[Incorporate findings → eval-instructions.template.md\ncopilot_proposer_prompt.md.template\nos-eval-runner/SKILL.md]
     end
 
     P5F --> P5b
 
     subgraph P5b["Phase 5b — Close the Loop"]
-        P5bA[Report: files updated in master] --> P5bB[Report: changes rejected + why]
-        P5bB --> P5bC[Suggest follow-up: next eval round / evals coverage / test fixtures]
+        P5bA[Report: which master files updated] --> P5bB
+        P5bB[Report: which changes rejected + why] --> P5bC
+        P5bC["Suggest follow-up:\n• next eval round\n• evals.json coverage gaps\n• test fixture improvements\n• copilot_proposer_prompt.md refinements"]
     end
 
     P5bC --> P6
 
     subgraph P6["Phase 6 — Capture Learnings (Mandatory)"]
-        P6A{OS initialized<BR>in master repo?} -- Yes --> P6B[Delegate to os-memory-manager:<BR>write dated session log]
-        P6A -- No --> P6C[Write context/memory/YYYY-MM-DD.md directly]
-        P6B --> P6D[Non-obvious filter:<BR>would future agent get burned<BR>without this?]
+        P6A{"OS initialized?\nls context/kernel.py"} -- Present --> P6B
+        P6A -- Absent --> P6C
+        P6B["Delegate to os-memory-manager skill:\nwrite context/memory/YYYY-MM-DD.md\nFields: skill, baseline→final score,\niterations, backported, rejected, snags"]
+        P6C["Write directly:\nmkdir -p context/memory\ncontext/memory/YYYY-MM-DD.md"]
+        P6B --> P6D
         P6C --> P6D
-        P6D -- Passes --> P6E[Write feedback memory file<BR>Update MEMORY.md index]
-        P6D -- Routine / self-evident --> P6F[Skip memory entry]
-        P6E --> P6G{OS present?}
-        P6G -- Yes --> P6H[os-memory-manager: promote to<BR>context/memory.md with dedup ID]
-        P6G -- No --> P6I([Done])
-        P6F --> P6I
+        P6D{"Non-obvious filter:\nwould future agent get burned\nwithout this?"}
+        P6D -- Passes filter --> P6E
+        P6D -- "Routine / self-evident\n/ already in memory" --> P6F
+        P6E["Write memory/feedback_eval_&lt;skill&gt;_&lt;topic&gt;.md\nUpdate MEMORY.md index\nTypes: scoring footgun / snag that blocked /\nnon-obvious architecture / reusable ADAPT pattern"]
+        P6E --> P6G
+        P6F[Skip — no memory entry needed] --> P6I
+        P6G{"OS present?"}
+        P6G -- Yes --> P6H["os-memory-manager: promote to\ncontext/memory.md with dedup ID"]
+        P6G -- No --> P6I
         P6H --> P6I
+        P6I([Done])
+    end
+
+    subgraph MAPPING["Master Source Mapping Reference"]
+        MAP1["Lab: &lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md\n→ Master: plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md"]
+        MAP2["Lab: &lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json\n→ Master: plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json"]
+        MAP3["Lab: .agents/skills/os-eval-runner/\n→ Master: plugins/agent-agentic-os/skills/os-eval-runner/"]
+        MAP4["Lab: references/copilot_proposer_prompt.md\n→ Contribute to: plugins/copilot-cli/skills/copilot-cli-agent/references/"]
     end
 
     style P0 fill:#e8f4f8,stroke:#4a9eca
@@ -80,3 +100,4 @@ flowchart TD
     style P5 fill:#f8e8f8,stroke:#9a4aca
     style P5b fill:#e8f8f8,stroke:#4acaca
     style P6 fill:#f8f8e8,stroke:#9a9a4a
+    style MAPPING fill:#f4f4f4,stroke:#999
