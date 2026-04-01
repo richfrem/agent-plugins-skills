@@ -97,6 +97,19 @@ The strategy is written into `program.md` as an instruction to the proposer. It 
 
 Default: `traces` unless the user specifies otherwise.
 
+**Q9 — Which CLI proposer for mutations?**
+
+The improvement loop delegates mutation proposals to an external CLI for cheap, fast iteration.
+
+| Option | Command | Best when |
+|---|---|---|
+| `copilot` (default) | `copilot -p "..."` | GitHub Copilot CLI installed |
+| `gemini` | `gemini -p "..."` | Gemini CLI installed |
+| `self` | agent self-proposes | No CLI available (slowest, most tokens) |
+
+Check availability: `which copilot` / `which gemini`. Default to `copilot` if both are present.
+The choice is written into `eval-instructions.md` Step 4 so the eval agent knows which command to use.
+
 **Confirm before proceeding:**
 ```
 Lab repo:          /path/to/lab-repo
@@ -106,6 +119,7 @@ GitHub remote:     https://github.com/...
 Round label:       <label>
 Primary metric:    quality_score  (or: f1 / precision / recall / heuristic)
 Strategy:          traces         (or: scores-only / full)
+Proposer CLI:      copilot        (or: gemini / self)
 ```
 
 ---
