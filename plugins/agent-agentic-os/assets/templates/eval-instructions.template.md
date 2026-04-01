@@ -199,6 +199,16 @@ Aim for at least 10 test cases with a good mix. **Tell the user when ready to re
 > ```json
 > { "prompt": "...", "expected_behavior": "should trigger" }
 > ```
+>
+> ⚠️ **Eval quality — avoid the keyword trap:** The router uses boolean-OR keyword matching.
+> Before finalizing your eval suite, check each `should_trigger: true` prompt for "bridge words" —
+> words that also appear in `should_trigger: false` prompts. If ALL 4+ char words in a true-positive
+> prompt also appear in false-positive prompts, that prompt can never be satisfied without causing a
+> false positive. This creates a mathematical ceiling that no description edit can break.
+>
+> **Fix:** Make adversarial false-positive prompts more conceptual and less keyword-overlapping.
+> For example, prefer `"Explain why I would use a git worktree"` over `"What is a git worktree?"`
+> — the former shares fewer action-oriented keywords with true-positive prompts.
 
 ---
 
@@ -226,14 +236,28 @@ git push origin main
 
 **Each iteration follows this exact sequence:**
 
-### Step A: Classify Failure
-Read the last row in `./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv`.
+### Step A: Classify Failure + Check What's Already Been Tried
+
+**A1 — Read current state:**
+```bash
+tail -5 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv
+```
 Classify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
-Read the most recent trace for specifics:
+
+**A2 — Read the most recent trace for specifics:**
 ```bash
 ls ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/
 cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | python3 -m json.tool
 ```
+
+**A3 — Scan all traces to avoid repeating a failed mutation (mandatory):**
+```bash
+for f in ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/iter_*.json; do
+  echo "=== $f ===" && python3 -c "import json,sys; d=json.load(open('$f')); print(d.get('mutation_diff','(no diff)'))" 2>/dev/null
+done | head -200
+```
+Before proposing anything, confirm your intended mutation is NOT already in this list.
+If it is, pick a different approach — do not re-run a test that already has a trace.
 
 ### Step B: Propose Mutation via Copilot CLI
 

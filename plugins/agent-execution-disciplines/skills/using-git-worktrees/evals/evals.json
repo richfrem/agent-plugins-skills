@@ -1,0 +1,17 @@
+[
+  { "prompt": "I need to start working on a new feature in isolation from my main branch", "should_trigger": true },
+  { "prompt": "Create a worktree for the auth feature branch", "should_trigger": true },
+  { "prompt": "Set up an isolated workspace before I start implementing this plan", "should_trigger": true },
+  { "prompt": "I want to work on two branches simultaneously without switching", "should_trigger": true },
+  { "prompt": "Add a git worktree for feature/payments", "should_trigger": true },
+  { "prompt": "Start feature work that needs its own directory", "should_trigger": true },
+  { "prompt": "Set up a worktree in .worktrees/ for this branch", "should_trigger": true },
+  { "prompt": "Switch to the main branch", "should_trigger": false },
+  { "prompt": "Create a new branch called feature/auth", "should_trigger": false },
+  { "prompt": "Explain why I would use a git worktree", "should_trigger": false },
+  { "prompt": "Merge my feature branch into main", "should_trigger": false },
+  { "prompt": "Run git checkout to switch branches", "should_trigger": false },
+  { "prompt": "How do I stash my changes?", "should_trigger": false },
+  { "prompt": "Set up a virtual environment for Python", "should_trigger": false },
+  { "prompt": "Create an isolated Docker container", "should_trigger": false }
+]
