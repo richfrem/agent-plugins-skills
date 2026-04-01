@@ -21,6 +21,24 @@
 
 ---
 
+## ⚠️ Restart Recovery Protocol — Read This First If You Were Just Restarted
+
+If you were restarted mid-run (freeze, context limit, or manual restart), do NOT start over.
+Recover state immediately and resume:
+
+1. **Find where you left off:**
+   ```bash
+   tail -30 temp/logs/run-log_*.md                                        # last logged action
+   tail -20 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv     # iteration count + last scores
+   git log --oneline -10                                                   # last committed iteration
+   git status                                                              # verify clean (no partial edits)
+   ```
+2. **Verify file state:** If the last iteration was a DISCARD, `evaluate.py` auto-reverted. `git status` should be clean. If a file is modified but uncommitted, read `results.tsv` to determine if it was a pending KEEP or abandoned DISCARD — commit or revert accordingly.
+3. **Resume from the next iteration** — do NOT re-run baseline, do NOT re-scaffold. Continue the loop.
+4. **Log the restart** in the run log with a `[RESTART]` entry and timestamp before continuing.
+
+---
+
 ## ⚠️ Autonomy Directive — NO INTERRUPTIONS During the Loop
 
 Run the entire improvement loop **without pausing or asking for confirmation**.
@@ -139,6 +157,7 @@ python3 .agents/skills/os-eval-runner/scripts/init_autoresearch.py \
 
 This creates:
 - `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/references/program.md`
+- `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/references/copilot_proposer_prompt.md` ← evolvable proposer prompt (read each iteration)
 - `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json`
 - `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv`
 
@@ -211,42 +230,30 @@ cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | python3 
 > ⚠️ **MANDATORY**: You MUST run the `copilot` bash command below. Do NOT self-propose.
 > Do NOT use the copilot-cli-agent skill. Execute the command and pipe output to disk.
 
+The proposer prompt lives in `references/copilot_proposer_prompt.md` — read it from file each
+iteration. Do NOT rebuild the prompt inline. This file is a first-class evolvable artifact.
+
 ```bash
 # Verify copilot CLI is available
 which copilot || (echo "ERROR: copilot CLI not found — halt" && exit 1)
 
+PROMPT_FILE=./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/references/copilot_proposer_prompt.md
+[ -f "$PROMPT_FILE" ] || (echo "ERROR: $PROMPT_FILE missing — re-run init_autoresearch.py" && exit 1)
+
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} /tmp/current-skill.md
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json /tmp/current-evals.json
 
-copilot -p "
-You are an expert at optimizing Claude Code SKILL.md files for routing accuracy.
+copilot -p "$(cat $PROMPT_FILE)
 
-HOW THE SCORER WORKS (critical — read this first):
-The evaluation engine extracts words of 4+ characters from the SKILL.md 'description' field
-and checks for exact word overlap with each eval prompt. Semantic similarity does NOT help —
-only shared words matter. Synonyms that don't share characters with eval prompts score zero.
-Words under 4 characters are invisible to the scorer.
-Score = (routing_accuracy * 0.7) + (heuristic * 0.3). F1 must not regress.
-
-CURRENT SKILL FILE:
+---CURRENT SKILL---
 $(cat /tmp/current-skill.md)
 
-EVALUATION SUITE (should_trigger: true = must route here, false = must NOT route here):
+---EVAL SUITE---
 $(cat /tmp/current-evals.json)
 
-SPECIFIC ISSUE TO FIX:
-<INSERT_FAILURE_TYPE>: <INSERT_1_SENTENCE_FAILURE_SUMMARY>
-
-STRATEGY:
-- Find words (4+ chars) in should_trigger=true prompts but NOT in should_trigger=false prompts — safe triggers.
-- Find words in should_trigger=false prompts that appear in the current description — remove them.
-
-CONSTRAINTS:
-- Minimal edits only (<=10 changed lines)
-- Fix ONLY the 'description' field and/or <example> blocks
-- Do NOT add a 'keywords:' field (disables description scanning — known footgun)
-- Output ONLY the fully rewritten SKILL.md. No markdown fences. No commentary.
-" > /tmp/proposed-skill.md
+---FAILURE ANALYSIS---
+Type: <INSERT_FAILURE_TYPE>
+Summary: <INSERT_1_SENTENCE_FAILURE_SUMMARY>" > /tmp/proposed-skill.md
 
 # Verify non-empty and changed before applying
 [ -s /tmp/proposed-skill.md ] || echo "ERROR: empty output — re-prompt with 'try a different approach'"
@@ -254,6 +261,20 @@ diff -q /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION
   echo "WARNING: identical to current — re-prompt" || \
   cp /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
 ```
+
+### Step B.1: Evolve the Proposer Prompt (Second-Order Mutation)
+
+After **3 consecutive DISCARDs** with the same failure type, the prompt itself may be the
+bottleneck — not the skill. Try one focused edit to `references/copilot_proposer_prompt.md`:
+- Add a clarifying constraint that addresses the recurring failure pattern
+- Sharpen the strategy section with the specific word-overlap insight from the traces
+- Adjust the output format if the CLI is returning commentary or fences
+
+Gate it the same way: edit → eval → KEEP or revert. Log it as "prompt evolution" in the run log.
+
+Other second-order mutations if the loop stalls for 5+ consecutive DISCARDs:
+- **`references/program.md`** — clarify the goal or locked-files list if it has become ambiguous
+- **`copilot-cli-agent/SKILL.md`** — if the proposer skill description is missing patterns you rely on
 
 ### Step C: Eval Gate
 ```bash
