@@ -136,6 +136,16 @@ Log every command, output, error, decision, and result as it happens using this 
 
 Log every non-zero exit code, every deviation from instructions, every eval score surprise, every DISCARD and why. **Push the log with every commit.**
 
+> ⚠️ **NEVER delete or compress past entries.** Individual attempt details must be preserved:
+> - The exact mutation tried (or a diff)
+> - The failure type and which specific eval inputs changed verdict
+> - The score delta and why you believe it failed
+>
+> You MAY append a summary section (e.g. "Round 2 Summary") after a completed round —
+> but the individual iteration entries it covers must remain intact beneath it.
+> This log is the institutional memory of the experiment. Future sessions use it to avoid
+> repeating failed approaches.
+
 ---
 
 ## Step 1: Scaffold the Experiment
