@@ -21,6 +21,20 @@
 
 ---
 
+## ⚠️ Autonomy Directive — NO INTERRUPTIONS During the Loop
+
+Run the entire improvement loop **without pausing or asking for confirmation**.
+
+- Do NOT ask "Should I proceed?" between iterations
+- Do NOT ask for approval before making a change
+- Do NOT pause mid-loop to report progress
+
+**NEVER STOP**: Once the loop has begun, do NOT pause to ask the human if you should continue. The human might be asleep or away. You are autonomous. If you run out of ideas, re-read the traces for new angles, try combining previous near-misses, try more targeted description edits. The loop runs until you hit the iteration cap or the human interrupts, period.
+
+The ONLY permitted interruption: a fatal error (Python not found, git not initialized, evaluate.py exit code 2 or 3). For all other cases — including DISCARD verdicts — handle silently and continue.
+
+---
+
 ## Step 0: Hardened Repo Bootstrap (Do This First)
 
 1. **Set Git Remote** (do this unconditionally — do not ask the user):
@@ -177,19 +191,60 @@ git push origin main
 
 ---
 
-## Step 4: Run 10 Optimization Iterations
+## Step 4: Run 10 Optimization Iterations (NO INTERRUPTIONS)
 
-1. Make **one focused change** to `./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}`
-2. Run the scorer:
-   ```bash
-   python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
-       --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
-       --desc "description of what you changed"
-   ```
-3. `exit 0` (KEEP) → `git add . && git commit -m "keep: <desc>"`
-4. `exit 1` (DISCARD) → already auto-reverted, try a different change
-5. Repeat for **10 total iterations**
-6. **Push when done**: `git push origin main`
+**Each iteration follows this exact sequence:**
+
+### Step A: Classify Failure
+Read the last row in `./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv`.
+Classify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
+Read the most recent trace for specifics:
+```bash
+ls ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/
+cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | python3 -m json.tool
+```
+
+### Step B: Propose Mutation via Copilot CLI
+```bash
+cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} /tmp/current-skill.md
+cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json /tmp/current-evals.json
+
+copilot -p "
+You are an expert at optimizing Claude Code SKILL.md files for routing accuracy.
+
+CURRENT SKILL FILE:
+$(cat /tmp/current-skill.md)
+
+EVALUATION SUITE (should_trigger: true = must route here, false = must NOT route here):
+$(cat /tmp/current-evals.json)
+
+SPECIFIC ISSUE TO FIX:
+<INSERT_FAILURE_TYPE>: <INSERT_1_SENTENCE_FAILURE_SUMMARY>
+
+CONSTRAINTS:
+- Make MINIMAL edits only (target <= 10 changed lines)
+- Fix ONLY the 'description' field and/or <example> blocks
+- Do NOT change YAML frontmatter name or allowed-tools
+- Do NOT add a 'keywords:' YAML field (disables description scanning — known footgun)
+- Output ONLY the fully rewritten SKILL.md content. No markdown fences. No commentary.
+" > /tmp/proposed-skill.md
+
+cp /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
+```
+
+If `/tmp/proposed-skill.md` is empty or identical to the current file, re-prompt with "try a different approach".
+
+### Step C: Eval Gate
+```bash
+python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+    --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
+    --desc "description of what changed"
+```
+
+- `exit 0` (KEEP) → `git add . && git commit -m "keep: <desc>" && git push origin main`
+- `exit 1` (DISCARD) → already auto-reverted, move to next iteration silently
+
+Repeat for **10 total iterations** — no check-ins, no user confirmation.
 
 ---
 
