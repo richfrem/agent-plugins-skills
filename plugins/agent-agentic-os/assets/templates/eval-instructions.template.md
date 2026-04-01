@@ -226,14 +226,28 @@ git push origin main
 
 **Each iteration follows this exact sequence:**
 
-### Step A: Classify Failure
-Read the last row in `./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv`.
+### Step A: Classify Failure + Check What's Already Been Tried
+
+**A1 — Read current state:**
+```bash
+tail -5 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv
+```
 Classify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
-Read the most recent trace for specifics:
+
+**A2 — Read the most recent trace for specifics:**
 ```bash
 ls ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/
 cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | python3 -m json.tool
 ```
+
+**A3 — Scan all traces to avoid repeating a failed mutation (mandatory):**
+```bash
+for f in ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/iter_*.json; do
+  echo "=== $f ===" && python3 -c "import json,sys; d=json.load(open('$f')); print(d.get('mutation_diff','(no diff)'))" 2>/dev/null
+done | head -200
+```
+Before proposing anything, confirm your intended mutation is NOT already in this list.
+If it is, pick a different approach — do not re-run a test that already has a trace.
 
 ### Step B: Propose Mutation via Copilot CLI
 
