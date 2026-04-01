@@ -33,7 +33,7 @@ standalone git repo with a hard copy of the plugin files (no symlinks), the
 an eval agent to follow.
 
 The template used to generate `eval-instructions.md` lives at:
-`plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/eval-instructions.template.md`
+`plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/eval-instructions.template.md`
 
 ---
 
@@ -163,7 +163,7 @@ python3 --version  # must be 3.8+
 
 Read the template:
 ```
-<APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/eval-instructions.template.md
+<APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/eval-instructions.template.md
 ```
 
 Replace all `{{PLACEHOLDERS}}` with intake values:
