@@ -153,6 +153,7 @@ You are the OS Quality Assurance (QA) sub-agent. You are a **stateless evaluatio
 | program.md **template** | `skills/os-eval-runner/assets/templates/autoresearch/program.md.template` |
 | evals.json **template** | `skills/os-eval-runner/assets/templates/autoresearch/evals.json.template` |
 | results.tsv **template** | `skills/os-eval-runner/assets/templates/autoresearch/results.tsv.template` |
+| copilot proposer prompt **template** | `skills/os-eval-runner/assets/templates/autoresearch/copilot_proposer_prompt.md.template` |
 
 ### What lives with the target (deployed per experiment, most appropriate location)
 
@@ -162,6 +163,7 @@ with a clear metric. All experiment state deploys alongside the target — not h
 | What | Location |
 |---|---|
 | program.md (rendered from template) | `<experiment-dir>/references/program.md` |
+| copilot proposer prompt (rendered from template) | `<experiment-dir>/references/copilot_proposer_prompt.md` |
 | evals.json (rendered from template) | `<experiment-dir>/evals/evals.json` |
 | results.tsv (loop ledger) | `<experiment-dir>/evals/results.tsv` |
 | .lock.hashes (SHA256 snapshot) | `<experiment-dir>/evals/.lock.hashes` |
@@ -300,18 +302,49 @@ The agent will:
 
    **Step A — Classify failure:** Read the latest row in `<skill>/evals/results.tsv` and the most recent trace file in `<skill>/evals/traces/`. Identify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
 
-   **Step B — Propose via CLI (preferred) or self:** Delegate the mutation to an external CLI proposer for cheap, fast iteration:
+   **Step B — Propose via CLI (preferred) or self:** Delegate the mutation to an external CLI proposer for cheap, fast iteration.
+
+   The proposer prompt lives in `<experiment-dir>/references/copilot_proposer_prompt.md`. Read it each
+   iteration — do not rebuild inline. If the file is missing, scaffold it first:
+   ```bash
+   python3 plugins/agent-agentic-os/scripts/init_autoresearch.py \
+       --experiment-dir <experiment-dir> --mutation-target <filename>
+   ```
+
+   Call pattern:
    ```bash
    cp <skill>/SKILL.md /tmp/current-skill.md
    cp <skill>/evals/evals.json /tmp/current-evals.json
-   copilot -p "You are an expert at optimizing Claude Code SKILL.md routing accuracy.
-   CURRENT SKILL: $(cat /tmp/current-skill.md)
-   EVALS: $(cat /tmp/current-evals.json)
-   ISSUE: <failure_type>: <one-sentence summary>
-   CONSTRAINTS: minimal edits (≤10 lines), fix description/examples only, no 'keywords:' field, output raw SKILL.md only." > /tmp/proposed-skill.md
+   copilot -p "$(cat <experiment-dir>/references/copilot_proposer_prompt.md)
+
+   ---CURRENT SKILL---
+   $(cat /tmp/current-skill.md)
+
+   ---EVAL SUITE---
+   $(cat /tmp/current-evals.json)
+
+   ---FAILURE ANALYSIS---
+   Type: <failure_type>
+   Summary: <one-sentence description of what the last iteration got wrong>" > /tmp/proposed-skill.md
    cp /tmp/proposed-skill.md <skill>/SKILL.md
    ```
    Use `gemini` instead of `copilot` if specified. Fall back to self-proposing only if neither CLI is available. If the proposed file is identical to current, re-prompt with "try a different approach".
+
+   **Step B.1 — Evolve the proposer prompt (second-order mutation):**
+   After 3 consecutive DISCARDs with the same failure type, consider that the *prompt itself* may be
+   the problem — not the skill. Propose one focused improvement to `copilot_proposer_prompt.md`
+   (e.g. add a constraint, clarify the failure pattern, sharpen the output format). Gate it the same
+   way: apply, run the loop, KEEP or revert. A KEEP on a prompt change means future iterations have
+   a stronger proposer.
+
+   Other second-order mutations to consider when the loop stalls:
+   - **`references/program.md`** — if the spec's goal or locked-files list has become ambiguous or
+     misaligned with what the evals actually test, proposing a clarification here can unblock progress.
+   - **`copilot-cli-agent/SKILL.md`** — if the Copilot CLI skill description is missing patterns you
+     rely on, improving it here benefits all future loops that use this proposer.
+
+   Second-order mutations are lower priority than direct skill mutations. Only pursue them when the
+   primary mutation target has stalled (3+ consecutive DISCARDs or diminishing score deltas).
 
    **Step C — Eval gate:**
    ```bash
@@ -461,7 +494,19 @@ For **unattended** (`os-nightly-evolver`) runs: write this commentary to
 `temp/retrospectives/backport_[YYYYMMDD]_iter_NNN.md` and flag for human review
 before applying. Do not auto-apply to master from unattended runs.
 
-**7. Commit to master:**
+**7. Contribute evolved proposer prompt (if improved during the run):**
+
+If `references/copilot_proposer_prompt.md` was mutated and accepted (KEEPed) during the run,
+compare it against the canonical template. If it substantially improved proposal quality, copy it
+to the copilot-cli plugin as a reference example:
+```bash
+cp <lab-experiment-dir>/references/copilot_proposer_prompt.md \
+   plugins/copilot-cli/skills/copilot-cli-agent/references/skill-proposer-prompt.md
+```
+This closes the loop: the prompt that emerged from real eval feedback becomes the new starting
+baseline for future experiments.
+
+**8. Commit to master:**
 ```bash
 cd /path/to/agent-plugins-skills
 git add plugins/<plugin>/...
