@@ -4,12 +4,12 @@ title: Dual-Loop Agent Architecture
 flowchart TB
     subgraph Outer["Outer Loop (Strategy and Protocol)"]
         direction TB
-        Scout["Scout and Plan\n(read goals, decompose tasks)"]
-        Spec["Define Work Packages\n(atomic, testable, non-overlapping)"]
-        Packet["Generate Strategy Packet\n(goal, commitment diagram, constraints,\nacceptance criteria)"]
-        Verify["Verify Result\n(run tests, check acceptance criteria)"]
-        Commit["Seal and Commit\n(Outer Loop commits to main branch)"]
-        Correct["Generate Correction Packet\n(delta fix with targeted feedback)"]
+        Scout["Scout and Plan<BR>(read goals, decompose tasks)"]
+        Spec["Define Work Packages<BR>(atomic, testable, non-overlapping)"]
+        Packet["Generate Strategy Packet<BR>(goal, commitment diagram, constraints,<BR>acceptance criteria)"]
+        Verify["Verify Result<BR>(run tests, check acceptance criteria)"]
+        Commit["Seal and Commit<BR>(Outer Loop commits to main branch)"]
+        Correct["Generate Correction Packet<BR>(delta fix with targeted feedback)"]
 
         Scout --> Spec
         Spec --> Packet
@@ -19,10 +19,10 @@ flowchart TB
 
     subgraph Inner["Inner Loop (Tactical Execution)"]
         direction TB
-        Receive["Read Strategy Packet\n(understand exact goal)"]
-        Plan["Commit to Execution Plan\n(pre-execution diagram)"]
-        Execute["Write Code and Run Tests\n(no git commits)"]
-        Signal["Signal Done\n(report result to Outer Loop)"]
+        Receive["Read Strategy Packet<BR>(understand exact goal)"]
+        Plan["Commit to Execution Plan<BR>(pre-execution diagram)"]
+        Execute["Write Code and Run Tests<BR>(no git commits)"]
+        Signal["Signal Done<BR>(report result to Outer Loop)"]
 
         Receive --> Plan
         Plan --> Execute
