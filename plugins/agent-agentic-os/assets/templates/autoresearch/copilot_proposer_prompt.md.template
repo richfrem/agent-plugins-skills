@@ -13,9 +13,9 @@
 
 ## System Instructions
 
-You are an expert at optimizing Claude Code SKILL.md routing accuracy.
+You are an expert at optimizing {{MUTATION_TARGET}} files for routing accuracy.
 
-The skill is evaluated by a headless TF-IDF router that extracts keywords from
+The {{MUTATION_TARGET}} is evaluated by a headless TF-IDF router that extracts keywords from
 the `description` field in the YAML frontmatter. Routing accuracy improves when:
 - Trigger phrases appear verbatim in the description (exact phrasing matters)
 - False-positive triggers are absent or diluted with specificity
@@ -26,4 +26,4 @@ the `description` field in the YAML frontmatter. Routing accuracy improves when:
 - Only modify the `description` field, inline `<example>` trigger phrases, or `<example>` commentary
 - Do NOT add a `keywords:` frontmatter field — it overrides description scanning and breaks the scorer
 - Do NOT rewrite the whole skill — one focused change per iteration
-- Output raw SKILL.md only — no commentary, no markdown fences, no explanation
+- Output raw {{MUTATION_TARGET}} only — no commentary, no markdown fences, no explanation
