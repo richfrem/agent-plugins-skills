@@ -13,13 +13,13 @@ To set up a new optimization run, work with the user to:
 1. **Agree on a run tag**: propose a tag based on today's date (e.g. `mar14`). The branch `skillopt/<tag>` must not already exist.
 2. **Create the branch**: `git checkout -b skillopt/<tag>` from current master.
 3. **Read the in-scope files** (all 4 must be read before starting):
-   - `plugins/spec-kitty-plugin/agents/spec-kitty-agent.md` — standalone agent card (compact)
-   - `plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md` — full lifecycle + bridge sync skill
-   - `plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md` — workflow SOP (main editable target)
-   - `plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd` — lifecycle diagram
+   - `.agents/agents/spec-kitty-agent.md` — standalone agent card (compact)
+   - `.agents/skills/spec-kitty-workflow/SKILL.md` — workflow SOP (main editable target)
+   - `.agents/skills/spec-kitty-agent/SKILL.md` — full lifecycle + bridge sync skill
+   - `.agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd` — lifecycle diagram
 4. **Read the fixed reference files** (DO NOT modify):
-   - `plugins/agent-plugin-analyzer/skills/analyze-plugin/references/maturity-model.md` — scoring rubric
-   - `plugins/spec-kitty-plugin/skills/spec-kitty-agent/references/` — AUGMENTED.md files and known-good behavior
+   - `.agents/skills/analyze-plugin/references/maturity-model.md` — scoring rubric
+   - `.agents/skills/spec-kitty-agent/references/` — AUGMENTED.md files and known-good behavior
 5. **Initialize skill-results.tsv**: Create it with just the header row. The baseline score is established in the first iteration.
 6. **Confirm and go**.
 
@@ -231,16 +231,16 @@ Each iteration (read → change → score) takes roughly 2–5 minutes. In an ov
 After the human reviews and approves the accumulated improvements on the `skillopt/<tag>` branch, sync the improved files back to the master plugin location:
 
 ```bash
-cp plugins/spec-kitty-plugin/agents/spec-kitty-agent.md \
+cp .agents/agents/spec-kitty-agent.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/agents/spec-kitty-agent.md
 
-cp plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md \
+cp .agents/skills/spec-kitty-workflow/SKILL.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md
 
-cp plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd \
+cp .agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd
 
-cp plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md \
+cp .agents/skills/spec-kitty-agent/SKILL.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md
 ```
 
