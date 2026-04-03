@@ -1,13 +1,50 @@
-{
-  "evals": [
-    {"id": "eval-1", "input": "set up an eval lab for the link-checker skill", "should_trigger": true},
-    {"id": "eval-2", "input": "bootstrap the eval repo for skill testing", "should_trigger": true},
-    {"id": "eval-3", "input": "prepare the test repo for skill evaluation", "should_trigger": true},
-    {"id": "eval-4", "input": "create an eval environment for this skill", "should_trigger": true},
-    {"id": "eval-5", "input": "set up the lab space for the commit skill", "should_trigger": true},
-    {"id": "eval-6", "input": "run the optimization loop on this skill", "should_trigger": false},
-    {"id": "eval-7", "input": "backport the eval results to master", "should_trigger": false},
-    {"id": "eval-8", "input": "create a new plugin", "should_trigger": false},
-    {"id": "eval-9", "input": "install this skill in my project", "should_trigger": false}
-  ]
-}
+[
+  {
+    "prompt": "Set up an eval lab for the link-checker skill",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Bootstrap the eval repo for running an autoresearch improvement loop",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Prepare the test repo for skill evaluation",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create an isolated eval environment for this skill",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Set up the lab space for this skill so I can run an overnight loop",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I have a lab repo that needs to be configured for eval",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Initialize a new skill optimization lab repo",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run the eval loop on this skill",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Backport the eval results to master",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill from scratch",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Optimize this skill using the autoresearch loop",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install dependencies for my project",
+    "should_trigger": false
+  }
+]
