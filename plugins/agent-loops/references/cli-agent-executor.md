@@ -56,7 +56,7 @@ Always redirect output to a file (`> output.md`), then review with `view_file`.
 | Business | product-manager | Product strategy |
 | Specialization | api-documenter, documentation-expert | Technical writing |
 
-All personas are physically located inside their respective CLI plugin directories (e.g., `plugins/claude-cli/personas/`, `plugins/gemini-cli/personas/`). Use standard `/ls` equivalents to find the exact markdown file needed for your pipeline.
+All personas are physically located inside their respective installed CLI skill directories (e.g., `.agents/skills/claude-cli-agent/personas/`, `.agents/skills/gemini-cli-agent/personas/`). Use standard `/ls` equivalents to find the exact markdown file needed for your pipeline.
 
 ## 🔄 Recommended Audit Loop
 When asked to perform a comprehensive "Audit Loop", you should construct a sequence of CLI dispatches passing the SAME `bundle.md` or context code block to three consecutive personas.
