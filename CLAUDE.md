@@ -6,30 +6,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the **upstream source monorepo** for a cross-platform library of reusable AI agent plugins and skills. It is the hub in a hub-and-spoke model: plugins live here in canonical form and are deployed ("bridged") into target projects via installer scripts.
 
-- **118 production skills** across **30 plugins** targeting Claude Code, GitHub Copilot, Gemini CLI, Roo Code, Windsurf, Cursor, and compatible integrations.
+- **120 production skills** across **29 plugins** targeting Claude Code, GitHub Copilot, Gemini CLI, Roo Code, Windsurf, Cursor, and compatible integrations.
 - Individual skills must function in complete isolation — no hard runtime dependencies on sibling plugins.
 
 ## Key Commands
 
-### Install / Deploy Plugins (Windows — always use this)
+### Install / Deploy Plugins
 
 ```bash
-# First-time install from repo root
-python plugins/plugin-manager/scripts/install_all_plugins.py
+# Recommended: uvx (cross-platform, no clone needed)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y  # non-interactive
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
 
-# Subsequent updates
-python .agents/skills/plugin-installer/scripts/install_all_plugins.py
+# Zero-dep fallback (Mac/Linux)
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
+
+# From a local clone (interactive TUI)
+python plugins/plugin-manager/scripts/install_all_plugins.py
 
 # Dry run preview
 python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run
 ```
 
-> **Windows**: Never use `npx skills add` — Git symlinks check out as plain-text pointer files on Windows. Use the Python bridge installer instead.
+> **Windows**: Never use `npx skills add` — Git symlinks check out as plain-text pointer files on Windows. Use `uvx` or `bootstrap.py` instead.
 
-### Add/Update a Single Plugin
+### Add/Update a Single Plugin (Interactive TUI)
 
 ```bash
-python plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/<plugin-name>
+# Interactive picker — select plugins to install from local repo
+python plugins/plugin-manager/scripts/plugin_add.py
+
+# Install from a remote GitHub repo
+python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
 ```
 
 ### Regenerate the Autoresearch Fitness Report
@@ -76,15 +85,14 @@ plugins/<plugin>/           ← canonical source (this repo)
 
 The bridge installer resolves all file-level symlinks into physical copies so each deployed skill is self-contained regardless of which other plugins are present.
 
-### Symlink Rules (ADR-003)
+### Architecture Decision Records
 
-- **File-level symlinks only** inside `skills/<skill>/scripts/` pointing to `../../scripts/`. Directory-level symlinks are forbidden — `npx skills add` silently drops them.
-- Scripts, assets, and reference documents belong at **plugin root** (`plugins/<plugin>/scripts/`), never duplicated inside skill directories.
-- All file references in SKILL.md use **relative paths from the skill root** (e.g. `scripts/extract.py`).
+See `ADRs/` for the authoritative rules governing this repo. Key ADRs:
 
-### Cross-Plugin Dependencies (ADR-001)
-
-No plugin may call another plugin's scripts directly (no `subprocess` calls to `../../other-plugin/scripts/foo.py`). Cross-plugin coordination happens at the **agent conversation layer** — Plugin A instructs the agent to trigger Plugin B's skill. This keeps deployed artifacts self-contained.
+- **ADR-001** — No cross-plugin script execution; use agent skill delegation at runtime
+- **ADR-002** — Within-plugin multi-skill script sharing (hub-and-spoke)
+- **ADR-003** — File-level symlinks only; scripts/assets/references at plugin root, never duplicated in skill subdirs
+- **ADR-004** — Self-contained installed artifacts; no runtime cross-plugin dependencies
 
 ### Skill Standards
 
@@ -109,10 +117,14 @@ All ecosystem management lives in `plugins/plugin-manager/scripts/`:
 | Script | Purpose |
 |---|---|
 | `install_all_plugins.py` | Bulk bridge-install all plugins |
-| `plugin_installer.py` | Install a single plugin |
+| `plugin_add.py` | Interactive TUI installer (local or remote GitHub repo) |
+| `bridge_installer.py` | Low-level installer called by plugin_add.py |
 | `update_agent_system.py` | Pull-based sync for installed environments |
 | `clean_orphans.py` | Remove artifacts for deleted plugins |
 | `audit_structure.py` | Validate plugin directory structure |
+| `plugin_inventory.py` | List all plugins and their metadata |
+| `sync_with_inventory.py` | Reconcile installed state with plugin_sources.json |
+| `generate_readmes.py` | Regenerate plugin-level README files |
 
 `skills-lock.json` at repo root tracks installed plugin hashes (analogous to a lockfile).
 
@@ -124,4 +136,8 @@ Use the scaffolding skills rather than hand-rolling structure:
 - `/agent-scaffolders:create-skill` — skill scaffold with evals.json, references/, acceptance-criteria.md
 - `/agent-scaffolders:audit-plugin` — validate structure after scaffolding
 
-After scaffolding, run `plugin_installer.py` to deploy.
+After scaffolding, run `plugin_add.py` to deploy.
+
+## Scratch Output
+
+Write any temporary files or analysis output to `temp/` at the repo root — never to the project root directly.
