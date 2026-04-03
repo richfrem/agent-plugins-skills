@@ -10,12 +10,12 @@
   {{GITHUB_REPO_URL}}      Full HTTPS clone URL, e.g. "https://github.com/richfrem/test-link-checker-eval.git"
   {{ROUND_LABEL}}          Short label for logs/surveys, e.g. "link-checker-round1"
   {{SKILL_EVAL_SOURCE}}    Absolute local path to os-eval-runner skill,
-                           e.g. "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os/skills/os-eval-runner"
+                           e.g. "<SKILL_PATH>/os-eval-runner"
   {{MASTER_PLUGIN_PATH}}   Absolute path to master plugin in agent-plugins-skills,
-                           e.g. "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/link-checker"
+                           e.g. "<SKILL_PATH>/link-checker"
 -->
 
-**Target skill:** `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}`
+**Target skill:** `{{SKILL_PATH}}/{{SKILL_NAME}}/{{MUTATION_TARGET}}`
 **Engine:** `os-eval-runner`
 **Goal:** Run 10 autonomous optimization iterations on the {{SKILL_NAME}} skill.
 
@@ -88,10 +88,11 @@ The ONLY permitted interruption: a fatal error (Python not found, git not initia
    ```
 
 4. **Install the Evaluation Engine and Copilot CLI**:
-   ```bash
-   npx skills add -y {{SKILL_EVAL_SOURCE}}
-   npx skills add -y {{APS_ROOT}}/plugins/copilot-cli/skills/copilot-cli-agent
-   ```
+Consult the authoritative installation hub for current deployment commands:
+
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.mdem/agent-plugins-skills/blob/main/INSTALL.md)
+
+This section ensures the `os-eval-runner` and `copilot-cli-agent` skills are active in your environment.
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.
    > Both are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
 
@@ -166,14 +167,14 @@ Log every non-zero exit code, every deviation from instructions, every eval scor
 ## Step 1: Scaffold the Experiment
 
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/init_autoresearch.py \
+python3 scripts/init_autoresearch.py \
     --experiment-dir ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --mutation-target {{MUTATION_TARGET}}
 ```
 
 > ⚠️ **Standalone Installation Snag:** If this fails with a `FileNotFoundError` or `TemplateNotFound` error referencing a `skills/os-eval-runner/` nested path, the script's `TEMPLATES_DIR` is resolving against the full plugin repo layout instead of the installed location. Patch it:
 > ```python
-> # In .agents/skills/os-eval-runner/scripts/init_autoresearch.py
+> # In scripts/init_autoresearch.py
 > # Change TEMPLATES_DIR to use HERE.parent (script-relative resolution):
 > HERE = Path(__file__).resolve().parent
 > TEMPLATES_DIR = HERE.parent / "assets" / "templates" / "autoresearch"
@@ -230,7 +231,7 @@ Aim for at least 10 test cases with a good mix. **Tell the user when ready to re
 ## Step 3: Establish Baseline & Push
 
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+python3 scripts/evaluate.py \
     --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --baseline \
     --desc "initial baseline"
@@ -364,7 +365,7 @@ Log both options in the run log under `[CREATIVITY UNBLOCK]` before proceeding.
 
 ### Step C: Eval Gate
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+python3 scripts/evaluate.py \
     --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --desc "description of what changed"
 ```

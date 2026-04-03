@@ -2,33 +2,6 @@
 
 Bridge the gap between programmatic AI agent workflows and the local Obsidian knowledge base.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install obsidian-integration
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/obsidian-integration
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/obsidian-integration
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install obsidian-integration
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/obsidian-integration
-```
-
 ## Dependencies
 
 The `obsidian-vault-crud` and `obsidian-bases-manager` skills require `ruamel.yaml` for lossless YAML round-trip parsing:

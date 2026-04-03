@@ -68,25 +68,25 @@ Common defaults (your project may use different names or define more):
 
 ```bash
 # Search docs/protocols cache
-python3 .agents/skills/rlm-search/scripts/query_cache.py \
+python3 scripts/query_cache.py \
   --profile project "vector query"
 
 # Search plugins/scripts cache
-python3 .agents/skills/rlm-search/scripts/query_cache.py \
+python3 scripts/query_cache.py \
   --profile tools "vector query"
 
 # Ambiguous topic -- search both (recommended default)
-python3 .agents/skills/rlm-search/scripts/query_cache.py \
+python3 scripts/query_cache.py \
   --profile project "embedding search" && \
-python3 .agents/skills/rlm-search/scripts/query_cache.py \
+python3 scripts/query_cache.py \
   --profile tools "embedding search"
 
 # List all cached entries for a profile
-python3 .agents/skills/rlm-search/scripts/query_cache.py \
+python3 scripts/query_cache.py \
   --profile project --list
 
 # JSON output for programmatic use
-python3 .agents/skills/rlm-search/scripts/query_cache.py \
+python3 scripts/query_cache.py \
   --profile tools "inject_summary" --json
 ```
 

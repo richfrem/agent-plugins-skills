@@ -11,13 +11,13 @@ Formula: `quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)`
 Mutation target: `SKILL.md` — you may ONLY edit this file each iteration.
 
 Locked (never modify):
-- `.agents/skills/os-eval-runner/scripts/evaluate.py`
-- `.agents/skills/os-eval-runner/scripts/eval_runner.py`
+- `scripts/evaluate.py`
+- `scripts/eval_runner.py`
 - `evals/evals.json`
 
 How to run one iteration:
 1. Edit `SKILL.md` (one focused change per iteration — frontmatter description/triggers only)
-2. `python .agents/skills/os-eval-runner/scripts/evaluate.py --skill .agents/skills/eval-autoresearch-fit/SKILL.md --desc "what you changed"`
+2. `python scripts/evaluate.py --skill .agents/skills/eval-autoresearch-fit/SKILL.md --desc "what you changed"`
 3. If KEEP (exit 0): `git add SKILL.md && git commit -m "keep: score=X <description>"`
 4. If DISCARD (exit 1): evaluate.py already reverted SKILL.md automatically
 

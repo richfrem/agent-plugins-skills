@@ -14,9 +14,9 @@ Runs the master sync to update all plugins and redeploy capabilities to all agen
 
 ```bash
 if [ "${dry_run}" = "true" ]; then
-    python3 ./plugins/plugin-manager/scripts/plugin_add.py --all -y --dry-run
+    python3 ././scripts/plugin_add.py --all -y --dry-run
 else
-    python3 ./plugins/plugin-manager/scripts/plugin_add.py --all -y
+    python3 ././scripts/plugin_add.py --all -y
 fi
 ```
 

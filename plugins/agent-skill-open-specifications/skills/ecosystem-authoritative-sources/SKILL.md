@@ -87,12 +87,11 @@ Note: `/plugin marketplace browse` returns no content in 2.1.81 — use `/plugin
 Universal CLI to install across all supported agents (Claude Code, Copilot, Gemini CLI, etc).
 
 **Quick Reference:**
-*   **Install from GitHub:** `npx skills add <user>/<repo>`
-*   **Install Specific Skill:** `npx skills add <user>/<repo>/plugins/<plugin-name>`
-*   **Update All Skills:** `npx skills update`
-*   **Local Development Install:** `rm -rf .agents/ && npx skills add ./plugins/<plugin-name> --force`
+For all installation, update, and management commands, strictly refer to the authoritative project hub:
 
-*For full installation documentation and architecture rules, strictly refer to `skills.md`.*
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
+
+*This hub contains the definitive logic for `uvx`, `bootstrap.py`, and `npx skills` methods.*
 
 ## Table of Contents
 To read any of the reference guides, use your file system tools to `cat` or `view` the relevant file.

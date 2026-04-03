@@ -62,7 +62,7 @@ cat .agent/learning/vector_profiles.json
 Common default is `knowledge` -- your project may define more (e.g. separate profiles for code vs docs). When topic is ambiguous, search all profiles.
 
 ```bash
-python3 .agents/skills/vector-db-search/scripts/query.py \
+python3 scripts/query.py \
   "your natural language question" --profile knowledge --limit 5
 ```
 

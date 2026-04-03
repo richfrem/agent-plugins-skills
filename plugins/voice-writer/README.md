@@ -9,33 +9,6 @@ locally.
 
 ---
 
-## Installation
-
-### Cross-agent via npx (recommended for end users)
-
-```bash
-npx skills add richfrem/agent-plugins-skills/plugins/voice-writer
-```
-
-Works across Claude Code, Antigravity / Gemini CLI, GitHub Copilot, Cursor,
-Roo Code, and any other agent that supports the Agent Skills open standard.
-
-### Full local deployment via bridge (Claude Code + Antigravity)
-
-```bash
-# From the agent-plugins-skills project root:
-python ./plugin_installer.py --plugin plugins/voice-writer
-
-# Or install all plugins at once:
-python ./install_all_plugins.py
-```
-
-### Local development install
-
-```bash
-rm -rf .agents/ && npx skills add ./plugins/voice-writer --force
-```
-
 ---
 
 ## Included Skills

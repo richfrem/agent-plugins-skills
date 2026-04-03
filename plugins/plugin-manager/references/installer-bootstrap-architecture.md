@@ -2,7 +2,7 @@
 
 ## The Problem Statement
 
-Our transition to the GitHub-native, cross-platform `plugin_add.py` script successfully resolved the Windows symlink failures caused by `npx skills add`. However, we've traded one problem for another: **The Bootstrap Problem**.
+Our transition to the GitHub-native, cross-platform `plugin_add.py` script successfully resolved the Windows symlink failures caused by legacy installation methods. However, we've traded one problem for another: **The Bootstrap Problem**.
 
 `npx` has an immense ergonomic advantage: it downloads and executes code from a remote registry on the fly. Consumers don't need to clone a repository to run a script inside it. Right now, `plugin_add.py` requires the user to either clone the `agent-plugins-skills` repository or run from within it.
 
@@ -99,7 +99,7 @@ npx @agent-plugins/cli add richfrem/agent-plugins-skills
 ```
 
 **Pros:**
-- Retains the exact ergonomic feel that people loved about Vercel's `npx skills add`.
+- Retains the exact ergonomic feel of universal one-liner installers.
 
 **Cons:**
 - Philosophically contradicts our effort to remove Node.js as a dependency to fix Windows compatibility. (Though technically, executing a Node script that calls Python would work, it's an unnecessary architectural loop).

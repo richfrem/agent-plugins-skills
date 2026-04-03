@@ -3,27 +3,6 @@
 Validate and auto-repair broken documentation links across your repository using
 file inventory mapping and unique-basename matching.
 
-## Installation
-
-### Local Development
-```bash
-claude --plugin-dir ./plugins/link-checker
-```
-
-### From Marketplace (when published)
-```
-/plugin install link-checker
-```
-
-### Prerequisites
-- **Claude Code** ≥ 1.0.33
-- **Python** ≥ 3.8 (stdlib only — no pip dependencies)
-
-### Verify Installation
-With native plugins enabled, your agent autonomously detects the task and executes the required python scripts.
-
----
-
 ## Usage Guide
 
 The autonomous agent executes a strict **5-Step Pipeline**: **Inventory → Extract → Audit → Fix → Report**
@@ -35,7 +14,10 @@ The autonomous agent executes a strict **5-Step Pipeline**: **Inventory → Extr
 ```
 
 ### Script Location
-Scripts live at `./scripts/` in the plugin root. When installed via `npx skills add` or symlinked into an agent environment, they are available at `scripts/` relative to the skill directory. Always run from the **repository root** you want to scan.
+Scripts live at `./scripts/` in the plugin root. When installed into an agent environment, they are available at `scripts/` relative to the skill directory. Always run from the **repository root** you want to scan.
+
+For installation instructions, consult the authoritative project hub:
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
 ### Direct CLI Usage (without an Agent)
 ```bash

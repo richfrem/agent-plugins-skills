@@ -2,33 +2,6 @@
 
 Composable agent loop architectures for **learning loops**, **agent orchestration**, **red team coordination**, and **parallel swarm execution**. Framework-agnostic — works with any AI agent in any repository, with or without other plugins.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install agent-loops
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/agent-loops
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/agent-loops
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install agent-loops
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/agent-loops
-```
-
 ## Core Skills
 
 | Skill | Pattern | Description |

@@ -3,33 +3,6 @@
 Recursive Language Model factory — distill repository files into semantic summaries
 using Ollama for instant context retrieval.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install rlm-factory
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/rlm-factory
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/rlm-factory
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install rlm-factory
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/rlm-factory
-```
-
 ### Prerequisites
 - **Claude Code** ≥ 1.0.33
 - **Python** ≥ 3.8

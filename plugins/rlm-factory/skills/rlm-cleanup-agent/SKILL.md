@@ -59,10 +59,10 @@ Default: run against all configured profiles. Ask if unsure:
 ### 2. Dry run first -- show what will be removed
 
 ```bash
-python3 .agents/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
+python3 scripts/cleanup_cache.py \
   --profile project --dry-run
 
-python3 .agents/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
+python3 scripts/cleanup_cache.py \
   --profile tools --dry-run
 ```
 
@@ -71,17 +71,17 @@ Report: "Found N stale entries across profiles: [list of paths]"
 ### 3. Apply -- only after confirming with the user
 
 ```bash
-python3 .agents/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
+python3 scripts/cleanup_cache.py \
   --profile project --apply
 
-python3 .agents/skills/rlm-cleanup-agent/scripts/cleanup_cache.py \
+python3 scripts/cleanup_cache.py \
   --profile tools --apply
 ```
 
 ### 4. Verify
 
 ```bash
-python3 .agents/skills/rlm-cleanup-agent/scripts/inventory.py --profile project
+python3 scripts/inventory.py --profile project
 ```
 
 Report the new coverage percentage.
@@ -92,4 +92,4 @@ Report the new coverage percentage.
 - **Never edit `*_cache.json` directly.** Always use `cleanup_cache.py`.
 - **Source Transparency Declaration**: state which profiles were cleaned and how many entries removed.
 
-<!-- DIAGNOSTIC: npx skills add local update test (SKILL.md) -->
+

@@ -59,8 +59,8 @@ summary, and inject it into the ledger via `inject_summary.py`.
 ### 1. Identify missing files
 
 ```bash
-python3 .agents/skills/rlm-distill-agent/scripts/inventory.py --profile project
-python3 .agents/skills/rlm-distill-agent/scripts/inventory.py --profile tools
+python3 scripts/inventory.py --profile project
+python3 scripts/inventory.py --profile tools
 ```
 
 ### 2. For each missing file -- read deeply and write a great summary
@@ -73,7 +73,7 @@ and what are its key components/functions?"* in one dense sentence.
 ### 3. Inject the summary
 
 ```bash
-python3 .agents/skills/rlm-distill-agent/scripts/inject_summary.py \
+python3 scripts/inject_summary.py \
   --profile project \
   --file ../SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."

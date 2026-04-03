@@ -17,7 +17,7 @@ description: >
 
   <example>
   Context: User has a lab repo but needs it configured.
-  user: "Prepare the test repo at ~/Projects/test-my-skill-eval for skill evaluation"
+  user: "Prepare the test repo at <USER_HOME>/Projects/test-my-skill-eval for skill evaluation"
   assistant: [triggers os-eval-lab, installs engine, copies plugin files, generates eval-instructions.md]
   </example>
 
@@ -42,7 +42,7 @@ The template used to generate `eval-instructions.md` lives at:
 Ask each unanswered question. If provided in `$ARGUMENTS`, confirm rather than re-ask.
 
 **Q1 — Lab repo path?**
-The local filesystem path to the lab git repository (e.g. `/Users/.../test-link-checker-eval`).
+The local filesystem path to the lab git repository (e.g. `<USER_HOME>/Projects/test-link-checker-eval`).
 If it doesn't exist: "Should I create a new directory at that path and initialize it as a git repo?"
 
 **Q2 — Target plugin path?**
@@ -112,7 +112,7 @@ The choice is written into `eval-instructions.md` Step 4 so the eval agent knows
 
 **Confirm before proceeding:**
 ```
-Lab repo:          /path/to/lab-repo
+Lab repo:          /path/to/lab-repo (e.g. <USER_HOME>/Projects/...)
 Plugin (master):   plugins/<plugin-name>  →  /abs/path/agent-plugins-skills/plugins/<plugin-name>
 Skill:             <skill-name>
 GitHub remote:     https://github.com/...
@@ -153,11 +153,12 @@ rsync -aL --exclude='__pycache__' \
   <lab-repo>/<plugin-folder-name>/
 ```
 
-### 1d. Install the eval engine and Copilot CLI skill
-```bash
-npx skills add -y <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner
-npx skills add -y <APS_ROOT>/plugins/copilot-cli/skills/copilot-cli-agent
-```
+## Dependencies
+- **os-eval-runner** (agent-agentic-os plugin)
+- **copilot-cli-agent** (copilot-cli plugin)
+
+> [!TIP]
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 > If `-y` crashes: run without it and press Enter to accept defaults.
 > Both skills are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
 
@@ -177,10 +178,9 @@ python3 --version  # must be 3.8+
 
 ## Phase 2: Generate eval-instructions.md
 
-Read the template:
+Read the template from this skill's own assets:
 ```
-<APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/eval-instructions.template.md
-# (symlink → plugins/agent-agentic-os/assets/templates/eval-instructions.template.md)
+assets/templates/eval-instructions.template.md
 ```
 
 Replace all `{{PLACEHOLDERS}}` with intake values:
@@ -189,11 +189,11 @@ Replace all `{{PLACEHOLDERS}}` with intake values:
 |:---|:---|
 | `{{SKILL_DISPLAY_NAME}}` | Human-readable skill name (e.g. "Link Checker") |
 | `{{SKILL_NAME}}` | Skill folder name (e.g. `link-checker-agent`) |
-| `{{PLUGIN_DIR}}` | Plugin folder name (e.g. `link-checker`) |
+| `{{SKILL_PATH}}` | Plugin folder name (e.g. `link-checker`) |
 | `{{MUTATION_TARGET}}` | `SKILL.md` |
 | `{{GITHUB_REPO_URL}}` | The GitHub URL |
 | `{{ROUND_LABEL}}` | The round label |
-| `{{SKILL_EVAL_SOURCE}}` | `<APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner` |
+| `{{SKILL_EVAL_SOURCE}}` | Path to installed `os-eval-runner` (see [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)) |
 | `{{MASTER_PLUGIN_PATH}}` | `<APS_ROOT>/plugins/<plugin-name>` |
 
 Write the rendered output to `<lab-repo>/eval-instructions.md`.

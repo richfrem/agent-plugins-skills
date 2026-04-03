@@ -265,11 +265,12 @@ Companion skills (all required for a complete loop):
 - `os-memory-manager` — session log template, L2/L3 promotion, deduplication
 - `os-learning-loop` — root cause analysis, Full Loop improvement, auto-patching skills
 
-> **Cross-Plugin Boundary** — `os-eval-lab-setup` and `os-eval-runner` are part of the
-> **`agent-agentic-os` plugin** (same plugin as this skill). If not already installed:
-> ```bash
-> npx skills add agent-agentic-os
-> ```
+## Dependencies
+- **os-eval-lab-setup** (agent-agentic-os plugin) — required for experimental scaffolding.
+- **os-eval-runner** (agent-agentic-os plugin) — the canonical evaluation engine.
+
+> [!TIP]
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 
 ---
 

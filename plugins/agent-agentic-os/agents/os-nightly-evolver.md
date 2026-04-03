@@ -10,7 +10,7 @@ description: >
 
   <example>
   Context: User wants to improve a skill overnight without manual supervision.
-  user: "Run overnight evolution on plugins/agent-agentic-os/skills/os-guide for 80 iterations using gemini. No interruptions."
+  user: "Run overnight evolution on a skill for 80 iterations using gemini. No interruptions."
   assistant: "Launching os-nightly-evolver for bounded INNER-flywheel iterations on os-guide with Gemini CLI proposals."
   <commentary>
   User requesting unattended overnight improvement with explicit skill target and iteration count. Trigger agent.
@@ -93,7 +93,7 @@ STATE:
 ### 0.1 Parse Inputs
 
 Extract from the user prompt:
-- `target_skill`: path to the target skill folder (e.g. `plugins/agent-agentic-os/skills/os-guide`)
+- `target_skill`: path to the target skill folder (e.g. `<skill-path>` — relative to repo root or absolute)
 - `max_iterations`: integer from "for N iterations" (default 50 if not specified)
 - `model`: "gemini" or "copilot" (default gemini)
 

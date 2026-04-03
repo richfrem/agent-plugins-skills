@@ -3,65 +3,6 @@
 Manage tool registries with embedded ChromaDB for semantic tool discovery.
 Semantic tool discovery powered by ChromaDB. Integrates directly with the `rlm-factory` plugin for gap-filling and cache generation.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install tool-inventory
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/tool-inventory
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/tool-inventory
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install tool-inventory
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/tool-inventory
-```
-
-### Prerequisites
-- **Claude Code** ≥ 1.0.33
-- **Python** ≥ 3.8
-- **Ollama** (Required for `distill` command):
-    1.  **Install**: `brew install ollama` or download from [ollama.com](https://ollama.com/)
-    2.  **Pull Model**: `ollama pull granite3.2:8b` (or your preferred model)
-    3.  **Run Server**: `ollama serve` (must be running for distillation)
-- **Python Dependencies**: `pip install chromadb requests python-dotenv`
-
-### Configuration
-Environment variables can be used to customize behavior:
-- `OPENAI_API_KEY`: Your OpenAI API key for LLM distillation (if not using Ollama).
-- `OLLAMA_HOST`: The host for your Ollama server (default: `http://localhost:11434`).
-- `OLLAMA_MODEL`: The Ollama model to use for distillation (default: `granite3.2:8b`).
-- `RLM_TOOL_CACHE`: Override the default tool cache path (default: `.agent/learning/rlm_tool_cache.json`).
-- `RLM_SUMMARY_CACHE`: Override the default summary cache path (default: `.agent/learning/rlm_summary_cache.json`).
-
-### Verify Installation
-After loading, `/help` should show:
-```
-/tool-inventory:list      List all registered tools
-/tool-inventory:add       Register a new tool
-/tool-inventory:remove    Remove a tool
-/tool-inventory:search    Search (keyword or semantic)
-/tool-inventory:audit     Check coverage
-/tool-inventory:discover  Find untracked scripts
-/tool-inventory:generate  Render TOOL_INVENTORY.md
-/tool-inventory:sync      Import/migrate cache data
-```
-
----
-
 ## Usage Guide
 
 ### Quick Start

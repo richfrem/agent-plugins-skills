@@ -3,28 +3,6 @@
 Interactive scaffolding system for creating and optimising Claude Code plugins, skills,
 hooks, sub-agents, commands, GitHub Actions, MCP integrations, and agentic workflows.
 
-## Installation
-
-### Option 1: Claude Code Plugin Marketplace (recommended)
-```bash
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install agent-scaffolders
-```
-
-### Option 2: Skills-only (cross-agent — Claude, Gemini, Copilot, Cursor, etc.)
-```bash
-npx skills add richfrem/agent-plugins-skills --path plugins/agent-scaffolders
-```
-
-### Option 3: Local development checkout
-```bash
-npx skills add ./plugins/agent-scaffolders
-# or
-python plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/agent-scaffolders
-```
-
----
-
 ## Skills
 
 | Skill | Trigger | What it builds |
@@ -144,7 +122,7 @@ See `requirements.in` for the dependency source and `requirements.txt` for the l
 ## Architecture Notes
 
 - **ADR-001**: No cross-plugin script execution at runtime — use Agent Skill Delegation instead.
-- **ADR-002**: Scripts shared across multiple skills live at `plugins/agent-scaffolders/scripts/`;
+- **ADR-002**: Scripts shared across multiple skills live at `./scripts/`;
   skill directories contain file-level symlinks pointing up to the plugin root.
 - **ADR-003**: File-level symlinks only — directory-level symlinks are silently dropped by `npx`.
 - **ADR-004**: Plugin is fully self-contained — no runtime dependencies on other plugins.

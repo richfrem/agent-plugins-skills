@@ -44,6 +44,22 @@ $(cat <INPUT>)
 ```
 *Note: Copilot uses `-p` or `--prompt` for non-interactive scripting runs.*
 
+### ⚠️ Large Context: Use Temp File Concatenation
+For prompts > ~10KB, shell `$(cat ...)` expansion can silently fail or produce empty output
+when run in background (`&`). Always concatenate to a temp file first:
+```bash
+# Build combined prompt+content file
+cat prompt.md > /tmp/combined.txt
+echo "" >> /tmp/combined.txt
+echo "---FILE TO FIX---" >> /tmp/combined.txt
+cat target_file.md >> /tmp/combined.txt
+
+# Then run (sequentially, not in background)
+copilot -p "$(cat /tmp/combined.txt)" > /tmp/output.md
+```
+**Known issue**: Running copilot in background (`&`) with large prompts produces empty output.
+Always run sequentially and verify output size with `wc -l /tmp/output.md` before applying.
+
 ## ⚠️ CLI Best Practices
 
 ### 1. Prompt Construction — Embed Source Material When Using `-p`

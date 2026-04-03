@@ -18,33 +18,6 @@ pip install spec-kitty-cli --upgrade
 spec-kitty init . --ai windsurf
 ```
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install spec-kitty
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/spec-kitty-plugin
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/spec-kitty-plugin
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install spec-kitty
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/spec-kitty-plugin
-```
-
 ### 1. Initializing Spec Kitty (First Time)
 Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-init` skill:
 > "Hey Assistant, run spec-kitty-init to set up this repository."

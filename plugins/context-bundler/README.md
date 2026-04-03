@@ -2,31 +2,6 @@
 
 Bundle source files and documentation into single-file Markdown or compressed ZIP context packages for portable AI agent distribution.
 
-## Installation
-
-### Option 1: Claude Code Plugin (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install context-bundler
-```
-
-### Option 2: Standalone Skill via NPX (For Agentic OS / Local Agents)
-When using `npx skills add`, the system will download a self-contained hard copy of the skill folder directly into your local project's `.agents/skills/context-bundler/` directory.
-
-```bash
-# From GitHub
-npx skills add richfrem/agent-plugins-skills --path plugins/context-bundler/skills/context-bundler
-
-# From Local Development Checkout
-npx skills add ./plugins/context-bundler/skills/context-bundler
-```
-
-### Prerequisites
-- **Claude Code** ≥ 1.0.33 (if using as a full plugin)
-- **Python** ≥ 3.8 (for local script execution)
-
----
-
 ## Usage Guide
 
 The Context Bundler operates purely through autonomous agent skills.
@@ -71,7 +46,7 @@ The agent will:
 ---
 
 ### Architecture & Portability
-To ensure maximum portability when installed as a standalone skill via `npx` (which creates a hard copy in the `.agents/` directory), the required execution scripts and assets are symmetrically linked or copied directly inside the skill folder itself.
+To ensure maximum portability when installed as a standalone skill (which creates a hard copy in the `.agents/` directory), the required execution scripts and assets are symmetrically linked or copied directly inside the skill folder itself.
 
 ```text
 context-bundler/
@@ -80,7 +55,7 @@ context-bundler/
 ├── scripts/                     # Original plugin-level scripts
 ├── assets/                      # Original plugin-level assets
 └── skills/
-    └── context-bundler/         # 🎯 Target for `npx skills add`
+    └── context-bundler/         # 🎯 Installation target
         ├── SKILL.md             # The unified bundling protocol
         ├── evals/
         │   └── evals.json

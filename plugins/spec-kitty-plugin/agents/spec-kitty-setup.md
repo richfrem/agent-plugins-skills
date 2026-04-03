@@ -57,12 +57,12 @@ Execute these phases in order based on the user's needs. Do not skip phases unle
   ```
 - *This automatically converts local workflows into Open Standard skills inside the plugin.*
 
-### Phase 4: Deploy to Agents (Agent Handoff)
-- Finally, ask the user if they would like to use the new `npx skills add` open standard to deploy these natively formatted skills to their active AI environments.
-  ```bash
-  # To install just the spec-kitty plugin updates (Press 'a' then 'Enter' if prompted to select skills):
-  npx skills add ./plugins/spec-kitty-plugin --force
-  ```
+### Phase 4: Deploy to Agents (Centralized)
+- After synchronization, consult the central installation guide for the authoritative deployment logic:
+
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
+
+- *This handles the native deployment of your synchronized skills to active AI environments.*
 
 ## Operating Principles
 - Do not guess or hallucinate parameters; explicitly query the filesystem or use tools.

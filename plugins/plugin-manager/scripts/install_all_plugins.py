@@ -36,7 +36,7 @@ Script Dependencies:
 Consumed by:
     - None (Standalone script)
 Related:
-    - scripts/plugin_installer.py
+    - scripts/bridge_installer.py
 """
 import os
 import sys
@@ -62,7 +62,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = Path.cwd()
 PLUGINS_ROOT = PROJECT_ROOT / "plugins"
 
-INSTALLER_SCRIPT = SCRIPT_DIR / "plugin_installer.py"
+INSTALLER_SCRIPT = SCRIPT_DIR / "bridge_installer.py"
 
 def _compute_folder_hash(folder: Path) -> str:
     """Matches npx skills computeSkillFolderHash simple SHA-256 over relative files."""
@@ -164,16 +164,14 @@ def main() -> None:
         sys.exit(1)
 
     tag = " [DRY RUN]" if args.dry_run else ""
-    print(f"\n{'='*80}")
     print(f"Full-stack installer{tag}: deploys skills + commands + rules + hooks.")
-    print("npx skills installs SKILLS ONLY. Use this script for complete deployment.")
     print(f"{'='*80}\n")
 
     if not INSTALLER_SCRIPT.exists():
         print(f"❌ Error: Installer script not found at {INSTALLER_SCRIPT}")
         sys.exit(1)
 
-    print(f"🚀 Starting Local Batch Installation mimicking `npx skills add ./plugins/`...")
+    print(f"🚀 Starting Local Batch Installation...")
 
     plugins_processed = 0
     plugins_failed = 0

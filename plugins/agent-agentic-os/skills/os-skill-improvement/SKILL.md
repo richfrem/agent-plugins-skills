@@ -72,7 +72,7 @@ The RED scenario is the evidence that the skill is needed. Without it:
 
 Before proposing any change in an active improvement loop, run:
 ```bash
-python3 plugins/agent-agentic-os/scripts/eval_runner.py \
+python3 ./scripts/eval_runner.py \
     --skill <experiment-dir> \
     --snapshot
 ```
@@ -208,7 +208,7 @@ One-paragraph description of what the skill does and why.
 After writing the SKILL.md, run the eval gate. **Do not apply the skill without a KEEP verdict.**
 
 ```bash
-python3 plugins/agent-agentic-os/scripts/eval_runner.py \
+python3 ./scripts/eval_runner.py \
   --skill path/to/new/SKILL.md
 ```
 
@@ -298,17 +298,12 @@ improve what it cannot measure.
 
 ## Cross-Plugin Relationship
 
-> ⚠️ **Cross-Plugin Boundary** — `os-skill-improvement` is part of the **`agent-agentic-os`** plugin.
-> If you arrived here from `create-skill` (agent-scaffolders plugin), that skill handles
-> *filesystem scaffolding*. This skill handles *content quality and routing accuracy*.
-> They are complementary — scaffolding first, then authoring quality gate.
->
-> **`create-skill`** is in a separate plugin and is NOT a dependency of this skill.
-> To use both together, install both plugins:
-> ```bash
-> npx skills add agent-scaffolders    # scaffolding executor
-> npx skills add agent-agentic-os     # TDD methodology + eval runner
-> ```
+## Dependencies
+- **agent-scaffolders** (plugin) — required for `create-skill` (filesystem scaffolding).
+- **os-eval-runner** (agent-agentic-os plugin) — required for RED-GREEN-REFACTOR scoring.
+
+> [!TIP]
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 
 **How they work together:**
 1. `create-skill` (agent-scaffolders) — runs the discovery interview, creates the directory, writes starter files

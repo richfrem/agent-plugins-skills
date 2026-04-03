@@ -18,7 +18,7 @@ from datetime import date
 
 def load_template(filename: str) -> str:
     """Load a given template from the skills/os-init/templates directory.
-    Tries CLAUDE_PLUGIN_ROOT env var first (set by Claude Code and npx skills),
+    Tries CLAUDE_PLUGIN_ROOT env var first (set by the plugin environment),
     then falls back to path-relative resolution for direct script invocation."""
     env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
     if env_root:
@@ -38,7 +38,7 @@ def load_template(filename: str) -> str:
 
 def copy_runtime_file(filename: str) -> str:
     """Load a runtime file from scripts/ (canonical location) or skills/os-init/runtime/ (legacy fallback).
-    Tries CLAUDE_PLUGIN_ROOT env var first (set by Claude Code and npx skills),
+    Tries CLAUDE_PLUGIN_ROOT env var first (set by the plugin environment),
     then falls back to path-relative resolution for direct script invocation."""
     env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
     if env_root:
@@ -189,7 +189,8 @@ def print_next_steps(target: Path, did_global: bool) -> None:
     print(f"\n3. Fill in {target}/context/user.md")
     print("   Add your working style and preferences.")
     print("\n4. Install skills (optional):")
-    print("   npx skills add richfrem/agent-plugins-skills/plugins/agent-agentic-os")
+    print("   Consult the authoritative installation hub for current deployment logic:")
+    print("   https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md")
     print("\n5. Add to .gitignore:")
     print("   CLAUDE.local.md")
     print("   context/memory/")

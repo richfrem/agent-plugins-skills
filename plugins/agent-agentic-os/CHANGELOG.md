@@ -37,9 +37,7 @@ All notable changes to `agent-agentic-os` are documented here.
 - **post_run_metrics.py**: Added 2048-char payload truncation guard on `--summary` argument.
 
 ### Bug Fixes
-- **init_agentic_os.py**: `context/memory.md` removed from `.gitignore` guidance; moved to "Keep in git" section (it is curated long-term memory and must be committed).
-- **init_agentic_os.py**: `--global` flag now prints a note reminding users to manually `@import` or wire `context/kernel.py` into `~/.claude/CLAUDE.md`.
-- **init_agentic_os.py**: Both `load_template()` and `copy_runtime_file()` now prefer `CLAUDE_PLUGIN_ROOT` env var (set by Claude Code and `npx skills add`) before falling back to `Path(__file__)` resolution. Fixes path breakage on Windows and symlinked npx installs.
+- **init_agentic_os.py**: Both `load_template()` and `copy_runtime_file()` now prefer `CLAUDE_PLUGIN_ROOT` env var (set by the plugin environment) before falling back to `Path(__file__)` resolution. Fixes path breakage on Windows and symlinked legacy installs.
 - **hooks/hooks.json**: Fixed from flat format to Anthropic-spec nested format (`hooks -> EventName -> [{matcher, hooks: [{type, command}]}]`).
 - **os-init/templates/HOOKS_JSON.json**: Was empty `{"hooks": []}`. Now ships with `SessionStart`, `PostToolUse`, and `Stop` hooks so fresh installs get auto-memory wiring.
 - **agents/os-health-check.md**: Removed `Write` from tool list; health check is read-only.

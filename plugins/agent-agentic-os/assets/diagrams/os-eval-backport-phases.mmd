@@ -3,24 +3,24 @@ flowchart TD
     START([os-eval-backport triggered\nvia SKILL.md routing]) --> P0
 
     subgraph P0["Phase 0 — Intake"]
-        P0A[Q1: Lab repo path\ne.g. ~/Projects/test-&lt;plugin&gt;-eval] --> P0B
-        P0B[Q2: Master plugin path\ne.g. plugins/agent-execution-disciplines] --> P0C
+        P0A[Q1: Lab repo path\ne.g. ~/Projects/test-<plugin>-eval] --> P0B
+        P0B[Q2: Master plugin path\ne.g. <Master Repository>/<plugin>] --> P0C
         P0C["Q3: Baseline commit SHA\ngit log --oneline in lab repo\nlook for 'baseline:' commit"] --> P0D
-        P0D["Confirm block:\nLab repo: /path/to/test-repo\nMaster plugin: plugins/&lt;plugin&gt;\nBaseline commit: &lt;sha&gt;"]
+        P0D["Confirm block:\nLab repo: /path/to/test-repo\nMaster plugin: <Master Repository>/<plugin>\nBaseline commit: <sha>"]
     end
 
     P0D --> P1
 
     subgraph P1["Phase 1 — Read Run Log & Self-Assessment"]
-        P1A["ls &lt;lab-repo&gt;/temp/logs/\nls &lt;lab-repo&gt;/temp/retrospectives/\ne.g. survey_YYYYMMDD_HHMM_&lt;skill&gt;.md"] --> P1B
+        P1A["ls <lab-repo>/temp/logs/\nls <lab-repo>/temp/retrospectives/\ne.g. survey_YYYYMMDD_HHMM_<skill>.md"] --> P1B
         P1B["Note: final score vs baseline\nKEEP vs DISCARD count\nerrors / workarounds\nagent's next-step recommendation"]
     end
 
     P1B --> P2
 
     subgraph P2["Phase 2 — Get Full Diff"]
-        P2A["git log --oneline &lt;baseline&gt;..HEAD\ngit diff &lt;baseline&gt; HEAD --name-only\ngit diff &lt;baseline&gt; HEAD"] --> P2B
-        P2B["Key files to watch:\nskills/&lt;skill&gt;/SKILL.md\nskills/&lt;skill&gt;/evals/evals.json\nreferences/copilot_proposer_prompt.md\n.agents/skills/os-eval-runner/ (if patched)\nscripts/*.py"] --> P2C
+        P2A["git log --oneline <baseline>..HEAD\ngit diff <baseline> HEAD --name-only\ngit diff <baseline> HEAD"] --> P2B
+        P2B["Key files to watch:\nskills/<skill>/SKILL.md\nskills/<skill>/evals/evals.json\nreferences/copilot_proposer_prompt.md\n.agents/skills/os-eval-runner/ (if patched)\nscripts/*.py"] --> P2C
         P2C[Annotate each: what changed / why from log / generalizes to master?]
     end
 
@@ -34,10 +34,10 @@ flowchart TD
     end
 
     subgraph P4["Phase 4 — Apply Approved Changes"]
-        P4A["1. Read current master file\n   plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md"] --> P4B
+        P4A["1. Read current master file\n   <Master Repository>/<plugin>/skills/<skill>/SKILL.md"] --> P4B
         P4B["2. Targeted edits only\n   never paste full file contents\n   master may have diverged from lab copy"] --> P4C
         P4C[3. Verify result] --> P4D
-        P4D["4. git add + commit\n   backport(&lt;plugin&gt;): &lt;summary&gt;"]
+        P4D["4. git add + commit\n   backport(<plugin>): <summary>"]
     end
 
     P4 --> P5
@@ -75,7 +75,7 @@ flowchart TD
         P6D{"Non-obvious filter:\nwould future agent get burned\nwithout this?"}
         P6D -- Passes filter --> P6E
         P6D -- "Routine / self-evident\n/ already in memory" --> P6F
-        P6E["Write memory/feedback_eval_&lt;skill&gt;_&lt;topic&gt;.md\nUpdate MEMORY.md index\nTypes: scoring footgun / snag that blocked /\nnon-obvious architecture / reusable ADAPT pattern"]
+        P6E["Write memory/feedback_eval_<skill>_<topic>.md\nUpdate MEMORY.md index\nTypes: scoring footgun / snag that blocked /\nnon-obvious architecture / reusable ADAPT pattern"]
         P6E --> P6G
         P6F[Skip — no memory entry needed] --> P6I
         P6G{"OS present?"}
@@ -86,10 +86,10 @@ flowchart TD
     end
 
     subgraph MAPPING["Master Source Mapping Reference"]
-        MAP1["Lab: &lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md\n→ Master: plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md"]
-        MAP2["Lab: &lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json\n→ Master: plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json"]
-        MAP3["Lab: .agents/skills/os-eval-runner/\n→ Master: plugins/agent-agentic-os/skills/os-eval-runner/"]
-        MAP4["Lab: references/copilot_proposer_prompt.md\n→ Contribute to: plugins/copilot-cli/skills/copilot-cli-agent/references/"]
+        MAP1["Lab: <plugin>/skills/<skill>/SKILL.md\n→ Master: <Master Repository>/<plugin>/skills/<skill>/SKILL.md"]
+        MAP2["Lab: <plugin>/skills/<skill>/evals/evals.json\n→ Master: <Master Repository>/<plugin>/skills/<skill>/evals/evals.json"]
+        MAP3["Lab: .agents/skills/os-eval-runner/\n→ Master: <Master Repository>/agent-agentic-os/skills/os-eval-runner/"]
+        MAP4["Lab: references/copilot_proposer_prompt.md\n→ Contribute to: <Master Repository>/copilot-cli/skills/copilot-cli-agent/references/"]
     end
 
     style P0 fill:#e8f4f8,stroke:#4a9eca
