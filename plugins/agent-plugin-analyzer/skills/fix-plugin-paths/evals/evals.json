@@ -1,0 +1,50 @@
+[
+  {
+    "prompt": "Fix the plugin path references in this SKILL.md",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit all plugin files for broken path references",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Standardize path references after installing this skill",
+    "should_trigger": true
+  },
+  {
+    "prompt": "There are hardcoded plugins/ paths in my skill files — fix them",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Prepare these plugin files for distribution via npx skills add",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I see /Users/richardfremmerlid in my SKILL.md — remove the machine path",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Fix cross-plugin path dependencies in agent-agentic-os",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a portability audit on all SKILL.md files in this repo",
+    "should_trigger": true
+  },
+  {
+    "prompt": "There are broken symlinks in my installed skills folder",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new plugin skill for link checking",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Help me format this markdown file",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install plugins from the repository",
+    "should_trigger": false
+  }
+]
