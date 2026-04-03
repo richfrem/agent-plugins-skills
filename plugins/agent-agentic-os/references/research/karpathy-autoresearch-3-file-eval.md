@@ -175,9 +175,9 @@ Without locking `evaluate.py`, an agent would inevitably:
 The lock on the evaluator is what makes the metric trustworthy. The agent's ONLY lever is the mutation target.
 
 ### Directory Layout
-
+s
 ```
-plugins/<plugin>/skills/<skill>/
+<SKILL_PATH>/
   SKILL.md                       <- mutation target (agent edits this each loop)
   evals/evals.json               <- locked: golden test cases
   scripts/eval_runner.py         <- locked: the scoring engine
@@ -222,7 +222,7 @@ The autoresearch loop only touches the first part — the trigger language. This
 ### Every File in `os-eval-runner` and What It Does
 
 ```
-plugins/agent-agentic-os/skills/os-eval-runner/
+<SKILL_PATH>/
 ```
 
 #### `SKILL.md`
@@ -307,8 +307,8 @@ The loop agent NEVER modifies this file. It:
 
 Run from the skill root:
 ```bash
-python autoresearch/evaluate.py --desc "what you changed"
-python autoresearch/evaluate.py --baseline   # record a new baseline
+python ./autoresearch/evaluate.py --desc "what you changed"
+python ./autoresearch/evaluate.py --baseline   # record a new baseline
 ```
 
 ---
@@ -347,7 +347,7 @@ Agent edits SKILL.md
         v
 python autoresearch/evaluate.py --desc "my change"
         |
-        +--[call 1]--> scripts/eval_runner.py --skill SKILL.md --json
+        +--[call 1]--> ./scripts/eval_runner.py --skill SKILL.md --json
         |                   |
         |                   +--> reads SKILL.md frontmatter keywords
         |                   +--> matches against evals/evals.json prompts
@@ -357,7 +357,7 @@ python autoresearch/evaluate.py --desc "my change"
         +--[reads]--> autoresearch/results.tsv (first BASELINE row)
         |                   baseline_score=0.8444, baseline_f1=0.8333
         |
-        +--[call 2]--> scripts/eval_runner.py --skill SKILL.md --desc "_f1_probe"
+        +--[call 2]--> ./scripts/eval_runner.py --skill SKILL.md --desc "_f1_probe"
         |                   |
         |                   +--> writes another row to evals/results.tsv  <-- side effect
         |                   +--> (output captured, not printed)

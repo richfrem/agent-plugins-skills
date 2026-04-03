@@ -2,41 +2,6 @@
 
 Convert Excel files (entire workbooks or specific worksheets/tables) into CSV format natively via agent execution. Upgraded to V2 with L5 Delegated Constraint Verification.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install excel-to-csv
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/excel-to-csv
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/excel-to-csv
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install excel-to-csv
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/excel-to-csv
-```
-
-### Dependencies
-This plugin requires external Python packages (`pandas`, `openpyxl`). To install them, use the standard dependency management workflow:
-```bash
-cd plugins/excel-to-csv
-pip-compile requirements.in
-pip install -r requirements.txt
-```
-
 ## Structure
 ```
 excel-to-csv/

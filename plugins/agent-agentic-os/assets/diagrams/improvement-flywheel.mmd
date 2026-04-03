@@ -36,7 +36,7 @@ flowchart TD
     SkipImprove --> Commit
     Commit -->|"Next session"| Work
 
-    subgraph CrossPlugin ["Cross-Plugin Dependencies (npx skills add agent-agentic-os)"]
+    subgraph CrossPlugin ["Cross-Plugin Dependencies (agent-agentic-os plugin)"]
         direction LR
         CP1["os-eval-runner<br>eval gate scorer"]:::evalNode
         CP2["os-eval-backport<br>lab → master handoff"]:::evalNode

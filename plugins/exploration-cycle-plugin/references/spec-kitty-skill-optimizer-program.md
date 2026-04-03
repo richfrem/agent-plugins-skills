@@ -235,16 +235,15 @@ cp .agents/agents/spec-kitty-agent.md \
    /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/agents/spec-kitty-agent.md
 
 cp .agents/skills/spec-kitty-workflow/SKILL.md \
-   /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md
+   /Users/richardfremmerlid/Projects/agent-plugins-skills/.agents/skills/spec-kitty-workflow/SKILL.md
 
 cp .agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd \
-   /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd
+   /Users/richardfremmerlid/Projects/agent-plugins-skills/.agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd
 
 cp .agents/skills/spec-kitty-agent/SKILL.md \
-   /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/skills/spec-kitty-agent/SKILL.md
+   /Users/richardfremmerlid/Projects/agent-plugins-skills/.agents/skills/spec-kitty-agent/SKILL.md
 ```
 
-Then redeploy:
-```bash
-npx skills add ./plugins/spec-kitty-plugin --force
-```
+Then redeploy by following the authoritative installation hub for current deployment logic:
+
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)

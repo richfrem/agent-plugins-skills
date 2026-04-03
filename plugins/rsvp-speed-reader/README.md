@@ -2,20 +2,6 @@
 
 A plugin and skill for AI-assisted **Rapid Serial Visual Presentation (RSVP)** speed reading.
 
-## Installation
-### Option 1: Skills Only (End Users)
-```bash
-npx skills add ./plugins/rsvp-speed-reader
-```
-This installs the skills from this plugin.
-
-### Option 2: Full Deployment (Skills + Commands + Agents)
-For complete access to all components, use the plugin-installer skill:
-```bash
-# Use the plugin-installer skill to deploy all components
-# python ./plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/rsvp-speed-reader
-```
-
 ## What is RSVP Speed Reading?
 
 RSVP is a speed reading method popularized by tools like [Spritz](https://spritzinc.com/). Instead of scanning across a page, words are **flashed one at a time in the same fixed position**. One letter in each word is highlighted (typically in red) as a visual anchor called the **Optimal Recognition Point (ORP)** — the character your eye naturally gravitates to for fastest recognition.

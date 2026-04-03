@@ -31,11 +31,10 @@ Before running any loops, ensure the environment is clean and correctly linked. 
    rm -rf .agent .agents .gemini .claude
    ```
 
-4. **Install Skill via Full Path**:
-   Use the absolute path to this skill source to ensure you get the latest fixes:
-   ```bash
-   npx skills add -y <YOUR CLONED REPO PATH>/plugins/autoresearch-improvement/skills/os-eval-runner
-   ```
+4. **Install Skill via GitHub Hub**:
+   Consult the authoritative installation hub for current deployment commands:
+
+   > ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and respond to prompts manually. You will see a list of agent environments; press **Enter** to accept defaults.
 
 5. **Final Seed & Push**:
@@ -56,7 +55,7 @@ Before running any loops, ensure the environment is clean and correctly linked. 
 ## 1. Scaffold the Experiment (One-Time)
 
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/init_autoresearch.py \
+python3 scripts/init_autoresearch.py \
     --experiment-dir .agents/skills/your-target-skill \
     --mutation-target SKILL.md
 ```
@@ -81,7 +80,7 @@ Replace every `REPLACE` placeholder with real test prompts and correct `should_t
 ## 3. Establish the Baseline
 
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+python3 scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --baseline \
     --desc "initial baseline"
@@ -99,7 +98,7 @@ Your main agent (or os-learning-loop) repeatedly runs:
 
 ```bash
 # Example single iteration
-python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+python3 scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --desc "improved trigger phrasing for edge case X"
 ```

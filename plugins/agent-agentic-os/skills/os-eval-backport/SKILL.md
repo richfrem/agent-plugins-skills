@@ -40,7 +40,7 @@ symlinks — you edit only the canonical source.
 ## Phase 0: Intake
 
 **Q1 — Lab repo path?**
-The local path to the test repo where the eval ran (e.g. `/Users/.../test-link-checker-eval`).
+The local path to the test repo where the eval ran (e.g. `<USER_HOME>/Projects/test-link-checker-eval`).
 
 **Q2 — Master plugin path?**
 The canonical plugin path in `agent-plugins-skills` (e.g. `plugins/link-checker`).
@@ -117,7 +117,7 @@ For each ACCEPT or ADAPT that the user approves:
 4. Verify the result
 
 ```bash
-cd /path/to/agent-plugins-skills
+cd <APS_ROOT>
 git status
 git add plugins/<plugin>/...
 git commit -m "backport(<plugin>): <summary of accepted changes>"
@@ -245,7 +245,7 @@ If the OS is initialized and the non-obvious filter passed, also ask `os-memory-
 | `<plugin>/skills/<skill>/evals/evals.json` | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
 | `<plugin>/skills/<skill>/references/*.md` | `plugins/<plugin>/skills/<skill>/references/*.md` |
 | `<plugin>/scripts/*.py` | `plugins/<plugin>/scripts/*.py` |
-| `.agents/skills/os-eval-runner/` (if patched) | `plugins/agent-agentic-os/skills/os-eval-runner/` |
+| `.agents/skills/os-eval-runner/` (if patched) | `<SKILL_PATH>` |
 
 > The master uses hub-and-spoke symlinks. Only the canonical source files listed above need
 > updating — deployed environments sync from master automatically.

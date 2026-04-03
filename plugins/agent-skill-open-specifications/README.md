@@ -1,32 +1,5 @@
 # Agent Skill Open Specifications Meta-Plugin
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install agent-skill-open-specifications
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/agent-skill-open-specifications
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/agent-skill-open-specifications
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install agent-skill-open-specifications
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/agent-skill-open-specifications
-```
-
 ## Purpose
 This plugin acts as the central **Meta-Protocol** for the repository. It houses the authoritative research and the execution instructions necessary for agents to build, audit, and understand the extensible agent ecosystem.
 

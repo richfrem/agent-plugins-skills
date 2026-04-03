@@ -104,19 +104,11 @@ Create the confirmed directory structure. Standards enforced by `acceptance-crit
 
 ## Phase 4: Quality Gate Handoff
 
-> ⚠️ **Cross-Plugin Boundary** — This step invokes `os-skill-improvement` from the
-> **`agent-agentic-os` plugin**, which is a separate plugin not bundled with `agent-scaffolders`.
->
-> **To install:**
-> ```bash
-> npx skills add agent-agentic-os
-> ```
-> Or install just the authoring skill:
-> ```bash
-> npx skills add os-skill-improvement
-> ```
-> If `os-skill-improvement` is not installed, the scaffold completes but the TDD quality
-> gate is skipped — the skill will be structurally valid but routing accuracy is unverified.
+## Dependencies
+- **os-skill-improvement** (agent-agentic-os plugin)
+
+> [!TIP]
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 
 **If `os-skill-improvement` is available**, hand off immediately after scaffolding:
 
@@ -128,9 +120,7 @@ Run the RED-GREEN-REFACTOR cycle to verify routing accuracy before shipping.
 
 **If not available**, advise the user:
 ```
-Scaffold complete. To verify routing accuracy and trigger description quality,
-install os-skill-improvement (agent-agentic-os plugin) and run it against this skill:
-  npx skills add agent-agentic-os
+Scaffold complete. To verify routing accuracy and trigger description quality, ensure **os-skill-improvement** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
 ```
 
 ---
@@ -163,7 +153,5 @@ install os-skill-improvement (agent-agentic-os plugin) and run it against this s
 
 - [`acceptance-criteria.md`](references/acceptance-criteria.md) — structural pass/fail criteria
 - [`fallback-tree.md`](fallback-tree.md) — error handling procedures
-- **`os-skill-improvement`** *(agent-agentic-os plugin — cross-plugin dependency)*: TDD methodology,
-  RED scenario protocol, eval gate, routing anti-patterns. Install: `npx skills add agent-agentic-os`
-- **`os-eval-runner`** *(agent-agentic-os plugin)*: autoresearch eval loop for longitudinal
-  skill optimization. Install: `npx skills add agent-agentic-os`
+- **`os-skill-improvement`** *(agent-agentic-os plugin)*: TDD methodology, RED scenario protocol, eval gate.
+- **`os-eval-runner`** *(agent-agentic-os plugin)*: autoresearch eval loop for skill optimization.

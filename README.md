@@ -24,94 +24,11 @@ Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplin
 ## Installation
 
 > [!IMPORTANT]
-> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty. Run the installer below to deploy all plugins before using any skills or agents.
-
-### Initial Installation (Bootstrapping)
-
-These commands are for consumers who want to add plugins seamlessly *without* cloning the repo.
-
-#### Option 1: `uvx` — Modern Python Standard (Recommended)
-
-If you have [uv](https://docs.astral.sh/uv/) installed (the modern Python package manager), you get instantaneous, isolated installations exactly like `npx`, but natively cross-platform without Node.js.
-
-```bash
-# Interactive picker
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-
-# Install everything non-interactively (no prompts)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
-
-# Preview what will be installed without writing any files
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
-```
-
-#### Option 2: Fallback Bootstrap (Zero Tooling Assumptions)
-
-If you don't use `uv`, you can install purely using standard Python tooling without cloning the repo.
-
-**Mac / Linux:**
-```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
-```
-**Windows (PowerShell):**
-```powershell
-Invoke-RestMethod https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
-```
-
-### Subsequent Installations
-
-Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same command to add new plugins later. There is no local state to manage outside of your `.agents/` folder.
-
-#### Option 3: Full Local Clone (For Developers)
-
-If you want to maintain a Git repo for debugging instead of using the remote bootstrappers:
-
-```bash
-git clone https://github.com/richfrem/agent-plugins-skills.git
-cd agent-plugins-skills
-python plugins/plugin-manager/scripts/plugin_add.py
-```
-
----
-
-### Alternative: Claude Code Native Marketplace (Claude Code only)
-
-If you are using Claude Code (2.1.81+), you can add this repository as a native marketplace and install plugins without leaving the terminal:
-
-```text
-# Add this repository to your known marketplaces
-/plugin marketplace add richfrem/agent-plugins-skills
-
-# Open the interactive TUI to browse, discover, and install plugins
-/plugin
-
-# Or install a specific plugin directly
-/plugin install <plugin-name>
-```
-
-### Alternative: npx skills CLI (Mac / Linux, skills only)
-
-> [!NOTE]
-> **`npx skills add` installs skills only** — no commands, agents, or hooks. It also only works correctly on Mac/Linux (Git symlinks check out as plain-text files on Windows). For full plugin deployment on any platform, use `plugin_add.py` above.
-
-```bash
-# Install all skills (skills only — no agents, commands, or hooks)
-npx skills add richfrem/agent-plugins-skills
-
-# Update all installed skills
-npx skills update
-```
-
-Browse all plugins: **[skills.sh/richfrem/agent-plugins-skills](https://skills.sh/richfrem/agent-plugins-skills)**
-
-### Installer Comparison
-
-| Method | Platform | Full Plugin | GitHub source | Notes |
-|---|---|---|---|---|
-| `uvx` ★ | **All** (Win/Mac/Linux) | ✅ skills + agents + commands + hooks | ✅ `owner/repo` | Recommended default |
-| `bootstrap.py` | **All** (Win/Mac/Linux) | ✅ full | ✅ `owner/repo` | Zero-dependency fallback |
-| `/plugin` marketplace | Claude Code only | ✅ full | ✅ | Native Claude TUI |
-| `npx skills add` | Mac/Linux only | ❌ skills only | ✅ | No Python required |
+> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default.
+>
+> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Claude Marketplace**) are now consolidated in a single authoritative guide:
+>
+> ### 👉 [Go to INSTALL.md](./INSTALL.md)
 
 ---
 

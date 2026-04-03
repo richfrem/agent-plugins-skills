@@ -2,11 +2,6 @@
 
 Lightweight kanban task board — directory-backed with zero dependencies. Tasks are manually tracked as human-readable Markdown files natively mapped into statuses via folders.
 
-## Installation
-```bash
-claude --plugin-dir ./plugins/task-manager
-```
-
 ## Quick Start
 The Task Manager operates autonomously based on conversational intent, using simple file operations to manage state.
 

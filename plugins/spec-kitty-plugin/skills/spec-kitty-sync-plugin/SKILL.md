@@ -6,7 +6,10 @@ allowed-tools: Bash, Read, Write
 
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+This skill requires **Python 3.8+** and standard library only. No external dependencies.
+
+> [!TIP]
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 
 **To install this skill's dependencies:**
 ```bash
@@ -157,17 +160,15 @@ If **ANY** protected file is missing or `ls` returns an error, trigger the Escal
 > 1. **Only spec-kitty-plugin** (just the updated spec-kitty commands)
 > 2. **All plugins** (full ecosystem sync across all 80+ plugins)
 
-**If spec-kitty-plugin only:**
-Invoke the `npx skills` installer targeted specifically at `plugins/spec-kitty-plugin`:
-```bash
-npx skills add ./plugins/spec-kitty-plugin --force
-```
+### Step 4: Deploy to Agent Environments (Universal)
 
-**If all plugins:**
-Invoke the `npx skills` installer across the entire `plugins/` directory:
-```bash
-npx skills add ./plugins/ --force
-```
+After performing the sync, you must deploy the updated plugin to your agent environment.
+
+> [!IMPORTANT]
+> **Zero Inline Commands**: See the central installation guide for the authoritative deployment logic:
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
+
+This handles both forced re-installation and full ecosystem synchronization across all 80+ plugins.
 
 ### Step 5: Confirmation
 

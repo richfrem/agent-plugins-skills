@@ -171,26 +171,24 @@ See `references/` for detailed usage guide.
 
 ## Installation
 
-### Option 1: Install Single Skill (npx skills add)
+### Option 1: Install Single Skill (GitHub Hub)
 
-For end users who want just this skill:
+For end users who want just this skill, consult the authoritative installation hub for current deployment logic:
 
-```bash
-npx skills add agent-plugin-analyzer/path-reference-auditor
-```
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
 Then run from the skill directory:
 ```bash
 python3 scripts/path_reference_auditor.py --project . --phase scan
 ```
 
-### Option 2: Install Full Plugin (plugin-installer)
+### Option 2: Install Full Plugin (Bridge Installer)
 
 For developers who want all agent-plugin-analyzer skills + commands + hooks:
 
 ```bash
 # From project root, use the bridge installer
-python3 ./scripts/plugin_installer.py plugins/agent-plugin-analyzer
+python3 ./scripts/bridge_installer.py plugins/agent-plugin-analyzer
 
 # Or manually
 cp -r plugins/agent-plugin-analyzer /path/to/target/plugins/

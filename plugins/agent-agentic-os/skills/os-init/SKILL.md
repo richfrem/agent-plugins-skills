@@ -278,17 +278,12 @@ Standard entries (from the runtime template):
 When installing a plugin that fires hook events, check the plugin's `hooks/` directory for the `--agent` value passed to `emit_event` and add it to the list. Missing entries cause silent event rejection (or, on unpatched kernels, fail-open — a security risk).
 
 ### Priority 5: Install skills (optional)
-If the user wants additional skills for this environment:
-```bash
-# Install the agentic-os plugin skills
-npx skills add richfrem/agent-plugins-skills/plugins/agent-agentic-os
+If more specialized skills are required for this environment, see the central installation guide:
 
-# Or from local checkout
-npx skills add ./plugins/agent-agentic-os --force
-```
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
 > [!TIP]
-> **Avoid File Duplication**: When installing local/development plugins, ensure they are linked as **Symbolic Links** rather than deep copied (verify if `npx skills add` does this, or use `ln -s`). This guarantees that continuous improvements made during your session update the primary source file instantly.
+> **Avoid File Duplication**: When installing local/development plugins, ensure they are linked as **Symbolic Links** rather than deep copied (verify if the skill installer does this, or use `ln -s`).
 
 ---
 

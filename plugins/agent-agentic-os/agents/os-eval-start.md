@@ -57,7 +57,7 @@ ls <skill-path>/evals/results.tsv 2>/dev/null && echo "baseline exists" || echo 
 
 ### 0.4 Run snapshot if evals exist
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/eval_runner.py \
+python3 scripts/eval_runner.py \
   --skill <skill-path> --snapshot 2>/dev/null
 ```
 Read the fp/fn rates from output to recommend a metric. If evals are missing, skip.
@@ -95,13 +95,8 @@ git worktree add ../eval-<skill-name>-worktree main
 cd ../eval-<skill-name>-worktree
 ```
 
-### 2A.2 Install eval engine and Copilot CLI if not present
-```bash
-ls .agents/skills/os-eval-runner/scripts/evaluate.py 2>/dev/null || \
-  npx skills add -y $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-runner
-ls .agents/skills/copilot-cli-agent/SKILL.md 2>/dev/null || \
-  npx skills add -y $APS_ROOT/plugins/copilot-cli/skills/copilot-cli-agent
-```
+### 2A.2 Requirements
+This protocol requires **os-eval-runner** and **copilot-cli-agent** to be installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions.
 
 ### 2A.3 Scaffold evals if missing
 If `evals.json` is missing, draft eval cases from the skill's description and `<example>` blocks:
@@ -117,7 +112,7 @@ Wait for approval or edits. Then write to `<skill-path>/evals/evals.json`.
 
 ### 2A.4 Establish baseline
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+python3 scripts/evaluate.py \
   --skill <skill-path> --baseline --desc "initial baseline"
 git add <skill-path>/evals/ && git commit -m "baseline: <skill-name> eval start"
 ```
@@ -149,7 +144,7 @@ cp /tmp/proposed-skill.md <skill-path>/SKILL.md
 
 **C — Eval gate:**
 ```bash
-python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
+python3 scripts/evaluate.py \
   --skill <skill-path> --desc "<what changed>"
 ```
 - exit 0 (KEEP): `git add . && git commit -m "keep: <desc>"`
@@ -189,39 +184,28 @@ git remote remove origin 2>/dev/null
 git remote add origin $GH_URL
 ```
 
-### 2B.4 Hard-copy plugin files (resolve symlinks)
-```bash
-APS_ROOT="/path/to/agent-plugins-skills"
-PLUGIN_NAME=$(basename $(dirname $(dirname <skill-path>)))  # e.g. agent-execution-disciplines
+### 2B.4 Install skills into lab environment
 
-rsync -aL --exclude='__pycache__' \
-  $APS_ROOT/plugins/$PLUGIN_NAME/ \
-  $LAB_PATH/$PLUGIN_NAME/
-```
+Consult the authoritative installation hub for all current deployment steps (hard-copying plugin files, installing `os-eval-runner`, `copilot-cli-agent`, and resolving symlinks):
 
-### 2B.5 Install eval engine and Copilot CLI
-```bash
-npx skills add -y $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-runner
-npx skills add -y $APS_ROOT/plugins/copilot-cli/skills/copilot-cli-agent
-```
-If `-y` crashes: run without it and press Enter. Both are required — os-eval-runner gates iterations, copilot-cli-agent proposes mutations.
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
 ### 2B.6 Generate eval-instructions.md
 
-Read the template:
+Read the template from the skill's own assets:
 ```
-$APS_ROOT/plugins/agent-agentic-os/assets/templates/eval-instructions.template.md
+assets/templates/eval-instructions.template.md
 ```
 
 Replace all placeholders and write to `$LAB_PATH/eval-instructions.md`. Key values:
 - `{{SKILL_DISPLAY_NAME}}` — human-readable name
 - `{{SKILL_NAME}}` — skill folder name
-- `{{PLUGIN_DIR}}` — plugin folder name
+- `{{SKILL_PATH}}` — path to the skill being evaluated
 - `{{MUTATION_TARGET}}` — `SKILL.md`
 - `{{GITHUB_REPO_URL}}` — `$GH_URL`
 - `{{ROUND_LABEL}}` — `<skill-name>-round1` (increment if results.tsv exists in lab)
-- `{{SKILL_EVAL_SOURCE}}` — `$APS_ROOT/plugins/agent-agentic-os/skills/os-eval-runner`
-- `{{MASTER_PLUGIN_PATH}}` — `$APS_ROOT/plugins/$PLUGIN_NAME`
+- `{{SKILL_EVAL_SOURCE}}` — path to the installed `os-eval-runner` skill (see [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md))
+- `{{MASTER_PLUGIN_PATH}}` — path to the master plugin in the source repo
 
 ### 2B.7 Seed commit and push
 ```bash
@@ -246,7 +230,7 @@ When the run completes, come back here and say "backport <skill-name>" to review
 ## Backport (post-run)
 
 When the user returns and says "backport <skill-name>":
-1. Check `$LAB_PATH/agent-execution-disciplines/skills/<skill-name>/evals/results.tsv` — show score trajectory
+1. Check `./evals/results.tsv` in the lab repo — show score trajectory
 2. Show `git diff <baseline-commit> HEAD --name-only` from the lab repo
 3. For each changed SKILL.md: show diff, recommend accept/adapt/reject
 4. Apply approved changes to master plugin sources

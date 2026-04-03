@@ -81,7 +81,7 @@ os-eval-runner/                      THE EVALUATOR
 ```
 
 **Examples of `<experiment-dir>` for different target types:**
-- Evaluating a skill → the skill's own directory: `plugins/my-plugin/skills/my-skill/`
+- Evaluating a skill → the skill's own directory: `.agents/skills/my-skill/`
 - Evaluating a Python module → the project dir containing the module
 - General experiment → a dedicated experiment folder anywhere in the repo
 
@@ -93,7 +93,7 @@ os-eval-runner/                      THE EVALUATOR
 > os-eval-runner's own SKILL.md trigger phrases.
 
 ```
-<experiment-dir> = plugins/autoresearch-improvement/skills/os-eval-runner/
+<experiment-dir> = .agents/skills/os-eval-runner/
 <mutation-target> = SKILL.md
 ```
 

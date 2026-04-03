@@ -9,7 +9,7 @@ description: >
 
   <example>
   Context: User wants to start an autonomous improvement loop on a skill.
-  user: "Run the autoresearch loop on plugins/agent-agentic-os/skills/os-health-check for 20 iterations"
+  user: "Run the autoresearch loop on <SKILL_PATH> for 20 iterations"
   assistant: [triggers os-eval-runner, runs Phase 0 intake to confirm target, metrics, and iteration cap]
   <commentary>
   Explicit loop request with target path and iteration count — go straight to intake confirmation then Mode 1.
@@ -107,12 +107,12 @@ Before running any loops in a new environment, ensure it is clean and correctly 
 1. **Check Git Remote**: `git remote -v`. If blank, ask the user for the repo URL.
 2. **Initialize Local Git**: `git init && git add . && git commit -m "init"`.
 3. **Delete Old Config**: `rm -rf .agent .agents .gemini .claude`.
-4. **Install Skill via Full Path**: `npx skills add -y <YOUR CLONED REPO PATH>/plugins/agent-agentic-os/skills/os-eval-runner`.
+4. **Install Skill**: Ensure **os-eval-runner** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
 5. **Verify Python 3**: `python3 --version` (must be 3.8+).
 
 **Step 1 — Deploy templates into your experiment directory:**
 ```bash
-python3 plugins/agent-agentic-os/scripts/init_autoresearch.py \
+python3 ./scripts/init_autoresearch.py \
     --experiment-dir <path/to/your-experiment-dir> \
     --mutation-target SKILL.md   # or any filename being mutated
 ```
@@ -124,7 +124,7 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 
 **Step 3 — Establish baseline and start the loop:**
 ```bash
-python3 plugins/agent-agentic-os/scripts/evaluate.py \
+python3 ./scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
     --baseline --desc "initial baseline"
 git add <path/to/experiment-dir>/evals/
@@ -148,12 +148,12 @@ You are the OS Quality Assurance (QA) sub-agent. You are a **stateless evaluatio
 
 | What | Location |
 |---|---|
-| Scoring scripts | `plugins/agent-agentic-os/scripts/evaluate.py`, `eval_runner.py` |
-| Scaffold script | `plugins/agent-agentic-os/scripts/init_autoresearch.py` |
-| program.md **template** | `skills/os-eval-runner/assets/templates/autoresearch/program.md.template` |
-| evals.json **template** | `skills/os-eval-runner/assets/templates/autoresearch/evals.json.template` |
-| results.tsv **template** | `skills/os-eval-runner/assets/templates/autoresearch/results.tsv.template` |
-| copilot proposer prompt **template** | `skills/os-eval-runner/assets/templates/autoresearch/copilot_proposer_prompt.md.template` |
+| Scoring scripts | `./scripts/evaluate.py`, `./scripts/eval_runner.py` |
+| Scaffold script | `./scripts/init_autoresearch.py` |
+| program.md **template** | `./assets/templates/autoresearch/program.md.template` |
+| evals.json **template** | `./assets/templates/autoresearch/evals.json.template` |
+| results.tsv **template** | `./assets/templates/autoresearch/results.tsv.template` |
+| copilot proposer prompt **template** | `./assets/templates/autoresearch/copilot_proposer_prompt.md.template` |
 
 ### What lives with the target (deployed per experiment, most appropriate location)
 
@@ -169,13 +169,13 @@ with a clear metric. All experiment state deploys alongside the target — not h
 | .lock.hashes (SHA256 snapshot) | `<experiment-dir>/evals/.lock.hashes` |
 
 Where `<experiment-dir>` is the directory most natural to the target:
-- Evaluating a skill → the skill's own directory (e.g. `plugins/my-plugin/skills/my-skill/`)
+- Evaluating a skill → the skill's own directory (e.g. `.agents/skills/my-skill/`)
 - Evaluating a Python module → the module's project directory
 - Evaluating a config or model → wherever that experiment lives
 
 **Deploy the templates to a new experiment:**
 ```bash
-python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+python ./scripts/init_autoresearch.py \
     --experiment-dir <path/to/experiment-dir> \
     --mutation-target SKILL.md   # or any filename being mutated
 # Creates: <experiment-dir>/references/program.md  (rendered)
@@ -250,7 +250,7 @@ If not specified: "How many iterations? Or run until a target score — e.g. sto
 Check `<experiment-dir>/evals/evals.json`.
 - If exists: show the number of test cases.
 - If missing: "No evals.json found. I'll scaffold it from the template — you'll need to replace the placeholder test cases before the loop starts."
-  Run: `python3 plugins/agent-agentic-os/scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
+  Run: `python3 ./scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
   Then pause for the user to fill in the test cases.
 
 **Q6 — (Loop mode only) Does `program.md` exist?**
@@ -258,7 +258,7 @@ Check `<experiment-dir>/references/program.md`.
 - If exists: read it and show the goal. Confirm it still reflects what the user wants to optimize.
 - If missing: "No program.md found. I'll scaffold it from the standard template:"
   ```bash
-  python plugins/agent-agentic-os/scripts/init_autoresearch.py \
+  python ./scripts/init_autoresearch.py \
       --experiment-dir <experiment-dir> \
       --mutation-target <filename>
   ```
@@ -296,8 +296,8 @@ The agent drives N iterations against a target skill. Start with:
 "Run the autoresearch loop on <path/to/target-skill> for N iterations"
 ```
 The agent will:
-1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python3 plugins/agent-agentic-os/scripts/init_autoresearch.py --skill <target-path>` first.
-2. Establish a baseline if none exists: `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python3 ./scripts/init_autoresearch.py --skill <target-path>` first.
+2. Establish a baseline if none exists: `python3 ./scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive). Each iteration:
 
    **Step A — Classify failure:** Read the latest row in `<skill>/evals/results.tsv` and the most recent trace file in `<skill>/evals/traces/`. Identify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
@@ -307,7 +307,7 @@ The agent will:
    The proposer prompt lives in `<experiment-dir>/references/copilot_proposer_prompt.md`. Read it each
    iteration — do not rebuild inline. If the file is missing, scaffold it first:
    ```bash
-   python3 plugins/agent-agentic-os/scripts/init_autoresearch.py \
+   python3 ./scripts/init_autoresearch.py \
        --experiment-dir <experiment-dir> --mutation-target <filename>
    ```
 
@@ -448,11 +448,11 @@ git diff <baseline-commit> HEAD --name-only  # all files changed since baseline
 
 **3. For each changed file, identify its master source:**
 
-| Lab file | Master source in `agent-plugins-skills` |
-|:---|:---|
-| `<plugin>/skills/<skill>/SKILL.md` | `plugins/<plugin>/skills/<skill>/SKILL.md` |
-| `<plugin>/skills/<skill>/evals/evals.json` | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
-| `.agents/skills/os-eval-runner/` (if patched) | `plugins/agent-agentic-os/skills/os-eval-runner/` |
+| Component | Skill Installer (Universal) | Claude Code Native |
+|:---|:---|:---|
+| `<plugin>/skills/<skill>/SKILL.md` | Deployed Skill | `plugins/<plugin>/skills/<skill>/SKILL.md` |
+| `<plugin>/skills/<skill>/evals/evals.json` | Deployed Evals | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
+| `.agents/skills/os-eval-runner/` (if patched) | Deployed Engine | `plugins/agent-agentic-os/skills/os-eval-runner/` |
 
 **4. For each file — read the diff and assess:**
 - **Accept as-is**: change is clearly an improvement, apply verbatim
@@ -501,14 +501,14 @@ compare it against the canonical template. If it substantially improved proposal
 to the copilot-cli plugin as a reference example:
 ```bash
 cp <lab-experiment-dir>/references/copilot_proposer_prompt.md \
-   plugins/copilot-cli/skills/copilot-cli-agent/references/skill-proposer-prompt.md
+   .agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md
 ```
 This closes the loop: the prompt that emerged from real eval feedback becomes the new starting
 baseline for future experiments.
 
 **8. Commit to master:**
 ```bash
-cd /path/to/agent-plugins-skills
+cd <APS_ROOT>
 git add plugins/<plugin>/...
 git commit -m "backport: <what was accepted from lab run>"
 ```
@@ -536,7 +536,7 @@ git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after ev
 ```
 
 ### Exit 2: standalone template path fail
-If `init_autoresearch.py` crashes with a `FileNotFoundError` pointing to a `skills/os-eval-runner/` nested path, the script is resolving templates against the full plugin repo layout instead of the installed standalone location. The fix is already applied in the master source (`TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"`). If you see it in a locally-patched copy, verify the script's `TEMPLATES_DIR` line uses `HERE.parent` resolution.
+If `init_autoresearch.py` crashes with a `FileNotFoundError` pointing to a `./` nested path, the script is resolving templates against the full plugin repo layout instead of the installed standalone location. The fix is already applied in the master source (`TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"`). If you see it in a locally-patched copy, verify the script's `TEMPLATES_DIR` line uses `HERE.parent` resolution.
 
 ### Keywords frontmatter footgun
 The `eval_runner.py` scorer treats an explicit `keywords:` field in skill frontmatter as authoritative — it stops scanning the `description` field. If `keywords:` is present but not exhaustive, critical routing words are missed and scores collapse (observed: 1.0000 → 0.5333, F1 1.0 → 0.29 in a single iteration). **Do not add a `keywords:` field unless the list is complete.** Remove it and rely on the description for routing if in doubt.
@@ -556,7 +556,7 @@ The heuristic engine applies soft penalties for missing structure (e.g. -0.30 fo
 ### Re-baseline required after upgrading evaluate.py or eval_runner.py
 Both scripts are SHA256-locked. If you pull an upstream update to either script, existing `.lock.hashes` files will mismatch and trigger exit 3. Fix:
 ```bash
-python3 plugins/agent-agentic-os/scripts/evaluate.py \
+python3 ./scripts/evaluate.py \
     --skill <experiment-dir> --baseline --desc "re-baseline after script upgrade"
 git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evaluate.py upgrade"
 ```
@@ -567,15 +567,15 @@ For runs exceeding 25 iterations, generate a milestone summary to preserve dista
 
 ```bash
 # Write a milestone if iteration count is a multiple of 25 (auto-check)
-python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+python3 ./scripts/generate_milestone.py \
     --experiment-dir <path/to/experiment-dir>
 
 # Force-write a milestone at any iteration count
-python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+python3 ./scripts/generate_milestone.py \
     --experiment-dir <path/to/experiment-dir> --force
 
 # Custom interval (e.g. every 10 iterations)
-python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+python3 ./scripts/generate_milestone.py \
     --experiment-dir <path/to/experiment-dir> --every 10
 ```
 

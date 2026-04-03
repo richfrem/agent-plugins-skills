@@ -23,7 +23,7 @@
 - B) Add a full ORCHESTRATOR self-assessment survey parallel to INNER/PEER surveys (Standard Cycle only). More thorough but slower — only runs on Standard Cycle, misses Fast Cycle observations.
 - C) Both: step 6.5 for quick triage observations (Fast Cycle), full survey for deep reflection (Standard Cycle).
 **Recommendation**: Option C. Step 6.5 is the speed path; full survey is optional depth. The two serve different purposes.
-**Applies to**: `os-improvement-loop/SKILL.md`, new `references/orchestrator-meta-survey.md` template, `init_flywheel_files.py` (seed backlog.md)
+**Applies to**: `.agents/skills/os-improvement-loop/SKILL.md`, new `references/orchestrator-meta-survey.md` template, `init_flywheel_files.py` (seed backlog.md)
 **Decision needed**: Which 5 meta-questions go in step 6.5? (draft in options section above — needs user sign-off before implementation)
 
 ---
@@ -38,7 +38,7 @@
 - B) Add `--cycle-id` as optional but log a warning to stderr when absent. Non-breaking.
 - C) Add a guard in the strategy packet instructions: "do not run eval_runner.py except at the designated eval step." Procedural only, not enforced.
 **Recommendation**: Option B first (non-breaking warning), then make required after all callers are updated.
-**Applies to**: `os-eval-runner/scripts/eval_runner.py`
+**Applies to**: `.agents/skills/os-eval-runner/scripts/eval_runner.py`
 **Blocks**: Nothing currently. Noise issue only.
 
 ---
@@ -54,7 +54,7 @@
 - C) PEER reads score from INNER's event summary rather than from TSV. PEER's job is independent verification of the number, not independent TSV access.
 - D) Accept the race — it only matters at score boundaries (ties). Add `>` instead of `>=` for DISCARD to avoid tie ambiguity. One-character fix.
 **Recommendation**: Option D as immediate mitigation (S-class), Option A or C as proper fix (M-class, decide with user).
-**Applies to**: `eval_runner.py` (Option D), `os-improvement-loop/SKILL.md` (Options A/C)
+**Applies to**: `eval_runner.py` (Option D), `.agents/skills/os-improvement-loop/SKILL.md` (Options A/C)
 **Note**: Option D changes KEEP semantics — equal score becomes DISCARD. Evaluate carefully.
 
 ---
@@ -70,7 +70,7 @@
 - C) Add LLM-based routing to `eval_runner.py` as an optional `--llm-judge` flag. Only fires when explicitly requested (Standard Cycle). Fast Cycle stays keyword-only.
 - D) Accept keyword-only for now. The F1 gate + adversarial negative evals provide meaningful regression protection even without semantic judgment. Add LLM judge when a skill passes keyword eval but fails in practice (event-driven).
 **Recommendation**: Option C + D combined. Default to keyword-only (fast). Add `--llm-judge` flag for Standard Cycle. Trigger it when a KEEP skill degrades in practice (a new friction event pattern).
-**Applies to**: `eval_runner.py`, `os-improvement-loop/SKILL.md` Standard Cycle step 4, `os-eval-runner/SKILL.md`
+**Applies to**: `eval_runner.py`, `.agents/skills/os-improvement-loop/SKILL.md` Standard Cycle step 4, `.agents/skills/os-eval-runner/SKILL.md`
 **Research needed**: Which model, what prompt, how to score the response, how to normalize against keyword score.
 
 ---
@@ -84,7 +84,7 @@
 - B) Add a rule to Fast Cycle step 6.5: if any new backlog item is L-class + P0/P1, emit a `task_promotion_needed` event. ORCHESTRATOR creates the task at next session start during orientation.
 - C) Keep everything in `backlog.md`. Simple but the backlog gets long and tasks board stays unused.
 **Recommendation**: Option B. Keeps Fast Cycle fast (no task creation during loop), defers to session start where ORCHESTRATOR has full context.
-**Applies to**: `os-improvement-loop/SKILL.md` step 6.5, step 1 Orientation (check for `task_promotion_needed` events)
+**Applies to**: `.agents/skills/os-improvement-loop/SKILL.md` step 6.5, step 1 Orientation (check for `task_promotion_needed` events)
 **Decision needed**: Task format for `/tasks/` — does task-manager skill need a specific template?
 
 ---
@@ -98,7 +98,7 @@
 - A) Update HOW-TO-RESTART.md to explicitly state `CLAUDE_PROJECT_DIR` must point at LAB, with a failing example.
 - B) Add a guard in `init_flywheel_files.py` that warns if `CLAUDE_PROJECT_DIR` appears to be a plugin-source repo (heuristic: contains `plugins/` directory at root).
 **Recommendation**: Option A immediately (S-class). Option B later if it recurs.
-**Applies to**: `temp/agent-agentic-os-review/HOW-TO-RESTART.md`, optionally `init_flywheel_files.py`
+**Applies to**: `INSTALL.md`, optionally `init_flywheel_files.py` (was `temp/agent-agentic-os-review/HOW-TO-RESTART.md`)
 
 ---
 

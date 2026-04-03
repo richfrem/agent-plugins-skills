@@ -91,11 +91,11 @@ Plugins must be self-contained -- any script a plugin needs must be copied into 
 
 ## Portability and Discovery
 
-| Component | `npx skills add` (Universal) | Claude Code Native |
+| Component | Universal Bridge (.agents) | Claude Code Native |
 |-----------|-------------------------------|-------------------|
 | `skills/` | Portable - installed everywhere | Discovered natively |
-| `agents/` | NOT installed by npx | Discovered natively |
-| `commands/` | NOT installed by npx | Discovered natively |
+| `agents/` | Included in bridge (.agents)  | Discovered natively |
+| `commands/`| Included in bridge (.agents)  | Discovered natively |
 
 **Key rule:** If you want something universally installable across all agents
 (Claude, Gemini, Copilot, Antigravity, Cursor, etc.), it MUST be a skill.

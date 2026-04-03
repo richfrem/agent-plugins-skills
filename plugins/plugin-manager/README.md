@@ -1,8 +1,8 @@
 # Plugin Manager
 
-**Universal Cross-Platform Plugin Installer — Works Everywhere `npx skills` Cannot**
+**Universal Cross-Platform Plugin Installer — Works where other managers cannot**
 
-The **Plugin Manager** is the cross-agent, cross-platform orchestration hub for your plugin ecosystem. Where `npx skills add` installs skills only and the Claude `/plugin` marketplace is Claude-specific, `plugin_add.py` installs **full plugins** (skills + agents + commands + hooks) directly from GitHub — on any OS, for any agent.
+The **Plugin Manager** is the cross-agent, cross-platform orchestration hub for your plugin ecosystem. Where other managers install individual skills only and the Claude `/plugin` marketplace is Claude-specific, `plugin_add.py` installs **full plugins** (skills + agents + commands + hooks) directly from GitHub — on any OS, for any agent.
 
 ---
 
@@ -10,11 +10,11 @@ The **Plugin Manager** is the cross-agent, cross-platform orchestration hub for 
 
 | Tool | Platform | Installs | GitHub source |
 |---|---|---|---|
-| `npx skills add` | Mac/Linux only (symlink issue on Windows) | Skills only | ✓ `owner/repo` |
+| Legacy skills managers | Mac/Linux only (symlink issues) | Skills only | ✓ `owner/repo` |
 | `/plugin marketplace add` | Claude Code only | Full plugins | ✓ `owner/repo` |
 | **`plugin_add.py`** ★ | **All platforms** (Windows, Mac, Linux) | **Full plugins** (skills + agents + commands + hooks) | ✓ `owner/repo` |
 
-> `plugin_add.py` is the cross-platform, cross-agent equivalent of `npx skills add` — but for full plugins, not just skills.
+> `plugin_add.py` is the cross-platform, cross-agent equivalent of other skills managers — but for full plugins, not just individual skills.
 
 ---
 
@@ -63,14 +63,14 @@ Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same
 
 If you chose to **clone the repo locally** instead of using the remote bootstrappers, run:
 ```bash
-python plugins/plugin-manager/scripts/plugin_add.py
+python ./scripts/plugin_add.py
 ```
 
 ---
 
 ## Why `plugin_add.py` Works on Windows
 
-`npx skills add` fails on Windows because Git checks out symlinks as plain text files (e.g. `../../../scripts/install_all_plugins.py`). Node.js `cp({ dereference: true })` detects real symlinks and copies the target on Mac/Linux — but on Windows it sees a text file and copies the literal path string, leaving broken installs.
+Legacy installers often fail on Windows because Git checks out symlinks as plain text files (e.g. `scripts/install_all_plugins.py`). Node.js `cp({ dereference: true })` detects real symlinks and copies the target on Mac/Linux — but on Windows it sees a text file and copies the literal path string, leaving broken installs.
 
 `plugin_add.py` solves this by reading those pointer files at install time, following the relative path back to the real Python source, and writing a proper hard copy into `.agents/`. **No symlinks. No npm. No Node.js dependency.** Works identically on all platforms.
 

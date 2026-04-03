@@ -16,10 +16,10 @@ Installs a plugin into the local `.agents/` directory (and other agent environme
 ```bash
 if [ -n "${plugin_name}" ]; then
     # Headless install
-    python ./plugins/plugin-manager/scripts/plugin_add.py "${plugin_name}" -y
+    python ././scripts/plugin_add.py "${plugin_name}" -y
 else
     # Interactive picker
-    python ./plugins/plugin-manager/scripts/plugin_add.py
+    python ././scripts/plugin_add.py
 fi
 ```
 

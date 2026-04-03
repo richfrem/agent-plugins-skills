@@ -431,7 +431,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ### T26 — learning-loop: Baseline 3-Phase Completion
 
-- **Target**: learning-loop (plugins/agent-loops)
+- **Target**: learning-loop
 - **Hypothesis**: A full learning loop run executes all 3 core phases: observe (Phase I),
   hypothesize + design (Phase II-III), test (Phase IV) in order without skipping.
 - **Why now**: Baseline needed before testing the new Phases V-VIII added this session.
@@ -501,7 +501,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ### T31 — dual-loop: Baseline Outer-Inner Handoff
 
-- **Target**: dual-loop (plugins/agent-loops)
+- **Target**: dual-loop
 - **Hypothesis**: Outer loop assigns task to inner loop via event bus; inner loop completes
   and signals back; outer loop receives result before iteration 2.
 - **Why now**: Baseline transport test needed before testing flywheel additions.

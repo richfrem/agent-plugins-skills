@@ -207,5 +207,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-# DIAGNOSTIC: npx skills add local update test (cleanup_cache.py via hardlink)

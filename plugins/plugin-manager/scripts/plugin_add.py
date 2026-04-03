@@ -3,15 +3,14 @@ Plugin Add (CLI)
 ================
 
 Purpose:
-    Interactive plugin installer with an npx-skills-add-like TUI.
+    Interactive plugin installer with a multiselect TUI.
     Accepts a local path OR a GitHub owner/repo shorthand, clones into a
     temp directory if remote, discovers all plugins, lets the user select
     which to install, then runs bridge_installer.py for each.
 
-Inspiration & Attribution:
     The interactive TUI design pattern (multiselect, arrow navigation, search,
-    owner/repo GitHub shorthand, temp-clone-then-install flow) is inspired by
-    the `npx skills add` command from the Vercel Labs `skills` CLI:
+    owner/repo GitHub shorthand, temp-clone-then-install flow) follows modern
+    command-line interface best practices:
       https://github.com/vercel-labs/skills
       https://skills.sh
     This script re-implements those UX patterns in pure Python (stdlib only)
@@ -388,7 +387,7 @@ def _print_banner(source_label: str):
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Interactive plugin installer  (npx-skills-add style, for full plugins)"
+        description="Interactive plugin installer (for full plugins)"
     )
     parser.add_argument(
         "source",

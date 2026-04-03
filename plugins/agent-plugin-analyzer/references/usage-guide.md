@@ -91,9 +91,9 @@ python3 ./check_skill_boundaries.py inventory.json --skill plugins/adr-manager/s
 
 **Example violation:**
 ```
-FILE: plugins/adr-manager/skills/adr-management/SKILL.md:45
+FILE: .agents/skills/adr-management/SKILL.md:45
   REF: ../../templates/adr-template.md
-  SKILL ROOT: plugins/adr-manager/skills/adr-management/
+  SKILL ROOT: .agents/skills/adr-management/
   RESOLVES TO: plugins/adr-manager/templates/adr-template.md  ❌ OUTSIDE!
 ```
 
@@ -150,7 +150,7 @@ After Phase 1 (SCAN), `inventory.json` contains:
   },
   "references": [
     {
-      "source_file": "plugins/adr-manager/skills/adr-management/SKILL.md",
+      "source_file": ".agents/skills/adr-management/SKILL.md",
       "reference": "./scripts/adr_manager.py",
       "line": 17,
       "status": null
@@ -165,7 +165,7 @@ After Phase 2 (VERIFY), each reference has a status:
   "status": {
     "exists": true,
     "type": "file",
-    "path": "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py",
+    "path": ".agents/skills/adr-management/scripts/adr_manager.py",
     "resolved_path": "/full/path/..."
   }
 }

@@ -19,18 +19,18 @@ Given any skill in the ecosystem, it can run an overnight loop that iteratively 
 
 **Score a skill (standalone, no history written):**
 ```bash
-python3 scripts/eval_runner.py --skill path/to/SKILL.md
-python3 scripts/eval_runner.py --skill path/to/SKILL.md --json
+python3 ./scripts/eval_runner.py --skill path/to/SKILL.md
+python3 ./scripts/eval_runner.py --skill path/to/SKILL.md --json
 ```
 
 **Establish a baseline for a target skill:**
 ```bash
-python3 scripts/evaluate.py --skill path/to/SKILL.md --baseline --desc "initial baseline"
+python3 ./scripts/evaluate.py --skill path/to/SKILL.md --baseline --desc "initial baseline"
 ```
 
 **Run one loop iteration (agent calls this after editing SKILL.md):**
 ```bash
-python3 scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
+python3 ./scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
 # exit 0 = KEEP  →  git add + commit
 # exit 1 = DISCARD  →  git checkout -- SKILL.md
 ```
@@ -44,9 +44,9 @@ The agent IS the loop. There is no train.py. The agent reads `references/program
 ```
 Agent reads program.md
   -> edits SKILL.md (one change)
-  -> python evaluate.py --skill SKILL.md
-       -> eval_runner.py --json  (pure scorer, writes nothing)
-       -> compares against last BASELINE in evals/results.tsv
+  -> python ./scripts/evaluate.py --skill SKILL.md
+       -> ./scripts/eval_runner.py --json  (pure scorer, writes nothing)
+       -> compares against last BASELINE in ./evals/results.tsv
        -> appends one row, exits 0 or 1
   -> KEEP: git commit  |  DISCARD: git checkout
   -> repeat
@@ -70,8 +70,8 @@ Each **target skill** owns its own `evals/evals.json`, `evals/results.tsv`, and 
 
 ## Architecture & Background
 
-- **Architecture doc**: `references/autoresearch-architecture.md` — file ownership, schema, current vs target state, known risks
-- **Overview**: `references/autoresearch-overview.md` — how the Karpathy pattern maps to skills, worked example
-- **Sequence diagram**: `references/diagrams/autoresearch-loop.mmd`
-- **Mapping diagram**: `references/diagrams/mapping-karpathy-to-os-eval-runner.mmd`
-- **Karpathy reference**: `<repo-root>/plugins/autoresearch-improvement/references/research/karpathy-autoresearch-3-file-eval.md`
+- **Architecture doc**: `./references/autoresearch-architecture.md` — file ownership, schema, current vs target state, known risks
+- **Overview**: `./references/autoresearch-overview.md` — how the Karpathy pattern maps to skills, worked example
+- **Sequence diagram**: `./references/diagrams/autoresearch-loop.mmd`
+- **Mapping diagram**: `./references/diagrams/mapping-karpathy-to-os-eval-runner.mmd`
+- **Karpathy reference**: `<APS_ROOT>/plugins/agent-agentic-os/references/research/karpathy-autoresearch-3-file-eval.md`

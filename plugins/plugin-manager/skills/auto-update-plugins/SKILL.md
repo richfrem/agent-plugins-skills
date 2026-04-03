@@ -87,7 +87,7 @@ To subscribe to **multiple source repos**, add more entries:
 
 ### Step 2: Install `check_and_sync.py` into the consumer project
 
-Copy `skills/auto-update-plugins/scripts/check_and_sync.py` into the consumer
+Copy `./scripts/check_and_sync.py` into the consumer
 project at `.agents/scripts/check_and_sync.py`.
 
 This script:
@@ -138,10 +138,10 @@ To manually pull the latest plugins from GitHub at any time:
 
 ```bash
 # Interactive — pick which plugins to update
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
+python ./scripts/plugin_add.py richfrem/agent-plugins-skills
 
 # Non-interactive — reinstall everything
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
+python ./scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
 ```
 
 ---

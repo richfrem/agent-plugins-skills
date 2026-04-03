@@ -2,18 +2,16 @@
 Bridge Installer (CLI)
 =====================
 
-Purpose:
     Installs Agent Plugins into .agents/ central repository natively 
-    and symlinks them across locally installed agent platforms 
-    (mimicking the behavior of npx skills add --force).
+    and symlinks them across locally installed agent platforms.
 
 Layer: Plugin Manager / Installation
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/plugin_installer.py --plugin plugins/my-plugin
+    python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
 
     # install plugin in a different repo e.g. context-bundler specifically
-    python <full install path>\agent-plugins-skills\plugins\plugin-manager\scripts\plugin_installer.py --plugin <full install path>\agent-plugins-skills\plugins\context-bundler
+    python <full install path>\agent-plugins-skills\plugins\plugin-manager\scripts\bridge_installer.py --plugin <full install path>\agent-plugins-skills\plugins\context-bundler
 
 Platform Command Mapping (commands/ vs workflows/):
     Plugin source always uses commands/ as the canonical folder name.
@@ -42,7 +40,6 @@ Input Files:
 Output:
     - Creates symlinks and updates skills-lock.json
 
-Key Functions:
     _is_pointer_file(): Checks if file is a pointer.
     _copy_resolving_pointers(): Copies resolving pointers.
     _symlink_or_copy(): Symlinks or copies fallback.
@@ -240,7 +237,7 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
                 shutil.copy2(src, link_path)
             print(f"    -> Copied (symlink failed) for {env_name}: "
                   f"{link_path.relative_to(root)}")
-            return False  # False = symlinkFailed, like npx skills
+            return False
         except Exception as e:
             print(f"    X Failed for {env_name}: {e}")
             return False

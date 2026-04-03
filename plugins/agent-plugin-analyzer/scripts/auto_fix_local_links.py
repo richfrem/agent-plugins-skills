@@ -6,7 +6,7 @@ auto_fix_local_links.py
 Purpose:
     Safely rewrites hardcoded plugin execution paths in Markdown files.
     Converts full repository absolute paths into relative ones so commands
-    remain functional when a skill is installed via `npx skills add`.
+    remain functional when a skill is installed via legacy methods.
 
 Layer: Investigate / Repair / Documentation
 
@@ -70,7 +70,8 @@ def fix_file(file_path: Path) -> int:
     state = {'replacements': 0}
     
     for line in lines:
-        if "npx skills add" in line or "#" in line and "Hardcoded" in line:
+        # Skip installation commands and specific hardcoded markers
+        if "skills add" in line or "#" in line and "Hardcoded" in line:
             fixed_lines.append(line)
             continue
             

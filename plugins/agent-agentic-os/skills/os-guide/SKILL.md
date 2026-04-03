@@ -147,8 +147,8 @@ Work → Backport/Ship → Phase 6: Capture → Phase 7: Improve
 
 ### Phase 6: Capture Learnings (os-memory-manager)
 
-> ⚠️ **Cross-Plugin Boundary** — `os-memory-manager` is part of `agent-agentic-os`.
-> Install: `npx skills add agent-agentic-os`
+> [!NOTE] Dependency: Requires **os-memory-manager** (agent-agentic-os plugin).
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions.
 
 After any backport, eval run, or skill change:
 
@@ -173,8 +173,8 @@ Where it writes:
 
 ### Phase 7: Continuous Skill Improvement (os-skill-improvement)
 
-> ⚠️ **Cross-Plugin Boundary** — `os-skill-improvement` is part of `agent-agentic-os`.
-> Install: `npx skills add agent-agentic-os`
+> [!NOTE] Dependency: Requires **os-skill-improvement** (agent-agentic-os plugin).
+> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions.
 
 After memory is captured, check whether any skill's routing or trigger accuracy was
 found to be weak during the session:

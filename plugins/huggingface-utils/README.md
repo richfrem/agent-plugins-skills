@@ -2,33 +2,6 @@
 
 Integration utilities for syncing the consuming project's remote dataset with the HuggingFace Hub.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install huggingface-utils
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/huggingface-utils
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/huggingface-utils
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install huggingface-utils
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/huggingface-utils
-```
-
 ## Dependencies
 
 The `hf-upload` skill requires `huggingface_hub`:

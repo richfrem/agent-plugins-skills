@@ -79,29 +79,6 @@ exploration-cycle-plugin/
 
 ---
 
-## 🚀 Installation & Usage
-
-### 📦 uvx — Universal Cross-Platform Hub (Recommended)
-Add this repository’s plugins seamlessly to your local environment using the `uvx` Python standard:
-
-```bash
-# Interactive picker (select exploration-cycle-plugin)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-```
-
-### 🏪 Claude Code Native Marketplace
-If you are using Claude Code, add the repository as a native marketplace:
-
-```bash
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install exploration-cycle-plugin
-```
-
-### 🛠️ Local Development
-```bash
-npx skills add ./plugins/exploration-cycle-plugin
-```
-
 ---
 
 *See [OVERVIEW.md](OVERVIEW.md) for a deeper conceptual dive into the GenAI Double Diamond.*

@@ -41,16 +41,6 @@ can reference these by name without cross-plugin script dependencies.
 |---|---|
 | `code-reviewer` | Independent code review agent (dispatched by requesting-code-review) |
 
-## Installation
-
-```bash
-# Full deployment (skills + any commands/rules/hooks)
-python ./plugin_installer.py --plugin plugins/agent-execution-disciplines
-
-# Skills only via npx
-npx skills add richfrem/agent-plugins-skills/plugins/agent-execution-disciplines
-```
-
 ## ADR Compliance
 
 - ADR-001: No cross-plugin script paths. Skills reference each other by name via Agent Skill Delegation.

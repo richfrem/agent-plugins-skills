@@ -222,7 +222,7 @@ The autoresearch loop only touches the first part — the trigger language. This
 ### Every File in `os-eval-runner` and What It Does
 
 ```
-plugins/autoresearch-improvement/skills/os-eval-runner/
+.agents/skills/os-eval-runner/
 ```
 
 #### `SKILL.md`

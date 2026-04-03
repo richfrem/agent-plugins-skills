@@ -4,33 +4,6 @@
 
 Search your repository by *meaning*, not just keywords. Uses a highly-accurate **Parent-Child Retrieval Architecture** and local **Nomic Embeddings** to provide precise code context to the agent without sacrificing the "big picture" surrounding logic.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install vector-db
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/vector-db
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/vector-db
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install vector-db
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/vector-db
-```
-
 ## Architecture Highlights
 - **Parent-Child Retrieval**: Files are stored exactly as they are (Parents), but searched via tiny chunks (Children). This guarantees exact semantic matches of specific functions, while returning the entire file to the LLM for maximum context.
 - **Nomic Embeddings**: Uses `nomic-ai/nomic-embed-text-v1.5` (768-dim) for enterprise-grade, local code embedding without API keys.

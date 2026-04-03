@@ -36,10 +36,10 @@ This skill deploys plugin components to agent environments using the
 |-----------|----------|-----------------------|-----------------|
 | `uvx` ★ **default** | Full interactive TUI | No (runs from GitHub) | Everyone using `uv` |
 | `bootstrap.py` | Full interactive TUI | No (downloads in-memory) | End users without `uv` |
-| `npx skills add` | Skills only | No (runs from GitHub) | Mac/Linux users wanting only skills |
+| `legacy methods` | Skills only | No (runs from GitHub) | Users wanting only individual skills |
 | `plugin_add.py` | Full interactive TUI | Yes | Local developers debugging the installer |
 
-> **Use `uvx`** (★ recommended default) for an interactive TUI that works exactly like `npx skills add` but installs full plugins without requiring Node.js.
+> **Use `uvx`** (★ recommended default) for an interactive TUI that installs full plugins without requiring Node.js.
 > **Use the `bootstrap.py` curl pipeline** if you do not have `uv` installed.
 > **Use `plugin_add.py`** directly for scripted/CI single-plugin installs from a local clone.
 
@@ -53,9 +53,9 @@ You do not need to "install the installer". Just run the `uvx` or `curl` command
 
 ## Attribution
 
-The `plugin_add.py` interactive TUI (multiselect, arrow-key navigation, fuzzy search, `owner/repo` GitHub shorthand, temp-clone-then-install flow) is inspired by the **`npx skills add`** command from the **Vercel Labs `skills` CLI**:
+The `plugin_add.py` interactive TUI (multiselect, arrow-key navigation, fuzzy search, `owner/repo` GitHub shorthand, temp-clone-then-install flow) is inspired by universal one-liner installation patterns:
 
-- GitHub: <https://github.com/vercel-labs/skills>
+- GitHub Repository Patterns: <https://github.com/vercel-labs/skills>
 - Marketplace: <https://skills.sh>
 
 This implementation re-creates those UX patterns in **pure Python stdlib** (no npm, no external packages) so they work on Windows without symlink issues and operate at the **plugin** level rather than individual SKILL.md files.
@@ -112,18 +112,17 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 
 ---
 
-## npx skills Compatibility
+## External Skills Compatibility
 
-`plugin_installer.py` writes to the `npx skills` lock file after installation
-so that `npx skills list`, `check`, and `update` remain aware of
-bridge-installed skills.
+`plugin_installer.py` writes to the external skills lock file after installation
+so that legacy tools remain aware of bridge-installed skills.
 
 **Lock file locations:**
 
 | File | Path | Purpose |
 |------|------|---------|
-| Global lock | `~/.agents/.skill-lock.json` | Tracks global installs; enables `npx skills check/update` |
-| Project lock | `<project>/skills-lock.json` | Tracks project installs; enables `npx skills experimental_install` |
+| Global lock | `~/.agents/.skill-lock.json` | Tracks global installs; enables legacy check/update |
+| Project lock | `<project>/skills-lock.json` | Tracks project installs; enables legacy experimental installs |
 
 **Lock file schema (version 3):**
 ```json
@@ -196,22 +195,22 @@ When a repo root is resolved, plugins are found via three-tier fallback:
 
 ```bash
 # Interactive plugin picker — current repo
-python plugins/plugin-manager/scripts/plugin_add.py
+python ./scripts/plugin_add.py
 
 # Install from remote GitHub repo (any layout)
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
+python ./scripts/plugin_add.py richfrem/agent-plugins-skills
 
 # Install specific subpath
-python plugins/plugin-manager/scripts/plugin_add.py anthropics/knowledge-work-plugins/engineering
+python ./scripts/plugin_add.py anthropics/knowledge-work-plugins/engineering
 
 # Full GitHub URL (tree/main/ stripped automatically)
-python plugins/plugin-manager/scripts/plugin_add.py https://github.com/anthropics/claude-plugins-official/tree/main/plugins
+python ./scripts/plugin_add.py https://github.com/anthropics/claude-plugins-official/tree/main/plugins
 
 # Install all non-interactively
-python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
+python ./scripts/plugin_add.py richfrem/agent-plugins-skills --all -y
 
 # Dry-run preview
-python plugins/plugin-manager/scripts/plugin_add.py --dry-run
+python ./scripts/plugin_add.py --dry-run
 ```
 
 #### Fresh Project: `.claude/` Auto-Init
@@ -229,13 +228,13 @@ Answering `Y` (default) creates `.claude/` so Claude Code symlinks are activated
 
 **Install a single plugin:**
 ```bash
-python ./plugins/plugin-manager/scripts/bridge_installer.py \
+python ././scripts/bridge_installer.py \
   --plugin plugins/my-plugin
 ```
 
 **Dry run (preview only, no writes):**
 ```bash
-python ./plugins/plugin-manager/scripts/bridge_installer.py \
+python ././scripts/bridge_installer.py \
   --plugin plugins/my-plugin --dry-run
 ```
 
@@ -359,7 +358,7 @@ DETECTABLE_AGENTS = {
 
 ## When NOT to Use This Skill
 
-- **End-user consumption from remote repo** — use `plugin_add.py owner/repo` (auto-clones + interactive TUI) or `npx skills add` (skills only, no Python required)
+- **End-user consumption from remote repo** — use `plugin_add.py owner/repo` (auto-clones + interactive TUI) or the authoritative installation hub for individual skills.
 - **Auditing plugin structure** — use `maintain-plugins`
 
 ## Related Skills

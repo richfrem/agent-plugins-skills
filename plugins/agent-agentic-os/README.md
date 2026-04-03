@@ -81,30 +81,6 @@ This is NOT for:
 
 ---
 
-## Installation
-
-### From the Marketplace (Recommended)
-```bash
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install agent-agentic-os
-```
-
-### From GitHub Directly
-```bash
-# Full plugin (Claude Code)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install agent-agentic-os
-
-# Skills only (portable, works with Claude, Copilot, Gemini CLI)
-npx skills add richfrem/agent-plugins-skills --path plugins/agent-agentic-os
-```
-
-### Local Development
-```bash
-/plugin marketplace add ./
-/plugin install agent-agentic-os
-```
-
 ---
 
 ## Quick Start

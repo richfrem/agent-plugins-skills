@@ -38,6 +38,27 @@ cat <PERSONA_PROMPT> | gemini -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
 ```
 *Note: Gemini uses `-p` or `--prompt` for headless execution where output is desired without interactive prompts.*
 
+### ⚠️ Large Context: Prefer Stdin Piping
+For large files, use stdin piping rather than `$(cat ...)` shell expansion.
+Shell expansion in background jobs (`&`) with large prompts silently produces empty output:
+```bash
+# Good — stdin pipe (works reliably for large files)
+cat combined_prompt_and_content.txt | gemini -p "Apply the rules in this document. Output the fixed file only." > /tmp/output.md
+
+# Alternatively — build temp file then run sequentially (not in background)
+cat prompt.md > /tmp/combined.txt && cat target.md >> /tmp/combined.txt
+gemini -p "$(cat /tmp/combined.txt)" > /tmp/output.md
+```
+**Gemini Flash limits (as of 2026):**
+- Context window: 1,048,576 tokens (~50k lines of code)
+- Max output: 65,536 tokens
+- Rate limit: ~1,500 requests/day, ~15 RPM on free tier
+- Concurrency: treat as 1 request every 4 seconds to stay safe
+- Model flag: `-m flash` or `-m gemini-3.1-flash` for explicit Flash selection
+
+**Known issue**: Running gemini in background (`&`) with large `$(cat ...)` prompts produces empty output.
+Always run sequentially and verify: `wc -l /tmp/output.md` before applying changes.
+
 ## ⚠️ CLI Best Practices
 
 ### 1. Token Efficiency — PIPE, Don't Load

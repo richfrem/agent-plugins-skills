@@ -2,42 +2,13 @@
 
 Manage Architecture Decision Records natively — auto-number, scaffold, and maintain design logs using standard prompts.
 
-## Installation
-
-### Option 1: From a Marketplace (Recommended)
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install adr-manager
-```
-For skills-only portability across all agents (Claude, Gemini, Copilot, etc.):
-```bash
-npx skills add <marketplace-url>/plugins/adr-manager
-```
-
-### Option 2: From GitHub Directly
-```bash
-# Skills only
-npx skills add richfrem/agent-plugins-skills --path plugins/adr-manager
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install adr-manager
-```
-
-### Option 3: Local Development Checkout
-```bash
-npx skills add ./plugins/adr-manager
-```
-
-
-
 ### Dependencies
 
 **For Skill Users:** See the Dependencies section in [`skills/adr-management/SKILL.md`](./skills/adr-management/SKILL.md) for what you need to install the skill.
 
 **For Plugin Developers:** This plugin manages dependencies using the standard lockfile workflow:
 ```bash
-cd plugins/adr-manager
+cd <PLUGINPATH>/adr-manager
 pip-compile requirements.in
 pip install -r requirements.txt
 ```
