@@ -1,0 +1,2 @@
+timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
+2026-04-03T16:15:31.447381	ed37eec5	0.7950	0.0000	0.7500	0.9000	0.8421	BASELINE	initial baseline: post task-tracker workflow + self-referential path fixes

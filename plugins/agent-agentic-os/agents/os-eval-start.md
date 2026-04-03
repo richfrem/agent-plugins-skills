@@ -78,9 +78,10 @@ Baseline:  0.7700        (or: none yet)
 Run where?
   A) Worktree — I run the loop here, you watch (faster, uses Copilot CLI directly)
   B) Lab repo — I set up ~/Projects/test-<skill-name>-eval, you open it and say "Follow eval-instructions.md"
+  C) In-session — I evolve the skill directly in master as a background thread while doing related work
 ```
 
-Wait for A or B. That's the only required answer.
+Wait for A, B, or C. That's the only required answer.
 
 Optionally accept: metric override, iteration cap ("run 20 iterations"). If not given, default to
 `quality_score` and NEVER STOP (runs until user interrupts).
@@ -151,6 +152,54 @@ python3 scripts/evaluate.py \
 - exit 1 (DISCARD): already auto-reverted, next iteration silently
 
 When done (if iteration cap was set), print summary and run backport review instructions.
+
+---
+
+## Phase 2C: In-Session Direct Evolution Protocol
+
+Use when the agent is already working in the master repo and wants to continuously improve a skill
+without interrupting the main task (e.g. during a portability audit, a backport session, or any
+multi-file remediation). No worktree. No external repo. The agent IS the proposer.
+
+### 2C.1 Scaffold evals if missing
+If `evals/evals.json` does not exist, draft and write it inline:
+```bash
+ls <skill-path>/evals/evals.json 2>/dev/null || echo "MISSING"
+```
+If missing: draft 8 `should_trigger: true` + 4 `should_trigger: false` cases from the skill's
+description and `<example>` blocks. Write directly to `<skill-path>/evals/evals.json`.
+Also write `<skill-path>/evals/results.tsv` (header only) and `<skill-path>/references/program.md`
+from the template format.
+
+### 2C.2 Establish baseline
+```bash
+python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+  --skill <skill-path> --baseline --desc "initial baseline"
+git add <skill-path>/evals/ && git commit -m "baseline: <skill-name> eval start"
+```
+Report the baseline score to the user before continuing.
+
+### 2C.3 Evolve on each SKILL.md change (continuous background loop)
+
+After **every edit** to the skill's `SKILL.md` during the session:
+
+1. **Score:** Run the evaluator against the updated file.
+   ```bash
+   python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+     --skill <skill-path> --desc "<what changed>"
+   ```
+2. **KEEP (exit 0):** Commit the change.
+   ```bash
+   git add <skill-path>/SKILL.md && git commit -m "keep: score=<score> <desc>"
+   ```
+3. **DISCARD (exit 1):** Revert is automatic. Note the failure type and try a different approach.
+4. **Report** the score delta inline (e.g. `📊 score: 0.7950 → 0.8233 (+0.028) KEEP`).
+
+### 2C.4 Session close
+At the end of the session, or when the user says "stop the loop":
+- Print the score trajectory from `results.tsv`
+- Identify the highest-impact change
+- If score improved by >0.05: flag for backport review using `os-eval-backport`
 
 ---
 
