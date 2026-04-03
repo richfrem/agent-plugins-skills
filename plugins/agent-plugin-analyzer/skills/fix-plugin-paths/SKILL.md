@@ -116,13 +116,13 @@ For repository-wide remediation, always follow this three-step cycle.
 Initialize a `portability-audit-report.md` artifact to act as the source of truth.
 ```bash
 # Scan for all genuine issues (excluding false positive examples/github links)
-grep -rn "plugins/" plugins/ --include="*.md" | \
+grep -rn "plugins/" . --include="*.md" | \
 grep -vE "github.com|\$|<APS_ROOT>|plugins/my-|plugins/<|plugins/\$" | \
 grep -v "CHANGELOG\|broken_symlinks\|repair_report" | \
 cut -d: -f1 | sort | uniq > /tmp/files_with_issues.txt
 
 # Add absolute machine paths
-grep -rl "/Users/" plugins/ --include="*.md" >> /tmp/files_with_issues.txt
+grep -rl "/Users/" . --include="*.md" >> /tmp/files_with_issues.txt
 sort -u /tmp/files_with_issues.txt -o /tmp/files_with_issues.txt
 ```
 Populate the report with a checkbox per file.
@@ -135,7 +135,7 @@ Populate the report with a checkbox per file.
 
 ### 3. Final Verification
 ```bash
-grep -rn "plugins/" plugins/ --include="*.md" | \
+grep -rn "plugins/" . --include="*.md" | \
 grep -vE "github.com|\$|<APS_ROOT>|plugins/my-|plugins/<|plugins/\$" | \
 grep -v "CHANGELOG\|broken_symlinks\|repair_report"
 ```
@@ -158,8 +158,8 @@ and `<example>` blocks. Write to `evals/evals.json`, `evals/results.tsv` (header
 
 ### C.2 Establish baseline
 ```bash
-python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
-  --skill plugins/agent-plugin-analyzer/skills/fix-plugin-paths \
+python3 <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+  --skill . \
   --baseline --desc "initial baseline"
 git add evals/ && git commit -m "baseline: fix-plugin-paths eval start"
 ```
@@ -168,8 +168,8 @@ Report the baseline score before continuing main work.
 ### C.3 Score after every SKILL.md edit
 After each modification to `SKILL.md`:
 ```bash
-python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
-  --skill plugins/agent-plugin-analyzer/skills/fix-plugin-paths \
+python3 <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+  --skill . \
   --desc "<what changed>"
 ```
 - **KEEP (exit 0)**: `git add SKILL.md && git commit -m "keep: score=<X> <desc>"`
