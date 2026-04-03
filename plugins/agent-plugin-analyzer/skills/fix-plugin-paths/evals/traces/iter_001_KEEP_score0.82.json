@@ -1,0 +1,183 @@
+{
+  "iteration": 1,
+  "verdict": "KEEP",
+  "score": 0.825,
+  "baseline_score": 0.795,
+  "delta": 0.03,
+  "desc": "major upgrade: intake + mode C in-session evolution + self-assessment + operating principles",
+  "mutation_diff": "diff --git a/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/SKILL.md b/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/SKILL.md\nindex ec79e5ed..cbd34154 100644\n--- a/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/SKILL.md\n+++ b/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/SKILL.md\n@@ -4,8 +4,10 @@ description: >\n   Fixes broken path references in plugin skill and agent files to ensure portability\n   across installed environments. Use when you see \"plugins/\" paths in SKILL.md or agent\n   files, need to standardize path references after installing a skill, want to audit and\n-  fix cross-plugin path dependencies, or are preparing plugin files for distribution via\n-  npx skills add or uvx.\n+  fix cross-plugin path dependencies, run a portability audit on a repository, neutralize\n+  hardcoded machine paths like /Users/, or are preparing plugin files for distribution via\n+  npx skills add or uvx. Also handles evolving a skill in-session while tracking quality\n+  scores with the eval runner to continuously improve skill routing accuracy.\n \n   <example>\n   Context: Agent just wrote a SKILL.md with a hardcoded source repo path.\n@@ -16,13 +18,31 @@ description: >\n   </commentary>\n   </example>\n \n+  <example>\n+  Context: User wants all plugin files ready for distribution.\n+  user: \"Run a portability audit on all SKILL.md files in this repo\"\n+  assistant: [triggers fix-plugin-paths, generates task tracker, audits each file one-by-one, marks complete, runs final sweep]\n+  <commentary>\n+  Repository-wide remediation request \u2014 use the Task Tracker Workflow.\n+  </commentary>\n+  </example>\n+\n+  <example>\n+  Context: Agent is mid-session doing related work and wants continuous skill improvement.\n+  user: \"Evolve the fix-plugin-paths skill while you work\"\n+  assistant: [triggers fix-plugin-paths Mode C, scaffolds evals if missing, establishes baseline, scores after each SKILL.md edit]\n+  <commentary>\n+  In-session evolution request \u2014 use Mode C: Direct Evolution Protocol.\n+  </commentary>\n+  </example>\n+\n allowed-tools: Bash, Read, Write, Edit\n ---\n \n # Identity: Plugin Path Portability Enforcer\n \n-You audit and fix path references in plugin skill and agent files to ensure they work\n-correctly when installed via `npx skills add`, the plugin installer, or `uvx`.\n+You audit, fix, and continuously improve plugin path portability in skill and agent files.\n+You ensure they work correctly when installed via `npx skills add`, the plugin installer, or `uvx`.\n \n **The core rule:** When a skill is installed, only its own directory exists:\n ```\n@@ -38,17 +58,19 @@ The full ruleset is in `references/fix-plugin-paths.prompt.md`.\n \n ---\n \n-## Phase 0: Identify Target\n+## Phase 0: Intake\n \n-If the user specifies a file or directory, use those. Otherwise:\n-```bash\n-# Find all .md files in the current plugin folder with broken path references\n-grep -rl \"plugins/[a-z][a-z-]*/\" . --include=\"*.md\" \\\n-  | grep -v \"CHANGELOG\\|broken_symlinks\\|repair_report\" \\\n-  | sort > /tmp/files_to_fix.txt\n-wc -l /tmp/files_to_fix.txt\n+If the user specifies a file or directory, confirm and proceed. Otherwise ask one question:\n+\n+```\n+Scope:  <single file | plugin directory | full repository>\n+Mode:   A) Single audit     \u2014 fix one file now\n+        B) Repository audit \u2014 generate task tracker, fix all flagged files\n+        C) In-session evolve \u2014 continuously score SKILL.md after each edit\n ```\n \n+Auto-detect the scope if inferable from context. If mode is clear from the request, skip the question.\n+\n ---\n \n ## Phase 1: Audit a File\n@@ -86,12 +108,12 @@ Zero results = clean.\n \n ---\n \n-## \ud83d\udccb Task Tracker Workflow (Standard Operating Procedure)\n+## \ud83d\udccb Task Tracker Workflow (Mode B \u2014 Repository-Wide Remediation)\n \n-For repository-wide remediation, always follow this three-step cycle to ensure no files are missed and all fixes are verified.\n+For repository-wide remediation, always follow this three-step cycle.\n \n ### 1. Generate Task Tracker\n-Initialize a `por",
+  "routing_detail": [
+    {
+      "input": "fix the plugin path references in this skill.md",
+      "should_trigger": true,
+      "matched_keywords": [
+        "path",
+        "plugin",
+        "references",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "audit all plugin files for broken path references",
+      "should_trigger": true,
+      "matched_keywords": [
+        "audit",
+        "broken",
+        "files",
+        "path",
+        "plugin",
+        "references"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "standardize path references after installing this skill",
+      "should_trigger": true,
+      "matched_keywords": [
+        "after",
+        "installing",
+        "path",
+        "references",
+        "skill",
+        "standardize"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "there are hardcoded plugins/ paths in my skill files \u2014 fix them",
+      "should_trigger": true,
+      "matched_keywords": [
+        "files",
+        "hardcoded",
+        "paths",
+        "plugins",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "prepare these plugin files for distribution via npx skills add",
+      "should_trigger": true,
+      "matched_keywords": [
+        "distribution",
+        "files",
+        "plugin",
+        "skills"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "i see /users/richardfremmerlid in my skill.md \u2014 remove the machine path",
+      "should_trigger": true,
+      "matched_keywords": [
+        "machine",
+        "path",
+        "skill",
+        "users"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "fix cross-plugin path dependencies in agent-agentic-os",
+      "should_trigger": true,
+      "matched_keywords": [
+        "agent",
+        "cross",
+        "dependencies",
+        "path",
+        "plugin"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "run a portability audit on all skill.md files in this repo",
+      "should_trigger": true,
+      "matched_keywords": [
+        "audit",
+        "files",
+        "portability",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "there are broken symlinks in my installed skills folder",
+      "should_trigger": false,
+      "matched_keywords": [
+        "broken",
+        "installed",
+        "skills"
+      ],
+      "triggered": true,
+      "correct": false,
+      "failure_reason": "false positive \u2014 keywords ['broken', 'installed', 'skills'] matched a should_trigger=false input"
+    },
+    {
+      "input": "create a new plugin skill for link checking",
+      "should_trigger": false,
+      "matched_keywords": [
+        "plugin",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": false,
+      "failure_reason": "false positive \u2014 keywords ['plugin', 'skill'] matched a should_trigger=false input"
+    },
+    {
+      "input": "help me format this markdown file",
+      "should_trigger": false,
+      "matched_keywords": [],
+      "triggered": false,
+      "correct": true
+    },
+    {
+      "input": "install plugins from the repository",
+      "should_trigger": false,
+      "matched_keywords": [
+        "plugins",
+        "repository"
+      ],
+      "triggered": true,
+      "correct": false,
+      "failure_reason": "false positive \u2014 keywords ['plugins', 'repository'] matched a should_trigger=false input"
+    }
+  ],
+  "heuristic_detail": [
+    {
+      "check": "folder_name_matches",
+      "penalty": 0.0,
+      "passed": true
+    },
+    {
+      "check": "description_length",
+      "penalty": 0.0,
+      "passed": true
+    },
+    {
+      "check": "example_blocks",
+      "penalty": 0.0,
+      "passed": true,
+      "note": "3 blocks found"
+    },
+    {
+      "check": "body_length",
+      "penalty": 0.0,
+      "passed": true
+    },
+    {
+      "check": "references_non_empty",
+      "penalty": 0.0,
+      "passed": true
+    }
+  ],
+  "timestamp": "2026-04-03T16:17:49.266948"
+}

@@ -1,2 +1,4 @@
 timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
 2026-04-03T16:15:31.447381	ed37eec5	0.7950	0.0000	0.7500	0.9000	0.8421	BASELINE	initial baseline: post task-tracker workflow + self-referential path fixes
+2026-04-03T16:17:49.250390	73b567cc	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	major upgrade: intake + mode C in-session evolution + self-assessment + operating principles
+2026-04-03T16:21:25.653401	55f17c25	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	continuing audit: self-audit.md fix + tracker updates + 21 files processed

@@ -76,7 +76,7 @@ We added a scaffold layer to standardize this:
 **How to use:**
 ```bash
 # Deploy templates into a new experiment
-python plugins/autoresearch-improvement/scripts/init_autoresearch.py \
+python ./scripts/init_autoresearch.py \
     --experiment-dir <path/to/experiment> \
     --mutation-target SKILL.md   # or any filename
 ```
