@@ -79,7 +79,7 @@ Each flywheel has its own eval targets, its own memory artifacts, and its own cl
 A session that runs INNER loop work must still close through the OUTER loop's Phase 6/7
 (os-memory-manager + os-skill-improvement) to persist learnings and harden OS-level routing.
 
-See `assets/diagrams/improvement-flywheel.mmd` for the full visual.
+See `assets/diagrams/triple-loop-learning-system.mmd` for the full visual.
 
 ---
 

@@ -178,7 +178,7 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 |---------|-------------|
 | ![Overview](./assets/diagrams/agentic-os-overview.png) | Conceptual OS structure |
 | ![Structure](./assets/diagrams/agentic-os-structure.png) | Physical plugin architecture |
-| ![Loop lifecycle](./assets/diagrams/agentic-os-loop-lifecycle.png) | Improvement loop sequence |
+| ![Triple Loop](./assets/diagrams/triple-loop-learning-system.mmd) | The Unified Triple-Loop Architecture |
 | ![Memory subsystem](./assets/diagrams/agentic-os-memory-subsystem.png) | Memory promotion flowchart |
 
 ---
