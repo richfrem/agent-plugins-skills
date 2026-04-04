@@ -17,5 +17,16 @@
         }
     },
     "license": "MIT",
-    "keywords": ["markdown", "docx", "msword", "convert", "word", "document"]
+    "keywords": [
+        "markdown",
+        "docx",
+        "msword",
+        "convert",
+        "word",
+        "document"
+    ],
+    "capabilities": [
+        "document-conversion",
+        "markdown-processing"
+    ]
 }

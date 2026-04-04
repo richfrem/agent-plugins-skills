@@ -7,5 +7,17 @@
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
-    "keywords": ["claude", "anthropic", "cli", "sub-agent", "persona", "security-audit", "code-review"]
+    "keywords": [
+        "claude",
+        "anthropic",
+        "cli",
+        "sub-agent",
+        "persona",
+        "security-audit",
+        "code-review"
+    ],
+    "capabilities": [
+        "cli-integration",
+        "claude-cli"
+    ]
 }

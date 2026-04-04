@@ -7,5 +7,17 @@
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
-    "keywords": ["copilot", "github-copilot", "cli", "sub-agent", "persona", "security-audit", "code-review"]
+    "keywords": [
+        "copilot",
+        "github-copilot",
+        "cli",
+        "sub-agent",
+        "persona",
+        "security-audit",
+        "code-review"
+    ],
+    "capabilities": [
+        "cli-integration",
+        "copilot-cli"
+    ]
 }

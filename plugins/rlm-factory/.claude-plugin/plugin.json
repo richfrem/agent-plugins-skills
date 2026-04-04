@@ -35,5 +35,10 @@
         "models": [
             "granite3.2:8b (default)"
         ]
-    }
+    },
+    "capabilities": [
+        "rlm-distillation",
+        "vector-search",
+        "semantic-search"
+    ]
 }

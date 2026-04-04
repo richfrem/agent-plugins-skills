@@ -15,5 +15,10 @@
         "session-management",
         "rlm",
         "vector-db"
+    ],
+    "capabilities": [
+        "memory",
+        "session-continuity",
+        "tiered-storage"
     ]
 }

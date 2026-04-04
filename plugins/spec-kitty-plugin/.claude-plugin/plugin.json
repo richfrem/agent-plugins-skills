@@ -18,5 +18,10 @@
     "prerequisites": {
         "spec-kitty-cli": "pip install spec-kitty-cli OR uv tool install spec-kitty-cli",
         "init": "spec-kitty init . --ai windsurf"
-    }
+    },
+    "capabilities": [
+        "spec-driven-dev",
+        "tdd-workflow",
+        "feature-lifecycle"
+    ]
 }

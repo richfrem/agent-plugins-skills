@@ -13,5 +13,9 @@
         "python",
         "requirements",
         "security"
+    ],
+    "capabilities": [
+        "dependency-management",
+        "package-management"
     ]
 }

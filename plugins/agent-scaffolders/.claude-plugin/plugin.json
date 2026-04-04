@@ -12,5 +12,10 @@
         "plugin-generator",
         "skill-generator",
         "agent-tooling"
+    ],
+    "capabilities": [
+        "skill-scaffolding",
+        "plugin-scaffolding",
+        "code-generation"
     ]
 }

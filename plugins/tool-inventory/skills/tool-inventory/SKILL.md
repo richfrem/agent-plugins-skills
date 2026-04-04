@@ -33,6 +33,7 @@ This skill combines **Tool Discovery** (finding tools) and **Inventory Managemen
 |:---|:---|:---|
 | `manage_tool_inventory.py` | **The Registry** - CRUD on `tool_inventory.json` | Triggers RLM distillation |
 | `audit_plugins.py` | **The Auditor** — Verify inventory consistency | Filesystem check |
+| `build_capability_index.py` | **The Capability Indexer** — Builds `~~category` → plugin mapping from `plugin.json` | stdlib only |
 
 > **Note**: For Semantic Search, Distillation, Cache Querying, and Cleanup, you **MUST** use the respective scripts inside the `rlm-curator` skill provided by the `rlm-factory` plugin.
 
@@ -77,6 +78,19 @@ python3 ./scripts/manage_tool_inventory.py discover --auto-stub
 ```bash
 python3 ./scripts/manage_tool_inventory.py generate
 ```
+
+### 4. Build Capability Index (`~~category` Discovery)
+Scans all `plugin.json` files and builds a `capability → [plugin]` index for semantic
+`~~category` resolution used by CONNECTORS.md files across the ecosystem.
+
+```bash
+python3 ./scripts/build_capability_index.py
+```
+
+Output: `plugins/tool-inventory/assets/capability-index.json`
+
+Run this whenever plugins are added, removed, or their `capabilities` array changes.
+The index is the authoritative resolution table for all `~~category` placeholders.
 
 ## Next Actions
 If any of these registry scripts fail or ChromaDB refuses a connection, immediately refer to the `references/fallback-tree.md`.

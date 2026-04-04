@@ -130,8 +130,8 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 ```
 ✅ Scaffolded: plugins/<plugin>/skills/<skill-name>/
    Files created: SKILL.md, evals/evals.json, references/acceptance-criteria.md
-   Quality gate: [PASSED via os-skill-improvement | SKIPPED — os-skill-improvement not installed]
-   Next: fill in REPLACE placeholders in evals/evals.json, then run os-eval-runner baseline
+   Quality gate: [PASSED via ~~skill-improvement | SKIPPED — ~~eval-gate not installed]
+   Next: fill in REPLACE placeholders in evals/evals.json, then run ~~eval-gate baseline
 ```
 
 ---
@@ -140,7 +140,7 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 
 - **Empty `$ARGUMENTS`**: begin with Phase 1 discovery — do not skip to scaffolding
 - **Existing directory**: dual-confirmation before any overwrite (see Phase 2)
-- **Improving an existing skill**: redirect to `os-skill-improvement` — that skill owns content
+- **Improving an existing skill**: redirect to `~~skill-improvement` capability — that skill owns content
   quality and routing improvement. `create-skill` is for net-new scaffolding only.
 - **Scaffold script crash**: read the Python stack trace, correct obvious errors, or surface
   the full trace to the user — do not silently skip
@@ -153,5 +153,5 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 
 - [`acceptance-criteria.md`](references/acceptance-criteria.md) — structural pass/fail criteria
 - [`fallback-tree.md`](fallback-tree.md) — error handling procedures
-- **`os-skill-improvement`** *(agent-agentic-os plugin)*: TDD methodology, RED scenario protocol, eval gate.
-- **`os-eval-runner`** *(agent-agentic-os plugin)*: autoresearch eval loop for skill optimization.
+- **`~~skill-improvement`** *(~~eval-gate capability — see CONNECTORS.md)*: TDD methodology, RED scenario protocol, eval gate.
+- **`~~eval-gate`** *(~~eval-gate capability — see CONNECTORS.md)*: autoresearch eval loop for skill optimization.

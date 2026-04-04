@@ -36,5 +36,10 @@
     },
     "prerequisites": {
         "rlm-factory": "Optional but recommended \u2014 provides Super-RAG context injection"
-    }
+    },
+    "capabilities": [
+        "vector-search",
+        "embeddings",
+        "semantic-retrieval"
+    ]
 }

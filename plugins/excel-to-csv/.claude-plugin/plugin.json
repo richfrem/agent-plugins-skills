@@ -14,5 +14,9 @@
         "data",
         "l5-verified",
         "safe-extraction"
+    ],
+    "capabilities": [
+        "document-conversion",
+        "data-processing"
     ]
 }

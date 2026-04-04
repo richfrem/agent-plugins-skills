@@ -67,10 +67,17 @@ When executing `task_manager.py`:
 
 ## Core Workflows
 
-### 1. Creating a Task
+
+### 1. Creating a Task (Best Practice)
+**Always create the task with a short, descriptive title first to avoid filename length errors.**
+
 ```bash
-python3 ./scripts/task_manager.py create "Fix login validation" --lane todo
+python3 ./scripts/task_manager.py create "Short Title" --lane todo
 ```
+
+**After creation, update the generated Markdown file to add full details, objectives, and acceptance criteria.**
+
+This two-step process ensures filenames remain valid and all task details are captured without error.
 
 ### 2. Viewing the Board
 ```bash

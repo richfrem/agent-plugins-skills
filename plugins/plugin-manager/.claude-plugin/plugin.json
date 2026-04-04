@@ -15,5 +15,10 @@
         "installer",
         "bridge",
         "deployment"
+    ],
+    "capabilities": [
+        "plugin-management",
+        "ecosystem-orchestration",
+        "deployment"
     ]
 }

@@ -15,5 +15,10 @@
         "agent-swarm",
         "red-team-review",
         "multi-agent"
+    ],
+    "capabilities": [
+        "orchestration",
+        "multi-agent",
+        "red-team-review"
     ]
 }
