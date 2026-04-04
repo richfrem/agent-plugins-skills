@@ -11,7 +11,7 @@
         "agent-loops",
         "orchestrator",
         "learning-loop",
-        "triple-loop",
+        "dual-loop",
         "agent-swarm",
         "red-team-review",
         "multi-agent"

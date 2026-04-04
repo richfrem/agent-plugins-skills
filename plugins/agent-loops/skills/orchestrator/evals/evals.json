@@ -1,5 +1,5 @@
 [
-  {"prompt": "Assess this task and decide whether to run a learning loop, triple-loop delegation, or parallel swarm.", "should_trigger": true},
+  {"prompt": "Assess this task and decide whether to run a learning loop, dual-loop delegation, or parallel swarm.", "should_trigger": true},
   {"prompt": "Analyze this ambiguous work assignment and route it to the appropriate agent-loop pattern.", "should_trigger": true},
   {"prompt": "Evaluate the incoming trigger and manage the shared closure — seal, persist, retrospective.", "should_trigger": true},
   {"prompt": "Launch multiple parallel agents to process these independent tasks across worktrees.", "should_trigger": false},
