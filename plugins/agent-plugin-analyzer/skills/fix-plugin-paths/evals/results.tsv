@@ -3,3 +3,5 @@ timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
 2026-04-03T16:17:49.250390	73b567cc	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	major upgrade: intake + mode C in-session evolution + self-assessment + operating principles
 2026-04-03T16:21:25.653401	55f17c25	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	continuing audit: self-audit.md fix + tracker updates + 21 files processed
 2026-04-03T16:46:22.576223	0691bbf5	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	use relative root dir for self eval script
+2026-04-03T17:30:52.029078	57f9185c	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	Iter 7: whitelists for link-checker, adr-manager, doc-patterns
+2026-04-03T18:19:53.895430	57f9185c	0.8250	0.7950	0.7500	1.0000	0.8421	KEEP	Iter 18: whitelisted maintain-plugins/ and reaching zero violations

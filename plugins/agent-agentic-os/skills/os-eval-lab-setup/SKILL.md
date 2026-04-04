@@ -46,7 +46,7 @@ The local filesystem path to the lab git repository (e.g. `<USER_HOME>/Projects/
 If it doesn't exist: "Should I create a new directory at that path and initialize it as a git repo?"
 
 **Q2 — Target plugin path?**
-The canonical plugin path in `agent-plugins-skills` (e.g. `plugins/link-checker`). This is
+The canonical plugin path in `agent-plugins-skills` (e.g. `.agents/skills/link-checker`). This is
 what gets hard-copied into the lab repo.
 
 **Q3 — Target skill name?**

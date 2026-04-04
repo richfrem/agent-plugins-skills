@@ -26,10 +26,10 @@ Templates live at:
         results.tsv.template     (schema header — no vars)
 
 Usage:
-    python plugins/autoresearch-improvement/scripts/init_autoresearch.py \\
+    python scripts/init_autoresearch.py \\
         --experiment-dir <path/to/experiment-or-skill> \\
         [--mutation-target SKILL.md] \\
-        [--plugin-root plugins/autoresearch-improvement]
+        [--plugin-root .agents/plugins/autoresearch-improvement]
 
     # For a skill:
     python scripts/init_autoresearch.py \\
@@ -164,7 +164,7 @@ def main() -> None:
     parser.add_argument(
         "--plugin-root", default=None,
         help="Path to the plugin owning evaluate.py / eval_runner.py. "
-             "Defaults to plugins/autoresearch-improvement."
+             "Defaults to the parent of this script's directory."
     )
     args = parser.parse_args()
 

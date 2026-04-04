@@ -232,16 +232,16 @@ After the human reviews and approves the accumulated improvements on the `skillo
 
 ```bash
 cp .agents/agents/spec-kitty-agent.md \
-   <USER_HOME>/Projects/agent-plugins-skills/plugins/spec-kitty-plugin/agents/spec-kitty-agent.md
+   plugins/spec-kitty-plugin/agents/spec-kitty-agent.md
 
 cp .agents/skills/spec-kitty-workflow/SKILL.md \
-   <USER_HOME>/Projects/agent-plugins-skills/.agents/skills/spec-kitty-workflow/SKILL.md
+   .agents/skills/spec-kitty-workflow/SKILL.md
 
 cp .agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd \
-   <USER_HOME>/Projects/agent-plugins-skills/.agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd
+   .agents/skills/spec-kitty-workflow/pure-spec-kitty-workflow.mmd
 
 cp .agents/skills/spec-kitty-agent/SKILL.md \
-   <USER_HOME>/Projects/agent-plugins-skills/.agents/skills/spec-kitty-agent/SKILL.md
+   .agents/skills/spec-kitty-agent/SKILL.md
 ```
 
 Then redeploy by following the authoritative installation hub for current deployment logic:

@@ -545,7 +545,7 @@ Every data ingestion path is a potential attack vector:
 
 ### Reference
 
-- `/Users/richardfremmerlid/Projects/manchurian-agent-poc` — full PoC with red team assessments from Gemini, Claude, and Copilot CLI
+- `~/Projects/manchurian-agent-poc` — full PoC with red team assessments from Gemini, Claude, and Copilot CLI
 - Research paper: `manchurian-agent-poc/research/2602.06547v1.pdf`
 - Red team rounds 1 and 2 findings in `001-manchurian-candidate-poc/red-team-reviews/`
 
