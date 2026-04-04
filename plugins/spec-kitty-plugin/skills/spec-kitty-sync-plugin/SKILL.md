@@ -78,7 +78,7 @@ spec-kitty init . --ai windsurf --force
 
 ### Step 3: Sync to Spec-Kitty Plugin (Automated)
 
-Convert the refreshed `.kittify/` templates into distributable plugin components inside `plugins/spec-kitty-plugin/`:
+Convert the refreshed `.kittify/` templates into distributable plugin components inside the `spec-kitty-plugin` directory:
 ```bash
 python3 ./sync_configuration.py
 ```

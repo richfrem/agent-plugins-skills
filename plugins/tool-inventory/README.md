@@ -24,8 +24,8 @@ Semantic tool discovery powered by ChromaDB. Integrates directly with the `rlm-f
 
 | Store | Location | Purpose |
 |:---|:---|:---|
-| **ChromaDB** | `plugins/tool-inventory/data/chroma/` | Semantic search (primary) |
-| **JSON Inventory** | `plugins/tool_inventory.json` | Project-level structured registry |
+| **ChromaDB** | `data/chroma/` | Semantic search (primary) |
+| **JSON Inventory** | `tool_inventory.json` | Project-level structured registry |
 | **JSON Cache** | `.agent/learning/rlm_tool_cache.json` | Backward compat |
 
 ChromaDB is the primary truth store. JSON cache is kept for backward compatibility.

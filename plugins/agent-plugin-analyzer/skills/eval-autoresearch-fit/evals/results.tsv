@@ -1,0 +1,2 @@
+timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
+2026-04-03T16:48:07.298915	6fac9105	0.9100	0.0000	1.0000	0.7000	1.0000	BASELINE	use relative root dir for self eval script

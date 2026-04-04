@@ -55,7 +55,7 @@ This plugin enforces strict **Workflow Provenance** to maintain a single source 
 Rather than duplicating workflow files (which leads to drift and destructive overwrites), the plugin utilizes a central asset mapping architecture driven by `sync_configuration.py`. 
 
 The upstream master `*.md` files live in `.windsurf/workflows/`. When you execute `python3 scripts/sync_configuration.py`, the script:
-1. Generates master symlinks within `plugins/spec-kitty-plugin/workflows/` mapping back to the `.windsurf/workflows/` master definitions.
+1. Generates master symlinks within `spec-kitty-plugin/workflows/` mapping back to the `.windsurf/workflows/` master definitions.
 2. Creates isolated nested `workflows/` symlinks within each individual `skills/*` directory.
 3. Injects a deterministic `[./workflows/spec-kitty.<feature>.md](./workflows/...)` provenance header into every compiled `SKILL.md`.
 

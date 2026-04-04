@@ -1,0 +1,16 @@
+{
+  "global_patterns": [
+    "github\\.com/.*?/plugins/",
+    "<APS_ROOT>/plugins/",
+    "plugins/my-",
+    "plugins/<"
+  ],
+  "file_specific_patterns": {
+    "plugins/agent-agentic-os/assets/architecture-overview.md": [
+      "  plugins/agent-agentic-os/          <- plugin source"
+    ],
+    "plugins/plugin-manager/references/plugin_replicator_overview.md": [
+      "plugins/base-plugin"
+    ]
+  }
+}

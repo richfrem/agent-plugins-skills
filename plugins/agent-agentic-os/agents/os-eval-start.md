@@ -173,7 +173,7 @@ from the template format.
 
 ### 2C.2 Establish baseline
 ```bash
-python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
   --skill <skill-path> --baseline --desc "initial baseline"
 git add <skill-path>/evals/ && git commit -m "baseline: <skill-name> eval start"
 ```
@@ -185,7 +185,7 @@ After **every edit** to the skill's `SKILL.md` during the session:
 
 1. **Score:** Run the evaluator against the updated file.
    ```bash
-   python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+   python3 .agents/skills/os-eval-runner/scripts/evaluate.py \
      --skill <skill-path> --desc "<what changed>"
    ```
 2. **KEEP (exit 0):** Commit the change.
@@ -289,7 +289,7 @@ When the user returns and says "backport <skill-name>":
 
 ## Troubleshooting
 
-- **Skill not found**: use full path `plugins/<plugin>/skills/<skill-name>`
+- **Skill not found**: use full path `.agents/skills/<skill-name>`
 - **Proposer CLI missing**: `npm install -g @githubnext/github-copilot-cli` or `npm install -g @google/gemini-cli`
 - **gh not installed**: `brew install gh && gh auth login`
 - **npx skills crashes on -y**: run without it, press Enter at prompt

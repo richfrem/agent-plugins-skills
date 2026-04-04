@@ -21,9 +21,9 @@ This project uses multiple technology stacks that each require dependency manage
 
 | Tool | Location | Purpose |
 |------|----------|---------|
-| **Vector DB Plugin** | `plugins/vector-db/` | Vector database management and retrieval operations |
-| **RLM Factory Plugin** | `plugins/rlm-factory/` | Generates RLM configurations and manages AI model tasks |
-| **Context Bundler** | `plugins/context-bundler/` | Bundles context for LLMs |
+| **Vector DB Plugin** | `vector-db/` | Vector database management and retrieval operations |
+| **RLM Factory Plugin** | `rlm-factory/` | Generates RLM configurations and manages AI model tasks |
+| **Context Bundler** | `context-bundler/` | Bundles context for LLMs |
 
 ### Adding a Python Dependency
 
@@ -88,8 +88,8 @@ pip-compile --upgrade ../../requirements.in
 
 | Tool | Location | Purpose |
 |------|----------|---------|
-| **Spec-Kitty Dashboard** | `plugins/spec-kitty-dashboard/` | Next.js frontend for spec-kitty data |
-| **Example UI** | `plugins/example-ui/` | Web interfaces for specific agent tools |
+| **Spec-Kitty Dashboard** | `spec-kitty-dashboard/` | Next.js frontend for spec-kitty data |
+| **Example UI** | `example-ui/` | Web interfaces for specific agent tools |
 
 ### Managing Node.js Dependencies
 
@@ -103,7 +103,7 @@ npm ci
 
 **2. Adding a Dependency (Modifying Intent)**
 ```bash
-cd plugins/spec-kitty-dashboard
+cd spec-kitty-dashboard
 npm install <package-name>
 # This updates package.json (Intent) AND regenerates package-lock.json (Truth)
 ```
@@ -132,8 +132,8 @@ git diff package-lock.json
 
 | Project | Location | Purpose |
 |---------|----------|---------|
-| **Example Plugin API** | `plugins/example-api/dotnet/` | Backend extensions for agent APIs |
-| **Shared Services** | `plugins/shared-services/dotnet/` | Shared enterprise logic |
+| **Example Plugin API** | `example-api/dotnet/` | Backend extensions for agent APIs |
+| **Shared Services** | `shared-services/dotnet/` | Shared enterprise logic |
 
 ### Managing .NET Dependencies
 

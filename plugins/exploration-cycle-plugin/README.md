@@ -48,8 +48,8 @@ When Diamond 2 (Execution) uncovers an "unknown unknown"—unresolved ambiguity 
 To maintain the "Cheap Exploration" economic advantage, all documentation sub-agents are invoked via a dedicated `dispatch.py` wrapper. This avoids context truncation and ensures precise subprocess execution.
 
 ```bash
-python3 plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/dispatch.py \
-  --agent plugins/exploration-cycle-plugin/agents/requirements-doc-agent.md \
+python3 ./skills/exploration-workflow/scripts/dispatch.py \
+  --agent ./agents/requirements-doc-agent.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md \
   --instruction "Mode: business-requirements. Extract functional requirements." \
   --output exploration/captures/brd-draft.md

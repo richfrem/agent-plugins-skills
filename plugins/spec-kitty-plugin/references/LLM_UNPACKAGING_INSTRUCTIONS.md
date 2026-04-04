@@ -5,7 +5,7 @@ This bundle contains the complete toolset for the "Universal Bridge" capability 
 
 ## Contents
 The bundle includes files for the following directories:
-1.  `plugins/bridge/` - The core Python scripts and documentation.
+1.  `bridge/` - The core Python scripts and documentation.
 2.  `.agents/skills/spec-kitty-bridge/` - The skill definition for AI agents.
 3.  `.agents/workflows/utilities/` - The user-facing workflow trigger.
 
@@ -21,7 +21,7 @@ To unpackage and install this capability:
     Trigger the `spec-kitty-plugin:spec-kitty-sync-plugin` skill to confirm the bridge is operational.
 
 4.  **Register Tools**:
-    Access `plugins/bridge/plugins/tool_inventory.json` (included in this bundle) to see the list of tools available for registration in your agent's configuration.
+    Access `bridge/plugins/tool_inventory.json` (included in this bundle) to see the list of tools available for registration in your agent's configuration.
 
 5.  **Restart IDE**:
     If this is a fresh install, restart the IDE to load the new slash commands (e.g., `/spec-kitty.bridge`).

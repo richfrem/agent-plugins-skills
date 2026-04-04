@@ -34,4 +34,4 @@ This skill manages the installation of standalone plugins into agent environment
 -   **Batch Install**: Trigger `maintain-plugins` skill to install all plugins at once.
 
 ## 5. Visual Representation
-See `plugins/spec-kitty/docs/bridge_process.mmd` for a detailed process diagram.
+See `docs/bridge_process.mmd` for a detailed process diagram.

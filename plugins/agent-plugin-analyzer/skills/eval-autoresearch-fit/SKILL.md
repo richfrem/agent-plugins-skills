@@ -165,7 +165,7 @@ Then update the JSON using the update script:
 
 ```bash
 DATA_JSON=$(git rev-parse --show-toplevel)/plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json
-SKILL_DIR=$(git rev-parse --show-toplevel)/plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit
+SKILL_DIR=.
 
 python "$SKILL_DIR/scripts/update_ranked_skills.py" \
   --json-path "$DATA_JSON" \

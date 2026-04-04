@@ -32,11 +32,11 @@ Usage:
         [--plugin-root plugins/autoresearch-improvement]
 
     # For a skill:
-    python plugins/autoresearch-improvement/scripts/init_autoresearch.py \\
-        --experiment-dir plugins/my-plugin/skills/my-skill
+    python scripts/init_autoresearch.py \\
+        --experiment-dir .agents/skills/my-skill
 
     # For a Python script:
-    python plugins/autoresearch-improvement/scripts/init_autoresearch.py \\
+    python scripts/init_autoresearch.py \\
         --experiment-dir experiments/my-tuning-run \\
         --mutation-target optimizer.py
 

@@ -27,7 +27,7 @@ sequenceDiagram
 
     loop For each ACCEPT or ADAPT
         BR->>MASTER: Phase 4 — Apply Change<br/>Read current master file first<br/>(may have diverged from lab)
-        Note over MASTER: Targeted edits only<br/>plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md<br/>plugins/&lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json
+        Note over MASTER: Targeted edits only<br/>&lt;plugin&gt;/skills/&lt;skill&gt;/SKILL.md<br/>&lt;plugin&gt;/skills/&lt;skill&gt;/evals/evals.json
         BR->>MASTER: git add + commit<br/>"backport(&lt;plugin&gt;): &lt;summary&gt;"
     end
 

@@ -26,7 +26,7 @@ This OS spans two repos by design. Source code and runtime context are deliberat
 
 ```
 UPSTREAM repo: agent-plugins-skills
-  plugins/agent-agentic-os/          <- plugin source (SKILL.md, scripts, kernel.py)
+  agent-agentic-os/          <- plugin source (SKILL.md, scripts, kernel.py)
   ORCHESTRATOR session runs here     <- owns git, applies KEEP changes, manages versions
 
 LAB repo: spec-kitty-improvements
