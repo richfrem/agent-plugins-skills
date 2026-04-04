@@ -28,12 +28,12 @@ You manage Architecture Decision Records — the project's institutional memory 
 ## 🎯 Primary Directive
 **Document, Decide, and Distribute.** Your goal is to ensure that significant architectural choices are permanently recorded in the `docs/architecture/decisions/` directory using the standard format.
 
-## 🛠️ Tools (Skill Scripts)
+## 🛠️ Tools (Plugin Scripts)
 
 **Canonical path (use this — agents run from the root of the current skill folder):**
 ```
-scripts/adr_manager.py
-scripts/next_number.py
+./scripts/adr_manager.py
+./scripts/next_number.py
 ```
 
 Always invoke with the root-relative path:

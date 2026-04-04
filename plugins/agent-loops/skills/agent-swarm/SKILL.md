@@ -77,21 +77,21 @@ The **./../scripts/swarm_run.py** script is the universal engine for executing t
 # Zero-cost Copilot batch (2 workers recommended to avoid rate limits)
 source ~/.zshrc   # NOTE: use source ~/.zshrc, NOT 'export COPILOT_GITHUB_TOKEN=$(gh auth token)'
                   # gh auth token generates a PAT without Copilot scope -> auth failures
-python3 ./../scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
     --engine copilot \
     --job ./resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 2
 
 # Gemini (free, higher parallelism)
-python3 ./../scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
     --engine gemini \
     --job ./resources/jobs/my_job.job.md \
     --files-from checklist.md \
     --resume --workers 5
 
 # Claude (paid, highest quality)
-python3 ./../scripts/swarm_run.py \
+python3 ./scripts/swarm_run.py \
     --job ./resources/jobs/my_job.job.md \
     [--dir some/dir] [--resume] [--dry-run]
 ```
@@ -114,14 +114,14 @@ vars:
 Prompt for the agent goes here.
 
 IMPORTANT for Copilot engine: The copilot CLI ignores stdin when -p is used.
-Instead, the instruction is prepended to the file content automatically by ./../scripts/swarm_run.py.
+Instead, the instruction is prepended to the file content automatically by ./scripts/swarm_run.py.
 Do NOT use tool calls or filesystem access - rely only on the content provided via stdin.
 ```
 
 ## Known Engine Quirks
 
 ### Copilot CLI
-- **No `-p` flag** -- Copilot ignores stdin when `-p` is present. `scripts/swarm_run.py` automatically prepends the prompt to the file content instead.
+- **No `-p` flag** -- Copilot ignores stdin when `-p` is present. `./scripts/swarm_run.py` automatically prepends the prompt to the file content instead.
 - **Auth token scope** -- Use `source ~/.zshrc` to load your token. `gh auth token` returns a PAT without Copilot permissions, causing auth failures under concurrency.
 - **Rate limits** -- Use `--workers 2` maximum. Higher concurrency trips GitHub's anti-abuse systems and surfaces as authentication errors.
 - **Concurrent writes** -- If using a shared JSON post-cmd output (e.g. cache), ensure the writer script uses `fcntl.flock` for atomic writes. See `inject_summary.py`.
