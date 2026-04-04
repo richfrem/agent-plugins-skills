@@ -134,6 +134,6 @@ Full ADR records: `ADRs/` at repo root.
 ## Pattern Library
 
 L4 pattern definitions (65+) are referenced from each skill's `references/patterns/` directory
-(file-level symlinks to `plugins/agent-skill-open-specifications/L4-pattern-definitions/`).
+(file-level symlinks to the `agent-skill-open-specifications` L4-pattern-definitions directory).
 Key patterns: Progressive Disclosure, Graduated Autonomy, Escalation Taxonomy, Dual-Mode
 Bootstrap, Artifact Lifecycle, Persistent Plugin Configuration, Anti-Pattern Vaccination.

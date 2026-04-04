@@ -75,14 +75,13 @@ Auto-detect the scope if inferable from context. If mode is clear from the reque
 
 ## Phase 1: Audit a File
 
-For each target file, check which rules from `references/fix-plugin-paths.prompt.md` apply:
+For each target file, check which rules from `references/fix-plugin-paths.prompt.md` apply using the auditor script:
 
 ```bash
-grep -n "plugins/[a-z][a-z-]*/" <file> | grep -v "github.com\|\$\|<APS_ROOT>\|plugins/my-\|plugins/<"
-grep -n "\.agents/skills/[a-z]" <file>
-grep -n "/Users/" <file>
-grep -n "{{PLUGIN_DIR}}" <file>
+python3 scripts/audit_plugin_paths.py <directory-or-file>
 ```
+
+If the script flags an issue that is functionally required (like a structural diagram or explicit documentation reference), **DO NOT MUTATE THE FILE**. Instead, update `scripts/plugin_paths_whitelist.json` using the Edit tool to include a targeted pattern that squashes the false positive, then re-run the auditor to confirm it cleanly skips that item.
 
 ---
 
@@ -98,10 +97,9 @@ Apply only after confirming the diff is correct.
 
 ## Phase 3: Verify
 
-After fixing, confirm no broken references remain:
+After fixing, confirm no broken references remain by rerunning the auditor:
 ```bash
-grep -n "plugins/[a-z][a-z-]*/" <file> | grep -v "github.com\|\$\|<APS_ROOT>\|plugins/my-\|plugins/<"
-grep -n "/Users/" <file>
+python3 scripts/audit_plugin_paths.py <directory-or-file>
 ```
 
 Zero results = clean.
@@ -113,31 +111,23 @@ Zero results = clean.
 For repository-wide remediation, always follow this three-step cycle.
 
 ### 1. Generate Task Tracker
-Initialize a `portability-audit-report.md` artifact to act as the source of truth.
+Initialize the `scripts/portability-audit-report.md` artifact to act as the source of truth by running the auditor script:
 ```bash
-# Scan for all genuine issues (excluding false positive examples/github links)
-grep -rn "plugins/" . --include="*.md" | \
-grep -vE "github.com|\$|<APS_ROOT>|plugins/my-|plugins/<|plugins/\$" | \
-grep -v "CHANGELOG\|broken_symlinks\|repair_report" | \
-cut -d: -f1 | sort | uniq > /tmp/files_with_issues.txt
-
-# Add absolute machine paths
-grep -rl "/Users/" . --include="*.md" >> /tmp/files_with_issues.txt
-sort -u /tmp/files_with_issues.txt -o /tmp/files_with_issues.txt
+python3 scripts/audit_plugin_paths.py .
 ```
-Populate the report with a checkbox per file.
+This script will automatically generate the `scripts/portability-audit-report.md` formatted with a checkbox per file, itemizing exactly what line contains the issue.
 
 ### 2. Process One-by-One
-- **Audit**: View the next unchecked file and identify rule violations.
-- **Fix**: Apply corrective edits manually.
-- **Update**: Check off the file in the Task Tracker **immediately** after the fix is applied.
-- **Repeat**: Proceed through every item on the list without skipping.
+- **Audit**: Read the generated `scripts/portability-audit-report.md` file to identify the next unchecked rule violation.
+- **Fix**: Apply corrective edits manually to the corresponding file to neutralize the reference.
+- **Whitelist (False Positives)**: If the item represents a structurally necessary path (like a URL or a diagram tree leaf), do **not** mutate the source file. Instead, open `scripts/plugin_paths_whitelist.json` and add a targeted global regex or file-specific string pattern to exempt it.
+- **Regenerate & Verify**: Re-run `python3 scripts/audit_plugin_paths.py .` to update the report. Prove your fix worked by confirming that the issue dropped off the active report.
+- **Repeat**: The skill must continuously loop through these steps, repeatedly running the script, reading the updated report, and applying fixes or whitelists, until all issues are processed.
 
 ### 3. Final Verification
+The loop finishes strictly only when running the auditor returns a completely clean scan:
 ```bash
-grep -rn "plugins/" . --include="*.md" | \
-grep -vE "github.com|\$|<APS_ROOT>|plugins/my-|plugins/<|plugins/\$" | \
-grep -v "CHANGELOG\|broken_symlinks\|repair_report"
+python3 scripts/audit_plugin_paths.py .
 ```
 **Goal: Zero results found.**
 

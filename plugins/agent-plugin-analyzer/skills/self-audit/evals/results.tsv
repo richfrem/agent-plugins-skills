@@ -1,0 +1,2 @@
+timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
+2026-04-03T16:50:56.821689	691ef950	0.2100	0.0000	0.0000	0.7000	0.0000	BASELINE	remove self-referential plugin path

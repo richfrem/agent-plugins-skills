@@ -16,7 +16,7 @@ We have successfully implemented accurate adhering to the core **Late-Binding** 
 | **Semantic Search** | Query RLM index. | ✅ **Implemented** | `query_cache.py` supports both Vector (Semantic) and Fuzzy search. |
 
 ## Exceeded Expectations (Value Add)
-1.  **Inventory Enrichment Feedback Loop**: The vision didn't explicitly ask for the Distiller to write back to the human-readable inventory. We added this, making `plugins/tool_inventory.json` dynamic and self-correcting.
+1.  **Inventory Enrichment Feedback Loop**: The vision didn't explicitly ask for the Distiller to write back to the human-readable inventory. We added this, making `tool_inventory.json` dynamic and self-correcting.
 2.  **Multi-Stack Support**: The system now generically handles Python, JavaScript/Node, and other stacks.
 
 ## Strategic Gaps / Future Work

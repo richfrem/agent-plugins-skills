@@ -40,7 +40,7 @@ and iteratively improve skills using an eval/benchmark loop:
 - Third-person description format with specific trigger phrases
 - Imperative writing style in SKILL.md body (verb-first, not "you should")
 
-Source: `temp/claude-plugins-official/plugins/skill-creator/`
+Source: [GitHub: claude-plugins-official/plugins/skill-creator](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator)
 
 ## Plugin Dev Skills (Anthropic, March 2026)
 
@@ -59,4 +59,4 @@ From Anthropic's official `plugin-dev` plugin:
 - **command-development**: `$ARGUMENTS`, `$1 $2` positional args, `@` file references,
   `!` bash execution, `argument-hint` for autocomplete, `disable-model-invocation`
 
-Source: `temp/claude-plugins-official/plugins/plugin-dev/`
+Source: [GitHub: claude-plugins-official/plugins/plugin-dev](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)

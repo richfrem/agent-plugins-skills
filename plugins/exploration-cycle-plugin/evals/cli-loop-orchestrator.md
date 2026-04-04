@@ -24,8 +24,8 @@ Produce these sections in order:
 ## IMPORTANT: Optimization Targets
 
 You may only propose changes to these files (use the EXACT paths shown):
-- `plugins/exploration-cycle-plugin/agents/requirements-doc-agent.md` — capture agent
-- `plugins/exploration-cycle-plugin/agents/handoff-preparer-agent.md` — handoff agent
+- `./agents/requirements-doc-agent.md` — capture agent
+- `./agents/handoff-preparer-agent.md` — handoff agent
 - `architecture/templates/exploration-session-brief-template.md` — session brief template
 
 Do NOT invent or reference paths that are not listed above.

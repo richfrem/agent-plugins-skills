@@ -6,10 +6,10 @@ Formula: `quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)`
 Mutation target: `SKILL.md` — only this file changes each iteration.
 Locked: `evals/evals.json`, `evaluate.py`, `eval_runner.py`
 
-How to run one iteration:
+How to run one iteration (from within this skill's directory):
 ```bash
-python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
-  --skill plugins/copilot-cli/skills/copilot-cli-agent \
+python3 ../os-eval-runner/scripts/evaluate.py \
+  --skill . \
   --desc "what changed"
 ```
 
