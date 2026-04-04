@@ -2,12 +2,11 @@
 name: os-memory-manager
 description: >
   Trigger with "remember this", "update memory", "what should we record from this session", 
-  "capture learnings", "write a session log", or when closing a session and summarizing 
-  what was accomplished. Guides agents on managing memory hygiene across sessions, deciding 
+  "capture learnings", "write a session log", or when closing a session.
+  Guides agents on managing memory hygiene across sessions, deciding 
   what to write to dated memory logs, what to promote to long-term memory.md, and when to archive.
 
   <example>
-  <commentary>User requested explicit session close.</commentary>
   User: I'm done for the day, can you write up a session log?
   Agent:
   <Bash>
@@ -17,7 +16,6 @@ description: >
   </example>
 
   <example>
-  <commentary>User implicitly closed the session.</commentary>
   User: That's all, logging off now.
   Agent:
   <Bash>
@@ -26,13 +24,13 @@ description: >
   </example>
 
   <example>
-  <commentary>User is mid-task and asks a question. Do not invoke.</commentary>
+  
   User: How does the memory system work?
   Agent:
   <Read>
   ./references/context-folder-patterns.md
   </Read>
-  <commentary>Reads documentation instead of trying to lock the memory manager.</commentary>
+  
   </example>
 allowed-tools: Bash, Read, Write
 ---

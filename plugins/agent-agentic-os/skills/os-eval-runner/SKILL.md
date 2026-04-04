@@ -1,45 +1,31 @@
 ---
 name: os-eval-runner
 description: >
-  Trigger with "evaluate this skill", "run the autoresearch loop on", "run tests on the new skill",
-  "check if this change breaks anything", "evaluate the learning loop proposal",
-  "measure the performance gain", "optimize this skill", "improve this skill autonomously",
-  or when an agent (like `os-learning-loop`) proposes a change to an existing skill and needs
-  empirical validation before writing it to disk.
+  Trigger: "evaluate this skill", "run autoresearch loop on", "optimize this skill".
+  Use when an agent proposes a change to an existing skill and needs empirical validation.
 
   <example>
-  Context: User wants to start an autonomous improvement loop on a skill.
+  Context: Start autonomous improvement loop on a skill.
   user: "Run the autoresearch loop on <SKILL_PATH> for 20 iterations"
-  assistant: [triggers os-eval-runner, runs Phase 0 intake to confirm target, metrics, and iteration cap]
-  <commentary>
-  Explicit loop request with target path and iteration count — go straight to intake confirmation then Mode 1.
-  </commentary>
+  assistant: [triggers os-eval-runner, runs Mode 1 intake]
   </example>
 
   <example>
-  Context: User wants to optimize a skill but hasn't specified details.
+  Context: Incomplete optimize request.
   user: "Optimize the commit skill"
-  assistant: [triggers os-eval-runner, runs Phase 0 intake interview to gather target path, mode, metrics, iterations]
-  <commentary>
-  Incomplete request — run the intake interview before starting any loop.
-  </commentary>
+  assistant: [triggers os-eval-runner, runs Phase 0 intake interview]
   </example>
 
   <example>
-  Context: `os-learning-loop` has a proposed skill edit and needs validation before writing.
-  assistant: [autonomously] "Before I apply this description change to os-memory-manager, I'll run os-eval-runner to confirm routing accuracy doesn't regress."
-  <commentary>
-  Implicit audit trigger -- agent self-gates on the evaluator before any skill write. Mode 2 single-shot QA.
-  </commentary>
+  Context: `os-learning-loop` proposes a skill edit.
+  assistant: [autonomously] "Before I apply this description change, I'll run os-eval-runner to confirm."
   </example>
 
   <example>
   Context: An agent is asking for general information about a skill, not evaluating a proposed change.
   agentic-os-setup: "Tell me about the os-clean-locks skill."
   assistant: "It cleans up stale lock files..."
-  <commentary>
-  Information request, not an evaluation trigger. Do not trigger os-eval-runner.
-  </commentary>
+  
   </example>
 argument-hint: "[path/to/SKILL.md or skill-name] [--iterations N] [--until-score 0.95]"
 allowed-tools: Bash, Read, Write

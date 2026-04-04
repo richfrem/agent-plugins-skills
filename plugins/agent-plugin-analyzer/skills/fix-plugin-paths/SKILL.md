@@ -10,32 +10,11 @@ description: >
   distribution via uvx or bootstrap.py. Also handles evolving a skill in-session while
   tracking quality scores with the eval runner to continuously improve skill routing accuracy.
 
-  <example>
-  Context: Agent just wrote a SKILL.md with a hardcoded source repo path.
-  user: "Fix the plugin path references in this SKILL.md"
-  assistant: [triggers fix-plugin-paths, audits file against portability rules, applies corrections]
-  <commentary>
-  Explicit path fix request on a skill file — run audit then apply fixes.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: User wants all plugin files ready for distribution.
-  user: "Run a portability audit on all SKILL.md files in this repo"
-  assistant: [triggers fix-plugin-paths, generates task tracker, audits each file one-by-one, marks complete, runs final sweep]
-  <commentary>
-  Repository-wide remediation request — use the Task Tracker Workflow.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: Agent is mid-session doing related work and wants continuous skill improvement.
-  user: "Evolve the fix-plugin-paths skill while you work"
-  assistant: [triggers fix-plugin-paths Mode C, scaffolds evals if missing, establishes baseline, scores after each SKILL.md edit]
-  <commentary>
-  In-session evolution request — use Mode C: Direct Evolution Protocol.
-  </commentary>
-  </example>
+  
 
 allowed-tools: Bash, Read, Write, Edit
 ---

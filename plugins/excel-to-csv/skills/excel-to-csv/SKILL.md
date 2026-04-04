@@ -9,14 +9,14 @@ description: >
   Context: User has a monthly sales workbook and needs a CSV.
   user: "Convert the 'SalesData' sheet from monthly_report.xlsx into a CSV file."
   assistant: "I'll use the excel-to-csv skill to extract that sheet for you."
-  <commentary>Explicit request for a worksheet conversion targets the native extraction utility.</commentary>
+  
   </example>
 
   <example>
   Context: User asks to preview a massive spreadsheet in chat.
   user: "Extract the 'AllTransactions' sheet from database_dump.xlsx and print the whole CSV to me."
   assistant: "I can convert that for you, but I'll only show you a preview of the first 25 lines to keep the chat history manageable."
-  <commentary>Safety check for large file outputs prevents context window crashes.</commentary>
+  
   </example>
 allowed-tools: Bash, Read, Write
 ---

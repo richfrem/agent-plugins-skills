@@ -3,23 +3,13 @@ name: os-eval-backport
 description: >
   Reviews a completed os-eval-runner lab run and backports approved changes to master
   plugin sources. Trigger with "backport the eval results", "review the lab run",
-  "apply eval improvements to master", "check what the eval agent changed",
-  "review the test repo changes", or after a os-eval-runner run finishes in a lab repo.
+  "apply eval improvements to master", "check what the eval agent changed".
 
-  <example>
-  Context: A os-eval-runner run just finished in a test repo.
-  user: "The link-checker eval run is done — backport the results"
-  assistant: [triggers os-eval-backport, reads run log + git diff, produces ACCEPT/ADAPT/REJECT table, applies approved changes to master]
-  <commentary>
-  Explicit backport request — go straight to log review then diff assessment.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: User wants to review changes before deciding what to keep.
-  user: "Review what the eval agent changed in the link-checker lab repo"
-  assistant: [triggers os-eval-backport, reads run log and self-assessment, lists changed files with diffs, presents assessment table before applying anything]
-  </example>
+  
+
+  
 
 argument-hint: "[lab-repo-path] [master-plugin-path] [--baseline-commit <sha>]"
 allowed-tools: Bash, Read, Write
