@@ -1,1 +1,1 @@
-../../scripts/run_agent.py
+../../../scripts/run_agent.py

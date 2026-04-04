@@ -3,16 +3,37 @@ import sys
 import subprocess
 import os
 
+def resolve_path(provided_path):
+    """
+    Resolves the provided file path against the current working directory,
+    falling back to the plugin's root (one level up from this script's directory).
+    """
+    if os.path.exists(provided_path):
+        return provided_path
+    
+    # Try resolving relative to the script's directory
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    plugin_root = os.path.dirname(script_dir)
+    fallback_path = os.path.join(plugin_root, provided_path)
+    
+    if os.path.exists(fallback_path):
+        return fallback_path
+        
+    return provided_path
+
 def run_agent(persona_file, input_file, output_file, instruction):
     """
     Orchestrates a Gemini CLI sub-agent execution by assembling a persona,
     input context, and instruction for specific model invocation.
     """
+    persona_path = resolve_path(persona_file)
+    input_path = resolve_path(input_file)
+    
     try:
-        with open(persona_file, 'r') as f:
+        with open(persona_path, 'r') as f:
             persona_content = f.read()
             
-        with open(input_file, 'r') as f:
+        with open(input_path, 'r') as f:
             input_content = f.read()
     except FileNotFoundError as e:
         print(f"Error: {e}")
