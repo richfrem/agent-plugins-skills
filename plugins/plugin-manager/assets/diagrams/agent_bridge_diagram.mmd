@@ -1,28 +1,31 @@
 flowchart LR
-    Plugins["plugins/"]
+    subgraph Sources ["Install Sources"]
+        UVX["uvx / bootstrap.py<BR>(GitHub — no local clone)"]
+        LocalSrc["plugins/<BR>(local clone)"]
+    end
 
-    subgraph Bridge ["agent-bridge"]
-        BI["plugin_installer.py"]
+    subgraph Bridge ["Installer Scripts"]
+        PA["plugin_add.py<BR>(interactive TUI — primary)"]
+        BI["bridge_installer.py<BR>(single plugin / CI)"]
     end
 
     subgraph Agents ["Target Environments"]
-        Antigravity[".agents/ (Antigravity)"]
-        Copilot[".github/ (Copilot)"]
-        Claude[".claude/ (Claude Code)"]
-        Gemini[".gemini/ (Gemini CLI)"]
+        Central[".agents/<BR>(canonical store)<BR>Antigravity · Gemini · Copilot"]
+        Claude[".claude/ → symlinks<BR>(Claude Code only)"]
     end
 
-    Plugins -->|"load"| BI
+    UVX -->|"runs"| PA
+    LocalSrc -->|"runs"| PA
+    LocalSrc -->|"runs"| BI
 
-    BI -->|"workflows + rules"| Antigravity
-    BI -->|"prompts"| Copilot
-    BI -->|"commands"| Claude
-    BI -->|"TOML + commands"| Gemini
+    PA -->|"skills + commands<BR>+ rules + hooks"| Central
+    BI -->|"skills + commands<BR>+ rules + hooks"| Central
+    Central -.->|"symlinked"| Claude
 
-    classDef source fill:#eee,stroke:#333
+    classDef source fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
     classDef bridge fill:#bbf,stroke:#333,stroke-width:2px
     classDef agent fill:#bfb,stroke:#333
 
-    class Plugins source
-    class BI bridge
-    class Antigravity,Copilot,Claude,Gemini agent
+    class UVX,LocalSrc source
+    class PA,BI bridge
+    class Central,Claude agent

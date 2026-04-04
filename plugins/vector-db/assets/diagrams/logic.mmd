@@ -1,7 +1,7 @@
 flowchart TD
     subgraph Initialization [Step 1: Unpacking]
         Bundle(tool-bundle.md) -- Agent Extracts --> Scripts
-        Scripts[../../scripts/ingest.py\n../../scripts/query.py\n../../scripts/cleanup.py]
+        Scripts[../../scripts/ingest.py<BR>../../scripts/query.py<BR>../../scripts/cleanup.py]
         Bundle -- Extract --> Config[.env Template]
         Scripts --> Install{Install Deps}
         Install -- "pip install" --> Venv[(Python Env)]

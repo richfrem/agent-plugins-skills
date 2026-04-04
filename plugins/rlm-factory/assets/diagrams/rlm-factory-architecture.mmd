@@ -1,11 +1,11 @@
 flowchart TD
     Q[/"AI Agent Query"/] --> D{Route Query}
 
-    D --> RLM[("rlm-factory / rlm-search\nquery_cache.py --profile project|tools")]
-    D --> VDB[("vector-db / vector-db-agent\nquery.py --profile knowledge")]
+    D --> RLM[("rlm-factory / rlm-search<BR>query_cache.py --profile project|tools")]
+    D --> VDB[("vector-db / vector-db-agent<BR>query.py --profile knowledge")]
 
-    RLM -->|"O(1) keyword lookup\n(no embeddings, no inference)"| R1[1-sentence summary per file\n+ file path]
-    VDB -->|"Nearest-neighbor embedding search"| R2[Ranked parent chunks\n+ RLM Super-RAG context injected]
+    RLM -->|"O(1) keyword lookup<BR>(no embeddings, no inference)"| R1[1-sentence summary per file<BR>+ file path]
+    VDB -->|"Nearest-neighbor embedding search"| R2[Ranked parent chunks<BR>+ RLM Super-RAG context injected]
 
     R1 --> OUT[/"Agent Response"/]
     R2 --> OUT

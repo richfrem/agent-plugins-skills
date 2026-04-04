@@ -1,13 +1,13 @@
 flowchart TD
     subgraph Boot["Session Start (Boot)"]
-        B1["1. Load primer_file\n(Role / Identity / Constraints)"]
-        B2["2. Load boot_contract_file\n(Immutable Constraints)"]
-        B3["3. Load boot_digest_file\n(Active Tasks / Status)"]
-        B4["4. Load snapshot_file\n(Cognitive Hologram)"]
-        B5{"Snapshot\ncurrent?"}
+        B1["1. Load primer_file<BR>(Role / Identity / Constraints)"]
+        B2["2. Load boot_contract_file<BR>(Immutable Constraints)"]
+        B3["3. Load boot_digest_file<BR>(Active Tasks / Status)"]
+        B4["4. Load snapshot_file<BR>(Cognitive Hologram)"]
+        B5{"Snapshot<BR>current?"}
         B1 --> B2 --> B3 --> B4 --> B5
         B5 -->|"Yes"| READY["Agent Ready"]
-        B5 -->|"Stale"| FLAG["Flag for refresh\nat session end"]
+        B5 -->|"Stale"| FLAG["Flag for refresh<BR>at session end"]
         FLAG --> READY
     end
 
@@ -15,17 +15,17 @@ flowchart TD
         READY --> EV{"Event type?"}
         EV -->|"New learning"| NL["Write to domain_data_dir/{topic}/"]
         EV -->|"New decision"| ND["Create design_docs_dir/{id}_{name}.md"]
-        EV -->|"New tool"| NT["Register in tool inventory\n(rlm-factory inject_summary.py)"]
+        EV -->|"New tool"| NT["Register in tool inventory<BR>(rlm-factory inject_summary.py)"]
         EV -->|"Correction"| NC["Update file + disputes log"]
-        EV -->|"Code search"| NS["3-Phase Search:\n1. query_cache.py (rlm-search)\n2. query.py (vector-db-agent)\n3. rg / grep"]
+        EV -->|"Code search"| NS["3-Phase Search:<BR>1. query_cache.py (rlm-search)<BR>2. query.py (vector-db-agent)<BR>3. rg / grep"]
         NL & ND & NT & NC & NS --> EV
     end
 
     subgraph Seal["Session End (Seal)"]
-        S1["1. Update snapshot_file\n(add new 1-sentence entries)"]
-        S2["2. Validate no drift\n(integrity check)"]
-        S3{"External traces\nconfigured?"}
-        S4["3. Persist to traces_file\n(e.g. HuggingFace dataset)"]
+        S1["1. Update snapshot_file<BR>(add new 1-sentence entries)"]
+        S2["2. Validate no drift<BR>(integrity check)"]
+        S3{"External traces<BR>configured?"}
+        S4["3. Persist to traces_file<BR>(e.g. HuggingFace dataset)"]
         S5["Session Sealed"]
         S1 --> S2 --> S3
         S3 -->|"Yes"| S4 --> S5

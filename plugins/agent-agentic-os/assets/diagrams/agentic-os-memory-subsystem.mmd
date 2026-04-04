@@ -13,7 +13,7 @@ flowchart TD
         
         Host -- Saves a file --> Hook
         Hook -- Triggers --> UpdatePy
-        UpdatePy -- "Appends action\n(Skips volatile files)" --> DailyLog
+        UpdatePy -- "Appends action<BR>(Skips volatile files)" --> DailyLog
     end
     
     subgraph "Phase 2: Semantic Promotion"
