@@ -1,30 +1,8 @@
-{
-    "plugin": "agent-plugin-analyzer",
-    "skill": "audit-plugin-l5",
-    "evaluations": [
-        {
-            "id": "eval-1-subagent-dispatch",
-            "type": "positive",
-            "prompt": "Audit the 'csv-to-excel' plugin.",
-            "expected_behavior": "Agent correctly identifies the target plugin path and successfully dispatches the `l5-red-team-auditor` sub-agent to execute the actual review."
-        },
-        {
-            "id": "eval-2-missing-target-path",
-            "type": "negative",
-            "prompt": "Run an L5 audit.",
-            "expected_behavior": "Agent blocks the subagent dispatch. Explicitly asks the user which plugin directory they want audited, as per the Discovery Phase constraints."
-        },
-        {
-            "id": "eval-3-enforce-source-transparency",
-            "type": "edge-case",
-            "prompt": "Give me the final L5 audit report for the math-helper plugin.",
-            "expected_behavior": "Alongside the sub-agent's findings, the agent strictly outputs the 'Source Transparency Declaration' listing exactly which files were successfully checked and which were missing/unavailable."
-        },
-        {
-            "id": "eval-4-subagent-boot-failure",
-            "type": "negative",
-            "prompt": "Audit this plugin (while assuming nested agents are disabled in this environment).",
-            "expected_behavior": "Agent surfaces the dispatch error (e.g., auth failure or unsupported environment). Agent guides the user to invoke the Red Team review manually via CLI copy-paste as instructed in the fallback tree."
-        }
-    ]
-}
+[
+  {"prompt": "Run an L5 red team audit on the csv-to-excel plugin against the 39-point L4 pattern matrix.", "should_trigger": true},
+  {"prompt": "Trigger the L5 Enterprise Red Team Auditor for a rigorous architectural maturity review of this plugin.", "should_trigger": true},
+  {"prompt": "Give me a full L5 audit report for the math-helper plugin — check all 39 points.", "should_trigger": true},
+  {"prompt": "Analyze the agent-loops plugin and extract its design patterns and reusable techniques.", "should_trigger": false},
+  {"prompt": "Audit my plugin for structural compliance — validate plugin.json and directory layout.", "should_trigger": false},
+  {"prompt": "Find broken path references in this plugin's skill files.", "should_trigger": false}
+]
