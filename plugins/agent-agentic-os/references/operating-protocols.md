@@ -2,19 +2,20 @@
 
 This document defines the canonical, mandatory protocols for setting up and running Agentic OS evaluations. To maximize repository safety and execution efficiency, several legacy approaches have been deprecated.
 
-## Canonical Setup & Execution Matrix
+## The Two Unified Operating Protocols
 
-| Architecture Component | Golden Protocol | Deprecated Legacy Protocols | Why Deprecated? |
-|-------------------------|----------------|-----------------------------|-----------------|
-| **Test Environment** | **Sibling Repo Labs** <br> Creates isolated test repos alongside the main project folder (`../test-target-skill`). Facilitated by `os-eval-lab-setup`.<br>*(See: `assets/diagrams/sibling-repo-labs.mmd`)* | ❌ Subfolder within repo <br> ❌ Manual Copilot CLI project generation | Subfolders pollute git index and tangle lab artifacts with master. Manual generation is brittle. |
-| **Execution Loop** | **Triple-Loop Learning System** <br> Unified model: Orchestrator (Meta-learning) → Strat Planner → Tactical Executor.<br>*(See: `assets/diagrams/triple-loop-learning-system.mmd`)* | ❌ Presenting Single, Double, or Dual loops as separate choices. | Creates confusion. They are nested rings of the *same* system, not distinct alternative operational models. |
-| **Run Mechanism** | **Headless Overnight Orchestrator** <br> External agent (e.g. Gemini/Copilot CLI) runs the triple-loop iterations headlessly.<br>*(See: `assets/diagrams/headless-overnight-orchestrator.mmd`)* | ❌ Manual step-by-step confirmation loops | Human latency blocks large-scale iteration testing. Objective gating runs securely in the background. |
+Rather than offering multiple overlapping options for testing, we rely on **One Core Architecture (The Triple-Loop Learning System)** operating in two distinct phases, each mapped to a specific agent:
+
+| Phase / Protocol | Managing Agent | How It Works | Deprecated Legacy Alternatives |
+|------------------|----------------|--------------|--------------------------------|
+| **1. Interactive Lab Setup** <br>*(Test Environment)* | `triple-loop-architect` | **Sibling Repo Labs** <br> The architect creates isolated test repos alongside the main project folder (`../test-target-skill`). <br>*(See: `assets/diagrams/sibling-repo-labs.mmd`)* | ❌ Subfolder tests within repo <br> ❌ Manual Copilot CLI project generation |
+| **2. Unattended Execution** <br>*(Run Mechanism)* | `triple-loop-orchestrator` | **Headless Overnight Orchestrator** <br> The orchestrator runs the full Triple-Loop System headlessly overnight (e.g. via Gemini/Copilot CLI), using `evaluate.py` as an objective gate. <br>*(See: `assets/diagrams/headless-overnight-orchestrator.mmd`)* | ❌ Interactive Step-by-Step Confirmation Loops <br> ❌ Single/Double/Dual loops presented as separate, disjoint options |
 
 ## The Golden Path (End-to-End)
 
-1. **Bootstrap** a pristine, risk-free sibling evaluation repo using `os-eval-lab-setup`.
-2. **Execute** iterations headlessly using the **Triple-Loop Orchestrator** pattern.
-3. **Review & Backport** only the successful, evaluated changes back to the canonical sources using `os-eval-backport`.
+1. **Bootstrap** a pristine, risk-free sibling evaluation repo guided by the `triple-loop-architect` agent.
+2. **Execute** iterations headlessly using the `triple-loop-orchestrator` agent.
+3. **Review & Backport** only the successful, evaluated changes back to the canonical sources using the `os-eval-backport` skill.
 
 ## Critical Rule: The Re-Baseline Protocol
 

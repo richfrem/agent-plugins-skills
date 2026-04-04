@@ -72,6 +72,13 @@ Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run i
 Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools:
 > "You are operating as an isolated sub-agent. Do NOT use tools. Do NOT access filesystem. Only use the provided input."
 
+### 4. 🚀 Autonomous Triple-Loop Orchestration (`--yolo`)
+If you are deploying Gemini CLI as an active orchestrator (e.g., an L1 Evaluator running an improvement loop), pass the `--yolo` flag. This allows all tool calls (like bash commands or Python execution) to run automatically without manual confirmation, enabling fully headless sub-agent operation.
+
+### 5. 🛑 Workspace Boundaries (IDEClient Directory Mismatch)
+The `gemini` CLI inherits strict workspace bounds. If you `cd` into an external directory (e.g., a test lab repo) and attempt to invoke `gemini` from there, it will crash with `[ERROR] [IDEClient] Directory mismatch`.
+- **Fix:** *Always* invoke `gemini` from your active OS workspace directory. If you need the sub-agent to operate in an external folder, pass instructions in the prompt string telling it to `cd` into that folder itself (e.g., `gemini --yolo -p "Use bash to cd to /external/lab/repo first, then..."`).
+
 ---
 
 ## 🔄 How to Update Gemini CLI
