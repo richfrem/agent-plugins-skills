@@ -1,7 +1,7 @@
-# Concurrent Agent Loop - Architecture Overview
+# Triple-Loop Learning System - Architecture Overview
 
-> Pattern 5: Agents as OS Threads with Shared Event Bus
-> Status: v2 - revised after 4-model red team review (Claude 4.6, Grok 4, GPT-5, Gemini 2.5 Pro)
+> Core Architecture: Agents as OS Threads with Shared Event Bus
+> Status: v2 - unified Triple-Loop architecture (Claude 4.6, Grok 4, GPT-5, Gemini 2.5 Pro)
 > Plugin home: `agent-agentic-os` (kernel + bus already here)
 > Updated: 2026-03-22 (deployment topology added, AGENT_COMMS.md retired)
 
@@ -79,10 +79,10 @@ All four agreed on the following issues. This architecture revision addresses al
 
 | Role | Description | Lifecycle |
 |---|---|---|
-| ORCHESTRATOR | Outer loop coordinator. Assigns tasks, applies fixes, owns git, drives cycle. | Persistent |
-| PEER_AGENT | Long-lived co-session. Runs evals, syncs skills, reports results. | Persistent |
-| INNER_AGENT | Registered short-lived executor. Owns locks and identity. Exits after task.complete. | Ephemeral |
-| WORKER | Stateless fire-and-forget unit. No locks, no registry entry, no identity. (GPT-5 distinction) | Ephemeral |
+| ORCHESTRATOR | Triple-Loop Meta-Coordinator. Evaluates trends, drives Double-loop/Single-loop, manages memory. | Persistent |
+| PEER_AGENT | Runs objective evaluations independently (`evaluate.py`). Single-Loop Gate. | Persistent |
+| INNER_AGENT | Short-lived executor (Strategic Planner). Emits proposed file patches via CLI (Gemini/Copilot). | Ephemeral |
+| WORKER | Stateless fire-and-forget unit. No locks, no registry entry. | Ephemeral |
 
 Note: INNER_AGENT and WORKER are now distinct. INNER_AGENT acquires locks and emits validated
 events. WORKER does pure computation and returns output via stdout/file - not via the bus.
@@ -321,8 +321,6 @@ os-init. P0 before self-improvement loop is meaningful.
 
 | Pattern | Mode | Shared State | Concurrency |
 |---|---|---|---|
-| Learning Loop (P1) | Solo | None | None |
-| Red Team Review (P2) | Sequential dual | None | None |
-| Dual-Loop (P3) | Sequential inner/outer | None | None |
-| Agent Swarm (P4) | Parallel isolated | None | Parallel but isolated |
-| **Concurrent Loop (P5)** | **Concurrent** | **Yes - shared bus + memory** | **True concurrent with sync** |
+| Learning Loop | Solo | None | None |
+| Red Team Review | Sequential dual | None | None |
+| **Triple-Loop System** | **Concurrent/Hierarchical** | **Yes - shared bus + memory** | **True concurrent with sync** |
