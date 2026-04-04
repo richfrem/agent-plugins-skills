@@ -2,22 +2,20 @@ graph TD
     %% Phase 1: Sources
     subgraph Phase1 ["Phase 1: Sources of Truth"]
         P_Rules["Ecosystem Rules<br/>(Constitution, Conventions)"]
-        W_Masters["Ecosystem Workflows<br/>(.windsurf, scripts)"]
+        W_Masters["Ecosystem Commands<br/>(commands/, scripts/)"]
         Plugins["Ecosystem Plugins<br/>(plugins/*/)"]
     end
 
     %% Phase 2: Bridge Logic
-    subgraph Phase2 ["Phase 2: Bridge Systems"]
-        BridgeSync["Ecosystem Sync Engine<br/>(Rule/Template Propagation)"]
-        BridgeInstall["Plugin Mapper<br/>(Bridge Installation)"]
+    subgraph Phase2 ["Phase 2: Installer Scripts"]
+        BridgeSync["Ecosystem Sync<br/>(sync_with_inventory.py)"]
+        BridgeInstall["Plugin Installer<br/>(plugin_add.py / bridge_installer.py)"]
     end
 
     %% Phase 3: Targets
     subgraph Phase3 ["Phase 3: Agent Environments"]
-        Antigravity[".agents/ (Antigravity)"]
-        Claude[".claude/ (Claude)"]
-        Gemini[".gemini/ (Gemini)"]
-        Copilot[".github/ (Copilot)"]
+        Central[".agents/<br/>(canonical store)<br/>Antigravity · Gemini · Copilot"]
+        Claude[".claude/ → symlinks<br/>(Claude Code only)"]
     end
 
     %% Connections
@@ -26,14 +24,8 @@ graph TD
     Plugins --> BridgeInstall
 
     %% BridgeSync Outbound
-    BridgeSync -->|"Monolithic Context"| Antigravity
-    BridgeSync -->|"Monolithic Context"| Claude
-    BridgeSync -->|"Monolithic Context"| Gemini
-    BridgeSync -->|"Monolithic Context"| Copilot
-    BridgeSync -->|"Native Workflows"| Antigravity
+    BridgeSync -->|"rules + context"| Central
 
     %% BridgeInstall Outbound
-    BridgeInstall -->|"Native Skills"| Antigravity
-    BridgeInstall -->|"Native Skills"| Claude
-    BridgeInstall -->|"Native Skills"| Gemini
-    BridgeInstall -->|"Native Skills"| Copilot
+    BridgeInstall -->|"skills + commands<br/>+ rules + hooks"| Central
+    Central -.->|"symlinked"| Claude

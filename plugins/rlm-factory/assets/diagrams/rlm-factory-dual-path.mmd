@@ -8,12 +8,12 @@ flowchart TD
     end
 
     subgraph Path1["Path 1: rlm-factory / rlm-search (O(1) -- offline, no Ollama)"]
-        D -->|"Keyword lookup"| RLM[("RLM Summary Ledger\nrlm_summary_cache.json\nrlm_tool_cache.json")]
-        RLM -->|"Instant"| S1["1-sentence file summary\n+ file path"]
+        D -->|"Keyword lookup"| RLM[("RLM Summary Ledger<BR>rlm_summary_cache.json<BR>rlm_tool_cache.json")]
+        RLM -->|"Instant"| S1["1-sentence file summary<BR>+ file path"]
     end
 
     subgraph Path2["Path 2: vector-db / vector-db-agent (Semantic -- ChromaDB)"]
-        D -->|"Semantic search"| VDB[("ChromaDB\nlocalhost:port")]
+        D -->|"Semantic search"| VDB[("ChromaDB<BR>localhost:port")]
         VDB -->|"Nearest-neighbor"| S2[Ranked parent chunks]
     end
 

@@ -7,14 +7,14 @@ flowchart TB
 
     subgraph OUTER ["OUTER FLYWHEEL — OS Self-Improvement (os-improvement-loop)"]
         direction TB
-        O1["1. Orientation\nRead ledger, registry, last survey\nKnow what to improve next"]:::outerNode
-        O2["2. Document Test Scenario\nWrite hypothesis + AC to tests/\nBEFORE emitting task.assigned"]:::outerNode
-        O3["3. Assign to INNER_AGENT\nEmit task.assigned with strategy packet\nINNER_AGENT executes the work"]:::outerNode
-        O4{"KEEP or DISCARD?\nBoth eval gates ≥ baseline?"}:::gateNode
-        O5a["5a. KEEP → Apply change\nUpdate canonical skill or artifact\nORCHESTRATOR owns git"]:::outerNode
-        O5b["5b. DISCARD → Correction packet\nWrite correction-CID.md\nRe-assign to INNER_AGENT"]:::outerNode
-        O6["6. Loop Close (all 4 mandatory)\n6a: ledger + registry row\n6b: surveys (all agents)\n6c: metrics + report\n6d: log M/L issues as tasks"]:::outerNode
-        O7["7. Trigger Check\n3+ same-type friction → flag os-learning-loop\nNorth star regressing → emit immediately"]:::outerNode
+        O1["1. Orientation<BR>Read ledger, registry, last survey<BR>Know what to improve next"]:::outerNode
+        O2["2. Document Test Scenario<BR>Write hypothesis + AC to tests/<BR>BEFORE emitting task.assigned"]:::outerNode
+        O3["3. Assign to INNER_AGENT<BR>Emit task.assigned with strategy packet<BR>INNER_AGENT executes the work"]:::outerNode
+        O4{"KEEP or DISCARD?<BR>Both eval gates ≥ baseline?"}:::gateNode
+        O5a["5a. KEEP → Apply change<BR>Update canonical skill or artifact<BR>ORCHESTRATOR owns git"]:::outerNode
+        O5b["5b. DISCARD → Correction packet<BR>Write correction-CID.md<BR>Re-assign to INNER_AGENT"]:::outerNode
+        O6["6. Loop Close (all 4 mandatory)<BR>6a: ledger + registry row<BR>6b: surveys (all agents)<BR>6c: metrics + report<BR>6d: log M/L issues as tasks"]:::outerNode
+        O7["7. Trigger Check<BR>3+ same-type friction → flag os-learning-loop<BR>North star regressing → emit immediately"]:::outerNode
 
         O1 --> O2 --> O3 --> O4
         O4 -->|KEEP| O5a
@@ -27,13 +27,13 @@ flowchart TB
 
     subgraph INNER ["INNER FLYWHEEL — Skill Improvement (os-eval-runner + os-skill-improvement)"]
         direction TB
-        I1["os-eval-lab-setup\nBootstrap lab repo with hard-copy plugin files\nInstall eval engine, generate eval-instructions.md"]:::innerNode
-        I2["os-eval-runner\nPhase 0 intake → confirm target + metrics\nRun evaluate.py --baseline (record baseline score)"]:::innerNode
-        I3["INNER_AGENT executes work\nMutate SKILL.md description, examples, triggers\nEmit friction events during uncertainty"]:::innerNode
-        I4["eval_runner.py scores the patch\nPEER_AGENT runs independently\nKEEP if accuracy AND F1 ≥ baseline"]:::evalNode
-        I5a["KEEP → Commit patch\nUpdate lab repo HEAD\nBackport via os-eval-backport"]:::innerNode
-        I5b["DISCARD → New hypothesis\nos-skill-improvement RED-GREEN-REFACTOR\nTry different description angle"]:::innerNode
-        I6["os-eval-backport\nReview lab diff\nApply approved changes to master plugin source"]:::memNode
+        I1["os-eval-lab-setup<BR>Bootstrap lab repo with hard-copy plugin files<BR>Install eval engine, generate eval-instructions.md"]:::innerNode
+        I2["os-eval-runner<BR>Phase 0 intake → confirm target + metrics<BR>Run evaluate.py --baseline (record baseline score)"]:::innerNode
+        I3["INNER_AGENT executes work<BR>Mutate SKILL.md description, examples, triggers<BR>Emit friction events during uncertainty"]:::innerNode
+        I4["eval_runner.py scores the patch<BR>PEER_AGENT runs independently<BR>KEEP if accuracy AND F1 ≥ baseline"]:::evalNode
+        I5a["KEEP → Commit patch<BR>Update lab repo HEAD<BR>Backport via os-eval-backport"]:::innerNode
+        I5b["DISCARD → New hypothesis<BR>os-skill-improvement RED-GREEN-REFACTOR<BR>Try different description angle"]:::innerNode
+        I6["os-eval-backport<BR>Review lab diff<BR>Apply approved changes to master plugin source"]:::memNode
 
         I1 --> I2 --> I3 --> I4
         I4 -->|KEEP| I5a
@@ -43,13 +43,13 @@ flowchart TB
     end
 
     %% Cross-flywheel relationships
-    O3 -->|"spawns INNER work\n(strategy packet)"| I3
-    I4 -->|"eval.result → PEER_AGENT\nKEEP/DISCARD verdict"| O4
-    I6 -->|"backport triggers\nphase 6+7 close"| O6
+    O3 -->|"spawns INNER work<BR>(strategy packet)"| I3
+    I4 -->|"eval.result → PEER_AGENT<BR>KEEP/DISCARD verdict"| O4
+    I6 -->|"backport triggers<BR>phase 6+7 close"| O6
 
     subgraph Legend ["Scope Distinction"]
         direction LR
-        L1["OUTER asks:\n'Is the OS improvement\nprocess itself working?'"]:::outerNode
-        L2["INNER asks:\n'Does this specific skill\nroute and execute correctly?'"]:::innerNode
+        L1["OUTER asks:<BR>'Is the OS improvement<BR>process itself working?'"]:::outerNode
+        L2["INNER asks:<BR>'Does this specific skill<BR>route and execute correctly?'"]:::innerNode
         L1 ~~~ L2
     end

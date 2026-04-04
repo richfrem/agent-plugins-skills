@@ -2,30 +2,30 @@ flowchart TD
     %% Plugin Maintenance: Sync Flow
 
     subgraph Inputs
-        LocalDir["/plugins/ Directory"]
-        VendorFile[".vendor/.../vendor-plugins-inventory.json"]
+        LocalDir["./plugins/ Directory"]
+        SourceFile["plugin-sources.json<BR>(GitHub sources config)"]
     end
 
-    Start(["/plugin-manager:update\nor maintain-plugins Sync"])
-    CheckVendor{"Vendor Inventory\nExists?"}
+    Start(["maintain-plugins: Sync"])
+    CheckVendor{"plugin-sources.json<BR>Exists?"}
 
-    LoadVendor["Load Vendor List\n(Source of Truth)"]
-    SafeMode["Safety Mode\n(No cleanup — skip delete step)"]
+    LoadVendor["Load GitHub Source List<BR>(Source of Truth)"]
+    SafeMode["Safety Mode<BR>(No cleanup — skip delete step)"]
 
     ScanLocal["Scan Local ./plugins/"]
 
-    Compare{"Compare:\nVendor vs Local"}
+    Compare{"Compare:<BR>GitHub Source vs Local"}
 
     subgraph States ["Three Plugin States"]
-        Active["In BOTH Vendor + Local\n= Active Vendor Plugin"]
-        Private["In Local ONLY\n= Project-Specific (Protected)"]
-        Deleted["In Vendor ONLY\n= User Deleted"]
+        Active["In BOTH Source + Local<BR>= Active Vendor Plugin"]
+        Private["In Local ONLY<BR>= Project-Specific (Protected)"]
+        Deleted["In Source ONLY<BR>= User Deleted"]
     end
 
     subgraph Actions
-        Update["UPDATE\nRun bridge installer\n(deploy to .agent, .claude, etc.)"]
-        Protect["PROTECT\nSkip — never delete custom plugins"]
-        Cleanup["CLEANUP\nRemove orphaned artifacts\nfrom .agents/, .github/, .gemini/"]
+        Update["UPDATE<BR>Run sync_with_inventory.py<BR>(deploy to .agents/, .claude/)"]
+        Protect["PROTECT<BR>Skip — never delete custom plugins"]
+        Cleanup["CLEANUP<BR>Remove orphaned artifacts<BR>from .agents/skills/, .agents/workflows/<BR>.agents/rules/, .agents/hooks/, .claude/"]
     end
 
     Report["Generate local-plugins-inventory.json"]
@@ -39,9 +39,9 @@ flowchart TD
     LoadVendor --> ScanLocal
     ScanLocal --> Compare
 
-    Compare -->|"In Vendor + Local"| Active
+    Compare -->|"In Source + Local"| Active
     Compare -->|"Local only"| Private
-    Compare -->|"Vendor only"| Deleted
+    Compare -->|"Source only"| Deleted
 
     Active --> Update
     Private --> Protect
@@ -52,8 +52,8 @@ flowchart TD
     Cleanup --> Report
     Report --> EndNode
 
-    VendorFile -..-> CheckVendor
-    LocalDir -..-> ScanLocal
+    SourceFile -.->|"declares sources"| CheckVendor
+    LocalDir -..-|"scanned"| ScanLocal
 
     %% Styles
     classDef file fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
@@ -61,7 +61,7 @@ flowchart TD
     classDef danger fill:#fbb,stroke:#333,stroke-width:2px
     classDef safe fill:#bfb,stroke:#333,stroke-width:2px
 
-    class VendorFile,LocalDir file
+    class SourceFile,LocalDir file
     class Cleanup danger
     class Protect safe
     class Update action
