@@ -27,13 +27,13 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 ---
 
-## Dual-Flywheel Architecture
+## Triple-Loop Architecture
 
-There are **two distinct flywheels** operating at different scopes. Do not conflate them.
+There are **two distinct Triple-Loop orchestration cycles** operating at different scopes. Do not conflate them.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  OUTER FLYWHEEL — OS Self-Improvement (this skill)       │
+│  TRIPLE-LOOP ARCHITECT — OS Self-Improvement (this skill)       │
 │                                                          │
 │  os-improvement-loop evaluates and improves the OS       │
 │  workflows, protocols, agent coordination patterns,      │
@@ -48,7 +48,7 @@ There are **two distinct flywheels** operating at different scopes. Do not confl
 └────────────────────┬────────────────────────────────────┘
                      │ spawns / governs
 ┌────────────────────▼────────────────────────────────────┐
-│  INNER FLYWHEEL — Individual Skill Improvement           │
+│  TRIPLE-LOOP EXECUTOR — Individual Skill Improvement           │
 │                                                          │
 │  os-eval-runner + os-skill-improvement evaluate and      │
 │  improve a specific target SKILL.md (routing accuracy,   │
@@ -67,7 +67,7 @@ There are **two distinct flywheels** operating at different scopes. Do not confl
 
 **`Triple-Loop Retrospective` vs `os-improvement-loop`:** `Triple-Loop Retrospective` (agent) is the
 trigger/diagnostic layer — it analyzes friction events, identifies improvement targets,
-and decides which flywheel to invoke. `os-improvement-loop` (skill) is the execution
+and decides which Triple-Loop to invoke. `os-improvement-loop` (skill) is the execution
 protocol that agents follow once a target has been identified. Do not conflate them.
 
 **Session Lifecycle Invariant**: The OUTER loop owns session lifecycle. INNER loop work
@@ -75,7 +75,7 @@ protocol that agents follow once a target has been identified. Do not conflate t
 until Phase 6 (os-memory-manager) is executed. An INNER loop that completes without running
 Phase 6/7 has silently discarded its learnings.
 
-Each flywheel has its own eval targets, its own memory artifacts, and its own close protocol.
+Each Triple-Loop has its own eval targets, its own memory artifacts, and its own close protocol.
 A session that runs INNER loop work must still close through the OUTER loop's Phase 6/7
 (os-memory-manager + os-skill-improvement) to persist learnings and harden OS-level routing.
 
@@ -85,10 +85,10 @@ See `assets/diagrams/triple-loop-learning-system.mmd` for the full visual.
 
 ## CRITICAL: Two-Tier Loop Model
 
-Every loop cycle uses one of two tiers. **Fast Cycle is the default.**
+Every loop cycle uses one of two tiers. **Triple-Loop cycle is the default.**
 Use Standard Cycle only when the north star is regressing or explicitly requested.
 
-### Fast Cycle (7 steps, ~30 min) -- default for every run
+### Triple-Loop cycle (7 steps, ~30 min) -- default for every run
 
 ```dot
 digraph fast_cycle {
@@ -126,7 +126,7 @@ digraph fast_cycle {
    On BASELINE verdict (first run of a skill): record the score, do not apply or revert any
    change, proceed to step 5.
 5. **Apply verdict** -- KEEP: apply change. DISCARD: correction packet, re-assign to INNER_AGENT.
-6. **Loop close (4 required actions -- all mandatory every Fast Cycle):**
+6. **Loop close (4 required actions -- all mandatory every Triple-Loop cycle):**
 
    **6a. Ledger + Registry** -- Append one row to ledger Section 1 (date, cycle ID, target,
    scores, verdict). Update `context/memory/tests/registry.md` row to CLOSED-KEEP or
@@ -135,7 +135,7 @@ digraph fast_cycle {
    **6b. Survey child agents** -- INNER_AGENT and PEER_AGENT each complete the Post-Run
    Self-Assessment Survey (`references/memory/post_run_survey.md`), save to
    `context/memory/retrospectives/survey_[DATE]_[TIME]_[AGENT].md`, and emit `survey_completed`.
-   Even on Fast Cycle, surveys are required -- they are the source of truth for what to improve next.
+   Even on Triple-Loop cycle, surveys are required -- they are the source of truth for what to improve next.
 
    **6c. Metrics + report** -- Run `post_run_metrics.py --correlation-id "$CID"`. If this is a
    KEEP cycle, optionally run `generate_report.py` to update the progress chart. Update
@@ -166,7 +166,7 @@ digraph fast_cycle {
 
    | File | Location | When written |
    |------|----------|--------------|
-   | `improvement-ledger.md` | LAB `context/memory/` | Every Fast Cycle (Section 1). Standard Cycle adds S2+S3. |
+   | `improvement-ledger.md` | LAB `context/memory/` | Every Triple-Loop cycle (Section 1). Standard Cycle adds S2+S3. |
    | `tests/registry.md` | LAB `context/memory/tests/` | Every cycle -- row updated to CLOSED. |
    | `tests/[CID]_[TARGET].md` | LAB `context/memory/tests/` | Before emit (scenario). Results filled in on Standard Cycle. |
    | `memory/YYYY-MM-DD.md` | LAB `context/memory/` | Standard Cycle only (session log). |
@@ -179,7 +179,7 @@ digraph fast_cycle {
 
    A cycle that produces a protocol fix but does not update this SKILL.md has not fully closed.
 
-**Cycle Completion Checklist** — a Fast Cycle is complete only when ALL of these exist:
+**Cycle Completion Checklist** — a Triple-Loop cycle is complete only when ALL of these exist:
 - [ ] Ledger Section 1 row appended (`improvement-ledger.md`)
 - [ ] Registry row updated to CLOSED (`tests/registry.md`)
 - [ ] At least one survey saved (`context/memory/retrospectives/`)
@@ -194,7 +194,7 @@ Missing any item = incomplete cycle. Do not start the next cycle until the check
    if the last two Trend values are both negative, emit `north_star_regression` event and trigger
    Triple-Loop Retrospective immediately (do not wait for next session).
 
-Emitting `eval.result` without completing steps 6a-6d and 7 is an incomplete Fast Cycle.
+Emitting `eval.result` without completing steps 6a-6d and 7 is an incomplete Triple-Loop cycle.
 
 ---
 

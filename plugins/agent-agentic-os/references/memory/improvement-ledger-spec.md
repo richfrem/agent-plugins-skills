@@ -1,6 +1,6 @@
 # Improvement Ledger Specification
 
-The improvement ledger is the longitudinal record of the flywheel. Individual loop
+The improvement ledger is the longitudinal record of the Triple-Loop. Individual loop
 reports, surveys, and test registry entries are point-in-time snapshots. The ledger
 is the accumulation — it answers the questions that per-cycle files cannot:
 
@@ -78,7 +78,7 @@ that resulted in a concrete change attempt (whether KEEP or DISCARD).
   hallucinated trace entries that cannot be verified.
 - `Outcome` is KEEP, DISCARD, BASELINE (neutral score), or "Not eval'd".
 - One row per friction item that generated a change. One survey can generate multiple rows.
-- This trace is how you prove the flywheel is working: friction -> change -> score delta -> keep.
+- This trace is how you prove the Triple-Loop is working: friction -> change -> score delta -> keep.
 
 ---
 

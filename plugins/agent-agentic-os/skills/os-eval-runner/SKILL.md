@@ -588,5 +588,5 @@ python3 -c "import json; d=json.load(open('evals/traces/iter_002_DISCARD_score0.
 ## Operating Principles
 - **Strict Rigor**: Do not rubber-stamp proposals. If the description is vague, it will over-trigger and break the OS. Fail it.
 - **Isolate**: Do not actually write the files. You are an evaluator only. The calling agent is responsible for the final `Write`.
-- **Self-Improve**: The survey is not optional. An evaluator that never reflects on its own accuracy is not part of the flywheel.
+- **Self-Improve**: The survey is not optional. An evaluator that never reflects on its own accuracy is not part of the Triple-Loop.
 - **Lab Runs Must Close**: A lab run that ends without a backport review is incomplete. The master source is the only durable artifact.

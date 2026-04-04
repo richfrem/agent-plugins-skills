@@ -104,4 +104,4 @@ Install the plugin, then ask your agent to "set up an agentic OS" or "run the ag
 - **Loops run on command** - run `/os-loop` to trigger a retrospective that mines the event log and proposes skill improvements
 - **Health checks on demand** - run `os-health-check` to inspect system state, event log, and memory integrity
 
-The improvement flywheel starts generating useful signal after a few sessions. By session ten, the skills and CLAUDE.md instructions are meaningfully more accurate for your specific workflow than they were at install.
+The Triple-Loop learning system starts generating useful signal after a few sessions. By session ten, the skills and CLAUDE.md instructions are meaningfully more accurate for your specific workflow than they were at install.

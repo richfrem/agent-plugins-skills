@@ -344,7 +344,7 @@ Every session, `Triple-Loop Retrospective` observes failures, repeated friction,
 
 **Vision extensions:**
 
-- **Cross-project learning** — improvements learned in one project's agentic-os propagate (with owner consent) to other projects running the same plugin. The improvement flywheel operates across the whole user base, not just one repo.
+- **Cross-project learning** — improvements learned in one project's agentic-os propagate (with owner consent) to other projects running the same plugin. the Triple-Loop orchestrator operates across the whole user base, not just one repo.
 - **Skill performance ranking** — the event log contains latency, success rate, and friction signals per skill. Low-performing skills get flagged for improvement automatically; high-performing patterns get promoted.
 - **A/B eval harness** — before committing an improvement, run both old and new skill versions against the eval suite. Only promote if measurably better. No blind commits.
 - **Planetary scale** — at scale, millions of agent sessions across thousands of projects collectively observe friction and propose fixes. The agentic OS becomes a distributed, always-improving system shaped by aggregate usage intelligence. This is closer to a living organism than conventional software.

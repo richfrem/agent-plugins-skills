@@ -90,7 +90,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: os-eval-runner
 - **Hypothesis**: The evaluator correctly assigns KEEP to a skill with an added positive example
   and DISCARD to a skill with a removed description keyword.
-- **Why now**: Without a working KEEP/DISCARD signal the entire flywheel cannot function.
+- **Why now**: Without a working KEEP/DISCARD signal the entire Triple-Loop cannot function.
 - **Prior results**: None.
 - **Acceptance criteria**: KEEP returned for +1 positive example change; DISCARD for -1 keyword.
 - **Failure criteria**: KEEP/DISCARD swapped, or STATUS: BASELINE returned for both.
@@ -163,7 +163,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Hypothesis**: When an INNER_AGENT encounters an ambiguous task description, it emits a
   `type: friction` event before requesting human rescue.
 - **Why now**: Friction events are the primary signal for Triple-Loop Retrospective auto-trigger.
-  If agents don't emit them, the flywheel is broken.
+  If agents don't emit them, the Triple-Loop is broken.
 - **Prior results**: None — friction event protocol is new.
 - **Acceptance criteria**: At least 1 `type: friction` event in events.jsonl during the cycle.
 - **Failure criteria**: Agent requests human rescue without a prior friction event.
@@ -192,7 +192,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: os-improvement-loop
 - **Hypothesis**: Both ORCHESTRATOR and INNER_AGENT complete and save self-assessment surveys
   after every cycle, not just the one that ran evals.
-- **Why now**: Survey is mandatory per v0.5.0. If only one agent surveys, flywheel data is incomplete.
+- **Why now**: Survey is mandatory per v0.5.0. If only one agent surveys, Triple-Loop data is incomplete.
 - **Prior results**: None.
 - **Acceptance criteria**: Two survey files in retrospectives/ after 1 cycle, one per agent role.
 - **Failure criteria**: Only 1 survey file, or no survey files.
@@ -504,7 +504,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: triple-loop
 - **Hypothesis**: Outer loop assigns task to inner loop via event bus; inner loop completes
   and signals back; outer loop receives result before iteration 2.
-- **Why now**: Baseline transport test needed before testing flywheel additions.
+- **Why now**: Baseline transport test needed before testing Triple-Loop additions.
 - **Prior results**: Smoke test in prior session validated kernel transport; this validates the
   triple-loop SKILL coordination layer specifically.
 - **Acceptance criteria**: task.assigned event followed by task.completed in events.jsonl;
@@ -549,7 +549,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: triple-loop
 - **Hypothesis**: The inner loop's eval.result event (KEEP/DISCARD + score delta) is read by
   the outer loop and included in the strategy for iteration 2.
-- **Why now**: Without this, outer loop cannot learn from inner loop results — flywheel breaks.
+- **Why now**: Without this, outer loop cannot learn from inner loop results — Triple-Loop breaks.
 - **Prior results**: None.
 - **Acceptance criteria**: Outer loop's iteration 2 strategy packet references the KEEP/DISCARD
   verdict from iteration 1.
@@ -791,7 +791,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Failure criteria**: Survey absent after init; or sections blank.
 - **Known weaknesses**: Survey may not be saved if init is interrupted mid-phase.
 - **Recommended next test**: Review whether the improvement recommendation from T50
-  leads to an update of the os-init SKILL.md — closing the flywheel.
+  leads to an update of the os-init SKILL.md — completing the Triple-Loop cycle.
 
 ---
 
@@ -806,5 +806,5 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 Priority ordering within a target: start with HIGH, then MEDIUM.
 Cross-target ordering: run kernel.py and hooks tests first (foundational infrastructure),
-then os-memory-manager and Triple-Loop Retrospective (most impactful for flywheel),
+then os-memory-manager and Triple-Loop Retrospective (most impactful for Triple-Loop),
 then os-improvement-loop and triple-loop (integration tests).

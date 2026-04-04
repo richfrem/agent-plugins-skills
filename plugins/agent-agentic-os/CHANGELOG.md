@@ -2,6 +2,15 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## [1.4.0] - 2026-04-04
+
+### Deep Architecture & Triple-Loop Paradigm
+- **Full Pattern 5 Deprecation**: Formally sunset the legacy "Flywheel" and "Pattern 5" orchestration methodologies in favor of the unified **Triple-Loop Orchestrator** framework.
+- **Dynamic Sibling-Repo Evaluations**: Migrated automated code evaluations entirely to isolated, headless sibling-labs via `evaluate.py`. Removed obsolete subjective testing instructions from `test-scenarios-seed.md` and deprecated `init_flywheel_files.py`.
+- **Reference & Taxonomy Healing**: Restructured the 24 flat file `references/` directory into highly organized semantic subfolders (`architecture/`, `operations/`, `memory/`, `testing/`, `meta/`), executing a cross-plugin automated parser to safely heal every markdown text link and symlink within the `.agents/skills` isolation boundaries.
+- **Hook Portability**: Re-engineered shell-script hooks (`session-start.sh`) into clean, inherently cross-platform Python binaries (`session_start.py`) ensuring full Windows and MacOS resilience.
+- **Metric Normalzation**: Transformed logging metrics within `post_run_metrics.py` to correctly surface Triple Loop progression rather than "Fast Cycle" phases.
+
 ## [1.3.1] - 2026-03-19
 
 ### Bug Fixes (claude-4.6 review of v1.3.0)

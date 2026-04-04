@@ -10,7 +10,7 @@
 
 ## Relevance to This Skill
 
-Meta-Harness runs the same outer loop as this repo's autoresearch flywheel — propose a change, evaluate it, log the result, repeat — but with one critical difference: the proposer has unrestricted filesystem access to **every prior candidate's source code, evaluation scores, and raw execution traces**.
+Meta-Harness runs the same outer loop as this repo's autoresearch Triple-Loop — propose a change, evaluate it, log the result, repeat — but with one critical difference: the proposer has unrestricted filesystem access to **every prior candidate's source code, evaluation scores, and raw execution traces**.
 
 The ablation study directly measures the value of that access:
 

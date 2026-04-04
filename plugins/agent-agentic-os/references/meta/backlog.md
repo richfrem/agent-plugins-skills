@@ -1,6 +1,6 @@
 # Agentic OS Improvement Backlog
 
-> Append-only triage log. ORCHESTRATOR adds entries at Fast Cycle step 6.5.
+> Append-only triage log. ORCHESTRATOR adds entries at Triple-Loop cycle step 6.5.
 > Never edit prior entries. Add a resolution note and move to Resolved when closed.
 >
 > Classes: S = simple fix (<5 min, clear solution) | M = requires thought, no arch change | L = architecture/options/trade-offs
@@ -19,11 +19,11 @@
 **Observed in**: All loops this session — nobody captures system-level health: are agents struggling with tooling, is the protocol too heavy, is the eval gate meaningful, are patterns repeating?
 **Impact**: Systemic friction is invisible. Issues are noticed per-run but never logged, triaged, or tracked. The backlog itself doesn't exist until now.
 **Options**:
-- A) Add Fast Cycle step 6.5: ORCHESTRATOR answers 5 fixed meta-questions, appends to `context/memory/backlog.md`. ~5 min per loop. Simple, low overhead.
-- B) Add a full ORCHESTRATOR self-assessment survey parallel to INNER/PEER surveys (Standard Cycle only). More thorough but slower — only runs on Standard Cycle, misses Fast Cycle observations.
-- C) Both: step 6.5 for quick triage observations (Fast Cycle), full survey for deep reflection (Standard Cycle).
+- A) Add Triple-Loop cycle step 6.5: ORCHESTRATOR answers 5 fixed meta-questions, appends to `context/memory/backlog.md`. ~5 min per loop. Simple, low overhead.
+- B) Add a full ORCHESTRATOR self-assessment survey parallel to INNER/PEER surveys (Standard Cycle only). More thorough but slower — only runs on Standard Cycle, misses Triple-Loop cycle observations.
+- C) Both: step 6.5 for quick triage observations (Triple-Loop cycle), full survey for deep reflection (Standard Cycle).
 **Recommendation**: Option C. Step 6.5 is the speed path; full survey is optional depth. The two serve different purposes.
-**Applies to**: `.agents/skills/os-improvement-loop/SKILL.md`, new `references/orchestrator-meta-survey.md` template, `init_flywheel_files.py` (seed backlog.md)
+**Applies to**: `.agents/skills/os-improvement-loop/SKILL.md`, new `references/orchestrator-meta-survey.md` template, `init_Triple-Loop_files.py` (seed backlog.md)
 **Decision needed**: Which 5 meta-questions go in step 6.5? (draft in options section above — needs user sign-off before implementation)
 
 ---
@@ -67,7 +67,7 @@
 **Options**:
 - A) One LLM API call per eval cycle via `claude-api` skill: submit the SKILL.md diff + one positive prompt and get a one-sentence routing judgment. Fills `llm_routing_score`. Cost: ~$0.001 per cycle. Requires API key in env.
 - B) Use the existing `gemini-cli-agent` or `copilot-cli-agent` as a free-tier judge. More setup, less reliable, but zero API cost.
-- C) Add LLM-based routing to `eval_runner.py` as an optional `--llm-judge` flag. Only fires when explicitly requested (Standard Cycle). Fast Cycle stays keyword-only.
+- C) Add LLM-based routing to `eval_runner.py` as an optional `--llm-judge` flag. Only fires when explicitly requested (Standard Cycle). Triple-Loop cycle stays keyword-only.
 - D) Accept keyword-only for now. The F1 gate + adversarial negative evals provide meaningful regression protection even without semantic judgment. Add LLM judge when a skill passes keyword eval but fails in practice (event-driven).
 **Recommendation**: Option C + D combined. Default to keyword-only (fast). Add `--llm-judge` flag for Standard Cycle. Trigger it when a KEEP skill degrades in practice (a new friction event pattern).
 **Applies to**: `eval_runner.py`, `.agents/skills/os-improvement-loop/SKILL.md` Standard Cycle step 4, `.agents/skills/os-eval-runner/SKILL.md`
@@ -81,9 +81,9 @@
 **Observed in**: This session — BL-004 (LLM judge) and BL-003 (race condition fix) are L/M class but have no formal task created. They will be forgotten without a promotion path.
 **Options**:
 - A) ORCHESTRATOR manually promotes L-class P0/P1 items to `/tasks/` via task-manager skill at end of each Standard Cycle. Explicit, controlled.
-- B) Add a rule to Fast Cycle step 6.5: if any new backlog item is L-class + P0/P1, emit a `task_promotion_needed` event. ORCHESTRATOR creates the task at next session start during orientation.
+- B) Add a rule to Triple-Loop cycle step 6.5: if any new backlog item is L-class + P0/P1, emit a `task_promotion_needed` event. ORCHESTRATOR creates the task at next session start during orientation.
 - C) Keep everything in `backlog.md`. Simple but the backlog gets long and tasks board stays unused.
-**Recommendation**: Option B. Keeps Fast Cycle fast (no task creation during loop), defers to session start where ORCHESTRATOR has full context.
+**Recommendation**: Option B. Keeps Triple-Loop cycle fast (no task creation during loop), defers to session start where ORCHESTRATOR has full context.
 **Applies to**: `.agents/skills/os-improvement-loop/SKILL.md` step 6.5, step 1 Orientation (check for `task_promotion_needed` events)
 **Decision needed**: Task format for `/tasks/` — does task-manager skill need a specific template?
 
@@ -96,9 +96,9 @@
 **Impact**: Low — caught and corrected. But the demo instructions (HOW-TO-RESTART.md) don't make the `CLAUDE_PROJECT_DIR` requirement explicit enough.
 **Options**:
 - A) Update HOW-TO-RESTART.md to explicitly state `CLAUDE_PROJECT_DIR` must point at LAB, with a failing example.
-- B) Add a guard in `init_flywheel_files.py` that warns if `CLAUDE_PROJECT_DIR` appears to be a plugin-source repo (heuristic: contains `plugins/` directory at root).
+- B) Add a guard in `init_Triple-Loop_files.py` that warns if `CLAUDE_PROJECT_DIR` appears to be a plugin-source repo (heuristic: contains `plugins/` directory at root).
 **Recommendation**: Option A immediately (S-class). Option B later if it recurs.
-**Applies to**: `INSTALL.md`, optionally `init_flywheel_files.py` (was `temp/agent-agentic-os-review/HOW-TO-RESTART.md`)
+**Applies to**: `INSTALL.md`, optionally `init_Triple-Loop_files.py` (was `temp/agent-agentic-os-review/HOW-TO-RESTART.md`)
 
 ---
 
@@ -124,7 +124,7 @@ Effort:      1 = trivial  2 = small  3 = medium  4 = large  5 = research/options
 
 ## Writing Protocol
 
-ORCHESTRATOR appends to **Active** at Fast Cycle step 6.5. One entry per observed issue or opportunity.
+ORCHESTRATOR appends to **Active** at Triple-Loop cycle step 6.5. One entry per observed issue or opportunity.
 Move to **In Progress** when a task is created or work begins.
 Move to **Resolved** with a one-line resolution note when closed.
 Never edit prior entries — add a follow-up entry if findings change.
