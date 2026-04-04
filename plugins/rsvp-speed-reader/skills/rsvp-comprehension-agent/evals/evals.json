@@ -1,0 +1,8 @@
+[
+  {"prompt": "Start the RSVP reading session for the token stream that was just generated", "should_trigger": true},
+  {"prompt": "Pause the current RSVP reading session at the current word and resume later", "should_trigger": true},
+  {"prompt": "After the RSVP session completes, give me a comprehension quiz on the key points", "should_trigger": true},
+  {"prompt": "Generate an RSVP token stream from this article so I can read it at 400 WPM", "should_trigger": false},
+  {"prompt": "Convert this PDF document into RSVP format with Optimal Recognition Points marked", "should_trigger": false},
+  {"prompt": "Summarize the document I just finished reading and extract the main ideas", "should_trigger": false}
+]

@@ -1,0 +1,8 @@
+[
+  {"prompt": "Walk me through the full Spec Kitty workflow from plan to merge", "should_trigger": true},
+  {"prompt": "What are the standard operating procedures for the Spec Kitty Plan -> Implement -> Review -> Merge lifecycle?", "should_trigger": true},
+  {"prompt": "I need to follow the spec-kitty workflow with human gate approval checkpoints between phases", "should_trigger": true},
+  {"prompt": "Generate work packages for my feature using /spec-kitty.tasks", "should_trigger": false},
+  {"prompt": "Run spec-kitty.tasks-packages to create the WP prompt files", "should_trigger": false},
+  {"prompt": "Start a retrospective after completing the feature implementation", "should_trigger": false}
+]

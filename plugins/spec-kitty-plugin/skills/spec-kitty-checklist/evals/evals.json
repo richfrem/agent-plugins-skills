@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run /spec-kitty.checklist to validate that the requirements are complete and unambiguous", "should_trigger": true},
+  {"prompt": "Generate a unit-test-style checklist for the spec to check if requirements are well-written", "should_trigger": true},
+  {"prompt": "Create a requirements quality checklist — check completeness, clarity, and consistency of the spec", "should_trigger": true},
+  {"prompt": "Analyze the spec.md and plan.md for inconsistencies and duplications before we code", "should_trigger": false},
+  {"prompt": "Verify the button click handler works correctly and confirm the API returns 200", "should_trigger": false},
+  {"prompt": "Generate the implementation tasks from the spec and plan", "should_trigger": false}
+]

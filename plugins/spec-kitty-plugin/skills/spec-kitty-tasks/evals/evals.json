@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run /spec-kitty.tasks to generate work packages from the plan", "should_trigger": true},
+  {"prompt": "Generate the tasks.md breakdown and work package list for this feature", "should_trigger": true},
+  {"prompt": "Use spec-kitty tasks to create WP definitions with subtasks and dependencies for the feature", "should_trigger": true},
+  {"prompt": "Create the individual WP*.md prompt files from tasks.md using tasks-packages", "should_trigger": false},
+  {"prompt": "Run spec-kitty.plan to plan this feature before generating tasks", "should_trigger": false},
+  {"prompt": "Implement WP01 using spec-kitty implement and create the worktree", "should_trigger": false}
+]

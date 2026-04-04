@@ -1,0 +1,8 @@
+[
+  {"prompt": "set up the RLM semantic cache for the first time in this project", "should_trigger": true},
+  {"prompt": "initialize a new RLM cache profile for the docs and scripts in this repo", "should_trigger": true},
+  {"prompt": "walk me through folder selection and extension config to create the RLM manifest and cache", "should_trigger": true},
+  {"prompt": "summarize the new files added since last week into the existing RLM ledger", "should_trigger": false},
+  {"prompt": "clean up stale entries from the RLM Summary Ledger after renaming files", "should_trigger": false},
+  {"prompt": "query what files are already in the RLM cache and check coverage", "should_trigger": false}
+]

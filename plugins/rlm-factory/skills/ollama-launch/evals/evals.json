@@ -1,0 +1,8 @@
+[
+  {"prompt": "start and verify the local Ollama server before running distillation", "should_trigger": true},
+  {"prompt": "Ollama is not running and the seal phase failed with Connection refused to 127.0.0.1:11434", "should_trigger": true},
+  {"prompt": "check if Ollama is already running and start it if not", "should_trigger": true},
+  {"prompt": "run RLM distillation using the Ollama batch mode on the project files", "should_trigger": false},
+  {"prompt": "install Ollama on my system from ollama.com", "should_trigger": false},
+  {"prompt": "pull the qwen2:7b model from the Ollama registry", "should_trigger": false}
+]

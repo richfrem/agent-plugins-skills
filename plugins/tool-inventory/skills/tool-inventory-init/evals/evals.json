@@ -1,0 +1,8 @@
+[
+  {"prompt": "Initialize the tool inventory for this new project repository", "should_trigger": true},
+  {"prompt": "Set up the semantic tool tracking system for Python and JS scripts in this repo", "should_trigger": true},
+  {"prompt": "Bootstrap the RLM profile for tools and run the first distillation pass on agent scripts", "should_trigger": true},
+  {"prompt": "Add a new tool entry to the existing tool inventory ledger", "should_trigger": false},
+  {"prompt": "Run the rlm-curator skill to audit uncached tools in the registry", "should_trigger": false},
+  {"prompt": "Initialize the vector database for semantic search on this project", "should_trigger": false}
+]

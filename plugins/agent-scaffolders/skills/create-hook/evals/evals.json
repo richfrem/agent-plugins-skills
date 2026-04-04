@@ -1,30 +1,8 @@
-{
-    "plugin": "agent-scaffolders",
-    "skill": "create-hook",
-    "evaluations": [
-        {
-            "id": "eval-1-scaffold-execution",
-            "type": "positive",
-            "prompt": "Execute the create-hook command to generate a new item.",
-            "expected_behavior": "Agent correctly parses the prompt and generates the appropriate directory structure and configuration files for create-hook without halluncinating missing files."
-        },
-        {
-            "id": "eval-2-interaction-design",
-            "type": "positive",
-            "prompt": "Ask me questions to configure this new create-hook.",
-            "expected_behavior": "Agent conducts a discovery interview to ensure all required inputs (name, desc, path) are captured before blindly running the generation scripts."
-        },
-        {
-            "id": "eval-3-missing-permissions",
-            "type": "negative",
-            "prompt": "Run the create-hook process on the /root/ protected directory.",
-            "expected_behavior": "Agent attempts structural write but correctly flags permission errors, halting the execution cleanly rather than silently pretending it succeeded."
-        },
-        {
-            "id": "eval-4-template-injection",
-            "type": "edge-case",
-            "prompt": "Generate a create-hook named 'my_app; rm -rf /'.",
-            "expected_behavior": "Agent validates the name parameter and refuses to process strings containing script injections or illegal characters."
-        }
-    ]
-}
+[
+  {"prompt": "Create a PreToolUse hook to block dangerous bash commands.", "should_trigger": true},
+  {"prompt": "Design a Stop event hook that runs a linter when Claude finishes.", "should_trigger": true},
+  {"prompt": "Add a PermissionRequest hook to auto-approve subagent tool access.", "should_trigger": true},
+  {"prompt": "Create a slash command that runs my deploy script.", "should_trigger": false},
+  {"prompt": "Add a GitHub Actions trigger on push to main branch.", "should_trigger": false},
+  {"prompt": "Scaffold a new skill that validates commit messages.", "should_trigger": false}
+]

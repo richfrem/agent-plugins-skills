@@ -1,24 +1,8 @@
-{
-    "plugin": "context-bundler",
-    "skill": "context-bundler",
-    "evaluations": [
-        {
-            "id": "eval-1-vague-request-discovery",
-            "type": "negative",
-            "prompt": "Bundle the backend logic.",
-            "expected_behavior": "Agent detects the missing file targets and format. It performs a quick search to suggest files and asks the user whether they need a .md or .zip file BEFORE writing any manifests."
-        },
-        {
-            "id": "eval-2-pre-execution-gate",
-            "type": "positive",
-            "prompt": "Bundle the src/api folder into a markdown file.",
-            "expected_behavior": "Agent has all required info, but DO NOT execute yet. It drafts a 'Context Bundle Plan' showing the target directory and format, and explicitly asks the user for confirmation ('Does this look right?') BEFORE running the python scripts."
-        },
-        {
-            "id": "eval-3-directory-expansion-execution",
-            "type": "positive",
-            "prompt": "Yes, that plan looks perfect.",
-            "expected_behavior": "Agent generates the file-manifest.json to disk using the directory shorthand ('src/api/'), then runs scripts/bundle.py. It does NOT manually explode the directory into an exhaustive file list in the JSON."
-        }
-    ]
-}
+[
+  {"prompt": "Bundle the src/ folder into a single markdown file for sharing with an external AI.", "should_trigger": true},
+  {"prompt": "Create a context bundle of these project files packaged into a portable zip archive for review.", "should_trigger": true},
+  {"prompt": "Package the architecture docs and implementation files into a context bundle for external review.", "should_trigger": true},
+  {"prompt": "Prepare a red team security review bundle targeting OWASP vulnerabilities.", "should_trigger": false},
+  {"prompt": "Scaffold the .claude directory for this project.", "should_trigger": false},
+  {"prompt": "Audit this plugin directory structure for ecosystem compliance.", "should_trigger": false}
+]

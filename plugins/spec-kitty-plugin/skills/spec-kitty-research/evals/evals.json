@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty research to scaffold research artifacts for this feature", "should_trigger": true},
+  {"prompt": "spec-kitty.research — create research.md and data-model.md stubs", "should_trigger": true},
+  {"prompt": "Generate the research artifacts including evidence-log.csv using spec-kitty research", "should_trigger": true},
+  {"prompt": "Run spec-kitty plan to create the implementation plan after research", "should_trigger": false},
+  {"prompt": "Run spec-kitty specify to write the feature specification", "should_trigger": false},
+  {"prompt": "Research this topic online and summarize the findings in a document", "should_trigger": false}
+]

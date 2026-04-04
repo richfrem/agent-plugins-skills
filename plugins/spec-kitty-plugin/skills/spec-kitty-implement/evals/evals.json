@@ -1,0 +1,8 @@
+[
+  {"prompt": "Implement the tasks from the spec-kitty plan by writing the actual code", "should_trigger": true},
+  {"prompt": "Run /spec-kitty.implement to start the implementation phase of the workflow", "should_trigger": true},
+  {"prompt": "Execute spec-kitty implement to work through the tasks.md and build the feature", "should_trigger": true},
+  {"prompt": "Analyze the spec for inconsistencies before we begin implementation", "should_trigger": false},
+  {"prompt": "Show me the spec-kitty dashboard to check which features are in progress", "should_trigger": false},
+  {"prompt": "Generate a checklist to validate that the requirements are complete and unambiguous", "should_trigger": false}
+]

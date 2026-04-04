@@ -1,0 +1,8 @@
+[
+  {"prompt": "Analyze the spec for inconsistencies and duplications before we start implementation", "should_trigger": true},
+  {"prompt": "Run /spec-kitty.analyze to identify ambiguities across spec.md, plan.md, and tasks.md", "should_trigger": true},
+  {"prompt": "Check the three core artifacts for conflicts and underspecified items after tasks.md was generated", "should_trigger": true},
+  {"prompt": "Generate a checklist to validate requirements quality in the spec", "should_trigger": false},
+  {"prompt": "Accept the spec-kitty plan and begin implementation", "should_trigger": false},
+  {"prompt": "Ask clarifying questions about the underspecified parts of the feature spec", "should_trigger": false}
+]

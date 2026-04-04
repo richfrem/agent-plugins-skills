@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty status to check the current state of the feature", "should_trigger": true},
+  {"prompt": "spec-kitty.status — show me the progress of feature 001-auth", "should_trigger": true},
+  {"prompt": "What is the spec-kitty status of the current workflow?", "should_trigger": true},
+  {"prompt": "Run spec-kitty plan to see what planning steps are next", "should_trigger": false},
+  {"prompt": "Run spec-kitty merge to finalize and merge the feature branch", "should_trigger": false},
+  {"prompt": "Check the git status of my repository to see uncommitted changes", "should_trigger": false}
+]

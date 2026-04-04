@@ -1,0 +1,2 @@
+timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
+2026-04-04T18:42:01	init	0.5600	0.0000	0.5000	0.7000	0.5600	BASELINE	Auto-generated baseline sweep

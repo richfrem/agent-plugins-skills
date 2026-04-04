@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty review on the feature before merging", "should_trigger": true},
+  {"prompt": "spec-kitty.review — review the completed implementation", "should_trigger": true},
+  {"prompt": "Execute the spec-kitty review workflow for feature 003-dashboard", "should_trigger": true},
+  {"prompt": "Run spec-kitty merge to merge the reviewed feature into main", "should_trigger": false},
+  {"prompt": "Run spec-kitty status to check feature progress", "should_trigger": false},
+  {"prompt": "Review the pull request using standard code review guidelines", "should_trigger": false}
+]

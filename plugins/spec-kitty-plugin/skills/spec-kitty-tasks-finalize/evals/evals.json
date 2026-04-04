@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty tasks-finalize to generate the individual WP prompt files", "should_trigger": true},
+  {"prompt": "spec-kitty.tasks-finalize — finalize the tasks and create work package prompts", "should_trigger": true},
+  {"prompt": "Execute the spec-kitty tasks-finalize step after reviewing the tasks outline", "should_trigger": true},
+  {"prompt": "Run spec-kitty tasks-outline to create the initial task breakdown document first", "should_trigger": false},
+  {"prompt": "Run spec-kitty plan to revise the implementation plan", "should_trigger": false},
+  {"prompt": "Mark all my tasks as complete in the project management tool", "should_trigger": false}
+]

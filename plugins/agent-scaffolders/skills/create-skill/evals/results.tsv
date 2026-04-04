@@ -1,0 +1,3 @@
+timestamp	commit	score	baseline	accuracy	heuristic	f1	status	description
+2026-04-04T18:42:10	init	0.7667	0.0000	0.6667	1.0000	0.8000	BASELINE	Auto-generated baseline sweep
+2026-04-04T19:16:17	init	0.6500	0.0000	0.5000	1.0000	0.6667	BASELINE	Schema migration: upgraded to should_trigger boolean schema

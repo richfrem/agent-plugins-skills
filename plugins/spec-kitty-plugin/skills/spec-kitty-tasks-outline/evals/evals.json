@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty tasks-outline to create the task breakdown document", "should_trigger": true},
+  {"prompt": "spec-kitty.tasks-outline — generate tasks.md with work packages and subtasks", "should_trigger": true},
+  {"prompt": "Create the tasks.md blueprint with work package sizing and dependencies using spec-kitty tasks-outline", "should_trigger": true},
+  {"prompt": "Run spec-kitty tasks-finalize to generate the individual WP prompt files from the outline", "should_trigger": false},
+  {"prompt": "Run spec-kitty plan to update the implementation plan before outlining tasks", "should_trigger": false},
+  {"prompt": "Create a simple to-do list for this project without using spec-kitty", "should_trigger": false}
+]

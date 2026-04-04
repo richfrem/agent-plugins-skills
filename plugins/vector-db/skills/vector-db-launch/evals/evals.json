@@ -1,0 +1,8 @@
+[
+  {"prompt": "Start the Native Python ChromaDB background server on port 8110", "should_trigger": true},
+  {"prompt": "Semantic search returns connection refused, launch the ChromaDB server", "should_trigger": true},
+  {"prompt": "The vector-db server is not running, start chroma run on port 8110", "should_trigger": true},
+  {"prompt": "Initialize the vector DB plugin and configure vector_profiles.json", "should_trigger": false},
+  {"prompt": "Ingest repository files into the ChromaDB vector store", "should_trigger": false},
+  {"prompt": "Clean up stale chunks from the vector store after file deletions", "should_trigger": false}
+]

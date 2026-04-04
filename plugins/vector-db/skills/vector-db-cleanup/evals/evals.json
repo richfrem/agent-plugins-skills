@@ -1,0 +1,8 @@
+[
+  {"prompt": "Clean up the vector store after I deleted some files", "should_trigger": true},
+  {"prompt": "The vector database has chunks for files that no longer exist, prune them", "should_trigger": true},
+  {"prompt": "Remove orphaned and stale chunks from ChromaDB after renaming files in the repo", "should_trigger": true},
+  {"prompt": "Index these new plugin files into the vector database", "should_trigger": false},
+  {"prompt": "Start the ChromaDB background server on port 8110", "should_trigger": false},
+  {"prompt": "Run a semantic search query against the vector store", "should_trigger": false}
+]

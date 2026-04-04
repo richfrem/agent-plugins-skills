@@ -1,0 +1,8 @@
+[
+  {"prompt": "Set up the project constitution for this spec-kitty project by running the interview", "should_trigger": true},
+  {"prompt": "Run /spec-kitty.constitution to capture project governance policies and compile the constitution", "should_trigger": true},
+  {"prompt": "Interview me to create the spec-kitty constitution and save it to .kittify/constitution/constitution.md", "should_trigger": true},
+  {"prompt": "Clarify the underspecified areas in the feature spec before planning", "should_trigger": false},
+  {"prompt": "Analyze the spec for inconsistencies across spec.md, plan.md, and tasks.md", "should_trigger": false},
+  {"prompt": "Accept the reviewed spec-kitty feature proposal", "should_trigger": false}
+]
