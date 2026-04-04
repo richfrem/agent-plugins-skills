@@ -82,6 +82,21 @@ python3 ./scripts/audit_structure.py
 ```
 > For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
 
+### Step 1.5: Path Portability Audit
+Run after every structure scan to catch hardcoded or non-portable paths (ADR-003/004):
+```bash
+python3 plugins/agent-plugin-analyzer/scripts/audit_plugin_paths.py plugins/
+```
+**Expected output**: `✅ Clean! 0 violations found.`
+
+If violations are found, invoke the `fix-plugin-paths` skill from `agent-plugin-analyzer` to
+remediate each file. A clean path audit is a mandatory gate before any merge or release.
+
+**Common violations it catches:**
+- Self-referential absolute paths (`plugins/<name>/scripts/foo.py` → `./scripts/foo.py`)
+- Environment-specific `.agents/skills/<skill>/scripts/` paths that break on reinstall
+- Absolute machine paths (`/Users/<name>/...`) that break portability across machines
+
 ### Step 2: Manual Audit Checklist (if script unavailable)
 
 For each plugin being audited, classify every file by type and check against Open Standards:
@@ -177,10 +192,10 @@ python3 ./scripts/generate_readmes.py --apply
 ---
 
 ## When to Use
-- **After adding a new plugin** — run Audit to verify correct structure
+- **After adding a new plugin** — run Audit + Path Portability Audit to verify correct structure
 - **After removing a vendor plugin** — run Sync to clean orphaned agent artifacts
-- **Periodically** — to catch drift or accidental file placements
-- **Before a release** — to ensure clean distribution state
+- **Periodically** — to catch drift or accidental file placements and path portability regressions
+- **Before a release** — to ensure clean distribution state (both structure and path audits must pass)
 
 ## Next Actions
 - Run `plugin-installer` from `plugin-manager` to deploy updated plugins to agent environments.

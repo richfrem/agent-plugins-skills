@@ -91,6 +91,28 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **When to Use**: When a skill covers distinct but highly related use cases that differ in urgency or scope.
 - **Example**: `/brief incident` values speed and available data; `/brief topic` defaults to thorough research and external counsel recommendation.
 
+### Policy Plane Separation
+- **Category**: Architectural
+- **Lifecycle**: `canonical`
+- **Confidence**: High
+- **Frequency**: 29 plugins (ecosystem-wide mandate per ADR-005)
+- **First Seen In**: `agent-agentic-os`, `agent-loops`, `spec-kitty-plugin`
+- **Last Validated**: 2026-04-04
+- **Description**: The ecosystem enforces three strictly independent layers. **Reasoning** (SKILL.md — what to do) must be framework-agnostic. **Policy** (hooks, sentinels, eval gates — how it is governed) is pluggable and replaceable. **Execution** (Python scripts — how it runs) is invoked only via relative paths with no framework coupling. Functional utility skills must operate correctly when orchestration frameworks (agent-agentic-os, spec-kitty) are absent.
+- **When to Use**: Every plugin. Framework references in functional skills must be marked `⚠️ OPTIONAL — Only relevant when <framework> is installed.` Mandatory references are violations.
+- **Example**: `mermaid-to-png`, `task-manager`, `link-checker` run flawlessly without any orchestration framework installed. `os-eval-runner` is an optional accelerator for skills that want it, never a requirement.
+
+### Pluggable Execution
+- **Category**: Architectural
+- **Lifecycle**: `validated`
+- **Confidence**: High
+- **Frequency**: 5+ plugins
+- **First Seen In**: `agent-loops`, `agent-execution-disciplines`, `exploration-cycle-plugin`
+- **Last Validated**: 2026-04-04
+- **Description**: Sub-system plugins operate in total isolation. If a framework plugin (e.g., `agent-agentic-os`) is uninstalled or replaced by a native model provider feature, surrounding functional skills continue to operate via standard API surfaces without modification. Achieved by: (1) delegating cross-plugin capability via agent natural language, not direct code calls; (2) marking all framework integrations as OPTIONAL with graceful degradation paths; (3) never sharing mutable state with a framework's internals unless mediated by that framework's documented interface.
+- **When to Use**: Any plugin that may optionally benefit from an orchestration framework. Design the baseline path first, then layer in the framework enhancement.
+- **Example**: `exploration-workflow` uses `spec-kitty` Phase 5 planning drafts but wraps the entire phase with `⚠️ OPTIONAL — Only relevant when spec-kitty plugin is installed. Skip this phase if running exploration standalone.`
+
 ---
 
 ## Execution Patterns
@@ -513,11 +535,12 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 
 | Date | Action | Pattern(s) | Notes |
 |------|--------|-----------|-------|
+| 2026-04-04 | Addition | Policy Plane Separation, Pluggable Execution | ADR-005 formalization; ecosystem-wide canonical patterns |
 | 2026-03-03 | Governance backfill | All 28 patterns | Added Lifecycle, Confidence, Frequency fields to all existing patterns |
 | 2026-03-03 | Initial catalog | 18 core patterns | Architectural (3), Execution (4), Content (6), Knowledge (3), Integration (2) |
 | 2026-03-03 | Expansion | 10 Interaction patterns | Added Interaction Design Patterns category |
 
 ---
 
-*Last updated: Governance backfilled 2026-03-03*
-*Total patterns: 28 (governance fields backfilled 2026-03-03)*
+*Last updated: 2026-04-04 — ecosystem-robustness-refactor*
+*Total patterns: 30 (added Policy Plane Separation, Pluggable Execution)*
