@@ -24,7 +24,7 @@ The **Orchestrator** assesses the incoming trigger, selects the right loop patte
 ## The Core Loop
 
 ### Ecosystem Context
-- **Patterns**: [`learning-loop`](../learning-loop/SKILL.md) | [`red-team-review`](../red-team-review/SKILL.md) | [`dual-loop`](../dual-loop/SKILL.md) | [`agent-swarm`](../agent-swarm/SKILL.md)
+- **Patterns**: [`learning-loop`](../learning-loop/SKILL.md) | [`red-team-review`](../red-team-review/SKILL.md) | [`dual-loop`](../dual-loop/SKILL.md) | [`agent-swarm`](../agent-swarm/SKILL.md) | [`triple-loop-learning`](../triple-loop-learning/SKILL.md)
 - **Inner Loop Reference**: [`cli-agent-executor.md`](../../references/cli-agent-executor.md) — Persona configs for specialized CLI execution.
 
 ## Routing Decision Tree
@@ -32,15 +32,19 @@ The **Orchestrator** assesses the incoming trigger, selects the right loop patte
 Use this to select the correct loop pattern:
 
 ```
-1. Is this work I can do entirely myself (research, document, iterate)?
+1. Does the trigger mention unguided friction evaluation, tests, and self-optimization?
+   └─ YES → Pattern 5: triple-loop-learning
+   └─ NO → continue
+
+2. Is this work I can do entirely myself (research, document, iterate)?
    └─ YES → Pattern 1: learning-loop
    └─ NO → continue
 
-2. Does it need adversarial review before proceeding?
+3. Does it need adversarial review before proceeding?
    └─ YES → Pattern 2: red-team-review
    └─ NO → continue
 
-3. Can the work be split into parallel independent tasks?
+4. Can the work be split into parallel independent tasks?
    └─ YES → Pattern 4: agent-swarm
    └─ NO → Pattern 3: dual-loop (sequential inner/outer delegation)
 ```
@@ -51,6 +55,7 @@ Use this to select the correct loop pattern:
 | Architecture decision, security review, high-risk change | **Red Team Review** | `red-team-review` |
 | Feature implementation, bug fix, single work package | **Dual-Loop** | `dual-loop` |
 | Large feature, bulk migration, multi-concern parallel work | **Agent Swarm** | `agent-swarm` |
+| Systemic rules generation, autonomous meta-optimizations | **Triple-Loop** | `triple-loop-learning` |
 
 ### Process Flow
 1.  **Plan (Strategy)**: You define the work (Spec → Plan → Tasks). When planning scripts/pipelines, default to a "Modular Building Blocks" architecture (CLI wrappers + independent core modules).

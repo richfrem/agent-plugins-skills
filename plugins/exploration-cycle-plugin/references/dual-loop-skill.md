@@ -1,5 +1,5 @@
 ---
-name: dual-loop
+name: triple-loop
 description: "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
 allowed-tools: Bash, Read, Write
 ---
@@ -115,7 +115,7 @@ Once the Inner Loop signals completion, the Outer Loop must verify the results:
 ### Step 7: Self-Assessment Survey (MANDATORY — Outer Loop and Inner Loop)
 
 Before handoff, both the Outer Loop and Inner Loop MUST each complete the Post-Run
-Self-Assessment Survey (`references/post_run_survey.md`). Answer every section in full.
+Self-Assessment Survey (`references/memory/post_run_survey.md`). Answer every section in full.
 
 **Count-Based Signals**: How many times did you not know what to do next? Miss a step?
 Use wrong CLI syntax? Get redirected by a human? Total friction events?
@@ -135,7 +135,7 @@ python3 context/kernel.py emit_event --agent <ROLE> \
   --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
 ```
 
-If any single friction cause appears 3+ times this cycle, flag for `os-learning-loop`
+If any single friction cause appears 3+ times this cycle, flag for `Triple-Loop Retrospective`
 Full Loop before the next cycle begins.
 
 ### Step 8: Completion & Handoff

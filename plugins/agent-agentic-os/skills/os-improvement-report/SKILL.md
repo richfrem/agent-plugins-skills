@@ -47,7 +47,7 @@ This skill produces the same chart for agentic-os and exploration-cycle-plugin i
 | `.agents/skills/*/evals/results.tsv` | Per-skill detailed eval score history (supplement to ledger) |
 
 The improvement ledger is the primary source. It is written at every loop close (Stage 4.7
-of os-improvement-loop). See `references/improvement-ledger-spec.md` for the format.
+of os-improvement-loop). See `references/memory/improvement-ledger-spec.md` for the format.
 
 ---
 
@@ -140,7 +140,7 @@ Steep step-line rises = the survey-to-action trace is working.
 Any plugin that runs eval cycles can plug into this report by:
 
 1. Initializing `context/memory/improvement-ledger.md` with the three-section format
-   (see `references/improvement-ledger-spec.md` — includes a bash init snippet).
+   (see `references/memory/improvement-ledger-spec.md` — includes a bash init snippet).
 2. Writing to Section 1 after every KEEP or DISCARD cycle.
 3. Writing to Section 2 when a survey friction item results in a change attempt.
 4. Writing to Section 3 once per session with the completion rate.
@@ -152,8 +152,8 @@ tied to agent-agentic-os specifically.
 
 ## References
 
-- [improvement-ledger-spec.md](../../references/improvement-ledger-spec.md) — ledger format, writing protocol, initialization
-- [chart-reading-guide.md](references/chart-reading-guide.md) — how to interpret KEEP/DISCARD dots, step line, and text summary fields
+- [improvement-ledger-spec.md](../../references/memory/improvement-ledger-spec.md) — ledger format, writing protocol, initialization
+- [chart-reading-guide.md](references/operations/chart-reading-guide.md) — how to interpret KEEP/DISCARD dots, step line, and text summary fields
 - [os-improvement-loop SKILL](../os-improvement-loop/SKILL.md) — Stage 4.7 writes to the ledger
-- [test-scenarios-seed.md](../../references/test-scenarios-seed.md) — 50 pre-designed test hypotheses
-- [post_run_survey.md](../../references/post_run_survey.md) — survey template (Section 2 trace sources)
+- [test-scenarios-seed.md](../../references/testing/test-scenarios-seed.md) — 50 pre-designed test hypotheses
+- [post_run_survey.md](../../references/memory/post_run_survey.md) — survey template (Section 2 trace sources)

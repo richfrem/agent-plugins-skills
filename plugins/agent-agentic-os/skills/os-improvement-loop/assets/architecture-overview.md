@@ -1,1 +1,1 @@
-../../../assets/architecture-overview.md
+../../../references/architecture/architecture-overview.md

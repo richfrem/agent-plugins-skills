@@ -215,7 +215,7 @@ The loop runs on a dedicated branch (e.g. `skillopt/mar14`).
 - Duplicate "Step 4f" labels in `spec-kitty-workflow/SKILL.md`
 - `--actor`/`--test` flags referenced as instructions despite being in the failure modes table as unsupported
 - `spec-kitty init . --ai windsurf` hardcoded — no general form shown
-- `dependencies: ["skill:agent-bridge"]` and `["skill:dual-loop"]` point to non-existent skills
+- `dependencies: ["skill:agent-bridge"]` and `["skill:triple-loop"]` point to non-existent skills
 - Near-identical content between `agents/spec-kitty-agent.md` and `skills/spec-kitty-agent/SKILL.md` — reduce duplication or clarify the distinction
 
 **Errors**: If a change breaks the internal logic of a skill (e.g. a step now references a section that no longer exists), treat it as an error. Log `error`, `git reset --hard HEAD~1`, and move on.

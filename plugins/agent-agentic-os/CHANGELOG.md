@@ -2,11 +2,20 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## [1.4.0] - 2026-04-04
+
+### Deep Architecture & Triple-Loop Paradigm
+- **Full Pattern 5 Deprecation**: Formally sunset the legacy "Flywheel" and "Pattern 5" orchestration methodologies in favor of the unified **Triple-Loop Orchestrator** framework.
+- **Dynamic Sibling-Repo Evaluations**: Migrated automated code evaluations entirely to isolated, headless sibling-labs via `evaluate.py`. Removed obsolete subjective testing instructions from `test-scenarios-seed.md` and deprecated `init_flywheel_files.py`.
+- **Reference & Taxonomy Healing**: Restructured the 24 flat file `references/` directory into highly organized semantic subfolders (`architecture/`, `operations/`, `memory/`, `testing/`, `meta/`), executing a cross-plugin automated parser to safely heal every markdown text link and symlink within the `.agents/skills` isolation boundaries.
+- **Hook Portability**: Re-engineered shell-script hooks (`session-start.sh`) into clean, inherently cross-platform Python binaries (`session_start.py`) ensuring full Windows and MacOS resilience.
+- **Metric Normalzation**: Transformed logging metrics within `post_run_metrics.py` to correctly surface Triple Loop progression rather than "Fast Cycle" phases.
+
 ## [1.3.1] - 2026-03-19
 
 ### Bug Fixes (claude-4.6 review of v1.3.0)
-- **os-learning-loop.md Phase 1**: Lock acquisition (`acquire_lock kernel`) is now conditional — skipped entirely in Fast Path mode. Previously Fast Path held the kernel write lock while doing a read-only analysis, defeating the lightweight intent.
-- **AUTO-APPLY ZONE**: Replaced vague "low-risk" with four concrete, enumerable conditions that must ALL be true for auto-apply (user-confirmed this session, pure addition, factual not policy, non-strict mode). Conditions are now present in both the CLAUDE.md template comment and the SANDBOX PROTECTION RULE in `os-learning-loop.md` so the agent has them at decision time.
+- **Triple-Loop Retrospective.md Phase 1**: Lock acquisition (`acquire_lock kernel`) is now conditional — skipped entirely in Fast Path mode. Previously Fast Path held the kernel write lock while doing a read-only analysis, defeating the lightweight intent.
+- **AUTO-APPLY ZONE**: Replaced vague "low-risk" with four concrete, enumerable conditions that must ALL be true for auto-apply (user-confirmed this session, pure addition, factual not policy, non-strict mode). Conditions are now present in both the CLAUDE.md template comment and the SANDBOX PROTECTION RULE in `Triple-Loop Retrospective.md` so the agent has them at decision time.
 
 ## [1.3.0] - 2026-03-19
 
@@ -14,7 +23,7 @@ All notable changes to `agent-agentic-os` are documented here.
 - **os-state.json template**: Added `execution_mode` (`lightweight` | `standard` | `strict`, default `standard`), `hook_sample_rate` (default 1 = every call), and `lock_timeout_seconds` (default 1800) fields.
 - **update_memory.py**: Added `_check_execution_gate()` — skips hook entirely when `execution_mode=lightweight`; skips `N-1` of every `N` calls when `hook_sample_rate > 1` (counter stored in `os-state.json["hook_call_count"]`).
 - **CLAUDE_MD_PROJECT.md template**: Added `## [AUTO-APPLY ZONE]` append-only section; the learning loop may write low-risk facts here without manual approval when `execution_mode != strict`.
-- **os-learning-loop.md**: Added "Fast Path (Passive Analyzer)" mode — default for routine sessions. Completes Phases 0-2 and emits a `FINDINGS:` block without acquiring write locks or modifying files. Full loop only on explicit user request or 3+ same-type friction events.
+- **Triple-Loop Retrospective.md**: Added "Fast Path (Passive Analyzer)" mode — default for routine sessions. Completes Phases 0-2 and emits a `FINDINGS:` block without acquiring write locks or modifying files. Full loop only on explicit user request or 3+ same-type friction events.
 
 ### Hook Visibility (Issue: silent failures unnoticed)
 - **post_run_metrics.py**: Added `count_hook_errors()` that reads `context/memory/hook-errors.log`; hook error count included in Stop-hook summary line and in the emitted metric event (`results.hook_errors`). Failures are now visible at session end.
@@ -63,7 +72,7 @@ All notable changes to `agent-agentic-os` are documented here.
 - **todo-check/SKILL.md**: Added 1 implicit/audit `<example>` block.
 - **os-eval-runner/SKILL.md**: Added 1 implicit/audit `<example>` block.
 - **os-clean-locks/SKILL.md**: Added 1 implicit/audit `<example>` block.
-- **agents/os-learning-loop.md**: Added 1 implicit/audit `<example>` block (proactive friction detection from event stream).
+- **agents/Triple-Loop Retrospective.md**: Added 1 implicit/audit `<example>` block (proactive friction detection from event stream).
 
 ## [1.1.0] - 2026-03-18
 

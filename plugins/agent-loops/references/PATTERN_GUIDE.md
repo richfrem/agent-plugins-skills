@@ -11,6 +11,7 @@ This guide maps the Agent-Loops skills to standard industry terminology (e.g., G
 | `agent-swarm` | Parallel Agent | Work that can be partitioned into independent sub-tasks running concurrently across multiple agents. |
 | `orchestrator` | Routing Agent / Hierarchical | Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations above. |
 | `red-team-review` | Review and Critique Pattern | Iterative generation paired with adversarial review, continuing until an "Approved" verdict is reached. |
+| `triple-loop-learning` | Meta-Learning System | Continuous, unguided self-improvement of agent processes through rigorous objective headless testing, iterating on prompts and system skills from logged friction. |
 
 ---
 
@@ -68,6 +69,14 @@ Use for bulk operations (RLM distillation, massive doc conversions) or partition
 
 ---
 
+## 5. Meta-Learning System (`triple-loop-learning`)
+
+The **Meta-Learning Loop** architecture automates the iterative improvement of an agentic system over long horizons using rigorous headless testing. Unlike simpler loops, it acts as an autonomous optimization engine continuously hunting for friction, hypothesizing process and rule improvements, deploying them safely to headless testing environments, and securely promoting the winning logic into systemic changes.
+
+**Best used when:** You have comprehensive headless test metrics running the core workflows and you want an agent to autonomously test improvements without supervision.
+
+---
+
 ## 4. Routing Agent / Hierarchical (`orchestrator`)
 
 An initial decision layer that analyzes the prompt or trigger and directs the query to the correct specialized sub-agent or pattern.
@@ -82,7 +91,7 @@ An initial decision layer that analyzes the prompt or trigger and directs the qu
 | Ideal for "universal" command inputs | Increases architectural complexity |
 
 ### When to Use
-Use as the primary entry point for ambiguous human triggers. The Router decides if the task warrants a simple learning loop, a dual-loop delegation, or a full swarm.
+Use as the primary entry point for ambiguous human triggers. The Router decides if the task warrants a simple learning loop, a triple-loop delegation, or a full swarm.
 
 ---
 

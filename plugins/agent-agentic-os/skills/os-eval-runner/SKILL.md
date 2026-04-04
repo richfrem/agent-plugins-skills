@@ -17,7 +17,7 @@ description: >
   </example>
 
   <example>
-  Context: `os-learning-loop` proposes a skill edit.
+  Context: `Triple-Loop Retrospective` proposes a skill edit.
   assistant: [autonomously] "Before I apply this description change, I'll run os-eval-runner to confirm."
   </example>
 
@@ -390,7 +390,7 @@ python3 ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
 After every evaluation run, complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). This is how the evaluator itself improves.
+(`references/memory/post_run_survey.md`). This is how the evaluator itself improves.
 
 **Count-Based Signals**: How many times did you not know what to do next? Use wrong
 eval syntax? Miss a required check? Get redirected?
@@ -588,5 +588,5 @@ python3 -c "import json; d=json.load(open('evals/traces/iter_002_DISCARD_score0.
 ## Operating Principles
 - **Strict Rigor**: Do not rubber-stamp proposals. If the description is vague, it will over-trigger and break the OS. Fail it.
 - **Isolate**: Do not actually write the files. You are an evaluator only. The calling agent is responsible for the final `Write`.
-- **Self-Improve**: The survey is not optional. An evaluator that never reflects on its own accuracy is not part of the flywheel.
+- **Self-Improve**: The survey is not optional. An evaluator that never reflects on its own accuracy is not part of the Triple-Loop.
 - **Lab Runs Must Close**: A lab run that ends without a backport review is incomplete. The master source is the only durable artifact.

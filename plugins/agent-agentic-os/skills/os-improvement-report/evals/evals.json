@@ -52,7 +52,7 @@
     {
       "id": 9,
       "prompt": "Run the learning loop on the os-eval-runner skill.",
-      "expected_output": "Triggers os-learning-loop or os-eval-runner, NOT os-improvement-report.",
+      "expected_output": "Triggers Triple-Loop Retrospective or os-eval-runner, NOT os-improvement-report.",
       "files": []
     },
     {

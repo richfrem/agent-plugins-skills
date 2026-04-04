@@ -157,7 +157,7 @@ Every summary should answer: **"Why does this file exist and what does it do?"**
 
 | ❌ Bad | ✅ Good |
 |--------|---------|
-| "This is a README file" | "Plugin providing 5 composable agent loop patterns for learning, red team review, dual-loop delegation, and parallel swarm execution" |
+| "This is a README file" | "Plugin providing 5 composable agent loop patterns for learning, red team review, triple-loop delegation, and parallel swarm execution" |
 | "Contains a SKILL definition" | "Orchestrator skill that routes tasks to the correct loop pattern using a 4-question decision tree, manages shared closure sequence" |
 
 ## After Init

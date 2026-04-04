@@ -1,0 +1,23 @@
+flowchart TD
+    classDef user fill:#fee2e2,stroke:#fca5a5,stroke-width:2px,color:#7f1d1d
+    classDef process fill:#dbeafe,stroke:#93c5fd,stroke-width:2px,color:#1e3a8a
+    classDef file fill:#fef3c7,stroke:#fcd34d,stroke-width:2px,color:#78350f
+
+    U1["Developer finishes day"]:::user
+    P1["Trigger Async Triple-Loop<br>(e.g. gemini -p '...')"]:::process
+    P2["Headless CLI Agent"]:::process
+    
+    F1["results.tsv (Scores)"]:::file
+    F2["SKILL.md (Target)"]:::file
+    
+    U1 --> P1
+    P1 -->|"Runs detached in background"| P2
+    P2 -->|"Proposes Change"| F2
+    F2 -->|"Gated by Headless Eval"| F1
+    F1 -->|"If KEEP"| F2
+    F1 -->|"If DISCARD"| P2
+    
+    P2 -.->|"Hundreds of autonomous iterations"| P2
+    
+    U2["Developer reviews milestones<br>next morning"]:::user
+    F1 --> U2

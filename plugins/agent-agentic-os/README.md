@@ -2,7 +2,7 @@
 
 A developer **meta-harness** that gives your AI agent **persistent memory**, a **self-improving feedback loop**, and **cross-IDE orchestration** — helping solo developers coordinate workflows and continuously improve skills with every execution across multiple environments (VS Code, Cursor, Windsurf, Copilot).
 
-A *harness* controls what information a model sees at each step: prompting, context management, memory retrieval, and tool orchestration. A *meta-harness* adds an outer loop that searches over and improves the harness itself. This plugin is both: the memory and coordination layer is the harness; the `os-eval-runner` + `os-improvement-loop` flywheel is the meta-layer that evolves the harness's own skills and protocols continuously.
+A *harness* controls what information a model sees at each step: prompting, context management, memory retrieval, and tool orchestration. A *meta-harness* adds an outer loop that searches over and improves the harness itself. This plugin is both: the memory and coordination layer is the harness; the `os-eval-runner` + `triple-loop-architect` orchestration is the meta-layer that evolves the harness's own skills and protocols continuously.
 
 This architecture is independently validated by Meta-Harness (Lee et al., arXiv:2603.28052, 2026), which demonstrates that code-space search over harness definitions — using an LLM proposer with access to prior candidates and evaluation traces — outperforms hand-designed harnesses by significant margins across benchmarks. See [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) for the full analysis.
 
@@ -28,21 +28,25 @@ Every session writes structured logs to `context/events.jsonl` and `context/memo
 
 ### Continuous Improvement Loop (The Meta-Harness Layer)
 
-This is the system's core differentiator: a two-flywheel feedback control system that continuously improves the instructions the model receives based on objective evaluation.
+### Continuous Improvement Loop (The Meta-Harness Layer)
+
+This is the system's core differentiator: a unified **Triple-Loop Learning System** that continuously improves the instructions the model receives based on objective evaluation.
 
 ```text
-INNER flywheel (os-eval-runner + os-skill-improvement + os-nightly-evolver):
+TRIPLE-LOOP (Outer Meta-Learning Orchestrator via os-improvement-loop/nightly-evolver):
+  Runs automated loops unattended
+    -> oversees all experiments and delegates strategic targets
+    -> reviews cross-loop patterns to improve OS-level protocols 
+
+DOUBLE-LOOP (Strategic Planner via os-skill-improvement):
   Session runs
     -> errors and friction logged to events.jsonl
-    -> os-learning-loop proposes a single-variable patch to a SKILL.md (The Target)
-    -> eval_runner.py scores it against locked evals/evals.json fixtures (The Headless Evaluator)
-    -> if DISCARD: auto-reverted via git checkout; if KEEP: retained for the next session
+    -> formulates hypotheses and generates strategy packets 
 
-OUTER flywheel (os-improvement-loop):
-  Runs between sessions
-    -> reviews patterns across many inner iterations
-    -> proposes improvements to OS-level protocols and memory hygiene rules
-    -> os-nightly-evolver runs the INNER flywheel unattended overnight via Gemini CLI
+SINGLE-LOOP (Tactical Executor via os-eval-runner):
+    -> executes the patch against a SKILL.md (The Target)
+    -> scores it against locked evals/evals.json fixtures (Headless Evaluation)
+    -> if DISCARD: auto-reverted via git checkout; if KEEP: retained for next session
 ```
 
 The loop relies strictly on headless evaluation — no subjective LLM "mental" testing — defeating Goodhart's Law. A test registry prevents re-testing falsified hypotheses. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
@@ -55,7 +59,7 @@ Three simple signaling patterns built into the system:
 
 **Inner/outer loop** - outer supervisor sets goals and reviews results; inner worker executes and signals completion in the shared event log. Context flows through shared memory, not tight coupling.
 
-**Background + foreground** - background agents (`os-learning-loop`, `os-health-check`) run asynchronously with simple execution locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
+**Background + foreground** - background agents (`Triple-Loop Retrospective`, `os-health-check`) run asynchronously with simple execution locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
 
 **Sequential agent handoff** - Agent A writes structured output to the event log. Agent B reads the log to pick up where A left off. Agents coordinate their turns through the simple shared log, not through each other.
 
@@ -67,7 +71,7 @@ Developers running **long-horizon, multi-session workflows** — projects where 
 
 This is NOT for:
 - Single-session tasks (native auto-memory is sufficient)
-- Enterprise multi-machine deployments (see `references/vision.md`)
+- Enterprise multi-machine deployments (see `references/architecture/vision.md`)
 - Framework-agnostic portability requirements
 
 ---
@@ -77,7 +81,7 @@ This is NOT for:
 - **Developer tool, single machine** - designed and tested for solo developer use
 - **No external dependencies** - file system only, standard library Python
 - **Academic/research quality** - clarity of implementation over production hardening
-- **Not enterprise scale** - for multi-machine coordination or high-throughput streaming, see `references/vision.md`
+- **Not enterprise scale** - for multi-machine coordination or high-throughput streaming, see `references/architecture/vision.md`
 
 ---
 
@@ -124,7 +128,7 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 | Agent | Purpose |
 |-------|---------|
 | `agentic-os-setup` | Conversational setup guide; runs the init interview |
-| `os-learning-loop` | Post-session retrospective; mines friction, proposes and validates skill patches |
+| `Triple-Loop Retrospective` | Post-session retrospective; mines friction, proposes and validates skill patches |
 | `os-health-check` | System diagnostics; inspects event log, memory state, lock status |
 
 ### Hooks
@@ -174,7 +178,7 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 |---------|-------------|
 | ![Overview](./assets/diagrams/agentic-os-overview.png) | Conceptual OS structure |
 | ![Structure](./assets/diagrams/agentic-os-structure.png) | Physical plugin architecture |
-| ![Loop lifecycle](./assets/diagrams/agentic-os-loop-lifecycle.png) | Improvement loop sequence |
+| ![Triple Loop](./assets/diagrams/triple-loop-learning-system.mmd) | The Unified Triple-Loop Architecture |
 | ![Memory subsystem](./assets/diagrams/agentic-os-memory-subsystem.png) | Memory promotion flowchart |
 
 ---
@@ -192,9 +196,9 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 ## Key References
 
 - [`SUMMARY.md`](./SUMMARY.md) - scope, architecture, OS analogy, how-to
-- [`references/vision.md`](./references/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
-- [`references/dual-loop.md`](./references/dual-loop.md) - inner/outer loop coordination patterns
-- [`references/memory-hygiene.md`](./references/memory-hygiene.md) - when to write, promote, archive, and expire
+- [`references/architecture/vision.md`](./references/architecture/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
+- [`references/operations/triple-loop.md`](./references/operations/triple-loop.md) - the Triple-Loop system strategy packets and verification protocols
+- [`references/operations/operating-protocols.md`](./references/operations/operating-protocols.md) - **Canonical** test arenas (sibling-repo) and overnight orchestrator execution paths
 - [`skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md`](./skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md) - foundational 3-file autoresearch pattern
 - [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) - Meta-Harness paper analysis, artifact code review, and enhancement implementation plan (Lee et al., arXiv:2603.28052, 2026)
 - [Anthropic CLAUDE.md docs](https://docs.anthropic.com/en/docs/claude-code/memory)

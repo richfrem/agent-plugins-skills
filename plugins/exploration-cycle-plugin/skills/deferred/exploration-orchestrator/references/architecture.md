@@ -1,1 +1,1 @@
-../../../../references/architecture.md
+../../../../references/architecture/architecture.md

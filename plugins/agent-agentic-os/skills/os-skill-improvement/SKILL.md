@@ -26,7 +26,7 @@ is observable. Always observe the failure BEFORE writing the fix.
 
 **Integrated with**:
 - `os-eval-runner` -- runs `eval_runner.py` as the GREEN verification step
-- `os-learning-loop` -- uses this methodology to gate every proposed skill patch
+- `Triple-Loop Retrospective` -- uses this methodology to gate every proposed skill patch
 - `evals/evals.json` + `results.tsv` -- autoresearch eval format for longitudinal tracking
 
 ---
@@ -271,9 +271,9 @@ If a reference doc or script is shared with another skill in the same plugin:
 
 ---
 
-## Integration with os-learning-loop
+## Integration with Triple-Loop Retrospective
 
-When `os-learning-loop` proposes a new skill or skill patch, it MUST:
+When `Triple-Loop Retrospective` proposes a new skill or skill patch, it MUST:
 
 1. **Generate one RED scenario** -- a concrete prompt that currently produces wrong behavior.
 2. **Verify the RED** -- confirm the agent violates the protocol without the skill present.
@@ -289,10 +289,10 @@ improve what it cannot measure.
 ## References
 
 - [os-eval-runner](../os-eval-runner/SKILL.md) -- eval_runner.py, KEEP/DISCARD logic
-- [skill_optimization_guide.md](../../references/skill_optimization_guide.md) -- routing accuracy patterns
-- [os-learning-loop agent](../../agents/os-learning-loop.md) -- how the loop uses this skill
-- [test-registry-protocol.md](../../references/test-registry-protocol.md) -- how to document test scenarios
-- [improvement-ledger-spec.md](../../references/improvement-ledger-spec.md) -- longitudinal tracking format
+- [skill_optimization_guide.md](../../references/operations/skill_optimization_guide.md) -- routing accuracy patterns
+- [Triple-Loop Retrospective agent](../../agents/Triple-Loop Retrospective.md) -- how the loop uses this skill
+- [test-registry-protocol.md](../../references/testing/test-registry-protocol.md) -- how to document test scenarios
+- [improvement-ledger-spec.md](../../references/memory/improvement-ledger-spec.md) -- longitudinal tracking format
 
 ---
 

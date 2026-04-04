@@ -171,18 +171,6 @@ After the script runs, create any use-case-specific additional folders that the
 interview surfaced (entities/, research/, content/, etc.) but the script does not
 create automatically.
 
-**Flywheel scaffold** (always run after the main init script):
-
-```bash
-python3 "${PLUGIN_DIR}/skills/os-init/scripts/init_flywheel_files.py" \
-  --project-dir "${CLAUDE_PROJECT_DIR:-$(pwd)}"
-```
-
-This creates `context/memory/improvement-ledger.md`, `context/memory/tests/registry.md`,
-and `context/memory/loop-reports/` with correct headers if they do not already exist.
-Safe to re-run (idempotent). Without this step, ORCHESTRATOR stalls at Step 1 of the first
-loop cycle because the ledger and registry files it must read do not exist yet.
-
 ---
 
 ## Phase 4: Post-Init Guidance
@@ -243,7 +231,7 @@ Standard entries (from the runtime template):
   "schema_version": "1.0",
   "permitted_agents": [
     "agentic-os-setup",
-    "os-learning-loop",
+    "Triple-Loop Retrospective",
     "os-memory-manager",
     "os-health-check",
     "os-clean-locks",
@@ -268,7 +256,7 @@ If more specialized skills are required for this environment, see the central in
 ## Phase 5: Self-Assessment Survey (MANDATORY)
 
 After every init run, complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). Init sessions reveal what is confusing about
+(`references/memory/post_run_survey.md`). Init sessions reveal what is confusing about
 onboarding — this is critical signal for improving the skill and the OS.
 
 **Count-Based Signals**: How many times did the user need clarification? How many
@@ -299,4 +287,4 @@ python3 context/kernel.py emit_event --agent agentic-os-setup \
 For the agent running this skill:
 - Full Agentic OS pattern explained -> `os-guide` skill
 - Memory write/promote/archive decisions -> `os-memory-manager` skill
-- Project setup reference -> `references/project-setup-guide.md`
+- Project setup reference -> `references/operations/project-setup-guide.md`

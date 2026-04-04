@@ -1,1 +1,1 @@
-../../references/improvement-ledger-spec.md
+../../references/memory/improvement-ledger-spec.md

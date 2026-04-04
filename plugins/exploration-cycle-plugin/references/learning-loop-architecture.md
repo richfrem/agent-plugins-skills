@@ -66,4 +66,4 @@ When delegation is needed, the Learning Loop (Outer Loop) generates a Strategy P
 hands off to the Dual-Loop inner agent. All cognitive continuity — orientation, memory,
 retrospective — remains the Learning Loop's responsibility.
 
-See [dual-loop-architecture.md](dual-loop-architecture.md) for the delegation pattern.
+See [triple-loop-architecture.md](triple-loop-architecture.md) for the delegation pattern.

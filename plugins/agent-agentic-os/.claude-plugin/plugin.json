@@ -27,7 +27,7 @@
     ],
     "agents": [
         "agents/agentic-os-setup.md",
-        "agents/os-learning-loop.md",
+        "agents/Triple-Loop Retrospective.md",
         "agents/os-health-check.md"
     ],
     "hooks": [

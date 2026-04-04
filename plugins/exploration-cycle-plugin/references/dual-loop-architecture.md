@@ -2,7 +2,7 @@
 
 **Industry standard**: Sequential Agent / Agent as Tool
 **Diagram**: [dual_loop_architecture.mmd](../assets/diagrams/dual_loop_architecture.mmd)
-**Full skill reference**: [dual-loop-skill.md](dual-loop-skill.md)
+**Full skill reference**: [triple-loop-skill.md](triple-loop-skill.md)
 
 ---
 

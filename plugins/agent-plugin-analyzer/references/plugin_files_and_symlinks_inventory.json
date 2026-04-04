@@ -196,7 +196,7 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-plugin-analyzer/references/architecture.md",
+    "path": "plugins/agent-plugin-analyzer/references/architecture/architecture.md",
     "is_symlink": false
   },
   {
@@ -1026,9 +1026,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-plugin-analyzer/skills/path-reference-auditor/references/architecture.md",
+    "path": "plugins/agent-plugin-analyzer/skills/path-reference-auditor/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -2028,9 +2028,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/architecture.md",
+    "path": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -3373,7 +3373,7 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/rsvp-speed-reader/references/architecture.md",
+    "path": "plugins/rsvp-speed-reader/references/architecture/architecture.md",
     "is_symlink": false
   },
   {
@@ -3481,9 +3481,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/references/architecture.md",
+    "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -6238,7 +6238,7 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-scaffolders/skills/continuous-skill-optimizer/references/architecture.md",
+    "path": "plugins/agent-scaffolders/skills/continuous-skill-optimizer/references/architecture/architecture.md",
     "is_symlink": true,
     "target": "../../../references/continuous-skill-optimizer/architecture.md",
     "is_broken": true
@@ -9334,7 +9334,7 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-scaffolders/skills/manage-marketplace/references/architecture.md",
+    "path": "plugins/agent-scaffolders/skills/manage-marketplace/references/architecture/architecture.md",
     "is_symlink": true,
     "target": "../../../references/manage-marketplace/architecture.md",
     "is_broken": true
@@ -15848,8 +15848,8 @@
     "is_symlink": false
   },
   {
-    "name": "dual-loop",
-    "path": "plugins/agent-loops/skills/dual-loop",
+    "name": "triple-loop",
+    "path": "plugins/agent-loops/skills/triple-loop",
     "is_symlink": false
   },
   {
@@ -15959,75 +15959,75 @@
   },
   {
     "name": "requirements.txt",
-    "path": "plugins/agent-loops/skills/dual-loop/requirements.txt",
+    "path": "plugins/agent-loops/skills/triple-loop/requirements.txt",
     "is_symlink": true,
     "target": "../../requirements.txt",
     "is_broken": false
   },
   {
     "name": "acceptance-criteria.md",
-    "path": "plugins/agent-loops/skills/dual-loop/acceptance-criteria.md",
+    "path": "plugins/agent-loops/skills/triple-loop/acceptance-criteria.md",
     "is_symlink": false
   },
   {
     "name": "fallback-tree.md",
-    "path": "plugins/agent-loops/skills/dual-loop/fallback-tree.md",
+    "path": "plugins/agent-loops/skills/triple-loop/fallback-tree.md",
     "is_symlink": false
   },
   {
     "name": "SKILL.md",
-    "path": "plugins/agent-loops/skills/dual-loop/SKILL.md",
+    "path": "plugins/agent-loops/skills/triple-loop/SKILL.md",
     "is_symlink": false
   },
   {
     "name": "evals",
-    "path": "plugins/agent-loops/skills/dual-loop/evals",
+    "path": "plugins/agent-loops/skills/triple-loop/evals",
     "is_symlink": false
   },
   {
     "name": "references",
-    "path": "plugins/agent-loops/skills/dual-loop/references",
+    "path": "plugins/agent-loops/skills/triple-loop/references",
     "is_symlink": false
   },
   {
     "name": "assets",
-    "path": "plugins/agent-loops/skills/dual-loop/assets",
+    "path": "plugins/agent-loops/skills/triple-loop/assets",
     "is_symlink": false
   },
   {
     "name": "evals.json",
-    "path": "plugins/agent-loops/skills/dual-loop/evals/evals.json",
+    "path": "plugins/agent-loops/skills/triple-loop/evals/evals.json",
     "is_symlink": false
   },
   {
     "name": "acceptance-criteria.md",
-    "path": "plugins/agent-loops/skills/dual-loop/references/acceptance-criteria.md",
+    "path": "plugins/agent-loops/skills/triple-loop/references/acceptance-criteria.md",
     "is_symlink": true,
     "target": "../acceptance-criteria.md",
     "is_broken": false
   },
   {
     "name": "fallback-tree.md",
-    "path": "plugins/agent-loops/skills/dual-loop/references/fallback-tree.md",
+    "path": "plugins/agent-loops/skills/triple-loop/references/fallback-tree.md",
     "is_symlink": true,
     "target": "../fallback-tree.md",
     "is_broken": false
   },
   {
     "name": "diagrams",
-    "path": "plugins/agent-loops/skills/dual-loop/references/diagrams",
+    "path": "plugins/agent-loops/skills/triple-loop/references/diagrams",
     "is_symlink": false
   },
   {
     "name": "dual_loop_architecture.mmd",
-    "path": "plugins/agent-loops/skills/dual-loop/references/diagrams/dual_loop_architecture.mmd",
+    "path": "plugins/agent-loops/skills/triple-loop/references/diagrams/dual_loop_architecture.mmd",
     "is_symlink": true,
-    "target": "../../../../references/dual-loop/diagrams/dual_loop_architecture.mmd",
+    "target": "../../../../references/triple-loop/diagrams/dual_loop_architecture.mmd",
     "is_broken": true
   },
   {
     "name": "resources",
-    "path": "plugins/agent-loops/skills/dual-loop/assets/resources",
+    "path": "plugins/agent-loops/skills/triple-loop/assets/resources",
     "is_symlink": false
   },
   {
@@ -16424,8 +16424,8 @@
     "is_symlink": false
   },
   {
-    "name": "dual-loop-meta-tasks.md",
-    "path": "plugins/agent-loops/assets/templates/dual-loop-meta-tasks.md",
+    "name": "triple-loop-meta-tasks.md",
+    "path": "plugins/agent-loops/assets/templates/triple-loop-meta-tasks.md",
     "is_symlink": false
   },
   {
@@ -19392,7 +19392,7 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/references/architecture/architecture.md",
     "is_symlink": false
   },
   {
@@ -19637,9 +19637,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -19720,9 +19720,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/exploration-session-brief/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/exploration-session-brief/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -19840,9 +19840,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/deferred/exploration-orchestrator/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/deferred/exploration-orchestrator/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../../references/architecture.md",
+    "target": "../../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -19918,9 +19918,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/deferred/prototype-builder/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/deferred/prototype-builder/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../../references/architecture.md",
+    "target": "../../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -19994,9 +19994,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/user-story-capture/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/user-story-capture/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -20102,9 +20102,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/business-requirements-capture/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/business-requirements-capture/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -20178,9 +20178,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/exploration-cycle-plugin/skills/exploration-handoff/references/architecture.md",
+    "path": "plugins/exploration-cycle-plugin/skills/exploration-handoff/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -20644,102 +20644,102 @@
   },
   {
     "name": "context-folder-patterns.md",
-    "path": "plugins/agent-agentic-os/references/context-folder-patterns.md",
+    "path": "plugins/agent-agentic-os/references/architecture/context-folder-patterns.md",
     "is_symlink": false
   },
   {
     "name": "memory-promotion-guide.md",
-    "path": "plugins/agent-agentic-os/references/memory-promotion-guide.md",
+    "path": "plugins/agent-agentic-os/references/memory/memory-promotion-guide.md",
     "is_symlink": false
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-agentic-os/references/architecture.md",
+    "path": "plugins/agent-agentic-os/references/architecture/architecture.md",
     "is_symlink": false
   },
   {
     "name": "loop-scheduler.md",
-    "path": "plugins/agent-agentic-os/references/loop-scheduler.md",
+    "path": "plugins/agent-agentic-os/references/operations/loop-scheduler.md",
     "is_symlink": false
   },
   {
     "name": "test-registry-protocol.md",
-    "path": "plugins/agent-agentic-os/references/test-registry-protocol.md",
+    "path": "plugins/agent-agentic-os/references/testing/test-registry-protocol.md",
     "is_symlink": false
   },
   {
     "name": "improvement-ledger-spec.md",
-    "path": "plugins/agent-agentic-os/references/improvement-ledger-spec.md",
+    "path": "plugins/agent-agentic-os/references/memory/improvement-ledger-spec.md",
     "is_symlink": false
   },
   {
     "name": "post_run_survey.md",
-    "path": "plugins/agent-agentic-os/references/post_run_survey.md",
+    "path": "plugins/agent-agentic-os/references/memory/post_run_survey.md",
     "is_symlink": false
   },
   {
     "name": "canonical-file-structure.md",
-    "path": "plugins/agent-agentic-os/references/canonical-file-structure.md",
+    "path": "plugins/agent-agentic-os/references/architecture/canonical-file-structure.md",
     "is_symlink": false
   },
   {
     "name": "status-file-spec.md",
-    "path": "plugins/agent-agentic-os/references/status-file-spec.md",
+    "path": "plugins/agent-agentic-os/references/memory/status-file-spec.md",
     "is_symlink": false
   },
   {
     "name": "sub-agents-and-hooks.md",
-    "path": "plugins/agent-agentic-os/references/sub-agents-and-hooks.md",
+    "path": "plugins/agent-agentic-os/references/architecture/sub-agents-and-hooks.md",
     "is_symlink": false
   },
   {
     "name": "test-scenarios-seed.md",
-    "path": "plugins/agent-agentic-os/references/test-scenarios-seed.md",
+    "path": "plugins/agent-agentic-os/references/testing/test-scenarios-seed.md",
     "is_symlink": false
   },
   {
     "name": "metrics.md",
-    "path": "plugins/agent-agentic-os/references/metrics.md",
+    "path": "plugins/agent-agentic-os/references/memory/metrics.md",
     "is_symlink": false
   },
   {
-    "name": "dual-loop.md",
-    "path": "plugins/agent-agentic-os/references/dual-loop.md",
+    "name": "triple-loop.md",
+    "path": "plugins/agent-agentic-os/references/operations/triple-loop.md",
     "is_symlink": false
   },
   {
     "name": "memory-hygiene.md",
-    "path": "plugins/agent-agentic-os/references/memory-hygiene.md",
+    "path": "plugins/agent-agentic-os/references/memory/memory-hygiene.md",
     "is_symlink": false
   },
   {
     "name": "backlog.md",
-    "path": "plugins/agent-agentic-os/references/backlog.md",
+    "path": "plugins/agent-agentic-os/references/meta/backlog.md",
     "is_symlink": false
   },
   {
     "name": "claude-md-hierarchy.md",
-    "path": "plugins/agent-agentic-os/references/claude-md-hierarchy.md",
+    "path": "plugins/agent-agentic-os/references/architecture/claude-md-hierarchy.md",
     "is_symlink": false
   },
   {
     "name": "chart-reading-guide.md",
-    "path": "plugins/agent-agentic-os/references/chart-reading-guide.md",
+    "path": "plugins/agent-agentic-os/references/operations/chart-reading-guide.md",
     "is_symlink": false
   },
   {
     "name": "skill_optimization_guide.md",
-    "path": "plugins/agent-agentic-os/references/skill_optimization_guide.md",
+    "path": "plugins/agent-agentic-os/references/operations/skill_optimization_guide.md",
     "is_symlink": false
   },
   {
     "name": "project-setup-guide.md",
-    "path": "plugins/agent-agentic-os/references/project-setup-guide.md",
+    "path": "plugins/agent-agentic-os/references/operations/project-setup-guide.md",
     "is_symlink": false
   },
   {
     "name": "anthropic-official-docs.md",
-    "path": "plugins/agent-agentic-os/references/anthropic-official-docs.md",
+    "path": "plugins/agent-agentic-os/references/meta/anthropic-official-docs.md",
     "is_symlink": false
   },
   {
@@ -20753,8 +20753,8 @@
     "is_symlink": false
   },
   {
-    "name": "os-learning-loop.md",
-    "path": "plugins/agent-agentic-os/agents/os-learning-loop.md",
+    "name": "Triple-Loop Retrospective.md",
+    "path": "plugins/agent-agentic-os/agents/Triple-Loop Retrospective.md",
     "is_symlink": false
   },
   {
@@ -20997,10 +20997,10 @@
     "is_symlink": false
   },
   {
-    "name": "dual-loop.md",
-    "path": "plugins/agent-agentic-os/skills/concurrent-agent-loop/references/dual-loop.md",
+    "name": "triple-loop.md",
+    "path": "plugins/agent-agentic-os/skills/concurrent-agent-loop/references/operations/triple-loop.md",
     "is_symlink": true,
-    "target": "../../../references/dual-loop.md",
+    "target": "../../../references/operations/triple-loop.md",
     "is_broken": false
   },
   {
@@ -21107,9 +21107,9 @@
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-init/references/architecture.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-init/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -21128,9 +21128,9 @@
   },
   {
     "name": "project-setup-guide.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-init/references/project-setup-guide.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-init/references/operations/project-setup-guide.md",
     "is_symlink": true,
-    "target": "../../../references/project-setup-guide.md",
+    "target": "../../../references/operations/project-setup-guide.md",
     "is_broken": false
   },
   {
@@ -21327,9 +21327,9 @@
   },
   {
     "name": "chart-reading-guide.md",
-    "path": "plugins/agent-agentic-os/skills/loop-progress-report/references/chart-reading-guide.md",
+    "path": "plugins/agent-agentic-os/skills/loop-progress-report/references/operations/chart-reading-guide.md",
     "is_symlink": true,
-    "target": "../../../references/chart-reading-guide.md",
+    "target": "../../../references/operations/chart-reading-guide.md",
     "is_broken": false
   },
   {
@@ -21439,30 +21439,30 @@
   },
   {
     "name": "context-folder-patterns.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/context-folder-patterns.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/architecture/context-folder-patterns.md",
     "is_symlink": true,
-    "target": "../../../references/context-folder-patterns.md",
+    "target": "../../../references/architecture/context-folder-patterns.md",
     "is_broken": false
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/architecture.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
     "name": "loop-scheduler.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/loop-scheduler.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/operations/loop-scheduler.md",
     "is_symlink": true,
-    "target": "../../../references/loop-scheduler.md",
+    "target": "../../../references/operations/loop-scheduler.md",
     "is_broken": false
   },
   {
     "name": "canonical-file-structure.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/canonical-file-structure.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/architecture/canonical-file-structure.md",
     "is_symlink": true,
-    "target": "../../../references/canonical-file-structure.md",
+    "target": "../../../references/architecture/canonical-file-structure.md",
     "is_broken": false
   },
   {
@@ -21474,9 +21474,9 @@
   },
   {
     "name": "sub-agents-and-hooks.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/sub-agents-and-hooks.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/architecture/sub-agents-and-hooks.md",
     "is_symlink": true,
-    "target": "../../../references/sub-agents-and-hooks.md",
+    "target": "../../../references/architecture/sub-agents-and-hooks.md",
     "is_broken": false
   },
   {
@@ -21488,16 +21488,16 @@
   },
   {
     "name": "memory-hygiene.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/memory-hygiene.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/memory/memory-hygiene.md",
     "is_symlink": true,
-    "target": "../../../references/memory-hygiene.md",
+    "target": "../../../references/memory/memory-hygiene.md",
     "is_broken": false
   },
   {
     "name": "claude-md-hierarchy.md",
-    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/claude-md-hierarchy.md",
+    "path": "plugins/agent-agentic-os/skills/agentic-os-guide/references/architecture/claude-md-hierarchy.md",
     "is_symlink": true,
-    "target": "../../../references/claude-md-hierarchy.md",
+    "target": "../../../references/architecture/claude-md-hierarchy.md",
     "is_broken": false
   },
   {
@@ -21600,16 +21600,16 @@
   },
   {
     "name": "memory-promotion-guide.md",
-    "path": "plugins/agent-agentic-os/skills/session-memory-manager/references/memory-promotion-guide.md",
+    "path": "plugins/agent-agentic-os/skills/session-memory-manager/references/memory/memory-promotion-guide.md",
     "is_symlink": true,
-    "target": "../../../references/memory-promotion-guide.md",
+    "target": "../../../references/memory/memory-promotion-guide.md",
     "is_broken": false
   },
   {
     "name": "architecture.md",
-    "path": "plugins/agent-agentic-os/skills/session-memory-manager/references/architecture.md",
+    "path": "plugins/agent-agentic-os/skills/session-memory-manager/references/architecture/architecture.md",
     "is_symlink": true,
-    "target": "../../../references/architecture.md",
+    "target": "../../../references/architecture/architecture.md",
     "is_broken": false
   },
   {
@@ -21751,8 +21751,8 @@
     "is_symlink": false
   },
   {
-    "name": "dual-loop-flow.mmd",
-    "path": "plugins/agent-agentic-os/assets/diagrams/dual-loop-flow.mmd",
+    "name": "triple-loop-flow.mmd",
+    "path": "plugins/agent-agentic-os/assets/diagrams/triple-loop-flow.mmd",
     "is_symlink": false
   },
   {

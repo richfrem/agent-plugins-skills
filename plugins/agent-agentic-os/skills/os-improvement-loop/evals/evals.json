@@ -28,7 +28,7 @@
     "should_trigger": true
   },
   {
-    "prompt": "run a dual-loop: outer supervisor sets goals, inner agent executes and signals completion",
+    "prompt": "run a triple-loop: outer supervisor sets goals, inner agent executes and signals completion",
     "should_trigger": true
   },
   {

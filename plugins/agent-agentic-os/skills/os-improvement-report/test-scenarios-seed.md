@@ -1,1 +1,1 @@
-../../references/test-scenarios-seed.md
+../../references/testing/test-scenarios-seed.md

@@ -44,8 +44,8 @@ Engineering is non-linear. When an "unknown unknown" surfaces during Diamond 2, 
 - [Exploration Workflow](assets/diagrams/exploration-cycle-workflow.mmd)
 
 ## 📚 Technical References
-- [Core Architecture](references/architecture.md)
-- [Dual-Loop Architecture Pattern](references/dual-loop-architecture.md)
+- [Core Architecture](references/architecture/architecture.md)
+- [Dual-Loop Architecture Pattern](references/triple-loop-architecture.md)
 - [Learning-Loop Architecture Pattern](references/learning-loop-architecture.md)
 - [Post-Run Survey Workflow](references/post-run-survey.md)
 

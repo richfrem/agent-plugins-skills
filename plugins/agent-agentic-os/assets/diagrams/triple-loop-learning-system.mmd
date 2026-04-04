@@ -1,0 +1,37 @@
+flowchart TD
+    classDef triple fill:#f3e8ff,stroke:#d8b4fe,stroke-width:2px,color:#581c87
+    classDef double fill:#dbeafe,stroke:#93c5fd,stroke-width:2px,color:#1e3a8a
+    classDef single fill:#dcfce7,stroke:#86efac,stroke-width:2px,color:#14532d
+
+    subgraph Triple ["TRIPLE-LOOP (Meta-Learning Orchestrator)"]
+        direction TB
+        O1["Read Logs & Score Ledger"]:::triple
+        O2["Formulate OS Hypothesis"]:::triple
+        O3["Assign to Inner Loop"]:::triple
+        O4["Review & Persist to Long-Term Memory"]:::triple
+        
+        O1 --> O2 --> O3 --> O4
+    end
+
+    subgraph Double ["DOUBLE-LOOP (Strategic Planner)"]
+        direction TB
+        S1["Create Strategy Packet"]:::double
+        S2["Validate Inner Execution Outcome"]:::double
+        S3["Propose Pivot Strategy on Failure"]:::double
+        
+        S1 --> S2 --> S3
+    end
+
+    subgraph Single ["SINGLE-LOOP (Tactical Executor)"]
+        direction TB
+        T1["Execute Strategy Packet"]:::single
+        T2["Run Objective Eval Gates"]:::single
+        T3["Emit Friction / Fix Syntax"]:::single
+        
+        T1 --> T2 --> T3
+    end
+
+    O3 -->|"Spawns"| S1
+    S3 -->|"Reports Up"| O4
+    S1 -->|"Delegates"| T1
+    T2 -->|"Returns Eval Score"| S2

@@ -1,1 +1,1 @@
-../../../../../.agents/skills/manage-marketplace/references/architecture.md
+../../../../../.agents/skills/manage-marketplace/references/architecture/architecture.md

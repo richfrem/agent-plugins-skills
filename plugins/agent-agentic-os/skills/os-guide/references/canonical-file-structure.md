@@ -1,1 +1,1 @@
-../../../references/canonical-file-structure.md
+../../../references/architecture/canonical-file-structure.md

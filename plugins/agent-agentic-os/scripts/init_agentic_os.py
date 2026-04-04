@@ -1,8 +1,46 @@
 #!/usr/bin/env python3
 """
-Purpose: Initialize the Agentic OS / Agent Harness structure in a target project directory.
-Creates CLAUDE.md, context/, .claude/, START_HERE.md, heartbeat.md, and optional
-global ~/.claude/CLAUDE.md. Safe for existing projects via --dry-run preview.
+init_agentic_os.py — Agentic OS Directory Scaffolder
+======================================================
+
+Purpose:
+    Initialize the Agentic OS / Agent Harness structure in a target project directory.
+    Creates CLAUDE.md, context/, .claude/, START_HERE.md, heartbeat.md, and optional
+    global ~/.claude/CLAUDE.md. Safe for existing projects via --dry-run preview.
+
+Layer: 
+    CLI / Initialization
+
+Usage Examples:
+    python3 init_agentic_os.py --target /my/project --global
+
+Supported Object Types:
+    - Filesystem Directories
+    - Markdown Templates
+    - JSON configurations
+
+CLI Arguments:
+    --target       Target project directory
+    --global       Scaffold global ~/.claude/CLAUDE.md
+    --dry-run      Preview actions without modifying disk
+    --force        Overwrite existing files
+
+Input Files:
+    - CLAUDE_MD_PROJECT.md and other templates
+
+Output:
+    - Creates base scaffolding in the target application
+
+Key Functions:
+    create_project_structure()
+    create_global_kernel()
+    load_template()
+
+Script Dependencies:
+    - None
+
+Consumed by:
+    - os-init skill (Agentic OS CLI)
 """
 
 import argparse

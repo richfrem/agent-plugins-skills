@@ -32,7 +32,7 @@ Agent: [invokes business-requirements-capture, NOT exploration-workflow]
 
 This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the Spec-Kitty engineering workflow and produces handoff packages that optionally feed into it.
 
-**Loop patterns**: Adapts the `agent-loops` patterns (`learning-loop` for solo framing sessions, `dual-loop` for orchestrated documentation passes to the requirements-doc-agent sub-agent). These are reference patterns, not runtime dependencies — the current implementation borrows their structure without invoking those skills directly.
+**Loop patterns**: Adapts the `agent-loops` patterns (`learning-loop` for solo framing sessions, `triple-loop` for orchestrated documentation passes to the requirements-doc-agent sub-agent). These are reference patterns, not runtime dependencies — the current implementation borrows their structure without invoking those skills directly.
 
 **Optimization discipline**: Baseline-first iteration — run one baseline, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
 
@@ -50,7 +50,7 @@ digraph exploration_workflow_phase_a {
 
   Phase0  [label="Phase 0: Intake\nintake-agent classifies session type\n(greenfield / brownfield / re-entry spike)\nwrites exploration/session-brief.md"];
   HG0     [label="Human Gate:\nbrief clear and confirmed?", shape=diamond, fillcolor=lightyellow];
-  Phase1  [label="Phase 1: Requirements Capture\ndual-loop via CLI (cheap model, many passes)\npass1: problem-framing\npass2: BRD draft\npass2b: workflow diagram (if process flow)\npass3: user stories\npass4: issues + opportunities (optional)"];
+  Phase1  [label="Phase 1: Requirements Capture\ntriple-loop via CLI (cheap model, many passes)\npass1: problem-framing\npass2: BRD draft\npass2b: workflow diagram (if process flow)\npass3: user stories\npass4: issues + opportunities (optional)"];
   GapCheck [label="check_gaps.py after each pass\n(non-zero exit halts the chain)", shape=diamond, fillcolor=lightyellow];
   HG1     [label="Human Gate:\nreview full capture set", shape=diamond, fillcolor=lightyellow];
   Phase2  [label="Phase 2: Prototype (optional)\nprototype-companion-agent via CLI\noutput: exploration/captures/prototype-notes.md"];
