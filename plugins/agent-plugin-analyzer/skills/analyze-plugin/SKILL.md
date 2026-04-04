@@ -90,7 +90,7 @@ If the script is unavailable, manually enumerate:
    - `*.yaml` / `*.yml` → Pipeline/config data
    - `*.html` → Artifact templates
    - `*.mmd` → Architecture diagrams
-   - Other → Assets/misc
+   - Other → ./assets/misc
 
 3. Record for each file: path, type, line count, byte size
 4. Output a structured inventory as a markdown checklist with one checkbox per file

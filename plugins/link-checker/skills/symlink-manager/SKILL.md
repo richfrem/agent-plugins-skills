@@ -40,7 +40,7 @@ Run the diagnosis script first. It checks:
 - Existing symlinks vs broken links vs text-file stand-ins in the repo
 
 ```bash
-python scripts/symlink_manager.py diagnose
+python ./scripts/symlink_manager.py diagnose
 ```
 
 ### Step 2 — Fix Git config
@@ -74,23 +74,23 @@ Always use `scripts/symlink_manager.py` rather than raw `os.symlink()` because i
 
 ```bash
 # Create a single symlink
-python scripts/symlink_manager.py create --src configs/shared.cfg --dst app/shared.cfg
+python ./scripts/symlink_manager.py create --src configs/shared.cfg --dst app/shared.cfg
 
 # Re-create ALL links from the manifest
-python scripts/symlink_manager.py restore
+python ./scripts/symlink_manager.py restore
 
 # Audit: list broken or missing links
-python scripts/symlink_manager.py audit
+python ./scripts/symlink_manager.py audit
 
 # Full diagnosis of the environment
-python scripts/symlink_manager.py diagnose
+python ./scripts/symlink_manager.py diagnose
 ```
 
 ### Step 4 — Commit the manifest
 
 Commit `symlinks.json` to the repo. On a fresh checkout (or after a `git pull` breaks links on Windows), any developer runs:
 ```bash
-python scripts/symlink_manager.py restore
+python ./scripts/symlink_manager.py restore
 ```
 …and all links are recreated correctly for their platform.
 

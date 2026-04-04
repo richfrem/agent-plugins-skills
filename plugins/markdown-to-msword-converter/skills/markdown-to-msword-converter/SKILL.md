@@ -21,7 +21,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 You are a specialized conversion agent. Your job is to orchestrate the translation of `.md` plaintext files into `.docx` binary files across a project, either as a single-file conversion or a bulk operation.
 
-## 🛠️ Tools (Plugin Scripts)
+## 🛠️ Tools (Skill Scripts)
 - **Single File Engine**: `scripts/md_to_docx.py`
 - **Bulk Engine**: `scripts/run_bulk_md_to_docx.py`
 - **Verification Engine**: `scripts/verify_docx.py`
@@ -40,7 +40,7 @@ Invoke the appropriate Python converter script.
 Immediately after generating a `.docx` file (or a sample of files if bulk generating), execute the verification engine:
 
 ```bash
-python3 scripts/verify_docx.py "output.docx"
+python3 ./scripts/verify_docx.py "output.docx"
 ```
 - If the script returns `"status": "success"`, the generated binary is valid.
 - If it returns `"status": "errors_found"`, review the JSON log (e.g., `ArchiveCorrupt`, `NoParagraphs`). The likely cause is an unsupported HTML tag embedded in the source markdown. Consult the `references/fallback-tree.md`.

@@ -32,25 +32,25 @@ The plugin provides a numbered suite of scripts that **must be run in order**:
 
 ### Quick Reference: Full Pipeline (one-liner)
 ```bash
-python3 scripts/01_build_file_inventory.py && \
-python3 scripts/02_extract_link_references.py && \
-python3 scripts/03_audit_broken_links.py && \
-python3 scripts/04_autofix_unique_links.py --dry-run && \
-python3 scripts/04_autofix_unique_links.py --backup && \
-python3 scripts/05_report_unfixable_links.py
+python3 ./scripts/01_build_file_inventory.py && \
+python3 ./scripts/02_extract_link_references.py && \
+python3 ./scripts/03_audit_broken_links.py && \
+python3 ./scripts/04_autofix_unique_links.py --dry-run && \
+python3 ./scripts/04_autofix_unique_links.py --backup && \
+python3 ./scripts/05_report_unfixable_links.py
 ```
 
 ### 1. Initialization (Mapping & Extraction)
 Run the first two steps to build the knowledge base.
 ```bash
-python3 scripts/01_build_file_inventory.py
-python3 scripts/02_extract_link_references.py
+python3 ./scripts/01_build_file_inventory.py
+python3 ./scripts/02_extract_link_references.py
 ```
 
 ### 2. Auditing
 Identify what is broken. This produces `broken_links.log` and `broken_links.json`.
 ```bash
-python3 scripts/03_audit_broken_links.py
+python3 ./scripts/03_audit_broken_links.py
 ```
 
 ### 3. Automated Repair
@@ -58,8 +58,8 @@ python3 scripts/03_audit_broken_links.py
 
 Preview changes first, then apply:
 ```bash
-python3 scripts/04_autofix_unique_links.py --dry-run
-python3 scripts/04_autofix_unique_links.py --backup
+python3 ./scripts/04_autofix_unique_links.py --dry-run
+python3 ./scripts/04_autofix_unique_links.py --backup
 ```
 
 Step 4 writes `remaining_broken_links.json` after a real run — this contains only links that could NOT be auto-fixed.
@@ -67,13 +67,13 @@ Step 4 writes `remaining_broken_links.json` after a real run — this contains o
 
 Optional: Re-run Step 3 after fixing to independently verify improvements:
 ```bash
-python3 scripts/03_audit_broken_links.py
+python3 ./scripts/03_audit_broken_links.py
 ```
 
 ### 4. Final Reporting
 Generate the human-review report. Step 5 automatically uses `remaining_broken_links.json` if present (post-fix state), falling back to `broken_links.json` otherwise.
 ```bash
-python3 scripts/05_report_unfixable_links.py
+python3 ./scripts/05_report_unfixable_links.py
 ```
 Review: Open `unfixable_links_report.md` to see items requiring manual intervention.
 

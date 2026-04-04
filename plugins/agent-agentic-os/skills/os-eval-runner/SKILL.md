@@ -81,7 +81,7 @@ os-eval-runner/                        <-- the evaluation ENGINE (this skill)
     evaluate.py          Loop gate: scores, KEEP/DISCARD, reverts, exits 0/1
     eval_runner.py       Pure scorer: reads target + evals.json, outputs JSON metrics
     init_autoresearch.py Scaffold tool: copies templates into your experiment dir
-  assets/templates/autoresearch/               <-- TEMPLATES (master copies, never edit directly)
+  ./assets/templates/autoresearch/               <-- TEMPLATES (master copies, never edit directly)
     program.md.template  Spec: goal, locked files, NEVER STOP
     evals.json.template  Test prompts: what inputs should/should not trigger your target
     results.tsv.template Schema header for the loop ledger
@@ -348,7 +348,7 @@ The agent will:
 
    **Step C — Eval gate:**
    ```bash
-   python3 scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
+   python3 .scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
    ```
    - exit 0 (KEEP): `git add . && git commit -m "keep: score=X <desc>" && git push origin main`
    - exit 1 (DISCARD): already auto-reverted, move to next iteration silently
@@ -375,7 +375,7 @@ Execute these phases in strict order:
 Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
 Run the loop gate against the target skill. It calls `eval_runner.py` internally and compares against the baseline:
 ```bash
-python3 scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
+python3 ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
 ```
 `eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 
@@ -531,7 +531,7 @@ git commit -m "backport: <what was accepted from lab run>"
 If you update `evals.json` after a partial baseline run, `evaluate.py` detects the SHA256 mismatch and exits 3. Fix:
 ```bash
 rm <experiment-dir>/evals/.lock.hashes
-python3 scripts/evaluate.py --skill <experiment-dir> --baseline --desc "re-baseline after evals update"
+python3 ./scripts/evaluate.py --skill <experiment-dir> --baseline --desc "re-baseline after evals update"
 git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evals update"
 ```
 

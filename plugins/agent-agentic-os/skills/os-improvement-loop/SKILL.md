@@ -475,13 +475,13 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 
    **Option A — pure scorer** (get JSON metrics, decide KEEP/DISCARD manually):
    ```bash
-   python3 scripts/eval_runner.py --skill path/to/target/
+   python3 ./scripts/eval_runner.py --skill path/to/target/
    # Pass the FOLDER path, not a file. Output: JSON with accuracy + F1 scores.
    ```
 
    **Option B — loop gate** (evaluate.py returns exit 0=KEEP, 1=DISCARD automatically):
    ```bash
-   python3 scripts/evaluate.py --skill path/to/target/
+   python3 ./scripts/evaluate.py --skill path/to/target/
    # Exit 0 = KEEP (accuracy AND F1 >= baseline). Exit 1 = DISCARD. Exit 2 = path error.
    # Exit 3 = tampered env (.lock.hashes mismatch) — delete .lock.hashes, re-run --baseline.
    ```
@@ -502,7 +502,7 @@ Every time PEER_AGENT receives `signal.wakeup` for eval, it MUST:
    Use `evaluate.py` (loop gate) for KEEP/DISCARD; it compares against `results.tsv` baseline
    automatically and returns exit code 0=KEEP or 1=DISCARD.
    ```bash
-   python3 scripts/evaluate.py --skill path/to/target/
+   python3 ./scripts/evaluate.py --skill path/to/target/
    # Note: PEER_AGENT runs this from its OWN session independently.
    ```
 3. DISCARD if exit code 1. Note: `results.tsv` is the authoritative per-experiment baseline
@@ -595,7 +595,7 @@ python3 "$KERNEL_PY" emit_event \
 python3 "${CLAUDE_PROJECT_DIR}/context/kernel.py" emit_event \
   --agent post_run_hook --type intent --action session_summary
 
-python3 scripts/post_run_metrics.py
+python3 ./scripts/post_run_metrics.py
 ```
 
 This emits a `type: metric` event with:
@@ -761,7 +761,7 @@ python3 "$KERNEL_PY" emit_event \
 
 **Optional: update progress chart** (run after every KEEP cycle, or on user request):
 ```bash
-python3 scripts/generate_report.py \
+python3 ./scripts/generate_report.py \
   --project-dir "${CLAUDE_PROJECT_DIR}" \
   --plugin-dir "${CLAUDE_PLUGIN_ROOT}"
 ```

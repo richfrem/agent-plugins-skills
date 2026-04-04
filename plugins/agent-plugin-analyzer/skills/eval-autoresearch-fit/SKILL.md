@@ -187,18 +187,18 @@ python "$SKILL_DIR/scripts/update_ranked_skills.py" \
 DATA_JSON=$(git rev-parse --show-toplevel)/plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json
 
 # List all entries with current status
-python scripts/update_ranked_skills.py --json-path "$DATA_JSON" --list
+python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" --list
 
 # Show a specific entry
-python scripts/update_ranked_skills.py --json-path "$DATA_JSON" \
+python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" \
   --plugin agent-execution-disciplines --skill verification-before-completion --show
 
 # List only PENDING entries (next batch to evaluate)
-python scripts/update_ranked_skills.py --json-path "$DATA_JSON" \
+python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" \
   --list --filter-status PENDING
 
 # Generate morning report (full ranked table + recommendation)
-python scripts/update_ranked_skills.py --json-path "$DATA_JSON" --morning-report
+python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" --morning-report
 ```
 
 ## Batch Mode

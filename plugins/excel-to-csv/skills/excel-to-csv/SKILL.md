@@ -58,7 +58,7 @@ You are the Excel Converter. Your job is to extract data bounded in proprietary 
 - **Numeric Precision**: Maintain floating point precision as defined by the internal converter engine.
 - **Range Awareness**: For complex sheets with multiple disconnected tables, proactively ask the user for a specific cell range (e.g., `A1:M50`) to ensure 100% extraction accuracy.
 
-## 🛠️ Tools (Plugin Scripts)
+## 🛠️ Tools (Skill Scripts)
 - **Converter Engine**: `scripts/convert.py`
 - **Verification Engine**: `scripts/verify_csv.py`
 
@@ -72,7 +72,7 @@ When a user provides an Excel file and specifies a worksheet or table they want 
 3. **Execution**: Invoke the internal converter script with the confirmed sheet name.
 
 ```bash
-python3 scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "output_folder/"
+python3 ./scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "output_folder/"
 ```
 
 ### Phase 2: Delegated Constraint Verification
@@ -80,7 +80,7 @@ python3 scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdi
 Immediately after generating the `.csv`, execute the verification engine:
  
 ```bash
-python3 scripts/verify_csv.py "output_folder/Sheet1.csv"
+python3 ./scripts/verify_csv.py "output_folder/Sheet1.csv"
 ```
 - **If status is "success"**: Proceed to Phase 3.
 - **If status is "errors_found"**:

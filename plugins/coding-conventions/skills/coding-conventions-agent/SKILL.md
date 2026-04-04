@@ -33,8 +33,8 @@ You enforce coding conventions and documentation standards for all code in the p
 6. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
 
 ## 📂 Header Templates
-- **Python**: `./scripts/python-tool-header-template.py` (in this skill's scripts/)
-- **JS/TS**: `./scripts/js-tool-header-template.js` (in this skill's scripts/)
+- **Python**: `./scripts/python-tool-header-template.py` (in this skill's ./scripts/)
+- **JS/TS**: `./scripts/js-tool-header-template.js` (in this skill's ./scripts/)
 
 ## 📝 File Headers
 

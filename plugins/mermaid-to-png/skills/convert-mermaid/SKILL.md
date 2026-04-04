@@ -21,7 +21,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 You are a specialized conversion agent. Your job is to orchestrate the translation of `.mmd` or `.mermaid` syntax files into high-resolution `.png` binary images.
 
-## 🛠️ Tools (Plugin Scripts)
+## 🛠️ Tools (Skill Scripts)
 - **Converter Engine**: `scripts/convert.py`
 - **Verification Engine**: `scripts/verify_png.py`
 
@@ -34,7 +34,7 @@ Invoke the appropriate Python converter script wrapper.
 If the user asks for "high resolution", "retina", or "HQ", set `-s` to 3 or 4.
 
 ```bash
-python3 scripts/convert.py -i architecture.mmd -o architecture.png -s 3
+python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3
 ```
 
 ### Phase 2: Delegated Constraint Verification (L5 Pattern)
@@ -42,7 +42,7 @@ python3 scripts/convert.py -i architecture.mmd -o architecture.png -s 3
 Immediately after the `convert.py` wrapper finishes, execute the verification engine:
 
 ```bash
-python3 scripts/verify_png.py "architecture.png"
+python3 ./scripts/verify_png.py "architecture.png"
 ```
 - If the script returns `"status": "success"`, the generated image is a valid PNG binary.
 - If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `references/fallback-tree.md`.
