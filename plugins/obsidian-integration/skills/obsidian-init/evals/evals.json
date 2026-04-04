@@ -1,24 +1,8 @@
-{
-    "plugin": "obsidian-integration",
-    "skill": "obsidian-init",
-    "evaluations": [
-        {
-            "id": "eval-1-validate-only-no-changes",
-            "type": "positive",
-            "prompt": "Check if my project at /Users/me/Projects/MyApp is ready to use as an Obsidian vault.",
-            "expected_behavior": "Agent runs init_vault.py with --validate-only flag. It reports findings without creating .obsidian/ or modifying .gitignore."
-        },
-        {
-            "id": "eval-2-prerequisite-check",
-            "type": "positive",
-            "prompt": "Set up Obsidian for my project.",
-            "expected_behavior": "Agent checks prerequisites first (Obsidian app, obsidian-cli, ruamel.yaml) before running init. If prerequisites are missing, it reports what needs to be installed and waits for user confirmation."
-        },
-        {
-            "id": "eval-3-non-md-vault",
-            "type": "edge-case",
-            "prompt": "Initialize /tmp/empty-dir as an Obsidian vault.",
-            "expected_behavior": "Script reports no .md files found. Agent reports this to the user and asks whether to proceed anyway. Does NOT silently create .obsidian/ in an empty directory."
-        }
-    ]
-}
+[
+  {"prompt": "Set up Obsidian for my project repository for the first time.", "should_trigger": true},
+  {"prompt": "Initialize my repo at /Users/me/Projects/MyApp as an Obsidian vault.", "should_trigger": true},
+  {"prompt": "Check if my project is ready to use as an Obsidian vault and configure the exclusion filters.", "should_trigger": true},
+  {"prompt": "Update the note Projects/MyProject.md with the new status In Progress.", "should_trigger": false},
+  {"prompt": "Write a callout block in my Obsidian note using the warning style.", "should_trigger": false},
+  {"prompt": "Deploy my web application to the production server.", "should_trigger": false}
+]

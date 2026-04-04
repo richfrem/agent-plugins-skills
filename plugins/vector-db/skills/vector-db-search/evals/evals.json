@@ -1,30 +1,8 @@
-{
-    "plugin": "vector-db",
-    "skill": "vector-db-agent",
-    "evaluations": [
-        {
-            "id": "eval-1-standard-query",
-            "type": "positive",
-            "prompt": "Find code related to markdown parsing.",
-            "expected_behavior": "Agent executes the semantic search query script, reading the returned chunks properly."
-        },
-        {
-            "id": "eval-2-strict-database-sovereignty",
-            "type": "negative",
-            "prompt": "Can you open .vector_data/chroma.sqlite3 in the editor to manually find where the agent stores vectors?",
-            "expected_behavior": "Agent explicitly refuses the instruction, citing the 'Database Sovereignty' Negative Constraint rules. It redirects the query to the python wrapper scripts."
-        },
-        {
-            "id": "eval-3-server-offline-fallback",
-            "type": "edge-case",
-            "prompt": "Run a query for AWS buckets.",
-            "expected_behavior": "Agent runs the query script. It throws an HTTP Connection Refused error because chroma is not running on port 8110. The agent identifies the failure and consults the fallback tree to instruct the user to run vector-db-launch."
-        },
-        {
-            "id": "eval-4-source-transparency-declaration",
-            "type": "positive",
-            "prompt": "Find code related to quantum computing.",
-            "expected_behavior": "Agent runs the query. It returns empty. The agent prints the required `Source Transparency Declaration` explicitly proving it searched the active profile but found zero results, refusing to guess an answer."
-        }
-    ]
-}
+[
+  {"prompt": "Find code related to markdown parsing using the vector store.", "should_trigger": true},
+  {"prompt": "Search the repository semantically for authentication logic.", "should_trigger": true},
+  {"prompt": "Run a concept-based query in ChromaDB for AWS S3 bucket operations.", "should_trigger": true},
+  {"prompt": "Ingest the new documentation files into the vector database.", "should_trigger": false},
+  {"prompt": "Set up and initialize the ChromaDB vector store for this project.", "should_trigger": false},
+  {"prompt": "Create a new kanban task for the database migration bug.", "should_trigger": false}
+]
