@@ -24,7 +24,7 @@ How it works:
 
 ```text
 Session runs -> errors and friction captured to events.jsonl
-             -> os-learning-loop (The Spec) proposes a single-variable patch to a SKILL.md (The Target)
+             -> Triple-Loop Orchestrator formulates learning hypothesis for a SKILL.md
              -> eval_runner.py (The Headless Evaluator) scores it against static evals/evals.json fixtures
              -> if DISCARD, agent automatically reverts via `git reset --hard`
              -> if KEEP, the improved instruction is retained for the next session
@@ -44,7 +44,7 @@ The Agentic OS plugin applies this loop to its own skills. The plugin improves i
 
 The core turn-management patterns this plugin enables:
 
-**Inner/outer loop** - the outer loop is a supervisor (human or orchestrator agent) that sets goals and reviews results. The inner loop is a worker agent that executes. The outer loop passes context via shared memory; the inner loop writes completion signals to the event log. Neither needs to know the other's implementation.
+**Triple-Loop Learning System** - A unified architectural model where the outer loop (Orchestrator) is a supervisor that sets goals, manages memory, and triggers evaluation runs overnight. The inner loops (Strategic Planner and Tactical Executor) handle the iterative patching of code/skills. The entire stack communicates via shared memory and event logs without tight coupling.
 
 **Background + foreground** - a foreground session agent does active work while a background agent (`os-learning-loop`, `os-health-check`) runs asynchronously. Simple locks prevent collisions. The background agent's findings are available to the foreground agent in the next session through promoted memory.
 

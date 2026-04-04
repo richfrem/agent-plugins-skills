@@ -1,16 +1,16 @@
-# Dual-Loop (Inner/Outer Agent Delegation)
+# Triple-Loop Learning System (Outer Orchestrator + Inner Execution)
 
-Canonical reference for the strategy packet, correction packet, and verification protocol used by `os-improvement-loop` Pattern D.
+Canonical reference for the overarching orchestrator, strategy packet (Double-Loop), and tactical verification protocol (Single-Loop) used by `os-improvement-loop`.
 
-Diagram: [`references/diagrams/dual-loop-flow.mmd`](../assets/diagrams/dual-loop-flow.mmd)
+Diagram: [`references/diagrams/triple-loop-learning-system.mmd`](../assets/diagrams/triple-loop-learning-system.mmd)
 
 ---
 
 ## Workflow
 
-**Step 1 - Plan (ORCHESTRATOR):** Orient, decompose goal into atomic WPs, confirm non-overlapping.
+**Step 1 - Plan (TRIPLE-LOOP ORCHESTRATOR):** Orient, decompose goal into atomic iteration targets across experiments, formulate cross-session learning hypotheses.
 
-**Step 2 - Strategy Packet:** Write `handoffs/packet-${CID}.md` containing: goal + target path, pre-execution diagram, required file paths only, strict NO GIT constraint, acceptance criteria. Emit `task.assigned`.
+**Step 2 - Strategy Packet (DOUBLE-LOOP PLANNER):** Write `handoffs/packet-${CID}.md` containing: goal + target path, required file paths only, strict NO GIT constraint, acceptance criteria. Emit `task.assigned`.
 
 **Step 3 - Execute (INNER_AGENT):** Read packet, do work, emit `friction` events immediately on uncertainty, run `eval_runner.py`, write `handoffs/out-${CID}.md`, emit `task.complete`.
 

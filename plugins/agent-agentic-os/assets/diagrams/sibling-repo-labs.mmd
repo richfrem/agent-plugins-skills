@@ -1,0 +1,22 @@
+flowchart LR
+    classDef master fill:#f3e8ff,stroke:#d8b4fe,stroke-width:2px,color:#581c87
+    classDef lab fill:#dbeafe,stroke:#93c5fd,stroke-width:2px,color:#1e3a8a
+    classDef tool fill:#fef3c7,stroke:#fcd34d,stroke-width:2px,color:#78350f
+
+    M1["Master Repository<br>(agent-plugins-skills)"]:::master
+    M2["Plugins & Skills"]:::master
+    L1["Sibling Lab Repo<br>(../test-my-skill)"]:::lab
+    L2["Hard-copied files for eval"]:::lab
+    
+    Tool1{"os-eval-lab-setup"}:::tool
+    Tool2{"os-eval-backport"}:::tool
+
+    M1 -->|Contains| M2
+    M2 -->|Bootstraps| Tool1
+    Tool1 -->|Clones/Copies into| L1
+    L1 -->|Contains| L2
+    
+    L2 -->|Runs iterations without fear<br>Auto-reverts on failure| L2
+    
+    L2 -->|When proven & Score improves| Tool2
+    Tool2 -->|Human/Agent review diffs| M2

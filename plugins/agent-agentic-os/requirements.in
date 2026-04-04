@@ -1,1 +1,3 @@
-# No external dependencies required. Standard library only.
+pandas
+matplotlib
+numpy
