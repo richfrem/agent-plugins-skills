@@ -68,17 +68,9 @@ SYNC_STATE_FILE = PROJECT_ROOT / ".agents" / "plugin-sync-state.json"
 
 # Resolve plugin_add.py — find it relative to this script or walk up from cwd
 def _find_plugin_add() -> Path | None:
-    """Find plugin_add.py — checks installed .agents/ store first, then local source repo."""
-    candidates = [
-        # Installed via bridge installer to canonical .agents/ store
-        PROJECT_ROOT / ".agents" / "skills" / "plugin-installer" / "scripts" / "plugin_add.py",
-        # Local source repo (dev/CI only)
-        PROJECT_ROOT / "plugins" / "plugin-manager" / "scripts" / "plugin_add.py",
-    ]
-    for c in candidates:
-        if c.exists():
-            return c
-    return None
+    """Return plugin_add.py if installed in .agents/, otherwise None (caller uses uvx)."""
+    installed = PROJECT_ROOT / ".agents" / "skills" / "plugin-installer" / "scripts" / "plugin_add.py"
+    return installed if installed.exists() else None
 
 
 def _fetch_latest_sha(owner_repo: str) -> str | None:
