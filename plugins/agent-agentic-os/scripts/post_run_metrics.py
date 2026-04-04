@@ -193,7 +193,7 @@ def main() -> None:
     # NOTE: North star regression check (_check_north_star_regression) is intentionally NOT
     # called here. The Stop hook fires before ORCHESTRATOR writes Section 3 of the ledger,
     # so checking here would always read the prior session's data (fires one session late).
-    # Instead, emit a pending event that ORCHESTRATOR reads at Fast Cycle step 7.
+    # Instead, emit a pending event that ORCHESTRATOR reads during Triple-Loop completion.
     kernel_path = project_root / "context" / "kernel.py"
     if kernel_path.exists():
         try:
@@ -203,7 +203,7 @@ def main() -> None:
                 "--type", "metric",
                 "--action", "north_star_check_pending",
                 "--status", "success",
-                "--summary", "ORCHESTRATOR must run _check_north_star_regression at Fast Cycle step 7 after writing ledger Section 3"
+                "--summary", "ORCHESTRATOR must run _check_north_star_regression during Triple-Loop completion checks"
             ], capture_output=True)
         except Exception:
             pass
