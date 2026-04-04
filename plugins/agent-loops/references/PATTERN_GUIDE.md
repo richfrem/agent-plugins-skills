@@ -11,6 +11,7 @@ This guide maps the Agent-Loops skills to standard industry terminology (e.g., G
 | `agent-swarm` | Parallel Agent | Work that can be partitioned into independent sub-tasks running concurrently across multiple agents. |
 | `orchestrator` | Routing Agent / Hierarchical | Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations above. |
 | `red-team-review` | Review and Critique Pattern | Iterative generation paired with adversarial review, continuing until an "Approved" verdict is reached. |
+| `triple-loop-learning` | Meta-Learning System | Continuous, unguided self-improvement of agent processes through rigorous objective headless testing, iterating on prompts and system skills from logged friction. |
 
 ---
 
@@ -65,6 +66,14 @@ Tasks are partitioned into independent chunks and delegated to N agents executin
 
 ### When to Use
 Use for bulk operations (RLM distillation, massive doc conversions) or partitioned tests where tasks are 100% independent and do not rely on each other's intermediate state.
+
+---
+
+## 5. Meta-Learning System (`triple-loop-learning`)
+
+The **Meta-Learning Loop** architecture automates the iterative improvement of an agentic system over long horizons using rigorous headless testing. Unlike simpler loops, it acts as an autonomous optimization engine continuously hunting for friction, hypothesizing process and rule improvements, deploying them safely to headless testing environments, and securely promoting the winning logic into systemic changes.
+
+**Best used when:** You have comprehensive headless test metrics running the core workflows and you want an agent to autonomously test improvements without supervision.
 
 ---
 
