@@ -37,19 +37,51 @@ Gemini CLI uses a hierarchical context system rooted in `GEMINI.md` files:
 - `/skills reload`: Reloads capabilities located in `.agents/skills/`.
 - `/mcp reload`: Reloads MCP servers.
 
-## Configuration & Settings
+## Detailed Configuration & Settings (Reference)
 
-**Settings Precedence:** `.gemini/settings.json` (Project) > `~/.gemini/settings.json` (User) > System Defaults.
+Gemini CLI offers several ways to configure its behavior, including environment variables, command-line arguments, and settings files.
 
-**Key Environment Variables (`.env`):**
-- `GEMINI_MODEL`: Override default execution model (e.g., `export GEMINI_MODEL="gemini-3.1-pro-preview"`).
-- `GEMINI_API_KEY`, `GOOGLE_CLOUD_PROJECT`: Authentication provisioning.
-- `GEMINI_SANDBOX`: Enable secure tool sandboxing (`true`, `docker`, `podman`).
+### Configuration layers
+Precedence (lower numbers are overridden by higher numbers):
+1. Default values
+2. System defaults file
+3. User settings file (`~/.gemini/settings.json`)
+4. Project settings file (`.gemini/settings.json`)
+5. System settings file
+6. Environment variables (`.env`)
+7. Command-line arguments
 
-**Important Run Flags:**
-- `--approval-mode <default|auto_edit|yolo|plan>`: Control tool confirmation prompts.
-- `--yolo`: Automatically approve all tool calls (equivalent to `--approval-mode yolo`).
-- `-s` or `--sandbox`: Execute potentially unsafe operations in an isolated container.
+### Key Model Aliases (gemini-3.x)
+- `gemini-3.1-pro-preview`
+- `gemini-3.1-flash-lite-preview`
+- `gemini-3-pro-preview`
+- `gemini-3-flash-preview`
+- `gemini-2.5-pro`
+- `gemini-2.5-flash`
+
+### Example `settings.json`
+```json
+{
+  "general": {
+    "vimMode": true,
+    "preferredEditor": "code"
+  },
+  "model": {
+    "name": "gemini-3-pro-preview"
+  }
+}
+```
+
+### Command-line Arguments
+- `--approval-mode <default|auto_edit|yolo|plan>`: Sets the approval mode for tool calls.
+- `--model <model_name>` (**`-m`**): Specifies the Gemini model to use.
+- `--prompt <your_prompt>` (**`-p`**): Non-interactive mode (positional arguments preferred).
+- `--resume [session_id]` (**`-r`**): Resume a previous chat session.
+- `--sandbox` (**`-s`**): Enables sandbox mode.
+- `--yolo`: Automatically approve all tool calls.
+
+---
+*Source: https://geminicli.com/docs/reference/configuration/*
 
 ## Policy Engine (`.gemini/policies/*.toml`)
 
