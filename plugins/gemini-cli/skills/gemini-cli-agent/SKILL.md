@@ -7,101 +7,82 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+## Identity: The Gemini Sub-Agent Dispatcher 🎭
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+You, the Antigravity agent, dispatch specialized analysis tasks to Gemini CLI sub-agents. 
 
-**To install this skill's dependencies:**
+### ✅ Minimal Working Code Review Agent Pattern
+
+To ensure Gemini CLI behaves as a specialized persona rather than a generic responder, **always** embed the persona and source material directly into the prompt flag (`-p`).
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+gemini -m gemini-3-flash-preview -p "$(cat agents/persona.md)
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+---SOURCE CODE---
+$(cat target.py)
+
+---INSTRUCTION---
+Perform a full code review. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR.
+You are operating as an isolated sub-agent.
+Do NOT use tools. Do NOT access filesystem." > review.md
+```
 
 ---
-## Ecosystem Role: Inner Loop Specialist
 
-This skill provides specialized **Inner Loop Execution** for the `dual-loop` skill.
+## 🛠️ Orchestration Pattern: `run_agent.py` (Cross-Platform)
 
-- **Orchestrated by**: the `agent-orchestrator` skill (see the dual-loop plugin)
-- **Use Case**: When "generic coding" is insufficient and specialized expertise (Security, QA, Architecture) is required.
-- **Why**: The CLI context is naturally isolated (no git, no tools), making it the perfect "Safe Inner Loop".
+For reusable sub-agent execution, use the provided Python orchestrator which handles temp file assembly and prompt concatenation reliably across Windows, macOS, and Linux.
 
-## Identity: The Sub-Agent Dispatcher 🎭
-
-You, the Antigravity agent, dispatch specialized analysis tasks to Gemini CLI sub-agents.
-
-## 🛠️ Core Pattern
 ```bash
-cat <PERSONA_PROMPT> | gemini -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
+# Location: plugins/gemini-cli/scripts/run_agent.py
+python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
 ```
-*Note: Gemini uses `-p` or `--prompt` for headless execution where output is desired without interactive prompts.*
 
-### ⚠️ Large Context: Prefer Stdin Piping
-For large files, use stdin piping rather than `$(cat ...)` shell expansion.
-Shell expansion in background jobs (`&`) with large prompts silently produces empty output:
+### Example Usage:
 ```bash
-# Good — stdin pipe (works reliably for large files)
-cat combined_prompt_and_content.txt | gemini -p "Apply the rules in this document. Output the fixed file only." > /tmp/output.md
-
-# Alternatively — build temp file then run sequentially (not in background)
-cat prompt.md > /tmp/combined.txt && cat target.md >> /tmp/combined.txt
-gemini -p "$(cat /tmp/combined.txt)" > /tmp/output.md
+python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
+"Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
 ```
-**Gemini Flash limits (as of 2026):**
-- Context window: 1,048,576 tokens (~50k lines of code)
-- Max output: 65,536 tokens
-- Rate limit: ~1,500 requests/day, ~15 RPM on free tier
-- Concurrency: treat as 1 request every 4 seconds to stay safe
-- Model flag: `-m flash` or `-m gemini-3.1-flash` for explicit Flash selection
 
-**Known issue**: Running gemini in background (`&`) with large `$(cat ...)` prompts produces empty output.
-Always run sequentially and verify: `wc -l /tmp/output.md` before applying changes.
+---
 
-## ⚠️ CLI Best Practices
+## 🎭 Persona Registry (`agents/`)
 
-### 1. Token Efficiency — PIPE, Don't Load
-**Bad** — loads file into agent memory just to pass it:
-```python
-content = read_file("large.log")
-run_command(f"gemini -p 'Analyze: {content}'")
-```
-**Good** — direct shell piping:
+These personas are mirrored from the Copilot CLI plugin to ensure consistent "Agentic" analysis across the ecosystem.
+
+| Persona | Use For |
+|:---|:---|
+| `security-auditor.md` | Red team, vulnerability scanning, threat modeling |
+| `refactor-expert.md` | Optimizing code for readability, performance, and DRY |
+| `architect-review.md` | Assessing system design, modularity, and complexity |
+
+---
+
+## ⚠️ CLI Best Practices & Failure Modes
+
+### 1. ⚡ Preferred Model: Gemini 3 Flash
+For analytical sub-agent tasks, **always** specify `-m gemini-3-flash-preview`. It provides the best balance of context window (1M+ tokens) and latency for analytical reviews.
+
+### 2. ❌ Avoid Shell Expansion for Large Contexts
+Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run in the background. 
+- **Fix**: Use a temporary file for the combined prompt (as implemented in `run_agent.sh`).
+- **Fix**: Run commands sequentially and verify output size with `wc -l`.
+
+### 3. 🧩 Force Agent Behavior
+Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools:
+> "You are operating as an isolated sub-agent. Do NOT use tools. Do NOT access filesystem. Only use the provided input."
+
+---
+
+## 🔄 How to Update Gemini CLI
+- **Via NPM (Global)**: Run `npm install -g @google/gemini-cli@latest`.
+- **Via Brew (macOS/Linux)**: Run `brew upgrade gemini-cli`.
+- **Using NPX**: Use `npx @google/gemini-cli` to automatically pull the latest version.
+
+---
+
+## ✅ Smoke Test
+
 ```bash
-gemini -p "Analyze this log" < large.log > analysis.md
+./plugins/gemini-cli/scripts/run_agent.sh agents/refactor-expert.md target.py output.md "Refactor this code."
 ```
-
-### 2. Self-Contained Prompts
-The CLI runs in a **separate context** — no access to agent tools or memory.
-- **Add**: "Do NOT use tools. Do NOT search filesystem."
-- Ensure prompt + piped input contain 100% of necessary context.
-- **Model Selection**: Gemini supports the `-m <model>` flag (e.g., `-m gemini-3.1-pro-preview`, `-m gemini-2.5-pro`, or alias `-m flash-lite`).
-
-### 3. Output to File
-Always redirect output to a file (`> output.md`), then review with `view_file`.
-
-### 4. Severity-Stratified Constraints
-When dispatching code-review, architecture, or security analysis, explicitly instruct the CLI sub-agent to use the **Severity-Stratified Output Schema**. This ensures the Outer Loop can parse the results deterministically:
-> "Format all findings using the strict Severity taxonomy: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
-
-## 🎭 Persona Categories
-
-| Category | Personas | Use For |
-|:---|:---|:---|
-| Security | security-auditor | Red team, vulnerability scanning |
-| Development | 14 personas | Backend, frontend, React, Python, Go, etc. |
-| Quality | architect-review, code-reviewer, qa-expert, test-automator, debugger | Design validation, test planning |
-| Data/AI | 8 personas | ML, data engineering, DB optimization |
-| Infrastructure | 5 personas | Cloud, CI/CD, incident response |
-| Business | product-manager | Product strategy |
-| Specialization | api-documenter, documentation-expert | Technical writing |
-
-All personas are documented in the table above. Load the persona prompt file from your CLI plugin's `agents/` directory.
-
-## 🔄 Recommended Audit Loop
-1. **Red Team** (Security Auditor) → find exploits
-2. **Architect** → validate design didn't add complexity
-3. **QA Expert** → find untested edge cases
-
-Run architect **AFTER** red team to catch security-fix side effects.
