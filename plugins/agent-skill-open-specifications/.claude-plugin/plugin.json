@@ -13,5 +13,9 @@
         "skill-standards",
         "authoritative-reference",
         "agent-skills"
+    ],
+    "capabilities": [
+        "agent-standards",
+        "specifications"
     ]
 }

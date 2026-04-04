@@ -10,5 +10,9 @@
     "agents": [
         "rsvp-comprehension-agent"
     ],
-    "license": "MIT"
+    "license": "MIT",
+    "capabilities": [
+        "speed-reading",
+        "reading-tools"
+    ]
 }

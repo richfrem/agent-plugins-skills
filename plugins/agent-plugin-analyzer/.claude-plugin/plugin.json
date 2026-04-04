@@ -13,5 +13,10 @@
         "security-audit",
         "maturity-model",
         "skill-analysis"
+    ],
+    "capabilities": [
+        "code-analysis",
+        "plugin-audit",
+        "pattern-extraction"
     ]
 }

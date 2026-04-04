@@ -7,5 +7,17 @@
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
-    "keywords": ["gemini", "google-gemini", "cli", "sub-agent", "persona", "security-audit", "code-review"]
+    "keywords": [
+        "gemini",
+        "google-gemini",
+        "cli",
+        "sub-agent",
+        "persona",
+        "security-audit",
+        "code-review"
+    ],
+    "capabilities": [
+        "cli-integration",
+        "gemini-cli"
+    ]
 }

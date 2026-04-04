@@ -26,6 +26,10 @@ never delete or overwrite existing rows.
 | 2026-03-03 | Expand gold-standard fixture SKILL.md | analyzer | medium | implemented | tests/gold-standard-plugin |
 | 2026-03-03 | Add Goodhart fixture (structurally compliant, hollow) | analyzer | low | implemented | tests/goodhart-plugin |
 | 2026-03-03 | Declare plugin-validator cross-plugin dependency | analyzer | low | implemented | skills/audit-plugin/CONNECTORS.md |
+| 2026-04-04 | Formalize Policy Plane Separation as canonical pattern | analyzer | high | implemented | pattern-catalog.md (ecosystem-robustness-refactor branch) |
+| 2026-04-04 | Integrate fix-plugin-paths into maintain-plugins workflow | plugin-manager | high | implemented | maintain-plugins SKILL.md Step 1.5 (ecosystem-robustness-refactor branch) |
+| 2026-04-04 | Document Discovery-over-Hardcoding migration path | plugin-manager | medium | open | N/A — capability declaration in plugin.json not yet standardized |
+| 2026-04-04 | Convert hook validation .sh scripts to Python | agent-plugin-analyzer | low | open | N/A — 36 shell scripts are legacy; Python equivalents not yet written |
 
 ## How to Append
 

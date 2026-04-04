@@ -7,5 +7,16 @@
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
-    "keywords": ["huggingface", "hf-hub", "soul-persistence", "upload", "dataset", "cognitive-continuity"]
+    "keywords": [
+        "huggingface",
+        "hf-hub",
+        "soul-persistence",
+        "upload",
+        "dataset",
+        "cognitive-continuity"
+    ],
+    "capabilities": [
+        "ml-integration",
+        "huggingface"
+    ]
 }

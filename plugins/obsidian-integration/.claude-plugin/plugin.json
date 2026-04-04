@@ -15,5 +15,9 @@
         "canvas",
         "wikilinks",
         "pkm"
+    ],
+    "capabilities": [
+        "obsidian-integration",
+        "knowledge-management"
     ]
 }

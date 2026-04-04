@@ -14,5 +14,9 @@
         "packaging",
         "red-team-review",
         "agent-tools"
+    ],
+    "capabilities": [
+        "context-packaging",
+        "llm-packaging"
     ]
 }

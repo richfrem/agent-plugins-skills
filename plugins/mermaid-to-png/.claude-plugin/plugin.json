@@ -7,5 +7,16 @@
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
-    "keywords": ["mermaid", "diagrams", "png", "convert", "visualization", "puppeteer"]
+    "keywords": [
+        "mermaid",
+        "diagrams",
+        "png",
+        "convert",
+        "visualization",
+        "puppeteer"
+    ],
+    "capabilities": [
+        "diagram-generation",
+        "visualization"
+    ]
 }

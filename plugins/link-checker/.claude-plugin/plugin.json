@@ -13,5 +13,9 @@
         "validation",
         "auto-repair",
         "markdown"
+    ],
+    "capabilities": [
+        "link-validation",
+        "documentation-qa"
     ]
 }

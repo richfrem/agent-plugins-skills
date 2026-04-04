@@ -1,0 +1,1 @@
+../../../scripts/build_capability_index.py

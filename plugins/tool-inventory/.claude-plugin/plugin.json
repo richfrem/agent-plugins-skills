@@ -35,5 +35,10 @@
     },
     "integrates": {
         "note": "Vendors RLM scripts (distiller, query_cache, cleanup_cache, rlm_config, inventory) for tool-scoped operations. The rlm-factory plugin handles docs-only cache separately."
-    }
+    },
+    "capabilities": [
+        "tool-discovery",
+        "semantic-search",
+        "registry-management"
+    ]
 }

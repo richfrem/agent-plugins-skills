@@ -12,5 +12,9 @@
         "architecture",
         "decisions",
         "documentation"
+    ],
+    "capabilities": [
+        "adr-management",
+        "documentation"
     ]
 }

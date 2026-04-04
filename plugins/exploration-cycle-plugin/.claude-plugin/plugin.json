@@ -14,5 +14,10 @@
         "prototype",
         "user-stories",
         "exploration-cycle"
+    ],
+    "capabilities": [
+        "exploration",
+        "requirements-capture",
+        "discovery"
     ]
 }
