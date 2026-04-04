@@ -26,8 +26,8 @@ from pathlib import Path
 
 ROOT = Path.cwd()
 
-SPEC_KITTY_SYNC = ROOT / "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py"
-PLUGIN_INSTALLER = ROOT / "plugins/plugin-manager/scripts/install_all_plugins.py"
+SPEC_KITTY_SYNC = ROOT / "plugins" / "spec-kitty-plugin" / "skills" / "spec-kitty-agent" / "scripts" / "sync_configuration.py"
+PLUGIN_INSTALLER = ROOT / "plugins" / "plugin-manager" / "scripts" / "install_all_plugins.py"
 
 
 def run_step(name: str, script_path: Path, args: list = []) -> None:

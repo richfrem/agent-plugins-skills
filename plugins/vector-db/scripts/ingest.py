@@ -44,7 +44,7 @@ from operations import VectorDBOperations
 
 # Try to import RLM for code context injection if available
 HAS_RLM_IMPORTS = False
-rlm_script_dir = PROJECT_ROOT / "plugins/rlm-factory/skills/rlm-curator/scripts"
+rlm_script_dir = PROJECT_ROOT / ".agents" / "skills" / "rlm-curator" / "scripts"
 if rlm_script_dir.exists():
     if str(rlm_script_dir) not in sys.path:
         sys.path.insert(0, str(rlm_script_dir))
