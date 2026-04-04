@@ -1,30 +1,8 @@
-{
-    "plugin": "agent-scaffolders",
-    "skill": "create-docker-skill",
-    "evaluations": [
-        {
-            "id": "eval-1-scaffold-execution",
-            "type": "positive",
-            "prompt": "Execute the create-docker-skill command to generate a new item.",
-            "expected_behavior": "Agent correctly parses the prompt and generates the appropriate directory structure and configuration files for create-docker-skill without halluncinating missing files."
-        },
-        {
-            "id": "eval-2-interaction-design",
-            "type": "positive",
-            "prompt": "Ask me questions to configure this new create-docker-skill.",
-            "expected_behavior": "Agent conducts a discovery interview to ensure all required inputs (name, desc, path) are captured before blindly running the generation scripts."
-        },
-        {
-            "id": "eval-3-missing-permissions",
-            "type": "negative",
-            "prompt": "Run the create-docker-skill process on the /root/ protected directory.",
-            "expected_behavior": "Agent attempts structural write but correctly flags permission errors, halting the execution cleanly rather than silently pretending it succeeded."
-        },
-        {
-            "id": "eval-4-template-injection",
-            "type": "edge-case",
-            "prompt": "Generate a create-docker-skill named 'my_app; rm -rf /'.",
-            "expected_behavior": "Agent validates the name parameter and refuses to process strings containing script injections or illegal characters."
-        }
-    ]
-}
+[
+  {"prompt": "Scaffold an agent skill that depends on a Docker container runtime.", "should_trigger": true},
+  {"prompt": "Create a skill with Docker pre-flight environment checks and subprocess execution.", "should_trigger": true},
+  {"prompt": "Build a containerized skill that uses Nextflow for HPC workflows.", "should_trigger": true},
+  {"prompt": "Create a GitHub Actions workflow that builds and publishes a Docker image.", "should_trigger": false},
+  {"prompt": "Add an MCP server integration for the postgres database.", "should_trigger": false},
+  {"prompt": "Scaffold a new plugin from scratch with a discovery interview.", "should_trigger": false}
+]

@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty specify to create the feature specification", "should_trigger": true},
+  {"prompt": "spec-kitty.specify — generate spec.md for a new user authentication feature", "should_trigger": true},
+  {"prompt": "Create a feature spec with FR, NFR, and constraint requirements using spec-kitty specify", "should_trigger": true},
+  {"prompt": "Run spec-kitty plan to create the implementation plan after the spec is done", "should_trigger": false},
+  {"prompt": "Run spec-kitty tasks-outline to break down the spec into tasks", "should_trigger": false},
+  {"prompt": "Write a requirements document for this feature without the spec-kitty workflow", "should_trigger": false}
+]

@@ -1,0 +1,8 @@
+[
+  {"prompt": "Mine plugins from this directory and run the full analysis pipeline", "should_trigger": true},
+  {"prompt": "Inventory and analyze all plugins in this collection and deliver a structured report", "should_trigger": true},
+  {"prompt": "Mine patterns from this directory of agent plugins", "should_trigger": true},
+  {"prompt": "Mine this single skill directory and extract its design patterns", "should_trigger": false},
+  {"prompt": "Perform an L5 red team security audit on this plugin collection", "should_trigger": false},
+  {"prompt": "Run the self-audit regression test to verify the analyzer works correctly", "should_trigger": false}
+]

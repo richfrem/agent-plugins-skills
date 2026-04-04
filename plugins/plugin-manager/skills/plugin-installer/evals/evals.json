@@ -1,30 +1,8 @@
-{
-    "plugin": "plugin-manager",
-    "skill": "plugin-installer",
-    "evaluations": [
-        {
-            "id": "eval-1-auto-detection",
-            "type": "negative",
-            "prompt": "Install all my plugins to all my agent environments.",
-            "expected_behavior": "Agent relies on automatic environment detection mapped to central `.agents/` repositories. It does not look for a --target flag."
-        },
-        {
-            "id": "eval-2-single-plugin-bridge",
-            "type": "positive",
-            "prompt": "Bridge the rlm-factory plugin to my Gemini CLI setup.",
-            "expected_behavior": "Agent runs plugin_installer.py with --plugin plugins/rlm-factory. Does NOT use any --target flag. Output confirms files written to .agents/ and symlinked to active environments."
-        },
-        {
-            "id": "eval-3-all-plugins-sync",
-            "type": "positive",
-            "prompt": "Sync all plugins to my antigravity environment.",
-            "expected_behavior": "Agent runs install_all_plugins.py with the correct script path. The script handles environment detection automatically."
-        },
-        {
-            "id": "eval-4-directory-not-found",
-            "type": "edge-case",
-            "prompt": "Run the bridge for my agent setup.",
-            "expected_behavior": "Since the bridge auto-detects environments, if no detectable agent environments folder exist, agent reports the error, and provides setup guidance before retrying."
-        }
-    ]
-}
+[
+  {"prompt": "Install the rlm-factory plugin to my agent environments.", "should_trigger": true},
+  {"prompt": "Deploy the plugin from GitHub richfrem/agent-plugins-skills into my Claude setup.", "should_trigger": true},
+  {"prompt": "Add the vector-db plugin and sync it to my active agent configs.", "should_trigger": true},
+  {"prompt": "Audit all plugins for structural compliance against the open standards.", "should_trigger": false},
+  {"prompt": "Create a new task for the authentication bug and add it to the backlog.", "should_trigger": false},
+  {"prompt": "Speed read my research paper at 300 WPM.", "should_trigger": false}
+]

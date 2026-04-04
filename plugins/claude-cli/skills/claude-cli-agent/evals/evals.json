@@ -1,30 +1,8 @@
-{
-    "plugin": "claude-cli",
-    "skill": "claude-cli-agent",
-    "evaluations": [
-        {
-            "id": "eval-1-pipe-not-load",
-            "type": "negative",
-            "prompt": "Run a security audit on this 10MB log file using Claude CLI.",
-            "expected_behavior": "Agent pipes the file via shell redirection ('claude -p \"...\" < large.log > output.md') rather than loading it into memory first. Never reads the file content into agent context to pass as a string argument."
-        },
-        {
-            "id": "eval-2-context-isolation",
-            "type": "positive",
-            "prompt": "Ask the Claude CLI sub-agent to analyze this architecture document.",
-            "expected_behavior": "Agent builds a self-contained prompt that includes 100% of necessary context. The prompt explicitly includes 'Do NOT use tools. Do NOT search filesystem.' The CLI sub-agent receives no access to agent memory or tools."
-        },
-        {
-            "id": "eval-3-severity-schema",
-            "type": "positive",
-            "prompt": "Run a red team security audit using Claude CLI.",
-            "expected_behavior": "Agent instructs the CLI sub-agent to format findings using the Severity-Stratified Schema: CRITICAL, MODERATE, MINOR. The output can be deterministically parsed by the Outer Loop agent."
-        },
-        {
-            "id": "eval-4-output-to-file",
-            "type": "negative",
-            "prompt": "Get the Claude CLI output directly in the terminal.",
-            "expected_behavior": "Agent always redirects CLI output to a file ('> output.md') then uses view_file to review. Never attempts to capture large CLI output inline in a run_command response."
-        }
-    ]
-}
+[
+  {"prompt": "Use Claude CLI sub-agent to pipe this large codebase to a fresh model context for a security audit.", "should_trigger": true},
+  {"prompt": "Run an architecture review on this file using the Claude CLI sub-agent system with the architect-review persona.", "should_trigger": true},
+  {"prompt": "Dispatch a specialized QA analysis task to a Claude CLI sub-agent using run_agent.py.", "should_trigger": true},
+  {"prompt": "Set up the .claude directory and scaffold CLAUDE.md for this project.", "should_trigger": false},
+  {"prompt": "Review this code inline for coding conventions compliance.", "should_trigger": false},
+  {"prompt": "Bundle these project files into a markdown context bundle.", "should_trigger": false}
+]

@@ -1,0 +1,8 @@
+[
+  {"prompt": "Generate work package files from tasks.md using /spec-kitty.tasks-packages", "should_trigger": true},
+  {"prompt": "Run spec-kitty.tasks-packages to create the WP*.md prompt files in the tasks/ directory", "should_trigger": true},
+  {"prompt": "Create WP01-slug.md and WP02-slug.md prompt files from the work package definitions in tasks.md", "should_trigger": true},
+  {"prompt": "Generate the tasks.md outline and work package breakdown using spec-kitty.tasks", "should_trigger": false},
+  {"prompt": "Start implementing a work package with spec-kitty implement WP01", "should_trigger": false},
+  {"prompt": "Run spec-kitty.plan to generate a plan for this feature", "should_trigger": false}
+]

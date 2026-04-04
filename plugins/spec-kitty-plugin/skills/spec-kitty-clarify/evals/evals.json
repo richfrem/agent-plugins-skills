@@ -1,0 +1,8 @@
+[
+  {"prompt": "Ask clarifying questions about the feature spec to identify underspecified areas", "should_trigger": true},
+  {"prompt": "Run /spec-kitty.clarify to detect and reduce ambiguity in the active feature specification", "should_trigger": true},
+  {"prompt": "Clarify the underspecified parts of the spec before we start planning", "should_trigger": true},
+  {"prompt": "Create a plan from the clarified spec using spec-kitty plan", "should_trigger": false},
+  {"prompt": "Implement the feature tasks defined in tasks.md", "should_trigger": false},
+  {"prompt": "Analyze the spec.md for inconsistencies and duplications with /spec-kitty.analyze", "should_trigger": false}
+]

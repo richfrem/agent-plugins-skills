@@ -1,35 +1,8 @@
-{
-  "description": "claude-project-setup skill evals",
-  "evals": [
-    {
-      "input": "set up claude for this project",
-      "expected_behavior": "Triggers Phase 1 discovery interview, asks all 9 questions before scaffolding anything",
-      "should_invoke": true
-    },
-    {
-      "input": "optimize my CLAUDE.md",
-      "expected_behavior": "Triggers optimization mode — reads existing CLAUDE.md, proposes splits into rules files",
-      "should_invoke": true
-    },
-    {
-      "input": "scaffold .claude folder",
-      "expected_behavior": "Triggers Phase 1 discovery interview",
-      "should_invoke": true
-    },
-    {
-      "input": "my CLAUDE.md is 500 lines, help me trim it",
-      "expected_behavior": "Enters optimization mode, analyzes content, proposes rules/ splits",
-      "should_invoke": true
-    },
-    {
-      "input": "create claude settings json with permissions",
-      "expected_behavior": "Triggers Phase 1 interview to collect project context before writing settings",
-      "should_invoke": true
-    },
-    {
-      "input": "configure claude for this python project",
-      "expected_behavior": "Triggers discovery interview, tailors output for Python stack",
-      "should_invoke": true
-    }
-  ]
-}
+[
+  {"prompt": "Set up claude for this project — scaffold the .claude directory with CLAUDE.md and settings.", "should_trigger": true},
+  {"prompt": "Optimize my CLAUDE.md — it's over 300 lines and needs to be split into rules files.", "should_trigger": true},
+  {"prompt": "Configure claude for this project with hooks and a settings.json.", "should_trigger": true},
+  {"prompt": "Pipe large source files to Claude CLI for a sub-agent security analysis.", "should_trigger": false},
+  {"prompt": "Create a new agent skill using the scaffolding workflow.", "should_trigger": false},
+  {"prompt": "Configure a GitHub Copilot workspace with a prompt file.", "should_trigger": false}
+]

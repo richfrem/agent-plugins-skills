@@ -1,0 +1,8 @@
+[
+  {"prompt": "Find all files related to user authentication in the RLM Factory repository using the 3-phase search strategy", "should_trigger": true},
+  {"prompt": "Search for the architecture documentation and context for the data pipeline in this codebase", "should_trigger": true},
+  {"prompt": "I need to locate where the database schema is defined — use the RLM Summary Scan first, then escalate if needed", "should_trigger": true},
+  {"prompt": "Initialize the RLM learning module and create a new rlm_profiles.json for this project", "should_trigger": false},
+  {"prompt": "Summarize all files in the repository by generating RLM embeddings for vector search", "should_trigger": false},
+  {"prompt": "Run a grep search across the codebase to find all TODO comments", "should_trigger": false}
+]

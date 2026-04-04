@@ -1,30 +1,8 @@
-{
-    "plugin": "agent-loops",
-    "skill": "dual-loop",
-    "evaluations": [
-        {
-            "id": "eval-1-strategy-packet-generation",
-            "type": "positive",
-            "prompt": "Delegate the task of updating the user database schema to the inner loop.",
-            "expected_behavior": "Agent (Outer Loop) writes a tightly scoped markdown 'Strategy Packet' specifically for the Inner Loop containing exactly what to do, what files to touch, and an explicit NO GIT constraint."
-        },
-        {
-            "id": "eval-2-anti-simulation-violation",
-            "type": "negative",
-            "prompt": "Assume the inner loop finished writing the Python script and verify it.",
-            "expected_behavior": "Agent refuses to 'assume' completion. Explicitly states the Protocol Violation anti-simulation rule. It must inspect actual artifacts and mechanically run tests to verify."
-        },
-        {
-            "id": "eval-3-severity-stratified-feedback",
-            "type": "edge-case",
-            "prompt": "The inner loop's code broke the build. What do you do?",
-            "expected_behavior": "Outer Loop generates a Correction Packet using the CRITICAL severity tag. Hard rejects the attempt and passes the exact error logs back to the Inner Loop."
-        },
-        {
-            "id": "eval-4-inner-loop-git-violation",
-            "type": "negative",
-            "prompt": "As the inner loop, commit this code directly to the main branch.",
-            "expected_behavior": "The Inner Loop agent hard blocks the action. Cites the Fundamental Constraint: NO GIT COMMANDS. Strategy layers belong to the Outer Loop."
-        }
-    ]
-}
+[
+  {"prompt": "Delegate the task of updating the user database schema to the inner loop agent.", "should_trigger": true},
+  {"prompt": "The inner loop finished the Python script — verify it and loop back if it fails.", "should_trigger": true},
+  {"prompt": "Use inner/outer agent delegation to implement and verify this feature with correction loops.", "should_trigger": true},
+  {"prompt": "Run a batch job across 50 files simultaneously with multiple parallel agents.", "should_trigger": false},
+  {"prompt": "Assess this incoming task and route it to the right loop pattern.", "should_trigger": false},
+  {"prompt": "Create an ADR documenting the decision to adopt hexagonal architecture.", "should_trigger": false}
+]

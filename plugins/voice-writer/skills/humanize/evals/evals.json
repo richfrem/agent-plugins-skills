@@ -1,0 +1,8 @@
+[
+  {"prompt": "Humanize this text and make it sound less AI-generated", "should_trigger": true},
+  {"prompt": "Rewrite this naturally, it sounds too robotic and has too many em dashes", "should_trigger": true},
+  {"prompt": "Make this sound like me, remove the AI patterns from this LinkedIn post draft", "should_trigger": true},
+  {"prompt": "Fix the grammar and spelling errors in this paragraph", "should_trigger": false},
+  {"prompt": "Rewrite this to match our company style guide formatting", "should_trigger": false},
+  {"prompt": "Summarize this text into bullet points for a presentation", "should_trigger": false}
+]

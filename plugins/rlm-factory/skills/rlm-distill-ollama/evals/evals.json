@@ -1,0 +1,8 @@
+[
+  {"prompt": "run Ollama batch distillation on all project profile files in the RLM ledger", "should_trigger": true},
+  {"prompt": "distill repository files into the RLM Summary Ledger using local Ollama offline", "should_trigger": true},
+  {"prompt": "use the Ollama distiller to batch summarize all scripts changed in the last 2 hours", "should_trigger": true},
+  {"prompt": "start the local Ollama server so it is ready for inference", "should_trigger": false},
+  {"prompt": "remove stale orphaned entries from the RLM cache after a refactor", "should_trigger": false},
+  {"prompt": "set up a new RLM cache profile from scratch with folder selection", "should_trigger": false}
+]

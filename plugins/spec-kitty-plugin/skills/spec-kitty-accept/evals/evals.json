@@ -1,0 +1,8 @@
+[
+  {"prompt": "Accept the current spec-kitty proposal and mark it approved", "should_trigger": true},
+  {"prompt": "Run /spec-kitty.accept to approve the feature implementation plan", "should_trigger": true},
+  {"prompt": "spec-kitty accept the reviewed spec and proceed to the next phase", "should_trigger": true},
+  {"prompt": "Analyze the spec for inconsistencies and ambiguities before implementation", "should_trigger": false},
+  {"prompt": "Implement the tasks defined in the spec-kitty plan", "should_trigger": false},
+  {"prompt": "Show me the spec-kitty dashboard to review project status", "should_trigger": false}
+]

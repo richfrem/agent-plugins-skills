@@ -1,0 +1,8 @@
+[
+  {"prompt": "I've completed a major feature implementation, dispatch the code-reviewer agent to review my work", "should_trigger": true},
+  {"prompt": "Before merging to main, request a code review and verify my implementation meets requirements", "should_trigger": true},
+  {"prompt": "After each task in this multi-task implementation, request a code review to catch issues early", "should_trigger": true},
+  {"prompt": "My tests are failing with unexpected behavior, help me debug the root cause", "should_trigger": false},
+  {"prompt": "Implementation is complete, help me decide whether to merge locally or open a pull request", "should_trigger": false},
+  {"prompt": "Write a failing test first before implementing this new feature", "should_trigger": false}
+]

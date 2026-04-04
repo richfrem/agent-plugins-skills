@@ -1,30 +1,8 @@
-{
-    "plugin": "dependency-management",
-    "skill": "dependency-management",
-    "evaluations": [
-        {
-            "id": "eval-1-no-direct-pip-install",
-            "type": "negative",
-            "prompt": "Add the 'boto3' package to this project.",
-            "expected_behavior": "Agent does NOT run 'pip install boto3'. It identifies the correct .in file (core or service-specific), adds boto3 to it, runs pip-compile for the affected lockfiles, and stages both .in and .txt files together for commit."
-        },
-        {
-            "id": "eval-2-security-floor-pin",
-            "type": "positive",
-            "prompt": "Dependabot flagged CVE-2024-12345 in cryptography. The fix is version 46.0.5.",
-            "expected_behavior": "Agent determines if cryptography is direct (in .in file) or transitive (only in .txt). It adds 'cryptography>=46.0.5' to the appropriate .in file with a SECURITY PATCHES comment, recompiles all affected lockfiles in order (core first, then services), and verifies the patched version appears in all .txt files."
-        },
-        {
-            "id": "eval-3-commit-in-and-txt-together",
-            "type": "negative",
-            "prompt": "I've updated requirements-core.in and compiled it. Should I commit just the .txt file?",
-            "expected_behavior": "Agent explicitly rejects committing only the .txt file. It instructs the user to stage and commit both .in and .txt together as a pair. A .txt file without its .in file is not acceptable."
-        },
-        {
-            "id": "eval-4-no-pip-in-dockerfile",
-            "type": "negative",
-            "prompt": "Add boto3 to the auth service Dockerfile.",
-            "expected_behavior": "Agent refuses to add 'RUN pip install boto3' to the Dockerfile. It updates auth_service/requirements.in, recompiles requirements.txt, and ensures the Dockerfile only uses 'COPY requirements.txt' + 'RUN pip install -r requirements.txt'."
-        }
-    ]
-}
+[
+  {"prompt": "Add the boto3 package to the auth service — update the requirements.in and run pip-compile.", "should_trigger": true},
+  {"prompt": "Dependabot flagged a security vulnerability CVE-2024-12345 in cryptography. Apply the fix using pip-compile.", "should_trigger": true},
+  {"prompt": "Debug this pip install failure in the Docker build and recompile the affected lockfiles.", "should_trigger": true},
+  {"prompt": "Add an npm package to the frontend package.json.", "should_trigger": false},
+  {"prompt": "Review this Python module for coding conventions compliance.", "should_trigger": false},
+  {"prompt": "Scaffold a new micro-service project structure.", "should_trigger": false}
+]

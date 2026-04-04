@@ -1,0 +1,8 @@
+[
+  {"prompt": "Sync the spec-kitty plugin and upgrade the CLI to the latest version", "should_trigger": true},
+  {"prompt": "Run spec-kitty sync-plugin to install and refresh the Spec-Kitty framework", "should_trigger": true},
+  {"prompt": "Full-cycle install of spec-kitty: upgrade CLI, refresh templates, and bridge to agent environment", "should_trigger": true},
+  {"prompt": "Run spec-kitty specify to create a new feature specification", "should_trigger": false},
+  {"prompt": "Run spec-kitty status to check the current feature progress", "should_trigger": false},
+  {"prompt": "Install a different npm plugin into my project", "should_trigger": false}
+]

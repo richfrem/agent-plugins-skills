@@ -1,24 +1,8 @@
-{
-    "plugin": "obsidian-integration",
-    "skill": "obsidian-canvas-architect",
-    "evaluations": [
-        {
-            "id": "eval-1-uuid-node-ids",
-            "type": "positive",
-            "prompt": "Create a canvas with two nodes connected by an edge.",
-            "expected_behavior": "Agent runs canvas_ops.py create then add-node twice then add-edge. Node IDs are UUID-generated, not user-specified strings. Output is a valid .canvas JSON file."
-        },
-        {
-            "id": "eval-2-atomic-write-via-crud",
-            "type": "positive",
-            "prompt": "Add a new node to an existing canvas file.",
-            "expected_behavior": "Agent uses canvas_ops.py which internally routes writes through obsidian-vault-crud atomic write protocol. It does NOT write directly to the .canvas file."
-        },
-        {
-            "id": "eval-3-malformed-json-handling",
-            "type": "edge-case",
-            "prompt": "Add a node to a canvas file that has been manually corrupted.",
-            "expected_behavior": "Script detects malformed JSON and reports a clean error. Agent does NOT attempt to auto-repair. It asks user to restore from backup or recreate the canvas."
-        }
-    ]
-}
+[
+  {"prompt": "Create a new Obsidian Canvas file mapping the project architecture with nodes and edges.", "should_trigger": true},
+  {"prompt": "Add a text node and connect it to the existing 'Backend' node in my architecture.canvas file.", "should_trigger": true},
+  {"prompt": "Build a planning board canvas (.canvas) showing the sprint workflow as a visual flowchart.", "should_trigger": true},
+  {"prompt": "Write a new Obsidian note and update its frontmatter status to 'active'.", "should_trigger": false},
+  {"prompt": "Read the project-tracker.base database view and show me the open tasks.", "should_trigger": false},
+  {"prompt": "Render the architecture.mmd Mermaid diagram as a PNG image.", "should_trigger": false}
+]

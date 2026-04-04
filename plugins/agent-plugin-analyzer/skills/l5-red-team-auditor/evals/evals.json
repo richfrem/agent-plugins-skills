@@ -1,0 +1,8 @@
+[
+  {"prompt": "Perform a security audit and red team assessment on this plugin against the 39-point architectural maturity matrix", "should_trigger": true},
+  {"prompt": "Run a structural compliance review and maturity gap analysis on the agent-plugin-analyzer plugin", "should_trigger": true},
+  {"prompt": "I need an uncompromising L5 Enterprise Red Team Audit of this skill directory", "should_trigger": true},
+  {"prompt": "Mine patterns from this plugin collection and produce a full analysis report", "should_trigger": false},
+  {"prompt": "Run self-audit regression test on the agent-plugin-analyzer to verify the scanner works correctly", "should_trigger": false},
+  {"prompt": "Analyze this single skill directory and extract its design patterns", "should_trigger": false}
+]

@@ -1,0 +1,8 @@
+[
+  {"prompt": "defer this exploration decision until we have more prototype data", "should_trigger": true},
+  {"prompt": "hold the exploration session and revisit after the prototype is built", "should_trigger": true},
+  {"prompt": "park the ambiguous scope questions for now and re-enter exploration later", "should_trigger": true},
+  {"prompt": "start a new exploration session to clarify the product direction", "should_trigger": false},
+  {"prompt": "prepare the handoff package for the engineering team", "should_trigger": false},
+  {"prompt": "capture the business requirements from the stakeholder interview", "should_trigger": false}
+]

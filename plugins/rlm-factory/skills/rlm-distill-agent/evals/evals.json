@@ -1,0 +1,8 @@
+[
+  {"prompt": "summarize these new plugin files into the RLM ledger", "should_trigger": true},
+  {"prompt": "The RLM ledger is missing 40 files — fill the gaps by reading and summarizing each file", "should_trigger": true},
+  {"prompt": "distill uncached files into the RLM Summary Ledger using the agent as the distillation engine", "should_trigger": true},
+  {"prompt": "use Ollama in batch mode to distill all project files into the ledger", "should_trigger": false},
+  {"prompt": "remove stale orphaned entries from the RLM cache after renaming files", "should_trigger": false},
+  {"prompt": "initialize a new RLM semantic cache profile for this project", "should_trigger": false}
+]

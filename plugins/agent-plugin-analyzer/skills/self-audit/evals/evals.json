@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run self-audit to regression test the agent-plugin-analyzer and verify it works correctly", "should_trigger": true},
+  {"prompt": "Test the analyzer by running it against itself and the test fixtures", "should_trigger": true},
+  {"prompt": "Audit the agent-plugin-analyzer plugin to check for regressions after my changes", "should_trigger": true},
+  {"prompt": "Mine plugins from this directory and run the full analysis pipeline", "should_trigger": false},
+  {"prompt": "Perform an L5 red team security audit on this plugin against the 39-point maturity matrix", "should_trigger": false},
+  {"prompt": "Analyze this single skill directory and extract its design patterns", "should_trigger": false}
+]

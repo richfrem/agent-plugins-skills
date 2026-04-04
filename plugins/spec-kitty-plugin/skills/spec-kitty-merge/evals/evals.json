@@ -1,0 +1,8 @@
+[
+  {"prompt": "Run spec-kitty merge to merge my feature branch", "should_trigger": true},
+  {"prompt": "spec-kitty.merge the completed feature into main", "should_trigger": true},
+  {"prompt": "Execute the spec-kitty merge workflow for feature 001-auth", "should_trigger": true},
+  {"prompt": "Run spec-kitty review to check the feature before merging", "should_trigger": false},
+  {"prompt": "Run spec-kitty status to see the current feature progress", "should_trigger": false},
+  {"prompt": "Merge my git branches using a standard git merge command", "should_trigger": false}
+]

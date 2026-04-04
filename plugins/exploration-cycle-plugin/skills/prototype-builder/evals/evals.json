@@ -1,0 +1,8 @@
+[
+  {"prompt": "build an exploratory prototype to make the ambiguous product direction concrete", "should_trigger": true},
+  {"prompt": "create a working frontend prototype to test the concept before we commit to specs", "should_trigger": true},
+  {"prompt": "build or refine a full-stack learning artifact to clarify the scope", "should_trigger": true},
+  {"prompt": "write up the formal business requirements document from our session", "should_trigger": false},
+  {"prompt": "coordinate the exploration loop and route to specialized agents", "should_trigger": false},
+  {"prompt": "prepare the final handoff package for the engineering team", "should_trigger": false}
+]

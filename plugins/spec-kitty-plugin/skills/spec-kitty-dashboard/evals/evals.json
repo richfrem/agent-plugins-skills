@@ -1,0 +1,8 @@
+[
+  {"prompt": "Show me the spec-kitty dashboard with overall project status", "should_trigger": true},
+  {"prompt": "Run /spec-kitty.dashboard to view the current feature pipeline and progress", "should_trigger": true},
+  {"prompt": "Open the spec-kitty project dashboard to see all features and their states", "should_trigger": true},
+  {"prompt": "Accept the current spec-kitty proposal and mark it approved", "should_trigger": false},
+  {"prompt": "Implement the tasks from the spec-kitty plan by writing code", "should_trigger": false},
+  {"prompt": "Analyze the spec.md for inconsistencies before implementation starts", "should_trigger": false}
+]

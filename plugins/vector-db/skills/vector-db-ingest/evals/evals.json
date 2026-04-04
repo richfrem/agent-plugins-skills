@@ -1,0 +1,8 @@
+[
+  {"prompt": "Index these new plugin files into the vector database", "should_trigger": true},
+  {"prompt": "The vector store is missing recent files, update it with ingest", "should_trigger": true},
+  {"prompt": "Run a full vector-db ingest to rebuild the ChromaDB index from the repository files", "should_trigger": true},
+  {"prompt": "Remove orphaned chunks from the vector store for deleted files", "should_trigger": false},
+  {"prompt": "Initialize the vector database and install chromadb dependencies", "should_trigger": false},
+  {"prompt": "Start the ChromaDB server so I can run semantic searches", "should_trigger": false}
+]

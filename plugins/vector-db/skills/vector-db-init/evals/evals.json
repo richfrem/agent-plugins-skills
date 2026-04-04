@@ -1,0 +1,8 @@
+[
+  {"prompt": "Initialize the vector DB plugin and install chromadb dependencies", "should_trigger": true},
+  {"prompt": "Set up vector_profiles.json and run init.py to configure the Native Python Server connection", "should_trigger": true},
+  {"prompt": "I'm getting ModuleNotFoundError for chromadb, run the vector-db-init setup", "should_trigger": true},
+  {"prompt": "Start the ChromaDB background server on port 8110", "should_trigger": false},
+  {"prompt": "Ingest new files into the vector store using ingest.py", "should_trigger": false},
+  {"prompt": "Initialize the tool inventory RLM profile for this project", "should_trigger": false}
+]

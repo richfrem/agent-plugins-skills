@@ -1,30 +1,8 @@
-{
-    "plugin": "memory-management",
-    "skill": "memory-management",
-    "evaluations": [
-        {
-            "id": "eval-1-promote-threshold",
-            "type": "positive",
-            "prompt": "I've referenced the authentication architecture in the last 3 sessions. Should I remember it?",
-            "expected_behavior": "Agent applies the promotion rule (referenced in 3+ consecutive sessions) and recommends promoting to hot cache. It identifies the correct hot cache slot (likely the snapshot file) and proposes the exact content to add."
-        },
-        {
-            "id": "eval-2-demote-completed-feature",
-            "type": "positive",
-            "prompt": "We just merged the payment integration spec. Remove it from hot cache.",
-            "expected_behavior": "Agent applies the demotion rule (spec completed and merged) and moves the entry from the snapshot/boot digest to deep storage in the design_docs_dir. It does NOT delete the knowledge — only relocates it."
-        },
-        {
-            "id": "eval-3-session-boot-order",
-            "type": "positive",
-            "prompt": "Starting a new session, load my project context.",
-            "expected_behavior": "Agent loads hot cache files in the correct order: (1) primer, (2) boot digest, (3) boot contract, (4) snapshot. Reports if any file is missing or stale. Does NOT skip the integrity check."
-        },
-        {
-            "id": "eval-4-unknown-knowledge-escalation",
-            "type": "edge-case",
-            "prompt": "What was decided about the database schema in last month's architecture review?",
-            "expected_behavior": "Agent checks hot cache, then deep storage under design_docs_dir, then semantic cache. If not found after all tiers, reports 'not found in memory system' and asks the user to provide the information so it can be stored."
-        }
-    ]
-}
+[
+  {"prompt": "Load the hot cache at session start — read the primer, boot digest, and snapshot files.", "should_trigger": true},
+  {"prompt": "Remember this decision: we are using PostgreSQL for all persistence going forward.", "should_trigger": true},
+  {"prompt": "Promote this research topic from deep storage to the hot cache because it's referenced every session.", "should_trigger": true},
+  {"prompt": "Upload a sealed learning snapshot to HuggingFace for external soul persistence.", "should_trigger": false},
+  {"prompt": "Search the codebase for all usages of the UserAuth class using semantic embeddings.", "should_trigger": false},
+  {"prompt": "Create a new Obsidian canvas file mapping the project architecture.", "should_trigger": false}
+]
