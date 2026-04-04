@@ -30,8 +30,7 @@ You enforce coding conventions and documentation standards for all code in the p
 3. **Type hints** — all Python function signatures use type annotations
 4. **Naming** — `snake_case` (Python), `camelCase` (JS/TS), `PascalCase` (C# public)
 5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers
-6. **Tool registration** - all project scripts registered via the `tool-inventory` skill
-7. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
+6. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
 
 ## 📂 Header Templates
 - **Python**: `./scripts/python-tool-header-template.py` (in this skill's scripts/)
@@ -147,13 +146,8 @@ module/
    - **Single-Skill Usage**: Place script physically inside the owning skill directory (`plugins/<plugin>/skills/<skill>/scripts/foo.py`).
    - **Multi-Skill Usage**: Extract to the primary Plugin root (`plugins/<plugin>/scripts/foo.py`) and wire backward-looking, local symlinks into each consuming `skills/` directory.
 
-## 🛠️ Tool Inventory Integration
-
-All project scripts **must** be registered in `tool_inventory.json` (tracked at project root).
-
-After creating or modifying a tool, trigger the `tool-inventory` skill to register the script and audit coverage.
-
 ### Pre-Commit Checklist
 - [ ] File has proper header
-- [ ] Script registered in `tool_inventory.json` (via `tool-inventory` skill)
-- [ ] Tool inventory audit shows 0 untracked scripts
+- [ ] Type hints are complete
+- [ ] Docstrings follow Google style
+- [ ] Dual-layer documentation applied (comment + docstring)
