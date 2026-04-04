@@ -30,7 +30,7 @@ description: >
   User: How does the memory system work?
   Agent:
   <Read>
-  references/context-folder-patterns.md
+  ./references/context-folder-patterns.md
   </Read>
   <commentary>Reads documentation instead of trying to lock the memory manager.</commentary>
   </example>

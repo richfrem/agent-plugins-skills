@@ -81,14 +81,14 @@ You orchestrate workflows by natively executing the `agent_orchestrator.py` scri
 ### 1. Planning Status
 Use the `scan` command to inspect the state of the spec and readiness for delegation.
 ```bash
-python scripts/agent_orchestrator.py scan --spec-dir <PATH>
+python ./scripts/agent_orchestrator.py scan --spec-dir <PATH>
 ```
 *Tip: Always ensure you have a clear plan or spec before delegating tasks.*
 
 ### 2. Delegation (Handoff)
 When a task is ready for implementation, generate a Task Packet using the `packet` command.
 ```bash
-python scripts/agent_orchestrator.py packet --wp <WP-ID> --spec-dir <PATH>
+python ./scripts/agent_orchestrator.py packet --wp <WP-ID> --spec-dir <PATH>
 ```
 This generates a markdown file in the `handoffs/` directory. You must then instruct the user/system to launch the Inner Loop with this file.
 
@@ -96,7 +96,7 @@ This generates a markdown file in the `handoffs/` directory. You must then instr
 
 Check the Inner Loop's work against the packet using the `verify` command.
 ```bash
-python scripts/agent_orchestrator.py verify --packet handoffs/task_packet_NNN.md --worktree <PATH>
+python ./scripts/agent_orchestrator.py verify --packet handoffs/task_packet_NNN.md --worktree <PATH>
 ```
 
 If the work fails criteria, use the **Severity-Stratified Output** schema to generate a structured correction packet:
@@ -107,7 +107,7 @@ If the work fails criteria, use the **Severity-Stratified Output** schema to gen
 
 Generate the correction packet to send back to the Inner Loop:
 ```bash
-python scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN.md --feedback "Specific failure reason"
+python ./scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN.md --feedback "Specific failure reason"
 ```
 
 ### 4. Parallel Execution (Agent Swarm)
@@ -130,14 +130,14 @@ flowchart LR
 ### 5. Red Team / Peer Review
 Use the `bundle` command to compile files for a human or 3rd-party agent review.
 ```bash
-python scripts/agent_orchestrator.py bundle --files <file1> <file2> --output <OUTPUT_BUNDLE.md>
+python ./scripts/agent_orchestrator.py bundle --files <file1> <file2> --output <OUTPUT_BUNDLE.md>
 ```
 This creates a single markdown bundle ideal for "paste-to-chat" reviews.
 
 ### 6. Retrospective (Post-Loop Learning)
 Generate a retrospective template to close the cognitive loop with structured learning, *before* signaling the environment to seal.
 ```bash
-python scripts/agent_orchestrator.py retro
+python ./scripts/agent_orchestrator.py retro
 ```
 This creates a template in the `retros/` directory.
 

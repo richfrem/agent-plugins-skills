@@ -25,16 +25,16 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 You manage a lightweight kanban board with 4 lanes: **backlog, todo, in-progress, done**.
 Tasks are represented as standalone Markdown files (`NNNN-title.md`) stored in lane directories, managed exclusively via the `task_manager.py` CLI.
 
-## 🛠️ Tools (Plugin Scripts)
+## 🛠️ Tools (Skill Scripts)
 
-**Canonical path (use this — agents run from the project root):**
+**Canonical path (use this — agents run from the root of the current skill folder):**
 ```
 scripts/task_manager.py
 ```
 
 This is the installed copy of the script. Always invoke with an absolute or root-relative path:
 ```bash
-python3 scripts/task_manager.py <command>
+python3 ./scripts/task_manager.py <command>
 ```
 
 **Do NOT use** `./task_manager.py` (relative to script dir — breaks from project root) or
@@ -69,22 +69,22 @@ When executing `task_manager.py`:
 
 ### 1. Creating a Task
 ```bash
-python3 scripts/task_manager.py create "Fix login validation" --lane todo
+python3 ./scripts/task_manager.py create "Fix login validation" --lane todo
 ```
 
 ### 2. Viewing the Board
 ```bash
-python3 scripts/task_manager.py board
+python3 ./scripts/task_manager.py board
 ```
 
 ### 3. Moving a Task Between Lanes
 ```bash
-python3 scripts/task_manager.py move 3 in-progress --note "Starting work"
+python3 ./scripts/task_manager.py move 3 in-progress --note "Starting work"
 ```
 
 ### 4. Searching Tasks
 ```bash
-python3 scripts/task_manager.py search "login"
+python3 ./scripts/task_manager.py search "login"
 ```
 
 ## 📂 Data Structure

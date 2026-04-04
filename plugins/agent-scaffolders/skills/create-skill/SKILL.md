@@ -73,8 +73,8 @@ plugins/<plugin>/skills/<skill-name>/
     evals.json
   references/
     acceptance-criteria.md
-  scripts/         (if the skill needs Python helpers)
-  assets/          (if the skill needs static resources)
+  ./scripts/         (if the skill needs Python helpers)
+  ./assets/          (if the skill needs static resources)
 ```
 
 **Confirm with the user before proceeding.** If a directory with that name already exists:

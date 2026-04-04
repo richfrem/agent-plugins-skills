@@ -145,7 +145,7 @@ Dispatch the requirements-doc-agent as a cheap CLI sub-agent. Each pass is focus
 
 ### Pass 1: Problem Framing
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals, and initial scope hypotheses." \
@@ -154,7 +154,7 @@ python3 scripts/dispatch.py \
 
 ### Pass 2: Business Requirements
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md \
   --instruction "Mode: business-requirements. Extract functional requirements, business rules, and constraints." \
@@ -166,11 +166,11 @@ python3 scripts/dispatch.py \
 Run when the captures describe a multi-step process, approval flow, or state machine:
 
 ```bash
-python3 scripts/generate_workflow.py \
+python3 ./scripts/generate_workflow.py \
   --input exploration/session-brief.md exploration/captures/brd-draft.md \
   --output exploration/captures/workflow-map.md
 # Then fan out to agent to populate the Mermaid skeleton:
-# python3 scripts/dispatch.py \
+# python3 ./scripts/dispatch.py \
 #   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
 #   --context exploration/captures/workflow-map.md \
 #   --instruction "Mode: workflow-map. Fill in the Mermaid diagram with actual process steps from the captures." \
@@ -179,7 +179,7 @@ python3 scripts/generate_workflow.py \
 
 ### Pass 3: User Stories
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md exploration/captures/brd-draft.md \
   --instruction "Mode: user-stories. Generate an initial user story set from the requirements." \
@@ -191,7 +191,7 @@ python3 scripts/dispatch.py \
 Run when you need formal `Given / When / Then` AC blocks ready for backlog entry:
 
 ```bash
-python3 scripts/execute.py \
+python3 ./scripts/execute.py \
   --input exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
   --format gherkin \
   --output exploration/captures/user-stories-gherkin.md
@@ -199,7 +199,7 @@ python3 scripts/execute.py \
 
 ### Pass 4: Issues and Opportunities (optional)
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md exploration/captures/brd-draft.md \
   --instruction "Mode: issues-and-opportunities. Extract issue themes, challenges, and opportunities." \
@@ -209,7 +209,7 @@ python3 scripts/dispatch.py \
 After each pass, run the gap checker before dispatching the next one. If the exit code is non-zero, stop, refine the session brief, and re-run from the affected pass — do not push a weak context chain through the remaining passes.
 
 ```bash
-python3 scripts/check_gaps.py \
+python3 ./scripts/check_gaps.py \
   --files exploration/captures/problem-framing.md \
   --threshold 3
 # Repeat after each pass, pointing --files at the file just written.
@@ -228,7 +228,7 @@ If exploration needs a runnable prototype to resolve ambiguity:
 2. After running it, dispatch the prototype-companion-agent for observation capture:
 
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-prototype-companion-agent/SKILL.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
   --optional-context exploration/captures/issues-opportunities.md \
@@ -243,7 +243,7 @@ python3 scripts/dispatch.py \
 Run after prototype observations are captured and before the Narrowing Gate. This step checks that the prototype's implied behaviour does not contradict the business rules in `brd-draft.md`. It is **not optional** — skipping it means the narrowing gate and handoff will not catch logic drift introduced during prototyping.
 
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-business-rule-audit-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \
   --optional-context exploration/captures/prototype-notes.md \
@@ -254,7 +254,7 @@ python3 scripts/dispatch.py \
 Then check the output for unresolved drifts before proceeding:
 
 ```bash
-python3 scripts/check_gaps.py \
+python3 ./scripts/check_gaps.py \
   --files exploration/captures/business-rule-audit.md \
   --threshold 0
 # Threshold 0: any [NEEDS HUMAN INPUT] marker in the audit report is a hard stop.
@@ -286,7 +286,7 @@ If NOT ready: run another capture pass or a targeted spike. Do not force handoff
 Synthesize all captures into a single handoff package:
 
 ```bash
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
   --context exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
   --optional-context exploration/captures/issues-opportunities.md exploration/captures/prototype-notes.md exploration/captures/business-rule-audit.md \
@@ -313,21 +313,21 @@ This phase uses the [`planning-doc-agent`](../../agents/planning-doc-agent.md) t
 
 ```bash
 # Mode 1: spec-draft
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/handoff/exploration-handoff.md \
   --instruction "Mode: spec-draft. Pre-draft a spec.md from this handoff. Mark any gap with [NEEDS HUMAN INPUT]." \
   --output exploration/planning-drafts/spec-draft.md
 
 # Mode 2: plan-draft
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/handoff/exploration-handoff.md \
   --instruction "Mode: plan-draft. Pre-draft a plan.md with phases and WP hints. Mark any gap with [NEEDS HUMAN INPUT]." \
   --output exploration/planning-drafts/plan-draft.md
 
 # Mode 3: tasks-outline (reads the two drafts above)
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/planning-drafts/spec-draft.md exploration/planning-drafts/plan-draft.md \
   --instruction "Mode: tasks-outline. Generate a WP outline. WP-XX stubs only — do not fabricate scope." \
@@ -351,7 +351,7 @@ The relationship between exploration and formal engineering is **bidirectional**
 echo "CONTEXT: [describe the blocking ambiguity or engineering question here]" > /tmp/reentry-context-$$.md
 
 # Step 2: dispatch
-python3 scripts/dispatch.py \
+python3 ./scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context /tmp/reentry-context-$$.md \
   --instruction "Mode: re-entry-scope. Identify the exploration gap. Suggest exploration type. Draft a session brief." \
