@@ -68,15 +68,9 @@ SYNC_STATE_FILE = PROJECT_ROOT / ".agents" / "plugin-sync-state.json"
 
 # Resolve plugin_add.py — find it relative to this script or walk up from cwd
 def _find_plugin_add() -> Path | None:
-    # Try relative to this script's location (when deployed in .agents/scripts/)
-    candidates = [
-        Path(__file__).resolve().parent.parent.parent / "plugins/plugin-manager/scripts/plugin_add.py",
-        PROJECT_ROOT / "plugins/plugin-manager/scripts/plugin_add.py",
-    ]
-    for c in candidates:
-        if c.exists():
-            return c
-    return None
+    """Return plugin_add.py if installed in .agents/, otherwise None (caller uses uvx)."""
+    installed = PROJECT_ROOT / ".agents" / "skills" / "plugin-installer" / "scripts" / "plugin_add.py"
+    return installed if installed.exists() else None
 
 
 def _fetch_latest_sha(owner_repo: str) -> str | None:
@@ -157,9 +151,7 @@ def main() -> None:
 
     plugin_add = _find_plugin_add()
     if not plugin_add:
-        print("  [auto-sync] ERROR: plugin_add.py not found. "
-              "Run `python plugins/plugin-manager/scripts/plugin_add.py` manually.")
-        return
+        print("  [auto-sync] plugin_add.py not found locally — will use uvx fallback.")
 
     sync_state = _load_sync_state()
     any_synced = False
@@ -194,7 +186,12 @@ def main() -> None:
         print(f"  [auto-sync] Changes detected in '{name}' "
               f"({cached_sha[:8] if cached_sha else 'new'} → {latest_sha[:8]}). Syncing...")
 
-        cmd = [sys.executable, str(plugin_add), owner_repo, "--all", "-y"]
+        if plugin_add:
+            cmd = [sys.executable, str(plugin_add), owner_repo, "--all", "-y"]
+        else:
+            # uvx fallback — works in any consumer project without a local clone
+            cmd = ["uvx", "--from", "git+https://github.com/richfrem/agent-plugins-skills",
+                   "plugin-add", owner_repo, "--all", "-y"]
         # If specific plugins requested (not "all"), we can't filter via CLI yet —
         # fall back to --all and note it. Future: add --plugin filter to plugin_add.py.
         if plugins_selection != "all" and isinstance(plugins_selection, list):

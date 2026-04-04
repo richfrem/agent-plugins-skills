@@ -65,7 +65,7 @@ DEFAULT_VENDOR_DIR = VENDOR_ROOT / "agent-plugins-skills"
 LOCAL_ROOT = Path(".")
 # Bridge installer is provided by plugin-manager
 PROJECT_ROOT = SCRIPT_DIR.parents[2]  # scripts→plugin-manager→plugins→ROOT
-BRIDGE_INSTALLER = PROJECT_ROOT / "plugins/plugin-manager/scripts/plugin_installer.py"
+BRIDGE_INSTALLER = PROJECT_ROOT / "plugins" / "plugin-manager" / "scripts" / "bridge_installer.py"
 
 AGENT_DIRS = {
     "antigravity": {
