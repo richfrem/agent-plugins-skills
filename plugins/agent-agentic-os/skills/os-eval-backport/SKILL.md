@@ -43,7 +43,7 @@ symlinks — you edit only the canonical source.
 The local path to the test repo where the eval ran (e.g. `<USER_HOME>/Projects/test-link-checker-eval`).
 
 **Q2 — Master plugin path?**
-The canonical plugin path in `agent-plugins-skills` (e.g. `plugins/link-checker`).
+The canonical plugin path in `agent-plugins-skills` (e.g. `.agents/skills/link-checker`).
 
 **Q3 — Baseline commit?**
 The git SHA of the baseline commit in the lab repo. Look for a commit starting with

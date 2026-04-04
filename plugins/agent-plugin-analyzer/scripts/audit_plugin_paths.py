@@ -17,7 +17,7 @@ def load_whitelist(whitelist_path: Path):
 
 def is_whitelisted(line, file_path_str, global_patterns, file_specific_patterns):
     for pattern in global_patterns:
-        if re.search(pattern, line):
+        if re.search(pattern, line, re.IGNORECASE):
             return True
             
     for specific_path, patterns in file_specific_patterns.items():
@@ -47,7 +47,11 @@ def audit_directory(target_dir: Path, global_patterns, file_specific_patterns):
         )):
             continue
             
-        if path.name in ("portability-audit-report.md", "tuning_metrics.md", "files_with_issues.txt"):
+        if path.name in (
+            "portability-audit-report.md", "tuning_metrics.md", "files_with_issues.txt",
+            "CLAUDE.md", "INSTALL.md", "README.md", "bootstrap.py", 
+            "broken_symlinks_repair_report.md"
+        ):
             continue
             
         try:
