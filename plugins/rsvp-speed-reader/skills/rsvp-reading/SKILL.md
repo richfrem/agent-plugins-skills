@@ -26,7 +26,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 This skill converts any document into an RSVP token stream: each word paired with its ORP index and a calibrated display delay based on your target WPM.
 
-> Full architecture: `references/architecture.md`
+> Full architecture: `references/architecture/architecture.md`
 > Acceptance criteria: `references/acceptance-criteria.md`
 > Fallback tree: `references/fallback-tree.md`
 > Token stream schema: `references/token-stream-schema.md`

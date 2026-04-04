@@ -2,7 +2,7 @@
   {"prompt": "Send this design document to the red team for adversarial review — iterate until approved.", "should_trigger": true},
   {"prompt": "Run a red team review on this architecture, cycling through research, bundle, and critique rounds.", "should_trigger": true},
   {"prompt": "Review this security design with a red team agent and continue iterating until it gets an Approved verdict.", "should_trigger": true},
-  {"prompt": "Assess this incoming task and route it to the appropriate loop — learning loop, swarm, or dual-loop.", "should_trigger": false},
+  {"prompt": "Assess this incoming task and route it to the appropriate loop — learning loop, swarm, or triple-loop.", "should_trigger": false},
   {"prompt": "The red team approved the design. Delegate implementation to the inner loop agent.", "should_trigger": false},
   {"prompt": "Partition the test suite into independent chunks and run them in parallel across worktrees.", "should_trigger": false}
 ]

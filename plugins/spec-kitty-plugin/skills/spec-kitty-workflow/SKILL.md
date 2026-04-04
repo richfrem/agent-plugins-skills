@@ -396,7 +396,7 @@ When Spec Kitty runs inside a Dual-Loop session, roles are split:
 - Scope limited to the Strategy Packet — no exploratory changes
 - If worktree is inaccessible, may implement on feature branch (fallback — log in friction log)
 
-**Cross-reference**: `dual-loop` skill
+**Cross-reference**: `triple-loop` skill
 
 ---
 

@@ -82,7 +82,7 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 **Option B: Dual Loop**
 *   **Action**: Delegate execution to a scoped, isolated Inner Loop agent.
-*   **Command**: Open the `dual-loop` SKILL. Execute according to its instructions.
+*   **Command**: Open the `triple-loop` SKILL. Execute according to its instructions.
 *   **Return**: Once Inner Loop finishes, resume here at **Phase V (Synthesis)**.
 
 ---
@@ -95,7 +95,7 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 ### Phase V: Self-Assessment Survey (MANDATORY)
 
 Before handoff, you MUST complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). Answer every question — do not summarize or skip sections.
+(`references/memory/post_run_survey.md`). Answer every question — do not summarize or skip sections.
 
 Survey sections (all mandatory):
 
@@ -130,7 +130,7 @@ Save completed survey to:
 
 Emit survey completion event:
 ```bash
-python3 context/kernel.py emit_event --agent os-learning-loop \
+python3 context/kernel.py emit_event --agent Triple-Loop Retrospective \
   --type learning --action survey_completed \
   --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
 ```
@@ -143,7 +143,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"
 ```
 
 This emits a `type: metric` event capturing: human_interventions, workflow_uncertainty,
-missed_steps, cli_errors, friction_events_total, hook_errors. These feed the os-learning-loop
+missed_steps, cli_errors, friction_events_total, hook_errors. These feed the Triple-Loop Retrospective
 auto-trigger: 3+ friction events of same type = Full Loop improvement before next cycle.
 
 ### Phase VII: Memory Persistence
@@ -201,4 +201,4 @@ When a Learning Loop runs inside a Dual-Loop session:
 
 **Key rule**: The Inner Loop does NOT run Learning Loop phases. All cognitive continuity is the Outer Loop's responsibility.
 
-**Cross-reference**: [dual-loop SKILL](dual-loop-skill.md)
+**Cross-reference**: [triple-loop SKILL](triple-loop-skill.md)

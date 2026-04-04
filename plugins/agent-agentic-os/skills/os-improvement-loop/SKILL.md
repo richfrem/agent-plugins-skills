@@ -6,15 +6,15 @@ description: >
   as OS threads sharing a common event bus and memory address space. Every loop cycle is a
   full improvement cycle: execute, eval against benchmark (KEEP/DISCARD), emit friction events
   during work, close with post_run_metrics, agent self-assessment survey saved to retrospectives,
-  memory persistence, and os-learning-loop trigger if friction threshold crossed.
-  Four coordination topologies: turn-signal, fan-out, request-reply, dual-loop (Pattern D).
+  memory persistence, and Triple-Loop Retrospective trigger if friction threshold crossed.
+  Four coordination topologies: turn-signal, fan-out, request-reply, triple-loop (Pattern D).
 status: active
 trigger: concurrent agents, shared event log, parallel agents, turn signal, fan-out,
   request-reply, background task shared state, event-driven agents, agent threads, kernel event bus,
   cross-session coordination, replace AGENT_COMMS, concurrent skill audit, claim task,
   inner agent, orchestrator peer agent, worker agent, continuous improvement loop,
   eval benchmark, self-assessment survey, post-run survey, friction events, metrics,
-  os-learning-loop, skill improvement, memory persistence, retrospective
+  Triple-Loop Retrospective, skill improvement, memory persistence, retrospective
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -65,7 +65,7 @@ There are **two distinct flywheels** operating at different scopes. Do not confl
 - The OUTER loop asks: *"Is the OS improvement process itself working correctly?"*
 - The INNER loop asks: *"Does this specific skill route and execute correctly?"*
 
-**`os-learning-loop` vs `os-improvement-loop`:** `os-learning-loop` (agent) is the
+**`Triple-Loop Retrospective` vs `os-improvement-loop`:** `Triple-Loop Retrospective` (agent) is the
 trigger/diagnostic layer — it analyzes friction events, identifies improvement targets,
 and decides which flywheel to invoke. `os-improvement-loop` (skill) is the execution
 protocol that agents follow once a target has been identified. Do not conflate them.
@@ -104,7 +104,7 @@ digraph fast_cycle {
   Apply       [label="5a. Apply (KEEP)\nApply change to canonical skill or artifact"];
   Correction  [label="5b. Correction Packet (DISCARD)\nWrite correction-{CID}.md (CRITICAL/MODERATE/MINOR)\nRe-assign to INNER_AGENT"];
   LoopClose   [label="6. Loop Close -- all 4 required, no exceptions\n6a: ledger + registry row  6b: surveys (all agents)\n6c: metrics + report       6d: log M/L-class issues as tasks"];
-  Trigger     [label="7. Trigger Check\n3+ same-type friction events this cycle?\nFlag os-learning-loop for Full Loop on next session start"];
+  Trigger     [label="7. Trigger Check\n3+ same-type friction events this cycle?\nFlag Triple-Loop Retrospective for Full Loop on next session start"];
 
   Orientation -> Scenario -> Execution -> Eval -> Verdict;
   Verdict -> Apply      [label="KEEP"];
@@ -133,7 +133,7 @@ digraph fast_cycle {
    CLOSED-DISCARD. Full scenario file fill-in and ledger Section 2+3 are Standard Cycle only.
 
    **6b. Survey child agents** -- INNER_AGENT and PEER_AGENT each complete the Post-Run
-   Self-Assessment Survey (`references/post_run_survey.md`), save to
+   Self-Assessment Survey (`references/memory/post_run_survey.md`), save to
    `context/memory/retrospectives/survey_[DATE]_[TIME]_[AGENT].md`, and emit `survey_completed`.
    Even on Fast Cycle, surveys are required -- they are the source of truth for what to improve next.
 
@@ -174,7 +174,7 @@ digraph fast_cycle {
    | `memory.md` | LAB `context/` | Standard Cycle -- promoted L3 facts via os-memory-manager. |
    | `HOW-TO-RESTART.md` | UPSTREAM `temp/agent-agentic-os-review/` | Every cycle -- reflect state changes. |
    | `tasks/backlog/NNNN-[slug].md` | UPSTREAM `tasks/backlog/` | When M/L-class issue is observed. |
-   | `references/backlog.md` | UPSTREAM `references/` | When any issue is observed (S/M/L). |
+   | `references/meta/backlog.md` | UPSTREAM `references/` | When any issue is observed (S/M/L). |
    | **`SKILL.md` (this file)** | UPSTREAM `.agents/skills/os-improvement-loop/` | **When applicable** -- if the loop produces a confirmed protocol improvement (step unclear, gap found, new requirement), ORCHESTRATOR updates this file before closing the cycle. Self-improvement of the loop protocol is a first-class output of every loop. |
 
    A cycle that produces a protocol fix but does not update this SKILL.md has not fully closed.
@@ -189,10 +189,10 @@ digraph fast_cycle {
 
 Missing any item = incomplete cycle. Do not start the next cycle until the checklist is done.
 
-7. **Trigger check** -- if 3+ friction events of the same type this cycle, flag os-learning-loop
+7. **Trigger check** -- if 3+ friction events of the same type this cycle, flag Triple-Loop Retrospective
    for Full Loop at next session start. Read `context/memory/improvement-ledger.md` Section 3:
    if the last two Trend values are both negative, emit `north_star_regression` event and trigger
-   os-learning-loop immediately (do not wait for next session).
+   Triple-Loop Retrospective immediately (do not wait for next session).
 
 Emitting `eval.result` without completing steps 6a-6d and 7 is an incomplete Fast Cycle.
 
@@ -226,7 +226,7 @@ Use when:
 - You want every cycle to produce measurable improvement and persistent memory
 
 Do NOT use for:
-- Single-session work (use `learning-loop` or `dual-loop` instead)
+- Single-session work (use `learning-loop` or `triple-loop` instead)
 - Signal-only coordination with no eval, survey, or memory steps
 
 ---
@@ -259,11 +259,11 @@ ${CLAUDE_PROJECT_DIR}/context/
 ```
 
 Companion skills (all required for a complete loop):
-- `dual-loop` — strategy packet format, correction packet protocol, verification
+- `triple-loop` — strategy packet format, correction packet protocol, verification
 - `os-eval-lab-setup` — bootstrap experiment dirs (deploys program.md, evals.json, results.tsv); use **before** running any eval cycle on a new target
 - `os-eval-runner` — eval_runner.py (pure scorer), evaluate.py (loop gate with KEEP/DISCARD exit codes), results.tsv baseline; the canonical eval engine
 - `os-memory-manager` — session log template, L2/L3 promotion, deduplication
-- `os-learning-loop` — root cause analysis, Full Loop improvement, auto-patching skills
+- `Triple-Loop Retrospective` — root cause analysis, Full Loop improvement, auto-patching skills
 
 ## Dependencies
 - **os-eval-lab-setup** (agent-agentic-os plugin) — required for experimental scaffolding.
@@ -290,7 +290,7 @@ python3 "$KERNEL_PY" emit_event \
   --summary "step:eval-runner cause:wrong-flag-name"
 ```
 
-These events are counted by `post_run_metrics.py` at close and drive the os-learning-loop
+These events are counted by `post_run_metrics.py` at close and drive the Triple-Loop Retrospective
 auto-trigger (3+ friction events of same type = Full Loop improvement automatically).
 
 ---
@@ -341,7 +341,7 @@ print(json.dumps(hits[0]) if hits else '')
    - `context/events.jsonl` last 100 lines for friction patterns from prior cycle
 2. **ORCHESTRATOR answers before writing any strategy packet:**
    - What does the improvement ledger show for this target's score trajectory? (flat = try a different approach; declining = revert last change)
-   - Is the north star completion rate regressing 2+ sessions in a row? (if yes, trigger os-learning-loop before this cycle)
+   - Is the north star completion rate regressing 2+ sessions in a row? (if yes, trigger Triple-Loop Retrospective before this cycle)
    - What does the test registry say was the recommended next test?
    - Has this hypothesis already been confirmed or falsified? (check registry — do not re-run)
    - Which survey friction items from prior cycles have not been acted on yet? (Section 2 gaps)
@@ -353,7 +353,7 @@ print(json.dumps(hits[0]) if hits else '')
      --summary "ORCHESTRATOR online — registry read, designing test from prior results"
    ```
 5. **ORCHESTRATOR documents the test scenario** in `context/memory/tests/[CYCLE_ID]_[TARGET_SLUG].md`
-   per `references/test-registry-protocol.md` — hypothesis, acceptance criteria, failure criteria,
+   per `references/testing/test-registry-protocol.md` — hypothesis, acceptance criteria, failure criteria,
    prior results consulted, known weaknesses — BEFORE emitting `loop.start`.
 6. Add row to `context/memory/tests/registry.md` with status IN PROGRESS.
 7. ORCHESTRATOR emits `loop.start`:
@@ -547,7 +547,7 @@ python3 "$KERNEL_PY" emit_event \
 ### 4.2 Agent Self-Assessment Survey (Each Agent)
 
 Every agent that performed work this cycle MUST complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). Answer every section — do not skip.
+(`references/memory/post_run_survey.md`). Answer every section — do not skip.
 
 Save completed survey to:
 ```
@@ -682,7 +682,7 @@ cycle's official record. Save to `context/memory/loop-reports/report_[CYCLE_ID].
 
 ## Status
 - [ ] Results saved to memory: YES / NO
-- [ ] os-learning-loop triggered: YES (cause: [friction pattern]) / NO
+- [ ] Triple-Loop Retrospective triggered: YES (cause: [friction pattern]) / NO
 ```
 
 Emit loop report written event:
@@ -701,7 +701,7 @@ Only display the report content if the user says yes. Never display it automatic
 ### 4.6 Test Registry Update (MANDATORY — Every Cycle)
 
 After the loop report is written, update the test scenario record per
-`references/test-registry-protocol.md`:
+`references/testing/test-registry-protocol.md`:
 
 1. Open `context/memory/tests/[CYCLE_ID]_[TARGET_SLUG].md` and fill in the Results section:
    - Eval scores (baseline vs after, delta, verdict)
@@ -734,7 +734,7 @@ python3 "$KERNEL_PY" emit_event \
 
 After the test registry update, ORCHESTRATOR appends to `context/memory/improvement-ledger.md`.
 This is the longitudinal record that makes the cycle of improvement visible over time.
-See `references/improvement-ledger-spec.md` for the full format and writing protocol.
+See `references/memory/improvement-ledger-spec.md` for the full format and writing protocol.
 
 **Section 1 — Eval Score Progression** (one row, every cycle):
 ```
@@ -770,7 +770,7 @@ After running: "Progress chart updated at `context/memory/reports/progress_[TIME
 Only display the chart/summary if the user says yes — never auto-display.
 
 **If north star regresses 2 consecutive sessions**: log a warning in the ledger and invoke
-`os-learning-loop` in Full Loop mode at the start of the next session. Do not wait for the
+`Triple-Loop Retrospective` in Full Loop mode at the start of the next session. Do not wait for the
 friction event threshold — a completion rate decline is a systemic signal.
 
 ### 4.8 Promote to Long-Term Memory
@@ -816,7 +816,7 @@ If all four answers are "no", skip this step. Otherwise, update memory before em
 > **Note**: The most common omission is feedback memory — if the user corrected an approach or
 > confirmed a non-obvious choice worked, that should be saved. Watch for it.
 
-### 4.10 os-learning-loop Trigger Check
+### 4.10 Triple-Loop Retrospective Trigger Check
 
 After metrics are collected, ORCHESTRATOR checks the friction threshold:
 
@@ -832,7 +832,7 @@ print(max(causes.values()) if causes else 0, list(causes.most_common(1)))
 ")
 ```
 
-If any single friction cause appears 3+ times this cycle: invoke `os-learning-loop` in
+If any single friction cause appears 3+ times this cycle: invoke `Triple-Loop Retrospective` in
 **Full Loop mode** automatically. Pass the friction pattern and relevant survey excerpts.
 The learning loop will run root cause analysis (Kernel/RAM/Stdlib layer), propose a fix,
 run the eval-gate, and apply the improvement before the next cycle begins.
@@ -873,7 +873,7 @@ friction event when hitting the confusing flag, completes eval, saves survey not
 worked. PEER_AGENT runs os-eval-runner independently, produces KEEP verdict with
 score delta, saves survey noting zero friction. ORCHESTRATOR applies edit, runs post_run_metrics
 (friction count dropped from 3 to 0), writes session log with before/after scores, promotes
-fix to memory.md. No os-learning-loop trigger needed — friction threshold not crossed.
+fix to memory.md. No Triple-Loop Retrospective trigger needed — friction threshold not crossed.
 </example>
 
 <example>
@@ -881,7 +881,7 @@ User: "audit 3 skills in parallel"
 ORCHESTRATOR dispatches 3 INNER_AGENTs via claim_task. Each emits friction events during work,
 runs eval_runner.py, saves survey. ORCHESTRATOR collects all results, identifies lowest scorer,
 writes correction packet. After correction cycle, runs post_run_metrics — 4 friction events
-for same cause (wrong CLI syntax in eval_runner). Triggers os-learning-loop Full Loop to patch
+for same cause (wrong CLI syntax in eval_runner). Triggers Triple-Loop Retrospective Full Loop to patch
 eval_runner documentation in the skill. Closes with session log and memory promotion.
 </example>
 
@@ -890,20 +890,20 @@ User: "replace AGENT_COMMS.md with the event bus and track whether it's faster"
 ORCHESTRATOR establishes bus, runs Pattern A turn-signal cycle, records round-trip latency.
 INNER_AGENT and PEER_AGENT both complete post-run surveys noting any friction with polling syntax.
 post_run_metrics emitted. Session log records latency delta vs AGENT_COMMS baseline.
-Surveys compared — if both agents report same confusion point, os-learning-loop patches SKILL.md.
+Surveys compared — if both agents report same confusion point, Triple-Loop Retrospective patches SKILL.md.
 </example>
 
 ---
 
 ## References
 
-- [dual-loop protocol](references/dual-loop.md) - strategy packet format, correction packets, verification (inlined from agent-loops)
+- [triple-loop protocol](references/operations/triple-loop.md) - strategy packet format, correction packets, verification (inlined from agent-loops)
 - [os-eval-runner SKILL](../os-eval-runner/SKILL.md) - eval_runner.py, KEEP/DISCARD, results.tsv
 - [os-memory-manager SKILL](../os-memory-manager/SKILL.md) - session log template, L2/L3 promotion
-- [os-learning-loop agent](../../agents/os-learning-loop.md) - root cause analysis, Full Loop patching
+- [Triple-Loop Retrospective agent](../../agents/Triple-Loop Retrospective.md) - root cause analysis, Full Loop patching
 - [os-improvement-report SKILL](../os-improvement-report/SKILL.md) - generate progress chart from improvement ledger
-- [improvement-ledger-spec.md](../../references/improvement-ledger-spec.md) - ledger format, Section 1/2/3 writing protocol
-- [post_run_survey.md](../../references/post_run_survey.md) - self-assessment survey template (all sections mandatory)
+- [improvement-ledger-spec.md](../../references/memory/improvement-ledger-spec.md) - ledger format, Section 1/2/3 writing protocol
+- [post_run_survey.md](../../references/memory/post_run_survey.md) - self-assessment survey template (all sections mandatory)
 - [post_run_metrics.py](scripts/post_run_metrics.py) - automated metric collection script
-- [metrics.md](../../references/metrics.md) - North Star metric definition and review cadence
+- [metrics.md](../../references/memory/metrics.md) - North Star metric definition and review cadence
 - [kernel.py](scripts/kernel.py) - v3 kernel: seven commands, ~200 lines

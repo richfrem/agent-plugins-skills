@@ -6,7 +6,7 @@ description: >
   requirements-doc-agent via Copilot CLI (cheap model, many invocations per session).
   Can run independently — no Spec-Kitty CLI required. Use when starting a new exploration
   session, re-entering discovery mid-engineering, or running a greenfield/brownfield/spike.
-dependencies: ["skill:exploration-workflow", "skill:dual-loop", "skill:learning-loop"]
+dependencies: ["skill:exploration-workflow", "skill:triple-loop", "skill:learning-loop"]
 model: inherit
 color: purple
 tools: ["Bash", "Read", "Write"]
@@ -16,7 +16,7 @@ tools: ["Bash", "Read", "Write"]
 
 This agent orchestrates Phase A of the exploration cycle.
 
-- **Patterns used**: [`learning-loop`](../references/learning-loop-architecture.md) for solo sessions, [`dual-loop`](../references/dual-loop-architecture.md) when delegating capture passes to the requirements-doc-agent
+- **Patterns used**: [`learning-loop`](../references/learning-loop-architecture.md) for solo sessions, [`triple-loop`](../references/triple-loop-architecture.md) when delegating capture passes to the requirements-doc-agent
 - **Sub-agents dispatched**: [`requirements-doc-agent`](requirements-doc-agent.md) via Copilot CLI — cheap model, no git access, called many times per session
 - **Skill reference**: [`exploration-workflow`](../skills/exploration-workflow/SKILL.md)
 - **Independent of Spec-Kitty**: this cycle produces a handoff package that _may_ feed Spec-Kitty, but does not require it
@@ -41,7 +41,7 @@ Is this a solo framing or research session (no output needed yet)?
   └─ YES -> Use learning-loop pattern: read brief, explore, iterate in context
 
 Does the session need structured requirements captured as artifacts?
-  └─ YES -> Use dual-loop: dispatch requirements-doc-agent via CLI, many passes
+  └─ YES -> Use triple-loop: dispatch requirements-doc-agent via CLI, many passes
 
 Does the session context describe a multi-step process, approval flow, or state machine?
   └─ YES -> Use business-workflow-doc skill to generate a Mermaid diagram
@@ -85,7 +85,7 @@ digraph orchestrator_routing {
 
   node [shape=box, fillcolor="#d4edda"];
   LearningLoop [label="learning-loop pattern\n(solo: read brief, explore, iterate)"];
-  DualLoop     [label="Dispatch requirements-doc-agent\n(dual-loop, many focused CLI passes)"];
+  DualLoop     [label="Dispatch requirements-doc-agent\n(triple-loop, many focused CLI passes)"];
   WorkflowDoc  [label="business-workflow-doc skill\n(Mermaid diagram generation)"];
   Prototype    [label="Dispatch prototype-companion-agent\n(observation capture)"];
   Audit        [label="Dispatch business-rule-audit-agent\n(logic drift detection)"];

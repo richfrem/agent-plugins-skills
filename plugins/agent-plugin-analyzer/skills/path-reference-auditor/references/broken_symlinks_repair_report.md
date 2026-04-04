@@ -83,7 +83,7 @@
 | `.agents/skills/tool-inventory/references/diagrams/legacy-architecture/Tool_Architecture_Domain_Model.mmd` | `../../../../../references/tool-inventory/diagrams/legacy-architecture/Tool_Architecture_Domain_Model.mmd` | Found elsewhere: plugins/tool-inventory/assets/diagrams/Tool_Architecture_Domain_Model.mmd | ⚠️  Manual Fix |
 | `.agents/skills/tool-inventory/references/diagrams/legacy-architecture/Tool_Architecture_Domain_Model.png` | `../../../../../references/tool-inventory/diagrams/legacy-architecture/Tool_Architecture_Domain_Model.png` | Found elsewhere: plugins/tool-inventory/assets/diagrams/Tool_Architecture_Domain_Model.png | ⚠️  Manual Fix |
 | `.agents/skills/rsvp-reading/references/diagrams/rsvp-reading-flow.mmd` | `../../../../references/rsvp-reading/diagrams/rsvp-reading-flow.mmd` | Found elsewhere: plugins/rsvp-speed-reader/assets/diagrams/rsvp-reading-flow.mmd | ⚠️  Manual Fix |
-| `.agents/skills/continuous-skill-optimizer/references/architecture.md` | `../../../references/continuous-skill-optimizer/architecture.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
+| `.agents/skills/continuous-skill-optimizer/references/architecture/architecture.md` | `../../../references/continuous-skill-optimizer/architecture.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/continuous-skill-optimizer/references/resources/continuous-skill-optimizer-flow.mmd` | `../../../../references/continuous-skill-optimizer/resources/continuous-skill-optimizer-flow.mmd` | Found elsewhere: plugins/agent-scaffolders/assets/diagrams/continuous-skill-optimizer-flow.mmd | ⚠️  Manual Fix |
 | `.agents/skills/continuous-skill-optimizer/references/diagrams/continuous-skill-optimizer-flow.mmd` | `../../../../references/continuous-skill-optimizer/diagrams/continuous-skill-optimizer-flow.mmd` | Found elsewhere: plugins/agent-scaffolders/assets/diagrams/continuous-skill-optimizer-flow.mmd | ⚠️  Manual Fix |
 | `.agents/skills/create-command/references/simple-commands.md` | `examples/simple-commands.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
@@ -92,7 +92,7 @@
 | `.agents/skills/create-command/references/examples/simple-commands.md` | `../../../../references/create-command/examples/simple-commands.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/create-command/references/examples/plugin-commands.md` | `../../../../references/create-command/examples/plugin-commands.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/manage-marketplace/manage-marketplace-flow.mmd` | `../../../assets/resources/manage-marketplace-flow.mmd` | Found elsewhere: plugins/agent-scaffolders/assets/diagrams/manage-marketplace-flow.mmd | ⚠️  Manual Fix |
-| `.agents/skills/manage-marketplace/references/architecture.md` | `../../../references/manage-marketplace/architecture.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
+| `.agents/skills/manage-marketplace/references/architecture/architecture.md` | `../../../references/manage-marketplace/architecture.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/manage-marketplace/examples/marketplace.json` | `../../../../references/manage-marketplace/examples/marketplace.json` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/create-sub-agent/references/triggering-examples.md` | `../../../references/create-sub-agent/triggering-examples.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/create-sub-agent/references/examples/agent-creation-prompt.md` | `../../../../references/create-sub-agent/examples/agent-creation-prompt.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
@@ -174,7 +174,7 @@
 | `.agents/skills/link-checker-agent/references/link_checker_workflow.png` | `../../../../assets/diagrams/link_checker_workflow.png` | Found elsewhere: plugins/link-checker/assets/diagrams/link_checker_workflow.png | ⚠️  Manual Fix |
 | `.agents/skills/link-checker-agent/references/link_checker_workflow.mmd` | `../../../../assets/diagrams/link_checker_workflow.mmd` | Found elsewhere: plugins/link-checker/assets/diagrams/link_checker_workflow.mmd | ⚠️  Manual Fix |
 | `.agents/skills/agent-swarm/assets/resources/agent_swarm.mmd` | `../../../../assets/resources/agent_swarm.mmd` | Found elsewhere: plugins/agent-loops/assets/diagrams/agent_swarm.mmd | ⚠️  Manual Fix |
-| `.agents/skills/dual-loop/references/diagrams/dual_loop_architecture.mmd` | `../../../../references/dual-loop/diagrams/dual_loop_architecture.mmd` | Found elsewhere: plugins/agent-loops/assets/diagrams/dual_loop_architecture.mmd | ⚠️  Manual Fix |
+| `.agents/skills/triple-loop/references/diagrams/dual_loop_architecture.mmd` | `../../../../references/triple-loop/diagrams/dual_loop_architecture.mmd` | Found elsewhere: plugins/agent-loops/assets/diagrams/dual_loop_architecture.mmd | ⚠️  Manual Fix |
 | `.agents/skills/red-team-review/assets/resources/red_team_review_loop.mmd` | `../../../../assets/resources/red_team_review_loop.mmd` | Found elsewhere: plugins/agent-loops/assets/diagrams/red_team_review_loop.mmd | ⚠️  Manual Fix |
 | `.agents/skills/spec-kitty-tasks-outline/assets/workflows/spec-kitty.tasks-outline.md` | `../../../../assets/workflows/spec-kitty.tasks-outline.md` | ⚠️  Unknown target | ⚠️  Manual Fix |
 | `.agents/skills/spec-kitty-checklist/references/diagrams/bridge_process.mmd

@@ -59,7 +59,7 @@ Three simple signaling patterns built into the system:
 
 **Inner/outer loop** - outer supervisor sets goals and reviews results; inner worker executes and signals completion in the shared event log. Context flows through shared memory, not tight coupling.
 
-**Background + foreground** - background agents (`os-learning-loop`, `os-health-check`) run asynchronously with simple execution locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
+**Background + foreground** - background agents (`Triple-Loop Retrospective`, `os-health-check`) run asynchronously with simple execution locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
 
 **Sequential agent handoff** - Agent A writes structured output to the event log. Agent B reads the log to pick up where A left off. Agents coordinate their turns through the simple shared log, not through each other.
 
@@ -71,7 +71,7 @@ Developers running **long-horizon, multi-session workflows** — projects where 
 
 This is NOT for:
 - Single-session tasks (native auto-memory is sufficient)
-- Enterprise multi-machine deployments (see `references/vision.md`)
+- Enterprise multi-machine deployments (see `references/architecture/vision.md`)
 - Framework-agnostic portability requirements
 
 ---
@@ -81,7 +81,7 @@ This is NOT for:
 - **Developer tool, single machine** - designed and tested for solo developer use
 - **No external dependencies** - file system only, standard library Python
 - **Academic/research quality** - clarity of implementation over production hardening
-- **Not enterprise scale** - for multi-machine coordination or high-throughput streaming, see `references/vision.md`
+- **Not enterprise scale** - for multi-machine coordination or high-throughput streaming, see `references/architecture/vision.md`
 
 ---
 
@@ -128,7 +128,7 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 | Agent | Purpose |
 |-------|---------|
 | `agentic-os-setup` | Conversational setup guide; runs the init interview |
-| `os-learning-loop` | Post-session retrospective; mines friction, proposes and validates skill patches |
+| `Triple-Loop Retrospective` | Post-session retrospective; mines friction, proposes and validates skill patches |
 | `os-health-check` | System diagnostics; inspects event log, memory state, lock status |
 
 ### Hooks
@@ -196,9 +196,9 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 ## Key References
 
 - [`SUMMARY.md`](./SUMMARY.md) - scope, architecture, OS analogy, how-to
-- [`references/vision.md`](./references/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
-- [`references/dual-loop.md`](./references/dual-loop.md) - the Triple-Loop system strategy packets and verification protocols
-- [`references/operating-protocols.md`](./references/operating-protocols.md) - **Canonical** test arenas (sibling-repo) and overnight orchestrator execution paths
+- [`references/architecture/vision.md`](./references/architecture/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
+- [`references/operations/triple-loop.md`](./references/operations/triple-loop.md) - the Triple-Loop system strategy packets and verification protocols
+- [`references/operations/operating-protocols.md`](./references/operations/operating-protocols.md) - **Canonical** test arenas (sibling-repo) and overnight orchestrator execution paths
 - [`skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md`](./skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md) - foundational 3-file autoresearch pattern
 - [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) - Meta-Harness paper analysis, artifact code review, and enhancement implementation plan (Lee et al., arXiv:2603.28052, 2026)
 - [Anthropic CLAUDE.md docs](https://docs.anthropic.com/en/docs/claude-code/memory)

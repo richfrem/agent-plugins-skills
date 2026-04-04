@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Agentic OS - Kernel v3 (dual-loop focused)
+Agentic OS - Kernel v3 (triple-loop focused)
 Seven commands: acquire_lock, release_lock, emit_event, read_events,
 state_update, state_increment, claim_task (partition lock only, no registry).
 
-Deliberately minimal. Solves the dual-loop use case: one ORCHESTRATOR,
+Deliberately minimal. Solves the triple-loop use case: one ORCHESTRATOR,
 one INNER_AGENT (or N agents claiming partitions), one laptop.
 """
 import os, sys, json, time, uuid, random, argparse

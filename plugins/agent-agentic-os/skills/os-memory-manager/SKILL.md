@@ -28,7 +28,7 @@ description: >
   User: How does the memory system work?
   Agent:
   <Read>
-  ./references/context-folder-patterns.md
+  ./references/architecture/context-folder-patterns.md
   </Read>
   
   </example>
@@ -180,7 +180,7 @@ You MUST verify the size of the curated memory file to prevent context degradati
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
 Before releasing the lock, complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). The memory manager must reflect on its own runs
+(`references/memory/post_run_survey.md`). The memory manager must reflect on its own runs
 to improve the quality of what gets promoted and what gets skipped.
 
 **Count-Based Signals**: How many times were you uncertain whether to promote or skip?
@@ -221,4 +221,4 @@ Finally, **Lock Release Protocol**: Execute `python3 context/kernel.py release_l
 ## Next Actions
 
 - To understand the full memory layer architecture -> read `os-guide` skill
-- To set up CLAUDE.md @imports for memory -> read `references/claude-md-hierarchy.md` in `os-guide`
+- To set up CLAUDE.md @imports for memory -> read `references/architecture/claude-md-hierarchy.md` in `os-guide`

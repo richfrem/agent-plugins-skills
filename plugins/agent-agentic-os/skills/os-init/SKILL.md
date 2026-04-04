@@ -243,7 +243,7 @@ Standard entries (from the runtime template):
   "schema_version": "1.0",
   "permitted_agents": [
     "agentic-os-setup",
-    "os-learning-loop",
+    "Triple-Loop Retrospective",
     "os-memory-manager",
     "os-health-check",
     "os-clean-locks",
@@ -268,7 +268,7 @@ If more specialized skills are required for this environment, see the central in
 ## Phase 5: Self-Assessment Survey (MANDATORY)
 
 After every init run, complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). Init sessions reveal what is confusing about
+(`references/memory/post_run_survey.md`). Init sessions reveal what is confusing about
 onboarding — this is critical signal for improving the skill and the OS.
 
 **Count-Based Signals**: How many times did the user need clarification? How many
@@ -299,4 +299,4 @@ python3 context/kernel.py emit_event --agent agentic-os-setup \
 For the agent running this skill:
 - Full Agentic OS pattern explained -> `os-guide` skill
 - Memory write/promote/archive decisions -> `os-memory-manager` skill
-- Project setup reference -> `references/project-setup-guide.md`
+- Project setup reference -> `references/operations/project-setup-guide.md`

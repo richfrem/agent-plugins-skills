@@ -118,7 +118,7 @@ packet, answer these questions from the registry:
 
 4. **What friction patterns are accumulating across tests?** If the same friction cause
    appears in surveys across multiple different targets, that is a systemic gap in the OS
-   itself (not a target-specific issue) — escalate to `os-learning-loop`.
+   itself (not a target-specific issue) — escalate to `Triple-Loop Retrospective`.
 
 5. **Is the test design improving?** Compare "Known weaknesses" from prior cycles to
    "Recommended next test design improvement." If the same weakness recurs across cycles,

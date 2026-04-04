@@ -49,7 +49,7 @@ One row per friction item that generated a change. Written with grep verificatio
 ## Section 3 -- North Star Metric
 
 Autonomous Workflow Completion Rate per session. Written once at session close.
-Two consecutive rows with a declining trend trigger os-learning-loop Full Loop.
+Two consecutive rows with a declining trend trigger Triple-Loop Retrospective Full Loop.
 
 | Date | Session ID | Total Cycles | Cycles Without Human Rescue | Completion % | Human Interventions | Friction Events | Trend vs Prior |
 |------|------------|--------------|----------------------------|--------------|---------------------|-----------------|----------------|
@@ -67,7 +67,7 @@ REGISTRY_TEMPLATE = """\
 # Test Registry
 
 Tracks all test scenarios run against the self-improvement loop. One row per cycle.
-See references/test-registry-protocol.md for the full before/after documentation protocol.
+See references/testing/test-registry-protocol.md for the full before/after documentation protocol.
 
 | Cycle ID | Date | Target | Hypothesis | Status | Verdict | Notes |
 |----------|------|--------|------------|--------|---------|-------|

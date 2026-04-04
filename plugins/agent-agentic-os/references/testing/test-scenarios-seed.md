@@ -24,7 +24,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T08 | os-improvement-loop | Loop report written: report file created after every cycle regardless of outcome | HIGH |
 | T09 | os-improvement-loop | Survey completion: both ORCHESTRATOR and INNER_AGENT complete survey after cycle | HIGH |
 | T10 | os-improvement-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
-| T11 | os-improvement-loop | Auto-trigger: os-learning-loop triggered when friction_events_total reaches 3 | HIGH |
+| T11 | os-improvement-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
 | T12 | os-improvement-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
 | T13 | os-clean-locks | Baseline routing: triggers on /os-clean-locks and lock variants, not on list-locks | HIGH |
 | T14 | os-clean-locks | Stale lock cleanup: lock with PID that no longer exists gets removed | HIGH |
@@ -44,16 +44,16 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T28 | learning-loop | Metrics Phase VI: post_run_metrics.py fires and emits metric event | HIGH |
 | T29 | learning-loop | Memory Phase VII: os-memory-manager invoked before handoff | HIGH |
 | T30 | learning-loop | Handoff gate: Phase VIII only starts after survey saved + metrics emitted + memory written | HIGH |
-| T31 | dual-loop | Baseline handoff: outer loop assigns task, inner loop completes and signals back | HIGH |
-| T32 | dual-loop | Survey both agents: outer loop AND inner loop both complete self-assessment | HIGH |
-| T33 | dual-loop | Friction propagation: inner loop friction events visible to outer loop via event bus | MEDIUM |
-| T34 | dual-loop | Result surfacing: inner loop eval result surfaced to outer loop before next iteration | HIGH |
-| T35 | dual-loop | Auto-trigger: os-learning-loop flagged when same friction cause appears 3+ times across both loops | HIGH |
-| T36 | os-learning-loop | Registry orientation: Phase 1 reads registry.md and lists prior confirmed/falsified hypotheses | HIGH |
-| T37 | os-learning-loop | DO NOT RE-TEST respected: agent skips hypothesis already falsified in prior cycle | HIGH |
-| T38 | os-learning-loop | Pre-eval documentation: scenario file written BEFORE eval_runner.py is called | HIGH |
-| T39 | os-learning-loop | Registry close: registry.md row updated from IN PROGRESS to CLOSED after cycle | HIGH |
-| T40 | os-learning-loop | Fast Path vs Full Loop: Fast Path halts before Phase 3, does not acquire lock | MEDIUM |
+| T31 | triple-loop | Baseline handoff: outer loop assigns task, inner loop completes and signals back | HIGH |
+| T32 | triple-loop | Survey both agents: outer loop AND inner loop both complete self-assessment | HIGH |
+| T33 | triple-loop | Friction propagation: inner loop friction events visible to outer loop via event bus | MEDIUM |
+| T34 | triple-loop | Result surfacing: inner loop eval result surfaced to outer loop before next iteration | HIGH |
+| T35 | triple-loop | Auto-trigger: Triple-Loop Retrospective flagged when same friction cause appears 3+ times across both loops | HIGH |
+| T36 | Triple-Loop Retrospective | Registry orientation: Phase 1 reads registry.md and lists prior confirmed/falsified hypotheses | HIGH |
+| T37 | Triple-Loop Retrospective | DO NOT RE-TEST respected: agent skips hypothesis already falsified in prior cycle | HIGH |
+| T38 | Triple-Loop Retrospective | Pre-eval documentation: scenario file written BEFORE eval_runner.py is called | HIGH |
+| T39 | Triple-Loop Retrospective | Registry close: registry.md row updated from IN PROGRESS to CLOSED after cycle | HIGH |
+| T40 | Triple-Loop Retrospective | Fast Path vs Full Loop: Fast Path halts before Phase 3, does not acquire lock | MEDIUM |
 | T41 | kernel.py | PROTECTED_STATE_KEYS state_update guard: execution_mode rejects string overwrite | HIGH |
 | T42 | kernel.py | PROTECTED_STATE_KEYS state_increment guard: execution_mode rejects integer increment | HIGH |
 | T43 | kernel.py | Stale lock auto-cleanup: lock file with dead PID cleared automatically on next acquire | HIGH |
@@ -61,7 +61,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T45 | kernel.py | Agent permit list: emit_event from unlisted agent name is rejected | HIGH |
 | T46 | hooks | Friction count: post_run_metrics.py correctly counts type:friction events from events.jsonl | HIGH |
 | T47 | hooks | Metrics on Stop: metrics report written to disk on every Stop hook fire | HIGH |
-| T48 | hooks | Auto-trigger threshold: friction_events_total >= 3 emits metric that triggers os-learning-loop | HIGH |
+| T48 | hooks | Auto-trigger threshold: friction_events_total >= 3 emits metric that triggers Triple-Loop Retrospective | HIGH |
 | T49 | os-init | Interview skip: init does not repeat questions already answered in conversation | MEDIUM |
 | T50 | os-init | Survey completion: init completes self-assessment after every onboarding run | HIGH |
 
@@ -118,7 +118,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: os-eval-runner
 - **Hypothesis**: eval_runner.py exits with a clear error message (not a Python traceback) when
   evals.json is absent or malformed.
-- **Why now**: Agents calling eval_runner.py during os-learning-loop Phase 3 should get
+- **Why now**: Agents calling eval_runner.py during Triple-Loop Retrospective Phase 3 should get
   actionable errors, not crashes.
 - **Prior results**: None.
 - **Acceptance criteria**: Exit code non-zero, stderr contains human-readable error, no traceback.
@@ -162,7 +162,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: os-improvement-loop
 - **Hypothesis**: When an INNER_AGENT encounters an ambiguous task description, it emits a
   `type: friction` event before requesting human rescue.
-- **Why now**: Friction events are the primary signal for os-learning-loop auto-trigger.
+- **Why now**: Friction events are the primary signal for Triple-Loop Retrospective auto-trigger.
   If agents don't emit them, the flywheel is broken.
 - **Prior results**: None — friction event protocol is new.
 - **Acceptance criteria**: At least 1 `type: friction` event in events.jsonl during the cycle.
@@ -197,7 +197,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Acceptance criteria**: Two survey files in retrospectives/ after 1 cycle, one per agent role.
 - **Failure criteria**: Only 1 survey file, or no survey files.
 - **Known weaknesses**: Agent roles may be played by same Claude session; test may not distinguish.
-- **Recommended next test**: T35 (dual-loop survey) — verify in proper 2-session setup.
+- **Recommended next test**: T35 (triple-loop survey) — verify in proper 2-session setup.
 
 ---
 
@@ -215,16 +215,16 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T11 — os-improvement-loop: os-learning-loop Auto-Trigger at 3 Friction Events
+### T11 — os-improvement-loop: Triple-Loop Retrospective Auto-Trigger at 3 Friction Events
 
 - **Target**: os-improvement-loop
 - **Hypothesis**: When 3 friction events of the same type accumulate in events.jsonl,
-  the ORCHESTRATOR flags os-learning-loop to run at next session start.
+  the ORCHESTRATOR flags Triple-Loop Retrospective to run at next session start.
 - **Why now**: Auto-trigger is the primary mechanism for systemic improvement. Unverified.
 - **Prior results**: None.
-- **Acceptance criteria**: After injecting 3 same-type friction events, os-learning-loop intent
+- **Acceptance criteria**: After injecting 3 same-type friction events, Triple-Loop Retrospective intent
   event appears in events.jsonl on next session, OR a flag file is written.
-- **Failure criteria**: No os-learning-loop invocation after 3 friction events.
+- **Failure criteria**: No Triple-Loop Retrospective invocation after 3 friction events.
 - **Known weaknesses**: "Next session start" is hard to test in a single session.
 - **Recommended next test**: Test with friction_events_total >= 3 in post_run_metrics output (T48).
 
@@ -419,13 +419,13 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: os-memory-manager
 - **Hypothesis**: When a test registry entry is falsified (DISCARD verdict), the manager adds
   a "DO NOT RE-TEST" entry to context/memory.md with the cycle ID as evidence.
-- **Why now**: Without DO NOT RE-TEST entries, os-learning-loop will re-test the same
+- **Why now**: Without DO NOT RE-TEST entries, Triple-Loop Retrospective will re-test the same
   hypotheses indefinitely, wasting cycles.
 - **Prior results**: None.
 - **Acceptance criteria**: DO NOT RE-TEST entry with cycle ID appears in memory.md after falsification.
 - **Failure criteria**: No entry added, or entry added without cycle ID reference.
 - **Known weaknesses**: Requires a real falsified cycle to test.
-- **Recommended next test**: Verify T37 (os-learning-loop respects DO NOT RE-TEST) after this.
+- **Recommended next test**: Verify T37 (Triple-Loop Retrospective respects DO NOT RE-TEST) after this.
 
 ---
 
@@ -499,14 +499,14 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T31 — dual-loop: Baseline Outer-Inner Handoff
+### T31 — triple-loop: Baseline Outer-Inner Handoff
 
-- **Target**: dual-loop
+- **Target**: triple-loop
 - **Hypothesis**: Outer loop assigns task to inner loop via event bus; inner loop completes
   and signals back; outer loop receives result before iteration 2.
 - **Why now**: Baseline transport test needed before testing flywheel additions.
 - **Prior results**: Smoke test in prior session validated kernel transport; this validates the
-  dual-loop SKILL coordination layer specifically.
+  triple-loop SKILL coordination layer specifically.
 - **Acceptance criteria**: task.assigned event followed by task.completed in events.jsonl;
   outer loop reads result before emitting next task.assigned.
 - **Failure criteria**: Outer loop emits task.assigned twice without reading result from first.
@@ -515,12 +515,12 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T32 — dual-loop: Survey Completion by Both Agents
+### T32 — triple-loop: Survey Completion by Both Agents
 
-- **Target**: dual-loop
+- **Target**: triple-loop
 - **Hypothesis**: Both outer loop and inner loop agents complete self-assessment surveys after
   a full cycle, not just the inner loop that ran the eval.
-- **Why now**: Step 7 (survey) is new in dual-loop SKILL. Both agents must contribute.
+- **Why now**: Step 7 (survey) is new in triple-loop SKILL. Both agents must contribute.
 - **Prior results**: None.
 - **Acceptance criteria**: Two survey_completed events in events.jsonl, one from each agent role.
 - **Failure criteria**: Only 1 survey_completed, or surveys only from inner loop.
@@ -529,9 +529,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T33 — dual-loop: Inner Loop Friction Propagation
+### T33 — triple-loop: Inner Loop Friction Propagation
 
-- **Target**: dual-loop
+- **Target**: triple-loop
 - **Hypothesis**: Friction events emitted by the inner loop are visible to the outer loop
   via the shared events.jsonl before the outer loop decides the next iteration strategy.
 - **Why now**: Friction propagation is necessary for outer loop to adapt task strategy.
@@ -544,9 +544,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T34 — dual-loop: Inner Loop Eval Result Surfaced to Outer Loop
+### T34 — triple-loop: Inner Loop Eval Result Surfaced to Outer Loop
 
-- **Target**: dual-loop
+- **Target**: triple-loop
 - **Hypothesis**: The inner loop's eval.result event (KEEP/DISCARD + score delta) is read by
   the outer loop and included in the strategy for iteration 2.
 - **Why now**: Without this, outer loop cannot learn from inner loop results — flywheel breaks.
@@ -559,23 +559,23 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T35 — dual-loop: os-learning-loop Auto-Trigger After 3 Same-Cause Friction Events
+### T35 — triple-loop: Triple-Loop Retrospective Auto-Trigger After 3 Same-Cause Friction Events
 
-- **Target**: dual-loop
+- **Target**: triple-loop
 - **Hypothesis**: When the same friction cause appears 3+ times across both outer and inner loop
-  survey responses, a flag or event triggers os-learning-loop before the next session.
-- **Why now**: This is the primary systemic improvement signal from the dual-loop.
+  survey responses, a flag or event triggers Triple-Loop Retrospective before the next session.
+- **Why now**: This is the primary systemic improvement signal from the triple-loop.
 - **Prior results**: None.
-- **Acceptance criteria**: os-learning-loop:intent event or flag file after 3 same-cause friction items.
+- **Acceptance criteria**: Triple-Loop Retrospective:intent event or flag file after 3 same-cause friction items.
 - **Failure criteria**: No trigger despite 3 matching friction causes.
 - **Known weaknesses**: "Same cause" requires semantic matching — hard to verify mechanically.
-- **Recommended next test**: T36 (os-learning-loop reads registry) — full loop if T35 triggers it.
+- **Recommended next test**: T36 (Triple-Loop Retrospective reads registry) — full loop if T35 triggers it.
 
 ---
 
-### T36 — os-learning-loop: Registry Orientation at Phase 1
+### T36 — Triple-Loop Retrospective: Registry Orientation at Phase 1
 
-- **Target**: os-learning-loop
+- **Target**: Triple-Loop Retrospective
 - **Hypothesis**: Phase 1 reads context/memory/tests/registry.md and the agent lists
   confirmed/falsified hypotheses before proposing any new change.
 - **Why now**: Registry read was added to Phase 1 in this session. First test.
@@ -587,9 +587,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T37 — os-learning-loop: DO NOT RE-TEST Entries Respected
+### T37 — Triple-Loop Retrospective: DO NOT RE-TEST Entries Respected
 
-- **Target**: os-learning-loop
+- **Target**: Triple-Loop Retrospective
 - **Hypothesis**: When registry.md contains a "DO NOT RE-TEST" entry for a hypothesis,
   the agent skips that hypothesis and proposes the next untested one.
 - **Why now**: Without this, cycles are wasted re-testing confirmed failures.
@@ -602,9 +602,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T38 — os-learning-loop: Test Scenario Documented BEFORE Eval
+### T38 — Triple-Loop Retrospective: Test Scenario Documented BEFORE Eval
 
-- **Target**: os-learning-loop
+- **Target**: Triple-Loop Retrospective
 - **Hypothesis**: The scenario file is written to context/memory/tests/ BEFORE eval_runner.py
   is called in Phase 3.
 - **Why now**: Protocol requires this ordering. If reversed, no pre-test documentation exists
@@ -617,9 +617,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T39 — os-learning-loop: Registry Row Closed After Cycle
+### T39 — Triple-Loop Retrospective: Registry Row Closed After Cycle
 
-- **Target**: os-learning-loop
+- **Target**: Triple-Loop Retrospective
 - **Hypothesis**: After Phase 5 (test registry close), the registry.md row is updated from
   IN PROGRESS to CLOSED with the verdict.
 - **Why now**: Phase 5 is new. Unclosed rows pollute future orientation reads.
@@ -631,9 +631,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T40 — os-learning-loop: Fast Path vs Full Loop Selection
+### T40 — Triple-Loop Retrospective: Fast Path vs Full Loop Selection
 
-- **Target**: os-learning-loop
+- **Target**: Triple-Loop Retrospective
 - **Hypothesis**: Fast Path mode completes Phases 0-2 and outputs FINDINGS: block, then stops
   without acquiring the kernel lock or running evals.
 - **Why now**: Fast Path / Full Loop selection is documented but unverified.
@@ -723,7 +723,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Target**: hooks/post_run_metrics.py
 - **Hypothesis**: The script correctly counts type:friction events from events.jsonl and
   reports the count in friction_events_total.
-- **Why now**: Friction count is the trigger for os-learning-loop auto-trigger. If counting
+- **Why now**: Friction count is the trigger for Triple-Loop Retrospective auto-trigger. If counting
   is wrong, the trigger fires at wrong thresholds.
 - **Prior results**: None.
 - **Acceptance criteria**: With 5 friction events in events.jsonl, friction_events_total = 5.
@@ -748,18 +748,18 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T48 — hooks: Auto-Trigger Threshold for os-learning-loop
+### T48 — hooks: Auto-Trigger Threshold for Triple-Loop Retrospective
 
-- **Target**: hooks/post_run_metrics.py + os-learning-loop
+- **Target**: hooks/post_run_metrics.py + Triple-Loop Retrospective
 - **Hypothesis**: When post_run_metrics.py emits a metric event with friction_events_total >= 3,
-  os-learning-loop runs in Full Loop mode at next session start.
+  Triple-Loop Retrospective runs in Full Loop mode at next session start.
 - **Why now**: Auto-trigger is the primary autonomous improvement mechanism. Unverified end-to-end.
 - **Prior results**: None.
 - **Acceptance criteria**: After seeding events.jsonl with 3 friction events, Stop hook fires,
-  metric event shows friction_events_total = 3, os-learning-loop intent event appears.
-- **Failure criteria**: No os-learning-loop invocation; or metric not emitted; or wrong count.
+  metric event shows friction_events_total = 3, Triple-Loop Retrospective intent event appears.
+- **Failure criteria**: No Triple-Loop Retrospective invocation; or metric not emitted; or wrong count.
 - **Known weaknesses**: "Next session start" timing hard to test in single session.
-- **Recommended next test**: Verify os-learning-loop runs in Full Loop mode (not Fast Path) per T40.
+- **Recommended next test**: Verify Triple-Loop Retrospective runs in Full Loop mode (not Fast Path) per T40.
 
 ---
 
@@ -800,11 +800,11 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 1. Read this file at orientation (Phase 0 / Stage 0).
 2. Cross-reference with `context/memory/tests/registry.md` — skip any scenario already IN PROGRESS or CLOSED.
 3. Select the highest-priority untested scenario that targets the skill under active improvement.
-4. Follow `references/test-registry-protocol.md` to document the scenario BEFORE running.
+4. Follow `references/testing/test-registry-protocol.md` to document the scenario BEFORE running.
 5. After completing, update `context/memory/tests/registry.md` and follow the promotion rules.
 6. Use the "Recommended next test" field from this scenario to choose the next cycle's test.
 
 Priority ordering within a target: start with HIGH, then MEDIUM.
 Cross-target ordering: run kernel.py and hooks tests first (foundational infrastructure),
-then os-memory-manager and os-learning-loop (most impactful for flywheel),
-then os-improvement-loop and dual-loop (integration tests).
+then os-memory-manager and Triple-Loop Retrospective (most impactful for flywheel),
+then os-improvement-loop and triple-loop (integration tests).

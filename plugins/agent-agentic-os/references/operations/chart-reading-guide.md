@@ -23,7 +23,7 @@ The chart mirrors the autoresearch `progress.png` format:
 
 **Flat or declining step line**
 The loop is not improving the skill. Check the test scenarios seed
-(`references/test-scenarios-seed.md`) -- the current hypotheses may be exhausted.
+(`references/testing/test-scenarios-seed.md`) -- the current hypotheses may be exhausted.
 Review the survey-to-action trace (Section 2 of the ledger) for unresolved friction items.
 
 **Frequent DISCARD clusters**

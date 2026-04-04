@@ -19,7 +19,7 @@ Diagram: [`references/diagrams/triple-loop-learning-system.mmd`](../assets/diagr
 - **KEEP**: ORCHESTRATOR applies changes, emits `orchestrator.decision`.
 - **DISCARD**: Generate correction packet (`handoffs/correction-${CID}.md`) with severity (CRITICAL / MODERATE / MINOR). Re-signal INNER_AGENT. Do not emit `orchestrator.decision` until KEEP.
 
-**Step 5 - Survey (all agents):** Complete Post-Run Self-Assessment Survey. Save to `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[DATE]_[TIME]_[AGENT].md`. Emit `learning / survey_completed`. If any friction cause appears 3+ times: flag for `os-learning-loop`.
+**Step 5 - Survey (all agents):** Complete Post-Run Self-Assessment Survey. Save to `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[DATE]_[TIME]_[AGENT].md`. Emit `learning / survey_completed`. If any friction cause appears 3+ times: flag for `Triple-Loop Retrospective`.
 
 ---
 

@@ -63,7 +63,7 @@ Use the `Bash` tool to run:
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 
 After every health check run, complete the Post-Run Self-Assessment Survey
-(`references/post_run_survey.md`). The health check agent must reflect on what it
+(`references/memory/post_run_survey.md`). The health check agent must reflect on what it
 found so the OS can improve its own diagnostics.
 
 **Count-Based Signals**: How many anomalies were detected? How many false positives?

@@ -2,7 +2,7 @@
     "schema_version": "1.0",
     "permitted_agents": [
         "agentic-os-setup",
-        "os-learning-loop",
+        "Triple-Loop Retrospective",
         "os-memory-manager",
         "os-health-check",
         "os-clean-locks",

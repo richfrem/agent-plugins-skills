@@ -101,7 +101,7 @@ One row per session. Tracks the Autonomous Workflow Completion Rate over time.
 - `Completion Rate` = Completed / Total Cycles (percentage).
 - `Trend` = change from prior session (first session is "(baseline)").
 - Goal: completion rate increases, friction events decrease, over sessions.
-- If completion rate regresses 2 sessions in a row, ORCHESTRATOR MUST invoke os-learning-loop
+- If completion rate regresses 2 sessions in a row, ORCHESTRATOR MUST invoke Triple-Loop Retrospective
   in Full Loop mode at the start of the next session — this is a mandatory auto-trigger.
 
 ---
@@ -157,7 +157,7 @@ At Stage 1 orientation, ORCHESTRATOR reads the improvement ledger BEFORE writing
 
 3. **Scan Section 3** (North Star Metric) for session trend:
    - Is completion rate stable, improving, or regressing?
-   - Two-session regression -> mandatory os-learning-loop at session start.
+   - Two-session regression -> mandatory Triple-Loop Retrospective at session start.
 
 These answers must inform the strategy packet content. A strategy packet written without
 reading the ledger is missing the core improvement context.
@@ -205,7 +205,7 @@ EOF
 | Are we completing more cycles autonomously? | Calculate from individual metric events | Scan Section 3, one table |
 | What changes made things worse? | No record | Section 1 DISCARD rows with change summary |
 | Which agent generates the most actionable friction items? | Impossible without aggregation | Section 2, group by Agent column |
-| When should os-learning-loop auto-trigger on trend? | No signal | Section 3, two consecutive regression rows |
+| When should Triple-Loop Retrospective auto-trigger on trend? | No signal | Section 3, two consecutive regression rows |
 
 ---
 

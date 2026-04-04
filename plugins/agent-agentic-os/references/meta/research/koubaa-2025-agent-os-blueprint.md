@@ -187,7 +187,7 @@ The paper's five-layer architecture strongly validates the Agentic OS plugin's e
 The paper's Agent Contract concept maps directly to combining `plugin.json` with the Explicit Scope Declaration Model proposed in `vision.md`. Formalizing these as portable, machine-readable contracts is the right direction.
 
 ### Latency Classes Suggest Plugin Tiering
-The HRT/SRT/DT taxonomy suggests the Agentic OS plugin should eventually classify skills and agents by latency class. Interactive user-facing agents are SRT; background daemons (os-learning-loop, os-health-check) are DT. Future robotics/automation integrations may require HRT guarantees.
+The HRT/SRT/DT taxonomy suggests the Agentic OS plugin should eventually classify skills and agents by latency class. Interactive user-facing agents are SRT; background daemons (Triple-Loop Retrospective, os-health-check) are DT. Future robotics/automation integrations may require HRT guarantees.
 
 ### Confirms Microkernel Approach
 The paper's argument for a zero-trust microkernel with minimal trusted core validates keeping `kernel.py` small and pushing skill logic to disk-resident SKILL.md bodies. The kernel should do less, not more.

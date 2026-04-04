@@ -7,7 +7,7 @@ This guide maps the Agent-Loops skills to standard industry terminology (e.g., G
 | Our Skill | Industry Alias | Primary Use Case |
 | :--- | :--- | :--- |
 | `learning-loop` | Single Agent / Loop Agent | Self-contained research, content generation, and exploration where no inner delegation is required. |
-| `dual-loop` | Sequential Agent / Agent as a Tool | Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. |
+| `triple-loop` | Sequential Agent / Agent as a Tool | Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. |
 | `agent-swarm` | Parallel Agent | Work that can be partitioned into independent sub-tasks running concurrently across multiple agents. |
 | `orchestrator` | Routing Agent / Hierarchical | Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations above. |
 | `red-team-review` | Review and Critique Pattern | Iterative generation paired with adversarial review, continuing until an "Approved" verdict is reached. |
@@ -32,7 +32,7 @@ Use when a task requires pure exploratory research, basic document generation, o
 
 ---
 
-## 2. Sequential Agent / Agent as a Tool (`dual-loop`)
+## 2. Sequential Agent / Agent as a Tool (`triple-loop`)
 
 An outer/manager agent defines a strategy packet, hands it to an inner/worker agent, and verifies the output before continuing.
 
@@ -82,7 +82,7 @@ An initial decision layer that analyzes the prompt or trigger and directs the qu
 | Ideal for "universal" command inputs | Increases architectural complexity |
 
 ### When to Use
-Use as the primary entry point for ambiguous human triggers. The Router decides if the task warrants a simple learning loop, a dual-loop delegation, or a full swarm.
+Use as the primary entry point for ambiguous human triggers. The Router decides if the task warrants a simple learning loop, a triple-loop delegation, or a full swarm.
 
 ---
 

@@ -3,7 +3,7 @@
 The `status.md` file serves as the "active register" and the primary interface point between human users and the autonomous heartbeat loops. 
 
 ## Strict Format Requirements
-To ensure the `~~scheduler` heartbeat agents (`os-learning-loop`, etc.) can reliably parse state, `status.md` must adhere to the following markdown structure.
+To ensure the `~~scheduler` heartbeat agents (`Triple-Loop Retrospective`, etc.) can reliably parse state, `status.md` must adhere to the following markdown structure.
 
 ```markdown
 ---

@@ -1,1 +1,1 @@
-../../../references/memory-promotion-guide.md
+../../../references/memory/memory-promotion-guide.md

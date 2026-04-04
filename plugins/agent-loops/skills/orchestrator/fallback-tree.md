@@ -5,7 +5,7 @@ If the user's prompt (e.g., "Fix it") does not map cleanly to Research (Pattern 
 - **Action**: Do not guess. Default to Pattern 1 (Learning Loop) to synthesize the requirement. Ask the user 1 clarifying question to determine if code execution or review is actually needed.
 
 ## 2. Inner Loop Crashes (Timeout/Dependency)
-If the delegated inner loop (whether dual-loop or swarm) crashes abruptly without returning a completed artifact or a status:
+If the delegated inner loop (whether triple-loop or swarm) crashes abruptly without returning a completed artifact or a status:
 - **Action**: The Orchestrator reclaims control. It does NOT enter an infinite wait. It assesses the terminal output or log of the crash, generates a Correction Packet containing the crash trace, and attempts to re-delegate.
 
 ## 3. Sub-Agent Process Fails to Start

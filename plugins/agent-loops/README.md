@@ -9,7 +9,7 @@ Composable agent loop architectures for **learning loops**, **agent orchestratio
 | **`orchestrator`** | Router (Routing Agent / Orchestrator Pattern) | Assesses the trigger, selects the appropriate loop pattern, and manages shared closure (seal, persist, retro + self-improvement). |
 | **`learning-loop`** | 1. Simple Learning (Loop Agent / Single Agent) | Self-directed research, document, iterate. No inner agents or review gates. |
 | **`red-team-review`** | 2. Adversarial Review (Review and Critique Pattern) | Research → bundle context → red team review → iterate in rounds until approved. |
-| **`dual-loop`** | 3. Inner/Outer Agent (Sequential Agent / Agent as a Tool) | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies output. |
+| **`triple-loop`** | 3. Inner/Outer Agent (Sequential Agent / Agent as a Tool) | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies output. |
 | **`agent-swarm`** | 4. Parallel Execution (Parallel Agent) | Partition work → dispatch to N agents across isolated workspaces → verify and merge all. |
 
 > [!TIP]
@@ -57,7 +57,7 @@ agent-loops/
 │   ├── orchestrator/    # Routes to patterns, manages closure
 │   ├── learning-loop/   # Pattern 1
 │   ├── red-team-review/ # Pattern 2
-│   ├── dual-loop/       # Pattern 3
+│   ├── triple-loop/       # Pattern 3
 │   └── agent-swarm/     # Pattern 4
 └── references/          # Pattern guide and cross-skill references
 ```
@@ -85,7 +85,7 @@ The orchestration layer works with any CLI-invokable agent:
 
 ### Skills
 - `agent-swarm`
-- `dual-loop`
+- `triple-loop`
 - `learning-loop`
 - `orchestrator`
 - `red-team-review`

@@ -1,1 +1,1 @@
-../../../references/memory-hygiene.md
+../../../references/memory/memory-hygiene.md

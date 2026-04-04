@@ -114,7 +114,7 @@ Koubaa formalizes three latency classes as first-class OS scheduling primitives:
 | **SRT** (Soft Real-Time) | Occasional misses tolerable; user-perceived responsiveness critical | Chat assistants, screen copilots, live captioning | First-token 150-300 ms; full-turn 0.8-1.2 s |
 | **DT** (Delay-Tolerant) | No hard deadline; maximize throughput per unit cost | Overnight batch analytics, report generation | 60-120 s acceptable; cost-per-token optimized |
 
-For the Agentic OS plugin: interactive user-facing agents are SRT class; background daemons (`os-learning-loop`, `os-health-check`) are DT class. Classifying skills and agents by latency class enables smarter scheduling and better resource allocation.
+For the Agentic OS plugin: interactive user-facing agents are SRT class; background daemons (`Triple-Loop Retrospective`, `os-health-check`) are DT class. Classifying skills and agents by latency class enables smarter scheduling and better resource allocation.
 
 ### Sharma (Authorea, Feb 2026): AOS as Agentic Control Plane
 
@@ -257,7 +257,7 @@ Simple task files. No kanban, no cross-agent visibility.
 | Backend | Use Case |
 |---|---|
 | learning-loop (default) | Single agent retrospective |
-| dual-loop | Inner agent + outer supervisor |
+| triple-loop | Inner agent + outer supervisor |
 | os-improvement-loop | Parallel agent fan-out |
 | custom | Domain-specific loop logic |
 
@@ -277,7 +277,7 @@ Most of the swappable backends already exist as plugins in this repo:
 - `memory-management` — tiered memory
 - `vector-db` — semantic retrieval
 - `rlm-factory` — long-term distillation
-- `dual-loop`, `os-improvement-loop`, `learning-loop` — loop patterns
+- `triple-loop`, `os-improvement-loop`, `learning-loop` — loop patterns
 
 The work is not building new plugins — it is defining the adapter interfaces and wiring the existing plugins in.
 
@@ -309,7 +309,7 @@ The agentic-os is built on an OS metaphor that maps directly to classical operat
 | Always in RAM | Skill metadata headers, agent descriptions, `CLAUDE.md`, `soul.md`, `user.md` |
 | Application on disk | Full `SKILL.md` body — stays on disk until invoked |
 | App launcher | Skill metadata descriptions — scanned to decide which skill to invoke |
-| Background daemon | Agents (`os-learning-loop`, `os-health-check`) — runs autonomously, acquires locks, terminates |
+| Background daemon | Agents (`Triple-Loop Retrospective`, `os-health-check`) — runs autonomously, acquires locks, terminates |
 | Cron scheduler | `/loop` + `heartbeat.md` |
 | System registry | `context/os-state.json` |
 | System event log | `context/events.jsonl` (JSONL, append-only, never enters context during normal operation) |
@@ -317,7 +317,7 @@ The agentic-os is built on an OS metaphor that maps directly to classical operat
 | Swap / overflow | `context/memory/archive/` — old memory rotated out when L3 gets too large |
 | Antivirus / LSM | `PreToolUse` hooks — intercept every tool call before execution |
 | Intrusion detection | `PostToolUse` hooks + `events.jsonl` |
-| **No OS equivalent** | **Self-improvement loop** — `os-learning-loop` mines `events.jsonl` and patches `CLAUDE.md` and `SKILL.md` files based on observed friction |
+| **No OS equivalent** | **Self-improvement loop** — `Triple-Loop Retrospective` mines `events.jsonl` and patches `CLAUDE.md` and `SKILL.md` files based on observed friction |
 | **No OS equivalent** | **On-demand software creation** — if no skill exists, describe it in plain language, `create-skill` generates it in seconds |
 | **No OS equivalent** | **LLM reasoning engine** — the CPU follows instructions; the LLM understands them |
 
@@ -330,7 +330,7 @@ The context window is finite RAM. Every byte consumed by infrastructure is unava
 | **Always in RAM** | Skill metadata headers, agent descriptions, `CLAUDE.md`, `soul.md`, `user.md` | Every session — routing and identity |
 | **Loaded on trigger** | Full `SKILL.md` body | Only when that skill is invoked |
 | **Loaded on demand** | `references/` docs via progressive disclosure | Only when a specific sub-topic is needed |
-| **Loaded for audit** | `context/events.jsonl` | Only when `os-health-check` or `os-learning-loop` reads it — never during normal work |
+| **Loaded for audit** | `context/events.jsonl` | Only when `os-health-check` or `Triple-Loop Retrospective` reads it — never during normal work |
 
 **Vision:** As context windows grow (1M+ tokens becoming standard), this discipline remains critical because the problem doesn't disappear — it shifts. Larger context windows create new failure modes: attention dilution, relevant signal buried in noise, cost per token at scale. The lazy-loading pattern evolves from "fit in the window" to "maintain signal density." The Context Orchestrator (see below) is the next evolution of this discipline.
 
@@ -340,7 +340,7 @@ The most fundamental departure from traditional operating systems:
 
 > A conventional OS is a static artifact — Windows does not rewrite its own kernel based on how you used it today. The Agentic OS does.
 
-Every session, `os-learning-loop` observes failures, repeated friction, and patterns in the event log, then proposes and applies patches to the system's own skill instructions and `CLAUDE.md`. Using a Karpathy-style research loop, `os-eval-runner` validates each proposed change with `eval_runner` before it is committed. Over time, the OS becomes measurably better at the specific workflows of the project it lives in.
+Every session, `Triple-Loop Retrospective` observes failures, repeated friction, and patterns in the event log, then proposes and applies patches to the system's own skill instructions and `CLAUDE.md`. Using a Karpathy-style research loop, `os-eval-runner` validates each proposed change with `eval_runner` before it is committed. Over time, the OS becomes measurably better at the specific workflows of the project it lives in.
 
 **Vision extensions:**
 
@@ -961,7 +961,7 @@ Agent SIEM is the infrastructure that doesn't exist yet but will become critical
 9. Build behavioral baseline logging into `events.jsonl` — foundation for future SIEM
 
 ### OS Paradigm
-10. Cross-project learning prototype — export improvement signals from `os-learning-loop` to a shared ledger
+10. Cross-project learning prototype — export improvement signals from `Triple-Loop Retrospective` to a shared ledger
 11. Distributed lock management — Redis-backed spinlock as optional kernel primitive
 12. Event sourcing spike — derive `os-state.json` as a projection of `events.jsonl` instead of mutable file
 
@@ -969,10 +969,10 @@ Agent SIEM is the infrastructure that doesn't exist yet but will become critical
 
 ## Related Files
 
-- `references/architecture.md` — current architecture
-- `references/backlog.md` — implementation backlog items
-- `references/memory-hygiene.md` — memory management patterns
-- `references/dual-loop.md` — loop architecture
+- `references/architecture/architecture.md` — current architecture
+- `references/meta/backlog.md` — implementation backlog items
+- `references/memory/memory-hygiene.md` — memory management patterns
+- `references/operations/triple-loop.md` — loop architecture
 - `assets/diagrams/event-bus-architecture.mmd` — current event bus diagram
 - `assets/diagrams/agentic-os-memory-subsystem.mmd` — current memory diagram
 

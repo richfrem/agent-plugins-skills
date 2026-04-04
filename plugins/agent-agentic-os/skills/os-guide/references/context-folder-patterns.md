@@ -1,1 +1,1 @@
-../../../references/context-folder-patterns.md
+../../../references/architecture/context-folder-patterns.md

@@ -10,7 +10,7 @@ The Agentic OS is not a binary - it is a directory structure and behavioral conv
 
 **3. Standard Library (`skills/`)** - Reusable procedural modules defined in YAML+Markdown (`SKILL.md`). Define triggers and execution paths. Extend agent capabilities without bloated context.
 
-**4. Processes (`agents/`)** - Standalone sub-agents optimized for narrow execution (e.g. `agentic-os-setup`, `os-learning-loop`).
+**4. Processes (`agents/`)** - Standalone sub-agents optimized for narrow execution (e.g. `agentic-os-setup`, `Triple-Loop Retrospective`).
 
 ---
 

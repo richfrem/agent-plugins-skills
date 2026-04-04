@@ -94,7 +94,7 @@ git push origin main
 
 ## 4. Run the Autonomous Loop
 
-Your main agent (or os-learning-loop) repeatedly runs:
+Your main agent (or Triple-Loop Retrospective) repeatedly runs:
 
 ```bash
 # Example single iteration

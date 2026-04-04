@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations. Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
+description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations. Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, triple-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
 allowed-tools: Bash, Read, Write
 ---
 
@@ -24,7 +24,7 @@ The **Orchestrator** assesses the incoming trigger, selects the right loop patte
 ## The Core Loop
 
 ### Ecosystem Context
-- **Patterns**: [`learning-loop`](../learning-loop/SKILL.md) | [`red-team-review`](../red-team-review/SKILL.md) | [`dual-loop`](../dual-loop/SKILL.md) | [`agent-swarm`](../agent-swarm/SKILL.md)
+- **Patterns**: [`learning-loop`](../learning-loop/SKILL.md) | [`red-team-review`](../red-team-review/SKILL.md) | [`triple-loop`](../triple-loop/SKILL.md) | [`agent-swarm`](../agent-swarm/SKILL.md)
 - **Inner Loop Reference**: [`cli-agent-executor.md`](../../references/cli-agent-executor.md) — Persona configs for specialized CLI execution.
 
 ## Routing Decision Tree
@@ -42,14 +42,14 @@ Use this to select the correct loop pattern:
 
 3. Can the work be split into parallel independent tasks?
    └─ YES → Pattern 4: agent-swarm
-   └─ NO → Pattern 3: dual-loop (sequential inner/outer delegation)
+   └─ NO → Pattern 3: triple-loop (sequential inner/outer delegation)
 ```
 
 | Signal | Pattern | Skill |
 |--------|---------|-------|
 | Research question, knowledge gap, documentation task | **Simple Learning** | `learning-loop` |
 | Architecture decision, security review, high-risk change | **Red Team Review** | `red-team-review` |
-| Feature implementation, bug fix, single work package | **Dual-Loop** | `dual-loop` |
+| Feature implementation, bug fix, single work package | **Dual-Loop** | `triple-loop` |
 | Large feature, bulk migration, multi-concern parallel work | **Agent Swarm** | `agent-swarm` |
 
 ### Process Flow
