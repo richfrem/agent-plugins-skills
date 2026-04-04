@@ -5,9 +5,10 @@ description: >
   across installed environments. Use when you see "plugins/" paths in SKILL.md or agent
   files, need to standardize path references after installing a skill, want to audit and
   fix cross-plugin path dependencies, run a portability audit on a repository, neutralize
-  hardcoded machine paths like /Users/, or are preparing plugin files for distribution via
-  npx skills add or uvx. Also handles evolving a skill in-session while tracking quality
-  scores with the eval runner to continuously improve skill routing accuracy.
+  hardcoded machine paths like /Users/, find Python scripts using PROJECT_ROOT or Path()
+  to reach into plugins/<name>/ at runtime, or are preparing plugin files for
+  distribution via uvx or bootstrap.py. Also handles evolving a skill in-session while
+  tracking quality scores with the eval runner to continuously improve skill routing accuracy.
 
   <example>
   Context: Agent just wrote a SKILL.md with a hardcoded source repo path.
@@ -54,6 +55,10 @@ You ensure they work correctly when installed via `npx skills add`, the plugin i
 ```
 No `plugins/` folder. No `CLAUDE_PLUGIN_ROOT`. No source repo structure.
 
+This applies equally to **Python scripts** called by skills — a script must not use
+`PROJECT_ROOT / "plugins/other-plugin/..."` at runtime. Cross-plugin script references
+must use `.agents/skills/<skill>/scripts/<script>` or a self-contained copy.
+
 The full ruleset is in `references/fix-plugin-paths.prompt.md`.
 
 ---
@@ -81,7 +86,17 @@ For each target file, check which rules from `references/fix-plugin-paths.prompt
 python3 scripts/audit_plugin_paths.py <directory-or-file>
 ```
 
-If the script flags an issue that is functionally required (like a structural diagram or explicit documentation reference), **DO NOT MUTATE THE FILE**. Instead, update `scripts/plugin_paths_whitelist.json` using the Edit tool to include a targeted pattern that squashes the false positive, then re-run the auditor to confirm it cleanly skips that item.
+The auditor runs **two passes**:
+
+1. **Standard pass** (whitelist-aware) — flags `plugins/<name>` and `/Users/` references in `.md` and `.py` files. False positives can be suppressed via `scripts/plugin_paths_whitelist.json`.
+2. **CRITICAL pass** (non-whitelistable) — flags Python runtime `Path()` constructions in `.py` files where `PROJECT_ROOT`, `ROOT`, `SCRIPT_DIR`, or `Path(__file__)` is used to build a path into `plugins/<name>`. These **cannot be whitelisted** and must always be fixed.
+
+For CRITICAL violations the correct fix is always one of:
+- Replace with a relative `scripts/<script>.py` path (self-contained, portable)
+- Replace with `.agents/skills/<skill-name>/scripts/<script>.py` (cross-skill installed reference)
+- Invoke via `uvx` / `subprocess` calling the GitHub-native installer (for installer bootstrapping)
+
+If the standard pass flags an issue that is functionally required (like a structural diagram or explicit documentation reference), **DO NOT MUTATE THE FILE**. Instead, update `scripts/plugin_paths_whitelist.json` using the Edit tool to include a targeted pattern that squashes the false positive, then re-run the auditor to confirm it cleanly skips that item.
 
 ---
 
