@@ -4,34 +4,13 @@ description: >
   Trigger with "explain agentic os", "how do I set up a persistent agent environment", 
   "what is the CLAUDE.md hierarchy", "explain the context folder structure", 
   "how does session memory work", "what is soul.md or user.md", "explain auto-memory or MEMORY.md", 
-  "what is a loop scheduler or heartbeat", or when the user asks for the canonical
-  reference and operational guide for the Agentic OS / Agent Harness pattern.
+  "what is a loop scheduler or heartbeat", or when the user asks for the canonical guide.
 
-  <example>
-  Context: User is new and wants to understand the system.
-  user: "How does session memory work in this setup?"
-  assistant: "I'll use the os-guide to explain the memory layers and how context persists between sessions."
-  <commentary>
-  User asks about memory without referencing any specific file or command. Trigger the guide.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: Agent proactively orients before starting work in an unfamiliar project.
-  assistant: [autonomously] "This project uses the Agentic OS pattern. Let me load the guide to orient on the context/ folder, CLAUDE.md hierarchy, and memory layers before making changes."
-  <commentary>
-  Implicit audit trigger -- no explicit user prompt. Load guide to avoid misusing the OS.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: User asks about a specific implementation file, not the OS pattern.
-  user: "Can you explain what kernel.py does?"
-  assistant: "I'll read context/kernel.py and explain the lock, state, and event bus functions directly."
-  <commentary>
-  Question about a specific file -- read it directly, do not invoke the full guide.
-  </commentary>
-  </example>
+  
 allowed-tools: Read, Write
 ---
 

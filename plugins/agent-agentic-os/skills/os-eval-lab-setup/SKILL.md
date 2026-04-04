@@ -10,9 +10,7 @@ description: >
   Context: User wants to start an improvement run on a skill in an isolated lab repo.
   user: "Set up an eval lab for the link-checker skill"
   assistant: [triggers os-eval-lab, runs intake interview, bootstraps lab repo, installs engine, copies plugin files, generates eval-instructions.md]
-  <commentary>
-  Explicit lab setup request — run intake then bootstrap.
-  </commentary>
+  
   </example>
 
   <example>

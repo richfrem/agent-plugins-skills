@@ -11,19 +11,14 @@ description: >
   Context: User wants to create a brand-new skill from scratch.
   user: "Create a new skill called link-validator"
   assistant: [triggers create-skill, runs discovery interview, scaffolds directory structure]
-  <commentary>
-  Explicit scaffold request — run discovery interview then scaffold. Quality gate follows.
-  </commentary>
+  
   </example>
 
   <example>
   Context: User wants to improve an existing skill's content, not scaffold a new one.
   user: "Improve the trigger description for my link-checker skill"
   assistant: [triggers os-skill-improvement, not create-skill]
-  <commentary>
-  This is a methodology/quality task, not a scaffolding task. create-skill does not trigger.
-  os-skill-improvement (agent-agentic-os plugin) owns routing quality and TDD methodology.
-  </commentary>
+  
   </example>
 argument-hint: "[skill-name or use-case description]"
 allowed-tools: Bash, Read, Write
@@ -88,7 +83,7 @@ plugins/<plugin>/skills/<skill-name>/
 Create the confirmed directory structure. Standards enforced by `acceptance-criteria.md`:
 
 - **Python only** — helper scripts go in `scripts/*.py`. Never generate `.sh` bash scripts.
-- **Starter SKILL.md** — frontmatter with `name`, `description` (use the purpose from Phase 1),
+- **Starter SKILL.md** — frontmatter with `name`, `description` (use the purpose from Phase 1; **MUST NOT exceed 1024 characters**),
   `allowed-tools`. Body: stub sections for Identity, Steps, and Common Failures.
 - **Starter evals.json** — at least 2 placeholder eval cases using the `should_trigger` schema:
   ```json

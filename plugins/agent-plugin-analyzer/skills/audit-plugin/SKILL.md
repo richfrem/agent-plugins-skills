@@ -58,7 +58,7 @@ The agent checks all 10 categories automatically:
 2. Directory structure -- components at root, not inside `.claude-plugin/`
 3. Commands (`commands/**/*.md`) -- frontmatter, `description`, `argument-hint`, `allowed-tools`
 4. Agents (`agents/**/*.md`) -- `name`, `description` with `<example>` blocks, `model`, `color`
-5. Skills (`skills/*/SKILL.md`) -- frontmatter, `name`, `description`, supporting directories
+5. Skills (`skills/*/SKILL.md`) -- frontmatter, `name`, `description` (<= 1024 chars), supporting directories
 6. Hooks (`hooks/hooks.json`) -- JSON syntax, valid event names, matcher + hooks array
 7. MCP configuration (`.mcp.json`) -- server type, required fields, HTTPS enforcement
 8. File organization -- README.md, .gitignore, no node_modules or .DS_Store

@@ -3,41 +3,14 @@ name: os-improvement-report
 description: >
   Trigger with "show me the improvement chart", "how are we improving", "progress report",
   "graph the eval scores", "show cycle of improvement", "what's the trend", "are we getting
-  better", "show improvement over time", "generate the progress chart", "are we improving",
-  "what did this cycle contribute", or any time the user wants a visual or text summary of
-  how the agentic loop is improving across cycles. Use this skill even when the user says
-  "show me the data" or "how are we doing overall" in the context of an improvement loop.
-  Works across all plugins that write to an improvement-ledger.md. Do NOT use this to run
-  the learning loop or to evaluate a specific skill change -- use os-learning-loop or
-  os-eval-runner for those.
+  better". Produces a visual/text summary of how the agentic loop is improving across cycles.
+  Do NOT use this to run the learning loop or evaluate a specific skill change.
 
-  <example>
-  Context: User wants to see if the agentic-os skills are getting better over cycles.
-  user: "Show me the improvement chart. Are we actually getting better?"
-  assistant: "I'll run the os-improvement-report to generate the progress chart and summary."
-  <commentary>
-  User wants the longitudinal view — generate_report.py reads improvement-ledger.md and produces
-  the progress.png chart (KEEP/DISCARD timeline with running-best line) and text summary.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: End of a session, user wants to see what this cycle contributed.
-  user: "What did we actually improve this session?"
-  assistant: "I'll run the progress report to show this cycle's contribution to the improvement trend."
-  <commentary>
-  Report includes per-skill score delta, survey-to-action trace, and north star completion rate.
-  </commentary>
-  </example>
+  
 
-  <example>
-  Context: User asks generally about progress but doesn't want the report run.
-  user: "How does the improvement tracking work?"
-  assistant: "The improvement ledger tracks three things: eval score progression per skill (like the
-  autoresearch progress chart), a survey-to-action trace connecting friction items to score changes,
-  and the North Star completion rate. The os-improvement-report skill reads it and produces a chart."
-  <commentary>User wants explanation, not execution. Do not run generate_report.py.</commentary>
-  </example>
+  
 allowed-tools: Bash, Read, Write
 ---
 
