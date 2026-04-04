@@ -1,11 +1,50 @@
 #!/usr/bin/env python3
 """
-Agentic OS - Kernel v3 (triple-loop focused)
-Seven commands: acquire_lock, release_lock, emit_event, read_events,
-state_update, state_increment, claim_task (partition lock only, no registry).
+kernel.py — Agentic OS Event Bus and Lock Manager
+======================================================
 
-Deliberately minimal. Solves the triple-loop use case: one ORCHESTRATOR,
-one INNER_AGENT (or N agents claiming partitions), one laptop.
+Purpose:
+    Core operational kernel for the Agentic OS. Provides persistent memory bus,
+    process coordination, and distributed locks for multiple sub-agents.
+    Deliberately minimal. Solves the triple-loop use case: one ORCHESTRATOR,
+    one INNER_AGENT, securely sharing data.
+
+Layer: 
+    OS Kernel primitives
+
+Usage Examples:
+    python3 kernel.py acquire_lock my_lock --ttl 30
+    python3 kernel.py emit_event --agent worker --type intent --action task_start
+
+Supported Object Types:
+    - JSONL Event payloads
+    - File-based Locks
+    - JSON State Dictionaries
+
+CLI Arguments:
+    acquire_lock, release_lock, emit_event, 
+    read_events, state_update, state_increment, claim_task
+
+Input Files:
+    - context/os-state.json
+    - context/agents.json
+
+Output:
+    - Appends to context/events.jsonl
+    - Mutates context/os-state.json
+    - Drops lock dirs in context/.locks/
+
+Key Functions:
+    acquire_lock()
+    emit_event()
+    state_update()
+    read_events()
+
+Script Dependencies:
+    - None
+
+Consumed by:
+    - All background hooks and sub-agents
 """
 import os, sys, json, time, uuid, random, argparse
 from pathlib import Path

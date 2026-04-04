@@ -1,11 +1,42 @@
 #!/usr/bin/env python3
 """
-Purpose: Automated Post-Run Metric Collection.
-Scans events.jsonl to count friction, intervention, and error events,
-then emits a 'type: metric' event to the Event Bus.
+post_run_metrics.py — Automated Metric Collection Hook
+======================================================
 
-Pass --correlation-id CYCLE_ID to scope counting to a single cycle only.
-When omitted (Stop hook context), all events since last metric event are counted.
+Purpose:
+    Automated Post-Run Metric Collection. Scans events.jsonl to count friction,
+    intervention, and error events, then emits a 'type: metric' event to the Event Bus.
+
+Layer: 
+    Hooks / Operations
+
+Usage Examples:
+    python3 post_run_metrics.py --correlation-id abc-123
+
+Supported Object Types:
+    - JSONL Event Logs
+    - Terminal Metrics
+
+CLI Arguments:
+    --correlation-id       Scope counting to a single cycle only
+
+Input Files:
+    - context/events.jsonl
+    - context/memory/hook-errors.log
+
+Output:
+    - Emits a 'type: metric' event via kernel.py
+
+Key Functions:
+    _count_events()
+    count_hook_errors()
+    emit_event()
+
+Script Dependencies:
+    - None
+
+Consumed by:
+    - Stop hook (hooks.json)
 """
 
 import json
