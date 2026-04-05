@@ -34,14 +34,41 @@ Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplin
 
 ## Architecture Highlights
 
-### Dual-Flywheel (agent-agentic-os)
+### Triple-Loop Autonomous Skill Improvement
 
-The `agent-agentic-os` plugin implements a **Dual-Flywheel** continuous improvement architecture:
+The `agent-agentic-os` plugin implements a **Triple-Loop** architecture for continuous, autonomous skill improvement:
 
-- **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols, ledgers, surveys, and kernel events — runs between sessions
-- **INNER flywheel** (`os-eval-runner` + `os-skill-improvement`): improves individual skill routing accuracy — runs within a session via the Karpathy 3-file evaluate/mutate/gate loop
+| Layer | Agent | Role |
+|:---|:---|:---|
+| **L0** | `triple-loop-architect` (Claude) | Interactive setup: scaffolds isolated sibling lab, seeds all files, launches L1 |
+| **L1** | Gemini CLI (`gemini --yolo --model gemini-3-flash-preview`) | Headless orchestrator: reads `eval-instructions.md`, runs the loop, gates via `evaluate.py` |
+| **L2** | Copilot CLI (`gpt-5-mini`) | Cheap mutation proposer: proposes SKILL.md edits using free Copilot quota |
 
-The `os-nightly-evolver` agent runs the INNER flywheel autonomously overnight — delegating mutation proposals to Gemini CLI (cheap/fast) while using `evaluate.py` as the locked KEEP/DISCARD gate. No human interruptions. See [`agents/os-nightly-evolver.md`](plugins/agent-agentic-os/agents/os-nightly-evolver.md).
+The loop is autonomous and cost-effective: L2 uses GitHub Copilot's `gpt-5-mini` (free quota), enabling 20–80 mutation proposals per run at near-zero cost. L1 (Gemini Flash) orchestrates unattended overnight. `evaluate.py` is the absolute gate — exit 0 = KEEP, exit 1 = DISCARD + auto-revert.
+
+**Not all skills are good candidates** — the best targets have clear, objective routing criteria and adversarial eval cases. Use [`eval-autoresearch-fit`](plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md) to score a skill before running a loop.
+
+**To start a loop on any skill:**
+```
+@triple-loop-architect
+
+Kick off a 10-iteration Triple-Loop optimization run targeting the `<skill-name>` skill
+inside the `<plugin-folder>` plugin. Use gemini-3-flash-preview as L1 and gpt-5-mini as L2.
+```
+See the full sample prompt: [`references/sample-prompts/triple-loop-architect-prompt.md`](plugins/agent-agentic-os/references/sample-prompts/triple-loop-architect-prompt.md)
+
+**Live example — `convert-mermaid` skill, 26 iterations across 2 rounds: 0.61 → 1.00**
+
+![convert-mermaid eval progress](plugins/mermaid-to-png/skills/convert-mermaid/evals/eval_progress.png)
+
+Each blue diamond is a baseline anchor (one per session). Green = new best score. Amber = kept but not a record. The two-segment shape shows a fresh re-baseline for round 2 — the plotter handles this automatically.
+
+Monitor a live run: `python3 plugins/agent-agentic-os/scripts/plot_eval_progress.py --tsv <lab>/evals/ --live`
+
+**Flywheel layers:**
+- **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
+- **INNER flywheel** (`os-eval-runner` + `os-skill-improvement`): improves individual skill routing accuracy within a session
+- **Overnight** (`os-nightly-evolver`): runs the INNER flywheel unattended — see [`agents/os-nightly-evolver.md`](plugins/agent-agentic-os/agents/os-nightly-evolver.md)
 
 ### Karpathy Autoresearch Loop
 
@@ -217,7 +244,7 @@ Multi-tiered cognition and context caching between long-term persistent storage 
 
 Diagram exporter and renderer using headless browser.
 
-- [`convert-mermaid`](plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md) *(autoresearch score: 30/40 MEDIUM)*
+- [`convert-mermaid`](plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md) *(autoresearch score: 30/40 MEDIUM — Triple-Loop eval run complete: 0.61 → 1.00 in 26 iterations)*
 
 ### Obsidian Integration
 

@@ -3,6 +3,23 @@
 Use this prompt to trigger the `triple-loop-architect` agent for an end-to-end autonomous eval run.
 Adjust `<skill-name>` and `<plugin-folder>` to target a different skill.
 
+## What This Does
+
+The Triple-Loop runs three tiers of agents autonomously:
+- **L0 (you + Claude)** — scaffolds an isolated sibling lab repo, seeds all required files, launches L1
+- **L1 (Gemini Flash, `--yolo`)** — headless overnight orchestrator, reads `eval-instructions.md`, loops
+- **L2 (Copilot `gpt-5-mini`)** — cheap mutation proposer using free Copilot quota
+
+`evaluate.py` gates every iteration: exit 0 = KEEP, exit 1 = DISCARD + auto-revert. The loop runs unattended.
+
+**Real result — `convert-mermaid`, 26 iterations across 2 rounds:**
+
+![convert-mermaid eval progress](../../../../mermaid-to-png/skills/convert-mermaid/evals/eval_progress.png)
+
+Score went from **0.61 → 1.00**. The two-segment shape shows a fresh baseline for round 2 — the plotter handles this automatically. Each green dot is a new record. Each blue diamond is a session baseline.
+
+> **Not every skill is a good candidate.** The best targets have clear routing criteria and good adversarial eval cases. Run [`eval-autoresearch-fit`](../../../agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md) first if unsure.
+
 ---
 
 ## 🧪 Prompt (copy/paste to use)
