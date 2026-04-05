@@ -17,7 +17,7 @@ Follow the `create-hook` skill workflow to design and generate a hook configurat
 1. If `$ARGUMENTS` names an event or use case, use it to seed Phase 1 questions
 2. Follow the create-hook phased workflow: select event, choose handler type
    (command / prompt / agent), design the matcher and logic, then write the hook entry
-3. Validate with `validate-hook-schema.sh` and test with `test-hook.sh`
+3. Validate with `validate_hook_schema.py` and test with `test_hook.py`
 4. Report placement (global `hooks.json` vs skill-scoped frontmatter) and next steps
 
 ## Output

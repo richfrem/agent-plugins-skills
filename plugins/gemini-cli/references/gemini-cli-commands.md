@@ -67,7 +67,7 @@ Precedence (lower numbers are overridden by higher numbers):
     "preferredEditor": "code"
   },
   "model": {
-    "name": "gemini-3-pro-preview"
+    "name": "gemini-3-flash-preview"
   }
 }
 ```

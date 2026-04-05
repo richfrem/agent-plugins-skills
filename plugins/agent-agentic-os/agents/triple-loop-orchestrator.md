@@ -47,8 +47,23 @@ STATE:
 
 ## Phase 0: Orientation
 
-1. Resolve the Lab Path (`~/Projects/test-<skill-name>-eval`). If the lab does not exist, HALT and prompt the user to run `triple-loop-architect` first.
-2. Establish Baseline: `cd $LAB_PATH && python3 scripts/evaluate.py --skill <skill> --baseline`. Record `STATE.best_score`.
+1. **Resolve variables** (if not already set by architect):
+```bash
+LAB_PATH="$HOME/Projects/test-<skill-name>-eval"
+PLUGIN_NAME=<plugin-folder>          # e.g. mermaid-to-png (NOT 'plugins')
+SKILL_NAME=<skill-folder>            # e.g. convert-mermaid
+SKILL_EVAL_SOURCE="$LAB_PATH/.agents/skills/os-eval-runner"
+SKILL_PATH="$LAB_PATH/$PLUGIN_NAME/skills/$SKILL_NAME"
+```
+> ⚠️ If the lab does not exist, HALT and prompt the user to run `triple-loop-architect` first.
+
+2. **Establish Baseline:**
+```bash
+cd $LAB_PATH
+python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME --baseline
+```
+Record `STATE.best_score`.
+
 3. Emit Start Event via `kernel.py`: `<agent=triple-loop-orchestrator action=loop-started>`.
 
 ---
@@ -57,24 +72,25 @@ STATE:
 
 Run until `max_iterations`, `consecutive_discards >= 4`, or oscillation detected.
 
-**Step A (Orchestrator Meta-Analysis):** Read `<skill>/evals/results.tsv`. Classify the latest failure (`false_positive` or `false_negative`). Formulate the constraint hypothesis.
+**Step A (Orchestrator Meta-Analysis):** Read `$SKILL_PATH/evals/results.tsv`. Classify the latest failure (`false_positive` or `false_negative`). Formulate the constraint hypothesis.
 
-**Step B (Strategic Double-Loop via CLI):**
+**Step B (L2 Mutation Proposal via Copilot CLI):**
 ```bash
-cp $LAB_PATH/<skill>/SKILL.md /tmp/current-skill.md
-cp $LAB_PATH/<skill>/evals/evals.json /tmp/current-evals.json
+cp $SKILL_PATH/SKILL.md /tmp/current-skill.md
+cp $SKILL_PATH/evals/evals.json /tmp/current-evals.json
 
-gemini -p "Optimize Claude Code routing accuracy. \
-CURRENT: $(cat /tmp/current-skill.md) \
-EVALS: $(cat /tmp/current-evals.json) \
-ISSUE: <FAILURE_TYPE> \
-OUTPUT: Raw SKILL.md content only." > /tmp/proposed-skill.md
+copilot --model gpt-mini --allow-all-paths --allow-all-urls -y -p "
+Optimize agentic skill routing accuracy.
+CURRENT SKILL.md: $(cat /tmp/current-skill.md)
+EVALS: $(cat /tmp/current-evals.json)
+ISSUE: <FAILURE_TYPE>
+OUTPUT: Raw SKILL.md content only — no commentary, no markdown fences." > /tmp/proposed-skill.md
 ```
 
-**Step C (Tactical Single-Loop / Gate):**
+**Step C (Tactical Gate via evaluate.py):**
 ```bash
-cp /tmp/proposed-skill.md $LAB_PATH/<skill>/SKILL.md
-python3 $LAB_PATH/scripts/evaluate.py --skill <skill>
+cp /tmp/proposed-skill.md $SKILL_PATH/SKILL.md
+python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME
 ```
 - **Exit 0 (KEEP)**: Update best_score, reset discard counters.
 - **Exit 1 (DISCARD)**: evaluate.py reverted it. Increment throwaway counters.
@@ -87,7 +103,12 @@ python3 $LAB_PATH/scripts/evaluate.py --skill <skill>
 
 When the iterations exhaust or plateau:
 1. Ensure the final file matches the best recorded version.
-2. Invoke `os-improvement-report` using the lab's metrics to plot the journey chart.
+2. Generate the progress chart:
+```bash
+python3 $SKILL_EVAL_SOURCE/scripts/plot_eval_progress.py \
+  --tsv $SKILL_PATH/evals/results.tsv \
+  --out $SKILL_PATH/evals/eval_progress.png
+```
 3. Emit `loop-complete` and `overnight-summary` kernel events.
 
 **Print:**
@@ -98,6 +119,7 @@ Iterations:          <N>
 Baseline score:      <baseline>
 Final score:         <new_score>
 Stop reason:         <reason>
+Progress chart:      <SKILL_PATH>/evals/eval_progress.png
 
 Review the chart and run "os-eval-backport <skill-name>" in your master workspace to adopt changes.
 ===============================================

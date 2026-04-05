@@ -212,7 +212,7 @@ The orchestrator must verify these gates at each phase:
 
 | Mechanism | Purpose |
 |-----------|---------|
-| **Stop Hook** (`scripts/closure-guard.sh`) | Blocks premature session exit until Seal → Persist → Retrospective are complete. |
+| **Stop Hook** (`scripts/closure_guard.py`) | Blocks premature session exit until Seal → Persist → Retrospective are complete. |
 | **Red Team Subagent** | Red team review can run as a forked subagent to keep the main session context clean. |
 
 ---

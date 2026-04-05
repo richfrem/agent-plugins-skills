@@ -65,7 +65,7 @@ For analytical sub-agent tasks, **always** specify `-m gemini-3-flash-preview`. 
 
 ### 2. ❌ Avoid Shell Expansion for Large Contexts
 Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run in the background. 
-- **Fix**: Use a temporary file for the combined prompt (as implemented in `run_agent.sh`).
+- **Fix**: Use a temporary file for the combined prompt (as implemented in `run_agent.py`).
 - **Fix**: Run commands sequentially and verify output size with `wc -l`.
 
 ### 3. 🧩 Force Agent Behavior
@@ -79,6 +79,15 @@ If you are deploying Gemini CLI as an active orchestrator (e.g., an L1 Evaluator
 The `gemini` CLI inherits strict workspace bounds. If you `cd` into an external directory (e.g., a test lab repo) and attempt to invoke `gemini` from there, it will crash with `[ERROR] [IDEClient] Directory mismatch`.
 - **Fix:** *Always* invoke `gemini` from your active OS workspace directory. If you need the sub-agent to operate in an external folder, pass instructions in the prompt string telling it to `cd` into that folder itself (e.g., `gemini --yolo -p "Use bash to cd to /external/lab/repo first, then..."`).
 
+### 6. 🛡️ Backgrounding & TTY (SIGTTIN)
+When running `gemini` or `copilot` in a background shell (e.g. `&`), it may be **stopped** by the OS (STP status) if it attempts to interact with the TTY.
+- **Fix**: Use `nohup` and detach from `stdin`:
+```bash
+nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/null &
+```
+- **Fix**: Redirection `< /dev/null` is critical to prevent `SIGTTIN` blocks.
+- **Fix**: If you see `Tool execution denied by policy`, ensure the directory has been added to `gemini trust`.
+
 ---
 
 ## 🔄 How to Update Gemini CLI
@@ -91,5 +100,5 @@ The `gemini` CLI inherits strict workspace bounds. If you `cd` into an external 
 ## ✅ Smoke Test
 
 ```bash
-./plugins/gemini-cli/scripts/run_agent.sh agents/refactor-expert.md target.py output.md "Refactor this code."
+python3 ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```

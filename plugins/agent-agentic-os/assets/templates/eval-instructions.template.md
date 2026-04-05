@@ -15,7 +15,7 @@
                            e.g. "<SKILL_PATH>/link-checker"
 -->
 
-**Target skill:** `{{SKILL_PATH}}/{{SKILL_NAME}}/{{MUTATION_TARGET}}`
+**Target skill:** `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}`
 **Engine:** `os-eval-runner`
 **Goal:** Run 10 autonomous optimization iterations on the {{SKILL_NAME}} skill.
 
@@ -70,6 +70,16 @@ The ONLY permitted interruption: a fatal error (Python not found, git not initia
 
 ## Step 0: Hardened Repo Bootstrap (Do This First)
 
+0. **Verify Key Variables** (do this before everything else):
+   ```bash
+   # These should already be substituted by the L0 architect — verify they are correct:
+   echo "PLUGIN_DIR = {{PLUGIN_DIR}}"          # should be e.g. mermaid-to-png (NOT 'plugins')
+   echo "SKILL_NAME = {{SKILL_NAME}}"          # should be e.g. convert-mermaid
+   echo "SKILL_EVAL_SOURCE = {{SKILL_EVAL_SOURCE}}"
+   ```
+   > ⚠️ If `{{PLUGIN_DIR}}` shows literally `plugins` or is still an unfilled placeholder, STOP.
+   > The eval-instructions.md was not correctly filled by the L0 architect. Re-read Step 0 setup instructions.
+
 1. **Set Git Remote** (do this unconditionally — do not ask the user):
    ```bash
    git remote remove origin 2>/dev/null; git remote add origin {{GITHUB_REPO_URL}}
@@ -96,7 +106,13 @@ This section ensures the `os-eval-runner` and `copilot-cli-agent` skills are act
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.
    > Both are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
 
-5. **Final Seed & Push**:
+5. **Verify eval engine scripts are present**:
+   ```bash
+   ls {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py && echo "engine OK" || echo "MISSING - install os-eval-runner first"
+   ls {{SKILL_EVAL_SOURCE}}/scripts/plot_eval_progress.py && echo "plotter OK" || echo "MISSING - copy from APS_ROOT/plugins/agent-agentic-os/scripts/"
+   ```
+
+6. **Final Seed & Push**:
    ```bash
    git add . && git commit -m "seed: install os-eval-runner engine"
    git push origin main
@@ -167,14 +183,14 @@ Log every non-zero exit code, every deviation from instructions, every eval scor
 ## Step 1: Scaffold the Experiment
 
 ```bash
-python3 scripts/init_autoresearch.py \
+python3 {{SKILL_EVAL_SOURCE}}/scripts/init_autoresearch.py \
     --experiment-dir ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --mutation-target {{MUTATION_TARGET}}
 ```
 
 > ⚠️ **Standalone Installation Snag:** If this fails with a `FileNotFoundError` or `TemplateNotFound` error referencing a `skills/os-eval-runner/` nested path, the script's `TEMPLATES_DIR` is resolving against the full plugin repo layout instead of the installed location. Patch it:
 > ```python
-> # In scripts/init_autoresearch.py
+> # In {{SKILL_EVAL_SOURCE}}/scripts/init_autoresearch.py
 > # Change TEMPLATES_DIR to use HERE.parent (script-relative resolution):
 > HERE = Path(__file__).resolve().parent
 > TEMPLATES_DIR = HERE.parent / "assets" / "templates" / "autoresearch"
@@ -206,7 +222,8 @@ Aim for at least 10 test cases with a good mix.
 
 **Review Gate:** 
 - **Interactive Mode:** Tell the user when ready to review the cases before proceeding.
-- **Autonomous Headless Mode:** If you are running headlessly via a CLI orchestrator (e.g. Gemini `--yolo`), do NOT pause. Assume the `evals.json` is sufficient and proceed immediately.
+- **Autonomous Headless Mode:** If you are running headlessly via a CLI orchestrator (e.g. `gemini --yolo --model gemini-3-flash-preview`), do NOT pause. Assume the `evals.json` is sufficient and proceed immediately.
+  - **Tool Policy Failures:** If a tool call (like `run_shell_command`) is denied by policy in your headless environment, fallback to using standard bash redirection (`sed`, `cat`, `echo >>`) if possible, or report the failure and continue to the next step.
 
 > ⚠️ **Schema Requirement:** Every test case **must** include a `"should_trigger"` boolean field (`true` or `false`). The eval engine uses this field to calculate accuracy. The legacy `"expected_behavior"` string field is ignored by the scorer and will result in a 0% accuracy baseline.
 >
@@ -235,7 +252,7 @@ Aim for at least 10 test cases with a good mix.
 ## Step 3: Establish Baseline & Push
 
 ```bash
-python3 scripts/evaluate.py \
+python3 {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
     --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --baseline \
     --desc "initial baseline"
@@ -369,7 +386,7 @@ Log both options in the run log under `[CREATIVITY UNBLOCK]` before proceeding.
 
 ### Step C: Eval Gate
 ```bash
-python3 scripts/evaluate.py \
+python3 {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
     --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --desc "description of what changed"
 ```
@@ -387,7 +404,7 @@ After all 10 iterations:
 
 1. **Plot the Score Progress:**
 ```bash
-python3 scripts/plot_eval_progress.py \
+python3 {{SKILL_EVAL_SOURCE}}/scripts/plot_eval_progress.py \
     --tsv ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv \
     --out ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/eval_progress.png
 ```

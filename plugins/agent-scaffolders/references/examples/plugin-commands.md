@@ -65,13 +65,13 @@ model: sonnet
 Running complete audit on $1:
 
 **Security scan:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/security-scan.sh $1`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/security_scan.py $1`
 
 **Performance analysis:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/perf-analyze.sh $1`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/perf_analyze.py $1`
 
 **Best practices check:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/best-practices.sh $1`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/best_practices.py $1`
 
 Analyze all results and create comprehensive report including:
 - Critical issues requiring immediate attention
@@ -141,16 +141,16 @@ allowed-tools: Bash(*), Read
 Executing release workflow for version $1:
 
 **Step 1 - Pre-release validation:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/pre-release-check.sh $1`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/pre_release_check.py $1`
 
 **Step 2 - Build artifacts:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/build-release.sh $1`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/build_release.py $1`
 
 **Step 3 - Run test suite:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/run-tests.sh`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py`
 
 **Step 4 - Package release:**
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/package.sh $1`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/package.py $1`
 
 Review all step outputs and report:
 1. Any failures or warnings
@@ -358,7 +358,7 @@ allowed-tools: Bash(*)
 
 Validate environment argument: !`echo "$1" | grep -E "^(dev|staging|prod)$" && echo "VALID" || echo "INVALID"`
 
-Check build script exists: !`test -x ${CLAUDE_PLUGIN_ROOT}/scripts/build.sh && echo "EXISTS" || echo "MISSING"`
+Check build script exists: !`test -f ${CLAUDE_PLUGIN_ROOT}/scripts/build.py && echo "EXISTS" || echo "MISSING"`
 
 Verify configuration available: !`test -f ${CLAUDE_PLUGIN_ROOT}/config/$1.json && echo "FOUND" || echo "NOT_FOUND"`
 
@@ -366,9 +366,9 @@ If all validations pass:
 
 **Configuration:** @${CLAUDE_PLUGIN_ROOT}/config/$1.json
 
-**Execute build:** !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/build.sh $1 2>&1`
+**Execute build:** !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/build.py $1 2>&1`
 
-**Validation results:** !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-build.sh $1 2>&1`
+**Validation results:** !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate_build.py $1 2>&1`
 
 Report build status and any issues.
 
@@ -408,14 +408,14 @@ Load environment configuration: @${CLAUDE_PLUGIN_ROOT}/config/$1-checks.json
 Determine check level: !`echo "$1" | grep -E "^prod$" && echo "FULL" || echo "BASIC"`
 
 **For production environment:**
-- Full test suite: !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/test-full.sh`
-- Security scan: !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/security-scan.sh`
-- Performance audit: !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/perf-check.sh`
-- Compliance check: !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/compliance.sh`
+- Full test suite: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/test_full.py`
+- Security scan: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/security_scan.py`
+- Performance audit: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/perf_check.py`
+- Compliance check: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/compliance.py`
 
 **For non-production environments:**
-- Basic tests: !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/test-basic.sh`
-- Quick lint: !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/lint.sh`
+- Basic tests: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/test_basic.py`
+- Quick lint: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/lint.py`
 
 Analyze results based on environment requirements:
 
@@ -529,7 +529,7 @@ Use for: Verifying required plugin files exist
    ---
    allowed-tools: Bash(*)
    ---
-   !`bash ${CLAUDE_PLUGIN_ROOT}/scripts/script.sh`
+   !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/script.py`
    ```
 
 3. **Not validating inputs:**

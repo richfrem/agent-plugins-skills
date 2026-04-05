@@ -67,9 +67,9 @@ For each CONNECTORS.md that declares a cross-plugin script dependency:
 2. Copy those scripts into plugins/<this-plugin>/scripts/
 3. Update all path references in SKILL.md / command files:
       FROM: ${CLAUDE_PLUGIN_ROOT}/../other-plugin/scripts/script.sh
-      TO:   ${CLAUDE_PLUGIN_ROOT}/scripts/script.sh
+      TO:   ${CLAUDE_PLUGIN_ROOT}/scripts/script.py
 4. For each skill that needs the script, create a file-level symlink:
-      ln -s ../../../scripts/script.sh skills/skill-name/scripts/script.sh
+      ln -s ../../../scripts/script.py skills/skill-name/scripts/script.py
 5. Delete the CONNECTORS.md (or keep only if it has real ~~category entries)
 ```
 
@@ -86,8 +86,8 @@ For each CONNECTORS.md that declares a cross-plugin script dependency:
 
 ## Applied Fixes (as of 2026-03-22)
 
-- `agent-plugin-analyzer/audit-plugin`: Copied `validate-agent.sh`,
-  `validate-hook-schema.sh`, `test-hook.sh`, `hook-linter.sh` from `agent-scaffolders`
+- `agent-plugin-analyzer/audit-plugin`: Copied `validate_agent.py`,
+  `validate_hook_schema.py`, `test_hook.py`, `hook_linter.py` from `agent-scaffolders`
   into `agent-plugin-analyzer/scripts/`. Removed CONNECTORS.md.
 - Deleted empty template CONNECTORS.md files from `exploration-cycle-plugin`,
   `agent-scaffolders/skills/continuous-skill-optimizer`,

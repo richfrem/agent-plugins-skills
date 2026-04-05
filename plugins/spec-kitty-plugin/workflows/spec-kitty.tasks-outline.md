@@ -1,4 +1,4 @@
-<!-- spec-kitty-command-version: 3.0.0 -->
+<!-- spec-kitty-command-version: 3.0.3 -->
 # /spec-kitty.tasks-outline - Create Task Breakdown Document
 
 **Version**: 0.12.0+

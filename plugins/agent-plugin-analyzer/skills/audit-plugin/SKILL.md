@@ -85,7 +85,7 @@ After plugin-validator, run targeted scripts for detailed checks:
 
 **Validate each agent file:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-agent.sh agents/my-agent.md
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
 ```
 Checks: frontmatter structure, required fields (name/description/model/color), name format
 (3-50 chars, lowercase + hyphens), description has `<example>` blocks, system prompt
@@ -93,7 +93,7 @@ length (minimum 20 chars, recommended 500-3,000).
 
 **Validate hooks.json schema:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-hook-schema.sh hooks/hooks.json
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
 ```
 Checks: JSON syntax, valid event names, each hook has `matcher` + `hooks` array,
 hook type is `command` or `prompt`, command hooks reference existing scripts with
@@ -101,15 +101,15 @@ hook type is `command` or `prompt`, command hooks reference existing scripts wit
 
 **Test a hook script directly:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/test-hook.sh \
-  --hook hooks/scripts/validate.sh \
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/test_hook.py \
+  --hook hooks/scripts/validate.py \
   --event PreToolUse \
   --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
 ```
 
 **Lint hook scripts for common issues:**
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/hook-linter.sh hooks/
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
 ```
 
 ---

@@ -253,7 +253,7 @@ These reference documents are available in `references/`:
 - **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
-The bisection script `scripts/find-polluter.sh` helps identify which test creates unwanted state.
+The bisection script `scripts/find_polluter.py` helps identify which test creates unwanted state.
 
 **Related skills:**
 - **`test-driven-development`** - For creating failing test case (Phase 4, Step 1)

@@ -1,1 +1,0 @@
-../../../scripts/validate-hook-schema.sh

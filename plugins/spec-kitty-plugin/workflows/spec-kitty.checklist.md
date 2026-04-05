@@ -1,4 +1,4 @@
-<!-- spec-kitty-command-version: 3.0.0 -->
+<!-- spec-kitty-command-version: 3.0.3 -->
 ## Checklist Purpose: "Unit Tests for English"
 
 **CRITICAL CONCEPT**: Checklists are **UNIT TESTS FOR REQUIREMENTS WRITING** - they validate the quality, clarity, and completeness of requirements in a given domain.

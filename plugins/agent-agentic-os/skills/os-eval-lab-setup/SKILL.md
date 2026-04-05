@@ -124,8 +124,29 @@ Proposer CLI:      copilot        (or: gemini / self)
 
 ## Phase 1: Bootstrap the Lab Repo
 
+### ⚙️ Set Key Variables First (do this before all other steps)
+
+The plugin path from Q2 has the form `plugins/<plugin-folder>/skills/<skill-folder>`.
+Parse it explicitly using `cut` — do NOT infer PLUGIN_NAME from the `plugins/` root word:
+```bash
+APS_ROOT=<abs-path-to-agent-plugins-skills>          # from Q6
+PLUGIN_PATH=plugins/<plugin-name>                    # from Q2, e.g. plugins/mermaid-to-png
+SKILL_NAME=<skill-folder-name>                       # from Q3, e.g. convert-mermaid
+
+# Extract plugin folder name (segment 2, NOT segment 1 which is 'plugins')
+PLUGIN_NAME=$(echo "$PLUGIN_PATH" | cut -d'/' -f2)  # → mermaid-to-png
+
+LAB_PATH=<lab-repo-path>                             # from Q1
+SKILL_EVAL_SOURCE="$LAB_PATH/.agents/skills/os-eval-runner"
+
+# Verify before proceeding:
+echo "PLUGIN_NAME=$PLUGIN_NAME  SKILL_NAME=$SKILL_NAME"
+echo "SKILL_EVAL_SOURCE=$SKILL_EVAL_SOURCE"
+```
+> ⚠️ `PLUGIN_NAME` = `mermaid-to-png`, NOT `plugins`. Always verify the echo output.
+
 > [!WARNING]
-> **Workspace Permissions:** The lab repo path is usually outside your current active workspace. Before modifying any files in the lab directory, you MUST ask the user for full file access / to turn off workspace validation. Once they confirm, you may use your normal code-editing tools securely. If they choose not to grant permission, you must bypass your internal file tools entirely and use only native bash operations (`mkdir`, `rsync`, `echo` via `run_command`) to create the lab environment. Using file tools without permission will result in frozen operations.
+> **Workspace Permissions:** The lab repo path is usually outside your current active workspace. Before modifying any files in the lab directory, you MUST ask the user for full file access / to turn off workspace validation. Once they confirm, you may use your normal code-editing tools securely. If they choose not to grant permission, you must bypass your internal file tools entirely and use only native bash operations (`mkdir`, `cp`, `echo` via `run_command`) to create the lab environment. Using file tools without permission will result in frozen operations.
 
 Run these steps in the lab repo directory in order:
 
@@ -149,9 +170,8 @@ rm -rf .agent .agents .gemini .claude
 
 ### 1c. Hard-copy plugin files (resolve symlinks)
 ```bash
-rsync -aL --exclude='__pycache__' \
-  <APS_ROOT>/plugins/<plugin-name>/ \
-  <lab-repo>/<plugin-folder-name>/
+cp -RL <APS_ROOT>/plugins/<plugin-name> <lab-repo>/<plugin-folder-name>
+rm -rf <lab-repo>/<plugin-folder-name>/**/__pycache__
 ```
 
 ## Dependencies
@@ -218,10 +238,12 @@ Ask the user how they want to run the loop:
 **If Autonomous:**
 Run this exact bash command from your active workspace:
 ```bash
-# Note: You MUST execute this from your active workspace to avoid IDEClient validation errors, 
-# but instruct the agent to cd into the external lab folder via the prompt.
-gemini --yolo -m gemini-3.1-flash -p "As the L1 Autonomous Triple-Loop Evaluator, first use bash to 'cd <lab-repo-path>'. Read eval-instructions.md completely and follow it precisely. You are running headlessly, so DO NOT pause to ask for human confirmation on the evals.json setup; populate the JSON yourself and immediately execute all 10 iteration loops using copilot." > temp/gemini_orchestrator_<skill-name>.log 2>&1 &
+# Run from within the lab repository
+nohup gemini --yolo --model gemini-3-flash-preview -p "You are the L1 Triple-Loop Orchestrator. Read eval-instructions.md completely and follow every step precisely. You are running headlessly — do NOT pause to ask for human confirmation on the evals.json setup; populate the JSON yourself and immediately execute all 10 iteration loops using copilot (gpt-mini with --allow-all-paths --allow-all-urls -y) as your L2 proposer. Generate eval_progress.png at the end." > gemini_orchestrator_<skill-name>.log 2>&1 < /dev/null &
 ```
+
+> [!IMPORTANT]
+> If you hit `Tool execution denied by policy`, run `gemini trust <lab-repo-path>` in your master terminal.
 
 When the run completes (or you observe it finishing via logs), use the `os-eval-backport` skill in this repo to review and apply approved changes back to master sources.
 
