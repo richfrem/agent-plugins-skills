@@ -199,25 +199,21 @@ python3 --version  # must be 3.8+
 
 ## Phase 2: Generate eval-instructions.md
 
-Read the template from this skill's own assets:
+Use the `generate_eval_instructions.py` script provided in this skill's scripts directory to generate the filled instruction file:
+
+```bash
+python3 $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-lab-setup/scripts/generate_eval_instructions.py \
+    --template $APS_ROOT/plugins/agent-agentic-os/assets/templates/eval-instructions.template.md \
+    --out $LAB_PATH/eval-instructions.md \
+    --skill-display-name "<Human-readable skill name>" \
+    --skill-name "$SKILL_NAME" \
+    --plugin-dir "$PLUGIN_NAME" \
+    --mutation-target "SKILL.md" \
+    --repo-url "$GH_URL" \
+    --round-label "<The round label>" \
+    --engine-source "$SKILL_EVAL_SOURCE" \
+    --master-plugin-path "$APS_ROOT/plugins/$PLUGIN_NAME"
 ```
-assets/templates/eval-instructions.template.md
-```
-
-Replace all `{{PLACEHOLDERS}}` with intake values:
-
-| Placeholder | Value |
-|:---|:---|
-| `{{SKILL_DISPLAY_NAME}}` | Human-readable skill name (e.g. "Link Checker") |
-| `{{SKILL_NAME}}` | Skill folder name (e.g. `link-checker-agent`) |
-| `{{SKILL_PATH}}` | Plugin folder name (e.g. `link-checker`) |
-| `{{MUTATION_TARGET}}` | `SKILL.md` |
-| `{{GITHUB_REPO_URL}}` | The GitHub URL |
-| `{{ROUND_LABEL}}` | The round label |
-| `{{SKILL_EVAL_SOURCE}}` | Path to installed `os-eval-runner` (see [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)) |
-| `{{MASTER_PLUGIN_PATH}}` | `<APS_ROOT>/plugins/<plugin-name>` |
-
-Write the rendered output to `<lab-repo>/eval-instructions.md`.
 
 ---
 

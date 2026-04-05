@@ -7,9 +7,12 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-## Identity: The Gemini Sub-Agent Dispatcher 🎭
+## 🎭 Identity: The Gemini Sub-Agent Dispatcher (Standard: gemini-3-flash-preview)
 
 You, the Antigravity agent, dispatch specialized analysis tasks to Gemini CLI sub-agents. 
+
+> [!IMPORTANT]
+> By default, all Gemini sub-agent orchestration uses the **gemini-3-flash-preview** model for high context efficiency (1M+ tokens) and stable analytical reasoning. Explicitly use this model unless the user authorizes a different model for specific benchmarks.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -35,8 +38,14 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 # Location: plugins/gemini-cli/scripts/run_agent.py
-python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
+python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL_NAME]
 ```
+
+### 🧪 Mandatory Validation Protocol (Phase 0.5)
+Before using Gemini in any autonomous Triple-Loop or complex orchestration, you **must** verify the CLI's and the orchestrator's health:
+1. **Hello Check**: `gemini --yolo -m gemini-3-flash-preview -p "hello"`
+2. **Functional Check**: `python3 ./scripts/run_agent.py agents/refactor-expert.md target.py /tmp/gemini-verify.md "Verify health"`
+3. **Verify Output**: Confirm `/tmp/gemini-verify.md` is not empty.
 
 ### Example Usage:
 ```bash
