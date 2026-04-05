@@ -78,7 +78,7 @@ def resolve_path(provided_path: str) -> str:
     return provided_path
 
 # --- AGENT ORCHESTRATION ---
-def run_agent(persona_file: str, input_file: str, output_file: str, instruction: str, model: str = None) -> None:
+def run_agent(persona_file: str, input_file: str, output_file: str, instruction: str, model: str = "gpt-5-mini") -> None:
     """
     Orchestrates a Copilot CLI sub-agent execution by assembling a combined prompt.
 
@@ -87,7 +87,7 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         input_file: Path to the input source file.
         output_file: Path to save the resulting analysis.
         instruction: Specific task instruction for the model.
-        model: Optional AI model to use (passed to --model).
+        model: AI model to use (defaults to gpt-5-mini).
 
     Raises:
         FileNotFoundError: If the persona or input files cannot be resolved.
@@ -124,9 +124,7 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
     try:
         # Run Copilot CLI in non-interactive mode
         # --yolo ensures all tool permissions are granted for headless execution
-        cmd = ["copilot", "--yolo", "-p", prompt]
-        if model:
-            cmd.extend(["--model", model])
+        cmd = ["copilot", "--yolo", "--model", model, "-p", prompt]
         
         with open(output_file, 'w') as out:
             subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, check=True)
@@ -144,5 +142,5 @@ if __name__ == "__main__":
         print("Usage: python3 run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\" [MODEL_NAME]")
         sys.exit(1)
     
-    model_name = sys.argv[5] if len(sys.argv) == 6 else None
+    model_name = sys.argv[5] if len(sys.argv) == 6 else "gpt-5-mini"
     run_agent(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], model_name)

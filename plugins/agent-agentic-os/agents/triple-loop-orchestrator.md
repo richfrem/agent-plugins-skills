@@ -68,17 +68,17 @@ python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SK
 Record `STATE.best_score`.
 
 3. **Step 0.5: Functional CLI Heartbeat (Mandatory):**
-Before starting Phase 1, you MUST run a functional check of the Copilot CLI.
+Before starting Phase 1, you MUST run a functional check of the Copilot CLI within the lab workspace.
 ```bash
 # Run a dummy mutation proposal to verify end-to-end connectivity
 python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   $SKILL_PATH/references/copilot_proposer_prompt.md \
   $SKILL_PATH/SKILL.md \
-  /tmp/heartbeat-test.md \
+  $LAB_PATH/HEARTBEAT_MD.md \
   "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 
 # Verify success
-[ -s /tmp/heartbeat-test.md ] && echo "HEARTBEAT_OK" || (echo "HEARTBEAT_FAIL" && exit 2)
+[ -s $LAB_PATH/HEARTBEAT_MD.md ] && echo "HEARTBEAT_OK" || (echo "HEARTBEAT_FAIL" && exit 2)
 ```
 - **Log Result**: Write the status to `temp/logs/run-log_*.md`.
 - **Fatal Gate**: If heartbeat returns anything other than success, HALT and report to the user.
@@ -99,13 +99,13 @@ Run until `max_iterations`, `consecutive_discards >= 4`, or oscillation detected
 python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   $SKILL_PATH/references/copilot_proposer_prompt.md \
   $SKILL_PATH/SKILL.md \
-  /tmp/proposed-skill.md \
+  $LAB_PATH/proposed-skill.md \
   "Optimize agentic skill routing accuracy. ISSUE: <FAILURE_TYPE>"
 ```
 
 **Step C (Tactical Gate via evaluate.py):**
 ```bash
-cp /tmp/proposed-skill.md $SKILL_PATH/SKILL.md
+cp $LAB_PATH/proposed-skill.md $SKILL_PATH/SKILL.md
 python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME
 ```
 - **Exit 0 (KEEP)**: Update best_score, reset discard counters.

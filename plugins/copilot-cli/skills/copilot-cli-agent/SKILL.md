@@ -87,11 +87,11 @@ Before initiating major orchestrations or long-running iterative loops (e.g., Tr
 ### Heartbeat Pattern:
 ```bash
 python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null /tmp/heartbeat-test.md \
+  /dev/null /dev/null ./HEARTBEAT_MD.md \
   "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 
 # Verification Logic:
-[ -s /tmp/heartbeat-test.md ] && grep -q "HEARTBEAT_OK" /tmp/heartbeat-test.md && echo "HEARTBEAT_OK" || echo "HEARTBEAT_FAIL"
+[ -s ./HEARTBEAT_MD.md ] && grep -q "HEARTBEAT_OK" ./HEARTBEAT_MD.md && echo "HEARTBEAT_OK" || echo "HEARTBEAT_FAIL"
 ```
 
 **Logging Requirement**: The result of this heartbeat (Success or Failure) MUST be explicitly written to the session log before proceeding. If it fails, halt execution and report the error details (e.g., `401 Unauthorized`, `429 Rate Limit`, or `Network Error`).

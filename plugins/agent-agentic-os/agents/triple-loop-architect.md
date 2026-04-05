@@ -160,17 +160,17 @@ Test the Python orchestrators using the central `.agents/skills` paths, explicit
 python3 .agents/skills/gemini-cli-agent/scripts/run_agent.py \
   plugins/gemini-cli/agents/security-auditor.md \
   plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md \
-  /tmp/gemini-test.md "Verify this works" gemini-3-flash-preview
+  ./HEARTBEAT_MD.md "Verify this works" gemini-3-flash-preview
 
 # Test Copilot Orchestrator (defaults to gpt-5-mini)
 python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   plugins/copilot-cli/agents/refactor-expert.md \
   plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md \
-  /tmp/copilot-test.md "Verify this works" 
+  ./HEARTBEAT_MD.md "Verify this works" 
 ```
 **C. Report & Log Results:**
 You MUST explicitly state the status of these tests in your current session log.
-- Check `/tmp/gemini-test.md` and `/tmp/copilot-test.md`. 
+- Check `./HEARTBEAT_MD.md`. 
 - Verify they are NOT empty.
 - Verify `gpt-5-mini` was used for Copilot.
 - If issues occur, report them to the user before proceeding to the lab seed.
