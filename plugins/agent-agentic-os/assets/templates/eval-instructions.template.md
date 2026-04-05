@@ -410,6 +410,23 @@ python3 {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
 
 Repeat for **10 total iterations** — no check-ins, no user confirmation.
 
+### Step 5: Iteration Visibility Sync (Scoreboard)
+
+After every iteration (KEEP or DISCARD), you MUST update the markdown progress table in `./LOG_PROGRESS.md`:
+
+```bash
+# Initialize scoreboard if missing
+[ -f ./LOG_PROGRESS.md ] || echo "| Iteration | Score | Verdict | Reason |" > ./LOG_PROGRESS.md
+[ -f ./LOG_PROGRESS.md ] || echo "|:---|:---|:---|:---|" >> ./LOG_PROGRESS.md
+
+# Append the latest result from results.tsv
+SCORE=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f2)
+VERDICT=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f4)
+REASON=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f5)
+ITERATION_NUM=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f1)
+echo "| $ITERATION_NUM | $SCORE | $VERDICT | $REASON |" >> ./LOG_PROGRESS.md
+```
+
 ---
 
 ## Step 5: Generate Progress Plot and Self-Assessment Survey

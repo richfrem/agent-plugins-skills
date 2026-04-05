@@ -113,6 +113,20 @@ python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SK
 
 **Step D:** Emit progress event via kernel every 10 iterations.
 
+**Step E (Progress Sync):**
+Update the markdown progress table in `$LAB_PATH/LOG_PROGRESS.md`:
+```bash
+# Initialize if missing
+[ -f $LAB_PATH/LOG_PROGRESS.md ] || echo "| Iteration | Score | Verdict | Reason |" > $LAB_PATH/LOG_PROGRESS.md
+[ -f $LAB_PATH/LOG_PROGRESS.md ] || echo "|:---|:---|:---|:---|" >> $LAB_PATH/LOG_PROGRESS.md
+
+# Append result
+SCORE=$(tail -1 $SKILL_PATH/evals/results.tsv | cut -f2)
+VERDICT=$(tail -1 $SKILL_PATH/evals/results.tsv | cut -f4)
+REASON=$(tail -1 $SKILL_PATH/evals/results.tsv | cut -f5)
+echo "| $STATE.iteration | $SCORE | $VERDICT | $REASON |" >> $LAB_PATH/LOG_PROGRESS.md
+```
+
 ---
 
 ## Phase 2: Morning Handoff
