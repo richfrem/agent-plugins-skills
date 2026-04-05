@@ -198,7 +198,7 @@ Always validate generated agents:
 
 ```bash
 # Validate structure
-./validate-agent.sh agents/your-agent.md
+python3 validate_agent.py agents/your-agent.md
 
 # Check triggering works
 # Test with scenarios from examples

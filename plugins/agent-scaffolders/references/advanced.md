@@ -14,7 +14,7 @@ Combine command and prompt hooks for layered validation:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/quick-check.sh",
+          "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/quick_check.py",
           "timeout": 5
         },
         {
@@ -30,19 +30,20 @@ Combine command and prompt hooks for layered validation:
 
 **Use case:** Fast deterministic checks followed by intelligent analysis
 
-**Example quick-check.sh:**
-```bash
-#!/bin/bash
-input=$(cat)
-command=$(echo "$input" | jq -r '.tool_input.command')
+**Example quick_check.py:**
+```python
+#!/usr/bin/env python3
+import sys, json
+
+input_data = json.loads(sys.stdin.read())
+command = input_data.get("tool_input", {}).get("command", "")
 
 # Immediate approval for safe commands
-if [[ "$command" =~ ^(ls|pwd|echo|date|whoami)$ ]]; then
-  exit 0
-fi
+if command in ("ls", "pwd", "echo", "date", "whoami"):
+    sys.exit(0)
 
 # Let prompt hook handle complex cases
-exit 0
+sys.exit(0)
 ```
 
 The command hook quickly approves obviously safe commands, while the prompt hook analyzes everything else.
@@ -205,12 +206,12 @@ Since hooks run in parallel, design them to be independent:
       "hooks": [
         {
           "type": "command",
-          "command": "bash check-size.sh",      // Independent
+          "command": "python3 check_size.py",      // Independent
           "timeout": 2
         },
         {
           "type": "command",
-          "command": "bash check-path.sh",      // Independent
+          "command": "python3 check_path.py",      // Independent
           "timeout": 2
         },
         {
@@ -381,11 +382,11 @@ exit 0
 ### Unit Testing Hook Scripts
 
 ```bash
-# test-hook.sh
+# test_hook.py
 #!/bin/bash
 
 # Test 1: Approve safe command
-result=$(echo '{"tool_input": {"command": "ls"}}' | bash validate-bash.sh)
+result=$(echo '{"tool_input": {"command": "ls"}}' | python3 validate_bash.py)
 if [ $? -eq 0 ]; then
   echo "✓ Test 1 passed"
 else
@@ -393,7 +394,7 @@ else
 fi
 
 # Test 2: Block dangerous command
-result=$(echo '{"tool_input": {"command": "rm -rf /"}}' | bash validate-bash.sh)
+result=$(echo '{"tool_input": {"command": "rm -rf /"}}' | python3 validate_bash.py)
 if [ $? -eq 2 ]; then
   echo "✓ Test 2 passed"
 else

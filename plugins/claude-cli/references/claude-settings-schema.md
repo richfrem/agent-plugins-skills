@@ -59,7 +59,7 @@ Rules eval order: **deny first, then ask, then allow**. First match wins.
       "matcher": "",
       "hooks": [{
         "type": "command",
-        "command": "bash .agents/hooks/session_start.sh"
+        "command": "python3 .agents/hooks/session_start.py"
       }]
     }]
   }

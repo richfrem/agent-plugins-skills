@@ -438,10 +438,13 @@ def main():
     if not (project_root / ".claude").exists() and not args.dry_run:
         print()
         print(yellow("  No .claude/ directory found in this project."))
-        try:
-            answer = input(f"  Initialize .claude/ for Claude Code integration? [{green('Y')}/n] ").strip().lower()
-        except (EOFError, KeyboardInterrupt):
-            answer = ""
+        if args.yes:
+            answer = "yes"
+        else:
+            try:
+                answer = input(f"  Initialize .claude/ for IDE integration? [{green('Y')}/n] ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                answer = ""
         if answer in ("", "y", "yes"):
             (project_root / ".claude").mkdir(exist_ok=True)
             print(f"  {green('✓')} Created .claude/ — Claude Code symlinks will be activated")

@@ -63,7 +63,7 @@ Using `cat code.py | copilot -p "review this"` is unreliable. The CLI often prio
 
 ### 2. ❌ Empty Output (Background Runs)
 Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run in the background (`&`). 
-- **Fix**: Use a temporary file for the combined prompt (as implemented in `run_agent.sh`).
+- **Fix**: Use a temporary file for the combined prompt (as implemented in `run_agent.py`).
 - **Fix**: Run commands sequentially and verify output size with `wc -l`.
 
 ### 3. 🧩 Force Agent Behavior
@@ -79,7 +79,7 @@ To dramatically improve review results, add:
 ## ✅ Smoke Test
 
 ```bash
-./plugins/copilot-cli/scripts/run_agent.sh agents/refactor-expert.md target.py output.md "Refactor this code."
+python3 ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```
 
 Examine `output.md`. It should contain ONLY the refactored code and a brief 3-bullet summary.

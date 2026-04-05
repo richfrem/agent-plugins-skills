@@ -420,7 +420,7 @@ Choose colors that match agent purpose:
 2. Replace placeholders with your specifics
 3. Customize process steps for your domain
 4. Adjust examples to your triggering scenarios
-5. Validate with `./validate-agent.sh`
+5. Validate with `python3 validate_agent.py`
 6. Test triggering with real scenarios
 7. Iterate based on agent performance
 

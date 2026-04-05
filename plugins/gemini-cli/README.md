@@ -14,7 +14,7 @@ Provides a sub-agent dispatcher pattern for routing analysis tasks to Gemini CLI
 
 ## Usage
 
-Invoke when specialized analysis (security audit, architecture review, QA) benefits from an isolated Gemini model context. Supports model selection via the `-m` flag (e.g., `gemini-2.5-pro`, `gemini-2.5-flash`).
+Invoke when specialized analysis (security audit, architecture review, QA) benefits from an isolated Gemini model context. Supports model selection via the `-m` flag (e.g., `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`).
 
 ## Structure
 

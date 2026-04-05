@@ -19,7 +19,7 @@ Follow the `create-sub-agent` skill workflow to design and generate a Claude Cod
    (purpose, input/output contract, escalation posture, tools, permissions.deny, model,
    maxTokens, color, lifecycle hooks, placement), present design summary, confirm,
    then generate the agent `.md` file
-3. Validate the generated agent with `validate-agent.sh`
+3. Validate the generated agent with `validate_agent.py`
 4. Report the created agent path, triggering conditions, and next steps
 
 ## Output
