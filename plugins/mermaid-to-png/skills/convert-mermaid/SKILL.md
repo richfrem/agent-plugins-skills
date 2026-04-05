@@ -1,8 +1,14 @@
 ---
 name: convert-mermaid
-description: Convert mermaid diagrams mmd/mermaid to .png and have an option to pick/increase resolution level. V2 includes L5 Delegated Constraint Verification for strict binary image linting.
+description: Translate .mmd diagram files into PNG images with configurable resolution (retina/HQ/scale), supporting rasterization (raster, rasterize, rasterization). V2 includes L5 Delegated Constraint Verification via verify_png for strict binary linting and Puppeteer-based rendering.
 allowed-tools: Bash, Read, Write
+examples:
+  - "python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3"
+  - "python3 ./scripts/verify_png.py architecture.png"
 ---
+
+<example>python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3</example>
+<example>python3 ./scripts/verify_png.py architecture.png</example>
 
 ## Dependencies
 
