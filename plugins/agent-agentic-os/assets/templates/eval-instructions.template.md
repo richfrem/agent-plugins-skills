@@ -100,7 +100,7 @@ The ONLY permitted interruption: a fatal error (Python not found, git not initia
 4. **Install the Evaluation Engine and Copilot CLI**:
 Consult the authoritative installation hub for current deployment commands:
 
-> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.mdem/agent-plugins-skills/blob/main/INSTALL.md)
+> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
 This section ensures the `os-eval-runner` and `copilot-cli-agent` skills are active in your environment.
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.

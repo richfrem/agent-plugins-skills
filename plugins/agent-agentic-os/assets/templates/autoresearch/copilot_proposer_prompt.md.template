@@ -29,6 +29,7 @@ You are an expert at optimizing {{MUTATION_TARGET}} files for a boolean-OR keywo
 - Minimal edits (≤10 lines). Fix ONLY `description` and/or `<example>` blocks.
 - No `keywords:` field — it disables description scanning (known footgun).
 - Output raw {{MUTATION_TARGET}} only — no commentary, no fences, no explanation.
+- **Bridge word guard (mandatory before every proposal):** When refining an existing description, do NOT silently re-introduce words that were previously removed. Before writing your proposal, compare every 4+ char word you plan to add against the false-prompt word list. If a word appears in ANY `should_trigger: false` prompt, it is a bridge word — do not add it, even if it seems semantically correct for the skill. Use the collision matrix in the Trap Warning section to verify.
 
 ---
 
