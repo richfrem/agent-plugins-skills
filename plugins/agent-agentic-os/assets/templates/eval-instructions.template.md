@@ -125,6 +125,24 @@ This section ensures the `os-eval-runner` and `copilot-cli-agent` skills are act
 
 ---
 
+## Step 0.4: Functional CLI Heartbeat (Mandatory)
+
+Before establishing the baseline or starting any iterations, you **MUST** verify the Copilot CLI is functional within this lab environment.
+
+```bash
+# Run a zero-shot heartbeat test
+python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+    /dev/null /dev/null ./HEARTBEAT_MD.md \
+    "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
+
+# Verify and Log
+[ -s ./HEARTBEAT_MD.md ] && grep -q "HEARTBEAT_OK" ./HEARTBEAT_MD.md && echo "HEARTBEAT_OK" || (echo "HEARTBEAT_FAIL" && exit 2)
+```
+
+**Logging Requirement**: Record the result in your run log (`temp/logs/run-log_*.md`) under the header `## [Step 0.4] [HH:MM] — CLI Heartbeat`. If the test fails, do NOT proceed. Report the failure and halt.
+
+---
+
 ## Step 0b: Prepare Test Fixtures
 
 The `test-fixtures/` folder is a **permanent, never-modified** source of test data. Before running any pipeline test, copy it to `working/` at the repo root:
@@ -311,26 +329,21 @@ which copilot || (echo "ERROR: copilot CLI not found — halt" && exit 1)
 PROMPT_FILE=./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/references/copilot_proposer_prompt.md
 [ -f "$PROMPT_FILE" ] || (echo "ERROR: $PROMPT_FILE missing — re-run init_autoresearch.py" && exit 1)
 
-cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} /tmp/current-skill.md
-cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json /tmp/current-evals.json
+cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} ./current-skill.md
+cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json ./current-evals.json
 
-copilot -m gpt-5-mini --allow-all-paths --allow-all-urls -y -p "$(cat $PROMPT_FILE)
-
----CURRENT SKILL---
-$(cat /tmp/current-skill.md)
-
----EVAL SUITE---
-$(cat /tmp/current-evals.json)
-
----FAILURE ANALYSIS---
-Type: <INSERT_FAILURE_TYPE>
-Summary: <INSERT_1_SENTENCE_FAILURE_SUMMARY>" > /tmp/proposed-skill.md
+# Use the Copilot run_agent orchestrator for stable, gpt-5-mini powered mutations
+python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+  $PROMPT_FILE \
+  ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} \
+  ./proposed-skill.md \
+  "Optimize agentic skill routing accuracy. ISSUE: <INSERT_FAILURE_TYPE>. Summary: <INSERT_1_SENTENCE_FAILURE_SUMMARY>"
 
 # Verify non-empty and changed before applying
-[ -s /tmp/proposed-skill.md ] || echo "ERROR: empty output — re-prompt with 'try a different approach'"
-diff -q /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} > /dev/null && \
+[ -s ./proposed-skill.md ] || echo "ERROR: empty output — re-prompt with 'try a different approach'"
+diff -q ./proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} > /dev/null && \
   echo "WARNING: identical to current — re-prompt" || \
-  cp /tmp/proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
+  cp ./proposed-skill.md ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}
 ```
 
 ### Step B.1: Evolve the Proposer Prompt (Second-Order Mutation)
@@ -369,15 +382,16 @@ for overlap risk, then incorporate the most distinctive ones into the next mutat
 **Option 2 — Ask Copilot for strategy ideas (not a mutation):**
 Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
 ```bash
-copilot -m gpt-5-mini --allow-all-paths --allow-all-urls -y -p "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF
+# Use the Copilot run_agent orchestrator for gpt-5-mini strategy brainstorming
+python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+  /dev/null /dev/null ./strategy-ideas.md \
+  "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF
 keyword scorer (4+ char words, exact match only, no semantics).
-
 Current score: <score>. Stuck on this failure: <failure_type> — <summary>.
 Strategies already tried: <list briefly>.
-
 Suggest 3 distinct strategies I haven't tried yet. Do NOT rewrite the skill.
-Output a numbered list of strategy ideas only." > /tmp/strategy-ideas.md
-cat /tmp/strategy-ideas.md
+Output a numbered list of strategy ideas only."
+cat ./strategy-ideas.md
 ```
 Read the ideas, pick the most promising one, then run the normal Step B mutation call
 with that strategy embedded in the failure analysis line.
@@ -395,6 +409,23 @@ python3 {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
 - `exit 1` (DISCARD) → already auto-reverted, move to next iteration silently
 
 Repeat for **10 total iterations** — no check-ins, no user confirmation.
+
+### Step 5: Iteration Visibility Sync (Scoreboard)
+
+After every iteration (KEEP or DISCARD), you MUST update the markdown progress table in `./LOG_PROGRESS.md`:
+
+```bash
+# Initialize scoreboard if missing
+[ -f ./LOG_PROGRESS.md ] || echo "| Iteration | Score | Verdict | Reason |" > ./LOG_PROGRESS.md
+[ -f ./LOG_PROGRESS.md ] || echo "|:---|:---|:---|:---|" >> ./LOG_PROGRESS.md
+
+# Append the latest result from results.tsv
+SCORE=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f2)
+VERDICT=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f4)
+REASON=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f5)
+ITERATION_NUM=$(tail -1 ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv | cut -f1)
+echo "| $ITERATION_NUM | $SCORE | $VERDICT | $REASON |" >> ./LOG_PROGRESS.md
+```
 
 ---
 

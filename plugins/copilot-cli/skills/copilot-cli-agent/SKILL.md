@@ -7,9 +7,12 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-## Identity: The Sub-Agent Dispatcher 🎭
+## 🎭 Identity: The Sub-Agent Dispatcher (Standard: gpt-5-mini)
+ 
+ You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents. 
 
-You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents. 
+> [!IMPORTANT]
+> By default, all Copilot sub-agent orchestration uses the **gpt-5-mini** model for efficiency and accuracy. Explicitly use this model unless the user characterizes a specific need for a larger model.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -66,13 +69,32 @@ Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run i
 - **Fix**: Use a temporary file for the combined prompt (as implemented in `run_agent.py`).
 - **Fix**: Run commands sequentially and verify output size with `wc -l`.
 
-### 3. 🧩 Force Agent Behavior
-Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools:
-> "You are operating as an isolated sub-agent. Do NOT use tools. Do NOT access filesystem. Only use the provided input."
+### 🧩 Force Agent Behavior & Model
+Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools. **Strictly use gpt-5-mini as the default model.**
 
 ### 4. 💡 Improve Quality
 To dramatically improve review results, add:
 > "Think step-by-step internally, but output only final results. Be strict and critical. Do not be polite."
+
+---
+
+---
+
+## ✅ Functional CLI Heartbeat (Mandatory: "All Signals Go")
+
+Before initiating major orchestrations or long-running iterative loops (e.g., Triple-Loop), you **MUST** perform a zero-shot heartbeat check to verify the host CLI has end-to-end connectivity and correct model defaults.
+
+### Heartbeat Pattern:
+```bash
+python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+  /dev/null /dev/null ./HEARTBEAT_MD.md \
+  "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
+
+# Verification Logic:
+[ -s ./HEARTBEAT_MD.md ] && grep -q "HEARTBEAT_OK" ./HEARTBEAT_MD.md && echo "HEARTBEAT_OK" || echo "HEARTBEAT_FAIL"
+```
+
+**Logging Requirement**: The result of this heartbeat (Success or Failure) MUST be explicitly written to the session log before proceeding. If it fails, halt execution and report the error details (e.g., `401 Unauthorized`, `429 Rate Limit`, or `Network Error`).
 
 ---
 

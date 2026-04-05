@@ -76,7 +76,7 @@ def resolve_path(provided_path: str) -> str:
     return provided_path
 
 # --- AGENT ORCHESTRATION ---
-def run_agent(persona_file: str, input_file: str, output_file: str, instruction: str) -> None:
+def run_agent(persona_file: str, input_file: str, output_file: str, instruction: str, model: str = "gemini-3-flash-preview") -> None:
     """
     Orchestrates a Gemini CLI sub-agent execution by assembling a combined prompt.
 
@@ -85,6 +85,7 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         input_file: Path to the input source file.
         output_file: Path to save the resulting analysis.
         instruction: Specific task instruction for the model.
+        model: AI model to use (defaults to gemini-3-flash-preview).
 
     Raises:
         FileNotFoundError: If the persona or input files cannot be resolved.
@@ -114,12 +115,12 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         "Do NOT access filesystem. Only use the provided input."
     )
 
-    # Use gemini-3-flash-preview for high context efficiency
-    cmd = ["gemini", "-m", "gemini-3-flash-preview", "-p", prompt]
+    # Use the provided model (defaults to gemini-3-flash-preview)
+    cmd = ["gemini", "--yolo", "-m", model, "-p", prompt]
 
     try:
         with open(output_file, 'w') as out:
-            subprocess.run(cmd, stdout=out, check=True)
+            subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, check=True)
             
         print(f"Gemini Agent execution complete. Output saved to {output_file}")
     except subprocess.CalledProcessError as e:
@@ -127,8 +128,9 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         sys.exit(1)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("Usage: python3 run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\"")
+    if len(sys.argv) < 5 or len(sys.argv) > 6:
+        print("Usage: python3 run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\" [MODEL_NAME]")
         sys.exit(1)
     
-    run_agent(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    model_name = sys.argv[5] if len(sys.argv) == 6 else "gemini-3-flash-preview"
+    run_agent(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], model_name)

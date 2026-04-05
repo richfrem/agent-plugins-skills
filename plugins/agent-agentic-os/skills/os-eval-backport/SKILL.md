@@ -48,14 +48,15 @@ Baseline commit: <sha>  ("baseline: initial evaluation snapshot")
 
 ---
 
-## Phase 1: Read the Run Log and Self-Assessment
+## Phase 1: Read the Progress Table and Run Log
 
 ```bash
+ls <lab-repo>/LOG_PROGRESS.md
+cat <lab-repo>/LOG_PROGRESS.md
 ls <lab-repo>/temp/logs/
-ls <lab-repo>/temp/retrospectives/
 ```
 
-Read both files fully. Note:
+Read the progress table first to understand the iteration history at a glance. Then read the run log for specific technical decisions. Note:
 - Final quality score vs baseline score
 - Number of KEEP vs DISCARD iterations
 - Any errors, surprises, or workarounds the agent encountered

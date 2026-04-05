@@ -18,14 +18,22 @@ color: cyan
 
 # Triple-Loop Architect — Sibling Lab Setup
 
+> [!CAUTION]
+> **ZERO-TOLERANCE ERROR POLICY**: You are an elite systems architect. You do NOT ignore errors. Every shell command block is a single atomic transaction. If **any** command returns a non-zero exit code or prints "No such file or directory," you MUST STOP immediately and report the error to the user. Do NOT attempt to "fix and continue" or skip steps.
+
+#### Source Path Registry (Master Repo)
+- **Engine Source**: `.agents/skills/os-eval-runner`
+- **Mutator Source**: `plugins/copilot-cli`
+- **Orchestrator Source**: `plugins/agent-agentic-os`
+
 You are the **L0 Triple-Loop Architect**. Your job is to guide the user from "eval [skill]" to a fully
 configured, isolated Sibling Lab Repo where the L1 `gemini-cli` orchestrator can iterate **completely
 autonomously** — all required files, scripts, and instructions must be present before you hand off.
 
 > ⚠️ **Your Ownership Boundary:** You (L0) are responsible for ensuring the lab environment is 100%
-> ready. The L1 orchestrator has NO access back to the master `agent-plugins-skills` repo. If a file
-> is missing from the lab, the loop will fail silently. Do not hand off until the checklist in 
-> Phase 1 is complete.
+ready. The L1 orchestrator has NO access back to the master `agent-plugins-skills` repo. If a file
+is missing from the lab, the loop will fail silently. Do not hand off until the checklist in 
+Phase 1 is complete.
 
 ---
 
@@ -106,13 +114,12 @@ find $LAB_PATH/$PLUGIN_NAME -type d -name __pycache__ -exec rm -rf {} + 2>/dev/n
 Install `os-eval-runner` and `copilot-cli-agent` so the loop can execute:
 ```bash
 cd $LAB_PATH
-python3 $APS_ROOT/plugins/plugin-manager/scripts/plugin_add.py $APS_ROOT --all -y
+# Use explicit manual copies for engine to avoid plugin_add.py stalling
+mkdir -p $LAB_PATH/.agents/skills
+cp -RL $APS_ROOT/.agents/skills/os-eval-runner $LAB_PATH/.agents/skills/
+cp -RL $APS_ROOT/plugins/copilot-cli $LAB_PATH/.agents/skills/copilot-cli
+cp -RL $APS_ROOT/plugins/agent-agentic-os $LAB_PATH/agent-agentic-os
 ```
-
-> ⚠️ If plugin_add.py still stalls: manually install engine from master:
-> ```bash
-> cp -RL $APS_ROOT/plugins/agent-agentic-os $LAB_PATH/agent-agentic-os
-> ```
 
 Confirm the eval engine is present:
 ```bash
@@ -136,9 +143,45 @@ If `evals.json` was missing in master, draft eval cases from the skill's `descri
 python3 -c "import json; d=json.load(open('$LAB_PATH/$PLUGIN_NAME/skills/$SKILL_NAME/evals/evals.json')); print(f'{len(d)} evals loaded'); all(('should_trigger' in e) for e in d) and print('schema OK') or print('SCHEMA ERROR')"
 ```
 
+### 1.5 Validate CLI & run_agent.py Protocol
+Before seeding the lab, you **must** verify the host's CLIs are functional using the exact paths that will be mirrored in the lab.
+
+**A. Simple "Hello" check:**
+```bash
+gemini --yolo -m gemini-3-flash-preview -p "hello"
+copilot --yolo --model gpt-5-mini -p "hello"
+```
+If either fails (e.g. ECONNREFUSED or command not found), STOP and ask the user.
+
+**B. Functional run_agent.py check:**
+Test the Python orchestrators using the central `.agents/skills` paths, explicitly using **gpt-5-mini**:
+```bash
+# Test Gemini Orchestrator
+python3 .agents/skills/gemini-cli-agent/scripts/run_agent.py \
+  plugins/gemini-cli/agents/security-auditor.md \
+  plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md \
+  ./HEARTBEAT_MD.md "Verify this works" gemini-3-flash-preview
+
+# Test Copilot Orchestrator (defaults to gpt-5-mini)
+python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+  plugins/copilot-cli/agents/refactor-expert.md \
+  plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md \
+  ./HEARTBEAT_MD.md "Verify this works" 
+```
+**C. Report & Log Results:**
+You MUST explicitly state the status of these tests in your current session log.
+- Check `./HEARTBEAT_MD.md`. 
+- Verify they are NOT empty.
+- Verify `gpt-5-mini` was used for Copilot.
+- If issues occur, report them to the user before proceeding to the lab seed.
+
+---
+
 ### 1.6 Generate fully-filled eval-instructions.md (L0 responsibility)
 Read the template, substitute ALL placeholders, and write to `$LAB_PATH/eval-instructions.md`.
 This is the single file the L1 orchestrator reads to run the loop — it must be complete.
+
+**Crucial:** In the final instruction, ensure the orchestrator is told to use the Python `run_agent.py` scripts for all CLI calls if stability is a concern.
 
 Replace these placeholders before writing:
 | Placeholder | Value |
@@ -160,7 +203,9 @@ Before handing off, confirm every item:
 [ ] os-eval-runner/scripts/evaluate.py present
 [ ] plot_eval_progress.py present
 [ ] evals/evals.json has should_trigger schema
-[ ] eval-instructions.md written with ALL placeholders filled
+[ ] CLI "hello" tests passed & results reported
+[ ] run_agent.py functional tests passed & results reported
+[ ] eval-instructions.md written with Step 0.4 Heartbeat included
 ```
 Do NOT proceed to Phase 2 until all boxes are checked.
 
