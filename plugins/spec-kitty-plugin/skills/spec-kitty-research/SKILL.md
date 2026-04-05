@@ -8,7 +8,7 @@ description: A standard Spec-Kitty workflow routine.
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.research.md`](./workflows/spec-kitty.research.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
-<!-- spec-kitty-command-version: 3.0.0 -->
+<!-- spec-kitty-command-version: 3.0.3 -->
 **Path reference rule:** When you mention directories or files, provide either the absolute path or a path relative to the project root (for example, `kitty-specs/<feature>/tasks/`). Never refer to a folder by name alone.
 
 **In repos with multiple features, always pass `--feature <slug>` to every spec-kitty command.**

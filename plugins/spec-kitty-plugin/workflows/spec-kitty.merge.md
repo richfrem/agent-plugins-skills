@@ -1,4 +1,4 @@
-<!-- spec-kitty-command-version: 3.0.0 -->
+<!-- spec-kitty-command-version: 3.0.3 -->
 Run this exact command and treat its output as authoritative.
 Do not rediscover context from branches, files, or prompt contents.
 

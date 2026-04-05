@@ -8,7 +8,7 @@ description: A standard Spec-Kitty workflow routine.
 > **Source**: This skill augments the baseline workflow located at [`./workflows/spec-kitty.tasks-packages.md`](./workflows/spec-kitty.tasks-packages.md).
 > It acts as an intelligent wrapper that is continuously improved with each execution.
 
-<!-- spec-kitty-command-version: 3.0.0 -->
+<!-- spec-kitty-command-version: 3.0.3 -->
 # /spec-kitty.tasks-packages - Generate Work Package Files
 
 **Version**: 0.12.0+
@@ -57,7 +57,7 @@ For each work package defined in `tasks.md`:
 **CRITICAL PATH RULE**: All WP files MUST be created in a FLAT `feature_dir/tasks/` directory, NOT in subdirectories!
 
 - Correct: `feature_dir/tasks/WPxx-slug.md` (flat, no subdirectories)
-- WRONG: `feature_dir/tasks/planned/`, `feature_dir/tasks/doing/`, or ANY lane subdirectories
+- WRONG: `feature_dir/tasks/planned/`, `feature_dir/tasks/doing/`, or ANY status subdirectories
 
 **For each WP**:
 1. Derive a kebab-case slug from the title
@@ -65,7 +65,7 @@ For each work package defined in `tasks.md`:
 3. Full path: `feature_dir/tasks/WP01-create-html-page.md`
 4. Follow the WP prompt template structure below (**do NOT write instructions to read a template file from `.kittify/`**)
 5. Include frontmatter with:
-   - `work_package_id`, `subtasks` array, `lane: "planned"`, `dependencies`, history entry
+   - `work_package_id`, `subtasks` array, `dependencies`, history entry
    - `requirement_refs` array from the WP's `Requirement Refs` line in `tasks.md`
    - `owned_files`, `authoritative_surface`, `execution_mode` (required ownership fields)
 6. Include in body:
@@ -78,7 +78,7 @@ For each work package defined in `tasks.md`:
 **MAXIMUM PROMPT SIZE**: 700 lines per WP (10 subtasks max)
 **If prompts are >700 lines**: Split the WP — it's too large
 
-**IMPORTANT**: All WP files live in flat `tasks/` directory. Lane status is tracked ONLY in the `lane:` frontmatter field, NOT by directory location.
+**IMPORTANT**: All WP files live in flat `tasks/` directory. Status is managed via `status.events.jsonl`, not by directory location or frontmatter fields.
 
 ### 4. Include Dependencies in Frontmatter
 
@@ -87,7 +87,6 @@ Each WP prompt file MUST include a `dependencies` field:
 ---
 work_package_id: "WP02"
 title: "Build API"
-lane: "planned"
 dependencies: ["WP01"]  # From tasks.md
 requirement_refs: ["FR-001", "NFR-001"]  # From tasks.md Requirement Refs
 subtasks: ["T001", "T002"]
@@ -118,7 +117,7 @@ After generating each prompt:
 
 After completing this step:
 - `feature_dir/tasks/WP*.md` prompt files exist for all work packages
-- Each has proper frontmatter with `work_package_id`, `lane`, `dependencies`, `owned_files`, `authoritative_surface`, `execution_mode`
+- Each has proper frontmatter with `work_package_id`, `dependencies`, `owned_files`, `authoritative_surface`, `execution_mode`
 - `tasks.md` references all prompt filenames
 
 **Next step**: `spec-kitty next --agent <name>` will advance to finalization.
