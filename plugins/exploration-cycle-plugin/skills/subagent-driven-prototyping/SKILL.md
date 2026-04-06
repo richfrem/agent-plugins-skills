@@ -6,6 +6,18 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+## Dashboard Intercept
+
+Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
+
+- **If the file EXISTS:** Stop immediately. Do not proceed with this skill's standalone flow.
+  Announce to the user:
+  > "It looks like you have an active Exploration Session in progress. Let me take you back
+  > to your session dashboard so we can keep your progress on track."
+  Then invoke `exploration-workflow` to resume from the correct phase.
+
+- **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
+
 <example>
 <commentary>Demonstrates the skill being invoked by prototype-builder after layout has been confirmed by visual-companion.</commentary>
 User: [dispatched by prototype-builder after layout confirmed]
@@ -17,6 +29,13 @@ Agent: Verifies the Discovery Plan and layout direction files exist, announces t
 User: Let's build it
 Agent: Checks for the required Discovery Plan and layout direction files. If both exist, announces the build plan in plain language and begins building each component one at a time with progress updates.
 </example>
+
+## Orchestrator Context
+
+If dispatched by `exploration-workflow`, the Discovery Plan and layout direction have
+already been approved by the SME. The Required Inputs Check below is a verification
+step only — do not re-present these artifacts for re-approval. Proceed directly to
+Component Decomposition once inputs are confirmed present.
 
 ## Required Inputs Check
 
@@ -69,10 +88,17 @@ After all components reach `COMPLETE` status:
 
 ## Completion Report
 
-Announce:
-> "Your prototype is ready. I'll hand it over now so you can walk through it."
+Announce: "Your prototype is ready — Phase 3 is complete."
 
-Report back to prototype-builder: all components are built, the entry point is at `exploration/prototype/index.html`, and the prototype is ready for the SME walkthrough.
+## Completion — Return to Orchestrator
+
+If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md` exists):
+> "Returning to your session dashboard now."
+Then invoke `exploration-workflow` to trigger the Phase 3 HARD-GATE and dashboard update.
+
+If operating standalone (no dashboard file), the skill is complete. Report back to
+prototype-builder: all components are built, the entry point is at
+`exploration/prototype/index.html`, and the prototype is ready for the SME walkthrough.
 
 ## Persona Enforcement
 
