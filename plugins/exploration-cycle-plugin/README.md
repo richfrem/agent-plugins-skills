@@ -5,7 +5,7 @@ The **exploration-cycle-plugin** is a technical implementation of the **GenAI Do
 ---
 
 ## 🖼️ Framework Overview
-See the **[GenAI Double Diamond Flowchart](references/genai-double-diamond.mmd)** for a visual representation of the Scouting Party (Diamond 1) and Engineering Factory (Diamond 2) cycle.
+See the **[GenAI Double Diamond Flowchart](assets/diagrams/genai-double-diamond.mmd)** for a visual representation of the Scouting Party (Diamond 1) and Engineering Factory (Diamond 2) cycle.
 
 ---
 
