@@ -24,13 +24,13 @@ How to run one iteration:
 3. If KEEP (exit 0): `git add SKILL.md && git commit -m "keep: score=X <description>"`
 4. If DISCARD (exit 1): evaluate.py already reverted `SKILL.md` automatically
 
-NEVER STOP. Run until manually interrupted or target score is reached.
+Run iteratively. Stop when the target score is reached or when manually interrupted.
 
 ---
 
 ## Notes (fill in before starting the loop)
 
 - **What is being optimized**: <!-- e.g. skill trigger phrase coverage, function accuracy, config tuning -->
-- **Target score**: <!-- e.g. 0.95, or leave blank for NEVER STOP -->
-- **Max iterations**: <!-- e.g. 50, or leave blank for NEVER STOP -->
+- **Target score**: <!-- e.g. 0.95, or leave blank to run until manually interrupted -->
+- **Max iterations**: <!-- e.g. 50, or leave blank to run until manually interrupted -->
 - **Baseline established**: <!-- date + commit hash, filled in by evaluate.py --baseline -->

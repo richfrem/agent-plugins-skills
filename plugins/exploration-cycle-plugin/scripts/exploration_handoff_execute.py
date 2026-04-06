@@ -43,8 +43,13 @@ def main() -> None:
     
     args = parser.parse_args()
     
-    print("Executing exploration-handoff logic...")
-    # Add your logic here
+    print(
+        "ERROR: exploration_handoff_execute.py is not implemented.\n"
+        "This script is a planned batch-mode wrapper that has not been built yet.\n"
+        "Use the exploration-handoff SKILL.md for conversational handoff synthesis.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

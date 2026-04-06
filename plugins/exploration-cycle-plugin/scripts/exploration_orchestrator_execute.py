@@ -43,8 +43,13 @@ def main() -> None:
     
     args = parser.parse_args()
     
-    print("Executing exploration-orchestrator logic...")
-    # Add your logic here
+    print(
+        "ERROR: exploration_orchestrator_execute.py is not implemented.\n"
+        "This script is a legacy stub from the pre-Dashboard Pattern architecture.\n"
+        "The exploration-workflow SKILL.md is now the canonical orchestrator.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

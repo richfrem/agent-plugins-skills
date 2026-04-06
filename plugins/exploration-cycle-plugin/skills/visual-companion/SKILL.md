@@ -9,11 +9,15 @@ allowed-tools: Read, Write
 
 Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
 
-- **If the file EXISTS:** Stop immediately. Do not proceed with this skill's standalone flow.
-  Announce to the user:
-  > "It looks like you have an active Exploration Session in progress. Let me take you back
-  > to your session dashboard so we can keep your progress on track."
-  Then invoke `exploration-workflow` to resume from the correct phase.
+- **If the file EXISTS:** Read it silently and check the `**Status:**` line.
+  - If `**Status:** Complete` → the prior session has ended. Proceed with this skill's
+    standalone flow as normal.
+  - Otherwise → an active session is in progress. Stop immediately. Do not continue here.
+    Announce to the user:
+    > "It looks like you have an active Exploration Session in progress. Let me take you back
+    > to your session dashboard so we can keep your progress on track."
+    **Immediately transfer control to `exploration-workflow`.** Stop your response here and
+    switch to `exploration-workflow` now — do not print the word "invoke" as literal text.
 
 - **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
 
@@ -81,8 +85,14 @@ Announce: "Layout confirmed — Phase 2 is complete."
 
 ## Completion — Return to Orchestrator
 
-If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md` exists):
-> "Returning to your session dashboard now."
-Then invoke `exploration-workflow` to trigger the Phase 2 HARD-GATE and dashboard update.
+If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md`
+exists and `**Status:**` is not `Complete`):
+1. Say to the user:
+   > "Returning to your session dashboard now."
+2. **Immediately transfer control to `exploration-workflow`.** This is a live skill switch.
+   Stop generating output and switch to `exploration-workflow` now. Do not print the phrase
+   "invoke exploration-workflow" as literal text — execute the switch. If your harness uses
+   `@skill-name` routing, trigger `@exploration-workflow`. If direct invocation is
+   unavailable, tell the user: "Please start `exploration-workflow` to continue your session."
 
-If operating standalone (no dashboard file), the skill is complete.
+If operating standalone (no dashboard file, or `**Status:** Complete`), the skill is complete.
