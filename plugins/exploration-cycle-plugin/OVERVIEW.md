@@ -5,7 +5,7 @@ The **GenAI Double Diamond** is the foundational framework for this plugin. It b
 ---
 
 ## 🖼️ Framework Overview
-See the **[GenAI Double Diamond Flowchart](references/genai-double-diamond.mmd)** for a visual representation of how the "Vibe" collapses into a "Spec."
+See the **[GenAI Double Diamond Flowchart](assets/diagrams/genai-double-diamond.mmd)** for a visual representation of how the "Vibe" collapses into a "Spec."
 
 ---
 
@@ -39,7 +39,7 @@ Engineering is non-linear. When an "unknown unknown" surfaces during Diamond 2, 
 ---
 
 ## 📂 Key Architectural Diagrams
-- [GenAI Double Diamond (Evolved)](assets/diagrams/genai-double-diamond-evolved.mmd)
+- [GenAI Double Diamond](assets/diagrams/genai-double-diamond.mmd)
 - [Exploration Workflow](assets/diagrams/exploration-cycle-workflow.mmd)
 
 ## 📚 Technical References
