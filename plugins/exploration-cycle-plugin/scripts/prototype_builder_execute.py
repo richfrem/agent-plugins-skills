@@ -43,8 +43,13 @@ def main() -> None:
     
     args = parser.parse_args()
     
-    print("Executing prototype-builder logic...")
-    # Add your logic here
+    print(
+        "ERROR: prototype_builder_execute.py is not implemented.\n"
+        "This script is a planned batch-mode wrapper that has not been built yet.\n"
+        "Use the subagent-driven-prototyping SKILL.md for conversational prototype building.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

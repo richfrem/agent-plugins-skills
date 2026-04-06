@@ -32,12 +32,25 @@ This skill is the single canonical entry point for the Business Exploration Loop
 ## Block 2 — Read State (run silently)
 
 1. Read `exploration/exploration-dashboard.md`.
-2. Identify the **active phase** — the first phase with an unchecked `- [ ]` box.
-3. For every phase marked `- [x]`, verify that its listed Outcome file exists on disk.
+2. **Check session status first:** If the dashboard contains `**Status:** Complete`, skip directly
+   to the Completion Block. The session is already finished.
+3. Identify the **active phase** using these explicit parsing rules:
+   - `- [x]` or `- [X]` (case-insensitive) → phase is **complete**
+   - `- [ ]` (exactly one space between brackets) → phase is **incomplete**
+   - The **active phase** is the first incomplete phase in the numbered list.
+   - **Malformed checkboxes** (e.g., `-[x]` with no leading space, `* [x]` with asterisk,
+     `–[ ]` with an em-dash) must NOT be silently mis-routed. If you encounter one, pause
+     and tell the user:
+     > "The session dashboard has a formatting issue on one of the phase checkboxes.
+     > Let me show you so we can quickly confirm where we are."
+     Display the raw affected line(s) and ask: "Is this phase complete or still in progress?"
+     Correct the checkbox before continuing.
+4. For every complete phase, verify that its listed Outcome file exists on disk.
    - If an Outcome file is missing for a completed phase, stop and say:
-     > "It looks like [Phase N] was marked complete but I can't find the expected output file at [path]. Let's take a quick look before continuing."
+     > "It looks like [Phase N] was marked complete but I can't find the expected output
+     > file at [path]. Let's take a quick look before continuing."
    - Do not advance to Block 3 until this is resolved.
-4. Proceed to Block 3.
+5. Proceed to Block 3.
 
 ---
 
