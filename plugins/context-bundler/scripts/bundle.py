@@ -89,7 +89,7 @@ def bundle_files(manifest_path: Path, output_path: Path) -> None:
                 if is_ignored(file_path, project_root, ignore_patterns):
                     continue
 
-                rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
+                rel_path = str(file_path.relative_to(project_root)).replace('\\', '/') if file_path.is_relative_to(project_root) else str(file_path).replace('\\', '/')
                 real_path = os.path.realpath(file_path)
                 is_symlink = file_path.is_symlink()
 
