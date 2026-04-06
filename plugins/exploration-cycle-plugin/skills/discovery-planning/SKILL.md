@@ -6,6 +6,18 @@ description: >
 allowed-tools: Read, Write
 ---
 
+## Dashboard Intercept
+
+Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
+
+- **If the file EXISTS:** Stop immediately. Do not proceed with this skill's standalone flow.
+  Announce to the user:
+  > "It looks like you have an active Exploration Session in progress. Let me take you back
+  > to your session dashboard so we can keep your progress on track."
+  Then invoke `exploration-workflow` to resume from the correct phase.
+
+- **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
+
 <example>
 <commentary>Demonstrates a cold start where the user opens a brand new session with no prior context.</commentary>
 User: I have an idea I want to explore
@@ -115,5 +127,12 @@ Repeat until the SME is satisfied.
 
 On approval:
 1. Write the final plan file to `exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md`
-2. Announce:
-> "Your plan is saved. We're all set to move forward."
+2. Announce: "Your plan is saved — Phase 1 is complete."
+
+## Completion — Return to Orchestrator
+
+If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md` exists):
+> "Returning to your session dashboard now."
+Then invoke `exploration-workflow` to trigger the Phase 1 HARD-GATE and dashboard update.
+
+If operating standalone (no dashboard file), the skill is complete.
