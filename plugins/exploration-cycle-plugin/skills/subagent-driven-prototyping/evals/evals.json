@@ -1,0 +1,23 @@
+{
+  "skill": "subagent-driven-prototyping",
+  "evals": [
+    {
+      "id": "eval-001",
+      "trigger": "build the prototype now",
+      "expected_skill": "subagent-driven-prototyping",
+      "notes": "Direct build trigger — should route to subagent-driven-prototyping (which will check for required inputs)"
+    },
+    {
+      "id": "eval-002",
+      "trigger": "let's build it",
+      "expected_skill": "subagent-driven-prototyping",
+      "notes": "Colloquial build trigger — should route to subagent-driven-prototyping after layout is confirmed"
+    },
+    {
+      "id": "eval-003",
+      "trigger": "start building the prototype",
+      "expected_skill": "subagent-driven-prototyping",
+      "notes": "Explicit start instruction — primary trigger for the component build loop"
+    }
+  ]
+}

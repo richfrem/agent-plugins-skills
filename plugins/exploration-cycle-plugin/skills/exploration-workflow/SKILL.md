@@ -6,7 +6,7 @@ description: >
   prototypes, and producing handoff packages for downstream planning or spec-driven
   engineering. Adapted from autoresearch-style iteration discipline (baseline-first,
   one-variable loop) and doc-coauthoring structured capture. Runs independently — no
-  Spec-Kitty CLI required.
+  downstream engineering CLI required.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -30,9 +30,7 @@ Agent: [invokes business-requirements-capture, NOT exploration-workflow]
 
 # Exploration Cycle Workflow
 
-This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the Spec-Kitty engineering workflow and produces handoff packages that optionally feed into it.
-
-**Loop patterns**: Adapts the `agent-loops` patterns (`learning-loop` for solo framing sessions, `triple-loop` for orchestrated documentation passes to the requirements-doc-agent sub-agent). These are reference patterns, not runtime dependencies — the current implementation borrows their structure without invoking those skills directly.
+This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the formal engineering workflow and produces handoff packages that optionally feed into it.
 
 **Optimization discipline**: Baseline-first iteration — run one baseline, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
 
@@ -60,7 +58,7 @@ digraph exploration_workflow_phase_a {
   NarrowOK [label="ready for handoff?", shape=diamond, fillcolor=lightyellow];
   MoreCapture [label="Run another capture pass\nor targeted spike", style=dashed];
   Phase4  [label="Phase 4: Handoff\nhandoff-preparer-agent via CLI\noutput: exploration/handoff/exploration-handoff.md"];
-  Phase5  [label="Phase 5: Planning Drafts (optional)\nspec-kitty plugin only\nplanning-doc-agent: spec-draft, plan-draft, tasks-outline\nHuman approves before any spec-kitty CLI"];
+  Phase5  [label="Phase 5: Planning Drafts (optional)\nengineering harness integration only\nplanning-doc-agent: spec-draft, plan-draft, tasks-outline\nHuman approves before formal engineering"];
   End     [label="Handoff package ready\nor planning drafts staged", shape=ellipse];
 
   Start -> Phase0 -> HG0;
@@ -78,7 +76,7 @@ digraph exploration_workflow_phase_a {
   NarrowOK -> Phase4 [label="ready"];
   NarrowOK -> MoreCapture [label="not ready", style=dashed];
   MoreCapture -> Phase1 [style=dashed];
-  Phase4 -> Phase5 [label="spec-kitty present"];
+  Phase4 -> Phase5 [label="harness present"];
   Phase4 -> End [label="standalone"];
   Phase5 -> End;
 }
@@ -86,9 +84,9 @@ digraph exploration_workflow_phase_a {
 
 ---
 
-## Running Independently of Spec-Kitty
+## Running Independently of Formal Engineering
 
-This workflow does **not** require Spec-Kitty CLI. Output artifacts _may_ feed into Spec-Kitty, but the exploration cycle is self-contained:
+This workflow does **not** require downstream engineering CLIs. Output artifacts _may_ feed into execution harnesses, but the exploration cycle is self-contained:
 
 ```
 exploration/
@@ -148,7 +146,7 @@ cp architecture/templates/exploration-session-brief-template.md exploration/sess
 
 ---
 
-## Phase 1: Requirements Capture (Dual-Loop via Copilot CLI)
+## Phase 1: Requirements Capture (Orchestrated CLI)
 
 The standard Phase A framing path is:
 
@@ -323,9 +321,9 @@ Review output against `architecture/templates/exploration-handoff-template.md`.
 
 ---
 
-## Phase 5: Planning Draft — Optional Integration with Spec-Kitty
+## Phase 5: Planning Draft — Optional Engineering Harness Integration
 
-> ⚠️ **OPTIONAL** — Only relevant when the **spec-kitty plugin** is installed and you are using the **quantum double diamond framework**. If running exploration standalone, skip this phase. Your workflow ends at Phase 4.
+> ⚠️ **OPTIONAL** — Only relevant when an **execution harness plugin** (like superpowers or spec-kitty) is installed and you are using the **quantum double diamond framework**. If running exploration standalone, skip this phase. Your workflow ends at Phase 4.
 
 This phase uses the [`planning-doc-agent`](../../agents/planning-doc-agent.md) to pre-draft Spec-Kitty artifacts from the handoff package. Outputs land in a **staging area** — a human must review and approve before any spec-kitty CLI commands are run.
 
@@ -354,18 +352,18 @@ python3 ./scripts/dispatch.py \
   --output exploration/planning-drafts/tasks-outline.md
 ```
 
-**Human gate**: Review all staging drafts. Approve before running `spec-kitty agent feature create-feature`.
+**Human gate**: Review all staging drafts. Approve before handing off to the engineering harness for execution.
 
 ---
 
-## Re-Entry: Cycling Back from Spec-Kitty to Exploration
+## Re-Entry: Cycling Back from Engineering to Exploration
 
 The relationship between exploration and formal engineering is **bidirectional**. When the engineering cycle uncovers unresolved ambiguity — during spec authoring, work package planning, or implementation — a new exploration cycle is spawned. This is not a failure; it is a designed feedback loop in the quantum double diamond framework.
 
-### Re-entry with Spec-Kitty present
+### Re-entry with an Execution Harness present
 
 ```bash
-# Triggered from within the spec-kitty engineering cycle.
+# Triggered from within the formalized engineering cycle.
 # Step 1: write the blocker description to a temp file (dispatch.py requires a real file, not an empty string)
 # Use a session-scoped path for parallel session safety: /tmp/reentry-context-$$.md
 echo "CONTEXT: [describe the blocking ambiguity or engineering question here]" > /tmp/reentry-context-$$.md
@@ -380,9 +378,9 @@ python3 ./scripts/dispatch.py \
 
 Feed the output session brief back into the exploration-cycle-orchestrator and restart from Phase 0 for the scoped re-entry.
 
-### Standalone re-entry without Spec-Kitty
+### Standalone re-entry without an Execution Harness
 
-If Spec-Kitty is not present, re-entry is scoped by running the intake-agent again with the engineering ambiguity as the new trigger. Classify it as a `re-entry spike`, draft a fresh `session-brief.md`, and restart from Phase 0. No planning-doc-agent is required for the standalone path.
+If an execution harness is not present, re-entry is scoped by running the intake-agent again with the engineering ambiguity as the new trigger. Classify it as a `re-entry spike`, draft a fresh `session-brief.md`, and restart from Phase 0. No planning-doc-agent is required for the standalone path.
 
 Multiple re-entry cycles per engineering run are expected and supported.
 

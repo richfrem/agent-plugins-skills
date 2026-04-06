@@ -23,12 +23,12 @@ See the **[GenAI Double Diamond Flowchart](references/genai-double-diamond.mmd)*
     - **Tier 1 (Low):** Internal R&D. Agile/Lightweight cycle.
     - **Tier 2 (Moderate):** Internal data + standard tools. Red-Teaming mandatory.
     - **Tier 3 (High):** PII/Sensitive data + High-privilege access. Full architectural audit and hardening required.
-- **Gatekeeping:** Ensures Tier 3 projects are forced into the full `spec-kitty` engineering lifecycle.
+- **Gatekeeping:** Ensures Tier 3 projects are handed off to a formalized engineering harness (e.g., spec-kits, superpowers) for lifecycle management.
 
 ## 3. The Second Diamond: Execution (Solidification)
 **Goal:** Structural builds and enterprise-grade validation.
 **Role:** The "Static Map."
-- **Solidification:** We use the `spec-kitty-plugin` to convert the exploration's output into formal specifications and verified work packages.
+- **Solidification:** We use a specification layer and execution harness to convert the exploration's output into formal specifications and verified work packages.
 - **Logic Drift Audit:** Our `business-rule-audit-agent` cross-references prototype behavior against captured BRDs to ensure the "Fast" build remains "Safe."
 
 ---
@@ -40,13 +40,10 @@ Engineering is non-linear. When an "unknown unknown" surfaces during Diamond 2, 
 
 ## 📂 Key Architectural Diagrams
 - [GenAI Double Diamond (Evolved)](assets/diagrams/genai-double-diamond-evolved.mmd)
-- [Dual-Loop Architecture](assets/diagrams/dual_loop_architecture.mmd)
 - [Exploration Workflow](assets/diagrams/exploration-cycle-workflow.mmd)
 
 ## 📚 Technical References
 - [Core Architecture](references/architecture/architecture.md)
-- [Dual-Loop Architecture Pattern](references/triple-loop-architecture.md)
-- [Learning-Loop Architecture Pattern](references/learning-loop-architecture.md)
 - [Post-Run Survey Workflow](references/post-run-survey.md)
 
 ---

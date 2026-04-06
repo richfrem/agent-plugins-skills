@@ -16,14 +16,11 @@ allowed-tools: Bash, Read, Write
 This skill coordinates exploration work that must be deferred until more information is
 available, typically prototype feedback or clarified business requirements.
 
-## Sub-Skills
-
-- [exploration-orchestrator](./exploration-orchestrator/SKILL.md) — Coordinates the multi-agent exploration loop
-- [prototype-builder](./prototype-builder/SKILL.md) — Builds exploratory prototypes to make direction concrete
-
 ## When to Use
 
 - Defer a decision or exploration thread until prototype data is available
 - Hold back ambiguous scope items rather than prematurely narrowing
 - Re-enter a paused exploration phase from a deferred state
 - Park exploration work while waiting for stakeholder input
+
+> **Note:** `exploration-orchestrator` and `prototype-builder` have been promoted to active skills. They are no longer housed here.

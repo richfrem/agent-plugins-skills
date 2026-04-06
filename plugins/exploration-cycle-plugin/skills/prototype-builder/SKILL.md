@@ -1,118 +1,98 @@
 ---
 name: prototype-builder
 description: >
-  Builds a fully working, interactive prototype that the SME can click through
-  to validate business flows. Use ONLY after the Discovery Plan is approved.
-  Trigger with "build the prototype", "let's build it", "I want to see it working",
-  "create a working version", or when the SME wants to validate their Discovery Plan
-  with a real interactive experience rather than just documents.
+  Orchestrates the full prototype build cycle for a Subject Matter Expert. Coordinates layout confirmation and component building — it does not build components directly. Acts as the single entry point for all prototype-related requests. Trigger phrases: "build a prototype", "create a working prototype", "show me a working version", "prototype to clarify scope", "build an exploratory prototype"
 allowed-tools: Bash, Read, Write
 ---
 
-# Prototype Builder
+<example>
+<commentary>Demonstrates the standard flow where the user asks to build after a Discovery Plan has been approved.</commentary>
+User: Build a prototype based on our plan
+Agent: Reads the most recent Discovery Plan, invokes visual-companion to confirm layout direction, then invokes subagent-driven-prototyping to build the components, stays available during the build, and guides the SME through a walkthrough once it's ready.
+</example>
 
-Build a fully working, interactive prototype that the SME can click through,
-fill in, and use to validate that the proposed solution matches what they need.
+<example>
+<commentary>Demonstrates the HARD-GATE redirect when the user asks to build without any existing Discovery Plan.</commentary>
+User: Create a working prototype for me
+Agent: Checks for a Discovery Plan file and finds none. Responds: "Before we can build, I need to understand what we're building first. Can we start with a planning session? It only takes a few minutes and it'll make sure what we build is exactly what you need." Stops there and does not continue.
+</example>
 
-This is not a mockup, not a wireframe, and not a sketch. The SME must be able
-to walk through real business flows and confirm — or correct — the logic.
+## Role
 
-<HARD-GATE>
-Do NOT begin building until you have confirmed that an approved Discovery Plan
-exists in `exploration/discovery-plans/`. If no approved plan exists, stop and
-invoke the `discovery-planning` skill first. Building without an approved plan
-wastes everyone's time.
-</HARD-GATE>
+This skill coordinates the full prototype build cycle. It does NOT build components directly. Building is handled by `subagent-driven-prototyping`. Layout confirmation is handled by `visual-companion`. This skill connects those two steps and guides the SME through the full journey from plan to working prototype.
 
-## Step 1: Confirm the Discovery Plan is Approved
+## HARD-GATE Check
 
-Check that an approved Discovery Plan exists:
+This is the **first thing that runs**, before any other step.
 
-```bash
-ls exploration/discovery-plans/
-```
+Check: does `exploration/discovery-plans/` exist and contain at least one `.md` file?
 
-If no approved plan exists: stop and invoke `discovery-planning` first.
+**If NO plan exists:**
+> "Before we can build, I need to understand what we're building first.
+> Can we start with a planning session? It only takes a few minutes and
+> it'll make sure what we build is exactly what you need."
 
-If a plan exists, read it fully before proceeding. You will build exactly what
-it describes — nothing more, nothing less.
+Stop. Do not continue. Do not suggest workarounds. Do not attempt to build without a plan.
 
-## Step 2: Offer the Visual Companion for Layout Direction
+**If a plan exists:** Read the most recent `.md` file in `exploration/discovery-plans/`. This is the source of truth for the entire build session.
 
-Before building, confirm the visual layout direction with the SME. Invoke the
-`visual-companion` skill for this step.
+## Session Flow
 
-The layout-confirm question: show the SME 2-3 layout options for the prototype
-and get their confirmation before building the full thing.
+### Step 1 — Layout direction
 
-Ask: "Before I start building, would you like to see a few layout options so we
-can pick the right look before I put everything together?"
+Invoke the `visual-companion` skill to present layout options and get SME confirmation before any building begins.
 
-If yes: use the Visual Companion to show 2-3 layout options. Build in the direction
-the SME approves.
+Do not proceed to Step 2 until visual-companion has written `exploration/captures/layout-direction.md` and announced "Layout confirmed."
 
-If no: proceed with a standard layout that matches the Discovery Plan context.
+### Step 2 — Build
 
-## Step 3: Build Component by Component
-
-Invoke `subagent-driven-prototyping` to build the prototype.
+Once layout is confirmed, invoke the `subagent-driven-prototyping` skill.
 
 Announce:
-> "I'm building your prototype now. I'll build each part separately and check
-> that it matches our plan before moving on. This keeps each piece clean and
-> avoids mistakes carrying over between sections."
+> "I'm putting your prototype together now — each part separately so I can
+> make sure it matches our plan. I'll show you the full version once everything is ready."
 
-The `subagent-driven-prototyping` skill handles:
-- Creating the prototype sandbox
-- Dispatching a focused assistant per component
-- Running the two-stage review (Plan Alignment → Quality Check)
-- Reporting component status
+Stay available during the build. If any component is BLOCKED or NEEDS_CONTEXT, address it immediately. Do not let the build stall.
 
-Your role during this step: stay available to answer questions the focused
-assistants raise. Do not intervene in the build unless a component is BLOCKED
-or NEEDS_CONTEXT.
+### Step 3 — SME walkthrough
 
-## Step 4: SME Validates the Working Prototype
+Once all components are built and the completion report is received, invite the SME to review:
 
-Once all components are built and reviewed, invite the SME to walk through
-the prototype:
+> "Your prototype is ready. Please click through it and let me know if the flows
+> work the way you described. It's much easier to adjust things at this stage
+> than later on."
 
-> "Your prototype is ready. Please click through it and walk through the business
-> flows we discussed. Let me know if anything works differently from what you
-> expected — that's exactly the kind of feedback we want at this stage."
+Guide the SME through each main flow described in the Discovery Plan. Ask about each one:
+> "Does this part work the way you expected?"
 
-Guide the SME through each main flow described in the Discovery Plan. Note any
-observations, surprises, or corrections they raise.
+Listen carefully for surprises, corrections, and anything that wasn't in the original plan.
 
-## Step 5: Capture Observations
+### Step 4 — Capture observations
 
-After the SME walkthrough, write observations to:
-`exploration/captures/prototype-notes.md`
+Write `exploration/captures/prototype-notes.md`:
 
-Include:
-- Business flows the SME confirmed as correct
-- Anything that surprised the SME or worked differently from the plan
-- New business rules implied by the prototype behaviour
-- Edge cases or exceptions the SME raised during the walkthrough
+```
+# Prototype Observations
 
-Then dispatch the `prototype-companion-agent` to extract structured observations
-from the session for use in the documentation phase.
+**Session date:** [date]
+**Discovery Plan reference:** [plan filename]
 
-## What a Good Prototype Looks Like
+## Confirmed Flows
+[Business flows the SME confirmed as correct]
 
-A prototype built by this skill must:
-- Run locally without external dependencies (self-contained)
-- Present real business flows — not placeholder "Lorem ipsum" content
-- Accept input and show meaningful responses (not static pages)
-- Be clickable end-to-end through at least one complete business scenario
+## Surprises and Corrections
+[Anything that worked differently from the plan]
 
-A prototype that crashes, shows blank pages, or cannot be interacted with is
-not done. Fix before presenting to the SME.
+## New Rules Observed
+[Rules implied by prototype behaviour not in the original plan]
 
-## Key Principles
+## Edge Cases Raised
+[Exceptions or conditions the SME flagged during the walkthrough]
+```
 
-- HARD-GATE is absolute: no building without an approved Discovery Plan
-- Layout direction is confirmed BEFORE building (not after)
-- Build component by component — never all at once
-- The SME's walkthrough is part of the build, not optional
-- Observations from the walkthrough feed directly into the documentation phase
+### Step 5 — Hand off
+
+> "I'll pass your walkthrough notes to the next stage now, which will pull out
+> all the details we need for the documentation."
+
+Invoke `prototype-companion-agent` for structured requirement extraction from the walkthrough notes.

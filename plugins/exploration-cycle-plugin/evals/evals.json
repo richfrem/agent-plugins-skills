@@ -1,0 +1,18 @@
+[
+  {
+    "prompt": "REPLACE: a prompt that SHOULD trigger exploration-cycle-plugin",
+    "should_trigger": true
+  },
+  {
+    "prompt": "REPLACE: another prompt that SHOULD trigger exploration-cycle-plugin",
+    "should_trigger": true
+  },
+  {
+    "prompt": "REPLACE: a clearly unrelated prompt that should NOT trigger exploration-cycle-plugin",
+    "should_trigger": false
+  },
+  {
+    "prompt": "REPLACE: an adversarial prompt that shares vocabulary but should NOT trigger",
+    "should_trigger": false
+  }
+]

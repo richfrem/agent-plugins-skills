@@ -58,26 +58,52 @@ python3 ./skills/exploration-workflow/scripts/dispatch.py \
 ### Directory Structure
 ```text
 exploration-cycle-plugin/
-├── OVERVIEW.md             # GenAI Double Diamond framework overview
-├── README.md                 # Entry point and philosophy
-├── agents/                   # Vision Translators and Scribes
-├── assets/diagrams/          # Technical and philosophical flowcharts
-├── references/               # Architectural patterns (Dual-Loop, Learning-Loop)
-├── skills/                   # Technical capabilities
+├── OVERVIEW.md                     # GenAI Double Diamond framework overview
+├── README.md                       # Entry point and philosophy
+├── agents/                         # Vision Translators and Scribes
+├── assets/diagrams/                # Technical and philosophical flowcharts
+├── references/                     # Architectural patterns (Dual-Loop, Learning-Loop)
+├── skills/                         # Technical capabilities
 │   ├── business-requirements-capture/
 │   ├── business-workflow-doc/
+│   ├── discovery-planning/         # NEW: HARD-GATE SME discovery session
 │   ├── exploration-handoff/
 │   ├── exploration-optimizer/
+│   ├── exploration-orchestrator/
 │   ├── exploration-session-brief/
 │   ├── exploration-workflow/
+│   ├── prototype-builder/          # NEW: orchestrates full prototype build cycle
+│   ├── subagent-driven-prototyping/ # NEW: component-by-component builder
 │   ├── user-story-capture/
-│   └── deferred/             # Planned future capabilities
-│       ├── exploration-orchestrator/
-│       └── prototype-builder/
-└── requirements.in           # Python dependencies
+│   ├── visual-companion/           # NEW: layout direction before building
+│   └── deferred/                   # Parked future capabilities
+└── requirements.in                 # Python dependencies
 ```
 
 ---
+
+## 📜 Attribution & License
+
+### Architectural Inspiration: `obra/superpowers`
+
+The `exploration-cycle-plugin` borrows core architectural patterns from
+[**obra/superpowers**](https://github.com/obra/superpowers), an open-source
+agentic harness by Jesse Vincent (obra).
+
+Patterns adapted:
+
+| Pattern | Source | Adapted As |
+|---|---|---|
+| `<HARD-GATE>` execution block | `brainstorming` skill | `discovery-planning` skill |
+| Blank-slate context isolation per task | Execution harness | `subagent-driven-prototyping` skill |
+| Two-stage verification (Spec + Quality) | Verification layer | Business Rule Audit + Prototype Walkthrough |
+| Linguistic Detox (persona scan) | Jargon policing | SME language enforcement across all agents |
+| Manifest-Driven Scaffolding | Pre-flight scaffolding | Pre-Phase 0 Silent Discovery |
+
+**superpowers is licensed under the MIT License.**
+Full text: https://github.com/obra/superpowers/blob/main/LICENSE
+
+The `exploration-cycle-plugin` is independently authored and not affiliated with or endorsed by obra/superpowers.
 
 ---
 
