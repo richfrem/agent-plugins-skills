@@ -5,13 +5,6 @@
       "env": "AGENT_PLUGINS_SKILLS_DIR",
       "plugins_subdir": "plugins",
       "installer_subpath": "plugins/plugin-manager/scripts/install_all_plugins.py"
-    },
-    {
-      "name": "obra-superpowers-marketplace",
-      "from": "https://github.com/obra/superpowers-marketplace",
-      "type": "marketplace",
-      "plugins_subdir": "",
-      "installer_subpath": ""
     }
   ]
 }
