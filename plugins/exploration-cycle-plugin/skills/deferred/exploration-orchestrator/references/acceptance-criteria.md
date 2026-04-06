@@ -1,1 +1,0 @@
-../../../exploration-orchestrator/acceptance-criteria.md

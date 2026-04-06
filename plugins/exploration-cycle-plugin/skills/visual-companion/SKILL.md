@@ -5,6 +5,18 @@ description: >
 allowed-tools: Read, Write
 ---
 
+## Dashboard Intercept
+
+Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
+
+- **If the file EXISTS:** Stop immediately. Do not proceed with this skill's standalone flow.
+  Announce to the user:
+  > "It looks like you have an active Exploration Session in progress. Let me take you back
+  > to your session dashboard so we can keep your progress on track."
+  Then invoke `exploration-workflow` to resume from the correct phase.
+
+- **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
+
 <example>
 <commentary>Demonstrates a direct user trigger asking to see layout options before building starts.</commentary>
 User: What should it look like?
@@ -65,5 +77,12 @@ Write `exploration/captures/layout-direction.md` with this structure:
 
 ### Step 5 — Signal ready
 
-Announce:
-> "Layout confirmed. Ready to start building."
+Announce: "Layout confirmed — Phase 2 is complete."
+
+## Completion — Return to Orchestrator
+
+If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md` exists):
+> "Returning to your session dashboard now."
+Then invoke `exploration-workflow` to trigger the Phase 2 HARD-GATE and dashboard update.
+
+If operating standalone (no dashboard file), the skill is complete.
