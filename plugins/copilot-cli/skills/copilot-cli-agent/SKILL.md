@@ -8,11 +8,11 @@ allowed-tools: Bash, Read, Write
 ---
 
 ## 🎭 Identity: The Sub-Agent Dispatcher (Standard: gpt-5-mini)
- 
- You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents. 
+
+You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents.
 
 > [!IMPORTANT]
-> By default, all Copilot sub-agent orchestration uses the **gpt-5-mini** model for efficiency and accuracy. Explicitly use this model unless the user characterizes a specific need for a larger model.
+> **Default model: `gpt-5-mini` (free tier — no per-request cost).** Use this unless the user explicitly requests a premium model. Premium models (e.g., `claude-sonnet-4-6`) are **charged per request**, not per token — see the [💰 Premium Model Cost Discipline](#-premium-model-cost-discipline) section before using them.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -37,15 +37,45 @@ Do NOT use tools. Do NOT access filesystem." > review.md
 For reusable sub-agent execution, use the provided Python orchestrator which handles temp file assembly and prompt concatenation reliably across Windows, macOS, and Linux.
 
 ```bash
-# Location: plugins/copilot-cli/scripts/run_agent.py
-python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
+# Signature:
+python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL]
+#                                                                                           ^ optional 5th arg
 ```
 
-### Example Usage:
+---
+
+## 🔀 Model Selection Guide
+
+### Default: `gpt-5-mini` (Free — use for most tasks)
+
 ```bash
+# No model arg = gpt-5-mini (free tier, no per-request cost)
 python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
-"Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
+  "Find vulnerabilities."
 ```
+
+### Premium: `claude-sonnet-4-6` (Charged per request — batch everything)
+
+```bash
+# Pass model name as the 5th argument to override the default
+python3 ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_output.md \
+  "Generate all files exactly as specified using ===FILE:=== delimiters." \
+  claude-sonnet-4-6
+```
+
+> [!NOTE]
+> **When to use `claude-sonnet-4-6`:** Complex multi-file generation, nuanced content requiring reasoning, tasks where output quality matters more than cost. See [💰 Premium Model Cost Discipline](#-premium-model-cost-discipline) for request-batching rules before calling.
+
+### Known Model Identifiers
+
+| Model | Identifier | Cost |
+|:---|:---|:---|
+| GitHub Copilot default | `gpt-5-mini` | Free / flat rate |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Per request (premium) |
+| Claude Opus | `claude-opus-4-5` | Per request (premium, highest quality) |
+
+> [!WARNING]
+> Model identifiers can change with Copilot CLI updates. If a premium model call fails with a model-not-found error, check `copilot --help` or the [GitHub Copilot model docs](https://docs.github.com/en/copilot/using-github-copilot/ai-models) for the current identifier.
 
 ---
 
@@ -77,6 +107,59 @@ To dramatically improve review results, add:
 > "Think step-by-step internally, but output only final results. Be strict and critical. Do not be polite."
 
 ---
+
+## 💰 Premium Model Cost Discipline
+
+> [!CAUTION]
+> **Premium models (e.g., `claude-sonnet-4-6`, `claude-opus`) are billed per REQUEST, not per token.** A 5-request workflow costs 5× more than a 1-request workflow with the same total content. **Maximize token density per call — do NOT make iterative follow-up requests.**
+
+### Two-Tier Strategy
+
+| Model | Cost Model | Request Strategy |
+|:---|:---|:---|
+| `gpt-5-mini` (default) | Free / flat rate | Iterative fine-grained requests are fine |
+| `claude-sonnet-4-6`, `claude-opus`, etc. | **Per request** | ONE big dense request — batch everything |
+
+### Rules for Premium Models
+
+1. **ONE request generates ALL output.** If you need 7 files generated, put all 7 specs in a single prompt. Never send 7 separate requests.
+2. **Use structured output delimiters** so the single response can be parsed into multiple files:
+   ```
+   ===FILE: [relative/path/to/file]===
+   [complete file content]
+   ===ENDFILE===
+   ```
+3. **Verify delimiter coverage before calling.** Count expected `===FILE:===` markers in your prompt — confirm the same count appears in output before parsing.
+4. **No follow-up requests for minor gaps.** If the response has small omissions (a missing line, a thin section), fill them yourself using your own tools. Only make a second premium request if a whole file is entirely missing.
+5. **Heartbeat with the free model.** Always run the heartbeat check against `gpt-5-mini` (default), never against a premium model — it's a waste of a paid request.
+6. **Do NOT background (`&`) premium model calls.** Large prompt expansions can silently fail in background processes. Run sequentially and verify output with `wc -l` (expect 200+ lines for multi-file generation).
+
+### Premium Model Invocation Pattern
+
+```bash
+# Write the full multi-file prompt to a temp file first
+cat > /tmp/copilot_prompt.md << 'PROMPT_EOF'
+[Your complete, dense, multi-file generation prompt]
+PROMPT_EOF
+
+# Dispatch ONE request — all output in a single call
+python3 ./scripts/run_agent.py \
+  /dev/null \
+  /tmp/copilot_prompt.md \
+  /tmp/copilot_output.md \
+  "Generate all files exactly as specified using ===FILE:=== delimiters." \
+  claude-sonnet-4-6
+
+# Verify output is substantial before parsing
+wc -l /tmp/copilot_output.md   # expect 200+ lines for multi-file output
+```
+
+### Quality Gate Before Parsing
+
+```bash
+# Confirm all expected FILE markers are present before assuming success
+grep -c '===FILE:' /tmp/copilot_output.md  # should equal your expected file count
+```
 
 ---
 
