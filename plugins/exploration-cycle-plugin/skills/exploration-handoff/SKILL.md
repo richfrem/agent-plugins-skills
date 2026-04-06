@@ -53,7 +53,7 @@ Before synthesis, perform a mandatory risk assessment to determine the "Rigor Ti
 
 - **Tier 1 (Low Risk)**: Internal R&D, limited data. Lightweight, self-assessed development cycle.
 - **Tier 2 (Moderate Risk)**: Internal data, standard tools. Requires security team review, mandatory red teaming, and context sanitization.
-- **Tier 3 (High Risk)**: PII/Sensitive data, high-privilege tools (Bash). Mandatory full `spec-kitty` engineering cycle with architectural hardening (e.g., **Countermind** SBL, **Pro2Guard** sidecar enforcement).
+- **Tier 3 (High Risk)**: PII/Sensitive data, high-privilege tools (Bash). Mandatory formal engineering execution cycle (e.g., via spec-kits or execution harnesses) with architectural hardening (e.g., **Countermind** SBL, **Pro2Guard** sidecar enforcement).
 
 Ask the user to categorize the project based on these tiers and document the result in the handoff package.
 

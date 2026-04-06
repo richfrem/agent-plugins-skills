@@ -1,134 +1,85 @@
+# Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
 ---
 name: subagent-driven-prototyping
 description: >
-  Use when building a prototype component-by-component against an approved Discovery Plan.
-  Each component is built by a focused assistant with only the approved plan as context,
-  then reviewed in two stages: Spec Alignment (does it match the plan?) then Prototype
-  Quality (does it work?). Trigger with "build the prototype", "start building",
-  "let's create the working prototype", or when the prototype-builder skill is active.
+  Builds a prototype component by component, self-reviewing each component against the Discovery Plan before moving to the next. Invoked by prototype-builder after the layout direction is confirmed. Trigger phrases: "build the prototype", "let's build it", "start building". Also invoked by prototype-builder-agent after visual-companion confirms layout.
+allowed-tools: Bash, Read, Write
 ---
 
-# Subagent-Driven Prototyping
+<example>
+<commentary>Demonstrates the skill being invoked by prototype-builder after layout has been confirmed by visual-companion.</commentary>
+User: [dispatched by prototype-builder after layout confirmed]
+Agent: Verifies the Discovery Plan and layout direction files exist, announces the number of components and their plain-language names, then builds each one in order — announcing each start, checking it against the plan on completion, and reporting each as done before moving to the next.
+</example>
 
-Build a working prototype component by component, with a fresh focused assistant per
-component and a two-stage review after each one.
+<example>
+<commentary>Demonstrates a user triggering the skill directly after plan approval.</commentary>
+User: Let's build it
+Agent: Checks for the required Discovery Plan and layout direction files. If both exist, announces the build plan in plain language and begins building each component one at a time with progress updates.
+</example>
 
-**Why focused assistants:** Each prototype component is built by an assistant that only
-knows the approved Discovery Plan and the current component's requirements. No context
-pollution, no confusion from earlier components. This produces cleaner, more reliable work.
+## Required Inputs Check
 
-**Core principle:** Fresh assistant per component + two-stage review (plan alignment then
-quality check) = a prototype the SME can actually click through and validate.
+Before doing anything else, verify that both of the following exist:
 
-## When to Use
+1. At least one `.md` file in `exploration/discovery-plans/`
+2. The file `exploration/captures/layout-direction.md`
 
-This skill is invoked by the `prototype-builder` skill after:
-1. The Discovery Plan has been approved by the SME
-2. The Visual Companion has confirmed the visual layout direction
+If either is missing, stop immediately and report in plain language which file is missing and what needs to happen first. Do not begin building.
 
-Do NOT use this skill directly. It is always invoked by `prototype-builder`.
+Example:
+> "I need a confirmed layout direction before I can start building. Can we take a moment to go through the layout options first?"
 
-## The Process
+## Component Decomposition
 
-### Setting Up the Prototype Sandbox
-
-Before building, create an isolated working area:
-
-```bash
-# Create the prototype sandbox
-mkdir -p exploration/prototypes/YYYY-MM-DD-<topic>
-cd exploration/prototypes/YYYY-MM-DD-<topic>
-```
-
-Announce to the SME:
-> "I'm setting up your prototype sandbox and building each component separately to
-> make sure everything matches what we planned."
-
-### Per-Component Loop
-
-For each component in the Discovery Plan:
-
-1. **Dispatch a focused assistant** — provide ONLY:
-   - The approved Discovery Plan
-   - The specific component requirements
-   - The prototype sandbox location
-
-2. **Focused assistant builds the component** — it should:
-   - Build exactly what the Discovery Plan specifies (no extras)
-   - Validate that the component works
-   - Report back with status
-
-3. **Stage 1 — Spec Alignment Review:**
-   Read the approved Discovery Plan. Does this component do exactly what was described?
-   No extra features, no missing features?
-   - **Pass:** continue to Stage 2
-   - **Fail:** rebuild the component against the plan before continuing
-
-4. **Stage 2 — Prototype Quality Check:**
-   Does the component render and function correctly? Can the SME interact with it?
-   - **Pass:** mark component complete, move to next
-   - **Fail:** fix and re-check
-
-5. **Mark component complete** — only after both stages pass
-
-### Component Status Handling
-
-Focused assistants report one of these statuses:
-
-**DONE:** Proceed to Stage 1 Spec Alignment Review.
-
-**DONE_WITH_CONCERNS:** The assistant completed the work but flagged doubts. Read the
-concerns before reviewing. If they affect correctness or scope, address them first.
-If they are observations, note them and proceed to review.
-
-**NEEDS_CONTEXT:** The assistant needs information not provided. Supply the missing
-context and re-dispatch.
-
-**BLOCKED:** The assistant cannot complete the component. Assess:
-1. If it is a context problem, provide more context and re-dispatch
-2. If the component is too complex, break it into smaller pieces
-3. If the Discovery Plan is unclear, stop and clarify with the SME
-
-## Two-Stage Review Detail
-
-### Stage 1: Spec Alignment Review
-
-The goal: does this component match what the SME approved?
-
-Check:
-- Does it do exactly what the Discovery Plan described for this component?
-- Is there anything EXTRA that was not in the plan?
-- Is there anything MISSING that was in the plan?
-
-If any check fails: the assistant rebuilds before moving to Stage 2.
-
-### Stage 2: Prototype Quality Check
-
-The goal: does this component actually work?
-
-Check:
-- Does it render without errors?
-- Can the SME click through it, fill in fields, and see realistic responses?
-- Does it connect correctly to adjacent components already built?
-
-If any check fails: the assistant fixes before marking complete.
-
-## After All Components
-
-Once all components pass both review stages:
-
-1. Invite the SME to click through the full prototype
-2. Ask them to validate each business flow against what they described in the Discovery Plan
-3. Capture their observations for the documentation phase
+Based on the Discovery Plan and layout direction, identify 3–6 logical components of the prototype. Use plain-language names the SME will understand (e.g., "top navigation bar", "summary panel", "request form", "approval confirmation screen") — not technical terms.
 
 Announce:
-> "Your prototype is ready. Please click through it and let me know if everything
-> works the way you described. We'll capture any surprises for the next step."
+> "I'll put this together in [N] parts. I'll check each one before moving to the next to make sure it matches our plan."
 
-## Key Principles
+List the components by name so the SME knows what is being built.
 
-- One component at a time — never build multiple in parallel
-- Fresh assistant per component — no shared context between components
-- Both review stages required — skipping either means the work is not complete
-- The Discovery Plan is the source of truth — not your judgment about what would be useful
-- Stop and ask if anything in the Discovery Plan is unclear before building
+## Build Loop
+
+For each component, in order:
+
+1. **Announce start:** "Working on: [plain-language component name]..."
+2. **Build the component.** Write it to `exploration/prototype/components/[descriptive-name].[ext]`
+3. **Self-review:** Read the completed component against the Discovery Plan requirements and layout direction. Check that it serves the stated user groups and success criteria.
+4. **Assign a status:**
+   - `COMPLETE` — component matches the plan and is ready
+   - `BLOCKED` — something is preventing completion (missing data, contradictory requirements, etc.)
+   - `NEEDS_CONTEXT` — a specific question must be answered before the component can be finished
+5. **If BLOCKED:** Stop. Explain the problem in plain language. Ask the SME to resolve it before continuing.
+6. **If NEEDS_CONTEXT:** Stop. Ask the specific question needed. Wait for the SME's answer before continuing.
+7. **Only advance** to the next component when the current one has status `COMPLETE`.
+
+Report each completed component to the user:
+> "✓ [component name] is done."
+
+## Assembly
+
+After all components reach `COMPLETE` status:
+
+1. Assemble into `exploration/prototype/index.html` (or an equivalent entry point that links all components together)
+2. Write `exploration/prototype/README.md` with run instructions in plain language:
+   - Include: "Open index.html in your browser to see the prototype."
+   - Do not include technical setup instructions like "run npm start" or "install dependencies"
+   - Include one sentence describing what the prototype demonstrates
+
+## Completion Report
+
+Announce:
+> "Your prototype is ready. I'll hand it over now so you can walk through it."
+
+Report back to prototype-builder: all components are built, the entry point is at `exploration/prototype/index.html`, and the prototype is ready for the SME walkthrough.
+
+## Persona Enforcement
+
+Throughout this skill, always use plain language in user-facing text:
+
+- Say **"build"** — not "scaffold", "generate", or "create"
+- Say **"set up"** — not "initialize" or "instantiate"
+- Say **"put together"** — not "spin up"
+- Say **"check"** — not "validate" or "verify" (in user-facing messages)
+- Keep all progress updates brief and plain: one sentence per update

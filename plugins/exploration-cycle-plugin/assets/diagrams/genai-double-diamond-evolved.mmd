@@ -38,7 +38,7 @@ flowchart TB
     %% --- PROCESS 2: THE ENGINEERING CYCLE (The Factory / Black Box) ---
     subgraph Diamond2 [Diamond 2: Engineering Cycle]
         direction TB
-        TierGate -->|High Rigor| BlackBox[Engineering 'Black Box'<BR>spec-kitty / spec-kit]
+        TierGate -->|High Rigor| BlackBox[Engineering 'Black Box'<BR>Formal Execution Harness]
         TierGate -->|Low Rigor| Agile[Agile / Lightweight<BR>Dev Cycle]
         
         BlackBox --> Solidify[Solidification:<BR>Specs & Work Packages]

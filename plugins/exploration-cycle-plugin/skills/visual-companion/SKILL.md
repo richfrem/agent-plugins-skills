@@ -1,130 +1,69 @@
 ---
 name: visual-companion
 description: >
-  Browser-based visual companion for the Discovery Planning Session. Use when
-  the SME needs to see mockups, layout options, or process flow diagrams to answer
-  a question. MUST be offered once for consent before use — not invoked automatically.
-  Trigger via the discovery-planning skill when visual content would help more than text.
-allowed-tools: Bash, Read, Write
+  Presents layout options to the SME in plain language before any prototype construction begins. Invoked after the Discovery Plan is approved to confirm visual structure and direction. Trigger phrases: "what should it look like", "show me some layout options", "let me see the design options before we build". Also invoked by prototype-builder after plan approval.
+allowed-tools: Read, Write
 ---
 
-# Visual Companion
+<example>
+<commentary>Demonstrates a direct user trigger asking to see layout options before building starts.</commentary>
+User: What should it look like?
+Agent: Reads the most recent Discovery Plan for context, then presents three plain-language layout options labelled Option A, Option B, and Option C — adapted to the specific problem domain — and asks the SME which feels closest to what they had in mind.
+</example>
 
-A browser-based companion for showing layout options, process diagrams, and mockups
-during a Discovery Planning Session. Available as a tool — not a mode. Accepting the
-companion means it is available for questions that benefit from visual treatment; it
-does NOT mean every question goes through the browser.
+<example>
+<commentary>Demonstrates the skill being invoked by prototype-builder as part of the coordinated build cycle.</commentary>
+User: [dispatched by prototype-builder after Discovery Plan approval]
+Agent: Reads the Discovery Plan silently, presents three contextually adapted layout options in plain language, confirms the SME's selection, and writes the confirmed layout direction to exploration/captures/layout-direction.md before signalling ready to build.
+</example>
 
-## When to Offer
+## Role
 
-When you anticipate that upcoming questions will involve visual content (layout options,
-process flows, interface arrangements), offer the Visual Companion once for consent:
+This skill is invoked after the Discovery Plan is approved. Its purpose is to confirm the visual structure of the prototype before any building starts. It ensures the SME has a clear picture of what they are agreeing to before anything is created.
 
-> "Some of what we are exploring might be easier to understand if I can show it to you
-> in a web browser — layout options, process diagrams, side-by-side comparisons. Would
-> you like me to use that when it helps? (Requires opening a local URL)"
+## Session Flow
 
-**This offer MUST be its own message.** Do not combine it with a question or summary.
-Wait for the SME's response before continuing. If they decline, proceed with text only.
+### Step 1 — Read context
 
-## Per-Question Routing Decision
+Read the most recent file in `exploration/discovery-plans/`. Understand the problem domain, stakeholders, and success criteria before proposing anything. Do not skip this step.
 
-Even after the SME accepts, decide FOR EACH QUESTION whether to use the browser or text.
-The test: **would the SME understand this better by seeing it than reading it?**
+### Step 2 — Present 3 options
 
-| Use the browser for | Use plain text for |
-|---|---|
-| Layout mockups and options | Requirement clarification questions |
-| Process flow diagrams | Option lists and trade-offs |
-| Side-by-side visual comparisons | Scope and priority decisions |
-| Interface arrangement choices | Conceptual questions |
+Offer 3 layout options adapted to the context of the Discovery Plan. Describe each in plain language (2–4 sentences). No technical terms. No code. No wireframes. Words only.
 
-A question about a visual topic is NOT automatically a visual question. "What kind of
-flow does your team follow?" is a conceptual question — use plain text. "Which of these
-two flow diagrams matches how your team works?" is a visual question — use the browser.
+Label them **Option A**, **Option B**, **Option C**.
 
-## How the Browser Companion Works
+Adapt these generic starting points to the specific problem and user group from the Discovery Plan:
 
-The server watches a directory for HTML files and serves the newest one to the browser.
-You write content to the screen directory; the SME sees it in their browser and can click
-to select options.
+- **Option A:** A single-page view with a summary at the top and details below — good when people need to see everything at once and make decisions without switching screens
+- **Option B:** A step-by-step flow that walks the user through one thing at a time — good when there's a sequence of decisions, approvals, or actions that need to happen in order
+- **Option C:** A two-panel layout with a list on the left and details on the right — good when people need to browse through a number of items and compare them before deciding
 
-### Starting a Session
+After presenting the three options, ask:
+> "Which of these feels closest to what you had in mind? Or if none of them fit, describe what you're picturing and I'll work with that."
 
-```bash
-# Start the visual server
-scripts/start-server.sh --project-dir /path/to/project
+### Step 3 — Confirm selection
 
-# Returns JSON with port, URL, screen_dir, state_dir
-# Save screen_dir and state_dir — you will use them every step
+Reflect back the chosen option in one sentence. For example:
+> "Got it — we'll go with a step-by-step flow so your team can move through each approval in order."
+
+Then ask: "Is there anything you'd like to adjust about that?"
+
+Wait for the SME's response before proceeding.
+
+### Step 4 — Save direction
+
+Write `exploration/captures/layout-direction.md` with this structure:
+
+```
+# Layout Direction
+
+**Selected:** [Option letter and name]
+**SME notes:** [any modifications or specific requests the SME mentioned]
+**Confirmed:** [date]
 ```
 
-Tell the SME to open the returned URL. Save the `screen_dir` and `state_dir` paths.
+### Step 5 — Signal ready
 
-### Writing a Screen
-
-Write an HTML content fragment (not a full HTML document) to a new file in `screen_dir`.
-The server wraps it in the page template automatically.
-
-```html
-<h2>Which layout works better for your team?</h2>
-<p class="subtitle">Consider which one matches how you think about the process</p>
-
-<div class="options">
-  <div class="option" data-choice="a" onclick="toggleSelect(this)">
-    <div class="letter">A</div>
-    <div class="content">
-      <h3>Step-by-Step Flow</h3>
-      <p>Linear process — each step must complete before the next begins</p>
-    </div>
-  </div>
-  <div class="option" data-choice="b" onclick="toggleSelect(this)">
-    <div class="letter">B</div>
-    <div class="content">
-      <h3>Parallel Tracks</h3>
-      <p>Multiple things happen at once — teams work independently</p>
-    </div>
-  </div>
-</div>
-```
-
-**Never reuse filenames.** Each screen gets a fresh file with a semantic name
-(`process-flow.html`, `layout-options.html`, `team-structure.html`).
-
-### Reading the SME's Response
-
-After the SME responds in the terminal, read `$STATE_DIR/events` if it exists.
-This contains their browser interactions (clicks, selections) as JSON lines.
-Merge with their terminal text to get the full picture.
-
-### Returning to Text
-
-When the next question does not need the browser, push a waiting screen:
-
-```html
-<div style="display:flex;align-items:center;justify-content:center;min-height:60vh">
-  <p class="subtitle">Continuing our conversation in the terminal...</p>
-</div>
-```
-
-This prevents the SME from looking at a resolved choice while the conversation has moved on.
-
-### Ending the Session
-
-```bash
-scripts/stop-server.sh $SESSION_DIR
-```
-
-## Design Principles
-
-- **Show real content when it matters** — for a real business process, use representative labels and flows, not generic placeholders
-- **Scale detail to the question** — rough sketches for layout questions, clearer diagrams for process confirmation
-- **2–4 options maximum** per screen — more than that overwhelms
-- **Iterate before advancing** — if the SME's feedback changes the current screen, write a new version before moving on
-- **Explain the question on each page** — the SME should not need to remember what you asked
-
-## File Naming
-
-- Use semantic names: `process-flow.html`, `layout-options.html`, `team-roles.html`
-- Never reuse filenames — each screen must be a new file
-- For revisions: append version suffix like `layout-v2.html`, `layout-v3.html`
+Announce:
+> "Layout confirmed. Ready to start building."

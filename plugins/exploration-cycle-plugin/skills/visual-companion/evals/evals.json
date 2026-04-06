@@ -1,0 +1,23 @@
+{
+  "skill": "visual-companion",
+  "evals": [
+    {
+      "id": "eval-001",
+      "trigger": "what should it look like",
+      "expected_skill": "visual-companion",
+      "notes": "Direct question about appearance — should route to visual-companion to present layout options"
+    },
+    {
+      "id": "eval-002",
+      "trigger": "show me some layout options",
+      "expected_skill": "visual-companion",
+      "notes": "Explicit request for layout options — primary trigger phrase for visual-companion"
+    },
+    {
+      "id": "eval-003",
+      "trigger": "let me see the design options before we build",
+      "expected_skill": "visual-companion",
+      "notes": "SME wants to review design before building — should route to visual-companion, not prototype-builder"
+    }
+  ]
+}

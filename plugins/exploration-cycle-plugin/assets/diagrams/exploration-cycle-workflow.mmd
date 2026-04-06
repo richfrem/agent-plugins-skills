@@ -64,11 +64,11 @@ flowchart TD
         HandoffPrep --> HandoffReview
     end
 
-    HandoffReview --> OptBridge{{"Optional:<BR>Spec-Kitty plugin<BR>present?"}}
+    HandoffReview --> OptBridge{{"Optional:<BR>Engineering harness<BR>present?"}}
     OptBridge -->|"No — standalone<BR>exploration"| NextStep
     OptBridge -->|"Yes — double diamond<BR>integration"| SpecDraft
 
-    subgraph Phase5["Phase 5 OPTIONAL: Planning Draft — Spec-Kitty Integration"]
+    subgraph Phase5["Phase 5 OPTIONAL: Planning Draft — Engineering Harness Integration"]
         direction TB
         SpecDraft["planning-doc-agent CLI<BR>Mode: spec-draft<BR>→ planning-drafts/spec-draft.md"]
         PlanDraft["planning-doc-agent CLI<BR>Mode: plan-draft<BR>→ planning-drafts/plan-draft.md"]
@@ -80,21 +80,18 @@ flowchart TD
     HumanGate2 --> NextStep
 
     NextStep{{"Recommended<BR>Next Step"}}
-    NextStep -->|Spec ready| FormalSpec["Generate formal spec<BR>spec-kitty agent create-feature<BR>(uses approved staging drafts)"]
+    NextStep -->|Spec ready| FormalSpec["Generate formal spec<BR>via engineering agent<BR>(uses approved staging drafts)"]
     NextStep -->|Needs more| Spike["Targeted exploration<BR>spike"]
     NextStep -->|Defer| Roadmap["Update roadmap<BR>and defer"]
 
     Spike --> Pass1
-    FormalSpec --> EngineeringCycle["Spec-Kitty<BR>Engineering Cycle"]
+    FormalSpec --> EngineeringCycle["Execution Sandbox<BR>Engineering Cycle"]
     EngineeringCycle --> ReEntryQ{{"Unresolved<BR>ambiguity found?"}}
     ReEntryQ -->|No| Done(["Done"])
-    ReEntryQ -->|"Yes — spec-kitty present"| ReEntryBrief["planning-doc-agent CLI<BR>Mode: re-entry-scope<BR>→ session-brief-reentry.md"]
+    ReEntryQ -->|"Yes — harness present"| ReEntryBrief["planning-doc-agent CLI<BR>Mode: re-entry-scope<BR>→ session-brief-reentry.md"]
     ReEntryQ -->|"Yes — standalone"| ReEntryIntake["Run intake-agent again<BR>classify as re-entry spike<BR>→ session-brief.md"]
     ReEntryBrief --> Start
     ReEntryIntake --> Start
-
-    LL["learning-loop<BR>◆ Optional solo framing"] -.->|"reference pattern"| Pass1
-    DL["dual-loop<BR>◆ Orchestrated capture passes"] -.->|"reference pattern<BR>not runtime dependency"| Pass2
 
     Baseline["◆ Baseline: 3 sessions<BR>log to evals/results.tsv"] -.->|"Phase D optimizer<BR>once baseline stable"| Pass4
 
@@ -108,4 +105,4 @@ flowchart TD
     class HumanGate0,HumanGate1,NarrowGate,OptBridge,NextStep,ReEntryQ,IntakeConfirm,OrchCheck1 gate
     class Pass1,Pass2,Pass3,Pass4,ProtoGen,ProtoObs,HandoffPrep,SpecDraft,PlanDraft,TasksOutline,IntakeOpen,IntakeClassify,IntakeDraft agent
     class FormalSpec,Spike,Roadmap,Done output
-    class LL,DL,Baseline,RepeatCheck ref
+    class Baseline,RepeatCheck ref

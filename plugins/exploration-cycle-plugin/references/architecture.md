@@ -12,7 +12,7 @@ The plugin provides:
 - handoff generation into formal spec workflows
 - optimization loops for improving the exploration process itself
 
-It is intentionally not designed around a specific MCP architecture, model vendor, or IDE shell. The plugin acts as a repository-native workflow package in the same general spirit as Spec-Kit or Spec-Kitty extensions.
+It is intentionally not designed around a specific MCP architecture, model vendor, or IDE shell. The plugin acts as a repository-native workflow package driving formal execution harnesses like OpenSpec, Spec-Kitty, or Superpowers.
 
 Implementation is incremental. The repository validates the smallest useful exploration loop before hardening this plugin boundary into a richer workflow package.
 
@@ -30,7 +30,7 @@ Implementation is incremental. The repository validates the smallest useful expl
 | `problem-framing-agent` | Optional higher-touch interactive framing alternative | ✅ Phase A |
 | `prototype-companion-agent` | Cheap CLI sub-agent — prototype observation capture | ✅ Phase A |
 | `handoff-preparer-agent` | Cheap CLI sub-agent — synthesizes captures into handoff | ✅ Phase A |
-| `planning-doc-agent` | Optional — pre-drafts Spec-Kitty artifacts; re-entry scope mode | ✅ Phase A |
+| `planning-doc-agent` | Optional — pre-drafts execution harness artifacts; re-entry scope mode | ✅ Phase A |
 
 ### Skills
 
@@ -45,7 +45,9 @@ Implementation is incremental. The repository validates the smallest useful expl
 | `prototype-builder` | Exploratory prototype generation | ✅ Phase A |
 | `exploration-handoff` | Handoff synthesis | ✅ Phase A |
 | `exploration-optimizer` | Autoresearch-style loop optimization | ✅ Phase A |
-| `exploration-session-brief` | Session brief management | ✅ Phase A |
+| `discovery-planning` | HARD-GATE discovery sessions for SME alignment | ✅ Phase A |
+| `visual-companion` | Layout discovery and flowchart mocking | ✅ Phase A |
+| `subagent-driven-prototyping` | Focused component-by-component prototype assembly | ✅ Phase A |
 
 ### Phase A Capture Output Classes
 

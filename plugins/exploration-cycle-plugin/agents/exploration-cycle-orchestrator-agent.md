@@ -67,12 +67,12 @@ Does the session have a captured BRD and a generated prototype?
 Is the exploration narrowed enough for a downstream spec or planning update?
   └─ YES -> Dispatch handoff-preparer-agent via CLI
 
-[OPTIONAL -- only if spec-kitty plugin present]
-Is the user transitioning into the spec-kitty engineering cycle (quantum double diamond)?
+[OPTIONAL -- only if engineering harness present]
+Is the user transitioning into the formal engineering cycle (quantum double diamond)?
   └─ YES -> Dispatch planning-doc-agent via CLI (3 draft modes in sequence)
 
-[OPTIONAL -- only if spec-kitty plugin present]
-Is this invocation triggered from within the spec-kitty engineering cycle (unresolved ambiguity)?
+[OPTIONAL -- only if engineering harness present]
+Is this invocation triggered from within the formal engineering cycle (unresolved ambiguity)?
   └─ YES -> Dispatch planning-doc-agent in re-entry-scope mode -> new session brief -> restart Phase 0
 ```
 
@@ -92,8 +92,8 @@ digraph orchestrator_routing {
   Q4 [label="Post-prototype\nsession?"];
   Q5 [label="BRD ready +\nprototype done?"];
   Q6 [label="Narrow enough\nfor handoff?"];
-  Q7 [label="spec-kitty present +\ndouble diamond?"];
-  Q8 [label="Triggered from\nspec-kitty cycle?"];
+  Q7 [label="harness present +\ndouble diamond?"];
+  Q8 [label="Triggered from\nengineering cycle?"];
 
   node [shape=box, fillcolor="#d4edda"];
   LearningLoop [label="learning-loop pattern\n(solo: read brief, explore, iterate)"];
@@ -192,7 +192,7 @@ python3 scripts/dispatch.py \
   --instruction "Synthesize all captures into a handoff package." \
   --output exploration/handoff/exploration-handoff.md
 
-# --- OPTIONAL: only if spec-kitty plugin is present ---------------------
+# --- OPTIONAL: only if engineering harness plugin is present ---------------------
 # Phase 5a: pre-draft spec.md (staging only)
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
@@ -214,8 +214,8 @@ python3 scripts/dispatch.py \
   --instruction "Mode: tasks-outline. Generate WP outline. Stubs only." \
   --output exploration/planning-drafts/tasks-outline.md
 
-# --- OPTIONAL: re-entry from spec-kitty engineering cycle ---------------
-# Triggered when spec-kitty cycle uncovers unresolved ambiguity (cycling back)
+# --- OPTIONAL: re-entry from an engineering cycle ---------------
+# Triggered when execution cycle uncovers unresolved ambiguity (cycling back)
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context "" \
@@ -234,8 +234,8 @@ python3 scripts/dispatch.py \
 6. **Audit**: Dispatch business-rule-audit-agent to verify logic compliance (context: BRD + prototype)
 7. **Narrowing gate**: Is the problem narrow enough for handoff?
 8. **Handoff**: Dispatch handoff-preparer-agent CLI, review output against template
-9. **Planning drafts** _(optional — spec-kitty + double diamond only)_: Dispatch planning-doc-agent for spec/plan/tasks staging drafts. Human reviews before any spec-kitty CLI.
-10. **Re-entry** _(optional — if triggered from spec-kitty engineering cycle)_: Dispatch planning-doc-agent in re-entry-scope mode → new session brief → restart from step 1
+9. **Planning drafts** _(optional — formal harness + double diamond only)_: Dispatch planning-doc-agent for spec/plan/tasks staging drafts. Human reviews before any engineering CLI.
+10. **Re-entry** _(optional — if triggered from an engineering cycle)_: Dispatch planning-doc-agent in re-entry-scope mode → new session brief → restart from step 1
 
 ## Phase A Gate Criteria (Before Expanding to Phase B)
 
@@ -252,5 +252,5 @@ Do not proceed to Phase B until **all three** are true:
 - Record all capture files in `exploration/captures/` for traceability.
 - Human gates at: after initial framing, after capture review, before handoff.
 - This cycle runs independently — do not assume Spec-Kitty CLI is installed.
-- planning-doc-agent dispatch (Phase 5) is **optional** — only invoke when spec-kitty plugin is present and quantum double diamond is in use.
-- Re-entry cycles (spec-kitty → exploration → spec-kitty) are expected and supported. There is no limit to how many re-entry cycles may occur during one engineering run.
+- planning-doc-agent dispatch (Phase 5) is **optional** — only invoke when an engineering harness plugin is present and quantum double diamond is in use.
+- Re-entry cycles (engineering → exploration → engineering) are expected and supported. There is no limit to how many re-entry cycles may occur during one engineering run.

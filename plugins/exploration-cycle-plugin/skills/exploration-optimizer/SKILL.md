@@ -55,7 +55,7 @@ python3 ./scripts/execute.py \
   --iterations 3
 ```
 
-For a concrete target-specific playbook, use [references/spec-kitty-skill-optimizer-program.md](../../references/spec-kitty-skill-optimizer-program.md) when optimizing the Spec-Kitty agent/workflow files themselves.
+
 
 ## Iteration Loop
 The `execute.py` script follows a disciplined loop:

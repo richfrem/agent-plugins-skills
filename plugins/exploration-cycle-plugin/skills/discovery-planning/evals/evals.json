@@ -1,0 +1,29 @@
+{
+  "skill": "discovery-planning",
+  "evals": [
+    {
+      "id": "eval-001",
+      "trigger": "start a discovery session",
+      "expected_skill": "discovery-planning",
+      "notes": "Direct cold-start trigger phrase — should always route to discovery-planning"
+    },
+    {
+      "id": "eval-002",
+      "trigger": "let's plan this out before building",
+      "expected_skill": "discovery-planning",
+      "notes": "Explicit planning intent before building — should route to discovery-planning, not prototype-builder"
+    },
+    {
+      "id": "eval-003",
+      "trigger": "I have an idea I want to explore",
+      "expected_skill": "discovery-planning",
+      "notes": "Open-ended exploration trigger — SME has an idea but no plan; should route to discovery-planning"
+    },
+    {
+      "id": "eval-004",
+      "trigger": "help me figure out what we're building",
+      "expected_skill": "discovery-planning",
+      "notes": "Uncertainty about scope — classic entry point for discovery-planning before any building"
+    }
+  ]
+}
