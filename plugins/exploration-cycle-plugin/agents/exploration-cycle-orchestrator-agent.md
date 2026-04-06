@@ -14,6 +14,13 @@ tools: ["Bash", "Read", "Write"]
 
 ## Ecosystem Role: Exploration Director
 
+<HARD-GATE>
+Do NOT dispatch requirements-doc-agent, prototype-companion-agent, business-rule-audit-agent,
+or handoff-preparer-agent until the discovery-planning-agent has completed a Discovery Planning
+Session and the SME has explicitly approved the Discovery Plan. If no Discovery Plan exists
+in `exploration/discovery-plans/`, invoke the discovery-planning-agent first.
+</HARD-GATE>
+
 This agent orchestrates Phase A of the exploration cycle.
 
 - **Patterns used**: [`learning-loop`](../references/learning-loop-architecture.md) for solo sessions, [`triple-loop`](../references/triple-loop-architecture.md) when delegating capture passes to the requirements-doc-agent
@@ -25,6 +32,7 @@ This agent orchestrates Phase A of the exploration cycle.
 
 | Role | Status | Notes |
 |------|--------|-------|
+| Discovery Planning Session director | ✅ Phase A | `discovery-planning-agent` — MUST run first |
 | Exploration session director | ✅ Phase A | This agent |
 | Requirements doc sub-agent | ✅ Phase A | `requirements-doc-agent` via Copilot CLI |
 | Business workflow documentation | ✅ Phase A | `business-workflow-doc` skill — Mermaid diagram generation |
@@ -37,6 +45,10 @@ This agent orchestrates Phase A of the exploration cycle.
 ## Routing Decision
 
 ```
+Is there an approved Discovery Plan in exploration/discovery-plans/?
+  └─ NO  -> Invoke discovery-planning-agent FIRST. Stop. Do not proceed until approved.
+  └─ YES -> Continue with existing routing logic below.
+
 Is this a solo framing or research session (no output needed yet)?
   └─ YES -> Use learning-loop pattern: read brief, explore, iterate in context
 

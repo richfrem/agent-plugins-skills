@@ -105,6 +105,22 @@ exploration/
 
 ---
 
+## Pre-Phase 0: Discovery Planning (Required)
+
+Before any intake or capture begins, a Discovery Planning Session MUST be completed.
+
+The `discovery-planning-agent` leads the SME through a structured planning session:
+- One question at a time to understand the problem and goals
+- 2-3 approach options presented with trade-offs
+- Discovery Plan written and approved by the SME
+
+**This is a hard prerequisite.** Do not proceed to Phase 0 intake until `exploration/discovery-plans/` contains an approved plan for this session.
+
+Invoke: `discovery-planning-agent`
+Output: `exploration/discovery-plans/YYYY-MM-DD-<topic>-plan.md`
+
+---
+
 ## Phase 0: Intake and Session Brief
 
 The standard Phase A path starts with the interactive [`intake-agent`](../../agents/intake-agent.md), not with a blank manual template copy.
@@ -222,10 +238,14 @@ python3 ./scripts/check_gaps.py \
 
 ## Phase 2: Prototype Session (Optional)
 
-If exploration needs a runnable prototype to resolve ambiguity:
+If exploration needs a runnable prototype to resolve ambiguity or validate business flows:
 
-1. Use `prototype-builder` skill to generate the prototype.
-2. After running it, dispatch the prototype-companion-agent for observation capture:
+1. The `prototype-builder` skill is invoked — NOT the prototype-companion-agent directly.
+2. `prototype-builder` first offers the Visual Companion for a layout-confirm step.
+3. After layout direction is confirmed, `subagent-driven-prototyping` builds the full working prototype component by component.
+4. Each component passes a two-stage review (Plan Alignment → Prototype Quality Check).
+5. The SME clicks through the working prototype and validates the business logic.
+6. After validation, dispatch prototype-companion-agent for observation capture:
 
 ```bash
 python3 ./scripts/dispatch.py \

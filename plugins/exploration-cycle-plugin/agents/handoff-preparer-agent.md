@@ -28,6 +28,15 @@ python3 scripts/dispatch.py \
   --output exploration/handoff/exploration-handoff.md
 ```
 
+## Pre-Synthesis Self-Review (Placeholder Scan)
+
+Before synthesising the handoff package, scan all capture files for:
+- Any section marked `[NEEDS HUMAN INPUT]` — resolve or flag explicitly
+- Any business rule with no corresponding evidence from prototype observations
+- Any user story with no acceptance criteria
+
+Do not proceed to synthesis until these are resolved or explicitly accepted as known gaps.
+
 ## Output
 
 Produce a complete `exploration-handoff-template.md` with all sections filled.
@@ -57,3 +66,18 @@ When the same unresolved decision appears across multiple captures, consolidate 
 - In other sections (readiness check, risks, next steps), reference the consolidated entry by name rather than repeating the marker.
 - The five canonical open decisions from any waitlist-type exploration are: data model, minimum signup fields, admit lifecycle, bulk admin behavior, and privacy/retention rules. Consolidate all occurrences of these into one entry each.
 - Only add `[NEEDS HUMAN INPUT]` for a genuinely new unresolved item not already captured elsewhere in the handoff.
+
+## Opportunity 4 Format Selection
+
+After writing `exploration/handoff/exploration-handoff.md`, ask the SME or engineer:
+
+> "We're ready to hand this off to the engineering team. Which format does your team use?
+> 1. **Spec-Kitty** — I'll generate `spec-draft.md`, `plan-draft.md`, and a tasks outline
+> 2. **Superpowers** — I'll generate a spec document in `docs/superpowers/specs/` format
+> 3. **Generic** — I'll produce a plain structured specification document
+
+**If Spec-Kitty chosen:** Dispatch planning-doc-agent in spec-draft → plan-draft → tasks-outline sequence. Stage to `exploration/planning-drafts/`. Human must approve before any spec-kitty CLI is run.
+
+**If Superpowers chosen:** Write handoff content to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. Include architecture, components, data flow, and acceptance criteria sections matching superpowers spec format.
+
+**If Generic chosen:** Write structured specification to `exploration/handoff/specification.md` with sections: Problem Statement, Solution Approach, Business Rules, User Stories, Acceptance Criteria, Known Risks.
