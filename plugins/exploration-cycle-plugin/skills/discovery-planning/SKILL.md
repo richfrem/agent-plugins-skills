@@ -1,10 +1,11 @@
-# Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
 ---
 name: discovery-planning
 description: >
   Guides a Subject Matter Expert through a structured discovery session to create and approve a Discovery Plan before any building begins. This is the HARD-GATE brainstorming skill — no prototype can be built until the SME explicitly approves the plan. Trigger phrases: "start a discovery session", "let's plan this out", "help me figure out what we're building", "I have an idea I want to explore", "let's start from scratch"
 allowed-tools: Read, Write
 ---
+# Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
+
 
 ## Dashboard Intercept
 
