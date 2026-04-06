@@ -8,6 +8,18 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+## Dashboard Intercept
+
+Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
+
+- **If the file EXISTS:** Stop immediately. Do not proceed with this skill's standalone flow.
+  Announce to the user:
+  > "It looks like you have an active Exploration Session in progress. Let me take you back
+  > to your session dashboard so we can keep your progress on track."
+  Then invoke `exploration-workflow` to resume from the correct phase.
+
+- **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
+
 <example>
 <commentary>User has finished exploration and wants to produce a handoff package.</commentary>
 User: I finished my exploration session, help me write the handoff package.
@@ -33,6 +45,32 @@ Agent: [invokes exploration-session-brief, NOT exploration-handoff]
 This skill provides a structured, 3-stage interactive workflow for synthesizing exploration artifacts into a concise Handoff Package.
 
 **Important Note for Agents:** Do NOT passively run a bash script or dump a massive block of markdown. You must guide the user through the following 3 stages.
+
+## Stage 0: Scribe Activities (Automated Capture Before Synthesis)
+
+Before opening the handoff dialogue, silently check for `exploration/prototype/`.
+
+If the prototype directory exists, run the following three capture activities in sequence.
+Announce each one briefly as you start it:
+> "Capturing [activity name] first — this gives us the raw material for the handoff."
+
+1. **Business Requirements Capture** (invoke `business-requirements-capture`)
+   - Extract business rules and functional constraints from the Discovery Plan and prototype
+   - Output: `exploration/captures/business-requirements.md`
+
+2. **User Story Capture** (invoke `user-story-capture`)
+   - Translate validated prototype behaviors into Agile user stories
+   - Output: `exploration/captures/user-stories.md`
+
+3. **Business Workflow Doc** (invoke `business-workflow-doc` — **only** if the Discovery Plan
+   describes a process flow with sequential steps or decision branches)
+   - Output: `exploration/captures/workflow-diagram.md`
+
+Once all applicable Stage 0 outputs are written, announce:
+> "Requirements and stories captured. Now let's put together your handoff package."
+
+If the prototype directory does not exist, skip Stage 0 entirely and proceed to Stage 1.
+The Stage 0 outputs (if created) are now available as source artifacts for synthesis.
 
 ## Stage 1: Context Gathering (Routing)
 Before synthesizing anything, establish what you're working with and where it's going. Ask both questions in a single message:
@@ -86,3 +124,14 @@ Ensure the handoff gives the downstream consumer what they need to act:
 
 ## Final Output Destination
 Write the approved markdown content to: `exploration/handoffs/handoff-package.md` (or a timestamped equivalent).
+
+## Completion — Return to Orchestrator
+
+Once the handoff package is approved and written to `exploration/handoffs/handoff-package.md`:
+1. Announce: "Your handoff package is complete — Phase 4 is done."
+2. If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md` exists):
+   > "Returning to your session dashboard now."
+   Then invoke `exploration-workflow` to trigger the Phase 4 HARD-GATE, dashboard update,
+   and Completion Block.
+
+If operating standalone (no dashboard file), the skill is complete.
