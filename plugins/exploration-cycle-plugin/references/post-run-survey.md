@@ -1,4 +1,4 @@
-# Post-Run Survey: exploration-orchestrator
+# Post-Run Survey: exploration-workflow
 
 Use this survey after each exploration cycle, targeted sub-loop, or major re-entry from engineering.
 

@@ -69,7 +69,6 @@ exploration-cycle-plugin/
 │   ├── discovery-planning/         # NEW: HARD-GATE SME discovery session
 │   ├── exploration-handoff/
 │   ├── exploration-optimizer/
-│   ├── exploration-orchestrator/
 │   ├── exploration-session-brief/
 │   ├── exploration-workflow/
 │   ├── prototype-builder/          # NEW: orchestrates full prototype build cycle

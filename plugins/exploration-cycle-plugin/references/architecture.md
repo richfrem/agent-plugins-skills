@@ -36,8 +36,7 @@ Implementation is incremental. The repository validates the smallest useful expl
 
 | Skill | Purpose | Status |
 |-------|---------|--------|
-| `exploration-workflow` | End-to-end Phase A workflow guidance | ✅ Phase A |
-| `exploration-orchestrator` | Orchestration patterns and routing | ✅ Phase A |
+| `exploration-workflow` | SME-facing state machine orchestrator. Manages `exploration-dashboard.md`, enforces 4-phase gates, routes to child skills. Single canonical entry point. | ✅ Phase A |
 | `exploration-session-brief` | Session brief creation and refinement | ✅ Phase A |
 | `business-requirements-capture` | BRD generator — `brd / rules / constraints` modes | ✅ Phase A |
 | `user-story-capture` | Story generator — `standard / gherkin` AC formats | ✅ Phase A |
