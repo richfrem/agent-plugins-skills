@@ -188,6 +188,11 @@ def main() -> None:
     combined_prompt = f"{full_prompt}\n\n---\n\nInstruction: {args.instruction}"
 
     if args.cli == "claude":
+        # TODO: SECURITY - SANDBOXING REQUIRES SYSTEM-LEVEL TIERING IMPL
+        # Risk: --dangerously-skip-permissions is applied unconditionally for all Tiers.
+        # Tier 2/3 workloads (PII, high-privilege tools) require explicit human gate before
+        # any bash-capable dispatch. See references/architecture.md Rigor Tier table.
+        # Tracked for future dispatch.py infrastructure rewrite — do not ship to Tier 2+ without fix.
         cmd = ["claude", "-p", combined_prompt, "--dangerously-skip-permissions"]
     elif args.cli == "gh-copilot":
         cmd = ["gh", "copilot", "suggest", "-t", "shell", combined_prompt]

@@ -81,7 +81,7 @@ When the engineering cycle encounters unresolved ambiguity, use this mode to det
 ```bash
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context "" \
+  --context "active scope" \
   --instruction "CONTEXT: [describe the ambiguity]. Mode: re-entry-scope. Identify the exploration gap. Suggest exploration type (spike / brownfield). Draft a session brief." \
   --output exploration/session-brief-reentry-$(date +%Y%m%d).md
 ```
