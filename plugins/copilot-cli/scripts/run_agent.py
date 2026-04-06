@@ -116,27 +116,19 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         "Do NOT access filesystem. Only use the provided input."
     )
 
-    # Write assembled prompt to a temp file to avoid ARG_MAX shell argument length limits.
-    # IMPORTANT: We read the content back from the temp file and pass it via -p to ensure
-    # the full prompt is delivered regardless of size. Do NOT pass the raw `prompt` string
-    # directly — on macOS/Linux, large strings passed as subprocess args can be silently
-    # truncated or rejected when they exceed the OS ARG_MAX limit (~256KB on macOS).
+    # Use a temporary file for the prompt to avoid shell argument length limits
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as tf:
         tf.write(prompt)
         prompt_tmp_path = tf.name
 
     try:
-        # Read prompt back from temp file to pass via -p (avoids ARG_MAX limits)
-        with open(prompt_tmp_path, 'r') as tf:
-            prompt_from_file = tf.read()
-
         # Run Copilot CLI in non-interactive mode
         # --yolo ensures all tool permissions are granted for headless execution
-        cmd = ["copilot", "--yolo", "--model", model, "-p", prompt_from_file]
-
+        cmd = ["copilot", "--yolo", "--model", model, "-p", prompt]
+        
         with open(output_file, 'w') as out:
             subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, check=True)
-
+        
         print(f"Agent execution complete. Output saved to {output_file}")
     except subprocess.CalledProcessError as e:
         print(f"Error executing Copilot CLI: {e}")
