@@ -1,410 +1,114 @@
 ---
 name: exploration-workflow
 description: >
-  Phase A exploration cycle workflow. Structured guidance for running discovery sessions,
-  capturing requirements via cheap-model CLI sub-agent (requirements-doc-agent), observing
-  prototypes, and producing handoff packages for downstream planning or spec-driven
-  engineering. Adapted from autoresearch-style iteration discipline (baseline-first,
-  one-variable loop) and doc-coauthoring structured capture. Runs independently — no
-  downstream engineering CLI required.
-allowed-tools: Bash, Read, Write
+  SME-facing orchestrator for the 4-phase Business Exploration Loop. Manages
+  state via exploration-dashboard.md, enforces phase gates, and routes to
+  child skills in sequence. Single canonical entry point — invoke at the start
+  of any exploration session or to resume an in-progress session.
+  Trigger phrases: "start an exploration", "let's explore this idea",
+  "resume my exploration", "where did we leave off", "start discovery".
+allowed-tools: Read, Write
 ---
 
-<example>
-<commentary>User wants to run the full Phase A discovery loop on a problem.</commentary>
-User: Run the exploration workflow on this problem — we need to understand why users are abandoning the onboarding flow.
-Agent: [invokes exploration-workflow, starts Phase A: session brief → requirements capture → handoff package]
-</example>
+# Exploration Workflow — SME Orchestrator
 
-<example>
-<commentary>User asks for end-to-end guidance on the exploration cycle.</commentary>
-User: Walk me through the full Phase A exploration cycle.
-Agent: [invokes exploration-workflow, explains and guides through each phase in order]
-</example>
-
-<example>
-<commentary>BRD-only requests route to business-requirements-capture, not this skill.</commentary>
-User: Generate a BRD from our session captures.
-Agent: [invokes business-requirements-capture, NOT exploration-workflow]
-</example>
-
-# Exploration Cycle Workflow
-
-This workflow describes the Phase A exploration cycle end-to-end. It runs independently of the formal engineering workflow and produces handoff packages that optionally feed into it.
-
-**Optimization discipline**: Baseline-first iteration — run one baseline, change one variable per iteration, log keep/discard decisions to `evals/results.tsv`, prefer simplicity over marginal gains.
-
-**Visual reference**: [`exploration-cycle-workflow.mmd`](../../assets/diagrams/exploration-cycle-workflow.mmd)
-
-**Inline Phase A workflow diagram** (machine-readable for agent routing):
-
-```dot
-digraph exploration_workflow_phase_a {
-  rankdir=TB;
-  node [shape=box, style="rounded,filled", fillcolor=white, fontname=Helvetica];
-  edge [fontname=Helvetica, fontsize=10];
-
-  node [shape=ellipse] Start [label="Session Trigger"];
-
-  Phase0  [label="Phase 0: Intake\nintake-agent classifies session type\n(greenfield / brownfield / re-entry spike)\nwrites exploration/session-brief.md"];
-  HG0     [label="Human Gate:\nbrief clear and confirmed?", shape=diamond, fillcolor=lightyellow];
-  Phase1  [label="Phase 1: Requirements Capture\ntriple-loop via CLI (cheap model, many passes)\npass1: problem-framing\npass2: BRD draft\npass2b: workflow diagram (if process flow)\npass3: user stories\npass4: issues + opportunities (optional)"];
-  GapCheck [label="check_gaps.py after each pass\n(non-zero exit halts the chain)", shape=diamond, fillcolor=lightyellow];
-  HG1     [label="Human Gate:\nreview full capture set", shape=diamond, fillcolor=lightyellow];
-  Phase2  [label="Phase 2: Prototype (optional)\nprototype-companion-agent via CLI\noutput: exploration/captures/prototype-notes.md"];
-  Phase2b [label="Phase 2b: Business Rule Audit\nbusiness-rule-audit-agent via CLI\nautput: exploration/captures/business-rule-audit.md\nHard stop: resolve all Unresolved Drifts"];
-  HG2     [label="Human Gate:\nall drifts resolved?", shape=diamond, fillcolor=lightyellow];
-  Phase3  [label="Phase 3: Narrowing Gate\n5-check readiness table\n(problem, shape, constraints, risks, unknowns)"];
-  NarrowOK [label="ready for handoff?", shape=diamond, fillcolor=lightyellow];
-  MoreCapture [label="Run another capture pass\nor targeted spike", style=dashed];
-  Phase4  [label="Phase 4: Handoff\nhandoff-preparer-agent via CLI\noutput: exploration/handoff/exploration-handoff.md"];
-  Phase5  [label="Phase 5: Planning Drafts (optional)\nengineering harness integration only\nplanning-doc-agent: spec-draft, plan-draft, tasks-outline\nHuman approves before formal engineering"];
-  End     [label="Handoff package ready\nor planning drafts staged", shape=ellipse];
-
-  Start -> Phase0 -> HG0;
-  HG0 -> Phase1 [label="confirmed"];
-  HG0 -> Phase0 [label="unclear", style=dashed];
-  Phase1 -> GapCheck;
-  GapCheck -> Phase1 [label="gaps found", style=dashed];
-  GapCheck -> HG1 [label="clean"];
-  HG1 -> Phase2 [label="prototype needed"];
-  HG1 -> Phase3 [label="no prototype"];
-  Phase2 -> Phase2b -> HG2;
-  HG2 -> Phase3 [label="resolved"];
-  HG2 -> Phase2b [label="drifts remain", style=dashed];
-  Phase3 -> NarrowOK;
-  NarrowOK -> Phase4 [label="ready"];
-  NarrowOK -> MoreCapture [label="not ready", style=dashed];
-  MoreCapture -> Phase1 [style=dashed];
-  Phase4 -> Phase5 [label="harness present"];
-  Phase4 -> End [label="standalone"];
-  Phase5 -> End;
-}
-```
+This skill is the single canonical entry point for the Business Exploration Loop. It manages all session state via `exploration-dashboard.md`, enforces phase gates, and routes work to the correct child skill at each phase. The SME never needs to invoke any other skill directly.
 
 ---
 
-## Running Independently of Formal Engineering
+## Block 1 — Bootstrap (run silently before speaking to the SME)
 
-This workflow does **not** require downstream engineering CLIs. Output artifacts _may_ feed into execution harnesses, but the exploration cycle is self-contained:
-
-```
-exploration/
-├── session-brief.md         — session framing (from template)
-├── captures/
-│   ├── problem-framing.md   — problem, users, goals
-│   ├── brd-draft.md         — business requirements, rules, constraints
-│   ├── user-stories-draft.md— user stories
-│   ├── issues-opportunities.md — issue/opportunity themes (optional)
-│   └── prototype-notes.md   — observations from prototype sessions (optional)
-└── handoff/
-    └── exploration-handoff.md — ready for spec or planning update
-```
+1. Check for `exploration/exploration-dashboard.md`.
+2. **If the file does NOT exist:**
+   - Create the `exploration/` directory if it does not already exist.
+   - Scaffold a new dashboard by copying the template structure from `assets/templates/exploration-dashboard.md` to `exploration/exploration-dashboard.md`.
+   - Ask the SME: *"What are we exploring today? Give it a short name so we can track it."*
+   - Replace `[to be filled in]` in the `**Session:**` field with their answer.
+   - Write the updated file, then proceed to Block 3.
+3. **If the file EXISTS:** Proceed to Block 2.
 
 ---
 
-## Pre-Phase 0: Discovery Planning (Required)
+## Block 2 — Read State (run silently)
 
-Before any intake or capture begins, a Discovery Planning Session MUST be completed.
-
-The `discovery-planning-agent` leads the SME through a structured planning session:
-- One question at a time to understand the problem and goals
-- 2-3 approach options presented with trade-offs
-- Discovery Plan written and approved by the SME
-
-**This is a hard prerequisite.** Do not proceed to Phase 0 intake until `exploration/discovery-plans/` contains an approved plan for this session.
-
-Invoke: `discovery-planning-agent`
-Output: `exploration/discovery-plans/YYYY-MM-DD-<topic>-plan.md`
+1. Read `exploration/exploration-dashboard.md`.
+2. Identify the **active phase** — the first phase with an unchecked `- [ ]` box.
+3. For every phase marked `- [x]`, verify that its listed Outcome file exists on disk.
+   - If an Outcome file is missing for a completed phase, stop and say:
+     > "It looks like [Phase N] was marked complete but I can't find the expected output file at [path]. Let's take a quick look before continuing."
+   - Do not advance to Block 3 until this is resolved.
+4. Proceed to Block 3.
 
 ---
 
-## Phase 0: Intake and Session Brief
+## Block 3 — Orientation Summary (always shown to the SME)
 
-The standard Phase A path starts with the interactive [`intake-agent`](../../agents/intake-agent.md), not with a blank manual template copy.
+Present a brief, friendly status message based on the dashboard state.
 
-The intake-agent is intentionally the one expensive step in the loop: it runs in the primary model context so the session starts with a higher-quality classification and a better pre-filled brief. The cheaper CLI sub-agents are used after this point.
+**For a brand-new session (just bootstrapped):**
+> "Great — we're all set up. We'll work through 4 phases together, starting with Problem Framing.
+> Ready to begin?"
 
-Standard path:
+**For a mid-session resume (at least one phase complete):**
+> "Welcome back! Here's where we are:
+> [List each phase with ✅ if `[x]` complete, or 🔵 if it is the active phase]
+>
+> Ready to pick up where we left off with [active phase name]?"
 
-```bash
-# interactive, main-session step
-# intake-agent writes exploration/session-brief.md
-```
-
-Manual fallback if intake-agent is unavailable:
-
-```bash
-cp architecture/templates/exploration-session-brief-template.md exploration/session-brief.md
-```
-
-- `Exploration type`: `greenfield`, `brownfield`, or `re-entry spike`
-- **Brownfield**: fill in the "Current System Behavior" section before starting captures
-- **Re-entry spike**: describe the specific engineering question that blocked progress
-
-**Human gate**: Confirm brief is clear before proceeding to capture.
+Wait for a soft confirmation before proceeding. Any clear affirmation counts: "Yes", "Let's go", "Go ahead", "Ready", "Sure". Do not proceed until received.
 
 ---
 
-## Phase 1: Requirements Capture (Orchestrated CLI)
+## Block 4 — Phase Routing
 
-The standard Phase A framing path is:
+Route to the child skill for the active phase:
 
-1. `intake-agent` classifies the session and drafts `session-brief.md`
-2. `requirements-doc-agent` in `problem-framing` mode produces the first framing artifact
+| Active Phase | Child Skill to Invoke |
+|---|---|
+| Phase 1 — Problem Framing | `discovery-planning` |
+| Phase 2 — Visual Blueprinting | `visual-companion` |
+| Phase 3 — Prototyping | `subagent-driven-prototyping` |
+| Phase 4 — Handoff & Specs | `exploration-handoff` |
+| All 4 phases complete | → Completion Block |
 
-The standalone [`problem-framing-agent`](../../agents/problem-framing-agent.md) remains available as an **optional interactive alternative** when you want a higher-touch framing conversation. Do not run all three framing steps in sequence in the standard path.
-
-Dispatch the requirements-doc-agent as a cheap CLI sub-agent. Each pass is focused on one artifact — do not try to capture everything in one invocation. For every pass, include the session brief plus all prior relevant captures so context accumulates instead of collapsing to only the most recent file.
-
-### Pass 1: Problem Framing
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
-  --context exploration/session-brief.md \
-  --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals, and initial scope hypotheses." \
-  --output exploration/captures/problem-framing.md
-```
-
-### Pass 2: Business Requirements
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
-  --context exploration/session-brief.md exploration/captures/problem-framing.md \
-  --instruction "Mode: business-requirements. Extract functional requirements, business rules, and constraints." \
-  --output exploration/captures/brd-draft.md
-```
-
-### Pass 2b: Business Workflow Documentation (when process flow is relevant)
-
-Run when the captures describe a multi-step process, approval flow, or state machine:
-
-```bash
-python3 ./scripts/generate_workflow.py \
-  --input exploration/session-brief.md exploration/captures/brd-draft.md \
-  --output exploration/captures/workflow-map.md
-# Then fan out to agent to populate the Mermaid skeleton:
-# python3 ./scripts/dispatch.py \
-#   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
-#   --context exploration/captures/workflow-map.md \
-#   --instruction "Mode: workflow-map. Fill in the Mermaid diagram with actual process steps from the captures." \
-#   --output exploration/captures/workflow-map.md
-```
-
-### Pass 3: User Stories
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
-  --context exploration/session-brief.md exploration/captures/problem-framing.md exploration/captures/brd-draft.md \
-  --instruction "Mode: user-stories. Generate an initial user story set from the requirements." \
-  --output exploration/captures/user-stories-draft.md
-```
-
-### Pass 3b: Gherkin Acceptance Criteria (optional — high-fidelity stories)
-
-Run when you need formal `Given / When / Then` AC blocks ready for backlog entry:
-
-```bash
-python3 ./scripts/execute.py \
-  --input exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
-  --format gherkin \
-  --output exploration/captures/user-stories-gherkin.md
-```
-
-### Pass 4: Issues and Opportunities (optional)
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
-  --context exploration/session-brief.md exploration/captures/problem-framing.md exploration/captures/brd-draft.md \
-  --instruction "Mode: issues-and-opportunities. Extract issue themes, challenges, and opportunities." \
-  --output exploration/captures/issues-opportunities.md
-```
-
-After each pass, run the gap checker before dispatching the next one. If the exit code is non-zero, stop, refine the session brief, and re-run from the affected pass — do not push a weak context chain through the remaining passes.
-
-```bash
-python3 ./scripts/check_gaps.py \
-  --files exploration/captures/problem-framing.md \
-  --threshold 3
-# Repeat after each pass, pointing --files at the file just written.
-# Non-zero exit halts the chain.
-```
-
-**Human gate**: Review the full capture set after the pass chain completes.
+When invoking a child skill, include this context:
+> "You are operating as part of an active Exploration Session. When your phase is complete, return here so we can update the session dashboard."
 
 ---
 
-## Phase 2: Prototype Session (Optional)
+## Block 5 — HARD-GATE (phase completion approval)
 
-If exploration needs a runnable prototype to resolve ambiguity or validate business flows:
+`<HARD-GATE>` — This block runs when the child skill signals its phase is done.
 
-1. The `prototype-builder` skill is invoked — NOT the prototype-companion-agent directly.
-2. `prototype-builder` first offers the Visual Companion for a layout-confirm step.
-3. After layout direction is confirmed, `subagent-driven-prototyping` builds the full working prototype component by component.
-4. Each component passes a two-stage review (Plan Alignment → Prototype Quality Check).
-5. The SME clicks through the working prototype and validates the business logic.
-6. After validation, dispatch prototype-companion-agent for observation capture:
-
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-prototype-companion-agent/SKILL.md \
-  --context exploration/session-brief.md exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
-  --optional-context exploration/captures/issues-opportunities.md \
-  --instruction "Mode: prototype-observations. Capture implied requirements, assumptions, and edge cases observed." \
-  --output exploration/captures/prototype-notes.md
-```
+1. Present a plain-language summary of what was produced (1–3 bullets).
+2. Show the SME the Outcome file path.
+3. Ask for explicit approval:
+   > "Does everything look right? If you're happy with it, just say the word and I'll mark Phase [N] complete."
+4. **Do NOT update the dashboard until the SME gives a clear affirmation.** Accepted responses: "Yes", "Looks good", "Approved", "Go ahead", "That's right", or any equivalent clear confirmation.
+5. If the SME requests changes: return control to the child skill, apply changes, then re-present for approval. Repeat until satisfied.
 
 ---
 
-## Phase 2b: Business Rule Audit (Required gate — do not skip)
+## Block 6 — Dashboard Write (runs after HARD-GATE approval)
 
-Run after prototype observations are captured and before the Narrowing Gate. This step checks that the prototype's implied behaviour does not contradict the business rules in `brd-draft.md`. It is **not optional** — skipping it means the narrowing gate and handoff will not catch logic drift introduced during prototyping.
+Using the Write tool, update `exploration/exploration-dashboard.md`:
+1. Change `- [ ]` to `- [x]` for the now-completed phase.
+2. Update `**Current Phase:**` to the name of the next phase, or to `Complete` if Phase 4 was just finished.
+3. Update `**Status:**` to `In Progress` (or `Complete` if all phases are done).
+4. In the Session Log table, fill in the completed phase row with today's date and a one-sentence note describing what was produced.
 
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-business-rule-audit-agent/SKILL.md \
-  --context exploration/captures/brd-draft.md \
-  --optional-context exploration/captures/prototype-notes.md \
-  --instruction "Run a full business rule audit. Compare all BR-xxx rules in the BRD against the prototype observations (if present). Produce a structured report with a required ## Unresolved Drifts section. List every rule with no corresponding evidence. If no prototype-notes are present, flag all rules as unverified." \
-  --output exploration/captures/business-rule-audit.md
-```
-
-Then check the output for unresolved drifts before proceeding:
-
-```bash
-python3 ./scripts/check_gaps.py \
-  --files exploration/captures/business-rule-audit.md \
-  --threshold 0
-# Threshold 0: any [NEEDS HUMAN INPUT] marker in the audit report is a hard stop.
-# Resolve all drifts before the Narrowing Gate.
-```
-
-**Human gate**: Read `## Unresolved Drifts` in the audit report. Each item must be resolved (clarified in `brd-draft.md` or accepted as a known constraint) before handoff.
+Then loop back to **Block 3** to orient the SME for the next phase.
 
 ---
 
-## Phase 3: Narrowing Gate
+## Completion Block
 
-Before handoff, confirm readiness. Each item requires a one-sentence evidence field:
+When all 4 phases are marked `[x]`:
 
-| Check | Evidence Required |
-|-------|------------------|
-| Problem is clear | One sentence from `problem-framing.md` |
-| Product shape is understood | Summary line from `brd-draft.md` |
-| Key constraints are known | Constraint count from `brd-draft.md` |
-| Major risks are understood | Top risk from `issues-opportunities.md` |
-| Remaining unknowns are acceptable | Decision rationale (human judgment) |
+> "🎉 Congratulations — your Exploration Session is complete!
+> All four phases are finished and your handoff package is ready.
+> Your exploration outputs are in the `exploration/` folder.
+> The next step is Opportunity 4: Engineering. Hand your team the file at
+> `exploration/handoffs/handoff-package.md` to begin the build."
 
-If NOT ready: run another capture pass or a targeted spike. Do not force handoff — premature handoff produces unusable specs.
-
----
-
-## Phase 4: Handoff Preparation
-
-Synthesize all captures into a single handoff package:
-
-```bash
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
-  --context exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
-  --optional-context exploration/captures/issues-opportunities.md exploration/captures/prototype-notes.md exploration/captures/business-rule-audit.md \
-  --instruction "Synthesize all exploration captures into a structured handoff package. If a business rule audit is present, include its Unresolved Drifts section as a top-level risk section." \
-  --output exploration/handoff/exploration-handoff.md
-```
-
-Review output against `architecture/templates/exploration-handoff-template.md`.
-
-**Recommended next step options**:
-- Generate formal spec using Spec-Kitty
-- Update roadmap and defer implementation
-- Run a targeted exploration spike for remaining open questions
-
----
-
-## Phase 5: Planning Draft — Optional Engineering Harness Integration
-
-> ⚠️ **OPTIONAL** — Only relevant when an **execution harness plugin** (like superpowers or spec-kitty) is installed and you are using the **quantum double diamond framework**. If running exploration standalone, skip this phase. Your workflow ends at Phase 4.
-
-This phase uses the [`planning-doc-agent`](../../agents/planning-doc-agent.md) to pre-draft Spec-Kitty artifacts from the handoff package. Outputs land in a **staging area** — a human must review and approve before any spec-kitty CLI commands are run.
-
-### Running the three draft modes in sequence
-
-```bash
-# Mode 1: spec-draft
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/handoff/exploration-handoff.md \
-  --instruction "Mode: spec-draft. Pre-draft a spec.md from this handoff. Mark any gap with [NEEDS HUMAN INPUT]." \
-  --output exploration/planning-drafts/spec-draft.md
-
-# Mode 2: plan-draft
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/handoff/exploration-handoff.md \
-  --instruction "Mode: plan-draft. Pre-draft a plan.md with phases and WP hints. Mark any gap with [NEEDS HUMAN INPUT]." \
-  --output exploration/planning-drafts/plan-draft.md
-
-# Mode 3: tasks-outline (reads the two drafts above)
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/planning-drafts/spec-draft.md exploration/planning-drafts/plan-draft.md \
-  --instruction "Mode: tasks-outline. Generate a WP outline. WP-XX stubs only — do not fabricate scope." \
-  --output exploration/planning-drafts/tasks-outline.md
-```
-
-**Human gate**: Review all staging drafts. Approve before handing off to the engineering harness for execution.
-
----
-
-## Re-Entry: Cycling Back from Engineering to Exploration
-
-The relationship between exploration and formal engineering is **bidirectional**. When the engineering cycle uncovers unresolved ambiguity — during spec authoring, work package planning, or implementation — a new exploration cycle is spawned. This is not a failure; it is a designed feedback loop in the quantum double diamond framework.
-
-### Re-entry with an Execution Harness present
-
-```bash
-# Triggered from within the formalized engineering cycle.
-# Step 1: write the blocker description to a temp file (dispatch.py requires a real file, not an empty string)
-# Use a session-scoped path for parallel session safety: /tmp/reentry-context-$$.md
-echo "CONTEXT: [describe the blocking ambiguity or engineering question here]" > /tmp/reentry-context-$$.md
-
-# Step 2: dispatch
-python3 ./scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context /tmp/reentry-context-$$.md \
-  --instruction "Mode: re-entry-scope. Identify the exploration gap. Suggest exploration type. Draft a session brief." \
-  --output "exploration/session-brief-reentry-$(date +%Y%m%d).md"
-```
-
-Feed the output session brief back into the exploration-cycle-orchestrator and restart from Phase 0 for the scoped re-entry.
-
-### Standalone re-entry without an Execution Harness
-
-If an execution harness is not present, re-entry is scoped by running the intake-agent again with the engineering ambiguity as the new trigger. Classify it as a `re-entry spike`, draft a fresh `session-brief.md`, and restart from Phase 0. No planning-doc-agent is required for the standalone path.
-
-Multiple re-entry cycles per engineering run are expected and supported.
-
----
-
-## Optimization Loop (Phase D Preview)
-
-Once the Phase A baseline is established (3+ sessions completed), use the autoresearch-style loop via `exploration-optimizer`:
-
-- Establish baseline: run 3 sessions, log artifact quality scores to `evals/results.tsv`
-- Change one variable per iteration: prompt text, capture pass ordering, session brief structure
-- Keep only changes that measurably improve handoff usefulness
-- Prefer simpler capture sequences over marginally better complex ones
-
----
-
-## Phase A Gate Criteria (Before Proceeding to Phase B)
-
-The Phase A slice is validated when **all three** are true:
-
-1. At least 3 exploration sessions complete the full loop (brief → captures → handoff)
-2. At least 2 handoff packages are used as input to a downstream spec or planning update
-3. The downstream spec/planning author rates at least 2 of 3 handoff packages as "materially helpful" in post-run survey
-
-The helpfulness rating is made **after** the downstream spec or planning draft is complete, not at handoff time.
-
-Do not build the Phase B requirements-scribe specialist agent until these criteria are met.
+Update `**Status:**` to `Complete` in the dashboard.
