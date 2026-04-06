@@ -1,8 +1,0 @@
-[
-  {"prompt": "coordinate the multi-agent exploration loop for this ambiguous project", "should_trigger": true},
-  {"prompt": "start exploration and route work to specialized skills as needed", "should_trigger": true},
-  {"prompt": "manage the exploration state and decide when to trigger narrowing reviews", "should_trigger": true},
-  {"prompt": "capture the business requirements from the stakeholder session", "should_trigger": false},
-  {"prompt": "build an exploratory prototype to make the product direction concrete", "should_trigger": false},
-  {"prompt": "prepare the handoff package for the engineering team after discovery", "should_trigger": false}
-]
