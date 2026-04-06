@@ -1,13 +1,33 @@
+# Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
 ---
 name: discovery-planning
 description: >
   MUST run before any exploration capture begins. Leads the SME through a structured
-  Discovery Planning Session to understand the problem, propose 2-3 solution
-  approaches, build a Discovery Plan, and get explicit SME approval before
-  dispatching any documentation or prototype agents. Trigger with "start exploration",
-  "let's plan this out", "I have an idea", "help me scope this", or at the beginning
-  of any new Opportunity 3 session.
+  Discovery Planning Session to understand the problem, build a Discovery Plan, and
+  get explicit SME approval before any building starts. Trigger with "start a discovery
+  session", "let's plan this out", "help me figure out what we're building",
+  "I have an idea I want to explore", "let's start from scratch", "start exploration",
+  or at the beginning of any new session.
+allowed-tools: Read, Write
 ---
+
+<example>
+<commentary>Cold start — SME kicks off a fresh session with a vague idea.</commentary>
+User: I have an idea I want to explore
+Agent: Starts by reading any existing session brief, then asks the first discovery question: "What problem are we trying to solve for the people we serve?" — one question, waits for the answer before continuing.
+</example>
+
+<example>
+<commentary>Re-entry after a failed previous attempt — SME returns to planning.</commentary>
+User: Let's try the planning again, last time didn't go well
+Agent: Reads existing discovery-plans/ directory for any prior drafts, acknowledges the previous attempt, then re-opens the discovery session from Q1 to make sure nothing is missed.
+</example>
+
+<example>
+<commentary>SME tries to skip planning and jump straight to building — skill redirects.</commentary>
+User: Skip the planning, just build it
+Agent: "Let's make sure we have a solid plan first — it'll save us time later. I just have a couple more questions." Continues with the next unanswered discovery question. Does not begin building.
+</example>
 
 # Discovery Planning Session
 
@@ -15,109 +35,85 @@ Help any Subject Matter Expert — technical or non-technical — turn a raw ide
 problem, or process pain point into a structured Discovery Plan through natural,
 guided conversation.
 
-Start by understanding the current context, then ask one question at a time to refine
-the idea. Once you understand what we are going to explore, present the plan and get
-the SME's explicit approval before anything is documented or built.
+## HARD-GATE Rule
 
-<HARD-GATE>
-Do NOT dispatch any documentation agents (requirements-doc-agent, prototype-companion-agent,
-business-rule-audit-agent, handoff-preparer-agent) or trigger any prototype-building
-activity until you have presented a Discovery Plan and the SME has explicitly approved it.
+Do NOT write any prototype files. Do NOT hand off to prototype-builder or any build
+activity. Do NOT proceed beyond this skill until the SME replies YES (or equivalent
+clear affirmation) approving the Discovery Plan.
+
+If the SME asks to "just build it" or "skip to the prototype", politely but firmly
+redirect: "Let's make sure we have a solid plan first — it'll save us time later.
+I just have a couple more questions."
+
 This applies to EVERY session regardless of perceived simplicity.
-</HARD-GATE>
 
-## Anti-Pattern: "This Is Too Simple to Need a Plan"
+## Pre-Phase 0: Silent Discovery
 
-Every session goes through this process. A simple automation, a process improvement,
-a documentation need — all of them. Simple problems are where unexamined assumptions
-cause the most wasted effort. The plan can be brief (a few sentences), but you MUST
-present it and get approval.
+Before speaking to the SME, silently (without announcing):
+1. Check if `exploration/session-brief.md` exists. If yes, read it for context.
+2. Create directory `exploration/discovery-plans/` if it does not exist.
 
-## Discovery Planning Checklist
+Do not mention these steps to the SME.
 
-Complete these steps in order:
+## Discovery Session
 
-1. **Understand the context** — ask the SME what they are trying to solve, improve, or build
-2. **Offer the Visual Companion** (if visual layouts or process flows are involved) — offer it once in its own message, get consent before proceeding
-3. **Ask clarifying questions** — one at a time. Focus on: purpose, who is affected, what success looks like, any known constraints
-4. **Propose 2-3 approaches** — lay out the options conversationally, with trade-offs and your recommendation
-5. **Present the Discovery Plan** — summarise the agreed direction in plain language, section by section, get SME approval
-6. **Write the Discovery Plan** — save to `exploration/discovery-plans/YYYY-MM-DD-<topic>-plan.md`
-7. **Self-Review the Plan** — scan for vague sections, contradictions, unanswered questions (see Spec Alignment Checker below)
-8. **SME Review Gate** — ask the SME to confirm the written plan before any agents are dispatched
-9. **Transition to capture** — invoke the exploration-workflow skill to begin the capture phase
+Guide the SME through these 5 questions, ONE at a time. After each answer, confirm
+understanding in 1-2 plain sentences and ask any needed clarifying questions before
+advancing.
 
-## How to Run the Session
+- Q1: "What problem are we trying to solve for the people we serve?"
+- Q2: "Who's involved — who uses this, who gives the final say, who else is affected?"
+- Q3: "What does a great outcome look like when this is working the way you imagined?"
+- Q4: "If we had to pick the three most important things this must do — what would they be? And what would be nice to have but not essential?"
+- Q5: "Are there any hard rules, limits, or things we absolutely cannot do?"
 
-**Ask one question at a time.** Never ask multiple questions in the same message.
-Prefer multiple-choice questions where possible — they are much easier for non-technical
+**Ask one question at a time.** Never stack multiple questions in the same message.
+Prefer multiple-choice questions where possible — they are easier for non-technical
 users to answer than open-ended questions.
 
-**Understand the problem space:**
-- What is the problem, opportunity, or idea?
-- Who is affected by it?
-- What would "success" look like in plain language?
-- Are there known constraints, deadlines, or non-negotiables?
+## Discovery Plan
 
-**If the scope seems very large:**
-Flag it immediately. Help the SME decompose into smaller explorations. What are the
-independent pieces? What should be explored first?
+After all 5 questions, write a draft plan to
+`exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md` using this structure:
 
-**Propose 2-3 approaches:**
-Always present options before committing. Include your recommendation and why.
-Present in plain business language — no technical jargon.
+```
+# Discovery Plan — [Date]
 
-**Present the Discovery Plan in sections:**
-- Problem Statement
-- Who Is Affected
-- What We Are Going to Explore
-- Proposed Approach
-- What Success Looks Like
-- Known Constraints and Risks
-- What We Will Build or Document
+## Problem Statement
+[plain language, 2-3 sentences]
 
-Ask after each section if it looks correct. Be ready to revise.
+## Stakeholders
+[who uses it, who approves, who is affected]
 
-## Writing the Discovery Plan
+## Success Criteria
+[what great looks like]
 
-After approval, write the plan to `exploration/discovery-plans/YYYY-MM-DD-<topic>-plan.md`.
+## Must-Have Requirements
+[numbered list]
 
-Then run the self-review (Spec Alignment Checker below).
+## Constraints and Rules
+[numbered list]
 
-Then ask the SME to review the written plan:
-> "I've written up our Discovery Plan. Please read it and let me know if anything looks
-> wrong or is missing before I start gathering the details."
+## Open Questions
+[anything that needs more information before building]
+```
 
-Wait for explicit approval. Only after approval: invoke `exploration-workflow` to begin
-gathering the details.
+## HARD-GATE Approval
 
-## Spec Alignment Checker (Self-Review)
+Present the completed plan with:
+> "Here is the plan we built together. Please read it through.
+> When you're happy with everything, just reply **YES** — then we'll move on to the next step.
+> If anything needs changing, tell me what and I'll update it right away."
 
-After writing the Discovery Plan, review it with fresh eyes:
+Wait. Do NOT proceed until the SME replies with YES or equivalent affirmation.
+If they suggest changes, update the plan and present it again.
 
-1. **Vagueness scan:** Any sections that say "TBD", "to be determined", or "handle later"? Fix them.
-2. **Contradiction check:** Does any section conflict with another? Pick one interpretation and make it explicit.
-3. **Scope check:** Is this focused enough for one exploration session? If not, decompose.
-4. **Ambiguity check:** Could any requirement be interpreted two different ways? Make the chosen interpretation explicit.
-
-Fix inline. Do not re-review — just fix and move on.
-
-## Visual Companion
-
-Offer the Visual Companion when the session will involve layouts, process flows, or
-interface design. Offer it once in its own message — do not combine with questions:
-
-> "Some of what we're exploring might be easier to understand if I can show it to you
-> visually in a browser — mockups, process diagrams, layout options. Would you like me
-> to use that when helpful?" 
-
-After consent, read and follow `skills/visual-companion/SKILL.md` for per-question
-routing decisions (browser vs plain text).
+On approval: Write the plan file. Announce:
+> "Your plan is saved. We're all set to move forward."
 
 ## Key Principles
 
 - One question per message — never ask multiple at once
 - Multiple choice preferred over open-ended
-- Always propose 2-3 approaches before committing
-- Use plain business language throughout — no developer jargon
-- The HARD-GATE is absolute: no capture, no prototype until the plan is approved
+- Use plain language throughout — no developer jargon
+- The HARD-GATE is absolute: no prototype, no building until the plan is approved
