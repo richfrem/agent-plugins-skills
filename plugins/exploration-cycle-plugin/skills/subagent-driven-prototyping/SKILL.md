@@ -99,12 +99,10 @@ Announce: "Your prototype is ready — Phase 3 is complete."
 If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md`
 exists and `**Status:**` is not `Complete`):
 1. Say to the user:
-   > "Returning to your session dashboard now."
-2. **Immediately transfer control to `exploration-workflow`.** This is a live skill switch.
-   Stop generating output and switch to `exploration-workflow` now. Do not print the phrase
-   "invoke exploration-workflow" as literal text — execute the switch. If your harness uses
-   `@skill-name` routing, trigger `@exploration-workflow`. If direct invocation is
-   unavailable, tell the user: "Please start `exploration-workflow` to continue your session."
+   > "Your prototype is ready for review. Please click the index.html link above to test it."
+   > "Once you approve the layout and logic, you must push us to the next phase to generate your formal User Stories and API Specs."
+   > "Please reply with exactly: **'Return to dashboard and start Phase 4 Handoff'**"
+2. **Immediately stop.** Do not attempt an automated skill switch. You must wait for the user to explicitly type the confirmation phrase to ensure they have actually reviewed the prototype before Phase 4 automation begins.
 
 If operating standalone (no dashboard file, or `**Status:** Complete`), the skill is complete.
 Report back to prototype-builder: all components are built, the entry point is at
