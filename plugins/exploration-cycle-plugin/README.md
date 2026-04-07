@@ -107,3 +107,9 @@ The `exploration-cycle-plugin` is independently authored and not affiliated with
 ---
 
 *See [OVERVIEW.md](OVERVIEW.md) for a deeper conceptual dive into the GenAI Double Diamond.*
+
+## BAE Start Guide
+
+A concise how-to for Business Area Experts (BAEs) has been added: `plugins/exploration-cycle-plugin/BAE-start-guide.md`.
+Recommended entrypoint for BAEs: `intake-agent` (interactive). For CLI-driven automation, use `exploration-workflow` as described in the guide.
+
