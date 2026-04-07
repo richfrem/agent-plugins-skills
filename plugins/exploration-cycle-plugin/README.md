@@ -113,3 +113,12 @@ The `exploration-cycle-plugin` is independently authored and not affiliated with
 A concise how-to for Business Area Experts (BAEs) has been added: `plugins/exploration-cycle-plugin/BAE-start-guide.md`.
 Recommended entrypoint for BAEs: `intake-agent` (interactive). For CLI-driven automation, use `exploration-workflow` as described in the guide.
 
+
+### BAE Start Guide & Diagram
+
+- BAE Start Guide: [BAE Quick Start — Guided Exploration Process](./BAE-start-guide.md)
+
+High-level process diagram:
+
+![High-level process](assets/diagrams/high-level-process.png)
+
