@@ -1,0 +1,68 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#e0f2fe", "primaryBorderColor": "#0369a1", "secondaryColor": "#f0fdf4", "tertiaryColor": "#fef9c3"}}}%%
+flowchart TD
+    SME(["👤 Business Expert<BR>asks one question at a time<BR>business language only"])
+
+    DB["📋 exploration-dashboard.md<BR>─────────────────────────────<BR>- [x] Phase 1 · Problem Framing ✅<BR>- [x] Phase 2 · Visual Blueprinting ✅<BR>- [ ] Phase 3 · Prototyping 🔵 Active<BR>- [ ] Phase 4 · Handoff & Specs<BR>─────────────────────────────<BR>Session: Expense Approval Workflow<BR>Status: In Progress"]
+
+    subgraph Orchestrator ["exploration-workflow — 6-Block State Machine Orchestrator"]
+        direction TB
+        B1["① Bootstrap / Read State<BR>silently reconstruct session from dashboard"] --> B2["② Orientation Summary<BR>present friendly status to SME"]
+        B2 --> B3["③ Route to Active Phase<BR>read first unchecked phase"]
+        B3 --> B4["④ Invoke Child Skill<BR>pass session context"]
+        B4 --> B5["⑤ HARD-GATE Approval<BR>SME must confirm before dashboard updates"]
+        B5 --> B6["⑥ Write Dashboard<BR>mark phase complete · advance to next"]
+        B6 -.->|"loop back"| B1
+    end
+
+    SME <-->|"natural conversation<BR>no CLI · no file trees"| Orchestrator
+    Orchestrator <-->|"reads & writes on every loop"| DB
+
+    subgraph Skills ["Child Skills — Dashboard Intercept on every invocation"]
+        direction LR
+        DP["discovery-planning<BR>─────────────────────<BR>Five questions · one at a time<BR>Written plan · HARD-GATE: SME YES<BR>Iterates until approved<BR>→ exploration/discovery-plans/"]
+        VC["visual-companion<BR>─────────────────────<BR>Option A · B · C in plain language<BR>Adapted to Discovery Plan context<BR>SME confirms before building starts<BR>→ exploration/captures/layout-direction.md"]
+        SP["subagent-driven-prototyping<BR>─────────────────────<BR>3–6 components · fresh agent per part<BR>Self-review against Discovery Plan<BR>BLOCKED / NEEDS_CONTEXT gates<BR>→ exploration/prototype/index.html"]
+        EH["exploration-handoff<BR>─────────────────────<BR>Stage 0: auto-capture business rules<BR>user stories · workflow diagrams<BR>Risk Tier Assessment · Reader Testing<BR>→ exploration/handoffs/handoff-package.md"]
+    end
+
+    B3 -->|"Phase 1"| DP
+    B3 -->|"Phase 2"| VC
+    B3 -->|"Phase 3"| SP
+    B3 -->|"Phase 4"| EH
+
+    DP -->|"Terminal Return on completion"| B5
+    VC -->|"Terminal Return on completion"| B5
+    SP -->|"Terminal Return on completion"| B5
+    EH -->|"Terminal Return on completion"| B5
+
+    subgraph Intercept ["⚠️ Dashboard Intercept — runs silently on every child skill invocation"]
+        Int["If exploration-dashboard.md EXISTS<BR>and Status ≠ Complete<BR>→ stop · redirect to exploration-workflow<BR>SME cannot accidentally run skills out of order"]
+    end
+
+    DP & VC & SP & EH -.->|"session check"| Intercept
+    Intercept -.->|"active session"| Orchestrator
+
+    subgraph Heritage ["Patterns adapted from obra/superpowers (MIT)"]
+        direction LR
+        H1["HARD-GATE<BR>from TDD: ship only<BR>when tests pass"]
+        H2["Blank-slate subagents<BR>zero prior context<BR>per execution unit"]
+        H3["State machine discipline<BR>no ad-hoc routing<BR>predictable loop"]
+    end
+
+    H1 -.->|"adapted"| B5
+    H2 -.->|"adapted"| SP
+    H3 -.->|"adapted"| Orchestrator
+
+    classDef orchestratorStyle fill:#e0f2fe,stroke:#0369a1,stroke-width:2px
+    classDef skillStyle fill:#f0fdf4,stroke:#15803d,stroke-width:2px
+    classDef dbStyle fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+    classDef smeStyle fill:#f3f4f6,stroke:#374151,stroke-width:2px
+    classDef interceptStyle fill:#fee2e2,stroke:#b91c1c,stroke-width:1px,stroke-dasharray:5 5
+    classDef heritageStyle fill:#f5f3ff,stroke:#7c3aed,stroke-width:1px,stroke-dasharray:4 4
+
+    class Orchestrator orchestratorStyle
+    class Skills skillStyle
+    class DB dbStyle
+    class SME smeStyle
+    class Intercept interceptStyle
+    class Heritage heritageStyle

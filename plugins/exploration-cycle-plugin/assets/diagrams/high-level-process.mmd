@@ -1,0 +1,52 @@
+flowchart LR
+    Start(["💡 Raw Idea<BR>Business Problem<BR>Process Pain Point"])
+
+    subgraph Diamond1 ["◇ Diamond 1 — Exploration Loop  ·  exploration-cycle-plugin"]
+        direction LR
+
+        P1["📋 Phase 1<BR>Problem Framing<BR>─────────────<BR>5 questions · one at a time<BR>Written Discovery Plan<BR>HARD-GATE: SME approves YES"]
+
+        P2["🎨 Phase 2<BR>Visual Blueprinting<BR>─────────────<BR>3 plain-language options<BR>A · B · C layout direction<BR>SME confirms before build"]
+
+        P3["⚙️ Phase 3<BR>Prototyping<BR>─────────────<BR>3–6 fresh subagents<BR>One component at a time<BR>Self-reviewed against plan"]
+
+        P4["📦 Phase 4<BR>Handoff & Specs<BR>─────────────<BR>Auto-capture requirements<BR>User stories · workflow docs<BR>Risk Tier + Reader Test"]
+
+        P1 -->|"plan approved"| P2
+        P2 -->|"layout confirmed"| P3
+        P3 -->|"prototype validated"| P4
+    end
+
+    Gate{"🔒 Risk &<BR>Rigor Gate<BR>─────────────<BR>Harm assessment<BR>Feasibility check<BR>Tier classification"}
+
+    T0["🗑️ Fail Fast<BR>Flawed idea<BR>Kill it early · zero cost"]
+    T1["✅ Self-Deploy<BR>Low / moderate risk<BR>Lightweight review or<BR>direct deployment"]
+    T3["🏭 Engineering Handoff<BR>Sensitive data · complex build<BR>Validated prototype → formal SDLC<BR>Faster · cheaper · no blank-page start"]
+
+    subgraph Diamond2 ["◇ Diamond 2 — Engineering Cycle"]
+        direction LR
+        E1["📐 Formal Specs<BR>& Planning"] --> E2["🚀 Production<BR>Build"]
+    end
+
+    Start --> P1
+    P4 --> Gate
+    Gate -->|"idea is flawed"| T0
+    Gate -->|"Tier 1 · Tier 2"| T1
+    Gate -->|"Tier 3"| T3
+    T3 --> Diamond2
+
+    E2 -.->|"Unknown unknown found<BR>→ Re-entry Spike"| Start
+
+    classDef trigger fill:#f3f4f6,stroke:#374151,stroke-width:2px
+    classDef explore fill:#e0f2fe,stroke:#0369a1,stroke-width:2px
+    classDef gate fill:#fff7ed,stroke:#c2410c,stroke-width:3px
+    classDef deploy fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+    classDef execute fill:#dcfce7,stroke:#15803d,stroke-width:2px
+    classDef dead fill:#fee2e2,stroke:#b91c1c,stroke-width:1px
+
+    class Start trigger
+    class P1,P2,P3,P4 explore
+    class Gate gate
+    class T1 deploy
+    class T3,E1,E2 execute
+    class T0 dead
