@@ -9,6 +9,8 @@ description: >
   between Mac and Windows machines using Git. This skill solves the common problem
   where symlinks committed on macOS show up as plain text files on Windows (and vice versa)
   because of Git's core.symlinks setting or missing Developer Mode / elevated permissions.
+  **IMPORTANT FOR WINDOWS USERS:** Developer Mode must be enabled before creating symlinks.
+  Without it, Git will check out symlinks as plain-text files or hardlinks, breaking cross-platform workflows.
 ---
 
 # Symlink Manager — Cross-Platform Skill
@@ -20,11 +22,22 @@ Git symlinks break across platforms because:
 | Issue | macOS/Linux | Windows |
 |---|---|---|
 | Git setting | `core.symlinks=true` (default) | `core.symlinks=false` (default, unless Dev Mode enabled) |
-| Link type | `ln -s` symlink | NTFS symlink *or* Junction Point |
+| Link type | `ln -s` symlink | NTFS symlink *or* Junction Point *or* Hardlink |
 | Permissions | Any user | Requires Developer Mode **or** admin elevation |
 | Git behaviour | Stores as symlink object | Stores as plain text file containing the target path |
 
 When `core.symlinks=false`, Git checks out a symlink as a **plain text file** whose contents are the target path. When you then `git pull` on the other machine, that text file arrives instead of a real link — silent, no error.
+
+### The Hardlink Trap
+
+When `core.symlinks=false` and Developer Mode is disabled, symlinks can be accidentally replaced with **hardlinks**. Hardlinks **cannot be committed as symlinks to Git**, so they break the cross-platform workflow:
+
+1. macOS user commits real symlinks (core.symlinks=true by default)
+2. Windows user with Developer Mode off: symlinks checkout as plain-text files, then get replaced with hardlinks
+3. Windows user pushes: Git sees plain-text file, commits it as a file, not a symlink
+4. macOS user pulls: receives text file instead of symlink — broken
+
+**Solution: Always use real symlinks, never hardlinks.** Enable Developer Mode on Windows first, then use `/create-sym-link` command to create proper symlinks that Git recognizes.
 
 ---
 
@@ -63,18 +76,20 @@ Add a `.gitattributes` line to lock symlinks in the repo:
 *.symlink  -text
 ```
 
-### Step 3 — Create symlinks with the script
+### Step 3 — Create symlinks (Automatic Platform Detection)
 
-Always use `scripts/symlink_manager.py` rather than raw `os.symlink()` because it:
-1. Detects OS and chooses the right link strategy
-2. Falls back to NTFS Junction Points on Windows when symlinks are unavailable
-3. Writes a `symlinks.json` manifest so links can be re-created after a `git reset --hard`
-4. Validates targets exist before linking
-5. Optionally commits the manifest to the repo
+**For cross-platform teams: Use the Python script** — it automatically handles OS differences without requiring bash, PowerShell, or .sh scripts.
 
+Use the `/create-sym-link` command in Claude Code for an interactive workflow:
+```
+/create-sym-link
+```
+This prompts for source and destination paths and uses the Python symlink manager.
+
+Or use the Python script directly (works on Windows, macOS, and Linux):
 ```bash
-# Create a single symlink
-python ./scripts/symlink_manager.py create --src configs/shared.cfg --dst app/shared.cfg
+# Create a single symlink (automatically detects OS)
+python ./scripts/symlink_manager.py create --src plugins/plugin-manager/scripts/bridge_installer.py --dst plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py
 
 # Re-create ALL links from the manifest
 python ./scripts/symlink_manager.py restore
@@ -85,6 +100,19 @@ python ./scripts/symlink_manager.py audit
 # Full diagnosis of the environment
 python ./scripts/symlink_manager.py diagnose
 ```
+
+**The Python script automatically:**
+- ✓ macOS/Linux: Creates true symlinks
+- ✓ Windows with Developer Mode: Creates true symlinks
+- ✓ Windows without Developer Mode: Falls back to junctions (dirs) or hardlinks (files)
+- ✓ No external shell scripts needed — pure Python with standard library only
+
+**Critical: If symlinks were created as hardlinks or plain-text files:**
+1. Delete them: `rm plugins/plugin-manager/skills/*/scripts/bridge_installer.py`
+2. Enable Developer Mode on Windows (Settings → System → For Developers)
+3. Set git config: `git config core.symlinks true`
+4. Use `/create-sym-link` command or `python ./scripts/symlink_manager.py create ...`
+5. Commit: `git add -A && git commit -m "fix: replace hardlinks with proper symlinks"`
 
 ### Step 4 — Commit the manifest
 
@@ -114,6 +142,7 @@ python ./scripts/symlink_manager.py restore
 
 - `references/troubleshooting.md` — Common error messages and fixes
 - `scripts/symlink_manager.py` — The cross-platform Python script
+- `.agent/rules/symlink-cross-platform.md` — Repository-wide symlink best practices and requirements
 
 Read `references/troubleshooting.md` when the user reports specific error messages.
 
