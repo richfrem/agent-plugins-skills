@@ -1,1 +1,1 @@
-plugins/plugin-manager/skills/scripts/bridge_installer.py
+../../../scripts/bridge_installer.py
