@@ -180,11 +180,19 @@ def find_repo_root() -> Path:
 def _create_windows_symlink(src: Path, dst: Path) -> tuple[bool, str, LinkStrategy]:
     """
     Try to create a Windows symlink; fall back to junction (dirs) or hardlink (files).
+    Always uses relative paths for portability.
     Returns (success, message, strategy_used).
     """
+    # Calculate relative path from dst's parent directory to src
+    try:
+        rel_path = os.path.relpath(src, dst.parent)
+    except ValueError:
+        # On Windows, relpath can fail if src and dst are on different drives
+        rel_path = str(src)
+
     if can_create_symlinks():
         try:
-            dst.symlink_to(src)
+            dst.symlink_to(rel_path)
             return True, "symlink created", "symlink"
         except OSError as e:
             pass  # fall through to fallback
@@ -239,8 +247,10 @@ def create_link(src: Path, dst: Path) -> tuple[bool, str, LinkStrategy]:
     if IS_WINDOWS:
         return _create_windows_symlink(src, dst)
     else:
+        # macOS/Linux: use relative path for portability
         try:
-            dst.symlink_to(src)
+            rel_path = os.path.relpath(src, dst.parent)
+            dst.symlink_to(rel_path)
             return True, "symlink created", "symlink"
         except OSError as e:
             return False, f"symlink creation failed: {e}", "symlink"
