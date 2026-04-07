@@ -520,7 +520,16 @@ def main() -> None:
     manifest = plugin_path / ".claude-plugin" / "plugin.json"
     metadata = {}
     if manifest.exists():
-        metadata = json.loads(manifest.read_text(encoding='utf-8'))
+        try:
+            raw_text = manifest.read_text(encoding='utf-8')
+            metadata = json.loads(raw_text)
+            # Clean up description field if it contains HTML tags
+            if "description" in metadata and isinstance(metadata["description"], str):
+                import re
+                metadata["description"] = re.sub(r'<[^>]+>', '', metadata["description"]).strip()
+        except json.JSONDecodeError as e:
+            print(f"Warning: Failed to parse {manifest}: {e}")
+            metadata = {"name": plugin_path.name}
     else:
         metadata = {"name": plugin_path.name}
 

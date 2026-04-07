@@ -307,7 +307,11 @@ def _read_plugin_meta(p: Path) -> dict:
         if manifest.exists():
             try:
                 data = json.loads(manifest.read_text(encoding="utf-8"))
-                meta["description"] = data.get("description", "")
+                description = data.get("description", "")
+                # Strip any residual HTML tags from the description (e.g., <example> tags)
+                import re
+                description = re.sub(r'<[^>]+>', '', description).strip()
+                meta["description"] = description
                 meta["version"] = data.get("version", "")
                 meta["name"] = data.get("name", p.name)
             except Exception:
