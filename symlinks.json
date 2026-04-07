@@ -30,6 +30,54 @@
       "dst": "plugins\\link-checker\\skills\\symlink-manager\\scripts\\symlink_manager.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
+      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\scripts\\test_symlink.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\audit_structure.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\audit_structure.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\generate_readmes.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\generate_readmes.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\plugin_bootstrap.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\plugin_bootstrap.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\plugin_inventory.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\plugin_inventory.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\sync_with_inventory.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\sync_with_inventory.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\test_symlink2.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\link-checker\\scripts\\bulk_symlink_fixer.py",
+      "dst": "plugins\\link-checker\\skills\\symlink-manager\\scripts\\bulk_symlink_fixer.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

@@ -114,7 +114,22 @@ python ./scripts/symlink_manager.py diagnose
 4. Use `/create-sym-link` command or `python ./scripts/symlink_manager.py create ...`
 5. Commit: `git add -A && git commit -m "fix: replace hardlinks with proper symlinks"`
 
-### Step 4 — Commit the manifest
+### Step 4 — Bulk Fix Symlinks in Folders
+
+If you have multiple text-file stand-ins in a folder hierarchy, use the bulk fixer:
+
+```bash
+# Scan folder, generate inventory, and fix all broken symlinks
+python ./scripts/bulk_symlink_fixer.py plugins/plugin-manager/skills/maintain-plugins/scripts
+```
+
+The bulk fixer:
+- Scans the folder recursively for text-file stand-ins and broken symlinks
+- Generates an inventory report (count and list of issues)
+- Calls `symlink_manager.py create` in a loop to fix each one
+- Reports summary (fixed, skipped, failed counts)
+
+### Step 5 — Commit the manifest
 
 Commit `symlinks.json` to the repo. On a fresh checkout (or after a `git pull` breaks links on Windows), any developer runs:
 ```bash
