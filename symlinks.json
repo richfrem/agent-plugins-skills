@@ -24,6 +24,12 @@
       "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\references\\install_all_plugins.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins\\link-checker\\scripts\\symlink_manager.py",
+      "dst": "plugins\\link-checker\\skills\\symlink-manager\\scripts\\symlink_manager.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

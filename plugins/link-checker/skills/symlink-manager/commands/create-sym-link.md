@@ -2,50 +2,50 @@
 name: create-sym-link
 description: >
   Create a real symbolic link that works correctly on both Windows and macOS/Linux.
-  Automatically detects the OS and creates the appropriate link type. Use whenever
-  you need to create cross-platform symlinks that Git will recognize correctly.
+  Uses the symlink_manager.py script to automatically detect OS and create the 
+  appropriate link type (symlink, junction, or hardlink fallback).
 argument-hint: "[source-path] [dest-path]"
 allowed-tools: Bash, Read
 ---
 
-You are helping create a cross-platform symbolic link. The process automatically adapts to the OS:
-
-**On macOS/Linux:** Creates true symlinks (`ln -s`)
-**On Windows:** Creates true symlinks if Developer Mode is enabled, otherwise uses fallback strategies
+You are helping create a cross-platform symbolic link using the symlink_manager.py script.
 
 ### Step 1: Gather paths
-If arguments were provided, use them:
-- Source: $1
-- Destination: $2
+
+If arguments were provided ($1 and $2), use them directly.
 
 If no arguments, ask the user for:
-1. **Source path** — the file or directory the link should point to (relative to repo root)
-2. **Destination path** — where the symlink should be created (relative to repo root)
+1. **Source path** — relative to repo root (e.g., `plugins/my-plugin/scripts/script.py`)
+2. **Destination path** — relative to repo root (e.g., `plugins/my-plugin/skills/my-skill/scripts/script.py`)
 
-### Step 2: Validate
-- [ ] Source path exists: `ls -l <source>`
-- [ ] Destination directory exists
-- [ ] Destination file does NOT already exist (ask before overwriting)
-- [ ] Both paths are relative from repo root
+### Step 2: Validate paths
+- [ ] Source exists: !`ls -l "$1" 2>&1`
+- [ ] Destination parent directory exists
+- [ ] Destination does not already exist (confirm if it does)
 
-### Step 3: Create using the symlink manager script
-The script automatically detects OS and handles platform differences:
+### Step 3: Execute the symlink manager script
 
+Run the command (this uses the skill's copy of symlink_manager.py):
 ```bash
-python ./scripts/symlink_manager.py create --src <source> --dst <destination>
+!`python ./scripts/symlink_manager.py create --src "$1" --dst "$2"`
 ```
 
-This uses `symlink_manager.py` which:
-- **Windows with Developer Mode**: creates true symlinks
-- **Windows without Developer Mode**: falls back to junction (dirs) or hardlinks (files)
-- **macOS/Linux**: always creates true symlinks
-- Updates `symlinks.json` manifest automatically
+**What the script does:**
+- **Windows with Developer Mode enabled**: Creates true symlink
+- **Windows without Developer Mode**: Falls back to junction (dirs) or hardlinks (files)
+- **macOS/Linux**: Always creates true symlinks
+- **All platforms**: Uses relative paths for portability
+- **Manifest**: Automatically updates `symlinks.json` for restoration
 
-### Step 4: Verify and commit
-1. Check the created link: `ls -la <destination>` should show link arrow `->` or symlink info
-2. Suggest commit: `git add <destination> && git commit -m "feat: add symlink <name>"`
+### Step 4: Verify and suggest commit
 
-### Special case: If user is on Windows
-- If they see hardlink fallback, suggest enabling Developer Mode for proper symlinks:
+After successful creation:
+- Report the symlink was created with relative path: !`readlink "$2"`
+- Verify file is accessible: !`head -3 "$2" 2>&1 || echo "Link points to: $(readlink "$2")"`
+- Suggest: `git add "$2" && git commit -m "feat: add symlink for $2"`
+
+### Special case: Windows without Developer Mode
+- If user sees hardlink fallback, they can enable Developer Mode:
   Settings → System → For Developers → toggle Developer Mode ON
-- Hardlinks created as fallback work but are not cross-platform compatible
+- Alternatively, run as administrator for unprivileged symlink creation
+- Warn: Hardlinks are not cross-platform compatible
