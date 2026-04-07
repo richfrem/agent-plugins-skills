@@ -81,7 +81,7 @@ Route to the child skill for the active phase:
 | Phase 1 — Problem Framing | `discovery-planning` |
 | Phase 2 — Visual Blueprinting | `visual-companion` |
 | Phase 3 — Prototyping | `subagent-driven-prototyping` |
-| Phase 4 — Handoff & Specs | `exploration-handoff` |
+| Phase 4 — Handoff & Specs (Auto-runs User Stories & Specs) | `exploration-handoff` |
 | All 4 phases complete | → Completion Block |
 
 When invoking a child skill, include this context:
