@@ -1,1 +1,1 @@
-../../../scripts/plugin_installer.py
+../../../scripts/bridge_installer.py

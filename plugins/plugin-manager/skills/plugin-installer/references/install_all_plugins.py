@@ -1,1 +1,1 @@
-../scripts/install_all_plugins.py
+../../../scripts/install_all_plugins.py

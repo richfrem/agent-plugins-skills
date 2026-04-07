@@ -11,7 +11,7 @@ Usage Examples:
     python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
 
     # install plugin in a different repo e.g. context-bundler specifically
-    python <full install path>\agent-plugins-skills\plugins\plugin-manager\scripts\bridge_installer.py --plugin <full install path>\agent-plugins-skills\plugins\context-bundler
+    python <full install path>/agent-plugins-skills/plugins/plugin-manager/scripts/bridge_installer.py --plugin <full install path>/agent-plugins-skills/plugins/context-bundler
 
 Platform Command Mapping (commands/ vs workflows/):
     Plugin source always uses commands/ as the canonical folder name.
@@ -386,7 +386,7 @@ def write_project_lock(plugin_path: Path, metadata: dict,
         lock = {"version": 1, "skills": {}}
 
     source = metadata.get("repository", plugin_path.name)
-    now = datetime.datetime.utcnow().isoformat() + "Z"
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
 
     for skill_name in installed_skills:
         existing = lock.get("skills", {}).get(skill_name, {})
