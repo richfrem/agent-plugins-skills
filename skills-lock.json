@@ -649,6 +649,104 @@
       "installedAt": "2026-03-23T19:00:48.646332Z",
       "updatedAt": "2026-04-07T20:30:20.143773Z"
     },
+    "oracle-legacy-system-analysis-business-rules": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-business-workflows": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-code-conversion": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-database": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-dependency-analysis": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-doc-gen": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-forms-visualizer": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-inventory-manager": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-oracle-forms": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-oracle-reports": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-roles": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-screenshot-manager": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-tech-stack-mapping": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
+    "oracle-legacy-system-analysis-xml-to-markdown": {
+      "source": "oracle-legacy-system-analysis",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-07T21:14:34.180062Z",
+      "updatedAt": "2026-04-07T21:14:34.180062Z"
+    },
     "orchestrator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
