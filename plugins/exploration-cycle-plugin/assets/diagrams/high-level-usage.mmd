@@ -1,0 +1,116 @@
+---
+config:
+  theme: base
+  layout: elk
+---
+flowchart LR
+ subgraph PreSession["Session Entry (optional)"]
+    direction TB
+        IA[["intake-agent<BR>─────────────────────────<BR>Front-door interviewer<BR>Runs before exploration-workflow<BR>Pre-fills exploration/session-brief.md<BR>High-touch · primary model"]]
+        ECO[["exploration-cycle-orchestrator-agent<BR>─────────────────────────<BR>Alternative Phase A orchestrator<BR>Dispatches requirements-doc-agent via CLI<BR>Greenfield · brownfield · re-entry spikes"]]
+  end
+ subgraph Core["Orchestration Layer"]
+    direction TB
+        OW["⚙️ exploration-workflow<BR>State Machine Orchestrator<BR>─────────────────────────<BR>① Read dashboard state<BR>② Orientation summary<BR>③ Route to active phase<BR>④ Invoke child skill<BR>⑤ HARD-GATE approval<BR>⑥ Write dashboard · advance"]
+        DB["📋 exploration-dashboard.md<BR>─────────────────────────<BR>- [x] Phase 1 ✅<BR>- [x] Phase 2 ✅<BR>- [ ] Phase 3 🔵 Active<BR>- [ ] Phase 4<BR>─────────────────────────<BR>Session state · no server · no DB"]
+  end
+ subgraph P1Box["Phase 1 — Problem Framing"]
+        DP["🔍 discovery-planning (Skill)<BR>─────────────────────────<BR>5 questions · one at a time<BR>Written Discovery Plan<BR>Iterative until SME says YES<BR>→ exploration/discovery-plans/"]
+        DPA[["discovery-planning-agent<BR>(Interactive agent dispatch path)"]]
+  end
+ subgraph P2Box["Phase 2 — Visual Blueprinting"]
+        VC["🎨 visual-companion (Skill)<BR>─────────────────────────<BR>Option A · single page overview<BR>Option B · step-by-step flow<BR>Option C · two-panel layout<BR>Adapted to Discovery Plan context<BR>→ exploration/captures/layout-direction.md"]
+  end
+ subgraph P3Box["Phase 3 — Prototyping"]
+        PB["🏗️ prototype-builder (Skill)<BR>Phase orchestrator<BR>Coordinates subagent build loop"]
+        SP["⚙️ subagent-driven-prototyping<BR>─────────────────────────<BR>3–6 named components<BR>Fresh agent per component<BR>Self-review vs Discovery Plan<BR>BLOCKED · NEEDS_CONTEXT gates<BR>→ exploration/prototype/index.html"]
+        PBA[["prototype-builder-agent<BR>(Alternate dispatch path)"]]
+  end
+ subgraph Stage0["Stage 0 Scribes (auto-run before synthesis)"]
+    direction LR
+        BRC["business-requirements-capture"]
+        USC["user-story-capture"]
+        BWD["business-workflow-doc<BR>(conditional: only if process flow)"]
+  end
+ subgraph P4Box["Phase 4 — Handoff & Specs"]
+        EH["📦 exploration-handoff (Skill)<BR>─────────────────────────<BR>Stage 0: auto-runs scribe skills<BR>Tier Assessment (SME classifies)<BR>Reader Test: predicts 3 downstream Qs<BR>→ handoff-package.md"]
+        HPA[["handoff-preparer-agent<BR>(Alternate CLI dispatch path)"]]
+        Stage0
+  end
+ subgraph Phases["4-Phase Execution Pipeline"]
+    direction TB
+        P1Box
+        P2Box
+        P3Box
+        P4Box
+  end
+ subgraph Patterns["Key Patterns (adapted from obra/superpowers · MIT)"]
+    direction TB
+        HG["HARD-GATE<BR>(No build until SME YES)"]
+        DI["Dashboard Intercept<BR>(Skills redirect to orchestrator<BR>if active session detected)"]
+        BSA["Blank-slate Subagents<BR>(Zero prior context per component)"]
+  end
+ subgraph Plugin["exploration-cycle-plugin  ·  installable via uvx"]
+    direction LR
+        PreSession
+        Core
+        Phases
+        Patterns
+  end
+    OW <-- reads & writes --> DB
+    IA -. pre-fills session brief .-> OW
+    ECO -. alternative orchestrator .-> OW
+    DPA -. wraps .-> DP
+    PB --> SP
+    PBA -. wraps .-> PB
+    HPA -. wraps .-> EH
+    BRC --> USC --> BWD
+    EH -- triggers --> Stage0
+    SME(["👤 Business Expert<BR>no CLI · no file trees · no jargon"]) <-- natural conversation --> OW
+    OW -- Routes to Phase 1 --> P1Box
+    OW -- Routes to Phase 2 --> P2Box
+    OW -- Routes to Phase 3 --> P3Box
+    OW -- Routes to Phase 4 --> P4Box
+    P1Box -- Terminal Return --> OW
+    P2Box -- Terminal Return --> OW
+    P3Box -- Terminal Return --> OW
+    P4Box -- Terminal Return --> OW
+    HG -. Applied to .-> DP
+    DI -. Applied to .-> DP & VC & SP & EH
+    BSA -. Applied to .-> SP
+
+     OW:::coreStyle
+     DB:::coreStyle
+     IA:::agentStyle
+     ECO:::agentStyle
+     DP:::p1Style
+     DPA:::agentStyle
+     VC:::p2Style
+     PB:::p3Style
+     SP:::p3Style
+     PBA:::agentStyle
+     BWD:::scribeStyle
+     USC:::scribeStyle
+     BRC:::scribeStyle
+     EH:::p4Style
+     HPA:::agentStyle
+     Stage0:::scribeStyle
+     P1Box:::p1Style
+     P2Box:::p2Style
+     P3Box:::p3Style
+     P4Box:::p4Style
+     HG:::patternStyle
+     DI:::patternStyle
+     BSA:::patternStyle
+     SME:::smeStyle
+     PreSession:::preStyle
+    classDef coreStyle fill:#e0f2fe,stroke:#0369a1,stroke-width:2px
+    classDef preStyle fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,stroke-dasharray:4 4
+    classDef p1Style fill:#eff6ff,stroke:#3b82f6,stroke-width:1px
+    classDef p2Style fill:#f0fdf4,stroke:#16a34a,stroke-width:1px
+    classDef p3Style fill:#fefce8,stroke:#ca8a04,stroke-width:1px
+    classDef p4Style fill:#fdf4ff,stroke:#9333ea,stroke-width:1px
+    classDef patternStyle fill:#f5f3ff,stroke:#7c3aed,stroke-width:1px,stroke-dasharray:5 5
+    classDef smeStyle fill:#f3f4f6,stroke:#374151,stroke-width:2px
+    classDef agentStyle fill:#fff7ed,stroke:#ea580c,stroke-width:1px,stroke-dasharray:3 3
+    classDef scribeStyle fill:#f0f9ff,stroke:#0ea5e9,stroke-width:1px
