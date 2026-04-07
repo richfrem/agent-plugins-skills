@@ -32,12 +32,6 @@
       "description": ""
     },
     {
-      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
-      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\scripts\\test_symlink.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins\\plugin-manager\\scripts\\audit_structure.py",
       "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\audit_structure.py",
       "strategy": "symlink",
@@ -64,12 +58,6 @@
     {
       "src": "plugins\\plugin-manager\\scripts\\sync_with_inventory.py",
       "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\sync_with_inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
-      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\test_symlink2.py",
       "strategy": "symlink",
       "description": ""
     },
