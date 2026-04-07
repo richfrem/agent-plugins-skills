@@ -1512,6 +1512,690 @@
       "dst": "plugins\\vector-db\\skills\\vector-db-search\\scripts\\vector_consistency_check.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins\\adr-manager\\assets\\templates\\adr-template.md",
+      "dst": "plugins\\adr-manager\\skills\\adr-management\\assets\\templates\\adr-template.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\eval-instructions.template.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-lab-setup\\assets\\templates\\eval-instructions.template.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\evals.json.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-lab-setup\\assets\\templates\\autoresearch\\evals.json.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\program.md.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-lab-setup\\assets\\templates\\autoresearch\\program.md.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\results.tsv.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-lab-setup\\assets\\templates\\autoresearch\\results.tsv.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\eval-instructions.template.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-runner\\assets\\templates\\eval-instructions.template.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\copilot_proposer_prompt.md.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-runner\\assets\\templates\\autoresearch\\copilot_proposer_prompt.md.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\evals.json.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-runner\\assets\\templates\\autoresearch\\evals.json.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\program.md.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-runner\\assets\\templates\\autoresearch\\program.md.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\autoresearch\\results.tsv.template",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-eval-runner\\assets\\templates\\autoresearch\\results.tsv.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\agentic-os-guide-flow.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-guide\\assets\\diagrams\\agentic-os-guide-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\agentic-os-guide-flow.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-guide\\assets\\resources\\agentic-os-guide-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\references\\architecture\\architecture-overview.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-improvement-loop\\assets\\architecture-overview.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\triple-loop-learning-system.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-improvement-loop\\assets\\diagrams\\triple-loop-learning-system.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\agentic-os-init-flow.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\diagrams\\agentic-os-init-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\agentic-os-init-flow.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\resources\\agentic-os-init-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\CLAUDE_LOCAL_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\CLAUDE_LOCAL_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\CLAUDE_MD_GLOBAL.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\CLAUDE_MD_GLOBAL.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\CLAUDE_MD_PROJECT.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\CLAUDE_MD_PROJECT.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\EVENTS_JSONL.jsonl",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\EVENTS_JSONL.jsonl",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\HEARTBEAT_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\HEARTBEAT_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\HOOKS_JSON.json",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\HOOKS_JSON.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\MEMORY_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\MEMORY_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\OS_STATE_JSON.json",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\OS_STATE_JSON.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\SOUL_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\SOUL_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\START_HERE_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\START_HERE_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\STATUS_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\STATUS_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\templates\\USER_MD.md",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-init\\assets\\templates\\USER_MD.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\session-memory-manager-flow.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-memory-manager\\assets\\diagrams\\session-memory-manager-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\assets\\diagrams\\session-memory-manager-flow.mmd",
+      "dst": "plugins\\agent-agentic-os\\skills\\os-memory-manager\\assets\\resources\\session-memory-manager-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-loops\\assets\\diagrams\\agent_swarm.mmd",
+      "dst": "plugins\\agent-loops\\skills\\agent-swarm\\assets\\resources\\agent_swarm.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-loops\\assets\\diagrams\\red_team_review_loop.mmd",
+      "dst": "plugins\\agent-loops\\skills\\red-team-review\\assets\\resources\\red_team_review_loop.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\diagrams\\analyze-plugin-flow.mmd",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\analyze-plugin\\assets\\resources\\analyze-plugin-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\agent.md.jinja",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\agent.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\command.md.jinja",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\command.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\execute.py.jinja",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\execute.py.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\README.md.jinja",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\README.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\SKILL.md.jinja",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\SKILL.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-plugin-analyzer\\assets\\diagrams\\audit-plugin-l5-flow.mmd",
+      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin-l5\\assets\\resources\\audit-plugin-l5-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\agent.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\create-command\\assets\\templates\\agent.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\command.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\create-command\\assets\\templates\\command.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\execute.py.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\create-command\\assets\\templates\\execute.py.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\README.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\create-command\\assets\\templates\\README.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\SKILL.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\create-command\\assets\\templates\\SKILL.md.jinja",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-skill-open-specifications\\assets\\diagrams\\plugin-architecture.mmd",
+      "dst": "plugins\\agent-skill-open-specifications\\skills\\ecosystem-authoritative-sources\\assets\\resources\\plugin-architecture.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\agent-skill-open-specifications\\assets\\diagrams\\skill-execution-flow.mmd",
+      "dst": "plugins\\agent-skill-open-specifications\\skills\\ecosystem-authoritative-sources\\assets\\resources\\skill-execution-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\coding-conventions\\assets\\templates\\js-tool-header-template.js",
+      "dst": "plugins\\coding-conventions\\skills\\coding-conventions-agent\\assets\\templates\\js-tool-header-template.js",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\coding-conventions\\assets\\templates\\python-tool-header-template.py",
+      "dst": "plugins\\coding-conventions\\skills\\coding-conventions-agent\\assets\\templates\\python-tool-header-template.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\context-bundler\\assets\\resources\\file-manifest-schema.json",
+      "dst": "plugins\\context-bundler\\skills\\context-bundler\\assets\\resources\\file-manifest-schema.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\context-bundler\\assets\\resources\\file-manifest.json",
+      "dst": "plugins\\context-bundler\\skills\\context-bundler\\assets\\resources\\file-manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\context-bundler\\assets\\resources\\file-manifest-schema.json",
+      "dst": "plugins\\context-bundler\\skills\\red-team-bundler\\assets\\resources\\file-manifest-schema.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\context-bundler\\assets\\resources\\file-manifest.json",
+      "dst": "plugins\\context-bundler\\skills\\red-team-bundler\\assets\\resources\\file-manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\link-checker\\assets\\diagrams\\link-checker-workflow.mmd",
+      "dst": "plugins\\link-checker\\skills\\link-checker-agent\\assets\\diagrams\\link-checker-workflow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\link-checker\\assets\\diagrams\\logic.mmd",
+      "dst": "plugins\\link-checker\\skills\\link-checker-agent\\assets\\diagrams\\logic.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\link-checker\\assets\\diagrams\\workflow.mmd",
+      "dst": "plugins\\link-checker\\skills\\link-checker-agent\\assets\\diagrams\\workflow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\memory-management\\assets\\diagrams\\memory_architecture.mmd",
+      "dst": "plugins\\memory-management\\skills\\memory-management\\assets\\resources\\memory_architecture.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\memory-management\\assets\\diagrams\\memory_lookup_flow.mmd",
+      "dst": "plugins\\memory-management\\skills\\memory-management\\assets\\resources\\memory_lookup_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\memory-management\\assets\\diagrams\\memory_session_lifecycle.mmd",
+      "dst": "plugins\\memory-management\\skills\\memory-management\\assets\\resources\\memory_session_lifecycle.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\architecture-background.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-bases-manager\\assets\\resources\\architecture-background.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\kepano-analysis-summary.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-bases-manager\\assets\\resources\\kepano-analysis-summary.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\safety-learnings.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-bases-manager\\assets\\resources\\safety-learnings.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\architecture-background.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-canvas-architect\\assets\\resources\\architecture-background.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\kepano-analysis-summary.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-canvas-architect\\assets\\resources\\kepano-analysis-summary.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\safety-learnings.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-canvas-architect\\assets\\resources\\safety-learnings.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\architecture-background.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-graph-traversal\\assets\\resources\\architecture-background.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\kepano-analysis-summary.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-graph-traversal\\assets\\resources\\kepano-analysis-summary.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\safety-learnings.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-graph-traversal\\assets\\resources\\safety-learnings.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\architecture-background.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-init\\assets\\resources\\architecture-background.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\kepano-analysis-summary.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-init\\assets\\resources\\kepano-analysis-summary.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\safety-learnings.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-init\\assets\\resources\\safety-learnings.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\architecture-background.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-markdown-mastery\\assets\\resources\\architecture-background.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\kepano-analysis-summary.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-markdown-mastery\\assets\\resources\\kepano-analysis-summary.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\safety-learnings.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-markdown-mastery\\assets\\resources\\safety-learnings.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\architecture-background.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-vault-crud\\assets\\resources\\architecture-background.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\kepano-analysis-summary.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-vault-crud\\assets\\resources\\kepano-analysis-summary.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-integration\\assets\\resources\\safety-learnings.md",
+      "dst": "plugins\\obsidian-integration\\skills\\obsidian-vault-crud\\assets\\resources\\safety-learnings.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\assets\\diagrams\\cleanup_flow.mmd",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\assets\\diagrams\\cleanup_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\assets\\diagrams\\cleanup_flow.mmd",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\assets\\resources\\cleanup_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\ollama-launch\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\ollama-launch\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\ollama-launch\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\ollama-launch\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\ollama-launch\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-cleanup-agent\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-curator\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-agent\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-distill-ollama\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\references\\examples\\rlm_profiles.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\assets\\rlm_profiles.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\references\\examples\\rlm_summary_cache_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\assets\\rlm_summary_cache_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\references\\examples\\rlm_tools_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\assets\\rlm_tools_manifest.json",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
