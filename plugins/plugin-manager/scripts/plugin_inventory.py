@@ -50,18 +50,44 @@ import argparse
 from pathlib import Path
 
 def parse_frontmatter(file_path: Path) -> str | None:
-    """Simple YAML frontmatter parser to avoid external dependencies if possible."""
+    """Parse YAML frontmatter to extract the description field.
+    Handles single-line and multi-line descriptions (with > or | folding).
+    Safely handles special characters like <example> tags.
+    """
     try:
         content = file_path.read_text(encoding='utf-8')
         if content.startswith('---'):
             parts = content.split('---', 2)
             if len(parts) >= 3:
-                # Part 0 is empty, Part 1 is YAML
                 yaml_text = parts[1]
-                # Simple parsing for 'description: ...'
+
+                # Use PyYAML if available for proper parsing
+                try:
+                    data = yaml.safe_load(yaml_text)
+                    if isinstance(data, dict) and 'description' in data:
+                        desc = data['description']
+                        # Handle multi-line strings — collapse whitespace and remove HTML tags
+                        if isinstance(desc, str):
+                            # Remove <example> tags and their content
+                            import re
+                            desc = re.sub(r'<example>.*?</example>', '', desc, flags=re.DOTALL)
+                            # Collapse multiple whitespace, strip
+                            desc = ' '.join(desc.split()).strip()
+                            return desc if desc else None
+                except Exception:
+                    pass
+
+                # Fallback: simple line-based parsing for single-line descriptions
                 for line in yaml_text.splitlines():
                     if line.strip().startswith('description:'):
-                        return line.split(':', 1)[1].strip()
+                        # Extract value after the colon, handling quoted strings
+                        value = line.split(':', 1)[1].strip()
+                        # Remove quotes if present
+                        if value.startswith('"') and value.endswith('"'):
+                            value = value[1:-1]
+                        elif value.startswith("'") and value.endswith("'"):
+                            value = value[1:-1]
+                        return value if value else None
     except Exception:
         pass
     return None
