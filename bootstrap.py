@@ -55,7 +55,7 @@ def fetch_file(url: str, dest: Path):
 
 def main():
     print(bold("\n  Initializing Plugin Installer Bootstrap..."))
-    
+
     # Enable ANSI escape sequences on Windows
     if sys.platform == "win32":
         try:
@@ -64,46 +64,59 @@ def main():
             pass
 
     suggest_uv()
-    
-    # We always pull from main to ensure the bootstrap user gets the latest stable installer
-    base_raw_url = "https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main"
-    scripts = [
-        "plugins/plugin-manager/scripts/plugin_add.py",
-        "plugins/plugin-manager/scripts/bridge_installer.py"
-    ]
-    
-    with tempfile.TemporaryDirectory(prefix="plugin_installer_env_") as tmpdir:
-        tmp_path = Path(tmpdir)
-        
-        print(f"  {dim('Downloading installer core... (standalone)')}", flush=True)
-        # Download the required files side-by-side
-        for file_path in scripts:
-            filename = Path(file_path).name
-            fetch_file(f"{base_raw_url}/{file_path}", tmp_path / filename)
-            
-        print(f"  {green('✓ Bootstrapped.')} Launching interactive UI...\n")
-        
-        # Determine args to pass along
-        args = sys.argv[1:]
-        # If no args were passed and we are piped from curl, sys.argv is just ['-']
-        # We want to default to `richfrem/agent-plugins-skills` if no source was provided
-        if not args or args == ["-"]:
+
+    # Check if we're running from a cloned git repo (uvx case)
+    bootstrap_dir = Path(__file__).parent
+    local_plugin_add = bootstrap_dir / "plugins" / "plugin-manager" / "scripts" / "plugin_add.py"
+
+    # Determine args to pass along
+    args = sys.argv[1:]
+    # If no args were passed and we are piped from curl, sys.argv is just ['-']
+    # We want to default to `richfrem/agent-plugins-skills` if no source was provided
+    if not args or args == ["-"]:
+        args = ["richfrem/agent-plugins-skills"]
+
+    # Ensure we pass the clean args to the downloaded python script
+    if args and args[0] == "-":
+        args = args[1:]
+        if not args:
             args = ["richfrem/agent-plugins-skills"]
-            
-        # Ensure we pass the clean args to the downloaded python script
-        if args and args[0] == "-":
-            args = args[1:]
-            if not args:
-                 args = ["richfrem/agent-plugins-skills"]
-                 
-        cmd = [sys.executable, str(tmp_path / "plugin_add.py")] + args
-        
+
+    # If running from cloned repo (uvx case), use local scripts directly
+    if local_plugin_add.exists():
+        print(f"  {green('✓ Using cloned installer scripts')}", flush=True)
+        print(f"  {dim('Launching interactive UI...')}\n")
+        cmd = [sys.executable, str(local_plugin_add)] + args
         try:
-            # We use replace to handle any windows encoding quirks from subprocess
             sys.exit(subprocess.call(cmd))
         except KeyboardInterrupt:
             print(red("\n  Cancelled."))
             sys.exit(0)
+    else:
+        # Running from curl pipe or pypi install — download from main
+        with tempfile.TemporaryDirectory(prefix="plugin_installer_env_") as tmpdir:
+            tmp_path = Path(tmpdir)
+
+            print(f"  {dim('Downloading installer core... (standalone)')}", flush=True)
+            base_raw_url = "https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main"
+            scripts = [
+                "plugins/plugin-manager/scripts/plugin_add.py",
+                "plugins/plugin-manager/scripts/bridge_installer.py"
+            ]
+            # Download the required files side-by-side
+            for file_path in scripts:
+                filename = Path(file_path).name
+                fetch_file(f"{base_raw_url}/{file_path}", tmp_path / filename)
+
+            print(f"  {green('✓ Bootstrapped.')} Launching interactive UI...\n")
+
+            cmd = [sys.executable, str(tmp_path / "plugin_add.py")] + args
+
+            try:
+                sys.exit(subprocess.call(cmd))
+            except KeyboardInterrupt:
+                print(red("\n  Cancelled."))
+                sys.exit(0)
 
 if __name__ == "__main__":
     main()
