@@ -2196,6 +2196,414 @@
       "dst": "plugins\\rlm-factory\\skills\\rlm-init\\assets\\rlm_tools_manifest.json",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-init\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm-factory-architecture.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\assets\\diagrams\\rlm-factory-architecture.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm-factory-dual-path.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\assets\\diagrams\\rlm-factory-dual-path.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\assets\\diagrams\\rlm_late_binding_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\assets\\diagrams\\rlm_tool_enrichment_flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\diagrams\\search_process.mmd",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\assets\\diagrams\\search_process.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\resources\\distiller_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\resources\\prompts\\rlm\\rlm_summarize_general.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\rlm-factory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\rlm-factory\\skills\\rlm-search\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-accept\\workflows\\spec-kitty.accept.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-accept\\assets\\workflows\\spec-kitty.accept.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-analyze\\workflows\\spec-kitty.analyze.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-analyze\\assets\\workflows\\spec-kitty.analyze.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-checklist\\workflows\\spec-kitty.checklist.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-checklist\\assets\\workflows\\spec-kitty.checklist.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-constitution\\workflows\\spec-kitty.constitution.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-constitution\\assets\\workflows\\spec-kitty.constitution.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-dashboard\\workflows\\spec-kitty.dashboard.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-dashboard\\assets\\workflows\\spec-kitty.dashboard.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-implement\\workflows\\spec-kitty.implement.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-implement\\assets\\workflows\\spec-kitty.implement.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-merge\\workflows\\spec-kitty.merge.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-merge\\assets\\workflows\\spec-kitty.merge.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-plan\\workflows\\spec-kitty.plan.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-plan\\assets\\workflows\\spec-kitty.plan.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-research\\workflows\\spec-kitty.research.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-research\\assets\\workflows\\spec-kitty.research.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-review\\workflows\\spec-kitty.review.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-review\\assets\\workflows\\spec-kitty.review.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-specify\\workflows\\spec-kitty.specify.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-specify\\assets\\workflows\\spec-kitty.specify.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-status\\workflows\\spec-kitty.status.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-status\\assets\\workflows\\spec-kitty.status.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\spec-kitty-plugin\\assets\\diagrams\\standard-spec-kitty-workflow.mmd",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-sync-plugin\\assets\\diagrams\\standard-spec-kitty-workflow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-tasks\\workflows\\spec-kitty.tasks.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-tasks\\assets\\workflows\\spec-kitty.tasks.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-tasks-finalize\\workflows\\spec-kitty.tasks-finalize.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-tasks-finalize\\assets\\workflows\\spec-kitty.tasks-finalize.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-tasks-outline\\workflows\\spec-kitty.tasks-outline.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-tasks-outline\\assets\\workflows\\spec-kitty.tasks-outline.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": ".agents\\skills\\spec-kitty-tasks-packages\\workflows\\spec-kitty.tasks-packages.md",
+      "dst": "plugins\\spec-kitty-plugin\\skills\\spec-kitty-tasks-packages\\assets\\workflows\\spec-kitty.tasks-packages.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\task-manager\\assets\\templates\\task-template.md",
+      "dst": "plugins\\task-manager\\skills\\task-agent\\assets\\templates\\task-template.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\manifest-index.json",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\manifest-index.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\rlm_manifest.json",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\rlm_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\tool-inventory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\architecture_sequence.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\assets\\resources\\architecture_sequence.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\deployment_model.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\assets\\resources\\deployment_model.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\rag_design_choices.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\assets\\resources\\rag_design_choices.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\README.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\assets\\resources\\stabilizers\\README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\architecture_sequence.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-ingest\\assets\\resources\\architecture_sequence.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\deployment_model.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-ingest\\assets\\resources\\deployment_model.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\rag_design_choices.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-ingest\\assets\\resources\\rag_design_choices.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\README.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-ingest\\assets\\resources\\stabilizers\\README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-ingest\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\references\\examples\\vector_knowledge_manifest.json",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\vector_knowledge_manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\references\\examples\\vector_profiles.json",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\vector_profiles.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\architecture_sequence.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\resources\\architecture_sequence.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\deployment_model.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\resources\\deployment_model.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\rag_design_choices.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\resources\\rag_design_choices.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\README.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\resources\\stabilizers\\README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-init\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\architecture_sequence.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-launch\\assets\\resources\\architecture_sequence.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\deployment_model.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-launch\\assets\\resources\\deployment_model.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\rag_design_choices.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-launch\\assets\\resources\\rag_design_choices.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\README.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-launch\\assets\\resources\\stabilizers\\README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-launch\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\architecture_sequence.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-search\\assets\\resources\\architecture_sequence.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\diagrams\\deployment_model.mmd",
+      "dst": "plugins\\vector-db\\skills\\vector-db-search\\assets\\resources\\deployment_model.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\rag_design_choices.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-search\\assets\\resources\\rag_design_choices.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\README.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-search\\assets\\resources\\stabilizers\\README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\vector-db\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "dst": "plugins\\vector-db\\skills\\vector-db-search\\assets\\resources\\stabilizers\\vector_consistency_check.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
