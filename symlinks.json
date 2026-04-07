@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "links": [
+    {
+      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\bridge_installer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
+      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\scripts\\bridge_installer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\install_all_plugins.py",
+      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\scripts\\install_all_plugins.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\plugin-manager\\scripts\\install_all_plugins.py",
+      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\references\\install_all_plugins.py",
+      "strategy": "symlink",
+      "description": ""
+    }
+  ]
+}
