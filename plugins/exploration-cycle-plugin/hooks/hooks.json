@@ -1,5 +1,15 @@
 {
-  "SessionStart": {
-    "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/session_start.py"
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/session_start.py"
+          }
+        ]
+      }
+    ]
   }
 }

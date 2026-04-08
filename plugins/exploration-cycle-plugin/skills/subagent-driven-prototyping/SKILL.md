@@ -1,4 +1,3 @@
-# Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
 ---
 name: subagent-driven-prototyping
 description: >

@@ -15,30 +15,6 @@
         "memory-management",
         "session-management"
     ],
-    "skills": [
-        "skills/os-guide/SKILL.md",
-        "skills/os-init/SKILL.md",
-        "skills/os-memory-manager/SKILL.md",
-        "skills/os-clean-locks/SKILL.md",
-        "skills/os-eval-runner/SKILL.md",
-        "skills/todo-check/SKILL.md",
-        "skills/os-improvement-loop/SKILL.md",
-        "skills/os-improvement-report/SKILL.md"
-    ],
-    "agents": [
-        "agents/agentic-os-setup.md",
-        "agents/triple-loop-architect.md",
-        "agents/triple-loop-orchestrator.md",
-        "agents/os-health-check.md"
-    ],
-    "hooks": [
-        "hooks/hooks.json"
-    ],
-    "commands": [
-        "commands/os-init.md",
-        "commands/os-loop.md",
-        "commands/os-memory.md"
-    ],
     "capabilities": [
         "eval-gate",
         "memory",
