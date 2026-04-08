@@ -1,27 +1,26 @@
 ---
 name: os-eval-lab-setup
 description: >
-  Bootstraps a skill evaluation lab repo for an autoresearch improvement run. Trigger with
-  "set up an eval lab", "bootstrap the eval repo", "prepare the test repo for skill evaluation",
-  "create an eval environment for this skill", "set up the lab space for this skill",
-  or when starting a new skill optimization run that needs a standalone test environment.
-
-  <example>
-  Context: User wants to start an improvement run on a skill in an isolated lab repo.
-  user: "Set up an eval lab for the link-checker skill"
-  assistant: [triggers os-eval-lab, runs intake interview, bootstraps lab repo, installs engine, copies plugin files, generates eval-instructions.md]
-  
-  </example>
-
-  <example>
-  Context: User has a lab repo but needs it configured.
-  user: "Prepare the test repo at <USER_HOME>/Projects/test-my-skill-eval for skill evaluation"
-  assistant: [triggers os-eval-lab, installs engine, copies plugin files, generates eval-instructions.md]
-  </example>
-
-argument-hint: "[lab-repo-path] [skill-path] [github-url]"
-allowed-tools: Bash, Read, Write
+  Bootstraps a skill evaluation lab repo for an autoresearch improvement run. Creates
+  a standalone git repository with hard-copied plugin files, installs the os-eval-runner
+  engine, and generates customized eval-instructions.md ready for an eval agent to follow.
+  Use when the user says "set up an eval lab", "bootstrap the eval repo", "prepare the
+  test repo for skill evaluation", "create an eval environment for this skill", "set up
+  the lab space for this skill", or when starting a new skill optimization run that needs
+  a standalone test environment. Requires Python 3.8+ and a target plugin path.
 ---
+
+<example>
+<commentary>User wants to start an improvement run on a skill in an isolated lab repo.</commentary>
+user: "Set up an eval lab for the link-checker skill"
+assistant: [triggers os-eval-lab-setup, runs intake interview, bootstraps lab repo, installs engine, copies plugin files, generates eval-instructions.md]
+</example>
+
+<example>
+<commentary>User has a lab repo but needs it configured for evaluation.</commentary>
+user: "Prepare the test repo at ~/Projects/test-my-skill-eval for skill evaluation"
+assistant: [triggers os-eval-lab-setup, installs engine, copies plugin files, generates eval-instructions.md]
+</example>
 
 # Identity: The Eval Lab Setup Agent
 

@@ -1,10 +1,15 @@
-# Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
 ---
 name: subagent-driven-prototyping
 description: >
-  Builds a prototype component by component, self-reviewing each component against the Discovery Plan before moving to the next. Invoked by prototype-builder after the layout direction is confirmed. Trigger phrases: "build the prototype", "let's build it", "start building". Also invoked by prototype-builder-agent after visual-companion confirms layout.
-allowed-tools: Bash, Read, Write
+  Builds a prototype component by component, self-reviewing each piece against the
+  Discovery Plan before moving to the next. Use when the user says "build the prototype",
+  "let's build it", "start building", or when prototype-builder dispatches after the
+  layout direction is confirmed by visual-companion. Reads the Discovery Plan and layout
+  direction, decomposes into 3-6 logical components, builds each sequentially with
+  self-review against plan requirements, and assembles into a runnable entry point.
 ---
+
+> Architectural patterns adapted from [obra/superpowers](https://github.com/obra/superpowers) (MIT)
 
 ## Dashboard Intercept
 

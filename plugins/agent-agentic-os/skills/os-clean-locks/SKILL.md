@@ -1,29 +1,25 @@
 ---
 name: os-clean-locks
 description: >
-  Trigger with "/os-clean-locks", "clear all locks", "reset agent locks", or when an agent 
-  is deadlocked and cannot acquire a lock because a previous agent crashed and left a stale 
-  lock behind in `context/.locks/`.
-  
-  <example>
-  Context: User is seeing errors about locks already existing.
-  user: "/os-clean-locks"
-  assistant:
-  <Bash>
-  rm -r context/.locks/
-  python3 context/kernel.py state_update active_agent os-clean-locks
-  </Bash>
-  </example>
-
-  <example>
-  Context: Agent detects a deadlock when trying to acquire a lock during a task.
-  assistant: [autonomously] "The acquire_lock call for 'memory' failed -- a prior agent likely crashed and left a stale lock. I'll invoke os-clean-locks to clear it before retrying."
-  <commentary>
-  Implicit audit trigger -- agent detects deadlock from kernel output and self-heals using os-clean-locks without user prompting.
-  </commentary>
-  </example>
-allowed-tools: Bash, Read, Write
+  Safely removes all agent lock files from the context/.locks/ directory to resolve
+  deadlocks caused by crashed agents leaving stale locks behind. Use when the user says
+  "/os-clean-locks", "clear all locks", "reset agent locks", or when an agent is deadlocked
+  and cannot acquire a lock because a previous agent crashed and left a stale lock behind
+  in context/.locks/. Verifies lock existence, discovers and removes stale lock directories,
+  updates OS state via kernel.py, and emits event bus notifications. Requires Python 3.8+
+  standard library only.
 ---
+
+<example>
+<commentary>User is seeing errors about locks already existing.</commentary>
+user: "/os-clean-locks"
+assistant: Checks context/.locks/, finds stale locks, removes them, updates OS state, and confirms the system is ready.
+</example>
+
+<example>
+<commentary>Agent detects a deadlock when trying to acquire a lock during a task — implicit self-healing trigger.</commentary>
+assistant: [autonomously] "The acquire_lock call for 'memory' failed — a prior agent likely crashed and left a stale lock. I'll invoke os-clean-locks to clear it before retrying."
+</example>
 
 ## Dependencies
 
