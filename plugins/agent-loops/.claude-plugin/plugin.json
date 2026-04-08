@@ -22,6 +22,17 @@
     "red-team-review"
   ],
   "skills": [
-    "triple-loop-learning"
+    "skills/agent-swarm/SKILL.md",
+    "skills/dual-loop/SKILL.md",
+    "skills/learning-loop/SKILL.md",
+    "skills/orchestrator/SKILL.md",
+    "skills/red-team-review/SKILL.md",
+    "skills/triple-loop-learning/SKILL.md"
+  ],
+  "agents": [
+    "agents/orchestrator.md"
+  ],
+  "hooks": [
+    "hooks/hooks.json"
   ]
 }

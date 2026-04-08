@@ -1,9 +1,16 @@
 {
-    "hooks": [
-        {
-            "type": "Stop",
-            "description": "Prevents premature session exit without completing the closure sequence (Seal, Persist, Retrospective). Checks for an active loop state file and blocks exit if closure phases are incomplete.",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/closure-guard.sh"
-        }
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/skills/orchestrator/scripts/closure-guard.sh",
+            "description": "Prevents premature session exit without completing the closure sequence (Seal, Persist, Retrospective). Checks for an active loop state file and blocks exit if closure phases are incomplete."
+          }
+        ]
+      }
     ]
+  }
 }

@@ -27,7 +27,8 @@
     ],
     "agents": [
         "agents/agentic-os-setup.md",
-        "agents/Triple-Loop Retrospective.md",
+        "agents/triple-loop-architect.md",
+        "agents/triple-loop-orchestrator.md",
         "agents/os-health-check.md"
     ],
     "hooks": [
