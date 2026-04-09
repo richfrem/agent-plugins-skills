@@ -83,6 +83,16 @@ plugins/<plugin>/skills/<skill-name>/
 Create the confirmed directory structure. Standards enforced by `acceptance-criteria.md`:
 
 - **Python only** — helper scripts go in `scripts/*.py`. Never generate `.sh` bash scripts.
+- **Symlink, don't copy** — if the skill needs a Python helper that lives at the plugin root's
+  `scripts/` directory, create a **file-level symlink** in `skills/<skill>/scripts/` pointing to
+  `../../../scripts/<canonical_name>.py`. Never duplicate the file. The symlink filename may differ
+  from the target (e.g. `execute.py` → `exploration_optimizer_execute.py`). Create with:
+  ```bash
+  ln -s ../../../scripts/<canonical_name>.py skills/<skill>/scripts/<name>.py
+  ```
+  Verify the symlink resolved: `python3 -c "import os; print(os.path.exists('skills/<skill>/scripts/<name>.py'))"`
+  must print `True`. On Windows/`core.symlinks=false` machines, git will check these out as
+  plain-text "stand-in" files — run `bulk_symlink_fixer.py` to restore them after checkout.
 - **Starter SKILL.md** — frontmatter with `name`, `description` (use the purpose from Phase 1; **MUST NOT exceed 1024 characters**),
   `allowed-tools`. Body: stub sections for Identity, Steps, and Common Failures.
 - **Starter evals.json** — at least 2 placeholder eval cases using the `should_trigger` schema:

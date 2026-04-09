@@ -31,3 +31,39 @@ and a `.claude/settings.json` stub for reliable local discovery.
 - If similar plugin already exists: reference it as a starting point
 - If MCP integrations are needed: invoke `create-mcp-integration` for each one
 - After scaffolding: run `/agent-scaffolders:audit-plugin` to validate structure
+
+## Symlink Standards for Shared Scripts
+
+When a skill needs to call a Python helper script that is shared across skills in the same
+plugin, always create a **file-level symlink** in the skill's `scripts/` folder pointing to the
+canonical copy at the plugin root — never duplicate the file.
+
+**Standard pattern:**
+```
+plugins/<plugin>/scripts/<canonical_name>.py      ← canonical source (real file)
+plugins/<plugin>/skills/<skill>/scripts/<name>.py  ← symlink → ../../../scripts/<canonical_name>.py
+```
+
+The symlink name and target name may differ (e.g. `execute.py` → `exploration_optimizer_execute.py`).
+The bridge installer resolves all symlinks to physical copies when deploying via the marketplace.
+
+**Creating symlinks correctly:**
+```bash
+# From the skill's scripts/ directory:
+ln -s ../../../scripts/<canonical_name>.py <symlink_name>.py
+
+# Or via symlink_manager.py:
+python3 plugins/link-checker/scripts/symlink_manager.py create \
+  --src plugins/<plugin>/scripts/<canonical_name>.py \
+  --dst plugins/<plugin>/skills/<skill>/scripts/<symlink_name>.py
+```
+
+**⚠️ Windows / core.symlinks warning:** If `git config core.symlinks` is `false`, git checks
+out symlinks as plain-text "stand-in" files. These are silently broken — the bridge installer
+copies the path string, not the script. After checkout on Windows or any machine where
+symlinks may have degraded, run:
+```bash
+python3 plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
+```
+Then manually verify: `find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l`
+should return nothing (all script references should be real symlinks, not plain files).
