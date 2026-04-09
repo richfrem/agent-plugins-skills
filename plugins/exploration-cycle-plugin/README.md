@@ -60,6 +60,9 @@ python3 ./skills/exploration-workflow/scripts/dispatch.py \
 exploration-cycle-plugin/
 ├── OVERVIEW.md                     # GenAI Double Diamond framework overview
 ├── README.md                       # Entry point and philosophy
+├── backlog/                        # Parked future capabilities (deferred)
+│   ├── skills/
+│   └── agents/
 ├── agents/                         # Vision Translators and Scribes
 ├── assets/diagrams/                # Technical and philosophical flowcharts
 ├── references/                     # Architectural patterns (Dual-Loop, Learning-Loop)
@@ -74,8 +77,7 @@ exploration-cycle-plugin/
 │   ├── prototype-builder/          # NEW: orchestrates full prototype build cycle
 │   ├── subagent-driven-prototyping/ # NEW: component-by-component builder
 │   ├── user-story-capture/
-│   ├── visual-companion/           # NEW: layout direction before building
-│   └── deferred/                   # Parked future capabilities
+│   └── visual-companion/           # NEW: layout direction before building
 └── requirements.in                 # Python dependencies
 ```
 
