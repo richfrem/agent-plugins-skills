@@ -220,22 +220,6 @@
       "strict": true,
       "category": "integrations",
       "tags": ["rsvp", "speed-reading", "documents", "pdf", "docx"]
-    },
-    {
-      "name": "voice-writer",
-      "description": "Transform AI-generated or over-polished writing into authentic human voice. Supports voice profile calibration so the agent learns your specific style.",
-      "source": "./plugins/voice-writer",
-      "strict": true,
-      "category": "writing",
-      "tags": ["writing", "humanize", "voice", "tone", "ai-patterns", "content"]
-    },
-    {
-      "name": "agent-execution-disciplines",
-      "description": "Core execution disciplines for AI agents: test-driven development, systematic debugging, verification before completion, code review workflows, and git worktree patterns.",
-      "source": "./plugins/agent-execution-disciplines",
-      "strict": true,
-      "category": "agent-infrastructure",
-      "tags": ["tdd", "debugging", "code-review", "git", "worktrees", "verification"]
     }
   ]
 }
