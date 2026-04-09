@@ -7,9 +7,6 @@
     },
     "repository": "https://github.com/richfrem/Project_Sanctuary",
     "architecture": "standalone",
-    "agents": [
-        "rsvp-comprehension-agent"
-    ],
     "license": "MIT",
     "capabilities": [
         "speed-reading",
