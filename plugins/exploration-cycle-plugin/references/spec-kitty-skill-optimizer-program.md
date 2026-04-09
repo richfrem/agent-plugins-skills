@@ -1,26 +1,37 @@
-# Skill Optimizer Program
+# Exploration Output Quality
 
-Skill optimization is handled by the **agent-agentic-os** plugin.
+The exploration cycle produces portable, high-quality artifacts that any
+downstream engineering process can consume. The exploration plugin does not
+depend on or require any specific engineering framework.
 
-All plugins below install from: `github.com/richfrem/agent-plugins-skills`
+## Output Artifacts
 
-## agent-agentic-os
+Exploration sessions produce:
 
-- **GitHub**: https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-agentic-os/skills/os-skill-improvement
-- **When installed**: `.agents/skills/os-skill-improvement/SKILL.md`
-- **Eval runner**: `.agents/skills/os-eval-runner/SKILL.md`
-- **Lab setup**: `.agents/skills/os-eval-lab-setup/SKILL.md`
+- **Spec drafts** — structured problem/solution specifications
+- **Plan outlines** — implementation approach with phases and milestones
+- **Business requirements** — captured BRDs, user stories, constraints
+- **Prototype observations** — validated assumptions and edge cases
+- **Handoff packages** — bundled deliverables ready for engineering intake
 
-## agent-loops
+## Downstream Consumers
 
-- **GitHub**: https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-loops/skills/triple-loop-learning
-- **When installed**: `.agents/skills/triple-loop-learning/SKILL.md`
+These outputs are designed to be consumed by any spec-driven or plan-driven
+engineering workflow. Examples from `github.com/richfrem/agent-plugins-skills`:
 
-Meta-learning loop that evolves skills via objective evaluation gates.
+- **superpowers** — write-plan / execute-plan workflow
+- **spec-kitty** — specify → plan → tasks → implement lifecycle
+- **agent-execution-disciplines** — TDD, debugging, verification disciplines
 
-## agent-execution-disciplines
+The handoff package format is deliberately generic — a structured markdown
+document with sections for requirements, decisions, open questions, and
+recommended next steps. Any tool that reads markdown can consume it.
 
-- **GitHub**: https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-execution-disciplines
-- **When installed**: `.agents/skills/` (TDD, debugging, verification, code review, git worktrees)
+## Skill Improvement
 
-Execution disciplines that skill optimization targets for improvement.
+If you want to improve exploration skills over time:
+
+- **agent-agentic-os** — `os-skill-improvement`, `os-eval-runner` for objective evaluation
+  - https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-agentic-os
+- **agent-loops** — `triple-loop-learning` for meta-learning via eval gates
+  - https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-loops
