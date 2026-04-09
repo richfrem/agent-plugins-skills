@@ -74,8 +74,7 @@ exploration-cycle-plugin/
 │   ├── prototype-builder/          # NEW: orchestrates full prototype build cycle
 │   ├── subagent-driven-prototyping/ # NEW: component-by-component builder
 │   ├── user-story-capture/
-│   ├── visual-companion/           # NEW: layout direction before building
-│   └── deferred/                   # Parked future capabilities
+│   └── visual-companion/           # NEW: layout direction before building
 └── requirements.in                 # Python dependencies
 ```
 

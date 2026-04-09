@@ -50,7 +50,7 @@ Best practices
 - Use intake-agent for all BAE-led sessions — it maximizes funnel quality.
 - Run gap checks after each capture pass (`check_gaps.py`).
 - Keep captures iterative: baseline-first, change one variable at a time.
-- If you see a parked `SKILL.md` in `skills/deferred/`, remove it to avoid registry conflicts.
+- All skills are active — there are no deferred/parked stubs.
 
 Need a custom walkthrough?
 --------------------------
