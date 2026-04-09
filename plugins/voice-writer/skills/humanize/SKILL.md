@@ -33,7 +33,7 @@ If none of these are provided, infer them from the text. Ask only if the
 target voice is genuinely ambiguous and would change the output significantly.
 
 If the user has placed writing samples in
-`references/voice-profile/my-voice.md`, read that file before rewriting.
+`./references/voice-profile/my-voice.md`, read that file before rewriting.
 It contains their preferred sentence patterns, register, and vocabulary. Apply
 those patterns instead of projecting a generic voice.
 
@@ -52,7 +52,7 @@ Before rewriting, read the text as a human editor would. Identify internally:
 Do this quickly and internally. Do not narrate this to the user unless asked.
 
 For a full catalog of AI patterns and their fixes, read:
-`references/patterns.md`
+`./references/patterns.md`
 
 ---
 
@@ -76,7 +76,7 @@ present in the source. Never invent examples. If something needs elaboration,
 flag it for the user -- do not fabricate it.
 
 **Register calibration.** Match the register to the channel. Read
-`references/channel-rules.md` for channel-specific constraints (LinkedIn,
+`./references/channel-rules.md` for channel-specific constraints (LinkedIn,
 email, blog, Slack). Character limits in that file are hard limits.
 
 **Natural emphasis.** Real writers use bold and italics sparingly and only for
@@ -91,7 +91,7 @@ Run these mentally before returning output:
 1. **Read-aloud test** -- Does it sound like a person is actually saying this?
    Any phrases you would never hear in speech?
 2. **Fingerprint scan** -- Any surviving em dashes doing decoration work? Any
-   triads? Any hollow pivots (see `references/patterns.md`)?
+   triads? Any hollow pivots (see `./references/patterns.md`)?
 3. **Content fidelity** -- Did anything get added that was not in the source?
    Did any meaning get lost?
 4. **Voice consistency** -- Is the register consistent from start to finish?
@@ -121,7 +121,7 @@ voice and rhythm, not just what was deleted.
 
 ## Edge Cases
 
-**"Make it sound like me"** -- Read `references/voice-profile/my-voice.md`
+**"Make it sound like me"** -- Read `./references/voice-profile/my-voice.md`
 first. Extract voice patterns: sentence length, how they open paragraphs,
 whether they use fragments, their preferred register, recurring vocabulary.
 Apply those patterns. If no profile exists, ask the user for 1-2 examples
@@ -148,7 +148,7 @@ would not appear in competent human writing of that type.
 
 Read these when needed (Progressive Disclosure -- do not load all at once):
 
-- `references/patterns.md` -- Full AI pattern catalog with bad to good rewrites
-- `references/channel-rules.md` -- Channel-specific rules and hard limits
-- `references/voice-profile/README.md` -- How users set up their voice profile
-- `references/voice-profile/my-voice.md` -- User's personal voice samples (if populated)
+- `./references/patterns.md` -- Full AI pattern catalog with bad to good rewrites
+- `./references/channel-rules.md` -- Channel-specific rules and hard limits
+- `./references/voice-profile/README.md` -- How users set up their voice profile
+- `./references/voice-profile/my-voice.md` -- User's personal voice samples (if populated)
