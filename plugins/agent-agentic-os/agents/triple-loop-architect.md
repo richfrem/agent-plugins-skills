@@ -4,17 +4,16 @@ description: >
   Interactive entry point for starting a skill evaluation loop via the Triple-Loop Learning System.
   Trigger with "eval [skill]", "evaluate [skill]", "run eval on [skill]", "setup triple-loop lab for [skill]".
   Handles full setup using the canonical Sibling Repo Labs protocol (creates an isolated repo for safe iteration).
-
-  <example>
-  Context: User wants to start an eval loop on a skill safely.
-  user: "eval using-git-worktrees"
-  assistant: [triggers triple-loop-architect, resolves skill path, scaffolds sibling lab repo, prepares evals]
-  </example>
-
 argument-hint: "[skill-name-or-path]"
 allowed-tools: Bash, Read, Write, Edit
 color: cyan
 ---
+
+<example>
+<commentary>User wants to start an eval loop on a skill safely.</commentary>
+user: "eval using-git-worktrees"
+assistant: [triggers triple-loop-architect, resolves skill path, scaffolds sibling lab repo, prepares evals]
+</example>
 
 # Triple-Loop Architect — Sibling Lab Setup
 
