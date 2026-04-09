@@ -11,13 +11,7 @@
       "source": "./plugins/spec-kitty-plugin",
       "strict": true,
       "category": "workflow",
-      "tags": [
-        "sdd",
-        "workflow",
-        "kanban",
-        "worktree",
-        "bridge"
-      ]
+      "tags": ["sdd", "workflow", "kanban", "worktree", "bridge"]
     },
     {
       "name": "task-manager",
@@ -25,12 +19,7 @@
       "source": "./plugins/task-manager",
       "strict": true,
       "category": "workflow",
-      "tags": [
-        "tasks",
-        "kanban",
-        "todo",
-        "project-management"
-      ]
+      "tags": ["tasks", "kanban", "todo", "project-management"]
     },
     {
       "name": "adr-manager",
@@ -38,26 +27,15 @@
       "source": "./plugins/adr-manager",
       "strict": true,
       "category": "workflow",
-      "tags": [
-        "adr",
-        "architecture",
-        "decisions",
-        "documentation"
-      ]
+      "tags": ["adr", "architecture", "decisions", "documentation"]
     },
     {
       "name": "exploration-cycle-plugin",
       "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
       "source": "./plugins/exploration-cycle-plugin",
-      "strict": false,
+      "strict": true,
       "category": "workflow",
-      "tags": [
-        "exploration",
-        "discovery",
-        "requirements",
-        "prototype",
-        "user-stories"
-      ]
+      "tags": ["exploration", "discovery", "requirements", "prototype", "user-stories"]
     },
     {
       "name": "agent-agentic-os",
@@ -65,13 +43,7 @@
       "source": "./plugins/agent-agentic-os",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": [
-        "agentic-os",
-        "agent-harness",
-        "claude-md",
-        "context-management",
-        "memory-management"
-      ]
+      "tags": ["agentic-os", "agent-harness", "claude-md", "context-management", "memory-management"]
     },
     {
       "name": "agent-loops",
@@ -79,14 +51,7 @@
       "source": "./plugins/agent-loops",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": [
-        "orchestrator",
-        "learning-loop",
-        "dual-loop",
-        "agent-swarm",
-        "red-team",
-        "multi-agent"
-      ]
+      "tags": ["orchestrator", "learning-loop", "dual-loop", "agent-swarm", "red-team", "multi-agent"]
     },
     {
       "name": "agent-scaffolders",
@@ -94,12 +59,7 @@
       "source": "./plugins/agent-scaffolders",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": [
-        "scaffolder",
-        "plugin-generator",
-        "skill-generator",
-        "agent-tooling"
-      ]
+      "tags": ["scaffolder", "plugin-generator", "skill-generator", "agent-tooling"]
     },
     {
       "name": "plugin-manager",
@@ -107,14 +67,7 @@
       "source": "./plugins/plugin-manager",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": [
-        "orchestration",
-        "sync",
-        "maintenance",
-        "installer",
-        "bridge",
-        "deployment"
-      ]
+      "tags": ["orchestration", "sync", "maintenance", "installer", "bridge", "deployment"]
     },
     {
       "name": "agent-plugin-analyzer",
@@ -122,12 +75,7 @@
       "source": "./plugins/agent-plugin-analyzer",
       "strict": true,
       "category": "analysis",
-      "tags": [
-        "plugin-analyzer",
-        "pattern-extraction",
-        "security-audit",
-        "maturity-model"
-      ]
+      "tags": ["plugin-analyzer", "pattern-extraction", "security-audit", "maturity-model"]
     },
     {
       "name": "coding-conventions",
@@ -135,13 +83,7 @@
       "source": "./plugins/coding-conventions",
       "strict": true,
       "category": "analysis",
-      "tags": [
-        "coding",
-        "conventions",
-        "standards",
-        "documentation",
-        "headers"
-      ]
+      "tags": ["coding", "conventions", "standards", "documentation", "headers"]
     },
     {
       "name": "dependency-management",
@@ -149,13 +91,7 @@
       "source": "./plugins/dependency-management",
       "strict": true,
       "category": "analysis",
-      "tags": [
-        "dependencies",
-        "pip-compile",
-        "python",
-        "requirements",
-        "security"
-      ]
+      "tags": ["dependencies", "pip-compile", "python", "requirements", "security"]
     },
     {
       "name": "link-checker",
@@ -163,13 +99,7 @@
       "source": "./plugins/link-checker",
       "strict": true,
       "category": "analysis",
-      "tags": [
-        "links",
-        "documentation",
-        "validation",
-        "auto-repair",
-        "markdown"
-      ]
+      "tags": ["links", "documentation", "validation", "auto-repair", "markdown"]
     },
     {
       "name": "agent-skill-open-specifications",
@@ -177,12 +107,7 @@
       "source": "./plugins/agent-skill-open-specifications",
       "strict": true,
       "category": "analysis",
-      "tags": [
-        "ecosystem-specs",
-        "plugin-standards",
-        "skill-standards",
-        "authoritative-reference"
-      ]
+      "tags": ["ecosystem-specs", "plugin-standards", "skill-standards", "authoritative-reference"]
     },
     {
       "name": "context-bundler",
@@ -190,13 +115,7 @@
       "source": "./plugins/context-bundler",
       "strict": true,
       "category": "memory-context",
-      "tags": [
-        "bundler",
-        "context",
-        "llm",
-        "packaging",
-        "agent-tools"
-      ]
+      "tags": ["bundler", "context", "llm", "packaging", "agent-tools"]
     },
     {
       "name": "rlm-factory",
@@ -204,14 +123,7 @@
       "source": "./plugins/rlm-factory",
       "strict": true,
       "category": "memory-context",
-      "tags": [
-        "rlm",
-        "summarization",
-        "ollama",
-        "context",
-        "memory",
-        "ledger"
-      ]
+      "tags": ["rlm", "summarization", "ollama", "context", "memory", "ledger"]
     },
     {
       "name": "vector-db",
@@ -219,13 +131,7 @@
       "source": "./plugins/vector-db",
       "strict": true,
       "category": "memory-context",
-      "tags": [
-        "vector-db",
-        "chromadb",
-        "semantic-search",
-        "rag",
-        "embeddings"
-      ]
+      "tags": ["vector-db", "chromadb", "semantic-search", "rag", "embeddings"]
     },
     {
       "name": "tool-inventory",
@@ -233,13 +139,7 @@
       "source": "./plugins/tool-inventory",
       "strict": true,
       "category": "memory-context",
-      "tags": [
-        "tools",
-        "inventory",
-        "chromadb",
-        "semantic-search",
-        "registry"
-      ]
+      "tags": ["tools", "inventory", "chromadb", "semantic-search", "registry"]
     },
     {
       "name": "memory-management",
@@ -247,13 +147,7 @@
       "source": "./plugins/memory-management",
       "strict": true,
       "category": "memory-context",
-      "tags": [
-        "memory",
-        "context",
-        "cognitive-continuity",
-        "tiered-storage",
-        "session-management"
-      ]
+      "tags": ["memory", "context", "cognitive-continuity", "tiered-storage", "session-management"]
     },
     {
       "name": "claude-cli",
@@ -261,14 +155,7 @@
       "source": "./plugins/claude-cli",
       "strict": true,
       "category": "cli-agents",
-      "tags": [
-        "claude",
-        "anthropic",
-        "cli",
-        "sub-agent",
-        "persona",
-        "security-audit"
-      ]
+      "tags": ["claude", "anthropic", "cli", "sub-agent", "persona", "security-audit"]
     },
     {
       "name": "gemini-cli",
@@ -276,14 +163,7 @@
       "source": "./plugins/gemini-cli",
       "strict": true,
       "category": "cli-agents",
-      "tags": [
-        "gemini",
-        "google-gemini",
-        "cli",
-        "sub-agent",
-        "persona",
-        "security-audit"
-      ]
+      "tags": ["gemini", "google-gemini", "cli", "sub-agent", "persona", "security-audit"]
     },
     {
       "name": "copilot-cli",
@@ -291,14 +171,7 @@
       "source": "./plugins/copilot-cli",
       "strict": true,
       "category": "cli-agents",
-      "tags": [
-        "copilot",
-        "github-copilot",
-        "cli",
-        "sub-agent",
-        "persona",
-        "security-audit"
-      ]
+      "tags": ["copilot", "github-copilot", "cli", "sub-agent", "persona", "security-audit"]
     },
     {
       "name": "excel-to-csv",
@@ -306,13 +179,7 @@
       "source": "./plugins/excel-to-csv",
       "strict": true,
       "category": "conversion",
-      "tags": [
-        "excel",
-        "csv",
-        "conversion",
-        "data",
-        "l5-verified"
-      ]
+      "tags": ["excel", "csv", "conversion", "data", "l5-verified"]
     },
     {
       "name": "markdown-to-msword-converter",
@@ -320,14 +187,7 @@
       "source": "./plugins/markdown-to-msword-converter",
       "strict": true,
       "category": "conversion",
-      "tags": [
-        "markdown",
-        "docx",
-        "msword",
-        "convert",
-        "word",
-        "document"
-      ]
+      "tags": ["markdown", "docx", "msword", "convert", "word", "document"]
     },
     {
       "name": "mermaid-to-png",
@@ -335,14 +195,7 @@
       "source": "./plugins/mermaid-to-png",
       "strict": true,
       "category": "conversion",
-      "tags": [
-        "mermaid",
-        "diagrams",
-        "png",
-        "convert",
-        "visualization",
-        "puppeteer"
-      ]
+      "tags": ["mermaid", "diagrams", "png", "convert", "visualization", "puppeteer"]
     },
     {
       "name": "obsidian-integration",
@@ -350,14 +203,7 @@
       "source": "./plugins/obsidian-integration",
       "strict": true,
       "category": "integrations",
-      "tags": [
-        "obsidian",
-        "vault",
-        "knowledge-graph",
-        "markdown",
-        "canvas",
-        "pkm"
-      ]
+      "tags": ["obsidian", "vault", "knowledge-graph", "markdown", "canvas", "pkm"]
     },
     {
       "name": "huggingface-utils",
@@ -365,13 +211,7 @@
       "source": "./plugins/huggingface-utils",
       "strict": true,
       "category": "integrations",
-      "tags": [
-        "huggingface",
-        "hf-hub",
-        "soul-persistence",
-        "upload",
-        "dataset"
-      ]
+      "tags": ["huggingface", "hf-hub", "soul-persistence", "upload", "dataset"]
     },
     {
       "name": "rsvp-speed-reader",
@@ -379,29 +219,7 @@
       "source": "./plugins/rsvp-speed-reader",
       "strict": true,
       "category": "integrations",
-      "tags": [
-        "rsvp",
-        "speed-reading",
-        "documents",
-        "pdf",
-        "docx"
-      ]
-    },
-    {
-      "name": "voice-writer",
-      "description": "Transform AI-generated or over-polished writing into authentic human voice. Supports voice profile calibration and humanization of AI patterns.",
-      "source": "./plugins/voice-writer",
-      "strict": false,
-      "category": "analysis",
-      "tags": ["writing", "humanize", "voice", "tone", "ai-patterns"]
-    },
-    {
-      "name": "agent-execution-disciplines",
-      "description": "Behavioral guardrails and quality disciplines for agentic workflows — verification, TDD, and systematic debugging.",
-      "source": "./plugins/agent-execution-disciplines",
-      "strict": true,
-      "category": "agent-infrastructure",
-      "tags": ["disciplines", "quality", "verification", "tdd", "debugging"]
+      "tags": ["rsvp", "speed-reading", "documents", "pdf", "docx"]
     }
   ]
 }
