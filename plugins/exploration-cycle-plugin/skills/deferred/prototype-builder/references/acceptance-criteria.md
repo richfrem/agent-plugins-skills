@@ -1,1 +1,0 @@
-../../../prototype-builder/acceptance-criteria.md
