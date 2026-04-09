@@ -131,6 +131,31 @@ def main() -> None:
         sys.exit(1)
     print("✅ Valid JSON")
 
+    # Check 1b: Detect literal \n chars (invalid JSON encoding from Python json.dump)
+    with open(hooks_file, encoding="utf-8") as raw_fh:
+        raw_content = raw_fh.read()
+    if r"\n" in raw_content and "\n" not in raw_content:
+        print("❌ File contains literal \\n characters instead of real newlines.")
+        print("   Run fix_plugin_load_errors.py to auto-fix.")
+        sys.exit(1)
+
+    # Check 1c: Root must be an object, not an array
+    if isinstance(data, list):
+        print("❌ Root must be an object, not an array. Expected: {\"hooks\": {}}")
+        sys.exit(1)
+
+    # Unwrap nested { "hooks": {...} } format (canonical Claude Code format)
+    # Old flat format had events at root; new format wraps them under "hooks" key.
+    if "hooks" in data and isinstance(data.get("hooks"), dict):
+        unwrapped = data["hooks"]
+        if not unwrapped:
+            print("✅ Empty hooks configuration: {\"hooks\": {}}")
+            sys.exit(0)
+        data = unwrapped
+    elif len(data) == 0:
+        print("⚠️  Empty {} detected. Preferred form is {\"hooks\": {}}")
+        sys.exit(0)
+
     # Check 2: Root structure - event name validity
     print()
     print("Checking root structure...")
@@ -147,6 +172,11 @@ def main() -> None:
 
     for event, hook_list in data.items():
         if not isinstance(hook_list, list):
+            errors.append(
+                f"❌ {event}: Value must be an array of hook entries, got {type(hook_list).__name__}. "
+                "Check for old flat format: {\"EventName\": {\"command\": \"...\"}} — "
+                "wrap in {\"hooks\": {\"EventName\": [{\"matcher\": \"\", \"hooks\": [{...}]}]}}"
+            )
             continue
         for i, entry in enumerate(hook_list):
             if not entry.get("matcher"):
