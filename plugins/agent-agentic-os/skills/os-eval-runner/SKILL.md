@@ -1,35 +1,37 @@
 ---
 name: os-eval-runner
 description: >
-  Trigger: "evaluate this skill", "run autoresearch loop on", "optimize this skill".
-  Use when an agent proposes a change to an existing skill and needs empirical validation.
-
-  <example>
-  Context: Start autonomous improvement loop on a skill.
-  user: "Run the autoresearch loop on <SKILL_PATH> for 20 iterations"
-  assistant: [triggers os-eval-runner, runs Mode 1 intake]
-  </example>
-
-  <example>
-  Context: Incomplete optimize request.
-  user: "Optimize the commit skill"
-  assistant: [triggers os-eval-runner, runs Phase 0 intake interview]
-  </example>
-
-  <example>
-  Context: `Triple-Loop Retrospective` proposes a skill edit.
-  assistant: [autonomously] "Before I apply this description change, I'll run os-eval-runner to confirm."
-  </example>
-
-  <example>
-  Context: An agent is asking for general information about a skill, not evaluating a proposed change.
-  agentic-os-setup: "Tell me about the os-clean-locks skill."
-  assistant: "It cleans up stale lock files..."
-  
-  </example>
-argument-hint: "[path/to/SKILL.md or skill-name] [--iterations N] [--until-score 0.95]"
-allowed-tools: Bash, Read, Write
+  Stateless evaluation engine that scores and gates skill improvement iterations using
+  headless Python evaluation scripts. Use when the user says "evaluate this skill",
+  "run autoresearch loop on", "optimize this skill", "run the eval loop", or when
+  another agent proposes a change to an existing skill and needs empirical validation
+  before applying it. Supports autonomous loop mode for iterative improvement and
+  single-shot QA mode for validating one specific proposed change. Requires Python 3.8+
+  and a git repository.
 ---
+
+<example>
+<commentary>Start autonomous improvement loop on a skill.</commentary>
+user: "Run the autoresearch loop on plugins/link-checker/skills/link-checker-agent for 20 iterations"
+assistant: [triggers os-eval-runner, runs Mode 1 intake, establishes baseline, begins iteration loop]
+</example>
+
+<example>
+<commentary>Incomplete optimize request — runs intake interview first.</commentary>
+user: "Optimize the commit skill"
+assistant: [triggers os-eval-runner, runs Phase 0 intake interview to gather path, mode, and iteration count]
+</example>
+
+<example>
+<commentary>Another agent proposes a skill edit and needs validation.</commentary>
+assistant: [autonomously] "Before I apply this description change, I'll run os-eval-runner to confirm the score doesn't regress."
+</example>
+
+<example>
+<commentary>Negative — user is asking about a skill, not evaluating a proposed change.</commentary>
+user: "Tell me about the os-clean-locks skill."
+assistant: "It cleans up stale lock files..." [does NOT trigger os-eval-runner]
+</example>
 
 ## Dependencies
 
@@ -410,178 +412,11 @@ Save to: `temp/retrospectives/survey_[YYYYMMDD]_[HHMM]_os-eval-runner.md`
 
 ---
 
-## The Lab-Space Protocol (Full Lifecycle)
-
-When a skill runs in a **lab repo** (a standalone test repo with copies of plugin files — not the master source), there is a mandatory handoff stage after the loop completes. Lab repos use real file copies; the master repo uses hub-and-spoke symlinks pointing to canonical sources. Changes must be reviewed and backported — never blindly copied.
-
-**Lab runs with `os-eval-runner` installed as a peer:** When the lab repo has both the target skill and `os-eval-runner` installed side by side (the `os-eval-lab-setup` default), the improvement loop will sometimes propose changes to `os-eval-runner` itself — its SKILL.md, eval scripts, or evals. This is expected and productive: the agent finds the highest-leverage change available across all installed skills. The physical copy in the lab is safe to mutate. Treat these changes in backport review with extra scrutiny (see note in Stage 6 below).
-
-### Stage 6: Backport to Master Repo
-
-After the loop completes and the self-assessment survey is written:
-
-**1. Commit and push everything:**
-```bash
-git add . && git commit -m "post-run: finalize all artifacts"
-git push origin main
-```
-
-**2. Identify changed files:**
-```bash
-git log --oneline --name-only  # which commits changed what
-git diff <baseline-commit> HEAD --name-only  # all files changed since baseline
-```
-
-**3. For each changed file, identify its master source:**
-
-| Component | Skill Installer (Universal) | Claude Code Native |
-|:---|:---|:---|
-| `<plugin>/skills/<skill>/SKILL.md` | Deployed Skill | `plugins/<plugin>/skills/<skill>/SKILL.md` |
-| `<plugin>/skills/<skill>/evals/evals.json` | Deployed Evals | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
-| `.agents/skills/os-eval-runner/` (if patched) | Deployed Engine | `plugins/agent-agentic-os/skills/os-eval-runner/` |
-
-**4. For each file — read the diff and assess:**
-- **Accept as-is**: change is clearly an improvement, apply verbatim
-- **Adapt**: change direction is right but needs adjustment for master context
-- **Reject**: change was eval-specific, doesn't generalize, or is a regression
-
-> **Extra scrutiny for `os-eval-runner` changes:** If the loop mutated `eval_runner.py` or `evaluate.py` in the lab, verify the change does not introduce scoring bias that inflates future KEEP rates. The evaluator rewriting its own verdict logic to always exit 0 is the Goodhart failure mode for meta-circular runs. Check the score trajectory in `results.tsv` — a suspiciously high acceptance rate after the change is a red flag.
-
-**5. Apply approved changes deliberately:**
-```
-# Never blind-copy. Read the diff, understand the intent, edit master files deliberately.
-# The master uses symlinks — only update the canonical source file.
-```
-
-**6. Two-gate confirmation before applying to master:**
-
-Do not apply any change to master until both gates are cleared:
-
-**Gate 1 — Machine:** `evaluate.py` exited 0 (score ≥ baseline AND f1 ≥ baseline_f1). Confirm from `results.tsv`.
-
-**Gate 2 — Three-perspective diff commentary** (write this before editing master files):
-```
-BACKPORT REVIEW: iter_NNN — "<desc>"
-Score delta: +0.07 (0.82 → 0.89)
-
-Test engineer view:
-  Which eval inputs changed verdict? [list them]
-  Are these the inputs we were targeting, or collateral?
-
-Routing precision view:
-  What similar-but-wrong request could now trigger this skill?
-
-Regression view:
-  Do any other installed skills have overlapping keywords with this change?
-  grep -r "<new keyword>" .agents/skills/*/SKILL.md
-```
-
-For **unattended** (`os-nightly-evolver`) runs: write this commentary to
-`temp/retrospectives/backport_[YYYYMMDD]_iter_NNN.md` and flag for human review
-before applying. Do not auto-apply to master from unattended runs.
-
-**7. Contribute evolved proposer prompt (if improved during the run):**
-
-If `references/copilot_proposer_prompt.md` was mutated and accepted (KEEPed) during the run,
-compare it against the canonical template. If it substantially improved proposal quality, copy it
-to the copilot-cli plugin as a reference example:
-```bash
-cp <lab-experiment-dir>/references/copilot_proposer_prompt.md \
-   .agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md
-```
-This closes the loop: the prompt that emerged from real eval feedback becomes the new starting
-baseline for future experiments.
-
-**8. Commit to master:**
-```bash
-cd <APS_ROOT>
-git add plugins/<plugin>/...
-git commit -m "backport: <what was accepted from lab run>"
-```
-
-> **Trigger the `os-eval-backport` skill** from the master repo session to orchestrate this review. It reads the lab run log, produces a structured diff assessment, and guides the edit.
+See [`references/lab-space-protocol.md`](references/lab-space-protocol.md) for the complete lab-space protocol including backport review, two-gate confirmation, and proposer prompt evolution.
 
 ---
 
-## Troubleshooting
-
-### Exit code reference
-| Code | Meaning | Fix |
-|:---|:---|:---|
-| `0` | KEEP — change accepted | Commit the change |
-| `1` | DISCARD — change rejected, auto-reverted | Try a different change |
-| `2` | Script error (path, missing file, arg parse) | Check error output; often a template path issue — see below |
-| `3` | Locked loop deadlock — environment was tampered after baseline | Delete `<experiment-dir>/evals/.lock.hashes` and re-run `evaluate.py --baseline` |
-
-### Exit 3: tampered environment reset
-If you update `evals.json` after a partial baseline run, `evaluate.py` detects the SHA256 mismatch and exits 3. Fix:
-```bash
-rm <experiment-dir>/evals/.lock.hashes
-python3 ./scripts/evaluate.py --skill <experiment-dir> --baseline --desc "re-baseline after evals update"
-git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evals update"
-```
-
-### Exit 2: standalone template path fail
-If `init_autoresearch.py` crashes with a `FileNotFoundError` pointing to a `./` nested path, the script is resolving templates against the full plugin repo layout instead of the installed standalone location. The fix is already applied in the master source (`TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"`). If you see it in a locally-patched copy, verify the script's `TEMPLATES_DIR` line uses `HERE.parent` resolution.
-
-### Keywords frontmatter footgun
-The `eval_runner.py` scorer treats an explicit `keywords:` field in skill frontmatter as authoritative — it stops scanning the `description` field. If `keywords:` is present but not exhaustive, critical routing words are missed and scores collapse (observed: 1.0000 → 0.5333, F1 1.0 → 0.29 in a single iteration). **Do not add a `keywords:` field unless the list is complete.** Remove it and rely on the description for routing if in doubt.
-
-### 4-character word floor
-The scorer only counts words ≥ 4 characters (`\w{4,}`). Words like "fix", "run", "doc" are invisible to the router. Ensure skill descriptions use longer trigger words: "broken", "audit", "paths", "links", "repair", "validation", "commit", "execute", "documentation".
-
-### F1 guard — do not disable
-Never disable the `f1 >= baseline_f1` check in `evaluate.py`. It is the only protection against keyword stuffing — where padding the description raises recall at the expense of precision. A high routing accuracy score with low F1 is a red flag, not a victory.
-
-### Structural heuristic penalties
-The heuristic engine applies soft penalties for missing structure (e.g. -0.30 for no `<example>` blocks). Do not ignore these even when routing accuracy is high. They are self-correcting signals for documentation quality, not noise.
-
-### .lock.hashes and path portability
-`.lock.hashes` currently uses absolute paths. If the skill folder is moved between environments or machines, the baseline hashes will mismatch and trigger exit 3. Re-establish the baseline with `--baseline` after any move.
-
-### Re-baseline required after upgrading evaluate.py or eval_runner.py
-Both scripts are SHA256-locked. If you pull an upstream update to either script, existing `.lock.hashes` files will mismatch and trigger exit 3. Fix:
-```bash
-python3 ./scripts/evaluate.py \
-    --skill <experiment-dir> --baseline --desc "re-baseline after script upgrade"
-git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evaluate.py upgrade"
-```
-
-### Milestone summaries for long runs (25+ iterations)
-
-For runs exceeding 25 iterations, generate a milestone summary to preserve distant history context:
-
-```bash
-# Write a milestone if iteration count is a multiple of 25 (auto-check)
-python3 ./scripts/generate_milestone.py \
-    --experiment-dir <path/to/experiment-dir>
-
-# Force-write a milestone at any iteration count
-python3 ./scripts/generate_milestone.py \
-    --experiment-dir <path/to/experiment-dir> --force
-
-# Custom interval (e.g. every 10 iterations)
-python3 ./scripts/generate_milestone.py \
-    --experiment-dir <path/to/experiment-dir> --every 10
-```
-
-Output: `evals/traces/milestone_NNN.md` — score trajectory, top KEEPs, worst DISCARDs,
-recurring false-positive inputs, dominant problem type, and recommended focus.
-
-The proposer should read milestone summaries for distant history and raw traces for recent
-iterations. This prevents the loop from losing context on early experiments as trace count grows.
-
-### Reading traces to diagnose DISCARD iterations
-```bash
-# Find all false positives across recent traces
-grep -h "false positive" evals/traces/iter_*.json | sort | uniq -c | sort -rn
-
-# Show full routing detail for a specific DISCARD
-cat evals/traces/iter_002_DISCARD_score0.71.json | python3 -m json.tool
-
-# Show the mutation diff for a DISCARD
-python3 -c "import json; d=json.load(open('evals/traces/iter_002_DISCARD_score0.71.json')); print(d['mutation_diff'])"
-```
+See [`references/troubleshooting.md`](references/troubleshooting.md) for exit code reference, common fixes (tampered environment, template path issues, keywords footgun, F1 guard), milestone summaries, and trace diagnostics.
 
 ---
 

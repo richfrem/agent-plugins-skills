@@ -5,6 +5,8 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+> Architectural patterns adapted from [obra/superpowers](https://github.com/obra/superpowers) (MIT)
+
 ## Dashboard Intercept
 
 Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
