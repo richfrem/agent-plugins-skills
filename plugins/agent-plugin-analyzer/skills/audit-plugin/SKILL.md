@@ -177,10 +177,9 @@ skills/<skill>/references/architecture.md  →  ../../../references/architecture
 The symlink filename and the target filename may differ (e.g. `execute.py` → `exploration_optimizer_execute.py`)
 — that is intentional and valid.
 
-**9 known missing-source stand-ins in exploration-cycle-plugin** (leave as-is until source files
+**6 known missing-source stand-ins in exploration-cycle-plugin** (leave as-is until source files
 are created at `plugins/exploration-cycle-plugin/references/`):
-`dual-loop-architecture.md`, `dual-loop-skill.md`, `learning-loop-architecture.md`,
-`learning-loop-skill.md`, `spec-kitty-skill-optimizer-program.md`
+`agent-loop-patterns.md`, `exploration-output-standards.md`
 
 ---
 

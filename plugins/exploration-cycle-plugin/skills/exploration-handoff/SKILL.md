@@ -121,6 +121,15 @@ Ensure the handoff gives the downstream consumer what they need to act:
 2. **Surface gaps:** Present the 3 questions: *"If [audience] reads this, they'll immediately ask: [Q1], [Q2], [Q3]. Are these answered?"*
 3. **Resolve:** For each unanswered question, ask whether to (a) answer it inline, (b) add it to `## Unresolved Ambiguity` for the execution phase to own, or (c) confirm it's intentionally out of scope.
 
+## Stage 4: Engineering Harness Formatting
+
+If the target audience is Engineering (Tier 3 Risk), ask the user if they want to format this handoff package for a specific technical execution harness:
+1. **Spec-Kitty**: The package must be output strictly as an architectural requirements spec, aligning with Spec-Kitty's `spec.md` format.
+2. **Superpowers**: The package must emphasize actionable Checklists, TDD plans, and raw User Story input suitable for the explicit powers `brainstorming` and `planning`.
+3. **Generic Engineering**: Standard formatting.
+
+If they choose a specific harness, rewrite the generated package to maximize compatibility with the requested execution tool before the final export.
+
 ## Anti-Hallucination Rules
 - Do NOT invent requirements or rules that were not present in the Stage 1 input sources.
 - Maintain traceability: When stating a major constraint or rule, briefly mention which exploration source it came from.
