@@ -4,25 +4,24 @@ description: >
   Scaffolds the filesystem structure for a new agent skill: creates the directory layout,
   writes a starter SKILL.md, generates evals/evals.json, references/, scripts/, and assets/
   as needed, and runs a discovery interview to capture name, purpose, and trigger phrases
-  before writing any files. Trigger with "create a new skill", "scaffold a skill",
-  "generate a skill", "new skill setup", or "make a skill directory".
-
-  <example>
-  Context: User wants to create a brand-new skill from scratch.
-  user: "Create a new skill called link-validator"
-  assistant: [triggers create-skill, runs discovery interview, scaffolds directory structure]
-  
-  </example>
-
-  <example>
-  Context: User wants to improve an existing skill's content, not scaffold a new one.
-  user: "Improve the trigger description for my link-checker skill"
-  assistant: [triggers os-skill-improvement, not create-skill]
-  
-  </example>
+  before writing any files. Use when the user says "create a new skill", "scaffold a skill",
+  "generate a skill", "new skill setup", or "make a skill directory". Does not handle
+  content improvement for existing skills — that is handled by os-skill-improvement.
 argument-hint: "[skill-name or use-case description]"
 allowed-tools: Bash, Read, Write
 ---
+
+<example>
+<commentary>User wants to create a brand-new skill from scratch.</commentary>
+user: "Create a new skill called link-validator"
+assistant: [triggers create-skill, runs discovery interview, scaffolds directory structure with SKILL.md, evals/evals.json, references/acceptance-criteria.md]
+</example>
+
+<example>
+<commentary>Negative — user wants to improve an existing skill, not scaffold a new one.</commentary>
+user: "Improve the trigger description for my link-checker skill"
+assistant: [triggers os-skill-improvement, not create-skill]
+</example>
 
 # create-skill: Skill Scaffolding Executor
 
