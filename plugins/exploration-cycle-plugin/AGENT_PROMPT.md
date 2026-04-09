@@ -17,7 +17,7 @@ cat docs/superpowers/plans/2026-04-06-exploration-cycle-smr-upgrade.md
 # Inventory the current plugin state
 ls agents/
 ls skills/
-ls skills/deferred/
+ls skills/
 
 # Read the superpowers source files you will adapt from (these are your reference materials):
 # (Adjust path to wherever superpowers is available in your environment)

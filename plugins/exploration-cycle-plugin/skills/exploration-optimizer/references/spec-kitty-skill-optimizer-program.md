@@ -1,1 +1,0 @@
-../../../references/spec-kitty-skill-optimizer-program.md
