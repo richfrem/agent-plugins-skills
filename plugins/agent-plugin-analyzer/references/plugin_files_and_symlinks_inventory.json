@@ -19384,8 +19384,8 @@
     "is_symlink": false
   },
   {
-    "name": "spec-kitty-skill-optimizer-program.md",
-    "path": "plugins/exploration-cycle-plugin/references/spec-kitty-skill-optimizer-program.md",
+    "name": "exploration-output-standards.md",
+    "path": "plugins/exploration-cycle-plugin/references/exploration-output-standards.md",
     "is_symlink": false
   },
   {
@@ -19633,10 +19633,10 @@
     "is_broken": false
   },
   {
-    "name": "spec-kitty-skill-optimizer-program.md",
-    "path": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/spec-kitty-skill-optimizer-program.md",
+    "name": "exploration-output-standards.md",
+    "path": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/exploration-output-standards.md",
     "is_symlink": true,
-    "target": "../../../references/spec-kitty-skill-optimizer-program.md",
+    "target": "../../../references/exploration-output-standards.md",
     "is_broken": false
   },
   {
