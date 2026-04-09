@@ -79,6 +79,52 @@ The agent checks all 10 categories automatically:
 
 ---
 
+## Step 2b: Auto-Fix Claude Code Load Errors
+
+Before deep validation, run the load-error fixer to catch issues that prevent
+Claude Code from loading the plugin at all. These are silent failures — the plugin
+simply doesn't load with no useful error until you run `/doctor`.
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
+```
+
+**What it fixes automatically:**
+
+| Issue | Symptom in /doctor | Root cause |
+|---|---|---|
+| `plugin.json` has `skills`/`agents`/`hooks`/`commands` arrays | `Invalid input` | Validator rejects these — auto-discovery handles them |
+| `hooks.json` is `{}` (empty object) | `expected record, received undefined` | Must be `{"hooks": {}}` |
+| `hooks.json` is `[]` (array) | `expected object received array` | Must be an object |
+| `hooks.json` flat format `{"EventName":{...}}` | `expected record, received undefined` | Must be nested under `"hooks"` key |
+| `hooks.json`/`lsp.json`/`.mcp.json` has literal `\n` chars | `Unrecognized token '\'` | Python `json.dump` wrote escaped newlines; file must have real newlines |
+| `SKILL.md` has comment lines before `---` | skill fails to load | Frontmatter parser requires `---` as the very first line |
+
+**Correct `hooks.json` format:**
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [{ "type": "command", "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }]
+      }
+    ]
+  }
+}
+```
+
+**Empty hooks (no hooks needed):**
+```json
+{ "hooks": {} }
+```
+
+**IMPORTANT — Cache coverage**: Claude Code scans ALL cached versions under
+`~/.claude/plugins/cache/`, not just the active `installPath`. Fixing source files
+and reinstalling is the only reliable fix. Use `uvx plugin-add` to reinstall.
+
+---
+
 ## Step 3: Run Component-Specific Scripts
 
 After plugin-validator, run targeted scripts for detailed checks:
