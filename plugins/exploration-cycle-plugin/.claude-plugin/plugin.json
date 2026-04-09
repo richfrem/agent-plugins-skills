@@ -5,6 +5,7 @@
     "author": {
         "name": "Richard Fremmerlid"
     },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
         "exploration",
