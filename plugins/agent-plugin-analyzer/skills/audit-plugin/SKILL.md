@@ -125,6 +125,65 @@ and reinstalling is the only reliable fix. Use `uvx plugin-add` to reinstall.
 
 ---
 
+## Step 2c: Detect and Fix Symlink Stand-Ins
+
+Git checks out symlinks as plain-text "stand-in" files when `core.symlinks=false` (common on
+Windows without Developer Mode, or when cloned without the setting). Stand-ins look like real files
+but contain only a relative path (e.g. `../../../scripts/execute.py`). They are functionally broken
+— the bridge installer will copy the path string, not the actual script.
+
+**Run the bulk scanner** from the link-checker plugin:
+
+```bash
+python3 plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
+```
+
+The scanner detects both:
+- **text-file stand-ins**: small plain-text files (`< 512 bytes`) whose content looks like a relative path
+- **broken symlinks**: real symlinks whose target no longer exists
+
+**Important — the fixer has a silent failure mode.** `symlink_manager.py` always exits 0, so
+`bulk_symlink_fixer.py` prints "✓ Fixed" even when the source doesn't exist. Always verify manually:
+
+```bash
+# Confirm symlinks resolved (count should match expectations)
+find plugins/<plugin-name> -type l | wc -l
+
+# Confirm no text-file stand-ins remain for scripts paths (critical)
+find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l
+```
+
+**Two categories of stand-ins:**
+
+1. **Valid stand-ins** (target exists) — the fixer converts these automatically. If it fails
+   silently, convert manually:
+   ```python
+   # Read the path out of the stand-in, unlink the file, recreate as symlink
+   content = Path(standin).read_text().strip()
+   Path(standin).unlink()
+   Path(standin).symlink_to(content)
+   ```
+
+2. **Wrong-path stand-ins** (target missing) — common cause: an extra subdirectory in the path
+   (e.g. `references/architecture/architecture.md` when the file is at `references/architecture.md`).
+   Correct the relative path before creating the symlink. Check what actually exists at the plugin
+   `references/` root and recalculate the depth.
+
+**Correct symlink pattern (must match ADR manager / all standard skills):**
+```
+skills/<skill>/scripts/execute.py  →  ../../../scripts/<canonical_name>.py
+skills/<skill>/references/architecture.md  →  ../../../references/architecture.md
+```
+The symlink filename and the target filename may differ (e.g. `execute.py` → `exploration_optimizer_execute.py`)
+— that is intentional and valid.
+
+**9 known missing-source stand-ins in exploration-cycle-plugin** (leave as-is until source files
+are created at `plugins/exploration-cycle-plugin/references/`):
+`dual-loop-architecture.md`, `dual-loop-skill.md`, `learning-loop-architecture.md`,
+`learning-loop-skill.md`, `spec-kitty-skill-optimizer-program.md`
+
+---
+
 ## Step 3: Run Component-Specific Scripts
 
 After plugin-validator, run targeted scripts for detailed checks:
