@@ -42,49 +42,20 @@ Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same
 
 ---
 
-## Alternative: plugin Marketplace installs
+## Alternative: Claude Code Native Marketplace
 
-### Claude code instructions
 If you are using Claude Code (2.1.81+), you can add this repository as a native marketplace and install plugins without leaving the terminal:
 
 ```text
 # Add this repository to your known marketplaces
 /plugin marketplace add richfrem/agent-plugins-skills
 
-# Browse the available plugins in this marketplace
-/plugin marketplace browse richfrem-agent-plugins-skills
-
-# Open the interactive TUI to discover and install
+# Open the interactive TUI to browse, discover, and install plugins
 /plugin
 
 # Or install a specific plugin directly
 /plugin install <plugin-name>
 ```
-
-
-### Copilot CLI marketplace install
-
-```text
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install exploration-cycle-plugin@richfrem-agent-plugins-skills 
-```
-
-### GEMINI CLI marketplace install
-
-```text
-gemini extensions install https://github.com/richfrem/agent-plugins-skills
-```
-to update gemini
-```text
-gemini extensions update richfrem/agent-plugins-skills
-```
-
-### Marketplace Browse and Verification
-Use `/plugin marketplace browse richfrem-agent-plugins-skills` to see available plugins.
-
-After a successful install, you will see a message like:
-> *Plugin "exploration-cycle-plugin" installed successfully.*
-> *Installed 12 skills. Use `/skills list` to see them.*
 
 ---
 
