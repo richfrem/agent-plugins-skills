@@ -23,14 +23,8 @@
       ]
     },
     "agent-loops": {
-      "count": 5,
+      "count": 4,
       "scripts": [
-        {
-          "name": "closure-guard.sh",
-          "path": "plugins/agent-loops/hooks/closure-guard.sh",
-          "purpose": "",
-          "type": "bash"
-        },
         {
           "name": "swarm_run.py",
           "path": "plugins/agent-loops/scripts/swarm_run.py",

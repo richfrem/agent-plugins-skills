@@ -443,14 +443,6 @@
         "header_style": "minimal"
       },
       {
-        "name": "closure-guard.sh",
-        "path": "plugins/agent-loops/hooks/closure-guard.sh",
-        "description": "TBD",
-        "last_updated": "2026-03-09T13:17:41.086777",
-        "compliance_status": "needs_review",
-        "header_style": "none"
-      },
-      {
         "name": "swarm_run.py",
         "path": "plugins/agent-loops/scripts/swarm_run.py",
         "description": "TBD",
@@ -1015,7 +1007,7 @@
       {
         "name": "task_manager.py",
         "path": "plugins/task-manager/skills/task-agent/scripts/task_manager.py",
-        "description": "task_manager.py — Lightweight Kanban Task Manager",
+        "description": "task_manager.py \u2014 Lightweight Kanban Task Manager",
         "last_updated": "2026-03-09T13:17:40.971211",
         "compliance_status": "needs_review",
         "header_style": "basic"
@@ -1197,7 +1189,7 @@
       {
         "name": "tool_chroma.py",
         "path": "plugins/tool-inventory/skills/tool-inventory/scripts/tool_chroma.py",
-        "description": "tool_chroma.py — Embedded ChromaDB wrapper for tool-inventory plugin",
+        "description": "tool_chroma.py \u2014 Embedded ChromaDB wrapper for tool-inventory plugin",
         "last_updated": "2026-03-09T13:17:40.997583",
         "compliance_status": "needs_review",
         "header_style": "basic"

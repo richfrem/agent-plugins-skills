@@ -15818,11 +15818,6 @@
     "is_symlink": false
   },
   {
-    "name": "closure-guard.sh",
-    "path": "plugins/agent-loops/hooks/closure-guard.sh",
-    "is_symlink": false
-  },
-  {
     "name": "swarm_run.py",
     "path": "plugins/agent-loops/scripts/swarm_run.py",
     "is_symlink": false
@@ -15830,11 +15825,6 @@
   {
     "name": "agent_orchestrator.py",
     "path": "plugins/agent-loops/scripts/agent_orchestrator.py",
-    "is_symlink": false
-  },
-  {
-    "name": "closure-guard.sh",
-    "path": "plugins/agent-loops/scripts/closure-guard.sh",
     "is_symlink": false
   },
   {
@@ -16274,13 +16264,6 @@
     "path": "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py",
     "is_symlink": true,
     "target": "../../../scripts/agent_orchestrator.py",
-    "is_broken": false
-  },
-  {
-    "name": "closure-guard.sh",
-    "path": "plugins/agent-loops/skills/orchestrator/scripts/closure-guard.sh",
-    "is_symlink": true,
-    "target": "../../../scripts/closure-guard.sh",
     "is_broken": false
   },
   {
