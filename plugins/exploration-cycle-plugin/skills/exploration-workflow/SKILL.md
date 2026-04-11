@@ -72,6 +72,14 @@ two-stage review, and TDD. When it signals complete, the orchestrator invokes
 
 **For Analysis/Docs sessions:** Skip the dispatch strategy question. Default to `direct`.
 
+### Token Efficiency — Claude-only sessions
+
+If the SME has no Copilot (strategy = `claude-subagents` or `direct`), apply these practices throughout:
+- **Simple capture passes** (template filling, document extraction, format conversion): use the `Agent` tool with `model: "haiku"` to keep the main context light.
+- **Q&A clarification**: batch 3–5 questions, dispatch `haiku` to collect structured answers, write to `exploration/captures/clarifications-[topic].md`, read back once. Never run clarification loops inline in the main orchestrator turn.
+- **Compact before topic switches**: if the session moves from one major phase to the next and earlier content is no longer needed, use `/compact` to reduce carry-forward context debt.
+- Full details and Claude Code dispatch examples: `references/dispatch-strategies.md`.
+
 For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
@@ -114,46 +122,94 @@ not just at handoff. The earlier it happens, the more valuable it is.
 1. Check for `exploration/exploration-dashboard.md`.
 2. **If the file does NOT exist:**
    - Create the `exploration/` directory if it does not already exist.
-   - Ask the SME: *"What are we exploring today? Give it a short name so we can track it."*
-   - After receiving the session name, ask the SME to choose a **session type**:
-     > "What kind of session is this?
-     > 1. **New app or system** — building a software prototype from scratch (all 4 phases)
-     > 2. **Feature for an existing app** — adding to or modifying a codebase you already have (Phase 2 is optional, Phase 3 builds into the real codebase, Phase 4 is optional)
-     > 3. **Analysis or documentation** — no code output. Could be: requirements gathering, business process mapping, legacy code analysis, policy drafting, strategic planning, workflow design, or any non-software deliverable (Phases 1 & 4, Phase 2 optional, Phase 3 skipped)
-     > 4. **Spike or investigation** — exploring a question or technology, may loop back to Phase 1 multiple times (flexible phases)"
-   - Based on their selection, scaffold the dashboard from the appropriate template (see Session Type Templates below).
-   - Replace `[to be filled in]` in the `**Session:**` field with their session name.
-   - Write the updated file, then proceed to Block 3.
+   - Ask the SME **two questions in one message**:
+     > "What are we exploring today? Give it a short name so we can track it — and in a sentence or two, what are you hoping to achieve or solve? (Don't worry about framing it perfectly — we'll work that out together.)"
+   - **Using the Scenario Routing Guide below, suggest a session type with a one-sentence rationale:**
+     > "That sounds like [Type X] — [why]. Does that fit, or would you describe it differently?"
+   - If the SME confirms: proceed with that type.
+   - If the SME corrects or says "not quite": take their word for it. Always defer to SME judgment.
+   - If the SME says "I'm not sure" or "you tell me": present the **full type menu** (see below) with examples.
+   - Scaffold the dashboard from the appropriate template (see Session Type Templates below).
+   - Record the session name in `**Session:**` and the session type in `**Session Type:**`.
+   - Write the file, then proceed to Block 3.
 3. **If the file EXISTS:** Proceed to Block 2.
+
+---
+
+### Scenario Routing Guide (for agent use — do NOT recite to SME)
+
+Match on **intent**, not keywords. When uncertain, default to the type with more phases (easier to skip phases than to add them back).
+
+| What the SME describes | Suggested type | Key signal |
+|---|---|---|
+| Net-new app, portal, tool, system from scratch | Type 1 (Greenfield) | Nothing exists yet |
+| New website (product site, marketing site, customer portal) | Type 1 (Greenfield) | Treat as greenfield even if using a CMS |
+| Automated workflow, approval bot, notification system, integration | Type 1 (Greenfield) | New software, but ask: "Is the current manual process documented?" — if not, open with Analysis/Docs first |
+| Add a feature or fix something in an existing app/codebase | Type 2 (Brownfield — feature addition) | Working codebase exists |
+| Understand, document, or analyse an existing/legacy system | Type 2 (Brownfield — legacy analysis) | See Legacy Analysis sub-type below |
+| Modernise, replatform, or migrate a legacy system | Type 2 (Brownfield — legacy analysis) → handoff to engineering | Start with analysis to understand what exists before planning the rebuild |
+| Fix a broken business process, improve a workflow | Type 3 (Analysis/Docs — process) — but run Intervention Check first | Often NOT a software problem |
+| Requirements gathering or documenting for an upcoming project | Type 3 (Analysis/Docs — requirements) | Deliverable is documents |
+| Strategic planning, market entry, go-to-market, business decision | Type 3 (Analysis/Docs — strategic) | No code output |
+| Policy, compliance, regulatory, risk assessment | Type 3 (Analysis/Docs — risk/compliance) | Deliverable is policy or risk doc |
+| Should we build vs. buy? What are our options? | Type 4 (Spike) | Decision support, may not lead to building |
+| I'm not sure if we even need software | Type 4 (Spike) or start Phase 1 directly — the Intervention Check will clarify | Do not force a type prematurely |
+| Research a technology, validate a hypothesis | Type 4 (Spike) | Exploratory, outcome open |
+
+**"Not sure if software is the answer" path:**
+> "That's actually the most important question — let's not assume software is the answer yet. Let's start with Phase 1 and figure out what kind of solution actually fits. I'll ask a specific question about that during our planning conversation."
+Use Type 4 (Spike). The Intervention Check in Phase 1 will resolve this cleanly.
+
+---
 
 ### Session Type Templates
 
-**Type 1 — New app (Greenfield):** All 4 phases enabled. Use the full template from `assets/templates/exploration-dashboard.md`.
+**Type 1 — Greenfield (new app, system, or website):**
+All 4 phases enabled.
 
-**Type 2 — Feature for existing app (Brownfield):**
-- Phase 1 (Problem Framing): enabled
-- Phase 2 (Visual Blueprinting): optional — ask the SME: *"Does this feature need a layout discussion, or is the design straightforward enough to skip?"*
-- Phase 3 (Implementation): enabled — builds directly into the existing codebase (not a throwaway prototype)
-- Phase 4 (Handoff): optional — ask the SME: *"Are you handing this off to another team, or building it yourself? If building it yourself, we can skip the formal handoff."*
+Phase notes:
+- Phase 2 (Visual Blueprinting): always run for software and websites. For websites: present page structure and layout options, not just UI widgets.
+- Phase 3: builds a working prototype. For websites: focus on content structure, navigation, and one representative page before building all pages.
+- Phase 4: required — produces handoff package with risk assessment.
+
+**Type 2 — Brownfield:**
+Two distinct sub-types with different phase configurations:
+
+*Sub-type A — Feature addition or improvement:*
+- Phase 1: enabled
+- Phase 2: optional — ask: *"Does this feature need a layout discussion, or is the design straightforward enough to skip?"*
+- Phase 3: enabled — builds into the existing codebase directly (not a throwaway prototype)
+- Phase 4: optional — ask: *"Are you handing this off to someone else, or building it yourself?"*
+
+*Sub-type B — Legacy analysis / modernisation / replatforming:*
+- Phase 1: enabled — problem framing focuses on "what does the current system do?" rather than "what do we want to build?"
+- Phase 2: optional — use for architecture diagrams or migration maps if helpful
+- Phase 3: **disabled** — this is an analysis session, not a build session. Output is documentation and a modernisation plan.
+- Phase 4: enabled and required — the handoff IS the deliverable, typically a modernisation spec for a formal engineering team.
+
+Record the sub-type in the dashboard under `**Session Type:**` (e.g., `Brownfield — legacy analysis`).
 
 **Type 3 — Analysis or documentation:**
-- Phase 1 (Problem Framing): enabled
-- Phase 2 (Visual Blueprinting): optional — only if the work involves visual outputs (UI concepts, process diagrams, workflow maps). For pure analysis or text deliverables, skip.
-- Phase 3: disabled (no code output)
-- Phase 4 (Handoff): enabled — the handoff IS the primary output
+Phase 1: enabled.
+Phase 2: optional — only for visual outputs (process flow diagrams, document structure maps, architecture sketches). Skip for pure text deliverables.
+Phase 3: **disabled**.
+Phase 4: enabled — the handoff IS the primary output.
 
-This type covers a wide range of non-software work:
-- Business requirements gathering and documentation
-- Business process mapping and workflow design
-- Legacy application or codebase analysis (reading and documenting, not modifying)
-- Policy drafting, strategic planning, or operational procedures
-- Any exploration where the deliverable is documents, not running code
+Sub-types (record in dashboard):
+- **Process**: Fix or improve a business workflow. Deliverable: process documentation + change recommendations.
+- **Requirements**: Capture requirements for an upcoming project. Deliverable: BRD / user stories / acceptance criteria.
+- **Strategic**: Plans, decisions, market analysis. Deliverable: strategic recommendation document.
+- **Risk/Compliance**: Policy, regulatory, or security requirements. Deliverable: risk assessment or policy document.
+- **Legacy analysis**: Document an existing system from the outside (no code access). Deliverable: system analysis report.
 
-**Type 4 — Spike:**
-- Phase 1 (Problem Framing): enabled, may repeat
-- Phases 2–4: flexible — the SME decides which phases are relevant as the investigation unfolds
+Note: for **Process** sub-type, flag to discovery-planning that the Intervention Check is especially important — this is the scenario most likely to reveal that software is NOT the right answer.
 
-For skipped phases, mark them `- [~]` in the dashboard (tilde = intentionally skipped) and add a note: `(Skipped — [reason])`.
+**Type 4 — Spike or investigation:**
+Phase 1: enabled, may repeat.
+Phases 2–4: flexible — the SME decides as the investigation unfolds.
+Use when the outcome is unclear, when decision support is needed, or when "I'm not sure if we need software."
+
+For skipped phases, mark them `- [~]` in the dashboard and add a note: `(Skipped — [reason])`.
 
 ---
 
@@ -268,15 +324,19 @@ and return to Block 3. If they're done, proceed with completion below.
 > Your build documentation is at `exploration/prototype/README.md`."
 
 **If Phase 4 produced a handoff package**, the completion message depends on the
-**Risk Tier** recorded in the handoff (from Stage 1.5 — Risk & Rigor Assessment):
+**Risk Tier** and **session type** recorded in the handoff:
 
 | Tier | Completion Message |
 |---|---|
 | **Tier 1 (Low Risk)** | "Your handoff assessed this as low risk. You're clear to deploy directly — no formal engineering cycle needed. Your build documentation and handoff are in `exploration/`." |
 | **Tier 2 (Moderate Risk)** | "Your handoff assessed this as moderate risk. Before deploying, this needs a security review and red team assessment. Hand the file at `exploration/handoffs/handoff-package.md` to your security team." |
-| **Tier 3 (High Risk)** | "Your handoff assessed this as high risk. The next step is formal Engineering (Opportunity 4). Hand the file at `exploration/handoffs/handoff-package.md` to the engineering team to begin the spec-driven build." |
+| **Tier 3 (High Risk)** | "Your handoff assessed this as high risk. The next step is a formal engineering cycle. Hand the package at `exploration/handoffs/handoff-package.md` to your development team — it includes the requirements, user stories, business rules, prototype notes, and risk assessment they need to begin a spec-driven build." |
+| **Non-software outcome** | "The exploration concluded that the right solution here isn't a new system — it's a [process change / policy update / strategic recommendation]. Your recommendation document is at `exploration/handoffs/handoff-package.md`. Hand it to the team or person responsible for [implementing the change]." |
+| **Legacy analysis complete** | "The analysis is done. Your modernisation plan is at `exploration/handoffs/handoff-package.md`. This is the input your engineering team needs to scope the replatforming project — hand it to them to begin formal planning." |
 | **Throwaway / Fail Fast** | "The exploration revealed this idea isn't viable — and that's a valuable outcome. You discovered this at near-zero cost instead of months into a build. The session artifacts are preserved in `exploration/` for reference." |
 
 If no tier is recorded in the handoff, default to the Tier 3 message (safest path).
+
+**Non-software and legacy analysis sessions:** check the session type in the dashboard. If `**Session Type:**` contains "process", "strategic", "risk/compliance", or "legacy analysis", use the matching non-software or legacy analysis completion message above, regardless of tier.
 
 Update `**Status:**` to `Complete` in the dashboard.
