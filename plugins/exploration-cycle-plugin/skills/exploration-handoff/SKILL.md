@@ -46,6 +46,15 @@ Agent: [invokes exploration-session-brief, NOT exploration-handoff]
 
 > **Note:** This skill runs fully interactively via Claude — no script needed. `execute.py` is a planned batch-mode convenience wrapper that hasn't been built yet, but the core skill works now. The [handoff-preparer-agent](../../agents/handoff-preparer-agent.md) provides an alternative agentic dispatch path.
 
+## When This Phase Is Required vs Optional
+
+- **Greenfield (Type 1):** Always required — the handoff package is how the engineering team knows what to build.
+- **Brownfield (Type 2):** Optional — if the same person/agent is doing both exploration and implementation, formal handoff may be unnecessary. The SME decides during session setup.
+- **Discovery only (Type 3):** Always required — the handoff IS the primary output of the session (requirements, stories, rules, workflow diagrams).
+- **Spike (Type 4):** Optional — depends on whether findings need to be communicated to others.
+
+If this phase was skipped during session setup, it will be marked `- [~]` in the dashboard and the orchestrator will not route here.
+
 This skill provides a structured, 3-stage interactive workflow for synthesizing exploration artifacts into a concise Handoff Package.
 
 **Important Note for Agents:** Do NOT passively run a bash script or dump a massive block of markdown. You must guide the user through the following 3 stages.
@@ -90,14 +99,31 @@ Before synthesizing anything, establish what you're working with and where it's 
 
 After the user responds: read each artifact file they identify. If a file doesn't exist, note it explicitly and ask whether to proceed without it or pause until it's available. Do not invent content for missing artifacts.
 
-## Stage 1.5: Risk & Rigor Assessment
-Before synthesis, perform a mandatory risk assessment to determine the "Rigor Tier" for the downstream execution phase:
+## Stage 1.5: Risk & Rigor Assessment (TierGate)
 
-- **Tier 1 (Low Risk)**: Internal R&D, limited data. Lightweight, self-assessed development cycle.
-- **Tier 2 (Moderate Risk)**: Internal data, standard tools. Requires security team review, mandatory red teaming, and context sanitization.
-- **Tier 3 (High Risk)**: PII/Sensitive data, high-privilege tools (Bash). Mandatory formal engineering execution cycle (e.g., via spec-kits or execution harnesses) with architectural hardening (e.g., **Countermind** SBL, **Pro2Guard** sidecar enforcement).
+Before synthesis, perform a mandatory risk assessment. The result determines the **delivery path** — not every exploration routes to formal engineering.
 
-Ask the user to categorize the project based on these tiers and document the result in the handoff package.
+Present these options to the SME:
+
+> "Before we finalize the handoff, let's assess the risk level. This determines what happens next:
+>
+> 1. **Throwaway / Fail Fast** — The exploration revealed the idea isn't viable. We'll document why and close the session. This is a valid, valuable outcome — you discovered the problem at near-zero cost.
+> 2. **Tier 1 (Low Risk)** — Internal utility, limited data, no PII. You deploy directly with a lightweight self-assessment. No formal engineering needed.
+> 3. **Tier 2 (Moderate Risk)** — Internal data access or broader user exposure. Requires security team review and mandatory red teaming before deployment.
+> 4. **Tier 3 (High Risk)** — PII, sensitive data, high-privilege tools, or public-facing system. Mandatory formal engineering cycle (Opportunity 4) with architectural hardening.
+>
+> Which best describes this project?"
+
+Record the tier in the handoff package under a `## Risk Assessment` section. Include the tier, a one-sentence rationale from the SME, and the resulting delivery path.
+
+**For Tier 2 and Tier 3 projects**, note in the handoff package that a deeper risk and
+harm assessment may be required by the organization's security team. Reference:
+`AI-Security-and-Safety-Lab/Mitigations/enterprise-governance-and-education/risk-and-harm-assessment/`
+for the full enterprise assessment workflow (taxonomy mapping, control selection, sign-off).
+The inline assessment here is a lightweight first pass — it determines the delivery path,
+not the full security posture.
+
+**If the SME selects Throwaway:** Skip synthesis (Stages 2–4). Instead, write a brief `exploration/handoffs/handoff-package.md` documenting: what was explored, what was learned, and why the idea was killed. This is the "fail fast and cheap" outcome — preserve the learning.
 
 ## Stage 2: Synthesis and Iterative Refinement
 Your job is to extract the signal relevant to the target audience — not to copy-paste source documents.
@@ -121,14 +147,26 @@ Ensure the handoff gives the downstream consumer what they need to act:
 2. **Surface gaps:** Present the 3 questions: *"If [audience] reads this, they'll immediately ask: [Q1], [Q2], [Q3]. Are these answered?"*
 3. **Resolve:** For each unanswered question, ask whether to (a) answer it inline, (b) add it to `## Unresolved Ambiguity` for the execution phase to own, or (c) confirm it's intentionally out of scope.
 
-## Stage 4: Engineering Harness Formatting
+## Stage 4: Delivery Path Formatting
 
-If the target audience is Engineering (Tier 3 Risk), ask the user if they want to format this handoff package for a specific technical execution harness:
-1. **Spec-Kitty**: The package must be output strictly as an architectural requirements spec, aligning with Spec-Kitty's `spec.md` format.
-2. **Superpowers**: The package must emphasize actionable Checklists, TDD plans, and raw User Story input suitable for the explicit powers `brainstorming` and `planning`.
+The formatting of the final package depends on the Risk Tier from Stage 1.5:
+
+**Tier 1 (Low Risk — Direct Deployment):**
+Format as a lightweight deployment brief: what was built, how to deploy it, what to monitor. No formal spec needed. Include a self-assessment checklist the BAE can complete independently.
+
+**Tier 2 (Moderate Risk — Security Review):**
+Format with a security review section: data flows, access patterns, authentication requirements, and a red team checklist. The primary consumer is the security team, not an engineering team.
+
+**Tier 3 (High Risk — Formal Engineering):**
+Ask the user if they want to format for a specific execution harness:
+1. **Spec-Kitty**: Output as an architectural requirements spec, aligning with Spec-Kitty's `spec.md` format.
+2. **Superpowers**: Emphasize actionable checklists, TDD plans, and user story input for `brainstorming` and `planning`.
 3. **Generic Engineering**: Standard formatting.
 
-If they choose a specific harness, rewrite the generated package to maximize compatibility with the requested execution tool before the final export.
+If they choose a specific harness, rewrite the package to maximize compatibility before final export.
+
+**Throwaway (Fail Fast):**
+Already handled in Stage 1.5 — no further formatting needed.
 
 ## Anti-Hallucination Rules
 - Do NOT invent requirements or rules that were not present in the Stage 1 input sources.

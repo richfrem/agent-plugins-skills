@@ -33,6 +33,10 @@ User: [dispatched by prototype-builder after Discovery Plan approval]
 Agent: Reads the Discovery Plan silently, presents three contextually adapted layout options in plain language, confirms the SME's selection, and writes the confirmed layout direction to exploration/captures/layout-direction.md before signalling ready to build.
 </example>
 
+## Skippable Phase
+
+This phase may be skipped for brownfield sessions or simple features where the design is straightforward. If skipped, it will be marked `- [~]` in the dashboard. The downstream Phase 3 skill handles missing layout direction gracefully.
+
 ## Role
 
 This skill is invoked after the Discovery Plan is approved. Its purpose is to confirm the visual structure of the prototype before any building starts. It ensures the SME has a clear picture of what they are agreeing to before anything is created.

@@ -1,0 +1,129 @@
+%% Hybrid Workflow: exploration-cycle-plugin + orba/superpowers
+%% Blue = exploration-cycle (owns discovery: what to build)
+%% Green = superpowers (owns discipline: how to build it right)
+%% Key insight: even prototypes need validation — the prototype is
+%% the EVIDENCE that exploration captured the right thing.
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'edgeLabelBackground': '#1a1a2e'}}}%%
+flowchart TD
+    Start(("Session Start")) --> SessionType
+
+    subgraph Bootstrap["Block 0–1: Session Setup"]
+        direction TB
+        SessionType{"Session Type?"}
+        SessionType -->|"1. New app"| Greenfield["Greenfield<BR>All 4 phases"]
+        SessionType -->|"2. Existing app"| Brownfield["Brownfield<BR>Phases 2 & 4 optional"]
+        SessionType -->|"3. Docs only"| Discovery["Discovery Only<BR>Phase 3 skipped"]
+        SessionType -->|"4. Investigation"| Spike["Spike<BR>Flexible phases"]
+
+        Greenfield --> Dispatch
+        Brownfield --> Dispatch
+        Discovery --> Dispatch
+        Spike --> Dispatch
+
+        Dispatch{"Dispatch Strategy?"}
+        Dispatch -->|"Copilot Pro"| CopilotCLI["copilot-cli<BR>gpt-5-mini (free)<BR>claude-sonnet (premium)"]
+        Dispatch -->|"No Copilot"| ClaudeSub["claude-subagents<BR>haiku (cheap)<BR>sonnet (mid)"]
+        Dispatch -->|"Keep it simple"| Direct["direct<BR>Current model does all"]
+    end
+
+    CopilotCLI --> Phase1
+    ClaudeSub --> Phase1
+    Direct --> Phase1
+
+    subgraph Phase1["Phase 1: Problem Framing"]
+        direction TB
+        P1Skill["exploration-cycle skill:<BR>discovery-planning"]
+        P1Gate{{"HARD-GATE<BR>SME approves<BR>Discovery Plan?"}}
+        P1Skill --> P1Gate
+        P1Gate -->|"Changes needed"| P1Skill
+    end
+
+    Phase1 --> P2Check{"Phase 2<BR>enabled?"}
+    P2Check -->|"Yes"| Phase2
+    P2Check -->|"Skipped [~]"| P3Check
+
+    subgraph Phase2["Phase 2: Visual Blueprinting"]
+        direction TB
+        P2Skill["exploration-cycle skill:<BR>visual-companion"]
+        P2Confirm{{"SME confirms<BR>layout direction?"}}
+        P2Skill --> P2Confirm
+    end
+
+    Phase2 --> P3Check{"Phase 3<BR>enabled?"}
+    P3Check -->|"Yes"| WorktreeSetup
+    P3Check -->|"Skipped [~]"| P4Check
+
+    subgraph Phase3["Phase 3: Build (Hybrid — exploration-cycle + superpowers)"]
+        direction TB
+
+        subgraph SP_Isolation["superpowers: using-git-worktrees"]
+            WorktreeSetup["Create isolated<BR>workspace + branch"]
+        end
+
+        WorktreeSetup --> ComponentLoop
+
+        subgraph ComponentLoop["Per Component (exploration-cycle orchestrates)"]
+            direction TB
+            Announce["Announce component<BR>to SME"]
+            ImplementDispatch["Dispatch implementer<BR>(per strategy)"]
+
+            subgraph SP_TDD["superpowers: test-driven-development"]
+                RedTest["RED: Write failing test"]
+                GreenCode["GREEN: Minimal code to pass"]
+                Refactor["REFACTOR: Clean up"]
+                RedTest --> GreenCode --> Refactor
+            end
+
+            subgraph SP_Review["superpowers: requesting-code-review"]
+                PlanCheck["Stage 1: Plan<BR>alignment check"]
+                QualityCheck["Stage 2: Quality check"]
+                PlanCheck --> QualityCheck
+            end
+
+            Announce --> ImplementDispatch --> SP_TDD --> SP_Review
+            QualityCheck -->|"Issues"| ImplementDispatch
+            QualityCheck -->|"Approved"| NextComponent["Next component"]
+        end
+
+        NextComponent --> AllDone{"All components<BR>complete?"}
+        AllDone -->|"No"| Announce
+        AllDone -->|"Yes"| SP_Finish
+
+        subgraph SP_Finish["superpowers: finishing-a-development-branch"]
+            VerifyTests["Verify all tests pass"]
+            FinishOptions{"Merge / PR /<BR>Keep / Discard?"}
+            VerifyTests --> FinishOptions
+        end
+    end
+
+    SP_Finish --> P4Check{"Phase 4<BR>enabled?"}
+    P4Check -->|"Yes"| Phase4
+    P4Check -->|"Skipped [~]"| Complete
+
+    subgraph Phase4["Phase 4: Handoff & Specs"]
+        direction TB
+        P4Scribe["Auto-capture:<BR>business-requirements<BR>user-stories<BR>workflow-diagrams"]
+        P4Synth["exploration-cycle skill:<BR>exploration-handoff"]
+        P4Approve{{"SME approves<BR>handoff package?"}}
+        P4Scribe --> P4Synth --> P4Approve
+    end
+
+    Phase4 --> Complete
+    Complete(("Session Complete"))
+
+    %% Spike re-entry loop
+    Spike -.->|"May loop back"| Phase1
+
+    %% Style classes
+    classDef ecPlugin fill:#1e3a5f,stroke:#4fc3f7,stroke-width:2px,color:#e0f7fa
+    classDef spPlugin fill:#1b5e20,stroke:#66bb6a,stroke-width:2px,color:#e8f5e9
+    classDef gate fill:#4a1c24,stroke:#ef5350,stroke-width:3px,color:#ffcdd2
+    classDef setup fill:#263238,stroke:#78909c,stroke-width:2px,color:#eceff1
+    classDef complete fill:#1a237e,stroke:#7c4dff,stroke-width:2px,color:#e8eaf6
+
+    class Phase1,Phase2,Phase4 ecPlugin
+    class SP_Isolation,SP_TDD,SP_Review,SP_Finish spPlugin
+    class Phase3 ecPlugin
+    class P1Gate,P2Confirm,P4Approve,P3Check,P2Check,P4Check,AllDone gate
+    class Bootstrap,SessionType,Dispatch setup
+    class Complete,Start complete

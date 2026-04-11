@@ -42,34 +42,89 @@ already been approved by the SME. The Required Inputs Check below is a verificat
 step only — do not re-present these artifacts for re-approval. Proceed directly to
 Component Decomposition once inputs are confirmed present.
 
+## Execution Discipline (powered by orba/superpowers)
+
+> **Required:** The `orba/superpowers` plugin must be installed.
+
+This skill invokes superpowers execution discipline skills during the build loop.
+
+### Isolation
+Before building, check if a worktree/feature branch was set up by the orchestrator.
+If not, and the session type is brownfield or greenfield, **invoke
+`superpowers:using-git-worktrees`** now to create one.
+
+### Dispatch Strategy
+Read the `**Dispatch Strategy:**` field from the dashboard. Use it to determine how to
+dispatch component implementation:
+
+- **`copilot-cli`:** Use `copilot-cli-agent` skill. Simple components → `gpt-5-mini` (free).
+  Complex/multi-file components → `claude-sonnet-4-6` (batch into one dense request —
+  charged per request, not per token).
+- **`claude-subagents`:** Use the `Agent` tool. Mechanical components → `model: "haiku"`.
+  Complex components → `model: "sonnet"`.
+- **`direct`:** Build each component directly in this session.
+
+### Two-Stage Review (per component)
+After each component is built, **invoke `superpowers:requesting-code-review`** twice:
+1. **Plan alignment check** — reviewer sub-agent verifies component matches the Discovery Plan
+2. **Quality check** — reviewer sub-agent checks code quality and codebase conventions
+
+For `copilot-cli` and `claude-subagents` dispatch: use a separate sub-agent for each review.
+For `direct` mode: self-review both stages before proceeding.
+
+### Validation
+Even prototypes must be verified against the Discovery Plan — the prototype is the
+evidence that exploration captured the right thing. Unverified prototypes lead to
+flawed handoffs and wrong specs.
+
+For code-producing sessions, **invoke `superpowers:test-driven-development`** for each
+component: write a failing test that verifies a Discovery Plan requirement → verify
+failure → implement → refactor.
+
+### Finishing
+After all components are built, **invoke `superpowers:finishing-a-development-branch`**:
+verify tests pass, then present merge/PR options to the SME.
+
 ## Required Inputs Check
 
 Before doing anything else, verify that both of the following exist:
 
 1. At least one `.md` file in `exploration/discovery-plans/`
-2. The file `exploration/captures/layout-direction.md`
+2. The file `exploration/captures/layout-direction.md` (only required if Phase 2 was not skipped)
 
-If either is missing, stop immediately and report in plain language which file is missing and what needs to happen first. Do not begin building.
+If the Discovery Plan is missing, stop immediately and report in plain language what needs to happen first.
 
-Example:
-> "I need a confirmed layout direction before I can start building. Can we take a moment to go through the layout options first?"
+If the layout direction is missing but Phase 2 was skipped (`- [~]` in the dashboard), proceed without it — use the Discovery Plan's success criteria to guide visual decisions.
+
+## Session Mode Detection
+
+Read `exploration/exploration-dashboard.md` and check the `**Session Type:**` field:
+
+- **Greenfield (Type 1):** Build a standalone prototype in `exploration/prototype/`. Follow the standard Build Loop below.
+- **Brownfield (Type 2):** Build directly into the existing codebase. Before starting, read the project structure to understand existing patterns (component conventions, file locations, styling, API patterns). Match them. Write documentation of what was built to `exploration/prototype/components/` as `.md` files for tracking.
+- **If no session type is set:** Ask the SME: *"Should I build a standalone prototype, or add this directly into your existing codebase?"*
 
 ## Component Decomposition
 
-Based on the Discovery Plan and layout direction, identify 3–6 logical components of the prototype. Use plain-language names the SME will understand (e.g., "top navigation bar", "summary panel", "request form", "approval confirmation screen") — not technical terms.
+Based on the Discovery Plan and layout direction (if available), identify 3–6 logical components. Use plain-language names the SME will understand (e.g., "top navigation bar", "summary panel", "request form", "approval confirmation screen") — not technical terms.
 
 Announce:
 > "I'll put this together in [N] parts. I'll check each one before moving to the next to make sure it matches our plan."
 
 List the components by name so the SME knows what is being built.
 
+**For Brownfield sessions**, also announce:
+> "I'll build these directly into your existing codebase, matching the patterns I see in [framework/stack]."
+
 ## Build Loop
 
 For each component, in order:
 
 1. **Announce start:** "Working on: [plain-language component name]..."
-2. **Build the component.** Write it to `exploration/prototype/components/[descriptive-name].[ext]`
-3. **Self-review:** Read the completed component against the Discovery Plan requirements and layout direction. Check that it serves the stated user groups and success criteria.
+2. **Build the component.**
+   - **Greenfield:** Write to `exploration/prototype/components/[descriptive-name].[ext]`
+   - **Brownfield:** Write to the appropriate location in the existing codebase. Also write a brief `.md` summary to `exploration/prototype/components/[descriptive-name].md` documenting what was built and where.
+3. **Self-review:** Read the completed component against the Discovery Plan requirements and layout direction. Check that it serves the stated user groups and success criteria. For brownfield, also check that it follows the existing codebase conventions.
 4. **Assign a status:**
    - `COMPLETE` — component matches the plan and is ready
    - `BLOCKED` — something is preventing completion (missing data, contradictory requirements, etc.)
@@ -79,17 +134,22 @@ For each component, in order:
 7. **Only advance** to the next component when the current one has status `COMPLETE`.
 
 Report each completed component to the user:
-> "✓ [component name] is done."
+> "Done — [component name] is done."
 
 ## Assembly
 
 After all components reach `COMPLETE` status:
 
+**Greenfield:**
 1. Assemble into `exploration/prototype/index.html` (or an equivalent entry point that links all components together)
-2. Write `exploration/prototype/README.md` with run instructions in plain language:
-   - Include: "Open index.html in your browser to see the prototype."
-   - Do not include technical setup instructions like "run npm start" or "install dependencies"
-   - Include one sentence describing what the prototype demonstrates
+2. Write `exploration/prototype/README.md` with run instructions in plain language
+
+**Brownfield:**
+1. Verify the feature works within the existing app (build succeeds, no type errors in new files)
+2. Write `exploration/prototype/README.md` documenting:
+   - All new files created (with paths)
+   - All existing files modified (with paths)
+   - How to test the feature (which URL, which command, etc.)
 
 ## Completion Report
 
