@@ -39,25 +39,43 @@ This phase may be skipped for brownfield sessions or simple features where the d
 
 ## Role
 
-This skill is invoked after the Discovery Plan is approved. Its purpose is to confirm the visual structure of the prototype before any building starts. It ensures the SME has a clear picture of what they are agreeing to before anything is created.
+This skill is invoked after the Discovery Plan is approved. Its purpose is to confirm the **structure and shape** of the output before any building or drafting starts. For software, this means UI layout. For non-software work, this means document structure, process flow shape, or analysis format. It ensures the SME has a clear picture of what they are agreeing to before anything is created.
 
 ## Session Flow
 
-### Step 1 — Read context
+### Step 1 — Read context and determine output type
 
 Read the most recent file in `exploration/discovery-plans/`. Understand the problem domain, stakeholders, and success criteria before proposing anything. Do not skip this step.
 
-### Step 2 — Present 3 options
+Determine the **output type** from the Discovery Plan and session type:
+- **Software UI** — the output is a screen, page, or interactive interface
+- **Process or workflow** — the output is a business process, approval chain, or operational flow
+- **Document or analysis** — the output is a report, requirements doc, policy, or strategic plan
+- **Mixed** — some combination of the above
 
-Offer 3 layout options adapted to the context of the Discovery Plan. Describe each in plain language (2–4 sentences). No technical terms. No code. No wireframes. Words only.
+### Step 2 — Present 3 options (adapted to output type)
+
+Offer 3 structure options adapted to the context of the Discovery Plan. Describe each in plain language (2–4 sentences). No technical terms. No code. No wireframes. Words only.
 
 Label them **Option A**, **Option B**, **Option C**.
 
-Adapt these generic starting points to the specific problem and user group from the Discovery Plan:
+**For software UI outputs**, adapt these starting points:
 
 - **Option A:** A single-page view with a summary at the top and details below — good when people need to see everything at once and make decisions without switching screens
 - **Option B:** A step-by-step flow that walks the user through one thing at a time — good when there's a sequence of decisions, approvals, or actions that need to happen in order
 - **Option C:** A two-panel layout with a list on the left and details on the right — good when people need to browse through a number of items and compare them before deciding
+
+**For process or workflow outputs**, adapt these starting points:
+
+- **Option A:** A linear flow — steps happen in a fixed order from start to finish, good for simple processes with no branches
+- **Option B:** A decision-tree flow — the path branches based on conditions or approvals, good when different situations lead to different actions
+- **Option C:** A swimlane view — shows who does what at each stage, good when multiple people or teams are involved and handoffs matter
+
+**For document or analysis outputs**, adapt these starting points:
+
+- **Option A:** Executive summary up front with supporting detail sections — good when the audience wants the answer first and the reasoning second
+- **Option B:** Problem → Analysis → Recommendations structure — good when the audience needs to follow the logic to be convinced
+- **Option C:** Comparison format with side-by-side options — good when the deliverable is about choosing between alternatives
 
 After presenting the three options, ask:
 > "Which of these feels closest to what you had in mind? Or if none of them fit, describe what you're picturing and I'll work with that."

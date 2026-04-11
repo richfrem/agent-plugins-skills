@@ -50,7 +50,7 @@ Agent: [invokes exploration-session-brief, NOT exploration-handoff]
 
 - **Greenfield (Type 1):** Always required — the handoff package is how the engineering team knows what to build.
 - **Brownfield (Type 2):** Optional — if the same person/agent is doing both exploration and implementation, formal handoff may be unnecessary. The SME decides during session setup.
-- **Discovery only (Type 3):** Always required — the handoff IS the primary output of the session (requirements, stories, rules, workflow diagrams).
+- **Analysis/Docs (Type 3):** Always required — the handoff IS the primary output of the session (requirements, process maps, analysis reports, stories, rules, workflow diagrams, or whatever the non-software deliverable is).
 - **Spike (Type 4):** Optional — depends on whether findings need to be communicated to others.
 
 If this phase was skipped during session setup, it will be marked `- [~]` in the dashboard and the orchestrator will not route here.

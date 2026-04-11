@@ -72,7 +72,7 @@ Guide the SME through the following 5 questions, **one at a time**. After each a
 
 **Q3:** "What does a great outcome look like when this is working the way you imagined?"
 
-**Q4:** "If we had to pick the three most important things this must do — what would they be? And what would be nice to have but not essential?"
+**Q4:** "If we had to pick the three most important things this must deliver — what would they be? And what would be nice to have but not essential?"
 
 **Q5:** "Are there any hard rules, limits, or things we absolutely cannot do?"
 
