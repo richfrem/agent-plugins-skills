@@ -76,6 +76,8 @@ After all approved stories are drafted:
 - Do NOT fabricate edge cases in Gherkin AC without evidence from input files or explicit user confirmation.
 - Mark inferred stories and scenarios `[UNCONFIRMED]` — only promote to `[CONFIRMED]` after human sign-off.
 - Do NOT proceed without input files — stories generated from nothing are pure hallucination.
+- **Source citations required:** each story must note which input file it derives from (e.g., `(source: brd-draft.md, Functional Requirements)`). Stories with no traceable source must be marked `[UNCONFIRMED — inferred, not in source]`.
+- **`## Story Gaps` section is mandatory** — list every open decision or missing actor definition exactly once.
 
 <example>
 Context: BRD draft is complete, user wants a core story set.

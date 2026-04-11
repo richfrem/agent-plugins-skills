@@ -1,14 +1,15 @@
 ---
 name: optimize-context
 description: >-
-  Reduces Claude Code context bloat by running two complementary passes: (1)
-  duplicate skill deduplication — detects skills loaded from both .agents/skills/
-  and .claude/skills/ and clears the .claude/ copies since Claude Code already
-  reads from .agents/ directly; (2) CLAUDE.md optimization — audits the project
-  CLAUDE.md for token bloat and rewrites it to under ~80 lines, keeping only rules
-  that directly change Claude behaviour. Trigger with "optimize claude context",
-  "reduce context bloat", "deduplicate skills", "trim CLAUDE.md", "fix my context
-  usage", "why are my skills loading twice", or "clean up .claude directory".
+  Reduces Claude Code context bloat across three dimensions: (1) duplicate skill
+  deduplication — clears .claude/ copies since Claude Code already reads from
+  plugins/ directly; (2) CLAUDE.md optimization — rewrites to under ~80 lines,
+  keeping only rules that directly change Claude behaviour; (3) session token
+  efficiency — guidance on cheap subagent delegation, context compounding across
+  turns, and session hygiene. Trigger with "optimize claude context", "reduce
+  context bloat", "deduplicate skills", "trim CLAUDE.md", "fix my context usage",
+  "why are my skills loading twice", "how do I reduce token usage", or "clean up
+  .claude directory".
 argument-hint: "[--dry-run] [--verbose] [--project-root PATH]"
 allowed-tools: Bash, Read, Write
 ---
@@ -138,6 +139,73 @@ Read the project `CLAUDE.md` (check both `./CLAUDE.md` and `./.claude/CLAUDE.md`
 
 ---
 
+## Phase 3.5: Session Token Efficiency
+
+> Skip this phase if the user only asked about file-level deduplication or CLAUDE.md trimming.
+> Surface it when the user asks about token usage, conversation cost, or why sessions feel slow.
+
+Token costs are **cumulative across turns** — every message in a multi-turn session re-pays the
+full context window cost including all prior messages, all loaded skills, and all CLAUDE.md content.
+A 200-line CLAUDE.md isn't 1× the cost of an 80-line one — it's that cost multiplied by every
+turn in every session.
+
+### 3.5.1 — Identify delegation candidates
+
+Present this as a quick diagnostic. Ask the user:
+
+> "Are there any tasks in this session where you're asking me to produce a structured output from
+> well-defined inputs? (e.g., filling templates, extracting information, converting formats,
+> writing first-draft documentation) — those can be delegated to a cheap sub-agent so your
+> main session context stays light."
+
+**Delegation rule of thumb:**
+
+| Task type | Use cheap subagent? | Why |
+|---|---|---|
+| Template filling from provided input | Yes | No dialogue needed |
+| Single-pass document generation | Yes | One-shot, no iteration |
+| Data extraction / format conversion | Yes | Deterministic, bounded |
+| Clarifying questions → structured answers | Yes | Cheap model handles Q&A; write answers to a file |
+| Multi-turn refinement with feedback loops | No | Needs full model for judgment |
+| Coordination, synthesis, orchestration | No | Outer-loop reasoning, full context required |
+| Discovery sessions with SMEs | No | Interactive, nuanced |
+
+### 3.5.2 — Context compounding advice
+
+If the session is getting long or the user reports high token costs, surface these practices:
+
+1. **Delegate Q&A to cheap subagents** — instead of asking questions interactively in the main
+   session, batch 3–5 clarifying questions, dispatch a cheap model to collect answers from the
+   user or from files, write results to `temp/clarifications.md`, and read that back. This converts
+   expensive main-context Q&A into a cheap dispatch + one read.
+
+2. **Use `/compact` between major topic switches** — if you've finished one task and are starting
+   an unrelated one in the same session, run `/compact` first to compress prior context.
+
+3. **Start fresh sessions for unrelated work** — context from a debugging session does not help
+   a documentation session. Fresh session = zero context debt.
+
+4. **Pipe artifacts, not transcripts** — when chaining agent tasks, pass structured files
+   (e.g., `brd-draft.md`) as context rather than pasting conversation history. Structured files
+   are token-dense and re-readable; pasted transcripts are token-bloated and partially redundant.
+
+5. **Keep orchestrator turns light** — if you are coordinating multiple sub-agents, the main
+   session should only hold the coordination decisions and the summary artifacts. Sub-agents
+   run in isolated context and their outputs land in files; only the summaries come back to you.
+
+### 3.5.3 — Cheap dispatch model selection
+
+| You have | Simple tasks | Complex tasks |
+|---|---|---|
+| GitHub Copilot Pro | `gpt-5-mini` (free, via Copilot CLI) | `claude-sonnet` (1 premium req) |
+| Claude only | `claude-haiku-4-5` (cheapest) | `claude-sonnet-4-6` (standard) |
+| No sub-agent tooling | Main session (direct mode) | Main session (direct mode) |
+
+For Claude Code specifically: use the `Agent` tool with `model: "haiku"` for cheap sub-agent
+dispatches. For Copilot CLI: use `copilot gpt-5-mini` for free-tier passes.
+
+---
+
 ## Phase 4: Post-Fix Validation
 
 ```bash
@@ -185,6 +253,8 @@ Pass 1 — Skill deduplication:
 Pass 2 — CLAUDE.md:
   Before : [N] lines / ~[N]k tokens
   After  : [N] lines / ~[N]k tokens (-[N]%)
+
+Pass 3 — Session efficiency: [skipped | N delegation candidates identified | practices applied]
 
 Next: reload Claude Code and run /context to measure token delta
 ```

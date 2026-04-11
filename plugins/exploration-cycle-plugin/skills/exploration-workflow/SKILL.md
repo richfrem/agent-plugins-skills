@@ -12,6 +12,24 @@ description: >
 allowed-tools: Read, Write
 ---
 
+<example>
+<commentary>SME starts a brand-new exploration session from scratch.</commentary>
+user: "Let's explore this idea I have for a staff scheduling tool."
+agent: [invokes exploration-workflow, bootstraps dashboard, asks for session type, begins Phase 1 discovery-planning]
+</example>
+
+<example>
+<commentary>SME resumes an in-progress session after prior work.</commentary>
+user: "Where did we leave off with the customer portal exploration?"
+agent: [invokes exploration-workflow, reads dashboard, presents status summary, routes to active phase]
+</example>
+
+<example>
+<commentary>Negative — user wants to start a new discovery plan only, not the full workflow.</commentary>
+user: "Run a discovery planning session for my onboarding redesign."
+agent: [invokes discovery-planning directly, NOT exploration-workflow]
+</example>
+
 # Exploration Workflow — SME Orchestrator
 
 This skill is the single canonical entry point for the Business Exploration Loop. It manages all session state via `exploration-dashboard.md`, enforces phase gates, and routes work to the correct child skill at each phase. The SME never needs to invoke any other skill directly.
@@ -45,11 +63,14 @@ two-stage review, and TDD. When it signals complete, the orchestrator invokes
 
 ---
 
-## Block 0 — Sub-Agent Dispatch Strategy (ask once during bootstrap)
+## Block 0 — Pre-Flight & Dispatch Strategy (ask once during bootstrap)
 
-> Full details: `references/dispatch-strategies.md`
+> Dispatch strategy details: `references/dispatch-strategies.md`
+> Environment check: `references/environment-check.md`
 
-**For Analysis/Docs sessions:** Skip this question. Default to `direct`.
+**Run the environment check silently first** (see `references/environment-check.md`). Only surface results if something is missing or needs a fallback. Do not mention the check to the SME unless action is needed.
+
+**For Analysis/Docs sessions:** Skip the dispatch strategy question. Default to `direct`.
 
 For all other session types, ask the SME after session type selection:
 

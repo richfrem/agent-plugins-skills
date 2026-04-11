@@ -19,6 +19,9 @@ Do NOT dispatch requirements-doc-agent, prototype-companion-agent, business-rule
 or handoff-preparer-agent until the discovery-planning-agent has completed a Discovery Planning
 Session and the SME has explicitly approved the Discovery Plan. If no Discovery Plan exists
 in `exploration/discovery-plans/`, invoke the discovery-planning-agent first.
+
+See `references/hard-gate-enforcement.md` for the canonical redirect text to use when no plan exists.
+Do not offer workarounds. Do not continue. Use the redirect verbatim.
 </HARD-GATE>
 
 This agent orchestrates Phase A of the exploration cycle.
@@ -231,7 +234,10 @@ python3 scripts/dispatch.py \
 3. **Capture**: Run CLI passes for each documentation artifact needed
 4. **Human gate 1**: Review captures. Gaps? Re-run passes with refined brief.
 5. **Prototype** (optional): Dispatch prototype-companion for observation capture
-6. **Audit**: Dispatch business-rule-audit-agent to verify logic compliance (context: BRD + prototype)
+6. **Audit** (MANDATORY if prototype ran): Dispatch business-rule-audit-agent (context: BRD + prototype notes).
+   - If audit finds any `CONTRADICTED` or `UNCERTAIN` rules → **block handoff** until resolved.
+   - Do NOT skip this step. Logic drift at handoff is the most expensive kind.
+   - If prototype was skipped (discovery-only session): skip audit, proceed to step 7.
 7. **Narrowing gate**: Is the problem narrow enough for handoff?
 8. **Handoff**: Dispatch handoff-preparer-agent CLI, review output against template
 9. **Planning drafts** _(optional — formal harness + double diamond only)_: Dispatch planning-doc-agent for spec/plan/tasks staging drafts. Human reviews before any engineering CLI.

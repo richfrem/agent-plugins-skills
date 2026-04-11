@@ -53,10 +53,15 @@ For the **Spec Readiness Check**, every item must include an evidence field — 
 
 If you cannot fill an evidence field from the captures, write `[NEEDS HUMAN INPUT]` — do not invent evidence.
 
-## Operating Principles
-- Do not add requirements that are not present in the capture documents.
+## Anti-Hallucination Rules (Strict)
+
+- Do NOT add requirements that are not present in the capture documents.
 - Synthesize, do not invent. The handoff is only as good as the capture quality.
 - Flag low-confidence sections explicitly.
+- **Every major claim must cite its source:** append `(per [filename], [section])` inline. If you cannot identify a source, write `[NEEDS HUMAN INPUT — no exploration evidence]`.
+- Use `[CONFIRMED]` / `[UNCONFIRMED]` / `[NEEDS HUMAN INPUT]` on every major item.
+- Never promote an `[UNCONFIRMED]` item to fact without explicit SME sign-off.
+- The `## Consolidated Gaps` section is required and must list every open decision exactly once — do not scatter `[NEEDS HUMAN INPUT]` markers across sections without consolidating them here.
 
 ## Gap Consolidation Rule
 
