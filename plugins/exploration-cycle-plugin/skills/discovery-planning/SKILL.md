@@ -99,15 +99,18 @@ or policy issue rather than a technology gap, gently surface it:
 > necessarily a technology gap. If we [simplified the rule / changed the sequence /
 > clarified the guidance], would that solve most of it without building anything new?"
 
-**If the SME agrees the problem is non-technical:** Pivot the session type to Analysis/Docs.
-The deliverable becomes the process change, policy recommendation, or communication fix.
-This is a valid, high-value outcome — saving the cost of building something unnecessary.
+**If the SME agrees the problem is non-technical:**
+1. Acknowledge: *"That's actually a great outcome — you've just saved the cost of building something that wouldn't have solved it."*
+2. Update the session type: if the dashboard exists and `**Session Type:**` is currently Greenfield or Brownfield, change it to `Analysis/Docs — [process / policy / communication]` with a note explaining the pivot. If the dashboard doesn't exist yet (standalone use), note this in the Discovery Plan.
+3. The deliverable becomes the process change recommendation, policy update, or communication fix — not a software prototype. Phase 3 is now disabled.
+4. Continue to Q5–Q6 with this framing: "requirements" means the criteria for a successful process or policy change, not software features.
 
-**If the SME confirms they do need a technical solution:** Proceed. The intervention check
-still adds value because it sharpens the problem statement and prevents solutioneering.
+**If the SME confirms they need a technical solution:** Proceed. The intervention check
+still adds value — it sharpens the problem statement and prevents solutioneering.
 
-**If it's mixed:** Note both dimensions. The Discovery Plan should capture the non-technical
-fixes alongside the technical requirements, so the handoff reflects the full picture.
+**If it's mixed (both a process gap AND a technology gap):**
+Note both dimensions explicitly in the Intervention Type section of the Discovery Plan.
+Flag which is primary. The handoff should address both: the non-technical fixes the team can act on immediately, and the technical requirements that justify a build.
 
 ### Part 3: Requirements and Constraints
 
