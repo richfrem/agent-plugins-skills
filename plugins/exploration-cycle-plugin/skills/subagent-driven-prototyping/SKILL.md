@@ -87,14 +87,10 @@ verify tests pass, then present merge/PR options to the SME.
 
 ## Required Inputs Check
 
-Before doing anything else, verify that both of the following exist:
+Before doing anything else, verify the following:
 
-1. At least one `.md` file in `exploration/discovery-plans/`
-2. The file `exploration/captures/layout-direction.md` (only required if Phase 2 was not skipped)
-
-If the Discovery Plan is missing, stop immediately and report in plain language what needs to happen first.
-
-If the layout direction is missing but Phase 2 was skipped (`- [~]` in the dashboard), proceed without it — use the Discovery Plan's success criteria to guide visual decisions.
+1. **Discovery Plan (required):** At least one `.md` file in `exploration/discovery-plans/`. If missing, stop and report what needs to happen first.
+2. **Layout direction (conditional):** Check the dashboard — if Phase 2 is marked `[~]` (skipped), `layout-direction.md` will not exist, and **that is correct**. Proceed without it, using the Discovery Plan's success criteria to guide visual decisions. Only if Phase 2 was enabled (`[x]` or `[ ]`) is `exploration/captures/layout-direction.md` required.
 
 ## Session Mode Detection
 
@@ -102,7 +98,7 @@ Read `exploration/exploration-dashboard.md` and check the `**Session Type:**` fi
 
 - **Greenfield (Type 1):** Build a standalone prototype in `exploration/prototype/`. Follow the standard Build Loop below.
 - **Brownfield (Type 2):** Build directly into the existing codebase. Before starting, read the project structure to understand existing patterns (component conventions, file locations, styling, API patterns). Match them. Write documentation of what was built to `exploration/prototype/components/` as `.md` files for tracking.
-- **If no session type is set:** Ask the SME: *"Should I build a standalone prototype, or add this directly into your existing codebase?"*
+- **If the session type field is missing, blank, or unrecognized:** Ask the SME: *"Should I build a standalone prototype, or add this directly into your existing codebase?"*
 
 ## Component Decomposition
 

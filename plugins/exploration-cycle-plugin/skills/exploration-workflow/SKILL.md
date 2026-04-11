@@ -40,6 +40,22 @@ When the session reaches Phase 3 (Build), the orchestrator invokes superpowers s
 to enforce execution discipline. The exploration-cycle-plugin owns the discovery
 workflow (Phases 1, 2, 4); superpowers owns the build discipline (Phase 3 execution).
 
+### Superpowers Availability Check
+
+Before invoking any superpowers skill, silently check whether it is available (e.g.,
+try to resolve `superpowers:using-git-worktrees`). If superpowers is **not installed**:
+
+- **Greenfield sessions:** Warn the SME: *"I recommend installing the superpowers plugin
+  for isolated workspaces and build discipline. For now, I'll proceed without it, but
+  the build won't be isolated from your main branch."* Then proceed with `direct` build
+  mode — no worktrees, no TDD, no two-stage review. The prototype still gets built, but
+  without execution discipline guardrails.
+- **Brownfield sessions:** Halt. Announce: *"Building directly into an existing codebase
+  without an isolated workspace is risky. Please install the superpowers plugin first."*
+  Provide the install command from the README.
+
+If superpowers IS available, proceed with the steps below.
+
 ### Step 1 — Isolation: Invoke `superpowers:using-git-worktrees`
 
 Before Phase 3 begins, **invoke the `using-git-worktrees` skill**:
@@ -166,6 +182,19 @@ Is the task orchestration / planning / decision-making?
 The orchestrator (this skill) always stays on the primary model. It delegates
 **implementation** to cheaper/free models. It never delegates **judgment**.
 
+### Discovery-Only Sessions
+
+If the session type is **discovery-only**, skip the dispatch strategy question entirely.
+Default to `direct` and announce: *"Since this is a documentation session with no code
+phase, I'll handle all the work directly."*
+
+### Dispatch Fallback
+
+If the chosen dispatch strategy becomes unavailable during Phase 3 (e.g., Copilot CLI
+is not installed, or the `copilot-cli-agent` skill is not found), fall back to `direct`
+mode and announce: *"The [strategy] dispatch isn't available right now, so I'll build
+this directly in this session."* Do not ask the SME to reconfigure — just proceed.
+
 ---
 
 ## Early Exit — Kill Session
@@ -178,7 +207,9 @@ work", "kill it", "let's stop", or "the idea is bad", the workflow should exit c
    - What was explored
    - What was learned
    - Why the session was stopped
-   - Risk tier: Throwaway (Fail Fast)
+   - A `## Risk Assessment` section containing:
+     `**Outcome:** Throwaway (Fail Fast)` / `**Reason:** [one sentence from SME]` /
+     `**Delivery Path:** Session closed — learning preserved.`
 3. Mark all remaining phases as `[~]` (skipped) with note: `(Session killed — fail fast)`
 4. Update `**Status:**` to `Complete`
 5. Announce: *"Session closed. The learning is saved in `exploration/handoffs/`. Failing fast and cheap is a valid outcome — you saved weeks of wasted effort."*
@@ -325,6 +356,11 @@ Then loop back to **Block 3** to orient the SME for the next phase.
 ## Completion Block
 
 When all phases are either marked `[x]` (complete) or `[~]` (skipped):
+
+**Spike re-entry check:** For spike sessions, before declaring completion, ask the SME:
+*"You've completed this round of investigation. Would you like to loop back to Phase 1
+with what you've learned, or are we done?"* If they want to loop, reset Phase 1 to `[ ]`
+and return to Block 3. If they're done, proceed with completion below.
 
 > "Congratulations — your Exploration Session is complete!
 > All phases are finished and your outputs are ready.
