@@ -105,26 +105,43 @@ After the user responds: read each artifact file they identify. If a file doesn'
 
 ## Stage 1.5: Risk & Rigor Assessment (TierGate)
 
-Before synthesis, perform a mandatory risk assessment. The result determines the **delivery path** — not every exploration routes to formal engineering.
+Before synthesis, perform a mandatory structured risk assessment. The result determines the **delivery path** — not every exploration routes to formal engineering.
 
-Present these options to the SME:
+**Work through the following checklist with the SME. Ask each question and require a yes/no answer plus one sentence of evidence before moving on. Do not accept "maybe" or "it depends" — help the SME reach a concrete answer.**
 
-> "Before we finalize the handoff, let's assess the risk level. This determines what happens next:
->
-> 1. **Throwaway / Fail Fast** — The exploration revealed the idea isn't viable. We'll document why and close the session. This is a valid, valuable outcome — you discovered the problem at near-zero cost.
-> 2. **Tier 1 (Low Risk)** — Internal utility, limited data, no PII. You deploy directly with a lightweight self-assessment. No formal engineering needed.
-> 3. **Tier 2 (Moderate Risk)** — Internal data access or broader user exposure. Requires security team review and mandatory red teaming before deployment.
-> 4. **Tier 3 (High Risk)** — PII, sensitive data, high-privilege tools, or public-facing system. Mandatory formal engineering cycle (Opportunity 4) with architectural hardening.
->
-> Which best describes this project?"
+> "Before we finalize the handoff, I need to ask you four quick questions to figure out what happens next. Answer yes or no for each:"
 
-If the SME is uncertain, help them decide with these questions:
-- *"Will this handle personal information or sensitive data?"* (Yes → Tier 2 or 3)
-- *"Will it be used by people outside your team, or be public-facing?"* (Yes → Tier 2 or 3)
-- *"Does it need access to production systems or high-privilege tools?"* (Yes → Tier 3)
-- If all answers are "no" → Tier 1. If some yes → Tier 2. If PII + public-facing → Tier 3.
+| # | Question | SME Answer | Evidence (one sentence) |
+|---|----------|-----------|------------------------|
+| 1 | Does this handle personal information or sensitive data (names, emails, health, financial)? | yes / no | |
+| 2 | Will it be used by people outside your immediate team, or is it public-facing? | yes / no | |
+| 3 | Does it require access to production systems or high-privilege tools (admin, payment, auth)? | yes / no | |
+| 4 | Does it involve financial transactions or regulatory compliance? | yes / no | |
 
-Record the tier in the handoff package under a `## Risk Assessment` section. Include the tier, a one-sentence rationale from the SME, and the resulting delivery path.
+**Tier determination (based on filled checklist):**
+- All "no" → **Tier 1 (Low Risk)** — direct deployment, lightweight self-assessment
+- Any "yes" on Q1 or Q2 → **Tier 2 (Moderate Risk)** — security review required before deployment
+- "yes" on Q1 + Q2, or any "yes" on Q3 or Q4 → **Tier 3 (High Risk)** — mandatory formal engineering cycle
+- SME explicitly says the idea isn't viable → **Throwaway / Fail Fast**
+
+Record the tier in the handoff package under a `## Risk Assessment` section using this exact format:
+
+```
+## Risk Assessment
+
+**Tier:** [1 / 2 / 3 / Throwaway]
+**Checklist answers:**
+- PII or sensitive data: [yes/no] — [evidence]
+- External users or public-facing: [yes/no] — [evidence]
+- High-privilege access: [yes/no] — [evidence]
+- Financial or compliance: [yes/no] — [evidence]
+**Rationale:** [one sentence from SME]
+**Delivery Path:** [exact text: "Direct deployment" / "Security review before deployment" / "Formal engineering cycle (Opportunity 4)" / "Session closed — learning preserved"]
+```
+
+**If any TierGate answer is missing or vague:** insert `[NEEDS HUMAN INPUT]` in that row and do NOT finalize the handoff until resolved.
+
+**If the SME selects Throwaway:** Skip synthesis (Stages 2–4). Instead, write a brief `exploration/handoffs/handoff-package.md` documenting: what was explored, what was learned, and why the idea was killed. This is the "fail fast and cheap" outcome — preserve the learning.
 
 **For Tier 2 and Tier 3 projects**, note in the handoff package that a deeper risk and
 harm assessment may be required by the organization's security team. Reference:
@@ -132,8 +149,6 @@ harm assessment may be required by the organization's security team. Reference:
 for the full enterprise assessment workflow (taxonomy mapping, control selection, sign-off).
 The inline assessment here is a lightweight first pass — it determines the delivery path,
 not the full security posture.
-
-**If the SME selects Throwaway:** Skip synthesis (Stages 2–4). Instead, write a brief `exploration/handoffs/handoff-package.md` documenting: what was explored, what was learned, and why the idea was killed. This is the "fail fast and cheap" outcome — preserve the learning.
 
 ## Stage 2: Synthesis and Iterative Refinement
 Your job is to extract the signal relevant to the target audience — not to copy-paste source documents.

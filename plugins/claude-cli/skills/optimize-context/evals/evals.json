@@ -50,25 +50,25 @@
   {
     "id": "eval-09-negative-new-skill",
     "type": "negative",
-    "prompt": "Create a new skill called link-validator.",
+    "prompt": "Author a new link-validator for my project.",
     "should_trigger": false
   },
   {
     "id": "eval-10-negative-setup-claude",
     "type": "negative",
-    "prompt": "Set up the .claude directory for my project with CLAUDE.md and settings.json.",
+    "prompt": "Scaffold a new project configuration including settings.json.",
     "should_trigger": false
   },
   {
     "id": "eval-11-negative-install-plugin",
     "type": "negative",
-    "prompt": "Install the claude-cli plugin from GitHub into this project.",
+    "prompt": "Install a new third-party library into this project.",
     "should_trigger": false
   },
   {
     "id": "eval-12-negative-improve-skill",
     "type": "negative",
-    "prompt": "Improve the trigger description for my link-checker skill.",
+    "prompt": "Rewrite the routing phrase for my link-checker tool.",
     "should_trigger": false
   }
 ]

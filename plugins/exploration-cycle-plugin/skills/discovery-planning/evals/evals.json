@@ -1,29 +1,38 @@
-{
-  "skill": "discovery-planning",
-  "evals": [
-    {
-      "id": "eval-001",
-      "trigger": "start a discovery session",
-      "expected_skill": "discovery-planning",
-      "notes": "Direct cold-start trigger phrase — should always route to discovery-planning"
-    },
-    {
-      "id": "eval-002",
-      "trigger": "let's plan this out before building",
-      "expected_skill": "discovery-planning",
-      "notes": "Explicit planning intent before building — should route to discovery-planning, not prototype-builder"
-    },
-    {
-      "id": "eval-003",
-      "trigger": "I have an idea I want to explore",
-      "expected_skill": "discovery-planning",
-      "notes": "Open-ended exploration trigger — SME has an idea but no plan; should route to discovery-planning"
-    },
-    {
-      "id": "eval-004",
-      "trigger": "help me figure out what we're building",
-      "expected_skill": "discovery-planning",
-      "notes": "Uncertainty about scope — classic entry point for discovery-planning before any building"
-    }
-  ]
-}
+[
+  {
+    "query": "Start a discovery session for my new idea.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let's plan this out before we build anything.",
+    "should_trigger": true
+  },
+  {
+    "query": "I have an idea I want to explore — help me figure out what we're actually building.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me think through the scope before we start building.",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a working demo of my scheduling app.",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate user stories using our BRD.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing unit test in the auth module.",
+    "should_trigger": false
+  },
+  {
+    "query": "Show me layout options for the dashboard.",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy the latest release to staging.",
+    "should_trigger": false
+  }
+]

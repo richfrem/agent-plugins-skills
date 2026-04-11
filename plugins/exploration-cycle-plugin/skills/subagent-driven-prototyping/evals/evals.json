@@ -1,23 +1,38 @@
-{
-  "skill": "subagent-driven-prototyping",
-  "evals": [
-    {
-      "id": "eval-001",
-      "trigger": "build the prototype now",
-      "expected_skill": "subagent-driven-prototyping",
-      "notes": "Direct build trigger — should route to subagent-driven-prototyping (which will check for required inputs)"
-    },
-    {
-      "id": "eval-002",
-      "trigger": "let's build it",
-      "expected_skill": "subagent-driven-prototyping",
-      "notes": "Colloquial build trigger — should route to subagent-driven-prototyping after layout is confirmed"
-    },
-    {
-      "id": "eval-003",
-      "trigger": "start building the prototype",
-      "expected_skill": "subagent-driven-prototyping",
-      "notes": "Explicit start instruction — primary trigger for the component build loop"
-    }
-  ]
-}
+[
+  {
+    "query": "Build the prototype now.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let's build it — I've approved the layout.",
+    "should_trigger": true
+  },
+  {
+    "query": "Start building the prototype components.",
+    "should_trigger": true
+  },
+  {
+    "query": "Assemble the prototype from the approved plan.",
+    "should_trigger": true
+  },
+  {
+    "query": "Kick off a planning session for this feature.",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate a BRD using our session brief.",
+    "should_trigger": false
+  },
+  {
+    "query": "Show me wireframe options for the UI.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the broken login form.",
+    "should_trigger": false
+  },
+  {
+    "query": "Run the test suite.",
+    "should_trigger": false
+  }
+]

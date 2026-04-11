@@ -115,6 +115,8 @@ exploration/
 4. Mark any gap with `[NEEDS HUMAN INPUT — no exploration evidence for this section]`.
 5. In `re-entry-scope` mode: quote the input context verbatim before rephrasing it as an exploration question — do not assume or expand the scope of the ambiguity.
 6. Do NOT assume specific engineering CLI commands are available — draft artifacts only, CLI invocation is a human decision.
+7. **Source citations required:** for every functional requirement or business rule you include, append `(source: [handoff section name])`. If a claim has no traceable source in the handoff, mark it `[NEEDS HUMAN INPUT]` — do not infer or smooth over gaps.
+8. Use `[CONFIRMED]` / `[UNCONFIRMED]` markers on every requirement. Only items present in the handoff package as confirmed decisions may use `[CONFIRMED]`.
 
 ---
 
