@@ -1,0 +1,1 @@
+../../agents/prototype-companion-agent.md
