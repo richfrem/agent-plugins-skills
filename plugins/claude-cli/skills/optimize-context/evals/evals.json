@@ -1,0 +1,74 @@
+[
+  {
+    "id": "eval-01-positive-optimize",
+    "type": "positive",
+    "prompt": "Optimize my claude context — my skills are loading twice.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-02-positive-deduplicate",
+    "type": "positive",
+    "prompt": "Deduplicate skill definitions across my plugin and .agents/skills directories.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-03-positive-dry-run",
+    "type": "positive",
+    "prompt": "Run optimize claude context in dry-run mode and show me what would change.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-04-positive-why-loading-twice",
+    "type": "positive",
+    "prompt": "Why are my skills loading twice in /context? Can you fix the duplicates?",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-05-positive-trim-claude-md",
+    "type": "positive",
+    "prompt": "Trim my CLAUDE.md, it's way too big and eating tokens.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-06-positive-reduce-bloat",
+    "type": "positive",
+    "prompt": "Reduce my context bloat — CLAUDE.md is 1.8k tokens and skills are loading twice.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-07-positive-clean-claude-dir",
+    "type": "positive",
+    "prompt": "Clean up my .claude directory — it has 125 skills symlinked that are already in .agents.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-08-positive-fix-context-usage",
+    "type": "positive",
+    "prompt": "Fix my context usage — /context shows skills at 12k tokens with Project and Plugin duplicates.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-09-negative-new-skill",
+    "type": "negative",
+    "prompt": "Create a new skill called link-validator.",
+    "should_trigger": false
+  },
+  {
+    "id": "eval-10-negative-setup-claude",
+    "type": "negative",
+    "prompt": "Set up the .claude directory for my project with CLAUDE.md and settings.json.",
+    "should_trigger": false
+  },
+  {
+    "id": "eval-11-negative-install-plugin",
+    "type": "negative",
+    "prompt": "Install the claude-cli plugin from GitHub into this project.",
+    "should_trigger": false
+  },
+  {
+    "id": "eval-12-negative-improve-skill",
+    "type": "negative",
+    "prompt": "Improve the trigger description for my link-checker skill.",
+    "should_trigger": false
+  }
+]

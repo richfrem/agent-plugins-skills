@@ -82,12 +82,18 @@ if hasattr(sys.stderr, "reconfigure"):
 DETECTABLE_AGENTS = {
     ".claude": {
         "name": "claude",
-        "skills": ".claude/skills",
-        "agents": ".claude/agents",
-        "commands": ".claude/commands",
+        # Skills, agents, commands, and hooks are intentionally NOT symlinked
+        # into .claude/ — Claude Code picks all of these up directly from
+        # .agents/ (the canonical multi-IDE store). Symlinking them into
+        # .claude/ as well causes every skill to appear twice in /context
+        # (once as "Project" from .agents/skills/ and once as "Plugin" from
+        # .claude/skills/), doubling the Skills token cost for no benefit.
+        "skills": None,
+        "agents": None,
+        "commands": None,
         "rules": None,
         "rules_append_target": "CLAUDE.md",
-        "hooks": ".claude/hooks",
+        "hooks": None,
         "rules_mode": "append",
     },
     ".azure": {
