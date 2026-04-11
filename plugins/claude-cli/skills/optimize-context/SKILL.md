@@ -67,12 +67,17 @@ Confirm with the user before writing in live mode.
 
 ## Phase 2: Skill Deduplication
 
-**Root cause**: Claude Code loads skills from both `.agents/skills/` (Project)
-and `.claude/skills/` (Plugin). These are the same content — `.claude/skills/`
-is just symlinks created by the bridge installer. Claude Code already reads
-`.agents/skills/` natively, so the `.claude/skills/` copies are redundant.
+**Root cause**: Through experiment, we confirmed Claude Code auto-scans the entire 
+repository for `SKILL.md` files (identifying them as **"Plugin"** skills). It 
+**also** scans `.claude/skills/` (identifying them as **"Project"** skills). 
+Because the installer used to symlink everything into `.claude/`, Claude Code 
+was loading every skill twice.
 
-**Fix — clear `.claude/` skill copies** (Claude Code-specific, safe for all other IDEs):
+**The Fix**: Clear the `.claude/` symlink folders. This forces Claude Code to 
+rely on its auto-scan of the canonical source (`plugins/`), which fixes the 
+double-loading without breaking Antigravity (which relies on `.agents/`).
+
+**Fix — clear `.claude/` skill copies**:
 
 ```bash
 # Report what's there
@@ -81,7 +86,7 @@ ls .claude/agents 2>/dev/null | wc -l
 ls .claude/commands 2>/dev/null | wc -l
 ls .claude/hooks 2>/dev/null | wc -l
 
-# Remove the duplicates (Claude Code reads these from .agents/ directly)
+# Remove the duplicates (Claude Code picks these up via repository scan)
 rm -rf .claude/skills/* .claude/agents/* .claude/commands/* .claude/hooks/*
 ```
 
@@ -139,6 +144,30 @@ Read the project `CLAUDE.md` (check both `./CLAUDE.md` and `./.claude/CLAUDE.md`
 wc -l CLAUDE.md   # confirm ≤ 80 lines
 python3 plugins/claude-cli/scripts/optimize_context.py --dry-run  # confirm 0 skill duplicates
 ```
+
+---
+
+## Key Learning: Discovery Topology
+
+Through iterative testing (RED-GREEN-REFACTOR), we confirmed the discovery 
+hierarchy for Claude Code:
+
+1.  **Plugin Source (Canonical)**: Claude auto-scans the repository for any 
+    `SKILL.md` files. It labels matches found in `plugins/` as **"Plugin"** in 
+    the `/context` report.
+2.  **Project Source (Redundant)**: Claude also scans `.claude/skills/` and 
+    labels these as **"Project"** skills.
+3.  **Multi-IDE fallback**: Antigravity, Gemini CLI, and Copilot **do not** 
+    auto-scan; they require skills to be physically present in `.agents/skills/`.
+
+**The Root Cause of Bloat**: The legacy installer was symlinking 
+`.agents/skills/` → `.claude/skills/`. This caused Claude Code to load the same 
+definition twice (once as "Plugin" from its scan of `plugins/`, and once as 
+"Project" from its scan of the `.claude/` symlink).
+
+**The Native Fix**: Clear all files from `.claude/skills|agents|commands|hooks`. 
+Claude Code will still see everything via its auto-scan of `plugins/`, and other 
+IDEs will still work via `.agents/`.
 
 ---
 
