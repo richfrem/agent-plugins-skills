@@ -32,168 +32,37 @@ The workflow adapts to four session types, each with different phase requirement
 ## Execution Disciplines (powered by orba/superpowers)
 
 > **Required dependency:** The `orba/superpowers` plugin MUST be installed alongside this
-> plugin. The exploration-cycle-plugin does not replace superpowers — it **invokes
-> superpowers skills directly** during Phase 3 to enforce build discipline.
-> See the plugin README for installation instructions.
+> plugin. See the plugin README for installation instructions.
 
-When the session reaches Phase 3 (Build), the orchestrator invokes superpowers skills
-to enforce execution discipline. The exploration-cycle-plugin owns the discovery
-workflow (Phases 1, 2, 4); superpowers owns the build discipline (Phase 3 execution).
+When Phase 3 is active, read `references/phase3-execution-discipline.md` for the full
+execution discipline protocol (superpowers availability check, worktree isolation,
+build delegation, TDD validation, branch finishing).
 
-### Superpowers Availability Check
-
-Before invoking any superpowers skill, silently check whether it is available (e.g.,
-try to resolve `superpowers:using-git-worktrees`). If superpowers is **not installed**:
-
-- **Greenfield sessions:** Warn the SME: *"I recommend installing the superpowers plugin
-  for isolated workspaces and build discipline. For now, I'll proceed without it, but
-  the build won't be isolated from your main branch."* Then proceed with `direct` build
-  mode — no worktrees, no TDD, no two-stage review. The prototype still gets built, but
-  without execution discipline guardrails.
-- **Brownfield sessions:** Halt. Announce: *"Building directly into an existing codebase
-  without an isolated workspace is risky. Please install the superpowers plugin first."*
-  Provide the install command from the README.
-
-If superpowers IS available, proceed with the steps below.
-
-### Step 1 — Isolation: Invoke `superpowers:using-git-worktrees`
-
-Before Phase 3 begins, **invoke the `using-git-worktrees` skill**:
-
-```
-Skill invocation: superpowers:using-git-worktrees
-Context: "Starting Phase 3 of exploration session '[session name]'.
-Create a feature branch and worktree for the build work."
-```
-
-- All build work happens in the worktree, not on the main branch
-- If worktrees are not available (no git repo, or discovery-only session), skip this step
-- When speaking to the SME, say "isolated workspace" or "feature branch" — not "git worktree"
-
-### Step 2 — Build: Follow `superpowers:subagent-driven-development` pattern
-
-For each component in Phase 3, follow the sub-agent dispatch cycle from superpowers:
-
-1. **Dispatch implementer** — fresh sub-agent per component (via dispatch strategy from Block 0)
-2. **Self-review** — implementer checks its own work against the Discovery Plan
-3. **Plan alignment check** — invoke `superpowers:requesting-code-review` with the Discovery Plan as the spec. A reviewer sub-agent verifies the component matches requirements.
-4. **Quality check** — same review skill, second pass for code quality and conventions
-
-If either review finds issues → implementer fixes, then re-review before next component.
-
-**SME-friendly language adaptation:**
-
-| Superpowers term | We say instead |
-|---|---|
-| "spec reviewer" | "plan alignment check" |
-| "code quality reviewer" | "quality check" |
-| "TDD" | "validation check" |
-| "git worktree" | "isolated workspace" |
-| "spec" | "Discovery Plan" |
-
-### Step 3 — Validation: Invoke `superpowers:test-driven-development` (when applicable)
-
-> **Why validate prototypes?** The prototype is the *evidence* that the exploration
-> captured the right thing. If the prototype doesn't match the Discovery Plan, the
-> SME reviews the wrong thing, the handoff describes the wrong behavior, and the
-> engineering team builds from a flawed spec. Validation isn't about code quality —
-> it's about **exploration accuracy**.
-
-For code-producing sessions (greenfield, brownfield), **invoke the `test-driven-development`
-skill** for each component:
-- Write a failing test that verifies the component meets a Discovery Plan requirement
-- Verify it fails for the right reason
-- Implement minimal code to pass
-- Refactor
-
-For non-code sessions (discovery-only):
-- Validate outputs against the Discovery Plan requirements
-- Check for completeness, contradictions, and gaps
-
-The validation bar is not "production code quality" but "does this accurately represent
-what we discovered?" Even a prototype that will be thrown away after handoff must be
-verified against the plan — otherwise it's unverified evidence.
-
-### Step 4 — Finishing: Invoke `superpowers:finishing-a-development-branch`
-
-When Phase 3 is complete, **invoke the `finishing-a-development-branch` skill**:
-1. Verify all tests/evals pass
-2. Present options to the SME: merge locally, create PR, keep branch, or discard
-3. Clean up worktree if appropriate
-
-For discovery-only sessions, this step is skipped (no code branch to finish).
+**Summary:** The orchestrator sets up isolation (worktrees), then delegates all build
+work to `subagent-driven-prototyping`. That skill owns component decomposition, dispatch,
+two-stage review, and TDD. When it signals complete, the orchestrator invokes
+`finishing-a-development-branch` for merge/PR options.
 
 ---
 
 ## Block 0 — Sub-Agent Dispatch Strategy (ask once during bootstrap)
 
-The exploration workflow can dispatch implementation work to sub-agents for cost efficiency.
-Ask the SME during session setup (after session type selection):
+> Full details: `references/dispatch-strategies.md`
+
+**For Analysis/Docs sessions:** Skip this question. Default to `direct`.
+
+For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI to dispatch work. Simple tasks go to `gpt-5-mini` (free tier). Complex tasks go to `claude-sonnet-4-6` (1 premium request per task — charged per request, not per token, so big dense prompts are cost-efficient).
-> 2. **No Copilot subscription** — I'll dispatch sub-agents using the Claude model family. Implementation work goes to `haiku-4.5` (cheapest). Complex reasoning goes to `sonnet-4.6`.
-> 3. **I'll handle it myself** — Do all work in this session directly (simplest, uses current model for everything)."
+> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet` (1 premium request — batched dense for value).
+> 2. **No Copilot** — I'll use Claude sub-agents. Simple tasks use `haiku` (cheapest). Complex tasks use `sonnet`.
+> 3. **I'll handle it myself** — Everything happens directly in this session."
 
-Record the choice in the dashboard as `**Dispatch Strategy:**` (one of: `copilot-cli`, `claude-subagents`, `direct`).
+Record the choice in the dashboard as `**Dispatch Strategy:**` (`copilot-cli`, `claude-subagents`, or `direct`).
 
-### Dispatch Strategy Details
-
-**Copilot CLI (`copilot-cli`):**
-- Uses the `copilot-cli-agent` skill pattern (`scripts/run_agent.py`)
-- Simple/mechanical tasks → `gpt-5-mini` (free, unlimited)
-- Complex reasoning/multi-file generation → `claude-sonnet-4-6` (1 premium request; batch everything into one dense prompt)
-- Key advantage: premium model is charged per REQUEST not per token — one big prompt with 7 file specs costs the same as one small prompt
-
-**Claude Sub-agents (`claude-subagents`):**
-- Uses the `Agent` tool with `model` parameter
-- Mechanical tasks → `model: "haiku"` (cheapest Claude model)
-- Complex tasks → `model: "sonnet"` (mid-tier)
-- Follows the pattern from orba/superpowers: orchestrator stays on the primary model, dispatches implementation to cheaper models
-
-**Direct (`direct`):**
-- All work done in the current session by the current model
-- Simplest approach, no dispatch overhead
-- Best when the session is interactive and the SME wants to see everything happen live
-
-### Dispatch Decision Tree (for the orchestrator, not the SME)
-
-When dispatching a task during Phase 3, use this logic to pick the right model:
-
-```
-Is the task mechanical / single-file / boilerplate?
-  → copilot-cli: gpt-5-mini (free, unlimited)
-  → claude-subagents: model: "haiku" (cheapest)
-  → direct: do it inline
-
-Is the task complex / multi-file / requires reasoning?
-  → copilot-cli: claude-sonnet-4-6 (batch into ONE dense request — 
-    charged per request not per token, so include all file specs in 
-    a single prompt for maximum value)
-  → claude-subagents: model: "sonnet"
-  → direct: do it inline
-
-Is the task orchestration / planning / decision-making?
-  → Always keep in the current session (orchestrator model)
-  → Never delegate planning or routing decisions to cheap models
-```
-
-The orchestrator (this skill) always stays on the primary model. It delegates
-**implementation** to cheaper/free models. It never delegates **judgment**.
-
-### Discovery-Only Sessions
-
-If the session type is **discovery-only**, skip the dispatch strategy question entirely.
-Default to `direct` and announce: *"Since this is a documentation session with no code
-phase, I'll handle all the work directly."*
-
-### Dispatch Fallback
-
-If the chosen dispatch strategy becomes unavailable during Phase 3 (e.g., Copilot CLI
-is not installed, or the `copilot-cli-agent` skill is not found), fall back to `direct`
-mode and announce: *"The [strategy] dispatch isn't available right now, so I'll build
-this directly in this session."* Do not ask the SME to reconfigure — just proceed.
+**Fallback:** If the chosen strategy becomes unavailable during Phase 3, silently fall
+back to `direct` mode and inform the SME.
 
 ---
 

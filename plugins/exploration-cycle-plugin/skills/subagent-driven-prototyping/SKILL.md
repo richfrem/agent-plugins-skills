@@ -18,8 +18,8 @@ Before doing anything else, silently check for `exploration/exploration-dashboar
     Announce to the user:
     > "It looks like you have an active Exploration Session in progress. Let me take you back
     > to your session dashboard so we can keep your progress on track."
-    **Immediately transfer control to `exploration-workflow`.** Stop your response here and
-    switch to `exploration-workflow` now — do not print the word "invoke" as literal text.
+    **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
+    After invoking it, stop generating output from this skill — do not continue below.
 
 - **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
 

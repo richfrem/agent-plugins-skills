@@ -18,8 +18,8 @@ Before doing anything else, silently check for `exploration/exploration-dashboar
     Announce to the user:
     > "It looks like you have an active Exploration Session in progress. Let me take you back
     > to your session dashboard so we can keep your progress on track."
-    **Immediately transfer control to `exploration-workflow`.** Stop your response here and
-    switch to `exploration-workflow` now — do not print the word "invoke" as literal text.
+    **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
+    After invoking it, stop generating output from this skill — do not continue below.
 
 - **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
 
@@ -122,7 +122,7 @@ Only advance to the next question once the SME confirms your summary is correct.
 
 ## Discovery Plan
 
-After all 5 questions are answered and confirmed, write a draft plan to:
+After all 6 questions are answered and confirmed, write a draft plan to:
 
 `exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md`
 
@@ -187,10 +187,9 @@ If operating within an active Exploration Session (i.e., `exploration/exploratio
 exists and `**Status:**` is not `Complete`):
 1. Say to the user:
    > "Returning to your session dashboard now."
-2. **Immediately transfer control to `exploration-workflow`.** This is a live skill switch.
-   Stop generating output and switch to `exploration-workflow` now. Do not print the phrase
-   "invoke exploration-workflow" as literal text — execute the switch. If your harness uses
-   `@skill-name` routing, trigger `@exploration-workflow`. If direct invocation is
-   unavailable, tell the user: "Please start `exploration-workflow` to continue your session."
+2. **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
+   After invoking it, stop generating output from this skill.
+   If the Skill tool is not available in your harness, tell the user:
+   *"Please run `/exploration-workflow` to continue your session."*
 
 If operating standalone (no dashboard file, or `**Status:** Complete`), the skill is complete.
