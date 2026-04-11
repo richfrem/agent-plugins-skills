@@ -75,7 +75,7 @@ But validation doesn't mean heavyweight process. The execution discipline scales
 
 ### 4. Cheap Exploration, Smart Dispatch
 
-The plugin uses a tiered dispatch strategy to minimize token cost without sacrificing quality:
+The plugin uses a tiered dispatch strategy to minimize token cost without sacrificing quality. Full details: `references/dispatch-strategies.md`.
 
 | Dispatch Strategy | Simple/Mechanical Tasks | Complex/Multi-File Tasks | Orchestration/Planning |
 |---|---|---|---|
@@ -85,18 +85,31 @@ The plugin uses a tiered dispatch strategy to minimize token cost without sacrif
 
 The key insight: Copilot Pro charges per **request**, not per token. One dense prompt with 7 file specifications costs the same as one small prompt. The orchestrator (this skill, running on the primary model) never delegates judgment — only implementation.
 
+**Token efficiency across turns:** Context cost compounds — every turn in a multi-turn session re-pays the full context window cost. The dispatch strategy applies not just to build tasks but to Q&A clarification passes too: batch questions, dispatch a cheap model to collect structured answers, read the output file back. This keeps the orchestrator's expensive context reserved for coordination and synthesis, not interactive back-and-forth.
+
 ### 5. Fast by Default, Safe by Design
 
-Not everything needs a formal engineering cycle. The **TierGate** (Risk & Rigor Assessment) during handoff determines the proportional delivery path:
+Not everything needs a formal engineering cycle. The **TierGate** (Risk & Rigor Assessment) during handoff determines the proportional delivery path.
+
+The SME answers four yes/no questions — each with a one-sentence evidence note — and the tier is determined automatically:
+
+| Question | Yes → |
+|---|---|
+| Handles PII or sensitive data? | Tier 2 or 3 |
+| Public-facing or external users? | Tier 2 or 3 |
+| Requires high-privilege access? | Tier 3 |
+| Financial transactions or compliance? | Tier 3 |
 
 | Outcome | Risk Profile | What Happens Next |
 |---|---|---|
 | **Throwaway** | Idea proved non-viable during exploration | Session closed. Learning preserved at near-zero cost. |
-| **Tier 1 (Low)** | Internal utility, limited/no PII | BAE deploys directly — no formal engineering needed |
-| **Tier 2 (Moderate)** | Internal data, broader user exposure | Security review & mandatory Red Teaming before deployment |
-| **Tier 3 (High)** | PII/Sensitive data, public-facing, high-privilege | Mandatory formal engineering cycle (Opportunity 4) with architectural hardening |
+| **Tier 1 (Low)** | All answers "no" — internal utility, no PII | BAE deploys directly — no formal engineering needed |
+| **Tier 2 (Moderate)** | Any "yes" on Q1 or Q2 — internal data or broader exposure | Security review & mandatory Red Teaming before deployment |
+| **Tier 3 (High)** | "yes" on Q3 or Q4, or PII + public-facing | Mandatory formal engineering cycle (Opportunity 4) with architectural hardening |
 
-A low-risk internal tool ships immediately. A high-risk public system gets the rigor it needs. A failed idea dies cheaply. The gate is proportional, not bureaucratic — a few conversational questions, not a compliance form.
+Answers and evidence are recorded verbatim in the handoff package. A missing or vague answer blocks finalization — the gate is non-bypassable by design.
+
+A low-risk internal tool ships immediately. A high-risk public system gets the rigor it needs. A failed idea dies cheaply.
 
 ---
 
@@ -137,7 +150,7 @@ Superpowers provides world-class execution discipline for AI-assisted developmen
 
 | Pattern | Superpowers Source | How We Use It |
 |---|---|---|
-| `<HARD-GATE>` execution block | `brainstorming` skill | `discovery-planning` — SME approval gate before anything proceeds |
+| `<HARD-GATE>` execution block | `brainstorming` skill | `discovery-planning` — SME approval gate before anything proceeds; canonical redirect text in `references/hard-gate-enforcement.md` |
 | Blank-slate context isolation | `subagent-driven-development` | `subagent-driven-prototyping` — fresh sub-agent per component |
 | Two-stage verification | Spec + Quality reviewers | Plan alignment check + Quality check per component |
 | Git worktree isolation | `using-git-worktrees` | Isolated workspace before any build work |
@@ -207,7 +220,11 @@ exploration-cycle-plugin/
 │   ├── diagrams/                   # Technical flowcharts (Mermaid)
 │   ├── resources/design-thinking/  # Framework infographics and references
 │   └── templates/                  # Dashboard and session templates
-├── references/                     # Architectural patterns (Dual-Loop, Learning-Loop)
+├── references/
+│   ├── hard-gate-enforcement.md    # Canonical HARD-GATE redirect text (shared by all agents)
+│   ├── environment-check.md        # Pre-flight superpowers + dispatch strategy check
+│   ├── dispatch-strategies.md      # Dispatch tiers, task complexity guide, token efficiency
+│   └── agent-loop-patterns.md      # Loop architecture reference (dual-loop, learning-loop)
 ├── skills/
 │   ├── discovery-planning/         # Phase 1: Problem framing with Intervention Check
 │   ├── visual-companion/           # Phase 2: Adaptive structure confirmation
