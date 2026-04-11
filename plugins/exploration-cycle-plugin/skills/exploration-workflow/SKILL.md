@@ -24,7 +24,7 @@ The workflow adapts to four session types, each with different phase requirement
 |------|-------------|---------------|
 | **Greenfield** | Building a new app or system from scratch | All 4 phases |
 | **Brownfield** | Adding a feature to an existing codebase | Phase 1 required, Phases 2 & 4 optional, Phase 3 builds into real codebase |
-| **Discovery Only** | Output is documents, not code | Phases 1 & 4 required, Phase 2 optional, Phase 3 skipped |
+| **Analysis/Docs** | Non-software output: requirements, process maps, legacy code analysis, policy, strategy, workflow design | Phases 1 & 4 required, Phase 2 optional (structure not layout), Phase 3 skipped |
 | **Spike** | Investigating a question or technology | Phase 1 required (may repeat), all others flexible |
 
 ---
@@ -39,6 +39,22 @@ The workflow adapts to four session types, each with different phase requirement
 When the session reaches Phase 3 (Build), the orchestrator invokes superpowers skills
 to enforce execution discipline. The exploration-cycle-plugin owns the discovery
 workflow (Phases 1, 2, 4); superpowers owns the build discipline (Phase 3 execution).
+
+### Superpowers Availability Check
+
+Before invoking any superpowers skill, silently check whether it is available (e.g.,
+try to resolve `superpowers:using-git-worktrees`). If superpowers is **not installed**:
+
+- **Greenfield sessions:** Warn the SME: *"I recommend installing the superpowers plugin
+  for isolated workspaces and build discipline. For now, I'll proceed without it, but
+  the build won't be isolated from your main branch."* Then proceed with `direct` build
+  mode — no worktrees, no TDD, no two-stage review. The prototype still gets built, but
+  without execution discipline guardrails.
+- **Brownfield sessions:** Halt. Announce: *"Building directly into an existing codebase
+  without an isolated workspace is risky. Please install the superpowers plugin first."*
+  Provide the install command from the README.
+
+If superpowers IS available, proceed with the steps below.
 
 ### Step 1 — Isolation: Invoke `superpowers:using-git-worktrees`
 
@@ -166,6 +182,19 @@ Is the task orchestration / planning / decision-making?
 The orchestrator (this skill) always stays on the primary model. It delegates
 **implementation** to cheaper/free models. It never delegates **judgment**.
 
+### Discovery-Only Sessions
+
+If the session type is **discovery-only**, skip the dispatch strategy question entirely.
+Default to `direct` and announce: *"Since this is a documentation session with no code
+phase, I'll handle all the work directly."*
+
+### Dispatch Fallback
+
+If the chosen dispatch strategy becomes unavailable during Phase 3 (e.g., Copilot CLI
+is not installed, or the `copilot-cli-agent` skill is not found), fall back to `direct`
+mode and announce: *"The [strategy] dispatch isn't available right now, so I'll build
+this directly in this session."* Do not ask the SME to reconfigure — just proceed.
+
 ---
 
 ## Early Exit — Kill Session
@@ -178,7 +207,9 @@ work", "kill it", "let's stop", or "the idea is bad", the workflow should exit c
    - What was explored
    - What was learned
    - Why the session was stopped
-   - Risk tier: Throwaway (Fail Fast)
+   - A `## Risk Assessment` section containing:
+     `**Outcome:** Throwaway (Fail Fast)` / `**Reason:** [one sentence from SME]` /
+     `**Delivery Path:** Session closed — learning preserved.`
 3. Mark all remaining phases as `[~]` (skipped) with note: `(Session killed — fail fast)`
 4. Update `**Status:**` to `Complete`
 5. Announce: *"Session closed. The learning is saved in `exploration/handoffs/`. Failing fast and cheap is a valid outcome — you saved weeks of wasted effort."*
@@ -196,10 +227,10 @@ not just at handoff. The earlier it happens, the more valuable it is.
    - Ask the SME: *"What are we exploring today? Give it a short name so we can track it."*
    - After receiving the session name, ask the SME to choose a **session type**:
      > "What kind of session is this?
-     > 1. **New app or system** — building something from scratch (all 4 phases)
+     > 1. **New app or system** — building a software prototype from scratch (all 4 phases)
      > 2. **Feature for an existing app** — adding to or modifying a codebase you already have (Phase 2 is optional, Phase 3 builds into the real codebase, Phase 4 is optional)
-     > 3. **Discovery only** — the output is documents, not code: requirements, user stories, workflow diagrams, business rules (Phases 1–2 only, no code phases)
-     > 4. **Spike or investigation** — exploring a question, may loop back to Phase 1 multiple times (flexible phases)"
+     > 3. **Analysis or documentation** — no code output. Could be: requirements gathering, business process mapping, legacy code analysis, policy drafting, strategic planning, workflow design, or any non-software deliverable (Phases 1 & 4, Phase 2 optional, Phase 3 skipped)
+     > 4. **Spike or investigation** — exploring a question or technology, may loop back to Phase 1 multiple times (flexible phases)"
    - Based on their selection, scaffold the dashboard from the appropriate template (see Session Type Templates below).
    - Replace `[to be filled in]` in the `**Session:**` field with their session name.
    - Write the updated file, then proceed to Block 3.
@@ -215,11 +246,18 @@ not just at handoff. The earlier it happens, the more valuable it is.
 - Phase 3 (Implementation): enabled — builds directly into the existing codebase (not a throwaway prototype)
 - Phase 4 (Handoff): optional — ask the SME: *"Are you handing this off to another team, or building it yourself? If building it yourself, we can skip the formal handoff."*
 
-**Type 3 — Discovery only:**
+**Type 3 — Analysis or documentation:**
 - Phase 1 (Problem Framing): enabled
-- Phase 2 (Visual Blueprinting): optional — only if the discovery involves UI/UX concepts
-- Phase 3: disabled (no code)
-- Phase 4 (Handoff): enabled — the handoff IS the primary output (requirements, stories, rules)
+- Phase 2 (Visual Blueprinting): optional — only if the work involves visual outputs (UI concepts, process diagrams, workflow maps). For pure analysis or text deliverables, skip.
+- Phase 3: disabled (no code output)
+- Phase 4 (Handoff): enabled — the handoff IS the primary output
+
+This type covers a wide range of non-software work:
+- Business requirements gathering and documentation
+- Business process mapping and workflow design
+- Legacy application or codebase analysis (reading and documenting, not modifying)
+- Policy drafting, strategic planning, or operational procedures
+- Any exploration where the deliverable is documents, not running code
 
 **Type 4 — Spike:**
 - Phase 1 (Problem Framing): enabled, may repeat
@@ -325,6 +363,11 @@ Then loop back to **Block 3** to orient the SME for the next phase.
 ## Completion Block
 
 When all phases are either marked `[x]` (complete) or `[~]` (skipped):
+
+**Spike re-entry check:** For spike sessions, before declaring completion, ask the SME:
+*"You've completed this round of investigation. Would you like to loop back to Phase 1
+with what you've learned, or are we done?"* If they want to loop, reset Phase 1 to `[ ]`
+and return to Block 3. If they're done, proceed with completion below.
 
 > "Congratulations — your Exploration Session is complete!
 > All phases are finished and your outputs are ready.

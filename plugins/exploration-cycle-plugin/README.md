@@ -16,9 +16,11 @@ See the **[Hybrid Workflow Diagram](assets/diagrams/hybrid-workflow.mmd)** for h
 Standard specification kits (like GitHub's `spec-kit`) serve as a "Static Map" for engineering. They are world-class at recording the destination, but they often suffer from **Blank Page Syndrome**—they require structured input to function.
 
 The **exploration-cycle-plugin** solves this by acting as the **Scouting Party**. It is designed for Diamond 1 (Discovery):
+- **Right Problem First**: Before asking "what should we build?", the Scouting Party asks "is building the right intervention?" Sometimes the best outcome is a policy change, a process simplification, or a communication fix — not new software. The discovery phase includes an explicit **Intervention Check** to prevent solutioneering.
 - **Vision Translation**: Pulls ambiguous intent out of a visionary's head and converts it into structured captures before a spec even exists.
 - **Cheap Exploration**: Uses the `dispatch.py` wrapper to call focused, cheap-model sub-agents for framing, BRDs, and user stories. This eliminates the multi-week BA/UX bottleneck.
 - **Non-Linear Iteration**: Allows for "breaking things," hallucinating UIs, and testing "What if?" scenarios without premature architectural solidification.
+- **Output-Agnostic**: The exploration loop produces whatever the problem actually needs — a software prototype, a process map, a policy recommendation, a requirements document, or a "don't build this" conclusion. All are valid, high-value outcomes.
 
 ---
 

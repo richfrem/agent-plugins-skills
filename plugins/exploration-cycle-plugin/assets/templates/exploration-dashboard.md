@@ -1,7 +1,7 @@
 # Business Exploration Dashboard
 
 **Session:** [to be filled in]
-**Session Type:** [Greenfield | Brownfield | Discovery Only | Spike]
+**Session Type:** [Greenfield | Brownfield | Analysis/Docs | Spike]
 **Dispatch Strategy:** [copilot-cli | claude-subagents | direct]
 **Current Phase:** Phase 1 — Problem Framing
 **Status:** In Progress
@@ -41,7 +41,7 @@ Phases marked `[~]` are intentionally skipped for this session type.
 |------|---------|---------|---------|---------|
 | **Greenfield** (new app) | Required | Required | Standalone prototype | Required |
 | **Brownfield** (existing app) | Required | Optional | Builds into codebase | Optional |
-| **Discovery Only** (docs, not code) | Required | Optional | Skipped | Required (primary output) |
+| **Analysis/Docs** (non-software) | Required | Optional (structure) | Skipped | Required (primary output) |
 | **Spike** (investigation) | Required, may repeat | Flexible | Flexible | Optional |
 
 ---

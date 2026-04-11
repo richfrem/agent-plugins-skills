@@ -50,7 +50,7 @@ Agent: [invokes exploration-session-brief, NOT exploration-handoff]
 
 - **Greenfield (Type 1):** Always required — the handoff package is how the engineering team knows what to build.
 - **Brownfield (Type 2):** Optional — if the same person/agent is doing both exploration and implementation, formal handoff may be unnecessary. The SME decides during session setup.
-- **Discovery only (Type 3):** Always required — the handoff IS the primary output of the session (requirements, stories, rules, workflow diagrams).
+- **Analysis/Docs (Type 3):** Always required — the handoff IS the primary output of the session (requirements, process maps, analysis reports, stories, rules, workflow diagrams, or whatever the non-software deliverable is).
 - **Spike (Type 4):** Optional — depends on whether findings need to be communicated to others.
 
 If this phase was skipped during session setup, it will be marked `- [~]` in the dashboard and the orchestrator will not route here.
@@ -61,7 +61,11 @@ This skill provides a structured, 3-stage interactive workflow for synthesizing 
 
 ## Stage 0: Scribe Activities (Automated Capture Before Synthesis)
 
-Before opening the handoff dialogue, silently check for `exploration/prototype/`.
+First, check the dashboard `**Session Type:**` field. For **discovery-only** sessions or
+any session where Phase 3 is marked `[~]` (skipped), prototype artifacts are expected to
+be missing — that is correct. Skip Stage 0 entirely and proceed to Stage 1.
+
+For all other sessions, silently check for `exploration/prototype/`.
 
 If the prototype directory exists, run the following three capture activities in sequence.
 Announce each one briefly as you start it:
@@ -113,6 +117,12 @@ Present these options to the SME:
 > 4. **Tier 3 (High Risk)** — PII, sensitive data, high-privilege tools, or public-facing system. Mandatory formal engineering cycle (Opportunity 4) with architectural hardening.
 >
 > Which best describes this project?"
+
+If the SME is uncertain, help them decide with these questions:
+- *"Will this handle personal information or sensitive data?"* (Yes → Tier 2 or 3)
+- *"Will it be used by people outside your team, or be public-facing?"* (Yes → Tier 2 or 3)
+- *"Does it need access to production systems or high-privilege tools?"* (Yes → Tier 3)
+- If all answers are "no" → Tier 1. If some yes → Tier 2. If PII + public-facing → Tier 3.
 
 Record the tier in the handoff package under a `## Risk Assessment` section. Include the tier, a one-sentence rationale from the SME, and the resulting delivery path.
 

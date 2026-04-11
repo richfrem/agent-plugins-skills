@@ -61,10 +61,12 @@ Do not mention these steps to the SME.
 
 ## Discovery Session
 
-Guide the SME through the following 5 questions, **one at a time**. After each answer:
+Guide the SME through the following questions, **one at a time**. After each answer:
 - Confirm your understanding in 1–2 plain sentences ("Here's what I heard — does this look right?")
 - Ask any needed clarifying questions before moving to the next
 - Never ask more than one question at a time
+
+### Part 1: Understanding the Problem
 
 **Q1:** "What problem are we trying to solve for the people we serve?"
 
@@ -72,9 +74,46 @@ Guide the SME through the following 5 questions, **one at a time**. After each a
 
 **Q3:** "What does a great outcome look like when this is working the way you imagined?"
 
-**Q4:** "If we had to pick the three most important things this must do — what would they be? And what would be nice to have but not essential?"
+### Part 2: Right Problem, Right Intervention
 
-**Q5:** "Are there any hard rules, limits, or things we absolutely cannot do?"
+After Q3, pause and reflect. Based on what you've heard, consider whether the problem
+the SME described is actually a technology problem, or whether it might be:
+- A **process problem** — the steps are in the wrong order, or a handoff is broken
+- A **policy or rules problem** — the rules are confusing, contradictory, or create failure demand
+- A **communication problem** — people don't understand what's available or what to do
+- A **data or access problem** — the information exists but isn't reaching the right people
+
+**Q4 (Intervention Check):** Reflect what you heard, then ask:
+
+> "Before we go further — based on what you've described, I want to make sure we're
+> solving the right problem. Sometimes the best fix isn't a new tool or system — it's
+> changing a rule, simplifying a process, or removing a step entirely.
+>
+> When people hit this problem today, what actually goes wrong for them? Is it that they
+> don't have the right tool, or is it something about how the process or rules work?"
+
+This question is critical. Listen carefully to the answer. If the SME describes a process
+or policy issue rather than a technology gap, gently surface it:
+
+> "It sounds like the core issue might be [process/policy/communication problem], not
+> necessarily a technology gap. If we [simplified the rule / changed the sequence /
+> clarified the guidance], would that solve most of it without building anything new?"
+
+**If the SME agrees the problem is non-technical:** Pivot the session type to Analysis/Docs.
+The deliverable becomes the process change, policy recommendation, or communication fix.
+This is a valid, high-value outcome — saving the cost of building something unnecessary.
+
+**If the SME confirms they do need a technical solution:** Proceed. The intervention check
+still adds value because it sharpens the problem statement and prevents solutioneering.
+
+**If it's mixed:** Note both dimensions. The Discovery Plan should capture the non-technical
+fixes alongside the technical requirements, so the handoff reflects the full picture.
+
+### Part 3: Requirements and Constraints
+
+**Q5:** "If we had to pick the three most important things this must deliver — what would they be? And what would be nice to have but not essential?"
+
+**Q6:** "Are there any hard rules, limits, or things we absolutely cannot do?"
 
 After each answer, reflect back what you heard before moving forward. Example:
 > "So if I'm understanding correctly, [summary]. Does that sound right?"
@@ -95,6 +134,14 @@ Use this exact structure:
 ## Problem Statement
 [plain language, 2-3 sentences]
 
+## Intervention Type
+[What kind of fix does this problem actually need?]
+- Software: [yes/no — and if yes, what kind: new app, feature, automation, integration]
+- Process change: [yes/no — if yes, what needs to change in the workflow]
+- Policy or rules change: [yes/no — if yes, what rule is causing friction]
+- Communication fix: [yes/no — if yes, what guidance is missing or unclear]
+[If multiple, note which is primary and which are supporting]
+
 ## Stakeholders
 [who uses it, who approves, who is affected]
 
@@ -108,7 +155,7 @@ Use this exact structure:
 [numbered list]
 
 ## Open Questions
-[anything that needs more information before building]
+[anything that needs more information before proceeding]
 ```
 
 Use plain language throughout. No technical terms, no jargon.
