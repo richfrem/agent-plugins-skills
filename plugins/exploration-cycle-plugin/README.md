@@ -7,6 +7,8 @@ The **exploration-cycle-plugin** is a technical implementation of the **GenAI Do
 ## 🖼️ Framework Overview
 See the **[GenAI Double Diamond Flowchart](assets/diagrams/genai-double-diamond.mmd)** for a visual representation of the Scouting Party (Diamond 1) and Engineering Factory (Diamond 2) cycle.
 
+See the **[Hybrid Workflow Diagram](assets/diagrams/hybrid-workflow.mmd)** for how the exploration-cycle-plugin and superpowers skills work together. Blue phases are owned by the exploration-cycle-plugin; green phases are powered by superpowers.
+
 ---
 
 ## 🧭 Core Philosophy: The Scouting Party
@@ -22,15 +24,16 @@ The **exploration-cycle-plugin** solves this by acting as the **Scouting Party**
 
 ## 🛡️ Safety & Governance: The Rigor Gate
 
-Accountability and traceability are not optional in public sector or enterprise GenAI. This plugin mandates a **Risk & Rigor Assessment** during the handoff phase to determine the appropriate delivery path:
+Accountability and traceability are not optional in public sector or enterprise GenAI. This plugin mandates a **Risk & Rigor Assessment** (TierGate) during the handoff phase. The exploration does **not** always route to Opportunity 4 (formal engineering). The TierGate produces one of four outcomes:
 
-| Rigor Tier | Risk Profile | Execution Path (Diamond 2) |
+| Outcome | Risk Profile | Delivery Path |
 | :--- | :--- | :--- |
-| **Tier 1 (Low)** | Internal R&D, limited/no PII. | Lightweight Agile dev cycle. |
-| **Tier 2 (Moderate)** | Internal data, standard tools. | Requires Security review & mandatory Red Teaming. |
-| **Tier 3 (High)** | PII/Sensitive data, high-privilege tools (Bash). | **Mandatory** full `spec-kitty` cycle with architectural hardening. |
+| **Throwaway** | Idea proved non-viable during exploration. | Session closed. Learning preserved at near-zero cost. |
+| **Tier 1 (Low)** | Internal utility, limited/no PII. | BAE deploys directly — no formal engineering needed. |
+| **Tier 2 (Moderate)** | Internal data, broader user exposure. | Security review & mandatory Red Teaming before deployment. |
+| **Tier 3 (High)** | PII/Sensitive data, public-facing, high-privilege tools. | **Mandatory** formal engineering cycle (Opportunity 4) with architectural hardening. |
 
-This gate ensures that we remain **Fast by Default, but Safe by Design.**
+This gate ensures that we remain **Fast by Default, but Safe by Design.** Low-risk tools ship immediately. High-risk systems get the rigor they need. Failed ideas die cheaply.
 
 ---
 
@@ -80,23 +83,100 @@ exploration-cycle-plugin/
 
 ---
 
+## 🔌 Required Dependency: `orba/superpowers`
+
+The `exploration-cycle-plugin` **requires** the [orba/superpowers](https://github.com/obra/superpowers) plugin to be installed. The exploration workflow does not replace superpowers — it **augments and leverages** its execution discipline skills during Phase 3 (Build).
+
+### Why use execution discipline on prototypes?
+
+The prototype is the **evidence** that the exploration captured the right thing. If the
+prototype doesn't match the Discovery Plan, the SME reviews the wrong behavior, the
+handoff describes the wrong system, and the engineering team builds from a flawed spec.
+
+Execution discipline during Phase 3 isn't about production code quality — it's about
+**exploration accuracy**. Sub-agents keep components focused. Validation checks verify
+each component against the plan. Code review catches drift before the SME sees it.
+Even a prototype that will be thrown away after handoff must be verified.
+
+### What superpowers provides (used by this plugin)
+
+| Superpowers Skill | Used During | Exploration Purpose |
+|---|---|---|
+| `using-git-worktrees` | Phase 3 start | Isolated workspace — don't break the existing app while exploring |
+| `subagent-driven-development` | Phase 3 build loop | Fresh sub-agent per component — context isolation keeps each piece focused |
+| `test-driven-development` | Phase 3 build loop | Verify each component meets a Discovery Plan requirement |
+| `requesting-code-review` | Phase 3 review | Plan alignment check — does this demonstrate what the SME asked for? |
+| `finishing-a-development-branch` | Phase 3 completion | Structured merge/PR/cleanup flow |
+
+### How the relationship works
+
+```
+exploration-cycle-plugin          orba/superpowers
+========================          ================
+Phase 1: Problem Framing    →    (standalone — no superpowers needed)
+Phase 2: Visual Blueprinting →   (standalone — no superpowers needed)
+Phase 3: Build               →   uses: worktrees, sub-agent dispatch, TDD, code review
+Phase 4: Handoff             →    (standalone — no superpowers needed)
+```
+
+The exploration-cycle-plugin owns the **what** (discovery, framing, layout, handoff).
+Superpowers owns the **how** (isolation, dispatch, testing, review, finishing).
+
+### Installation
+
+**Claude Code (recommended):**
+```bash
+# Install superpowers first
+claude mcp add-plugin orba/superpowers
+
+# Then install exploration-cycle-plugin
+claude mcp add-plugin richfrem/agent-plugins-skills --path plugins/exploration-cycle-plugin
+```
+
+**Plugin Manager (if using agent-plugins-skills marketplace):**
+```bash
+# Install superpowers
+uvx --from git+https://github.com/obra/superpowers plugin-install orba/superpowers
+
+# Install exploration-cycle-plugin
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-install exploration-cycle-plugin
+```
+
+**Manual installation:**
+1. Clone `https://github.com/obra/superpowers` into your plugins directory
+2. Clone or symlink `plugins/exploration-cycle-plugin` from this repo into your plugins directory
+3. Ensure both are discoverable by your agent harness (Claude Code, Copilot CLI, Gemini CLI, etc.)
+
+**Verification:** After installation, confirm both plugins are loaded:
+```bash
+# In Claude Code
+/skills  # should list both exploration-workflow and using-git-worktrees
+```
+
+---
+
 ## 📜 Attribution & License
 
-### Architectural Inspiration: `obra/superpowers`
+### Architectural Foundation: `obra/superpowers`
 
-The `exploration-cycle-plugin` borrows core architectural patterns from
+The `exploration-cycle-plugin` is built on top of
 [**obra/superpowers**](https://github.com/obra/superpowers), an open-source
-agentic harness by Jesse Vincent (obra).
+agentic harness by Jesse Vincent (obra). Superpowers is a **required runtime
+dependency**, not just an inspiration — the execution discipline skills are
+invoked directly during Phase 3.
 
-Patterns adapted:
+Patterns adapted from superpowers:
 
-| Pattern | Source | Adapted As |
+| Pattern | Superpowers Source | Exploration-Cycle Adaptation |
 |---|---|---|
-| `<HARD-GATE>` execution block | `brainstorming` skill | `discovery-planning` skill |
-| Blank-slate context isolation per task | Execution harness | `subagent-driven-prototyping` skill |
-| Two-stage verification (Spec + Quality) | Verification layer | Business Rule Audit + Prototype Walkthrough |
+| `<HARD-GATE>` execution block | `brainstorming` skill | `discovery-planning` skill — SME approval gate |
+| Blank-slate context isolation | `subagent-driven-development` | `subagent-driven-prototyping` — fresh sub-agent per component |
+| Two-stage verification | Spec + Quality reviewers | Plan alignment check + Quality check |
+| Git worktree isolation | `using-git-worktrees` | Referenced directly — isolated workspace before build |
+| TDD cycle | `test-driven-development` | Adapted: evals for skills, tests for code, validation for docs |
+| Branch finishing | `finishing-a-development-branch` | Referenced directly — merge/PR/cleanup flow |
+| Model tiering | Cheap→standard→capable | 3 dispatch strategies: copilot-cli, claude-subagents, direct |
 | Linguistic Detox (persona scan) | Jargon policing | SME language enforcement across all agents |
-| Manifest-Driven Scaffolding | Pre-flight scaffolding | Pre-Phase 0 Silent Discovery |
 
 **superpowers is licensed under the MIT License.**
 Full text: https://github.com/obra/superpowers/blob/main/LICENSE
