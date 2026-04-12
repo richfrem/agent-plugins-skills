@@ -79,7 +79,7 @@ The plugin uses a tiered dispatch strategy to minimize token cost without sacrif
 
 | Dispatch Strategy | Simple/Mechanical Tasks | Complex/Multi-File Tasks | Orchestration/Planning |
 |---|---|---|---|
-| **Copilot CLI** (recommended if available) | `gpt-4o-mini` — free, unlimited | `claude-sonnet` — 1 premium request, batched dense | Current model (orchestrator) |
+| **Copilot CLI** (recommended if available) | `gpt-5-mini` — free, unlimited | `claude-sonnet` — 1 premium request, batched dense | Current model (orchestrator) |
 | **Claude Sub-agents** | `haiku` — cheapest | `sonnet` — mid-tier | Current model (orchestrator) |
 | **Direct** | Inline | Inline | Inline |
 

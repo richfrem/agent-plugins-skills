@@ -57,7 +57,7 @@ Choosing how the AI handles the heavy lifting
 ----------------------------------------------
 Early on, the assistant will ask how to handle complex tasks. Three options:
 
-1. **I have GitHub Copilot Pro** — uses free `gpt-4o-mini` for mechanical tasks, one premium request for complex ones (batched for value)
+1. **I have GitHub Copilot Pro** — uses free `gpt-5-mini` for mechanical tasks, one premium request for complex ones (batched for value)
 2. **No Copilot** — uses `haiku` for simple tasks, `sonnet` for complex ones
 3. **I'll handle it myself** — everything happens in this session directly
 
