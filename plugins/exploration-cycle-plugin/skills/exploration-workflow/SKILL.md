@@ -74,8 +74,8 @@ two-stage review, and TDD. When it signals complete, the orchestrator invokes
 
 ### Token Efficiency — Claude-only sessions
 
-If the SME has no Copilot (strategy = `claude-subagents` or `direct`), apply these practices throughout:
-- **Simple capture passes** (template filling, document extraction, format conversion): use the `Agent` tool with `model: "haiku"` to keep the main context light.
+If the SME has no Copilot or Gemini CLI (strategy = `claude-subagents` or `direct`), apply these practices throughout:
+- **Simple capture passes** (template filling, document extraction, format conversion): use the `Agent` tool with `model: "haiku"` (currently `haiku-4.5`) to keep the main context light.
 - **Q&A clarification**: batch 3–5 questions, dispatch `haiku` to collect structured answers, write to `exploration/captures/clarifications-[topic].md`, read back once. Never run clarification loops inline in the main orchestrator turn.
 - **Compact before topic switches**: if the session moves from one major phase to the next and earlier content is no longer needed, use `/compact` to reduce carry-forward context debt.
 - Full details and Claude Code dispatch examples: `references/dispatch-strategies.md`.
@@ -84,9 +84,10 @@ For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet-4-6` (1 premium request — batched dense for value).
-> 2. **No Copilot** — I'll use Claude sub-agents. Simple tasks use `haiku` (cheapest). Complex tasks use `sonnet`.
-> 3. **I'll handle it myself** — Everything happens directly in this session."
+> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet-4-6` or `claude-opus-4-6` (1 premium request — all related tasks batched into one dense call).
+> 2. **I have Gemini CLI** — Simple tasks use `gemini-2.5-flash-preview` (cheap). Complex tasks use `gemini-2.5-pro-preview`.
+> 3. **Claude only** — I'll use Claude sub-agents. Simple tasks use `haiku-4.5` (cheapest). Complex tasks use `sonnet`.
+> 4. **I'll handle it myself** — Everything happens directly in this session."
 
 Record the choice in the dashboard as `**Dispatch Strategy:**` (`copilot-cli`, `claude-subagents`, or `direct`).
 
