@@ -64,20 +64,87 @@ If the chosen strategy becomes unavailable mid-session:
 2. Inform the SME: "The [strategy] strategy isn't available. I'll handle the rest directly."
 3. Update `**Dispatch Strategy:**` in the dashboard to `direct (fallback)`
 
-## CLI Dispatch Reference
+## Dispatch Reference by Environment
+
+### Claude Code — `claude-subagents` strategy
+
+Use the `Agent` tool directly in Claude Code. Set `model: "haiku"` for simple tasks, omit for complex ones (inherits current session model).
+
+```
+# Simple capture task — haiku
+Agent({
+  description: "Capture problem framing from session brief",
+  model: "haiku",
+  prompt: "Read exploration/session-brief.md. Mode: problem-framing.
+           Extract the problem statement, user groups, goals, and scope hypotheses.
+           Write structured output to exploration/captures/problem-framing.md.
+           Mark anything not stated as [NEEDS HUMAN INPUT]."
+})
+
+# Q&A clarification pass — haiku
+Agent({
+  description: "Collect BRD clarifications",
+  model: "haiku",
+  prompt: "Read exploration/captures/brd-draft.md. Find every [NEEDS HUMAN INPUT] marker.
+           Present the 3 most important as plain questions to the user, collect their answers,
+           and write a structured summary to exploration/captures/clarifications-brd.md."
+})
+
+# Business rule audit — haiku
+Agent({
+  description: "Audit prototype against BRD",
+  model: "haiku",
+  prompt: "Read exploration/captures/brd-draft.md and exploration/captures/prototype-notes.md.
+           For each business rule in the BRD, check whether the prototype notes confirm,
+           contradict, or leave it uncertain. Write findings to exploration/captures/audit-findings.md.
+           Flag CONTRADICTED and UNCERTAIN rules explicitly."
+})
+
+# Handoff synthesis — sonnet (complex, multi-file)
+Agent({
+  description: "Synthesise exploration captures into handoff package",
+  prompt: "Read all files in exploration/captures/. Synthesise into a handoff package at
+           exploration/handoffs/handoff-package.md following the handoff-preparer-agent instructions.
+           Cite source files for every major claim. Mark gaps [NEEDS HUMAN INPUT]."
+})
+```
+
+### Copilot CLI — `copilot-cli` strategy
 
 ```bash
-# Simple capture task (cheap model)
+# Simple capture task — gpt-5-mini (free tier)
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals." \
   --output exploration/captures/problem-framing.md
 
-# Q&A clarification pass (cheap model)
+# Q&A clarification pass — gpt-5-mini (free tier)
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \
-  --instruction "Ask 3 targeted questions to clarify the gaps marked [NEEDS HUMAN INPUT]. Write answers to clarifications-brd.md." \
+  --instruction "Ask 3 targeted questions to clarify the gaps marked [NEEDS HUMAN INPUT].
+                 Write structured answers to clarifications-brd.md." \
   --output exploration/captures/clarifications-brd.md
+
+# Complex synthesis — claude-sonnet (1 premium request, batch dense for value)
+# Pack all captures into one invocation — Copilot charges per request, not per token
+python3 scripts/dispatch.py \
+  --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
+  --context exploration/captures/problem-framing.md \
+             exploration/captures/brd-draft.md \
+             exploration/captures/user-stories-draft.md \
+             exploration/captures/prototype-notes.md \
+             exploration/captures/audit-findings.md \
+  --instruction "Synthesise all captures into a complete handoff package.
+                 Cite sources. Mark gaps [NEEDS HUMAN INPUT]." \
+  --output exploration/handoffs/handoff-package.md
 ```
+
+### When no sub-agent tooling is available (`direct` strategy)
+
+Run all tasks in the current session. To reduce context carry-forward:
+- After completing a capture pass, summarise the output in 3 bullet points before moving on — the summary travels with you, not the full output.
+- After Phase 1 completes, use `/compact` before starting Phase 2.
+- After Phase 3 completes, use `/compact` before starting Phase 4.
+- Pass file paths to the next phase, not file contents — read on demand rather than keeping everything in context.
