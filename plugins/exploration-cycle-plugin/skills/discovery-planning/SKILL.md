@@ -59,14 +59,27 @@ Before speaking to the SME, silently (without announcing to the user):
 
 Do not mention these steps to the SME.
 
-## Session Type Check
+## Session Type Fork
 
-Before asking discovery questions, silently check the dashboard `**Session Type:**` field (if the dashboard exists) or the session type established by the orchestrator.
+**Read the session type before asking any questions.** Check in this order:
+1. The `## Session Context` block passed by the orchestrator (look for `Session type:`)
+2. `**Session Type:**` field in `exploration/exploration-dashboard.md`
+3. If neither is available, ask: *"What kind of session is this — are we building something new, improving an existing system, documenting a process, or investigating a question?"*
 
-- If `**Session Type:**` contains `brownfield` or `legacy` → use the **Legacy/Brownfield Track** (see below).
-- Otherwise → use the **Standard Track** (see below).
+Route to the correct track:
 
-This determines which set of discovery questions to ask. Do not mention this check to the SME.
+| Session Type | Question Track |
+|---|---|
+| Greenfield / website / new app | **Standard Track** (Q1–Q6 below) |
+| Brownfield — feature addition | **Feature Addition Track** (FQ1–FQ5 below) |
+| Brownfield — legacy analysis / replatforming | **Legacy/Brownfield Track** (LQ1–LQ6 below) |
+| Analysis/Docs — process | **Process Intervention Track** (PQ1–PQ5 below) |
+| Analysis/Docs — strategic | **Strategic Planning Track** (SQ1–SQ5 below) |
+| Analysis/Docs — risk/compliance | **Risk Assessment Track** (RQ1–RQ5 below) |
+| Analysis/Docs — requirements | **Standard Track** — requirements gathering uses the same questions, just without prototype output |
+| Spike | **Open Exploration Track** (OQ1–OQ4 below) |
+
+Do not mention this routing to the SME. Just use the correct track.
 
 ---
 
@@ -113,7 +126,100 @@ Use this track when `**Session Type:**` contains `brownfield` or `legacy analysi
 
 **LQ6:** "Are there hard constraints on the path forward — things we can't change, integrations that must survive, compliance requirements, or a timeline driven by something external?"
 
-After all six brownfield questions are answered, go directly to [Discovery Plan](#discovery-plan) below. Skip the Standard Track and the Intervention Check (it's implicit in LQ5 — the SME has already answered what kind of outcome they need).
+After all six brownfield questions are answered, go directly to the Discovery Plan section below. Skip the Standard Track and the Intervention Check (it's implicit in LQ5 — the SME has already answered what kind of outcome they need).
+
+---
+
+## Feature Addition Track
+
+Use when `**Session Type:**` is `Brownfield — feature addition`. Focus on what exists, what's changing, and why now.
+
+**FQ1:** "Tell me about the system we're adding to — what does it do today and who uses it?"
+
+**FQ2:** "What's the feature or change you want to add? What's the trigger — what problem or opportunity is driving this now?"
+
+**FQ3:** "Who will use this new feature and what does success look like for them?"
+
+**FQ4:** "Are there things the current system does that this change must not break? What are the non-negotiables?"
+
+**FQ5:** "Are there any technical constraints or integration requirements I should know about going in?"
+
+After all five answers, go to the Discovery Plan section below.
+
+---
+
+## Process Intervention Track
+
+Use when `**Session Type:**` is `Analysis/Docs — process`. Start with the Intervention Check — this scenario is the most likely to reveal that software isn't the answer.
+
+**PQ1 (Intervention Check first):** "Walk me through how the process works today — step by step, from the moment it starts to when it's done. Where does it break down or create the most friction?"
+
+Listen carefully. Before asking the next question, assess: is this a software problem, or a process/policy/people problem? Surface the distinction:
+> "Based on what you're describing, I want to check something before we go further. [Reflect the problem back.] Does it feel like the core issue is that people don't have the right tool — or that the steps, rules, or handoffs are wrong?"
+
+If non-software: acknowledge it as the better answer. Continue with the remaining questions framed around process change, not software.
+
+**PQ2:** "Who is affected by this process — both the people doing the work and the people waiting for the outcome?"
+
+**PQ3:** "What does 'fixed' look like? What would need to be true for this to be considered resolved?"
+
+**PQ4:** "Are there any constraints on what can change — regulatory requirements, systems that can't be touched, teams that can't be reorganised?"
+
+**PQ5:** "Has anyone tried to fix this before? What happened and why didn't it stick?"
+
+After all five answers, go to the Discovery Plan section below.
+
+---
+
+## Strategic Planning Track
+
+Use when `**Session Type:**` is `Analysis/Docs — strategic`. Focus on decisions, options, and constraints — not features.
+
+**SQ1:** "What decision needs to be made, and when does it need to be made by? What happens if it isn't made?"
+
+**SQ2:** "Who are the key stakeholders — who has a say, who is affected, and whose buy-in is essential?"
+
+**SQ3:** "What constraints are non-negotiable — budget, timeline, regulatory requirements, things that are already decided?"
+
+**SQ4:** "What does a good outcome look like in 12–24 months? How will you know the right decision was made?"
+
+**SQ5:** "What's the risk of doing nothing, or delaying? What's driving the urgency?"
+
+After all five answers, go to the Discovery Plan section below. The handoff for this track is a Strategic Recommendation document, not a prototype spec.
+
+---
+
+## Risk Assessment Track
+
+Use when `**Session Type:**` is `Analysis/Docs — risk/compliance`.
+
+**RQ1:** "What's the risk or compliance gap we're assessing — what triggered this and what's at stake if it isn't addressed?"
+
+**RQ2:** "What regulations, standards, or internal policies apply? Are there any external auditors or certifications involved?"
+
+**RQ3:** "What does the current state look like — what controls exist today and where are the gaps?"
+
+**RQ4:** "What does 'resolved' look like — what would a regulator, auditor, or risk committee need to see to sign off?"
+
+**RQ5:** "Are there constraints on the remediation path — technology choices already made, timelines, budget limits, or teams that own specific areas?"
+
+After all five answers, go to the Discovery Plan section below. The handoff for this track is a Risk Assessment or Policy document.
+
+---
+
+## Open Exploration Track
+
+Use when `**Session Type:**` is `Spike`. Keep structure light — the goal is to generate and test hypotheses, not converge prematurely.
+
+**OQ1:** "What's the question or hypothesis we're investigating? What would we need to learn or prove to feel confident moving forward?"
+
+**OQ2:** "What do we already know — what context, data, or prior attempts exist that we should start from?"
+
+**OQ3:** "What would a useful answer look like at the end of this session — a decision, a direction, a prototype, or just clearer questions?"
+
+**OQ4:** "Are there any boundaries on the investigation — things we've already ruled out, or areas we can't explore?"
+
+After all four answers, go to the Discovery Plan section below. Note: for spikes, the Discovery Plan is a lightweight investigation brief, not a full requirements document.
 
 ---
 

@@ -84,8 +84,8 @@ For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet` (1 premium request — batched dense for value).
-> 2. **No Copilot** — I'll use Claude sub-agents. Simple tasks use `haiku` (cheapest). Complex tasks use `sonnet`.
+> 1. **I have GitHub Copilot Pro** — I'll use it for the heavy lifting. Simple tasks are free, complex ones use one premium request per batch.
+> 2. **No Copilot** — I'll use AI sub-agents in this session, tiered by task complexity.
 > 3. **I'll handle it myself** — Everything happens directly in this session."
 
 Record the choice in the dashboard as `**Dispatch Strategy:**` (`copilot-cli`, `claude-subagents`, or `direct`).
@@ -122,17 +122,17 @@ not just at handoff. The earlier it happens, the more valuable it is.
 1. Check for `exploration/exploration-dashboard.md`.
 2. **If the file does NOT exist:**
    - Create the `exploration/` directory if it does not already exist.
-   - Ask the SME **two questions in one message**:
-     > "What are we exploring today? Give it a short name so we can track it — and in a sentence or two, what are you hoping to achieve or solve? (Don't worry about framing it perfectly — we'll work that out together.)"
-   - **Using the Scenario Routing Guide below, suggest a session type with a one-sentence rationale:**
+   - **Beat 1 — Name and goal:** Ask:
+     > "What are we exploring today? Give it a short name so we can track it — and in a sentence or two, what are you hoping to achieve or solve?"
+   - When the SME responds, immediately write a provisional dashboard with `**Session:**` set and `**Session Type:** TBD`. This anchors the session name before classification.
+   - **Beat 2 — Session type:** Using the Scenario Routing Guide below, suggest a type with a one-sentence rationale:
      > "That sounds like [Type X] — [why]. Does that fit, or would you describe it differently?"
    - If the SME confirms: proceed with that type.
    - If the SME corrects or says "not quite": take their word for it. Always defer to SME judgment.
    - If the SME says "I'm not sure" or "you tell me": present the **full type menu** (see below) with examples.
-   - Scaffold the dashboard from the appropriate template (see Session Type Templates below).
-   - Record the session name in `**Session:**` and the session type in `**Session Type:**`.
-   - **Immediately pre-mark non-applicable phases as `- [~]`** based on the confirmed session type. Use the Active Phases table in the Session Types section above to determine which phases to skip. Add a parenthetical reason: `(Skipped — [reason])`. Do this before writing the dashboard to disk — the SME should never see a phase as "upcoming" if this session type will never use it.
-   - Write the file, then proceed to Block 3.
+   - Update `**Session Type:**` in the dashboard to the confirmed type.
+   - **Immediately pre-mark non-applicable phases as `- [~]`** based on the confirmed session type. Use the Active Phases table in the Session Types section above to determine which phases to skip. Add a parenthetical reason: `(Skipped — [reason])`. Do this before finalizing the dashboard — the SME should never see a phase as "upcoming" if this session type will never use it.
+   - Write the final dashboard, then proceed to Block 3.
 3. **If the file EXISTS:** Proceed to Block 2.
 
 ---
@@ -192,7 +192,7 @@ Record the sub-type in the dashboard under `**Session Type:**` (e.g., `Brownfiel
 
 **Type 3 — Analysis or documentation:**
 Phase 1: enabled.
-Phase 2: optional — only for visual outputs (process flow diagrams, document structure maps, architecture sketches). Skip for pure text deliverables.
+Phase 2: optional — reframed as **Structure Mapping** (not "Visual Blueprinting"). Offer it proactively: *"Before we start capturing, would it help to sketch out what the final document should look like? I can show you a few structure options."* If yes, invoke `visual-companion` in document-structure mode (process flow diagrams, document outlines, decision trees, swimlanes). Output goes to `exploration/captures/document-structure.md`.
 Phase 3: **disabled**.
 Phase 4: enabled — the handoff IS the primary output.
 
@@ -277,8 +277,18 @@ Route to the child skill for the active phase:
 | Phase 4 — Handoff & Specs (Auto-runs User Stories & Specs) | `exploration-handoff` |
 | All phases complete or skipped | → Completion Block |
 
-When invoking a child skill, include this context:
-> "You are operating as part of an active Exploration Session. The session type is [type from dashboard]. When your phase is complete, return here so we can update the session dashboard."
+When invoking a child skill, pass this structured context block — do NOT bury it in prose:
+
+```
+## Session Context (from orchestrator — read and act on before proceeding)
+- Session type: [exact value from **Session Type:** in dashboard]
+- Active phase: Phase [N] — [phase name]
+- Discovery Plan: [path to most recent discovery-plan-*.md, or "not yet written"]
+- Dispatch strategy: [value from **Dispatch Strategy:** in dashboard]
+- Return signal: When this phase is complete, announce "PHASE [N] COMPLETE" then invoke the exploration-workflow skill to continue.
+```
+
+Child skills must read `Session type` and adapt their question tracks and outputs accordingly before doing anything else.
 
 ---
 
@@ -334,9 +344,16 @@ Then loop back to **Block 3** to orient the SME for the next phase.
 When all phases are either marked `[x]` (complete) or `[~]` (skipped):
 
 **Spike re-entry check:** For spike sessions, before declaring completion, ask the SME:
-*"You've completed this round of investigation. Would you like to loop back to Phase 1
-with what you've learned, or are we done?"* If they want to loop, reset Phase 1 to `[ ]`
-and return to Block 3. If they're done, proceed with completion below.
+*"You've completed this round of investigation. Would you like to loop back to Phase 1 with what you've learned, or are we done?"*
+
+If they want to loop:
+1. Archive the current discovery plan: rename `exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md` to `discovery-plan-YYYY-MM-DD-v[N].md` where N is the iteration number.
+2. Clear the Phase 1 Outcome file path in the dashboard (set to `TBD`).
+3. Reset Phase 1 to `- [ ]` in the dashboard.
+4. Add a note in the Session Log: `(Spike re-entry — iteration [N] — prior plan archived as [filename])`.
+5. Return to Block 3.
+
+If they're done, proceed with completion below.
 
 > "Congratulations — your Exploration Session is complete!
 > All phases are finished and your outputs are ready.
