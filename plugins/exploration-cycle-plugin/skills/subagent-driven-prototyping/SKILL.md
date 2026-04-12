@@ -57,7 +57,7 @@ If not, and the session type is brownfield or greenfield, **invoke
 Read the `**Dispatch Strategy:**` field from the dashboard. Use it to determine how to
 dispatch component implementation:
 
-- **`copilot-cli`:** Use `copilot-cli-agent` skill. Simple components → `gpt-5-mini` (free).
+- **`copilot-cli`:** Use `copilot-cli-agent` skill. Simple components → `gpt-4o-mini` (free).
   Complex/multi-file components → `claude-sonnet-4-6` (batch into one dense request —
   charged per request, not per token).
 - **`claude-subagents`:** Use the `Agent` tool. Mechanical components → `model: "haiku"`.

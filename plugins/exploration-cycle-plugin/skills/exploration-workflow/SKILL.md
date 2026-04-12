@@ -84,7 +84,7 @@ For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet` (1 premium request — batched dense for value).
+> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-4o-mini` (free). Complex tasks use `claude-sonnet` (1 premium request — batched dense for value).
 > 2. **No Copilot** — I'll use Claude sub-agents. Simple tasks use `haiku` (cheapest). Complex tasks use `sonnet`.
 > 3. **I'll handle it myself** — Everything happens directly in this session."
 
@@ -131,6 +131,7 @@ not just at handoff. The earlier it happens, the more valuable it is.
    - If the SME says "I'm not sure" or "you tell me": present the **full type menu** (see below) with examples.
    - Scaffold the dashboard from the appropriate template (see Session Type Templates below).
    - Record the session name in `**Session:**` and the session type in `**Session Type:**`.
+   - **Immediately pre-mark non-applicable phases as `- [~]`** based on the confirmed session type. Use the Active Phases table in the Session Types section above to determine which phases to skip. Add a parenthetical reason: `(Skipped — [reason])`. Do this before writing the dashboard to disk — the SME should never see a phase as "upcoming" if this session type will never use it.
    - Write the file, then proceed to Block 3.
 3. **If the file EXISTS:** Proceed to Block 2.
 
@@ -278,6 +279,28 @@ Route to the child skill for the active phase:
 
 When invoking a child skill, include this context:
 > "You are operating as part of an active Exploration Session. The session type is [type from dashboard]. When your phase is complete, return here so we can update the session dashboard."
+
+---
+
+## Mid-Session Revision Protocol
+
+If the SME asks to go back and change something in a completed phase (e.g., "Can we revisit the discovery plan?", "I want to change who the users are"), follow this protocol:
+
+1. **Identify what changed.** Ask one clarifying question: *"What specifically needs to change — the problem statement, the users, the constraints, or something else?"*
+
+2. **Assess downstream impact.** Before reopening anything, tell the SME what would need to be redone:
+   > "If we change [X], it affects [Y]. Here's what we'd need to redo: [list affected phases/outputs]."
+
+3. **Get confirmation.** *"Should I go ahead and reopen Phase [N], knowing that [downstream impact]?"* Wait for a clear yes.
+
+4. **On confirmation:**
+   - In the dashboard, change the affected phase's `- [x]` back to `- [↩]` (marks it as revised, not just incomplete).
+   - Clear the Outcome file path note for that phase (set to `TBD`).
+   - Re-invoke the child skill with the existing context as starting point, not a blank restart. Pass the prior output as: *"Here's what we had — the SME wants to change [specific thing]. Update accordingly."*
+
+5. **After revision is approved**, restore the dashboard to `- [x]`, update the Outcome file path, and log the revision in the Session Log with a note: `(revised — [one-sentence reason)`.
+
+**The `↩` marker** signals that this phase was completed, revised, and re-completed. It is distinct from `[x]` (complete), `[ ]` (not started), and `[~]` (skipped). If your dashboard template does not include this marker, add it manually.
 
 ---
 

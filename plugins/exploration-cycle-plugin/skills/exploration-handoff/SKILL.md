@@ -123,11 +123,13 @@ Before synthesis, perform a mandatory structured risk assessment. The result det
 | 2 | Will it be used by people outside your immediate team, or is it public-facing? | yes / no | |
 | 3 | Does it require access to production systems or high-privilege tools (admin, payment, auth)? | yes / no | |
 | 4 | Does it involve financial transactions or regulatory compliance? | yes / no | |
+| 5 | Does this system make or influence decisions about people — hiring, performance, access, eligibility — or could it reflect or amplify bias in historical data? | yes / no | |
 
 **Tier determination (based on filled checklist):**
 - All "no" → **Tier 1 (Low Risk)** — direct deployment, lightweight self-assessment
 - Any "yes" on Q1 or Q2 → **Tier 2 (Moderate Risk)** — security review required before deployment
 - "yes" on Q1 + Q2, or any "yes" on Q3 or Q4 → **Tier 3 (High Risk)** — mandatory formal engineering cycle
+- Any "yes" on Q5 → **Tier 2 minimum** — an ethics review (fairness, bias, and people-impact assessment) is required in addition to any security review. Q5 alone does not trigger Tier 3, but combined with any "yes" on Q3 or Q4 it does.
 - SME explicitly says the idea isn't viable → **Throwaway / Fail Fast**
 
 Record the tier in the handoff package under a `## Risk Assessment` section using this exact format:
@@ -141,8 +143,9 @@ Record the tier in the handoff package under a `## Risk Assessment` section usin
 - External users or public-facing: [yes/no] — [evidence]
 - High-privilege access: [yes/no] — [evidence]
 - Financial or compliance: [yes/no] — [evidence]
+- People decisions or bias risk: [yes/no] — [evidence]
 **Rationale:** [one sentence from SME]
-**Delivery Path:** [exact text: "Direct deployment" / "Security review before deployment" / "Formal engineering cycle (Opportunity 4)" / "Session closed — learning preserved"]
+**Delivery Path:** [exact text: "Direct deployment" / "Security review before deployment" / "Ethics + security review before deployment" / "Formal engineering cycle (Opportunity 4)" / "Session closed — learning preserved"]
 ```
 
 **If any TierGate answer is missing or vague:** insert `[NEEDS HUMAN INPUT]` in that row and do NOT finalize the handoff until resolved.
@@ -155,6 +158,11 @@ harm assessment may be required by the organization's security team. Reference:
 for the full enterprise assessment workflow (taxonomy mapping, control selection, sign-off).
 The inline assessment here is a lightweight first pass — it determines the delivery path,
 not the full security posture.
+
+**For Q5 "yes" (people decisions or bias risk):** Add a specific note to the handoff:
+> "This system makes or influences decisions about people. Before deployment, an ethics review is required in addition to any security review — specifically covering fairness, potential for bias in historical data, unintended use cases, and applicable legal constraints (e.g., labor law, anti-discrimination regulations). A security review alone is not sufficient."
+
+**Tier 3 hard stop:** If Tier 3 is determined, do not finalize or write the handoff package silently. Follow the Tier 3 Hard Stop protocol in `agents/handoff-preparer-agent.md` — generate a `tier3-risk-summary.md` first, then include it as the opening section of the handoff package.
 
 ## Stage 2: Synthesis and Iterative Refinement
 Your job is to extract the signal relevant to the target audience — not to copy-paste source documents.

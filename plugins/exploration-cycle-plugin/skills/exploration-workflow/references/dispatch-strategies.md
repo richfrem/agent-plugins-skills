@@ -6,7 +6,7 @@
 ## Copilot CLI (`copilot-cli`)
 
 - Uses the `copilot-cli-agent` skill pattern (`scripts/run_agent.py`)
-- Simple/mechanical tasks → `gpt-5-mini` (free, unlimited)
+- Simple/mechanical tasks → `gpt-4o-mini` (free, unlimited)
 - Complex reasoning/multi-file generation → `claude-sonnet-4-6` (1 premium request; batch everything into one dense prompt)
 - Key advantage: premium model is charged per REQUEST not per token — one big prompt with 7 file specs costs the same as one small prompt
 
@@ -29,7 +29,7 @@ When dispatching a task during Phase 3:
 
 ```
 Is the task mechanical / single-file / boilerplate?
-  → copilot-cli: gpt-5-mini (free)
+  → copilot-cli: gpt-4o-mini (free)
   → claude-subagents: model: "haiku" (cheapest)
   → direct: do it inline
 

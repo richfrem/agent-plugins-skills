@@ -10,7 +10,7 @@ The SME chooses a strategy during Block 0 of `exploration-workflow`. Choices:
 
 | Strategy | When | Simple tasks | Complex tasks |
 |---|---|---|---|
-| `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (free) via `copilot` CLI | `claude-sonnet` (1 premium req, batched dense) |
+| `copilot-cli` | User has GitHub Copilot Pro | `gpt-4o-mini` (free) via `copilot` CLI | `claude-sonnet` (1 premium req, batched dense) |
 | `claude-subagents` | No Copilot available | `haiku` (cheapest) | `sonnet` (standard) |
 | `direct` | No sub-agent tooling / all in-session | This session's model | This session's model |
 
@@ -112,14 +112,14 @@ Agent({
 ### Copilot CLI — `copilot-cli` strategy
 
 ```bash
-# Simple capture task — gpt-5-mini (free tier)
+# Simple capture task — gpt-4o-mini (free tier)
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals." \
   --output exploration/captures/problem-framing.md
 
-# Q&A clarification pass — gpt-5-mini (free tier)
+# Q&A clarification pass — gpt-4o-mini (free tier)
 python3 scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \
