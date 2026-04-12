@@ -84,8 +84,8 @@ For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use it for the heavy lifting. Simple tasks are free, complex ones use one premium request per batch.
-> 2. **No Copilot** — I'll use AI sub-agents in this session, tiered by task complexity.
+> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet-4-6` (1 premium request — batched dense for value).
+> 2. **No Copilot** — I'll use Claude sub-agents. Simple tasks use `haiku` (cheapest). Complex tasks use `sonnet`.
 > 3. **I'll handle it myself** — Everything happens directly in this session."
 
 Record the choice in the dashboard as `**Dispatch Strategy:**` (`copilot-cli`, `claude-subagents`, or `direct`).
