@@ -61,42 +61,48 @@ This skill provides a structured, 3-stage interactive workflow for synthesizing 
 
 ## Stage 0: Scribe Activities (Automated Capture Before Synthesis)
 
-First, check the dashboard `**Session Type:**` field. For **discovery-only** sessions or
-any session where Phase 3 is marked `[~]` (skipped), prototype artifacts are expected to
-be missing — that is correct. Skip Stage 0 entirely and proceed to Stage 1.
+First, read the dashboard `**Session Type:**` field. This determines what Stage 0 does.
 
-For all other sessions, silently check for `exploration/prototype/`.
+**Non-software sessions** (session type contains "process", "strategic", "risk/compliance", or "legacy analysis"):
+- Skip prototype-related captures.
+- Check whether `exploration/captures/` contains any of: problem-framing.md, brd-draft.md, workflow-diagram.md.
+- If captures are missing, announce: *"Before I package the handoff, let me capture the key outputs from our session."* Then invoke `business-requirements-capture` using the Discovery Plan as input. Skip `user-story-capture` unless the SME specifically wants user stories as an output.
+- Proceed to Stage 1.
 
-If the prototype directory exists, run the following three capture activities in sequence.
-Announce each one briefly as you start it:
-> "Capturing [activity name] first — this gives us the raw material for the handoff."
+**Software sessions where Phase 3 ran** (Greenfield, Brownfield — feature, website):
+- Silently check for `exploration/prototype/`.
+- If the prototype directory exists, run the following in sequence. Announce each briefly:
+  > "Capturing [activity name] first — this gives us the raw material for the handoff."
 
-1. **Business Requirements Capture** (invoke `business-requirements-capture`)
-   - Extract business rules and functional constraints from the Discovery Plan and prototype
-   - Output: `exploration/captures/business-requirements.md`
+  1. **Business Requirements Capture** (invoke `business-requirements-capture`)
+     - Extract business rules and functional requirements from Discovery Plan and prototype
+     - Output: `exploration/captures/business-requirements.md`
 
-2. **User Story Capture** (invoke `user-story-capture`)
-   - Translate validated prototype behaviors into Agile user stories
-   - Output: `exploration/captures/user-stories.md`
+  2. **User Story Capture** (invoke `user-story-capture`)
+     - Translate validated prototype behaviours into user stories
+     - Output: `exploration/captures/user-stories.md`
 
-3. **Business Workflow Doc** (invoke `business-workflow-doc` — **only** if the Discovery Plan
-   describes a process flow with sequential steps or decision branches)
-   - Output: `exploration/captures/workflow-diagram.md`
+  3. **Business Workflow Doc** (invoke `business-workflow-doc` — **only** if the Discovery Plan describes a process flow with sequential steps or decision branches)
+     - Output: `exploration/captures/workflow-diagram.md`
 
-Once all applicable Stage 0 outputs are written, announce:
-> "Requirements and stories captured. Now let's put together your handoff package."
+  Once complete, announce: *"Requirements and stories captured. Now let's put together your handoff package."*
 
-If the prototype directory does not exist, skip Stage 0 entirely and proceed to Stage 1.
-The Stage 0 outputs (if created) are now available as source artifacts for synthesis.
+**Software sessions where Phase 3 was skipped** (discovery-only, analysis, or spike with no build):
+- Skip Stage 0 entirely. Proceed to Stage 1.
+
+The Stage 0 outputs are now available as source artifacts for synthesis.
 
 ## Stage 1: Context Gathering (Routing)
 Before synthesizing anything, establish what you're working with and where it's going. Ask both questions in a single message:
 
 1. **Target audience:** Who receives this handoff and what will they do with it?
-   - *Engineering team* — writing a formal spec or implementation plan
+   - *Engineering team (internal AI harness)* — feeding into Spec-Kitty, Superpowers, or similar AI-assisted engineering workflow
+   - *Engineering team (traditional SDLC)* — a dev team who will scope, estimate, and build using standard project management
    - *Executive or sponsor* — making a go/no-go or budget decision
-   - *Operations or process team* — updating a workflow or policy
-   - *Product or design team* — scoping a discovery sprint or prototype
+   - *Operations or process team* — implementing a process change or updating a workflow or policy
+   - *Architecture or platform team* — planning a modernisation, replatforming, or migration
+   - *Security team* — reviewing before deployment
+   - *Product or design team* — scoping a discovery sprint or next prototype iteration
    - *Other* — describe briefly
 
 2. **Available artifacts:** Which exploration documents exist? (Check `exploration/` directory — list what you find.) Common sources: session brief, BRD draft, prototype notes, user story set, business-workflow diagrams.
@@ -164,9 +170,12 @@ Your job is to extract the signal relevant to the target audience — not to cop
 Ensure the handoff gives the downstream consumer what they need to act:
 
 1. **Predict blockers:** Based on the target audience type, predict exactly 3 questions they will ask after reading this document that are NOT answered by it. Use audience-specific framing:
-   - *Engineering*: implementation questions ("How should we handle X edge case?", "What's the auth strategy?")
-   - *Executive/sponsor*: decision questions ("What's the fallback if this fails?", "What's the cost?")
-   - *Operations*: process questions ("Who owns step 3?", "What's the escalation path?")
+   - *Engineering (AI harness)*: spec questions ("What are the exact acceptance criteria for story X?", "What's the data model?")
+   - *Engineering (traditional SDLC)*: scoping questions ("How many story points is this?", "What are the external dependencies?", "Who is the product owner?")
+   - *Executive/sponsor*: decision questions ("What's the fallback if this fails?", "What does it cost to build vs. not build?")
+   - *Operations/process team*: ownership questions ("Who owns step 3?", "What's the escalation path?", "What training is needed?")
+   - *Architecture/platform team*: technical questions ("What integrations must survive?", "What's the data migration path?")
+   - *Security team*: risk questions ("What data is stored and where?", "Who has admin access?")
    - *Product/design*: scope questions ("What's explicitly out of scope?", "Which user type is primary?")
 
 2. **Surface gaps:** Present the 3 questions: *"If [audience] reads this, they'll immediately ask: [Q1], [Q2], [Q3]. Are these answered?"*
@@ -174,21 +183,190 @@ Ensure the handoff gives the downstream consumer what they need to act:
 
 ## Stage 4: Delivery Path Formatting
 
-The formatting of the final package depends on the Risk Tier from Stage 1.5:
+The formatting depends on both the Risk Tier from Stage 1.5 and the session type from the dashboard. Check both before formatting.
+
+---
+
+**Step 4a — Detect the output type:**
+
+Read `**Session Type:**` from the dashboard (or infer from the artifacts). Apply the matching format:
+
+| Session type | Output format |
+|---|---|
+| Greenfield / Brownfield — feature / Website | Software handoff (see Tier-based formats below) |
+| Brownfield — legacy analysis | Legacy analysis format (see below) |
+| Analysis — process | Process change recommendation format (see below) |
+| Analysis — strategic | Strategic recommendation format (see below) |
+| Analysis — risk/compliance | Risk and compliance format (see below) |
+| Spike | Summary of findings + decision recommendation |
+
+---
 
 **Tier 1 (Low Risk — Direct Deployment):**
-Format as a lightweight deployment brief: what was built, how to deploy it, what to monitor. No formal spec needed. Include a self-assessment checklist the BAE can complete independently.
+Format as a lightweight deployment brief:
+- What was built and what it does
+- How to deploy or run it
+- What to watch for in the first week
+- Self-assessment checklist the BAE can complete independently
+
+---
 
 **Tier 2 (Moderate Risk — Security Review):**
-Format with a security review section: data flows, access patterns, authentication requirements, and a red team checklist. The primary consumer is the security team, not an engineering team.
+Format with a security-review-ready section:
+- Data flows and what data is touched
+- Access patterns and authentication/authorisation requirements
+- Known risks and mitigations already in place
+- Red team checklist: questions the security team will ask
+The primary consumer is the security team, not an engineering team.
 
-**Tier 3 (High Risk — Formal Engineering):**
-Ask the user if they want to format for a specific execution harness:
-1. **Spec-Kitty**: Output as an architectural requirements spec, aligning with Spec-Kitty's `spec.md` format.
-2. **Superpowers**: Emphasize actionable checklists, TDD plans, and user story input for `brainstorming` and `planning`.
-3. **Generic Engineering**: Standard formatting.
+---
 
-If they choose a specific harness, rewrite the package to maximize compatibility before final export.
+**Tier 3 (High Risk — Formal Engineering SDLC):**
+This package goes to a development team. It must be complete enough for them to scope and begin a formal engineering project without needing to re-interview the SME.
+
+Ask the user if they use a specific engineering harness:
+1. **Spec-Kitty / Superpowers** → format for the AI engineering harness (spec.md, plan.md structure)
+2. **External / traditional dev team** → use the SDLC package format below
+
+**Tier 3 — SDLC package (for an external or traditional dev team):**
+
+Produce a single handoff document containing all of the following sections. Mark any section that could not be filled from session artifacts as `[NEEDS HUMAN INPUT]`:
+
+```
+## 1. Executive Summary
+[2-3 sentence problem statement and proposed solution — written for a PM or tech lead]
+
+## 2. Business Context
+[Why this matters, who asked for it, what happens if it isn't built]
+
+## 3. User Stories
+[Full story set from exploration — As a / I want / So that format with acceptance criteria]
+
+## 4. Business Rules
+[Numbered list of rules the system must enforce — sourced from BRD]
+
+## 5. Process Flows
+[Key workflows the system supports — reference workflow-diagram.md if it exists]
+
+## 6. Functional Requirements
+[Numbered list — what the system must do]
+
+## 7. Non-Functional Requirements
+[Performance, accessibility, security, compliance requirements]
+
+## 8. Constraints
+[Hard limits — technology choices already made, integrations required, data residency, etc.]
+
+## 9. Prototype Notes
+[What the SME validated, surprises found, corrections made — from prototype-notes.md]
+
+## 10. Risk Assessment
+[The completed TierGate checklist and rationale — verbatim from Stage 1.5]
+
+## 11. Open Questions / Unresolved Ambiguity
+[Decisions the engineering team must make before they can begin — consolidated from all captures]
+
+## 12. Out of Scope
+[Explicitly what this project does NOT cover]
+```
+
+After producing the package, ask the SME:
+> "Is there an AI engineering harness your team uses — like Spec-Kitty or Superpowers? If so, I can reformat this into the structure it expects."
+
+---
+
+**Legacy Analysis Handoff (Brownfield — legacy analysis):**
+The consumer is an architecture or engineering team planning modernisation. Format as:
+
+```
+## 1. System Overview
+[What the system does, how old it is, what technology it runs on]
+
+## 2. Current Capabilities
+[What the system does well and must be preserved in any replacement]
+
+## 3. Known Pain Points
+[What it does poorly, what causes the most friction]
+
+## 4. Integration Map
+[What other systems it connects to and how]
+
+## 5. Data and Storage
+[What data it holds, estimated volume, sensitivity]
+
+## 6. Modernisation Options Considered
+[What approaches were discussed — rewrite, replatform, re-host, retire, replace]
+
+## 7. Recommended Path
+[The SME-approved recommendation — with rationale]
+
+## 8. Open Questions for Architecture
+[Decisions the engineering team needs to make before planning begins]
+
+## 9. Risk Assessment
+[From TierGate — verbatim]
+```
+
+---
+
+**Process Change Recommendation (Analysis — process):**
+The consumer is the team or person responsible for changing the process. Format as:
+
+```
+## 1. Problem Summary
+[What's broken, for whom, and what it costs them]
+
+## 2. Root Cause
+[From the Intervention Check — what's actually causing the problem]
+
+## 3. Recommendation
+[The specific change proposed — plain language, actionable]
+
+## 4. How to Implement
+[Step-by-step or role-by-role — who does what differently starting when]
+
+## 5. What Success Looks Like
+[How you'll know the change worked — measurable if possible]
+
+## 6. Risks and Considerations
+[What could go wrong, what resistance to expect, dependencies]
+
+## 7. Related Software Needs (if any)
+[If a technology component is also needed, describe it here — separate from the process change]
+```
+
+---
+
+**Strategic Recommendation (Analysis — strategic):**
+The consumer is a decision maker or leadership team. Format as:
+
+```
+## 1. The Question
+[The decision or strategic question that was explored]
+
+## 2. Context
+[Why this matters now, what triggered the exploration]
+
+## 3. What We Know
+[Confirmed facts and evidence from the session]
+
+## 4. What We Don't Know
+[Unresolved uncertainties that may affect the decision]
+
+## 5. Options Considered
+[The alternatives that were weighed]
+
+## 6. Recommendation
+[The preferred path — with rationale]
+
+## 7. Next Steps
+[Concrete actions, owners, and timing]
+
+## 8. Open Questions
+[What leadership or stakeholders need to decide]
+```
+
+---
 
 **Throwaway (Fail Fast):**
 Already handled in Stage 1.5 — no further formatting needed.

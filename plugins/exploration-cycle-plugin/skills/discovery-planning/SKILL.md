@@ -114,11 +114,39 @@ Flag which is primary. The handoff should address both: the non-technical fixes 
 
 ### Part 3: Requirements and Constraints
 
+Adapt Q5 and Q6 based on what the Intervention Check revealed:
+
+**If the outcome is software (new app, feature, automation, website, integration):**
+
 **Q5:** "If we had to pick the three most important things this must deliver — what would they be? And what would be nice to have but not essential?"
 
-**Q6:** "Are there any hard rules, limits, or things we absolutely cannot do?"
+**Q6:** "Are there any hard rules, limits, or things we absolutely cannot do? (e.g., must work on mobile, must integrate with [system], must not store personal data)"
 
-After each answer, reflect back what you heard before moving forward. Example:
+**If the outcome is a process or workflow change:**
+
+**Q5:** "What would need to be true for this process to be considered fixed? What are the three things that matter most to the people who use it every day?"
+
+**Q6:** "Are there any constraints on what we can change? (e.g., regulatory requirements, systems we can't touch, teams we can't reorganise)"
+
+**If the outcome is a strategic plan or decision document:**
+
+**Q5:** "What does a good decision here actually look like? What would you need to know or see to feel confident moving forward?"
+
+**Q6:** "Are there any boundaries on the options we should consider — budget, timeline, organisational constraints, things that are already decided?"
+
+**If the outcome is legacy system analysis or modernisation planning:**
+
+**Q5:** "What are the most important things the current system does that any replacement must also do? And what does it do that nobody would miss if it disappeared?"
+
+**Q6:** "Are there constraints on the modernisation path — technology choices already made, integrations that must survive, compliance requirements, or a timeline?"
+
+**If the outcome is policy, compliance, or risk documentation:**
+
+**Q5:** "What does 'good enough' look like here — what would make the risk or compliance gap considered resolved?"
+
+**Q6:** "Are there external standards, regulations, or existing policies that any recommendation must align with?"
+
+After each answer, reflect back what you heard before moving forward:
 > "So if I'm understanding correctly, [summary]. Does that sound right?"
 
 Only advance to the next question once the SME confirms your summary is correct.
@@ -129,39 +157,51 @@ After all 6 questions are answered and confirmed, write a draft plan to:
 
 `exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md`
 
-Use this exact structure:
+Use this exact structure — adapt the section labels in brackets to fit the scenario (guidance in parentheses):
 
 ```
 # Discovery Plan — [Date]
+**Session type:** [Greenfield / Brownfield — feature / Brownfield — legacy analysis /
+                   Analysis — process / Analysis — strategic / Analysis — risk/compliance /
+                   Spike]
 
 ## Problem Statement
-[plain language, 2-3 sentences]
+[plain language, 2-3 sentences — what's wrong or missing, for whom, and why it matters now]
 
 ## Intervention Type
-[What kind of fix does this problem actually need?]
-- Software: [yes/no — and if yes, what kind: new app, feature, automation, integration]
-- Process change: [yes/no — if yes, what needs to change in the workflow]
-- Policy or rules change: [yes/no — if yes, what rule is causing friction]
-- Communication fix: [yes/no — if yes, what guidance is missing or unclear]
-[If multiple, note which is primary and which are supporting]
+[Resolved from the Intervention Check — be explicit]
+- Primary: [Software — new app / feature / automation / website / integration]
+         OR [Process change — describe the change needed]
+         OR [Policy or rules change — describe the rule causing friction]
+         OR [Communication fix — describe what guidance is missing]
+         OR [Strategic decision — describe the decision to be made]
+         OR [Legacy analysis — describe what system is being understood]
+- Supporting (if mixed): [secondary intervention, if any]
+- Software needed: yes / no / not yet determined
 
 ## Stakeholders
-[who uses it, who approves, who is affected]
+- Users: [who interacts with the solution day-to-day]
+- Decision maker: [who approves / signs off]
+- Affected parties: [who else is impacted]
 
 ## Success Criteria
-[what great looks like]
+[what great looks like when this is solved — use the SME's own words where possible]
 
 ## Must-Have Requirements
-[numbered list]
+[numbered list — use language appropriate to the outcome type:
+  software → functional requirements
+  process → steps or criteria that must change
+  strategic → questions that must be answered
+  legacy analysis → systems or capabilities that must be documented]
 
 ## Constraints and Rules
-[numbered list]
+[numbered list — hard limits, non-negotiables, regulatory requirements]
 
 ## Open Questions
-[anything that needs more information before proceeding]
+[anything unresolved that Phase 2+ or the handoff will need to address]
 ```
 
-Use plain language throughout. No technical terms, no jargon.
+Use plain language throughout. No technical jargon. Write for the SME, not for engineers.
 
 ## HARD-GATE Approval
 
