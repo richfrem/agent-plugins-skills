@@ -85,3 +85,37 @@ The orchestrator is expected to emit or maintain:
 - a post-run orchestrator survey
 
 The `exploration-optimizer` skill uses those outputs in a baseline-first, one-hypothesis-at-a-time improvement loop.
+
+---
+
+## Canonical Artifact Conventions
+
+### The `[NEEDS HUMAN INPUT]` Marker
+
+Every agent and skill in this plugin that generates artifacts uses the following canonical marker for unresolved gaps:
+
+```
+[NEEDS HUMAN INPUT]
+```
+
+**Format rules (case- and format-sensitive):**
+- All uppercase, exactly as written above
+- Square brackets, no italics, no variation
+- `check_gaps.py` counts this exact string — any variation (lowercase, em-brackets, italic `*[NEEDS HUMAN INPUT]*`) will be silently missed by the gap checker
+
+**When to use it:**
+- A required field cannot be filled from existing captures
+- An assumption has not been explicitly confirmed by the SME
+- A question was raised but not answered during exploration
+
+**Consolidation rule:** Do not scatter this marker without consolidation. Every agent that uses this marker must also maintain a `## Consolidated Gaps` section (or equivalent "Remaining Unknowns") that lists each distinct unresolved decision once. Reference the consolidated entry in other sections rather than repeating the marker.
+
+**Agents that use this marker:** `handoff-preparer-agent`, `requirements-doc-agent`, `planning-doc-agent`, `user-story-capture` skill. When adding a new agent or skill that produces artifacts, link to this section and follow these conventions.
+
+### The `[CONFIRMED]` / `[UNCONFIRMED]` Status Tags
+
+Use these alongside source citations on major claims:
+- `[CONFIRMED]` — explicitly validated by the SME during the session
+- `[UNCONFIRMED]` — derived from captures but not explicitly approved
+
+Never promote `[UNCONFIRMED]` to `[CONFIRMED]` without explicit SME sign-off in the session.
