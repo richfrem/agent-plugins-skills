@@ -6,16 +6,23 @@
 ## Copilot CLI (`copilot-cli`)
 
 - Uses the `copilot-cli-agent` skill pattern (`scripts/run_agent.py`)
-- Simple/mechanical tasks → `gpt-5-mini` (free, unlimited)
-- Complex reasoning/multi-file generation → `claude-sonnet-4-6` (1 premium request; batch everything into one dense prompt)
-- Key advantage: premium model is charged per REQUEST not per token — one big prompt with 7 file specs costs the same as one small prompt
+- Simple/mechanical tasks → `gpt-5-mini` (free, no per-request cost)
+- Complex reasoning/multi-file generation → `claude-sonnet-4-6` or `claude-opus-4-6` (premium)
+- **Critical cost model: charged per REQUEST, not per token.** One dense prompt with 7 file specs costs the same as one small prompt. Always batch everything into a single call.
+- Full batching discipline and `===FILE:===` delimiter pattern: `plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md`
+
+## Gemini CLI (`gemini-cli`)
+
+- Simple/mechanical tasks → `gemini-2.5-flash-preview` (cheap, fast)
+- Complex tasks → `gemini-2.5-pro-preview`
+- Charged per token — standard model. Batching still reduces round-trips but is not as cost-critical as Copilot.
 
 ## Claude Sub-agents (`claude-subagents`)
 
 - Uses the `Agent` tool with `model` parameter
-- Mechanical tasks → `model: "haiku"` (cheapest Claude model)
+- Mechanical tasks → `model: "haiku"` (cheapest — currently `haiku-4.5`)
 - Complex tasks → `model: "sonnet"` (mid-tier)
-- Follows the pattern from orba/superpowers: orchestrator stays on the primary model, dispatches implementation to cheaper models
+- Orchestrator stays on primary model; dispatches implementation to cheaper models. Never delegates judgment.
 
 ## Direct (`direct`)
 
@@ -23,28 +30,39 @@
 - Simplest approach, no dispatch overhead
 - Best when the session is interactive and the SME wants to see everything happen live
 
+> **Model names change.** Verify current identifiers against CLI help or vendor docs before using. The names above reflect the plugin version date.
+
 ## Decision Tree (for the orchestrator, not the SME)
 
 When dispatching a task during Phase 3:
 
 ```
 Is the task mechanical / single-file / boilerplate?
-  → copilot-cli: gpt-5-mini (free)
+  → copilot-cli:      gpt-5-mini (free)
+  → gemini-cli:       gemini-2.5-flash-preview (cheap)
   → claude-subagents: model: "haiku" (cheapest)
-  → direct: do it inline
+  → direct:           do it inline
 
 Is the task complex / multi-file / requires reasoning?
-  → copilot-cli: claude-sonnet-4-6 (batch into ONE dense request)
+  → copilot-cli:      claude-sonnet-4-6 (batch ALL related tasks into ONE dense request)
+  → gemini-cli:       gemini-2.5-pro-preview
   → claude-subagents: model: "sonnet"
-  → direct: do it inline
+  → direct:           do it inline
 
 Is the task orchestration / planning / decision-making?
   → Always keep in the current session (orchestrator model)
   → Never delegate planning or routing decisions to cheap models
 ```
 
-The orchestrator always stays on the primary model. It delegates
-**implementation** to cheaper/free models. It never delegates **judgment**.
+**Copilot premium call rule — critical cost discipline:**
+A detailed implementation plan, a full prototype component set, a complete handoff package — even a long yolo-mode execution task — all count as **1 premium request** if sent in a single call. Size does not change the cost. Use this aggressively.
+
+Before calling `claude-sonnet-4-6` or `claude-opus-4-6` via Copilot, ask: "Can I combine this with anything else I'll need in the next few turns?" If yes — combine first, call once. Never split work across multiple premium calls when one dense call covers it all.
+
+> **Model names will change over time.** The identifiers in this file are current at the plugin version date. Always verify before use:
+> - Copilot: `copilot --help` or GitHub Copilot model docs
+> - Gemini: `gemini --help` or Google AI docs
+> - Claude: Anthropic model docs or `haiku`/`sonnet` aliases in Claude Code
 
 ## Special Cases
 

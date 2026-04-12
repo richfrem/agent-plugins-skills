@@ -8,13 +8,28 @@ should only do coordination work — delegate everything else to the cheapest mo
 
 The SME chooses a strategy during Block 0 of `exploration-workflow`. Choices:
 
-| Strategy | When | Simple tasks | Complex tasks |
-|---|---|---|---|
-| `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (free) via `copilot` CLI | `claude-sonnet` (1 premium req, batched dense) |
-| `claude-subagents` | No Copilot available | `haiku` (cheapest) | `sonnet` (standard) |
-| `direct` | No sub-agent tooling / all in-session | This session's model | This session's model |
+| Strategy | When | Free/cheap model | Premium model | Cost model |
+|---|---|---|---|---|
+| `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (free) | `claude-sonnet-4-6` or `claude-opus-4-6` | **Per request** — batch everything into 1 dense call |
+| `gemini-cli` | User has Gemini CLI | `gemini-2.5-flash-preview` (cheap) | `gemini-2.5-pro-preview` | Per token — standard |
+| `claude-subagents` | Claude Code only, no external CLI | `haiku-4.5` (cheapest) | `sonnet` / `claude-sonnet-4-6` | Per token — standard |
+| `direct` | No sub-agent tooling / all in-session | This session's model | This session's model | This session's cost model |
+
+> **Model names change.** The identifiers above are current as of the plugin version date. Always verify against:
+> - Copilot CLI: `copilot --help` or [GitHub Copilot model docs](https://docs.github.com/en/copilot/using-github-copilot/ai-models)
+> - Gemini CLI: `gemini --help` or Google AI docs
+> - Claude sub-agents: check `haiku` model alias or use full model ID from Anthropic docs
 
 Record the resolved strategy in `exploration/exploration-dashboard.md` as `**Dispatch Strategy:**`.
+
+### Critical: Copilot CLI Premium Request Batching
+
+Copilot CLI charges **per request**, not per token. This changes everything about how you use premium models:
+
+- **Wrong:** 3 separate `claude-sonnet-4-6` calls for 3 related tasks = 3 premium charges
+- **Right:** 1 dense call with all 3 tasks fully specified = 1 premium charge
+
+**Rule:** Before making any Copilot premium model call, ask: "Can I combine this with anything else I'll need in the next few turns?" If yes — combine first, then call once. See `plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md` for the full batching discipline and `===FILE:===` delimiter pattern.
 
 ## Task Complexity Guide
 
