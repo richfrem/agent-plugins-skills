@@ -11,7 +11,7 @@ The SME chooses a strategy during Block 0 of `exploration-workflow`. Choices:
 | Strategy | When | Free/cheap model | Premium model | Cost model |
 |---|---|---|---|---|
 | `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (free) | `claude-sonnet-4-6` or `claude-opus-4-6` | **Per request** — batch everything into 1 dense call |
-| `gemini-cli` | User has Gemini CLI | `gemini-2.5-flash-preview` (cheap) | `gemini-2.5-pro-preview` | Per token — standard |
+| `gemini-cli` | User has Gemini CLI | `gemini-3.1-flash-lite-preview` (cheap) | `gemini-3.1-pro-preview` | Per token — standard |
 | `claude-subagents` | Claude Code only, no external CLI | `haiku-4.5` (cheapest) | `sonnet` / `claude-sonnet-4-6` | Per token — standard |
 | `direct` | No sub-agent tooling / all in-session | This session's model | This session's model | This session's cost model |
 

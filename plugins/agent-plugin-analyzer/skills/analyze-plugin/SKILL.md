@@ -210,3 +210,7 @@ Generate a structured markdown report. For single plugins, output inline. For co
 **Asynchronous Benchmark Metric Capture**: Once the audit run completes, immediately log the resulting `total_tokens` and `duration_ms` to a `timing.json` file to calculate the cost of the deep-dive analysis.
 
 Always end with **Virtuous Cycle Recommendations**: specific, actionable improvements for `agent-plugin-analyzer` (this plugin), `agent-scaffolders`, and `agent-skill-open-specifications` based on patterns discovered.
+
+## References
+
+- **Architectural Decision Records (ADRs)** located at `references/*.md`. Always consult them (especially ADR 001-006) to evaluate if the analyzed plugin follows our standards for shared scripts, cross-plugin dependencies, symlinking patterns, and loose coupling. Use these as the source of truth for "Quality" and "Structural Analysis" assessments to avoid repeating yourself or missing standard patterns.

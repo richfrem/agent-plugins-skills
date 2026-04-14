@@ -542,7 +542,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:43.095665Z",
-      "updatedAt": "2026-04-11T15:20:20.013524Z"
+      "updatedAt": "2026-04-14T16:27:44.829095Z"
     },
     "link-checker-link-checker-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1200,7 +1200,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-31T19:06:22.971138Z",
-      "updatedAt": "2026-04-11T15:20:20.013524Z"
+      "updatedAt": "2026-04-14T16:27:44.829095Z"
     },
     "synthesize-learnings": {
       "source": "https://github.com/richfrem/agent-plugins-skills",

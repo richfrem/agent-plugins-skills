@@ -13,8 +13,8 @@
 
 ## Gemini CLI (`gemini-cli`)
 
-- Simple/mechanical tasks → `gemini-2.5-flash-preview` (cheap, fast)
-- Complex tasks → `gemini-2.5-pro-preview`
+- Simple/mechanical tasks → `gemini-3.1-flash-lite-preview` (cheap, fast)
+- Complex tasks → `gemini-3.1-pro-preview`
 - Charged per token — standard model. Batching still reduces round-trips but is not as cost-critical as Copilot.
 
 ## Claude Sub-agents (`claude-subagents`)
@@ -39,13 +39,13 @@ When dispatching a task during Phase 3:
 ```
 Is the task mechanical / single-file / boilerplate?
   → copilot-cli:      gpt-5-mini (free)
-  → gemini-cli:       gemini-2.5-flash-preview (cheap)
+  → gemini-cli:       gemini-3.1-flash-lite-preview (cheap)
   → claude-subagents: model: "haiku" (cheapest)
   → direct:           do it inline
 
 Is the task complex / multi-file / requires reasoning?
   → copilot-cli:      claude-sonnet-4-6 (batch ALL related tasks into ONE dense request)
-  → gemini-cli:       gemini-2.5-pro-preview
+  → gemini-cli:       gemini-3.1-pro-preview
   → claude-subagents: model: "sonnet"
   → direct:           do it inline
 

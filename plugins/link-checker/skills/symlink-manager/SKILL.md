@@ -158,6 +158,7 @@ python ./scripts/symlink_manager.py restore
 - `references/troubleshooting.md` — Common error messages and fixes
 - `scripts/symlink_manager.py` — The cross-platform Python script
 - `.agent/rules/symlink-cross-platform.md` — Repository-wide symlink best practices and requirements
+- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on shared scripts, cross-plugin dependencies, symlinking patterns and loose coupling to avoid repeating yourself.
 
 Read `references/troubleshooting.md` when the user reports specific error messages.
 
