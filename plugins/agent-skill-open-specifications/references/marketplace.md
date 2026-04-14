@@ -31,7 +31,18 @@ Each entry in the `plugins` array defines how a specific plugin is fetched. You 
     - Git URL: `{"source": "url", "url": "https://gitlab.com/owner/repo.git", "ref": "main", "sha": "..."}`.
     - Git subdirectory (sparse clone): `{"source": "git-subdir", "url": "https://github.com/owner/repo", "path": "plugins/my-plugin", "ref": "main"}`. Field is `path` not `subdir`.
     - npm: `{"source": "npm", "package": "@scope/plugin", "version": "^1.0.0", "registry": "https://registry.npmjs.org"}`.
-- `strict` (default `true`): When `true`, `plugin.json` is authoritative and marketplace entry supplements it. When `false`, marketplace entry is the entire definition — plugin must NOT also declare components in `plugin.json` (conflict = load failure).
+- `strict` (default `true`, **always set explicitly**): Controls which definition is authoritative.
+
+    | Value | Requires | Behavior |
+    |-------|----------|----------|
+    | `true` *(default)* | Plugin **must** have its own `plugin.json` | `plugin.json` is authoritative; marketplace entry supplements |
+    | `false` | Plugin **must NOT** have a `plugin.json` declaring components | Marketplace entry IS the entire definition |
+
+    **Both mismatches silently prevent the plugin from loading:**
+    - `strict: true` (or omitted) + **no** `plugin.json` → load failure
+    - `strict: false` + plugin **has** a `plugin.json` with components → conflict = load failure
+
+    Always set `"strict": true` explicitly for monorepo plugins that have their own `plugin.json`. Never rely on the default.
 - `version`: **Warning** — do not set in both the marketplace entry and `plugin.json`. The `plugin.json` wins silently; marketplace version is ignored. For relative-path plugins, set version in marketplace entry. For all other sources, set in `plugin.json`.
 - `category`, `tags`: For organization and searchability.
 - `commands`, `agents`, `hooks`, `mcpServers`, `lspServers`: Custom path overrides.
