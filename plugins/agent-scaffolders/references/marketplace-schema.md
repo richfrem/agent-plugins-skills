@@ -33,9 +33,18 @@ A `.claude-plugin/marketplace.json` defines a catalog of distributable plugins.
 
 - **`name`**: Marketplace identifier (**must be kebab-case**).
 - **`owner`**: Object containing a `name` field describing the maintainer.
-- **`strict`**: Boolean (default `true`).
-    - `true`: The plugin's internal `plugin.json` is the authority.
-    - `false`: The marketplace entry is the entire definition, allowing overrides.
+- **`strict`**: Boolean (default `true`, **always set explicitly** — do not rely on the default).
+
+    | Value | Requires | Behavior |
+    |-------|----------|----------|
+    | `true` *(default)* | Plugin **must** have its own `plugin.json` | `plugin.json` is authoritative; marketplace entry supplements |
+    | `false` | Plugin **must NOT** have a `plugin.json` declaring components | Marketplace entry IS the entire definition |
+
+    **Both mismatches silently prevent the entire plugin from loading:**
+    - `strict: true` (or omitted) + **no** `plugin.json` → load failure (authority source missing)
+    - `strict: false` + plugin **has** a `plugin.json` with components → conflict = load failure
+
+    **Rule of thumb:** Monorepo plugins with their own `plugin.json` must always use `"strict": true`.
 - **`category`**: Groups plugins by category for UI filtering.
 - **`tags`**: Filtering support.
 

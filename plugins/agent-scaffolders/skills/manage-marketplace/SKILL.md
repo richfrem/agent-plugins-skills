@@ -71,9 +71,18 @@ Note: field is `path` (not `subdir`), and the key is `source` (not `type`). Also
 ```
 The `.git` suffix is optional — Azure DevOps and AWS CodeCommit URLs without it work fine.
 
-3.  Set **`strict`** mode:
-    - `strict: true` (default) — plugin's own `plugin.json` is authoritative; marketplace entry can supplement with additional components.
-    - `strict: false` — marketplace entry IS the entire definition; plugin must NOT also have a `plugin.json` declaring components (conflict = plugin fails to load).
+3.  Set **`strict`** mode (always set this explicitly — never rely on the default):
+
+    | Value | Requires | Behavior |
+    |-------|----------|----------|
+    | `true` *(default when omitted)* | Plugin **must** have its own `plugin.json` | `plugin.json` is authoritative; marketplace entry supplements it |
+    | `false` | Plugin **must NOT** have a `plugin.json` that declares components | Marketplace entry IS the entire definition |
+
+    **Both failure modes cause the entire plugin to silently fail to load:**
+    - `strict: true` (or omitted) + **no** `plugin.json` → load failure (authority source missing)
+    - `strict: false` + plugin **has** a `plugin.json` declaring components → conflict = load failure
+
+    > **Best practice for monorepo plugins:** Always set `"strict": true` explicitly and ensure your plugin directory has a `.claude-plugin/plugin.json`. Never omit `strict` and assume the default will work.
 
 4.  Optional: use `metadata.pluginRoot` to shorten relative source paths. Setting `"pluginRoot": "./plugins"` lets you write `"source": "formatter"` instead of `"source": "./plugins/formatter"`.
 
