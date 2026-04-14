@@ -76,6 +76,15 @@ python3 plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
 Then manually verify: `find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l`
 should return nothing (all script references should be real symlinks, not plain files).
 
+## Marketplace Compatibility Note
+
+When this plugin will be distributed via a `marketplace.json`, the marketplace entry defaults to `strict: true`, which **requires** the plugin to have its own `plugin.json`. A missing `plugin.json` silently prevents the entire plugin from loading.
+
+Always:
+1. Scaffold `.claude-plugin/plugin.json` inside the plugin directory (this skill does this by default)
+2. When adding the plugin to a marketplace entry, explicitly set `"strict": true` — never rely on the default
+3. See `manage-marketplace` skill for the correct marketplace entry format
+
 ## References
 
 - **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.
