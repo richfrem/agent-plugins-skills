@@ -277,6 +277,12 @@ grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
 
 ---
 
+---
+
+## Standards & References
+
+- **Architectural Decision Records (ADRs)** located at `references/*.md`. Always consult them (especially ADR 001-006) to verify if the plugin follows our standards for shared scripts, cross-plugin dependencies, symlinking patterns, and loose coupling. A plugin that violates these ADRs (e.g. duplicates shared scripts instead of symlinking) is considered structurally non-compliant.
+
 ## Standards Reference
 
 **.claude-plugin/plugin.json minimal valid:**

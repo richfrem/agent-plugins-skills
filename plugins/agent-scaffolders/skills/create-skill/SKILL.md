@@ -157,5 +157,6 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 
 - [`acceptance-criteria.md`](references/acceptance-criteria.md) — structural pass/fail criteria
 - [`fallback-tree.md`](fallback-tree.md) — error handling procedures
+- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.
 - **`~~skill-improvement`** *(~~eval-gate capability — see CONNECTORS.md)*: TDD methodology, RED scenario protocol, eval gate.
 - **`~~eval-gate`** *(~~eval-gate capability — see CONNECTORS.md)*: autoresearch eval loop for skill optimization.

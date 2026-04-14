@@ -18,7 +18,15 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
    plan component table (skills / commands / agents / hooks / MCP), ask clarifying
    questions per component, scaffold directory structure and `plugin.json`, implement
    each component using the appropriate sub-skill, validate, test, and document
-3. Report the created plugin directory and verification checklist results
+3. **plugin.json Binding Check (MANDATORY — do not skip):** After every skill, agent, command, and hook is scaffolded:
+   - Read `.claude-plugin/plugin.json`.
+   - Verify each generated skill directory appears in the `skills` list.
+   - Verify each agent file appears in the `agents` list.
+   - Verify each command file appears in the `commands` list.
+   - Verify each hook appears in the `hooks` list.
+   - Add any missing entries immediately — do NOT wait for the user to ask.
+   - Report: *"All components are registered in `plugin.json`. ✅"* or list additions made.
+4. Report the created plugin directory and verification checklist results
 
 ## Output
 
@@ -67,3 +75,7 @@ python3 plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
 ```
 Then manually verify: `find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l`
 should return nothing (all script references should be real symlinks, not plain files).
+
+## References
+
+- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.

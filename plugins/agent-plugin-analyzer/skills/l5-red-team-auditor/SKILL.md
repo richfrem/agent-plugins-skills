@@ -37,6 +37,7 @@ Before analyzing the target plugin, you MUST read these foundational rubrics:
 1. `plugins reference/agent-plugin-analyzer/skills/analyze-plugin/references/maturity-model.md`
 2. `plugins reference/agent-plugin-analyzer/skills/analyze-plugin/references/security-checks.md`
 3. `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md` (CRITICAL: Read the 39 architectural constraints)
+4. **Architectural Decision Records (ADRs 001-006)** in `references/*.md` (CRITICAL: Standards for shared scripts, cross-plugin dependencies, symlinking patterns and loose coupling)
 
 ## Escalation Trigger Taxonomy
 
