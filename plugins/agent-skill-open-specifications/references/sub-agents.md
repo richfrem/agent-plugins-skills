@@ -25,12 +25,34 @@ The frontmatter defines the metadata and bounds of the subagent:
 - `memory`: Persistent memory scope (`user`, `project`, `local`) forming a `$MEMORY_DIR/MEMORY.md` directory across sessions.
 - `hooks`: Component-scoped [Hooks](hooks.md) running explicitly for this agent's lifecycle (e.g., `PreToolUse`, `SubagentStop`).
 
+## Placement: Plugin agents vs local agents
+
+**Plugin agents** (in an installed plugin) live as **flat `.md` files** inside the plugin's `agents/` directory:
+```
+plugins/<plugin-name>/agents/<agent-name>.md   ✓ correct
+plugins/<plugin-name>/agents/<agent-name>/AGENT.md  ✗ wrong — no subdirectory
+```
+
+This is the **opposite** of how skills are structured. Skills require a subdirectory + `SKILL.md` filename (`skills/<name>/SKILL.md`), but agents are flat files.
+
+**Local project agents** live in `.claude/agents/<agent-name>.md` (also flat).
+
+Confirmed by inspecting Anthropic's official plugin examples: `feature-dev`, `code-simplifier`, `hookify`, `agent-sdk-dev` all use flat `.md` agent files.
+
+## tools field format
+
+The `tools` allowlist can be written as either a comma-separated string or a JSON array:
+```yaml
+tools: Read, Glob, Grep           # string form
+tools: ["Read", "Glob", "Grep"]   # array form (also valid)
+```
+
 ## Scope & Precedence
 When multiple subagents share the same name, they resolve in an ordered priority:
 1. **CLI Flag** (`--agents '{...json...}'`)
-2. **Project** (`.claude/skills/`)
-3. **User Local** (`~/.claude/skills/`)
-4. **Plugin** (located in the enabled plugin's `agents/` root).
+2. **Project** (`.claude/agents/`)
+3. **User Local** (`~/.claude/agents/`)
+4. **Plugin** (flat `.md` files in the enabled plugin's `agents/` directory).
 
 ## Foreground vs. Background execution
 - **Foreground:** Subagent blocks the main conversation, passing through interactive permission and `AskUserQuestion` prompts.

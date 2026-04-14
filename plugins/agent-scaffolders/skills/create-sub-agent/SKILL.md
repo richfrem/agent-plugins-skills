@@ -28,6 +28,14 @@ Agent `.md` file with complete YAML frontmatter (name, description with `<exampl
 model, maxTokens, color, permissions.allowedTools, permissions.deny) and a second-person
 system prompt targeting 500-3,000 characters.
 
+## Placement Rules
+
+**Plugin agents**: flat `.md` file — `plugins/<plugin-name>/agents/<agent-name>.md`
+- **No subdirectory.** Skills use `skills/<name>/SKILL.md` subdirectory format, but agents do NOT.
+- Confirmed against Anthropic official plugins (`feature-dev`, `code-simplifier`, `hookify`).
+
+**Local/project agents**: `.claude/agents/<agent-name>.md` (also flat, no subdirectory).
+
 ## Edge Cases
 
 - If `$ARGUMENTS` is empty: conduct the full Phase 1 design interview — do not pre-fill
