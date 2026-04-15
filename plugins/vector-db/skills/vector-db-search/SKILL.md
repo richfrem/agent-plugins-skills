@@ -6,83 +6,48 @@ allowed-tools: Bash, Read
 
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+This skill requires the `chromadb` and `langchain` packages defined in the plugin root.
 
 ---
+
 # Vector DB Search
 
-Semantic (meaning-based) search against the ChromaDB vector store.
-Use for Phase 2 of the 3-phase search protocol -- after the RLM Summary Ledger (Phase 1)
-returns insufficient results.
+Semantic (meaning-based) search against the ChromaDB vector store using a high-precision Parent-Child architecture. Use for Phase 2 of the 3-phase search protocol (RLM -> Vector -> Grep).
 
 ## Scripts
 
 | Script | Role |
 |:-------|:-----|
-| `scripts/query.py` | Semantic search -- CLI entry point |
-| `scripts/operations.py` | Core Parent-Child retrieval library |
-| `scripts/vector_config.py` | Profile config helper (`vector_profiles.json`) |
-| `scripts/vector_consistency_check.py` | Integrity validation |
+| `scripts/query.py` | Semantic search CLI -- recovers context-rich parent chunks. |
+| `scripts/operations.py` | Core domain logic for retrieval. |
+| `scripts/vector_config.py` | Unified profile-based configuration loader. |
 
-**Write operations** (ingest, cleanup) are handled by dedicated agents: `vdb-ingest`, `vdb-cleanup`.
+## Execution Mode
+
+This skill defaults to **In-Process mode** for zero-latency direct disk access. No background server is required. This ensures maximum stability in isolated project environments.
 
 ## When to Use
 
-- Phase 1 (RLM Summary Ledger) returned no match or insufficient detail
-- User asks "how does X work?" / "find code that does Y"
-- You need specific snippets, not just file-level summaries
+- Phase 1 (RLM Summary Ledger) returned no match or insufficient detail.
+- User asks "how does X work?" / "find code that does Y".
+- You need specific high-context snippets (Parent chunks) for reasoning.
 
 ## Execution Protocol
 
-### 1. Verify ChromaDB is running
+### 1. Identify Search Profile
+Verify available profiles in `.agent/learning/vector_profiles.json`. The default profile is usually `wiki`.
+
+### 2. Run Query
+Note: The `--profile` flag is mandatory to ensure the correct model and collection are loaded.
 
 ```bash
-curl -sf http://127.0.0.1:8110/api/v1/heartbeat
+python3 ./scripts/query.py "your natural language question" --profile wiki --limit 5
 ```
 
-If connection refused: run `vector-db-launch` skill (`.agents/skills/vector-db-launch/SKILL.md`).
-For first-time setup: run `vector-db-init` skill (`scripts/init.py`).
+Results include ranked parent chunks (2,000 chars) that provide broad context to the LLM for reasoning.
 
-### 2. Select Profile and Search
+## Rules
 
-Profiles are **project-defined** in `vector_profiles.json` (see `vector-db-init` skill). Any number can exist. Discover what's available:
-
-```bash
-cat .agent/learning/vector_profiles.json
-```
-
-Common default is `knowledge` -- your project may define more (e.g. separate profiles for code vs docs). When topic is ambiguous, search all profiles.
-
-```bash
-python3 ./scripts/query.py \
-  "your natural language question" --profile knowledge --limit 5
-```
-
-Results include ranked parent chunks with RLM Super-RAG context pre-injected.
-
-
-## Architectural Constraints (Electric Fence)
-
-### NEVER -- direct database reads
-Do **not** `cat`, `strings`, or `sqlite3` the `.vector_data/` directory.
-Binary blobs will corrupt your context window and the retrieval pipeline.
-
-### ALWAYS -- use the API
-All access goes through `query.py`. No exceptions.
-
-### Source Transparency Declaration (L5 Pattern)
-When search returns empty results, explicitly state:
-```
-> Not Found in Vector Store
-> Searched profile: [profile_name] for "[query]"
-> Profile covers: [scope]
-> Not searched: [out-of-scope areas]
-```
+- **Profile Sovereignty**: Always pass `--profile` to ensure the correct semantic space is searched.
+- **API Integrity**: NEVER attempt to read the database SQLite or parquet files directly. Always use `query.py`.
+- **Transparency**: When search returns empty results, state which profile and scope were searched.

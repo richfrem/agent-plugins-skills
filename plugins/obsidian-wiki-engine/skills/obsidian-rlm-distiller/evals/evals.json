@@ -1,0 +1,9 @@
+[
+  {"prompt": "Generate RLM summaries for all stale wiki nodes using the cheapest available model", "should_trigger": true},
+  {"prompt": "Distill my wiki source files into summary.md and bullets.md", "should_trigger": true},
+  {"prompt": "Run the distillation pipeline using Copilot gpt-5-mini on the arch-docs source", "should_trigger": true},
+  {"prompt": "Refresh all missing RLM summaries in the wiki", "should_trigger": true},
+  {"prompt": "Build wiki nodes from the raw source folders", "should_trigger": false},
+  {"prompt": "Search the wiki for a concept about API design", "should_trigger": false},
+  {"prompt": "Distill repo files using Ollama", "should_trigger": false}
+]

@@ -7,6 +7,8 @@ Purpose:
     Compares the Vector DB index against the live filesystem (based on profiles)
     and reports coverage gaps. Produces CSV and text reports of missing files.
 
+Layer: Retrieve / Curate
+
 Usage:
     python audit_vector.py --profile wiki --csv ./missing_vector.csv --report ./vector_audit.txt
 """
@@ -16,12 +18,11 @@ import argparse
 import csv
 from pathlib import Path
 from datetime import datetime
-from typing import Set
+from typing import Set, List, Dict, Any, Optional
 
-# ============================================================
-# PATHS
-# ============================================================
+# Robustly discover the Project Root
 def _find_project_root(start_path: Path) -> Path:
+    """Walks up from start_path to find the first directory containing .git."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -31,6 +32,7 @@ def _find_project_root(start_path: Path) -> Path:
 PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent
 
+# Ensure local imports work correctly
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
@@ -41,23 +43,28 @@ except ImportError as e:
     print(f"[ERROR] Could not import vector dependencies from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
-def run_audit(profile_name: str, csv_path: str = None, report_path: str = None):
+
+def run_audit(profile_name: str, csv_path: Optional[str] = None, report_path: Optional[str] = None) -> None:
+    """
+    Performs the actual comparison between manifest and vector store.
+
+    Args:
+        profile_name: The Vector profile to audit.
+        csv_path: Optional path to save CSV of missing files.
+        report_path: Optional path to save a detailed summary report.
+    """
     try:
         config = VectorConfig(profile_name=profile_name, project_root=str(PROJECT_ROOT))
-    except SystemExit:
-        return
-    except Exception as e:
+    except (SystemExit, Exception) as e:
         print(f"[ERROR] Failed to load profile '{profile_name}': {e}")
         return
 
     print(f"[AUDIT] Starting Vector DB Audit for profile: {profile_name}")
-    print(f"   Manifest: {config.manifest_path}")
     
     # 1. Collect all expected files from the manifest
     manifest = config.load_manifest()
     fs_files = manifest.get_files()
     total_expected = len(fs_files)
-    
     print(f"   Searching for {total_expected} manifest files in Vector DB...")
 
     # 2. Check Vector DB status
@@ -67,12 +74,18 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None):
         parent_collection=config.parent_collection,
         chroma_host=config.chroma_host,
         chroma_port=config.chroma_port,
-        chroma_data_path=config.chroma_data_path
+        chroma_data_path=config.chroma_data_path,
+        embedding_model=config.embedding_model,
+        parent_chunk_size=config.parent_chunk_size,
+        parent_chunk_overlap=config.parent_chunk_overlap,
+        child_chunk_size=config.child_chunk_size,
+        child_chunk_overlap=config.child_chunk_overlap
     )
 
     # Get all sources currently in the child collection
     try:
-        all_data = cortex.chroma_client.get_collection(name=config.child_collection_name).get(include=['metadatas'])
+        collection_obj = cortex.chroma_client.get_collection(name=config.child_collection)
+        all_data = collection_obj.get(include=['metadatas'])
         indexed_sources: Set[str] = set()
         if all_data and 'metadatas' in all_data:
             for meta in all_data['metadatas']:
@@ -82,11 +95,10 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None):
         print(f"[ERROR] Failed to query ChromaDB: {e}")
         return
 
-    missing = []
+    missing: List[str] = []
     found_count = 0
     
     for rel_path in fs_files:
-        # Normalize to forward slashes for matching
         clean_path = str(rel_path).replace("\\", "/")
         if clean_path in indexed_sources:
             found_count += 1
@@ -103,7 +115,7 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None):
         f"Generated: {datetime.now().isoformat()}",
         f"Profile:   {profile_name}",
         f"Root:      {PROJECT_ROOT}",
-        f"Collection: {config.child_collection_name}",
+        f"Collection: {config.child_collection}",
         "",
         f"Total Files in Manifest:  {total_expected}",
         f"Indexed (in Vector DB):   {found_count}",
@@ -133,7 +145,9 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None):
                 writer.writerow([m])
         print(f"[OK] Missing files list saved to: {cp}")
 
-def main():
+
+def main() -> None:
+    """Main entry point for the audit CLI."""
     parser = argparse.ArgumentParser(description="Vector DB Audit - Compare manifest to ChromaDB collection")
     parser.add_argument("--profile", required=False, help="Profile name from vector_profiles.json")
     parser.add_argument("--csv", help="Path to export missing files CSV")
@@ -141,6 +155,7 @@ def main():
     
     args = parser.parse_args()
     run_audit(args.profile, args.csv, args.report)
+
 
 if __name__ == "__main__":
     main()

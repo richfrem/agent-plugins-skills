@@ -17,15 +17,7 @@ allowed-tools: Bash, Read, Write
 
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+This skill requires the `chromadb` and `langchain` packages defined in the plugin root.
 
 ---
 
@@ -33,67 +25,49 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 ## Role
 
-You ingest (index) repository files into the ChromaDB vector store so they can be semantically
-searched. You build or update the parent-child chunk structure that `query.py` searches against.
+You ingest (index) repository files into the ChromaDB vector store so they can be semantically searched. You build or update the parent-child chunk structure that `query.py` searches against.
 
-**This is a write operation.** The vector store is the backing index for Phase 2 search.
+**High-Performance Mode:** This skill uses a configurable batch processing engine (default 1,000 files) defined in `.agent/learning/vector_profiles.json`.
 
 ## Prerequisites
 
 ### 1. First-time setup
-If `chromadb` is not installed or `vector_profiles.json` is missing, run the init skill first:
+If `vector_profiles.json` is missing, run the init skill first:
 ```bash
 python3 ./scripts/init.py
 ```
 
-### 2. Verify server is running
-Use the `vector-db-launch` skill if the server is not already up:
-```bash
-# Check heartbeat
-curl -sf http://127.0.0.1:8110/api/v1/heartbeat
-
-# If not running, start it:
-chroma run --host 127.0.0.1 --port 8110 --path .vector_data &
-```
-See `SKILL.md` for full launch instructions.
+### 2. Execution Mode
+This plugin defaults to **In-Process mode** for zero-latency direct disk access. No background server is required unless explicitly configured in the profile.
 
 ## Execution Protocol
 
 ### Full ingest (first time or full rebuild)
+Note: The `--profile` flag is mandatory to load the correct manifest and batch settings.
 
 ```bash
-python3 ./scripts/ingest.py \
-  --profile knowledge --full
+python3 ./scripts/ingest.py --profile wiki --full
 ```
 
 ### Incremental ingest (only new/changed files since N hours)
-
 ```bash
-python3 ./scripts/ingest.py \
-  --profile knowledge --since 24
+python3 ./scripts/ingest.py --profile wiki --since 24
 ```
 
-### Code files (uses AST parsing shim)
-
+### Single File/Folder Ingest
 ```bash
-python3 ./scripts/ingest.py \
-  --profile knowledge --full --code
+python3 ./scripts/ingest.py --profile wiki --file path/to/file.md
+python3 ./scripts/ingest.py --profile wiki --folder path/to/folder
 ```
-
-`ingest_code_shim.py` is invoked automatically for `.py` and `.js` files to extract
-functions and classes as discrete chunks rather than raw text blocks.
 
 ## After Ingesting
 
-Run a quick smoke test to confirm the new content is retrievable:
-
+Run a quick semantic search to confirm the new content is retrievable:
 ```bash
-python3 ./scripts/query.py \
-  "describe what was just ingested" --profile knowledge --limit 3
+python3 ./scripts/query.py "search query" --profile wiki --limit 3
 ```
 
 ## Rules
-
-- **Never write to `.vector_data/` directly** -- always use `ingest.py`.
-- **Never read `.sqlite3` files with `cat` or `sqlite3`** -- will corrupt context.
-- **Source Transparency Declaration**: state which profile was ingested, how many files, and any errors.
+- **Profile Sovereignty**: Always pass `--profile` to ensure the correct batch size and manifest are used.
+- **In-Process Reliability**: Ensure no other process is holding a lock on the database folder during ingestion.
+- **Source Transparency**: State which profile was ingested, how many files, and any errors encountered.

@@ -158,6 +158,82 @@ backlinks pointing into machine-generated text, not human-authored knowledge.
 
 ---
 
+---
+
+## Phase 5: Wiki Engine Initialization (Guided Discovery Sub-Agent)
+
+After the vault is initialized, you can optionally initialize the **LLM Wiki
+Engine** layer. This creates a `wiki_sources.json` manifest — the multi-source
+registry that tells the wiki engine which raw content folders to index.
+
+> This is the wiki equivalent of `rlm_profiles.json` in the RLM system.
+> Each named entry in `wiki_sources.json` is a raw content directory that
+> will be parsed into Karpathy-style wiki nodes. **No files are moved.**
+
+### 5.1 Run the Guided Discovery Sub-Agent
+
+The sub-agent interviews you interactively to register your raw content directories:
+
+```bash
+/wiki-init
+```
+
+Or directly:
+```bash
+python ./scripts/raw_manifest.py --init --wiki-root /path/to/wiki-root
+```
+
+### 5.2 What the Sub-Agent Asks
+
+For each source folder you want to index, it asks:
+
+| Question | Example Answer |
+|:---------|:---------------|
+| Wiki root path? | `/path/to/vault/wiki-root` |
+| Source folder path? | `/path/to/vault/notes` |
+| Label for this source? | `daily-notes` |
+| File extensions? | `.md` (default) |
+| Subdirectories to exclude? | `_archive, *.tmp` |
+| Add another source? | yes/no |
+
+### 5.3 Output: `wiki_sources.json`
+
+```json
+{
+  "namespace": "my-project",
+  "wiki_root": "/path/to/wiki-root",
+  "sources": {
+    "daily-notes": {
+      "path": "/path/to/vault/notes",
+      "label": "daily-notes",
+      "extensions": [".md"],
+      "excludes": ["_archive", "*.tmp"],
+      "description": "Daily journal and quick capture notes"
+    },
+    "arch-docs": {
+      "path": "/path/to/docs/architecture",
+      "label": "arch-docs",
+      "extensions": [".md"],
+      "excludes": [],
+      "description": "Architecture decision records"
+    }
+  },
+  "global_excludes": ["_archive", "*.tmp", "__pycache__", ".git"]
+}
+```
+
+### 5.4 Next Steps After Discovery
+
+```bash
+/wiki-ingest    ← parse all registered sources, build wiki nodes
+/wiki-distill   ← generate RLM summaries (cheapest available LLM CLI)
+/wiki-query     ← start querying the wiki
+```
+
+> **Requires:** `rlm-factory` plugin installed. See `dependencies.md`.
+
+---
+
 ## Portability Note
 
 This skill is **project-agnostic**. It works on any Git repository with markdown
