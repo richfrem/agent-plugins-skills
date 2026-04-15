@@ -8,6 +8,12 @@ allowed-tools: Bash, Read, Write
 
 This skill requires **Python 3.8+** and standard library for initialization. Performance operations require `chromadb` and `langchain` as defined in the plugin root requirements.
 
+**To install this skill's dependencies:**
+```bash
+python -m piptools compile requirements.in --output-file requirements.txt
+pip install -r requirements.txt
+```
+
 ---
 
 # Vector DB Initialization
