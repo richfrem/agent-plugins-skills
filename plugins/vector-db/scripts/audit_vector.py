@@ -71,8 +71,6 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None):
     )
 
     # Get all sources currently in the child collection
-    # We fetch ALL metadatas. This can be large but for ~5k files/chunks it should be fine.
-    # To be safer, we only get the 'source' field if possible, but get() returns all.
     try:
         all_data = cortex.chroma_client.get_collection(name=config.child_collection_name).get(include=['metadatas'])
         indexed_sources: Set[str] = set()
