@@ -122,7 +122,7 @@ def main() -> None:
             
             md_file.write_text("\n".join(lines), encoding="utf-8")
         
-        print(f"[OK] Successfully injected summary for {rel_path} into {config.cache_path.name}")
+        print(f"[OK] Successfully injected summary for {rel_path} into {cache_dir.name}")
 
     except Exception as e:
         print(f"[ERROR] Fatal error during injection: {e}")
