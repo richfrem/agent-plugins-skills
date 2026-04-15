@@ -99,9 +99,9 @@ nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/nu
 
 ---
 
-## 🔄 How to Update Gemini CLI
-- **Via NPM (Global)**: Run `npm install -g @google/gemini-cli@latest`.
-- **Via Brew (macOS/Linux)**: Run `brew upgrade gemini-cli`.
+## 🔄 How to Manage Gemini CLI
+- **Update CLI**: Run `npm install -g @google/gemini-cli@latest`.
+- **Install Plugin Suite**: Run `gemini extensions install https://github.com/richfrem/agent-plugins-skills`.
 - **Using NPX**: Use `npx @google/gemini-cli` to automatically pull the latest version.
 
 ---
