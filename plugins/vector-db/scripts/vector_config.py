@@ -178,6 +178,7 @@ class VectorConfig:
         # Operational parameters (Self-Configurable)
         self.batch_size = int(profile.get("batch_size", 100))
         self.embedding_model = profile.get("embedding_model", "nomic-ai/nomic-embed-text-v1.5")
+        self.device = profile.get("device", "cpu")
         
         # Chunking parameters
         self.parent_chunk_size = int(profile.get("parent_chunk_size", 2000))

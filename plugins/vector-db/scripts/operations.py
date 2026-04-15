@@ -66,7 +66,8 @@ class VectorDBOperations:
         parent_chunk_size: int = 2000,
         parent_chunk_overlap: int = 200,
         child_chunk_size: int = 400,
-        child_chunk_overlap: int = 50
+        child_chunk_overlap: int = 50,
+        device: str = "cpu"
     ) -> None:
         """
         Initializes the Vector DB operation environment.
@@ -83,6 +84,7 @@ class VectorDBOperations:
             parent_chunk_overlap: Overlap for parent chunks.
             child_chunk_size: Size of child search chunks.
             child_chunk_overlap: Overlap for child chunks.
+            device: Hardware device to use ('cpu' or 'cuda').
         """
         self.project_root = Path(project_root)
         self.chroma_host = chroma_host
@@ -94,7 +96,7 @@ class VectorDBOperations:
         self.chroma_client = self._init_chroma_client()
         self.embedding_model = HuggingFaceEmbeddings(
             model_name=embedding_model,
-            model_kwargs={'device': 'cpu', 'trust_remote_code': True},
+            model_kwargs={'device': device, 'trust_remote_code': True},
             encode_kwargs={'normalize_embeddings': True}
         )
         

@@ -100,6 +100,7 @@ def configure_profile() -> None:
     profile["parent_chunk_overlap"] = profile.get("parent_chunk_overlap", 200)
     profile["child_chunk_size"] = profile.get("child_chunk_size", 400)
     profile["child_chunk_overlap"] = profile.get("child_chunk_overlap", 50)
+    profile["device"] = profile.get("device", "cpu")
 
     # Save Profile
     profiles_data["profiles"][KNOWLEDGE_PROFILE] = profile

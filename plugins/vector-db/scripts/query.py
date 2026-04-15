@@ -60,7 +60,8 @@ def main() -> None:
         parent_chunk_size=vec_config.parent_chunk_size,
         parent_chunk_overlap=vec_config.parent_chunk_overlap,
         child_chunk_size=vec_config.child_chunk_size,
-        child_chunk_overlap=vec_config.child_chunk_overlap
+        child_chunk_overlap=vec_config.child_chunk_overlap,
+        device=vec_config.device
     )
     
     print(f"\n[QUERY] Searching Vector Index for: '{args.query}'\n")
