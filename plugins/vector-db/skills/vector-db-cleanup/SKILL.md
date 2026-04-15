@@ -17,15 +17,7 @@ allowed-tools: Bash, Read, Write
 
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+This skill requires the `chromadb` and `langchain` packages defined in the plugin root.
 
 ---
 
@@ -33,64 +25,41 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 ## Role
 
-You remove stale and orphaned chunks from the ChromaDB vector store. A chunk is stale when
-its source file no longer exists on disk. Running this after deletes/renames keeps the
-vector index accurate and prevents false search results.
+You remove stale and orphaned chunks from the ChromaDB vector store. A chunk is stale when its source file no longer exists on disk. Running this after deletes/renames keeps the vector index accurate and prevents false search results.
 
-**This is a write (delete) operation.** Always dry-run first.
+**This is a write (delete) operation.**
 
 ## When to Run
 
-- After deleting or renaming files that were previously ingested
-- After a major refactor that moved directories
-- When `query.py` returns results pointing to non-existent files
-- Periodically as housekeeping
+- After deleting or renaming files that were previously ingested.
+- After a major refactor that moved directories.
+- When `query.py` returns results pointing to non-existent files.
+- Periodically as housekeeping to maintain index health.
 
-## Prerequisites
+## Execution Mode
 
-### Verify server is running
-If not already up, run the `vector-db-launch` skill first.
-For first-time setup (dependencies + profile config): run the `vector-db-init` skill.
-
-```bash
-curl -sf http://127.0.0.1:8110/api/v1/heartbeat
-```
+This skill defaults to **In-Process mode** for zero-latency direct disk access. No background server is required.
 
 ## Execution Protocol
 
-### 1. Dry run -- show what will be removed
+### 1. Identify Search Profile
+Verify available profiles in `.agent/learning/vector_profiles.json`. The default profile is usually `wiki`.
+
+### 2. Run Cleanup
+Note: The `--profile` flag is mandatory to ensure the correct collection and disk paths are loaded.
 
 ```bash
-python3 ./scripts/cleanup.py \
-  --profile wiki--dry-run
+python3 ./scripts/cleanup.py --profile wiki
 ```
 
-Report: "Found N orphaned chunks from X deleted files: [list of paths]"
-
-### 2. Apply -- only after confirming with user
-
+### 3. Verify Store Integrity (Optional)
+Run the consistency check to verify that remaining facts are still supported.
 ```bash
-python3 ./scripts/cleanup.py \
-  --profile wiki--apply
-```
-
-### 3. Verify store integrity (optional)
-
-```bash
-python3 ./scripts/vector_consistency_check.py \
-  --profile knowledge
-```
-
-### 4. Smoke test search still works
-
-```bash
-python3 ./scripts/query.py \
-  "test query" --profile wiki--limit 3
+python3 ./scripts/vector_consistency_check.py --profile wiki --topic .agent/learning/
 ```
 
 ## Rules
 
-- **Always dry-run first.** Never apply without showing the user what will be deleted.
-- **Never delete from `.vector_data/` directly** -- always use `cleanup.py`.
-- **Never read `.sqlite3` files with raw shell tools** -- will corrupt context.
-- **Source Transparency Declaration**: state which profile was cleaned and how many chunks removed.
+- **Profile Sovereignty**: Always pass `--profile` to ensure the correct semantic space is pruned.
+- **API Integrity**: NEVER attempt to delete chunks from the database SQLite files directly. Always use `cleanup.py`.
+- **Transparency**: State which profile was cleaned and how many chunks were removed.
