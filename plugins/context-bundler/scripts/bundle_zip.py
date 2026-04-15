@@ -77,8 +77,17 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
     print("🔍 Scanning directories and estimating tokens...")
 
     for entry in files:
-        path_str = entry.get('path', '')
+        path_str = entry.get('path', '').strip()
         note = entry.get('note', '')
+
+        # Guard: skip entries with empty/blank paths — likely a manifest key typo
+        # (e.g. "path:" instead of "path"). Without this, project_root / '' resolves
+        # to the project root dir and rglob crawls the entire workspace.
+        if not path_str:
+            print(f"⚠️  Skipping manifest entry with empty 'path' — possible key typo: {entry}")
+            resolved_files.append({'path': '(empty path — skipped)', 'note': str(entry), 'missing': True})
+            continue
+
         actual_path = project_root / path_str
 
         if actual_path.is_dir():
