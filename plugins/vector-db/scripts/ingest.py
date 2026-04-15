@@ -6,12 +6,6 @@ ingest.py (CLI)
 Purpose:
     Command-line interface for the Vector DB ingestion pipeline.
     Parses the project manifest and feeds documentation/code into the Vector backend.
-
-Workflow:
-    1. Resolve Project Root.
-    2. Load Config from JSON Profile (VectorConfig).
-    3. Initialize VectorDBOperations.
-    4. Execute Ingestion (Since time or Full reset).
 """
 
 import sys
@@ -22,7 +16,6 @@ from pathlib import Path
 from langchain_core.documents import Document
 
 # Project paths
-# File is at: ./scripts/ingest.py
 # ============================================================
 # CONFIG / PATHS
 # ============================================================
@@ -64,7 +57,7 @@ except ImportError:
 
 def main():
     parser = argparse.ArgumentParser(description="Ingest documentation into Vector DB")
-    parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., knowledge)")
+    parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., wiki)")
     parser.add_argument("--full", action="store_true", help="Force full re-indexing (wipes database)")
     parser.add_argument("--since", type=int, help="Only ingest files modified in last N hours")
     parser.add_argument("--file", type=str, help="Ingest a specific file relative to root")
@@ -81,12 +74,14 @@ def main():
     HAS_RLM = False
     if HAS_RLM_IMPORTS:
         try:
-            rlm_config = RLMConfig(profile_name=args.profile, project_root=PROJECT_ROOT)
+            rlm_config = RLMConfig(profile_name=vec_config.profile_name, project_root=PROJECT_ROOT)
             rlm_cache = load_cache(rlm_config.cache_path)
             HAS_RLM = True
-            print(f"🧠 RLM Integration Active: Loaded cache for Super-RAG injection.")
+            print(f"[RLM] Integration Active: Loaded cache for Super-RAG injection.")
         except SystemExit:
-            print(f"⚠️ No paired RLM profile for '{args.profile}'. Proceeding without Super-RAG.")
+            print(f"[WARN] No paired RLM profile for '{vec_config.profile_name}'. Proceeding without Super-RAG.")
+        except Exception as e:
+            print(f"[WARN] RLM error: {e}")
     
     # 2. Initialize operations module with profile config
     cortex = VectorDBOperations(
@@ -99,7 +94,7 @@ def main():
     )
     
     if args.full:
-        print("💥 Wipe and Re-index requested.")
+        print("[PURGE] Wipe and Re-index requested.")
         cortex.purge()
         target_files = manifest.get_files()
     elif args.file:
@@ -111,17 +106,17 @@ def main():
         if args.since:
             cutoff = datetime.now() - timedelta(hours=args.since)
             target_files = manifest.get_files_modified_since(cutoff)
-            print(f"🕒 Incremental ingest: Checking files modified since {cutoff.strftime('%Y-%m-%d %H:%M')}")
+            print(f"[TIME] Incremental ingest: Checking files modified since {cutoff.strftime('%Y-%m-%d %H:%M')}")
         else:
-            # Default to checking everything but only updating if file hash changed
+            # Default to checking everything
             target_files = manifest.get_files()
-            print("🔄 Smart Sync: Checking all files for changes...")
+            print("[SYNC] Smart Sync: Checking all files for changes...")
 
     if not target_files:
-        print("✅ No files found to ingest.")
+        print("[OK] No files found to ingest.")
         return
 
-    print(f"🚀 Processing {len(target_files)} files...")
+    print(f"[RUN] Processing {len(target_files)} files...")
     
     stats = {"success": 0, "failed": 0, "skipped": 0, "chunks": 0}
     
@@ -142,7 +137,7 @@ def main():
             
             # Simple metadata
             metadata = {
-                "source": rel_path,
+                "source": rel_path.replace("\\", "/"),
                 "type": full_path.suffix.lstrip('.'),
                 "last_modified": os.path.getmtime(full_path),
                 "has_rlm_context": False
@@ -150,7 +145,7 @@ def main():
             
             # Super-RAG Injection
             if HAS_RLM and rlm_cache:
-                rlm_entry = rlm_cache.get(rel_path)
+                rlm_entry = rlm_cache.get(rel_path.replace("\\", "/"))
                 if rlm_entry and "summary" in rlm_entry:
                     summary_text = rlm_entry["summary"]
                     content = f"--- RLM SUPER-RAG CONTEXT ---\n{summary_text}\n---------------------------\n\n{content}"
@@ -163,14 +158,14 @@ def main():
             stats["success"] += 1
             stats["chunks"] += res.get("chunks", 0)
             
-            if i % 50 == 0:
+            if i % 100 == 0:
                 print(f"   ... Progress: {i}/{len(target_files)} (Chunks: {stats['chunks']})")
                 
         except Exception as e:
-            print(f"❌ Error ingesting {rel_path}: {e}")
+            print(f"[ERROR] Ingesting {rel_path}: {e}")
             stats["failed"] += 1
 
-    print(f"\n✨ Ingestion Finished:")
+    print(f"\n[DONE] Ingestion Finished:")
     print(f"   - Success: {stats['success']}")
     print(f"   - Failed:  {stats['failed']}")
     print(f"   - Skipped: {stats['skipped']}")

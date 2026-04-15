@@ -13,7 +13,9 @@ import argparse
 from pathlib import Path
 
 # Project paths
-# File is at: plugins/vector-db/scripts/query.py
+# ============================================================
+# CONFIG / PATHS
+# ============================================================
 def _find_project_root(start_path: Path) -> Path:
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
@@ -35,7 +37,7 @@ def main():
     parser = argparse.ArgumentParser(description="Query the Vector DB")
     parser.add_argument("query", type=str, help="The semantic search query string")
     parser.add_argument("--limit", type=int, default=5, help="Maximum number of parent documents to return")
-    parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., knowledge)")
+    parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., wiki)")
     
     args = parser.parse_args()
     
@@ -51,11 +53,11 @@ def main():
         chroma_data_path=vec_config.chroma_data_path
     )
     
-    print(f"\n🔍 Searching Vector Index for: '{args.query}'\n")
+    print(f"\n[QUERY] Searching Vector Index for: '{args.query}'\n")
     results = cortex.query(args.query, max_results=args.limit)
     
     if not results:
-        print("⚠️ No matching context found.")
+        print("[WARN] No matching context found.")
         return
         
     for i, r in enumerate(results, 1):
@@ -65,11 +67,11 @@ def main():
         content = r.get("content", "")
         
         print(f"\n{'='*60}")
-        print(f"🏆 Result {i} (Score: {score:.4f})")
-        print(f"📄 Source: {source}")
-        print(f"🧩 Parent Chunk: {parent_id}")
+        print(f"[RESULT {i}] (Score: {score:.4f})")
+        print(f"Source: {source}")
+        print(f"Chunk ID: {parent_id}")
         if r.get("has_rlm_context"):
-            print(f"🧠 RLM Summary Super-RAG Applied")
+            print(f"[RLM] Super-RAG Context Applied")
         print(f"{'-'*60}")
         
         # Display an excerpt to prevent terminal flooding
