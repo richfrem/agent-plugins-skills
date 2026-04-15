@@ -1,50 +1,45 @@
 ---
 name: vector-db-init
-description: Interactively initializes the Vector DB plugin. Installs the required pip dependencies (chromadb, langchain wrappers) and configures the vector_profiles.json for Native Python Server connections. Run this before attempting to use the vector-db-search or vector-db-launch skills.
+description: Interactively initializes the Vector DB plugin. Scaffolds the configurable vector_profiles.json for high-performance In-Process or Native Server connections. Mandatory first step before ingestion or search.
 allowed-tools: Bash, Read, Write
 ---
 
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
-
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+This skill requires **Python 3.8+** and standard library for initialization. Performance operations require `chromadb` and `langchain` as defined in the plugin root requirements.
 
 ---
+
 # Vector DB Initialization
 
-The `vector-db-init` skill is an automated setup routine that prepares the environment for the Vector DBMS. 
+The `vector-db-init` skill is an automated setup routine that prepares the environment for the Vector database. 
 
-## Examples
+## Profile Configuration
 
-Real-world examples of each config file are in `references/examples/`:
+This skill scaffolds a dynamic registry in `.agent/learning/vector_profiles.json`. All operational settings (batch size, models, chunking) are centralized here to avoid hardcoding in library scripts.
 
-| File | Purpose |
-|:-----|:--------|
-| [`vector_profiles.json`](assets/vector_profiles.json) | Profile registry -- defines named vector collections and ChromaDB connection |
-| [`vector_knowledge_manifest.json`](assets/vector_knowledge_manifest.json) | Manifest -- what folders/globs to include/exclude in the vector index |
+| Parameter | Default | Purpose |
+|:-----|:--------|:--------|
+| `chroma_host` | `""` | Empty for In-Process mode (Direct Disk); IP for Server mode. |
+| `batch_size` | `1000` | Ingestion speed (number of files processed before embedding). |
+| `embedding_model` | `nomic-ai/nomic-embed-text-v1.5` | The semantic model used for indexing. |
+| `chunk_size` | `2000` (Parent) / `400` (Child) | The granularity of text splitting. |
 
 ## When to Use This
 - When a user first installs the `vector-db` plugin.
-- If the user complains that `chromadb` is not installed or `ModuleNotFoundError` is thrown.
 - If the Vector DB profile is missing from `.agent/learning/vector_profiles.json`.
+- If you need to re-scaffold a clean configuration schema after a plugin upgrade.
 
 ## Instructions for Agent
 
 1. **Run the Initialization Script:**
-   You must execute the interactive initialization script located at `scripts/init.py`.
+   You must execute the configuration script located at `scripts/init.py`.
    ```bash
    python3 ./scripts/init.py
    ```
 
 2. **Wait for Completion:** 
-   The script will automatically run `pip install`, then prompt the user to select their deployment architecture (In-Process or Native Server). All settings are written to `.agent/learning/vector_profiles.json`.
+   The script will scaffold `.agent/learning/vector_profiles.json` and a default manifest. It defaults to **In-Process mode** for zero-dependency performance.
 
 3. **Verify:**
-   After the script completes successfully, inform the user that their environment is ready, and they can now run the `vector-db-launch` skill to start the background server (if they chose Option 2).
+   Inform the user their environment is ready. They can now adjust batch sizes or models directly in the JSON profile before running `vector-db-ingest`.

@@ -62,7 +62,7 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 
 ```bash
 python3 ./scripts/cleanup.py \
-  --profile knowledge --dry-run
+  --profile wiki--dry-run
 ```
 
 Report: "Found N orphaned chunks from X deleted files: [list of paths]"
@@ -71,7 +71,7 @@ Report: "Found N orphaned chunks from X deleted files: [list of paths]"
 
 ```bash
 python3 ./scripts/cleanup.py \
-  --profile knowledge --apply
+  --profile wiki--apply
 ```
 
 ### 3. Verify store integrity (optional)
@@ -85,7 +85,7 @@ python3 ./scripts/vector_consistency_check.py \
 
 ```bash
 python3 ./scripts/query.py \
-  "test query" --profile knowledge --limit 3
+  "test query" --profile wiki--limit 3
 ```
 
 ## Rules

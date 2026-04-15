@@ -1,0 +1,10 @@
+[
+  {"prompt": "Search the wiki for anything about authentication and give me a quick summary", "should_trigger": true},
+  {"prompt": "What does the wiki say about the Oracle Forms module architecture?", "should_trigger": true},
+  {"prompt": "Look up the API design concept in the LLM wiki", "should_trigger": true},
+  {"prompt": "List all indexed concepts in the wiki", "should_trigger": true},
+  {"prompt": "Give me the full wiki node for the authentication flow concept", "should_trigger": true},
+  {"prompt": "Rebuild the wiki from the raw source folders", "should_trigger": false},
+  {"prompt": "Create a new canvas file for the component architecture", "should_trigger": false},
+  {"prompt": "Distill these files into RLM summaries", "should_trigger": false}
+]

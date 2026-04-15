@@ -1,0 +1,28 @@
+{
+  "namespace": "my-project",
+  "wiki_root": "/Users/me/vaults/my-vault/wiki-root",
+  "sources": {
+    "daily-notes": {
+      "path": "/Users/me/vaults/my-vault/notes",
+      "label": "daily-notes",
+      "extensions": [".md"],
+      "excludes": ["_archive", "*.tmp"],
+      "description": "Daily journal and quick-capture notes"
+    },
+    "arch-docs": {
+      "path": "/Users/me/docs/architecture",
+      "label": "arch-docs",
+      "extensions": [".md", ".txt"],
+      "excludes": [],
+      "description": "Architecture decision records and design docs"
+    },
+    "research": {
+      "path": "/Users/me/research",
+      "label": "research",
+      "extensions": [".md"],
+      "excludes": ["_drafts"],
+      "description": "Research notes and literature reviews"
+    }
+  },
+  "global_excludes": ["_archive", "*.tmp", "__pycache__", ".git", "node_modules"]
+}

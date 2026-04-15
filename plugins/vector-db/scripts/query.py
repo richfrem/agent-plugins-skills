@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 """
-query.py (CLI)
+query.py
 =====================================
 
 Purpose:
     Command-line interface for semantic search over the Vector DB index.
     Outputs results retrieved from the underlying Parent Store via the Child search match.
+
+Layer: Retrieve
+
+Usage:
+    python query.py "search text" --profile wiki
 """
 
 import sys
 import argparse
 from pathlib import Path
+from typing import List, Dict, Any, Optional
 
-# Project paths
-# ============================================================
-# CONFIG / PATHS
-# ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Walks up from start_path to find the first directory containing .git."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -33,7 +36,8 @@ from vector_config import VectorConfig
 from operations import VectorDBOperations
 
 
-def main():
+def main() -> None:
+    """Main entry point for the query CLI."""
     parser = argparse.ArgumentParser(description="Query the Vector DB")
     parser.add_argument("query", type=str, help="The semantic search query string")
     parser.add_argument("--limit", type=int, default=5, help="Maximum number of parent documents to return")
@@ -41,16 +45,22 @@ def main():
     
     args = parser.parse_args()
     
-    # Load configuration from JSON profile (no .env)
+    # 1. Configuration Setup (Dynamic from profile)
     vec_config = VectorConfig(profile_name=args.profile, project_root=str(PROJECT_ROOT))
     
+    # 2. Operations Setup with profile settings
     cortex = VectorDBOperations(
         str(PROJECT_ROOT),
         child_collection=vec_config.child_collection,
         parent_collection=vec_config.parent_collection,
         chroma_host=vec_config.chroma_host,
         chroma_port=vec_config.chroma_port,
-        chroma_data_path=vec_config.chroma_data_path
+        chroma_data_path=vec_config.chroma_data_path,
+        embedding_model=vec_config.embedding_model,
+        parent_chunk_size=vec_config.parent_chunk_size,
+        parent_chunk_overlap=vec_config.parent_chunk_overlap,
+        child_chunk_size=vec_config.child_chunk_size,
+        child_chunk_overlap=vec_config.child_chunk_overlap
     )
     
     print(f"\n[QUERY] Searching Vector Index for: '{args.query}'\n")
@@ -79,6 +89,7 @@ def main():
             print(content[:1000] + "\n... [TRUNCATED] ...")
         else:
             print(content)
+
 
 if __name__ == "__main__":
     main()

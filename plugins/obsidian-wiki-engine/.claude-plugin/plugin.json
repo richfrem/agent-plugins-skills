@@ -1,0 +1,34 @@
+{
+    "name": "obsidian-wiki-engine",
+    "version": "3.0.0",
+    "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation layer. Dual-representation knowledge graph: vault operations, wiki node generation, RLM summary distillation, graph traversal, canvas, bases, and progressive-disclosure query.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "obsidian",
+        "vault",
+        "knowledge-graph",
+        "markdown",
+        "canvas",
+        "wikilinks",
+        "pkm",
+        "wiki",
+        "rlm",
+        "llm",
+        "karpathy",
+        "distillation"
+    ],
+    "capabilities": [
+        "obsidian-wiki-engine",
+        "knowledge-management",
+        "rlm-distillation",
+        "wiki-generation",
+        "progressive-query"
+    ],
+    "dependencies": {
+        "plugins": ["rlm-factory"]
+    }
+}

@@ -1,53 +1,28 @@
 #!/usr/bin/env python3
 """
-ingest_code_shim.py (CLI)
+ingest_code_shim.py
 =====================================
 
 Purpose:
-    Shim for ingesting code files into Vector DB.
+    Specialized parser for converting code files (Oracle Forms XML, SQL, Python, JS, JSON)
+    into searchable Markdown optimized for Vector DB ingestion.
 
-Layer: Curate / Vector
+Layer: Curate / Retrieve
 
-Usage Examples:
-    python ./scripts/ingest_code_shim.py --help
-
-Supported Object Types:
-    - Generic
-
-CLI Arguments:
-    (None detected)
-
-Input Files:
-    - (See code)
-
-Output:
-    - (See code)
-
-Key Functions:
-    - find_project_root(): Find the project root (where .git or legacy-system exists).
-    - parse_xml_to_markdown(): No description.
-    - parse_sql_to_markdown(): No description.
-    - parse_json_to_markdown(): No description.
-    - parse_python_to_markdown(): No description.
-    - parse_javascript_to_markdown(): No description.
-    - convert_code_file(): Returns markdown string for a given code file
-
-Script Dependencies:
-    (None detected)
-
-Consumed by:
-    (Unknown)
+Usage:
+    from ingest_code_shim import convert_code_file
 """
+
 import ast
 import os
 import sys
 import re
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 def find_project_root() -> Path:
-    """Find the project root (where .git or legacy-system exists)."""
+    """Find the project root by searching for .git or legacy-system markers."""
     current = Path.cwd()
     for _ in range(5):
         if (current / ".git").exists() or (current / "legacy-system").exists():
@@ -55,11 +30,16 @@ def find_project_root() -> Path:
         current = current.parent
     return Path.cwd()
 
-#============================================
-# Function: parse_xml_to_markdown
-# Purpose: Optimized for Oracle Forms XML exports
-#============================================
 def parse_xml_to_markdown(file_path: Path) -> str:
+    """
+    Parses Oracle Forms XML exports into structured Markdown.
+
+    Args:
+        file_path: Path to the .xml export file.
+
+    Returns:
+        Markdown-formatted string representing the Forms module.
+    """
     try:
         import xml.etree.ElementTree as ET
     except ImportError:
@@ -104,7 +84,6 @@ def parse_xml_to_markdown(file_path: Path) -> str:
                 text = pu.find('ProgramUnitText')
                 if name and text is not None and text.text:
                      markdown_output += f"### Unit: `{name}`\n"
-                     # Extract signature if possible (first line)
                      first_line = text.text.strip().split('\n')[0]
                      markdown_output += f"**Signature:** `{first_line}`\n"
                      markdown_output += f"```plsql\n{text.text}\n```\n\n"
@@ -125,10 +104,8 @@ def parse_xml_to_markdown(file_path: Path) -> str:
     except Exception as e:
         return f"# Error parsing XML: {str(e)}\n\nOriginal file path: {file_path}"
 
-#============================================
-# Function: parse_sql_to_markdown
-#============================================
 def parse_sql_to_markdown(file_path: Path) -> str:
+    """Parses SQL scripts and extracts DDL object definitions."""
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
         source = f.read()
     
@@ -136,7 +113,6 @@ def parse_sql_to_markdown(file_path: Path) -> str:
     markdown_output = f"# SQL Script: {filename}\n\n"
     
     # Extract object creations
-    # CREATE [OR REPLACE] [TYPE] NAME
     pattern = re.compile(r'CREATE\s+(?:OR\s+REPLACE\s+)?(?:FORCE\s+)?(VIEW|TABLE|PROCEDURE|FUNCTION|PACKAGE|TRIGGER|INDEX)\s+([a-zA-Z0-9_$.]+)', re.IGNORECASE)
     
     found_objects = []
@@ -148,14 +124,11 @@ def parse_sql_to_markdown(file_path: Path) -> str:
     if found_objects:
         markdown_output += "## Defined Objects\n\n" + "\n".join(found_objects) + "\n\n"
     
-    # Just dump the whole thing in a block for semantic search to find keywords
     markdown_output += "## Source Code\n\n```sql\n" + source + "\n```\n"
     return markdown_output
 
-#============================================
-# Function: parse_json_to_markdown
-#============================================
 def parse_json_to_markdown(file_path: Path) -> str:
+    """Converts JSON structures into human-readable schema summaries."""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -171,7 +144,6 @@ def parse_json_to_markdown(file_path: Path) -> str:
                 summary += f"{spacing}- **Document Keys:** {', '.join(keys[:10])}"
                 if len(keys) > 10: summary += "..."
                 summary += "\n"
-                # Deep dive first level
                 for k in keys[:5]:
                     summary += f"{spacing}  - `{k}`: {type(obj[k]).__name__}\n"
             elif isinstance(obj, list):
@@ -183,7 +155,6 @@ def parse_json_to_markdown(file_path: Path) -> str:
         markdown_output += "## Structure Summary\n\n"
         markdown_output += summarize_obj(data)
         
-        # Dump string rep for searchability (truncated)
         text_rep = json.dumps(data, indent=2)
         if len(text_rep) > 50000:
             text_rep = text_rep[:50000] + "\n...[Truncated]"
@@ -194,10 +165,8 @@ def parse_json_to_markdown(file_path: Path) -> str:
     except Exception as e:
         return f"Error parsing JSON: {e}"
 
-#============================================
-# Function: parse_python_to_markdown
-#============================================
 def parse_python_to_markdown(file_path: Path) -> str:
+    """Extracts function/class definitions and docstrings from Python source."""
     file_path = Path(file_path)
     if not file_path.exists():
         return f"File not found: {file_path}"
@@ -213,12 +182,10 @@ def parse_python_to_markdown(file_path: Path) -> str:
     filename = file_path.name
     markdown_output = f"# Code File: {filename}\n\n**Language:** Python\n\n"
     
-    # Docstring
     docstring = ast.get_docstring(tree)
     if docstring:
         markdown_output += f"## Module Description\n\n{docstring}\n\n"
     
-    # Classes and Functions
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             type_label = "Class" if isinstance(node, ast.ClassDef) else "Function"
@@ -226,36 +193,30 @@ def parse_python_to_markdown(file_path: Path) -> str:
             start_line = node.lineno
             doc = ast.get_docstring(node) or "No docstring."
             
-            # Simple signature reconstruction
             markdown_output += f"## {type_label}: `{name}`\n"
             markdown_output += f"**Line:** {start_line}\n"
             markdown_output += f"**Docs:** {doc}\n\n"
             
-            # Source segment
             segment = ast.get_source_segment(source, node)
             if segment:
                 markdown_output += f"```python\n{segment}\n```\n\n"
                 
     return markdown_output
 
-#============================================
-# Function: parse_javascript_to_markdown (Regex Shim)
-#============================================
 def parse_javascript_to_markdown(file_path: Path) -> str:
+    """Uses Regex shims to extract function signatures from JS/TS sources."""
     with open(file_path, 'r', encoding='utf-8') as f:
         source = f.read()
         
     filename = file_path.name
     markdown_output = f"# Code File: {filename}\n\n**Language:** JS/TS\n\n"
     
-    # Functions
     func_pattern = re.compile(r'function\s+(\w+)\s*\((.*?)\)')
     for match in func_pattern.finditer(source):
         name = match.group(1)
         args = match.group(2)
         markdown_output += f"## Function: `{name}`\n**Signature:** `{name}({args})`\n\n"
         
-    # Full source (truncated if huge)
     if len(source) < 50000:
         markdown_output += f"## Source\n```javascript\n{source}\n```\n"
     else:
@@ -263,11 +224,16 @@ def parse_javascript_to_markdown(file_path: Path) -> str:
         
     return markdown_output
 
-#============================================
-# Main Converter Entry Point
-#============================================
 def convert_code_file(input_file: Path) -> str:
-    """Returns markdown string for a given code file"""
+    """
+    Orchestrates the conversion of various code formats to searchable Markdown.
+
+    Args:
+        input_file: Path to the code/data file to convert.
+
+    Returns:
+        Markdown string optimized for embeddings.
+    """
     suffix = input_file.suffix.lower()
     
     if suffix == '.py':
@@ -281,7 +247,6 @@ def convert_code_file(input_file: Path) -> str:
     elif suffix == '.json':
         return parse_json_to_markdown(input_file)
     else:
-        # Generic fallback
         try:
             content = input_file.read_text(encoding='utf-8', errors='ignore')
             return f"# File: {input_file.name}\n\n```\n{content}\n```"

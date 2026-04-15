@@ -1,74 +1,64 @@
 #!/usr/bin/env python3
 """
-cleanup.py (CLI)
+cleanup.py
 =====================================
 
 Purpose:
     Removes stale chunk entries for files that have been deleted or renamed
     on disk, keeping the ChromaDB vector store in sync with the filesystem.
 
-Layer: Curate / Vector-DB
+Layer: Curate / Retrieve
 
-Usage Examples:
-    python3 plugins/vector-db/scripts/cleanup.py
-    python3 plugins/vector-db/scripts/cleanup.py --profile knowledge
-
-Supported Object Types:
-    - ChromaDB chunk entries
-
-CLI Arguments:
-    --profile    Vector DB profile name to use (e.g. knowledge)
-
-Input Files:
-    - vector_profiles.json (resolved via VectorConfig)
-
-Output:
-    - Deletes stale chunks from the active ChromaDB collection
-
-Key Functions:
-    - run_cleanup: Scans collection metadata and deletes chunks for missing files.
-    - main: CLI entry point; loads config and delegates to run_cleanup.
-
-Script Dependencies:
-    - plugins/vector-db/scripts/vector_config.py
-    - plugins/vector-db/scripts/operations.py
-
-Consumed by:
-    - vector-db-cleanup skill
+Usage:
+    python cleanup.py --profile wiki
 """
 
 import sys
 import argparse
 from pathlib import Path
+from typing import List, Dict, Any, Optional
 
-# ============================================================
-# PATHS
-# ============================================================
+# Robustly discover the Project Root
 def _find_project_root(start_path: Path) -> Path:
+    """Walks up from start_path to find the first directory containing .git."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
             return parent
-    return current.parents[5]
+    return current.parents[2]
 
 PROJECT_ROOT = _find_project_root(Path(__file__))
 SCRIPT_DIR = Path(__file__).resolve().parent
 
+# Ensure local imports work correctly
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from vector_config import VectorConfig
-from operations import VectorDBOperations
+try:
+    from vector_config import VectorConfig
+    from operations import VectorDBOperations
+except ImportError as e:
+    print(f"[ERROR] Could not import vector dependencies from {SCRIPT_DIR}: {e}")
+    sys.exit(1)
 
 
 def run_cleanup(cortex: VectorDBOperations) -> int:
-    """Scan and sweep orphaned database entries."""
-    print("🧹 Running cleanup for stale entries...")
+    """
+    Scans the database and removes entries for files no longer on disk.
+
+    Args:
+        cortex: Initialized VectorDBOperations instance.
+
+    Returns:
+        Number of chunks removed.
+    """
+    print("[CLEANUP] Scanning for stale database entries...")
     
     try:
-        collection = cortex.chroma_client.get_collection(name=cortex.child_collection_name)
+        collection_name = cortex.child_collection_name
+        collection = cortex.chroma_client.get_collection(name=collection_name)
     except Exception as e:
-        print(f"❌ Collection not found: {e}")
+        print(f"[WARN] Collection not found: {e}")
         return 0
     
     total_chunks = collection.count()
@@ -77,7 +67,7 @@ def run_cleanup(cortex: VectorDBOperations) -> int:
         return 0
     
     all_data = collection.get(include=["metadatas"])
-    id_to_source = {}
+    id_to_source: Dict[str, List[str]] = {}
     
     metadatas = all_data.get('metadatas') or []
     ids = all_data.get('ids', [])
@@ -90,16 +80,16 @@ def run_cleanup(cortex: VectorDBOperations) -> int:
                 id_to_source[source] = []
             id_to_source[source].append(doc_id)
     
-    stale_ids = []
+    stale_ids: List[str] = []
     stale_count = 0
     for rel_path, chunk_ids in id_to_source.items():
-        full_path = Path(cortex.project_root) / rel_path
+        full_path = cortex.project_root / rel_path
         if not full_path.exists():
             stale_ids.extend(chunk_ids)
             stale_count += 1
     
     if not stale_ids:
-        print("   ✅ No stale entries found.")
+        print("   [OK] No stale entries found.")
         return 0
     
     print(f"   Found {stale_count} missing files ({len(stale_ids)} chunks)")
@@ -110,28 +100,36 @@ def run_cleanup(cortex: VectorDBOperations) -> int:
         batch = stale_ids[i:i + batch_size]
         collection.delete(ids=batch)
     
-    print(f"   ✅ Removed {len(stale_ids)} stale chunks")
+    print(f"   [DONE] Removed {len(stale_ids)} stale chunks.")
     return len(stale_ids)
 
 
 def main() -> None:
+    """Main entry point for the cleanup CLI."""
     parser = argparse.ArgumentParser(description="Clean up stale chunks in Vector DB")
-    parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., knowledge)")
+    parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., wiki)")
     args = parser.parse_args()
     
-    # Load configuration from JSON profile (no .env)
+    # 1. Configuration Setup (Dynamic from profile)
     vec_config = VectorConfig(profile_name=args.profile, project_root=str(PROJECT_ROOT))
     
+    # 2. Operations Setup with dynamic parameters
     cortex = VectorDBOperations(
         str(PROJECT_ROOT),
         child_collection=vec_config.child_collection,
         parent_collection=vec_config.parent_collection,
         chroma_host=vec_config.chroma_host,
         chroma_port=vec_config.chroma_port,
-        chroma_data_path=vec_config.chroma_data_path
+        chroma_data_path=vec_config.chroma_data_path,
+        embedding_model=vec_config.embedding_model,
+        parent_chunk_size=vec_config.parent_chunk_size,
+        parent_chunk_overlap=vec_config.parent_chunk_overlap,
+        child_chunk_size=vec_config.child_chunk_size,
+        child_chunk_overlap=vec_config.child_chunk_overlap
     )
         
     run_cleanup(cortex)
+
 
 if __name__ == "__main__":
     main()

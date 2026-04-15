@@ -1,0 +1,10 @@
+[
+  {"prompt": "Build wiki nodes from my architecture docs folder", "should_trigger": true},
+  {"prompt": "Regenerate the Karpathy wiki index from all registered sources", "should_trigger": true},
+  {"prompt": "Create wiki node pages from the raw-sources.json manifest", "should_trigger": true},
+  {"prompt": "Build the _index.md and _toc.md for the LLM wiki", "should_trigger": true},
+  {"prompt": "Rebuild the wiki cluster pages from scratch", "should_trigger": true},
+  {"prompt": "Distill this file into the RLM summary layer", "should_trigger": false},
+  {"prompt": "Search the wiki for authentication patterns", "should_trigger": false},
+  {"prompt": "Add a new row to the Obsidian bases database", "should_trigger": false}
+]
