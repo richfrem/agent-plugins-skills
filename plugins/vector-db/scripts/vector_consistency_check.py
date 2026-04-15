@@ -231,7 +231,8 @@ def main() -> None:
         parent_chunk_size=config.parent_chunk_size,
         parent_chunk_overlap=config.parent_chunk_overlap,
         child_chunk_size=config.child_chunk_size,
-        child_chunk_overlap=config.child_chunk_overlap
+        child_chunk_overlap=config.child_chunk_overlap,
+        device=config.device
     )
     
     topic_path = Path(args.topic).resolve()

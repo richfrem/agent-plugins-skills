@@ -29,6 +29,7 @@ This skill scaffolds a dynamic registry in `.agent/learning/vector_profiles.json
 | `chroma_host` | `""` | Empty for In-Process mode (Direct Disk); IP for Server mode. |
 | `batch_size` | `1000` | Ingestion speed (number of files processed before embedding). |
 | `embedding_model` | `nomic-ai/nomic-embed-text-v1.5` | The semantic model used for indexing. |
+| `device` | `cpu` | Hardware device to use: `cpu` or `cuda` (for NVIDIA GPU). |
 | `chunk_size` | `2000` (Parent) / `400` (Child) | The granularity of text splitting. |
 
 ## When to Use This
