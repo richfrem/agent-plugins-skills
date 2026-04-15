@@ -42,10 +42,11 @@ Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same
 
 ---
 
-## Alternative: Claude Code Native Marketplace
+## Alternative: Agent Plugin Marketplace (Claude / Copilot)
 
-If you are using Claude Code (2.1.81+), you can add this repository as a native marketplace and install plugins without leaving the terminal:
+If you are using **Claude Code** (2.1.81+) or the **Copilot Plugin CLI**, you can add this repository as a native marketplace and install plugins without leaving the terminal:
 
+### Claude Code Syntax
 ```text
 # Add this repository to your known marketplaces
 /plugin marketplace add richfrem/agent-plugins-skills
@@ -56,6 +57,22 @@ If you are using Claude Code (2.1.81+), you can add this repository as a native 
 # Or install a specific plugin directly
 /plugin install <plugin-name>
 ```
+
+### Copilot CLI Syntax
+```bash
+# Add this repository as a known marketplace
+copilot plugin marketplace add richfrem/agent-plugins-skills
+
+# Browse, discover, and install plugins via TUI
+copilot plugin
+
+# Install a specific plugin directly
+# Use the slugified marketplace ID (e.g., richfrem-agent-plugins-skills)
+copilot plugin install <plugin-name>@richfrem-agent-plugins-skills
+```
+
+> [!NOTE]
+> **Gemini CLI**: The `gemini extensions install` command installs the entire repository as a raw context bundle, not as discrete addressable plugins. For Gemini CLI, use **`uvx`** (Option 1 above) which correctly deploys individual plugins and skills into your `.agents/` folder.
 
 ---
 
@@ -96,7 +113,7 @@ rm -rf .agents/ && npx skills add richfrem/agent-plugins-skills/plugins/my-plugi
 |---|---|---|---|---|
 | `uvx` ★ | **All** (Win/Mac/Linux) | ✅ skills + agents + commands + hooks | ✅ `owner/repo` | Recommended default |
 | `bootstrap.py` | **All** (Win/Mac/Linux) | ✅ full | ✅ `owner/repo` | Zero-dependency fallback |
-| `/plugin` marketplace | Claude Code only | ✅ full | ✅ | Native Claude TUI |
+| Marketplace CLI ★ | **Claude / Copilot** | ✅ skills + agents + commands + hooks | ✅ | Native TUI / Marketplace |
 | `npx skills add` | Mac/Linux only | ❌ skills only | ✅ | No Python required |
 
 ---
