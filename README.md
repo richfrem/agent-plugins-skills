@@ -26,7 +26,7 @@ Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplin
 > [!IMPORTANT]
 > **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default.
 >
-> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Claude Marketplace**) are now consolidated in a single authoritative guide:
+> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Marketplace / Extension CLI**) are now consolidated in a single authoritative guide:
 >
 > ### 👉 [Go to INSTALL.md](./INSTALL.md)
 

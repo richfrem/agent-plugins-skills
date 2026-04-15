@@ -2,8 +2,9 @@
 name: manage-marketplace
 description: >
   This skill should be used when the user wants to "create a marketplace", 
-  "setup a marketplace catalog", "scaffold marketplace.json", or "initialize 
-  a plugin registry". Use this even if they just mention "setting up a marketplace".
+  "setup a marketplace catalog", "scaffold marketplace.json", "initialize 
+  a plugin registry", or "configure a Gemini CLI extension". Use this even if 
+  they just mention "setting up a marketplace".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -293,6 +294,34 @@ Shortcuts: `/plugin market` = `/plugin marketplace`, `rm` = `remove`.
 
 ### Watch Out
 Skills at `plugins/<plugin>/skills/<skill>/SKILL.md` (4 levels deep) may not be crawled. If not indexed after first sync, add a top-level `skills/` directory mirroring the skill folders.
+
+---
+
+## Step 6: Universal Marketplace Compatibility (Gemini)
+
+To ensure your repository is installable as a native extension suite in the **Gemini CLI**, you must provide a manifestation file in the root directory.
+
+### 1. `gemini-extension.json`
+The manifest defines the identity and behavior of the extension:
+```json
+{
+  "name": "my-extension-id",
+  "version": "1.0.0",
+  "description": "Universal Agent Plugins & Skills extension.",
+  "contextFileName": "GEMINI.md"
+}
+```
+
+### 2. `GEMINI.md`
+The `contextFileName` (usually `GEMINI.md`) serves as the "Instruction Profile" for the session.
+- Consolidated rules (coding conventions, discipline).
+- Specific personas or logic for the plugins in the suite.
+- If missing, Gemini may fail to load the extension instructions.
+
+### Gemini Installation Command
+```bash
+gemini extensions install https://github.com/owner/repo
+```
 
 ---
 
