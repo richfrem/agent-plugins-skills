@@ -93,17 +93,34 @@ def main() -> None:
         content = f_path.read_text(encoding="utf-8", errors="ignore")
         content_hash = compute_hash(content)
 
-        # Use a lockfile to serialize concurrent writes (e.g. from swarm workers)
+        # Save directly to the specific markdown file without reloading the entire 5000+ cache
         # Cross-platform: uses fcntl on POSIX, no-op on Windows
         lock_path = config.cache_path.with_suffix(".lock")
         with _file_lock(lock_path):
-            cache = load_cache(config.cache_path)
-            cache[rel_path] = {
+            cache_dir = config.cache_path.with_suffix('')
+            rel_path_clean = rel_path[:-3] if rel_path.endswith(".md") else rel_path
+            norm_key = rel_path_clean.replace("\\", "/")
+            md_file = cache_dir / f"{norm_key}.md"
+            md_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            entry = {
                 "hash": content_hash,
                 "summary": args.summary,
                 "summarized_at": datetime.now().isoformat()
             }
-            save_cache(cache, config.cache_path)
+            
+            lines = ["---"]
+            for k, v in entry.items():
+                if k != "summary":
+                    val = str(v).replace('"', "'")
+                    lines.append(f'{k}: "{val}"')
+            lines.append("---")
+            lines.append("")
+            lines.append("# Summary")
+            lines.append(str(entry.get("summary", "")))
+            lines.append("")
+            
+            md_file.write_text("\n".join(lines), encoding="utf-8")
         
         print(f"[OK] Successfully injected summary for {rel_path} into {config.cache_path.name}")
 
