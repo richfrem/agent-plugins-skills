@@ -173,6 +173,7 @@ def main() -> None:
             capture_output=True,
             text=True,
             timeout=120,
+            shell=(sys.platform == "win32"),
         )
     except FileNotFoundError:
         print(f"[ERROR] CLI binary '{args.engine}' not found on PATH.")
