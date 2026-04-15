@@ -1,8 +1,8 @@
 # Vector DB Dependencies (Intent File)
 # Workflow:
 #   1. Edit this file
-#   2. pip-compile ../../requirements.in --output-file ../../requirements.txt
-#   3. pip install -r ../../requirements.txt
+#   2. python -m piptools compile .agents/skills/vector-db-init/requirements.in --output-file .agents/skills/vector-db-init/requirements.txt
+#   3. pip install -r .agents/skills/vector-db-init/requirements.txt
 
 # Core
 python-frontmatter
