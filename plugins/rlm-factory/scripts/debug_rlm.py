@@ -38,7 +38,7 @@ if str(SCRIPT_DIR) not in sys.path:
 try:
     from rlm_config import RLMConfig, collect_files
 except ImportError as e:
-    print(f"❌ Import Error: {e}")
+    print(f"[ERROR] Import Error: {e}")
     sys.exit(1)
 
 
@@ -69,7 +69,7 @@ def inspect_profile(profile_name: str) -> None:
         if files:
             print(f"  Sample File:      {files[0].relative_to(PROJECT_ROOT)}")
     except Exception as e:
-        print(f"  ❌ Error: {e}")
+        print(f"  [ERROR] Error: {e}")
 
 
 if __name__ == "__main__":

@@ -45,10 +45,10 @@ if str(SCRIPT_DIR) not in sys.path:
 try:
     from rlm_config import RLMConfig, load_cache, collect_files
 except ImportError as e:
-    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
+    print(f"[ERROR] Could not import local rlm_config from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 except ImportError as e:
-    print(f"❌ Could not import RLMConfig from {SCRIPT_DIR}: {e}")
+    print(f"[ERROR] Could not import RLMConfig from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
 
@@ -68,7 +68,7 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
         show_full: If True, prints the complete list of missing/stale files without truncation.
         export_tasks: If True, writes a Markdown checklist of missing files to disk.
     """
-    print(f"📊 Auditing RLM Inventory [{config.profile_name.upper()}]...")
+    print(f"[STATS] Auditing RLM Inventory [{config.profile_name.upper()}]...")
     print(f"   Cache: {config.cache_path.name}")
 
     # 1. Load existing cache
@@ -80,7 +80,8 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
     fs_paths: Set[str] = set()
     for f in fs_files:
         try:
-            fs_paths.add(str(f.relative_to(PROJECT_ROOT)))
+            # Normalize to forward slashes for cross-platform key consistency
+            fs_paths.add(str(f.relative_to(PROJECT_ROOT)).replace("\\", "/"))
         except ValueError:
             pass
 
@@ -90,14 +91,14 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
     overlap = fs_paths & cached_paths
 
     # 4. Print report
-    print(f"\n📈 Statistics:")
+    print(f"\n[CHART] Statistics:")
     print(f"   Files on Disk:    {len(fs_paths)}")
     print(f"   Entries in Cache: {len(cached_paths)}")
     pct = (len(overlap) / len(fs_paths) * 100) if fs_paths else 0
     print(f"   Coverage:         {len(overlap)} / {len(fs_paths)} ({pct:.1f}%)")
 
     if missing_in_cache:
-        print(f"\n❌ Missing from Cache ({len(missing_in_cache)}):")
+        print(f"\n[ERROR] Missing from Cache ({len(missing_in_cache)}):")
         sorted_missing = sorted(missing_in_cache)
         if show_full:
             for p in sorted_missing:
@@ -118,10 +119,10 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
                     # Provide an actionable command for the agent/user
                     f.write(f"- [ ] `{p}`\n")
                     f.write(f"  - Command: `python ./scripts/inject_summary.py --profile {config.profile_name} --file \"{p}\" --summary \"YOUR_SUMMARY_HERE\"`\n")
-            print(f"\n📝 Exported task list to: {task_file.relative_to(PROJECT_ROOT)}")
+            print(f"\n[NOTE] Exported task list to: {task_file.relative_to(PROJECT_ROOT)}")
 
     if stale_in_cache:
-        print(f"\n⚠️  Stale in Cache ({len(stale_in_cache)}):")
+        print(f"\n[WARN]  Stale in Cache ({len(stale_in_cache)}):")
         sorted_stale = sorted(stale_in_cache)
         if show_full:
             for p in sorted_stale:
@@ -133,7 +134,7 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
                 print(f"   ... and {len(stale_in_cache) - 10} more (use --full to see all).")
 
     if not missing_in_cache and not stale_in_cache:
-        print("\n✅ RLM Inventory is perfectly synchronized.")
+        print("\n[OK] RLM Inventory is perfectly synchronized.")
 
 
 # ============================================================
@@ -164,7 +165,7 @@ def main() -> None:
         config = RLMConfig(profile_name=args.profile)
         audit_inventory(config, show_full=args.full, export_tasks=args.tasks)
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
 
 
 if __name__ == "__main__":

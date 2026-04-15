@@ -120,7 +120,7 @@ from datetime import datetime
 try:
     import yaml
 except ImportError:
-    print("❌ PyYAML not found. Run: pip install pyyaml")
+    print("[ERROR] PyYAML not found. Run: pip install pyyaml")
     sys.exit(1)
 
 # ─── LOGGING ───────────────────────────────────────────────────────────────
@@ -370,9 +370,9 @@ def execute_worker(
             result["error"] = (pr.stderr or pr.stdout or "post-cmd failed").strip()[:300]
     
     if result["success"]:
-        logger.info(f"  ✅ {file_path}")
+        logger.info(f"  [OK] {file_path}")
     else:
-        logger.error(f"  ❌ {file_path}: {result['error']}")
+        logger.error(f"  [ERROR] {file_path}: {result['error']}")
 
     return result
 
@@ -396,7 +396,7 @@ def main() -> None:
     # Load Job
     full_text = args.job.read_text()
     if not full_text.startswith("---"): 
-        print("❌ Invalid job file (no YAML frontmatter)")
+        print("[ERROR] Invalid job file (no YAML frontmatter)")
         sys.exit(1)
     
     parts = full_text.split("---", 2)
@@ -426,7 +426,7 @@ def main() -> None:
         logger.info("✨ Everything complete. Nothing to do.")
         return
 
-    logger.info(f"🚀 Starting Swarm: {len(pending)} pending items ({len(all_files)} total)")
+    logger.info(f"[START] Starting Swarm: {len(pending)} pending items ({len(all_files)} total)")
     logger.info(f"   Engine: {args.engine} | Model: {model} | Workers: {workers} | Dry-run: {args.dry_run}")
     print("-" * 70)
 
@@ -450,7 +450,7 @@ def main() -> None:
                 if len(results) % 5 == 0:
                     checkpoint_path.write_text(json.dumps(state, indent=2))
     except KeyboardInterrupt:
-        logger.warning("\n⚠️ Interrupted. Saving state...")
+        logger.warning("\n[WARN] Interrupted. Saving state...")
     finally:
         checkpoint_path.write_text(json.dumps(state, indent=2))
         

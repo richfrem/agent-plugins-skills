@@ -47,7 +47,7 @@ if str(SCRIPT_DIR) not in sys.path:
 try:
     from rlm_config import RLMConfig, load_cache
 except ImportError as e:
-    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
+    print(f"[ERROR] Could not import local rlm_config from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
 
@@ -76,7 +76,7 @@ def search_cache(
     term_lower = term.lower()
 
     if not output_json:
-        print(f"🔍 Searching [{config.profile_name.upper()}] for: '{term}'...")
+        print(f"[SEARCH] Searching [{config.profile_name.upper()}] for: '{term}'...")
 
     matches: List[Dict[str, Any]] = []
     for rel_path, entry in data.items():
@@ -94,7 +94,7 @@ def search_cache(
         print("   No matches found.")
         return
 
-    print(f"✅ Found {len(matches)} match(es):\n")
+    print(f"[OK] Found {len(matches)} match(es):\n")
     for match in matches:
         path = match["path"]
         entry = match["entry"]
@@ -103,7 +103,7 @@ def search_cache(
         if show_summary:
             summary_str = str(entry.get("summary", "No summary."))
             preview = (summary_str[:300] + "...") if len(summary_str) > 300 else summary_str
-            print(f"   📝 {preview}")
+            print(f"   [NOTE] {preview}")
         print("-" * 50)
 
 

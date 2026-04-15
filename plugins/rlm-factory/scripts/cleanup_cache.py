@@ -50,7 +50,7 @@ if str(SCRIPT_DIR) not in sys.path:
 try:
     from rlm_config import RLMConfig, load_cache, save_cache, collect_files
 except ImportError as e:
-    print(f"❌ Could not import local rlm_config from {SCRIPT_DIR}: {e}")
+    print(f"[ERROR] Could not import local rlm_config from {SCRIPT_DIR}: {e}")
     sys.exit(1)
 
 
@@ -82,10 +82,10 @@ def run_cleanup(
     Returns:
         Number of entries removed (or that would be removed in dry-run mode).
     """
-    print(f"🧹 Checking cache [{config.profile_name.upper()}]: {config.cache_path.name}")
+    print(f"[CLEAN] Checking cache [{config.profile_name.upper()}]: {config.cache_path.name}")
 
-    if not config.cache_path.exists():
-        print("   Cache file not found. Nothing to clean.")
+    if not config.cache_path.exists() and not config.cache_path.with_suffix('').exists():
+        print("   Cache not found. Nothing to clean.")
         return 0
 
     cache: Dict = load_cache(config.cache_path)
@@ -131,14 +131,14 @@ def run_cleanup(
     print(f"   Entries to remove: {count}")
 
     if count == 0:
-        print("   ✅ Cache is clean.")
+        print("   [OK] Cache is clean.")
         return 0
 
     if apply:
         for key in entries_to_remove:
             del cache[key]
         save_cache(cache, config.cache_path)
-        print(f"   ✅ Removed {count} entries.")
+        print(f"   [OK] Removed {count} entries.")
     else:
         print(f"\n   DRY RUN: Would remove {count} entries. Re-run with --apply to commit.")
 
@@ -164,19 +164,19 @@ def remove_entry(profile_name: str, file_path: str) -> bool:
     """
     try:
         config = RLMConfig(profile_name=profile_name)
-        if not config.cache_path.exists():
+        if not config.cache_path.exists() and not config.cache_path.with_suffix('').exists():
             return False
         cache = load_cache(config.cache_path)
         norm_path = file_path.replace("\\", "/")
         if norm_path in cache:
             del cache[norm_path]
             save_cache(cache, config.cache_path)
-            print(f"🗑️  [RLM] Removed '{norm_path}' from '{profile_name}' cache.")
+            print(f"[DELETE]  [RLM] Removed '{norm_path}' from '{profile_name}' cache.")
             return True
-        print(f"⚠️  [RLM] Entry not found: {file_path}")
+        print(f"[WARN]  [RLM] Entry not found: {file_path}")
         return False
     except Exception as e:
-        print(f"❌ [RLM] Error: {e}")
+        print(f"[ERROR] [RLM] Error: {e}")
         return False
 
 

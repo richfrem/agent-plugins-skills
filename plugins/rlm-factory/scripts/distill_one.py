@@ -67,7 +67,7 @@ for _p in _extra_paths:
 try:
     from rlm_config import RLMConfig
 except ImportError as e:
-    print(f"❌ Cannot import rlm_config: {e}")
+    print(f"[ERROR] Cannot import rlm_config: {e}")
     sys.exit(1)
 
 # ─── ENGINE DEFAULTS ─────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ def build_llm_cmd(engine: str, model: str, prompt_payload: str) -> tuple[list[st
             prompt_payload
         )
     else:
-        print(f"❌ Unknown engine: {engine}. Choose from: copilot, gemini, claude")
+        print(f"[ERROR] Unknown engine: {engine}. Choose from: copilot, gemini, claude")
         sys.exit(1)
 
 
@@ -132,7 +132,7 @@ def main() -> None:
 
     file_path = PROJECT_ROOT / args.file
     if not file_path.exists():
-        print(f"❌ File not found: {file_path}")
+        print(f"[ERROR] File not found: {file_path}")
         sys.exit(1)
 
     content = file_path.read_text(encoding="utf-8")
@@ -149,7 +149,7 @@ def main() -> None:
 
     prompt_payload = prompt_template.format(file_path=rel_path, content=content)
 
-    print(f"🔍 Distilling: {rel_path}")
+    print(f"[SEARCH] Distilling: {rel_path}")
     print(f"   Engine : {args.engine}")
     print(f"   Model  : {model}")
     print(f"   Profile: {args.profile}")
@@ -157,7 +157,7 @@ def main() -> None:
     print("-" * 60)
 
     if args.dry_run:
-        print("⚙️  DRY RUN — prompt payload preview (first 500 chars):")
+        print("[CONFIG]  DRY RUN — prompt payload preview (first 500 chars):")
         print(prompt_payload[:500])
         print("...")
         return
@@ -165,7 +165,7 @@ def main() -> None:
     # ─── CALL CLI ────────────────────────────────────────────────────────────
     cmd_args, stdin_text = build_llm_cmd(args.engine, model, prompt_payload)
 
-    print(f"🚀 Calling: {' '.join(shlex.quote(a) for a in cmd_args[:3])} ...")
+    print(f"[START] Calling: {' '.join(shlex.quote(a) for a in cmd_args[:3])} ...")
     try:
         proc = subprocess.run(
             cmd_args,
@@ -175,21 +175,21 @@ def main() -> None:
             timeout=120,
         )
     except FileNotFoundError:
-        print(f"❌ CLI binary '{args.engine}' not found on PATH.")
+        print(f"[ERROR] CLI binary '{args.engine}' not found on PATH.")
         print(f"   Make sure you have the {args.engine} CLI installed and authenticated.")
         sys.exit(1)
     except subprocess.TimeoutExpired:
-        print("❌ CLI call timed out after 120s.")
+        print("[ERROR] CLI call timed out after 120s.")
         sys.exit(1)
 
     if proc.returncode != 0 or not proc.stdout.strip():
-        print(f"❌ CLI returned exit code {proc.returncode}")
+        print(f"[ERROR] CLI returned exit code {proc.returncode}")
         print(proc.stderr[:500] if proc.stderr else "(no stderr)")
         sys.exit(1)
 
     summary = proc.stdout.strip()
 
-    print(f"\n✅ Summary received ({len(summary)} chars):")
+    print(f"\n[OK] Summary received ({len(summary)} chars):")
     print("-" * 60)
     print(summary)
     print("-" * 60)
@@ -203,13 +203,13 @@ def main() -> None:
         "--summary", summary,
     ]
 
-    print(f"\n💾 Injecting into cache...")
+    print(f"\n[SAVE] Injecting into cache...")
     inject_proc = subprocess.run(inject_cmd, capture_output=True, text=True)
     if inject_proc.returncode == 0:
         print(inject_proc.stdout.strip())
-        print(f"\n🎉 Done! Check: {config.cache_path}")
+        print(f"\n[DONE] Done! Check: {config.cache_path}")
     else:
-        print(f"❌ inject_summary.py failed:")
+        print(f"[ERROR] inject_summary.py failed:")
         print(inject_proc.stderr or inject_proc.stdout)
         sys.exit(1)
 

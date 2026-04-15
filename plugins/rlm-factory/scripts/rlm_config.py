@@ -107,7 +107,7 @@ class RLMConfig:
 
         if not profile:
             available = list(profiles_data.get("profiles", {}).keys())
-            print(f"❌ RLM Profile '{profile_name}' not found. Available: {available}")
+            print(f"[ERROR] RLM Profile '{profile_name}' not found. Available: {available}")
             sys.exit(1)
 
         self.description = profile.get("description", f"RLM Cache: {profile_name}")
@@ -119,7 +119,7 @@ class RLMConfig:
         cache_rel = profile.get("cache")
 
         if not manifest_rel or not cache_rel:
-            print(f"❌ Profile '{profile_name}' is missing 'manifest' or 'cache' path.")
+            print(f"[ERROR] Profile '{profile_name}' is missing 'manifest' or 'cache' path.")
             sys.exit(1)
 
         self.manifest_path = (self.root / manifest_rel).resolve()
@@ -157,7 +157,7 @@ class RLMConfig:
             with open(DEFAULT_PROFILES_PATH, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            print(f"⚠️ Error reading profiles JSON: {e}")
+            print(f"[WARN] Error reading profiles JSON: {e}")
             return {}
 
     def _load_prompt(self) -> str:
@@ -186,7 +186,7 @@ class RLMConfig:
         Logs a warning if the manifest does not exist.
         """
         if not self.manifest_path.exists():
-            print(f"⚠️ Manifest not found: {self.manifest_path}")
+            print(f"[WARN] Manifest not found: {self.manifest_path}")
             return
         try:
             with open(self.manifest_path, "r", encoding="utf-8") as f:
@@ -195,7 +195,7 @@ class RLMConfig:
             self.exclude_patterns = data.get("exclude", [])
             self.recursive = data.get("recursive", True)
         except Exception as e:
-            print(f"⚠️ Error reading manifest {self.manifest_path}: {e}")
+            print(f"[WARN] Error reading manifest {self.manifest_path}: {e}")
 
     @classmethod
     def from_profile(cls, profile_name: str, project_root: Optional[Path] = None) -> "RLMConfig":
@@ -259,15 +259,21 @@ def _parse_md_cache(filepath: Path) -> Dict:
 def load_cache(cache_path: Path) -> Dict:
     """
     Load the cache from the Markdown file system database.
+    Keys preserve the source file extension (e.g. 'path/to/file.md')
+    so they match the output of collect_files() exactly.
     Performs on-the-fly migration if legacy JSON exists.
     """
-    cache_dir = cache_path.with_suffix('')  # e.g., rlm_cache_project (no .json)
+    cache_dir = cache_path.with_suffix('')  # e.g., rlm_cache_project/
     result = {}
-    
+
     # 1. Load from the native Markdown hierarchy
+    # Each .md file in the cache dir represents ONE source file.
+    # The cache file path mirrors the source: source/path/file.md => cache_dir/source/path/file.md
+    # So the cache key = the relative path from cache_dir, keeping the .md extension.
     if cache_dir.exists() and cache_dir.is_dir():
         for md_file in cache_dir.rglob("*.md"):
-            rel_path = str(md_file.relative_to(cache_dir))[:-3] # strip .md
+            # Key = path relative to cache dir, forward-slash normalized, with .md preserved
+            rel_path = str(md_file.relative_to(cache_dir)).replace("\\", "/")
             entry = _parse_md_cache(md_file)
             if entry:
                 result[rel_path] = entry
@@ -278,8 +284,12 @@ def load_cache(cache_path: Path) -> Dict:
             with open(cache_path, "r", encoding="utf-8") as f:
                 legacy = json.load(f)
                 for k, v in legacy.items():
-                    if k not in result:
-                        result[k] = v
+                    # Normalize old keys: add .md if missing (old format stored without extension)
+                    norm_k = k.replace("\\", "/")
+                    if not norm_k.endswith(".md"):
+                        norm_k = norm_k + ".md"
+                    if norm_k not in result:
+                        result[norm_k] = v
         except Exception:
             pass
 
@@ -315,7 +325,7 @@ def save_cache(cache: Dict, cache_path: Path) -> None:
         
     # 2. Prune orphan .md files (entries deleted from cache dict by cleanup scripts)
     for md_file in list(cache_dir.rglob("*.md")):
-        rel_path = str(md_file.relative_to(cache_dir))[:-3]
+        rel_path = str(md_file.relative_to(cache_dir)).replace("\\", "/")
         if rel_path not in cache:
             md_file.unlink()
             # Clean up empty parent directories
