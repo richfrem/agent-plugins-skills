@@ -1,0 +1,50 @@
+# RLM Distillation Tasks: WIKI
+
+Generated: 23 missing files to distill into `rlm_wiki_cache.json`.
+
+- [ ] `plugin-research/superpowers/analysis-prompt.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/analysis-prompt.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/antigravity-review-of-claude.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/antigravity-review-of-claude.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/architecture-comparison.mmd`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/architecture-comparison.mmd" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/capabilities-matrix.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/capabilities-matrix.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/decision.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/decision.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/deprecation-analysis-prompt.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/deprecation-analysis-prompt.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/implementation-plan.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/implementation-plan.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/quick-wins.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/quick-wins.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/strengths-and-gaps.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/strengths-and-gaps.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugin-research/superpowers/supercharge-recommendations.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugin-research/superpowers/supercharge-recommendations.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/README.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/README.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/assets/templates/adr-template.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/assets/templates/adr-template.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/commands/adr-management.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/commands/adr-management.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/references/acceptance-criteria.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/references/acceptance-criteria.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/references/fallback-tree.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/references/fallback-tree.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/scripts/adr_manager.py`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/scripts/adr_manager.py" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/scripts/next_number.py`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/scripts/next_number.py" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/skills/adr-management/SKILL.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/skills/adr-management/SKILL.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/skills/adr-management/assets/templates/adr-template.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/skills/adr-management/assets/templates/adr-template.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/skills/adr-management/references/acceptance-criteria.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/skills/adr-management/references/acceptance-criteria.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/skills/adr-management/references/fallback-tree.md`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/skills/adr-management/references/fallback-tree.md" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/skills/adr-management/scripts/adr_manager.py`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py" --summary "YOUR_SUMMARY_HERE"`
+- [ ] `plugins/adr-manager/skills/adr-management/scripts/next_number.py`
+  - Command: `python ./scripts/inject_summary.py --profile wiki --file "plugins/adr-manager/skills/adr-management/scripts/next_number.py" --summary "YOUR_SUMMARY_HERE"`

@@ -5,21 +5,21 @@ flowchart TD
         Req --> Install{{"pip install -r requirements.txt"}}
         Install --> Venv[(Python Env)]
         Config --> Venv
-        note1["PREREQUISITE: Ollama running for distillation<BR>(query_cache.py works offline -- no Ollama needed)"]
+        note1["PREREQUISITE: CLI tools (Copilot/Gemini) configured<BR>(query_cache.py works offline -- no expensive calls)"]
         note1 -.- Config
     end
 
     subgraph Distillation ["Step 2: Build the RLM Summary Ledger (rlm-curator skill)"]
-        Venv --> Distiller["distiller.py --profile project"]
+        Venv --> Distiller["swarm_run.py --engine copilot"]
         Distiller -- "Scan target directories" --> Sources["Markdown / Python / YAML files"]
-        Distiller -- "POST /api/generate + rlm_summarize_general.md prompt" --> Ollama((Ollama API<BR>granite3.2:8b))
+        Distiller -- "Job processing + prompts" --> Ollama((Sub-Agents<BR>gpt-5-mini))
         Ollama -- "1-sentence dense summary" --> Distiller
-        Distiller -- "Incremental write (fcntl.flock)" --> Cache[("rlm_summary_cache.json<BR>rlm_tool_cache.json")]
+        Distiller -- "Atomic file writes" --> Cache[("rlm_summary_cache/*.md<BR>rlm_tool_cache/*.md")]
         Inject["inject_summary.py<BR>(agent distill path)"] -- "Single-file inject" --> Cache
     end
 
     subgraph Consumption ["Step 3: Query the Ledger (rlm-search skill)"]
-        Cache --> Query["query_cache.py --profile project 'keyword'<BR>O(1) substring search -- no Ollama"]
+        Cache --> Query["query_cache.py --profile project 'keyword'<BR>O(1) substring search -- no expensive calls"]
         Cache --> Inventory["inventory.py --profile project<BR>Coverage audit"]
         Cache --> Cleanup["cleanup_cache.py<BR>Remove stale/orphan entries"]
         Query -- "Matching summaries + file paths" --> User

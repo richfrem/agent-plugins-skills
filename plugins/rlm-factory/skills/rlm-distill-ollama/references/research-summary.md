@@ -1,1 +1,0 @@
-../../../assets/references/research-summary.md

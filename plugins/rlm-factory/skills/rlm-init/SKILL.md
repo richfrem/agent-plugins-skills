@@ -33,9 +33,9 @@ Real-world examples of each config file are in `references/examples/`:
 
 | File | Purpose |
 |:-----|:--------|
-| [`rlm_profiles.json`](assets/rlm_profiles.json) | Profile registry -- defines named caches and their manifest/cache paths |
-| [`rlm_summary_cache_manifest.json`](assets/rlm_summary_cache_manifest.json) | Project docs manifest -- what folders/globs to include and exclude |
-| [`rlm_tools_manifest.json`](assets/rlm_tools_manifest.json) | Tools manifest -- scoped to scripts and plugins only |
+| [`manifest-index.json`](resources/manifest-index.json) | Profile registry -- defines named caches and their manifest/cache paths |
+| [`rlm_manifest.json`](resources/rlm_manifest.json) | Project docs manifest -- what folders/globs to include and exclude |
+| [`distiller_manifest.json`](resources/distiller_manifest.json) | Tools manifest -- scoped to scripts and plugins only |
 
 ## Interactive Setup Protocol
 
@@ -82,7 +82,7 @@ Create or append to `<profiles_dir>/rlm_profiles.json`:
 |----------|---------|
 | `description` | Human-readable explanation of the profile's purpose |
 | `manifest` | Path to the manifest JSON (what folders/files to index) |
-| `cache` | Path to the cache JSON (where summaries are stored) |
+| `cache` | Path to the cache directory location |
 | `extensions` | List of string file extensions to include |
 
 ### Step 3: Create the Manifest
@@ -107,11 +107,9 @@ Create `<manifest_path>`:
 }
 ```
 
-### Step 4: Initialize Empty Cache
+### Step 4: Initialize Config
 
-```bash
-echo "{}" > <cache_path>
-```
+Make sure that the paths configured in `rlm_profiles.json` are properly created and empty arrays match where required. No `.json` databases are needed because the cache persists directly to `.md` files in a directory.
 
 ### Step 5: Audit (Show What Needs Caching)
 
@@ -127,16 +125,16 @@ Report: "N files in manifest, M already cached, K remaining."
 For each uncached file:
 1. **Read** the file
 2. **Summarize** — Generate a concise, information-dense summary
-3. **Write** the summary into the cache JSON with this schema:
+3. **Write** the summary into the cache using the script, which produces this markdown structure natively:
 
-```json
-{
-  "<relative_path>": {
-    "hash": "agent_distilled_<YYYY_MM_DD>",
-    "summary": "<your summary>",
-    "summarized_at": "<ISO timestamp>"
-  }
-}
+```markdown
+---
+hash: "agent_distilled_<YYYY_MM_DD>"
+summarized_at: "<ISO timestamp>"
+---
+
+# Summary
+<your summary>
 ```
 
 4. **Log**: `"✅ Cached: <path>"`

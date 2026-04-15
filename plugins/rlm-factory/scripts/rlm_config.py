@@ -233,39 +233,96 @@ def compute_hash(content: str) -> str:
 
 
 # ----------------------------------------------------------
-# load_cache / save_cache — crash-resilient JSON persistence
+# load_cache / save_cache — Markdown + YAML persistence
 # ----------------------------------------------------------
-def load_cache(cache_path: Path) -> Dict:
-    """
-    Load the cache JSON from disk.
-
-    Args:
-        cache_path: Path to the cache JSON file.
-
-    Returns:
-        Parsed cache dict, or empty dict if the file doesn't exist or is invalid.
-    """
-    if cache_path.exists():
-        try:
-            with open(cache_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"⚠️ Error loading cache at {cache_path}: {e}")
+def _parse_md_cache(filepath: Path) -> Dict:
+    """Helper to parse YAML frontmatter and summary from an RLM markdown file."""
+    try:
+        text = filepath.read_text(encoding="utf-8")
+        if text.startswith("---\n"):
+            parts = text.split("\n---", 1)
+            if len(parts) == 2:
+                frontmatter = parts[0].replace("---\n", "")
+                summary_block = parts[1].strip()
+                summary = summary_block.replace("# Summary\n", "").replace("# Summary", "").strip()
+                
+                entry = {"summary": summary}
+                for line in frontmatter.strip().split("\n"):
+                    if ":" in line:
+                        k, v = line.split(":", 1)
+                        entry[k.strip()] = v.strip().strip('"').strip("'")
+                return entry
+    except Exception:
+        pass
     return {}
 
+def load_cache(cache_path: Path) -> Dict:
+    """
+    Load the cache from the Markdown file system database.
+    Performs on-the-fly migration if legacy JSON exists.
+    """
+    cache_dir = cache_path.with_suffix('')  # e.g., rlm_cache_project (no .json)
+    result = {}
+    
+    # 1. Load from the native Markdown hierarchy
+    if cache_dir.exists() and cache_dir.is_dir():
+        for md_file in cache_dir.rglob("*.md"):
+            rel_path = str(md_file.relative_to(cache_dir))[:-3] # strip .md
+            entry = _parse_md_cache(md_file)
+            if entry:
+                result[rel_path] = entry
+
+    # 2. Legacy Migration: Also load from old JSON if it exists
+    if cache_path.exists() and cache_path.is_file():
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                legacy = json.load(f)
+                for k, v in legacy.items():
+                    if k not in result:
+                        result[k] = v
+        except Exception:
+            pass
+
+    return result
 
 def save_cache(cache: Dict, cache_path: Path) -> None:
     """
-    Persist the cache dict to disk, creating parent directories as needed.
-
-    Args:
-        cache: Cache data to serialize.
-        cache_path: Target path for the JSON file.
+    Persist the cache dict as individual Markdown files, matching the source 
+    directory structure underneath the cache directory.
     """
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(cache_path, "w", encoding="utf-8") as f:
-        json.dump(cache, f, indent=2, sort_keys=True)
-        f.write("\n")
+    cache_dir = cache_path.with_suffix('')
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 1. Distribute cache entries to their individual .md files
+    for rel_path, entry in cache.items():
+        # Strip existing .md suffix to avoid double extension (e.g. decision.md.md)
+        rel_path_clean = rel_path[:-3] if rel_path.endswith(".md") else rel_path
+        md_file = cache_dir / f"{rel_path_clean}.md"
+        md_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        lines = ["---"]
+        for k, v in entry.items():
+            if k != "summary":
+                val = str(v).replace('"', "'")
+                lines.append(f'{k}: "{val}"')
+        lines.append("---")
+        lines.append("")
+        lines.append("# Summary")
+        lines.append(str(entry.get("summary", "")))
+        lines.append("")
+        
+        md_file.write_text("\n".join(lines), encoding="utf-8")
+        
+    # 2. Prune orphan .md files (entries deleted from cache dict by cleanup scripts)
+    for md_file in list(cache_dir.rglob("*.md")):
+        rel_path = str(md_file.relative_to(cache_dir))[:-3]
+        if rel_path not in cache:
+            md_file.unlink()
+            # Clean up empty parent directories
+            p = md_file.parent
+            while p != cache_dir and not any(p.iterdir()):
+                p.rmdir()
+                p = p.parent
 
 
 # ----------------------------------------------------------

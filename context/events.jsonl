@@ -129,3 +129,6 @@
 {"time": "2026-04-11T12:16:08.978162Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-04-11T12:16:27.099308Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-04-11T12:16:41.353217Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-15T08:27:54.932308Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-15T08:31:24.138256Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-15T08:35:08.773236Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}

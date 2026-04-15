@@ -1,9 +1,0 @@
-vcs:
-  type: git
-agents:
-  available:
-  - windsurf
-  selection:
-    preferred_implementer: windsurf
-    preferred_reviewer: windsurf
-  auto_commit: true

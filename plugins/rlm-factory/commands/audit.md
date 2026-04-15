@@ -1,6 +1,6 @@
 ---
 description: Audit RLM cache coverage — compare ledger against filesystem (offline)
-argument-hint: "[--type legacy|tool]"
+argument-hint: "[--profile project|tools]"
 ---
 
 # Audit RLM Inventory

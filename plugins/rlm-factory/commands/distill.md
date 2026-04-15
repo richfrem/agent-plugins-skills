@@ -1,18 +1,18 @@
 ---
-description: Distill repository files into the RLM Summary Ledger using agentic intelligence (fast) or Ollama (offline batch)
-argument-hint: "[--profile project|tools] [--file path/to/file] [--since N]"
+description: Distill repository files into the RLM Summary Ledger using agentic intelligence (fast) or Swarm Workers (offline batch)
+argument-hint: "[--profile project|tools] [--file path/to/file]"
 ---
 
 # /rlm-factory:distill
 
 Summarize files into the RLM Summary Ledger. Two paths depending on context:
 
-> **For detailed execution protocol, see agent:** `rlm-distill`
+> **For detailed execution protocol, see agent:** `rlm-distill-agent`
 
-## Path 1 -- Agent Distillation (default, fast, no Ollama)
+## Path 1 -- Agent Distillation (default, fast, single file)
 
 The agent reads each file and writes a high-quality summary via `inject_summary.py`.
-Use for 1-50 files. The agent is faster and produces better summaries than local Ollama.
+Use for 1-10 files. The agent is faster for small batches.
 
 ```bash
 python3 ./scripts/inject_summary.py \
@@ -21,22 +21,18 @@ python3 ./scripts/inject_summary.py \
   --summary "Your agent-generated summary here."
 ```
 
-## Path 2 -- Ollama Batch (offline, bulk, 50+ files)
+## Path 2 -- Automated Swarm Batch (offline, bulk, 10+ files)
 
-Requires Ollama running locally (`ollama serve`, model: `granite3.2:8b`).
+Delegates to `swarm_run.py` to fan-out processing across Copilot/Gemini.
+> **Note:** Limit `--workers 2` when using `gpt-5-mini` on the free tier to avoid API throttling.
 
 ```bash
 # All files in profile scope
-python3 ./scripts/distiller.py --profile project
+python3 ./scripts/swarm_run.py --engine copilot --files-from rlm_distill_tasks_project.md
 
-# Single file
-python3 ./scripts/distiller.py --profile project --file path/to/file.md
-
-# Changed in last 2 hours
-python3 ./scripts/distiller.py --profile project --since 2
 ```
 
-| Profile | Flag | Cache file |
+| Profile | Flag | Cache Location |
 |:--------|:-----|:-----------|
-| Docs / protocols | `--profile project` | `rlm_summary_cache.json` |
-| Plugins / scripts | `--profile tools` | `rlm_tool_cache.json` |
+| Docs / protocols | `--profile project` | `rlm_summary_cache/*.md` |
+| Plugins / scripts | `--profile tools` | `rlm_tool_cache/*.md` |

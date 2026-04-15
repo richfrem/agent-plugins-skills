@@ -123,7 +123,7 @@ def test_compute_hash() -> None:
 
 
 def test_load_save_cache(tmp_path: Path) -> None:
-    """Test cache persistence functions."""
+    """Test cache persistence functions mapping to Markdown directories."""
     cache_path = tmp_path / "test_cache.json"
     data = {"file.py": {"summary": "test"}}
     
@@ -131,3 +131,8 @@ def test_load_save_cache(tmp_path: Path) -> None:
     loaded = load_cache(cache_path)
     
     assert loaded == data
+
+    # Verify the native Markdown directory format was generated
+    md_file = tmp_path / "test_cache" / "file.py.md"
+    assert md_file.exists()
+    assert "# Summary" in md_file.read_text()
