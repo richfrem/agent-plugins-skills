@@ -1,0 +1,14 @@
+{
+  "name": "richfrem-agent-plugins-skills",
+  "version": "1.0.0",
+  "description": "Universal Agent Plugins & Skills repository extension for Gemini CLI.",
+  "author": "Richard Fremmerlid",
+  "repository": "https://github.com/richfrem/agent-plugins-skills",
+  "contextFileName": "GEMINI.md",
+  "keywords": [
+    "agent-plugins",
+    "skills",
+    "automation",
+    "gemini-cli"
+  ]
+}
