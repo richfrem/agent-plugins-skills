@@ -321,7 +321,17 @@ def save_cache(cache: Dict, cache_path: Path) -> None:
         lines.append(str(entry.get("summary", "")))
         lines.append("")
         
-        md_file.write_text("\n".join(lines), encoding="utf-8")
+        new_content = "\n".join(lines)
+        write_needed = True
+        if md_file.exists():
+            try:
+                if md_file.read_text(encoding="utf-8") == new_content:
+                    write_needed = False
+            except Exception:
+                pass
+                
+        if write_needed:
+            md_file.write_text(new_content, encoding="utf-8")
         
     # 2. Prune orphan .md files (entries deleted from cache dict by cleanup scripts)
     for md_file in list(cache_dir.rglob("*.md")):
