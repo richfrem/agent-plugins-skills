@@ -22,6 +22,7 @@ langchain-text-splitters
 
 # Embeddings
 sentence-transformers
+einops
 
 # Security Overrides
 protobuf>=6.33.5
