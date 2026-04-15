@@ -1,1 +1,0 @@
-../../../assets/references/RLM_ARCHITECTURE.md

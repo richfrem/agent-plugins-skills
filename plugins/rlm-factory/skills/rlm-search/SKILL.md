@@ -46,48 +46,27 @@ Phase 3: Grep / Exact Search     -- Seconds, O(N) -- "Ctrl+F"
 
 **When to use:** Orientation, understanding what a file does, planning, high-level questions.
 
-**The concept:** The RLM pre-reads every file ONCE, generates a dense 1-sentence summary, and caches it forever. Searching those summaries costs nothing. This is amortized prework -- pay the reading cost once, benefit many times.
+**The concept:** The RLM pre-reads every file ONCE, generates a dense 1-sentence summary, and caches it forever as a native Markdown file. Searching those summaries costs nothing. This is amortized prework -- pay the reading cost once, benefit many times.
 
-### Profile Selection
+### Searching the Ledger
 
-Profiles are **project-defined** in `rlm_profiles.json` (see `rlm-init` skill). Any number of profiles can exist. Discover what's available:
+Because the summaries are now pure Markdown files, you can search them instantly using your native `grep_search` tool across the cache directories defined in `rlm_profiles.json` (typically `.agent/learning/rlm_summary_cache/` or `rlm_tool_cache/`).
 
-```bash
-cat .agent/learning/rlm_profiles.json
-```
+Common defaults:
 
-Common defaults (your project may use different names or define more):
-
-| Profile | Typical Contents | Use When |
+| Profile | Cache Directory | Use When |
 |:--------|:----------------|:---------|
-| `project` | Docs, protocols, research, markdown | Topic is a concept, decision, or process |
-| `tools` | Plugins, skills, scripts, Python files | Topic is a tool, command, or implementation |
-| *(any custom)* | Project-specific scope | Check `rlm_profiles.json` for your project's profiles |
+| `project` | `.agent/learning/rlm_summary_cache/` | Topic is a concept, decision, or process |
+| `tools` | `.agent/learning/rlm_tool_cache/` | Topic is a tool, command, or implementation |
 
-**When topic is ambiguous: search all configured profiles.** Each is O(1) -- near-zero cost.
+**When topic is ambiguous: search all profile directories.** Each is O(1) -- near-zero cost.
 
 ```bash
-# Search docs/protocols cache
-python3 ./scripts/query_cache.py \
-  --profile project "vector query"
+# Example: Search docs/protocols cache (Native Tool)
+grep_search "vector query" .agent/learning/rlm_summary_cache/
 
-# Search plugins/scripts cache
-python3 ./scripts/query_cache.py \
-  --profile tools "vector query"
-
-# Ambiguous topic -- search both (recommended default)
-python3 ./scripts/query_cache.py \
-  --profile project "embedding search" && \
-python3 ./scripts/query_cache.py \
-  --profile tools "embedding search"
-
-# List all cached entries for a profile
-python3 ./scripts/query_cache.py \
-  --profile project --list
-
-# JSON output for programmatic use
-python3 ./scripts/query_cache.py \
-  --profile tools "inject_summary" --json
+# Example: Search plugins/scripts cache
+grep_search "vector query" .agent/learning/rlm_tool_cache/
 ```
 
 **Phase 1 is sufficient when:** The summary gives you enough context to proceed (file path + what the file does). You do not need the exact code yet.
@@ -150,7 +129,7 @@ The diagrams below document the system this skill operates in:
 START: I need to find something in the codebase
    |
    v
-[Phase 1] query_cache.py -- "what does X do?"
+[Phase 1] grep_search -- "what does X do?" across `.agent/learning/*_cache/`
    |
    +-- Summary found + sufficient? --> USE IT. Done.
    |

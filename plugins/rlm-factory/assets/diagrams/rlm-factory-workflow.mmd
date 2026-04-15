@@ -2,9 +2,9 @@ sequenceDiagram
     participant User as User / Agent
     participant Config as rlm_config.py
     participant Auditor as inventory.py
-    participant Cache as rlm_*_cache.json
-    participant Distiller as distiller.py
-    participant Ollama as Ollama (granite3.2:8b)
+    participant Cache as rlm_*_cache/*.md
+    participant Distiller as swarm_run.py
+    participant LLM as Agent Swarm
     participant FS as File System
     participant Query as query_cache.py
     participant Janitor as cleanup_cache.py
@@ -18,7 +18,7 @@ sequenceDiagram
     Auditor->>FS: Scan target directories
     Auditor-->>User: 📊 Coverage: X% (N missing, M stale)
 
-    Note over User, Janitor: Phase 2: Distill (Write — requires Ollama)
+    Note over User, Janitor: Phase 2: Distill (Write — Automated Swarm)
 
     User->>Distiller: /rlm-factory:distill
     Distiller->>Config: Load RLMConfig
@@ -31,10 +31,10 @@ sequenceDiagram
         alt Hash unchanged (cache hit)
             Distiller->>Distiller: Skip
         else Hash changed or new file
-            Distiller->>Ollama: POST /api/generate (content + prompt)
-            Ollama-->>Distiller: Summary text
+            Distiller->>LLM: Distribute tasks to workers
+            LLM-->>Distiller: Summary text
             Distiller->>Cache: Write entry (hash, summary, timestamp)
-            Note right of Cache: Incremental persistence (write after EACH file)
+            Note right of Cache: Atomic file writes (markdown)
         end
     end
     Distiller-->>User: ✅ Processed N files

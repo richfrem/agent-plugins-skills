@@ -4,11 +4,10 @@ description: High-speed RLM distillation of project documentation using agentic 
 
 # Agent-Driven Distillation Workflow
 
-Use this workflow to bypass slow local Ollama models when summarizing files for the RLM
-Summary Ledger. The agent reads the file itself, generates a high-quality summary, and
-injects it via `inject_summary.py`.
+Use this workflow to generate a high-quality summary for single files, and
+inject it via `inject_summary.py`.
 
-> For full protocol, quality standards, and swarm delegation: see the `rlm-distill` agent
+> For full protocol, quality standards, and swarm delegation: see the `rlm-distill-agent` agent
 
 ## Steps
 

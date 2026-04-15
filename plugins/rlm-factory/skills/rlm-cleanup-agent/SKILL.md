@@ -89,7 +89,7 @@ Report the new coverage percentage.
 ## Rules
 
 - **Always dry-run first.** Never apply without showing the user what will be deleted.
-- **Never edit `*_cache.json` directly.** Always use `cleanup_cache.py`.
+- **Never edit `*_cache/*.md` directly.** Always use `cleanup_cache.py`.
 - **Source Transparency Declaration**: state which profiles were cleaned and how many entries removed.
 
 

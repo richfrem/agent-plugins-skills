@@ -7,8 +7,8 @@ flowchart TD
         Q --> D{Query Type?}
     end
 
-    subgraph Path1["Path 1: rlm-factory / rlm-search (O(1) -- offline, no Ollama)"]
-        D -->|"Keyword lookup"| RLM[("RLM Summary Ledger<BR>rlm_summary_cache.json<BR>rlm_tool_cache.json")]
+    subgraph Path1["Path 1: rlm-factory / rlm-search (O(1) -- offline, free)"]
+        D -->|"Keyword lookup"| RLM[("RLM Summary Ledger<BR>rlm_summary_cache/*.md<BR>rlm_tool_cache/*.md")]
         RLM -->|"Instant"| S1["1-sentence file summary<BR>+ file path"]
     end
 

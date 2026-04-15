@@ -1,28 +1,22 @@
 ---
-description: Search the RLM cache for file summaries by keyword (offline — no Ollama needed)
-argument-hint: "\"search term\" [--type legacy|tool] [--list] [--json]"
+description: Search the RLM cache for file summaries by keyword
+argument-hint: "\"search term\" [--profile project|tools] [--list] [--json]"
 ---
 
 # Query RLM Cache
 
-Instant O(1) search of the semantic ledger. **No Ollama required** — reads JSON only.
+Instant search of the semantic ledger. Because the cache leverages pure Markdown directories, you do NOT strictly need this script. You can use native `grep_search`.
 
 ## Usage
 ```bash
-# Search for a topic
+# Preferred Method (Native):
+grep_search "bail" .agent/learning/rlm_summary_cache/
+
+# Fallback CLI Method:
 python3 ./scripts/query_cache.py --profile project "bail"
-
-# Search tool cache
 python3 ./scripts/query_cache.py --profile tools "distiller"
-
-# List all cached entries
-python3 ./scripts/query_cache.py --profile project --list
-
-# JSON output for programmatic use
-python3 ./scripts/query_cache.py --profile project "config" --json
 ```
 
 ## Matches Against
 - File path (substring)
 - Summary content (substring)
-- Content hash
