@@ -88,7 +88,10 @@ def main() -> None:
     parser.add_argument("--folder", type=str, help="Ingest a specific folder relative to root")
     
     args = parser.parse_args()
-    
+    import time
+    start_time = time.perf_counter()
+    print(f"\n[RUN] Starting Environment Setup at {datetime.now().strftime('%H:%M:%S')}")
+
     # 1. Configuration Setup (Now dynamic from profile)
     vec_config = VectorConfig(profile_name=args.profile, project_root=str(PROJECT_ROOT))
     manifest = vec_config.load_manifest()
@@ -130,10 +133,11 @@ def main() -> None:
         print("[OK] No files found to ingest.")
         return
 
-    import time
-    start_time = time.perf_counter()
-    print(f"\n[RUN] Starting Ingestion at {datetime.now().strftime('%H:%M:%S')}")
-    print(f"[RUN] Processing {len(target_files)} files (Batch Size: {vec_config.batch_size})...")
+    if not target_files:
+        print("[OK] No files found to ingest.")
+        return
+
+    print(f"[RUN] Starting Batch Processing (Total Target: {len(target_files)}, Batch Size: {vec_config.batch_size})...")
     
     stats = {"success": 0, "failed": 0, "skipped": 0, "chunks": 0}
     docs_batch: List[Document] = []
