@@ -143,6 +143,12 @@ def main() -> None:
     docs_batch: List[Document] = []
     
     for i, rel_path in enumerate(target_files, 1):
+        if not args.full and cortex.is_indexed(rel_path):
+            stats["skipped"] += 1
+            if i % 100 == 0:
+                print(f"   ... Progress: {i}/{len(target_files)} (Skipped: {stats['skipped']})")
+            continue
+
         full_path = PROJECT_ROOT / rel_path
         if not full_path.exists():
             stats["skipped"] += 1

@@ -243,6 +243,17 @@ class VectorDBOperations:
             })
         return formatted_results
 
+    def is_indexed(self, rel_path: str) -> bool:
+        """Checks if a file has already been successfully indexed in the child collection."""
+        try:
+            results = self.chroma_client.get_collection(name=self.child_collection_name).get(
+                where={"source": rel_path},
+                limit=1
+            )
+            return len(results["ids"]) > 0
+        except Exception:
+            return False
+
     def get_stats(self) -> Dict[str, Any]:
         """Returns health status and counts for the Vector collections."""
         try:
