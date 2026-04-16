@@ -245,9 +245,11 @@ class VectorDBOperations:
 
     def is_indexed(self, rel_path: str) -> bool:
         """Checks if a file has already been successfully indexed in the child collection."""
+        # Normalize to forward slashes to match DB convention
+        safe_path = str(rel_path).replace("\\", "/")
         try:
             results = self.chroma_client.get_collection(name=self.child_collection_name).get(
-                where={"source": rel_path},
+                where={"source": safe_path},
                 limit=1
             )
             return len(results["ids"]) > 0
