@@ -130,6 +130,9 @@ def main() -> None:
         print("[OK] No files found to ingest.")
         return
 
+    import time
+    start_time = time.perf_counter()
+    print(f"\n[RUN] Starting Ingestion at {datetime.now().strftime('%H:%M:%S')}")
     print(f"[RUN] Processing {len(target_files)} files (Batch Size: {vec_config.batch_size})...")
     
     stats = {"success": 0, "failed": 0, "skipped": 0, "chunks": 0}
@@ -172,7 +175,10 @@ def main() -> None:
             print(f"[ERROR] Ingesting {rel_path}: {e}")
             stats["failed"] += 1
 
-    print(f"\n[DONE] Ingestion Finished. Success: {stats['success']}, Chunks: {stats['chunks']}")
+    duration = time.perf_counter() - start_time
+    print(f"\n[DONE] Ingestion Finished at {datetime.now().strftime('%H:%M:%S')}")
+    print(f"[DONE] Total Duration: {duration:.2f} seconds")
+    print(f"[DONE] Success: {stats['success']}, Chunks: {stats['chunks']}")
 
 
 if __name__ == "__main__":
