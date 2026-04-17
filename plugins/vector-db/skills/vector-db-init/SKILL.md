@@ -44,9 +44,44 @@ All operational settings live in `.agent/learning/vector_profiles.json`. These c
 
 ## Interactive Setup Protocol
 
-### Step 0: Setup Mode Selection
+### Step 0: Install Dependencies (MANDATORY — do this first)
 
-**Ask this before anything else.**
+**Before anything else**, install the plugin's Python dependencies from the lockfile.
+
+Run from the project root:
+
+```bash
+# Regenerate the lockfile from the intent file (only needed when requirements.in changes):
+python3 -m piptools compile plugins/vector-db/requirements.in \
+    --output-file plugins/vector-db/requirements.txt
+
+# Install all dependencies (always run this on first setup):
+python3 -m pip install -r plugins/vector-db/requirements.txt
+```
+
+> **Note:** `pip-tools` itself must be installed first if not present:
+> ```bash
+> python3 -m pip install pip-tools
+> ```
+>
+> **Known gotcha:** The system `pip` command may not be available on macOS. Always use
+> `python3 -m pip install ...` rather than bare `pip install ...`.
+
+Verify the critical packages are installed:
+
+```bash
+python3 -c "import chromadb; print('chromadb:', chromadb.__version__)"
+python3 -c "import einops; print('einops: OK')"
+python3 -c "from sentence_transformers import SentenceTransformer; print('sentence-transformers: OK')"
+```
+
+If any check fails, the install step above will fix it.
+
+---
+
+### Step 1: Setup Mode Selection
+
+**Ask this after dependencies are installed.**
 
 First, check what other plugins are installed:
 ```bash
