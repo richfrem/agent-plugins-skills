@@ -1,0 +1,1 @@
+../skills/obsidian-query-agent/SKILL.md

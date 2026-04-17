@@ -66,6 +66,12 @@ python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --engine gemini
 python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --engine copilot
 ```
 
+### Use shared .agent/learning/ cache (colocates with rlm-factory)
+```bash
+python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root \
+    --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
+```
+
 ### Dry run
 ```bash
 python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --dry-run
@@ -84,14 +90,21 @@ ENGINE_PRIORITY = [
 ]
 ```
 
-## Integration with rlm-factory
+## RLM Cache Storage
 
-`distill_wiki.py` calls `inject_summary.py` from the installed `rlm-factory`
-plugin to persist summaries. It resolves the path automatically:
+`distill_wiki.py` writes summaries directly into its own RLM cache directory.
+No cross-plugin script calls are made (ADR-001 compliant).
 
+Default cache: `{wiki-root}/rlm/{concept}/`
+
+To colocate with rlm-factory under `.agent/learning/`, pass `--rlm-cache-dir`:
+```bash
+python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root \
+    --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
 ```
-.agents/skills/rlm-distill-agent/scripts/inject_summary.py
-```
+
+The cache location is determined by configuration in `.agent/learning/rlm_profiles.json`
+(the `cache` key of the wiki profile) — not by hard-coded cross-plugin paths.
 
 ## When to Use
 

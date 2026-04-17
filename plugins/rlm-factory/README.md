@@ -1,20 +1,58 @@
 # RLM Factory Plugin 🏭
 
-Recursive Language Model factory — distill repository files into semantic summaries
-using Agent Swarms for instant context retrieval.
+Recursive Language Model factory — distill repository files into dense semantic summaries
+for O(1) keyword retrieval. **Works completely standalone** with zero external plugin deps.
+Pair with vector-db and/or obsidian-wiki-engine for a full Super-RAG 3-tier search stack.
 
-### Prerequisites
+## Standalone vs Combined
+
+**RLM factory is a complete product on its own.** Every file read once, summarized once,
+cached as plain text JSON. Searching is O(1) keyword lookup — no embeddings, no inference.
+
+| Mode | What you get | External deps in `.agents/` |
+|:-----|:-------------|:----------------------------|
+| **Standalone** | O(1) keyword search across all file summaries | None |
+| **+ vector-db** | Phase 1 narrows candidates; Phase 2 finds by meaning | `vector-db-init/` |
+| **+ obsidian-wiki-engine** | RLM distillation layers per concept node; wiki query uses RLM pre-filter | `obsidian-wiki-builder/` |
+| **Full Super-RAG** | All three: keyword → semantic → concept node | Both above |
+
+## Start Here
+
+**Skills run from `.agents/skills/` (the deployed runtime), not from `plugins/`.**
+
+```bash
+# Verify this plugin is installed and active
+ls .agents/skills/rlm-init/           # should exist
+ls .agents/agents/rlm-factory-init-agent.md  # should exist
+
+# If missing — install via:
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+# or: npx skills add richfrem/agent-plugins-skills
+# or: see INSTALL.md
+```
+
+**To initialize:** invoke `rlm-factory-init-agent` (or say "initialize RLM" / "set up my semantic cache").
+The agent asks what mode you want (standalone or combined with vector-db / obsidian-wiki-engine).
+
+## Prerequisites
+
 - **Claude Code** ≥ 1.0.33
 - **Python** ≥ 3.8
 - **Python Dependencies**: `pip install requests python-dotenv`
 
-### Verify Installation
-After loading, the following skills should be available:
-- `rlm-init` (Bootstrap caching)
-- `rlm-search` (Search semantic ledger)
-- `rlm-curator` (Audit and analyze cache coverages)
-- `rlm-distill-agent` (Agent-powered summarization engine)
-- `rlm-cleanup-agent` (Pruning entries)
+## Verify Installation
+
+After loading, the following skills should be available in `.agents/skills/`:
+- `rlm-init` — Bootstrap caching and profile setup
+- `rlm-search` — O(1) keyword search across the summary ledger
+- `rlm-curator` — Audit coverage, analyze cache gaps
+- `rlm-distill-agent` — Agent-powered summarization engine
+- `rlm-cleanup-agent` — Pruning stale/orphan entries
+
+```bash
+# Confirm skills are installed
+ls .agents/skills/ | grep rlm
+```
 
 ---
 
@@ -184,7 +222,24 @@ MIT
 - `skills/rlm-distill-agent/scripts/inject_summary.py`
 - `skills/rlm-search/scripts/query_cache.py`
 
-### Dependencies
-- `vector-db`
+### Optional Integrations (installed in `.agents/`)
+
+| Plugin | What it adds | Install |
+|:-------|:-------------|:--------|
+| `vector-db` | Phase 2 semantic search after RLM Phase 1 keyword filter | See [INSTALL.md](../../INSTALL.md) |
+| `obsidian-wiki-engine` | RLM distillation layers per wiki concept node | See [INSTALL.md](../../INSTALL.md) |
+
+```bash
+# Install via uvx (recommended)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+
+# Or via npx (Mac/Linux)
+npx skills add richfrem/agent-plugins-skills
+
+# Check what's installed
+ls .agents/skills/ | grep -E "vector-db|obsidian-wiki"
+```
+
+### Required Runtime Dependencies
 - `agent-loops`
 

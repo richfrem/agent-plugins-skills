@@ -9,6 +9,11 @@ Purpose:
     cheapest available LLM CLI, and generates three summary layers per concept:
     summary.md, bullets.md, deep.md.
 
+    Distillation is performed entirely within this plugin — no cross-plugin
+    script calls. RLM summaries are written to a configurable cache directory
+    (default: {wiki_root}/rlm/) or to a shared path under .agent/learning/
+    when --rlm-cache-dir is set to point there.
+
     Fallback chain (strict — Ollama is fully deprecated):
         1. copilot  -> gpt-5-mini
         2. claude   -> claude-haiku-4-5
@@ -21,6 +26,8 @@ Usage:
     python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --source arch-docs
     python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --engine claude
     python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --dry-run
+    python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root \\
+        --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
 
 Related:
     - raw_manifest.py  (WikiSourceConfig + agent-memory.json)
@@ -30,17 +37,16 @@ Related:
 import sys
 import os
 import shutil
-import shlex
 import argparse
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from raw_manifest import WikiSourceConfig, now_iso
+from raw_manifest import now_iso
 
 # ─── ENGINE REGISTRY (strict cheap-model only) ────────────────────────────────
 # Ollama is fully deprecated for distillation tasks.
@@ -186,22 +192,38 @@ def call_llm(
     return proc.stdout.strip()
 
 
+def _resolve_rlm_cache_dir(wiki_root: Path, rlm_cache_dir: Optional[Path] = None) -> Path:
+    """
+    Resolve the RLM cache directory.
+
+    Priority:
+        1. Explicit --rlm-cache-dir argument (e.g. .agent/learning/rlm_wiki_cache)
+        2. Default: {wiki_root}/rlm/
+
+    Using --rlm-cache-dir allows the wiki engine to write summaries into the
+    same .agent/learning/ tree as rlm-factory, avoiding duplicate storage.
+    """
+    if rlm_cache_dir:
+        return Path(rlm_cache_dir).resolve()
+    return wiki_root / "rlm"
+
+
 def write_rlm_layer(
-    wiki_root: Path,
     concept: str,
     layer: str,
     content: str,
+    rlm_cache_dir: Path,
 ) -> None:
     """
-    Write one RLM summary layer file to {wiki_root}/rlm/{concept}/{layer}.md.
+    Write one RLM summary layer file to {rlm_cache_dir}/{concept}/{layer}.md.
 
     Args:
-        wiki_root: Root of the wiki output directory.
-        concept:   Concept slug.
-        layer:     Layer name ('summary', 'bullets', 'deep').
-        content:   Distilled text to write.
+        concept:       Concept slug.
+        layer:         Layer name ('summary', 'bullets', 'deep').
+        content:       Distilled text to write.
+        rlm_cache_dir: Resolved RLM cache directory.
     """
-    rlm_dir = wiki_root / "rlm" / concept
+    rlm_dir = rlm_cache_dir / concept
     rlm_dir.mkdir(parents=True, exist_ok=True)
     layer_path = rlm_dir / f"{layer}.md"
 
@@ -226,21 +248,23 @@ def distill_concept(
     engine: str,
     model: str,
     layers: List[str],
+    rlm_cache_dir: Path,
     dry_run: bool = False,
 ) -> bool:
     """
     Distill all requested layers for one concept.
 
     Reads the wiki node file as source content, calls the LLM for each layer,
-    and writes the result to {wiki_root}/rlm/{concept}/
+    and writes the result to {rlm_cache_dir}/{concept}/
 
     Args:
-        concept:   Concept slug (matches wiki/{concept}.md filename).
-        wiki_root: Root of the wiki output directory.
-        engine:    LLM CLI to use.
-        model:     Model identifier.
-        layers:    List of layer names to generate.
-        dry_run:   If True, build prompts but do not call LLM.
+        concept:       Concept slug (matches wiki/{concept}.md filename).
+        wiki_root:     Root of the wiki output directory.
+        engine:        LLM CLI to use.
+        model:         Model identifier.
+        layers:        List of layer names to generate.
+        rlm_cache_dir: Resolved RLM cache directory.
+        dry_run:       If True, build prompts but do not call LLM.
 
     Returns:
         True on success, False if the wiki node file is missing.
@@ -262,7 +286,7 @@ def distill_concept(
         print(f"  [RUN] {concept}/{layer}.md via {engine}...", end=" ", flush=True)
         result = call_llm(engine, model, prompt)
         if result:
-            write_rlm_layer(wiki_root, concept, layer, result)
+            write_rlm_layer(concept, layer, result, rlm_cache_dir)
             print(f"OK ({len(result)} chars)")
         else:
             print("FAILED")
@@ -273,15 +297,17 @@ def distill_concept(
 def get_concepts_needing_distillation(
     wiki_root: Path,
     layers: List[str],
+    rlm_cache_dir: Path,
     source_name: Optional[str] = None,
 ) -> List[str]:
     """
     Find all wiki node concepts that are missing one or more RLM layers.
 
     Args:
-        wiki_root:   Root of the wiki output directory.
-        layers:      Layer names to check for.
-        source_name: Optional source filter (not yet implemented at this level).
+        wiki_root:     Root of the wiki output directory.
+        layers:        Layer names to check for.
+        rlm_cache_dir: Resolved RLM cache directory.
+        source_name:   Optional source filter (not yet implemented at this level).
 
     Returns:
         Sorted list of concept slugs needing distillation.
@@ -295,8 +321,8 @@ def get_concepts_needing_distillation(
         if node_file.name.startswith("_"):
             continue
         concept = node_file.stem
-        rlm_dir = wiki_root / "rlm" / concept
-        missing = any(not (rlm_dir / f"{layer}.md").exists() for layer in layers)
+        concept_rlm_dir = rlm_cache_dir / concept
+        missing = any(not (concept_rlm_dir / f"{layer}.md").exists() for layer in layers)
         if missing:
             needs_distill.append(concept)
 
@@ -314,27 +340,40 @@ def main() -> None:
                         help="Force a specific LLM CLI engine")
     parser.add_argument("--layers", default="summary,bullets,deep",
                         help="Comma-separated layers to generate (default: summary,bullets,deep)")
+    parser.add_argument(
+        "--rlm-cache-dir",
+        default=None,
+        help=(
+            "Override the RLM cache directory (default: {wiki-root}/rlm). "
+            "Set to .agent/learning/rlm_wiki_cache to colocate with rlm-factory."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true",
                         help="Show what would be distilled without calling the LLM")
     args = parser.parse_args()
 
     wiki_root = Path(args.wiki_root).resolve()
-    layers = [l.strip() for l in args.layers.split(",")]
+    layers = [layer.strip() for layer in args.layers.split(",")]
     engine, model = detect_engine(args.engine)
+    rlm_cache_dir = _resolve_rlm_cache_dir(wiki_root, args.rlm_cache_dir)
 
-    concepts = get_concepts_needing_distillation(wiki_root, layers)
+    concepts = get_concepts_needing_distillation(wiki_root, layers, rlm_cache_dir)
     if not concepts:
         print("[OK] All wiki nodes already have RLM summaries.")
         return
 
     print(f"\n[DISTILL] {len(concepts)} concepts need distillation")
-    print(f"          Engine: {engine} ({model})")
-    print(f"          Layers: {layers}")
-    print(f"          Wiki  : {wiki_root}\n")
+    print(f"          Engine   : {engine} ({model})")
+    print(f"          Layers   : {layers}")
+    print(f"          Wiki     : {wiki_root}")
+    print(f"          RLM cache: {rlm_cache_dir}\n")
 
     success = 0
     for concept in concepts:
-        ok = distill_concept(concept, wiki_root, engine, model, layers, dry_run=args.dry_run)
+        ok = distill_concept(
+            concept, wiki_root, engine, model, layers, rlm_cache_dir,
+            dry_run=args.dry_run,
+        )
         if ok:
             success += 1
 

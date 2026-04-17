@@ -1,7 +1,7 @@
 {
     "name": "obsidian-wiki-engine",
-    "version": "3.0.0",
-    "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation layer. Dual-representation knowledge graph: vault operations, wiki node generation, RLM summary distillation, graph traversal, canvas, bases, and progressive-disclosure query.",
+    "version": "3.1.0",
+    "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph: vault operations, cross-source concept synthesis, wiki node generation, RLM distillation, semantic health linting, graph traversal, canvas, bases, and progressive-disclosure query with vector DB Phase 2.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -19,16 +19,29 @@
         "rlm",
         "llm",
         "karpathy",
-        "distillation"
+        "distillation",
+        "vector-search",
+        "semantic-linting",
+        "concept-synthesis"
     ],
     "capabilities": [
         "obsidian-wiki-engine",
         "knowledge-management",
         "rlm-distillation",
         "wiki-generation",
-        "progressive-query"
+        "progressive-query",
+        "cross-source-synthesis",
+        "semantic-linting",
+        "vector-phase2-search"
     ],
+    "config": {
+        "manifest_path": ".agent/learning/rlm_wiki_raw_sources_manifest.json",
+        "rlm_profiles_path": ".agent/learning/rlm_profiles.json",
+        "vector_profiles_path": ".agent/learning/vector_profiles.json",
+        "vector_knowledge_manifest": ".agent/learning/vector_knowledge_manifest.json"
+    },
     "dependencies": {
-        "plugins": ["rlm-factory"]
+        "plugins": ["rlm-factory"],
+        "plugins_optional": ["vector-db"]
     }
 }

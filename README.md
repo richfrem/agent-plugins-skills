@@ -7,7 +7,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
 - *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
-**120 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
+**124 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -246,13 +246,24 @@ Diagram exporter and renderer using headless browser.
 
 - [`convert-mermaid`](plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md) *(autoresearch score: 30/40 MEDIUM — Triple-Loop eval run complete: 0.61 → 1.00 in 26 iterations)*
 
-### Obsidian Integration
+### Obsidian Wiki Engine — Karpathy LLM Wiki + Super-RAG
 
-Bi-directional sync translating codebase folders into Graph Vaults inside Obsidian.
+Karpathy-style LLM wiki with cross-source concept synthesis and 3-tier Super-RAG retrieval (RLM keyword → vector semantic → grep exact). Transforms raw markdown sources into structured, queryable concept nodes. Includes full Obsidian vault CRUD, canvas, and graph traversal.
 
-- [`obsidian-init`](plugins/obsidian-integration/skills/obsidian-init/SKILL.md) · [`obsidian-vault-crud`](plugins/obsidian-integration/skills/obsidian-vault-crud/SKILL.md)
-- [`obsidian-canvas-architect`](plugins/obsidian-integration/skills/obsidian-canvas-architect/SKILL.md) · [`obsidian-graph-traversal`](plugins/obsidian-integration/skills/obsidian-graph-traversal/SKILL.md)
-- [`obsidian-markdown-mastery`](plugins/obsidian-integration/skills/obsidian-markdown-mastery/SKILL.md) · [`obsidian-bases-manager`](plugins/obsidian-integration/skills/obsidian-bases-manager/SKILL.md)
+**Super-RAG stack:** `rlm-factory` (O(1) keyword) + `vector-db` (O(log N) semantic) + wiki nodes (full concept)
+
+**Wiki skills:**
+- [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) — build Karpathy nodes (ingest → concept synthesis → format)
+- [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) — generate RLM summary layers per concept
+- [`obsidian-query-agent`](plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md) — 3-phase query with `--save-as` (file outputs back)
+- [`obsidian-wiki-linter`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md) — semantic health check (inconsistencies, gaps, stale articles)
+
+**Vault skills:**
+- [`obsidian-init`](plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md) · [`obsidian-vault-crud`](plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/SKILL.md)
+- [`obsidian-canvas-architect`](plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/SKILL.md) · [`obsidian-graph-traversal`](plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/SKILL.md)
+- [`obsidian-markdown-mastery`](plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/SKILL.md) · [`obsidian-bases-manager`](plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/SKILL.md)
+
+**Setup agents:** `wiki-init-agent` (wiki-only setup) · `super-rag-setup-agent` (full 3-plugin orchestrator)
 
 ### Plugin Manager — Ecosystem Sync
 
@@ -298,11 +309,13 @@ Vector-search registry for all Python scripts — makes them discoverable withou
 
 ### Vector DB
 
-ChromaDB-driven continuous semantic embedding indexing for native codebase search.
+ChromaDB-driven semantic embedding indexing with Parent-Child retrieval. Supports In-Process mode (zero server setup) and HTTP Server mode. Profile-driven via `.agent/learning/vector_profiles.json`.
 
 - [`vector-db-init`](plugins/vector-db/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/vector-db/skills/vector-db-launch/SKILL.md)
 - [`vector-db-ingest`](plugins/vector-db/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/vector-db/skills/vector-db-search/SKILL.md)
 - [`vector-db-cleanup`](plugins/vector-db/skills/vector-db-cleanup/SKILL.md)
+
+**Setup agent:** `vector-db-init-agent` — guided wizard for profiles, deps, chunk sizes, and manifest
 
 ### Voice Writer
 
@@ -357,7 +370,7 @@ python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (29 plugins, 120 skills)
+plugins/                    ← upstream source (29 plugins, 124 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -384,4 +397,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*120 skills · 29 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops*
+*124 skills · 29 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*

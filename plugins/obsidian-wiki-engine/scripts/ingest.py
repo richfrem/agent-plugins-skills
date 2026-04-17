@@ -35,6 +35,7 @@ from raw_manifest import (
     WikiSourceConfig, load_agent_memory, save_agent_memory,
     compute_hash, is_stale, now_iso
 )
+from concept_extractor import infer_cluster_from_content
 
 # Maximum raw content characters kept per record before truncation
 MAX_CONTENT_CHARS = 4000
@@ -73,21 +74,22 @@ def extract_concept_name(title: str) -> str:
     return slug
 
 
-def infer_cluster(source_label: str, concept: str) -> str:
+def infer_cluster(source_label: str, concept: str, content: str = "") -> str:
     """
-    Infer a cluster name from the source label and concept name.
+    Infer a semantic cluster name from content keywords.
 
-    Uses the source label as the primary cluster identifier. A more
-    sophisticated implementation could use embeddings or keyword matching.
+    Delegates to concept_extractor.infer_cluster_from_content for keyword-
+    based cluster assignment. Falls back to source_label if extraction fails.
 
     Args:
         source_label: The label of the source (e.g. 'arch-docs').
         concept:      The concept slug.
+        content:      Raw file content for keyword extraction.
 
     Returns:
-        Cluster name string.
+        Kebab-case cluster name derived from dominant content keywords.
     """
-    return source_label
+    return infer_cluster_from_content(source_label, concept, content)
 
 
 def parse_file(
@@ -118,7 +120,7 @@ def parse_file(
     rel_path = source_cfg.relative_path(file_path)
     title = extract_title(content, file_path.stem)
     concept = extract_concept_name(title)
-    cluster = infer_cluster(source_cfg.label, concept)
+    cluster = infer_cluster(source_cfg.label, concept, content)
     content_hash = compute_hash(content)
 
     # Truncate for wiki node storage
