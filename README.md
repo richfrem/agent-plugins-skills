@@ -7,7 +7,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
 - *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
-**119 skills** across **27 plugins** — all maintained from a single hub-and-spoke source tree.
+**117 skills** across **25 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -98,7 +98,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (27 plugins · 119 skills)
+## Plugin Ecosystem (25 plugins · 117 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -189,11 +189,9 @@ Cross-platform pip-compile workflows with strict `.in` → `.txt` lockfile disci
 
 - [`dependency-management`](plugins/dependency-management/skills/dependency-management/SKILL.md)
 
-### Excel to CSV
+### Excel / CSV
 
-Headless batch conversion of Excel workbooks to CSV for data pipeline ingestion.
-
-- [`excel-to-csv`](plugins/excel-to-csv/skills/excel-to-csv/SKILL.md)
+Use Anthropic's canonical skill: [`anthropics/skills — xlsx`](https://github.com/anthropics/skills/tree/main/skills/xlsx)
 
 ### Exploration Cycle — Discovery & Requirements
 
@@ -228,9 +226,7 @@ Continuous markdown hyperlink validation with multi-stage pipeline (inventory �
 
 ### Markdown to MSWord
 
-Interoperability translator for non-technical stakeholders.
-
-- [`markdown-to-msword-converter`](plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/SKILL.md)
+Use Anthropic's canonical skill: [`anthropics/skills — docx`](https://github.com/anthropics/skills/blob/main/skills/docx/SKILL.md)
 
 ### Memory Management
 
@@ -368,7 +364,7 @@ python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (27 plugins, 119 skills)
+plugins/                    ← upstream source (25 plugins, 117 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -395,4 +391,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*119 skills · 27 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*117 skills · 25 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*

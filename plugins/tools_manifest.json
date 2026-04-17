@@ -285,29 +285,6 @@
         }
       ]
     },
-    "markdown-to-msword-converter": {
-      "count": 3,
-      "scripts": [
-        {
-          "name": "md_to_docx.py",
-          "path": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/md_to_docx.py",
-          "purpose": "Markdown -> Word (.docx) converter.",
-          "type": "python"
-        },
-        {
-          "name": "run_bulk_md_to_docx.py",
-          "path": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "verify_docx.py",
-          "path": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
-    },
     "mermaid-to-png": {
       "count": 2,
       "scripts": [

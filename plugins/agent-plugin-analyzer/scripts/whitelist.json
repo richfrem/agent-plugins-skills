@@ -54,9 +54,6 @@
         "gemini-cli": {},
         "huggingface-utils": {},
         "link-checker": {},
-        "markdown-to-msword-converter": {
-            "args.py": "false positive"
-        },
         "memory-management": {},
         "mermaid-to-png": {},
         "obsidian-integration": {},

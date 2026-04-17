@@ -1,8 +1,0 @@
-[
-  {"prompt": "Convert the 'SalesData' sheet from monthly_report.xlsx into a CSV file.", "should_trigger": true},
-  {"prompt": "Extract all rows from the 'Transactions' worksheet in database_dump.xlsx and save as CSV.", "should_trigger": true},
-  {"prompt": "I have an .xls workbook called inventory.xls — export the 'Stock' sheet to a flat CSV for analysis.", "should_trigger": true},
-  {"prompt": "How do I write a VLOOKUP formula in Excel to match sales data?", "should_trigger": false},
-  {"prompt": "Convert this Word document to a PDF file.", "should_trigger": false},
-  {"prompt": "Parse this JSON file and load it into a pandas DataFrame.", "should_trigger": false}
-]

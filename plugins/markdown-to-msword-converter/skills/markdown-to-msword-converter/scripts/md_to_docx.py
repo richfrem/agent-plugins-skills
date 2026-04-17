@@ -1,1 +1,0 @@
-../../../scripts/md_to_docx.py

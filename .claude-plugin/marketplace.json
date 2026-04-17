@@ -167,22 +167,6 @@
       "tags": ["copilot", "github-copilot", "cli", "sub-agent", "persona", "security-audit"]
     },
     {
-      "name": "excel-to-csv",
-      "description": "Convert Excel files (entire workbooks or specific worksheets/tables) into CSV format. Includes L5 Delegated Constraint Verification for strict artifact linting.",
-      "source": "./plugins/excel-to-csv",
-      "strict": true,
-      "category": "conversion",
-      "tags": ["excel", "csv", "conversion", "data", "l5-verified"]
-    },
-    {
-      "name": "markdown-to-msword-converter",
-      "description": "Convert Markdown files to MS Word (.docx) documents. Includes L5 Delegated Constraint Verification for strict binary artifact linting.",
-      "source": "./plugins/markdown-to-msword-converter",
-      "strict": true,
-      "category": "conversion",
-      "tags": ["markdown", "docx", "msword", "convert", "word", "document"]
-    },
-    {
       "name": "mermaid-to-png",
       "description": "Convert Mermaid diagrams (.mmd) into high-resolution PNG images via headless Puppeteer.",
       "source": "./plugins/mermaid-to-png",
