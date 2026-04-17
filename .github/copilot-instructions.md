@@ -1,113 +1,119 @@
-# Copilot instructions for agent-plugins-skills (from CLAUDE.md)
+# Copilot Instructions for agent-plugins-skills
 
-This file reproduces the key operational and architectural guidance present in CLAUDE.md so Copilot/AI sessions can act consistently with the repo's intent.
+> Authoritative rules for all AI agents (Claude Code, Copilot, Gemini) working in this repo.
+> Mirrors CLAUDE.md — keep in sync.
 
-## Repository purpose
+## Purpose
 
-This repo is the upstream monorepo for a cross-platform library of reusable AI agent plugins and skills. Plugins here are canonical sources that are "bridged" into target environments by installer scripts. Individual skills must be self-contained and not depend at runtime on sibling plugins.
-
-## Key commands
-
-### Install / Deploy Plugins
-
-- Recommended (uvx, cross-platform):
-  - uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-  - uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
-  - uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
-
-- Zero-dep fallback (macOS / Linux):
-  - curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
-
-- From a local clone (interactive TUI):
-  - python plugins/plugin-manager/scripts/plugin_add.py
-  - python plugins/plugin-manager/scripts/install_all_plugins.py
-  - python plugins/plugin-manager/scripts/install_all_plugins.py --dry-run
-
-### Regenerate autoresearch report (example)
-
-- python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/scripts/update_ranked_skills.py \
-  --json-path plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json \
-  --morning-report
-
-### Python dependency workflow (per-plugin)
-
-- pip-compile ./requirements.in
-- pip install -r ./requirements.txt
-
-Notes: Most skills require only Python 3.8+ standard library. Check requirements.in in the relevant plugin directory.
-
-Windows note: Never use `npx skills add` on Windows; Git symlinks check out as plain-text pointer files. Use `uvx` or `bootstrap.py` instead.
-
-## High-level architecture (Source → Deploy)
-
-```
-plugins/<plugin>/           ← canonical source (this repo)
-  plugin.json
-  skills/<skill>/
-    SKILL.md                ← skill definition (agent routing prompt)
-    evals/evals.json        ← routing eval suite (should_trigger boolean schema)
-    evals/results.tsv       ← score history
-    autoresearch/           ← optional: evaluate.py + golden tasks for improvement loops
-    scripts/                ← file-level symlinks → ../../scripts/ (never directory symlinks)
-  scripts/                  ← canonical scripts (shared via file-level symlinks only)
-  agents/                   ← sub-agent .md definitions
-  commands/                 ← slash command definitions
-
-.agents/                    ← bridge installer output (hard copies, all symlinks resolved)
-  skills/
-  agents/
-  workflows/
-
-.claude/agents/             ← symlinks → .agents/agents/ (Claude Code routing)
-```
-
-- The bridge installer resolves file-level symlinks into physical copies so deployed skills are self-contained.
-- Management scripts live in plugins/plugin-manager/scripts/ (install_all_plugins.py, plugin_add.py, bridge_installer.py, audit_structure.py, plugin_inventory.py, generate_readmes.py, etc.).
-
-## Architecture Decision Records
-
-See ADRs/ for authoritative rules. Relevant ADRs called out in CLAUDE.md:
-- ADR-001: No cross-plugin script execution; use agent skill delegation at runtime
-- ADR-002: Within-plugin multi-skill script sharing (hub-and-spoke)
-- ADR-003: File-level symlinks only; no directory symlinks
-- ADR-004: Self-contained installed artifacts; no runtime cross-plugin dependencies
-
-## Skill standards and conventions
-
-- Skill naming: kebab-case, directory-matching, no consecutive hyphens, 1–64 chars
-- SKILL.md: keep under ~500 lines; push longer detail to references/
-- evals/evals.json: use `should_trigger: true|false` schema (do not use legacy `expected_behavior` strings)
-- Scripting: use Python helper scripts only; do not create `.sh` scaffolding in skills
-- Symlinks: file-level symlinks only; installer resolves them into .agents/
-- Lockfile: skills-lock.json tracks installed plugin hashes
-- Temp outputs: write analysis/temporary files to temp/ (do not write to repo root)
-
-## Plugin-manager scripts (from CLAUDE.md)
-
-- install_all_plugins.py — Bulk bridge-install all plugins
-- plugin_add.py — Interactive TUI installer (local or remote)
-- bridge_installer.py — Low-level installer
-- update_agent_system.py — Pull-based sync for installed environments
-- clean_orphans.py — Remove artifacts for deleted plugins
-- audit_structure.py — Validate plugin directory structure
-- plugin_inventory.py — List plugins and metadata
-- sync_with_inventory.py — Reconcile installed state with plugin_sources.json
-- generate_readmes.py — Regenerate plugin-level README files
-
-## Creating new plugins & skills (scaffolding)
-
-- Use scaffolders rather than hand-rolling structure:
-  - /agent-scaffolders:create-plugin
-  - /agent-scaffolders:create-skill
-  - /agent-scaffolders:audit-plugin
-- After scaffolding run plugin_add.py to deploy and audit_structure.py to validate.
-
-## Scratch output
-
-- Write temporary files or analysis output to temp/ at repo root — never to the project root directly.
+Upstream source monorepo for a cross-platform library of reusable AI agent plugins and skills.
+Plugins are authored here and deployed into target projects via the bridge installer.
+Individual skills must be **fully self-contained** — no runtime cross-plugin dependencies.
 
 ---
 
-This file is now aligned with CLAUDE.md. If you want additional CLAUDE.md sections incorporated or per-plugin details added, say which plugin(s).
+## Key Commands
 
-Would you like an MCP server configured (for example Playwright) for this repository?
+```bash
+# Install plugins into any project (recommended)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+
+# Interactive local install
+python plugins/plugin-manager/scripts/plugin_add.py
+
+# Bulk install all plugins
+python plugins/plugin-manager/scripts/install_all_plugins.py
+
+# Dependencies (per plugin)
+pip-compile ./requirements.in && pip install -r ./requirements.txt
+```
+
+> **Windows**: Never use `npx skills add` — use `uvx` or `bootstrap.py` instead.
+
+---
+
+## Architecture
+
+```
+plugins/<plugin>/           ← canonical source
+  skills/<skill>/SKILL.md   ← skill definition
+  evals/evals.json          ← routing evals (should_trigger boolean schema)
+  scripts/                  ← shared scripts (file-level symlinks only)
+  agents/ commands/         ← sub-agents and slash commands
+
+.agents/                    ← bridge installer output (hard copies, symlinks resolved)
+  skills/ agents/ workflows/
+```
+
+> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. The `plugins/` directory
+> is the source. Files there are inactive until installed via `plugin_add.py` or `uvx`.
+
+See `ADRs/` for authoritative architecture rules.
+
+---
+
+## Behavior & Judgment (Karpathy Principles)
+
+Apply before writing any code or content.
+
+### 1. Think Before Acting
+Don't assume. Surface tradeoffs before starting. If uncertain, ask — don't run with a guess.
+Before adding a new skill or plugin, ask: does this belong in an existing plugin? Is there a scaffold skill to use?
+
+### 2. Simplicity First
+Minimum change that solves the problem. SKILL.md under ~500 lines. No abstractions for single-use code. No features beyond what was asked.
+
+### 3. Surgical Changes
+Touch only what you must. Don't improve adjacent sections you weren't asked to change. Every changed line traces directly to what was asked.
+
+### 4. Goal-Driven Execution
+Define success criteria first. For evals: write `evals.json` routing criteria before writing SKILL.md content. Verify outputs before claiming complete.
+
+---
+
+## Coding Rules (always applied)
+
+- **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime
+- **ADR-002**: Within-plugin multi-skill script sharing via hub-and-spoke (plugin root `scripts/`)
+- **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files
+- **ADR-004**: Installed artifacts must be self-contained — no runtime cross-plugin paths
+
+---
+
+## Skill Standards (always applied)
+
+- Skill `name`: kebab-case, matches directory name exactly, 1–64 chars
+- Skill `description`: third person ("Extracts text", not "I extract text")
+- `evals.json`: must use `should_trigger: true/false` — legacy `expected_behavior` produces 0% accuracy
+- SKILL.md: under ~500 lines; extra detail in `references/`
+- Helper scripts: Python only — never `.sh` bash scripts
+
+---
+
+## Scaffolding New Plugins/Skills
+
+Use these skills rather than hand-rolling structure:
+- `create-plugin` — full plugin scaffold with discovery interview
+- `create-skill` — skill scaffold with evals, references, acceptance-criteria
+- `audit-plugin` — validate structure after scaffolding
+
+Then run `plugin_add.py` to deploy.
+
+---
+
+## Scratch Output
+
+Write temporary files and analysis output to `temp/` — never to the project root directly.
+
+---
+
+## Context Retrieval Protocol (Super-RAG)
+
+Before reading source files blindly or running grep, follow the 3-phase protocol:
+
+| Phase | Command | When to use |
+|:------|:--------|:------------|
+| **1 — Keyword (O(1))** | `/rlm-factory:search "term"` | Always start here. Dense summaries of every file. |
+| **2 — Semantic (O(log N))** | `/vector-db:search "term"` | When Phase 1 finds the right area but needs deeper retrieval. |
+| **3 — Concept node** | `/wiki-query "concept"` | Full synthesized understanding of a concept. |
+
+Only fall back to raw `grep` if all three phases miss entirely.

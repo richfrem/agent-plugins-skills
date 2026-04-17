@@ -6,6 +6,8 @@ Upstream source monorepo for a cross-platform library of reusable AI agent plugi
 Plugins are authored here and deployed into target projects via the bridge installer.
 Individual skills must be **fully self-contained** — no runtime cross-plugin dependencies.
 
+---
+
 ## Key Commands
 
 ```bash
@@ -26,6 +28,8 @@ python plugins/plugin-manager/scripts/install_all_plugins.py
 pip-compile ./requirements.in && pip install -r ./requirements.txt
 ```
 
+---
+
 ## Architecture
 
 ```
@@ -39,8 +43,59 @@ plugins/<plugin>/           ← canonical source
   skills/ agents/ workflows/
 ```
 
+> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. The `plugins/` directory
+> is the source. Files there are inactive until installed via `plugin_add.py` or `uvx`.
+
 See `plugins/plugin-manager/scripts/` for ecosystem management scripts.
 See `ADRs/` for authoritative architecture rules.
+
+---
+
+## Behavior & Judgment (Karpathy Principles)
+
+These govern HOW to think, not just what to do. Apply before writing any code or content.
+
+### 1. Think Before Acting
+
+Don't assume. Don't hide confusion. Surface tradeoffs before starting.
+
+- State assumptions explicitly. If uncertain, ask — don't run with a guess.
+- If multiple interpretations exist, name them. Pick only after confirming.
+- Before adding a new skill or plugin, ask: does this belong in an existing plugin? Is there a scaffold skill to use (`create-skill`, `create-plugin`)?
+- If something is unclear, stop. Name what's confusing. Ask.
+
+### 2. Simplicity First
+
+Minimum change that solves the problem. Nothing speculative.
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- SKILL.md under ~500 lines — push extra detail to `references/` files.
+- No error handling for impossible scenarios.
+- If 200 lines could be 50, rewrite it. If a skill could be a pointer file, make it one.
+
+Ask: *Would a senior engineer say this is overcomplicated? If yes, simplify.*
+
+### 3. Surgical Changes
+
+Touch only what you must. Clean up only your own mess.
+
+- Don't "improve" adjacent SKILL.md sections, comments, or evals you weren't asked to change.
+- Don't refactor things that aren't broken.
+- Match existing style in the plugin you're editing, even if you'd do it differently.
+- If you notice unrelated dead code or stale skill content, mention it — don't silently fix it.
+- Every changed line should trace directly to what was asked.
+
+### 4. Goal-Driven Execution
+
+Define success criteria first. Loop until verified.
+
+- For evals: write `evals.json` routing criteria *before* writing SKILL.md content. The evals are the spec.
+- For scripts: state what the script will output and verify it before claiming complete.
+- For multi-step tasks, state a brief plan with a verification step for each stage.
+- Use the `verification-before-completion` skill on non-trivial tasks — it enforces shell verification before claiming done.
+
+---
 
 ## Coding Rules (always applied)
 
@@ -49,6 +104,8 @@ See `ADRs/` for authoritative architecture rules.
 - **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files
 - **ADR-004**: Installed artifacts must be self-contained — no runtime cross-plugin paths
 
+---
+
 ## Skill Standards (always applied)
 
 - Skill `name`: kebab-case, matches directory name exactly, 1–64 chars
@@ -56,6 +113,8 @@ See `ADRs/` for authoritative architecture rules.
 - `evals.json`: must use `should_trigger: true/false` — legacy `expected_behavior` produces 0% accuracy
 - SKILL.md: under ~500 lines; extra detail goes in `references/` files
 - Helper scripts: Python only — never generate `.sh` bash scripts
+
+---
 
 ## Scaffolding New Plugins/Skills
 
@@ -66,15 +125,24 @@ Use these skills rather than hand-rolling structure:
 
 Then run `plugin_add.py` to deploy.
 
+---
+
 ## Scratch Output
 
 Write temporary files and analysis output to `temp/` — never to the project root directly.
 
-## Context Retrieval & Search Protocol (Super-RAG)
+---
 
-Before reading source files blindly using expensive grep or wandering the codebase, you **MUST** follow the 3-Phase Search Protocol:
-1. **Phase 1 (Keyword/O(1))**: Run `/rlm-factory:search "term"` (or `rlm-search` from scripts) to query the distilled `.agent/learning/rlm_wiki_cache` for ultra-fast, token-efficient architecture context.
-2. **Phase 2 (Semantic/O(log N))**: Run `/vector-db:search "term"` (or use the vector-db python scripts) for deep semantic code retrieval if Phase 1 directs you to a core concept but lacks the exact payload.
-3. **Phase 3 (Concept/Exact)**: Use `/wiki-query "concept"` to pull final cohesive Karpathy-style documentation nodes from the `.wiki` root.
+## Context Retrieval Protocol (Super-RAG)
 
-*Only fall back to raw grep if the hierarchical Super-RAG caches miss entirely.*
+Before reading source files blindly or running grep across the whole repo, follow the 3-phase protocol:
+
+| Phase | Command | When to use |
+|:------|:--------|:------------|
+| **1 — Keyword (O(1))** | `/rlm-factory:search "term"` | Always start here. Dense summaries of every file. |
+| **2 — Semantic (O(log N))** | `/vector-db:search "term"` | When Phase 1 finds the right area but lacks the exact payload. |
+| **3 — Concept node** | `/wiki-query "concept"` | When you need the full synthesized understanding of a concept. |
+
+Only fall back to raw `grep` if all three phases miss entirely.
+
+The RLM cache is at `.agent/learning/`. The wiki is at `.wiki/`. Vector data at `.vector_data/`.
