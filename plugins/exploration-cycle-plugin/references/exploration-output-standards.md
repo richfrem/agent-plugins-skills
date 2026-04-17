@@ -21,7 +21,7 @@ engineering workflow. Examples from `github.com/richfrem/agent-plugins-skills`:
 
 - **superpowers** — write-plan / execute-plan workflow
 - **spec-kitty** — specify → plan → tasks → implement lifecycle
-- **agent-execution-disciplines** — TDD, debugging, verification disciplines
+- **superpowers** (obra/superpowers) — TDD, debugging, verification disciplines
 
 The handoff package format is deliberately generic — a structured markdown
 document with sections for requirements, decisions, open questions, and

@@ -7,7 +7,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
 - *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
-**125 skills** across **28 plugins** — all maintained from a single hub-and-spoke source tree.
+**119 skills** across **27 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -15,7 +15,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 
 This repository is built on a pragmatic acceptance of the current AI engineering landscape: **the ecosystem changes weekly, and workflows that were revolutionary six months ago are obsolete today.**
 
-Frameworks like `agent-agentic-os`, `spec-kitty`, and `agent-execution-disciplines` are treated as **Transitional Architectures** — bridges between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
+Frameworks like `agent-agentic-os` and `spec-kitty` are treated as **Transitional Architectures** — bridges between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
 
 **Skills are Applications; the SDK is the OS.** Individual skills must function in complete isolation — no hard dependencies on sibling plugins, no assumptions about which framework is running.
 
@@ -90,7 +90,7 @@ mutate SKILL.md → evaluate.py → exit 0 (KEEP) or exit 1 (DISCARD) → repeat
 Full ranked list: [`summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
 Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-report.md`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/autoresearch-opportunities-report.md)
 
-**First live autoresearch loop**: `agent-execution-disciplines/verification-before-completion` (35/40 HIGH) — golden task set + `evaluate.py` scaffolded, ready to run.
+**First live autoresearch loop**: `verification-before-completion` from `obra/superpowers` (35/40 HIGH) — golden task set + `evaluate.py` scaffolded, ready to run.
 
 ### Hub-and-Spoke ADR
 
@@ -98,7 +98,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (28 plugins · 125 skills)
+## Plugin Ecosystem (27 plugins · 119 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -133,16 +133,13 @@ Routing architecture unifying state management across complex agent executions w
 - [`agent-swarm`](plugins/agent-loops/skills/agent-swarm/SKILL.md) — parallelized concurrent sub-agents on independent worktrees
 - [`red-team-review`](plugins/agent-loops/skills/red-team-review/SKILL.md) — adversarial multi-agent evaluation
 
-### Agent Execution Disciplines — Safety & Quality
+### Execution Disciplines — Safety & Quality
 
-Behavioural guardrails enforcing best practices on every coding session.
+Behavioural guardrails enforcing best practices on every coding session. These skills come from [`obra/superpowers`](https://github.com/obra/superpowers) — install that plugin to get them. This ecosystem builds on superpowers rather than duplicating it.
 
-- [`verification-before-completion`](plugins/agent-execution-disciplines/skills/verification-before-completion/SKILL.md) — forces shell verification before claiming completion *(35/40 HIGH — **autoresearch loop live**, see `autoresearch/`)*
-- [`test-driven-development`](plugins/agent-execution-disciplines/skills/test-driven-development/SKILL.md) — RED-GREEN-REFACTOR compliance *(35/40 HIGH)*
-- [`using-git-worktrees`](plugins/agent-execution-disciplines/skills/using-git-worktrees/SKILL.md) — isolated worktree sandboxing *(33/40 HIGH — best DETERMINISTIC first loop candidate)*
-- [`systematic-debugging`](plugins/agent-execution-disciplines/skills/systematic-debugging/SKILL.md) — structured root cause analysis *(22/40 LOW)*
-- [`finishing-a-development-branch`](plugins/agent-execution-disciplines/skills/finishing-a-development-branch/SKILL.md) — safe git branch lifecycle *(16/40 LOW)*
-- [`requesting-code-review`](plugins/agent-execution-disciplines/skills/requesting-code-review/SKILL.md) — structured review request protocol *(28/40 MEDIUM)*
+**Install:** `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add obra/superpowers`
+
+Skills available via superpowers: `verification-before-completion` · `test-driven-development` · `using-git-worktrees` · `systematic-debugging` · `finishing-a-development-branch` · `requesting-code-review`
 
 ### Agent Scaffolders — Boilerplate Generators
 
@@ -349,10 +346,10 @@ Each skill scored on: objectivity (can a shell command measure it?), execution s
 
 | Rank | Skill | Score | Loop |
 |---|---|---|---|
-| 1 | agent-execution-disciplines/verification-before-completion | 35/40 | LLM_IN_LOOP |
-| 2 | agent-execution-disciplines/test-driven-development | 35/40 | LLM_IN_LOOP |
+| 1 | superpowers/verification-before-completion | 35/40 | LLM_IN_LOOP |
+| 2 | superpowers/test-driven-development | 35/40 | LLM_IN_LOOP |
 | 3 | coding-conventions/coding-conventions-agent | 34/40 | HYBRID |
-| 4 | agent-execution-disciplines/using-git-worktrees | 33/40 | DETERMINISTIC |
+| 4 | superpowers/using-git-worktrees | 33/40 | DETERMINISTIC |
 | 5 | spec-kitty-plugin/spec-kitty-status | 33/40 | DETERMINISTIC |
 | 6 | agent-agentic-os/os-eval-runner | 32/40 | DETERMINISTIC |
 
@@ -371,7 +368,7 @@ python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (28 plugins, 125 skills)
+plugins/                    ← upstream source (27 plugins, 119 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -398,4 +395,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*125 skills · 28 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*119 skills · 27 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*

@@ -191,7 +191,7 @@ python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" --list
 
 # Show a specific entry
 python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" \
-  --plugin agent-execution-disciplines --skill verification-before-completion --show
+  --plugin agent-agentic-os --skill os-eval-runner --show
 
 # List only PENDING entries (next batch to evaluate)
 python ./scripts/update_ranked_skills.py --json-path "$DATA_JSON" \

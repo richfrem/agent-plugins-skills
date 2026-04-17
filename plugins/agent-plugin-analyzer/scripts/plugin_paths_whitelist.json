@@ -32,7 +32,6 @@
     "plugins/spec-kitty-plugin",
     "plugins/exploration-cycle-plugin",
     "plugins/agent-scaffolders",
-    "plugins/agent-execution-disciplines",
     "plugins/[a-z-]+-plugin",
     "plugins/plugin-manager",
     "plugins/obsidian-integration",
