@@ -597,29 +597,6 @@
       "eval_date": "2026-03-29"
     },
     {
-      "plugin": "tool-inventory",
-      "skill": "tool-inventory",
-      "objectivity_score": 6,
-      "execution_speed_score": 9,
-      "frequency_of_use_score": 6,
-      "potential_utility_score": 7,
-      "total_autoresearch_viability": 28,
-      "proposed_benchmark_metric": "Inventory mismatch count (integer \u22650; ideal = 0), lower is better and directly measurable by the auditor script.",
-      "justification": "Objective MRR benchmark, but creating the golden dataset for the embeddings takes a long time.",
-      "status": "EVALUATED",
-      "eval_verdict": "MEDIUM",
-      "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/tool-inventory/scripts/audit_plugins.py --count-mismatches",
-      "mutation_target": ".agents/skills/tool-inventory/tool_inventory.json",
-      "key_barriers": [
-        "No evaluate.py provided \u2014 no standardized headless evaluator entrypoint",
-        "Dependency on external ChromaDB and the 'Electric Fence' constraints (no filesystem fallback) makes isolated headless runs brittle"
-      ],
-      "eval_notes": "The skill can produce deterministic numeric signals (inventory mismatch counts) and audits are fast, so an autoresearch loop is plausible. However, absence of a canonical evaluate.py entrypoint and reliance on ChromaDB require adding a stable headless evaluator and ensuring the DB can run in CI for unattended iterations.",
-      "eval_date": "2026-03-29",
-      "eval_count": 1
-    },
-    {
       "plugin": "agent-agentic-os",
       "skill": "os-guide",
       "objectivity_score": 2,
@@ -2224,29 +2201,6 @@
         "Quality judgments about 'clarity' are semantic and need LLM-level evaluation; simple counts are brittle proxies"
       ],
       "eval_notes": "The skill is fundamentally interactive and relies on semantic judgments, so it lacks a single deterministic numeric metric and cannot run headlessly. While simple proxies (TODO/TBD counts) can be measured, they do not guarantee true reduction of ambiguity and would make the loop brittle.",
-      "eval_date": "2026-03-30",
-      "eval_count": 2
-    },
-    {
-      "plugin": "tool-inventory",
-      "skill": "tool-inventory-init",
-      "objectivity_score": 6,
-      "execution_speed_score": 5,
-      "frequency_of_use_score": 1,
-      "potential_utility_score": 5,
-      "total_autoresearch_viability": 17,
-      "proposed_benchmark_metric": "Tool coverage percentage: (number of tools with injected RLM summaries) / (total detected tools) * 100, range 0\u2013100.",
-      "justification": "TODO: Needs evaluation",
-      "status": "EVALUATED",
-      "eval_verdict": "LOW",
-      "loop_type": "HYBRID",
-      "evaluator_command": "python3 -c 'import json,sys;d=json.load(open(\".agent/learning/rlm_profiles.json\"));print(len(d.get(\"profiles\",{}).get(\"tools\",{}).get(\"entries\",[])))'",
-      "mutation_target": ".agent/learning/rlm_profiles.json",
-      "key_barriers": [
-        "Core distillation and quality judgment require LLM summaries (non-deterministic evaluation).",
-        "Init workflow spawns multi-file artifacts and curator actions \u2014 not strictly a single-file mutation per iteration."
-      ],
-      "eval_notes": "A deterministic coverage metric (count of tools with RLM summaries) can be produced, but the meaningful quality signal depends on LLM-generated summaries and curator actions. Because distillation edits multiple records and uses models, the loop can't run purely headless and single-file without redesign.",
       "eval_date": "2026-03-30",
       "eval_count": 2
     },

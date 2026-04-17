@@ -30,6 +30,4 @@ We align with the open ecosystem driving this architecture:
 ### Skills
 - `coding-conventions-agent`
 
-### Dependencies
-- `tool-inventory`
 

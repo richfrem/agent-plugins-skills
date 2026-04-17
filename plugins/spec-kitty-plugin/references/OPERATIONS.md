@@ -74,7 +74,7 @@ To use models (Claude Opus or Gemini Pro/Ultra via API):
 ## 3. Maintenance Workflows
 To ingest new capabilities into the system:
 3.  **Register Tools**:
-    *   If you added new python scripts, trigger the `tool-inventory:tool-inventory` skill to register them.
+    *   If you added new python scripts, trigger the `rlm-factory:rlm-curator` skill to distill their summaries into the knowledge base.
 4.  **Run System Sync**:
     *   Execute `gemini run system-sync` to broadcast these new capabilities to Copilot and Gemini CLI.
 

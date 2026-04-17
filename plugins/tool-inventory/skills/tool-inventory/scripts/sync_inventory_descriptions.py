@@ -1,1 +1,0 @@
-../../../scripts/sync_inventory_descriptions.py

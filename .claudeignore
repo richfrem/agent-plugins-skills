@@ -75,12 +75,12 @@ desktop.ini
 .agents/skills/spec-kitty-specify/
 .agents/skills/os-memory-manager/
 .agents/skills/obsidian-graph-traversal/
-.agents/skills/tool-inventory-init/
+
 .agents/skills/systematic-debugging/
 .agents/skills/agent-swarm/
 .agents/skills/fix-plugin-paths/
 .agents/skills/convert-mermaid/
-.agents/skills/tool-inventory/
+
 .agents/skills/discovery-planning/
 .agents/skills/dual-loop/
 .agents/skills/link-checker-agent/

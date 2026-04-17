@@ -1,1 +1,0 @@
-../../../scripts/tool_inventory_init.py
