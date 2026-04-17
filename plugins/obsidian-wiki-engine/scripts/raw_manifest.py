@@ -47,11 +47,14 @@ from typing import Dict, List, Optional, Any
 
 # ─── PROJECT ROOT ─────────────────────────────────────────────────────────────
 def _find_project_root(start: Path) -> Path:
-    """Walk up from start to find the .git root, or fall back to 4 levels up."""
-    for p in [start.resolve()] + list(start.resolve().parents):
-        if (p / ".git").is_dir():
+    """Walk up from start to find the .git root (or .agents root), or fall back to 4 levels up."""
+    # Use .absolute() instead of .resolve() to prevent symlink traversal
+    # which breaks when the script is symlinked from a plugin repository.
+    absolute_start = start.absolute()
+    for p in [absolute_start] + list(absolute_start.parents):
+        if (p / ".git").is_dir() or (p / ".agents").is_dir():
             return p
-    return start.resolve().parents[3]
+    return absolute_start.parents[3]
 
 
 PROJECT_ROOT = _find_project_root(Path(__file__))
