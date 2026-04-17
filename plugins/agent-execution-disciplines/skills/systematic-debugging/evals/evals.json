@@ -1,8 +1,0 @@
-[
-  {"prompt": "There's a bug causing unexpected behavior, help me find the root cause before attempting any fix", "should_trigger": true},
-  {"prompt": "My tests are failing and I need to systematically debug to identify the root cause", "should_trigger": true},
-  {"prompt": "I've tried multiple fixes and the bug keeps appearing in different places — apply systematic debugging", "should_trigger": true},
-  {"prompt": "Write a failing test first so I can implement this new feature using TDD", "should_trigger": false},
-  {"prompt": "Dispatch the code-reviewer agent to review my implementation before merging", "should_trigger": false},
-  {"prompt": "Implementation is complete and all tests pass — help me decide how to integrate the branch", "should_trigger": false}
-]

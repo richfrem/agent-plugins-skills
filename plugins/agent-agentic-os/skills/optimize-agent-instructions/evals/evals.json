@@ -1,0 +1,74 @@
+[
+  {
+    "id": "tp-optimize-claude-md",
+    "type": "positive",
+    "prompt": "Optimize my CLAUDE.md with Karpathy principles",
+    "should_trigger": true
+  },
+  {
+    "id": "tp-audit-agent-instructions",
+    "type": "positive",
+    "prompt": "Audit my agent instruction files",
+    "should_trigger": true
+  },
+  {
+    "id": "tp-improve-claude-md",
+    "type": "positive",
+    "prompt": "Improve my CLAUDE.md — it has a lot of stale content",
+    "should_trigger": true
+  },
+  {
+    "id": "tp-apply-karpathy",
+    "type": "positive",
+    "prompt": "Apply Karpathy principles to my agent files",
+    "should_trigger": true
+  },
+  {
+    "id": "tp-clean-copilot-instructions",
+    "type": "positive",
+    "prompt": "Clean up my copilot-instructions.md",
+    "should_trigger": true
+  },
+  {
+    "id": "tp-review-gemini-md",
+    "type": "positive",
+    "prompt": "Review and improve my GEMINI.md",
+    "should_trigger": true
+  },
+  {
+    "id": "tp-update-ai-instructions",
+    "type": "positive",
+    "prompt": "Update my AI instruction files to follow best practices",
+    "should_trigger": true
+  },
+  {
+    "id": "tn-improve-skill",
+    "type": "negative",
+    "prompt": "Improve the trigger description for my link-checker skill",
+    "should_trigger": false
+  },
+  {
+    "id": "tn-create-plugin",
+    "type": "negative",
+    "prompt": "Create a new plugin for my project",
+    "should_trigger": false
+  },
+  {
+    "id": "tn-fix-bug",
+    "type": "negative",
+    "prompt": "Fix the bug in my authentication module",
+    "should_trigger": false
+  },
+  {
+    "id": "tn-setup-vector-db",
+    "type": "negative",
+    "prompt": "Set up the vector database for semantic search",
+    "should_trigger": false
+  },
+  {
+    "id": "tn-update-readme",
+    "type": "negative",
+    "prompt": "Update the README for the rlm-factory plugin",
+    "should_trigger": false
+  }
+]

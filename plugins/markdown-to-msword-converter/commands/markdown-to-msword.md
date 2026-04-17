@@ -1,1 +1,0 @@
-../skills/markdown-to-msword-converter/SKILL.md

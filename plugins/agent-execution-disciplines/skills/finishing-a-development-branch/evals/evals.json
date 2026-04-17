@@ -1,8 +1,0 @@
-[
-  {"prompt": "Implementation is complete and all tests pass — help me decide how to integrate this branch", "should_trigger": true},
-  {"prompt": "I've finished the feature, should I merge locally or create a pull request?", "should_trigger": true},
-  {"prompt": "Use the finishing-a-development-branch skill to complete this work", "should_trigger": true},
-  {"prompt": "I need to create a git worktree for a new feature branch", "should_trigger": false},
-  {"prompt": "Request a code review from the code-reviewer agent before I merge", "should_trigger": false},
-  {"prompt": "My tests are failing after recent changes, help me debug the root cause", "should_trigger": false}
-]

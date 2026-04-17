@@ -1,8 +1,0 @@
-[
-  {"prompt": "Use TDD to implement this new feature — write the failing test first before any production code", "should_trigger": true},
-  {"prompt": "Apply the red-green-refactor cycle when implementing this bugfix", "should_trigger": true},
-  {"prompt": "No production code without a failing test first — help me follow test-driven development", "should_trigger": true},
-  {"prompt": "There's a bug with unexpected behavior, help me trace the root cause systematically", "should_trigger": false},
-  {"prompt": "Dispatch the code-reviewer agent to review my implementation before merging", "should_trigger": false},
-  {"prompt": "Run os-eval-runner to measure this skill's routing accuracy score", "should_trigger": false}
-]

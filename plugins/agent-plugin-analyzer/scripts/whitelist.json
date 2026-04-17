@@ -54,9 +54,6 @@
         "gemini-cli": {},
         "huggingface-utils": {},
         "link-checker": {},
-        "markdown-to-msword-converter": {
-            "args.py": "false positive"
-        },
         "memory-management": {},
         "mermaid-to-png": {},
         "obsidian-integration": {},
@@ -76,9 +73,6 @@
             "tasks_cli.py": "spec-kitty sli command"
         },
         "task-manager": {},
-        "tool-inventory": {
-            "tool_distiller.py": "Hypothetical script discussed conceptually in strategy analysis prose."
-        },
         "vector-db": {}
     }
 }

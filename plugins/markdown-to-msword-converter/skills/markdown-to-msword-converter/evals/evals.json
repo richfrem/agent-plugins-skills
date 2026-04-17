@@ -1,8 +1,0 @@
-[
-  {"prompt": "Convert memo.md to a Word document (.docx) file.", "should_trigger": true},
-  {"prompt": "Bulk convert all Markdown files in the docs/ folder to MS Word format.", "should_trigger": true},
-  {"prompt": "Generate a .docx from this README.md and verify the binary output is valid.", "should_trigger": true},
-  {"prompt": "Convert this Word document to a PDF for sharing.", "should_trigger": false},
-  {"prompt": "Export this HTML page to a Markdown file.", "should_trigger": false},
-  {"prompt": "Render this Mermaid diagram to a PNG image.", "should_trigger": false}
-]
