@@ -38,16 +38,24 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 The `wiki-init-agent` asks which mode you want upfront and only provisions what's needed.
 Use `super-rag-setup-agent` if you want all three plugins configured in one session.
 
-## Super-RAG Stack (Mode D)
+## The Super-RAG Value Proposition (Why Mode D?)
 
-```
-Layer 1  rlm-factory          O(1) keyword scan across dense RLM summaries
-Layer 2  vector-db             O(log N) semantic embedding search
-Layer 3  obsidian-wiki-engine  Karpathy LLM wiki — full concept nodes
+Standard AI assistants and basic RAG systems often operate context-blind at query time — they chop files into random chunks, run basic semantic searches, and try to guess answers from fragmented paragraphs. They hallucinate, miss architectural rules, and fail on complex questions. 
 
-Query flow:
-  term → RLM scan (instant) → vector phase-2 (semantic) → grep fallback → wiki node
-```
+By combining all three layers in **Mode D (Full Super-RAG)**, you eliminate these blind spots and transform the repository into an **Active Cognitive Graph**:
+
+1. **Layer 1: The RLM Cache (`rlm-factory`) — The "Why"**
+   Indexes raw code by explicitly writing out its purpose, dependencies, and rules. When injected into the Vector DB, scattered code chunks become highly dense, pre-summarized knowledge. This practically eliminates AI hallucination.
+   *(O(1) keyword lookup across dense summaries)*
+2. **Layer 2: The Vector DB (`vector-db`) — The "Where"**
+   Maps searches to intent rather than requiring exact grep keywords. By ingesting the rich RLM summaries, the semantic search understands the concept behind your query and pulls the right, highly accurate context needle from the haystack.
+   *(O(log N) semantic embedding search)*
+3. **Layer 3: The LLM Wiki (`obsidian-wiki-engine`) — The "Synthesized Whole"**
+   Code is organized for compilers; human knowledge is organized by concepts. The Wiki Engine connects the fragmented dots across raw code and RLM summaries to pre-compute Karpathy-style Concept Nodes offline. 
+   *(Karpathy-style full concept nodes)*
+
+**The Result:** It pre-computes the "Senior Staff Architect" understanding of the codebase. Instead of dragging 30 massive source files into a context window, the AI quickly reads the synthesized concept nodes and RLM pre-filters. Every future query is lightning-fast, highly token-efficient, and dead-accurate to your specific ecosystem rules.
+
 
 ## Core Pipeline
 

@@ -112,6 +112,7 @@ import shlex
 import random
 import logging
 import argparse
+import platform as _platform
 import subprocess
 import concurrent.futures
 from pathlib import Path
@@ -120,8 +121,41 @@ from datetime import datetime
 try:
     import yaml
 except ImportError:
-    print("[ERROR] PyYAML not found. Run: pip install pyyaml")
+    print("[ERROR] PyYAML not found. Run: python3 -m pip install pyyaml")
     sys.exit(1)
+
+# ─── AUGMENT PATH for subprocesses ──────────────────────────────────────────
+# Ensures CLI tools like `copilot`, `gemini`, `claude` are discoverable when
+# this script is invoked by agents that strip the shell PATH.
+_extra_paths = [
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    os.path.expanduser("~/.local/bin"),
+    os.path.expanduser("~/.npm-global/bin"),
+    os.path.expanduser("~/n/bin"),
+    "/usr/local/share/npm/bin",
+]
+# VSCode Copilot Chat extension bundles the copilot CLI — path varies by OS
+_vscode_copilot_dir = {
+    "Darwin": os.path.expanduser(
+        "~/Library/Application Support/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+    "Windows": os.path.expanduser(
+        "~/AppData/Roaming/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+    "Linux": os.path.expanduser(
+        "~/.config/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+}.get(_platform.system())
+if _vscode_copilot_dir:
+    _extra_paths.append(_vscode_copilot_dir)
+
+for _p in _extra_paths:
+    if _p not in os.environ.get("PATH", "") and Path(_p).exists():
+        os.environ["PATH"] = _p + ":" + os.environ.get("PATH", "")
 
 # ─── LOGGING ───────────────────────────────────────────────────────────────
 logging.basicConfig(

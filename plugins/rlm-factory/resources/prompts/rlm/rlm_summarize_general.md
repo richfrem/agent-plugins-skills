@@ -1,16 +1,3 @@
----
-model: gpt-5-mini
-workers: 2
-timeout: 120
-max_retries: 3
-ext: [".md", ".py", ".js", ".mmd"]
-check_cmd: python3 ./plugins/rlm-factory/scripts/check_cached.py {file}
-post_cmd: >-
-  python3 ./plugins/rlm-factory/scripts/inject_summary.py
-  --profile wiki --file {file} --summary {output}
-vars:
-  profile: wiki
----
 Analyze this documentation, configuration, or structural file and extract a high-fidelity semantic summary perfectly aligned with the Recursive Language Model (RLM) philosophy.
 
 # RLM Core Philosophy: Summarize Once, Reuse Many
@@ -19,7 +6,7 @@ Your summary will be cached and read by other AI agents during future tasks. It 
 The summary is the agent's map: if the summary is good, the agent understands the terrain and doesn't have to scan the file. Only recurse to read the full file when strictly applicable.
 
 # File Context
-File: {file}
+File: {file_path}
 
 # Source Content
 {content}
