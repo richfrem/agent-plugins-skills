@@ -132,11 +132,16 @@ Validate each path exists. Warn if a path does not exist — ask the user to con
 Then ask once, globally:
 
 ```
-Any subdirectory patterns or file extensions to exclude beyond the defaults?
-Defaults: .git/, node_modules/, .venv/, __pycache__/
+1. Which specific file extensions should be INCLUDED? 
+   (Defaults: .md, .ts, .py)
+   Press Enter to accept, or type your own (e.g. .md, .json, .txt)
 
-Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
+2. Any subdirectory patterns or file extensions to EXCLUDE beyond the defaults?
+   (Defaults: .git/, node_modules/, .venv/, __pycache__/, _*, *.jsonl)
+   Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
 ```
+
+When generating the JSON manifest in Step 3, ensure the user's chosen extensions are propagated into the `extensions: []` array for each source, and any new exclusions are added to `global_excludes: []`.
 
 ---
 
