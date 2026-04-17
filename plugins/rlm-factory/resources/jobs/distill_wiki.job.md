@@ -1,6 +1,6 @@
 ---
 model: gpt-5-mini
-workers: 5
+workers: 2
 timeout: 120
 max_retries: 3
 ext: [".md", ".py", ".js", ".mmd"]

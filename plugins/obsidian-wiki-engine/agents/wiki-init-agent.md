@@ -335,12 +335,12 @@ Files written:
   # Run once per source directory (check_cmd skips already-cached files):
   1a. python3 plugins/rlm-factory/scripts/swarm_run.py \
         --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
-        --engine copilot --workers 5 \
+        --engine copilot --workers 2 \
         --dir plugins/
 
   1b. python3 plugins/rlm-factory/scripts/swarm_run.py \
         --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
-        --engine copilot --workers 5 \
+        --engine copilot --workers 2 \
         --dir plugin-research/
      (Slow on first run — covers all files in your manifest. Re-runs are fast due to check_cmd.)
 
@@ -396,12 +396,12 @@ Files written:
   # Run once per source directory (check_cmd auto-skips already-cached files):
      python3 plugins/rlm-factory/scripts/swarm_run.py \
        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
-       --engine copilot --workers 5 \
+       --engine copilot --workers 2 \
        --dir plugins/
 
      python3 plugins/rlm-factory/scripts/swarm_run.py \
        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
-       --engine copilot --workers 5 \
+       --engine copilot --workers 2 \
        --dir plugin-research/
 
   STEP 2 — Build vector index WITH RLM Super-RAG context (run after Step 1):
