@@ -39,18 +39,29 @@ guide AI behavior through explicit principles rather than hoping for defaults.
 
 ## Phase 1 — Discovery
 
-Before reading anything, ask:
+Run these checks silently before asking anything:
 
-1. **Which files to audit?** Default: all that exist. Check:
-   ```bash
-   ls CLAUDE.md GEMINI.md .github/copilot-instructions.md 2>/dev/null
-   ```
-2. **What platform(s) does the user work on?** (Claude Code, Copilot, Gemini CLI, all)
-3. **Does the repo have a Super-RAG stack?** (rlm-factory, vector-db, obsidian-wiki-engine)
-   — if yes, include the Super-RAG context retrieval protocol section
-4. **Any existing project-specific rules to preserve?** (coding standards, ADRs, etc.)
+**1. Which instruction files exist?**
+```bash
+ls CLAUDE.md GEMINI.md .github/copilot-instructions.md 2>/dev/null
+```
 
-If files are missing that should exist for active platforms, offer to create them.
+**2. Which Super-RAG layers are installed?** Check `.agents/skills/` only — NOT `plugins/`.
+Files in `plugins/` are the source repo and are inactive until installed via `plugin_add.py` or `uvx`.
+```bash
+ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
+ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
+ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
+```
+
+Store which layers are installed. The Super-RAG protocol section in the output files will
+**only include phases for installed layers**. If none are installed, omit the section entirely.
+
+**3. Ask the user:**
+- What platform(s) they use (Claude Code, Copilot, Gemini CLI) — determines which files to touch
+- Any project-specific rules to preserve (coding standards, ADRs, naming conventions)
+
+If instruction files are missing for active platforms, offer to create them.
 
 ---
 
@@ -83,7 +94,7 @@ Read each file, then score it against the **Quality Checklist**:
 **Platform-specific (if applicable)**
 - [ ] Gemini: has tool name mapping table (Read→read_file, Bash→run_shell_command, etc.)
 - [ ] Copilot: is authoritative (not framed as "a copy of CLAUDE.md")
-- [ ] All: has Super-RAG context retrieval table (if stack is installed)
+- [ ] Super-RAG table present only if layers are installed in `.agents/skills/` — and only lists installed layers (detected, not assumed)
 
 Report the audit score before rewriting. Example:
 ```
@@ -161,8 +172,16 @@ repo actually needs — do not add sections that don't apply.
 
 ---
 
-## Context Retrieval Protocol (if Super-RAG is installed)
-<3-phase table: keyword → semantic → concept.>
+## Context Retrieval Protocol (Super-RAG)
+<Only include this section if at least one layer is installed. Only include rows for installed layers.>
+
+| Phase | Command | When to use |
+|:------|:--------|:------------|
+| **1 — Keyword (O(1))** | `/rlm-factory:search "term"` | [only if rlm-factory installed] |
+| **2 — Semantic (O(log N))** | `/vector-db:search "term"` | [only if vector-db installed] |
+| **3 — Concept node** | `/wiki-query "concept"` | [only if obsidian-wiki-engine installed] |
+
+Only fall back to raw `grep` if all installed phases miss entirely.
 ```
 
 ### Platform-Specific Sections

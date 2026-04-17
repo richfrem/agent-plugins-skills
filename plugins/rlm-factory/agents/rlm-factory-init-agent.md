@@ -211,18 +211,34 @@ Report: "N files in manifest, M already cached, K remaining."
 
 ## Step 5.5 — Provision Super-RAG AI Search Protocol
 
-To ensure future AI agents use the cache natively, append the Super-RAG Search protocol to the user's `CLAUDE.md`, `GEMINI.md`, or `.github/copilot-instructions.md` if those files exist in the project root (never create the files if they don't exist). 
+Detect which Super-RAG layers are installed in `.agents/skills/` (NOT `plugins/` — that is
+the source repo; only `.agents/skills/` contains active installed skills):
 
-Append this exact block:
+```bash
+ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
+ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
+ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
+```
+
+**If `optimize-agent-instructions` is available** (`.agents/skills/optimize-agent-instructions/`):
+Invoke it — it handles detection, partial-stack awareness, and full instruction file optimization.
+
+**Otherwise**, manually append to `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`
+if those files exist in the project root (never create them):
+
+Build the protocol block using **only installed layers**:
 
 ```markdown
 ## Context Retrieval & Search Protocol (Super-RAG)
-Before reading source files blindly using expensive grep or wandering the codebase, you **MUST** follow the 3-Phase Search Protocol:
-1. **Phase 1 (Keyword/O(1))**: Run `/rlm-factory:search "term"` to query the distilled `.agent/learning/.rlm_cache` for ultra-fast, token-efficient architecture context.
-2. **Phase 2 (Semantic/O(log N))**: Run `/vector-db:search "term"` for deep semantic code retrieval if Phase 1 directs you to a core concept but lacks the exact payload.
-3. **Phase 3 (Concept/Exact)**: Use `/wiki-query "concept"` to pull final cohesive Karpathy-style documentation.
-*Only fall back to raw grep if the hierarchical Super-RAG caches miss entirely.*
+Before reading source files blindly, follow this protocol:
+[include only the lines below that correspond to INSTALLED layers]
+- **Phase 1 (Keyword/O(1))**: `/rlm-factory:search "term"` — [only if rlm-factory installed]
+- **Phase 2 (Semantic/O(log N))**: `/vector-db:search "term"` — [only if vector-db installed]
+- **Phase 3 (Concept/Exact)**: `/wiki-query "concept"` — [only if obsidian-wiki-engine installed]
+*Only fall back to raw grep if all installed phases miss entirely.*
 ```
+
+If only rlm-factory is installed (Mode A standalone), the block contains Phase 1 only.
 
 ---
 
