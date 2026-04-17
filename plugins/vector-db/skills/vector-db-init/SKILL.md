@@ -42,7 +42,22 @@ All operational settings live in `.agent/learning/vector_profiles.json`. These c
 
 ---
 
-## Interactive Setup Protocol
+## Default: In-Process (Filesystem) Mode
+
+Vector-db runs **In-Process by default** — ChromaDB persists directly to a local directory
+(configured as `chroma_data_path` in `vector_profiles.json`). No server process is needed.
+
+When running `ingest.py` or `query.py` you will see:
+```
+[WARN] Failed to connect to remote ChromaDB ... Falling back to local.
+[DIR] Connecting to local persistent ChromaDB at .agent/learning/vector_wiki_db...
+```
+**This is expected and correct.** The remote-server check (`127.0.0.1:8110`) happens
+automatically in case a server IS running, but falls back gracefully. Only switch to
+server mode (`vector-db-launch` skill) if you need multiple concurrent writers.
+
+---
+
 
 ### Step 0: Install Dependencies (MANDATORY — do this first)
 

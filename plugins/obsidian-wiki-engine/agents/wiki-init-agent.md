@@ -279,27 +279,135 @@ Update `<wiki-root>/meta/config.yaml`: set `vdb_profile: wiki`.
 
 ## Step 8 — Final Summary
 
-Print a summary appropriate to the chosen mode:
+Print a summary appropriate to the chosen mode, with the CORRECT ordering of next steps.
+
+> **CRITICAL ORDERING RULE:**
+> For Modes B, C, D — raw source distillation / vector ingest MUST happen BEFORE
+> running `/wiki-build`. The wiki-builder uses those caches to write richer nodes.
+> Mode A has no prerequisite — go straight to `/wiki-build`.
+
+### Two RLM Cache Locations — Architecture Note
+
+The wiki engine uses two DISTINCT RLM layers. Explain this to the user:
+
+| Location | Populated by | Purpose |
+|----------|--------------|---------|
+| `.agent/learning/rlm_wiki_cache/` | `rlm-factory` (copilot/claude batch) | Per-file distillation — one `.md` summary per raw source file. This is the Super-RAG context injected into vector chunks. |
+| `.wiki/rlm/` | `/wiki-distill` command | Per-concept 3-tier summaries — `summary.md`, `bullets.md`, `deep.md` per wiki concept node. Used for fast query responses. |
+
+Both layers are needed for full Mode D performance. Populate them in order:
+1. rlm-factory cache → 2. vector ingest → 3. `/wiki-build` → 4. `/wiki-distill`
+
+### Mode A — Wiki Only
 
 ```
-=== Wiki Engine Setup Complete (Mode <X>) ===
+=== Wiki Engine Setup Complete (Mode A) ===
 
 Files written:
   ✓ .agent/learning/rlm_wiki_raw_sources_manifest.json  (<N> sources)
-  [Mode B/D] ✓ .agent/learning/rlm_profiles.json         (wiki profile added)
-  [Mode C/D] ✓ .agent/learning/vector_profiles.json      (wiki profile added)
   ✓ <wiki-root>/meta/config.yaml
   ✓ <wiki-root>/meta/agent-memory.json
 
 === Next Steps ===
 
-  /wiki-build                        ← build concept nodes (all modes)
-  [Mode B/D] /wiki-distill           ← generate RLM summary layers per concept
-  /wiki-query "your question"        ← query the wiki
-  [Mode C/D] /wiki-query --vdb-profile wiki "your question"   ← with vector Phase 2
-  /wiki-lint                         ← semantic health check (after ~20+ nodes)
+  1. /wiki-build     <- parse sources and build concept nodes
+  2. /wiki-query "your question"    <- query the knowledge base
+  3. /wiki-audit     <- structural health check
+  4. /wiki-lint      <- semantic health check (after ~20+ nodes)
 
-To upgrade to a higher mode later, re-run /wiki-init.
+  To add RLM summaries later:  re-run /wiki-init -> choose Mode B or D
+  To add vector search later:  re-run /wiki-init -> choose Mode C or D
+```
+
+### Mode B — Wiki + RLM
+
+```
+=== Wiki Engine Setup Complete (Mode B) ===
+
+Files written:
+  ✓ .agent/learning/rlm_wiki_raw_sources_manifest.json
+  ✓ .agent/learning/rlm_profiles.json   (wiki profile)
+  ✓ <wiki-root>/meta/config.yaml
+
+=== Next Steps (in ORDER) ===
+
+  REQUIRED FIRST — populate the per-file RLM cache:
+  1. python3 plugins/rlm-factory/scripts/swarm_run.py \
+       --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
+       --engine copilot --workers 5 --resume
+     (Slow on first run — covers all files in your manifest. Use --resume to restart.)
+
+  AFTER cache is populated:
+  2. /wiki-build     <- build concept nodes (uses RLM cache for richer nodes)
+  3. /wiki-distill   <- generate per-concept .wiki/rlm/ summaries
+  4. /wiki-query "your question"    <- query the wiki
+
+  Audit coverage before step 2:
+     python3 plugins/rlm-factory/scripts/audit_cache.py --profile wiki
+```
+
+### Mode C — Wiki + Vector
+
+```
+=== Wiki Engine Setup Complete (Mode C) ===
+
+Files written:
+  ✓ .agent/learning/rlm_wiki_raw_sources_manifest.json
+  ✓ .agent/learning/vector_profiles.json   (wiki profile)
+  ✓ <wiki-root>/meta/config.yaml
+
+=== Next Steps (in ORDER) ===
+
+  REQUIRED FIRST — build the vector index:
+  1. python3 plugins/vector-db/scripts/ingest.py --profile wiki
+     (First run: downloads embedding model. Subsequent runs: smart-sync only changed files.)
+     Note: runs in In-Process (filesystem) mode by default — no server needed.
+
+  AFTER ingest completes:
+  2. /wiki-build     <- build concept nodes
+  3. /wiki-query --vdb-profile wiki "your question"   <- semantic search enabled
+
+  Verify vector search works:
+     python3 plugins/vector-db/scripts/query.py --profile wiki --limit 5 "test query"
+```
+
+### Mode D — Full Super-RAG (RLM + Vector + Wiki)
+
+```
+=== Wiki Engine Setup Complete (Mode D) ===
+
+Files written:
+  ✓ .agent/learning/rlm_wiki_raw_sources_manifest.json
+  ✓ .agent/learning/rlm_profiles.json      (wiki profile)
+  ✓ .agent/learning/vector_profiles.json   (wiki profile)
+  ✓ <wiki-root>/meta/config.yaml
+  ✓ <wiki-root>/meta/agent-memory.json
+
+=== Next Steps (in ORDER — do NOT skip steps) ===
+
+  STEP 1 — Populate per-file RLM cache (slow, run overnight / leave running):
+     python3 plugins/rlm-factory/scripts/swarm_run.py \
+       --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
+       --engine copilot --workers 5 --resume
+
+  STEP 2 — Build vector index WITH RLM Super-RAG context (run after Step 1):
+     python3 plugins/vector-db/scripts/ingest.py --profile wiki
+     Note: In-Process filesystem mode — no ChromaDB server required.
+
+  STEP 3 — Build wiki concept nodes (after Steps 1+2 are done):
+     /wiki-build
+
+  STEP 4 — Generate per-concept wiki summaries:
+     /wiki-distill
+
+  STEP 5 — Query and verify:
+     /wiki-query "your question"
+     /wiki-query --vdb-profile wiki "your question"   <- with vector Phase 2
+
+  Coverage audit (run between Step 1 and Step 2):
+     python3 plugins/rlm-factory/scripts/audit_cache.py --profile wiki
+
+  To upgrade or change sources later, re-run /wiki-init.
 ```
 
 ---
@@ -313,3 +421,4 @@ To upgrade to a higher mode later, re-run /wiki-init.
 - NEVER provision vector-db profiles unless Mode C or D was chosen.
 - If a `.agent/learning/rlm_wiki_raw_sources_manifest.json` already exists, ask: "A manifest already exists. Overwrite, merge, or abort?"
 - For merging: add new sources to existing sources dict; do not remove existing entries.
+- ALWAYS show the ordering note: RLM/vector BEFORE wiki-build for Modes B/C/D.

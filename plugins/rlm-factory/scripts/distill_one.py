@@ -52,6 +52,8 @@ if str(SCRIPT_DIR) not in sys.path:
 # ─── AUGMENT PATH for subprocesses ─────────────────────────────────────────
 # Antigravity runs with a stripped PATH. Add common locations for CLI tools.
 import os
+import platform as _platform
+
 _extra_paths = [
     "/opt/homebrew/bin",
     "/usr/local/bin",
@@ -59,12 +61,29 @@ _extra_paths = [
     os.path.expanduser("~/.npm-global/bin"),
     os.path.expanduser("~/n/bin"),
     "/usr/local/share/npm/bin",
-    # macOS: VSCode GitHub Copilot Chat extension bundles the copilot CLI here
-    os.path.expanduser(
+]
+
+# Add the VSCode Copilot Chat extension's bundled copilot CLI.
+# The path varies by OS — detect at runtime rather than hardcoding.
+# Users who install copilot CLI via npm/brew don't need these fallbacks;
+# they're here for the common case where it's only installed via VSCode.
+_vscode_copilot_dir = {
+    "Darwin": os.path.expanduser(
         "~/Library/Application Support/Code/User/globalStorage/"
         "github.copilot-chat/copilotCli"
     ),
-]
+    "Windows": os.path.expanduser(
+        "~/AppData/Roaming/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+    "Linux": os.path.expanduser(
+        "~/.config/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+}.get(_platform.system())
+if _vscode_copilot_dir:
+    _extra_paths.append(_vscode_copilot_dir)
+
 for _p in _extra_paths:
     if _p not in os.environ.get("PATH", "") and Path(_p).exists():
         os.environ["PATH"] = _p + ":" + os.environ.get("PATH", "")
