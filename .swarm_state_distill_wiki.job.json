@@ -34,7 +34,17 @@
     "plugins/agent-agentic-os/assets/diagrams/os-eval-backport-sequence.mmd",
     "plugins/agent-agentic-os/assets/diagrams/os-eval-backport-phases.mmd",
     "plugins/agent-agentic-os/assets/diagrams/session-memory-manager-flow.mmd",
-    "plugins/agent-agentic-os/assets/diagrams/shared-memory-layers.mmd"
+    "plugins/agent-agentic-os/assets/diagrams/shared-memory-layers.mmd",
+    "plugins/agent-agentic-os/assets/diagrams/sibling-repo-labs.mmd",
+    "plugins/agent-agentic-os/assets/diagrams/triple-loop-learning-system.mmd",
+    "plugins/agent-agentic-os/assets/templates/CLAUDE_LOCAL_MD.md",
+    "plugins/agent-agentic-os/assets/templates/CLAUDE_MD_GLOBAL.md",
+    "plugins/agent-agentic-os/assets/templates/CLAUDE_MD_PROJECT.md",
+    "plugins/agent-agentic-os/assets/templates/HEARTBEAT_MD.md",
+    "plugins/agent-agentic-os/assets/templates/MEMORY_MD.md",
+    "plugins/agent-agentic-os/assets/templates/SOUL_MD.md",
+    "plugins/agent-agentic-os/assets/templates/START_HERE_MD.md",
+    "plugins/agent-agentic-os/assets/templates/STATUS_MD.md"
   ],
   "failed": {}
 }
