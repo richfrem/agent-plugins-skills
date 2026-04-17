@@ -196,41 +196,36 @@ For each source folder you want to index, it asks:
 | Subdirectories to exclude? | `_archive, *.tmp` |
 | Add another source? | yes/no |
 
-### 5.3 Output: `wiki_sources.json`
+### 5.3 Output: `rlm_wiki_raw_sources_manifest.json`
+
+Uses the same flat schema as `rlm-factory` and `vector-db` for consistency:
 
 ```json
 {
-  "namespace": "my-project",
-  "wiki_root": "/path/to/wiki-root",
-  "sources": {
-    "daily-notes": {
-      "path": "/path/to/vault/notes",
-      "label": "daily-notes",
-      "extensions": [".md"],
-      "excludes": ["_archive", "*.tmp"],
-      "description": "Daily journal and quick capture notes"
-    },
-    "arch-docs": {
-      "path": "/path/to/docs/architecture",
-      "label": "arch-docs",
-      "extensions": [".md"],
-      "excludes": [],
-      "description": "Architecture decision records"
-    }
-  },
-  "global_excludes": ["_archive", "*.tmp", "__pycache__", ".git"]
+  "description": "Source raw content for Obsidian Wiki",
+  "include": [
+    "plugins/",
+    "plugin-research/"
+  ],
+  "exclude": [
+    ".git/",
+    "node_modules/",
+    ".venv/",
+    "__pycache__/"
+  ],
+  "recursive": true
 }
 ```
+
+Saved to: `.agent/learning/rlm_wiki_raw_sources_manifest.json`
 
 ### 5.4 Next Steps After Discovery
 
 ```bash
-/wiki-ingest    ← parse all registered sources, build wiki nodes
-/wiki-distill   ← generate RLM summaries (cheapest available LLM CLI)
-/wiki-query     ← start querying the wiki
+/wiki-ingest    <- parse all registered sources, build wiki nodes
+/wiki-distill   <- generate RLM summaries (cheapest available LLM CLI)
+/wiki-query     <- start querying the wiki
 ```
-
-> **Requires:** `rlm-factory` plugin installed. See `dependencies.md`.
 
 ---
 
