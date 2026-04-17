@@ -55,7 +55,7 @@ Consumed by:
 """
 ```
 
-> The `tool-inventory` skill auto-extracts the "Purpose:" section from this header for the registry.
+> The RLM summary cache auto-extracts the "Purpose:" section from this header.
 
 ## TypeScript Utility Module Header (Extended)
 

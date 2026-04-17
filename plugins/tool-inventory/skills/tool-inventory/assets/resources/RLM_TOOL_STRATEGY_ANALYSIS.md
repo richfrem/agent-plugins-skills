@@ -1,1 +1,0 @@
-../../../../assets/resources/RLM_TOOL_STRATEGY_ANALYSIS.md

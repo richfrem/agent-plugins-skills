@@ -1321,66 +1321,7 @@
       "strategy": "symlink",
       "description": ""
     },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\audit_plugins.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\audit_plugins.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\build_capability_index.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\build_capability_index.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\fix_inventory_paths.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\fix_inventory_paths.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\generate_tools_manifest.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\generate_tools_manifest.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\manage_tool_inventory.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\manage_tool_inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\rebuild_inventory.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\rebuild_inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\sync_inventory_descriptions.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\sync_inventory_descriptions.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\tool_chroma.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\scripts\\tool_chroma.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\manage_tool_inventory.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\scripts\\manage_tool_inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\scripts\\tool_inventory_init.py",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\scripts\\tool_inventory_init.py",
-      "strategy": "symlink",
-      "description": ""
-    },
+
     {
       "src": "plugins\\vector-db\\scripts\\cleanup.py",
       "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\scripts\\cleanup.py",
@@ -2395,54 +2336,7 @@
       "strategy": "symlink",
       "description": ""
     },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\manifest-index.json",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\manifest-index.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\rlm_manifest.json",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\rlm_manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\manifest-index.json",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\manifest-index.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\rlm_manifest.json",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\rlm_manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\RLM_TOOL_STRATEGY_ANALYSIS.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins\\tool-inventory\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
-      "dst": "plugins\\tool-inventory\\skills\\tool-inventory-init\\assets\\resources\\prompts\\rlm\\rlm_summarize_tool.md",
-      "strategy": "symlink",
-      "description": ""
-    },
+
     {
       "src": "plugins\\vector-db\\assets\\diagrams\\architecture_sequence.mmd",
       "dst": "plugins\\vector-db\\skills\\vector-db-cleanup\\assets\\resources\\architecture_sequence.mmd",

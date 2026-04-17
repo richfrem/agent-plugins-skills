@@ -1,1 +1,0 @@
-../skills/tool-inventory-init/SKILL.md

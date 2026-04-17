@@ -1,8 +1,0 @@
-[
-  {"prompt": "Find a tool for parsing CSV files in the tool registry.", "should_trigger": true},
-  {"prompt": "Register the new deploy.py script in the tool inventory.", "should_trigger": true},
-  {"prompt": "Audit the tool registry coverage and search for scripts related to database migrations.", "should_trigger": true},
-  {"prompt": "Search the vector store for code related to authentication logic.", "should_trigger": false},
-  {"prompt": "Create a new task for the payment processing bug.", "should_trigger": false},
-  {"prompt": "Audit all plugins for compliance with the open standards.", "should_trigger": false}
-]

@@ -8,10 +8,6 @@ If a language's header format is not in the skill (e.g., a new language is intro
 If a function being written grows beyond 50 lines:
 - **Action**: STOP adding to the function. Extract the oversized block into a named helper. Resume writing only after the refactor. Do NOT finish the long function and "plan to refactor later."
 
-## 3. New Script Not Registered in tool_inventory.json
-If a new script in plugins/ is missing from tool_inventory.json after creation:
-- **Action**: Trigger the `tool-inventory` skill to register the script. Do NOT commit the script without the registration. Ask the agent to confirm 0 untracked scripts before staging.
-
-## 4. Ambiguous Naming Convention (Multi-Language File)
+## 3. Ambiguous Naming Convention (Multi-Language File)
 If a file or function spans multiple language contexts (e.g., a Python script calling TypeScript-style names from a schema):
 - **Action**: Apply the target file's language convention. Report the ambiguity to the user and note which convention was applied. Never mix conventions within a single file.

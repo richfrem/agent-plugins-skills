@@ -132,14 +132,7 @@
       "strict": true,
       "category": "memory-context",
       "tags": ["vector-db", "chromadb", "semantic-search", "rag", "embeddings"]
-    },
-    {
-      "name": "tool-inventory",
-      "description": "Manage tool registries with embedded ChromaDB for semantic tool discovery — self-contained with vendored RLM scripts.",
-      "source": "./plugins/tool-inventory",
-      "strict": true,
-      "category": "memory-context",
-      "tags": ["tools", "inventory", "chromadb", "semantic-search", "registry"]
+
     },
     {
       "name": "memory-management",

@@ -301,11 +301,7 @@ Kanban board synchronization and task lane transitions.
 
 - [`task-agent`](plugins/task-manager/skills/task-agent/SKILL.md)
 
-### Tool Inventory
 
-Vector-search registry for all Python scripts — makes them discoverable without hard-coded rules.
-
-- [`tool-inventory`](plugins/tool-inventory/skills/tool-inventory/SKILL.md) · [`tool-inventory-init`](plugins/tool-inventory/skills/tool-inventory-init/SKILL.md)
 
 ### Vector DB
 

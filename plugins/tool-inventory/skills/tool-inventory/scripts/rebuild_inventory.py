@@ -1,1 +1,0 @@
-../../../scripts/rebuild_inventory.py

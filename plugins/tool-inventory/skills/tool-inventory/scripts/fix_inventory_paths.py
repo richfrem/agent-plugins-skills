@@ -1,1 +1,0 @@
-../../../scripts/fix_inventory_paths.py
