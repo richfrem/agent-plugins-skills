@@ -42,6 +42,9 @@ ls .agents/skills/rlm-init/       2>/dev/null && echo "rlm-factory: INSTALLED" |
 ls .agents/skills/vector-db-init/ 2>/dev/null && echo "vector-db: INSTALLED"   || echo "vector-db: NOT FOUND"
 ```
 
+If `<wiki-root>/meta/config.yaml` exists, inform the user:
+"I see you already have a Wiki configured (Mode X). You can select a higher mode now to instantly upgrade your architecture!"
+
 Then present the options, marking unavailable ones:
 
 ```
@@ -50,7 +53,7 @@ What setup mode do you want for the Obsidian Wiki Engine?
   A) Wiki only (standalone)
      - No external dependencies required
      - /wiki-build, /wiki-query with grep-based search
-     - Works right now, nothing else to install
+     - Perfect for instant gratification! You can run this wizard again later to seamlessly upgrade to Mode D.
 
   B) Wiki + RLM summaries                     [requires: rlm-factory in .agents/]
      - Adds /wiki-distill: generates dense summary layers per concept
