@@ -108,32 +108,65 @@ Ask: "Where should I create the wiki output? (default: `{project-root}/.wiki`)"
 
 ## Step 2 — Guided Raw Source Discovery
 
-Ask the user to identify raw content directories they want indexed. For each source:
+Scan the project root and present a numbered table of candidate directories:
 
-1. "What is the path to this raw content directory?"
-2. "What label should I use for this source? (e.g. `daily-notes`, `arch-docs`, `research`)"
-3. "What file extensions? (default: .md — press Enter to accept)"
-4. "Any subdirectories or patterns to exclude? (e.g. `_archive`, `*.tmp` — press Enter to skip)"
-5. "Add another source? (y/n)"
+```bash
+find . -maxdepth 1 -type d | grep -v '^\.$' | grep -v -E '\.(git|venv|vscode|windsurf|claude|agents|agent|knowledge_vector_data|wiki|vector_data)$' | sort
+```
 
-Build a `raw_sources_manifest` dict as you go.
+Present results as a numbered table with a one-line description of each folder. Then ask:
+
+```
+Which folders should be treated as raw content sources for the wiki?
+
+  Enter numbers separated by commas (e.g. 1, 3, 5)
+  or type custom paths (relative or absolute)
+  or both (e.g. 1, 2, /path/to/other/dir)
+
+  You can specify all sources now in one go.
+```
+
+Resolve all selected paths to their relative form from the project root (e.g. `plugins/`, `plugin-research/`).
+Validate each path exists. Warn if a path does not exist — ask the user to confirm or skip it.
+
+Then ask once, globally:
+
+```
+Any subdirectory patterns or file extensions to exclude beyond the defaults?
+Defaults: .git/, node_modules/, .venv/, __pycache__/
+
+Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
+```
 
 ---
 
 ## Step 3 — Confirm and Write Manifest
 
-Display the complete manifest before writing:
+Display the complete manifest before writing, using the same flat schema as `rlm_factory` and `vector-db`:
 
 ```json
 {
-  "namespace": "<project-name>",
-  "wiki_root": "<absolute-wiki-root>",
-  "sources": { ... },
-  "global_excludes": ["_archive", "*.tmp", "__pycache__"]
+  "description": "Source raw content for Obsidian Wiki",
+  "include": [
+    "<folder_1>/",
+    "<folder_2>/"
+  ],
+  "exclude": [
+    ".git/",
+    "node_modules/",
+    ".venv/",
+    "__pycache__/"
+  ],
+  "recursive": true
 }
 ```
 
 Ask: "Does this look correct? (y to write, e to edit, q to abort)"
+
+If `.agent/learning/rlm_wiki_raw_sources_manifest.json` already exists:
+- Ask: "A manifest already exists. Overwrite, merge (add new includes only), or abort? (o/m/q)"
+- **Merge**: append new paths to the existing `include` array; never remove existing entries
+- **Overwrite**: replace entirely with the new manifest
 
 Write to: `.agent/learning/rlm_wiki_raw_sources_manifest.json`
 Create parent directories if needed.
