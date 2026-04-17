@@ -2856,6 +2856,24 @@
       "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/rlm-factory/scripts/check_cached.py",
+      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/check_cached.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/rlm-factory/scripts/distill_one.py",
+      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/distill_one.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/rlm-factory/resources/jobs/distill_wiki.job.md",
+      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/jobs/distill_wiki.job.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
