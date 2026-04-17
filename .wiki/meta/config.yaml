@@ -1,0 +1,8 @@
+namespace: agent-plugins-skills
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+default_engine: copilot
+setup_mode: D
+# Mode D: Full Super-RAG (RLM keyword -> vector semantic -> grep exact)
+rlm_cache_dir: .agent/learning/rlm_wiki_cache
+vdb_profile: wiki
+created_at: "2026-04-17T04:59:00Z"

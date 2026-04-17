@@ -3,7 +3,7 @@
     "profiles": {
         "wiki": {
             "description": "General documentation and project wiki.",
-            "manifest": ".agent/learning/vector_wiki_manifest.json",
+            "manifest": ".agent/learning/vector_knowledge_manifest.json",
             "chroma_data_path": ".agent/learning/vector_wiki_db",
             "child_collection": "wiki_child_v5",
             "parent_collection": "wiki_parent_v5",

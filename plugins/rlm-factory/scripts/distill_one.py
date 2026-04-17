@@ -59,6 +59,11 @@ _extra_paths = [
     os.path.expanduser("~/.npm-global/bin"),
     os.path.expanduser("~/n/bin"),
     "/usr/local/share/npm/bin",
+    # macOS: VSCode GitHub Copilot Chat extension bundles the copilot CLI here
+    os.path.expanduser(
+        "~/Library/Application Support/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
 ]
 for _p in _extra_paths:
     if _p not in os.environ.get("PATH", "") and Path(_p).exists():
