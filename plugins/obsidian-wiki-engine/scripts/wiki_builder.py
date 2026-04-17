@@ -30,7 +30,6 @@ import sys
 import json
 import argparse
 import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -38,7 +37,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from raw_manifest import WikiSourceConfig, load_agent_memory, now_iso
+from raw_manifest import now_iso
 
 TEMPLATE_PATH = SCRIPT_DIR.parent / "assets" / "templates" / "wiki-node.template.md"
 
@@ -61,30 +60,35 @@ def _load_template() -> str:
     )
 
 
-def _load_rlm_summary(wiki_root: Path, concept: str) -> Optional[str]:
+def _resolve_rlm_cache_dir(wiki_root: Path, rlm_cache_dir: Optional[Path] = None) -> Path:
+    """Return the RLM cache directory, defaulting to {wiki_root}/rlm/."""
+    if rlm_cache_dir:
+        return Path(rlm_cache_dir).resolve()
+    return wiki_root / "rlm"
+
+
+def _load_rlm_summary(rlm_cache_dir: Path, concept: str) -> Optional[str]:
     """
     Load the 1-sentence RLM summary for a concept if it already exists.
 
     Returns None if distillation has not run yet for this concept.
     """
-    summary_path = wiki_root / "rlm" / concept / "summary.md"
+    summary_path = rlm_cache_dir / concept / "summary.md"
     if not summary_path.exists():
         return None
     text = summary_path.read_text(encoding="utf-8").strip()
-    # Strip YAML frontmatter if present
     if text.startswith("---"):
         parts = text.split("---", 2)
         if len(parts) >= 3:
             text = parts[2].strip()
-    # Remove "# Summary" heading if present
     if text.startswith("# Summary"):
         text = text[len("# Summary"):].strip()
     return text or None
 
 
-def _load_rlm_bullets(wiki_root: Path, concept: str) -> Optional[str]:
+def _load_rlm_bullets(rlm_cache_dir: Path, concept: str) -> Optional[str]:
     """Load bullets.md for a concept if it exists."""
-    bullets_path = wiki_root / "rlm" / concept / "bullets.md"
+    bullets_path = rlm_cache_dir / concept / "bullets.md"
     if not bullets_path.exists():
         return None
     text = bullets_path.read_text(encoding="utf-8").strip()
@@ -96,22 +100,18 @@ def _load_rlm_bullets(wiki_root: Path, concept: str) -> Optional[str]:
 
 
 def _find_related_concepts(
-    concept: str, cluster: str, all_concepts: List[str], max_links: int = 6
+    concept: str, all_concepts: List[str], max_links: int = 6
 ) -> List[str]:
     """
-    Find related concepts to wikilink using same-cluster membership.
-
-    Prioritizes concepts in the same cluster, then fills with others by
-    Levenshtein-distance approximation (shared word tokens).
+    Find related concepts to wikilink by shared word-token overlap.
 
     Args:
         concept:      The concept being built.
-        cluster:      The cluster this concept belongs to.
         all_concepts: All concept slugs known at build time.
         max_links:    Maximum number of wikilinks to generate.
 
     Returns:
-        List of concept slugs to wikilink.
+        List of concept slugs to wikilink (sorted by token overlap descending).
     """
     tokens = set(concept.split("-"))
     scored: List[tuple] = []
@@ -130,17 +130,20 @@ def build_wiki_node(
     wiki_root: Path,
     all_concepts: List[str],
     template: str,
+    rlm_cache_dir: Path,
     dry_run: bool = False,
 ) -> Path:
     """
     Format one ParsedRecord into a Karpathy wiki node and write it to disk.
 
     Args:
-        record:       ParsedRecord dict from ingest.py.
-        wiki_root:    Root of the wiki output directory.
-        all_concepts: All known concept slugs (for wikilink generation).
-        template:     Wiki node template string.
-        dry_run:      If True, skip writing.
+        record:        ParsedRecord dict from ingest.py (may cover multiple sources
+                       if concept_extractor merged them).
+        wiki_root:     Root of the wiki output directory.
+        all_concepts:  All known concept slugs (for wikilink generation).
+        template:      Wiki node template string.
+        rlm_cache_dir: Resolved RLM cache directory for loading existing summaries.
+        dry_run:       If True, skip writing.
 
     Returns:
         Path to the (potentially unwritten) wiki node file.
@@ -149,15 +152,15 @@ def build_wiki_node(
     wiki_dir = wiki_root / "wiki"
     node_path = wiki_dir / f"{concept}.md"
 
-    rlm_summary = _load_rlm_summary(wiki_root, concept) or "*Summary pending — run /wiki-distill*"
-    bullets_raw = _load_rlm_bullets(wiki_root, concept)
+    rlm_summary = _load_rlm_summary(rlm_cache_dir, concept) or "*Summary pending — run /wiki-distill*"
+    bullets_raw = _load_rlm_bullets(rlm_cache_dir, concept)
 
     if bullets_raw:
         bullets = bullets_raw
     else:
         bullets = "- *(Bullets pending — run /wiki-distill)*"
 
-    related = _find_related_concepts(concept, record["cluster"], all_concepts)
+    related = _find_related_concepts(concept, all_concepts)
     if related:
         wikilinks = "\n".join(f"- [[{r}]]" for r in related)
     else:
@@ -297,17 +300,23 @@ def main() -> None:
     parser.add_argument("--wiki-root", required=True, help="Path to the wiki root directory")
     parser.add_argument("--records", default=None, help="Path to records JSON from ingest.py (default: run ingest inline)")
     parser.add_argument("--source", default=None, help="Build nodes for one named source only")
+    parser.add_argument(
+        "--rlm-cache-dir",
+        default=None,
+        help="Override the RLM cache directory (default: {wiki-root}/rlm)",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Plan without writing any files")
     args = parser.parse_args()
 
     wiki_root = Path(args.wiki_root).resolve()
+    rlm_cache_dir = _resolve_rlm_cache_dir(wiki_root, args.rlm_cache_dir)
     template = _load_template()
 
     # Load or generate records
     if args.records:
         records: List[Dict[str, Any]] = json.loads(Path(args.records).read_text(encoding="utf-8"))
     else:
-        # Run ingest.py inline
+        # Run ingest.py inline then concept_extractor for cross-source synthesis
         ingest_script = SCRIPT_DIR / "ingest.py"
         cmd = [sys.executable, str(ingest_script), "--wiki-root", str(wiki_root)]
         if args.source:
@@ -317,22 +326,44 @@ def main() -> None:
             print(f"[ERROR] ingest.py failed:\n{result.stderr}")
             sys.exit(1)
         try:
-            records = json.loads(result.stdout)
+            raw_records: List[Dict[str, Any]] = json.loads(result.stdout)
         except json.JSONDecodeError:
-            print(f"[ERROR] Could not parse ingest.py output as JSON")
+            print("[ERROR] Could not parse ingest.py output as JSON")
             print(result.stdout[:500])
             sys.exit(1)
+
+        # Run concept extraction + cross-source synthesis
+        extractor_script = SCRIPT_DIR / "concept_extractor.py"
+        if extractor_script.exists():
+            ext_cmd = [sys.executable, str(extractor_script), "--json"]
+            ext_result = subprocess.run(
+                ext_cmd, input=json.dumps(raw_records), capture_output=True, text=True
+            )
+            if ext_result.returncode == 0:
+                try:
+                    records = json.loads(ext_result.stdout)
+                    merged = len(raw_records) - len(records)
+                    if merged > 0:
+                        print(f"[EXTRACT] Merged {merged} duplicate concepts across sources")
+                except json.JSONDecodeError:
+                    records = raw_records
+            else:
+                records = raw_records
+        else:
+            records = raw_records
 
     if not records:
         print("[OK] No new or changed records to build.")
         return
 
     all_concepts = [r["concept"] for r in records]
-    print(f"\n[BUILD] Building {len(records)} wiki nodes...")
+    print(f"\n[BUILD] Building {len(records)} wiki nodes (RLM cache: {rlm_cache_dir})...")
 
     built = 0
     for record in records:
-        node_path = build_wiki_node(record, wiki_root, all_concepts, template, dry_run=args.dry_run)
+        node_path = build_wiki_node(
+            record, wiki_root, all_concepts, template, rlm_cache_dir, dry_run=args.dry_run
+        )
         if not args.dry_run:
             print(f"  [OK] {node_path.name}")
         else:

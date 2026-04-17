@@ -61,7 +61,7 @@ Use this plugin when:
 |:-------|:----|
 | `rlm-factory` | Provides Recursive Language Model (RLM) Summary Ledger via `rlm-factory:rlm-search` and `rlm-factory:rlm-distill-agent` skills |
 | `vector-db` | Provides Vector Store tier (ChromaDB semantic search) |
-| `obsidian-integration` | Provides Vault tier (Tier 5) -- read/write Obsidian notes via `obsidian-integration:obsidian-vault-crud` skill |
+| `obsidian-wiki-engine` | Provides Vault tier (Tier 5) -- read/write Obsidian notes, Karpathy wiki nodes, 3-phase query via `obsidian-wiki-engine:obsidian-vault-crud` and related skills |
 
 ## Promotion / Demotion Rules
 
@@ -110,5 +110,5 @@ memory-management/
 ### Dependencies
 - `rlm-factory`
 - `vector-db`
-- `obsidian-integration`
+- `obsidian-wiki-engine`
 

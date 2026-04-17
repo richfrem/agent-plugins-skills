@@ -6,11 +6,12 @@ raw_manifest.py
 Purpose:
     WikiSourceConfig — centralized configuration loader for the Obsidian Wiki
     Engine. Mirrors the RLMConfig pattern from rlm-factory: loads named source
-    entries from wiki_sources.json, giving every wiki script a single
+    entries from the raw sources manifest, giving every wiki script a single
     configuration entry point.
 
-    wiki_sources.json is the wiki-engine equivalent of rlm_profiles.json.
-    Each named entry is a raw content directory to be indexed into the wiki.
+    Canonical manifest location: .agent/learning/rlm_wiki_raw_sources_manifest.json
+    This mirrors the rlm-factory pattern of storing all learning config under
+    .agent/learning/. Override via WIKI_SOURCES_PATH env var.
 
 Layer: Config / Wiki
 
@@ -56,42 +57,69 @@ def _find_project_root(start: Path) -> Path:
 PROJECT_ROOT = _find_project_root(Path(__file__))
 
 
+# Canonical manifest filename under .agent/learning/
+_CANONICAL_MANIFEST_NAME = "rlm_wiki_raw_sources_manifest.json"
+# Legacy fallback filename (wiki-root local)
+_LEGACY_MANIFEST_NAME = "wiki_sources.json"
+
+
 # ─── SOURCES FILE DISCOVERY ───────────────────────────────────────────────────
 def _get_sources_path(wiki_root: Optional[Path] = None) -> Path:
     """
-    Resolve the wiki_sources.json path.
+    Resolve the raw sources manifest path.
 
     Priority:
         1. WIKI_SOURCES_PATH env var
-        2. {wiki_root}/meta/wiki_sources.json
-        3. {project_root}/.agent/wiki/wiki_sources.json
-        4. {project_root}/.agents/wiki/wiki_sources.json
+        2. {project_root}/.agent/learning/rlm_wiki_raw_sources_manifest.json  (canonical)
+        3. {project_root}/.agents/learning/rlm_wiki_raw_sources_manifest.json (alt install)
+        4. {wiki_root}/meta/raw-sources.json                                  (local override)
+        5. {wiki_root}/meta/wiki_sources.json                                 (legacy)
+
+    The canonical location mirrors rlm-factory's convention of keeping all
+    learning config under .agent/learning/ for consistent discovery.
     """
     env_path = os.getenv("WIKI_SOURCES_PATH")
     if env_path:
         p = Path(env_path)
         return p if p.is_absolute() else (PROJECT_ROOT / p).resolve()
 
-    if wiki_root:
-        candidate = Path(wiki_root) / "meta" / "wiki_sources.json"
+    # Canonical: .agent/learning/ (mirrors rlm_profiles.json location)
+    for learning_dir in (".agent/learning", ".agents/learning"):
+        candidate = PROJECT_ROOT / learning_dir / _CANONICAL_MANIFEST_NAME
         if candidate.exists():
             return candidate
 
-    for sub in (".agent/wiki", ".agents/wiki"):
-        candidate = PROJECT_ROOT / sub / "wiki_sources.json"
-        if candidate.exists():
-            return candidate
-
-    # Return default even if not yet created (init will create it)
+    # Local wiki-root override
     if wiki_root:
-        return Path(wiki_root) / "meta" / "wiki_sources.json"
-    return PROJECT_ROOT / ".agent" / "wiki" / "wiki_sources.json"
+        for name in ("raw-sources.json", _LEGACY_MANIFEST_NAME):
+            candidate = Path(wiki_root) / "meta" / name
+            if candidate.exists():
+                return candidate
+
+    # Return canonical default even if not yet created (init will create it)
+    return PROJECT_ROOT / ".agent" / "learning" / _CANONICAL_MANIFEST_NAME
+
+
+def get_default_save_path(wiki_root: Optional[Path] = None) -> Path:
+    """
+    Return the preferred path for writing the raw sources manifest.
+
+    Writes to .agent/learning/ by default so it colocates with rlm_profiles.json
+    and vector_profiles.json for unified discovery.
+    """
+    # If an existing file is already in use, write back to the same location
+    existing = _get_sources_path(wiki_root)
+    canonical = PROJECT_ROOT / ".agent" / "learning" / _CANONICAL_MANIFEST_NAME
+    # Only use the canonical default if no file exists yet
+    if not existing.exists():
+        return canonical
+    return existing
 
 
 # ─── LOAD / SAVE ─────────────────────────────────────────────────────────────
 def load_wiki_sources(sources_path: Path) -> Dict[str, Any]:
     """
-    Load the raw wiki_sources.json data from disk.
+    Load the raw sources manifest from disk.
 
     Returns an empty dict structure if the file does not exist.
     """
@@ -107,12 +135,13 @@ def load_wiki_sources(sources_path: Path) -> Dict[str, Any]:
 
 def save_wiki_sources(data: Dict[str, Any], sources_path: Path) -> None:
     """
-    Persist wiki_sources.json to disk, creating parent directories as needed.
+    Persist the raw sources manifest to disk, creating parent directories as needed.
+    Default save path is .agent/learning/rlm_wiki_raw_sources_manifest.json.
     """
     sources_path.parent.mkdir(parents=True, exist_ok=True)
     with open(sources_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
-    print(f"[SAVE] wiki_sources.json written: {sources_path}")
+    print(f"[SAVE] raw sources manifest written: {sources_path}")
 
 
 # ─── WIKI SOURCE CONFIG ───────────────────────────────────────────────────────

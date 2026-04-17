@@ -34,9 +34,11 @@ Tier 4: DEEP STORAGE (filesystem -- authoritative source, loaded on demand)
 +-- <governance_dir>/         Protocols, playbooks
 
 Tier 5: VAULT (Obsidian -- linked knowledge graph, loaded on demand)
-+-- <vault_dir>/              Plugin: obsidian-integration
++-- <vault_dir>/              Plugin: obsidian-wiki-engine
                               Skills: obsidian-vault-crud, obsidian-canvas-architect,
-                                      obsidian-graph-traversal, obsidian-bases-manager
+                                      obsidian-graph-traversal, obsidian-bases-manager,
+                                      obsidian-wiki-builder, obsidian-query-agent,
+                                      obsidian-rlm-distiller, obsidian-wiki-linter
                               Env: VAULT_PATH or OBSIDIAN_VAULT_PATH
 
 Tier 6: SOUL (external persistence -- optional, synced at session seal)
@@ -110,7 +112,7 @@ rg "def query" ../../ --type py
 | **Skill (write/inject)** | `rlm-factory:rlm-curator` |
 | **Skill (audit coverage)** | `rlm-factory:rlm-curator` |
 | **Skill (shared config)** | `rlm-factory:rlm-curator` |
-| **Cache files** | `.agents/learning/rlm_summary_cache.json` (docs), `.agents/learning/rlm_tool_cache.json` (tools) |
+| **Cache files** | `.agent/learning/rlm_summary_cache.json` (docs), `.agent/learning/rlm_tool_cache.json` (tools) |
 
 ### `vector-db` -- Vector Store (Tier 3)
 
@@ -124,15 +126,18 @@ rg "def query" ../../ --type py
 | **Skill (config)** | `vector-db:vector-db-search` |
 | **Backend** | ChromaDB (`chromadb.HttpClient` with `PersistentClient` fallback) |
 
-### `obsidian-integration` -- Linked Vault (Tier 5)
+### `obsidian-wiki-engine` -- Linked Vault + LLM Wiki (Tier 5)
 
 | Component | Value |
 |:----------|:------|
-| **Plugin** | `.agents/skills/` (obsidian-vault-crud, obsidian-init, obsidian-canvas-architect, obsidian-graph-traversal) |
-| **Skill: vault setup** | `skills/obsidian-init/` -- prerequisites, `.obsidian/` config, exclusion filters |
-| **Skill: read/write notes** | `obsidian-integration:obsidian-vault-crud` -- atomic create/read/update/append |
-| **Skill: CRUD operations** | `obsidian-integration:obsidian-vault-crud` |
-| **Skill: parse markdown** | `obsidian-integration:obsidian-vault-crud` -- shared markdown parser |
+| **Plugin** | `.agents/skills/` (obsidian-vault-crud, obsidian-init, obsidian-wiki-builder, obsidian-query-agent, obsidian-rlm-distiller, obsidian-wiki-linter, obsidian-canvas-architect, obsidian-graph-traversal) |
+| **Skill: vault setup** | `obsidian-wiki-engine:obsidian-init` -- prerequisites, `.obsidian/` config, exclusion filters |
+| **Skill: read/write notes** | `obsidian-wiki-engine:obsidian-vault-crud` -- atomic create/read/update/append |
+| **Skill: build wiki nodes** | `obsidian-wiki-engine:obsidian-wiki-builder` -- Karpathy-style concept nodes |
+| **Skill: query wiki** | `obsidian-wiki-engine:obsidian-query-agent` -- 3-phase RLM+vector+grep search |
+| **Skill: distill RLM** | `obsidian-wiki-engine:obsidian-rlm-distiller` -- generates RLM summary layers |
+| **Skill: semantic lint** | `obsidian-wiki-engine:obsidian-wiki-linter` -- inconsistencies, gaps, stale articles |
+| **Config** | `.agent/learning/rlm_wiki_raw_sources_manifest.json` (sources), `.agent/learning/vector_profiles.json` (wiki profile) |
 | **Requires** | `pip:ruamel.yaml` (lossless YAML frontmatter), Obsidian Desktop |
 | **Env** | `VAULT_PATH` -- absolute path to the vault root |
 

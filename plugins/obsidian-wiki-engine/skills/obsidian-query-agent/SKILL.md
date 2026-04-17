@@ -51,22 +51,66 @@ python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root "authentication fl
 python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root "authentication flow" --level full
 ```
 
+### File result back into wiki (Karpathy's "outputs always add back" loop)
+```bash
+python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root "rlm design" \
+    --level full --save-as my-rlm-research
+```
+
+### Use specific vector DB profile for Phase 2
+```bash
+python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root "attention mechanism" \
+    --vdb-profile research
+```
+
+### Use shared .agent/learning/ RLM cache
+```bash
+python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root "auth flow" \
+    --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
+```
+
 ### List all indexed concepts
 ```bash
 python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root --list
 ```
 
-### JSON output (for programmatic use)
+### JSON output (for programmatic use / agent pipelines)
 ```bash
 python ./scripts/query_wiki.py --wiki-root /path/to/wiki-root "api design" --json
 ```
 
-## Search Strategy
+## Search Strategy (3-Phase)
 
-1. Exact concept name match in `wiki/_index.md`
-2. Fuzzy label match across all concept nodes
-3. Full-text keyword scan of `wiki/*.md` summaries
-4. Falls back to `rlm/` summary layer if wiki node is missing
+**Phase 1 — Slug/token match (O(1), always runs):**
+1. Exact concept slug match
+2. Slug is a prefix/substring of a concept name
+3. Shared word-token overlap (e.g. "auth" matches "authentication-flow")
+
+**Phase 2 — Vector DB semantic search (O(log N), requires vector-db installed):**
+- Calls `vector-db` plugin's `query.py` as a subprocess
+- Resolves vector DB config from `.agent/learning/vector_profiles.json`
+- Default profile: `wiki` (override with `--vdb-profile`)
+- Maps semantic results back to concept slugs via `meta/agent-memory.json`
+- Gracefully skipped if vector-db is not installed
+
+**Phase 3 — Full-text keyword scan (O(N), always available):**
+- Grep-style scan of `wiki/*.md` content as final fallback
+
+## --save-as: Filing Results Back Into the Wiki
+
+Karpathy's key insight: *"I end up filing the outputs back into the wiki to enhance it."*
+
+The `--save-as` flag writes the query result as a new wiki node:
+```
+wiki/{concept-slug}.md  ← new concept page derived from the query result
+```
+
+The saved node includes:
+- YAML frontmatter with `query_derived: true` and `derived_from` attribution
+- Original content at the requested disclosure level
+- `## See Also` link back to the source concept
+
+This means every query session can grow the wiki, not just read from it.
 
 ## When to Use
 

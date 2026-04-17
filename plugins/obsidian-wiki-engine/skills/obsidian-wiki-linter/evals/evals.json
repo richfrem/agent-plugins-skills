@@ -1,0 +1,78 @@
+{
+  "skill": "obsidian-wiki-linter",
+  "description": "Evaluates whether prompts should trigger the obsidian-wiki-linter skill",
+  "evals": [
+    {
+      "prompt": "Run a semantic health check on my wiki",
+      "should_trigger": true
+    },
+    {
+      "prompt": "lint the wiki",
+      "should_trigger": true
+    },
+    {
+      "prompt": "check my wiki for inconsistencies",
+      "should_trigger": true
+    },
+    {
+      "prompt": "find missing articles in my knowledge base",
+      "should_trigger": true
+    },
+    {
+      "prompt": "what articles should I add to my wiki",
+      "should_trigger": true
+    },
+    {
+      "prompt": "analyze my wiki for quality issues",
+      "should_trigger": true
+    },
+    {
+      "prompt": "wiki health report",
+      "should_trigger": true
+    },
+    {
+      "prompt": "find contradictions in my wiki notes",
+      "should_trigger": true
+    },
+    {
+      "prompt": "suggest wikilinks I should add",
+      "should_trigger": true
+    },
+    {
+      "prompt": "which wiki pages are stale or outdated",
+      "should_trigger": true
+    },
+    {
+      "prompt": "run lint_wiki.py on my vault",
+      "should_trigger": true
+    },
+    {
+      "prompt": "check for broken wikilinks in my vault",
+      "should_trigger": false
+    },
+    {
+      "prompt": "list all my wiki concepts",
+      "should_trigger": false
+    },
+    {
+      "prompt": "ingest my research notes into the wiki",
+      "should_trigger": false
+    },
+    {
+      "prompt": "distill my wiki nodes into RLM summaries",
+      "should_trigger": false
+    },
+    {
+      "prompt": "query the wiki about authentication flow",
+      "should_trigger": false
+    },
+    {
+      "prompt": "build wiki nodes from raw sources",
+      "should_trigger": false
+    },
+    {
+      "prompt": "check orphaned wiki nodes",
+      "should_trigger": false
+    }
+  ]
+}

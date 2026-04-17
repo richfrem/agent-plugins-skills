@@ -46,6 +46,32 @@ RLM summary layer.
     agent-memory.json  ← stale file tracking
 ```
 
+## Build Pipeline
+
+`wiki_builder.py` runs a 3-step pipeline internally:
+
+```
+ingest.py  →  concept_extractor.py  →  wiki node formatting
+```
+
+1. **ingest.py**: Reads raw source files, normalizes content, hashes for staleness detection
+2. **concept_extractor.py**: Groups records by concept slug, **merges multi-source records**
+   into one authoritative node (the Karpathy "compile" step), improves cluster assignment
+   via keyword extraction
+3. **wiki node formatting**: Renders merged records into Karpathy-format `.md` files
+   with wikilinks, cluster pages, `_index.md`, and `_toc.md`
+
+## Multi-Source Concept Merging
+
+When two source files (e.g. `arch-docs/auth.md` and `research/oauth.md`) produce
+the same concept slug, they are merged into **one wiki node** that:
+- Combines content from all sources with attribution headers
+- Lists all source files in `source_files` frontmatter
+- Re-derives the cluster from combined content keywords
+- Sets `multi_source: true` for identification
+
+This implements the core Karpathy "compile" metaphor: N raw files → M concept nodes (M ≤ N).
+
 ## Usage
 
 ### Build wiki nodes from all registered sources
@@ -56,6 +82,12 @@ python ./scripts/wiki_builder.py --wiki-root /path/to/wiki-root
 ### Build from one named source only
 ```bash
 python ./scripts/wiki_builder.py --wiki-root /path/to/wiki-root --source arch-docs
+```
+
+### Use shared .agent/learning/ RLM cache for existing summaries
+```bash
+python ./scripts/wiki_builder.py --wiki-root /path/to/wiki-root \
+    --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
 ```
 
 ### Dry run (plan without writing)
@@ -100,7 +132,10 @@ cluster: {cluster_name}
 - `{source_label}` → `{source_file}`
 ```
 
-## Source Registry Format (`wiki_sources.json`)
+## Source Registry Format (`rlm_wiki_raw_sources_manifest.json`)
+
+Canonical location: `.agent/learning/rlm_wiki_raw_sources_manifest.json`
+(mirrors rlm-factory's `.agent/learning/rlm_profiles.json` convention).
 
 Managed by `raw_manifest.py` via the Guided Discovery agent during `/wiki-init`:
 

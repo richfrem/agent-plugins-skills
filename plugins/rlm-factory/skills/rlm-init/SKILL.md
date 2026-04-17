@@ -39,6 +39,61 @@ Real-world examples of each config file are in `references/examples/`:
 
 ## Interactive Setup Protocol
 
+### Step 0: Setup Mode Selection
+
+**Ask this before anything else.**
+
+First, check what other plugins are installed:
+```bash
+ls .agents/skills/vector-db-init/          2>/dev/null && echo "vector-db: INSTALLED"            || echo "vector-db: NOT FOUND"
+ls .agents/skills/obsidian-wiki-builder/   2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT FOUND"
+```
+
+Then ask:
+```
+RLM Factory works standalone with zero external dependencies. You can also combine it with
+other plugins for a more powerful retrieval stack. What setup would you like?
+
+  A) RLM only (standalone)
+     - O(1) keyword search across dense file summaries
+     - No other plugins needed — works right now
+
+  B) RLM + vector-db Phase 2                          [requires: vector-db in .agents/]
+     - RLM keyword pre-filter → vector semantic search
+     - Reduces noise, improves precision for large corpora
+
+  C) RLM as wiki distiller                            [requires: obsidian-wiki-engine in .agents/]
+     - Generates RLM summary layers per wiki concept node
+     - /wiki-query uses RLM Phase 1 before grep
+
+  D) Full Super-RAG                                   [requires: vector-db + obsidian-wiki-engine]
+     - All three: RLM keyword → vector semantic → wiki concept nodes
+
+Enter A, B, C, or D (default: A):
+```
+
+If required plugins are NOT installed for the chosen mode:
+```
+[plugin-name] is not installed in .agents/.
+
+To install it:
+
+  # Recommended (uvx — works on Mac, Linux, Windows)
+  uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+
+  # npx (Mac/Linux)
+  npx skills add richfrem/agent-plugins-skills
+
+  # See full install guide
+  cat INSTALL.md
+
+After installing, re-run /rlm-factory:init and choose your desired mode.
+
+Continue with Mode A (standalone) for now? (y) or abort and install first? (n)
+```
+
+For Mode D, also provision `wiki` and `tools` profiles automatically (see Step 2).
+
 ### Step 1: Ask the User
 
 Before creating anything, gather requirements:
