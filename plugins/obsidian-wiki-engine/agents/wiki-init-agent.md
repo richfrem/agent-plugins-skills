@@ -332,10 +332,17 @@ Files written:
 === Next Steps (in ORDER) ===
 
   REQUIRED FIRST — populate the per-file RLM cache:
-  1. python3 plugins/rlm-factory/scripts/swarm_run.py \
-       --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
-       --engine copilot --workers 5 --resume
-     (Slow on first run — covers all files in your manifest. Use --resume to restart.)
+  # Run once per source directory (check_cmd skips already-cached files):
+  1a. python3 plugins/rlm-factory/scripts/swarm_run.py \
+        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
+        --engine copilot --workers 5 \
+        --dir plugins/
+
+  1b. python3 plugins/rlm-factory/scripts/swarm_run.py \
+        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
+        --engine copilot --workers 5 \
+        --dir plugin-research/
+     (Slow on first run — covers all files in your manifest. Re-runs are fast due to check_cmd.)
 
   AFTER cache is populated:
   2. /wiki-build     <- build concept nodes (uses RLM cache for richer nodes)
@@ -386,9 +393,16 @@ Files written:
 === Next Steps (in ORDER — do NOT skip steps) ===
 
   STEP 1 — Populate per-file RLM cache (slow, run overnight / leave running):
+  # Run once per source directory (check_cmd auto-skips already-cached files):
      python3 plugins/rlm-factory/scripts/swarm_run.py \
        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
-       --engine copilot --workers 5 --resume
+       --engine copilot --workers 5 \
+       --dir plugins/
+
+     python3 plugins/rlm-factory/scripts/swarm_run.py \
+       --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
+       --engine copilot --workers 5 \
+       --dir plugin-research/
 
   STEP 2 — Build vector index WITH RLM Super-RAG context (run after Step 1):
      python3 plugins/vector-db/scripts/ingest.py --profile wiki

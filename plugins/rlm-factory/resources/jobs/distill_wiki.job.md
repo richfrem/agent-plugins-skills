@@ -1,9 +1,10 @@
 ---
 model: gpt-5-mini
-workers: 2
+workers: 5
 timeout: 120
 max_retries: 3
 ext: [".md", ".py", ".js", ".mmd"]
+check_cmd: python3 ./plugins/rlm-factory/scripts/check_cached.py {file}
 post_cmd: >-
   python3 ./plugins/rlm-factory/scripts/inject_summary.py
   --profile wiki --file {file} --summary {output}
