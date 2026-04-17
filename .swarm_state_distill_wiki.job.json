@@ -144,7 +144,27 @@
     "plugins/agent-agentic-os/skills/os-guide/references/loop-scheduler.md",
     "plugins/agent-agentic-os/skills/os-guide/references/diagrams/agentic-os-guide-flow.mmd",
     "plugins/agent-agentic-os/skills/os-guide/references/memory-hygiene.md",
-    "plugins/agent-agentic-os/skills/os-guide/references/memory/memory-hygiene.md"
+    "plugins/agent-agentic-os/skills/os-guide/references/memory/memory-hygiene.md",
+    "plugins/agent-agentic-os/skills/os-guide/references/operations/loop-scheduler.md",
+    "plugins/agent-agentic-os/skills/os-guide/references/research/karpathy-autoresearch-3-file-eval.md",
+    "plugins/agent-agentic-os/skills/os-guide/references/sub-agents-and-hooks.md",
+    "plugins/agent-agentic-os/skills/os-guide/references/research/optimizer-engine-patterns.md",
+    "plugins/agent-agentic-os/references/architecture/architecture-overview.md",
+    "plugins/agent-agentic-os/assets/diagrams/triple-loop-learning-system.mmd",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/dual-loop.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/memory/metrics.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/memory/improvement-ledger-spec.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/memory/post_run_survey.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/meta/backlog.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/program.md",
+    "plugins/agent-agentic-os/skills/os-improvement-loop/references/operations/triple-loop.md",
+    "plugins/agent-agentic-os/scripts/eval_runner.py",
+    "plugins/agent-agentic-os/scripts/evaluate.py",
+    "plugins/agent-agentic-os/scripts/generate_report.py",
+    "plugins/agent-agentic-os/scripts/kernel.py",
+    "plugins/agent-agentic-os/scripts/post_run_metrics.py",
+    "plugins/agent-agentic-os/skills/os-improvement-report/SKILL.md"
   ],
   "failed": {}
 }

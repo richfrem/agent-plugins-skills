@@ -69,3 +69,12 @@ Then run `plugin_add.py` to deploy.
 ## Scratch Output
 
 Write temporary files and analysis output to `temp/` — never to the project root directly.
+
+## Context Retrieval & Search Protocol (Super-RAG)
+
+Before reading source files blindly using expensive grep or wandering the codebase, you **MUST** follow the 3-Phase Search Protocol:
+1. **Phase 1 (Keyword/O(1))**: Run `/rlm-factory:search "term"` (or `rlm-search` from scripts) to query the distilled `.agent/learning/rlm_wiki_cache` for ultra-fast, token-efficient architecture context.
+2. **Phase 2 (Semantic/O(log N))**: Run `/vector-db:search "term"` (or use the vector-db python scripts) for deep semantic code retrieval if Phase 1 directs you to a core concept but lacks the exact payload.
+3. **Phase 3 (Concept/Exact)**: Use `/wiki-query "concept"` to pull final cohesive Karpathy-style documentation nodes from the `.wiki` root.
+
+*Only fall back to raw grep if the hierarchical Super-RAG caches miss entirely.*

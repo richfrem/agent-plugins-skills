@@ -275,6 +275,21 @@ Show and confirm before writing back to `.agent/learning/vector_profiles.json`.
 
 Update `<wiki-root>/meta/config.yaml`: set `vdb_profile: wiki`.
 
+## Step 7.5 — Provision Super-RAG AI Search Protocol
+
+If Mode B, C, or D is chosen, append the Super-RAG Search protocol to the user's `CLAUDE.md`, `GEMINI.md`, or `.github/copilot-instructions.md` if those files exist in the project root (only if they exist).
+
+Append this exact block:
+
+```markdown
+## Context Retrieval & Search Protocol (Super-RAG)
+Before reading source files blindly using expensive grep or wandering the codebase, you **MUST** follow the 3-Phase Search Protocol:
+1. **Phase 1 (Keyword/O(1))**: Run `/rlm-factory:search "term"` to query the distilled `.agent/learning/rlm_wiki_cache` for ultra-fast, token-efficient architecture context.
+2. **Phase 2 (Semantic/O(log N))**: Run `/vector-db:search "term"` for deep semantic code retrieval if Phase 1 directs you to a core concept but lacks the exact payload.
+3. **Phase 3 (Concept/Exact)**: Use `/wiki-query "concept"` to pull final cohesive Karpathy-style documentation nodes from the `.wiki` root.
+*Only fall back to raw grep if the hierarchical Super-RAG caches miss entirely.*
+```
+
 ---
 
 ## Step 8 — Final Summary
