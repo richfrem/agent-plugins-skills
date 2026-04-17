@@ -1,0 +1,554 @@
+---
+cluster: plugin-code
+concepts: 544
+generated_at: 2026-04-17T06:42:21.317722+00:00
+---
+
+# Plugin Code
+
+*544 concepts in this cluster.*
+
+- [[006-python-native-plugin-bootstrap-installer-replacing-npx]] — 006: Python-Native Plugin Bootstrap Installer (Replacing npx)
+- [[006-python-native-plugin-bootstrap-installer-replacing-npx]] — 006: Python-Native Plugin Bootstrap Installer (Replacing npx)
+- [[006-python-native-plugin-bootstrap-installer-replacing-npx]] — 006: Python-Native Plugin Bootstrap Installer (Replacing npx)
+- [[006-python-native-plugin-bootstrap-installer-replacing-npx]] — 006: Python-Native Plugin Bootstrap Installer (Replacing npx)
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria-audit-plugin-l5nndefine-at-least-two-testable-criteria-or-correctincorrect-operational-patterns-here-to-ensure-the-skill-functions-correctly]] — Acceptance Criteria: audit-plugin-l5\n\nDefine at least two testable criteria or correct/incorrect operational patterns here to ensure the skill functions correctly.
+- [[acceptance-criteria-audit-plugin-l5nndefine-at-least-two-testable-criteria-or-correctincorrect-operational-patterns-here-to-ensure-the-skill-functions-correctly]] — Acceptance Criteria: audit-plugin-l5\n\nDefine at least two testable criteria or correct/incorrect operational patterns here to ensure the skill functions correctly.
+- [[acceptance-criteria-audit-plugin-l5nndefine-at-least-two-testable-criteria-or-correctincorrect-operational-patterns-here-to-ensure-the-skill-functions-correctly]] — Acceptance Criteria: audit-plugin-l5\n\nDefine at least two testable criteria or correct/incorrect operational patterns here to ensure the skill functions correctly.
+- [[acceptance-criteria-business-requirements-capture]] — Acceptance Criteria: business-requirements-capture
+- [[acceptance-criteria-business-requirements-capture]] — Acceptance Criteria: business-requirements-capture
+- [[acceptance-criteria-business-requirements-capture]] — Acceptance Criteria: business-requirements-capture
+- [[acceptance-criteria-business-requirements-capture]] — Acceptance Criteria: business-requirements-capture
+- [[acceptance-criteria-coding-conventions]] — Acceptance Criteria: coding-conventions
+- [[acceptance-criteria-coding-conventions]] — Acceptance Criteria: coding-conventions
+- [[acceptance-criteria-coding-conventions]] — Acceptance Criteria: coding-conventions
+- [[acceptance-criteria-create-hook]] — Acceptance Criteria: create-hook
+- [[acceptance-criteria-create-hook]] — Acceptance Criteria: create-hook
+- [[acceptance-criteria-create-hook]] — Acceptance Criteria: create-hook
+- [[acceptance-criteria-ecosystem-standards]] — Acceptance Criteria: ecosystem-standards
+- [[acceptance-criteria-ecosystem-standards]] — Acceptance Criteria: ecosystem-standards
+- [[acceptance-criteria-ecosystem-standards]] — Acceptance Criteria: ecosystem-standards
+- [[acceptance-criteria-exploration-handoff]] — Acceptance Criteria: exploration-handoff
+- [[acceptance-criteria-exploration-handoff]] — Acceptance Criteria: exploration-handoff
+- [[acceptance-criteria-exploration-handoff]] — Acceptance Criteria: exploration-handoff
+- [[acceptance-criteria-exploration-handoff]] — Acceptance Criteria: exploration-handoff
+- [[acceptance-criteria-exploration-optimizer]] — Acceptance Criteria: exploration-optimizer
+- [[acceptance-criteria-exploration-optimizer]] — Acceptance Criteria: exploration-optimizer
+- [[acceptance-criteria-exploration-optimizer]] — Acceptance Criteria: exploration-optimizer
+- [[acceptance-criteria-exploration-optimizer]] — Acceptance Criteria: exploration-optimizer
+- [[acceptance-criteria-exploration-session-brief]] — Acceptance Criteria: exploration-session-brief
+- [[acceptance-criteria-exploration-session-brief]] — Acceptance Criteria: exploration-session-brief
+- [[acceptance-criteria-exploration-session-brief]] — Acceptance Criteria: exploration-session-brief
+- [[acceptance-criteria-exploration-session-brief]] — Acceptance Criteria: exploration-session-brief
+- [[acceptance-criteria-obsidian-init]] — Acceptance Criteria: Obsidian Init
+- [[acceptance-criteria-obsidian-init]] — Acceptance Criteria: Obsidian Init
+- [[acceptance-criteria-obsidian-init]] — Acceptance Criteria: Obsidian Init
+- [[acceptance-criteria-os-clean-locks]] — Acceptance Criteria: os-clean-locks
+- [[acceptance-criteria-os-clean-locks]] — Acceptance Criteria: os-clean-locks
+- [[acceptance-criteria-os-clean-locks]] — Acceptance Criteria: os-clean-locks
+- [[acceptance-criteria-os-clean-locks]] — Acceptance Criteria: os-clean-locks
+- [[acceptance-criteria-os-clean-locks]] — Acceptance Criteria: os-clean-locks
+- [[acceptance-criteria-prototype-builder]] — Acceptance Criteria: prototype-builder
+- [[acceptance-criteria-prototype-builder]] — Acceptance Criteria: prototype-builder
+- [[acceptance-criteria-prototype-builder]] — Acceptance Criteria: prototype-builder
+- [[acceptance-criteria-rlm-init]] — Acceptance Criteria: RLM Init
+- [[acceptance-criteria-rlm-init]] — Acceptance Criteria: RLM Init
+- [[acceptance-criteria-rlm-init]] — Acceptance Criteria: RLM Init
+- [[acceptance-criteria-user-story-capture]] — Acceptance Criteria: user-story-capture
+- [[acceptance-criteria-user-story-capture]] — Acceptance Criteria: user-story-capture
+- [[acceptance-criteria-user-story-capture]] — Acceptance Criteria: user-story-capture
+- [[acceptance-criteria-user-story-capture]] — Acceptance Criteria: user-story-capture
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]] — ADR-003: Plugin Skill Resource Sharing via Mirrored Folder Structure and File-Level Symlinks
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]] — ADR-003: Plugin Skill Resource Sharing via Mirrored Folder Structure and File-Level Symlinks
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]] — ADR-003: Plugin Skill Resource Sharing via Mirrored Folder Structure and File-Level Symlinks
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]] — ADR-003: Plugin Skill Resource Sharing via Mirrored Folder Structure and File-Level Symlinks
+- [[adr-004-self-contained-plugins---no-cross-plugin-script-dependencies]] — ADR-004: Self-Contained Plugins - No Cross-Plugin Script Dependencies
+- [[adr-004-self-contained-plugins---no-cross-plugin-script-dependencies]] — ADR-004: Self-Contained Plugins - No Cross-Plugin Script Dependencies
+- [[adr-004-self-contained-plugins---no-cross-plugin-script-dependencies]] — ADR-004: Self-Contained Plugins - No Cross-Plugin Script Dependencies
+- [[adr-004-self-contained-plugins---no-cross-plugin-script-dependencies]] — ADR-004: Self-Contained Plugins - No Cross-Plugin Script Dependencies
+- [[agent-loop-patterns]] — Agent Loop Patterns
+- [[agent-plugin-analyzer---architecture]] — Agent Plugin Analyzer - Architecture
+- [[agent-scaffolders-create-docker-skill]] — Agent Scaffolders Create Docker Skill
+- [[agent-scaffolders-create-docker-skill]] — Agent Scaffolders Create Docker Skill
+- [[agent-skills-best-practices]] — Agent Skills Best Practices
+- [[agent-skills-best-practices]] — Agent Skills Best Practices
+- [[agent-triggering-examples-best-practices]] — Agent Triggering Examples: Best Practices
+- [[agent-triggering-examples-best-practices]] — Agent Triggering Examples: Best Practices
+- [[ai-assisted-agent-generation-template]] — AI-Assisted Agent Generation Template
+- [[ai-assisted-agent-generation-template]] — AI-Assisted Agent Generation Template
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[artifact-state-interrogative-routing]] — Artifact-State-Interrogative Routing
+- [[autoresearch-overview-applying-the-karpathy-loop-to-any-target]] — Autoresearch Overview: Applying the Karpathy Loop to Any Target
+- [[autoresearch-overview-applying-the-karpathy-loop-to-any-target]] — Autoresearch Overview: Applying the Karpathy Loop to Any Target
+- [[azure-ai-foundry-agents-open-agent-skills]] — Azure AI Foundry Agents & Open Agent-Skills
+- [[azure-ai-foundry-agents-open-agent-skills]] — Azure AI Foundry Agents & Open Agent-Skills
+- [[azure-ai-foundry-agents-open-agent-skills]] — Azure AI Foundry Agents & Open Agent-Skills
+- [[azure-ai-foundry-agents-open-agent-skills]] — Azure AI Foundry Agents & Open Agent-Skills
+- [[azure-ai-foundry-agents-open-agent-skills]] — Azure AI Foundry Agents & Open Agent-Skills
+- [[azure-ai-foundry-open-agent-skill-integration-plan]] — Azure AI Foundry & Open Agent-Skill Integration Plan
+- [[azure-ai-foundry-open-agent-skill-integration-plan]] — Azure AI Foundry & Open Agent-Skill Integration Plan
+- [[azure-ai-foundry-open-agent-skill-integration-plan]] — Azure AI Foundry & Open Agent-Skill Integration Plan
+- [[business-requirements-capture]] — Business Requirements Capture
+- [[business-requirements-capture]] — Business Requirements Capture
+- [[business-workflow-documentation]] — Business Workflow Documentation
+- [[business-workflow-documentation]] — Business Workflow Documentation
+- [[channel-specific-rules]] — Channel-Specific Rules
+- [[channel-specific-rules]] — Channel-Specific Rules
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[client-side-compute-sandbox-constraint]] — Client-Side Compute Sandbox Constraint
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[complexity-tiered-output-templating]] — Complexity-Tiered Output Templating
+- [[compliant-skill]] — Compliant Skill
+- [[continuous-skill-optimizer-protocol-reference]] — continuous-skill-optimizer Protocol Reference
+- [[create-skill-skill-scaffolding-executor]] — create-skill: Skill Scaffolding Executor
+- [[create-skill-skill-scaffolding-executor]] — create-skill: Skill Scaffolding Executor
+- [[create-skill-skill-scaffolding-executor]] — create-skill: Skill Scaffolding Executor
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[cross-tool-evidence-enrichment-multi-source-synthesis]] — Cross-Tool Evidence Enrichment (Multi-Source Synthesis)
+- [[deferred-exploration]] — Deferred Exploration
+- [[dependency-management-plugin]] — Dependency Management Plugin 💊
+- [[documentation-index]] — Documentation Index
+- [[exploration-cycle-plugin-handoff-preparer-agent]] — Exploration Cycle Plugin Handoff Preparer Agent
+- [[exploration-cycle-plugin-handoff-preparer-agent]] — Exploration Cycle Plugin Handoff Preparer Agent
+- [[exploration-handoff-interactive-co-authoring]] — Exploration Handoff (Interactive Co-Authoring)
+- [[flawed-skill]] — Flawed Skill
+- [[github-agent-types]] — GitHub Agent Types
+- [[github-agent-types]] — GitHub Agent Types
+- [[github-models-prompts-standard]] — GitHub Models Prompts Standard
+- [[github-models-prompts-standard]] — GitHub Models Prompts Standard
+- [[github-models-prompts-standard]] — GitHub Models Prompts Standard
+- [[global-agent-kernel]] — Global Agent Kernel
+- [[global-agent-kernel]] — Global Agent Kernel
+- [[global-agent-kernel]] — Global Agent Kernel
+- [[gold-standard-test-plugin]] — Gold Standard Test Plugin
+- [[handoff-preparer-agent]] — Handoff Preparer Agent
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[highly-procedural-fallback-trees]] — Highly Procedural Fallback Trees
+- [[huggingface-upload-primitives]] — HuggingFace Upload Primitives
+- [[huggingface-upload-primitives]] — HuggingFace Upload Primitives
+- [[huggingface-upload-primitives]] — HuggingFace Upload Primitives
+- [[huggingface-upload-primitives]] — HuggingFace Upload Primitives
+- [[huggingface-utils-plugin]] — HuggingFace Utils Plugin 🤗
+- [[install-plugin]] — Install Plugin
+- [[install-plugin]] — Install Plugin
+- [[install-plugin]] — Install Plugin
+- [[installation-management-npx-skills]] — Installation & Management (npx skills)
+- [[installation-management-npx-skills]] — Installation & Management (npx skills)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[iteration-directory-isolation-rollback-safety]] — Iteration Directory Isolation (Rollback Safety)
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[kepano-obsidian-skills-analysis-summary]] — Kepano Obsidian Skills: Analysis Summary
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[l4-chained-commands-workflow-graphs]] — L4 Chained Commands / Workflow Graphs
+- [[learning-loop-retrospective-post-seal]] — Learning Loop Retrospective (Post-Seal)
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-interactive-output-viewer-loop]] — Local Interactive Output Viewer Loop
+- [[local-overrides]] — Local Overrides
+- [[local-overrides]] — Local Overrides
+- [[local-overrides]] — Local Overrides
+- [[markdown-to-msword-converter-v2]] — markdown-to-msword-converter (V2)
+- [[memory-hygiene-when-to-write-promote-and-archive]] — Memory Hygiene: When to Write, Promote, and Archive
+- [[memory-hygiene-when-to-write-promote-and-archive]] — Memory Hygiene: When to Write, Promote, and Archive
+- [[memory-hygiene-when-to-write-promote-and-archive]] — Memory Hygiene: When to Write, Promote, and Archive
+- [[memory-management-plugin]] — Memory Management Plugin 🧠
+- [[merge-feature-branch]] — Merge Feature Branch
+- [[merge-feature-branch]] — Merge Feature Branch
+- [[merge-feature-branch]] — Merge Feature Branch
+- [[mermaid-to-png-plugin]] — mermaid-to-png Plugin
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[multi-dimensional-tone-configuration]] — Multi-Dimensional Tone Configuration
+- [[obsidian-bases-manager]] — Obsidian Bases Manager
+- [[obsidian-bases-manager]] — Obsidian Bases Manager
+- [[obsidian-canvas-architect]] — Obsidian Canvas Architect
+- [[obsidian-canvas-architect]] — Obsidian Canvas Architect
+- [[obsidian-init-vault-onboarding]] — Obsidian Init (Vault Onboarding)
+- [[obsidian-init-vault-onboarding]] — Obsidian Init (Vault Onboarding)
+- [[obsidian-init-vault-onboarding]] — Obsidian Init (Vault Onboarding)
+- [[obsidian-init-vault-onboarding]] — Obsidian Init (Vault Onboarding)
+- [[obsidian-markdown-mastery-protocol-129-compliant]] — Obsidian Markdown Mastery (Protocol 129 COMPLIANT)
+- [[obsidian-markdown-mastery-protocol-129-compliant]] — Obsidian Markdown Mastery (Protocol 129 COMPLIANT)
+- [[obsidian-vault-crud]] — Obsidian Vault CRUD
+- [[obsidian-vault-crud]] — Obsidian Vault CRUD
+- [[obsidian-wiki-engine-plugin]] — Obsidian Wiki Engine Plugin
+- [[opportunity-3-exploration-design]] — Opportunity 3: Exploration & Design
+- [[optimization-program-os-eval-lab-setup]] — Optimization Program: os-eval-lab-setup
+- [[optimization-program-os-eval-lab-setup]] — Optimization Program: os-eval-lab-setup
+- [[optimize-context-claude-context-hygiene]] — optimize-context: Claude Context Hygiene
+- [[os-health-check-sub-agent]] — OS Health Check Sub-Agent
+- [[os-health-check-sub-agent]] — OS Health Check Sub-Agent
+- [[os-health-check-sub-agent]] — OS Health Check Sub-Agent
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[output-classification-tagging]] — Output Classification Tagging
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-action-forcing-output-with-deadline-attribution]] — Pattern: Action-Forcing Output with Deadline Attribution
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-anti-pattern-vaccination]] — Pattern: Anti-Pattern Vaccination
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-audience-segmented-information-filtering]] — Pattern: Audience-Segmented Information Filtering
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-embedded-deterministic-scoring-formula]] — Pattern: Embedded Deterministic Scoring Formula
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[pattern-persistent-plugin-configuration-with-interactive-fallback]] — Pattern: Persistent Plugin Configuration with Interactive Fallback
+- [[phase-b-agent-do-not-implement-before-phase-a-gate-criteria-are-met]] — ⚠️ Phase B agent. Do not implement before Phase A gate criteria are met.
+- [[plugin-command-examples]] — Plugin Command Examples
+- [[plugin-command-examples]] — Plugin Command Examples
+- [[plugin-command-examples]] — Plugin Command Examples
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[population-normative-distribution-constraint-pndc]] — Population-Normative Distribution Constraint (PNDC)
+- [[portability-audit-report]] — Portability Audit Report
+- [[portability-audit-report]] — Portability Audit Report
+- [[portability-audit-report]] — Portability Audit Report
+- [[post-run-survey-exploration-orchestrator]] — Post-Run Survey: exploration-orchestrator
+- [[problem-framing]] — Problem Framing
+- [[problem-framing]] — Problem Framing
+- [[problem-framing]] — Problem Framing
+- [[problem-framing]] — Problem Framing
+- [[problem-framing]] — Problem Framing
+- [[prototype-builder-interactive-co-authoring]] — Prototype Builder (Interactive Co-Authoring)
+- [[quickstart-how-to-run-an-optimization-loop-on-any-skill]] — Quickstart: How to Run an Optimization Loop on Any Skill
+- [[quickstart-how-to-run-an-optimization-loop-on-any-skill]] — Quickstart: How to Run an Optimization Loop on Any Skill
+- [[research-plan-research-question]] — Research Plan: [RESEARCH QUESTION]
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[root-cause-category-selection-anti-symptom-triage]] — Root-Cause Category Selection (Anti-Symptom Triage)
+- [[rsvp-reading-protocol-referencennput-deep-context-here-so-it-is-not-loaded-into-context-implicitly]] — rsvp-reading Protocol Reference\n\nPut deep context here so it is not loaded into context implicitly.
+- [[session-memory-manager]] — Session Memory Manager
+- [[session-memory-manager]] — Session Memory Manager
+- [[setup-guide]] — Setup Guide
+- [[shared-block-component-pattern-for-oracle-forms-to-react-conversion]] — Shared Block Component Pattern for Oracle Forms to React Conversion
+- [[shared-block-component-pattern-for-oracle-forms-to-react-conversion]] — Shared Block Component Pattern for Oracle Forms to React Conversion
+- [[spec-kitty-plugin]] — Spec-Kitty Plugin 🐱
+- [[spec-kitty-setup-sync-orchestrator]] — Spec Kitty Setup & Sync Orchestrator
+- [[spec-kitty-setup-sync-orchestrator]] — Spec Kitty Setup & Sync Orchestrator
+- [[spec-kitty-setup-sync-orchestrator]] — Spec Kitty Setup & Sync Orchestrator
+- [[spec-kittyconstitution---interview-compile-constitution]] — /spec-kitty.constitution - Interview + Compile Constitution
+- [[spec-kittyconstitution---interview-compile-constitution]] — /spec-kitty.constitution - Interview + Compile Constitution
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[stage-aware-feedback-modulation]] — Stage-Aware Feedback Modulation
+- [[strategic-analysis-agent-skills-ecosystem-in-azure]] — Strategic Analysis: Agent Skills Ecosystem in Azure
+- [[strategic-analysis-agent-skills-ecosystem-in-azure]] — Strategic Analysis: Agent Skills Ecosystem in Azure
+- [[strategic-analysis-agent-skills-ecosystem-in-azure]] — Strategic Analysis: Agent Skills Ecosystem in Azure
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[structured-output-templates-as-agent-contracts]] — Structured Output Templates as Agent Contracts
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-action-command-multiplexing]] — Sub-Action Command Multiplexing
+- [[sub-agents-hooks-and-commands]] — Sub-Agents, Hooks, and Commands
+- [[sub-agents-hooks-and-commands]] — Sub-Agents, Hooks, and Commands
+- [[sub-agents-hooks-and-commands]] — Sub-Agents, Hooks, and Commands
+- [[task-manager-plugin]] — Task Manager Plugin 📋
+- [[test-registry-protocol]] — Test Registry Protocol
+- [[test-registry-protocol]] — Test Registry Protocol
+- [[test-registry-protocol]] — Test Registry Protocol
+- [[the-genai-double-diamond-vision-to-execution-framework]] — The GenAI Double Diamond: Vision-to-Execution Framework
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[tiered-source-authority-with-propagated-confidence]] — Tiered Source Authority with Propagated Confidence
+- [[todo-check]] — todo-check
+- [[todo-check]] — todo-check
+- [[triple-loop-learning-meta-learning-system]] — Triple-Loop Learning (Meta-Learning System)
+- [[triple-loop-learning-meta-learning-system]] — Triple-Loop Learning (Meta-Learning System)
+- [[triple-loop-orchestrator-unattended-supervisor]] — Triple-Loop Orchestrator — Unattended Supervisor
+- [[triple-loop-orchestrator-unattended-supervisor]] — Triple-Loop Orchestrator — Unattended Supervisor
+- [[triple-loop-orchestrator-unattended-supervisor]] — Triple-Loop Orchestrator — Unattended Supervisor
+- [[update-agent-system]] — Update Agent System
+- [[update-agent-system]] — Update Agent System
+- [[update-agent-system]] — Update Agent System
+- [[user-story-capture]] — User Story Capture
+- [[user-story-capture]] — User Story Capture
+- [[vector-db-audit]] — Vector DB Audit
+- [[vector-db-launch-python-native-server]] — Vector DB Launch (Python Native Server)
+- [[vector-db-launch-python-native-server]] — Vector DB Launch (Python Native Server)
+- [[vector-db-launch-python-native-server]] — Vector DB Launch (Python Native Server)
+- [[vector-db-launch-python-native-server]] — Vector DB Launch (Python Native Server)
+- [[vector-db-search]] — Vector DB Search
+- [[verification-before-completion]] — Verification Before Completion
+- [[verification-before-completion]] — Verification Before Completion
+- [[wiki-distill]] — /wiki-distill

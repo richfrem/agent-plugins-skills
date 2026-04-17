@@ -1,0 +1,113 @@
+---
+concept: voice-writer
+source: plugin-code
+source_file: voice-writer/README.md
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+generated_at: 2026-04-17T06:42:10.443072+00:00
+cluster: your
+content_hash: 4004b0693ae2b186
+---
+
+# voice-writer
+
+> *Summary pending — run /wiki-distill*
+
+## Key Ideas
+
+- *(Bullets pending — run /wiki-distill)*
+
+## Details
+
+# voice-writer
+
+Transform AI-generated or over-polished writing into authentic human voice.
+
+The `humanize` skill diagnoses AI fingerprints (structural patterns, hollow
+filler, vague adjectives), rewrites with real voice and rhythm, and optionally
+calibrates to your personal writing style using a voice profile you maintain
+locally.
+
+---
+
+---
+
+## Included Skills
+
+### `humanize`
+
+Rewrites AI-flavored or over-polished text so it sounds like a specific,
+competent human wrote it.
+
+**Trigger phrases:**
+- "Humanize this"
+- "Make this sound less AI"
+- "Rewrite this naturally"
+- "This sounds robotic"
+- "Make it sound like me"
+- "Edit for my voice/tone"
+- "Clean up this draft for LinkedIn / email / Slack"
+
+**Key capabilities:**
+- Diagnoses and removes structural AI patterns (triads, em dash pivots, hollow filler)
+- Calibrates to channel-specific constraints (LinkedIn hard limits, email length, Slack brevity)
+- Reads your personal voice profile for "make it sound like me" requests
+- Returns rewrite-only output by default (no preamble, no explanation)
+
+---
+
+## Voice Profile Setup
+
+The skill can learn your specific writing voice. Populate:
+
+```
+skills/humanize/references/voice-profile/my-voice.md
+```
+
+with 2-5 examples of your own writing labelled by channel. See
+`skills/humanize/references/voice-profile/README.md` for format instructions.
+
+When you ask "make this sound like me", the agent reads your profile before
+rewriting. The more samples you add, the more accurate the calibration.
+
+> The profile file lives locally and is never shared. Add it to `.gitignore`
+> if you want to keep it private.
+
+---
+
+## Plugin Structure
+
+```
+voice-writer/
+├── .claude-plugin/
+│   └── plugin.json
+├── skills/
+│   └── humanize/
+│       ├── SKILL.md
+│       └── references/
+│           ├── patterns.md           # Full AI pattern catalog
+│           ├── channel-rules.md      # Per-channel rules and hard limits
+│           └── voice-profile/
+│               ├── README.md         # Setup guide for users
+│               └── my-voice.md       # Your writing samples (populate this)
+└── README.md
+```
+
+---
+
+## License
+
+MIT
+
+
+## See Also
+
+- [[voice-profile-setup-guide]]
+- [[my-voice-profile]]
+- [[voice-profile-setup-guide]]
+- [[my-voice-profile]]
+
+## Raw Source
+
+- **Source:** `plugin-code`
+- **File:** `voice-writer/README.md`
+- **Indexed:** 2026-04-17T06:42:10.443072+00:00

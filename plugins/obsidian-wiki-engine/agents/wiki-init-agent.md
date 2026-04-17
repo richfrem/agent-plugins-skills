@@ -142,22 +142,29 @@ Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
 
 ## Step 3 — Confirm and Write Manifest
 
-Display the complete manifest before writing, using the same flat schema as `rlm_factory` and `vector-db`:
+Display the complete manifest before writing. NOTE: The Obsidian Wiki Engine mandates a highly structured nested schema (unlike the flat RLM factory schema). Generate it like this:
 
 ```json
 {
-  "description": "Source raw content for Obsidian Wiki",
-  "include": [
-    "<folder_1>/",
-    "<folder_2>/"
-  ],
-  "exclude": [
+  "namespace": "<project-name>",
+  "global_excludes": [
     ".git/",
     "node_modules/",
     ".venv/",
     "__pycache__/"
   ],
-  "recursive": true
+  "sources": {
+    "source-1-name": {
+      "path": "<folder_1>",
+      "label": "human-readable-label",
+      "extensions": [".md", ".ts", ".py"]
+    },
+    "source-2-name": {
+      "path": "<folder_2>",
+      "label": "human-readable-label",
+      "extensions": [".md", ".ts", ".py"]
+    }
+  }
 }
 ```
 
@@ -179,9 +186,10 @@ Create the rigid directory structure:
 
 ```bash
 mkdir -p <wiki-root>/wiki
-mkdir -p <wiki-root>/rlm
 mkdir -p <wiki-root>/meta
+# Note: No 'rlm' folder is scaffolded here if using the global .agent/learning cache
 ```
+
 
 Write `<wiki-root>/meta/config.yaml`:
 ```yaml

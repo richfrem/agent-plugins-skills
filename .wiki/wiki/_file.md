@@ -1,0 +1,86 @@
+---
+cluster: file
+concepts: 76
+generated_at: 2026-04-17T06:42:21.320331+00:00
+---
+
+# File
+
+*76 concepts in this cluster.*
+
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[39-pattern-l4-architectural-decision-matrix]] — 39-Pattern L4 Architectural Decision Matrix
+- [[context-status-specification-contextstatusmd]] — Context Status Specification (`context/status.md`)
+- [[copilot-sonnet-orchestration-brief]] — Copilot Sonnet Orchestration Brief
+- [[dependency-management]] — Dependency Management
+- [[dependency-management]] — Dependency Management
+- [[dependency-management]] — Dependency Management
+- [[dependency-management]] — Dependency Management
+- [[procedural-fallback-tree-context-bundler-markdown]] — Procedural Fallback Tree: Context Bundler (Markdown)
+- [[procedural-fallback-tree-context-bundler-markdown]] — Procedural Fallback Tree: Context Bundler (Markdown)
+- [[procedural-fallback-tree-markdown-to-ms-word-conversion]] — Procedural Fallback Tree: Markdown to MS Word Conversion
+- [[procedural-fallback-tree-markdown-to-ms-word-conversion]] — Procedural Fallback Tree: Markdown to MS Word Conversion
+- [[procedural-fallback-tree-markdown-to-ms-word-conversion]] — Procedural Fallback Tree: Markdown to MS Word Conversion
+- [[procedural-fallback-tree-memory-management]] — Procedural Fallback Tree: Memory Management
+- [[procedural-fallback-tree-memory-management]] — Procedural Fallback Tree: Memory Management
+- [[procedural-fallback-tree-memory-management]] — Procedural Fallback Tree: Memory Management
+- [[procedural-fallback-tree-mermaid-to-png-conversion]] — Procedural Fallback Tree: Mermaid to PNG Conversion
+- [[procedural-fallback-tree-mermaid-to-png-conversion]] — Procedural Fallback Tree: Mermaid to PNG Conversion
+- [[procedural-fallback-tree-mermaid-to-png-conversion]] — Procedural Fallback Tree: Mermaid to PNG Conversion
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-core-philosophy-summarize-once-reuse-many]] — RLM Core Philosophy: Summarize Once, Reuse Many
+- [[rlm-distill-agent]] — RLM Distill Agent
+- [[rlm-distill-agent]] — RLM Distill Agent
+- [[rlm-distill-agent]] — RLM Distill Agent
+- [[rlm-distill-agent]] — RLM Distill Agent
+- [[rlm-distill-agent]] — RLM Distill Agent
+- [[rlm-distill-agent]] — RLM Distill Agent
+- [[rlm-init-cache-bootstrap]] — RLM Init: Cache Bootstrap
+- [[rlm-init-cache-bootstrap]] — RLM Init: Cache Bootstrap
+- [[rlm-init-cache-bootstrap]] — RLM Init: Cache Bootstrap
+- [[rlm-init-cache-bootstrap]] — RLM Init: Cache Bootstrap
+- [[simple-command-examples]] — Simple Command Examples
+- [[simple-command-examples]] — Simple Command Examples
+- [[simple-command-examples]] — Simple Command Examples

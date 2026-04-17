@@ -1,0 +1,12 @@
+{
+  "sources": {
+    "plugins": {
+      "path": "plugins",
+      "label": "plugin-code"
+    },
+    "plugin-research": {
+      "path": "plugin-research",
+      "label": "research-docs"
+    }
+  }
+}

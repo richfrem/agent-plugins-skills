@@ -1,0 +1,70 @@
+---
+concept: research-decision-log
+source: plugin-code
+source_file: spec-kitty-plugin/assets/templates/.kittify/missions/research/templates/research-template.md
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+generated_at: 2026-04-17T06:42:10.343108+00:00
+cluster: evidence
+content_hash: 582fe34c36d8cd77
+---
+
+# Research Decision Log
+
+> *Summary pending — run /wiki-distill*
+
+## Key Ideas
+
+- *(Bullets pending — run /wiki-distill)*
+
+## Details
+
+# Research Decision Log
+
+Document the outcomes of Phase 0 discovery work. Capture every clarification you resolved and the supporting evidence that backs each decision.
+
+## Summary
+
+- **Feature**: <!-- e.g., 001-pii-detection-market -->
+- **Date**: <!-- YYYY-MM-DD -->
+- **Researchers**: <!-- Primary collaborators -->
+- **Open Questions**: <!-- Items still unanswered after Phase 0 -->
+
+## Decisions & Rationale
+
+For each decision, include the supporting sources and why the team aligned on this direction.
+
+| Decision | Rationale | Evidence | Status |
+|----------|-----------|----------|--------|
+| <!-- e.g., "Adopt vector database X" --> | <!-- Why this choice was made --> | <!-- Link to evidence rows / notes --> | <!-- final / follow-up --> |
+
+## Evidence Highlights
+
+Summarize the most impactful findings from the evidence log. Link back to specific rows so the trail is auditable.
+
+- **Key insight 1** – <!-- Cite evidence row or page reference -->
+- **Key insight 2** – <!-- Cite evidence row or page reference -->
+- **Risks / Concerns** – <!-- Any red flags uncovered -->
+
+## Next Actions
+
+Outline what needs to happen before moving into implementation planning.
+
+1. <!-- e.g., Validate data access with security team -->
+2. <!-- e.g., Schedule stakeholder read-out -->
+
+> Keep this document living. As more evidence arrives, update decisions and rationale so downstream implementers can trust the history.
+
+## See Also
+
+- [[memory-promotion-decision-guide]]
+- [[research-summary-agent-operating-systems-agent-os]]
+- [[research-summary-agent-operating-systems-aos]]
+- [[sources-template---research-topic-name]]
+- [[39-pattern-l4-architectural-decision-matrix]]
+- [[39-pattern-l4-architectural-decision-matrix]]
+
+## Raw Source
+
+- **Source:** `plugin-code`
+- **File:** `spec-kitty-plugin/assets/templates/.kittify/missions/research/templates/research-template.md`
+- **Indexed:** 2026-04-17T06:42:10.343108+00:00
