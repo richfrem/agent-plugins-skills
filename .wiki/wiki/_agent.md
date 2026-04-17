@@ -1,0 +1,207 @@
+---
+cluster: agent
+concepts: 197
+generated_at: 2026-04-17T06:42:21.316491+00:00
+---
+
+# Agent
+
+*197 concepts in this cluster.*
+
+- [[acceptance-criteria-adr-manager]] — Acceptance Criteria: ADR Manager
+- [[acceptance-criteria-adr-manager]] — Acceptance Criteria: ADR Manager
+- [[acceptance-criteria-ecosystem-authoritative-sources]] — Acceptance Criteria: ecosystem-authoritative-sources
+- [[acceptance-criteria-ecosystem-authoritative-sources]] — Acceptance Criteria: ecosystem-authoritative-sources
+- [[acceptance-criteria-ecosystem-authoritative-sources]] — Acceptance Criteria: ecosystem-authoritative-sources
+- [[acceptance-criteria-ecosystem-authoritative-sources]] — Acceptance Criteria: ecosystem-authoritative-sources
+- [[acceptance-criteria-ecosystem-authoritative-sources]] — Acceptance Criteria: ecosystem-authoritative-sources
+- [[acceptance-criteria-learning-loop]] — Acceptance Criteria: Learning Loop
+- [[acceptance-criteria-learning-loop]] — Acceptance Criteria: Learning Loop
+- [[acceptance-criteria-learning-loop]] — Acceptance Criteria: Learning Loop
+- [[acceptance-criteria-os-guide]] — Acceptance Criteria: os-guide
+- [[acceptance-criteria-os-guide]] — Acceptance Criteria: os-guide
+- [[acceptance-criteria-os-guide]] — Acceptance Criteria: os-guide
+- [[acceptance-criteria-os-init]] — Acceptance Criteria: os-init
+- [[acceptance-criteria-os-init]] — Acceptance Criteria: os-init
+- [[acceptance-criteria-os-init]] — Acceptance Criteria: os-init
+- [[acceptance-criteria-os-memory-manager]] — Acceptance Criteria: os-memory-manager
+- [[acceptance-criteria-os-memory-manager]] — Acceptance Criteria: os-memory-manager
+- [[acceptance-criteria-os-memory-manager]] — Acceptance Criteria: os-memory-manager
+- [[acceptance-criteria-plugin-maintenance]] — Acceptance Criteria: Plugin Maintenance
+- [[acceptance-criteria-plugin-maintenance]] — Acceptance Criteria: Plugin Maintenance
+- [[acceptance-criteria-plugin-maintenance]] — Acceptance Criteria: Plugin Maintenance
+- [[acceptance-criteria-red-team-bundler]] — Acceptance Criteria: Red Team Bundler
+- [[acceptance-criteria-red-team-bundler]] — Acceptance Criteria: Red Team Bundler
+- [[acceptance-criteria-red-team-review]] — Acceptance Criteria: Red Team Review
+- [[acceptance-criteria-red-team-review]] — Acceptance Criteria: Red Team Review
+- [[acceptance-criteria-red-team-review]] — Acceptance Criteria: Red Team Review
+- [[acceptance-criteria-task-manager]] — Acceptance Criteria: Task Manager
+- [[acceptance-criteria-task-manager]] — Acceptance Criteria: Task Manager
+- [[acceptance-criteria-task-manager]] — Acceptance Criteria: Task Manager
+- [[acceptance-criteria-tool-inventory-init]] — Acceptance Criteria: Tool Inventory Init
+- [[acceptance-criteria-tool-inventory-init]] — Acceptance Criteria: Tool Inventory Init
+- [[agentic-os---future-vision]] — Agentic OS - Future Vision
+- [[agentic-os-architecture]] — Agentic OS Architecture
+- [[agentic-os-architecture]] — Agentic OS Architecture
+- [[agentic-os-architecture]] — Agentic OS Architecture
+- [[agentic-os-architecture]] — Agentic OS Architecture
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[artifact-generation-xss-compliance-gate]] — Artifact Generation XSS Compliance Gate
+- [[autoresearch-loop-verification-before-completion]] — Autoresearch Loop — verification-before-completion
+- [[autoresearch-loop-verification-before-completion]] — Autoresearch Loop — verification-before-completion
+- [[bridge-architecture-overview]] — Bridge Architecture Overview
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[category-calibrated-benchmark-anchoring]] — Category-Calibrated Benchmark Anchoring
+- [[claude-code-subagents-collection]] — Claude Code Subagents Collection
+- [[context-bundler-plugin]] — Context Bundler Plugin 📦
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[delegated-constraint-verification-loop]] — Delegated Constraint Verification Loop
+- [[ecosystem-bake-off-spec-kitty-vs-organic-stack]] — Ecosystem Bake-Off: Spec-Kitty vs. Organic Stack
+- [[excel-to-csv-plugin-v2]] — Excel To Csv Plugin 📊 (V2)
+- [[exploration-orchestrator]] — Exploration Orchestrator
+- [[exploration-output-quality]] — Exploration Output Quality
+- [[exploration-output-quality]] — Exploration Output Quality
+- [[hitl-interaction-design]] — Hitl Interaction Design
+- [[learning-loop---detailed-phase-instructions]] — Learning Loop - Detailed Phase Instructions
+- [[learning-loop---detailed-phase-instructions]] — Learning Loop - Detailed Phase Instructions
+- [[learning-loop-pattern-overview]] — Learning Loop — Pattern Overview
+- [[learning-loop-pattern-overview]] — Learning Loop — Pattern Overview
+- [[location-pluginsclaude-cliscriptsrun-agentpy]] — Location: plugins/claude-cli/scripts/run_agent.py
+- [[location-pluginsclaude-cliscriptsrun-agentpy]] — Location: plugins/claude-cli/scripts/run_agent.py
+- [[location-pluginscopilot-cliscriptsrun-agentpy]] — Location: plugins/copilot-cli/scripts/run_agent.py
+- [[location-pluginsgemini-cliscriptsrun-agentpy]] — Location: plugins/gemini-cli/scripts/run_agent.py
+- [[opportunity-4-tooling-reference]] — Opportunity 4: Tooling Reference
+- [[orchestrator-loop-router-lifecycle-manager]] — Orchestrator: Loop Router & Lifecycle Manager
+- [[orchestrator-loop-router-lifecycle-manager]] — Orchestrator: Loop Router & Lifecycle Manager
+- [[orchestrator-loop-router-lifecycle-manager]] — Orchestrator: Loop Router & Lifecycle Manager
+- [[orchestrator-loop-router-lifecycle-manager]] — Orchestrator: Loop Router & Lifecycle Manager
+- [[os-clean-locks-utility]] — OS Clean Locks Utility
+- [[overview-of-autoresearch-programmd]] — Overview of autoresearch program.md
+- [[pass-1-problem-framing]] — Pass 1: Problem framing
+- [[pass-1-problem-framing]] — Pass 1: Problem framing
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[passive-style-injection-payload]] — Passive Style Injection Payload
+- [[pattern-decision-matrix]] — Pattern Decision Matrix
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[pattern-pre-execution-workflow-commitment-diagram]] — Pattern: Pre-Execution Workflow Commitment Diagram
+- [[plugin-auditor]] — Plugin Auditor
+- [[plugin-auditor]] — Plugin Auditor
+- [[plugin-auditor]] — Plugin Auditor
+- [[plugin-bridge-architecture-process]] — Plugin Bridge: Architecture & Process
+- [[plugin-bridge-architecture-process]] — Plugin Bridge: Architecture & Process
+- [[procedural-fallback-tree-l5-red-team-auditor]] — Procedural Fallback Tree: L5 Red Team Auditor
+- [[procedural-fallback-tree-l5-red-team-auditor]] — Procedural Fallback Tree: L5 Red Team Auditor
+- [[procedural-fallback-tree-l5-red-team-auditor]] — Procedural Fallback Tree: L5 Red Team Auditor
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[recursive-logic-discovery-the-infinite-context-ecosystem]] — Recursive Logic Discovery & The Infinite Context Ecosystem
+- [[red-team-briefing]] — Red Team Briefing
+- [[rlm-factory-plugin]] — RLM Factory Plugin 🏭
+- [[skill]] — Skill
+- [[skill]] — Skill
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[source-transparency-declaration]] — Source Transparency Declaration
+- [[strengths-and-gaps-analysis]] — Strengths and Gaps Analysis
+- [[system-prompt-design-patterns]] — System Prompt Design Patterns
+- [[system-prompt-design-patterns]] — System Prompt Design Patterns
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[tainted-context-cleanser-blind-reviewer]] — Tainted Context Cleanser (Blind Reviewer)
+- [[wiki-init]] — /wiki-init

@@ -1,0 +1,162 @@
+---
+cluster: user
+concepts: 152
+generated_at: 2026-04-17T06:42:21.317405+00:00
+---
+
+# User
+
+*152 concepts in this cluster.*
+
+- [[agentic-os-setup-orchestrator]] — Agentic OS Setup Orchestrator
+- [[agentic-os-setup-orchestrator]] — Agentic OS Setup Orchestrator
+- [[agentic-os-setup-orchestrator]] — Agentic OS Setup Orchestrator
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[category-semantic-deferred-tool-binding]] — Category-Semantic Deferred Tool Binding
+- [[context-folder-patterns]] — Context Folder Patterns
+- [[context-folder-patterns]] — Context Folder Patterns
+- [[context-folder-patterns]] — Context Folder Patterns
+- [[context-folder-patterns]] — Context Folder Patterns
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[dual-register-communication-enforcement]] — Dual-Register Communication Enforcement
+- [[exploration-session-brief-interactive-co-authoring]] — Exploration Session Brief (Interactive Co-Authoring)
+- [[exploration-session-brief-interactive-co-authoring]] — Exploration Session Brief (Interactive Co-Authoring)
+- [[feature-specification-feature-name]] — Feature Specification: [FEATURE NAME]
+- [[feature-specification-feature-name]] — Feature Specification: [FEATURE NAME]
+- [[feature-specification-feature-name]] — Feature Specification: [FEATURE NAME]
+- [[feature-specification-feature-name]] — Feature Specification: [FEATURE NAME]
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[graduated-source-attributed-knowledge-elicitation]] — Graduated Source-Attributed Knowledge Elicitation
+- [[identity-the-excel-converter]] — Identity: The Excel Converter 📊
+- [[identity-the-excel-converter]] — Identity: The Excel Converter 📊
+- [[identity-the-excel-converter]] — Identity: The Excel Converter 📊
+- [[identity-the-excel-converter]] — Identity: The Excel Converter 📊
+- [[plan]] — Plan
+- [[plan]] — Plan
+- [[plan]] — Plan
+- [[plan]] — Plan
+- [[plan]] — Plan
+- [[plan]] — Plan
+- [[procedural-fallback-tree-audit-plugin]] — Procedural Fallback Tree: audit-plugin
+- [[procedural-fallback-tree-audit-plugin]] — Procedural Fallback Tree: audit-plugin
+- [[procedural-fallback-tree-audit-plugin]] — Procedural Fallback Tree: audit-plugin
+- [[procedural-fallback-tree-create-agentic-workflow]] — Procedural Fallback Tree: create-agentic-workflow
+- [[procedural-fallback-tree-create-agentic-workflow]] — Procedural Fallback Tree: create-agentic-workflow
+- [[procedural-fallback-tree-create-agentic-workflow]] — Procedural Fallback Tree: create-agentic-workflow
+- [[procedural-fallback-tree-create-azure-agent]] — Procedural Fallback Tree: create-azure-agent
+- [[procedural-fallback-tree-create-azure-agent]] — Procedural Fallback Tree: create-azure-agent
+- [[procedural-fallback-tree-create-azure-agent]] — Procedural Fallback Tree: create-azure-agent
+- [[procedural-fallback-tree-create-command]] — Procedural Fallback Tree: create-command
+- [[procedural-fallback-tree-create-command]] — Procedural Fallback Tree: create-command
+- [[procedural-fallback-tree-create-command]] — Procedural Fallback Tree: create-command
+- [[procedural-fallback-tree-create-docker-skill]] — Procedural Fallback Tree: create-docker-skill
+- [[procedural-fallback-tree-create-docker-skill]] — Procedural Fallback Tree: create-docker-skill
+- [[procedural-fallback-tree-create-docker-skill]] — Procedural Fallback Tree: create-docker-skill
+- [[procedural-fallback-tree-create-github-action]] — Procedural Fallback Tree: create-github-action
+- [[procedural-fallback-tree-create-github-action]] — Procedural Fallback Tree: create-github-action
+- [[procedural-fallback-tree-create-github-action]] — Procedural Fallback Tree: create-github-action
+- [[procedural-fallback-tree-create-hook]] — Procedural Fallback Tree: create-hook
+- [[procedural-fallback-tree-create-hook]] — Procedural Fallback Tree: create-hook
+- [[procedural-fallback-tree-create-hook]] — Procedural Fallback Tree: create-hook
+- [[procedural-fallback-tree-create-mcp-integration]] — Procedural Fallback Tree: create-mcp-integration
+- [[procedural-fallback-tree-create-mcp-integration]] — Procedural Fallback Tree: create-mcp-integration
+- [[procedural-fallback-tree-create-mcp-integration]] — Procedural Fallback Tree: create-mcp-integration
+- [[procedural-fallback-tree-create-plugin]] — Procedural Fallback Tree: create-plugin
+- [[procedural-fallback-tree-create-plugin]] — Procedural Fallback Tree: create-plugin
+- [[procedural-fallback-tree-create-plugin]] — Procedural Fallback Tree: create-plugin
+- [[procedural-fallback-tree-create-skill]] — Procedural Fallback Tree: create-skill
+- [[procedural-fallback-tree-create-skill]] — Procedural Fallback Tree: create-skill
+- [[procedural-fallback-tree-create-skill]] — Procedural Fallback Tree: create-skill
+- [[procedural-fallback-tree-create-stateful-skill]] — Procedural Fallback Tree: create-stateful-skill
+- [[procedural-fallback-tree-create-stateful-skill]] — Procedural Fallback Tree: create-stateful-skill
+- [[procedural-fallback-tree-create-stateful-skill]] — Procedural Fallback Tree: create-stateful-skill
+- [[procedural-fallback-tree-create-sub-agent]] — Procedural Fallback Tree: create-sub-agent
+- [[procedural-fallback-tree-create-sub-agent]] — Procedural Fallback Tree: create-sub-agent
+- [[procedural-fallback-tree-create-sub-agent]] — Procedural Fallback Tree: create-sub-agent
+- [[procedural-fallback-tree-excel-conversion]] — Procedural Fallback Tree: Excel Conversion
+- [[procedural-fallback-tree-excel-conversion]] — Procedural Fallback Tree: Excel Conversion
+- [[procedural-fallback-tree-excel-conversion]] — Procedural Fallback Tree: Excel Conversion
+- [[procedural-fallback-tree-hf-init]] — Procedural Fallback Tree: hf-init
+- [[procedural-fallback-tree-hf-init]] — Procedural Fallback Tree: hf-init
+- [[procedural-fallback-tree-hf-init]] — Procedural Fallback Tree: hf-init
+- [[procedural-fallback-tree-orchestrator-routing]] — Procedural Fallback Tree: Orchestrator Routing
+- [[procedural-fallback-tree-orchestrator-routing]] — Procedural Fallback Tree: Orchestrator Routing
+- [[procedural-fallback-tree-orchestrator-routing]] — Procedural Fallback Tree: Orchestrator Routing
+- [[procedural-fallback-tree-red-team-bundler]] — Procedural Fallback Tree: Red Team Bundler
+- [[procedural-fallback-tree-red-team-bundler]] — Procedural Fallback Tree: Red Team Bundler
+- [[product-manager]] — Product Manager
+- [[red-team-bundler-skill]] — Red Team Bundler Skill 🕵️‍♂️
+- [[red-team-bundler-skill]] — Red Team Bundler Skill 🕵️‍♂️
+- [[spec-kittyconstitution---interview-compile-constitution]] — /spec-kitty.constitution - Interview + Compile Constitution
+- [[spec-kittyconstitution---interview-compile-constitution]] — /spec-kitty.constitution - Interview + Compile Constitution
+- [[spec-kittyconstitution---interview-compile-constitution]] — /spec-kitty.constitution - Interview + Compile Constitution
+- [[spec-kittyplan---create-implementation-plan]] — /spec-kitty.plan - Create Implementation Plan
+- [[spec-kittyplan---create-implementation-plan]] — /spec-kitty.plan - Create Implementation Plan
+- [[spec-kittyplan---create-implementation-plan]] — /spec-kitty.plan - Create Implementation Plan
+- [[spec-kittyplan---create-implementation-plan]] — /spec-kitty.plan - Create Implementation Plan
+- [[spec-kittyplan---create-implementation-plan]] — /spec-kitty.plan - Create Implementation Plan
+- [[spec-kittyplan---create-implementation-plan]] — /spec-kitty.plan - Create Implementation Plan
+- [[spec-kittyspecify---create-feature-specification]] — /spec-kitty.specify - Create Feature Specification
+- [[spec-kittyspecify---create-feature-specification]] — /spec-kitty.specify - Create Feature Specification
+- [[spec-kittyspecify---create-feature-specification]] — /spec-kitty.specify - Create Feature Specification
+- [[spec-kittyspecify---create-feature-specification]] — /spec-kitty.specify - Create Feature Specification
+- [[spec-kittyspecify---create-feature-specification]] — /spec-kitty.specify - Create Feature Specification
+- [[spec-kittyspecify---create-feature-specification]] — /spec-kitty.specify - Create Feature Specification
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[standalone-supercharged-dual-mode-degradation]] — Standalone + Supercharged Dual-Mode Degradation
+- [[ux-designer]] — UX Designer
+- [[workflow-retrospective]] — Workflow Retrospective
+- [[workflow-retrospective]] — Workflow Retrospective
+- [[workflow-retrospective]] — Workflow Retrospective

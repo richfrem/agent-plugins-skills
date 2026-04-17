@@ -1,0 +1,53 @@
+---
+concept: procedural-fallback-tree-claude-cli-agent
+source: plugin-code
+source_file: spec-kitty-plugin/.agents/skills/claude-cli-agent/references/fallback-tree.md
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+generated_at: 2026-04-17T06:42:09.743785+00:00
+cluster: action
+content_hash: f9920e3ff7432ad8
+---
+
+# Procedural Fallback Tree: Claude CLI Agent
+
+> *Summary pending — run /wiki-distill*
+
+## Key Ideas
+
+- *(Bullets pending — run /wiki-distill)*
+
+## Details
+
+# Procedural Fallback Tree: Claude CLI Agent
+
+## 1. claude Command Not Found
+If `claude` is not on PATH:
+- **Action**: Report the missing CLI. Provide install instructions (npm install -g @anthropic-ai/claude-code or equivalent). Do NOT attempt to simulate the CLI behavior inline.
+
+## 2. Claude CLI Hangs (Waiting for UI Approval)
+If a command containing claude-generated files hangs silently:
+- **Action**: Terminate the hanging process. Retry with `--dangerously-skip-permissions` flag. Document in the command why the flag is required.
+
+## 3. File Too Large for Pipe (5MB+ Error)
+If the CLI blocks on a massive file:
+- **Action**: Build a Python chunking script to semantically split the content before piping. Do NOT attempt to force the full file through as a single pipe or inline argument.
+
+## 4. Session Not Authenticated
+If the CLI fails with an authentication error:
+- **Action**: Report that `claude login` must be run in an active terminal first. Do NOT retry in the background — authentication requires an interactive session.
+
+
+## See Also
+
+- [[procedural-fallback-tree-copilot-cli-agent]]
+- [[procedural-fallback-tree-gemini-cli-agent]]
+- [[procedural-fallback-tree-copilot-cli-agent]]
+- [[procedural-fallback-tree-copilot-cli-agent]]
+- [[procedural-fallback-tree-gemini-cli-agent]]
+- [[procedural-fallback-tree-gemini-cli-agent]]
+
+## Raw Source
+
+- **Source:** `plugin-code`
+- **File:** `spec-kitty-plugin/.agents/skills/claude-cli-agent/references/fallback-tree.md`
+- **Indexed:** 2026-04-17T06:42:09.743785+00:00

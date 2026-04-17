@@ -1,0 +1,144 @@
+---
+cluster: skill
+concepts: 134
+generated_at: 2026-04-17T06:42:21.318358+00:00
+---
+
+# Skill
+
+*134 concepts in this cluster.*
+
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria]] — Acceptance Criteria
+- [[acceptance-criteria-optimize-context]] — Acceptance Criteria: optimize-context
+- [[agent-scaffolders-create-agentic-workflow]] — Agent Scaffolders Create Agentic Workflow
+- [[agent-scaffolders-create-agentic-workflow]] — Agent Scaffolders Create Agentic Workflow
+- [[agent-scaffolders-create-azure-agent]] — Agent Scaffolders Create Azure Agent
+- [[agent-scaffolders-create-azure-agent]] — Agent Scaffolders Create Azure Agent
+- [[agent-scaffolders-plugin]] — Agent Scaffolders Plugin
+- [[analysis-framework-reference]] — Analysis Framework Reference
+- [[analysis-framework-reference]] — Analysis Framework Reference
+- [[analysis-notes]] — Analysis Notes
+- [[audit-plugin-l5]] — Audit Plugin L5
+- [[audit-plugin-l5]] — Audit Plugin L5
+- [[autoresearch-architecture]] — Autoresearch Architecture
+- [[autoresearch-architecture]] — Autoresearch Architecture
+- [[ecosystem-standards-review-protocol]] — Ecosystem Standards Review Protocol
+- [[ecosystem-standards-review-protocol]] — Ecosystem Standards Review Protocol
+- [[evaluate-autoresearch-fit]] — Evaluate Autoresearch Fit
+- [[evaluate-autoresearch-fit]] — Evaluate Autoresearch Fit
+- [[exploration-optimizer]] — Exploration Optimizer
+- [[exploration-optimizer]] — Exploration Optimizer
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[human-in-the-loop-hitl-interaction-design-guide]] — Human-in-the-Loop (HITL) Interaction Design Guide
+- [[identity-plugin-path-portability-enforcer]] — Identity: Plugin Path Portability Enforcer
+- [[identity-plugin-path-portability-enforcer]] — Identity: Plugin Path Portability Enforcer
+- [[identity-the-eval-lab-setup-agent]] — Identity: The Eval Lab Setup Agent
+- [[identity-the-knowledge-curator]] — Identity: The Knowledge Curator 🧠
+- [[maturity-model-scoring]] — Maturity Model & Scoring
+- [[maturity-model-scoring]] — Maturity Model & Scoring
+- [[memory-management]] — Memory Management
+- [[memory-management]] — Memory Management
+- [[memory-management]] — Memory Management
+- [[memory-management]] — Memory Management
+- [[moved]] — Moved
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[multi-variant-trigger-optimizer]] — Multi-Variant Trigger Optimizer
+- [[os-eval-runner]] — os-eval-runner
+- [[os-eval-runner]] — os-eval-runner
+- [[output]] — Output
+- [[output-templates]] — Output Templates
+- [[output-templates]] — Output Templates
+- [[plugin-auditor]] — Plugin Auditor
+- [[plugin-auditor]] — Plugin Auditor
+- [[plugin-maintenance]] — Plugin Maintenance
+- [[plugin-maintenance]] — Plugin Maintenance
+- [[quick-start-zero-context-guide]] — Quick Start — Zero Context Guide
+- [[quick-start-zero-context-guide]] — Quick Start — Zero Context Guide
+- [[quick-wins-concrete-improvements-inspired-by-superpowers]] — Quick Wins: Concrete Improvements Inspired by superpowers
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[rigorous-benchmarking-grading-loop]] — Rigorous Benchmarking & Grading Loop
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skillcommand-two-tier-knowledge-architecture]] — Skill–Command Two-Tier Knowledge Architecture
+- [[skills-research]] — Skills Research
+- [[skills-research]] — Skills Research
+- [[spec-kitty-bridge-unpackaging-instructions]] — Spec Kitty Bridge: Unpackaging Instructions
+- [[synthesis-of-learnings-anthropic-skills-repository]] — Synthesis of Learnings: Anthropic Skills Repository
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[trigger-description-optimization-loop]] — Trigger Description Optimization Loop
+- [[triple-loop-architect-sample-test-prompt]] — Triple-Loop Architect — Sample Test Prompt
+- [[triple-loop-architect-sibling-lab-setup]] — Triple-Loop Architect — Sibling Lab Setup
+- [[triple-loop-architect-sibling-lab-setup]] — Triple-Loop Architect — Sibling Lab Setup
+- [[triple-loop-architect-sibling-lab-setup]] — Triple-Loop Architect — Sibling Lab Setup
+- [[vector-db-initialization]] — Vector DB Initialization
+- [[vector-db-initialization]] — Vector DB Initialization
+- [[vector-db-initialization]] — Vector DB Initialization
+- [[vector-db-search]] — Vector DB Search
+- [[vector-db-search]] — Vector DB Search
+- [[vector-db-search]] — Vector DB Search

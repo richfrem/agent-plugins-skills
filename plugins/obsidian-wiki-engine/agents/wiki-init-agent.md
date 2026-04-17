@@ -132,32 +132,44 @@ Validate each path exists. Warn if a path does not exist — ask the user to con
 Then ask once, globally:
 
 ```
-Any subdirectory patterns or file extensions to exclude beyond the defaults?
-Defaults: .git/, node_modules/, .venv/, __pycache__/
+1. Which specific file extensions should be INCLUDED? 
+   (Defaults: .md, .ts, .py)
+   Press Enter to accept, or type your own (e.g. .md, .json, .txt)
 
-Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
+2. Any subdirectory patterns or file extensions to EXCLUDE beyond the defaults?
+   (Defaults: .git/, node_modules/, .venv/, __pycache__/, _*, *.jsonl)
+   Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
 ```
+
+When generating the JSON manifest in Step 3, ensure the user's chosen extensions are propagated into the `extensions: []` array for each source, and any new exclusions are added to `global_excludes: []`.
 
 ---
 
 ## Step 3 — Confirm and Write Manifest
 
-Display the complete manifest before writing, using the same flat schema as `rlm_factory` and `vector-db`:
+Display the complete manifest before writing. NOTE: The Obsidian Wiki Engine mandates a highly structured nested schema (unlike the flat RLM factory schema). Generate it like this:
 
 ```json
 {
-  "description": "Source raw content for Obsidian Wiki",
-  "include": [
-    "<folder_1>/",
-    "<folder_2>/"
-  ],
-  "exclude": [
+  "namespace": "<project-name>",
+  "global_excludes": [
     ".git/",
     "node_modules/",
     ".venv/",
     "__pycache__/"
   ],
-  "recursive": true
+  "sources": {
+    "source-1-name": {
+      "path": "<folder_1>",
+      "label": "human-readable-label",
+      "extensions": [".md", ".ts", ".py"]
+    },
+    "source-2-name": {
+      "path": "<folder_2>",
+      "label": "human-readable-label",
+      "extensions": [".md", ".ts", ".py"]
+    }
+  }
 }
 ```
 
@@ -179,9 +191,10 @@ Create the rigid directory structure:
 
 ```bash
 mkdir -p <wiki-root>/wiki
-mkdir -p <wiki-root>/rlm
 mkdir -p <wiki-root>/meta
+# Note: No 'rlm' folder is scaffolded here if using the global .agent/learning cache
 ```
+
 
 Write `<wiki-root>/meta/config.yaml`:
 ```yaml

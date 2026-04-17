@@ -1,0 +1,110 @@
+---
+concept: agent-loops
+source: plugin-code
+source_file: agent-loops/README.md
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+generated_at: 2026-04-17T06:42:09.192246+00:00
+cluster: pattern
+content_hash: a8171a0da75c119c
+---
+
+# Agent Loops
+
+> *Summary pending — run /wiki-distill*
+
+## Key Ideas
+
+- *(Bullets pending — run /wiki-distill)*
+
+## Details
+
+# Agent Loops
+
+Composable agent loop architectures for **learning loops**, **agent orchestration**, **red team coordination**, and **parallel swarm execution**. Framework-agnostic — works with any AI agent in any repository, with or without other plugins.
+
+## Core Skills
+
+| Skill | Pattern | Description |
+|-------|---------|-------------|
+| **`orchestrator`** | Router (Routing Agent / Orchestrator Pattern) | Assesses the trigger, selects the appropriate loop pattern, and manages shared closure (seal, persist, retro + self-improvement). |
+| **`learning-loop`** | 1. Simple Learning (Loop Agent / Single Agent) | Self-directed research, document, iterate. No inner agents or review gates. |
+| **`red-team-review`** | 2. Adversarial Review (Review and Critique Pattern) | Research → bundle context → red team review → iterate in rounds until approved. |
+| **`dual-loop`** | 3. Inner/Outer Agent (Sequential Agent / Agent as a Tool) | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies output. |
+| **`agent-swarm`** | 4. Parallel Execution (Parallel Agent) | Partition work → dispatch to N agents across isolated workspaces → verify and merge all. |
+| **`triple-loop-learning`** | 5. Meta-Learning System (Triple-Loop Architecture) | Orchestrates inner tactical, strategic planning, and outer meta-learning loops to iteratively refine skills/prompts via headless evaluation. |
+
+> [!TIP]
+> 📖 Read the comprehensive **[Agent Loops Pattern Guide](references/PATTERN_GUIDE.md)** for a deep dive into the pros, cons, and when to use each of these industry-standard architectures.
+
+## How It Works
+
+This repository bridges the gap between abstract agent theories and concrete implementation. The orchestrator assesses the trigger (question, issue, research need, work assignment, review request) and routes to the appropriate pattern:
+
+```
+Trigger → Orchestrator → Which pattern?
+  │
+  ├── 1. Simple Learning Loop (solo, no agents)
+  ├── 2. Red Team Review Loop (bundle + adversarial review rounds)
+  ├── 3. Agent Orchestration (inner/outer delegation via CLI)
+  ├── 4. Agent Swarm (parallel execution across N workspaces)
+  └── 5. Meta-Learning Loop (headless objective evaluation and self-improvement)
+  │
+  └── Shared Closure: Seal → Persist → Retrospective → Improve Infrastructure
+```
+
+## Separation of Concerns
+
+This plugin focuses on **loop execution patterns**. It does NOT own:
+
+| Concern | Owned By | Relationship |
+|---------|----------|-------------|
+| Worktree / workspace creation | External tooling | Agent-loops receives a workspace and runs its pattern inside it. Works standalone. |
+| Context bundling | `context-bundler` | Used by red-team-review and seal phases. **Required generic dependency.** |
+| Memory synthesis | External utility | Used during orientation to load prior context. Optional dependency. |
+| Remote archival (e.g., HuggingFace) | User's choice | Out of scope — external skill or manual step. |
+
+> **Key Principle**: Agent-loops works standalone for basic activities. Complex patterns require the generic `context-bundler` utility.
+
+## Directory Structure
+
+```text
+agent-loops/
+├── .claude-plugin/      # Plugin manifest
+├── hooks/               # Lifecycle hooks (closure enforcement)
+├── personas/            # Specialized AI subagent configurations
+├── assets/resources/
+│   ├── diagrams/        # Architecture diagrams (overview + per-pattern)
+│   └── templates/       # Strategy packets, retrospective, audit templates
+├── skills/
+│   ├── orchestrator/    # Routes to patterns, manages closure
+│   ├── learning-loop/   # Pattern 1
+│   ├── red-team-review/ # Pattern 2
+│   ├── dual-loop/       # Pattern 3
+│   ├── agent-swarm/     # Pattern 4
+│   └── triple-loop-learning/ # Pattern 5
+└── references/          # Pattern guide and cross-skill references
+```
+
+## Diagrams
+
+| Diagram | Shows |
+|---------|-------|
+| [agent_loops_overview.mmd](assets/diagrams/agent_loops_overview.mmd) | High-level routing to all 4 patterns |
+| 
+
+*(content truncated)*
+
+## See Also
+
+- [[agent-loops-pattern-guide]]
+- [[agent-harness-learning-layer-formerly-agentic-os]]
+- [[agent-harness-summary]]
+- [[os-health-check-sub-agent]]
+- [[global-agent-kernel]]
+- [[template-post-run-agent-self-assessment]]
+
+## Raw Source
+
+- **Source:** `plugin-code`
+- **File:** `agent-loops/README.md`
+- **Indexed:** 2026-04-17T06:42:09.192246+00:00
