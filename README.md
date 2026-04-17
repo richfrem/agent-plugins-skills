@@ -7,7 +7,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
 - *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
-**124 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
+**125 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -98,7 +98,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (120 skills)
+## Plugin Ecosystem (125 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -115,6 +115,7 @@ The flagship operational framework. Implements the Dual-Flywheel architecture fo
 - [`os-init`](plugins/agent-agentic-os/skills/os-init/SKILL.md) — OS bootstrap and kernel initialization
 - [`os-clean-locks`](plugins/agent-agentic-os/skills/os-clean-locks/SKILL.md) — directory lock recovery
 - [`todo-check`](plugins/agent-agentic-os/skills/todo-check/SKILL.md) — session TODO hygiene
+- [`optimize-agent-instructions`](plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md) — audit and rewrite CLAUDE.md, GEMINI.md, and copilot-instructions.md; applies Karpathy's four behavioral principles, strips stale/foreign content, detects installed Super-RAG layers, adds platform-specific sections
 
 **Agents:**
 - [`os-learning-loop`](plugins/agent-agentic-os/agents/os-learning-loop.md) — retrospective + friction analysis sub-agent
@@ -252,6 +253,8 @@ Karpathy-style LLM wiki with cross-source concept synthesis and 3-tier Super-RAG
 
 **Super-RAG stack:** `rlm-factory` (O(1) keyword) + `vector-db` (O(log N) semantic) + wiki nodes (full concept)
 
+Each plugin works **standalone** (Mode A) or combined for full Super-RAG power. Init agents detect what is actually installed in `.agents/skills/` and configure only the available layers — any combination works.
+
 **Wiki skills:**
 - [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) — build Karpathy nodes (ingest → concept synthesis → format)
 - [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) — generate RLM summary layers per concept
@@ -263,7 +266,7 @@ Karpathy-style LLM wiki with cross-source concept synthesis and 3-tier Super-RAG
 - [`obsidian-canvas-architect`](plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/SKILL.md) · [`obsidian-graph-traversal`](plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/SKILL.md)
 - [`obsidian-markdown-mastery`](plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/SKILL.md) · [`obsidian-bases-manager`](plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/SKILL.md)
 
-**Setup agents:** `wiki-init-agent` (wiki-only setup) · `super-rag-setup-agent` (full 3-plugin orchestrator)
+**Setup agents:** `wiki-init-agent` (guided init, Modes A–D) · `rlm-factory-init-agent` (guided init, Modes A–D) · `vector-db-init-agent` (guided init, Modes A–D) · `super-rag-setup-agent` (full 3-plugin orchestrator)
 
 ### Plugin Manager — Ecosystem Sync
 
@@ -276,11 +279,13 @@ Authoritative suite for ecosystem health, synchronization, and artifact bootstra
 
 ### RLM Factory — Reverse Language Modeling
 
-High-speed offline functional cache representations of code via local Ollama models.
+O(1) keyword search over dense per-file summaries. Zero external dependencies — works standalone or as Phase 1 of the Super-RAG stack.
 
 - [`rlm-init`](plugins/rlm-factory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/rlm-factory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/rlm-factory/skills/rlm-search/SKILL.md)
 - [`rlm-distill-agent`](plugins/rlm-factory/skills/rlm-distill-agent/SKILL.md) · [`rlm-distill-ollama`](plugins/rlm-factory/skills/rlm-distill-ollama/SKILL.md) · [`rlm-cleanup-agent`](plugins/rlm-factory/skills/rlm-cleanup-agent/SKILL.md)
 - [`ollama-launch`](plugins/rlm-factory/skills/ollama-launch/SKILL.md)
+
+**Setup agent:** `rlm-factory-init-agent` (guided setup, Modes A–D: standalone → partial → full Super-RAG)
 
 ### RSVP Speed Reader
 
@@ -305,13 +310,13 @@ Kanban board synchronization and task lane transitions.
 
 ### Vector DB
 
-ChromaDB-driven semantic embedding indexing with Parent-Child retrieval. Supports In-Process mode (zero server setup) and HTTP Server mode. Profile-driven via `.agent/learning/vector_profiles.json`.
+ChromaDB-driven semantic embedding indexing with Parent-Child retrieval. Works standalone or as Phase 2 of the Super-RAG stack. Supports In-Process mode (zero server setup) and HTTP Server mode. Profile-driven via `.agent/learning/vector_profiles.json`.
 
 - [`vector-db-init`](plugins/vector-db/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/vector-db/skills/vector-db-launch/SKILL.md)
 - [`vector-db-ingest`](plugins/vector-db/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/vector-db/skills/vector-db-search/SKILL.md)
 - [`vector-db-cleanup`](plugins/vector-db/skills/vector-db-cleanup/SKILL.md)
 
-**Setup agent:** `vector-db-init-agent` — guided wizard for profiles, deps, chunk sizes, and manifest
+**Setup agent:** `vector-db-init-agent` — guided wizard (Modes A–D), detects installed Super-RAG layers, provisions only what's present
 
 ### Voice Writer
 
