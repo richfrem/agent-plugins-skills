@@ -7,7 +7,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
 - *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
-**125 skills** across **29 plugins** — all maintained from a single hub-and-spoke source tree.
+**125 skills** across **28 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -98,7 +98,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (125 skills)
+## Plugin Ecosystem (28 plugins · 125 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -371,7 +371,7 @@ python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (29 plugins, 124 skills)
+plugins/                    ← upstream source (28 plugins, 125 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -398,4 +398,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*124 skills · 29 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*125 skills · 28 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*

@@ -40,7 +40,6 @@
     "<USER_HOME>/Projects/",
     "plugins/skills",
     "anthropics/knowledge-work-plugins/",
-    "plugins/tool-inventory",
     "plugins/tool_inventory.json",
     "plugins/tools_manifest.json",
     "plugins/markdown",

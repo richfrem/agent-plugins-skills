@@ -619,59 +619,6 @@
         }
       ]
     },
-    "tool-inventory": {
-      "count": 8,
-      "scripts": [
-        {
-          "name": "audit_plugins.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/audit_plugins.py",
-          "purpose": "Audit Plugin Inventory",
-          "type": "python"
-        },
-        {
-          "name": "fix_inventory_paths.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/fix_inventory_paths.py",
-          "purpose": "Fix Inventory Paths",
-          "type": "python"
-        },
-        {
-          "name": "generate_tools_manifest.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/generate_tools_manifest.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "manage_tool_inventory.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/manage_tool_inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rebuild_inventory.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/rebuild_inventory.py",
-          "purpose": "rebuild_inventory.py",
-          "type": "python"
-        },
-        {
-          "name": "sync_inventory_descriptions.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/sync_inventory_descriptions.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "tool_chroma.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory/scripts/tool_chroma.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "tool_inventory_init.py",
-          "path": "plugins/tool-inventory/skills/tool-inventory-init/scripts/tool_inventory_init.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
-    },
     "vector-db": {
       "count": 18,
       "scripts": [
