@@ -12,7 +12,7 @@ allowed-tools: Bash, Read, Write
 You, the Antigravity agent, dispatch specialized analysis tasks to Gemini CLI sub-agents. 
 
 > [!IMPORTANT]
-> By default, all Gemini sub-agent orchestration uses the **gemini-3-flash-preview** model for high context efficiency (1M+ tokens) and stable analytical reasoning. Explicitly use this model unless the user authorizes a different model for specific benchmarks.
+> By default, all Gemini sub-agent orchestration uses the **gemini-3-flash-preview** model for maximum cost-efficiency. For deep analytical reasoning, structural validation, or multimodal vision tasks, explicitly override the model to **gemini-3.1-pro-preview**.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -70,7 +70,7 @@ These personas are mirrored from the Copilot CLI plugin to ensure consistent "Ag
 ## ⚠️ CLI Best Practices & Failure Modes
 
 ### 1. ⚡ Preferred Model: Gemini 3 Flash
-For analytical sub-agent tasks, **always** specify `-m gemini-3-flash-preview`. It provides the best balance of context window (1M+ tokens) and latency for analytical reviews.
+For analytical sub-agent tasks where cost is prioritized, **always** specify `-m gemini-3-flash-preview`. For deep reasoning or validation, use `-m gemini-3.1-pro-preview`.
 
 ### 2. ❌ Avoid Shell Expansion for Large Contexts
 Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run in the background. 

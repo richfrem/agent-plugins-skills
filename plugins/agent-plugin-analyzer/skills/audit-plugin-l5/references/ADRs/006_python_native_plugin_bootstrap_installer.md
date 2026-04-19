@@ -1,1 +1,1 @@
-../../../references/ADRs/006_python_native_plugin_bootstrap_installer.md
+../../../../../../ADRs/006_python_native_plugin_bootstrap_installer.md
