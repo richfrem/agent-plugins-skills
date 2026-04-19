@@ -2768,6 +2768,264 @@
       "description": ""
     },
     {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\wiki_builder.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-builder\\\\scripts\\\\wiki_builder.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\ingest.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-builder\\\\scripts\\\\ingest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\concept_extractor.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-builder\\\\scripts\\\\concept_extractor.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\raw_manifest.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-builder\\\\scripts\\\\raw_manifest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\query_wiki.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-query-agent\\\\scripts\\\\query_wiki.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\raw_manifest.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-query-agent\\\\scripts\\\\raw_manifest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\audit.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-query-agent\\\\scripts\\\\audit.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\distill_wiki.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-rlm-distiller\\\\scripts\\\\distill_wiki.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\raw_manifest.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-rlm-distiller\\\\scripts\\\\raw_manifest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\audit.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-rlm-distiller\\\\scripts\\\\audit.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\lint_wiki.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-linter\\\\scripts\\\\lint_wiki.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\audit.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-linter\\\\scripts\\\\audit.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\\\obsidian-wiki-engine\\\\scripts\\\\distill_wiki.py",
+      "dst": "plugins\\\\obsidian-wiki-engine\\\\skills\\\\obsidian-wiki-linter\\\\scripts\\\\distill_wiki.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-wiki-builder\\SKILL.md",
+      "dst": "plugins\\obsidian-wiki-engine\\agents\\wiki-build-agent.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-rlm-distiller\\SKILL.md",
+      "dst": "plugins\\obsidian-wiki-engine\\agents\\wiki-distill-agent.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-wiki-linter\\SKILL.md",
+      "dst": "plugins\\obsidian-wiki-engine\\agents\\wiki-lint-agent.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-query-agent\\SKILL.md",
+      "dst": "plugins\\obsidian-wiki-engine\\agents\\wiki-query-agent.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\SKILL.md",
+      "dst": "plugins\\obsidian-wiki-engine\\commands\\obsidian-init.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\requirements.txt",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-bases-manager\\requirements.txt",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\requirements.txt",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-canvas-architect\\requirements.txt",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\requirements.txt",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-graph-traversal\\requirements.txt",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\requirements.txt",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\requirements.txt",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\requirements.txt",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\requirements.txt",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\requirements.txt",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-vault-crud\\requirements.txt",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\obsidian-parser\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-vault-crud\\obsidian-parser\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-vault-crud\\acceptance-criteria.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-vault-crud\\references\\acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-vault-crud\\fallback-tree.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-vault-crud\\references\\fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\obsidian-parser\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\obsidian-parser\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\acceptance-criteria.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\references\\acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\fallback-tree.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\references\\fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-markdown-mastery\\references\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\obsidian-parser\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\obsidian-parser\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\acceptance-criteria.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\references\\acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\fallback-tree.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-init\\references\\fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\obsidian-parser\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-graph-traversal\\obsidian-parser\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-graph-traversal\\acceptance-criteria.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-graph-traversal\\references\\acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-graph-traversal\\fallback-tree.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-graph-traversal\\references\\fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\obsidian-parser\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-canvas-architect\\obsidian-parser\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-canvas-architect\\acceptance-criteria.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-canvas-architect\\references\\acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-canvas-architect\\fallback-tree.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-canvas-architect\\references\\fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\scripts\\obsidian-parser\\parser.py",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-bases-manager\\obsidian-parser\\parser.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-bases-manager\\acceptance-criteria.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-bases-manager\\references\\acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins\\obsidian-wiki-engine\\skills\\obsidian-bases-manager\\fallback-tree.md",
+      "dst": "plugins\\obsidian-wiki-engine\\skills\\obsidian-bases-manager\\references\\fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
       "src": "ADRs/001_cross_plugin_script_dependencies.md",
       "dst": "plugins/agent-scaffolders/skills/create-plugin/references/ADRs/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",

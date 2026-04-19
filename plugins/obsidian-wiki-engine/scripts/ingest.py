@@ -111,7 +111,7 @@ def parse_file(
     try:
         content = file_path.read_text(encoding="utf-8", errors="replace")
     except Exception as e:
-        print(f"[WARN] Cannot read {file_path}: {e}")
+        print(f"[WARN] Cannot read {file_path}: {e}", file=sys.stderr)
         return None
 
     if len(content.strip()) < 50:
@@ -163,8 +163,8 @@ def ingest_source(
     files = source_cfg.collect_files()
     records: List[Dict[str, Any]] = []
 
-    print(f"\n[INGEST] Source: {source_cfg.source_name} ({len(files)} eligible files)")
-    print(f"         Path  : {source_cfg.source_path}")
+    print(f"\n[INGEST] Source: {source_cfg.source_name} ({len(files)} eligible files)", file=sys.stderr)
+    print(f"         Path  : {source_cfg.source_path}", file=sys.stderr)
 
     for file_path in files:
         try:
@@ -191,7 +191,7 @@ def ingest_source(
         }
         records.append(record)
 
-    print(f"         New/changed: {len(records)}")
+    print(f"         New/changed: {len(records)}", file=sys.stderr)
     return records
 
 
@@ -216,7 +216,7 @@ def main() -> None:
         sources = WikiSourceConfig.all_sources(wiki_root=wiki_root)
 
     if not sources:
-        print("[ERROR] No sources found. Run /wiki-init first.")
+        print("[ERROR] No sources found. Run /wiki-init first.", file=sys.stderr)
         sys.exit(1)
 
     all_records: List[Dict[str, Any]] = []
@@ -224,12 +224,12 @@ def main() -> None:
         records = ingest_source(cfg, memory, force=args.force)
         all_records.extend(records)
 
-    print(f"\n[INGEST] Total new/changed records: {len(all_records)}")
+    print(f"\n[INGEST] Total new/changed records: {len(all_records)}", file=sys.stderr)
 
     if args.dry_run:
-        print("[DRY RUN] No files written.")
+        print("[DRY RUN] No files written.", file=sys.stderr)
         for r in all_records:
-            print(f"  + {r['source_label']}/{r['source_file']} -> wiki/{r['concept']}.md")
+            print(f"  + {r['source_label']}/{r['source_file']} -> wiki/{r['concept']}.md", file=sys.stderr)
         return
 
     # Persist updated memory
@@ -241,7 +241,7 @@ def main() -> None:
         out_path = Path(args.output)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(records_json, encoding="utf-8")
-        print(f"[SAVE] Records written: {args.output}")
+        print(f"[SAVE] Records written: {args.output}", file=sys.stderr)
     else:
         print(records_json)
 

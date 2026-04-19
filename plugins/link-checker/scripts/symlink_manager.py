@@ -70,14 +70,14 @@ class Manifest:
     def load(cls, path: Path) -> "Manifest":
         if not path.exists():
             return cls()
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         links = [LinkEntry(**e) for e in data.get("links", [])]
         return cls(version=data.get("version", 1), links=links)
 
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(
                 {"version": self.version, "links": [asdict(e) for e in self.links]},
                 f,

@@ -1,0 +1,1 @@
+../../../scripts/raw_manifest.py
