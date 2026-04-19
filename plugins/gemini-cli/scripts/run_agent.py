@@ -48,6 +48,8 @@ Consumed by:
 import sys
 import subprocess
 import os
+import shutil
+import shutil
 
 # --- PATH RESOLUTION ---
 def resolve_path(provided_path: str) -> str:
@@ -115,8 +117,19 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         "Do NOT access filesystem. Only use the provided input."
     )
 
-    # Use the provided model (defaults to gemini-3-flash-preview)
-    cmd = ["gemini", "--yolo", "-m", model, "-p", prompt]
+    # Homebrew path injection for native macOS execution
+    if os.path.exists("/opt/homebrew/bin") and "/opt/homebrew/bin" not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"
+
+    # Use the provided model
+    # Automatically fallback to npx if global binary is missing
+    if shutil.which("gemini"):
+        cmd = ["gemini", "--yolo", "-m", model, "-p", prompt]
+    elif shutil.which("npx"):
+        cmd = ["npx", "--yes", "@google/gemini-cli@latest", "--yolo", "-m", model, "-p", prompt]
+    else:
+        print("Error: Neither 'gemini' nor 'npx' executable found in PATH.")
+        sys.exit(1)
 
     try:
         with open(output_file, 'w') as out:

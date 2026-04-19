@@ -1,1 +1,0 @@
-../../../../agent-scaffolders/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
