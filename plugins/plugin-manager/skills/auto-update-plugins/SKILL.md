@@ -107,7 +107,7 @@ Create `.agents/hooks/session_start.sh`:
 #!/usr/bin/env bash
 # Auto-sync plugins from registered GitHub sources on every session start.
 if [ -f "plugin-sources.json" ]; then
-  python3 .agents/scripts/check_and_sync.py
+  python .agents/scripts/check_and_sync.py
 fi
 ```
 

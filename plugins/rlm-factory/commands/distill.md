@@ -15,7 +15,7 @@ The agent reads each file and writes a high-quality summary via `inject_summary.
 Use for 1-10 files. The agent is faster for small batches.
 
 ```bash
-python3 ./scripts/inject_summary.py \
+python ./scripts/inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your agent-generated summary here."
@@ -28,7 +28,7 @@ Delegates to `swarm_run.py` to fan-out processing across Copilot/Gemini.
 
 ```bash
 # All files in profile scope
-python3 ./scripts/swarm_run.py --engine copilot --files-from rlm_distill_tasks_project.md
+python ./scripts/swarm_run.py --engine copilot --files-from rlm_distill_tasks_project.md
 
 ```
 

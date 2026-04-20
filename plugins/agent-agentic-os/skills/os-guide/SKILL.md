@@ -204,7 +204,7 @@ missing from the references, or required more turns than expected to explain:
 
 ```bash
 # Only emit if friction was encountered — do not emit if explanation was clean
-python3 context/kernel.py emit_event --agent os-guide \
+python context/kernel.py emit_event --agent os-guide \
   --type friction --action encountered \
   --summary "step:[which-reference] cause:[what-was-unclear]"
 ```

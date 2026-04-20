@@ -53,7 +53,7 @@ spec-kitty merge --feature <feature-slug>
 Before merging, verify you are in the correct working directory by running this validation:
 
 ```bash
-python3 -c "
+python -c "
 from specify_cli.guards import validate_worktree_location
 result = validate_worktree_location()
 if not result.is_valid:

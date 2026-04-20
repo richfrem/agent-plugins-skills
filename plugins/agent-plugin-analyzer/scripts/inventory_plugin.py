@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 inventory_plugin.py (CLI)
 =====================================
@@ -10,9 +10,9 @@ Purpose:
 Layer: Meta-Execution
 
 Usage Examples:
-    python3 inventory_plugin.py --path <plugin-dir> --format json
-    python3 inventory_plugin.py --path <plugin-dir> --format markdown
-    python3 inventory_plugin.py --path <plugin-dir> --format checklist
+    pythonentory_plugin.py --path <plugin-dir> --format json
+    pythonentory_plugin.py --path <plugin-dir> --format markdown
+    pythonentory_plugin.py --path <plugin-dir> --format checklist
 
 CLI Arguments:
     --path: The path to the plugin or plugin collection directory.

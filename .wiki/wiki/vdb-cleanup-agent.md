@@ -69,13 +69,13 @@ Verify available profiles in `.agent/learning/vector_profiles.json`. The default
 Note: The `--profile` flag is mandatory to ensure the correct collection and disk paths are loaded.
 
 ```bash
-python3 ./scripts/cleanup.py --profile wiki
+python ./scripts/cleanup.py --profile wiki
 ```
 
 ### 3. Verify Store Integrity (Optional)
 Run the consistency check to verify that remaining facts are still supported.
 ```bash
-python3 ./scripts/vector_consistency_check.py --profile wiki --topic .agent/learning/
+python ./scripts/vector_consistency_check.py --profile wiki --topic .agent/learning/
 ```
 
 ## Rules

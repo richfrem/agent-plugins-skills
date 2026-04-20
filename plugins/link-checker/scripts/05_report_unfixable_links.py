@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 05_report_unfixable_links.py (CLI)
 =====================================
@@ -8,7 +8,7 @@ Purpose:
     This is Phase 5 of the Link Checker pipeline.
 
 Usage:
-    python3 05_report_unfixable_links.py
+    python05_report_unfixable_links.py
 
 Output:
     - unfixable_links_report.md: Human-readable report of gaps.

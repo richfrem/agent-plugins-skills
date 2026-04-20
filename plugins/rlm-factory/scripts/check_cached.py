@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 check_cached.py
 =====================================
@@ -11,10 +11,10 @@ Purpose:
     Exit code 1  = file NOT cached -> swarm worker should process it.
 
 Usage (invoked automatically by swarm_run.py via check_cmd):
-    python3 ./plugins/rlm-factory/scripts/check_cached.py <relative-file-path>
+    python ./plugins/rlm-factory/scripts/check_cached.py <relative-file-path>
 
     Example in a job file:
-        check_cmd: python3 ./plugins/rlm-factory/scripts/check_cached.py {file}
+        check_cmd: python ./plugins/rlm-factory/scripts/check_cached.py {file}
 
     The cache directory is resolved from the RLM profile named 'wiki' in
     .agent/learning/rlm_profiles.json. Override with --profile <name>.

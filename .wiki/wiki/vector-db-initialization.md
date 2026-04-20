@@ -87,27 +87,27 @@ Run from the project root:
 
 ```bash
 # Regenerate the lockfile from the intent file (only needed when requirements.in changes):
-python3 -m piptools compile plugins/vector-db/requirements.in \
+python -m piptools compile plugins/vector-db/requirements.in \
     --output-file plugins/vector-db/requirements.txt
 
 # Install all dependencies (always run this on first setup):
-python3 -m pip install -r plugins/vector-db/requirements.txt
+python -m pip install -r plugins/vector-db/requirements.txt
 ```
 
 > **Note:** `pip-tools` itself must be installed first if not present:
 > ```bash
-> python3 -m pip install pip-tools
+> python -m pip install pip-tools
 > ```
 >
 > **Known gotcha:** The system `pip` command may not be available on macOS. Always use
-> `python3 -m pip install ...` rather than bare `pip install ...`.
+> `python -m pip install ...` rather than bare `pip install ...`.
 
 Verify the critical packages are installed:
 
 ```bash
-python3 -c "import chromadb; print('chromadb:', chromadb.__version__)"
-python3 -c "import einops; print('einops: OK')"
-python3 -c "from sentence_transformers import SentenceTransformer; print('sentence-transformers: OK')"
+python -c "import chromadb; print('chromadb:', chromadb.__version__)"
+python -c "import einops; print('einops: OK')"
+python -c "from sentence_transformers import SentenceTransformer; print('sentence-transformers: OK')"
 ```
 
 If any check fails, the install step above will fix it.

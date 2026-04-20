@@ -66,8 +66,8 @@ summary, and inject it into the ledger via `inject_summary.py`.
 ### 1. Identify missing files
 
 ```bash
-python3 ./scripts/inventory.py --profile project
-python3 ./scripts/inventory.py --profile tools
+python ./scripts/inventory.py --profile project
+python ./scripts/inventory.py --profile tools
 ```
 
 ### 2. For each missing file -- read deeply and write a great summary
@@ -80,7 +80,7 @@ and what are its key components/functions?"* in one dense sentence.
 ### 3. Inject the summary
 
 ```bash
-python3 ./scripts/inject_summary.py \
+python ./scripts/inject_summary.py \
   --profile project \
   --file .agents/skills/my-skill/SKILL.md \
   --summary "Provides atomic vault CRUD operations for Obsidian notes using POSIX rename and fcntl.flock."
@@ -105,14 +105,14 @@ Switch to `--engine gemini --workers 5` if you need faster throughput.
 
 ```bash
 # Zero-cost bulk distillation (Copilot -- recommended default)
-python3 ./scripts/swarm_run.py \
+python ./scripts/swarm_run.py \
   --engine copilot \
   --job <path-to-job-file> \
   --files-from rlm_distill_tasks_project.md \
   --resume --workers 2
 
 # Higher throughput -- also free (Gemini)
-python3 ./scripts/swarm_run.py \
+python ./scripts/swarm_run.py \
   --engine gemini \
   --job <path-to-job-file> \
   --files-from rlm_distill_tasks_project.md \

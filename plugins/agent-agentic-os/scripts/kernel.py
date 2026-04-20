@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 kernel.py — Agentic OS Event Bus and Lock Manager
 ======================================================
@@ -13,8 +13,8 @@ Layer:
     OS Kernel primitives
 
 Usage Examples:
-    python3 kernel.py acquire_lock my_lock --ttl 30
-    python3 kernel.py emit_event --agent worker --type intent --action task_start
+    pythonkernel.py acquire_lock my_lock --ttl 30
+    pythonkernel.py emit_event --agent worker --type intent --action task_start
 
 Supported Object Types:
     - JSONL Event payloads

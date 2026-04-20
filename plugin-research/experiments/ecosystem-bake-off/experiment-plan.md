@@ -40,7 +40,7 @@ Before running the experiment, here is the architectural prognosis of how these 
 
 ### Run B: The Organic Stack (`run-B-organic-stack/`)
 1. CD into `run-B-organic-stack/`.
-2. Initialize the agentic OS (`python3 kernel.py init` or similar). Ensure the `superpowers` execution skills are loaded.
+2. Initialize the agentic OS (`python kernel.py init` or similar). Ensure the `superpowers` execution skills are loaded.
 3. Tell the agent: "Build a CSV parsing utility that calculates the average of a column using strict TDD."
 4. **Constraint:** Let the agent govern itself organically with the event bus and execution rules (TDD, verification-before-completion) without a formal Spec-Kitty Kanban board.
 

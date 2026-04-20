@@ -55,7 +55,7 @@ Since `plugin_add.py` is written in standard library Python, we can provide a un
 
 **Mac / Linux:**
 ```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 - richfrem/agent-plugins-skills
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python - richfrem/agent-plugins-skills
 ```
 
 **Windows (PowerShell):**
@@ -92,7 +92,7 @@ antigravity-plugins add richfrem/agent-plugins-skills
 
 ## Option 5: Build a lightweight `npx` wrapper
 
-We publish a tiny stub package to NPM (`@agent-plugins/cli`) whose ONLY job is to execute a `fetch()` call, download the Python `plugin_add.py` script to a temp folder, and spawn `python3 temp_script.py`.
+We publish a tiny stub package to NPM (`@agent-plugins/cli`) whose ONLY job is to execute a `fetch()` call, download the Python `plugin_add.py` script to a temp folder, and spawn `python temp_script.py`.
 
 ```bash
 npx @agent-plugins/cli add richfrem/agent-plugins-skills

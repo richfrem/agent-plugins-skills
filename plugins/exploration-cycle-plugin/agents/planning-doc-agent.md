@@ -43,7 +43,7 @@ In all re-entry cases, exploration is not a failure mode — it is a designed fe
 Pre-drafts `spec.md` from the handoff package. Output goes to staging — not directly into `kitty-specs/`.
 
 ```bash
-python3 scripts/dispatch.py \
+pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/handoff/exploration-handoff.md \
   --instruction "Mode: spec-draft. Pre-draft a spec.md from this exploration handoff. Follow Spec-Kitty spec format. Mark any gap with [NEEDS HUMAN INPUT]. Output to staging only." \
@@ -55,7 +55,7 @@ python3 scripts/dispatch.py \
 Pre-drafts `plan.md` with high-level phases and work package hints from the handoff.
 
 ```bash
-python3 scripts/dispatch.py \
+pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/handoff/exploration-handoff.md \
   --instruction "Mode: plan-draft. Pre-draft a plan.md with phases and WP hints from this handoff. Mark any gap with [NEEDS HUMAN INPUT]." \
@@ -67,7 +67,7 @@ python3 scripts/dispatch.py \
 Generates a first-pass work package outline (WP stubs) from the spec and plan drafts.
 
 ```bash
-python3 scripts/dispatch.py \
+pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context exploration/planning-drafts/spec-draft.md exploration/planning-drafts/plan-draft.md \
   --instruction "Mode: tasks-outline. Generate a WP outline from these drafts. Use WP-XX format. Stubs only — do not fabricate scope." \
@@ -79,7 +79,7 @@ python3 scripts/dispatch.py \
 When the engineering cycle encounters unresolved ambiguity, use this mode to detect the gap and scope a new exploration session. This triggers a return to Diamond 1.
 
 ```bash
-python3 scripts/dispatch.py \
+pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
   --context "active scope" \
   --instruction "CONTEXT: [describe the ambiguity]. Mode: re-entry-scope. Identify the exploration gap. Suggest exploration type (spike / brownfield). Draft a session brief." \

@@ -30,7 +30,7 @@ content_hash: fe0390c11ab32883
 
 ## Phase B: Review & Merge
 - [ ] **Review Completed WPs**: `/spec-kitty.review`
-- [ ] **Move to Review**: `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP> for_review`
+- [ ] **Move to Review**: `python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP> for_review`
 - [ ] **Final Acceptance**: `/spec-kitty.accept`
 - [ ] **Merge Feature**: `/spec-kitty.merge`
 

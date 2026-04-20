@@ -84,7 +84,7 @@ The community convention for auto-updating memory uses a `PostToolUse` hook:
     {
       "event": "PostToolUse",
       "tool": "Write",
-      "command": "python3 .claude/hooks/update_memory.py"
+      "command": "python .claude/hooks/update_memory.py"
     }
   ]
 }

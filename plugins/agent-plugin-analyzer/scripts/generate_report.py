@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 generate_report.py
 =====================================
@@ -10,8 +10,8 @@ Purpose:
 Layer: Investigate / Synthesis
 
 Usage Examples:
-    python3 generate_report.py run_loop_output.json -o report.html
-    cat run_loop_output.json | python3 generate_report.py -
+    pythongenerate_report.py run_loop_output.json -o report.html
+    cat run_loop_output.json | pythongenerate_report.py -
 
 Supported Object Types:
     Optimizer cycle result JSON metadata.

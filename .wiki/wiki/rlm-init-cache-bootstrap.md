@@ -137,7 +137,7 @@ echo "{}" > <cache_path>
 
 Scan the manifest against the cache to find uncached files:
 ```bash
-python3 ./scripts/inventory.py --profile <NAME>
+python ./scripts/inventory.py --profile <NAME>
 ```
 
 Report: "N files in manifest, M already cached, K remaining."

@@ -19,8 +19,8 @@ stateDiagram-v2
     
     state Execution {
         [*] --> RunScript
-        RunScript --> python3_execute_py
-        python3_execute_py --> ReturnStdout
+        RunScript --> pythonexecute_py
+        pythonexecute_py --> ReturnStdout
     }
     
     Execution --> [*]

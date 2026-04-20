@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 audit_scripts_conventions.py
 =====================================
@@ -11,10 +11,10 @@ Layer: Investigate / Curate
 
 Usage:
     # Audit a single file
-    python3 audit_scripts_conventions.py path/to/script.py
+    python audit_scripts_conventions.py path/to/script.py
     
     # Audit all files in a directory (recursively)
-    python3 audit_scripts_conventions.py path/to/scripts_dir/
+    python audit_scripts_conventions.py path/to/scripts_dir/
 """
 
 import os
@@ -77,7 +77,7 @@ def check_script(filepath: str) -> bool:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 audit_scripts_conventions.py <file_or_directory>")
+        print("Usage: python audit_scripts_conventions.py <file_or_directory>")
         sys.exit(1)
     
     target = sys.argv[1]

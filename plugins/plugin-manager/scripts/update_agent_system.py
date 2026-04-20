@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Update Agent System (Master Sync)
 =================================
@@ -17,7 +17,7 @@ Architecture Notes:
     have been superseded by the plugin bridge architecture.
 
 Usage:
-  python3 plugins/plugin-manager/scripts/update_agent_system.py
+  python plugins/plugin-manager/scripts/update_agent_system.py
 """
 
 import sys

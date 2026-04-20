@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 validate_agent.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Investigate
 
 Usage:
-    python3 validate_agent.py <path/to/agent.md>
+    pythonvalidate_agent.py <path/to/agent.md>
 """
 import sys
 import os

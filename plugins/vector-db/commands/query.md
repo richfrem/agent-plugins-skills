@@ -13,11 +13,11 @@ Semantic (meaning-based) search against the ChromaDB vector store.
 
 ```bash
 # Semantic search
-python3 ./scripts/query.py \
+python ./scripts/query.py \
   "your natural language question" --profile wiki--limit 5
 
 # Check DB stats / health
-python3 ./scripts/query.py --profile wiki--stats
+python ./scripts/query.py --profile wiki--stats
 ```
 
 Results are ranked by cosine similarity and include file path, chunk content, and score.

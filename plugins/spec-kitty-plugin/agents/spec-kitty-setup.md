@@ -53,7 +53,7 @@ Execute these phases in order based on the user's needs. Do not skip phases unle
 ### Phase 3: Synchronization (Propagate to Agents)
 - Sync local configurations:
   ```bash
-  python3 ./sync_configuration.py
+  python ./sync_configuration.py
   ```
 - *This automatically converts local workflows into Open Standard skills inside the plugin.*
 
@@ -80,5 +80,5 @@ Consult these files to understand the bridge deployment rules:
 *   `acceptance-criteria.md` — Generic rules of structure validation.
 
 ### 2. Available Scripts
-*   `sync_configuration.py` — The core synchronization engine that translates local workflows into Open Standard skills. Usage: `python3 ./sync_configuration.py`.
+*   `sync_configuration.py` — The core synchronization engine that translates local workflows into Open Standard skills. Usage: `python ./sync_configuration.py`.
 *   `plugin_installer.py` — Executes the installation scripts connecting local folders to central `.agents/` stores. Use only in tandem with verified sync output.

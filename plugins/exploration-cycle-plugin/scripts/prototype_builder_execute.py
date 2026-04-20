@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 prototype_builder_execute.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Execution / Automation
 
 Usage Examples:
-    python3 prototype_builder_execute.py
+    python prototype_builder_execute.py
 
 Supported Object Types:
     None

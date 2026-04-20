@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 load_context.py
 =====================================
@@ -12,7 +12,7 @@ Purpose:
 Layer: Retrieve
 
 Usage:
-    echo '<session-start-json>' | python3 load_context.py
+    echo '<session-start-json>' | python load_context.py
 """
 import sys
 import os

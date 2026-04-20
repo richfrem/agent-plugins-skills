@@ -9,8 +9,8 @@ Purpose:
 Layer: Core Operations
 
 Usage Examples:
-    python3 parser.py analyze --file example.md
-    python3 parser.py callout --type info --title "Note" --text "Content"
+    python.py analyze --file example.md
+    python.py callout --type info --title "Note" --text "Content"
 
 Supported Object Types:
     - .md (Markdown notes with Obsidian syntax)

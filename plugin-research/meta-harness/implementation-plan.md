@@ -49,7 +49,7 @@ plugins/agent-agentic-os/
 The autoresearch loop works like this:
 1. Agent reads `<experiment-dir>/references/program.md` (goal, rules)
 2. Agent edits one file (SKILL.md or a script) — one change per iteration
-3. Agent runs `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <experiment-dir> --desc "what changed"`
+3. Agent runs `python plugins/agent-agentic-os/scripts/evaluate.py --skill <experiment-dir> --desc "what changed"`
 4. `evaluate.py` calls `eval_runner.py --json`, compares to baseline, writes row to `results.tsv`, exits 0 or 1
 5. Agent: exit 0 → commit the change; exit 1 → `evaluate.py` already reverted via `git checkout`
 6. Repeat
@@ -204,7 +204,7 @@ grep -l "DISCARD" evals/traces/*.json | xargs -I{} jq '.routing_detail[] | selec
 # Reads results.tsv + most recent trace, prints a compact markdown block
 ```
 
-Output of `python3 eval_runner.py --skill <path> --snapshot`:
+Output of `python eval_runner.py --skill <path> --snapshot`:
 ```
 ## Skill State Snapshot
 - Current score:      0.71  (baseline: 0.84, delta: -0.13)
@@ -234,7 +234,7 @@ In Phase 1 (Frontier), add as Step 0 before "Define the pressure scenario":
 
 Before proposing any mutation, run:
 ```bash
-python3 plugins/agent-agentic-os/scripts/eval_runner.py \
+python plugins/agent-agentic-os/scripts/eval_runner.py \
     --skill <experiment-dir> \
     --snapshot
 ```
@@ -315,12 +315,12 @@ The second example contains no falsifiable claim and will produce random mutatio
 ### 4a. `generate_milestone.py`
 
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 generate_milestone.py -- Write a milestone summary every N iterations.
 
 Usage:
-    python3 generate_milestone.py --experiment-dir <path> [--every 25]
+    python generate_milestone.py --experiment-dir <path> [--every 25]
 
 Reads: evals/results.tsv, evals/traces/*.json
 Writes: evals/traces/milestone_NNN.md
@@ -481,7 +481,7 @@ cat plugin-research/meta-harness/enhancement-recommendations.md
 
 ```bash
 # Run a single eval against any skill with existing evals.json
-python3 plugins/agent-agentic-os/scripts/evaluate.py \
+python plugins/agent-agentic-os/scripts/evaluate.py \
     --skill plugins/agent-agentic-os/skills/os-eval-runner \
     --desc "test trace write"
 
@@ -489,7 +489,7 @@ python3 plugins/agent-agentic-os/scripts/evaluate.py \
 ls plugins/agent-agentic-os/skills/os-eval-runner/evals/traces/
 
 # Verify trace JSON is valid and has routing_detail
-cat plugins/agent-agentic-os/skills/os-eval-runner/evals/traces/iter_001_*.json | python3 -m json.tool
+cat plugins/agent-agentic-os/skills/os-eval-runner/evals/traces/iter_001_*.json | python -m json.tool
 ```
 
 Expected: trace JSON file with `routing_detail` array containing one entry per eval input.
@@ -497,7 +497,7 @@ Expected: trace JSON file with `routing_detail` array containing one entry per e
 ### Test Enhancement 2 (snapshot)
 
 ```bash
-python3 plugins/agent-agentic-os/scripts/eval_runner.py \
+python plugins/agent-agentic-os/scripts/eval_runner.py \
     --skill plugins/agent-agentic-os/skills/os-eval-runner \
     --snapshot
 ```
@@ -508,7 +508,7 @@ Expected: markdown block with score, iteration count, fp_rate, fn_rate, dominant
 
 ```bash
 # After 25+ iterations have been run in a target experiment:
-python3 plugins/agent-agentic-os/scripts/generate_milestone.py \
+python plugins/agent-agentic-os/scripts/generate_milestone.py \
     --experiment-dir plugins/agent-agentic-os/skills/os-eval-runner
 
 ls plugins/agent-agentic-os/skills/os-eval-runner/evals/traces/milestone_*.md
@@ -535,7 +535,7 @@ git add plugins/agent-agentic-os/skills/os-eval-runner/SKILL.md
 git commit -m "feat: add per-input trace storage to eval_runner.py and evaluate.py (Meta-Harness Rec 1)"
 
 # Then re-baseline (REQUIRED after evaluate.py change)
-python3 plugins/agent-agentic-os/scripts/evaluate.py \
+python plugins/agent-agentic-os/scripts/evaluate.py \
     --skill plugins/agent-agentic-os/skills/os-eval-runner \
     --baseline --desc "re-baseline after trace storage addition"
 git add plugins/agent-agentic-os/skills/os-eval-runner/evals/

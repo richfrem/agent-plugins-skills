@@ -9,8 +9,8 @@ Purpose:
 Layer: Core Operations
 
 Usage Examples:
-    python3 init_vault.py --vault-root /path/to/vault
-    python3 init_vault.py --vault-root /path/to/vault --validate-only
+    pythoninit_vault.py --vault-root /path/to/vault
+    pythoninit_vault.py --vault-root /path/to/vault --validate-only
 
 Supported Object Types:
     - .obsidian/app.json

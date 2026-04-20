@@ -63,7 +63,7 @@ pip install -r ./requirements.txt
 
 See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
-> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python3`.
+> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python`.
 
 ---
 

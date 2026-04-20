@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Spec Kitty Configuration Sync
 =============================
@@ -16,7 +16,7 @@ Assumptions:
 3. Run this script to propagate updates into the plugin system.
 
 Usage:
-    python3 ./scripts/sync_configuration.py
+    python ./scripts/sync_configuration.py
 """
 
 import shutil

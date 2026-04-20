@@ -38,18 +38,18 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 # Location: plugins/gemini-cli/scripts/run_agent.py
-python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL_NAME]
+python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL_NAME]
 ```
 
 ### 🧪 Mandatory Validation Protocol (Phase 0.5)
 Before using Gemini in any autonomous Triple-Loop or complex orchestration, you **must** verify the CLI's and the orchestrator's health:
 1. **Hello Check**: `gemini --yolo -m gemini-3-flash-preview -p "hello"`
-2. **Functional Check**: `python3 ./scripts/run_agent.py agents/refactor-expert.md target.py ./HEARTBEAT_MD.md "Verify health"`
+2. **Functional Check**: `python ./scripts/run_agent.py agents/refactor-expert.md target.py ./HEARTBEAT_MD.md "Verify health"`
 3. **Verify Output**: Confirm `./HEARTBEAT_MD.md` is not empty.
 
 ### Example Usage:
 ```bash
-python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
+python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 "Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
 ```
 
@@ -123,5 +123,5 @@ nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/nu
 ## ✅ Smoke Test
 
 ```bash
-python3 ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
+python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```

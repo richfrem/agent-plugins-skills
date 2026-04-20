@@ -36,7 +36,7 @@ This updates the LLM-optimized summary cache.
 ### 3.2 Vector DB Ingestion
 Every technical source (SQL dumps, XML-MD) and human-written documentation MUST be ingested:
 ```bash
-wsl python3 plugins/vector-db/scripts/ingest.py --file [FILE_PATH]
+wsl python plugins/vector-db/scripts/ingest.py --file [FILE_PATH]
 ```
 This enables semantic "RAG" search for future analysis.
 

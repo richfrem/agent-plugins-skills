@@ -2,7 +2,7 @@
 
 > **Prerequisites:**
 > - The target skill folder must be inside a **git repository**. Run `git init && git add . && git commit -m "init"` first if needed.
-> - **Python 3.8+** must be available as `python3`.
+> - **Python 3.8+** must be available as `python`.
 
 You only need two things:
 1. A copy of the **target skill folder** you want to improve.
@@ -45,9 +45,9 @@ Before running any loops, ensure the environment is clean and correctly linked. 
    ```
 
 6. **Verify Python 3**:
-   Ensure `python3` is available (v3.8+).
+   Ensure `python` is available (v3.8+).
    ```bash
-   python3 --version
+   python --version
    ```
 
 ---
@@ -55,7 +55,7 @@ Before running any loops, ensure the environment is clean and correctly linked. 
 ## 1. Scaffold the Experiment (One-Time)
 
 ```bash
-python3 scripts/init_autoresearch.py \
+python scripts/init_autoresearch.py \
     --experiment-dir .agents/skills/your-target-skill \
     --mutation-target SKILL.md
 ```
@@ -80,7 +80,7 @@ Replace every `REPLACE` placeholder with real test prompts and correct `should_t
 ## 3. Establish the Baseline
 
 ```bash
-python3 scripts/evaluate.py \
+python scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --baseline \
     --desc "initial baseline"
@@ -98,7 +98,7 @@ Your main agent (or Triple-Loop Retrospective) repeatedly runs:
 
 ```bash
 # Example single iteration
-python3 scripts/evaluate.py \
+python scripts/evaluate.py \
     --skill .agents/skills/your-target-skill \
     --desc "improved trigger phrasing for edge case X"
 ```

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 adr_manager.py — Architecture Decision Record Manager
 ======================================================
@@ -11,10 +11,10 @@ Layer:
     Plugin / ADR-Manager
 
 Usage Examples:
-    python3 ./scripts/adr_manager.py create "Title" --context "..." --decision "..." --consequences "..."
-    python3 ./scripts/adr_manager.py list [--limit N]
-    python3 ./scripts/adr_manager.py get N
-    python3 ./scripts/adr_manager.py search "query"
+    python./scripts/adr_manager.py create "Title" --context "..." --decision "..." --consequences "..."
+    python./scripts/adr_manager.py list [--limit N]
+    python./scripts/adr_manager.py get N
+    python./scripts/adr_manager.py search "query"
 
 Supported Object Types:
     - Architecture Decision Records (ADR)

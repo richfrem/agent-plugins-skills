@@ -30,8 +30,8 @@ description: >
   User: I'm done for the day, can you write up a session log?
   Agent:
   <Bash>
-  python3 context/kernel.py emit_event --agent os-memory-manager --type intent --action promote_memory
-  python3 context/kernel.py state_update active_agent os-memory-manager
+  python context/kernel.py emit_event --agent os-memory-manager --type intent --action promote_memory
+  python context/kernel.py state_update active_agent os-memory-manager
   </Bash>
   </example>
 
@@ -39,7 +39,7 @@ description: >
   User: That's all, logging off now.
   Agent:
   <Bash>
-  python3 context/kernel.py acquire_lock memory
+  python context/kernel.py acquire_lock memory
   </Bash>
   </example>
 
@@ -100,12 +100,12 @@ Execute these phases in order. Do not skip phases.
 
 Before taking any actions, you MUST publish your intent to the Event Bus.
 Use the `Bash` tool to run:
-`python3 context/kernel.py emit_event --agent os-memory-manager --type intent --action promote_memory`
+`python context/kernel.py emit_event --agent os-memory-manager --type intent --action promote_memory`
 
 ### Phase 1: Acquire OS State and Lock
 
-1. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-memory-manager`, `python3 context/kernel.py state_update mode memory-gc`, and `python3 context/kernel.py state_update memory_gc_due false`.
-2. **Strict Lock Protocol**: Run `python3 context/kernel.py acquire_lock memory` using the `Bash` tool to acquire the lock. If it fails, abort. The kernel handles stale lock timeouts automatically.
+1. **Update OS State**: Run `python context/kernel.py state_update active_agent os-memory-manager`, `python context/kernel.py state_update mode memory-gc`, and `python context/kernel.py state_update memory_gc_due false`.
+2. **Strict Lock Protocol**: Run `python context/kernel.py acquire_lock memory` using the `Bash` tool to acquire the lock. If it fails, abort. The kernel handles stale lock timeouts automatically.
 3. **Capture What Happened**: Before writing memory files, ask the user to confirm the session scope:
 - What was the main task or goal this session?
 - Were any architectural decisions made? (if yes -> promote to `context/memory.md`)

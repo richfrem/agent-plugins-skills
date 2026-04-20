@@ -9,8 +9,8 @@ Purpose:
 Layer: Plugin Manager / Installation
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/install_all_plugins.py
-    python3 plugins/plugin-manager/scripts/install_all_plugins.py --plugins-dir "temp/agent-plugins-skills/plugins"
+    python plugins/plugin-manager/scripts/install_all_plugins.py
+    python plugins/plugin-manager/scripts/install_all_plugins.py --plugins-dir "temp/agent-plugins-skills/plugins"
 
 Supported Object Types:
     - None (Batch execution)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 fix_inside_plugin_symlinks.py
 =====================================

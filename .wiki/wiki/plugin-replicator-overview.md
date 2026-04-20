@@ -25,7 +25,7 @@ The **Plugin Replicator** syncs plugin source code between local project reposit
 ## Push (from `agent-plugins-skills` outward)
 Use when you want to distribute an update from this central repo to a consumer project:
 ```bash
-python3 ./plugin_replicator.py \
+python ./plugin_replicator.py \
   --source <APS_ROOT>/plugins/rlm-factory \
   --dest <USER_HOME>/Projects/Project_Sanctuary/plugins/rlm-factory
 ```
@@ -34,7 +34,7 @@ python3 ./plugin_replicator.py \
 Use when you're inside a consumer project and want to pull the latest from this central repo:
 ```bash
 # Run from Project_Sanctuary
-python3 ./plugin_replicator.py \
+python ./plugin_replicator.py \
   --source <USER_HOME>/Projects/agent-plugins-skills/plugins/rlm-factory \
   --dest <PROJECT_ROOT>/plugins/rlm-factory \
   --clean
@@ -42,7 +42,7 @@ python3 ./plugin_replicator.py \
 
 ## Bulk Sync
 ```bash
-python3 ./bulk_replicator.py \
+python ./bulk_replicator.py \
   --source <USER_HOME>/Projects/agent-plugins-skills/plugins/ \
   --dest <PROJECT_ROOT>/plugins/
 ```

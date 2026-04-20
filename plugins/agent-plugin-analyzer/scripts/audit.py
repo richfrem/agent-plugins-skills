@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 audit.py (CLI)
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Meta-Execution
 
 Usage Examples:
-    python3 audit.py --path <plugin-directory>
+    pythonudit.py --path <plugin-directory>
 
 Supported Object Types:
     - .claude-plugin formatted directories

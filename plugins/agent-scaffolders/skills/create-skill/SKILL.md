@@ -89,7 +89,7 @@ Create the confirmed directory structure. Standards enforced by `acceptance-crit
   ```bash
   ln -s ../../../scripts/<canonical_name>.py skills/<skill>/scripts/<name>.py
   ```
-  Verify the symlink resolved: `python3 -c "import os; print(os.path.exists('skills/<skill>/scripts/<name>.py'))"`
+  Verify the symlink resolved: `python -c "import os; print(os.path.exists('skills/<skill>/scripts/<name>.py'))"`
   must print `True`. On Windows/`core.symlinks=false` machines, git will check these out as
   plain-text "stand-in" files — run `bulk_symlink_fixer.py` to restore them after checkout.
 - **Starter SKILL.md** — frontmatter with `name`, `description` (use the purpose from Phase 1; **MUST NOT exceed 1024 characters**),

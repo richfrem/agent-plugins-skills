@@ -45,7 +45,7 @@ pip install -r ./requirements.txt
 
 See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
-> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python3`.
+> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python`.
 
 ---
 
@@ -96,11 +96,11 @@ Before running any loops in a new environment, ensure it is clean and correctly 
 2. **Initialize Local Git**: `git init && git add . && git commit -m "init"`.
 3. **Delete Old Config**: `rm -rf .agent .agents .gemini .claude`.
 4. **Install Skill**: Ensure **os-eval-runner** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
-5. **Verify Python 3**: `python3 --version` (must be 3.8+).
+5. **Verify Python 3**: `python --version` (must be 3.8+).
 
 **Step 1 — Deploy templates into your experiment directory:**
 ```bash
-python3 ./scripts/init_autoresearch.py \
+python ./scripts/init_autoresearch.py \
     --experiment-dir <path/to/your-experiment-dir> \
     --mutation-target SKILL.md   # or any filename being mutated
 ```
@@ -112,7 +112,7 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 
 **Step 3 — Establish baseline and start the loop:**
 ```bash
-python3 ./scripts/evaluate.py \
+python ./scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
     --baseline --desc "initial baseline"
 git add <path/to/experiment-dir>/evals/
@@ -238,7 +238,7 @@ If not specified: "How many iterations? Or run until a target score — e.g. sto
 Check `<experiment-dir>/evals/evals.json`.
 - If exists: show the number of test cases.
 - If missing: "No evals.json found. I'll scaffold it from the template — you'll need to replace the placeholder test cases before the loop starts."
-  Run: `python3 ./scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
+  Run: `python ./scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
   Then pause for the user to fill in the test cases.
 
 **Q6 — (Loop mode only) Does `program.md` exist?**
@@ -284,8 +284,8 @@ The agent drives N iterations against a target skill. Start with:
 "Run the autoresearch loop on <path/to/target-skill> for N iterations"
 ```
 The agent will:
-1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python3 ./scripts/init_autoresearch.py --skill <target-path>` first.
-2. Establish a baseline if none exists: `python3 ./scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python ./scripts/init_autoresearch.py --skill <target-path>` first.
+2. Establish a baseline if none exists: `python ./scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive). Each iteration:
 
    **Step A — Classify failure:** Read the latest row in `<skill>/evals/results.tsv` and the most recent trace file in `<skill>/evals/traces/`. Identify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
@@ -295,7 +295,7 @@ The agent will:
    The proposer prompt lives in `<experiment-dir>/references/copilot_proposer_prompt.md`. Read it each
    iteration — do not rebuild inline. If the file is missing, scaffold it first:
    ```bash
-   python3 ./scripts/init_autoresearch.py \
+   python ./scripts/init_autoresearch.py \
        --experiment-dir <experiment-dir> --mutation-target <filename>
    ```
 
@@ -336,7 +336,7 @@ The agent will:
 
    **Step C — Eval gate:**
    ```bash
-   python3 .scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
+   python .scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
    ```
    - exit 0 (KEEP): `git add . && git commit -m "keep: score=X <desc>" && git push origin main`
    - exit 1 (DISCARD): already auto-reverted, move to next iteration silently
@@ -363,7 +363,7 @@ Execute these phases in strict order:
 Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
 Run the loop gate against the target skill. It calls `eval_runner.py` internally and compares against the baseline:
 ```bash
-python3 ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
+python ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
 ```
 `eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 

@@ -107,13 +107,13 @@ shutil.copy(target_path, backup_path)
 
 **Interactive (human operator):**
 ```bash
-python3 eval_runner.py --skill path/to/SKILL.md --desc "My hypothesis"
+python eval_runner.py --skill path/to/SKILL.md --desc "My hypothesis"
 ```
 Outputs human-readable score report with KEEP/DISCARD/BASELINE status.
 
 **Programmatic (optimizer loop):**
 ```bash
-python3 eval_runner.py --target path/to/SKILL.md --json
+python eval_runner.py --target path/to/SKILL.md --json
 ```
 `--target` is an alias for `--skill`. `--json` suppresses the human-readable output and prints:
 ```json

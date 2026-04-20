@@ -133,7 +133,7 @@ after the test registry update (Stage 4.6) and before long-term memory promotion
 
 Emit ledger updated event:
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type learning --action ledger_updated \
   --correlation-id "$CYCLE_ID" \
   --summary "section:eval-score target:[TARGET] delta:[DELTA] survey-actions:[N]"

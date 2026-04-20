@@ -121,7 +121,7 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find_polluter.py` in the scripts directory:
 
 ```bash
-python3 ./scripts/find_polluter.py '.git' 'src/**/*.test.ts'
+python ./scripts/find_polluter.py '.git' 'src/**/*.test.ts'
 ```
 
 Runs tests one-by-one, stops at first polluter. See script for usage.

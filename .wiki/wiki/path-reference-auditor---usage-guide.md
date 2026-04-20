@@ -27,7 +27,7 @@ Three-phase audit system to find and validate all file path references in plugin
 ## Phase 1: SCAN - Find All References
 
 ```bash
-python3 ./path_reference_auditor.py --project . --phase scan
+python ./path_reference_auditor.py --project . --phase scan
 ```
 
 **What it does:**
@@ -47,7 +47,7 @@ python3 ./path_reference_auditor.py --project . --phase scan
 ## Phase 2: VERIFY - Check Each Reference
 
 ```bash
-python3 ./path_reference_auditor.py --project . --phase verify
+python ./path_reference_auditor.py --project . --phase verify
 ```
 
 **What it does:**
@@ -68,19 +68,19 @@ python3 ./path_reference_auditor.py --project . --phase verify
 
 ```bash
 # Summary (overview)
-python3 ./path_reference_auditor.py --project . --phase report --report summary
+python ./path_reference_auditor.py --project . --phase report --report summary
 
 # Missing files (broken references)
-python3 ./path_reference_auditor.py --project . --phase report --report missing
+python ./path_reference_auditor.py --project . --phase report --report missing
 
 # Broken symlinks
-python3 ./path_reference_auditor.py --project . --phase report --report broken_symlinks
+python ./path_reference_auditor.py --project . --phase report --report broken_symlinks
 
 # All symlinks (working + broken)
-python3 ./path_reference_auditor.py --project . --phase report --report symlinks
+python ./path_reference_auditor.py --project . --phase report --report symlinks
 
 # All reports
-python3 ./path_reference_auditor.py --project . --phase report --report all
+python ./path_reference_auditor.py --project . --phase report --report all
 ```
 
 **Example output:**
@@ -100,13 +100,13 @@ Flag references that point OUTSIDE a skill directory.
 
 ```bash
 # All skills
-python3 ./check_skill_boundaries.py inventory.json --batch all
+python ./check_skill_boundaries.py inventory.json --batch all
 
 # Single skill (by name)
-python3 ./check_skill_boundaries.py inventory.json --skill adr-management
+python ./check_skill_boundaries.py inventory.json --skill adr-management
 
 # Single skill (by path)
-python3 ./check_skill_boundaries.py inventory.json --skill plugins/adr-manager/skills/adr-management
+python ./check_skill_boundaries.py inventory.json --skill plugins/adr-manager/skills/adr-management
 ```
 
 **Example violation:**
@@ -130,13 +130,13 @@ Flag references in plugin root that point OUTSIDE the plugin.
 
 ```bash
 # All plugins
-python3 ./check_plugin_boundaries.py inventory.json --batch all
+python ./check_plugin_boundaries.py inventory.json --batch all
 
 # Single plugin (by name)
-python3 ./check_plugin_boundaries.py inventory.json --plugin plugin-installer
+python ./check_plugin_boundaries.py inventory.json --plugin plugin-installer
 
 # Single plugin (by path)
-python3 ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-installer
+python ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-installer
 ```
 
 **Example violation:**

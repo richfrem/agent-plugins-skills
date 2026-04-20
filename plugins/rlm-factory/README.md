@@ -70,17 +70,17 @@ See `resources/` for manifest files and `rlm_profiles.json` for profile template
 ### Quick Start
 ```bash
 # 1. Check what's already memorized
-python3 ./scripts/inventory.py --profile project
+python ./scripts/inventory.py --profile project
 
 # 2. Search for a topic (natively across markdown)
-python3 ./scripts/query_cache.py "authentication" --profile project
+python ./scripts/query_cache.py "authentication" --profile project
 
 # 3. Distill missing files (Automatic via Swarm)
 # Note: Limit --workers 2 when using gpt-5-mini free tier
-python3 ./scripts/swarm_run.py --engine copilot --workers 2 ...
+python ./scripts/swarm_run.py --engine copilot --workers 2 ...
 
 # 4. Clean up deleted files
-python3 ./scripts/cleanup_cache.py --profile project --apply
+python ./scripts/cleanup_cache.py --profile project --apply
 ```
 
 ### Memory Banks (Profiles)

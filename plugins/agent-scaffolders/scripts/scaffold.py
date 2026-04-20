@@ -8,7 +8,7 @@ Purpose:
 Layer: Meta-Execution
 
 Usage Examples:
-    python3 scaffold.py --type skill --name <skill-name> --path <output-dir> --desc "<description>"
+    pythonfold.py --type skill --name <skill-name> --path <output-dir> --desc "<description>"
 
 Supported Object Types:
     - Plugins

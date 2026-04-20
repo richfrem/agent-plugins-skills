@@ -35,11 +35,11 @@ from event_bus import emit_event
 from state_manager import state_update, get_state
 ```
 
-All existing CLI invocations (`python3 context/kernel.py emit_event ...`) remain unchanged.
+All existing CLI invocations (`python context/kernel.py emit_event ...`) remain unchanged.
 
 ## Migration Impact
 
-- All SKILL.md files use `python3 context/kernel.py <subcommand>` -- no changes needed
+- All SKILL.md files use `python context/kernel.py <subcommand>` -- no changes needed
 - `context/agents.json` unchanged
 - `init_agentic_os.py` copies all 4 files instead of 1
 - `runtime/` directory gains 3 new files

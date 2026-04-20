@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 04_autofix_unique_links.py (CLI)
 =====================================
@@ -11,7 +11,7 @@ Purpose:
     After fixing, writes remaining_broken_links.json so Step 5 reflects post-fix state.
 
 Usage:
-    python3 04_autofix_unique_links.py --root . [--dry-run] [--backup]
+    python04_autofix_unique_links.py --root . [--dry-run] [--backup]
 
 Scope:
     Only fixes markdown links [label](path) and image links ![alt](path).

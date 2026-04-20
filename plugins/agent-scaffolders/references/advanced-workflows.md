@@ -557,17 +557,17 @@ description: Deployment with rollback
 # Deploy with Rollback
 
 Saving current state for rollback...
-Previous version: !`python3 current_version.py`
+Previous version: !`python current_version.py`
 
 Deploying new version...
 
-!`python3 deploy.py`
+!`python deploy.py`
 
 if [ $? -ne 0 ]; then
   DEPLOYMENT FAILED
 
   Initiating automatic rollback...
-  !`python3 rollback.py`
+  !`python rollback.py`
 
   Rolled back to previous version.
   Check logs for failure details.
@@ -586,15 +586,15 @@ description: Workflow with checkpoints
 # Multi-Stage Deployment
 
 ## Checkpoint 1: Validation
-!`python3 validate.py`
+!`python validate.py`
 echo "checkpoint:validation" >> .claude/deployment-checkpoints.log
 
 ## Checkpoint 2: Build
-!`python3 build.py`
+!`python build.py`
 echo "checkpoint:build" >> .claude/deployment-checkpoints.log
 
 ## Checkpoint 3: Deploy
-!`python3 deploy.py`
+!`python deploy.py`
 echo "checkpoint:deploy" >> .claude/deployment-checkpoints.log
 
 If any step fails, resume with:
@@ -697,7 +697,7 @@ Reading state: @.claude/deployment-state.local.md
 
 Executing deployment to [environment]...
 
-!`python3 deploy.py [environment]`
+!`python deploy.py [environment]`
 
 Deployment complete.
 Updating state to 'completed'...

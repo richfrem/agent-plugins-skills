@@ -38,7 +38,7 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 # Signature:
-python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL]
+python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL]
 #                                                                                           ^ optional 5th arg
 ```
 
@@ -50,7 +50,7 @@ python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTR
 
 ```bash
 # No model arg = gpt-5-mini (free tier, no per-request cost)
-python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
+python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
   "Find vulnerabilities."
 ```
 
@@ -58,7 +58,7 @@ python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md 
 
 ```bash
 # Pass model name as the 5th argument to override the default
-python3 ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_output.md \
+python ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_output.md \
   "Generate all files exactly as specified using ===FILE:=== delimiters." \
   claude-sonnet-4-6
 ```
@@ -143,7 +143,7 @@ cat > /tmp/copilot_prompt.md << 'PROMPT_EOF'
 PROMPT_EOF
 
 # Dispatch ONE request — all output in a single call
-python3 ./scripts/run_agent.py \
+python ./scripts/run_agent.py \
   /dev/null \
   /tmp/copilot_prompt.md \
   /tmp/copilot_output.md \
@@ -169,7 +169,7 @@ Before initiating major orchestrations or long-running iterative loops (e.g., Tr
 
 ### Heartbeat Pattern:
 ```bash
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null ./HEARTBEAT_MD.md \
   "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 
@@ -184,7 +184,7 @@ python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
 ## ✅ Smoke Test
 
 ```bash
-python3 ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
+python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```
 
 Examine `output.md`. It should contain ONLY the refactored code and a brief 3-bullet summary.

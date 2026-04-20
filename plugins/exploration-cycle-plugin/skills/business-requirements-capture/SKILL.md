@@ -17,7 +17,7 @@ Generate structured Business Requirements Documents from exploration session cap
 ## Usage
 
 ```bash
-python3 ./scripts/execute.py \
+python ./scripts/execute.py \
   --input <file> [<file2>...] \
   --mode <brd|rules|constraints> \
   --output <output_file.md>

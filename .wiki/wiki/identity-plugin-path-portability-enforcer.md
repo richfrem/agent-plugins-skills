@@ -82,7 +82,7 @@ Auto-detect the scope if inferable from context. If mode is clear from the reque
 For each target file, check which rules from `references/fix-plugin-paths.prompt.md` apply using the auditor script:
 
 ```bash
-python3 ./scripts/audit_plugin_paths.py <directory-or-file>
+python ./scripts/audit_plugin_paths.py <directory-or-file>
 ```
 
 The auditor runs **two passes**:
@@ -113,7 +113,7 @@ Apply only after confirming the diff is correct.
 
 After fixing, confirm no broken references remain by rerunning the auditor:
 ```bash
-python3 ./scripts/audit_plugin_paths.py <directory-or-file>
+python ./scripts/audit_plugin_paths.py <directory-or-file>
 ```
 
 Zero results = clean.

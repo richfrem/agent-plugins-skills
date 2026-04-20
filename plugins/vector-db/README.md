@@ -43,10 +43,10 @@ HTTP Server mode (concurrent multi-process access).
 /vector-db:init
 
 # 2. Ingest
-python3 ./scripts/ingest.py --full --profile knowledge
+python ./scripts/ingest.py --full --profile knowledge
 
 # 3. Search
-python3 ./scripts/query.py "your question here" --profile knowledge
+python ./scripts/query.py "your question here" --profile knowledge
 ```
 
 ## Quick Start (HTTP Server mode)
@@ -59,10 +59,10 @@ python3 ./scripts/query.py "your question here" --profile knowledge
 chroma run --host 127.0.0.1 --port 8110 --path .vector_data
 
 # 3. Ingest
-python3 ./scripts/ingest.py --full --profile knowledge
+python ./scripts/ingest.py --full --profile knowledge
 
 # 4. Search
-python3 ./scripts/query.py "your question here" --profile knowledge
+python ./scripts/query.py "your question here" --profile knowledge
 ```
 
 ## Initialization Agent

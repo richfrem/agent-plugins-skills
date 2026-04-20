@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 validate_bash.py
 =====================================
@@ -12,7 +12,7 @@ Purpose:
 Layer: Codify
 
 Usage:
-    echo '<pretooluse-json>' | python3 validate_bash.py
+    echo '<pretooluse-json>' | python validate_bash.py
 """
 import sys
 import json

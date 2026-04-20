@@ -41,7 +41,7 @@ Verify available profiles in `.agent/learning/vector_profiles.json`. The default
 Note: The `--profile` flag is mandatory to ensure the correct model and collection are loaded.
 
 ```bash
-python3 ./scripts/query.py "your natural language question" --profile wiki --limit 5
+python ./scripts/query.py "your natural language question" --profile wiki --limit 5
 ```
 
 Results include ranked parent chunks (2,000 chars) that provide broad context to the LLM for reasoning.

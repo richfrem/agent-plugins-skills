@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 hook_linter.py
 =====================================
@@ -12,8 +12,8 @@ Purpose:
 Layer: Investigate
 
 Usage:
-    python3 hook_linter.py <hook-script> [hook-script2 ...]
-    python3 hook_linter.py hooks/validate-bash.py
+    python hook_linter.py <hook-script> [hook-script2 ...]
+    python hook_linter.py hooks/validate-bash.py
 """
 import sys
 import os

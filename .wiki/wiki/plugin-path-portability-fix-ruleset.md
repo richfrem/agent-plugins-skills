@@ -23,16 +23,16 @@ content_hash: e980005def6f8767
 ## Rule 1: Self-referential script paths → `./scripts/`
 If a file inside `plugins/A/` references `plugins/A/scripts/foo.py`, replace with `./scripts/foo.py`.
 
-**BEFORE:** `python3 plugins/agent-agentic-os/scripts/evaluate.py`
-**AFTER:**  `python3 ./scripts/evaluate.py`
+**BEFORE:** `python plugins/agent-agentic-os/scripts/evaluate.py`
+**AFTER:**  `python ./scripts/evaluate.py`
 
 ---
 
 ## Rule 2: Environment-specific `.agents/skills/<skill>/scripts/` paths → `scripts/`
 These are environment-specific and break across installations.
 
-**BEFORE:** `python3 .agents/skills/os-eval-runner/scripts/evaluate.py`
-**AFTER:**  `python3 scripts/evaluate.py`
+**BEFORE:** `python .agents/skills/os-eval-runner/scripts/evaluate.py`
+**AFTER:**  `python scripts/evaluate.py`
 
 ---
 

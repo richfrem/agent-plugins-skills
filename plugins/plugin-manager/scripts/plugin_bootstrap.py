@@ -9,7 +9,7 @@ Purpose:
 Layer: Plugin Manager / Initialization
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/plugin_bootstrap.py
+    python plugins/plugin-manager/scripts/plugin_bootstrap.py
 
 Supported Object Types:
     - None (Automation script)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 orp_engine.py
 =============
@@ -11,7 +11,7 @@ Applies:
 - Sentence-end and paragraph-end flags
 
 Usage:
-    python3 orp_engine.py --input <word_list.json> --wpm 300 --output <stream.json>
+    python orp_engine.py --input <word_list.json> --wpm 300 --output <stream.json>
 """
 
 import argparse

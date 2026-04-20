@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 exploration_orchestrator_execute.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Execution / Orchestration
 
 Usage Examples:
-    python3 exploration_orchestrator_execute.py
+    python exploration_orchestrator_execute.py
 
 Supported Object Types:
     None

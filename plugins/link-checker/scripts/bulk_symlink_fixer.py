@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 bulk_symlink_fixer.py — Find and fix broken symlinks in a folder hierarchy.
 

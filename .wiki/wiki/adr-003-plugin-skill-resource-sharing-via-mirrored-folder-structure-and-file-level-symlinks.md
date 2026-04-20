@@ -47,7 +47,7 @@ point to paths that only exist inside the skill subtree. These paths are not ins
 when only the command is installed via bridge plugin.
 
 **Failure 3: Absolute hardcoded paths break portability.**
-SKILL.md files that invoke scripts as `python3 ./adr_manager.py` fail when the agent runs from the
+SKILL.md files that invoke scripts as `python ./adr_manager.py` fail when the agent runs from the
 project root. And paths hardcoded to `.agents/skills/<name>/scripts/...` break when the install
 location changes. The open Agent Skills spec (agentskills.io) specifies that file references in
 SKILL.md should use **relative paths from the skill root** (e.g. `scripts/extract.py`), which the

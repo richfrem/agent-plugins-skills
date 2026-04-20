@@ -138,10 +138,10 @@ If application analysis reveals business rules or workflows:
 
 ```bash
 # Add BR candidate (Application-Level Rule)
-python3 tools/investigate/search/priority_candidates.py --add-br --form APP_ID --desc "App-level rule" --priority P2
+python tools/investigate/search/priority_candidates.py --add-br --form APP_ID --desc "App-level rule" --priority P2
 
 # Add Workflow
-python3 tools/investigate/search/priority_candidates.py --add-bw --form APP_ID --desc "End-to-end workflow" --priority P2
+python tools/investigate/search/priority_candidates.py --add-bw --form APP_ID --desc "End-to-end workflow" --priority P2
 ```
 
 ## Post-Processing (Single File Operations)
@@ -149,13 +149,13 @@ Always update the knowledge base after editing:
 
 ```bash
 # 1. Enrich links
-python3 scripts/documentation/enrich_links_v2.py --file path/to/file.md
+python scripts/documentation/enrich_links_v2.py --file path/to/file.md
 
 # 2. Distill to RLM (Summary)
-python3 plugins/rlm-factory/scripts/distiller.py --file path/to/file.md
+python plugins/rlm-factory/scripts/distiller.py --file path/to/file.md
 
 # 3. Ingest to Vector DB
-python3 plugins/vector-db/scripts/ingest.py --file path/to/file.md
+python plugins/vector-db/scripts/ingest.py --file path/to/file.md
 ```
 
 ## 7. Continuous Improvement

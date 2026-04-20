@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 check_for_broken_symlinks.py
 =====================================
@@ -10,7 +10,7 @@ Purpose:
 Layer: Investigate / Codify
 
 Usage:
-    python3 check_for_broken_symlinks.py
+    pythoncheck_for_broken_symlinks.py
 """
 
 import os

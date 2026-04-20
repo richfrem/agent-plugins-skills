@@ -130,7 +130,7 @@ Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_
 
 Emit survey completion:
 ```bash
-python3 context/kernel.py emit_event --agent <ROLE> \
+python context/kernel.py emit_event --agent <ROLE> \
   --type learning --action survey_completed \
   --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
 ```

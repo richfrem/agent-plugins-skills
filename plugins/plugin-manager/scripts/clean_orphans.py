@@ -9,7 +9,7 @@ Purpose:
 Layer: Plugin Manager / Maintenance
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/clean_orphans.py [--dry-run]
+    python plugins/plugin-manager/scripts/clean_orphans.py [--dry-run]
 
 Supported Object Types:
     - None (Filesystem lookup)

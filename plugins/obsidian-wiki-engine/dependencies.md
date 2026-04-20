@@ -19,7 +19,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 ### Zero-dep fallback (macOS/Linux)
 
 ```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
 ```
 
 ### Local clone (interactive TUI)

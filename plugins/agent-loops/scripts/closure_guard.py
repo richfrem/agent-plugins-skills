@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 closure_guard.py
 =====================================
@@ -12,7 +12,7 @@ Purpose:
 Layer: Investigate
 
 Usage:
-    echo '<hook-json>' | python3 closure_guard.py
+    echo '<hook-json>' | python closure_guard.py
 """
 import sys
 import json

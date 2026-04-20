@@ -118,7 +118,7 @@ python ./scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN
 ### 4. Parallel Execution (Agent Swarm)
 For bulk operations or partitioned tasks, use the `swarm_run.py` script from the `agent-swarm` skill.
 ```bash
-python3 ./swarm_run.py --job <JOB_FILE> [--resume]
+python ./swarm_run.py --job <JOB_FILE> [--resume]
 ```
 This is the designated route for all Pattern 4 triggers.
 

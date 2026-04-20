@@ -190,7 +190,7 @@ git push origin main
 
 ### 1f. Verify Python 3
 ```bash
-python3 --version  # must be 3.8+
+python --version  # must be 3.8+
 ```
 
 ---
@@ -200,7 +200,7 @@ python3 --version  # must be 3.8+
 Use the `generate_eval_instructions.py` script provided in this skill's scripts directory to generate the filled instruction file:
 
 ```bash
-python3 $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-lab-setup/scripts/generate_eval_instructions.py \
+python $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-lab-setup/scripts/generate_eval_instructions.py \
     --template $APS_ROOT/plugins/agent-agentic-os/assets/templates/eval-instructions.template.md \
     --out $LAB_PATH/eval-instructions.md \
     --skill-display-name "<Human-readable skill name>" \

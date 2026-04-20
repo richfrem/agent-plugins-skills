@@ -98,14 +98,14 @@ Wait for explicit confirmation (`yes`, `looks good`, `ok`).
 
 ### Step 1: Run Deterministic Scanner
 ```bash
-python3 ./scripts/audit_structure.py
+python ./scripts/audit_structure.py
 ```
 > For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
 
 ### Step 1.5: Path Portability Audit
 Run after every structure scan to catch hardcoded or non-portable paths (ADR-003/004):
 ```bash
-python3 plugins/agent-plugin-analyzer/scripts/audit_plugin_paths.py plugins/
+python plugins/agent-plugin-analyzer/scripts/audit_plugin_paths.py plugins/
 ```
 **Expected output**: `✅ Clean! 0 violations found.`
 

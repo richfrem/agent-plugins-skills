@@ -28,7 +28,7 @@ Locked: `evals/evals.json`, `evaluate.py`, `eval_runner.py`
 
 How to run one iteration (from within this skill's directory):
 ```bash
-python3 ../os-eval-runner/scripts/evaluate.py \
+python ../os-eval-runner/scripts/evaluate.py \
   --skill . \
   --desc "what changed"
 ```

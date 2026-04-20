@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 audit_plugin_structure.py
 =====================================
@@ -11,8 +11,8 @@ Purpose:
 Layer: Investigate / Codify / Audit
 
 Usage Examples:
-    python3 audit_plugin_structure.py plugins/agent-plugin-analyzer
-    python3 audit_plugin_structure.py .
+    pythonaudit_plugin_structure.py plugins/agent-plugin-analyzer
+    pythonaudit_plugin_structure.py .
 
 Supported Object Types:
     Plugin folder trees.

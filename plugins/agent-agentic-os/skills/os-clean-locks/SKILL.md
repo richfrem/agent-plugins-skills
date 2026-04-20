@@ -50,7 +50,7 @@ Execute these phases in order:
 
 Before taking any actions, emit intent to the Event Bus (if kernel is available):
 ```bash
-python3 context/kernel.py emit_event --agent os-clean-locks --type intent --action clear_locks
+python context/kernel.py emit_event --agent os-clean-locks --type intent --action clear_locks
 ```
 If kernel.py does not exist, skip this step.
 
@@ -63,13 +63,13 @@ If kernel.py does not exist, skip this step.
 
 ### Phase 3: Lock Removal
 1. For each `.lock` directory found, safely delete it (these are directories, not files) using the `Bash` tool (e.g., `rm -r context/.locks/skill.lock/`).
-2. **Update OS State** (if kernel.py is available): Run `python3 context/kernel.py state_update active_agent os-clean-locks` and `python3 context/kernel.py state_update locks_cleared true`. Skip this step if `context/kernel.py` does not exist.
+2. **Update OS State** (if kernel.py is available): Run `python context/kernel.py state_update active_agent os-clean-locks` and `python context/kernel.py state_update locks_cleared true`. Skip this step if `context/kernel.py` does not exist.
 
 ### Phase 4: Final Briefing
 
 Emit a result event to the Event Bus (if kernel is available):
 ```bash
-python3 context/kernel.py emit_event --agent os-clean-locks --type result --action clear_locks --status success
+python context/kernel.py emit_event --agent os-clean-locks --type result --action clear_locks --status success
 ```
 
 Summarize exactly which locks were removed and confirm that the system is ready for subsequent agent operations.

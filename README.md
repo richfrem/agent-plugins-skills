@@ -63,7 +63,7 @@ See the full sample prompt: [`references/sample-prompts/triple-loop-architect-pr
 
 Each blue diamond is a baseline anchor (one per session). Green = new best score. Amber = kept but not a record. The two-segment shape shows a fresh re-baseline for round 2 — the plotter handles this automatically.
 
-Monitor a live run: `python3 plugins/agent-agentic-os/scripts/plot_eval_progress.py --tsv <lab>/evals/ --live`
+Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.py --tsv <lab>/evals/ --live`
 
 **Flywheel layers:**
 - **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
@@ -354,7 +354,7 @@ Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-repor
 
 Regenerate report:
 ```bash
-python3 plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/scripts/update_ranked_skills.py \
+python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/scripts/update_ranked_skills.py \
   --json-path plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json \
   --morning-report
 ```

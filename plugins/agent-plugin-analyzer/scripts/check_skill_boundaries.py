@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 check_skill_boundaries.py
 =====================================
@@ -10,8 +10,8 @@ Purpose:
 Layer: Investigate / Codify / Audit
 
 Usage Examples:
-    python3 check_skill_boundaries.py temp/inventory.json --batch all
-    python3 check_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management
+    pythonheck_skill_boundaries.py temp/inventory.json --batch all
+    pythonheck_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management
 
 Supported Object Types:
     Skill file references.

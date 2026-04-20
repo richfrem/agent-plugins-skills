@@ -152,7 +152,7 @@ Run the setup script with flags derived from the plan:
 # Fallback to current directory if not running inside the plugin manager
 PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
 
-python3 "${PLUGIN_DIR}/skills/os-init/scripts/init_agentic_os.py" \
+python "${PLUGIN_DIR}/skills/os-init/scripts/init_agentic_os.py" \
   --target <path> \
   [--global] \
   [--dry-run] \
@@ -275,7 +275,7 @@ Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_
 
 Emit survey completion:
 ```bash
-python3 context/kernel.py emit_event --agent agentic-os-setup \
+python context/kernel.py emit_event --agent agentic-os-setup \
   --type learning --action survey_completed \
   --summary "retrospectives/survey_[DATE]_[TIME]_os-init.md"
 ```

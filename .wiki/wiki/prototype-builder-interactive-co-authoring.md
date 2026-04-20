@@ -40,7 +40,7 @@ This skill implements the requested functionality. When invoked, you MUST execut
 
 **Usage:**
 ```bash
-python3 ./scripts/execute.py --help
+python ./scripts/execute.py --help
 ```
 
 ## Baseline Validation

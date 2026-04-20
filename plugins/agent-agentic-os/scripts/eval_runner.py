@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 eval_runner.py -- Pure skill scorer for the autoresearch loop
 =============================================================
@@ -16,10 +16,10 @@ Purpose:
     evaluator scores the folder holistically each iteration.
 
 Usage:
-    python3 eval_runner.py --skill PATH_TO_SKILL_DIR
-    python3 eval_runner.py --skill PATH_TO_SKILL_DIR --json
-    python3 eval_runner.py --skill PATH_TO_SKILL_DIR --snapshot
-    python3 eval_runner.py --skill PATH_TO_SKILL.md         # backward compat
+    pythonal_runner.py --skill PATH_TO_SKILL_DIR
+    pythonal_runner.py --skill PATH_TO_SKILL_DIR --json
+    pythonal_runner.py --skill PATH_TO_SKILL_DIR --snapshot
+    pythonal_runner.py --skill PATH_TO_SKILL.md         # backward compat
 
 CLI Arguments:
     --skill <path>   Skill folder path (or SKILL.md path for backward compat)

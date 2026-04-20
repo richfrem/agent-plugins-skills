@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 03_audit_broken_links.py (CLI)
 =====================================
@@ -8,7 +8,7 @@ Purpose:
     This is Phase 3 of the Link Checker pipeline.
 
 Usage:
-    python3 03_audit_broken_links.py --root .
+    python03_audit_broken_links.py --root .
 
 Output:
     - broken_links.log: Human-readable log of issues.

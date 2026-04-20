@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 symlink_manager.py — Cross-platform symlink creation and management.
 

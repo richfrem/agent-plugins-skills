@@ -8,7 +8,7 @@ Purpose:
 Layer: Tests
 
 Usage Examples:
-    python3 -m unittest plugins/obsidian-integration/scripts/obsidian-parser/tests/test_parser.py
+    python -m unittest plugins/obsidian-integration/scripts/obsidian-parser/tests/test_parser.py
 
 Supported Object Types:
     - None

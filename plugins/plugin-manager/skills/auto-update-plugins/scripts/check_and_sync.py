@@ -15,10 +15,10 @@ Purpose:
     No local clone of the source repo required.
 
 Usage:
-    python3 .agents/scripts/check_and_sync.py
-    python3 .agents/scripts/check_and_sync.py --force   # ignore SHA cache, always sync
-    python3 .agents/scripts/check_and_sync.py --dry-run # print what would happen
-    python3 .agents/scripts/check_and_sync.py --source agent-plugins-skills
+    python .agents/scripts/check_and_sync.py
+    python .agents/scripts/check_and_sync.py --force   # ignore SHA cache, always sync
+    python .agents/scripts/check_and_sync.py --dry-run # print what would happen
+    python .agents/scripts/check_and_sync.py --source agent-plugins-skills
 
 Layer: Plugin Manager / Consumer Auto-Sync
 

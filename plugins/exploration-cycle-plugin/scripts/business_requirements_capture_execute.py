@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Purpose: Business Requirements Document (BRD) generator for the exploration cycle.
 Reads exploration capture documents and produces a structured Markdown BRD with
@@ -7,7 +7,7 @@ an open-questions register. Markers: [CONFIRMED] and [UNCONFIRMED] indicate
 human-reviewed vs. agent-inferred content.
 
 Designed to be piped to/from the CLI dispatch pattern:
-  cat session-brief.md problem-framing.md | python3 execute.py --output brd-draft.md
+  cat session-brief.md problem-framing.md | pythonexecute.py --output brd-draft.md
 """
 
 import argparse

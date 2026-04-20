@@ -66,7 +66,7 @@ Use a deterministic proxy metric first (verify git worktree creation, .gitignore
 
 ### update_ranked_skills.py command
 ```bash
-python3 tools/update_ranked_skills.py --json-path skills-lock.json \
+python tools/update_ranked_skills.py --json-path skills-lock.json \
   --plugin agent-execution-disciplines --skill using-git-worktrees \
   --objectivity 10 --speed 7 --frequency 8 --utility 8 \
   --verdict HIGH \

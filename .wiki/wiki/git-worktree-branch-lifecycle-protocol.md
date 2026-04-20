@@ -55,7 +55,7 @@ For each Work Package (WP01, WP02...):
     - **Note:** This commits to the LOCAL feature branch. Do **NOT** push to origin unless explicitly instructed for backup. Do **NOT** merge to main.
 
 4.  **Submit for Review:**
-    - Command: `python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP-xx for_review`
+    - Command: `python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> WP-xx for_review`
     - Result: The CLI automatically updates `tasks.md` and the prompt file. You are done with this WP.
 
 ### Phase 2: Feature Completion (Once All WPs Done)

@@ -9,8 +9,8 @@ Purpose:
 Layer: Investigate / Utils
 
 Usage Examples:
-    python3 ./scripts/next_number.py --type spec
-    python3 ./scripts/next_number.py --type task
+    python ./scripts/next_number.py --type spec
+    python ./scripts/next_number.py --type task
 
 Supported Object Types:
     - None (Sequence output)

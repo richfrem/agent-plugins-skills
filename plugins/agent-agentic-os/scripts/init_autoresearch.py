@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 init_autoresearch.py -- Scaffold the Karpathy autoresearch loop for any target
 ================================================================================

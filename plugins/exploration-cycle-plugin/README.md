@@ -202,7 +202,7 @@ The `exploration-cycle-plugin` is independently authored and not affiliated with
 All documentation sub-agents are invoked via a dedicated `dispatch.py` wrapper for cost efficiency and context isolation:
 
 ```bash
-python3 ./skills/exploration-workflow/scripts/dispatch.py \
+python ./skills/exploration-workflow/scripts/dispatch.py \
   --agent ./agents/requirements-doc-agent.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md \
   --instruction "Mode: business-requirements. Extract functional requirements." \

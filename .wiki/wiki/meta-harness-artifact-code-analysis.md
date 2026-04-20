@@ -54,7 +54,7 @@ Extends `Terminus2` (from the Harbor framework). The key innovations over the ba
 Before the first agent turn, runs a single compound bash command that gathers:
 - Working directory (`pwd`)
 - File listing (`ls -la /app/`)
-- Available languages and tools (python3, gcc, node, java, rustc, go)
+- Available languages and tools (python, gcc, node, java, rustc, go)
 - Package managers (pip3, apt-get, npm)
 - Memory (`free -h`)
 
@@ -81,7 +81,7 @@ The baseline Terminus-KIRA used XML/JSON parsing of raw LLM output. This harness
   "analysis": "reasoning about what to do",
   "plan": "step-by-step plan",
   "commands": [
-    { "keystrokes": "python3 script.py", "duration": 5.0 }
+    { "keystrokes": "python script.py", "duration": 5.0 }
   ]
 }
 ```

@@ -14,7 +14,7 @@ Combine command and prompt hooks for layered validation:
       "hooks": [
         {
           "type": "command",
-          "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/quick_check.py",
+          "command": "python ${CLAUDE_PLUGIN_ROOT}/scripts/quick_check.py",
           "timeout": 5
         },
         {
@@ -32,7 +32,7 @@ Combine command and prompt hooks for layered validation:
 
 **Example quick_check.py:**
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys, json
 
 input_data = json.loads(sys.stdin.read())
@@ -206,12 +206,12 @@ Since hooks run in parallel, design them to be independent:
       "hooks": [
         {
           "type": "command",
-          "command": "python3 check_size.py",      // Independent
+          "command": "python check_size.py",      // Independent
           "timeout": 2
         },
         {
           "type": "command",
-          "command": "python3 check_path.py",      // Independent
+          "command": "python check_path.py",      // Independent
           "timeout": 2
         },
         {
@@ -386,7 +386,7 @@ exit 0
 #!/bin/bash
 
 # Test 1: Approve safe command
-result=$(echo '{"tool_input": {"command": "ls"}}' | python3 validate_bash.py)
+result=$(echo '{"tool_input": {"command": "ls"}}' | python validate_bash.py)
 if [ $? -eq 0 ]; then
   echo "✓ Test 1 passed"
 else
@@ -394,7 +394,7 @@ else
 fi
 
 # Test 2: Block dangerous command
-result=$(echo '{"tool_input": {"command": "rm -rf /"}}' | python3 validate_bash.py)
+result=$(echo '{"tool_input": {"command": "rm -rf /"}}' | python validate_bash.py)
 if [ $? -eq 2 ]; then
   echo "✓ Test 2 passed"
 else

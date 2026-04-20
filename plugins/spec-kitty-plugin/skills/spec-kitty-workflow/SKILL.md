@@ -151,7 +151,7 @@ git worktree list
 
 ### Step 1b: Update kanban
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> doing --note "Starting implementation"
+python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> doing --note "Starting implementation"
 ```
 **PROOF**: Paste the CLI output confirming lane change.
 
@@ -189,7 +189,7 @@ Run `git status` to ensure all files are committed.
 
 ### Step 3b: Update kanban to for_review
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> for_review --note "Implementation complete, ready for review"
+python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> for_review --note "Implementation complete, ready for review"
 ```
 **PROOF**: Paste the CLI output.
 
@@ -356,7 +356,7 @@ rm -f .kittify/workspaces/<SLUG>-WP*.json
 282. 
 283. ### Step 4g: Update kanban to done
 ```bash
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done --note "Merged and cleaned up"
+python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done --note "Merged and cleaned up"
 ```
 **PROOF**: Paste CLI output + final `/spec-kitty.status` board.
 
@@ -406,10 +406,10 @@ The tasks CLI manages WP lane transitions. **Always use this instead of manually
 
 ```bash
 # Move a WP between lanes (planned -> doing -> for_review -> done)
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
+python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> <LANE> --note "reason"
 
 # Force-move (when kitty-specs artifacts leak from serial implementation)
-python3 .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done --force --note "reason"
+python .kittify/scripts/tasks/tasks_cli.py update <FEATURE-SLUG> <WP-ID> done --force --note "reason"
 
 # View kanban board
 /spec-kitty.status

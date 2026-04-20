@@ -30,16 +30,16 @@ Instant O(1) search of the semantic ledger. **No Ollama required** — reads JSO
 ## Usage
 ```bash
 # Search for a topic
-python3 ./scripts/query_cache.py --profile project "bail"
+python ./scripts/query_cache.py --profile project "bail"
 
 # Search tool cache
-python3 ./scripts/query_cache.py --profile tools "distiller"
+python ./scripts/query_cache.py --profile tools "distiller"
 
 # List all cached entries
-python3 ./scripts/query_cache.py --profile project --list
+python ./scripts/query_cache.py --profile project --list
 
 # JSON output for programmatic use
-python3 ./scripts/query_cache.py --profile project "config" --json
+python ./scripts/query_cache.py --profile project "config" --json
 ```
 
 ## Matches Against

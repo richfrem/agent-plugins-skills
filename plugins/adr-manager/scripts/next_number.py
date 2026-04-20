@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 next_number.py (CLI)
 =====================================
@@ -11,10 +11,10 @@ Purpose:
 Layer: Investigate / Utils
 
 Usage Examples:
-    python3 ./scripts/next_number.py --type spec
-    python3 ./scripts/next_number.py --type task
-    python3 ./scripts/next_number.py --type br
-    python3 ./scripts/next_number.py --type all
+    python./scripts/next_number.py --type spec
+    python./scripts/next_number.py --type task
+    python./scripts/next_number.py --type br
+    python./scripts/next_number.py --type all
 
 CLI Arguments:
     --type          : Artifact type (spec, task, adr, chronicle, br, bw, all)

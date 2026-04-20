@@ -10,8 +10,8 @@ Purpose:
 Layer: Core Operations
 
 Usage Examples:
-    python3 vault_ops.py read --file note.md
-    python3 vault_ops.py create --file note.md --content "Hello"
+    pythonult_ops.py read --file note.md
+    pythonult_ops.py create --file note.md --content "Hello"
 
 Supported Object Types:
     - .md (Markdown notes with Obsidian syntax)

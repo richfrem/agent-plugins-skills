@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 gemini-run-agent (CLI)
 =====================================
@@ -10,7 +10,7 @@ Purpose:
 Layer: Codify
 
 Usage Examples:
-    python3 ./scripts/run_agent.py agents/security-auditor.md target.py output.md "Review this."
+    python./scripts/run_agent.py agents/security-auditor.md target.py output.md "Review this."
     ./scripts/run_agent.py agents/refactor-expert.md main.py refactor.md "Optimize logic."
 
 Supported Object Types:
@@ -142,7 +142,7 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
 
 if __name__ == "__main__":
     if len(sys.argv) < 5 or len(sys.argv) > 6:
-        print("Usage: python3 run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\" [MODEL_NAME]")
+        print("Usage: pythonrun_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\" [MODEL_NAME]")
         sys.exit(1)
     
     model_name = sys.argv[5] if len(sys.argv) == 6 else "gemini-3-flash-preview"

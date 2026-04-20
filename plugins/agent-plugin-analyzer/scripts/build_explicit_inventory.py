@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 build_explicit_inventory.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Investigate / Codify
 
 Usage:
-    python3 build_explicit_inventory.py
+    pythonbuild_explicit_inventory.py
 """
 
 import os

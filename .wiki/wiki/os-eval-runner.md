@@ -39,18 +39,18 @@ Given any skill in the ecosystem, it can run an overnight loop that iteratively 
 
 **Score a skill (standalone, no history written):**
 ```bash
-python3 ./scripts/eval_runner.py --skill path/to/SKILL.md
-python3 ./scripts/eval_runner.py --skill path/to/SKILL.md --json
+python ./scripts/eval_runner.py --skill path/to/SKILL.md
+python ./scripts/eval_runner.py --skill path/to/SKILL.md --json
 ```
 
 **Establish a baseline for a target skill:**
 ```bash
-python3 ./scripts/evaluate.py --skill path/to/SKILL.md --baseline --desc "initial baseline"
+python ./scripts/evaluate.py --skill path/to/SKILL.md --baseline --desc "initial baseline"
 ```
 
 **Run one loop iteration (agent calls this after editing SKILL.md):**
 ```bash
-python3 ./scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
+python ./scripts/evaluate.py --skill path/to/SKILL.md --desc "what changed"
 # exit 0 = KEEP  →  git add + commit
 # exit 1 = DISCARD  →  git checkout -- SKILL.md
 ```

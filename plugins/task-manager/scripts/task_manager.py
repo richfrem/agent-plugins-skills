@@ -10,9 +10,9 @@ Purpose:
 Layer: Plugin / Task-Manager
 
 Usage Examples:
-    python3 ./scripts/task_manager.py create "Fix login bug" --lane todo
-    python3 ./scripts/task_manager.py list
-    python3 ./scripts/task_manager.py board
+    python ./scripts/task_manager.py create "Fix login bug" --lane todo
+    python ./scripts/task_manager.py list
+    python ./scripts/task_manager.py board
 
 Supported Object Types:
     - None (Kanban operations)

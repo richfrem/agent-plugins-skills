@@ -58,8 +58,8 @@ You manage Architecture Decision Records — the project's institutional memory 
 
 Always invoke with the root-relative path:
 ```bash
-python3 ./scripts/adr_manager.py <command>
-python3 ./scripts/next_number.py --type adr
+python ./scripts/adr_manager.py <command>
+python ./scripts/next_number.py --type adr
 ```
 
 **Do NOT use** `./adr_manager.py` (relative to script dir — breaks from project root).
@@ -71,7 +71,7 @@ When asked to create an Architecture Decision Record (ADR):
 ### 1. Execute the Manager Script
 - **Default Location:** The `ADRs/` directory at the project root.
 - Execute the Manager script with the `create` subcommand. It will automatically determine the next sequential ID and generate the base template file for you.
-- e.g., `python3 ./scripts/adr_manager.py create "Use Python 3.12" --context "..." --decision "..." --consequences "..."`
+- e.g., `python ./scripts/adr_manager.py create "Use Python 3.12" --context "..." --decision "..." --consequences "..."`
 - The script will print the path of the generated `.md` file to stdout.
 
 ### 2. Fill in the Logical Content
@@ -88,24 +88,24 @@ When asked to create an Architecture Decision Record (ADR):
 
 ### Listing ADRs
 ```bash
-python3 ./scripts/adr_manager.py list
-python3 ./scripts/adr_manager.py list --limit 10
+python ./scripts/adr_manager.py list
+python ./scripts/adr_manager.py list --limit 10
 ```
 
 ### Viewing a Specific ADR
 ```bash
-python3 ./scripts/adr_manager.py get 42
+python ./scripts/adr_manager.py get 42
 ```
 
 ### Searching ADRs by Keyword
 ```bash
-python3 ./scripts/adr_manager.py search "ChromaDB"
+python ./scripts/adr_manager.py search "ChromaDB"
 ```
 
 ### Sequence Resolution
 Use `next_number.py` to identify the next sequential ID across various artifact domains.
 - **Scans**: Specs, Tasks, ADRs, Business Rules/Workflows.
-- **Example**: `python3 ./scripts/next_number.py --type adr`
+- **Example**: `python ./scripts/next_number.py --type adr`
 
 ## Best Practices
 1. **Always fill all sections**: Never leave an ADR blank. Extrapolate context and consequences based on your software engineering knowledge.

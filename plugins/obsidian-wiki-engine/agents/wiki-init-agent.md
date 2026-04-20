@@ -380,12 +380,12 @@ Files written:
 
   REQUIRED FIRST — populate the per-file RLM cache:
   # Run once per source directory (check_cmd skips already-cached files):
-  1a. python3 plugins/rlm-factory/scripts/swarm_run.py \
+  1a. python plugins/rlm-factory/scripts/swarm_run.py \
         --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
         --engine copilot --workers 2 \
         --dir plugins/
 
-  1b. python3 plugins/rlm-factory/scripts/swarm_run.py \
+  1b. python plugins/rlm-factory/scripts/swarm_run.py \
         --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
         --engine copilot --workers 2 \
         --dir plugin-research/
@@ -397,7 +397,7 @@ Files written:
   4. /wiki-query "your question"    <- query the wiki
 
   Audit coverage before step 2:
-     python3 plugins/rlm-factory/scripts/audit_cache.py --profile wiki
+     python plugins/rlm-factory/scripts/audit_cache.py --profile wiki
 ```
 
 ### Mode C — Wiki + Vector
@@ -413,7 +413,7 @@ Files written:
 === Next Steps (in ORDER) ===
 
   REQUIRED FIRST — build the vector index:
-  1. python3 plugins/vector-db/scripts/ingest.py --profile wiki
+  1. python plugins/vector-db/scripts/ingest.py --profile wiki
      (First run: downloads embedding model. Subsequent runs: smart-sync only changed files.)
      Note: runs in In-Process (filesystem) mode by default — no server needed.
 
@@ -422,7 +422,7 @@ Files written:
   3. /wiki-query --vdb-profile wiki "your question"   <- semantic search enabled
 
   Verify vector search works:
-     python3 plugins/vector-db/scripts/query.py --profile wiki --limit 5 "test query"
+     python plugins/vector-db/scripts/query.py --profile wiki --limit 5 "test query"
 ```
 
 ### Mode D — Full Super-RAG (RLM + Vector + Wiki)
@@ -441,18 +441,18 @@ Files written:
 
   STEP 1 — Populate per-file RLM cache (slow, run overnight / leave running):
   # Run once per source directory (check_cmd auto-skips already-cached files):
-     python3 plugins/rlm-factory/scripts/swarm_run.py \
+     python plugins/rlm-factory/scripts/swarm_run.py \
        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
        --engine copilot --workers 2 \
        --dir plugins/
 
-     python3 plugins/rlm-factory/scripts/swarm_run.py \
+     python plugins/rlm-factory/scripts/swarm_run.py \
        --job plugins/rlm-factory/resources/jobs/distill_wiki.job.md \
        --engine copilot --workers 2 \
        --dir plugin-research/
 
   STEP 2 — Build vector index WITH RLM Super-RAG context (run after Step 1):
-     python3 plugins/vector-db/scripts/ingest.py --profile wiki
+     python plugins/vector-db/scripts/ingest.py --profile wiki
      Note: In-Process filesystem mode — no ChromaDB server required.
 
   STEP 3 — Build wiki concept nodes (after Steps 1+2 are done):
@@ -466,7 +466,7 @@ Files written:
      /wiki-query --vdb-profile wiki "your question"   <- with vector Phase 2
 
   Coverage audit (run between Step 1 and Step 2):
-     python3 plugins/rlm-factory/scripts/audit_cache.py --profile wiki
+     python plugins/rlm-factory/scripts/audit_cache.py --profile wiki
 
   To upgrade or change sources later, re-run /wiki-init.
 ```

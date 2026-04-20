@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # Thin wrapper — delegates to the canonical implementation in scripts/
 import sys
 import os

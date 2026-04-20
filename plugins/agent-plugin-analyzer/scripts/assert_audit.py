@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 assert_audit.py (CLI)
 =====================================
@@ -11,9 +11,9 @@ Purpose:
 Layer: Investigate / Audit / Regression
 
 Usage Examples:
-    python3 assert_audit.py --fixture flawed --json-output scan_output.json
-    python3 assert_audit.py --fixture gold --json-output scan_output.json
-    python3 assert_audit.py --fixture self --json-output scan_output.json
+    pythonassert_audit.py --fixture flawed --json-output scan_output.json
+    pythonassert_audit.py --fixture gold --json-output scan_output.json
+    pythonassert_audit.py --fixture self --json-output scan_output.json
 
 Supported Object Types:
     Scanner auditing reports.

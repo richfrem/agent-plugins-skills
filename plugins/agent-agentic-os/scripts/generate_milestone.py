@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 generate_milestone.py -- Write milestone summary files for long autoresearch runs.
 ==================================================================================
@@ -13,7 +13,7 @@ Purpose:
     and must never be added to LOCKED_FILES in evaluate.py.
 
 Usage:
-    python3 generate_milestone.py --experiment-dir <path> [--every 25] [--force]
+    pythongenerate_milestone.py --experiment-dir <path> [--every 25] [--force]
 
     --experiment-dir   Path to the experiment directory (contains evals/ and references/)
     --every N          Write a milestone every N iterations (default: 25)

@@ -72,7 +72,7 @@ The RED scenario is the evidence that the skill is needed. Without it:
 
 Before proposing any change in an active improvement loop, run:
 ```bash
-python3 ./scripts/eval_runner.py \
+python ./scripts/eval_runner.py \
     --skill <experiment-dir> \
     --snapshot
 ```
@@ -208,7 +208,7 @@ One-paragraph description of what the skill does and why.
 After writing the SKILL.md, run the eval gate. **Do not apply the skill without a KEEP verdict.**
 
 ```bash
-python3 ./scripts/eval_runner.py \
+python ./scripts/eval_runner.py \
   --skill path/to/new/SKILL.md
 ```
 

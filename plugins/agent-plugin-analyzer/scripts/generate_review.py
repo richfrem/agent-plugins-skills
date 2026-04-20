@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 generate_review.py
 =====================================
@@ -10,8 +10,8 @@ Purpose:
 Layer: Investigate / Synthesis
 
 Usage Examples:
-    python3 generate_review.py path/to/workspace --port 3117
-    python3 generate_review.py path/to/workspace --static report_viewer.html
+    pythongenerate_review.py path/to/workspace --port 3117
+    pythongenerate_review.py path/to/workspace --static report_viewer.html
 
 Supported Object Types:
     Workspace execution bundles containing iterative output artifacts.

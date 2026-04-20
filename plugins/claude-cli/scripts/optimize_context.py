@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 optimize-context (CLI)
 =====================================
@@ -14,10 +14,10 @@ Purpose:
 Layer: Codify
 
 Usage Examples:
-    python3 scripts/optimize_context.py
-    python3 scripts/optimize_context.py --project-root /path/to/my-project
-    python3 scripts/optimize_context.py --dry-run
-    python3 scripts/optimize_context.py --verbose
+    pythonscripts/optimize_context.py
+    pythonscripts/optimize_context.py --project-root /path/to/my-project
+    pythonscripts/optimize_context.py --dry-run
+    pythonscripts/optimize_context.py --verbose
 
 CLI Arguments:
     --project-root PATH   Root of the project to scan (default: CWD)

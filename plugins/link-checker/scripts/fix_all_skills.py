@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 fix_all_skills.py — Run bulk_symlink_fixer on all skill scripts folders.
 

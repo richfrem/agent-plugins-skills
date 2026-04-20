@@ -53,15 +53,15 @@ The RLM Cache is an optimized architecture producing isolated Markdown files per
 
 ### 1. Assessment (Always First)
 ```bash
-python3 ./scripts/inventory.py --type legacy
+python ./scripts/inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read -- Fast)
 Use the **`rlm-search`** skill for all cache queries:
 ```bash
-python3 ./scripts/query_cache.py --profile plugins "search_term"
-python3 ./scripts/query_cache.py --profile tools --list
+python ./scripts/query_cache.py --profile plugins "search_term"
+python ./scripts/query_cache.py --profile tools --list
 ```
 
 ### 3. Distillation (Write)
@@ -78,7 +78,7 @@ Delegate to the `agent-loops:agent-swarm` skill, providing:
 
 #### Option C: Manual Agent Injection (< 5 files)
 ```bash
-python3 ./scripts/inject_summary.py \
+python ./scripts/inject_summary.py \
   --profile project \
   --file path/to/file.md \
   --summary "Your dense summary here..."
@@ -86,7 +86,7 @@ python3 ./scripts/inject_summary.py \
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 ./scripts/cleanup_cache.py --profile project --apply
+python ./scripts/cleanup_cache.py --profile project --apply
 ```
 
 ## Quality Guidelines

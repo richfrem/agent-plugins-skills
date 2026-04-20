@@ -9,7 +9,7 @@ Purpose:
 Layer: Plugin Manager / Synchronization
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/sync_with_inventory.py [--dry-run]
+    python plugins/plugin-manager/scripts/sync_with_inventory.py [--dry-run]
 
 Supported Object Types:
     - None (Synchronization)

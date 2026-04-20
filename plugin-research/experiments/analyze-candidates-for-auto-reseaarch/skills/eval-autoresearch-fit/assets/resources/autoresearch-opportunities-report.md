@@ -118,7 +118,7 @@ exit code (0=KEEP, 1=DISCARD).
 **Blocker**: Requires authored `evals.json` and `references/program.md` fixtures before the loop produces
 meaningful results. Absolute paths in `.lock.hashes` cause portability issues in new environments.
 
-**Evaluator**: `python3 scripts/eval_runner.py --skill plugins/agent-agentic-os/skills/os-eval-runner --json | python3 -c 'import sys,json; print(json.load(sys.stdin)["quality_score"])'`
+**Evaluator**: `python scripts/eval_runner.py --skill plugins/agent-agentic-os/skills/os-eval-runner --json | python -c 'import sys,json; print(json.load(sys.stdin)["quality_score"])'`
 
 ---
 
@@ -166,7 +166,7 @@ signal: either the output CSV is valid or it isn't.
 **Blocker**: No canonical `evaluate.py` entrypoint yet; `verify_csv.py` needs a thin wrapper. Requires
 `pandas`/`openpyxl` in environment.
 
-**Evaluator**: `python3 scripts/verify_csv.py output/Sheet1.csv && echo 0 || echo 1`
+**Evaluator**: `python scripts/verify_csv.py output/Sheet1.csv && echo 0 || echo 1`
 
 ---
 
@@ -192,12 +192,12 @@ rather than core to minimize cascade effects.
 Perfectly deterministic, runs in milliseconds. Mutate `check_todos.py`, run against a test file
 with known markers, verify count matches expected. Lowest-friction loop to bootstrap.
 
-**Metric**: `marker_count` (integer ≥0) from `python3 scripts/check_todos.py <path> | wc -l`.
+**Metric**: `marker_count` (integer ≥0) from `python scripts/check_todos.py <path> | wc -l`.
 Lower is better; target = 0.
 
 **Blocker**: Missing `evaluate.py` and defined single-file mutation target. ~1 hour to add both.
 
-**Evaluator**: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path> | wc -l`
+**Evaluator**: `python ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path> | wc -l`
 
 ---
 
@@ -257,7 +257,7 @@ for any documentation-heavy workflow.
 **Blocker**: Headless browser (Chromium/mmdc) dependency can be flaky in CI. Thin wrapper needed
 to emit numeric metric.
 
-**Evaluator**: `python3 scripts/convert.py -i tests/architecture.mmd -o /tmp/arch.png && echo 1 || echo 0`
+**Evaluator**: `python scripts/convert.py -i tests/architecture.mmd -o /tmp/arch.png && echo 1 || echo 0`
 
 ---
 
@@ -271,7 +271,7 @@ scanner, run against the repo, count stale paths. High frequency of use (every p
 **Blocker**: Skill only detects issues — it doesn't fix them. Single-file mutation target or
 automated fix strategy needed before a useful improvement loop can close the gap.
 
-**Evaluator**: `python3 scripts/path_reference_auditor.py --project . --phase verify && python3 -c "import json; inv=json.load(open('temp/inventory.json')); print(sum(1 for r in inv if r.get('status')=='missing'))"`
+**Evaluator**: `python scripts/path_reference_auditor.py --project . --phase verify && python -c "import json; inv=json.load(open('temp/inventory.json')); print(sum(1 for r in inv if r.get('status')=='missing'))"`
 
 ---
 
@@ -285,7 +285,7 @@ consumes this repo via pull-based sync. Deterministic when run against reproduci
 **Blocker**: Depends on machine-specific env vars and real external repos. Needs fixture environment
 to reproduce headlessly. No compact `evaluate.py` yet.
 
-**Evaluator**: `python3 scripts/check_and_sync.py --plugins-dir "$PLUGINS_DIR" --report-count`
+**Evaluator**: `python scripts/check_and_sync.py --plugins-dir "$PLUGINS_DIR" --report-count`
 
 ---
 

@@ -43,7 +43,7 @@ If you don't use `uv`, you can install purely using standard Python tooling with
 
 **Mac / Linux:**
 ```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
 ```
 **Windows (PowerShell):**
 ```powershell

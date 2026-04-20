@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 check_todos.py — TODO and Technical Debt Auditor
 ======================================================
@@ -11,7 +11,7 @@ Layer:
     Scripts / Audit
 
 Usage Examples:
-    python3 ./scripts/check_todos.py <file_path>
+    python./scripts/check_todos.py <file_path>
 
 Supported Object Types:
     - Code source files (Python, JS/TS, Markdown, etc.)
@@ -67,6 +67,6 @@ def check_todos(file_path: str) -> int:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 check_todos.py <file_path>")
+        print("Usage: pythoncheck_todos.py <file_path>")
         sys.exit(1)
     sys.exit(check_todos(sys.argv[1]))

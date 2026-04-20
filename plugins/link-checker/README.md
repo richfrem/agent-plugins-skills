@@ -24,12 +24,12 @@ For installation instructions, consult the authoritative project hub:
 cd /path/to/your/repo
 
 # Full pipeline (one-liner)
-python3 ./scripts/01_build_file_inventory.py && \
-python3 ./scripts/02_extract_link_references.py && \
-python3 ./scripts/03_audit_broken_links.py && \
-python3 ./scripts/04_autofix_unique_links.py --dry-run && \
-python3 ./scripts/04_autofix_unique_links.py --backup && \
-python3 ./scripts/05_report_unfixable_links.py
+python ./scripts/01_build_file_inventory.py && \
+python ./scripts/02_extract_link_references.py && \
+python ./scripts/03_audit_broken_links.py && \
+python ./scripts/04_autofix_unique_links.py --dry-run && \
+python ./scripts/04_autofix_unique_links.py --backup && \
+python ./scripts/05_report_unfixable_links.py
 ```
 
 ### How the Fixer Works

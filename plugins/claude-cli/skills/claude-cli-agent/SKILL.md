@@ -35,12 +35,12 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 # Location: plugins/claude-cli/scripts/run_agent.py
-python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
+python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
 ```
 
 ### Example Usage:
 ```bash
-python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
+python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 "Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
 ```
 
@@ -75,5 +75,5 @@ Always add these instructions to your dispatch prompt to prevent the sub-agent f
 ## ✅ Smoke Test
 
 ```bash
-python3 ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
+python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 exploration_session_brief_execute.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Execution / Automation
 
 Usage Examples:
-    python3 exploration_session_brief_execute.py
+    pythonexploration_session_brief_execute.py
 
 Supported Object Types:
     None

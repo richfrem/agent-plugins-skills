@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 audit_plugin_l5_execute.py
 =====================================
@@ -10,7 +10,7 @@ Purpose:
 Layer: Investigate / Codify / Audit
 
 Usage Examples:
-    python3 audit_plugin_l5_execute.py --example audit_target_dir
+    pythonudit_plugin_l5_execute.py --example audit_target_dir
 
 Supported Object Types:
     L5 audit validations.

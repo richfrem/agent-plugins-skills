@@ -25,7 +25,7 @@ content_hash: 8023b9609635b23c
 For CLI tools and complex scripts (especially in `plugins/` and `scripts/`):
 
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 {{script_name}} (CLI)
 =====================================

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 check_gaps.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Analysis / Verification
 
 Usage Examples:
-    python3 check_gaps.py --files exploration/captures/brd-draft.md --threshold 3
+    pythoncheck_gaps.py --files exploration/captures/brd-draft.md --threshold 3
 
 Supported Object Types:
     - Markdown files (.md)

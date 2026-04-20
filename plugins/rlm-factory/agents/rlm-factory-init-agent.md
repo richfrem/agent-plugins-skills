@@ -201,8 +201,8 @@ Show both before writing. Confirm.
 
 Run the inventory script to show what needs caching:
 ```bash
-python3 .agents/skills/rlm-init/scripts/inventory.py --profile project 2>&1 | head -20
-python3 .agents/skills/rlm-init/scripts/inventory.py --profile tools   2>&1 | head -20
+python .agents/skills/rlm-init/scripts/inventory.py --profile project 2>&1 | head -20
+python .agents/skills/rlm-init/scripts/inventory.py --profile tools   2>&1 | head -20
 ```
 
 If script path doesn't exist, skip and note: "Run /rlm-factory:distill after setup to build the cache."

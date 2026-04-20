@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 generate_workflow.py (CLI)
 =====================================
@@ -12,7 +12,7 @@ Purpose:
 Layer: Infrastructure / Tooling
 
 Usage Examples:
-    python3 generate_workflow.py --input captures/brd.md --output workflow.md --type sequenceDiagram
+    pythongenerate_workflow.py --input captures/brd.md --output workflow.md --type sequenceDiagram
 
 Supported Object Types:
     Exploration captures (.md)
