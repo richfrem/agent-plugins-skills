@@ -80,7 +80,7 @@ spec-kitty init . --ai windsurf --force
 
 Convert the refreshed `.kittify/` templates into distributable plugin components inside the `spec-kitty-plugin` directory:
 ```bash
-python3 ./scripts/sync_configuration.py
+python ./scripts/sync_configuration.py
 ```
 This generates skills, rules, and templates that agents can consume.
 

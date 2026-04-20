@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 validate_hook_schema.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Investigate
 
 Usage:
-    python3 validate_hook_schema.py <path/to/hooks.json>
+    pythonvalidate_hook_schema.py <path/to/hooks.json>
 """
 import sys
 import os

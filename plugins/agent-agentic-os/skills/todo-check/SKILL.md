@@ -26,7 +26,7 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 Check for TODOs and debt markers in a file.
 
 ## Usage
-`python3 ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path>`
+`python ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path>`
 
 <example>
 Context: Directly auditing a specific file.

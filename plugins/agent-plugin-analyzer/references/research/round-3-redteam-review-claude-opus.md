@@ -64,7 +64,7 @@ The `analysis-framework.md` Phase 6 section contains an old report template that
 
 The mine-plugins command's Step 2 runs:
 ```bash
-python3 "../scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
+python "../scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 But it doesn't include `--security`. Neither does the SKILL.md Phase 1 command. The security flag has to be deliberately invoked — the default path skips deterministic security scanning entirely. This should be the default for any analysis run, not an opt-in.
 

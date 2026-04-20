@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Execution wrapper for continuous skill optimization loops.
 
 This script runs the shared benchmarking loop with safe defaults:
@@ -19,7 +19,7 @@ def _build_command(args: argparse.Namespace, plugin_root: Path) -> list[str]:
     """Build the run_loop invocation command."""
     run_loop_path = plugin_root / "scripts" / "benchmarking" / "run_loop.py"
     cmd = [
-        "python3",
+        "python",
         str(run_loop_path),
         "--eval-set",
         args.eval_set,

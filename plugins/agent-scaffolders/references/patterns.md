@@ -58,7 +58,7 @@ Load project-specific context at session start:
       "hooks": [
         {
           "type": "command",
-          "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/load_context.py"
+          "command": "python ${CLAUDE_PLUGIN_ROOT}/scripts/load_context.py"
         }
       ]
     }
@@ -248,7 +248,7 @@ Combine multiple patterns for comprehensive protection:
       "hooks": [
         {
           "type": "command",
-          "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/load_context.py"
+          "command": "python ${CLAUDE_PLUGIN_ROOT}/scripts/load_context.py"
         }
       ]
     }

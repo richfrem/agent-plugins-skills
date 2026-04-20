@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 run_loop.py (CLI)
 =====================================
@@ -11,8 +11,8 @@ Purpose:
 Layer: Investigate / Optimization / Execution
 
 Usage Examples:
-    python3 run_loop.py --eval-set eval_set.json --skill-path plugins/agent-plugin-analyzer/skills/audit-plugin
-    python3 run_loop.py --eval-set set.json --skill-path path/to/skill --max-iterations 10
+    pythonrun_loop.py --eval-set eval_set.json --skill-path plugins/agent-plugin-analyzer/skills/audit-plugin
+    pythonrun_loop.py --eval-set set.json --skill-path path/to/skill --max-iterations 10
 
 Supported Object Types:
     Optimizer execution benchmarks.

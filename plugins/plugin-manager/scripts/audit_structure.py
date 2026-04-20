@@ -11,7 +11,7 @@ Purpose:
 Layer: Plugin Manager / Structure Validation
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/audit_structure.py
+    python plugins/plugin-manager/scripts/audit_structure.py
 
 Supported Object Types:
     - None (Filesystem scan)

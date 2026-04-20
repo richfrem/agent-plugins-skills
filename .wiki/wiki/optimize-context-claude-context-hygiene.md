@@ -114,7 +114,7 @@ rm -rf .claude/skills/* .claude/agents/* .claude/commands/* .claude/hooks/*
 Run the scanner to confirm no remaining filesystem duplicates:
 
 ```bash
-python3 plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
+python plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
 ```
 
 **Exit 0**: Clean — report counts cleared and confirm scanner is satisfied.

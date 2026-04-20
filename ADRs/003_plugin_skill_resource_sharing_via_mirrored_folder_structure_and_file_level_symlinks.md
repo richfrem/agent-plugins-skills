@@ -27,7 +27,7 @@ point to paths that only exist inside the skill subtree. These paths are not ins
 when only the command is installed via bridge plugin.
 
 **Failure 3: Absolute hardcoded paths break portability.**
-SKILL.md files that invoke scripts as `python3 ./adr_manager.py` fail when the agent runs from the
+SKILL.md files that invoke scripts as `python ./adr_manager.py` fail when the agent runs from the
 project root. And paths hardcoded to `.agents/skills/<name>/scripts/...` break when the install
 location changes. The open Agent Skills spec (agentskills.io) specifies that file references in
 SKILL.md should use **relative paths from the skill root** (e.g. `scripts/extract.py`), which the
@@ -91,19 +91,19 @@ should use paths relative to the skill root — not hardcoded install locations:
 
 ```
 # Correct - relative from skill root (portable, spec-compliant)
-python3 scripts/adr_manager.py create ...
+python scripts/adr_manager.py create ...
 
 # Also acceptable for Claude Code agents running from project root
-python3 .agents/skills/adr-management/scripts/adr_manager.py create ...
+python .agents/skills/adr-management/scripts/adr_manager.py create ...
 
 # Wrong - breaks when not in skill directory
-python3 ./adr_manager.py create ...
+python ./adr_manager.py create ...
 ```
 
 Command files (`commands/*.md`) reference the installed path since they are not installed as part
 of a skill and have no skill root to resolve from:
 ```
-python3 .agents/skills/adr-management/scripts/adr_manager.py create ...
+python .agents/skills/adr-management/scripts/adr_manager.py create ...
 ```
 
 ## Validated Test
@@ -151,7 +151,7 @@ no shared command references may keep resources inside the skill with no symlink
 Run it against any plugin to detect real files inside skill directories that should be at plugin root:
 
 ```bash
-python3 plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py plugins/<plugin-name>
+python plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py plugins/<plugin-name>
 ```
 
 Output:

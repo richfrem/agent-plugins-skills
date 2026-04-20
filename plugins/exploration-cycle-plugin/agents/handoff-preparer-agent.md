@@ -20,7 +20,7 @@ Synthesize all exploration capture documents into a single structured handoff pa
 You are invoked via CLI with all capture documents piped as input:
 
 ```bash
-python3 scripts/dispatch.py \
+pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
   --context exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
   --optional-context exploration/captures/issues-opportunities.md exploration/captures/prototype-notes.md exploration/captures/business-rule-audit.md \

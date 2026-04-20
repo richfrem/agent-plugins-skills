@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 01_build_file_inventory.py (CLI)
 =====================================
@@ -8,7 +8,7 @@ Purpose:
     This is Phase 1 of the Link Checker pipeline.
 
 Usage:
-    python3 01_build_file_inventory.py --root .
+    python01_build_file_inventory.py --root .
 
 Output:
     - file_inventory.json: Mapping of filename -> [list of relative paths]

@@ -9,9 +9,9 @@ Purpose:
 Layer: Core Operations
 
 Usage Examples:
-    python3 graph_ops.py build --vault-root /path/to/vault
-    python3 graph_ops.py forward --note "My Note" --vault-root /path/to/vault
-    python3 graph_ops.py backlinks --note "My Note" --vault-root /path/to/vault
+    pythongraph_ops.py build --vault-root /path/to/vault
+    pythongraph_ops.py forward --note "My Note" --vault-root /path/to/vault
+    pythongraph_ops.py backlinks --note "My Note" --vault-root /path/to/vault
 
 Supported Object Types:
     - .md (Markdown notes with wikilinks)

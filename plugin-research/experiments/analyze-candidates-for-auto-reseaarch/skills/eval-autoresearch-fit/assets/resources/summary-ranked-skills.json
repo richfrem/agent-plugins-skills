@@ -173,7 +173,7 @@
       "status": "EVALUATED",
       "eval_verdict": "HIGH",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 plugins/agent-agentic-os/scripts/eval_runner.py --skill plugins/agent-agentic-os/skills/os-eval-runner --json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
+      "evaluator_command": "python plugins/agent-agentic-os/scripts/eval_runner.py --skill plugins/agent-agentic-os/skills/os-eval-runner --json | python -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
       "mutation_target": "plugins/agent-agentic-os/skills/os-eval-runner/SKILL.md",
       "key_barriers": [
         "Requires authored evals/evals.json and references/program.md fixtures before the loop can run meaningfully (human must populate test cases).",
@@ -196,7 +196,7 @@
       "status": "EVALUATED",
       "eval_verdict": "HIGH",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "bash -c \"python3 scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer --format json > /tmp/self.json && python3 scripts/inventory_plugin.py --path tests/gold-standard-plugin --format json > /tmp/gold.json && python3 scripts/inventory_plugin.py --path tests/flawed-plugin --format json > /tmp/flawed.json && python3 scripts/assert_audit.py --fixture self --json-output /tmp/self.json; r1=$?; python3 scripts/assert_audit.py --fixture gold --json-output /tmp/gold.json; r2=$?; python3 scripts/assert_audit.py --fixture flawed --json-output /tmp/flawed.json; r3=$?; echo $(( (r1!=0) + (r2!=0) + (r3!=0) ))\"",
+      "evaluator_command": "bash -c \"python scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer --format json > /tmp/self.json && python scripts/inventory_plugin.py --path tests/gold-standard-plugin --format json > /tmp/gold.json && python scripts/inventory_plugin.py --path tests/flawed-plugin --format json > /tmp/flawed.json && python scripts/assert_audit.py --fixture self --json-output /tmp/self.json; r1=$?; python scripts/assert_audit.py --fixture gold --json-output /tmp/gold.json; r2=$?; python scripts/assert_audit.py --fixture flawed --json-output /tmp/flawed.json; r3=$?; echo $(( (r1!=0) + (r2!=0) + (r3!=0) ))\"",
       "mutation_target": "plugins/agent-plugin-analyzer/analyzer.py",
       "key_barriers": [
         "Evaluator invokes LLM-driven 6-phase analysis (non-deterministic scores and potential flakiness)",
@@ -242,7 +242,7 @@
       "status": "EVALUATED",
       "eval_verdict": "HIGH",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/excel-to-csv/scripts/verify_csv.py output_folder/Sheet1.csv && echo 0 || echo 1",
+      "evaluator_command": "python .agents/skills/excel-to-csv/scripts/verify_csv.py output_folder/Sheet1.csv && echo 0 || echo 1",
       "mutation_target": ".agents/skills/excel-to-csv/scripts/convert.py",
       "key_barriers": [
         "No canonical evaluate.py entrypoint \u2014 verify_csv.py must be guaranteed to run headlessly and return deterministic exit codes to satisfy the loop contract.",
@@ -288,7 +288,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path> | wc -l",
+      "evaluator_command": "python ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path> | wc -l",
       "mutation_target": "skills/todo-check/scripts/check_todos.py",
       "key_barriers": [
         "No evaluate.py or standard headless evaluator provided \u2014 CI-style evaluate harness must be added",
@@ -380,7 +380,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/vector-db-search/scripts/evaluate.py --benchmark tests/benchmark.json --profile knowledge --metric recall@5 --limit 5 --quiet",
+      "evaluator_command": "python .agents/skills/vector-db-search/scripts/evaluate.py --benchmark tests/benchmark.json --profile knowledge --metric recall@5 --limit 5 --quiet",
       "mutation_target": ".agents/skills/vector-db-search/scripts/query.py",
       "key_barriers": [
         "No headless evaluate.py or labeled benchmark currently present in the skill to produce a single numeric score",
@@ -403,7 +403,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/convert-mermaid/scripts/convert.py -i tests/architecture.mmd -o /tmp/architecture.png && python3 .agents/skills/convert-mermaid/scripts/verify_png.py /tmp/architecture.png | python3 -c \"import sys,json; print(1 if json.load(sys.stdin).get('status')=='success' else 0)\"",
+      "evaluator_command": "python .agents/skills/convert-mermaid/scripts/convert.py -i tests/architecture.mmd -o /tmp/architecture.png && python .agents/skills/convert-mermaid/scripts/verify_png.py /tmp/architecture.png | python -c \"import sys,json; print(1 if json.load(sys.stdin).get('status')=='success' else 0)\"",
       "mutation_target": "plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md",
       "key_barriers": [
         "verify_png.py needs wrapper to produce numeric CLI output reliably",
@@ -425,7 +425,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 scripts/path_reference_auditor.py --project . --phase scan && python3 scripts/path_reference_auditor.py --project . --phase verify && python3 -c \"import json,sys;inv=json.load(open('temp/inventory.json'));print(sum(1 for r in inv if r.get('status')=='missing'))\"",
+      "evaluator_command": "python scripts/path_reference_auditor.py --project . --phase scan && python scripts/path_reference_auditor.py --project . --phase verify && python -c \"import json,sys;inv=json.load(open('temp/inventory.json'));print(sum(1 for r in inv if r.get('status')=='missing'))\"",
       "mutation_target": "temp/inventory.json",
       "key_barriers": [
         "No single editable source-of-truth to fix issues: real remediation requires editing many project files or creating symlinks across the repo, not just one file.",
@@ -448,7 +448,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 skills/auto-update-plugins/scripts/check_and_sync.py --plugins-dir \"$AGENT_PLUGINS_SKILLS_DIR/plugins\" --report-count",
+      "evaluator_command": "python skills/auto-update-plugins/scripts/check_and_sync.py --plugins-dir \"$AGENT_PLUGINS_SKILLS_DIR/plugins\" --report-count",
       "mutation_target": "skills/auto-update-plugins/scripts/check_and_sync.py",
       "key_barriers": [
         "Depends on machine-specific env vars and real external plugin source repos (non-reproducible without fixtures)",
@@ -541,7 +541,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "HYBRID",
-      "evaluator_command": "python3 .agents/skills/rlm-search/evaluate.py --bench .agents/skills/rlm-search/benchmarks/queries.json --metric mrr --json | jq -r .mrr",
+      "evaluator_command": "python .agents/skills/rlm-search/evaluate.py --bench .agents/skills/rlm-search/benchmarks/queries.json --metric mrr --json | jq -r .mrr",
       "mutation_target": ".agents/skills/rlm-search/scripts/query_cache.py",
       "key_barriers": [
         "No headless evaluate.py or benchmark harness currently present to produce a single numeric metric.",
@@ -587,7 +587,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 scripts/03_audit_broken_links.py && python3 -c \"import json; print(len(json.load(open('broken_links.json'))))\"",
+      "evaluator_command": "python scripts/03_audit_broken_links.py && python -c \"import json; print(len(json.load(open('broken_links.json'))))\"",
       "mutation_target": "plugins/link-checker/skills/link-checker-agent/SKILL.md",
       "key_barriers": [
         "Fixer edits many documentation files \u2014 violates single-editable-file constraint",
@@ -678,7 +678,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 evaluate.py --plugin-root . --json | jq -r .critical_issues",
+      "evaluator_command": "python evaluate.py --plugin-root . --json | jq -r .critical_issues",
       "mutation_target": "plugins/agent-plugin-analyzer/skills/audit-plugin/SKILL.md",
       "key_barriers": [
         "Relies on the plugin-validator agent (LLM) for many judgments, so evaluation is not purely deterministic",
@@ -793,7 +793,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile project --apply --quiet | grep -Eo '[0-9]+' | tail -1",
+      "evaluator_command": "python .agents/skills/rlm-cleanup-agent/scripts/cleanup_cache.py --profile project --apply --quiet | grep -Eo '[0-9]+' | tail -1",
       "mutation_target": "multiple *_cache.json ledger files (the agent removes entries across many ledger files; not a single editable file)",
       "key_barriers": [
         "Skill requires an explicit user confirmation / dry-run policy before applying changes, preventing fully headless runs without changing policy.",
@@ -839,7 +839,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/vector-db-cleanup/scripts/cleanup.py --profile knowledge --dry-run 2>/dev/null | grep -oE '[0-9]+' | head -n1",
+      "evaluator_command": "python .agents/skills/vector-db-cleanup/scripts/cleanup.py --profile knowledge --dry-run 2>/dev/null | grep -oE '[0-9]+' | head -n1",
       "mutation_target": ".agents/skills/vector-db-cleanup/scripts/cleanup.py",
       "key_barriers": [
         "No headless evaluate.py present \u2014 current workflow expects a dry-run report and manual apply step",
@@ -931,7 +931,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "HYBRID",
-      "evaluator_command": "python3 plugins/agent-skill-open-specifications/skills/ecosystem-standards/evaluate.py ./subject | jq -r .score",
+      "evaluator_command": "python plugins/agent-skill-open-specifications/skills/ecosystem-standards/evaluate.py ./subject | jq -r .score",
       "mutation_target": "plugins/agent-skill-open-specifications/skills/ecosystem-standards/SKILL.md",
       "key_barriers": [
         "No headless evaluate.py that emits a single numeric metric",
@@ -954,7 +954,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "HYBRID",
-      "evaluator_command": "python3 .agents/skills/maintain-plugins/scripts/audit_structure.py --json | python3 -c \"import sys,json;print(json.load(sys.stdin).get('total_violations',0))\"",
+      "evaluator_command": "python .agents/skills/maintain-plugins/scripts/audit_structure.py --json | python -c \"import sys,json;print(json.load(sys.stdin).get('total_violations',0))\"",
       "mutation_target": "",
       "key_barriers": [
         "Interactive confirmation required (Recap-Before-Execute) prevents fully headless runs",
@@ -977,7 +977,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/rlm-curator/scripts/inventory.py --type legacy --json | python3 -c \"import sys,json; print(json.load(sys.stdin).get('coverage_percent',0))\"",
+      "evaluator_command": "python .agents/skills/rlm-curator/scripts/inventory.py --type legacy --json | python -c \"import sys,json; print(json.load(sys.stdin).get('coverage_percent',0))\"",
       "mutation_target": ".agent/learning/rlm_summary_cache.json",
       "key_barriers": [
         "Evaluator is not the canonical evaluate.py required by the 3-file pattern (no headless evaluate.py present)",
@@ -1000,7 +1000,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 plugins/agent-agentic-os/scripts/eval_runner.py --skill plugins/<target-plugin>/skills/<target-skill>/SKILL.md && tail -n1 plugins/<target-plugin>/skills/<target-skill>/evals/results.tsv | cut -f2",
+      "evaluator_command": "python plugins/agent-agentic-os/scripts/eval_runner.py --skill plugins/<target-plugin>/skills/<target-skill>/SKILL.md && tail -n1 plugins/<target-plugin>/skills/<target-skill>/evals/results.tsv | cut -f2",
       "mutation_target": "plugins/<target-plugin>/skills/<target-skill>/SKILL.md",
       "key_barriers": [
         "Evaluator depends on LLM-driven agent routing, introducing stochastic variance that may require repeated runs or averaging for stable comparisons",
@@ -1069,7 +1069,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 -c \"import json,sys;print(len(json.load(open('rlm_summary_cache.json'))))\"",
+      "evaluator_command": "python -c \"import json,sys;print(len(json.load(open('rlm_summary_cache.json'))))\"",
       "mutation_target": "rlm_summary_cache.json",
       "key_barriers": [
         "Metric is a proxy (count of summaries) and does not measure semantic quality of summaries",
@@ -1092,7 +1092,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/vector-db-ingest/scripts/query.py \"TEST_PROMPT_FOR_KNOWN_DOC\" --profile knowledge --limit 10 --json | python3 -c \"import sys,json; r=json.load(sys.stdin); ids=[it.get('id') for it in r.get('results',[])]; print(ids.index('EXPECTED_DOC_ID') if 'EXPECTED_DOC_ID' in ids else -1)\"",
+      "evaluator_command": "python .agents/skills/vector-db-ingest/scripts/query.py \"TEST_PROMPT_FOR_KNOWN_DOC\" --profile knowledge --limit 10 --json | python -c \"import sys,json; r=json.load(sys.stdin); ids=[it.get('id') for it in r.get('results',[])]; print(ids.index('EXPECTED_DOC_ID') if 'EXPECTED_DOC_ID' in ids else -1)\"",
       "mutation_target": ".agents/skills/vector-db-ingest/scripts/ingest.py",
       "key_barriers": [
         "Quality measurement requires semantic retrieval/LLM judgment (non-deterministic) rather than a pure shell-only metric",
@@ -1115,7 +1115,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 scripts/eval_runner.py --skill path/to/target/ | python3 -c \"import sys,json;print(json.load(sys.stdin)['accuracy'])\"",
+      "evaluator_command": "python scripts/eval_runner.py --skill path/to/target/ | python -c \"import sys,json;print(json.load(sys.stdin)['accuracy'])\"",
       "mutation_target": ".agents/skills/os-improvement-loop/SKILL.md",
       "key_barriers": [
         "Loop mandates writing many persistent artifacts (ledger, registry, surveys, memory), violating the single-edit-file requirement.",
@@ -1184,7 +1184,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/markdown-to-msword-converter/scripts/md_to_docx.py input.md --output output.docx >/dev/null 2>&1 || true; python3 .agents/skills/markdown-to-msword-converter/scripts/verify_docx.py output.docx 2>/dev/null || echo '{\"status\":\"errors_found\"}' | python3 -c \"import sys,json;print(1 if json.load(sys.stdin).get('status')=='success' else 0)\"",
+      "evaluator_command": "python .agents/skills/markdown-to-msword-converter/scripts/md_to_docx.py input.md --output output.docx >/dev/null 2>&1 || true; python .agents/skills/markdown-to-msword-converter/scripts/verify_docx.py output.docx 2>/dev/null || echo '{\"status\":\"errors_found\"}' | python -c \"import sys,json;print(1 if json.load(sys.stdin).get('status')=='success' else 0)\"",
       "mutation_target": ".agents/skills/markdown-to-msword-converter/scripts/md_to_docx.py",
       "key_barriers": [
         "No dedicated evaluate.py harness \u2014 verify_docx.py must be wrapped into a deterministic evaluate.py for the autoresearch runner",
@@ -1227,7 +1227,7 @@
       "total_autoresearch_viability": 25,
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python plugins/agent-agentic-os/scripts/evaluate.py --skill plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md --json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
+      "evaluator_command": "python plugins/agent-agentic-os/scripts/evaluate.py --skill plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md --json | python -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
       "mutation_target": "plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md",
       "key_barriers": [
         "Scoring itself requires LLM judgment \u2014 non-deterministic by nature",
@@ -1298,7 +1298,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/business-workflow-doc/scripts/evaluate.py --generated exploration/captures/workflow-map.md --source exploration/session-brief.md --json | jq -r .score",
+      "evaluator_command": "python .agents/skills/business-workflow-doc/scripts/evaluate.py --generated exploration/captures/workflow-map.md --source exploration/session-brief.md --json | jq -r .score",
       "mutation_target": "exploration/captures/workflow-map.md",
       "key_barriers": [
         "No deterministic, headless evaluator exists (evaluation requires LLM judgement or human review).",
@@ -1321,7 +1321,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/user-story-capture/scripts/execute.py --input exploration/session-brief.md --output exploration/captures/user-stories-draft.md --format standard && grep -c '^As a ' exploration/captures/user-stories-draft.md",
+      "evaluator_command": "python .agents/skills/user-story-capture/scripts/execute.py --input exploration/session-brief.md --output exploration/captures/user-stories-draft.md --format standard && grep -c '^As a ' exploration/captures/user-stories-draft.md",
       "mutation_target": "exploration/captures/user-stories-draft.md",
       "key_barriers": [
         "No objective, single-number quality metric \u2014 content quality requires human/LLM judgment, not a reliable shell-measurable score.",
@@ -1390,7 +1390,7 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/rsvp-reading/scripts/evaluate.py --candidate /tmp/rsvp_output.json --ground_truth tests/ground_truth.json | jq -r '.score'",
+      "evaluator_command": "python .agents/skills/rsvp-reading/scripts/evaluate.py --candidate /tmp/rsvp_output.json --ground_truth tests/ground_truth.json | jq -r '.score'",
       "mutation_target": ".agents/skills/rsvp-reading/scripts/orp_engine.py",
       "key_barriers": [
         "No headless evaluate.py provided and the skill includes an interactive confirmation gate for large files, preventing fully unattended runs.",
@@ -1413,7 +1413,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 plugins/agent-scaffolders/skills/create-command/evaluate.py --target plugins/agent-scaffolders/skills/create-command/SKILL.md",
+      "evaluator_command": "python plugins/agent-scaffolders/skills/create-command/evaluate.py --target plugins/agent-scaffolders/skills/create-command/SKILL.md",
       "mutation_target": "plugins/agent-scaffolders/skills/create-command/SKILL.md",
       "key_barriers": [
         "Core quality judgment requires LLM evaluation (not purely shell-measurable).",
@@ -1459,7 +1459,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "HYBRID",
-      "evaluator_command": "python3 ./os-eval-runner/evaluate.py --skill plugins/<plugin-name>/<skill-name> --round <ROUND_LABEL> --quiet | jq -r .score",
+      "evaluator_command": "python ./os-eval-runner/evaluate.py --skill plugins/<plugin-name>/<skill-name> --round <ROUND_LABEL> --quiet | jq -r .score",
       "mutation_target": "plugins/<plugin-name>/<skill-name>/SKILL.md",
       "key_barriers": [
         "No guaranteed deterministic, headless evaluator: os-eval-runner may rely on LLM judgments or non-deterministic checks.",
@@ -1482,7 +1482,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "HYBRID",
-      "evaluator_command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py\" | grep -o 'friction_events_total[^0-9]*[0-9]\\+' | grep -o '[0-9]\\+'",
+      "evaluator_command": "python \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py\" | grep -o 'friction_events_total[^0-9]*[0-9]\\+' | grep -o '[0-9]\\+'",
       "mutation_target": "context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_[AGENT].md",
       "key_barriers": [
         "Phase III Strategic Gate requires explicit human approval (HITL), blocking unattended iterations",
@@ -1505,7 +1505,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 scripts/score_maturity.py --report analysis-reports/target-run-1/report.md --json | jq -r .overall_score",
+      "evaluator_command": "python scripts/score_maturity.py --report analysis-reports/target-run-1/report.md --json | jq -r .overall_score",
       "mutation_target": "plugins/agent-plugin-analyzer/skills/analyze-plugin/SKILL.md",
       "key_barriers": [
         "Core quality judgments require LLM interpretation (non-deterministic evaluator)",
@@ -1551,7 +1551,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "HYBRID",
-      "evaluator_command": "python3 .agents/skills/skill-improvement-eval/scripts/eval_runner.py --target plugins/skills/<target>/SKILL.md --output-json | jq -r '.composite_score'",
+      "evaluator_command": "python .agents/skills/skill-improvement-eval/scripts/eval_runner.py --target plugins/skills/<target>/SKILL.md --output-json | jq -r '.composite_score'",
       "mutation_target": "plugins/skills/<target>/SKILL.md",
       "key_barriers": [
         "No single clear automated metric \u2014 evaluations rely on subjective dimensions (artifact usefulness, routing quality) that need LLM judgment.",
@@ -1620,7 +1620,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 evaluate.py --skill mine-plugins --path <TARGET> --headless --json | jq -r .score",
+      "evaluator_command": "python evaluate.py --skill mine-plugins --path <TARGET> --headless --json | jq -r .score",
       "mutation_target": "plugins/agent-plugin-analyzer/skills/mine-plugins/mine_plugins.py",
       "key_barriers": [
         "Evaluation depends on LLM-based analysis and synthesis \u2014 no deterministic, single-number metric exists",
@@ -1666,7 +1666,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "DETERMINISTIC",
-      "evaluator_command": "python3 .agents/skills/rlm-init/scripts/inventory.py --profile <NAME> --json | python3 -c 'import sys,json;print(json.load(sys.stdin)[\"coverage_percent\"])'",
+      "evaluator_command": "python .agents/skills/rlm-init/scripts/inventory.py --profile <NAME> --json | python -c 'import sys,json;print(json.load(sys.stdin)[\"coverage_percent\"])'",
       "mutation_target": ".agent/learning/rlm_<profile>_cache.json",
       "key_barriers": [
         "Requires interactive user prompts for initial setup (not headless)",
@@ -1804,7 +1804,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 .agents/skills/rlm-distill-agent/scripts/evaluate.py --profile project --distiller .agents/skills/rlm-distill-agent/scripts/distiller.py --metric-only",
+      "evaluator_command": "python .agents/skills/rlm-distill-agent/scripts/evaluate.py --profile project --distiller .agents/skills/rlm-distill-agent/scripts/distiller.py --metric-only",
       "mutation_target": ".agents/skills/rlm-distill-agent/scripts/distiller.py",
       "key_barriers": [
         "No deterministic, single-number quality metric exists: summary quality requires LLM or human judgment.",
@@ -1919,7 +1919,7 @@
       "status": "EVALUATED",
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 ./scripts/evaluate_tasks.py --feature-dir \"$(spec-kitty agent context resolve --action tasks_outline --json | jq -r '.feature_dir')\" --file tasks.md --metric coverage --json | jq -r .score",
+      "evaluator_command": "python ./scripts/evaluate_tasks.py --feature-dir \"$(spec-kitty agent context resolve --action tasks_outline --json | jq -r '.feature_dir')\" --file tasks.md --metric coverage --json | jq -r .score",
       "mutation_target": "tasks.md",
       "key_barriers": [
         "No deterministic single-number quality metric currently exists; planning quality is largely subjective and LLM-driven",
@@ -2378,7 +2378,7 @@
       "status": "EVALUATED",
       "eval_verdict": "NOT_VIABLE",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python3 ./../scripts/swarm_run.py --job ./resources/jobs/my_job.job.md --resume --workers 2 >/dev/null && jq '.completed | length' .swarm_state_my_job.json",
+      "evaluator_command": "python ./../scripts/swarm_run.py --job ./resources/jobs/my_job.job.md --resume --workers 2 >/dev/null && jq '.completed | length' .swarm_state_my_job.json",
       "mutation_target": "resources/jobs/my_job.job.md",
       "key_barriers": [
         "No headless evaluate.py provided \u2014 evaluation harness is not packaged for unattended runs",

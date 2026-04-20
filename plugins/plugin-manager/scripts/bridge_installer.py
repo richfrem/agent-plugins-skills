@@ -8,7 +8,7 @@ Bridge Installer (CLI)
 Layer: Plugin Manager / Installation
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
+    python plugins/plugin-manager/scripts/bridge_installer.py --plugin plugins/my-plugin
 
     # install plugin in a different repo e.g. context-bundler specifically
     python <full install path>/agent-plugins-skills/plugins/plugin-manager/scripts/bridge_installer.py --plugin <full install path>/agent-plugins-skills/plugins/context-bundler

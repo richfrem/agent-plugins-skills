@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 init_agentic_os.py — Agentic OS Directory Scaffolder
 ======================================================
@@ -12,7 +12,7 @@ Layer:
     CLI / Initialization
 
 Usage Examples:
-    python3 init_agentic_os.py --target /my/project --global
+    pythoninit_agentic_os.py --target /my/project --global
 
 Supported Object Types:
     - Filesystem Directories
@@ -248,7 +248,7 @@ def print_next_steps(target: Path, did_global: bool) -> None:
     print("   /loop \"Read heartbeat.md and execute the items listed under Every Hour\" --interval 1h")
     print("\n9. Wire Hooks (optional, requires restart):")
     print("   Add to .claude/hooks/hooks.json under SessionStart and PostToolUse:")
-    print("   { \"type\": \"command\", \"command\": \"python3 ${CLAUDE_PLUGIN_ROOT}/hooks/update_memory.py && cat .claude/hooks/hooks.json\", \"timeout\": 5 }")
+    print("   { \"type\": \"command\", \"command\": \"python${CLAUDE_PLUGIN_ROOT}/hooks/update_memory.py && cat .claude/hooks/hooks.json\", \"timeout\": 5 }")
     print()
 
 

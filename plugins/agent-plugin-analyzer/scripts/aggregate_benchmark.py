@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Aggregate individual run results into benchmark summary statistics.
 

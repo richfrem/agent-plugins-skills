@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import argparse
 import subprocess
 import sys
@@ -14,7 +14,7 @@ Purpose:
 Layer: Tools & Generation
 
 Usage Examples:
-    python3 convert.py -i input.mmd -o output.png -s 2 -t dark
+    pythonconvert.py -i input.mmd -o output.png -s 2 -t dark
 
 Supported Object Types:
     - Mermaid standard (.mmd)

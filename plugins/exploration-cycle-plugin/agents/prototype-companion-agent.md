@@ -20,7 +20,7 @@ After a prototype session, extract what the prototype revealed: implied requirem
 You are invoked via CLI after a prototype session. The piped input is the current BRD draft and/or session notes. Your instruction specifies what prototype was run and what to observe.
 
 ```bash
-python3 scripts/dispatch.py \
+pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-prototype-companion-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Mode: prototype-observations. Capture implied requirements and edge cases from the prototype session." \

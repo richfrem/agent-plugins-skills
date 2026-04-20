@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 claude-run-agent (CLI)
 =====================================
@@ -10,7 +10,7 @@ Purpose:
 Layer: Codify
 
 Usage Examples:
-    python3 ./scripts/run_agent.py agents/security-auditor.md target.py output.md "Review this."
+    python./scripts/run_agent.py agents/security-auditor.md target.py output.md "Review this."
     ./scripts/run_agent.py agents/refactor-expert.md main.py refactor.md "Optimize logic."
 
 Supported Object Types:
@@ -129,7 +129,7 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        print("Usage: python3 run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\"")
+        print("Usage: pythonrun_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\"")
         sys.exit(1)
     
     run_agent(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])

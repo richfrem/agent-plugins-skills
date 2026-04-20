@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 run_eval.py (CLI)
 =====================================
@@ -10,8 +10,8 @@ Purpose:
 Layer: Investigate / Curate / Retrieve
 
 Usage Examples:
-    python3 run_eval.py --eval-set eval_set.json --skill-path plugins/agent-plugin-analyzer/skills/audit-plugin
-    python3 run_eval.py --eval-set eval_set.json --skill-path path/to/skill --verbose
+    pythonrun_eval.py --eval-set eval_set.json --skill-path plugins/agent-plugin-analyzer/skills/audit-plugin
+    pythonrun_eval.py --eval-set eval_set.json --skill-path path/to/skill --verbose
 
 Supported Object Types:
     Any structured prompt payload or skill config.

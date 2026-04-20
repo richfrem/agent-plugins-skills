@@ -75,7 +75,7 @@ Since `plugin_add.py` is written in standard library Python, we can provide a un
 
 **Mac / Linux:**
 ```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 - richfrem/agent-plugins-skills
+curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python - richfrem/agent-plugins-skills
 ```
 
 **Windows (PowerShell):**

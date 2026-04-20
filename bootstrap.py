@@ -1,14 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Bootstrap script for Universal Agent Plugins Installer.
 
-This script acts as the entry point for both `uvx` and `curl -sL ... | python3 -`.
+This script acts as the entry point for both `uvx` and `curl -sL ... | python -`.
 Its sole purpose is to securely download the required installer scripts into an
 ephemeral directory and execute them, enabling a zero-clone installation experience
 that mirrors `npx skills add`.
 
 Usage:
-    curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python3 -
+    curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
     uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add
 """
 

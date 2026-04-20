@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 dispatch.py (CLI)
 =====================================
@@ -11,8 +11,8 @@ Purpose:
 Layer: Infrastructure / Tooling
 
 Usage Examples:
-    python3 dispatch.py --agent agent.md --context brief.md captures.md --instruction "Mode: run" --output out.md
-    python3 dispatch.py --agent agent.md --context brief.md --optional-context prototype-notes.md --instruction "Mode: run" --output out.md
+    pythondispatch.py --agent agent.md --context brief.md captures.md --instruction "Mode: run" --output out.md
+    pythondispatch.py --agent agent.md --context brief.md --optional-context prototype-notes.md --instruction "Mode: run" --output out.md
 
 Supported Object Types:
     Any text-based plugin artifacts

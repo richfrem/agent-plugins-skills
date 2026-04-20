@@ -81,7 +81,7 @@ The bridge installer resolves all symlinks to physical copies when deploying via
 ln -s ../../../scripts/<canonical_name>.py <symlink_name>.py
 
 # Or via symlink_manager.py:
-python3 plugins/link-checker/scripts/symlink_manager.py create \
+python plugins/link-checker/scripts/symlink_manager.py create \
   --src plugins/<plugin>/scripts/<canonical_name>.py \
   --dst plugins/<plugin>/skills/<skill>/scripts/<symlink_name>.py
 ```
@@ -91,7 +91,7 @@ out symlinks as plain-text "stand-in" files. These are silently broken — the b
 copies the path string, not the script. After checkout on Windows or any machine where
 symlinks may have degraded, run:
 ```bash
-python3 plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
+python plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
 ```
 Then manually verify: `find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l`
 should return nothing (all script references should be real symlinks, not plain files).

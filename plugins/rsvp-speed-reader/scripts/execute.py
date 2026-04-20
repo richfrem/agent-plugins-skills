@@ -8,7 +8,7 @@ Purpose:
 Layer: Scripts / RSVP
 
 Usage Examples:
-    python3 plugins/rsvp-speed-reader/scripts/execute.py [--example value]
+    python plugins/rsvp-speed-reader/scripts/execute.py [--example value]
 
 Supported Object Types:
     - None (Script template)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 fix_plugin_load_errors.py
 =========================
@@ -26,8 +26,8 @@ NOTE: Claude Code scans ALL cached plugin versions under ~/.claude/plugins/cache
       not just the active installPath. Fix source files, then reinstall to repopulate cache.
 
 Usage:
-    python3 fix_plugin_load_errors.py <plugin_root>
-    python3 fix_plugin_load_errors.py .
+    python fix_plugin_load_errors.py <plugin_root>
+    python fix_plugin_load_errors.py .
 """
 import sys
 import json

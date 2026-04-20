@@ -12,7 +12,7 @@ Purpose:
 Layer: Plugin Manager / Inventory
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/plugin_inventory.py [--root <project_root>] [--output <file.json>]
+    python plugins/plugin-manager/scripts/plugin_inventory.py [--root <project_root>] [--output <file.json>]
 
 Supported Object Types:
     - json (Inventory output)

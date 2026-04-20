@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 evaluate.py -- Locked loop gate for the autoresearch loop
 ==========================================================

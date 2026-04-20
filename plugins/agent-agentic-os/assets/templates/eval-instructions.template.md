@@ -120,7 +120,7 @@ This section ensures the `os-eval-runner` and `copilot-cli-agent` skills are act
 
 6. **Verify Python 3**:
    ```bash
-   python3 --version  # must be 3.8+
+   python-version  # must be 3.8+
    ```
 
 ---
@@ -131,7 +131,7 @@ Before establishing the baseline or starting any iterations, you **MUST** verify
 
 ```bash
 # Run a zero-shot heartbeat test
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
     /dev/null /dev/null ./HEARTBEAT_MD.md \
     "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 
@@ -201,7 +201,7 @@ Log every non-zero exit code, every deviation from instructions, every eval scor
 ## Step 1: Scaffold the Experiment
 
 ```bash
-python3 {{SKILL_EVAL_SOURCE}}/scripts/init_autoresearch.py \
+python{SKILL_EVAL_SOURCE}}/scripts/init_autoresearch.py \
     --experiment-dir ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --mutation-target {{MUTATION_TARGET}}
 ```
@@ -270,7 +270,7 @@ Aim for at least 10 test cases with a good mix.
 ## Step 3: Establish Baseline & Push
 
 ```bash
-python3 {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
+python{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
     --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --baseline \
     --desc "initial baseline"
@@ -302,13 +302,13 @@ Classify the dominant failure type: `false_positive`, `false_negative`, or `ambi
 **A2 — Read the most recent trace for specifics:**
 ```bash
 ls ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/
-cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | python3 -m json.tool
+cat ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/<latest>.json | pythonm json.tool
 ```
 
 **A3 — Scan all traces to avoid repeating a failed mutation (mandatory):**
 ```bash
 for f in ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/traces/iter_*.json; do
-  echo "=== $f ===" && python3 -c "import json,sys; d=json.load(open('$f')); print(d.get('mutation_diff','(no diff)'))" 2>/dev/null
+  echo "=== $f ===" && pythonc "import json,sys; d=json.load(open('$f')); print(d.get('mutation_diff','(no diff)'))" 2>/dev/null
 done | head -200
 ```
 Before proposing anything, confirm your intended mutation is NOT already in this list.
@@ -333,7 +333,7 @@ cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} ./current-skill.md
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json ./current-evals.json
 
 # Use the Copilot run_agent orchestrator for stable, gpt-5-mini powered mutations
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
   $PROMPT_FILE \
   ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} \
   ./proposed-skill.md \
@@ -383,7 +383,7 @@ for overlap risk, then incorporate the most distinctive ones into the next mutat
 Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
 ```bash
 # Use the Copilot run_agent orchestrator for gpt-5-mini strategy brainstorming
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null ./strategy-ideas.md \
   "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF
 keyword scorer (4+ char words, exact match only, no semantics).
@@ -400,7 +400,7 @@ Log both options in the run log under `[CREATIVITY UNBLOCK]` before proceeding.
 
 ### Step C: Eval Gate
 ```bash
-python3 {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
+python{SKILL_EVAL_SOURCE}}/scripts/evaluate.py \
     --skill ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}} \
     --desc "description of what changed"
 ```
@@ -435,7 +435,7 @@ After all 10 iterations:
 
 1. **Plot the Score Progress:**
 ```bash
-python3 {{SKILL_EVAL_SOURCE}}/scripts/plot_eval_progress.py \
+python{SKILL_EVAL_SOURCE}}/scripts/plot_eval_progress.py \
     --tsv ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/results.tsv \
     --out ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/eval_progress.png
 ```

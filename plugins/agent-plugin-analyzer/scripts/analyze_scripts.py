@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 analyze_scripts.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Investigate / Audit
 
 Usage:
-    python3 ./scripts/analyze_scripts.py
+    python ./scripts/analyze_scripts.py
 
 Related:
     - analysis_results.txt

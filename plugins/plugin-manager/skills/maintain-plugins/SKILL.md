@@ -78,14 +78,14 @@ Wait for explicit confirmation (`yes`, `looks good`, `ok`).
 
 ### Step 1: Run Deterministic Scanner
 ```bash
-python3 ./scripts/audit_structure.py
+python ./scripts/audit_structure.py
 ```
 > For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
 
 ### Step 1.5: Path Portability Audit
 Run after every structure scan to catch hardcoded or non-portable paths (ADR-003/004):
 ```bash
-python3 plugins/agent-plugin-analyzer/scripts/audit_plugin_paths.py plugins/
+python plugins/agent-plugin-analyzer/scripts/audit_plugin_paths.py plugins/
 ```
 **Expected output**: `✅ Clean! 0 violations found.`
 
@@ -158,12 +158,12 @@ For each violation found, report with severity:
 
 #### Preview Changes (Always Run First)
 ```bash
-python3 ./scripts/sync_with_inventory.py --dry-run
+python ./scripts/sync_with_inventory.py --dry-run
 ```
 
 #### Apply Changes
 ```bash
-python3 ./scripts/sync_with_inventory.py
+python ./scripts/sync_with_inventory.py
 ```
 
 ### Post-Sync Verification
@@ -175,7 +175,7 @@ python3 ./scripts/sync_with_inventory.py
 
 ## [README] Generate Missing Documentation
 ```bash
-python3 ./scripts/generate_readmes.py --apply
+python ./scripts/generate_readmes.py --apply
 ```
 
 ---

@@ -128,14 +128,14 @@ Agent({
 
 ```bash
 # Simple capture task — gpt-5-mini (free tier)
-python3 scripts/dispatch.py \
+python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals." \
   --output exploration/captures/problem-framing.md
 
 # Q&A clarification pass — gpt-5-mini (free tier)
-python3 scripts/dispatch.py \
+python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Ask 3 targeted questions to clarify the gaps marked [NEEDS HUMAN INPUT].
@@ -144,7 +144,7 @@ python3 scripts/dispatch.py \
 
 # Complex synthesis — claude-sonnet (1 premium request, batch dense for value)
 # Pack all captures into one invocation — Copilot charges per request, not per token
-python3 scripts/dispatch.py \
+python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
   --context exploration/captures/problem-framing.md \
              exploration/captures/brd-draft.md \

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 swarm_run.py 2.0
 ================
@@ -39,7 +39,7 @@ WHAT IS A JOB FILE?
     timeout: 90
     ext: [".md"]
     post_cmd: >-
-      python3 ./scripts/inject_summary.py
+      python ./scripts/inject_summary.py
       --profile {profile} --file {file} --summary {output}
     vars:
       profile: project
@@ -72,34 +72,34 @@ FILE DISCOVERY (checked in this order):
 
 USAGE EXAMPLES:
     # 1. Basic: Summarize all Documents
-    python3 ./scripts/swarm_run.py \
+    python ./scripts/swarm_run.py \
         --job ../../resources/jobs/my_job.job.md \
         --dir docs/
 
     # 2. Resume after interruption (rate limit, Ctrl+C, crash)
-    python3 ./scripts/swarm_run.py \\
+    python ./scripts/swarm_run.py \\
         --job ../../resources/jobs/my_job.job.md \
         --dir docs/ --resume
 
     # 3. Dry run to verify which files would be processed
-    python3 ./scripts/swarm_run.py \
+    python ./scripts/swarm_run.py \
         --job ../../resources/jobs/my_job.job.md \
         --dir docs/ --dry-run
 
     # 4. Override model and worker count at runtime
-    python3 ./scripts/swarm_run.py \\
+    python ./scripts/swarm_run.py \\
         --job my_job.md --dir docs/ --model sonnet --workers 3
 
     # 5. Process specific files only
-    python3 ./scripts/swarm_run.py \\
+    python ./scripts/swarm_run.py \\
         --job my_job.md --files docs/README.md docs/ARCHITECTURE.md
 
     # 6. Use a context-bundler manifest
-    python3 ./scripts/swarm_run.py \\
+    python ./scripts/swarm_run.py \\
         --job my_job.md --bundle ../../output/manifest.json
 
     # 7. Pass custom variables (available as {key} in post_cmd)
-    python3 ./scripts/swarm_run.py \\
+    python ./scripts/swarm_run.py \\
         --job my_job.md --dir src/ --var profile=staging --var env=prod
 """
 
@@ -121,7 +121,7 @@ from datetime import datetime
 try:
     import yaml
 except ImportError:
-    print("[ERROR] PyYAML not found. Run: python3 -m pip install pyyaml")
+    print("[ERROR] PyYAML not found. Run: python -m pip install pyyaml")
     sys.exit(1)
 
 # ─── AUGMENT PATH for subprocesses ──────────────────────────────────────────

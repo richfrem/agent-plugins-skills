@@ -124,7 +124,7 @@ Store the chosen mode — it determines which profiles to create in Step 3.
 
 Run:
 ```bash
-python3 -c "import chromadb; print('chromadb OK')" 2>/dev/null || echo "chromadb: MISSING"
+python -c "import chromadb; print('chromadb OK')" 2>/dev/null || echo "chromadb: MISSING"
 pytho
 
 *(content truncated)*

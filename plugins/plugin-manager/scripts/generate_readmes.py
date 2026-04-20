@@ -9,7 +9,7 @@ Purpose:
 Layer: Plugin Manager / Documentation
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/generate_readmes.py [--apply]
+    python plugins/plugin-manager/scripts/generate_readmes.py [--apply]
 
 Supported Object Types:
     - None (Filesystem lookup)

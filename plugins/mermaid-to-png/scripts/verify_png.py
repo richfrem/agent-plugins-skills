@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 verify_png.py (CLI)
 =====================================
@@ -10,7 +10,7 @@ Purpose:
 Layer: Cli_Entry_Points
 
 Usage Examples:
-    python3 verify_png.py output.png
+    pythonverify_png.py output.png
 
 Supported Object Types:
     - Generic

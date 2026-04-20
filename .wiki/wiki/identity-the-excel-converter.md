@@ -48,7 +48,7 @@ allowed-tools: Bash, Read, Write
 ## Prerequisites
 
 - **Git Protocol**: You MUST initialize a git repository (`git init`) before starting the optimization loop to enable the mandatory KEEP/DISCARD commit-rollback logic.
-- **Python Runtime**: Use `python3` for all script executions to ensure compatibility with modern environments.
+- **Python Runtime**: Use `python` for all script executions to ensure compatibility with modern environments.
 - **Dependencies**: Requires `pandas` and `openpyxl`.
 
 
@@ -92,7 +92,7 @@ When a user provides an Excel file and specifies a worksheet or table they want 
 3. **Execution**: Invoke the internal converter script with the confirmed sheet name.
 
 ```bash
-python3 ./scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "output_folder/"
+python ./scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --outdir "output_folder/"
 ```
 
 ### Phase 2: Delegated Constraint Verification
@@ -100,7 +100,7 @@ python3 ./scripts/convert.py --excel "path/to/data.xlsx" --sheets "Sheet1" --out
 Immediately after generating the `.csv`, execute the verification engine:
  
 ```bash
-python3 ./scripts/verify_csv.py "output_folder/Sheet1.csv"
+python ./scripts/verify_csv.py "output_folder/Sheet1.csv"
 ```
 - **If status is "success"**: Proceed to Phase 3.
 - **If status is "errors_found"**:

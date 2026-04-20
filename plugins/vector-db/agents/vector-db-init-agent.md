@@ -104,9 +104,9 @@ Store the chosen mode — it determines which profiles to create in Step 3.
 
 Run:
 ```bash
-python3 -c "import chromadb; print('chromadb OK')" 2>/dev/null || echo "chromadb: MISSING"
-python3 -c "import sentence_transformers; print('sentence-transformers OK')" 2>/dev/null || echo "sentence-transformers: MISSING"
-python3 -c "import langchain_community; print('langchain-community OK')" 2>/dev/null || echo "langchain-community: MISSING"
+python -c "import chromadb; print('chromadb OK')" 2>/dev/null || echo "chromadb: MISSING"
+python -c "import sentence_transformers; print('sentence-transformers OK')" 2>/dev/null || echo "sentence-transformers: MISSING"
+python -c "import langchain_community; print('langchain-community OK')" 2>/dev/null || echo "langchain-community: MISSING"
 ```
 
 If any are missing, ask: "Install missing dependencies now? (y/n)"
@@ -227,7 +227,7 @@ Show and confirm before writing to: `.agent/learning/vector_knowledge_manifest.j
 ## Step 6 — Validation Dry Run
 
 ```bash
-python3 .agents/skills/vector-db-ingest/scripts/ingest.py \
+python .agents/skills/vector-db-ingest/scripts/ingest.py \
   --profile knowledge \
   --dry-run \
   2>&1 | head -30

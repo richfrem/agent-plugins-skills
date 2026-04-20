@@ -49,7 +49,7 @@ phase: [Phase Name / Project Milestone]
 
 ## Parsing Rules
 1. Agents should `Read` this file **before** executing background loops.
-2. Agents must update the `last_updated` YAML frontmatter field via `python3 context/kernel.py state_update last_updated <timestamp>` whenever they mutate the queue or blocks.
+2. Agents must update the `last_updated` YAML frontmatter field via `python context/kernel.py state_update last_updated <timestamp>` whenever they mutate the queue or blocks.
 3. Keep the file small—do not use this file for architectural rules or logs (that is what the memory tiers are for).
 
 

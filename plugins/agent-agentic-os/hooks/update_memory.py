@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 update_memory.py — Memory Update Hook
 ======================================================

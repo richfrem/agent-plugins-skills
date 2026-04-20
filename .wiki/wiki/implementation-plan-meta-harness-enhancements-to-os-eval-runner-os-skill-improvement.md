@@ -69,7 +69,7 @@ plugins/agent-agentic-os/
 The autoresearch loop works like this:
 1. Agent reads `<experiment-dir>/references/program.md` (goal, rules)
 2. Agent edits one file (SKILL.md or a script) — one change per iteration
-3. Agent runs `python3 plugins/agent-agentic-os/scripts/evaluate.py --skill <experiment-dir> --desc "what changed"`
+3. Agent runs `python plugins/agent-agentic-os/scripts/evaluate.py --skill <experiment-dir> --desc "what changed"`
 4. `evaluate.py` calls `eval_runner.py --json`, compares to baseline, writes row to `results.tsv`, exits 0 or 1
 5. Agent: exit 0 → commit the change; exit 1 → `evaluate.py` already reverted via `git checkout`
 6. Repeat

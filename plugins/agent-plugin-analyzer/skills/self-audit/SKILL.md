@@ -32,13 +32,13 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
 
 1. **Run inventory on self (security scanning is on by default):**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path . --format json
+   python ./scripts/inventory_plugin.py --path . --format json
    ```
 
 2. **Run scanner against test fixtures:**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
-   python3 ./scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
+   python ./scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
+   python ./scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
    ```
 
 3. **Validate deterministic scanner results:**
@@ -60,7 +60,7 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
 
    **To run assertions programmatically:**
    ```bash
-   python3 ./scripts/assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
+   python ./scripts/assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
    ```
 
 4. **Run the full 6-phase analysis on each fixture:**

@@ -49,7 +49,7 @@ CREATE TABLE memory (
 
 - `kernel.py` gains a `--backend sqlite|jsonl` flag (default jsonl for backwards compat)
 - `os-state.json` gains `"event_backend": "sqlite"` to opt in
-- Export script: `python3 context/kernel.py export_events --format jsonl` for portability
+- Export script: `python context/kernel.py export_events --format jsonl` for portability
 - Keep JSONL fallback so the OS works without sqlite3 (standard library, so always available)
 
 ## Acceptance Criteria

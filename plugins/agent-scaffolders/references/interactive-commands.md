@@ -634,9 +634,9 @@ allowed-tools: AskUserQuestion, Bash, Read
 ## Detect Current State
 
 Check existing configuration:
-- Current language: !`python3 detect_language.py`
-- Existing frameworks: !`python3 detect_frameworks.py`
-- Available tools: !`python3 check_tools.py`
+- Current language: !`python detect_language.py`
+- Existing frameworks: !`python detect_frameworks.py`
+- Available tools: !`python check_tools.py`
 
 ## Ask Context-Appropriate Questions
 

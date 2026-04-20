@@ -13,8 +13,8 @@ Instant search of the semantic ledger. Because the cache leverages pure Markdown
 grep_search "bail" .agent/learning/rlm_summary_cache/
 
 # Fallback CLI Method:
-python3 ./scripts/query_cache.py --profile project "bail"
-python3 ./scripts/query_cache.py --profile tools "distiller"
+python ./scripts/query_cache.py --profile project "bail"
+python ./scripts/query_cache.py --profile tools "distiller"
 ```
 
 ## Matches Against

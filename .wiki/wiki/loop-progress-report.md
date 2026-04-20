@@ -104,7 +104,7 @@ Do not run the report script on an empty ledger — it will produce an empty cha
 PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)/.agents/skills/agent-agentic-os}"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-python3 "${PLUGIN_DIR}/skills/os-improvement-report/scripts/generate_report.py" \
+python "${PLUGIN_DIR}/skills/os-improvement-report/scripts/generate_report.py" \
   --project-dir "$PROJECT_DIR" \
   --plugin-dir "$PLUGIN_DIR" \
   [--skill SESSION-MEMORY-MANAGER]   # optional: filter to one skill
@@ -127,10 +127,10 @@ run the report twice — once per plugin — passing each plugin's project dir:
 
 ```bash
 # agentic-os cycles
-python3 "$SCRIPT" --project-dir "$AGENTIC_OS_PROJECT" --plugin-dir "$AGENTIC_OS_PLUGIN"
+python "$SCRIPT" --project-dir "$AGENTIC_OS_PROJECT" --plugin-dir "$AGENTIC_OS_PLUGIN"
 
 # exploration-cycle cycles
-python3 "$SCRIPT" --project-dir "$EXPLORATION_PROJECT" --plugin-dir "$EXPLORATION_PLUGIN"
+python "$SCRIPT" --project-dir "$EXPLORATION_PROJECT" --plugin-dir "$EXPLORATION_PLUGIN"
 ```
 
 Both plugins write to `context/memory/improvement-ledger.md` in their respective project dirs.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 auto_fix_local_links.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Investigate / Repair / Documentation
 
 Usage Examples:
-    python3 auto_fix_local_links.py
+    pythonauto_fix_local_links.py
 
 Supported Object Types:
     Markdown files (.md, .mmd).
@@ -42,11 +42,11 @@ import os
 import re
 from pathlib import Path
 
-# Match python3 execution paths that are hardcoded to the repo root plugins/ folder
-# Group 1: The command (python, python3)
+# Match pythonexecution paths that are hardcoded to the repo root plugins/ folder
+# Group 1: The command (python, python
 # Group 2: The plugins prefix (plugins/plugin-name/...)
 # Group 3: The actual script path starting with 'scripts/' or similar target
-EXEC_RX = re.compile(r'(python3?|bash) (plugins/[a-zA-Z0-9_\-]+/(?:skills/[a-zA-Z0-9_\-]+/)?)([^ ]+)')
+EXEC_RX = re.compile(r'(python|bash) (plugins/[a-zA-Z0-9_\-]+/(?:skills/[a-zA-Z0-9_\-]+/)?)([^ ]+)')
 
 def resolve_project_root() -> Path:
     current = Path(__file__).resolve().parent

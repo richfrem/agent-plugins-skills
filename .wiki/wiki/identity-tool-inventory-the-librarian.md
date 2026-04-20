@@ -85,18 +85,18 @@ When executing a search in `ChromaDB`:
 
 ### 1. Register New Tools
 ```bash
-python3 ./scripts/manage_tool_inventory.py add --path ./scripts/new_script_example.py
+python ./scripts/manage_tool_inventory.py add --path ./scripts/new_script_example.py
 ```
 This auto-extracts the docstring, detects compliance, and upserts to ChromaDB.
 
 ### 2. Discover Gaps
 ```bash
-python3 ./scripts/manage_tool_inventory.py discover --auto-stub
+python ./scripts/manage_tool_inventory.py discover --auto-stub
 ```
 
 ### 3. Generate Docs
 ```bash
-python3 ./scripts/manage_tool_inventory.py generate
+python ./scripts/manage_tool_inventory.py generate
 ```
 
 ### 4. Build Capability Index (`~~category` Discovery)
@@ -104,7 +104,7 @@ Scans all `plugin.json` files and builds a `capability → [plugin]` index for s
 `~~category` resolution used by CONNECTORS.md files across the ecosystem.
 
 ```bash
-python3 ./scripts/build_capability_index.py
+python ./scripts/build_capability_index.py
 ```
 
 Output: `plugins/tool-inventory/assets/capability-index.json`

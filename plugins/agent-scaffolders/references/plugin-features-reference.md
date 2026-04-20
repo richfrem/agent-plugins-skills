@@ -154,7 +154,7 @@ description: Complete plugin workflow
 allowed-tools: Bash(*), Read
 ---
 
-Step 1 - Prepare: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/prepare.py $1`
+Step 1 - Prepare: !`python ${CLAUDE_PLUGIN_ROOT}/scripts/prepare.py $1`
 Step 2 - Config: @${CLAUDE_PLUGIN_ROOT}/config/$1.json
 Step 3 - Execute: !`${CLAUDE_PLUGIN_ROOT}/bin/execute $1`
 
@@ -198,7 +198,7 @@ Review results and report status.
 
 4. **Combine with arguments:**
    ```markdown
-   Run: !`python3 ${CLAUDE_PLUGIN_ROOT}/bin/process.py $1 $2`
+   Run: !`python ${CLAUDE_PLUGIN_ROOT}/bin/process.py $1 $2`
    ```
 
 ### Troubleshooting
@@ -274,9 +274,9 @@ description: Complete build and test workflow
 allowed-tools: Bash(*)
 ---
 
-Build: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/build.py`
-Validate: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate.py`
-Test: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/test.py`
+Build: !`python ${CLAUDE_PLUGIN_ROOT}/scripts/build.py`
+Validate: !`python ${CLAUDE_PLUGIN_ROOT}/scripts/validate.py`
+Test: !`python ${CLAUDE_PLUGIN_ROOT}/scripts/test.py`
 
 Review all outputs and report:
 1. Build status
@@ -528,7 +528,7 @@ description: Build and validate output
 allowed-tools: Bash(*)
 ---
 
-Build: !`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/build.py`
+Build: !`python ${CLAUDE_PLUGIN_ROOT}/scripts/build.py`
 
 Validate output:
 - Exit code: !`echo $?`

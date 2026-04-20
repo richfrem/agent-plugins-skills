@@ -9,7 +9,7 @@ Purpose:
 Layer: Infrastructure / Configuration
 
 Usage Examples:
-    python3 hf_config.py
+    pythonf_config.py
 
 Supported Object Types:
     None

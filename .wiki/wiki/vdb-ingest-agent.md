@@ -54,7 +54,7 @@ You ingest (index) repository files into the ChromaDB vector store so they can b
 ### 1. First-time setup
 If `vector_profiles.json` is missing, run the init skill first:
 ```bash
-python3 ./scripts/init.py
+python ./scripts/init.py
 ```
 
 ### 2. Execution Mode
@@ -66,25 +66,25 @@ This plugin defaults to **In-Process mode** for zero-latency direct disk access.
 Note: The `--profile` flag is mandatory to load the correct manifest and batch settings.
 
 ```bash
-python3 ./scripts/ingest.py --profile wiki --full
+python ./scripts/ingest.py --profile wiki --full
 ```
 
 ### Incremental ingest (only new/changed files since N hours)
 ```bash
-python3 ./scripts/ingest.py --profile wiki --since 24
+python ./scripts/ingest.py --profile wiki --since 24
 ```
 
 ### Single File/Folder Ingest
 ```bash
-python3 ./scripts/ingest.py --profile wiki --file path/to/file.md
-python3 ./scripts/ingest.py --profile wiki --folder path/to/folder
+python ./scripts/ingest.py --profile wiki --file path/to/file.md
+python ./scripts/ingest.py --profile wiki --folder path/to/folder
 ```
 
 ## After Ingesting
 
 Run a quick semantic search to confirm the new content is retrievable:
 ```bash
-python3 ./scripts/query.py "search query" --profile wiki --limit 3
+python ./scripts/query.py "search query" --profile wiki --limit 3
 ```
 
 ## Rules

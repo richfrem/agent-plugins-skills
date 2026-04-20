@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 check_plugin_boundaries.py
 =====================================
@@ -10,8 +10,8 @@ Purpose:
 Layer: Investigate / Codify / Audit
 
 Usage Examples:
-    python3 check_plugin_boundaries.py temp/inventory.json --batch all
-    python3 check_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager
+    pythonheck_plugin_boundaries.py temp/inventory.json --batch all
+    pythonheck_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager
 
 Supported Object Types:
     Plugin root file references.

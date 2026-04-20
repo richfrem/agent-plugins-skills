@@ -170,7 +170,7 @@ Make sure that the paths configured in `rlm_profiles.json` are properly created 
 
 Scan the manifest against the cache to find uncached files:
 ```bash
-python3 ./scripts/inventory.py --profile <NAME>
+python ./scripts/inventory.py --profile <NAME>
 ```
 
 Report: "N files in manifest, M already cached, K remaining."
@@ -199,7 +199,7 @@ summarized_at: "<ISO timestamp>"
 
 Run audit again:
 ```bash
-python3 ./scripts/inventory.py --profile <NAME>
+python ./scripts/inventory.py --profile <NAME>
 ```
 
 Target: 100% coverage. If gaps remain, repeat Step 6 for missing files.

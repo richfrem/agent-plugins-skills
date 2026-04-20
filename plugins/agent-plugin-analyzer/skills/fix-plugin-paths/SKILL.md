@@ -62,7 +62,7 @@ Auto-detect the scope if inferable from context. If mode is clear from the reque
 For each target file, check which rules from `references/fix-plugin-paths.prompt.md` apply using the auditor script:
 
 ```bash
-python3 ./scripts/audit_plugin_paths.py <directory-or-file>
+python ./scripts/audit_plugin_paths.py <directory-or-file>
 ```
 
 The auditor runs **two passes**:
@@ -93,7 +93,7 @@ Apply only after confirming the diff is correct.
 
 After fixing, confirm no broken references remain by rerunning the auditor:
 ```bash
-python3 ./scripts/audit_plugin_paths.py <directory-or-file>
+python ./scripts/audit_plugin_paths.py <directory-or-file>
 ```
 
 Zero results = clean.
@@ -107,7 +107,7 @@ For repository-wide remediation, always follow this three-step cycle.
 ### 1. Generate Task Tracker
 Initialize the `scripts/portability-audit-report.md` artifact to act as the source of truth by running the auditor script:
 ```bash
-python3 ./scripts/audit_plugin_paths.py .
+python ./scripts/audit_plugin_paths.py .
 ```
 This script will automatically generate the `scripts/portability-audit-report.md` formatted with a checkbox per file, itemizing exactly what line contains the issue.
 
@@ -115,13 +115,13 @@ This script will automatically generate the `scripts/portability-audit-report.md
 - **Audit**: Read the generated `scripts/portability-audit-report.md` file to identify the next unchecked rule violation.
 - **Fix**: Apply corrective edits manually to the corresponding file to neutralize the reference.
 - **Whitelist (False Positives)**: If the item represents a structurally necessary path (like a URL or a diagram tree leaf), do **not** mutate the source file. Instead, open `scripts/plugin_paths_whitelist.json` and add a targeted global regex or file-specific string pattern to exempt it.
-- **Regenerate & Verify**: Re-run `python3 ./scripts/audit_plugin_paths.py .` to update the report. Prove your fix worked by confirming that the issue dropped off the active report.
+- **Regenerate & Verify**: Re-run `python ./scripts/audit_plugin_paths.py .` to update the report. Prove your fix worked by confirming that the issue dropped off the active report.
 - **Repeat**: The skill must continuously loop through these steps, repeatedly running the script, reading the updated report, and applying fixes or whitelists, until all issues are processed.
 
 ### 3. Final Verification
 The loop finishes strictly only when running the auditor returns a completely clean scan:
 ```bash
-python3 ./scripts/audit_plugin_paths.py .
+python ./scripts/audit_plugin_paths.py .
 ```
 **Goal: Zero results found.**
 
@@ -142,7 +142,7 @@ and `<example>` blocks. Write to `evals/evals.json`, `evals/results.tsv` (header
 
 ### C.2 Establish baseline
 ```bash
-python3 <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+python <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
   --skill . \
   --baseline --desc "initial baseline"
 git add evals/ && git commit -m "baseline: fix-plugin-paths eval start"
@@ -152,7 +152,7 @@ Report the baseline score before continuing main work.
 ### C.3 Score after every SKILL.md edit
 After each modification to `SKILL.md`:
 ```bash
-python3 <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
+python <APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py \
   --skill . \
   --desc "<what changed>"
 ```

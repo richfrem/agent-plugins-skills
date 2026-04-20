@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 event_subscriber.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Hooks / Triggering
 
 Usage Examples:
-    python3 hooks/event_subscriber.py --action suggest_intake --since 300 --dedup-window 3600
+    python hooks/event_subscriber.py --action suggest_intake --since 300 --dedup-window 3600
 
 Supported Object Types:
     - Events (.jsonl)

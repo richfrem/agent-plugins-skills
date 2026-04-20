@@ -56,8 +56,8 @@ summary, and inject it into the ledger via `inject_summary.py`.
 ### 1. Identify missing files
 
 ```bash
-python3 ./scripts/inventory.py --profile project
-python3 ./scripts/inventory.py --profile tools
+python ./scripts/inventory.py --profile project
+python ./scripts/inventory.py --profile tools
 ```
 
 ### 2. For each missing file -- read deeply and write a great summary
@@ -70,7 +70,7 @@ and what are its key components/functions?"* in one dense sentence.
 ### 3. Inject the summary
 
 ```bash
-python3 ./scripts/inject_summary.py \
+python ./scripts/inject_summary.py \
   --profile project \
   --file ../SKILL.md \
   --summary "Provides atomic file CRUD operations for markdown notes using POSIX rename and fcntl.flock."
@@ -95,7 +95,7 @@ Before blindly using `--engine copilot`, determine which agent CLI the user is r
 
 Then, run the swarm job based on their answer. For example, if they use Gemini:
 ```bash
-python3 ./scripts/swarm_run.py --engine gemini --workers 5 --files-from rlm_distill_tasks_project.md
+python ./scripts/swarm_run.py --engine gemini --workers 5 --files-from rlm_distill_tasks_project.md
 ```
 
 Provide a job file describing the summarization task and the gap file from `inventory.py --missing`.

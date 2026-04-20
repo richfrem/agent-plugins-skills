@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 parse_document.py
 =================
@@ -6,7 +6,7 @@ Parses an input document (.txt, .md, .pdf, .docx) into a flat list of words
 and outputs a JSON file for consumption by orp_engine.py.
 
 Usage:
-    python3 parse_document.py --input <file_path> --output <output_json>
+    python parse_document.py --input <file_path> --output <output_json>
 """
 
 import argparse

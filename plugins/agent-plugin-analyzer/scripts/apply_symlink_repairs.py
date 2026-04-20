@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 apply_symlink_repairs.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Codify
 
 Usage:
-    python3 apply_symlink_repairs.py
+    python apply_symlink_repairs.py
 """
 import os
 

@@ -94,7 +94,7 @@ rm -rf .claude/skills/* .claude/agents/* .claude/commands/* .claude/hooks/*
 Run the scanner to confirm no remaining filesystem duplicates:
 
 ```bash
-python3 plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
+python plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
 ```
 
 **Exit 0**: Clean — report counts cleared and confirm scanner is satisfied.
@@ -210,7 +210,7 @@ dispatches. For Copilot CLI: use `copilot gpt-5-mini` for free-tier passes.
 
 ```bash
 wc -l CLAUDE.md   # confirm ≤ 80 lines
-python3 plugins/claude-cli/scripts/optimize_context.py --dry-run  # confirm 0 skill duplicates
+python plugins/claude-cli/scripts/optimize_context.py --dry-run  # confirm 0 skill duplicates
 ```
 
 ---

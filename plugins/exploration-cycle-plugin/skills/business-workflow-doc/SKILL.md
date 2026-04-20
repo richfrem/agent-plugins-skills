@@ -16,7 +16,7 @@ Generate visual Mermaid flowcharts from exploration session captures and session
 ## Usage
 
 ```bash
-python3 ./scripts/generate_workflow.py \
+python ./scripts/generate_workflow.py \
   --input <capture_file_or_glob> \
   --output <output_file.md> \
   --type <flowchart|stateDiagram|sequenceDiagram>

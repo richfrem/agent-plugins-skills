@@ -17,7 +17,7 @@ When agents generate complex UI artifacts, code architectures, or multi-file sol
 ### Scaffold Preview Phase
 Instead of writing the generated skill files directly to `<PLUGIN_DIR>/`:
 1. Write the proposed file structure and contents to `/tmp/scaffold-preview/`.
-2. Execute `python3 scripts/preview_server.py /tmp/scaffold-preview/`.
+2. Execute `python scripts/preview_server.py /tmp/scaffold-preview/`.
 3. Provide the user the `localhost` link.
 4. Instruct the user to leave feedback in the browser viewer and click "Submit".
 5. Read `feedback.json` from the preview directory and iterate if necessary. If empty, commit files to final destination.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 validate_local_links.py
 =====================================
@@ -11,7 +11,7 @@ Purpose:
 Layer: Repair / Integrity
 
 Usage Examples:
-    python3 validate_local_links.py
+    pythonvalidate_local_links.py
 
 Supported Object Types:
     Plugins with symlinks inside skill directories.

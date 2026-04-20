@@ -40,7 +40,7 @@ Locked (never modify during the loop):
 
 How to run one iteration:
 1. Edit `SKILL.md` (one focused change)
-2. `python3 plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py --skill plugins/agent-plugin-analyzer/skills/fix-plugin-paths --desc "what you changed"`
+2. `python plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py --skill plugins/agent-plugin-analyzer/skills/fix-plugin-paths --desc "what you changed"`
 3. If KEEP (exit 0): `git add SKILL.md && git commit -m "keep: score=X <description>"`
 4. If DISCARD (exit 1): evaluate.py already reverted `SKILL.md` automatically
 

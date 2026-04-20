@@ -63,7 +63,7 @@ SKILL_PATH="$LAB_PATH/$PLUGIN_NAME/skills/$SKILL_NAME"
 2. **Establish Baseline:**
 ```bash
 cd $LAB_PATH
-python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME --baseline
+python $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME --baseline
 ```
 Record `STATE.best_score`.
 
@@ -71,7 +71,7 @@ Record `STATE.best_score`.
 Before starting Phase 1, you MUST run a functional check of the Copilot CLI within the lab workspace.
 ```bash
 # Run a dummy mutation proposal to verify end-to-end connectivity
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   $SKILL_PATH/references/copilot_proposer_prompt.md \
   $SKILL_PATH/SKILL.md \
   $LAB_PATH/HEARTBEAT_MD.md \
@@ -96,7 +96,7 @@ Run until `max_iterations`, `consecutive_discards >= 4`, or oscillation detected
 **Step B (L2 Mutation Proposal via Copilot CLI):**
 ```bash
 # Explicitly use gpt-5-mini as the default model for mutations via the orchestrator script
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   $SKILL_PATH/references/copilot_proposer_prompt.md \
   $SKILL_PATH/SKILL.md \
   $LAB_PATH/proposed-skill.md \
@@ -106,7 +106,7 @@ python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
 **Step C (Tactical Gate via evaluate.py):**
 ```bash
 cp $LAB_PATH/proposed-skill.md $SKILL_PATH/SKILL.md
-python3 $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME
+python $SKILL_EVAL_SOURCE/scripts/evaluate.py --skill ./$PLUGIN_NAME/skills/$SKILL_NAME
 ```
 - **Exit 0 (KEEP)**: Update best_score, reset discard counters.
 - **Exit 1 (DISCARD)**: evaluate.py reverted it. Increment throwaway counters.
@@ -135,7 +135,7 @@ When the iterations exhaust or plateau:
 1. Ensure the final file matches the best recorded version.
 2. Generate the progress chart:
 ```bash
-python3 $SKILL_EVAL_SOURCE/scripts/plot_eval_progress.py \
+python $SKILL_EVAL_SOURCE/scripts/plot_eval_progress.py \
   --tsv $SKILL_PATH/evals/results.tsv \
   --out $SKILL_PATH/evals/eval_progress.png
 ```

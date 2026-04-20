@@ -38,7 +38,7 @@ You are an expert at optimizing {{MUTATION_TARGET}} files for a boolean-OR keywo
 Known bridge words for this skill that cause false positives when added to the description.
 **Run the collision matrix before proposing** (see Step A3 in eval-instructions):
 ```bash
-python3 -c "
+python-c "
 import json, re
 evals = json.load(open('./evals/evals.json'))
 desc = open('./{{MUTATION_TARGET}}').read()

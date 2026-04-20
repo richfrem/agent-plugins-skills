@@ -42,7 +42,7 @@ sequenceDiagram
     ORCH->>KERNEL: emit ledger_updated event
 
     note over ORCH: Optional chart update (after KEEP, or on user request)
-    ORCH->>REPORT: python3 generate_report.py --project-dir ... --plugin-dir ...
+    ORCH->>REPORT: python generate_report.py --project-dir ... --plugin-dir ...
     REPORT->>LEDGER: Parse Section 1 (eval score progression)
     REPORT->>LEDGER: Parse Section 2 (survey-to-action trace)
     REPORT->>LEDGER: Parse Section 3 (north star metric log)

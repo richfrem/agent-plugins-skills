@@ -12,7 +12,7 @@
 If you update `evals.json` after a partial baseline run, `evaluate.py` detects the SHA256 mismatch and exits 3. Fix:
 ```bash
 rm <experiment-dir>/evals/.lock.hashes
-python3 ./scripts/evaluate.py --skill <experiment-dir> --baseline --desc "re-baseline after evals update"
+python ./scripts/evaluate.py --skill <experiment-dir> --baseline --desc "re-baseline after evals update"
 git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evals update"
 ```
 
@@ -37,7 +37,7 @@ The heuristic engine applies soft penalties for missing structure (e.g. -0.30 fo
 ## Re-baseline required after upgrading evaluate.py or eval_runner.py
 Both scripts are SHA256-locked. If you pull an upstream update to either script, existing `.lock.hashes` files will mismatch and trigger exit 3. Fix:
 ```bash
-python3 ./scripts/evaluate.py \
+python ./scripts/evaluate.py \
     --skill <experiment-dir> --baseline --desc "re-baseline after script upgrade"
 git add <experiment-dir>/evals/ && git commit -m "baseline: re-baseline after evaluate.py upgrade"
 ```
@@ -48,15 +48,15 @@ For runs exceeding 25 iterations, generate a milestone summary to preserve dista
 
 ```bash
 # Write a milestone if iteration count is a multiple of 25 (auto-check)
-python3 ./scripts/generate_milestone.py \
+python ./scripts/generate_milestone.py \
     --experiment-dir <path/to/experiment-dir>
 
 # Force-write a milestone at any iteration count
-python3 ./scripts/generate_milestone.py \
+python ./scripts/generate_milestone.py \
     --experiment-dir <path/to/experiment-dir> --force
 
 # Custom interval (e.g. every 10 iterations)
-python3 ./scripts/generate_milestone.py \
+python ./scripts/generate_milestone.py \
     --experiment-dir <path/to/experiment-dir> --every 10
 ```
 
@@ -72,8 +72,8 @@ iterations. This prevents the loop from losing context on early experiments as t
 grep -h "false positive" evals/traces/iter_*.json | sort | uniq -c | sort -rn
 
 # Show full routing detail for a specific DISCARD
-cat evals/traces/iter_002_DISCARD_score0.71.json | python3 -m json.tool
+cat evals/traces/iter_002_DISCARD_score0.71.json | python -m json.tool
 
 # Show the mutation diff for a DISCARD
-python3 -c "import json; d=json.load(open('evals/traces/iter_002_DISCARD_score0.71.json')); print(d['mutation_diff'])"
+python -c "import json; d=json.load(open('evals/traces/iter_002_DISCARD_score0.71.json')); print(d['mutation_diff'])"
 ```

@@ -40,7 +40,7 @@ You enforce coding conventions and documentation standards for all code in the p
 
 ### Python
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Script Name
 =====================================

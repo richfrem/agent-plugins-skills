@@ -80,7 +80,7 @@ tail -f temp/gemini_orchestrator_convert-mermaid.log
 cat ~/Projects/test-convert-mermaid-eval/mermaid-to-png/skills/convert-mermaid/evals/results.tsv
 
 # Regenerate chart manually at any point
-python3 plugins/agent-agentic-os/scripts/plot_eval_progress.py \
+python plugins/agent-agentic-os/scripts/plot_eval_progress.py \
   --tsv ~/Projects/test-convert-mermaid-eval/mermaid-to-png/skills/convert-mermaid/evals/results.tsv \
   --out ~/Projects/test-convert-mermaid-eval/mermaid-to-png/skills/convert-mermaid/evals/eval_progress.png
 ```

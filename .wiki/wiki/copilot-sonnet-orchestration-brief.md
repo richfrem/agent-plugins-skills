@@ -60,7 +60,7 @@ Read these files using your file tools (NOT shell commands):
 
 Then run the heartbeat check:
 ```bash
-python3 /Users/richardfremmerlid/Projects/AI-Research/.agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python /Users/richardfremmerlid/Projects/AI-Research/.agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null /tmp/heartbeat.md \
   "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 ```

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Deliberately flawed script for testing security detection.
 
 This file contains INTENTIONAL security anti-patterns for testing

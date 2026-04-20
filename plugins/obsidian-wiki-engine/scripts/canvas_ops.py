@@ -10,9 +10,9 @@ Purpose:
 Layer: Core Operations
 
 Usage Examples:
-    python3 canvas_ops.py read --file example.canvas
-    python3 canvas_ops.py create --file example.canvas
-    python3 canvas_ops.py add-node --file example.canvas --type text --text "Node Content"
+    pythoncanvas_ops.py read --file example.canvas
+    pythoncanvas_ops.py create --file example.canvas
+    pythoncanvas_ops.py add-node --file example.canvas --type text --text "Node Content"
 
 Supported Object Types:
     - .canvas (JSON layout)

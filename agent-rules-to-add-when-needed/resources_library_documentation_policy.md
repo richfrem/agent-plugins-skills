@@ -89,6 +89,6 @@ To prevent "high-level" skipped steps, every library documentation task MUST inc
 1.  **Draft Task**: Use `/maintenance-task` but manually expand the Implementation Plan into granular sub-steps (e.g., "Subtask 1.1: Context Bundle", "Subtask 1.2: Check for missing SQL dumps").
 2.  **Intelligence Sync**: NO task is "Done" until the following are executed and verified:
     *   **RLM Distill**: `python plugins/rlm-factory/scripts/distiller.py --file [PATH]`
-    *   **Vector Ingest**: `wsl python3 plugins/vector-db/scripts/ingest.py --file [PATH]` (for both Overview and any new Source artifacts).
+    *   **Vector Ingest**: `wsl python plugins/vector-db/scripts/ingest.py --file [PATH]` (for both Overview and any new Source artifacts).
     *   **Tracking Log**: `python scripts/documentation/update_analysis_tracking.py [ID]`
 3.  **Verification**: The checklist must show `[x]` for all sub-steps before moving the file to `tasks/done/`.

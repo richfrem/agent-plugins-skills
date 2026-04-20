@@ -10,9 +10,9 @@ Purpose:
 Layer: Core Operations
 
 Usage Examples:
-    python3 bases_ops.py read --file example.base
-    python3 bases_ops.py append-row --file example.base --data key1=value1 key2=value2
-    python3 bases_ops.py update-cell --file example.base --row-index 0 --column Title --value "New Title"
+    pythonbases_ops.py read --file example.base
+    pythonbases_ops.py append-row --file example.base --data key1=value1 key2=value2
+    pythonbases_ops.py update-cell --file example.base --row-index 0 --column Title --value "New Title"
 
 Supported Object Types:
     - .base (YAML layouts)

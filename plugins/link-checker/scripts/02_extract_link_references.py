@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 02_extract_link_references.py (CLI)
 =====================================
@@ -8,7 +8,7 @@ Purpose:
     This is Phase 2 of the Link Checker pipeline.
 
 Usage:
-    python3 02_extract_link_references.py --root .
+    python02_extract_link_references.py --root .
 
 Output:
     - link_references.json: { "source_file": [{"link": "path", "line": 1, "type": "markdown"}, ...] }

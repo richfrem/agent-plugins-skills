@@ -18,7 +18,7 @@ Agents struggle with "undertriggering" or matching overly broad namespaces becau
 After finalizing the `././SKILL.md` body logic:
 1. Generate an array of 5 Highly Specific "Should-Trigger" prompts.
 2. Generate an array of 5 Ambiguous "Should-Not-Trigger" prompts (near-misses).
-3. Execute `python3 scripts/optimize_trigger.py --skill ./my-skill --evals ./trigger_evals.json`.
+3. Execute `python scripts/optimize_trigger.py --skill ./my-skill --evals ./trigger_evals.json`.
 4. The background script will iteratively rewrite and test the frontmatter `description` field until the trigger accuracy exceeds 90%.
 5. Apply the optimized description.
 ```

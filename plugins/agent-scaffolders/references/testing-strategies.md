@@ -28,13 +28,13 @@ head -n 20 .claude/commands/my-command.md | grep -c "^---" # Should be 2
 ls .claude/commands/*.md
 
 # Check file is in correct location
-python3 -c "import os; print('Found' if os.path.exists('.claude/commands/my-command.md') else 'Missing')"
+python -c "import os; print('Found' if os.path.exists('.claude/commands/my-command.md') else 'Missing')"
 ```
 
 **Automated validation script:**
 
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # validate_command.py
 import sys
 import os
@@ -79,7 +79,7 @@ print("✓ Command file structure valid")
 
 **Validation script:**
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # validate_frontmatter.py
 import sys
 import os
@@ -171,7 +171,7 @@ tail -f ~/.claude/debug-logs/latest
 **Test script:**
 
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # test_command_arguments.py
 import sys
 
@@ -344,14 +344,14 @@ for cmd_file in "$TEST_DIR"/*.md; do
   echo "Testing: $cmd_name"
 
   # Validate structure
-  if python3 validate_command.py "$cmd_file"; then
+  if python validate_command.py "$cmd_file"; then
     echo "  ✓ Structure valid"
   else
     echo "  ✗ Structure invalid"
     ((FAILED_TESTS++))
   fi
   # Validate frontmatter
-  if python3 validate_frontmatter.py "$cmd_file"; then
+  if python validate_frontmatter.py "$cmd_file"; then
     echo "  ✓ Frontmatter valid"
   else
     echo "  ✗ Frontmatter invalid"
@@ -387,7 +387,7 @@ fi
 
 for cmd in $COMMANDS_CHANGED; do
   echo "Checking: $cmd"
-  if ! python3 scripts/validate_command.py "$cmd"; then
+  if ! python scripts/validate_command.py "$cmd"; then
     echo "ERROR: Command validation failed: $cmd"
     exit 1
   fi
@@ -415,12 +415,12 @@ jobs:
       - name: Validate command structure
         run: |
           for cmd in .claude/commands/*.md; do
-            python3 scripts/validate_command.py "$cmd"
+            python scripts/validate_command.py "$cmd"
           done
       - name: Validate frontmatter
         run: |
           for cmd in .claude/commands/*.md; do
-            python3 scripts/validate_frontmatter.py "$cmd"
+            python scripts/validate_frontmatter.py "$cmd"
           done
 
       - name: Check for TODOs

@@ -3,12 +3,12 @@ name: convert-mermaid
 description: Translate .mmd diagram files into PNG images with configurable resolution (retina/HQ/scale), supporting rasterization (raster, rasterize, rasterization). V2 includes L5 Delegated Constraint Verification via verify_png for strict binary linting and Puppeteer-based rendering.
 allowed-tools: Bash, Read, Write
 examples:
-  - "python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3"
-  - "python3 ./scripts/verify_png.py architecture.png"
+  - "python ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3"
+  - "python ./scripts/verify_png.py architecture.png"
 ---
 
-<example>python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3</example>
-<example>python3 ./scripts/verify_png.py architecture.png</example>
+<example>python ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3</example>
+<example>python ./scripts/verify_png.py architecture.png</example>
 
 ## Dependencies
 
@@ -40,7 +40,7 @@ Invoke the appropriate Python converter script wrapper.
 If the user asks for "high resolution", "retina", or "HQ", set `-s` to 3 or 4.
 
 ```bash
-python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3
+python ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3
 ```
 
 ### Phase 2: Delegated Constraint Verification (L5 Pattern)
@@ -48,7 +48,7 @@ python3 ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3
 Immediately after the `convert.py` wrapper finishes, execute the verification engine:
 
 ```bash
-python3 ./scripts/verify_png.py "architecture.png"
+python ./scripts/verify_png.py "architecture.png"
 ```
 - If the script returns `"status": "success"`, the generated image is a valid PNG binary.
 - If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `references/fallback-tree.md`.

@@ -284,7 +284,7 @@ Agents MUST emit a `type: friction` event immediately whenever they encounter:
 - A `<WRITE_FAILED>` or tool error requiring retry
 
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent INNER_AGENT --type friction --action encountered \
   --correlation-id "$CID" \
   --summary "step:eval-runner cause:wrong-flag-name"
@@ -301,8 +301,8 @@ auto-trigger (3+ friction events of same type = Full Loop improvement automatica
 poll_for_event() {
   local AGENT=$1 ACTION=$2 CID=$3
   for i in $(seq 1 30); do
-    EVENTS=$(python3 "$KERNEL_PY" read_events --agent "$AGENT")
-    MATCH=$(echo "$EVENTS" | python3 -c "
+    EVENTS=$(python "$KERNEL_PY" read_events --agent "$AGENT")
+    MATCH=$(echo "$EVENTS" | python -c "
 import sys, json
 evs = json.load(sys.stdin)
 hits = [e for e in evs if e.get('action') == '$ACTION'
@@ -348,7 +348,7 @@ print(json.dumps(hits[0]) if hits else '')
 3. Confirm `agents.json` lists all participating agents.
 4. Each agent emits `agent_start`:
    ```bash
-   python3 "$KERNEL_PY" emit_event \
+   python "$KERNEL_PY" emit_event \
      --agent ORCHESTRATOR --type agent_start --action registered \
      --summary "ORCHESTRATOR online — registry read, designing test from prior results"
    ```
@@ -359,7 +359,7 @@ print(json.dumps(hits[0]) if hits else '')
 7. ORCHESTRATOR emits `loop.start`:
    ```bash
    CYCLE_ID="cycle-$(date +%Y%m%d-%H%M%S)"
-   python3 "$KERNEL_PY" emit_event \
+   python "$KERNEL_PY" emit_event \
      --agent ORCHESTRATOR --type intent --action loop.start \
      --correlation-id "$CYCLE_ID" \
      --summary "target:[TARGET_SLUG] hypothesis:[one-line] scenario:tests/${CYCLE_ID}_[TARGET_SLUG].md"
@@ -375,7 +375,7 @@ print(json.dumps(hits[0]) if hits else '')
 
 ```bash
 # ORCHESTRATOR: apply fix, signal PEER_AGENT to eval
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type signal --action signal.wakeup \
   --to PEER_AGENT --correlation-id "$CID" \
   --summary "target:skills/skill-A/SKILL.md change:updated-triggers"
@@ -390,27 +390,27 @@ RESULT=$(poll_for_event ORCHESTRATOR eval.result "$CID")
 ```bash
 for partition in 1 2 3; do
   (
-    CLAIM=$(python3 "$KERNEL_PY" claim_task \
+    CLAIM=$(python "$KERNEL_PY" claim_task \
       --task-id "$CYCLE_ID" --partition $partition --agent INNER_AGENT --ttl 600)
     if [ "$CLAIM" = "claimed" ]; then
       # INNER_AGENT: full execution obligation (Stage 3)
-      python3 "$KERNEL_PY" emit_event \
+      python "$KERNEL_PY" emit_event \
         --agent INNER_AGENT --type result --action task.complete \
         --status success --to ORCHESTRATOR --correlation-id "$CYCLE_ID" \
         --summary "partition:$partition score:0.88 verdict:KEEP survey:saved"
-      python3 "$KERNEL_PY" release_lock "task_${CYCLE_ID}_p${partition}"
+      python "$KERNEL_PY" release_lock "task_${CYCLE_ID}_p${partition}"
     fi
   ) &
 done
 wait
-python3 "$KERNEL_PY" read_events --agent ORCHESTRATOR
+python "$KERNEL_PY" read_events --agent ORCHESTRATOR
 ```
 
 ### Pattern C: Request-Reply (Delegated Subtask)
 
 ```bash
-CID=$(python3 -c "import uuid; print(uuid.uuid4().hex[:8])")
-python3 "$KERNEL_PY" emit_event \
+CID=$(python -c "import uuid; print(uuid.uuid4().hex[:8])")
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type intent --action task.assigned \
   --to INNER_AGENT --correlation-id "$CID" \
   --summary "packet:handoffs/packet-${CID}.md target:skill-B"
@@ -433,7 +433,7 @@ loop.start -> task.assigned -> task.complete -> eval.result -> orchestrator.deci
 
 ```bash
 # ORCHESTRATOR assigns task
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type intent --action task.assigned \
   --to INNER_AGENT --correlation-id "$CID" \
   --summary "packet:handoffs/packet-${CID}.md target:skills/skill-A/SKILL.md"
@@ -442,7 +442,7 @@ python3 "$KERNEL_PY" emit_event \
 TC=$(poll_for_event ORCHESTRATOR task.complete "$CID")
 
 # Signal PEER_AGENT to eval
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type signal --action signal.wakeup \
   --to PEER_AGENT --correlation-id "$CID" \
   --summary "eval-target:skills/skill-A/SKILL.md output:handoffs/out-${CID}.md"
@@ -451,7 +451,7 @@ python3 "$KERNEL_PY" emit_event \
 ER=$(poll_for_event ORCHESTRATOR eval.result "$CID")
 
 # Emit decision
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type result --action orchestrator.decision \
   --status success --correlation-id "$CID" \
   --summary "verdict:KEEP improvements-applied:yes"
@@ -475,13 +475,13 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 
    **Option A — pure scorer** (get JSON metrics, decide KEEP/DISCARD manually):
    ```bash
-   python3 ./scripts/eval_runner.py --skill path/to/target/
+   python ./scripts/eval_runner.py --skill path/to/target/
    # Pass the FOLDER path, not a file. Output: JSON with accuracy + F1 scores.
    ```
 
    **Option B — loop gate** (evaluate.py returns exit 0=KEEP, 1=DISCARD automatically):
    ```bash
-   python3 ./scripts/evaluate.py --skill path/to/target/
+   python ./scripts/evaluate.py --skill path/to/target/
    # Exit 0 = KEEP (accuracy AND F1 >= baseline). Exit 1 = DISCARD. Exit 2 = path error.
    # Exit 3 = tampered env (.lock.hashes mismatch) — delete .lock.hashes, re-run --baseline.
    ```
@@ -502,7 +502,7 @@ Every time PEER_AGENT receives `signal.wakeup` for eval, it MUST:
    Use `evaluate.py` (loop gate) for KEEP/DISCARD; it compares against `results.tsv` baseline
    automatically and returns exit code 0=KEEP or 1=DISCARD.
    ```bash
-   python3 ./scripts/evaluate.py --skill path/to/target/
+   python ./scripts/evaluate.py --skill path/to/target/
    # Note: PEER_AGENT runs this from its OWN session independently.
    ```
 3. DISCARD if exit code 1. Note: `results.tsv` is the authoritative per-experiment baseline
@@ -510,7 +510,7 @@ Every time PEER_AGENT receives `signal.wakeup` for eval, it MUST:
 4. **Complete the Post-Run Self-Assessment Survey** (see Stage 4.2).
 5. Emit `eval.result` with KEEP/DISCARD verdict, score delta, and survey path:
    ```bash
-   python3 "$KERNEL_PY" emit_event \
+   python "$KERNEL_PY" emit_event \
      --agent PEER_AGENT --type result --action eval.result \
      --status success --to ORCHESTRATOR --correlation-id "$CID" \
      --summary "verdict:KEEP score-before:0.82 score-after:0.89 gaps:adversarial survey:retrospectives/survey_DATE_PEER_AGENT.md"
@@ -538,7 +538,7 @@ On **DISCARD** verdict:
 ### 4.1 Emit loop.close
 
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type result --action loop.close \
   --status success --correlation-id "$CYCLE_ID" \
   --summary "improvements-applied:N friction-events:N"
@@ -584,7 +584,7 @@ Survey sections (all mandatory):
 
 After saving, emit survey_completed event:
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent PEER_AGENT --type learning --action survey_completed \
   --summary "retrospectives/survey_${DATE}_${TIME}_PEER_AGENT.md"
 ```
@@ -592,10 +592,10 @@ python3 "$KERNEL_PY" emit_event \
 ### 4.3 Run Post-Run Metrics
 
 ```bash
-python3 "${CLAUDE_PROJECT_DIR}/context/kernel.py" emit_event \
+python "${CLAUDE_PROJECT_DIR}/context/kernel.py" emit_event \
   --agent post_run_hook --type intent --action session_summary
 
-python3 ./scripts/post_run_metrics.py
+python ./scripts/post_run_metrics.py
 ```
 
 This emits a `type: metric` event with:
@@ -687,7 +687,7 @@ cycle's official record. Save to `context/memory/loop-reports/report_[CYCLE_ID].
 
 Emit loop report written event:
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type result --action loop.report \
   --correlation-id "$CYCLE_ID" \
   --summary "report:loop-reports/report_${CYCLE_ID}.md"
@@ -724,7 +724,7 @@ After the loop report is written, update the test scenario record per
 
 Emit registry updated event:
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type learning --action test_registry_updated \
   --correlation-id "$CYCLE_ID" \
   --summary "scenario:tests/${CYCLE_ID}_[TARGET_SLUG].md verdict:[KEEP/DISCARD] next-hypothesis:[one-line]"
@@ -753,7 +753,7 @@ See `references/memory/improvement-ledger-spec.md` for the full format and writi
 
 After appending, emit:
 ```bash
-python3 "$KERNEL_PY" emit_event \
+python "$KERNEL_PY" emit_event \
   --agent ORCHESTRATOR --type learning --action ledger_updated \
   --correlation-id "$CYCLE_ID" \
   --summary "target:[TARGET] delta:[DELTA] verdict:[VERDICT] survey-actions:[N rows added to section 2]"
@@ -761,7 +761,7 @@ python3 "$KERNEL_PY" emit_event \
 
 **Optional: update progress chart** (run after every KEEP cycle, or on user request):
 ```bash
-python3 ./scripts/generate_report.py \
+python ./scripts/generate_report.py \
   --project-dir "${CLAUDE_PROJECT_DIR}" \
   --plugin-dir "${CLAUDE_PLUGIN_ROOT}"
 ```
@@ -821,7 +821,7 @@ If all four answers are "no", skip this step. Otherwise, update memory before em
 After metrics are collected, ORCHESTRATOR checks the friction threshold:
 
 ```bash
-FRICTION=$(python3 -c "
+FRICTION=$(python -c "
 import json
 events = [json.loads(l) for l in open('${CLAUDE_PROJECT_DIR}/context/events.jsonl') if l.strip()]
 # Count friction events by cause this cycle
@@ -840,9 +840,9 @@ run the eval-gate, and apply the improvement before the next cycle begins.
 ### 4.11 Release Locks and Shutdown
 
 ```bash
-python3 "$KERNEL_PY" release_lock memory
+python "$KERNEL_PY" release_lock memory
 # Each agent:
-python3 "$KERNEL_PY" emit_event --agent <ROLE> --type agent_stop --action shutdown \
+python "$KERNEL_PY" emit_event --agent <ROLE> --type agent_stop --action shutdown \
   --summary "surveys:saved metrics:emitted memory:written"
 ```
 

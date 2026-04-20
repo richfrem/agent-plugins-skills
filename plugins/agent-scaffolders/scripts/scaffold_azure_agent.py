@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 scaffold_azure_agent.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Meta-Execution
 
 Usage Examples:
-    python3 scaffold_azure_agent.py --skill path/to/skill
+    pythonscaffold_azure_agent.py --skill path/to/skill
 
 Supported Object Types:
     - Azure AI Foundry Agent boilerplate (azure_agent.py, main.bicep)

@@ -9,7 +9,7 @@ Purpose:
 Layer: Plugin / Spec-Kitty / Verification
 
 Usage Examples:
-    python3 plugins/spec-kitty-plugin/scripts/verify_workflow_state.py --feature SLUG --phase specify
+    python plugins/spec-kitty-plugin/scripts/verify_workflow_state.py --feature SLUG --phase specify
 
 Supported Object Types:
     - None (Verification)

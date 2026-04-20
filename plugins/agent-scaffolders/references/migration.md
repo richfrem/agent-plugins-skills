@@ -24,7 +24,7 @@ Prompt-based hooks offer several advantages:
       "hooks": [
         {
           "type": "command",
-          "command": "python3 ./validate_bash.py"
+          "command": "python ./validate_bash.py"
         }
       ]
     }
@@ -93,7 +93,7 @@ fi
       "hooks": [
         {
           "type": "command",
-          "command": "python3 ./validate_write.py"
+          "command": "python ./validate_write.py"
         }
       ]
     }

@@ -68,7 +68,7 @@ STATE:
 ## Phase 0: Orientation
 
 1. Resolve the Lab Path (`~/Projects/test-<skill-name>-eval`). If the lab does not exist, HALT and prompt the user to run `triple-loop-architect` first.
-2. Establish Baseline: `cd $LAB_PATH && python3 scripts/evaluate.py --skill <skill> --baseline`. Record `STATE.best_score`.
+2. Establish Baseline: `cd $LAB_PATH && python scripts/evaluate.py --skill <skill> --baseline`. Record `STATE.best_score`.
 3. Emit Start Event via `kernel.py`: `<agent=triple-loop-orchestrator action=loop-started>`.
 
 ---
@@ -94,7 +94,7 @@ OUTPUT: Raw SKILL.md content only." > /tmp/proposed-skill.md
 **Step C (Tactical Single-Loop / Gate):**
 ```bash
 cp /tmp/proposed-skill.md $LAB_PATH/<skill>/SKILL.md
-python3 $LAB_PATH/scripts/evaluate.py --skill <skill>
+python $LAB_PATH/scripts/evaluate.py --skill <skill>
 ```
 - **Exit 0 (KEEP)**: Update best_score, reset discard counters.
 - **Exit 1 (DISCARD)**: evaluate.py reverted it. Increment throwaway counters.

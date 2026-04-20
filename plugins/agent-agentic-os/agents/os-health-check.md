@@ -31,12 +31,12 @@ Execute these phases in order. Do not skip phases.
 
 Before taking any actions, you MUST publish your intent to the Event Bus.
 Use the `Bash` tool to run:
-`python3 context/kernel.py emit_event --agent os-health-check --type intent --action scan_metrics`
+`python context/kernel.py emit_event --agent os-health-check --type intent --action scan_metrics`
 
 ### Phase 1: Context Gathering & OS State Lock
 
-1. **Update OS State**: Run `python3 context/kernel.py state_update active_agent os-health-check`.
-2. **Strict Lock Protocol**: Run `python3 context/kernel.py acquire_lock monitor` using the `Bash` tool to acquire the lock. If it fails, abort. The kernel handles stale lock cleanup automatically.
+1. **Update OS State**: Run `python context/kernel.py state_update active_agent os-health-check`.
+2. **Strict Lock Protocol**: Run `python context/kernel.py acquire_lock monitor` using the `Bash` tool to acquire the lock. If it fails, abort. The kernel handles stale lock cleanup automatically.
 
 ### Phase 2: Analyze Event Bus
 
@@ -55,9 +55,9 @@ Use the `Bash` tool to run:
 ### Phase 4: Summarize & Lock Release
 
 1. **Event Bus Publish**: Use `Bash` to emit your success result metric (e.g., system healthy):
-`python3 context/kernel.py emit_event --agent os-health-check --type result --action scan_metrics --status success --summary "Metrics compiled"`
+`python context/kernel.py emit_event --agent os-health-check --type result --action scan_metrics --status success --summary "Metrics compiled"`
 
-2. **Lock Release Protocol**: Execute `python3 context/kernel.py release_lock monitor` to release the acquired lock.
+2. **Lock Release Protocol**: Execute `python context/kernel.py release_lock monitor` to release the acquired lock.
 3. Present the metrics to the user. Recommend running `os-clean-locks` or `os-memory-manager` if health metrics indicate deadlock or bloated state.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
@@ -82,7 +82,7 @@ Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_
 
 Emit survey completion:
 ```bash
-python3 context/kernel.py emit_event --agent os-health-check \
+python context/kernel.py emit_event --agent os-health-check \
   --type learning --action survey_completed \
   --summary "retrospectives/survey_[DATE]_[TIME]_os-health-check.md"
 ```

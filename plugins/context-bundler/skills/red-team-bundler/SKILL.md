@@ -87,12 +87,12 @@ Invoke the appropriate core Context Bundler script based on the format negotiate
 
 - **For Markdown (.md):**
   ```bash
-  python3 ./scripts/bundle.py --manifest temp/red-team-review-[topic-name]/file-manifest.json --bundle temp/red-team-review-[topic-name]/payload.md
+  python ./scripts/bundle.py --manifest temp/red-team-review-[topic-name]/file-manifest.json --bundle temp/red-team-review-[topic-name]/payload.md
   ```
 
 - **For ZIP Archive (.zip):**
   ```bash
-  python3 ./scripts/bundle_zip.py --manifest temp/red-team-review-[topic-name]/file-manifest.json --bundle temp/red-team-review-[topic-name]/payload.zip
+  python ./scripts/bundle_zip.py --manifest temp/red-team-review-[topic-name]/file-manifest.json --bundle temp/red-team-review-[topic-name]/payload.zip
   ```
 
 Once the payload is generated, inform the user that it is ready for handoff. If it is a Markdown file, explicitly remind them they can copy the contents of that file and paste it directly into their external chat interface.

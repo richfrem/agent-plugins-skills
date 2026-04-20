@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 session_start.py
 =====================================
@@ -9,7 +9,7 @@ Purpose:
 Layer: Hooks / Triggering
 
 Usage Examples:
-    python3 session_start.py
+    python session_start.py
 
 Supported Object Types:
     None

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 path_reference_auditor.py
 =====================================
@@ -10,9 +10,9 @@ Purpose:
 Layer: Investigate / Repair
 
 Usage Examples:
-    python3 path_reference_auditor.py --project . --phase scan
-    python3 path_reference_auditor.py --project . --phase verify
-    python3 path_reference_auditor.py --project . --phase report --report missing
+    pythonpath_reference_auditor.py --project . --phase scan
+    pythonpath_reference_auditor.py --project . --phase verify
+    pythonpath_reference_auditor.py --project . --phase report --report missing
 
 Supported Object Types:
     Recursive script/markdown links queries.

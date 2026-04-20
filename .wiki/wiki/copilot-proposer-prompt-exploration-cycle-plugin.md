@@ -58,7 +58,7 @@ You are an expert at optimizing OVERVIEW.md files for a boolean-OR keyword score
 Known bridge words for this skill that cause false positives when added to the description.
 **Run the collision matrix before proposing** (see Step A3 in eval-instructions):
 ```bash
-python3 -c "
+python -c "
 import json, re
 evals = json.load(open('./evals/evals.json'))
 desc = open('./OVERVIEW.md').read()

@@ -33,13 +33,13 @@ Build or update the vector index by chunking files and embedding them into Chrom
 
 ```bash
 # Full rebuild (first time or major changes)
-python3 ./scripts/ingest.py --profile wiki--full
+python ./scripts/ingest.py --profile wiki--full
 
 # Incremental update (files changed in last 24 hours)
-python3 ./scripts/ingest.py --profile wiki--since 24
+python ./scripts/ingest.py --profile wiki--since 24
 
 # Code files with AST parsing
-python3 ./scripts/ingest.py --profile wiki--full --code
+python ./scripts/ingest.py --profile wiki--full --code
 ```
 
 **Requires ChromaDB server running.** See `/vector-db:launch` if not up.

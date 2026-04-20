@@ -663,11 +663,11 @@ Hooks are currently the most dangerous ungoverned surface — they fire on event
 {
   "hooks": [{
     "event": "PostToolUse",
-    "command": "python3 hooks/post_run_metrics.py",
+    "command": "python hooks/post_run_metrics.py",
     "scopes": {
       "read": [".agentic-os/metrics/**"],
       "write": [".agentic-os/metrics/**"],
-      "exec": ["python3"],
+      "exec": ["python"],
       "network": "deny",
       "env": "deny"
     }

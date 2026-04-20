@@ -130,7 +130,7 @@ Save completed survey to:
 
 Emit survey completion event:
 ```bash
-python3 context/kernel.py emit_event --agent Triple-Loop Retrospective \
+python context/kernel.py emit_event --agent Triple-Loop Retrospective \
   --type learning --action survey_completed \
   --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
 ```
@@ -139,7 +139,7 @@ python3 context/kernel.py emit_event --agent Triple-Loop Retrospective \
 
 Run the automated metric collector:
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"
+python "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"
 ```
 
 This emits a `type: metric` event capturing: human_interventions, workflow_uncertainty,

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Purpose: User Story generator for the exploration cycle.
 Reads exploration capture documents (session brief, BRD draft, problem framing)
@@ -7,7 +7,7 @@ and produces a structured Markdown story set in either:
   - gherkin format: standard + Given/When/Then Acceptance Criteria blocks
 
 Designed for CLI dispatch pattern in the exploration cycle:
-  cat session-brief.md brd-draft.md | python3 execute.py --output user-stories-draft.md
+  cat session-brief.md brd-draft.md | pythonexecute.py --output user-stories-draft.md
 """
 
 import argparse

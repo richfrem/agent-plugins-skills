@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 test_hook.py
 =====================================
@@ -12,9 +12,9 @@ Purpose:
 Layer: Investigate
 
 Usage:
-    python3 test_hook.py [options] <hook-script> <test-input.json>
-    python3 test_hook.py --create-sample PreToolUse
-    python3 test_hook.py -v -t 30 validate_write.py write-input.json
+    python test_hook.py [options] <hook-script> <test-input.json>
+    python test_hook.py --create-sample PreToolUse
+    python test_hook.py -v -t 30 validate_write.py write-input.json
 """
 import sys
 import os
@@ -101,7 +101,7 @@ def _build_cmd(hook_script: str) -> list:
     """
     Determine the execution command for a hook script.
 
-    Python scripts are run via `python3`; others are tried directly, falling
+    Python scripts are run via `python`; others are tried directly, falling
     back to `bash` if not executable.
 
     Args:
@@ -111,7 +111,7 @@ def _build_cmd(hook_script: str) -> list:
         List of command components suitable for subprocess.run().
     """
     if hook_script.endswith(".py"):
-        return ["python3", hook_script]
+        return ["python", hook_script]
     if os.access(hook_script, os.X_OK):
         return [hook_script]
     print("⚠️  Warning: Hook script is not executable. Attempting to run with bash...")

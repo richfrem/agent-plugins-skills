@@ -181,7 +181,7 @@ Show both files and confirm before writing.
 ### 3a — Python Dependencies
 
 ```bash
-python3 -c "import chromadb; import sentence_transformers; print('deps OK')" 2>/dev/null \
+python -c "import chromadb; import sentence_transformers; print('deps OK')" 2>/dev/null \
   || echo "MISSING: pip install chromadb sentence-transformers langchain-community langchain-classic"
 ```
 

@@ -139,7 +139,7 @@ If `evals.json` was missing in master, draft eval cases from the skill's `descri
 
 ```bash
 # Verify schema after drafting
-python3 -c "import json; d=json.load(open('$LAB_PATH/$PLUGIN_NAME/skills/$SKILL_NAME/evals/evals.json')); print(f'{len(d)} evals loaded'); all(('should_trigger' in e) for e in d) and print('schema OK') or print('SCHEMA ERROR')"
+python -c "import json; d=json.load(open('$LAB_PATH/$PLUGIN_NAME/skills/$SKILL_NAME/evals/evals.json')); print(f'{len(d)} evals loaded'); all(('should_trigger' in e) for e in d) and print('schema OK') or print('SCHEMA ERROR')"
 ```
 
 ### 1.5 Validate CLI & run_agent.py Protocol
@@ -156,13 +156,13 @@ If either fails (e.g. ECONNREFUSED or command not found), STOP and ask the user.
 Test the Python orchestrators using the central `.agents/skills` paths, explicitly using **gpt-5-mini**:
 ```bash
 # Test Gemini Orchestrator
-python3 .agents/skills/gemini-cli-agent/scripts/run_agent.py \
+python .agents/skills/gemini-cli-agent/scripts/run_agent.py \
   plugins/gemini-cli/agents/security-auditor.md \
   plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md \
   ./HEARTBEAT_MD.md "Verify this works" gemini-3-flash-preview
 
 # Test Copilot Orchestrator (defaults to gpt-5-mini)
-python3 .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
   plugins/copilot-cli/agents/refactor-expert.md \
   plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md \
   ./HEARTBEAT_MD.md "Verify this works" 

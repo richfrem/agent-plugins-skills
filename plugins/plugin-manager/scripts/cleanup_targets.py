@@ -9,7 +9,7 @@ Purpose:
 Layer: Plugin Manager / Maintenance
 
 Usage Examples:
-    python3 plugins/plugin-manager/scripts/cleanup_targets.py
+    python plugins/plugin-manager/scripts/cleanup_targets.py
 
 Supported Object Types:
     - None (Filesystem cleanup)

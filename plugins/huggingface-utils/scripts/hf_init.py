@@ -8,8 +8,8 @@ Purpose:
 Layer: Execution / Initialization
 
 Usage Examples:
-    python3 hf_init.py
-    python3 hf_init.py --validate-only
+    pythonhf_init.py
+    pythonhf_init.py --validate-only
 
 Supported Object Types:
     None

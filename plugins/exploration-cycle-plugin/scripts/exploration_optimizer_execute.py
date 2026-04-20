@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 exploration_optimizer_execute.py
 =====================================
@@ -10,7 +10,7 @@ Purpose:
 Layer: Execution / Optimization
 
 Usage Examples:
-    python3 exploration_optimizer_execute.py --target skill.md --eval-script eval.py --goal "improve clarity"
+    pythonexploration_optimizer_execute.py --target skill.md --eval-script eval.py --goal "improve clarity"
 
 Supported Object Types:
     SKILL.md files

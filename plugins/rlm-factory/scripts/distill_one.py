@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 distill_one.py
 =====================================
@@ -13,16 +13,16 @@ Purpose:
 
 Usage:
     # 1. Copilot (GPT-5 mini)
-    python3 ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/decision.md --engine copilot
+    python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/decision.md --engine copilot
 
     # 2. Gemini (Gemini-3 Flash Preview)
-    python3 ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/quick-wins.md --engine gemini --model gemini-3-flash-preview
+    python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/quick-wins.md --engine gemini --model gemini-3-flash-preview
 
     # 3. Claude (Haiku-4.5)
-    python3 ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/capabilities-matrix.md --engine claude --model haiku-4.5
+    python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/capabilities-matrix.md --engine claude --model haiku-4.5
 
     # Dry-run: print the prompt but don't call the CLI:
-    python3 ./scripts/distill_one.py --profile wiki --file plugins/adr-manager/README.md --dry-run
+    python ./scripts/distill_one.py --profile wiki --file plugins/adr-manager/README.md --dry-run
 
 Related:
     - inject_summary.py  (cache persistence)

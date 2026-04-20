@@ -9,8 +9,8 @@ Purpose:
 Layer: Repair / Synthesis
 
 Usage Examples:
-    python3 improve_description.py --eval-results results.json --skill-path path/to -v
-    python3 improve_description.py --eval-results results.json --skill-path path/to --engine copilot
+    pythonimprove_description.py --eval-results results.json --skill-path path/to -v
+    pythonimprove_description.py --eval-results results.json --skill-path path/to --engine copilot
 
 Supported Object Types:
     Evaluative diagnostics streams.

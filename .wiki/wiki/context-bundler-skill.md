@@ -101,12 +101,12 @@ Invoke the appropriate script based on the format negotiated in Phase 1.
 
 - **For Markdown (.md):**
   ```bash
-  python3 ./scripts/bundle.py --manifest path/to/file-manifest.json --bundle path/to/output.md
+  python ./scripts/bundle.py --manifest path/to/file-manifest.json --bundle path/to/output.md
   ```
 
 - **For ZIP Archive (.zip):**
   ```bash
-  python3 ./scripts/bundle_zip.py --manifest path/to/file-manifest.json --bundle path/to/output.zip
+  python ./scripts/bundle_zip.py --manifest path/to/file-manifest.json --bundle path/to/output.zip
   ```
 
 Inform the user the payload is ready.

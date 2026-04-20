@@ -68,8 +68,8 @@ Execute these phases in order. Do not skip phases.
 
 ### Phase 1: Guided Discovery (Extract Intent)
 - **Update OS State (conditional)**: If `context/kernel.py` already exists, run
-  `python3 context/kernel.py state_update active_agent agentic-os-setup` and
-  `python3 context/kernel.py state_update mode setup` to formalize the machine state lifecycle.
+  `python context/kernel.py state_update active_agent agentic-os-setup` and
+  `python context/kernel.py state_update mode setup` to formalize the machine state lifecycle.
   If `context/kernel.py` does not yet exist, skip this step — the kernel will be created in Phase 3.
 - Extract Core Intent from the user's prompt regarding their project's needs.
 - Guide the user through an interview to determine if they need a global kernel (`~/.claude/CLAUDE.md`), and what constraints they have.
@@ -90,7 +90,7 @@ assistant: "I will now run the `init_agentic_os.py` script to generate the OS ha
 ### Phase 3: Scaffold Iteration
 - Execute the configuration by invoking the init script:
   - Run `PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"`
-  - Run `python3 ${PLUGIN_DIR}/skills/os-init/scripts/init_agentic_os.py`
+  - Run `python ${PLUGIN_DIR}/skills/os-init/scripts/init_agentic_os.py`
   - Ensure the output `hooks.json` maps correctly to the internal `update_memory.py` hook.
 
 ### Phase 4: Verification & Guidance

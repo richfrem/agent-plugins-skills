@@ -54,7 +54,7 @@ scripts/task_manager.py
 
 This is the installed copy of the script. Always invoke with an absolute or root-relative path:
 ```bash
-python3 ./scripts/task_manager.py <command>
+python ./scripts/task_manager.py <command>
 ```
 
 **Do NOT use** `./task_manager.py` (relative to script dir — breaks from project root) or
@@ -92,7 +92,7 @@ When executing `task_manager.py`:
 **Always create the task with a short, descriptive title first to avoid filename length errors.**
 
 ```bash
-python3 ./scripts/task_manager.py create "Short Title" --lane todo
+python ./scripts/task_manager.py create "Short Title" --lane todo
 ```
 
 **After creation, update the generated Markdown file to add full details, objectives, and acceptance criteria.**
@@ -101,17 +101,17 @@ This two-step process ensures filenames remain valid and all task details are ca
 
 ### 2. Viewing the Board
 ```bash
-python3 ./scripts/task_manager.py board
+python ./scripts/task_manager.py board
 ```
 
 ### 3. Moving a Task Between Lanes
 ```bash
-python3 ./scripts/task_manager.py move 3 in-progress --note "Starting work"
+python ./scripts/task_manager.py move 3 in-progress --note "Starting work"
 ```
 
 ### 4. Searching Tasks
 ```bash
-python3 ./scripts/task_manager.py search "login"
+python ./scripts/task_manager.py search "login"
 ```
 
 ## 📂 Data Structure
