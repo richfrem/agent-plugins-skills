@@ -67,6 +67,20 @@ These personas are mirrored from the Copilot CLI plugin to ensure consistent "Ag
 
 ---
 
+## 🚫 Capability Boundary — Read Before Dispatching
+
+### ❌ Image Generation is NOT supported via Gemini CLI
+The Gemini CLI (`gemini` binary) is a **text and code assistant only**. It cannot generate, render, or save image files regardless of model.
+
+- `gemini-3.1-pro-preview`, `gemini-2.5-pro`, `gemini-3-flash-preview` — **text only**
+- Asking the CLI to "generate an image and save it" will always fail or hallucinate
+- Image generation models (`imagen-4.0-*`, `gemini-2.5-flash-image`, `gemini-3-pro-image-preview`) are **not accessible via the CLI** — they require the Python `google-genai` SDK with a **paid billing account** (separate from Gemini Pro subscription)
+- `gemini-3.1-pro-preview` may hit `MODEL_CAPACITY_EXHAUSTED` (429) under load — retry or fall back to `gemini-2.5-pro`
+
+**Do not attempt image generation via this skill. Inform the user immediately.**
+
+---
+
 ## ⚠️ CLI Best Practices & Failure Modes
 
 ### 1. ⚡ Preferred Model: Gemini 3 Flash
