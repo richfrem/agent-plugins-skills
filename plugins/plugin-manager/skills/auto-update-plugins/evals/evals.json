@@ -1,8 +1,0 @@
-[
-  {"prompt": "set up auto plugin sync so plugins are updated on every session start", "should_trigger": true},
-  {"prompt": "subscribe this project to plugin updates from GitHub on startup", "should_trigger": true},
-  {"prompt": "auto install plugins on load by syncing with the upstream GitHub repo", "should_trigger": true},
-  {"prompt": "manually install a specific plugin right now from the local clone", "should_trigger": false},
-  {"prompt": "list all currently installed plugins and their versions", "should_trigger": false},
-  {"prompt": "remove orphaned plugin artifacts after deleting a plugin", "should_trigger": false}
-]

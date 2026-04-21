@@ -555,48 +555,66 @@ def main():
             data = {"sources": []}
             if sources_file.exists():
                 try:
-                    data = json.loads(sources_file.read_text(encoding="utf-8"))
+                    raw = json.loads(sources_file.read_text(encoding="utf-8"))
+                    # Migrate legacy schema (local/github/name keys → source key)
+                    migrated = []
+                    for s in raw.get("sources", []):
+                        src = s.get("source") or s.get("github") or s.get("local") or ""
+                        if src:
+                            migrated.append({"source": src, "plugins": s.get("plugins", [])})
+                    data = {"sources": migrated}
                 except ValueError:
                     pass
-            
+
             sources = data.setdefault("sources", [])
-            
+
+            # Determine canonical source key
             if args.source and _is_github_source(args.source):
+                # GitHub: normalize to owner/repo (strip subpaths)
                 source_key, _ = _parse_github_source(args.source)
-                source_type = "github"
             elif args.source:
-                source_key = str(Path(args.source).resolve())
-                source_type = "local"
+                # Local: resolve to the nearest ancestor that looks like a repo/plugins root
+                resolved = Path(args.source).resolve()
+                # Walk up to find the plugins/ root or project root
+                candidate = resolved
+                while candidate != candidate.parent:
+                    if (candidate.parent / "plugin-sources.json").exists() or \
+                       (candidate.parent / ".claude-plugin").exists() or \
+                       candidate.name == "plugins":
+                        candidate = candidate.parent
+                        break
+                    candidate = candidate.parent
+                source_key = str(resolved)  # default: keep full resolved path
+                # If the resolved path is INSIDE a plugins/ folder, normalize to that folder
+                parts = resolved.parts
+                if "plugins" in parts:
+                    plugins_idx = len(parts) - 1 - parts[::-1].index("plugins")
+                    source_key = str(Path(*parts[:plugins_idx + 1]))
             else:
                 source_key = str(plugins_root)
-                source_type = "local"
-                
+
             installed_names = [p["name"] for p in selected_plugins]
-            
-            # Step 1: Remove these plugins from ALL existing sources (so they don't sync from multiple places)
+
+            # Step 1: Remove these plugins from ALL other sources (move = one source of truth)
             for s in sources:
-                curr = s.get("plugins", [])
-                if not isinstance(curr, list):
-                    curr = []  # wipe out legacy "all" strings
-                s["plugins"] = [p for p in curr if p not in installed_names]
-            
-            # Clean up empty sources
-            data["sources"] = [s for s in sources if isinstance(s.get("plugins"), list) and len(s.get("plugins")) > 0]
+                if s.get("source") != source_key:
+                    curr = s.get("plugins", [])
+                    s["plugins"] = [p for p in curr if p not in installed_names]
+
+            # Clean up empty source entries
+            data["sources"] = [s for s in sources
+                               if isinstance(s.get("plugins"), list) and s["plugins"]]
             sources = data["sources"]
-            
-            # Step 2: Append newly installed plugins to their current true source location
-            existing = next((s for s in sources if s.get(source_type) == source_key), None)
+
+            # Step 2: Upsert into the matching source entry
+            existing = next((s for s in sources if s.get("source") == source_key), None)
             if not existing:
-                src_name = source_key.split("/")[-1] if "/" in source_key else source_key
-                existing = {"name": src_name, source_type: source_key, "plugins": []}
+                existing = {"source": source_key, "plugins": []}
                 sources.append(existing)
-            
+
             curr_plugins = existing.get("plugins", [])
-            if not isinstance(curr_plugins, list):
-                curr_plugins = []
-                
             existing["plugins"] = sorted(list(set(curr_plugins + installed_names)))
-                
+
             sources_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         except Exception as e:
             print(f"  {yellow('Warning:')} Failed to update plugin-sources.json: {e}")

@@ -1,0 +1,10 @@
+[
+  {"prompt": "Sync all my plugins from their sources.", "should_trigger": true},
+  {"prompt": "Update my installed plugins according to plugin-sources.json.", "should_trigger": true},
+  {"prompt": "Run the cleanup to remove orphaned plugin artifacts.", "should_trigger": true},
+  {"prompt": "Reinstall everything indicated in my registry.", "should_trigger": true},
+  {"prompt": "Run the sync script.", "should_trigger": true},
+  {"prompt": "Install the rlm-factory plugin.", "should_trigger": false},
+  {"prompt": "Remove the broken task manager plugin.", "should_trigger": false},
+  {"prompt": "Audit all plugins for structural compliance.", "should_trigger": false}
+]

@@ -63,11 +63,11 @@
     },
     {
       "name": "plugin-manager",
-      "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync, cross-repo plugin replication, and Universal Bridge Installation.",
+      "description": "Orchestration hub for the plugin ecosystem. Manages canonical source-keyed installations, unified package removal, and synchronized updates across all agent environments.",
       "source": "./plugins/plugin-manager",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["orchestration", "sync", "maintenance", "installer", "bridge", "deployment"]
+      "tags": ["orchestration", "sync", "installer", "package-manager", "deployment"]
     },
     {
       "name": "agent-plugin-analyzer",

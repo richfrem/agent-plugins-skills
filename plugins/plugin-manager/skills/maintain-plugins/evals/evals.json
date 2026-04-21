@@ -1,8 +1,0 @@
-[
-  {"prompt": "Audit all the plugins to check if they follow the correct structure.", "should_trigger": true},
-  {"prompt": "Sync the plugins to my agent environments.", "should_trigger": true},
-  {"prompt": "Run a health check on the plugin ecosystem and regenerate the README files.", "should_trigger": true},
-  {"prompt": "Install the rlm-factory plugin into my Claude setup.", "should_trigger": false},
-  {"prompt": "Create a new git branch called feature/auth-refactor.", "should_trigger": false},
-  {"prompt": "Debug my Docker container that is failing to start.", "should_trigger": false}
-]

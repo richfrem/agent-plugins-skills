@@ -1,7 +1,7 @@
 ---
 concept: plugin-bridge-architecture-process
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/plugin-installer/references/agent_bridge_overview.md
+source_file: spec-kitty-plugin/.agents/skills/plugin-installer/references/plugin_installer_overview.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
 generated_at: 2026-04-17T06:42:10.190264+00:00
 cluster: agent
@@ -90,5 +90,5 @@ python ./install_all_plugins.py
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/plugin-installer/references/agent_bridge_overview.md`
+- **File:** `spec-kitty-plugin/.agents/skills/plugin-installer/references/plugin_installer_overview.md`
 - **Indexed:** 2026-04-17T06:42:10.190264+00:00

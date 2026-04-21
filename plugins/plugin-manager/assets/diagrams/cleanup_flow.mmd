@@ -1,67 +1,67 @@
 flowchart TD
-    %% Plugin Maintenance: Sync Flow
+    %% Plugin Sync & Cleanup Flow
 
     subgraph Inputs
-        LocalDir["./plugins/ Directory"]
-        SourceFile["plugin-sources.json<BR>(GitHub sources config)"]
+        PSJ["plugin-sources.json\n(authoritative registry)"]
+        LocalDir["plugins/ Directory\n(local source plugins only)"]
     end
 
-    Start(["maintain-plugins: Sync"])
-    CheckVendor{"plugin-sources.json<BR>Exists?"}
+    Start(["sync_with_inventory.py"])
+    ReadRegistry["Read plugin-sources.json\nGet all registered plugin names"]
 
-    LoadVendor["Load GitHub Source List<BR>(Source of Truth)"]
-    SafeMode["Safety Mode<BR>(No cleanup — skip delete step)"]
+    ScanLocal["Scan local plugins/ Directory\n(for locally-sourced plugins)"]
 
-    ScanLocal["Scan Local ./plugins/"]
+    Compare{"Compare:\nRegistry vs Local plugins/"}
 
-    Compare{"Compare:<BR>GitHub Source vs Local"}
-
-    subgraph States ["Three Plugin States"]
-        Active["In BOTH Source + Local<BR>= Active Vendor Plugin"]
-        Private["In Local ONLY<BR>= Project-Specific (Protected)"]
-        Deleted["In Source ONLY<BR>= User Deleted"]
+    subgraph States ["Plugin States"]
+        Active["In Registry + Local\n= Active Local Plugin"]
+        GitHubOnly["In Registry (GitHub source)\n= Remotely managed"]
+        Stale["In Registry, missing locally\n= Stale / Removed"]
+        Private["In Local ONLY\n= Project-Specific (Protected)"]
     end
 
     subgraph Actions
-        Update["UPDATE<BR>Run sync_with_inventory.py<BR>(deploy to .agents/, .claude/)"]
-        Protect["PROTECT<BR>Skip — never delete custom plugins"]
-        Cleanup["CLEANUP<BR>Remove orphaned artifacts<BR>from .agents/skills/, .agents/workflows/<BR>.agents/rules/, .agents/hooks/, .claude/"]
+        Reinstall["REINSTALL\nRun plugin_installer.py\n(redeploy to .agents/, .claude/)"]
+        Protect["PROTECT\nSkip — never delete custom plugins"]
+        Cleanup["CLEANUP\nRemove orphaned artifacts\nfrom .agents/skills/, .agents/workflows/\n.agents/rules/, .agents/hooks/, .claude/"]
+        Skip["SKIP\nGitHub plugins synced via plugin_add.py\nnot reinstalled automatically here"]
     end
 
-    Report["Generate local-plugins-inventory.json"]
+    Report["Save local-plugins-inventory.json"]
     EndNode(["Sync Complete"])
 
     %% Connections
-    Start --> CheckVendor
-    CheckVendor -->|"Yes"| LoadVendor
-    CheckVendor -->|"No"| SafeMode
-    SafeMode --> ScanLocal
-    LoadVendor --> ScanLocal
+    Start --> ReadRegistry
+    ReadRegistry --> ScanLocal
     ScanLocal --> Compare
 
-    Compare -->|"In Source + Local"| Active
+    Compare -->|"Registry + Local"| Active
+    Compare -->|"Registry (GitHub source)"| GitHubOnly
+    Compare -->|"Registry, no local dir"| Stale
     Compare -->|"Local only"| Private
-    Compare -->|"Source only"| Deleted
 
-    Active --> Update
+    Active --> Reinstall
+    GitHubOnly --> Skip
+    Stale --> Cleanup
     Private --> Protect
-    Deleted --> Cleanup
-    Protect --> Update
 
-    Update --> Report
+    Reinstall --> Report
+    Skip --> Report
     Cleanup --> Report
+    Protect --> Report
     Report --> EndNode
 
-    SourceFile -.->|"declares sources"| CheckVendor
-    LocalDir -..-|"scanned"| ScanLocal
+    PSJ -.->|"source of truth"| ReadRegistry
+    LocalDir -.->|"scanned"| ScanLocal
 
     %% Styles
     classDef file fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
     classDef action fill:#bbf,stroke:#333,stroke-width:2px
     classDef danger fill:#fbb,stroke:#333,stroke-width:2px
     classDef safe fill:#bfb,stroke:#333,stroke-width:2px
+    classDef skip fill:#ffe,stroke:#aa8,stroke-width:1px
 
-    class SourceFile,LocalDir file
+    class PSJ,LocalDir file
     class Cleanup danger
-    class Protect safe
-    class Update action
+    class Protect,Skip safe
+    class Reinstall action

@@ -1,0 +1,39 @@
+flowchart LR
+    subgraph Sources ["Install Sources"]
+        GH["uvx --from git+github...\nor bootstrap.py\n(GitHub — no local clone)"]
+        LocalSrc["uvx --from .\nor python plugin_add.py\n(local clone)"]
+    end
+
+    subgraph Registry ["Tracking Registry"]
+        PSJ["plugin-sources.json\n{source: ..., plugins: [...]}"]
+    end
+
+    subgraph Installer ["Installer Scripts"]
+        PA["plugin_add.py\n(interactive TUI — primary)"]
+        PI["plugin_installer.py\n(single plugin deploy — called by plugin_add)"]
+        PR["plugin_remove.py\n(interactive TUI uninstaller)"]
+    end
+
+    subgraph Agents ["Target Environments"]
+        Central[".agents/\n(canonical store)\nAntigravity · Gemini · Copilot"]
+        Claude[".claude/ → symlinked\n(Claude Code only)"]
+    end
+
+    GH -->|"runs"| PA
+    LocalSrc -->|"runs"| PA
+    PA -->|"calls"| PI
+    PA -->|"writes"| PSJ
+    PR -->|"prunes"| PSJ
+
+    PI -->|"skills + commands\n+ rules + hooks"| Central
+    Central -.->|"symlinked"| Claude
+
+    classDef source fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    classDef registry fill:#ffe,stroke:#aa8,stroke-width:2px
+    classDef installer fill:#bbf,stroke:#333,stroke-width:2px
+    classDef agent fill:#bfb,stroke:#333
+
+    class GH,LocalSrc source
+    class PSJ registry
+    class PA,PI,PR installer
+    class Central,Claude agent

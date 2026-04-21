@@ -1,1 +1,0 @@
-../../../scripts/audit_structure.py

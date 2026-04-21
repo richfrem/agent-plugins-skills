@@ -27,14 +27,17 @@ These commands are for consumers who want to add plugins seamlessly *without* cl
 If you have [uv](https://docs.astral.sh/uv/) installed (the modern Python package manager), you get instantaneous, isolated installations exactly like `npx`, but natively cross-platform without Node.js.
 
 ```bash
-# Interactive picker
+# Interactive picker to add plugins
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
 # Install everything non-interactively
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
 
-# Preview without writing any files
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
+# Interactive picker to remove plugins
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove
+
+# Sync all installed plugins exactly to plugin-sources.json state
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-sync
 ```
 
 ### Option 2: Fallback Bootstrap (Zero Tooling Assumptions)
@@ -94,9 +97,9 @@ The Plugin Manager deploys to `.agents/` as the universal canonical store, then 
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Default: `plugin_add.py` interactive TUI; also `plugin_add.py --all -y` for single-plugin CI installs | `plugin_add.py`, `plugin_installer.py` |
-| **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs, clean orphans | `sync_with_inventory.py`, `audit_structure.py` |
-| **[auto-update-plugins](skills/auto-update-plugins/SKILL.md)** | SessionStart hook that auto-syncs from GitHub sources on every session | `check_and_sync.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Interactive TUI installer; `--all -y` for headless CI installs | `plugin_add.py`, `plugin_installer.py` |
+| **[plugin-remover](skills/plugin-remover/SKILL.md)** | Interactive TUI uninstaller grouped by source; `--plugins --yes` for headless removal | `plugin_remove.py` |
+| **[plugin-syncer](skills/plugin-syncer/SKILL.md)** | Reinstalls registered plugins from sources & cleans orphans | `sync_with_inventory.py` |
 
 ---
 
@@ -104,9 +107,36 @@ The Plugin Manager deploys to `.agents/` as the universal canonical store, then 
 
 | Command | Purpose |
 | :--- | :--- |
-| `/plugin-manager:update` | Sync all plugins to local agent environments (`.agents/`, `.claude/` etc.) |
-| `/plugin-manager:cleanup` | Remove orphaned artifacts from deleted plugins in agent environments |
 | `/plugin-manager:install` | Install a specific plugin from GitHub or local path |
+| `/plugin-manager:remove` | Safely remove a plugin and scrub its registry entry |
+| `/plugin-manager:sync` | Sync all plugins to local environments based on `plugin-sources.json` |
+| `/plugin-manager:cleanup` | Remove orphaned artifacts completely from `.agents/` |
+
+---
+
+## `plugin-sources.json` Schema
+
+The plugin manager uses `plugin-sources.json` at your project root as the authoritative registry of installed plugins. Each source entry uses a flat `"source"` key — no separate `"local"` or `"github"` key needed.
+
+```json
+{
+  "sources": [
+    {
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": ["adr-manager", "claude-cli"]
+    },
+    {
+      "source": "/path/to/local/plugins",
+      "plugins": ["agent-loops", "task-manager"]
+    }
+  ]
+}
+```
+
+- **`source`** — Either a GitHub `owner/repo` slug or an absolute local path. The value itself signals whether it's remote or local.
+- **`plugins`** — List of plugin names installed from that source. Each plugin appears under exactly one source (one source of truth).
+- Adding from a different source automatically moves the plugin to the new source entry.
+- Empty source entries are pruned automatically.
 
 ---
 
@@ -132,19 +162,21 @@ plugin-manager/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── README.md
+├── assets/
+│   └── templates/
+│       └── plugin-sources.template.json   <- Starter template for new projects
 ├── commands/
 │   ├── update.md       <- Sync all plugins to local agent environments
 │   ├── cleanup.md      <- Clean orphaned agent artifacts
 │   └── install.md      <- Install a plugin from GitHub or local path
 ├── scripts/
-│   ├── plugin_add.py          <- Interactive TUI installer (default, GitHub-native)
-│   ├── plugin_installer.py    <- Core deploy logic (single plugin)
-│   ├── install_all_plugins.py <- Batch install loop
-│   ├── sync_with_inventory.py <- Agent env sync + orphan cleanup
-│   ├── audit_structure.py     <- Structural audit
-│   └── generate_readmes.py    <- README scaffolding
+│   ├── plugin_add.py          <- Interactive TUI installer (GitHub-native)
+│   ├── plugin_remove.py       <- Interactive TUI uninstaller (source-grouped)
+│   ├── plugin_installer.py    <- Core deploy logic (single plugin, called by plugin_add)
+│   ├── sync_with_inventory.py <- Agent env sync + orphan cleanup via plugin-sources.json
+│   └── test_plugin_lifecycle.py <- Full add/remove lifecycle test harness
 └── skills/
     ├── plugin-installer/
-    ├── maintain-plugins/
-    └── auto-update-plugins/
+    ├── plugin-remover/
+    └── plugin-syncer/
 ```

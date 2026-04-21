@@ -4,7 +4,8 @@ Sync Plugins with Inventory
 
 Purpose:
     Synchronizes the agent environments with the local `plugins/` directory.
-    Implements a "Dual Inventory" approach to safely identify and clean up deleted plugins.
+    Uses `plugin-sources.json` as the authoritative registry of installed plugins
+    to safely identify and clean up deleted/removed plugins.
 
 Layer: Plugin Manager / Synchronization
 
@@ -19,16 +20,16 @@ CLI Arguments:
     --cleanup-only: Run cleanup analysis only, skip installation.
 
 Input Files:
-    - vendor-plugins-inventory.json (Vendor manifest)
-    - plugin_installer.py (Subprocess script)
+    - plugin-sources.json (canonical install registry)
+    - plugin_installer.py (subprocess installation engine)
 
 Output:
     - Cleans or installs plugin artifacts on agent targets.
 
 Key Functions:
     clean_plugin_artifacts(): Removes artifacts for a specific plugin.
-    run_bridge_installer(): Runs bridge installer for a plugin.
-    get_inventory_names(): Returns set of plugin names.
+    run_plugin_installer(): Runs plugin_installer for a plugin.
+    get_installed_plugin_names(): Returns set of plugin names from plugin-sources.json.
 
 Script Dependencies:
     os, sys, json, shutil, argparse, subprocess, pathlib
@@ -47,25 +48,13 @@ import argparse
 import subprocess
 from pathlib import Path
 
-# Add script dir to path to import plugin_inventory
-SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.append(str(SCRIPT_DIR))
-
-try:
-    import plugin_inventory
-except ImportError:
-    # Fallback if running from root without package structure
-    pass
+# Removed plugin_inventory import as it is now obsolete.
 
 # --- Configuration ---
 
-VENDOR_ROOT = Path(".vendor")
-# Fallback for simple setups or legacy references
-DEFAULT_VENDOR_DIR = VENDOR_ROOT / "agent-plugins-skills"
-LOCAL_ROOT = Path(".")
-# Bridge installer is provided by plugin-manager
+SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parents[2]  # scripts→plugin-manager→plugins→ROOT
-BRIDGE_INSTALLER = PROJECT_ROOT / "plugins" / "plugin-manager" / "scripts" / "plugin_installer.py"
+PLUGIN_INSTALLER = PROJECT_ROOT / "plugins" / "plugin-manager" / "scripts" / "plugin_installer.py"
 
 AGENT_DIRS = {
     "antigravity": {
@@ -109,119 +98,130 @@ def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> None:
                         if not dry_run:
                             f.unlink()
 
-def run_bridge_installer(plugin_path: Path) -> None:
-    """Runs the bridge installer for a specific plugin."""
-    cmd = [sys.executable, str(BRIDGE_INSTALLER), "--plugin", str(plugin_path)]
+def run_plugin_installer(plugin_path: Path) -> None:
+    """Runs plugin_installer.py for a specific plugin."""
+    cmd = [sys.executable, str(PLUGIN_INSTALLER), "--plugin", str(plugin_path)]
     try:
         subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         print(f"  [INSTALL] Success: {plugin_path.name}")
     except subprocess.CalledProcessError as e:
         print(f"  [ERROR] Failed to install {plugin_path.name}: {e.stderr.decode()}")
 
-def get_inventory_names(root: Path) -> set[str]:
-    """Helper to get just the set of plugin names from a root."""
+
+def get_installed_plugin_names(root: Path) -> set:
+    """Returns the set of plugin names tracked in plugin-sources.json.
+
+    Supports both the new schema ({"source": ..., "plugins": [...]}) and
+    legacy schema ({"local"/"github"/"name": ..., "plugins": [...]}).
+    """
+    sources_file = root / "plugin-sources.json"
+    if not sources_file.exists():
+        return set()
     try:
-        inventory = plugin_inventory.scan_plugins(root)
-        return {item["name"] for item in inventory}
+        data = json.loads(sources_file.read_text(encoding="utf-8"))
+        names = set()
+        for s in data.get("sources", []):
+            plugs = s.get("plugins", [])
+            if isinstance(plugs, list):
+                names.update(plugs)
+        return names
     except Exception as e:
-        print(f"Error scanning {root}: {e}")
+        print(f"  Warning: Failed reading plugin-sources.json: {e}")
         return set()
 
+
+# plugin_inventory dependencies removed
+
+def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> None:
+    """Re-installs all plugins for a given source by calling plugin_add.py."""
+    if not plugins:
+        return
+    plugin_add = root / "plugins" / "plugin-manager" / "scripts" / "plugin_add.py"
+    if not plugin_add.exists():
+        print(f"  [ERROR] plugin_add.py not found at {plugin_add}")
+        return
+
+    plugins_arg = ",".join(plugins)
+    cmd = [sys.executable, str(plugin_add), source_key, "--plugins", plugins_arg, "--yes"]
+    if dry_run:
+        print(f"  [DRY RUN] Would run: {' '.join(cmd)}")
+        return
+    try:
+        subprocess.run(cmd, check=True)
+        print(f"  [SYNC] OK: {source_key} → {plugins}")
+    except subprocess.CalledProcessError as e:
+        print(f"  [ERROR] Failed syncing source '{source_key}': {e}")
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sync plugins using dual-inventory.")
-    parser.add_argument("--dry-run", action="store_true", help="Simulate cleanup without deleting.")
-    parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup analysis only, skip installation.")
+    parser = argparse.ArgumentParser(description="Sync all plugins from plugin-sources.json registry.")
+    parser.add_argument("--dry-run", action="store_true", help="Simulate without modifying files.")
+    parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup only, skip reinstall.")
     args = parser.parse_args()
-    
+
     root = Path.cwd()
-    
-    # 1. Get Vendor Inventory (What we COULD have)
-    print("--- 1. Scanning Vendor Inventory ---")
-    
-    vendor_set = set()
-    
-    if VENDOR_ROOT.exists():
-        # Iterate all subdirectories in .vendor/ to support multiple sources (Repo 1, Repo 2, etc.)
-        for vendor_repo in VENDOR_ROOT.iterdir():
-            if not vendor_repo.is_dir() or vendor_repo.name.startswith("."):
-                continue
-            
-            print(f"  Scanning vendor: {vendor_repo.name}...")
-            
-            # 1a. Check for official inventory file
-            inventory_file = vendor_repo / "vendor-plugins-inventory.json"
-            if inventory_file.exists():
-                try:
-                    data = json.loads(inventory_file.read_text(encoding='utf-8'))
-                    names = {str(item["name"]) for item in data}
-                    vendor_set.update(names)
-                    print(f"    - Loaded {len(names)} plugins from inventory file.")
-                except Exception as e:
-                    print(f"    - Error reading inventory file: {e}")
-            
-            # 1b. Check for flat plugins directory (fallback or alongside)
-            vendor_plugins_dir = vendor_repo / "plugins"
-            if vendor_plugins_dir.exists():
-                results = get_inventory_names(vendor_plugins_dir)
-                if results:
-                    vendor_set.update({str(name) for name in results})
-                    print(f"    - Found {len(results)} plugins in directory.")
-    else:
-        print(f"Warning: Vendor root {VENDOR_ROOT} not found. Skipping cleanup logic.")
-    
-    print(f"Total Vendor Plugins discovered for sync: {len(vendor_set)}")
-    
-    # 2. Get Local Inventory (What we DO have)
-    print("\n--- 2. Scanning Local Inventory ---")
-    if plugin_inventory:
-        local_inventory = plugin_inventory.scan_plugins(root)
-        local_set = {str(item["name"]) for item in local_inventory}
-    else:
-        print("❌ Error: plugin_inventory module not found. Sync aborted.")
-        sys.exit(1)
-    
-    # Save Local Inventory (Rich) for the user to reference
-    local_inventory_path = root / "local-plugins-inventory.json"
-    local_inventory_path.write_text(json.dumps(local_inventory, indent=2), encoding='utf-8')
-    print(f"Found {len(local_set)} plugins in Local. Saved to {local_inventory_path}")
-    
-    # 3. Cleanup Logic (Review)
-    # Plugins that are in VENDOR but NOT in LOCAL means the user deleted them.
-    to_clean = vendor_set - local_set
-    
-    print(f"\n--- 3. Cleanup Analysis ---")
-    print(f"Vendor Only (Deleted by User): {len(to_clean)}")
-    print(f"Local Only (Project Specific): {len(local_set - vendor_set)} (Protected)")
-    
-    if to_clean:
-        print("\nCleaning up artifacts for deleted plugins:")
-        for plugin in sorted(to_clean):
+
+    # 1. Read plugin-sources.json — authoritative registry of ALL installed plugins
+    print("--- 1. Reading plugin-sources.json Registry ---")
+    registered_set = get_installed_plugin_names(root)
+    sources_file = root / "plugin-sources.json"
+    sources_data = []
+    if sources_file.exists():
+        try:
+            raw = json.loads(sources_file.read_text(encoding="utf-8"))
+            for s in raw.get("sources", []):
+                # Support both new (source) and legacy (local/github/name) schema
+                src = s.get("source") or s.get("github") or s.get("local") or s.get("name", "")
+                plugs = s.get("plugins", [])
+                if src and isinstance(plugs, list) and plugs:
+                    sources_data.append({"source": src, "plugins": plugs})
+        except Exception as e:
+            print(f"  Error reading plugin-sources.json: {e}")
+
+    print(f"  {len(registered_set)} registered plugins across {len(sources_data)} sources:")
+    for s in sources_data:
+        print(f"    [{s['source']}] → {', '.join(s['plugins'])}")
+
+# plugin_inventory dependency removed
+
+    # 3. Cleanup: plugins in registry that no longer have a local source dir
+    #    (only applies to locally-sourced plugins where the dir was deleted)
+    print("\n--- 3. Cleanup Analysis ---")
+    # Detect locally-sourced plugins whose source dir is gone
+    stale = set()
+    for s in sources_data:
+        src = s["source"]
+        # Only check stale for local paths (not GitHub slugs)
+        if src.startswith("/") or src.startswith("./") or src.startswith("plugins/"):
+            src_path = Path(src) if src.startswith("/") else root / src
+            if not src_path.exists():
+                stale.update(s["plugins"])
+                print(f"  Stale source (path gone): {src} → {s['plugins']}")
+
+    if stale:
+        print(f"  Cleaning {len(stale)} stale plugin(s)...")
+        for plugin in sorted(stale):
             clean_plugin_artifacts(plugin, root, args.dry_run)
     else:
-        print("No deleted vendor plugins found. Cleanup skipped.")
-        
-    # 4. Install Logic
+        print("  No stale local sources detected.")
+
+    # 4. Reinstall — call plugin_add.py per source entry so all plugins are redeployed
     if not args.cleanup_only:
-        print(f"\n--- 4. Updating Agent Artifacts (Bridge) ---")
-        if args.dry_run:
-            print("Dry run enabled. Skipping installation.")
+        print(f"\n--- 4. Syncing All Registered Plugins ---")
+        if not sources_data:
+            print("  No sources registered in plugin-sources.json. Nothing to sync.")
+            print("  Run plugin_add.py to register and install plugins first.")
         else:
-            # We iterate local_set to ensure we only install what we have
-            # We need the path. Since scan_plugins assumes standard layout:
-            for plugin_name in sorted(local_set):
-                # Assumption: Directory name matches plugin name for simplicity
-                # plugin_inventory uses directory name as default name
-                if plugin_name not in vendor_set:
-                     # This might be custom, still install it? Yes.
-                     pass
-                     
-                plugin_path = root / "plugins" / plugin_name
-                if plugin_path.exists():
-                    run_bridge_installer(plugin_path)
+            for s in sources_data:
+                if s["plugins"]:
+                    src = s["source"]
+                    print(f"\n  Source: {src}")
+                    sync_source(src, s["plugins"], root, args.dry_run)
     else:
-        print("\nSkipping installation (--cleanup-only enabled).")
+        print("\nSkipping reinstall (--cleanup-only).")
 
     print("\nSync Complete.")
+
 
 if __name__ == "__main__":
     main()

@@ -265,10 +265,9 @@ Each plugin works **standalone** (Mode A) or combined for full Super-RAG power. 
 
 Authoritative suite for ecosystem health, synchronization, and artifact bootstrapping.
 
-- [`plugin-installer`](plugins/plugin-manager/skills/plugin-installer/SKILL.md) — local symlink deployment from source to agent environments
-- [`auto-update-plugins`](plugins/plugin-manager/skills/auto-update-plugins/SKILL.md) — pull-based sync via SessionStart hook
-- [`maintain-plugins`](plugins/plugin-manager/skills/maintain-plugins/SKILL.md)
-- [`replicate-plugin`](plugins/plugin-manager/skills/replicate-plugin/SKILL.md)
+- [`plugin-installer`](plugins/plugin-manager/skills/plugin-installer/SKILL.md) — install plugins from source directories into agent environments
+- [`plugin-remover`](plugins/plugin-manager/skills/plugin-remover/SKILL.md) — uninstall plugins and cleanly wipe associated artifacts
+- [`plugin-syncer`](plugins/plugin-manager/skills/plugin-syncer/SKILL.md) — full registry sync updating mapped plugins and cleaning orphans
 
 ### RLM Factory — Reverse Language Modeling
 
