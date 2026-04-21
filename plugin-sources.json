@@ -1,9 +1,31 @@
 {
   "sources": [
     {
-      "source": "richfrem/agent-plugins-skills",
+      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "plugins": [
-        "agent-loops"
+        "adr-manager",
+        "agent-agentic-os",
+        "agent-loops",
+        "agent-scaffolders",
+        "claude-cli",
+        "coding-conventions",
+        "context-bundler",
+        "copilot-cli",
+        "dependency-management",
+        "exploration-cycle-plugin",
+        "gemini-cli",
+        "huggingface-utils",
+        "link-checker",
+        "memory-management",
+        "mermaid-to-png",
+        "obsidian-wiki-engine",
+        "plugin-manager",
+        "rlm-factory",
+        "rsvp-speed-reader",
+        "spec-kitty",
+        "task-manager",
+        "vector-db",
+        "voice-writer"
       ]
     }
   ]
