@@ -82,7 +82,20 @@ flowchart LR
 
 ### Step 4: Hand-off (The Bridge)
 
-The Outer Loop invokes the Inner Loop. Depending on the environment, this is either done by spawning a sub-process (e.g., `claude "Read handoffs/task_packet_001.md"`), calling an API, or asking the Human User to switch terminals.
+*(Best Practice: Run a functional CLI heartbeat using a simple health prompt to verify end-to-end connectivity before the first hand-off).*
+
+The Outer Loop invokes the Inner Loop. To ensure stability and avoid shell fragility (e.g., quoting/piping issues), the Outer Loop should explicitly delegate to a cost-effective CLI sub-agent (e.g., `gpt-5-mini` or `gemini-flash`) using `run_agent.py`:
+
+```bash
+# Explicitly delegate inner-loop execution for stability
+python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+  handoffs/task_packet_001.md \
+  <target_file_to_modify> \
+  handoffs/result_packet.md \
+  "Execute the strategy packet instructions exactly."
+```
+
+If `run_agent.py` is unavailable, this is done by spawning a sub-process (e.g., `gemini -p "Read handoffs/task_packet_001.md"`), calling an API, or asking the Human User to switch terminals.
 
 ### Step 5: Execute (Inner Loop)
 
@@ -111,6 +124,7 @@ Once the Inner Loop signals completion, the Outer Loop must verify the results:
    - 🟡 **MODERATE**: The feature works, but violates project architecture, ADRs, or performance standards.
    - 🟢 **MINOR**: The feature works and follows architecture, but has minor naming or stylistic issues.
 2. The Outer Loop loops back to Step 4, handing the Correction Packet to the Inner Loop.
+3. **Emit Friction Event**: Every Verification FAIL should be logged via `context/kernel.py` to maintain an observability trail for the stalling loop.
 
 ### Step 7: Self-Assessment Survey (MANDATORY — Outer Loop and Inner Loop)
 

@@ -111,6 +111,7 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 - `evals/evals.json` — replace the `REPLACE` placeholders with real test inputs and `should_trigger` values
 
 **Step 3 — Establish baseline and start the loop:**
+*(Best Practice: Run a functional CLI heartbeat using `run_agent.py` and a cheap model like `gpt-5-mini` to verify end-to-end connectivity before starting a long loop.)*
 ```bash
 python ./scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
@@ -182,6 +183,8 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 3. **The Immutable Evaluator**: `eval_runner.py` (pure scorer) + `evaluate.py` (loop gate) + `<target-skill>/evals/evals.json` (locked fixtures).
 
 ## Phase 0: Intake Interview
+
+*(Note: Triple-Loop architectures require a functional CLI Heartbeat before starting unattended loops. If you are starting an unattended loop, ensure `run_agent.py` and your AI models like `gpt-5-mini` or `gemini-3-flash-preview` are reachable).*
 
 Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
 
@@ -299,24 +302,19 @@ The agent will:
        --experiment-dir <experiment-dir> --mutation-target <filename>
    ```
 
-   Call pattern:
+   Call pattern (incorporating Triple-Loop Orchestrator stability patterns):
    ```bash
-   cp <skill>/SKILL.md /tmp/current-skill.md
-   cp <skill>/evals/evals.json /tmp/current-evals.json
-   copilot -p "$(cat <experiment-dir>/references/copilot_proposer_prompt.md)
-
-   ---CURRENT SKILL---
-   $(cat /tmp/current-skill.md)
-
-   ---EVAL SUITE---
-   $(cat /tmp/current-evals.json)
-
-   ---FAILURE ANALYSIS---
-   Type: <failure_type>
-   Summary: <one-sentence description of what the last iteration got wrong>" > /tmp/proposed-skill.md
+   # Explicitly delegate to a cost-effective CLI sub-agent (e.g., gpt-5-mini or gemini-flash)
+   # Use run_agent.py for stability instead of raw CLI calls to avoid quoting/piping fragility
+   python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+     <experiment-dir>/references/copilot_proposer_prompt.md \
+     <skill>/SKILL.md \
+     /tmp/proposed-skill.md \
+     "Optimize agentic skill routing accuracy. FAILURE TYPE: <failure_type>. Summary: <one-sentence description of what the last iteration got wrong>"
+     
    cp /tmp/proposed-skill.md <skill>/SKILL.md
    ```
-   Use `gemini` instead of `copilot` if specified. Fall back to self-proposing only if neither CLI is available. If the proposed file is identical to current, re-prompt with "try a different approach".
+   Use `gemini-cli-agent` instead of `copilot-cli-agent` if specified. Fall back to self-proposing only if neither CLI is available. If using raw CLI due to lack of `run_agent.py`, ensure prompts are piped appropriately. If the proposed file is identical to current, re-prompt with "try a different approach" and log a friction event via `context/kernel.py`.
 
    **Step B.1 — Evolve the proposer prompt (second-order mutation):**
    After 3 consecutive DISCARDs with the same failure type, consider that the *prompt itself* may be
@@ -387,6 +385,7 @@ python ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
    ```
    Iteration <N>: <KEEP|DISCARD>  score=<X>  delta=<+/-Y>  f1=<Z>  — <desc>
    ```
+   *Note: Best practice is to also emit kernel intent/result events via `context/kernel.py` here to provide an observability trail for morning backport reviews.*
 4. If a target score threshold was set (e.g. `--until-score 0.95`) and `status == KEEP`: check whether `score >= threshold`. If yes, stop the loop and notify the user.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
