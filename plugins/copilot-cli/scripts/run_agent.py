@@ -124,7 +124,8 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
     try:
         # Run Copilot CLI in non-interactive mode
         # --yolo ensures all tool permissions are granted for headless execution
-        cmd = ["copilot", "--yolo", "--model", model, "-p", prompt]
+        # Use @<path> to read prompt from the temp file, avoiding Windows 32K arg-length limit
+        cmd = ["copilot", "--yolo", "--model", model, "-p", f"@{prompt_tmp_path}"]
         
         with open(output_file, 'w') as out:
             subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, check=True)
