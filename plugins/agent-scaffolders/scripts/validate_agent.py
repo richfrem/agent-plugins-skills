@@ -11,7 +11,7 @@ Purpose:
 Layer: Investigate
 
 Usage:
-    python validate_agent.py <path/to/agent.md>
+    pythonvalidate_agent.py <path/to/agent.md>
 """
 import sys
 import os

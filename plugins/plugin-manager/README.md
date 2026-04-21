@@ -94,7 +94,7 @@ The Plugin Manager deploys to `.agents/` as the universal canonical store, then 
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Default: `plugin_add.py` interactive TUI; also `plugin_installer.py` for single-plugin CI installs | `plugin_add.py`, `bridge_installer.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Default: `plugin_add.py` interactive TUI; also `plugin_add.py --all -y` for single-plugin CI installs | `plugin_add.py`, `plugin_installer.py` |
 | **[maintain-plugins](skills/maintain-plugins/SKILL.md)** | Audit structure, sync agent environments, scaffold READMEs, clean orphans | `sync_with_inventory.py`, `audit_structure.py` |
 | **[auto-update-plugins](skills/auto-update-plugins/SKILL.md)** | SessionStart hook that auto-syncs from GitHub sources on every session | `check_and_sync.py` |
 
@@ -138,7 +138,7 @@ plugin-manager/
 │   └── install.md      <- Install a plugin from GitHub or local path
 ├── scripts/
 │   ├── plugin_add.py          <- Interactive TUI installer (default, GitHub-native)
-│   ├── bridge_installer.py    <- Core deploy logic (single plugin)
+│   ├── plugin_installer.py    <- Core deploy logic (single plugin)
 │   ├── install_all_plugins.py <- Batch install loop
 │   ├── sync_with_inventory.py <- Agent env sync + orphan cleanup
 │   ├── audit_structure.py     <- Structural audit

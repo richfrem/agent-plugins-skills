@@ -34,7 +34,7 @@ Script Dependencies:
 Consumed by:
     - None (Standalone script)
 Related:
-    - plugins/agent-skill-open-specifications/skills/ecosystem-standards/SKILL.md
+    - plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md
       → For a deeper LLM-driven content audit (YAML frontmatter, anti-patterns,
         line limits, SKILL.md quality). Use this after the structure check passes.
 """

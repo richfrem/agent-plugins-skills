@@ -6,7 +6,7 @@ Purpose:
     Interactive plugin installer with a multiselect TUI.
     Accepts a local path OR a GitHub owner/repo shorthand, clones into a
     temp directory if remote, discovers all plugins, lets the user select
-    which to install, then runs bridge_installer.py for each.
+    which to install, then runs plugin_installer.py for each.
 
     The interactive TUI design pattern (multiselect, arrow navigation, search,
     owner/repo GitHub shorthand, temp-clone-then-install flow) follows modern
@@ -22,6 +22,12 @@ Layer: Plugin Manager / Installation
 Usage Examples:
     # Install from the local repo (select plugins interactively)
     python plugins/plugin-manager/scripts/plugin_add.py
+
+    # Install from explicit local path (relative or absolute, Mac/Linux/Windows)
+    python plugins/plugin-manager/scripts/plugin_add.py plugins/
+    python plugins/plugin-manager/scripts/plugin_add.py plugins/agent-scaffolders
+    python plugins/plugin-manager/scripts/plugin_add.py /Users/path/to/plugins
+    python plugins/plugin-manager/scripts/plugin_add.py C:\\Users\\path\\to\\plugins
 
     # Install from a remote GitHub repo
     python plugins/plugin-manager/scripts/plugin_add.py richfrem/agent-plugins-skills
@@ -65,7 +71,7 @@ if sys.platform == "win32":
         pass
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-INSTALLER_SCRIPT = SCRIPT_DIR / "bridge_installer.py"
+INSTALLER_SCRIPT = SCRIPT_DIR / "plugin_installer.py"
 
 # ---------------------------------------------------------------------------
 # ANSI colour helpers (no external deps)
@@ -121,7 +127,7 @@ def _clear_lines(n: int):
 # ---------------------------------------------------------------------------
 # Interactive multi-select (space = toggle, enter = confirm, / = search)
 # ---------------------------------------------------------------------------
-def _multiselect(title: str, items: list[dict]) -> list[dict]:
+def _multiselect(title: str, items: list) -> list:
     """
     items: list of {"name": str, "description": str, "path": Path}
     Returns selected subset.
@@ -235,7 +241,7 @@ def _is_github_source(source: str) -> bool:
     return len(parts) >= 2 and not source.startswith(".")
 
 
-def _parse_github_source(source: str) -> tuple[str, str | None]:
+def _parse_github_source(source: str):
     """
     Parse a GitHub source string into (owner/repo, optional_subpath).
 
@@ -324,7 +330,7 @@ def _read_plugin_meta(p: Path) -> dict:
     return meta
 
 
-def _discover_plugins(search_root: Path) -> list[dict]:
+def _discover_plugins(search_root: Path) -> list:
     """
     Discover plugins under search_root using a three-tier waterfall:
 
@@ -403,10 +409,11 @@ def main():
     parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts")
     parser.add_argument("--dry-run", action="store_true", help="Preview — no files written")
     parser.add_argument("--install-rules", action="store_true", help="Also install plugin rules into CLAUDE.md")
+    parser.add_argument("--plugins", type=str, help="Comma-separated list of plugins to install (headless filtering)")
     args = parser.parse_args()
 
     if not INSTALLER_SCRIPT.exists():
-        print(red(f"  Error: bridge_installer.py not found at {INSTALLER_SCRIPT}"))
+        print(red(f"  Error: plugin_installer.py not found at {INSTALLER_SCRIPT}"))
         sys.exit(1)
 
     # ------------------------------------------------------------------
@@ -469,7 +476,11 @@ def main():
     # ------------------------------------------------------------------
     # Plugin selection
     # ------------------------------------------------------------------
-    if args.all or args.yes:
+    if args.plugins:
+        allowed = set(p.strip() for p in args.plugins.split(","))
+        selected_plugins = [p for p in all_plugins if p["name"] in allowed]
+        print(f"  {green('✓')} Installing {len(selected_plugins)} requested plugins")
+    elif args.all or args.yes:
         selected_plugins = all_plugins
         print(f"  {green('✓')} Installing all {len(selected_plugins)} plugins")
     else:
@@ -534,6 +545,61 @@ def main():
         else:
             print(f"    {red('✗')} Failed (exit {result.returncode})")
             fail_count += 1
+
+    # ------------------------------------------------------------------
+    # Record Subscription in plugin-sources.json
+    # ------------------------------------------------------------------
+    if not args.dry_run and success_count:
+        sources_file = project_root / "plugin-sources.json"
+        try:
+            data = {"sources": []}
+            if sources_file.exists():
+                try:
+                    data = json.loads(sources_file.read_text(encoding="utf-8"))
+                except ValueError:
+                    pass
+            
+            sources = data.setdefault("sources", [])
+            
+            if args.source and _is_github_source(args.source):
+                source_key, _ = _parse_github_source(args.source)
+                source_type = "github"
+            elif args.source:
+                source_key = str(Path(args.source).resolve())
+                source_type = "local"
+            else:
+                source_key = str(plugins_root)
+                source_type = "local"
+                
+            installed_names = [p["name"] for p in selected_plugins]
+            
+            # Step 1: Remove these plugins from ALL existing sources (so they don't sync from multiple places)
+            for s in sources:
+                curr = s.get("plugins", [])
+                if not isinstance(curr, list):
+                    curr = []  # wipe out legacy "all" strings
+                s["plugins"] = [p for p in curr if p not in installed_names]
+            
+            # Clean up empty sources
+            data["sources"] = [s for s in sources if isinstance(s.get("plugins"), list) and len(s.get("plugins")) > 0]
+            sources = data["sources"]
+            
+            # Step 2: Append newly installed plugins to their current true source location
+            existing = next((s for s in sources if s.get(source_type) == source_key), None)
+            if not existing:
+                src_name = source_key.split("/")[-1] if "/" in source_key else source_key
+                existing = {"name": src_name, source_type: source_key, "plugins": []}
+                sources.append(existing)
+            
+            curr_plugins = existing.get("plugins", [])
+            if not isinstance(curr_plugins, list):
+                curr_plugins = []
+                
+            existing["plugins"] = sorted(list(set(curr_plugins + installed_names)))
+                
+            sources_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        except Exception as e:
+            print(f"  {yellow('Warning:')} Failed to update plugin-sources.json: {e}")
 
     # ------------------------------------------------------------------
     # Cleanup

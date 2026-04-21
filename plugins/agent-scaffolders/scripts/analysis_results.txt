@@ -1,0 +1,609 @@
+
+======================================================================
+PLUGIN: agent-scaffolders
+======================================================================
+
+Script: analyze_scripts.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: None
+
+Script: auto_fix_local_links.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: None
+
+Script: bad_script.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: None
+
+Script: execute.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: audit-plugin-l5
+  3. Only used by 1 skill. Physically exists ONLY in that skill (audit-plugin-l5)? Yes
+
+Script: inventory_plugin.py
+  1. Exists physically in plugin: Yes (5 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: analyze-plugin, mine-plugins, mine-skill, self-audit
+  4. Used by 4 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 4 utilizing skills? Yes
+
+Script: validate_local_links.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: None
+
+======================================================================
+PLUGIN: plugin-manager
+======================================================================
+
+Script: audit_structure.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: maintain-plugins
+  3. Only used by 1 skill. Physically exists ONLY in that skill (maintain-plugins)? No
+     -> Found in: ['scripts/audit_structure.py', 'skills/maintain-plugins/scripts/audit_structure.py']
+
+Script: plugin_installer.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: plugin-installer, maintain-plugins
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 2 utilizing skills? Yes
+
+Script: bulk_replicator.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: replicate-plugin
+  3. Only used by 1 skill. Physically exists ONLY in that skill (replicate-plugin)? No
+     -> Found in: ['scripts/bulk_replicator.py', 'skills/replicate-plugin/scripts/bulk_replicator.py']
+
+Script: clean_orphans.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: None
+
+Script: cleanup_targets.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: None
+
+Script: generate_readmes.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: maintain-plugins
+  3. Only used by 1 skill. Physically exists ONLY in that skill (maintain-plugins)? No
+     -> Found in: ['scripts/generate_readmes.py', 'skills/maintain-plugins/scripts/generate_readmes.py']
+
+Script: install_all_plugins.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: plugin-installer
+  3. Only used by 1 skill. Physically exists ONLY in that skill (plugin-installer)? No
+     -> Found in: ['scripts/install_all_plugins.py']
+
+Script: plugin_bootstrap.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: maintain-plugins
+  3. Only used by 1 skill. Physically exists ONLY in that skill (maintain-plugins)? No
+     -> Found in: ['scripts/plugin_bootstrap.py', 'skills/maintain-plugins/scripts/plugin_bootstrap.py']
+
+Script: plugin_inventory.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: maintain-plugins
+  3. Only used by 1 skill. Physically exists ONLY in that skill (maintain-plugins)? No
+     -> Found in: ['scripts/plugin_inventory.py', 'skills/maintain-plugins/scripts/plugin_inventory.py']
+
+Script: plugin_replicator.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: replicate-plugin
+  3. Only used by 1 skill. Physically exists ONLY in that skill (replicate-plugin)? No
+     -> Found in: ['scripts/plugin_replicator.py', 'skills/replicate-plugin/scripts/plugin_replicator.py']
+
+Script: sync_with_inventory.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: maintain-plugins
+  3. Only used by 1 skill. Physically exists ONLY in that skill (maintain-plugins)? No
+     -> Found in: ['scripts/sync_with_inventory.py', 'skills/maintain-plugins/scripts/sync_with_inventory.py']
+
+Script: update_agent_system.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: None
+
+======================================================================
+PLUGIN: tool-inventory
+======================================================================
+
+Script: audit_plugins.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory)? Yes
+
+Script: fix_inventory_paths.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory)? Yes
+
+Script: generate_tools_manifest.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory)? Yes
+
+Script: manage_tool_inventory.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: tool-inventory, tool-inventory-init
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 2 utilizing skills? Yes
+
+Script: rebuild_inventory.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory)? Yes
+
+Script: sync_inventory_descriptions.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory)? Yes
+
+Script: tool_chroma.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory)? Yes
+
+Script: tool_inventory_init.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: tool-inventory-init
+  3. Only used by 1 skill. Physically exists ONLY in that skill (tool-inventory-init)? Yes
+
+======================================================================
+PLUGIN: rsvp-speed-reader
+======================================================================
+
+Script: execute.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: rsvp-reading
+  3. Only used by 1 skill. Physically exists ONLY in that skill (rsvp-reading)? Yes
+
+Script: orp_engine.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: rsvp-reading
+  3. Only used by 1 skill. Physically exists ONLY in that skill (rsvp-reading)? Yes
+
+Script: parse_document.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: rsvp-reading
+  3. Only used by 1 skill. Physically exists ONLY in that skill (rsvp-reading)? Yes
+
+======================================================================
+PLUGIN: agent-scaffolders
+======================================================================
+
+Script: audit.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: audit-plugin
+  3. Only used by 1 skill. Physically exists ONLY in that skill (audit-plugin)? No
+     -> Found in: ['scripts/audit.py', 'skills/audit-plugin/scripts/audit.py']
+
+Script: scaffold.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: create-docker-skill, create-hook, create-plugin, create-skill, create-stateful-skill, create-sub-agent
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: scaffold_agentic_workflow.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: create-agentic-workflow, create-github-action
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 2 utilizing skills? Yes
+
+Script: scaffold_azure_agent.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: create-azure-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (create-azure-agent)? Yes
+
+Script: scaffold_github_action.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: create-github-action
+  3. Only used by 1 skill. Physically exists ONLY in that skill (create-github-action)? Yes
+
+======================================================================
+PLUGIN: task-manager
+======================================================================
+
+Script: task_manager.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: task-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (task-agent)? Yes
+
+======================================================================
+PLUGIN: rlm-factory
+======================================================================
+
+Script: cleanup_cache.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: debug_rlm.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: rlm-curator
+  3. Only used by 1 skill. Physically exists ONLY in that skill (rlm-curator)? Yes
+
+Script: distiller.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: inject_summary.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: inventory.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: query_cache.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: rlm_config.py
+  1. Exists physically in plugin: Yes (7 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: rlm-cleanup-agent, rlm-curator, rlm-distill-agent, rlm-distill-ollama, rlm-init, rlm-search
+  4. Used by 6 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 6 utilizing skills? Yes
+
+Script: test_rlm_config.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: None
+
+======================================================================
+PLUGIN: context-bundler
+======================================================================
+
+Script: bundle.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: context-bundling, zip-bundling
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 2 utilizing skills? Yes
+
+Script: bundle_zip.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: zip-bundling
+  3. Only used by 1 skill. Physically exists ONLY in that skill (zip-bundling)? No
+     -> Found in: ['scripts/bundle_zip.py']
+
+Script: manifest_manager.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: context-bundling, zip-bundling
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all utilizing skills? No.
+     -> Missing symlinks in: context-bundling, zip-bundling
+
+Script: path_resolver.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: context-bundling, zip-bundling
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all utilizing skills? No.
+     -> Missing symlinks in: context-bundling, zip-bundling
+
+======================================================================
+PLUGIN: obsidian-integration
+======================================================================
+
+Script: bases_ops.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: obsidian-bases-manager
+  3. Only used by 1 skill. Physically exists ONLY in that skill (obsidian-bases-manager)? Yes
+
+Script: canvas_ops.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: obsidian-canvas-architect
+  3. Only used by 1 skill. Physically exists ONLY in that skill (obsidian-canvas-architect)? Yes
+
+Script: graph_ops.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: obsidian-graph-traversal
+  3. Only used by 1 skill. Physically exists ONLY in that skill (obsidian-graph-traversal)? Yes
+
+Script: init_vault.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: obsidian-init
+  3. Only used by 1 skill. Physically exists ONLY in that skill (obsidian-init)? Yes
+
+Script: parser.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: obsidian-markdown-mastery
+  3. Only used by 1 skill. Physically exists ONLY in that skill (obsidian-markdown-mastery)? No
+     -> Found in: ['obsidian-parser/parser.py']
+
+Script: test_parser.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: None
+
+Script: vault_ops.py
+  1. Exists physically in plugin: Yes (4 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: obsidian-canvas-architect, obsidian-init, obsidian-vault-crud
+  4. Used by 3 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 3 utilizing skills? Yes
+
+======================================================================
+PLUGIN: link-checker
+======================================================================
+
+Script: check_broken_paths.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: link-checker-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
+
+Script: find_source_links.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: link-checker-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
+
+Script: map_repository_files.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: link-checker-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
+
+Script: smart_fix_links.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: link-checker-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (link-checker-agent)? Yes
+
+======================================================================
+PLUGIN: agent-loops
+======================================================================
+
+Script: agent_orchestrator.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: orchestrator
+  3. Only used by 1 skill. Physically exists ONLY in that skill (orchestrator)? Yes
+
+Script: swarm_run.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: agent-swarm, orchestrator
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 2 utilizing skills? Yes
+
+======================================================================
+PLUGIN: spec-kitty-plugin
+======================================================================
+
+Script: sync_configuration.py
+  1. Exists physically in plugin: Yes (8 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: spec-kitty-agent, spec-kitty-implement, spec-kitty-merge, spec-kitty-plan, spec-kitty-review, spec-kitty-specify, spec-kitty-sync-plugin
+  4. Used by 7 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 7 utilizing skills? Yes
+
+Script: verify_workflow_state.py
+  1. Exists physically in plugin: Yes (2 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: spec-kitty-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (spec-kitty-agent)? No
+     -> Found in: ['scripts/verify_workflow_state.py']
+
+======================================================================
+PLUGIN: coding-conventions
+======================================================================
+
+Script: python-tool-header-template.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: coding-conventions-agent
+  3. Only used by 1 skill. Physically exists ONLY in that skill (coding-conventions-agent)? Yes
+
+======================================================================
+PLUGIN: excel-to-csv
+======================================================================
+
+Script: convert.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: excel-to-csv
+  3. Only used by 1 skill. Physically exists ONLY in that skill (excel-to-csv)? Yes
+
+Script: verify_csv.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: excel-to-csv
+  3. Only used by 1 skill. Physically exists ONLY in that skill (excel-to-csv)? Yes
+
+======================================================================
+PLUGIN: mermaid-to-png
+======================================================================
+
+Script: convert.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: convert-mermaid
+  3. Only used by 1 skill. Physically exists ONLY in that skill (convert-mermaid)? Yes
+
+Script: verify_png.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: convert-mermaid
+  3. Only used by 1 skill. Physically exists ONLY in that skill (convert-mermaid)? Yes
+
+======================================================================
+PLUGIN: huggingface-utils
+======================================================================
+
+Script: hf_config.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: hf-init, hf-upload
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all utilizing skills? No.
+     -> Missing symlinks in: hf-init, hf-upload
+
+Script: hf_init.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: hf-init
+  3. Only used by 1 skill. Physically exists ONLY in that skill (hf-init)? Yes
+
+Script: hf_upload.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: hf-upload
+  3. Only used by 1 skill. Physically exists ONLY in that skill (hf-upload)? Yes
+
+======================================================================
+PLUGIN: vector-db
+======================================================================
+
+Script: cleanup.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: vector-db-cleanup
+  3. Only used by 1 skill. Physically exists ONLY in that skill (vector-db-cleanup)? Yes
+
+Script: ingest.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: vector-db-ingest, vector-db-search
+  4. Used by 2 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 2 utilizing skills? Yes
+
+Script: ingest_code_shim.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: vector-db-ingest
+  3. Only used by 1 skill. Physically exists ONLY in that skill (vector-db-ingest)? Yes
+
+Script: init.py
+  1. Exists physically in plugin: Yes (5 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: vector-db-cleanup, vector-db-ingest, vector-db-init, vector-db-search
+  4. Used by 4 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 4 utilizing skills? Yes
+
+Script: operations.py
+  1. Exists physically in plugin: Yes (3 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: vector-db-cleanup, vector-db-ingest, vector-db-init, vector-db-launch, vector-db-search
+  4. Used by 5 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all utilizing skills? No.
+     -> Missing symlinks in: vector-db-cleanup, vector-db-init, vector-db-launch
+
+Script: query.py
+  1. Exists physically in plugin: Yes (6 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: vector-db-cleanup, vector-db-ingest, vector-db-init, vector-db-launch, vector-db-search
+  4. Used by 5 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 5 utilizing skills? Yes
+
+Script: vector_config.py
+  1. Exists physically in plugin: Yes (4 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: vector-db-cleanup, vector-db-ingest, vector-db-search
+  4. Used by 3 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 3 utilizing skills? Yes
+
+Script: vector_consistency_check.py
+  1. Exists physically in plugin: Yes (4 location(s))
+     -> Exists at pluginroot/scripts: Yes
+  2. Used by skills: vector-db-cleanup, vector-db-ingest, vector-db-search
+  4. Used by 3 skills. Exists in plugin root (scripts/)? Yes
+  5. Symlink exists in all 3 utilizing skills? Yes
+
+======================================================================
+PLUGIN: agent-scaffolders
+======================================================================
+
+======================================================================
+PLUGIN: adr-manager
+======================================================================
+
+Script: adr_manager.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: adr-management
+  3. Only used by 1 skill. Physically exists ONLY in that skill (adr-management)? Yes
+
+Script: next_number.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: adr-management
+  3. Only used by 1 skill. Physically exists ONLY in that skill (adr-management)? Yes
+
+======================================================================
+PLUGIN: markdown-to-msword-converter
+======================================================================
+
+Script: md_to_docx.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: markdown-to-msword-converter
+  3. Only used by 1 skill. Physically exists ONLY in that skill (markdown-to-msword-converter)? Yes
+
+Script: run_bulk_md_to_docx.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: markdown-to-msword-converter
+  3. Only used by 1 skill. Physically exists ONLY in that skill (markdown-to-msword-converter)? Yes
+
+Script: verify_docx.py
+  1. Exists physically in plugin: Yes (1 location(s))
+     -> Exists at pluginroot/scripts: No
+  2. Used by skills: markdown-to-msword-converter
+  3. Only used by 1 skill. Physically exists ONLY in that skill (markdown-to-msword-converter)? Yes

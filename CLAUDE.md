@@ -14,11 +14,18 @@ Individual skills must be **fully self-contained** — no runtime cross-plugin d
 # Install plugins into any project (recommended)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
+# Install a specific plugin non-interactively (e.g., agent-loops)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-loops -y
+
 # Interactive local install
 python plugins/plugin-manager/scripts/plugin_add.py
 
 # Bulk install all plugins
-python plugins/plugin-manager/scripts/install_all_plugins.py
+python plugins/plugin-manager/scripts/plugin_add.py --all -y
+
+# Local installation testing via uvx (uses remote script but local plugin files)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/agent-scaffolders
 ```
 
 > **Windows**: Never use `npx skills add` — use `uvx` or `bootstrap.py` instead.

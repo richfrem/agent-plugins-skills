@@ -89,7 +89,7 @@ This prompts for source and destination paths and uses the Python symlink manage
 Or use the Python script directly (works on Windows, macOS, and Linux):
 ```bash
 # Create a single symlink (automatically detects OS)
-python ./scripts/symlink_manager.py create --src plugins/plugin-manager/scripts/bridge_installer.py --dst plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py
+python ./scripts/symlink_manager.py create --src plugins/plugin-manager/scripts/plugin_installer.py --dst plugins/plugin-manager/skills/plugin-installer/scripts/plugin_installer.py
 
 # Re-create ALL links from the manifest
 python ./scripts/symlink_manager.py restore
@@ -108,7 +108,7 @@ python ./scripts/symlink_manager.py diagnose
 - ✓ No external shell scripts needed — pure Python with standard library only
 
 **Critical: If symlinks were created as hardlinks or plain-text files:**
-1. Delete them: `rm plugins/plugin-manager/skills/*/scripts/bridge_installer.py`
+1. Delete them: `rm plugins/plugin-manager/skills/*/scripts/plugin_installer.py`
 2. Enable Developer Mode on Windows (Settings → System → For Developers)
 3. Set git config: `git config core.symlinks true`
 4. Use `/create-sym-link` command or `python ./scripts/symlink_manager.py create ...`

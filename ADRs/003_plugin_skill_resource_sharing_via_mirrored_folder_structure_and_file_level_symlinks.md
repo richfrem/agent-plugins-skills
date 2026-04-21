@@ -147,11 +147,11 @@ no shared command references may keep resources inside the skill with no symlink
 
 ## Audit Tool
 
-`plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py` validates compliance with this ADR.
+`plugins/agent-scaffolders/scripts/audit_plugin_structure.py` validates compliance with this ADR.
 Run it against any plugin to detect real files inside skill directories that should be at plugin root:
 
 ```bash
-python plugins/agent-plugin-analyzer/scripts/audit_plugin_structure.py plugins/<plugin-name>
+python plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
 ```
 
 Output:

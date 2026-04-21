@@ -33,15 +33,12 @@ There is one bridge:
 
 ## Execution
 
-### Install a single plugin
-```bash
-python ./plugin_installer.py \
-  --plugin plugins/<plugin-name>
-```
+### 1. New Local Setup (All Plugins)
+Instead of relying on the legacy agent scripts to discover `.claude-plugin`, you now just run the unified Python installer:
 
-### Install all plugins
 ```bash
-python ./install_all_plugins.py
+# Deploys skills, commands, rules, and hooks into .agents/
+python plugins/plugin-manager/scripts/plugin_add.py --all -y
 ```
 
 ---

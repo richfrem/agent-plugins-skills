@@ -101,7 +101,7 @@ def main():
             base_raw_url = "https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main"
             scripts = [
                 "plugins/plugin-manager/scripts/plugin_add.py",
-                "plugins/plugin-manager/scripts/bridge_installer.py"
+                "plugins/plugin-manager/scripts/plugin_installer.py"
             ]
             # Download the required files side-by-side
             for file_path in scripts:

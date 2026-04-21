@@ -187,7 +187,7 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 
 | Plugin | Role |
 |--------|------|
-| `agent-skill-open-specifications` | Spec - what ecosystem artifacts are |
+| `agent-scaffolders` | Spec - what ecosystem artifacts are |
 | `agent-scaffolders` | Factory - how to create them |
 | **`agent-agentic-os`** | **Operations - how to run and improve the environment** |
 

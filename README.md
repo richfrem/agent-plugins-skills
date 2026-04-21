@@ -46,7 +46,7 @@ The `agent-agentic-os` plugin implements a **Triple-Loop** architecture for cont
 
 The loop is autonomous and cost-effective: L2 uses GitHub Copilot's `gpt-5-mini` (free quota), enabling 20–80 mutation proposals per run at near-zero cost. L1 (Gemini Flash) orchestrates unattended overnight. `evaluate.py` is the absolute gate — exit 0 = KEEP, exit 1 = DISCARD + auto-revert.
 
-**Not all skills are good candidates** — the best targets have clear, objective routing criteria and adversarial eval cases. Use [`eval-autoresearch-fit`](plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md) to score a skill before running a loop.
+**Not all skills are good candidates** — the best targets have clear, objective routing criteria and adversarial eval cases. Use [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) to score a skill before running a loop.
 
 **To start a loop on any skill:**
 ```
@@ -155,12 +155,12 @@ Interactive creators for exact file hierarchies across all plugin/skill types.
 
 Structured audit framework for assessing plugin architectural maturity and compliance.
 
-- [`l5-red-team-auditor`](plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/SKILL.md) — 39-point L5 maturity matrix audit
-- [`audit-plugin`](plugins/agent-plugin-analyzer/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-plugin-analyzer/skills/audit-plugin-l5/SKILL.md)
-- [`analyze-plugin`](plugins/agent-plugin-analyzer/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-plugin-analyzer/skills/self-audit/SKILL.md) *(32/40 HIGH)*
-- [`mine-skill`](plugins/agent-plugin-analyzer/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-plugin-analyzer/skills/mine-plugins/SKILL.md)
-- [`path-reference-auditor`](plugins/agent-plugin-analyzer/skills/path-reference-auditor/SKILL.md) · [`synthesize-learnings`](plugins/agent-plugin-analyzer/skills/synthesize-learnings/SKILL.md)
-- [`eval-autoresearch-fit`](plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md) — score any skill for Karpathy autoresearch loop viability; update `summary-ranked-skills.json` *(25/40 MEDIUM)*
+- [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) — 39-point L5 maturity matrix audit
+- [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md)
+- [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) *(32/40 HIGH)*
+- [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md)
+- [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md)
+- [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) — score any skill for Karpathy autoresearch loop viability; update `summary-ranked-skills.json` *(25/40 MEDIUM)*
 
 ### CLI Sub-Agents — Isolated Model Contexts
 
@@ -290,8 +290,8 @@ Token-stream speed reading with pause/resume, comprehension check-ins, and sessi
 
 Canonical documentation for compliant skill and directory architecture construction.
 
-- [`ecosystem-standards`](plugins/agent-skill-open-specifications/skills/ecosystem-standards/SKILL.md)
-- [`ecosystem-authoritative-sources`](plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/SKILL.md)
+- [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md)
+- [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md)
 
 ### Task Manager
 

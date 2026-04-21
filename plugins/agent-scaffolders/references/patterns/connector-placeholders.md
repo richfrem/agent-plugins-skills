@@ -24,4 +24,4 @@ If **~~knowledge base** is connected:
 - Extract the executive summaries and cross-reference with the current findings.
 ```
 
-The plugin must also include a `CONNECTORS.md` file at its root that maps the categories to actual allowed MCP servers, acting as the dependency injection blueprint.
+The plugin must also include a `././CONNECTORS.md` file at its root that maps the categories to actual allowed MCP servers, acting as the dependency injection blueprint.

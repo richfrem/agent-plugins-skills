@@ -18,7 +18,7 @@ The Triple-Loop runs three tiers of agents autonomously:
 
 Score went from **0.61 → 1.00**. The two-segment shape shows a fresh baseline for round 2 — the plotter handles this automatically. Each green dot is a new record. Each blue diamond is a session baseline.
 
-> **Not every skill is a good candidate.** The best targets have clear routing criteria and good adversarial eval cases. Run [`eval-autoresearch-fit`](../../../agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md) first if unsure.
+> **Not every skill is a good candidate.** The best targets have clear routing criteria and good adversarial eval cases. Run [`eval-autoresearch-fit`](../../../agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) first if unsure.
 
 ---
 

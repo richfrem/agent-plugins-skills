@@ -1,47 +1,48 @@
 #!/usr/bin/env python
 """
-generate_review.py (CLI/Dashboard)
+generate_review.py
 =====================================
 
 Purpose:
-    Generate and serve a standalone review page for evaluation workspaces.
-    Discovers run outputs, embeds all data into an HTML template, and serves via tiny HTTP server.
-    Feedback auto-saves to feedback.json inside the workspace.
+    Generates and serves a standalone self-contained review page dashboard 
+    using embeds of evaluation runs outputs and dynamic HTTP saves for local audits.
 
-Layer: User Interface/Dashboard
+Layer: Investigate / Synthesis
 
 Usage Examples:
-    python generate_review.py <workspace-path> [--port PORT] [--skill-name NAME]
+    pythongenerate_review.py path/to/workspace --port 3117
+    pythongenerate_review.py path/to/workspace --static report_viewer.html
 
 Supported Object Types:
-    - Eval workspace directories containing outputs/ Subdirectories
+    Workspace execution bundles containing iterative output artifacts.
 
 CLI Arguments:
-    workspace: Path to review workspace
-    --port, -p: Server port override (default 3117)
-    --skill-name, -n: Name override for dashboard header
-    --previous-workspace: Show comparisons against previous iterations
-    --benchmark: Path to benchmark.json results
-    --static, -s: Write standalone HTML file instead of serving
+    workspace: Workspace directory index.
+    --port|-p: Port to bind dashboard daemon on (default: 3117)
+    --skill-name|-n: Label prefix displayed on header items.
+    --previous-workspace: Show prior loops feedback comparison metadata.
+    --benchmark: Include benchmark result file displays.
+    --static|-s: Standalone dump without daemon server start.
 
 Input Files:
-    - Workspace directories
-    - feedback.json (read/write)
-    - benchmark.json
+    - workspace/* (outputs/)
+    - viewer.html (template sibling)
 
 Output:
-    - HTML standalone review dashboard
-    - feedback.json append commits
+    Runs localhost daemon server with dynamic state synchronizations.
 
 Key Functions:
-    - find_runs(): Scans nested directories for evaluation artifacts.
-    - generate_html(): Binds variables into viewer.html scripts.
+    - generate_html()
+    - find_runs()
+    - ReviewHandler.do_GET()
+    - ReviewHandler.do_POST()
 
 Script Dependencies:
-    - http.server, base64, mimetypes, webbrowser, functools
+    - argparse, json, base64, mimetypes, os, re, sys, time, webbrowser
+    - http.server.HTTPServer / BaseHTTPRequestHandler
 
 Consumed by:
-    - User (Browser)
+    Interactivity-driven code evaluation browser cycles.
 """
 
 import argparse

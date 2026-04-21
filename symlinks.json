@@ -2,14 +2,14 @@
   "version": 1,
   "links": [
     {
-      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
-      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\bridge_installer.py",
+      "src": "plugins\\plugin-manager\\scripts\\plugin_installer.py",
+      "dst": "plugins\\plugin-manager\\skills\\maintain-plugins\\scripts\\plugin_installer.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\plugin-manager\\scripts\\bridge_installer.py",
-      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\scripts\\bridge_installer.py",
+      "src": "plugins\\plugin-manager\\scripts\\plugin_installer.py",
+      "dst": "plugins\\plugin-manager\\skills\\plugin-installer\\scripts\\plugin_installer.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -194,140 +194,140 @@
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\inventory_plugin.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\analyze-plugin\\scripts\\inventory_plugin.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\inventory_plugin.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\analyze-plugin\\scripts\\inventory_plugin.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\aggregate_benchmark.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\aggregate_benchmark.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\aggregate_benchmark.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\audit.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\audit.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\audit.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\audit.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\generate_report.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\generate_report.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\generate_report.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\generate_report.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\generate_review.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\generate_review.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\generate_review.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\generate_review.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\improve_description.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\improve_description.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\improve_description.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\improve_description.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\run_eval.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\run_eval.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\run_eval.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\run_eval.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\run_loop.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\run_loop.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\run_loop.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\run_loop.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\utils.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\scripts\\utils.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\utils.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\scripts\\utils.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\audit_plugin_l5_execute.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin-l5\\scripts\\execute.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\audit_plugin_l5_execute.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin-l5\\scripts\\execute.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\update_ranked_skills.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\eval-autoresearch-fit\\scripts\\update_ranked_skills.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\update_ranked_skills.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\eval-autoresearch-fit\\scripts\\update_ranked_skills.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\audit_plugin_paths.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\fix-plugin-paths\\scripts\\audit_plugin_paths.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\audit_plugin_paths.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\fix-plugin-paths\\scripts\\audit_plugin_paths.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\plugin_paths_whitelist.json",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\fix-plugin-paths\\scripts\\plugin_paths_whitelist.json",
+      "src": "plugins\\agent-scaffolders\\scripts\\plugin_paths_whitelist.json",
+      "dst": "plugins\\agent-scaffolders\\skills\\fix-plugin-paths\\scripts\\plugin_paths_whitelist.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\portability-audit-report.md",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\fix-plugin-paths\\scripts\\portability-audit-report.md",
+      "src": "plugins\\agent-scaffolders\\scripts\\portability-audit-report.md",
+      "dst": "plugins\\agent-scaffolders\\skills\\fix-plugin-paths\\scripts\\portability-audit-report.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\inventory_plugin.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\mine-plugins\\scripts\\inventory_plugin.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\inventory_plugin.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\mine-plugins\\scripts\\inventory_plugin.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\inventory_plugin.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\mine-skill\\scripts\\inventory_plugin.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\inventory_plugin.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\mine-skill\\scripts\\inventory_plugin.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\check_plugin_boundaries.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\path-reference-auditor\\scripts\\check_plugin_boundaries.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\check_plugin_boundaries.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\path-reference-auditor\\scripts\\check_plugin_boundaries.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\check_skill_boundaries.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\path-reference-auditor\\scripts\\check_skill_boundaries.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\check_skill_boundaries.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\path-reference-auditor\\scripts\\check_skill_boundaries.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\cleanup_stacked_references.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\path-reference-auditor\\scripts\\cleanup_stacked_references.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\cleanup_stacked_references.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\path-reference-auditor\\scripts\\cleanup_stacked_references.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\fix_inside_plugin_symlinks.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\path-reference-auditor\\scripts\\fix_inside_plugin_symlinks.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\fix_inside_plugin_symlinks.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\path-reference-auditor\\scripts\\fix_inside_plugin_symlinks.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\path_reference_auditor.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\path-reference-auditor\\scripts\\path_reference_auditor.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\path_reference_auditor.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\path-reference-auditor\\scripts\\path_reference_auditor.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\assert_audit.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\self-audit\\scripts\\assert_audit.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\assert_audit.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\self-audit\\scripts\\assert_audit.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\scripts\\inventory_plugin.py",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\self-audit\\scripts\\inventory_plugin.py",
+      "src": "plugins\\agent-scaffolders\\scripts\\inventory_plugin.py",
+      "dst": "plugins\\agent-scaffolders\\skills\\self-audit\\scripts\\inventory_plugin.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1646,44 +1646,44 @@
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\diagrams\\analyze-plugin-flow.mmd",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\analyze-plugin\\assets\\resources\\analyze-plugin-flow.mmd",
+      "src": "plugins\\agent-scaffolders\\assets\\diagrams\\analyze-plugin-flow.mmd",
+      "dst": "plugins\\agent-scaffolders\\skills\\analyze-plugin\\assets\\resources\\analyze-plugin-flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\agent.md.jinja",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\agent.md.jinja",
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\agent.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\assets\\templates\\agent.md.jinja",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\command.md.jinja",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\command.md.jinja",
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\command.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\assets\\templates\\command.md.jinja",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\execute.py.jinja",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\execute.py.jinja",
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\execute.py.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\assets\\templates\\execute.py.jinja",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\README.md.jinja",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\README.md.jinja",
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\README.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\assets\\templates\\README.md.jinja",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\templates\\SKILL.md.jinja",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin\\assets\\templates\\SKILL.md.jinja",
+      "src": "plugins\\agent-scaffolders\\assets\\templates\\SKILL.md.jinja",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin\\assets\\templates\\SKILL.md.jinja",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-plugin-analyzer\\assets\\diagrams\\audit-plugin-l5-flow.mmd",
-      "dst": "plugins\\agent-plugin-analyzer\\skills\\audit-plugin-l5\\assets\\resources\\audit-plugin-l5-flow.mmd",
+      "src": "plugins\\agent-scaffolders\\assets\\diagrams\\audit-plugin-l5-flow.mmd",
+      "dst": "plugins\\agent-scaffolders\\skills\\audit-plugin-l5\\assets\\resources\\audit-plugin-l5-flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
@@ -1718,14 +1718,14 @@
       "description": ""
     },
     {
-      "src": "plugins\\agent-skill-open-specifications\\assets\\diagrams\\plugin-architecture.mmd",
-      "dst": "plugins\\agent-skill-open-specifications\\skills\\ecosystem-authoritative-sources\\assets\\resources\\plugin-architecture.mmd",
+      "src": "plugins\\agent-scaffolders\\assets\\diagrams\\plugin-architecture.mmd",
+      "dst": "plugins\\agent-scaffolders\\skills\\ecosystem-authoritative-sources\\assets\\resources\\plugin-architecture.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins\\agent-skill-open-specifications\\assets\\diagrams\\skill-execution-flow.mmd",
-      "dst": "plugins\\agent-skill-open-specifications\\skills\\ecosystem-authoritative-sources\\assets\\resources\\skill-execution-flow.mmd",
+      "src": "plugins\\agent-scaffolders\\assets\\diagrams\\skill-execution-flow.mmd",
+      "dst": "plugins\\agent-scaffolders\\skills\\ecosystem-authoritative-sources\\assets\\resources\\skill-execution-flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
@@ -2607,145 +2607,145 @@
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-scaffolders/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -3099,145 +3099,145 @@
     },
     {
       "src": "ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/ADRs/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/ADRs/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/ADRs/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/ADRs/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/ADRs/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/ADRs/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/ADRs/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/ADRs/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/ADRs/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/ADRs/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/ADRs/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/ADRs/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/analyze-plugin/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/ADRs/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/ADRs/001_cross_plugin_script_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/ADRs/002_multi_skill_script_centralization.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/ADRs/002_multi_skill_script_centralization.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/agent-plugin-analyzer/skills/l5-red-team-auditor/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
       "strategy": "symlink",
       "description": ""
     }

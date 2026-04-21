@@ -4,10 +4,10 @@ description: >-
   Installs plugin components (skills, commands/workflows, rules, hooks, MCP)
   into the .agents/ central store and symlinks them to agent environments that
   require it (.claude/). DEFAULT method: run plugin_add.py for an interactive
-  TUI that supports local and GitHub owner/repo installs. Use plugin_installer.py
-  for scripted/CI single-plugin installs. Trigger when a user says "install
-  plugin", "deploy plugin", "add plugin", "install from GitHub", or "sync
-  plugin to agents".
+  require it (.claude/). DEFAULT method: run plugin_add.py (the primary TUI and headless orchestrator) 
+  which internally delegates to plugin_installer.py (the execution engine) for the actual OS-level installation.
+  Trigger when a user says "install plugin", "deploy plugin", "add plugin", 
+  "install from GitHub", or "sync plugin to agents".
 allowed-tools: Bash, Write, Read
 ---
 
@@ -34,14 +34,14 @@ This skill deploys plugin components to agent environments using the
 
 | Installer | Features | Requires Local Clone? | Recommended For |
 |-----------|----------|-----------------------|-----------------|
-| `uvx` ★ **default** | Full interactive TUI | No (runs from GitHub) | Everyone using `uv` |
-| `bootstrap.py` | Full interactive TUI | No (downloads in-memory) | End users without `uv` |
-| `legacy methods` | Skills only | No (runs from GitHub) | Users wanting only individual skills |
-| `plugin_add.py` | Full interactive TUI | Yes | Local developers debugging the installer |
+| `uvx` ★ **default** | Runs `plugin_add.py` natively | No (runs from GitHub) | Everyone using `uv` |
+| `bootstrap.py` | Downloads & runs `plugin_add.py` | No (downloads in-memory) | End users without `uv` |
+| `plugin_add.py` | Full interactive TUI or Headless CI | Yes | Local developers debugging or updating locally |
+| `plugin_installer.py` | Execution Engine (No UX) | Yes | Internal framework usage only |
 
 > **Use `uvx`** (★ recommended default) for an interactive TUI that installs full plugins without requiring Node.js.
 > **Use the `bootstrap.py` curl pipeline** if you do not have `uv` installed.
-> **Use `plugin_add.py`** directly for scripted/CI single-plugin installs from a local clone.
+> **Use `plugin_add.py`** directly for scripted/CI installs from a local clone (e.g. `plugin_add.py --all -y`).
 
 ## Initial vs Subsequent Installs
 
@@ -166,6 +166,10 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add anthr
 
 # Install all non-interactively
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
+
+# Local installation testing via uvx (uses remote script but local plugin files)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/agent-scaffolders
 ```
 
 ### Full Deployment: `plugin_add.py` (interactive TUI)
@@ -224,17 +228,19 @@ If no `.claude/` directory exists in the target project, `plugin_add.py` will pr
 
 Answering `Y` (default) creates `.claude/` so Claude Code symlinks are activated during installation. Answering `n` skips it — only `.agents/` (the canonical store) will be populated.
 
-### Single Plugin: `bridge_installer.py` (scripted / CI)
+### The Execution Engine: `plugin_installer.py`
 
-**Install a single plugin:**
+This script is the literal OS execution engine. You should generally run `plugin_add.py`, but you can explicitly trigger the bridge engine if you need to bypass plugin discovery entirely.
+
+**Install a single plugin directly via bridge:**
 ```bash
-python ././scripts/bridge_installer.py \
+python scripts/plugin_installer.py \
   --plugin plugins/my-plugin
 ```
 
 **Dry run (preview only, no writes):**
 ```bash
-python ././scripts/bridge_installer.py \
+python scripts/plugin_installer.py \
   --plugin plugins/my-plugin --dry-run
 ```
 

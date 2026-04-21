@@ -80,16 +80,16 @@ Wait for explicit confirmation (`yes`, `looks good`, `ok`).
 ```bash
 python ./scripts/audit_structure.py
 ```
-> For deeper semantic + security checks, invoke `analyze-plugin` from `agent-plugin-analyzer`.
+> For deeper semantic + security checks, invoke `analyze-plugin` from `agent-scaffolders`.
 
 ### Step 1.5: Path Portability Audit
 Run after every structure scan to catch hardcoded or non-portable paths (ADR-003/004):
 ```bash
-python plugins/agent-plugin-analyzer/scripts/audit_plugin_paths.py plugins/
+python plugins/agent-scaffolders/scripts/audit_plugin_paths.py plugins/
 ```
 **Expected output**: `✅ Clean! 0 violations found.`
 
-If violations are found, invoke the `fix-plugin-paths` skill from `agent-plugin-analyzer` to
+If violations are found, invoke the `fix-plugin-paths` skill from `agent-scaffolders` to
 remediate each file. A clean path audit is a mandatory gate before any merge or release.
 
 **Common violations it catches:**
@@ -150,7 +150,7 @@ For each violation found, report with severity:
 - **MEDIUM** — Missing `CONNECTORS.md` for tool-using plugin, missing fallback-tree
 - **LOW** — Missing README, no `repository` in ././././plugin.json
 
-> For L5 maturity scoring, invoke the `l5-red-team-auditor` agent from `agent-plugin-analyzer`.
+> For L5 maturity scoring, invoke the `l5-red-team-auditor` agent from `agent-scaffolders`.
 
 ---
 
@@ -199,5 +199,5 @@ python ./scripts/generate_readmes.py --apply
 
 ## Next Actions
 - Run `plugin-installer` from `plugin-manager` to deploy updated plugins to agent environments.
-- Run `l5-red-team-auditor` from `agent-plugin-analyzer` for full L5 maturity assessment.
+- Run `l5-red-team-auditor` from `agent-scaffolders` for full L5 maturity assessment.
 - Run `create-skill` from `agent-scaffolders` to fix scaffolding gaps in audited plugins.

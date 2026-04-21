@@ -1,0 +1,59 @@
+---
+user-invocable: true
+argument-hint: "[optional: path to plugin]"
+---
+
+# Self-Audit: Analyze the Analyzer
+
+Run the `analyze-plugin` skill against the `agent-scaffolders` itself and the test fixtures. This is a regression smoke test that verifies the analyzer produces consistent, expected results.
+
+## Execution Steps
+
+1. **Run inventory on self (security scanning is on by default):**
+   ```bash
+   python ./scripts/inventory_plugin.py --path . --format json
+   ```
+
+2. **Run scanner against test fixtures:**
+   ```bash
+   python scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
+   python scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
+   ```
+
+3. **Validate deterministic scanner results:**
+
+   **Self-analysis scanner must confirm:**
+   - `security_flags` = [] (zero security findings in the analyzer itself)
+   - `issues` = [] (zero structural violations)
+
+   **Gold-standard fixture scanner must confirm:**
+   - `security_flags` = [] (zero security findings)
+   - `issues` = [] (zero structural violations)
+   - `warnings` = [] (zero missing components)
+
+   **Flawed fixture scanner must confirm:**
+   - `security_flags` count ≥ 5 (credential + network calls + env access)
+   - `issues` count ≥ 1 (bash script violation)
+   - `warnings` count ≥ 2 (missing acceptance criteria + references)
+   - See `tests/flawed-plugin/README.md` for the full expected findings manifest
+
+4. **Run the full 6-phase analysis on each fixture:**
+   - `tests/gold-standard-plugin/` — should score maturity ≥ L2, zero Critical, at least 2 patterns identified
+   - `tests/flawed-plugin/` — LLM must additionally detect: missing README file tree, missing plugin manifest
+
+5. **Validate self-analysis (full 6-phase on the analyzer itself):**
+   - Maturity Level ≥ L3
+   - Security score ≥ 4/5
+   - Structure score ≥ 4/5
+   - Pattern catalog governance model present with lifecycle states
+
+6. **Report deviations:**
+   ```
+   ⚠️ SELF-AUDIT REGRESSION: [dimension] expected [X] got [Y]
+   ✅ SELF-AUDIT PASSED: [N] scanner checks passed, [M] fixtures validated, [K] 6-phase checks passed
+   ```
+
+## When to Run
+- After any modification to the analyzer's own files
+- Before creating a bundle for external review
+- Before pattern catalog updates (to verify governance compliance)

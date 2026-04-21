@@ -1,8 +1,0 @@
-[
-  {"prompt": "Mine this skill — run targeted skill analysis and extract patterns from this single skill folder", "should_trigger": true},
-  {"prompt": "Analyze this specific skill directory and extract its design patterns", "should_trigger": true},
-  {"prompt": "Look at this skill and tell me how it's structured", "should_trigger": true},
-  {"prompt": "Mine plugins and run the full analysis pipeline on this entire plugin collection", "should_trigger": false},
-  {"prompt": "Run self-audit regression test on the agent-plugin-analyzer itself", "should_trigger": false},
-  {"prompt": "Perform an L5 red team audit and maturity gap analysis on this plugin", "should_trigger": false}
-]
