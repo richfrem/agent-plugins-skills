@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "data-model-discovery-draft.md",
+                "file": "_rule.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "data-model-discovery-draft"
+              "title": "_rule"
             }
           }
         ]
@@ -185,6 +185,20 @@
   },
   "active": "95ee600875023689",
   "lastOpenFiles": [
+    "_search.md",
+    "_plugins.md",
+    "_plan.md",
+    "_meta.md",
+    "_manual.md",
+    "_event.md",
+    "_documentation.md",
+    "optimizer-engine-patterns-reference-design.md",
+    "_index.md",
+    "explanation-concept-or-topic.md",
+    "_claude.md",
+    "_component.md",
+    "strategic-analysis-agent-skills-ecosystem-in-azure.md",
+    "data-model-discovery-draft.md",
     "backend-architect.md",
     "agent-execution-disciplines-code-reviewer.md",
     "acceptance-criteria-prototype-builder.md",
