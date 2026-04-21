@@ -136,7 +136,7 @@ python plugins/plugin-manager/scripts/plugin_add.py --plugin <plugin-name>
 python plugins/plugin-manager/scripts/plugin_add.py --all
 
 # Alternatively, you can use uvx to run the installer natively against your local files
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/agent-scaffolders
+uvx --from . plugin-add plugins/
+uvx --from . plugin-add plugins/agent-scaffolders
 ```
 
