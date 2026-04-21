@@ -125,7 +125,12 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
         # Run Copilot CLI in non-interactive mode
         # --yolo ensures all tool permissions are granted for headless execution
         # Use @<path> to read prompt from the temp file, avoiding Windows 32K arg-length limit
-        cmd = ["copilot", "--yolo", "--model", model, "-p", f"@{prompt_tmp_path}"]
+        # On Windows, copilot is a .ps1 script and must be invoked via PowerShell
+        if sys.platform == "win32":
+            cmd = ["powershell", "-NoProfile", "-Command",
+                   "copilot", "--yolo", "--model", model, "-p", f"@{prompt_tmp_path}"]
+        else:
+            cmd = ["copilot", "--yolo", "--model", model, "-p", f"@{prompt_tmp_path}"]
         
         with open(output_file, 'w') as out:
             subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, check=True)
