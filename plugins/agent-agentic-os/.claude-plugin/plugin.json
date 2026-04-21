@@ -1,7 +1,7 @@
 {
     "name": "agent-agentic-os",
-    "version": "1.4.1",
-    "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, and multi-agent event bus coordination. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
+    "version": "1.5.0",
+    "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, multi-agent event bus coordination, and a Triple-Loop autonomous skill evaluation system. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -10,15 +10,49 @@
     "keywords": [
         "agentic-os",
         "agent-harness",
-        "claude-md",
+        "triple-loop",
+        "eval-runner",
+        "continuous-improvement",
         "context-management",
         "memory-management",
-        "session-management"
+        "session-management",
+        "skill-improvement",
+        "autoresearch"
     ],
     "capabilities": [
         "eval-gate",
         "memory",
         "orchestration",
-        "continuous-improvement"
-    ]
+        "continuous-improvement",
+        "triple-loop-learning",
+        "self-healing",
+        "multi-agent-coordination",
+        "hooks"
+    ],
+    "skills": [
+        "optimize-agent-instructions",
+        "os-clean-locks",
+        "os-eval-backport",
+        "os-eval-lab-setup",
+        "os-eval-runner",
+        "os-guide",
+        "os-improvement-loop",
+        "os-improvement-report",
+        "os-init",
+        "os-memory-manager",
+        "os-skill-improvement",
+        "todo-check"
+    ],
+    "agents": [
+        "agentic-os-setup",
+        "os-health-check",
+        "triple-loop-architect",
+        "triple-loop-orchestrator"
+    ],
+    "commands": [
+        "os-init",
+        "os-loop",
+        "os-memory"
+    ],
+    "hooks": true
 }
