@@ -86,9 +86,9 @@ For each CONNECTORS.md that declares a cross-plugin script dependency:
 
 ## Applied Fixes (as of 2026-03-22)
 
-- `agent-plugin-analyzer/audit-plugin`: Copied `validate_agent.py`,
+- `agent-scaffolders/audit-plugin`: Copied `validate_agent.py`,
   `validate_hook_schema.py`, `test_hook.py`, `hook_linter.py` from `agent-scaffolders`
-  into `agent-plugin-analyzer/scripts/`. Removed CONNECTORS.md.
+  into `agent-scaffolders/scripts/`. Removed CONNECTORS.md.
 - Deleted empty template CONNECTORS.md files from `exploration-cycle-plugin`,
   `agent-scaffolders/skills/continuous-skill-optimizer`,
   `agent-scaffolders/skills/manage-marketplace`, `rsvp-speed-reader`.

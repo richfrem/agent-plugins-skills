@@ -6,7 +6,7 @@ Enable a Claude or Gemini 3.1 Pro agent to autonomously manage, refactor, and im
 - Initialize temp/refactor-plan/ with tasks.md and specification.md.
 - Synthesize ADRs 001-006 and plugin analysis patterns.
 - Enforce zero duplication, strict encapsulation, policy plane separation, and automated portability.
-- Use bridge_installer.py, os-eval-runner, and audit scripts for implementation and verification.
+- Use plugin_installer.py, os-eval-runner, and audit scripts for implementation and verification.
 - Commit with score deltas, update status, and generate a summary report on completion.
 
 ## Acceptance Criteria

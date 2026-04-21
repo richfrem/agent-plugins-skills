@@ -51,48 +51,48 @@
         }
       ]
     },
-    "agent-plugin-analyzer": {
+    "agent-scaffolders": {
       "count": 7,
       "scripts": [
         {
           "name": "analyze_scripts.py",
-          "path": "plugins/agent-plugin-analyzer/scripts/analyze_scripts.py",
+          "path": "plugins/agent-scaffolders/scripts/analyze_scripts.py",
           "purpose": "",
           "type": "python"
         },
         {
           "name": "auto_fix_local_links.py",
-          "path": "plugins/agent-plugin-analyzer/scripts/auto_fix_local_links.py",
+          "path": "plugins/agent-scaffolders/scripts/auto_fix_local_links.py",
           "purpose": "",
           "type": "python"
         },
         {
           "name": "validate_local_links.py",
-          "path": "plugins/agent-plugin-analyzer/scripts/validate_local_links.py",
+          "path": "plugins/agent-scaffolders/scripts/validate_local_links.py",
           "purpose": "",
           "type": "python"
         },
         {
           "name": "inventory_plugin.py",
-          "path": "plugins/agent-plugin-analyzer/skills/analyze-plugin/scripts/inventory_plugin.py",
+          "path": "plugins/agent-scaffolders/skills/analyze-plugin/scripts/inventory_plugin.py",
           "purpose": "",
           "type": "python"
         },
         {
           "name": "execute.py",
-          "path": "plugins/agent-plugin-analyzer/skills/audit-plugin-l5/scripts/execute.py",
+          "path": "plugins/agent-scaffolders/skills/audit-plugin-l5/scripts/execute.py",
           "purpose": "",
           "type": "python"
         },
         {
           "name": "bad_script.py",
-          "path": "plugins/agent-plugin-analyzer/tests/flawed-plugin/scripts/bad_script.py",
+          "path": "plugins/agent-scaffolders/tests/flawed-plugin/scripts/bad_script.py",
           "purpose": "Deliberately flawed script for testing security detection.",
           "type": "python"
         },
         {
           "name": "danger.sh",
-          "path": "plugins/agent-plugin-analyzer/tests/flawed-plugin/scripts/danger.sh",
+          "path": "plugins/agent-scaffolders/tests/flawed-plugin/scripts/danger.sh",
           "purpose": "",
           "type": "bash"
         }
@@ -109,7 +109,7 @@
         },
         {
           "name": "audit.py",
-          "path": "plugins/agent-plugin-analyzer/skills/audit-plugin/scripts/audit.py",
+          "path": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit.py",
           "purpose": "",
           "type": "python"
         },

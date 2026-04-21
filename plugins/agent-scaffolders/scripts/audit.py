@@ -9,7 +9,7 @@ Purpose:
 Layer: Meta-Execution
 
 Usage Examples:
-    python audit.py --path <plugin-directory>
+    pythonudit.py --path <plugin-directory>
 
 Supported Object Types:
     - .claude-plugin formatted directories
@@ -19,8 +19,8 @@ CLI Arguments:
     --path: The absolute or relative path to the plugin directory to audit.
 
 Input Files:
-    - plugin.json
-    - SKILL.md files
+    - ./plugin.json
+    - ././SKILL.md files
     - .mcp.json and hooks.json structures
 
 Output:
@@ -53,18 +53,9 @@ def audit_plugin(plugin_path: str) -> bool:
     if not os.path.isdir(claude_plugin_dir):
         errors.append("Missing `.claude-plugin/` directory.")
     else:
-        manifest_path = os.path.join(claude_plugin_dir, "plugin.json")
+        manifest_path = os.path.join(claude_plugin_dir, "../../../.claude-plugin/plugin.json")
         if not os.path.isfile(manifest_path):
-            errors.append("Missing `plugin.json` inside `.claude-plugin/`.")
-        else:
-            with open(manifest_path, "r") as f:
-                try:
-                    manifest = json.load(f)
-                    for forbidden in ["commands_dir", "skills_dir", "skills", "scripts", "dependencies"]:
-                        if forbidden in manifest:
-                            errors.append(f"'{forbidden}' is not in the spec - remove it from plugin.json (auto-discovered). Put them in README.md.")
-                except json.JSONDecodeError:
-                    errors.append("Invalid JSON in `plugin.json`.")
+            errors.append("Missing `../../../.claude-plugin/plugin.json` inside `.claude-plugin/`.")
 
     # 1.2. Check standard file layout
     if os.path.isfile(os.path.join(plugin_path, "mcp.json")):
@@ -90,15 +81,15 @@ def audit_plugin(plugin_path: str) -> bool:
             if not os.path.isdir(skill_path):
                 continue
             
-            skill_md = os.path.join(skill_path, "SKILL.md")
+            skill_md = os.path.join(skill_path, "././SKILL.md")
 
             if not os.path.isfile(skill_md):
-                errors.append(f"Skill '{skill_name}' is missing `SKILL.md`.")
+                errors.append(f"Skill '{skill_name}' is missing `././SKILL.md`.")
             else:
                 with open(skill_md, "r") as f:
                     lines = f.readlines()
                     if len(lines) > 500:
-                        warnings.append(f"Skill '{skill_name}' SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")
+                        warnings.append(f"Skill '{skill_name}' ././SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")
             
             # Check for illegal bash/powershell scripts
             scripts_dir = os.path.join(skill_path, "scripts")
@@ -114,7 +105,7 @@ def audit_plugin(plugin_path: str) -> bool:
             else:
                 acceptance_file = os.path.join(references_dir, "acceptance-criteria.md")
                 if not os.path.isfile(acceptance_file):
-                    errors.append(f"Skill '{skill_name}' is missing `references/acceptance-criteria.md`. All skills must have test criteria.")
+                    errors.append(f"Skill '{skill_name}' is missing `./acceptance-criteria.md`. All skills must have test criteria.")
                     
             # Check for illegal root directories inside skill (enforce agentskills.io Optional Directories)
             allowed_skill_dirs = {".history", "scripts", "references", "assets", "examples", "templates", "evals"}

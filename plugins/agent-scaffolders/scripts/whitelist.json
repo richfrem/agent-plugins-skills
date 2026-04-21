@@ -1,0 +1,78 @@
+{
+    "global_ignores": {
+        "__init__.py": "Standard Python module initializer. Not a standalone skill executable.",
+        "example.py": "Generic documentation placeholder often used in references.",
+        "example_script.py": "Dummy script name used frequently in code examples.",
+        "tool_script.py": "Dummy script name used frequently in CLI help blocks."
+    },
+    "plugin_ignores": {
+        "adr-manager": {},
+        "agent-loops": {
+            "bundle.py": "Conceptual name in orchestrator DOES NOT list - now replaced with skill reference.",
+            "check_cache.py": "Example placeholder in agent-swarm YAML job template.",
+            "inject_summary.py": "Example placeholder in agent-swarm YAML job template.",
+            "my_post_cmd.py": "Example placeholder in agent-swarm YAML job template.",
+            "persist_soul.py": "Conceptual name in orchestrator DOES NOT list - script does not exist."
+        },
+        "agent-scaffolders": {
+            "audit.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders.",
+            "qc_analysis.py": "Hypothetical docs example.",
+            "qc_core.py": "Hypothetical docs example.",
+            "scaffold.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders."
+        },
+        "agent-scaffolders": {
+            "azure_agent.py": "Generated output artifact written by scaffold_azure_agent.py into the target project.",
+            "check_environment.py": "Generated output artifact scaffolded by create-docker-skill into the target project.",
+            "execute.py": "Generated output artifact rendered from execute.py.jinja template into the target project."
+        },
+        "agent-scaffolders": {
+            "extract.py": "example provided",
+            "script.py": "example provided",
+            "shared.py": "example provided",
+            "shared_util.py": "example provided",
+            "plugin_installer.py": "example provided"
+        },
+        "claude-cli": {},
+        "coding-conventions": {
+            "constants.py": "Module organization diagram example in SKILL.md.",
+            "models.py": "Module organization diagram example in SKILL.md.",
+            "repositories.py": "Module organization diagram example in SKILL.md.",
+            "services.py": "Module organization diagram example in SKILL.md.",
+            "utils.py": "Module organization diagram example in SKILL.md.",
+            "dependency1.py": "Module organization diagram example in SKILL.md.",
+            "dependency2.py": "Module organization diagram example in SKILL.md.",
+            "foo.py": "Module organization diagram example in SKILL.md.",
+            "parent_script.py": "Module organization diagram example in SKILL.md.",
+            "script.py": "Module organization diagram example in SKILL.md."
+        },
+        "context-bundler": {
+            "file.py": "Dummy placeholder string in SKILL.md for missing file handling examples.",
+            "main.py": "Dummy script reference in examples."
+        },
+        "copilot-cli": {},
+        "dependency-management": {},
+        "gemini-cli": {},
+        "huggingface-utils": {},
+        "link-checker": {},
+        "memory-management": {},
+        "mermaid-to-png": {},
+        "obsidian-integration": {},
+        "plugin-manager": {},
+        "rlm-factory": {
+            "auth.py": "Eval prompt example in rlm-curator/evals/evals.json.",
+            "file.py": "Docstring usage example in distiller.py header comment."
+        },
+        "rsvp-speed-reader": {},
+        "spec-kitty-plugin": {
+            "auth.py": "Dummy script reference in examples.",
+            "file.py": "Dummy script reference in examples.",
+            "new_script.py": "Dummy script reference in examples.",
+            "script.py": "Dummy script reference in examples.",
+            "test_auth.py": "Dummy script reference in examples.",
+            "test_new_script.py": "Dummy script reference in examples.",
+            "tasks_cli.py": "spec-kitty sli command"
+        },
+        "task-manager": {},
+        "vector-db": {}
+    }
+}

@@ -1,0 +1,1 @@
+../../../references/ADRs/001_cross_plugin_script_dependencies.md

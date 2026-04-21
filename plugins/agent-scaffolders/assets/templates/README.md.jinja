@@ -1,86 +1,35 @@
-# {{ name }} Plugin
+# {name} Plugin
 
-{{ description }}
+Generated via Agent Scaffolder.
 
-## Installation
-
-### From Claude Code marketplace
-```bash
-/plugin marketplace add <marketplace-url>
-/plugin install {{ name }}
-```
-
-### From GitHub
-```bash
-# Skills only (cross-agent)
-Consult the authoritative installation hub for current deployment logic:
-> ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
-
-# Full plugin (Claude Code native)
-/plugin marketplace add richfrem/agent-plugins-skills
-/plugin install {{ name }}
-```
-
-### Local development (settings.json)
-Add to your `.claude/settings.json` for reliable local discovery on all platforms:
-```json
-{
-  "plugins": [
-    {
-      "source": "settings",
-      "path": "./plugins/{{ name }}"
-    }
-  ]
-}
-```
-Then run `/reload-plugins` to activate without restarting.
-
-## Available Slash Commands
-
-All commands are namespaced as `/{{ name }}:<command>` when installed as a plugin.
-
-{% for command in commands %}
-- `/{{ name }}:{{ command.name }}` — {{ command.description }}
-{% endfor %}
-
-When calling these from within agents or other skills, always use the full namespaced
-form (e.g., `/{{ name }}:my-command`), not the short form.
+## Purpose
+{description}
 
 ## Dependencies
-
-By default, standard library dependencies are assumed. If external packages are required,
-declare them in `requirements.in` and use the standard `pip-compile` workflow:
-
+By default, standard library dependencies are assumed. If external packages are required, declare them in `requirements.in` and use the standard `pip-compile` workflow:
 ```bash
-cd plugins/{{ name }}
+cd plugins/{name}
 pip-compile requirements.in
 pip install -r requirements.txt
 ```
 
 ## Plugin Components
+List the skills, scripts, and dependencies provided by this plugin here. Do NOT list them in `.claude-plugin/plugin.json` as that will break Claude Code native auto-discovery.
 
 ### Skills
-{% for skill in skills %}
-- `{{ skill.name }}` — {{ skill.description }}
-{% endfor %}
 
 ### Scripts
 
-{% for script in scripts %}
-- `scripts/{{ script.name }}` — {{ script.description }}
-{% endfor %}
+### Dependencies
 
 ## Directory Structure
 
 ```text
-{{ name }}/
+{name}/
 ├── .claude-plugin/plugin.json
 ├── README.md
-├── requirements.in
-├── requirements.txt
-├── commands/
-├── agents/
+├── references/
+├── scripts/
 ├── skills/
-├── hooks/
-└── scripts/
+└── templates/
 ```

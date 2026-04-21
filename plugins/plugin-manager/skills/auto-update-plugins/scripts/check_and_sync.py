@@ -67,7 +67,7 @@ SOURCES_FILE = PROJECT_ROOT / "plugin-sources.json"
 SYNC_STATE_FILE = PROJECT_ROOT / ".agents" / "plugin-sync-state.json"
 
 # Resolve plugin_add.py — find it relative to this script or walk up from cwd
-def _find_plugin_add() -> Path | None:
+def _find_plugin_add():
     """Return plugin_add.py if installed in .agents/, otherwise None (caller uses uvx)."""
     installed = PROJECT_ROOT / ".agents" / "skills" / "plugin-installer" / "scripts" / "plugin_add.py"
     return installed if installed.exists() else None
@@ -186,17 +186,18 @@ def main() -> None:
         print(f"  [auto-sync] Changes detected in '{name}' "
               f"({cached_sha[:8] if cached_sha else 'new'} → {latest_sha[:8]}). Syncing...")
 
+        plugin_args = ["-y"]
+        if isinstance(plugins_selection, list) and plugins_selection:
+            plugin_args.extend(["--plugins", ",".join(plugins_selection)])
+        else:
+            plugin_args.append("--all")
+
         if plugin_add:
-            cmd = [sys.executable, str(plugin_add), owner_repo, "--all", "-y"]
+            cmd = [sys.executable, str(plugin_add), owner_repo] + plugin_args
         else:
             # uvx fallback — works in any consumer project without a local clone
             cmd = ["uvx", "--from", "git+https://github.com/richfrem/agent-plugins-skills",
-                   "plugin-add", owner_repo, "--all", "-y"]
-        # If specific plugins requested (not "all"), we can't filter via CLI yet —
-        # fall back to --all and note it. Future: add --plugin filter to plugin_add.py.
-        if plugins_selection != "all" and isinstance(plugins_selection, list):
-            print(f"  [auto-sync] Note: installing all plugins from '{name}' "
-                  f"(per-plugin filtering not yet supported in non-interactive mode).")
+                   "plugin-add", owner_repo] + plugin_args
 
         try:
             subprocess.run(cmd, check=True, text=True)

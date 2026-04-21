@@ -1,64 +1,42 @@
 ---
-name: {{ name }}
-description: >
-  {{ description }}
-  Use for: {{ trigger_phrases }}.
-  Do NOT use for: {{ anti_trigger_phrases }}.
-disable-model-invocation: {{ disable_model_invocation | default('false') }}
-{% if user_invocable == false %}user-invocable: false
-{% endif %}allowed-tools:
-{% for tool in allowed_tools %}  - {{ tool }}
-{% endfor %}{% if model %}model: {{ model }}
-{% endif %}{% if effort %}effort: {{ effort | default('medium') }}
-{% endif %}{% if max_tokens %}maxTokens: {{ max_tokens }}
-{% endif %}{% if argument_hint %}argument-hint: "{{ argument_hint }}"
-{% endif %}{% if hooks %}hooks:
-{{ hooks | indent(2) }}
-{% endif %}{% if isolation %}isolation: {{ isolation }}
-{% endif %}---
+name: {name}
+description: {description}
+disable-model-invocation: false
+---
 
-# {{ title_name }}
-
+# {title_name}
 [See acceptance criteria](references/acceptance-criteria.md)
 
 ## Discovery Phase
-
 <!-- Add questions here to gather requirements, or remove section if fully autonomous -->
 
 ## Recap
-
-<!-- Confirmation gate: "Does this look right? (yes / adjust)" — remove if not needed -->
+<!-- Add confirmation gate here if gathering complex requirements. E.g., "Does this look right? (yes / adjust)" -->
 
 ## Execution
+This skill implements the requested functionality. When invoked, you MUST execute the provided Python determinism script instead of attempting to solve the task using raw bash or javascript logic.
 
-This skill implements the requested functionality. When invoked, execute the requested
-task using the tools declared in `allowed-tools`.
-
-{% if scripts %}**Utility scripts:**
+**Usage:**
 ```bash
-python.agents/skills/{{ name }}/scripts/execute.py --help
+python${{plugins}}/skills/{name}/scripts/execute.py --help
 ```
-{% endif %}
 
 ## Baseline Validation
-
-Before optimising, run one baseline evaluation and log it in `evals/results.tsv`.
+Before optimizing behavior, run one baseline evaluation and log it in `evals/results.tsv`.
 
 ## Iteration Loop
-
 When iterating, follow a disciplined loop:
 1. Change one dominant variable per iteration.
 2. Re-run evaluations.
 3. Mark the attempt as `keep` or `discard`.
-4. If the run crashes, log the failure and revert to last known-good state.
+4. If the run crashes or times out, log the failure and continue from the last known good state.
 
 ## Output
-
-Always conclude with a Source Transparency Declaration:
+Always conclude execution with a Source Transparency Declaration explicitly listing what was queried to guarantee user trust:
 **Sources Checked:** [list]
 **Sources Unavailable:** [list]
 
 ## Next Actions
-
-- Run `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for improvement loops.
-- Run `audit-plugin` to verify generated artifacts.
+<!-- Suggest logical follow-up skills here. For example: -->
+- Use `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for repeatable improvement loops.
+- Suggest the user run `audit-plugin` to verify the generated artifacts.

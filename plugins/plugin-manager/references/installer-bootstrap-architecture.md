@@ -24,7 +24,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 
 **Pros:**
 - **Exact `npx` Equivalent:** It creates a temporary, isolated environment, downloads the repo, runs the mapped entry script (`plugin_add.py`), and tears it down.
-- **Zero Local Footprint:** `plugin_add.py` resolves its relative local dependencies (like `bridge_installer.py`) fully isolated from the user's workspace.
+- **Zero Local Footprint:** `plugin_add.py` resolves its relative local dependencies (like `plugin_installer.py`) fully isolated from the user's workspace.
 - **No PyPI Required:** Works directly from the GitHub URL.
 
 **Cons:**
@@ -67,14 +67,14 @@ Invoke-RestMethod https://raw.githubusercontent.com/richfrem/agent-plugins-skill
 - Absolute zero friction. Requires only native Python (which agent developers already have installed). No package managers (`npm`, `uv`, `pipx`) required.
 
 **Cons:**
-- Requires engineering a `bootstrap.py` script whose sole job is to download `plugin_add.py` (and its dependency `bridge_installer.py`) into a temporary folder, execute it, and clean up.
+- Requires engineering a `bootstrap.py` script whose sole job is to download `plugin_add.py` (and its dependency `plugin_installer.py`) into a temporary folder, execute it, and clean up.
 - Security optics: IT departments often flag `curl | bash` equivalent patterns as bad practice.
 
 ---
 
 ## Option 4: Publish to PyPI 
 
-We bundle `plugin_add.py` and `bridge_installer.py` into a lightweight, standalone Python package (e.g., `antigravity-plugins`) and publish it officially to PyPI.
+We bundle `plugin_add.py` and `plugin_installer.py` into a lightweight, standalone Python package (e.g., `antigravity-plugins`) and publish it officially to PyPI.
 
 ```bash
 pip install antigravity-plugins

@@ -105,7 +105,7 @@ python plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
 > the shared multi-IDE store and is **never touched**. Gemini CLI, Copilot, and
 > Antigravity continue to work unchanged.
 
-> **Future installs**: `bridge_installer.py` has been updated to set
+> **Future installs**: `plugin_installer.py` has been updated to set
 > `"skills": None` for `.claude` — new installations will not recreate the
 > duplicate copies.
 

@@ -15,7 +15,7 @@ When agents generate complex UI artifacts, code architectures, or multi-file sol
 ## Implementation Example
 ```markdown
 ### Scaffold Preview Phase
-Instead of writing the generated skill files directly to `plugins/`:
+Instead of writing the generated skill files directly to `<PLUGIN_DIR>/`:
 1. Write the proposed file structure and contents to `/tmp/scaffold-preview/`.
 2. Execute `python scripts/preview_server.py /tmp/scaffold-preview/`.
 3. Provide the user the `localhost` link.

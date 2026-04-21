@@ -185,12 +185,12 @@ Nothing at the source repo needs to change.
 
 ## Migration from Old Local-Path Model
 
-If you previously used `AGENT_PLUGINS_SKILLS_DIR` env var + `install_all_plugins.py`:
+If you previously used `AGENT_PLUGINS_SKILLS_DIR` env var + `plugin_add.py --all`:
 
 1. Replace `plugin-sources.json` with the GitHub-based format above.
 2. Remove `AGENT_PLUGINS_SKILLS_DIR` from your shell profile / PowerShell profile.
 3. Remove the `sync-agent-plugins` alias (no longer needed).
-4. `check_and_sync.py` now calls `plugin_add.py` instead of `install_all_plugins.py`.
+4. `check_and_sync.py` now calls `plugin_add.py --all -y` automatically.
 
 ---
 

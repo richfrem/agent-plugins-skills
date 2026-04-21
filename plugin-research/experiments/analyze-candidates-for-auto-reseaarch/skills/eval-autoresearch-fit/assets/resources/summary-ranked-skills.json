@@ -184,7 +184,7 @@
       "eval_count": 1
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "self-audit",
       "objectivity_score": 10,
       "execution_speed_score": 5,
@@ -196,8 +196,8 @@
       "status": "EVALUATED",
       "eval_verdict": "HIGH",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "bash -c \"python scripts/inventory_plugin.py --path plugins/agent-plugin-analyzer --format json > /tmp/self.json && python scripts/inventory_plugin.py --path tests/gold-standard-plugin --format json > /tmp/gold.json && python scripts/inventory_plugin.py --path tests/flawed-plugin --format json > /tmp/flawed.json && python scripts/assert_audit.py --fixture self --json-output /tmp/self.json; r1=$?; python scripts/assert_audit.py --fixture gold --json-output /tmp/gold.json; r2=$?; python scripts/assert_audit.py --fixture flawed --json-output /tmp/flawed.json; r3=$?; echo $(( (r1!=0) + (r2!=0) + (r3!=0) ))\"",
-      "mutation_target": "plugins/agent-plugin-analyzer/analyzer.py",
+      "evaluator_command": "bash -c \"python scripts/inventory_plugin.py --path plugins/agent-scaffolders --format json > /tmp/self.json && python scripts/inventory_plugin.py --path tests/gold-standard-plugin --format json > /tmp/gold.json && python scripts/inventory_plugin.py --path tests/flawed-plugin --format json > /tmp/flawed.json && python scripts/assert_audit.py --fixture self --json-output /tmp/self.json; r1=$?; python scripts/assert_audit.py --fixture gold --json-output /tmp/gold.json; r2=$?; python scripts/assert_audit.py --fixture flawed --json-output /tmp/flawed.json; r3=$?; echo $(( (r1!=0) + (r2!=0) + (r3!=0) ))\"",
+      "mutation_target": "plugins/agent-scaffolders/analyzer.py",
       "key_barriers": [
         "Evaluator invokes LLM-driven 6-phase analysis (non-deterministic scores and potential flakiness)",
         "No single, pre-specified single-file mutation target in the skill; analyzer is multi-file making single-file-only edits hard"
@@ -413,7 +413,7 @@
       "eval_date": "2026-03-29"
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "path-reference-auditor",
       "objectivity_score": 10,
       "execution_speed_score": 7,
@@ -666,7 +666,7 @@
       "eval_count": 1
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "audit-plugin",
       "objectivity_score": 6,
       "execution_speed_score": 9,
@@ -679,7 +679,7 @@
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
       "evaluator_command": "python evaluate.py --plugin-root . --json | jq -r .critical_issues",
-      "mutation_target": "plugins/agent-plugin-analyzer/skills/audit-plugin/SKILL.md",
+      "mutation_target": "plugins/agent-scaffolders/skills/audit-plugin/SKILL.md",
       "key_barriers": [
         "Relies on the plugin-validator agent (LLM) for many judgments, so evaluation is not purely deterministic",
         "No guaranteed headless evaluate.py and plugin root detection may require human confirmation or ambiguous paths"
@@ -919,7 +919,7 @@
       "eval_count": 2
     },
     {
-      "plugin": "agent-skill-open-specifications",
+      "plugin": "agent-scaffolders",
       "skill": "ecosystem-standards",
       "objectivity_score": 6,
       "execution_speed_score": 9,
@@ -931,8 +931,8 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "HYBRID",
-      "evaluator_command": "python plugins/agent-skill-open-specifications/skills/ecosystem-standards/evaluate.py ./subject | jq -r .score",
-      "mutation_target": "plugins/agent-skill-open-specifications/skills/ecosystem-standards/SKILL.md",
+      "evaluator_command": "python plugins/agent-scaffolders/skills/ecosystem-standards/evaluate.py ./subject | jq -r .score",
+      "mutation_target": "plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md",
       "key_barriers": [
         "No headless evaluate.py that emits a single numeric metric",
         "Many audit checks require semantic/LLM judgment or touch multiple files rather than a single editable target"
@@ -1149,7 +1149,7 @@
       "eval_count": 2
     },
     {
-      "plugin": "agent-skill-open-specifications",
+      "plugin": "agent-scaffolders",
       "skill": "ecosystem-authoritative-sources",
       "objectivity_score": 3,
       "execution_speed_score": 9,
@@ -1161,8 +1161,8 @@
       "status": "EVALUATED",
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/evaluate.py --score",
-      "mutation_target": "plugins/agent-skill-open-specifications/skills/ecosystem-authoritative-sources/SKILL.md",
+      "evaluator_command": "python plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/evaluate.py --score",
+      "mutation_target": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md",
       "key_barriers": [
         "No headless evaluate.py exists; current evaluation relies on human/LLM judgement",
         "Content spans many reference files rather than a single, well-defined editable file"
@@ -1218,7 +1218,7 @@
       "eval_count": 2
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "eval-autoresearch-fit",
       "objectivity_score": 7,
       "execution_speed_score": 5,
@@ -1227,8 +1227,8 @@
       "total_autoresearch_viability": 25,
       "eval_verdict": "MEDIUM",
       "loop_type": "LLM_IN_LOOP",
-      "evaluator_command": "python plugins/agent-agentic-os/scripts/evaluate.py --skill plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md --json | python -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
-      "mutation_target": "plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md",
+      "evaluator_command": "python plugins/agent-agentic-os/scripts/evaluate.py --skill plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md --json | python -c 'import sys,json; print(json.load(sys.stdin)[\"quality_score\"])'",
+      "mutation_target": "plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md",
       "key_barriers": [
         "Scoring itself requires LLM judgment \u2014 non-deterministic by nature",
         "Batch mode (108 skills) takes 2-3 hours; per-skill speed is acceptable but sweep speed is slow"
@@ -1263,7 +1263,7 @@
       "eval_count": 1
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "synthesize-learnings",
       "objectivity_score": 3,
       "execution_speed_score": 7,
@@ -1493,7 +1493,7 @@
       "eval_count": 1
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "analyze-plugin",
       "objectivity_score": 4,
       "execution_speed_score": 7,
@@ -1506,7 +1506,7 @@
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
       "evaluator_command": "python scripts/score_maturity.py --report analysis-reports/target-run-1/report.md --json | jq -r .overall_score",
-      "mutation_target": "plugins/agent-plugin-analyzer/skills/analyze-plugin/SKILL.md",
+      "mutation_target": "plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md",
       "key_barriers": [
         "Core quality judgments require LLM interpretation (non-deterministic evaluator)",
         "No single predefined editable source-of-truth \u2014 analysis produces many artifacts instead of one mutable code file"
@@ -1516,7 +1516,7 @@
       "eval_count": 2
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "mine-skill",
       "objectivity_score": 2,
       "execution_speed_score": 7,
@@ -1608,7 +1608,7 @@
       "eval_count": 2
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "mine-plugins",
       "objectivity_score": 3,
       "execution_speed_score": 5,
@@ -1621,7 +1621,7 @@
       "eval_verdict": "LOW",
       "loop_type": "LLM_IN_LOOP",
       "evaluator_command": "python evaluate.py --skill mine-plugins --path <TARGET> --headless --json | jq -r .score",
-      "mutation_target": "plugins/agent-plugin-analyzer/skills/mine-plugins/mine_plugins.py",
+      "mutation_target": "plugins/agent-scaffolders/skills/mine-plugins/mine_plugins.py",
       "key_barriers": [
         "Evaluation depends on LLM-based analysis and synthesis \u2014 no deterministic, single-number metric exists",
         "Skill analyzes many files and produces reports (not constrained to editing one predefined file per iteration)"
@@ -1723,7 +1723,7 @@
       "eval_count": 1
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "l5-red-team-auditor",
       "objectivity_score": 3,
       "execution_speed_score": 7,
@@ -2435,7 +2435,7 @@
       "eval_count": 2
     },
     {
-      "plugin": "agent-plugin-analyzer",
+      "plugin": "agent-scaffolders",
       "skill": "audit-plugin-l5",
       "objectivity_score": 2,
       "execution_speed_score": 3,

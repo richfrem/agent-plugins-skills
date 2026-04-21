@@ -19,6 +19,9 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 # Install everything non-interactively (no prompts)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
 
+# Install a specific plugin directly (e.g., agent-loops)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-loops -y
+
 # Preview what will be installed without writing any files
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
 ```
@@ -118,7 +121,7 @@ rm -rf .agents/ && npx skills add richfrem/agent-plugins-skills/plugins/my-plugi
 
 ---
 
-## Local Development (For Developers)
+### Local Development (For Developers)
 
 If you want to maintain a Git repo for debugging instead of using the remote bootstrappers:
 
@@ -131,4 +134,9 @@ python plugins/plugin-manager/scripts/plugin_add.py --plugin <plugin-name>
 
 # Install all plugins from local source
 python plugins/plugin-manager/scripts/plugin_add.py --all
+
+# Alternatively, you can use uvx to run the installer natively against your local files
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/agent-scaffolders
 ```
+

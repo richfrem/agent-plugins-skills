@@ -3,7 +3,7 @@
 This skill has been promoted to the canonical plugin location:
 
 ```
-plugins/agent-plugin-analyzer/skills/eval-autoresearch-fit/SKILL.md
+plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md
 ```
 
 The data files (ranked skills JSON, opportunities report) remain here under `assets/resources/`

@@ -1,1 +1,0 @@
-../../../../ADRs/002_multi_skill_script_centralization.md
