@@ -7,7 +7,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the univ
 - **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
 - *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
 
-**117 skills** across **25 plugins** — all maintained from a single hub-and-spoke source tree.
+**119 skills** across **23 plugins** — all maintained from a single hub-and-spoke source tree.
 
 ---
 
@@ -98,7 +98,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (25 plugins · 117 skills)
+## Plugin Ecosystem (23 plugins · 119 skills)
 
 ### Agentic OS — Continuous Self-Improvement
 
@@ -118,8 +118,9 @@ The flagship operational framework. Implements the Dual-Flywheel architecture fo
 - [`optimize-agent-instructions`](plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md) — audit and rewrite CLAUDE.md, GEMINI.md, and copilot-instructions.md; applies Karpathy's four behavioral principles, strips stale/foreign content, detects installed Super-RAG layers, adds platform-specific sections
 
 **Agents:**
-- [`os-learning-loop`](plugins/agent-agentic-os/agents/os-learning-loop.md) — retrospective + friction analysis sub-agent
-- [`os-nightly-evolver`](plugins/agent-agentic-os/agents/os-nightly-evolver.md) — bounded autonomous overnight skill evolution (Gemini CLI mutations + evaluate.py gate)
+- [`triple-loop-architect`](plugins/agent-agentic-os/agents/triple-loop-architect.md) — autonomous optimization laboratory setup
+- [`triple-loop-orchestrator`](plugins/agent-agentic-os/agents/triple-loop-orchestrator.md) — headless loop execution and evaluation
+- [`improvement-intake-agent`](plugins/agent-agentic-os/agents/improvement-intake-agent.md) — session friction analysis and intake
 - [`os-health-check`](plugins/agent-agentic-os/agents/os-health-check.md) — OS liveness metrics
 - [`agentic-os-setup`](plugins/agent-agentic-os/agents/agentic-os-setup.md) — OS initialization agent
 
@@ -149,7 +150,7 @@ Interactive creators for exact file hierarchies across all plugin/skill types.
 - [`create-command`](plugins/agent-scaffolders/skills/create-command/SKILL.md) · [`create-hook`](plugins/agent-scaffolders/skills/create-hook/SKILL.md) · [`create-github-action`](plugins/agent-scaffolders/skills/create-github-action/SKILL.md)
 - [`create-agentic-workflow`](plugins/agent-scaffolders/skills/create-agentic-workflow/SKILL.md) · [`create-azure-agent`](plugins/agent-scaffolders/skills/create-azure-agent/SKILL.md)
 - [`create-docker-skill`](plugins/agent-scaffolders/skills/create-docker-skill/SKILL.md) · [`create-mcp-integration`](plugins/agent-scaffolders/skills/create-mcp-integration/SKILL.md)
-- [`create-stateful-skill`](plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md)
+- [`create-stateful-skill`](plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md)
 
 ### Agent Plugin Analyzer — Plugin Quality Audits
 
@@ -197,14 +198,11 @@ Use Anthropic's canonical skill: [`anthropics/skills — xlsx`](https://github.c
 
 Autonomous discovery loop for idea framing, business requirements, user stories, prototyping, and handoff into formal engineering specs.
 
-- [`exploration-workflow`](plugins/exploration-cycle-plugin/skills/exploration-workflow/SKILL.md) · [`exploration-session-brief`](plugins/exploration-cycle-plugin/skills/exploration-session-brief/SKILL.md)
+- [`exploration-workflow`](plugins/exploration-cycle-plugin/skills/exploration-workflow/SKILL.md) · [`exploration-session-brief`](plugins/exploration-cycle-plugin/skills/exploration-session-brief/SKILL.md) · [`discovery-planning`](plugins/exploration-cycle-plugin/skills/discovery-planning/SKILL.md)
 - [`business-requirements-capture`](plugins/exploration-cycle-plugin/skills/business-requirements-capture/SKILL.md) · [`business-workflow-doc`](plugins/exploration-cycle-plugin/skills/business-workflow-doc/SKILL.md)
 - [`user-story-capture`](plugins/exploration-cycle-plugin/skills/user-story-capture/SKILL.md) · [`exploration-handoff`](plugins/exploration-cycle-plugin/skills/exploration-handoff/SKILL.md)
-- [`exploration-optimizer`](plugins/exploration-cycle-plugin/skills/exploration-optimizer/SKILL.md)
-
-*Deferred (scaffolded, not yet active):*
-- [`exploration-orchestrator`](plugins/exploration-cycle-plugin/skills/deferred/exploration-orchestrator/SKILL.md) — full-cycle orchestrator coordinating discovery agents end-to-end
-- [`prototype-builder`](plugins/exploration-cycle-plugin/skills/deferred/prototype-builder/SKILL.md) — builds exploratory prototypes to make ambiguous product direction concrete
+- [`exploration-optimizer`](plugins/exploration-cycle-plugin/skills/exploration-optimizer/SKILL.md) · [`prototype-builder`](plugins/exploration-cycle-plugin/skills/prototype-builder/SKILL.md)
+- [`visual-companion`](plugins/exploration-cycle-plugin/skills/visual-companion/SKILL.md) · [`subagent-driven-prototyping`](plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/SKILL.md)
 
 ### Feature-Driven Engineering — Spec Kitty Suite
 
@@ -363,7 +361,7 @@ python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (25 plugins, 117 skills)
+plugins/                    ← upstream source (23 plugins, 119 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -390,4 +388,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*117 skills · 25 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*119 skills · 23 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
