@@ -1,1 +1,1 @@
-../../../references/agent_bridge_overview.md
+../../../references/plugin_installer_overview.md

@@ -53,8 +53,8 @@ def fetch_file(url: str, dest: Path):
         print(red(f"  {e}"))
         sys.exit(1)
 
-def main():
-    print(bold("\n  Initializing Plugin Installer Bootstrap..."))
+def run_script(primary_script_name: str, required_scripts: list, title: str):
+    print(bold(f"\n  Initializing {title}..."))
 
     # Enable ANSI escape sequences on Windows
     if sys.platform == "win32":
@@ -67,26 +67,28 @@ def main():
 
     # Check if we're running from a cloned git repo (uvx case)
     bootstrap_dir = Path(__file__).parent
-    local_plugin_add = bootstrap_dir / "plugins" / "plugin-manager" / "scripts" / "plugin_add.py"
+    local_script = bootstrap_dir / "plugins" / "plugin-manager" / "scripts" / primary_script_name
 
     # Determine args to pass along
     args = sys.argv[1:]
+    
     # If no args were passed and we are piped from curl, sys.argv is just ['-']
-    # We want to default to `richfrem/agent-plugins-skills` if no source was provided
-    if not args or args == ["-"]:
-        args = ["richfrem/agent-plugins-skills"]
-
-    # Ensure we pass the clean args to the downloaded python script
-    if args and args[0] == "-":
-        args = args[1:]
-        if not args:
+    # Default to richfrem/agent-plugins-skills if no source provided for plugin_add
+    if primary_script_name == "plugin_add.py":
+        if not args or args == ["-"]:
             args = ["richfrem/agent-plugins-skills"]
+        if args and args[0] == "-":
+            args = args[1:]
+            if not args:
+                args = ["richfrem/agent-plugins-skills"]
+    elif args and args[0] == "-":
+        args = args[1:]
 
     # If running from cloned repo (uvx case), use local scripts directly
-    if local_plugin_add.exists():
-        print(f"  {green('✓ Using cloned installer scripts')}", flush=True)
-        print(f"  {dim('Launching interactive UI...')}\n")
-        cmd = [sys.executable, str(local_plugin_add)] + args
+    if local_script.exists():
+        print(f"  {green('✓ Using cloned scripts')}", flush=True)
+        print(f"  {dim(f'Launching {title}...')}\n")
+        cmd = [sys.executable, str(local_script)] + args
         try:
             sys.exit(subprocess.call(cmd))
         except KeyboardInterrupt:
@@ -94,23 +96,20 @@ def main():
             sys.exit(0)
     else:
         # Running from curl pipe or pypi install — download from main
-        with tempfile.TemporaryDirectory(prefix="plugin_installer_env_") as tmpdir:
+        with tempfile.TemporaryDirectory(prefix="plugin_manager_env_") as tmpdir:
             tmp_path = Path(tmpdir)
 
-            print(f"  {dim('Downloading installer core... (standalone)')}", flush=True)
+            print(f"  {dim('Downloading core scripts... (standalone)')}", flush=True)
             base_raw_url = "https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main"
-            scripts = [
-                "plugins/plugin-manager/scripts/plugin_add.py",
-                "plugins/plugin-manager/scripts/plugin_installer.py"
-            ]
+            
             # Download the required files side-by-side
-            for file_path in scripts:
+            for file_path in required_scripts:
                 filename = Path(file_path).name
                 fetch_file(f"{base_raw_url}/{file_path}", tmp_path / filename)
 
-            print(f"  {green('✓ Bootstrapped.')} Launching interactive UI...\n")
+            print(f"  {green('✓ Bootstrapped.')} Launching {title}...\n")
 
-            cmd = [sys.executable, str(tmp_path / "plugin_add.py")] + args
+            cmd = [sys.executable, str(tmp_path / primary_script_name)] + args
 
             try:
                 sys.exit(subprocess.call(cmd))
@@ -118,5 +117,36 @@ def main():
                 print(red("\n  Cancelled."))
                 sys.exit(0)
 
+def add_main():
+    run_script(
+        primary_script_name="plugin_add.py",
+        required_scripts=[
+            "plugins/plugin-manager/scripts/plugin_add.py",
+            "plugins/plugin-manager/scripts/plugin_installer.py"
+        ],
+        title="Plugin Installer"
+    )
+
+def remove_main():
+    run_script(
+        primary_script_name="plugin_remove.py",
+        required_scripts=[
+            "plugins/plugin-manager/scripts/plugin_remove.py"
+        ],
+        title="Plugin Uninstaller"
+    )
+
+def sync_main():
+    run_script(
+        primary_script_name="sync_with_inventory.py",
+        required_scripts=[
+            "plugins/plugin-manager/scripts/sync_with_inventory.py",
+            "plugins/plugin-manager/scripts/plugin_add.py",
+            "plugins/plugin-manager/scripts/plugin_installer.py"
+        ],
+        title="Plugin Sync & Cleanup"
+    )
+
 if __name__ == "__main__":
-    main()
+    # If run generically via python bootstrap.py, default to install
+    add_main()

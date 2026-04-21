@@ -1,1 +1,0 @@
-../../../references/cleanup_process.md

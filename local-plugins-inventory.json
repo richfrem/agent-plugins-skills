@@ -1,0 +1,140 @@
+[
+  {
+    "name": "adr-manager",
+    "description": "ADR management skill for generating architecture decisions, documenting design rationale, and maintaining the decision record log using native read/write tools.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/adr-manager"
+  },
+  {
+    "name": "agent-agentic-os",
+    "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, and multi-agent event bus coordination. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
+    "version": "1.4.1",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os"
+  },
+  {
+    "name": "agent-loops",
+    "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-loops"
+  },
+  {
+    "name": "agent-scaffolders",
+    "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders"
+  },
+  {
+    "name": "claude-cli",
+    "description": "Claude CLI sub-agent system for persona-based analysis. Pipes large contexts to Anthropic models for security audits, architecture reviews, QA analysis, or specialized analysis requiring a fresh model context.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/claude-cli"
+  },
+  {
+    "name": "coding-conventions",
+    "description": "Coding standards, documentation conventions, and header templates for Python, TypeScript/JavaScript, and C#/.NET.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/coding-conventions"
+  },
+  {
+    "name": "context-bundler",
+    "description": "Bundle source files and documentation into single-file LLM context packages (Markdown or ZIP archives) for portable AI agent distribution.",
+    "version": "2.1.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/context-bundler"
+  },
+  {
+    "name": "copilot-cli",
+    "description": "Copilot CLI sub-agent system for persona-based analysis. Pipes large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or specialized analysis requiring a fresh model context.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/copilot-cli"
+  },
+  {
+    "name": "dependency-management",
+    "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/dependency-management"
+  },
+  {
+    "name": "exploration-cycle-plugin",
+    "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
+    "version": "0.1.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin"
+  },
+  {
+    "name": "gemini-cli",
+    "description": "Gemini CLI sub-agent system for persona-based analysis. Pipes large contexts to Google Gemini models for security audits, architecture reviews, QA analysis, or specialized analysis requiring a fresh model context.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/gemini-cli"
+  },
+  {
+    "name": "huggingface-utils",
+    "description": "HuggingFace integration utilities for Soul persistence - validates credentials, manages dataset structure, and provides upload primitives with exponential backoff.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/huggingface-utils"
+  },
+  {
+    "name": "link-checker",
+    "description": "Quality assurance agent for documentation link integrity. Checks, fixes, and audits documentation links across a repository using a deterministic Map-Fix-Verify workflow.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/link-checker"
+  },
+  {
+    "name": "memory-management",
+    "description": "Tiered memory system for cognitive continuity across agent sessions. Manages hot cache (loaded at boot) and deep storage (loaded on demand) with configurable promotion/demotion rules.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/memory-management"
+  },
+  {
+    "name": "mermaid-to-png",
+    "description": "Convert Mermaid diagrams (.mmd) into high-resolution PNG images via headless Puppeteer. Includes L5 Delegated Constraint Verification for binary linting.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/mermaid-to-png"
+  },
+  {
+    "name": "obsidian-wiki-engine",
+    "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph: vault operations, cross-source concept synthesis, wiki node generation, RLM distillation, semantic health linting, graph traversal, canvas, bases, and progressive-disclosure query with vector DB Phase 2.",
+    "version": "3.1.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-wiki-engine"
+  },
+  {
+    "name": "plugin-manager",
+    "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync (install + cleanup orphans), cross-repo plugin replication, and Universal Bridge Installation to adapt standard plugins to 30+ target environments (GitHub Copilot, Gemini, Cursor, Roo, etc).",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager"
+  },
+  {
+    "name": "rlm-factory",
+    "description": "Recursive Language Model factory \u2014 distill repository files into semantic summaries using agents for instant context retrieval",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/rlm-factory"
+  },
+  {
+    "name": "rsvp-speed-reader",
+    "description": "Converts documents into word-by-word RSVP token streams with ORP (Optimal Recognition Point) alignment for speed reading. Supports .txt, .md, .pdf, and .docx input files.",
+    "version": "1.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/rsvp-speed-reader"
+  },
+  {
+    "name": "spec-kitty",
+    "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin"
+  },
+  {
+    "name": "task-manager",
+    "description": "Lightweight kanban task board \u2014 directory-backed with zero dependencies. V2 enforces Kanban Sovereignty constraints preventing manual task file edits.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/task-manager"
+  },
+  {
+    "name": "vector-db",
+    "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
+    "version": "2.0.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/vector-db"
+  },
+  {
+    "name": "voice-writer",
+    "description": "Transform AI-generated or over-polished writing into authentic human voice. Supports voice profile calibration so the agent learns your specific style.",
+    "version": "0.1.0",
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/voice-writer"
+  }
+]

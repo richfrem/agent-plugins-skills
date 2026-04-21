@@ -11,7 +11,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:23.027393Z",
-      "updatedAt": "2026-04-21T13:50:02.735088Z"
+      "updatedAt": "2026-04-21T15:00:19.415218Z"
     },
     "agent-agentic-os-agentic-os-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -67,7 +67,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:26.539493Z",
-      "updatedAt": "2026-04-21T14:30:22.851794Z"
+      "updatedAt": "2026-04-21T15:10:34.466422Z"
     },
     "agentic-os-guide": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -95,7 +95,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-29T18:03:45.204613Z",
-      "updatedAt": "2026-04-21T13:50:05.807799Z"
+      "updatedAt": "2026-04-21T14:56:14.700541Z"
     },
     "audit-plugin": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -110,13 +110,6 @@
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:29.697809Z",
       "updatedAt": "2026-04-21T13:50:04.397388Z"
-    },
-    "auto-update-plugins": {
-      "source": "https://github.com/richfrem/agent-plugins-skills",
-      "sourceType": "local",
-      "computedHash": "",
-      "installedAt": "2026-03-27T16:11:14.650371Z",
-      "updatedAt": "2026-04-21T13:50:06.869858Z"
     },
     "business-requirements-capture": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -137,7 +130,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:37.067705Z",
-      "updatedAt": "2026-04-21T13:50:04.636677Z"
+      "updatedAt": "2026-04-21T14:55:27.594552Z"
     },
     "claude-cli-claude-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -151,7 +144,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-29T18:03:44.824639Z",
-      "updatedAt": "2026-04-21T13:50:04.636677Z"
+      "updatedAt": "2026-04-21T14:55:27.594552Z"
     },
     "coding-conventions-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -329,7 +322,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:26.539493Z",
-      "updatedAt": "2026-04-21T14:30:22.851794Z"
+      "updatedAt": "2026-04-21T15:10:34.466422Z"
     },
     "ecosystem-authoritative-sources": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -493,7 +486,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:42.069557Z",
-      "updatedAt": "2026-04-21T13:50:05.807799Z"
+      "updatedAt": "2026-04-21T14:56:14.700541Z"
     },
     "gemini-cli-gemini-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -535,7 +528,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:26.539493Z",
-      "updatedAt": "2026-04-21T14:30:22.851794Z"
+      "updatedAt": "2026-04-21T15:10:34.466422Z"
     },
     "link-checker-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -557,13 +550,6 @@
       "computedHash": "57de2bd6bc08d7337ff48c3bd365fba9e4ab1b6c7bf7a6fb295786c8ddee293c",
       "installedAt": "2026-03-23T19:00:25.406795Z",
       "updatedAt": "2026-03-29T21:38:22.695826Z"
-    },
-    "maintain-plugins": {
-      "source": "https://github.com/richfrem/agent-plugins-skills",
-      "sourceType": "local",
-      "computedHash": "",
-      "installedAt": "2026-03-23T19:00:46.686677Z",
-      "updatedAt": "2026-04-21T13:50:06.869858Z"
     },
     "manage-marketplace": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -689,7 +675,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-11T15:20:19.257058Z",
-      "updatedAt": "2026-04-21T13:50:04.636677Z"
+      "updatedAt": "2026-04-21T14:55:27.594552Z"
     },
     "oracle-legacy-system-analysis-business-rules": {
       "source": "oracle-legacy-system-analysis",
@@ -794,7 +780,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:26.539493Z",
-      "updatedAt": "2026-04-21T14:30:22.851794Z"
+      "updatedAt": "2026-04-21T15:10:34.466422Z"
     },
     "os-clean-locks": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -892,7 +878,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:46.686677Z",
-      "updatedAt": "2026-04-21T13:50:06.869858Z"
+      "updatedAt": "2026-04-21T14:53:48.497968Z"
+    },
+    "plugin-remover": {
+      "source": "https://github.com/richfrem/agent-plugins-skills",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-21T14:53:48.497968Z",
+      "updatedAt": "2026-04-21T14:53:48.497968Z"
     },
     "podcast-summarizer": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
@@ -918,7 +911,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:26.539493Z",
-      "updatedAt": "2026-04-21T14:30:22.851794Z"
+      "updatedAt": "2026-04-21T15:10:34.466422Z"
     },
     "replicate-plugin": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1263,7 +1256,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:52.277759Z",
-      "updatedAt": "2026-04-21T13:50:07.647476Z"
+      "updatedAt": "2026-04-21T14:56:14.770815Z"
     },
     "task-manager-task-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1305,7 +1298,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-04T20:54:39.722191Z",
-      "updatedAt": "2026-04-21T14:30:22.851794Z"
+      "updatedAt": "2026-04-21T15:10:34.466422Z"
     },
     "user-story-capture": {
       "source": "https://github.com/richfrem/agent-plugins-skills",

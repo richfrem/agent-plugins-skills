@@ -1,3 +1,10 @@
 {
-  "sources": []
+  "sources": [
+    {
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": [
+        "agent-loops"
+      ]
+    }
+  ]
 }

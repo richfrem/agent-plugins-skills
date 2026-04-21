@@ -1,0 +1,39 @@
+graph TD
+    %% Phase 1: Sources of Truth
+    subgraph Phase1 ["Phase 1: Sources of Truth"]
+        P_Rules["Ecosystem Rules\n(Constitution, Conventions)"]
+        W_Masters["Ecosystem Commands\n(commands/, scripts/)"]
+        Plugins_Local["Local Plugins\n(plugins/*/)\n(this repo)"]
+        Plugins_GH["Remote Plugins\n(GitHub repos)\n(any owner/repo)"]
+    end
+
+    %% Phase 2: Plugin Manager Scripts
+    subgraph Phase2 ["Phase 2: Plugin Manager"]
+        PSJ["plugin-sources.json\n(install registry)"]
+        PluginAdd["plugin_add.py\n(TUI installer)"]
+        PluginRemove["plugin_remove.py\n(TUI uninstaller)"]
+        PluginInstaller["plugin_installer.py\n(single plugin deploy)"]
+        SyncInv["sync_with_inventory.py\n(full sync + cleanup)"]
+    end
+
+    %% Phase 3: Agent Environments
+    subgraph Phase3 ["Phase 3: Agent Environments"]
+        Central[".agents/\n(canonical store)\nAntigravity · Gemini · Copilot"]
+        Claude[".claude/ → symlinked\n(Claude Code only)"]
+    end
+
+    %% Connections
+    P_Rules --> SyncInv
+    W_Masters --> SyncInv
+    Plugins_Local --> PluginAdd
+    Plugins_GH --> PluginAdd
+
+    PluginAdd -->|"records install"| PSJ
+    PluginAdd -->|"calls"| PluginInstaller
+    PluginRemove -->|"prunes"| PSJ
+    PSJ -->|"registry read"| SyncInv
+
+    PluginInstaller -->|"skills + commands\n+ rules + hooks"| Central
+    SyncInv -->|"rules + context"| Central
+    SyncInv -->|"cleanup stale artifacts"| Central
+    Central -.->|"symlinked"| Claude

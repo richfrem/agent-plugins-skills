@@ -79,9 +79,26 @@ def _clear_lines(n: int):
         sys.stdout.flush()
 
 # ---------------------------------------------------------------------------
-# Interactive multi-select
+# Source-grouped item loader
 # ---------------------------------------------------------------------------
-def _multiselect(title: str, items: list[dict]) -> list[dict]:
+def _load_installed(data: dict) -> list:
+    """Build flat list of {name, source} from plugin-sources.json.
+
+    Supports both new schema (source key) and legacy (local/github/name keys).
+    Items are ordered by source so the TUI groups them visually.
+    """
+    items = []
+    for s in data.get("sources", []):
+        src = s.get("source") or s.get("github") or s.get("local") or s.get("name", "unknown")
+        for p in sorted(s.get("plugins", [])):
+            items.append({"name": p, "source": src})
+    return items
+
+
+# ---------------------------------------------------------------------------
+# Interactive multi-select (grouped by source, mirrors plugin_add.py)
+# ---------------------------------------------------------------------------
+def _multiselect(title: str, items: list) -> list:
     if not items:
         return []
 
@@ -92,12 +109,12 @@ def _multiselect(title: str, items: list[dict]) -> list[dict]:
 
     def _filtered():
         q = search.lower()
-        return [i for i in items if q in i["name"].lower() or q in i.get("description", "").lower()]
+        return [i for i in items if q in i["name"].lower() or q in i.get("source", "").lower()]
 
     def _render(filtered, first_render=False):
         lines = []
         lines.append(bold(title))
-        lines.append(dim("  ↑↓ move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
+        lines.append(dim("  \u2191\u2193 move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
         if search:
             lines.append(f"  {dim('Search:')} {cyan(search)}_")
         else:
@@ -105,20 +122,24 @@ def _multiselect(title: str, items: list[dict]) -> list[dict]:
 
         visible = filtered[max(0, cursor - PAGE // 2): cursor + PAGE]
         offset = max(0, cursor - PAGE // 2)
+        last_src = None
 
         for idx, item in enumerate(visible):
-            is_cursor = (offset + idx) == cursor
+            abs_idx = offset + idx
+            src = item.get("source", "")
+            if src != last_src:
+                lines.append(f"  {dim('─── ' + src + ' ───')}")
+                last_src = src
+            is_cursor = abs_idx == cursor
             is_selected = item["name"] in selected
             check = red("[x]") if is_selected else dim("[ ]")
             name  = cyan(item["name"]) if is_cursor else item["name"]
-            desc  = dim(item.get("description", "")[:55])
             arrow = ">" if is_cursor else " "
-            lines.append(f"  {arrow} {check} {name}  {desc}")
+            lines.append(f"  {arrow} {check} {name}")
 
         count = len(selected)
-        total = len(filtered)
         lines.append("")
-        lines.append(f"  {red(str(count))} of {total} selected for removal")
+        lines.append(f"  {red(str(count))} of {len(filtered)} selected for removal")
 
         if not first_render:
             _clear_lines(len(lines))
@@ -126,7 +147,7 @@ def _multiselect(title: str, items: list[dict]) -> list[dict]:
         return len(lines)
 
     filtered = _filtered()
-    line_count = _render(filtered, first_render=True)
+    _render(filtered, first_render=True)
 
     while True:
         key = _read_key()
@@ -160,7 +181,7 @@ def _multiselect(title: str, items: list[dict]) -> list[dict]:
         elif key == "/":
             search = ""
             cursor = 0
-        elif key == "\x7f":          # backspace
+        elif key == "\x7f":
             search = search[:-1]
             cursor = 0
         elif key and len(key) == 1 and key.isprintable():
@@ -170,7 +191,7 @@ def _multiselect(title: str, items: list[dict]) -> list[dict]:
                 search += key
                 cursor = 0
 
-        line_count = _render(filtered)
+        _render(filtered)
 
     print()
     return [i for i in items if i["name"] in selected]
@@ -219,14 +240,23 @@ def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None
     if sources_file.exists():
         try:
             data = json.loads(sources_file.read_text(encoding="utf-8"))
+            # Migrate legacy schema on read
+            migrated = []
             for s in data.get("sources", []):
+                src = s.get("source") or s.get("github") or s.get("local") or ""
+                if src:
+                    migrated.append({"source": src, "plugins": s.get("plugins", [])})
+            data["sources"] = migrated
+
+            for s in data["sources"]:
                 curr = s.get("plugins", [])
                 if isinstance(curr, list) and plugin_name in curr:
                     curr.remove(plugin_name)
-                    print(f"    - Removed from plugin-sources.json mapping: {s.get('name')}")
-            
+                    print(f"    - Removed from plugin-sources.json: {s.get('source')}")
+
             # prune empty
-            data["sources"] = [s for s in data.get("sources", []) if isinstance(s.get("plugins"), list) and len(s.get("plugins")) > 0]
+            data["sources"] = [s for s in data["sources"]
+                               if isinstance(s.get("plugins"), list) and s["plugins"]]
             if not dry_run:
                 sources_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         except Exception as e:
@@ -267,16 +297,7 @@ def main():
         print(red(f"Error reading plugin-sources.json: {e}"))
         sys.exit(1)
 
-    installed_plugins = []
-    for s in data.get("sources", []):
-        plugs = s.get("plugins", [])
-        if isinstance(plugs, list):
-            src_name = s.get("name", "unknown source")
-            for p in plugs:
-                installed_plugins.append({
-                    "name": p,
-                    "description": f"Installed from {src_name}"
-                })
+    installed_plugins = _load_installed(data)
 
     if not installed_plugins:
         print(yellow("No plugins currently recorded in plugin-sources.json."))

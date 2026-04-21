@@ -1,1 +1,0 @@
-../../../scripts/plugin_bootstrap.py

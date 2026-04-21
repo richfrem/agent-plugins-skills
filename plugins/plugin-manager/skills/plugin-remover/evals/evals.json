@@ -1,0 +1,9 @@
+[
+  {"prompt": "Uninstall the broken garden designer plugin.", "should_trigger": true},
+  {"prompt": "Remove the task-manager plugin from my Claude environment.", "should_trigger": true},
+  {"prompt": "Delete the context bundler skill completely.", "should_trigger": true},
+  {"prompt": "Unsubscribe from the richfrem/agent-plugins-skills repository.", "should_trigger": true},
+  {"prompt": "Install the rlm-factory plugin to my agent environments.", "should_trigger": false},
+  {"prompt": "Sync all my plugins from the inventory manifest.", "should_trigger": false},
+  {"prompt": "Audit all plugins for structural compliance against the open standards.", "should_trigger": false}
+]

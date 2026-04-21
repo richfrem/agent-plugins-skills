@@ -1,9 +1,0 @@
-{
-  "sources": [
-    {
-      "name": "agent-plugins-skills",
-      "github": "richfrem/agent-plugins-skills",
-      "plugins": "all"
-    }
-  ]
-}
