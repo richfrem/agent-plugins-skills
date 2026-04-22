@@ -105,6 +105,14 @@ Date: [today]
 3. [Question about gap 3]
 ```
 
+## Gotchas
+
+- **Mode not specified in instruction**: If the `--instruction` doesn't contain an explicit `Mode:` prefix, you will not know which capture mode to run. Always check the instruction for a mode label before starting. If absent, report: `[ERROR: No Mode specified in instruction. Expected one of: problem-framing, business-requirements, user-stories, issues-and-opportunities, prototype-observations]` and halt.
+- **`[NEEDS HUMAN INPUT]` format is case- and format-sensitive**: The automated gap checker (`check_gaps.py`) counts the exact string `[NEEDS HUMAN INPUT]`. Any variation — lowercase, added period, italic wrapping — is silently missed. Use the exact form every time.
+- **Decision Pre-fills must not be re-asked**: If the session brief has a `Decision Pre-fills` section with filled answers, treat those as confirmed. Agents sometimes add `[NEEDS HUMAN INPUT]` to a pre-filled field — this contradicts the pre-fill and confuses the SME.
+- **Clarifying questions belong at the end, not inline**: Inline `[Q: ...]` markers scattered through the output create noisy artifacts. Consolidate all questions in the `## Clarifying Questions (for next pass)` section at the end.
+- **Zero-context dispatch produces hallucinated output**: If all required and optional context files are missing, `dispatch.py` will abort. This agent should never be called with an empty `--context` list — the orchestrator must ensure at least the session-brief is passed.
+
 ## Smoke Test
 
 After being dispatched, confirm you can read the piped input by reporting the first line of the input document before producing output.
