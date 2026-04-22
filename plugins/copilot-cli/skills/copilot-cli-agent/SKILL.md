@@ -12,7 +12,7 @@ allowed-tools: Bash, Read, Write
 You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents.
 
 > [!IMPORTANT]
-> **Default model: `gpt-5-mini` (free tier — no per-request cost).** Use this unless the user explicitly requests a premium model. Premium models (e.g., `claude-sonnet-4-6`) are **charged per request**, not per token — see the [💰 Premium Model Cost Discipline](#-premium-model-cost-discipline) section before using them.
+> **Default model: `gpt-5-mini` (free tier — no per-request cost).** Use this unless the user explicitly requests a premium model. Premium models (e.g., `claude-sonnet-4.6`) are **charged per request**, not per token — see the [💰 Premium Model Cost Discipline](#-premium-model-cost-discipline) section before using them.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -54,28 +54,32 @@ python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
   "Find vulnerabilities."
 ```
 
-### Premium: `claude-sonnet-4-6` (Charged per request — batch everything)
+### Premium: `claude-sonnet-4.6` (Charged per request — batch everything)
 
 ```bash
 # Pass model name as the 5th argument to override the default
 python ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_output.md \
   "Generate all files exactly as specified using ===FILE:=== delimiters." \
-  claude-sonnet-4-6
+  claude-sonnet-4.6
 ```
 
 > [!NOTE]
-> **When to use `claude-sonnet-4-6`:** Complex multi-file generation, nuanced content requiring reasoning, tasks where output quality matters more than cost. See [💰 Premium Model Cost Discipline](#-premium-model-cost-discipline) for request-batching rules before calling.
+> **When to use `claude-sonnet-4.6`:** Complex multi-file generation, nuanced content requiring reasoning, tasks where output quality matters more than cost. See [💰 Premium Model Cost Discipline](#-premium-model-cost-discipline) for request-batching rules before calling.
 
 ### Known Model Identifiers
 
 | Model | Identifier | Cost |
 |:---|:---|:---|
 | GitHub Copilot default | `gpt-5-mini` | Free / flat rate |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Per request (premium) |
-| Claude Opus | `claude-opus-4-5` | Per request (premium, highest quality) |
+| GPT-5.4 (default non-free) | `gpt-5.4` | 1x |
+| GPT-5.4 mini | `gpt-5.4-mini` | 0.33x |
+| Claude Sonnet 4.6 | `claude-sonnet-4.6` | 1x per request (premium) |
+| Claude Sonnet 4.5 | `claude-sonnet-4.5` | 1x per request (premium) |
+| Claude Haiku 4.5 | `claude-haiku-4.5` | 0.33x per request (premium) |
+| Claude Opus 4.7 | `claude-opus-4.7` | 7.5x per request (premium) |
 
 > [!WARNING]
-> Model identifiers can change with Copilot CLI updates. If a premium model call fails with a model-not-found error, check `copilot --help` or the [GitHub Copilot model docs](https://docs.github.com/en/copilot/using-github-copilot/ai-models) for the current identifier.
+> **Model identifiers use dots not dashes** — `claude-sonnet-4.6` NOT `claude-sonnet-4.6`. Using dashes returns "model not available" error. Verify with `copilot --model <id> -p "test"` before a premium batch run. Identifiers change with Copilot CLI updates — run `copilot -i "list models"` or check the interactive model selector to confirm current names.
 
 ---
 
@@ -111,14 +115,14 @@ To dramatically improve review results, add:
 ## 💰 Premium Model Cost Discipline
 
 > [!CAUTION]
-> **Premium models (e.g., `claude-sonnet-4-6`, `claude-opus`) are billed per REQUEST, not per token.** A 5-request workflow costs 5× more than a 1-request workflow with the same total content. **Maximize token density per call — do NOT make iterative follow-up requests.**
+> **Premium models (e.g., `claude-sonnet-4.6`, `claude-opus`) are billed per REQUEST, not per token.** A 5-request workflow costs 5× more than a 1-request workflow with the same total content. **Maximize token density per call — do NOT make iterative follow-up requests.**
 
 ### Two-Tier Strategy
 
 | Model | Cost Model | Request Strategy |
 |:---|:---|:---|
 | `gpt-5-mini` (default) | Free / flat rate | Iterative fine-grained requests are fine |
-| `claude-sonnet-4-6`, `claude-opus`, etc. | **Per request** | ONE big dense request — batch everything |
+| `claude-sonnet-4.6`, `claude-opus`, etc. | **Per request** | ONE big dense request — batch everything |
 
 ### Rules for Premium Models
 
@@ -148,7 +152,7 @@ python ./scripts/run_agent.py \
   /tmp/copilot_prompt.md \
   /tmp/copilot_output.md \
   "Generate all files exactly as specified using ===FILE:=== delimiters." \
-  claude-sonnet-4-6
+  claude-sonnet-4.6
 
 # Verify output is substantial before parsing
 wc -l /tmp/copilot_output.md   # expect 200+ lines for multi-file output
@@ -188,3 +192,13 @@ python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Ref
 ```
 
 Examine `output.md`. It should contain ONLY the refactored code and a brief 3-bullet summary.
+
+---
+
+## Gotchas (field-tested)
+
+- **Model identifiers use dots, not dashes.** `claude-sonnet-4.6` works; `claude-sonnet-4-6` returns "model not available". Always use dot notation for Claude version numbers in Copilot CLI.
+- **Always verify the model identifier before a premium batch run.** Run `copilot --yolo --model <id> -p "HEARTBEAT_OK"` first — if it echoes back any response, the identifier is valid. Do not assume identifiers from docs or memory are current.
+- **`run_agent.py` passes the 5th argument directly to `--model`.** If the identifier is wrong, the script exits with a non-zero code and produces no output file. Check exit code and output file size before claiming success.
+- **Background premium runs can silently fail with empty output.** Never background (`&`) a premium model call. Run foreground and verify with `wc -l output.md` — expect 200+ lines for multi-file output.
+- **Free heartbeat, not premium.** Run the mandatory heartbeat against `gpt-5-mini` (default, no model arg). Heartbeating against a premium model wastes a paid request.

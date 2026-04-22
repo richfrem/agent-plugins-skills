@@ -193,6 +193,14 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 
 ---
 
+## Acknowledgements
+
+The self-healing patterns in this plugin's v5 architecture — specifically the **contribute-back reflex** (every friction discovery becomes a skill artifact), **gotchas embedded in the artifact** (field-tested failures live in `SKILL.md` not an external log), and the **thin-core / extensible domain-layer** separation (see `references/domain-patterns/`) — were informed by studying the design of [`browser-use/browser-harness`](https://github.com/browser-use/browser-harness), an elegant self-healing CDP harness where agents extend the harness itself mid-task.
+
+browser-harness is MIT licensed. Patterns were adapted conceptually, not by copying code.
+
+---
+
 ## Key References
 
 - [`SUMMARY.md`](./SUMMARY.md) - scope, architecture, OS analogy, how-to

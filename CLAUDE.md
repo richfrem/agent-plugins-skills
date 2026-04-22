@@ -121,6 +121,25 @@ Define success criteria first. Loop until verified.
 - SKILL.md: under ~500 lines; extra detail goes in `references/` files
 - Helper scripts: Python only — never generate `.sh` bash scripts
 
+### After editing any skill or script in a plugin — audit symlinks
+
+Run immediately after any add/edit/delete of files in a plugin directory:
+
+```bash
+# Check for broken symlinks
+find plugins/<plugin-name> -type l | while read link; do
+  [ -e "$link" ] && echo "OK   $link" || echo "BROKEN $link -> $(readlink $link)"
+done
+
+# Check for ADR-003 violations (no directory symlinks)
+find plugins/<plugin-name> -type l | while read link; do
+  [ -d "$link" ] && echo "DIR-SYMLINK VIOLATION: $link"
+done
+```
+
+Fix any BROKEN entries before committing. A broken symlink in `plugins/` will silently fail at install time.
+Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add the symlink too.
+
 ---
 
 ## Scaffolding New Plugins/Skills
