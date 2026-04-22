@@ -201,9 +201,29 @@ exists and `**Status:**` is not `Complete`):
    > "Please reply with exactly: **'Return to dashboard and start Phase 4 Handoff'**"
 2. **Immediately stop.** Do not attempt an automated skill switch. You must wait for the user to explicitly type the confirmation phrase to ensure they have actually reviewed the prototype before Phase 4 automation begins.
 
+After the user provides the confirmation phrase, output this machine-readable block:
+
+~~~
+## HANDOFF_BLOCK
+PHASE: 3
+STATUS: COMPLETE
+OUTPUT: exploration/prototype/index.html
+SESSION_TYPE: [Greenfield / Brownfield / Agent Plugin]
+COMPONENTS_BUILT: [count]
+WORKTREE: [branch name if worktree was created, or "none"]
+~~~
+
 If operating standalone (no dashboard file, or `**Status:** Complete`), the skill is complete.
 Report back to prototype-builder: all components are built, the entry point is at
 `exploration/prototype/index.html`, and the prototype is ready for the SME walkthrough.
+
+## Gotchas
+
+- **Worktree setup not idempotent**: If `superpowers:using-git-worktrees` was already called by the orchestrator, calling it again creates a nested worktree. Check if a worktree branch already exists before invoking the setup skill.
+- **Brownfield build leaves orphaned prototype/ directory**: For brownfield sessions, the actual code changes go into the real codebase but `.md` tracking files go to `exploration/prototype/components/`. If the session is later revisited, these stale `.md` files may describe code that has since been refactored. Mark tracking files with the build date.
+- **Agent Plugin Mode detection is order-sensitive**: The Discovery Plan Intervention Type check happens BEFORE Component Decomposition. If the model reads "plugin" in a different context (e.g., "we'll use the WordPress plugin ecosystem"), it may incorrectly trigger Agent Plugin Mode. The trigger condition is "Agent Plugin" or "agentic plugin" as the PRIMARY output type, not any mention of "plugin".
+- **plugin.json Binding Check must run before completion, not after**: The check is listed in the Assembly section but agents sometimes defer it to "after the build loop". Run the binding check as part of Agent Plugin Mode assembly, not as a post-completion step.
+- **Two-stage review skipped for direct mode**: In `direct` mode the self-review is supposed to run twice (plan alignment + quality). In practice only one pass is done. Explicitly label and separate the two review purposes when self-reviewing.
 
 ## Persona Enforcement
 

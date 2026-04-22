@@ -1,18 +1,58 @@
 [
   {
-    "prompt": "REPLACE: a prompt that SHOULD trigger exploration-cycle-plugin",
+    "prompt": "Let's explore this idea I have for a staff scheduling tool.",
     "should_trigger": true
   },
   {
-    "prompt": "REPLACE: another prompt that SHOULD trigger exploration-cycle-plugin",
+    "prompt": "I have an idea I want to explore — can we start a discovery session?",
     "should_trigger": true
   },
   {
-    "prompt": "REPLACE: a clearly unrelated prompt that should NOT trigger exploration-cycle-plugin",
+    "prompt": "Where did we leave off with the customer portal exploration?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let's start an exploration session for a new HR onboarding system.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Resume my exploration from yesterday.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Start a discovery planning session for my onboarding redesign.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I need to explore whether we should build or buy this reporting tool.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me think through this business problem — I'm not sure if we need software.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Fix the bug in the authentication service on line 42.",
     "should_trigger": false
   },
   {
-    "prompt": "REPLACE: an adversarial prompt that shares vocabulary but should NOT trigger",
+    "prompt": "Run the test suite and report the results.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Review my pull request and suggest improvements.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "How do I configure the GitHub Actions workflow?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Generate a BRD from the session captures we already have.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Optimise the database query on line 87 in users.py.",
     "should_trigger": false
   }
 ]

@@ -149,6 +149,13 @@ def main() -> None:
     parser.add_argument("--cli", default="claude",
                         choices=["claude", "copilot", "gh-copilot"],
                         help="CLI backend to use (default: claude). 'copilot' = GitHub Copilot standalone CLI, 'gh-copilot' = gh copilot suggest.")
+    parser.add_argument("--model", default=None,
+                        help="Model to use (optional). When --cli copilot, appended as '--model <model>'. "
+                             "Example: claude-sonnet-4.6")
+    parser.add_argument("--tier", default="1", choices=["1", "2", "3"],
+                        help="Risk tier (1=low, 2=moderate, 3=high). Tier 2/3 require human gate "
+                             "before bash-capable dispatch. Only Tier 1 uses --dangerously-skip-permissions. "
+                             "Default: 1 (backward compatible).")
 
     args = parser.parse_args()
 
@@ -188,16 +195,22 @@ def main() -> None:
     combined_prompt = f"{full_prompt}\n\n---\n\nInstruction: {args.instruction}"
 
     if args.cli == "claude":
-        # TODO: SECURITY - SANDBOXING REQUIRES SYSTEM-LEVEL TIERING IMPL
-        # Risk: --dangerously-skip-permissions is applied unconditionally for all Tiers.
-        # Tier 2/3 workloads (PII, high-privilege tools) require explicit human gate before
-        # any bash-capable dispatch. See references/architecture.md Rigor Tier table.
-        # Tracked for future dispatch.py infrastructure rewrite — do not ship to Tier 2+ without fix.
-        cmd = ["claude", "-p", combined_prompt, "--dangerously-skip-permissions"]
+        # Security: --dangerously-skip-permissions is only applied for Tier 1 (low risk) dispatches.
+        # Tier 2/3 workloads run with standard permissions — the caller must ensure required tool
+        # access is granted before dispatch. See references/architecture.md Rigor Tier table.
+        cmd = ["claude", "-p", combined_prompt]
+        if args.tier == "1":
+            cmd.append("--dangerously-skip-permissions")
+        else:
+            # Tier 2/3: no auto permission bypass — agent runs with standard permissions
+            print(f"Info: Tier {args.tier} dispatch — not applying --dangerously-skip-permissions. "
+                  f"Ensure required tool permissions are granted interactively.", file=sys.stderr)
     elif args.cli == "gh-copilot":
         cmd = ["gh", "copilot", "suggest", "-t", "shell", combined_prompt]
     else:  # copilot (GitHub Copilot standalone CLI)
         cmd = ["copilot", "-p", full_prompt, args.instruction]
+        if args.model:
+            cmd = ["copilot", "--model", args.model, "-p", full_prompt, args.instruction]
 
     # 6. Invoke the CLI
     try:

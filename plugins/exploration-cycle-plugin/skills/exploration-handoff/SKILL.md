@@ -379,6 +379,14 @@ The consumer is a decision maker or leadership team. Format as:
 **Throwaway (Fail Fast):**
 Already handled in Stage 1.5 — no further formatting needed.
 
+## Gotchas
+
+- **TierGate Q5 (bias/people decisions) does not trigger Tier 3 alone**: Q5 "yes" → Tier 2 minimum, plus ethics review. Only combined with Q3 or Q4 "yes" does it escalate to Tier 3. Agents sometimes over-escalate Q5-only cases.
+- **Stage 0 runs twice if child skills also run it**: `business-requirements-capture` and `user-story-capture` are invoked in Stage 0 but they also have their own session-type detection. Pass the session type explicitly in the invocation instruction to avoid double-questioning.
+- **Reader Testing question 3 is often skipped**: Stage 3 says predict 3 questions — in practice agents predict 1–2 and move on. Enforce all 3 before asking the SME if they're answered.
+- **Throwaway path skips Anti-Hallucination Rules**: When the SME selects Throwaway in Stage 1.5, the skill jumps to write a brief handoff. This brief still must not invent content — apply Anti-Hallucination Rules even for the throwaway path.
+- **Return to orchestrator after standalone use**: If the dashboard does NOT exist (standalone use), the skill must not attempt to invoke `exploration-workflow`. Check for the dashboard before emitting the return signal.
+
 ## Anti-Hallucination Rules
 - Do NOT invent requirements or rules that were not present in the Stage 1 input sources.
 - Maintain traceability: When stating a major constraint or rule, briefly mention which exploration source it came from.
@@ -391,6 +399,19 @@ Write the approved markdown content to: `exploration/handoffs/handoff-package.md
 
 Once the handoff package is approved and written to `exploration/handoffs/handoff-package.md`:
 1. Announce: "Your handoff package is complete — Phase 4 is done."
+
+Output this machine-readable block so the orchestrator can parse phase completion:
+
+~~~
+## HANDOFF_BLOCK
+PHASE: 4
+STATUS: COMPLETE
+OUTPUT: exploration/handoffs/handoff-package.md
+RISK_TIER: [1 / 2 / 3 / Throwaway]
+DELIVERY_PATH: [Direct deployment / Security review before deployment / Ethics + security review before deployment / Formal engineering cycle (Opportunity 4) / Session closed — learning preserved]
+CONSOLIDATED_GAPS: [count of [NEEDS HUMAN INPUT] markers in handoff]
+~~~
+
 2. If operating within an active Exploration Session (i.e., `exploration/exploration-dashboard.md`
    exists and `**Status:**` is not `Complete`):
    1. Say to the user:
