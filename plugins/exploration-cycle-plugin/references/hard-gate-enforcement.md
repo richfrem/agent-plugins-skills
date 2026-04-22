@@ -34,7 +34,7 @@ Before any of the following work begins:
 
 ## Tier 3 Hard Stop — Canonical Redirect
 
-This gate applies when the TierGate assessment in Phase 4 determines **Tier 3 (High Risk)** — i.e., Q3 (high-privilege access) or Q4 (financial/compliance) answered "yes", or both Q1 and Q2 answered "yes".
+This gate applies when the TierGate assessment in Phase 4 determines **Tier 3 (High Risk)** — i.e., Q3 (high-privilege access) or Q4 (financial/compliance) answered "yes", or when Q5 (people decisions / bias risk) is "yes" AND combined with any "yes" on Q3 or Q4, or both Q1 and Q2 answered "yes".
 
 ### Canonical Redirect Text (use verbatim)
 
@@ -49,3 +49,4 @@ This gate applies when the TierGate assessment in Phase 4 determines **Tier 3 (H
 3. If the SME insists on bypassing: repeat the redirect text. Do not soften it.
 4. If the SME does not understand why they're being stopped: explain in plain terms which specific TierGate answer triggered it and what that means.
 5. The risk summary is not optional and is not a formality — it is the first section of the handoff package for a Tier 3 outcome.
+6. If Q5 is "yes" but Q3 and Q4 are both "no" — this is Tier 2 minimum (ethics review required), NOT Tier 3. Do not invoke the Tier 3 hard stop for Q5-alone cases.

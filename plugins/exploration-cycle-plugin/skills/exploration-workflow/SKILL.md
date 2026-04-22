@@ -84,7 +84,7 @@ For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet-4-6` or `claude-opus-4-6` (1 premium request — all related tasks batched into one dense call).
+> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet-4.6` or `claude-opus-4.6` (1 premium request — all related tasks batched into one dense call).
 > 2. **I have Gemini CLI** — Simple tasks use `gemini-3.1-flash-lite-preview` (cheap). Complex tasks use `gemini-3.1-pro-preview`.
 > 3. **Claude only** — I'll use Claude sub-agents. Simple tasks use `haiku-4.5` (cheapest). Complex tasks use `sonnet`.
 > 4. **I'll handle it myself** — Everything happens directly in this session."
@@ -339,6 +339,14 @@ Using the Write tool, update `exploration/exploration-dashboard.md`:
 Then loop back to **Block 3** to orient the SME for the next phase.
 
 ---
+
+## Gotchas
+
+- **Malformed checkbox silently mis-routes**: A `- [x]` with no leading space or an asterisk instead of dash will match the wrong phase. Block 2 now explicitly stops on malformed checkboxes — don't skip that check.
+- **Skipping dispatch strategy question for Analysis/Docs sessions**: Block 0 correctly skips the dispatch question for Analysis/Docs, but if the session type pivots mid-session (Q4 Intervention Check reveals a software problem was actually a process problem), the dispatch strategy default (`direct`) may not be what the SME wants. Re-ask if the session type changes.
+- **Phase routing after kill-session**: Early-exit writes `[~]` to remaining phases but if the write is incomplete (crash, context loss), Block 2 may re-route to a killed phase. Always confirm `**Status:** Complete` is written before announcing completion.
+- **Mid-session revision back-pointer**: When a phase is reopened with `- [↩]`, the Outcome file path is cleared to TBD. If the SME later asks "where are my files", they may not find them. Always log the prior file path in the Session Log revision note even when clearing the Outcome field.
+- **Tier message mismatch**: If Phase 4 is skipped but a prototype exists, the Completion Block may default to "Tier 3" message. Read the dashboard `**Session Type:**` field first — brownfield self-build completions use the brownfield message, not the tier message.
 
 ## Completion Block
 

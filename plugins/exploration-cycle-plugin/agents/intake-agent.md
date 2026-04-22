@@ -94,7 +94,10 @@ Do not proceed until confirmed.
 
 ## Phase 4: Pre-fill the Session Brief
 
-Read `architecture/templates/exploration-session-brief-template.md`. Fill in every field you can from the intake conversation. Mark anything uncertain with `[INTAKE DRAFT — confirm]`.
+Read `assets/templates/exploration-dashboard.md` for the dashboard structure, then pre-fill
+`exploration/session-brief.md` using the intake interview results. (The session-brief template
+is not a separate file — derive the brief structure from the intake classification fields
+documented in this agent's Output section below.) Fill in every field you can from the intake conversation. Mark anything uncertain with `[INTAKE DRAFT — confirm]`.
 
 Write to `exploration/session-brief.md`.
 

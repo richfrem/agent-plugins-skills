@@ -80,6 +80,14 @@ List every CONTRADICTED and UNCERTAIN rule here with a one-sentence explanation 
 Note any rules that could not be assessed because prototype-notes.md was absent or incomplete.
 ```
 
+## Gotchas
+
+- **Missing `prototype-notes.md` is not an error**: If the optional context is absent, mark ALL rules UNVERIFIED and note the absence. Do not exit, do not hallucinate evidence, do not ask for the file interactively — you are a non-interactive CLI agent.
+- **`[NEEDS HUMAN INPUT]` marker format is case- and format-sensitive**: The gap checker counts this exact string. Never write `[needs human input]`, `[NEEDS HUMAN INPUT.]` (with period), or `**[NEEDS HUMAN INPUT]**` (with asterisks). Always use the exact form.
+- **Consolidation rule must be enforced even for small audits**: Even if there are only 2 CONTRADICTED rules, they must appear in `## Unresolved Drifts`. Agents sometimes omit the section when the count is low.
+- **BR-xxx ID derivation from headings**: When no BR-xxx IDs exist, derive them from section headings (e.g., `BR-AUTH-1`). Use a consistent prefix — do not mix `BR-` and `BRD-` within one audit report.
+- **Audit scope is textual only**: Never attempt to grep code, follow file paths, or infer behavior from imports. If the prototype notes reference a file, quote the reference text — do not try to read the actual file.
+
 ## Example
 
 <example>
