@@ -2,6 +2,34 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## [1.5.0] - 2026-04-25
+
+### os-architect — Front-Door Evolution Intake
+- **New agent**: `agents/os-architect-agent.md` — interactive conductor that classifies user intent into 5 categories (Pattern Abstraction, Research Application, Lab Setup, Gap Fill, Multi-Loop Orchestration), audits the ecosystem, proposes Path A/B/C, and dispatches via `run_agent.py`. Replaces the "where do I start" problem in agent-agentic-os.
+- **New skill**: `skills/os-architect/SKILL.md` — slash command entry point (`/os-architect`)
+- **New evals**: `skills/os-architect/evals/evals.json` — 19 routing cases with `expected_category` field (1–5) on all TP cases and 4 misrouting-risk boundary cases
+- **Confidence-aware classification**: Phase 1 classification block includes `Confidence: High | Medium | Low`; Low confidence triggers a clarifying question before proceeding to audit
+- **Path A+ (no-op path)**: When audit shows Full match + current + all self-healing patterns present, agent tells user "no action needed" rather than forcing a path
+- **Category 5 dispatch spec**: Multi-Loop Orchestration now has a concrete per-target sequential dispatch protocol in Phase 3
+
+### os-evolution-planner — Repeatable Plan-and-Delegate Skill
+- **New skill**: `skills/os-evolution-planner/SKILL.md` — given a target and evolution goal, applies the self-healing diagnostic lens, writes a structured task plan (`tasks/todo/<slug>-plan.md`), and writes a dense Copilot CLI delegation prompt. Called by os-architect for Path B/C executions.
+
+### os-architect-tester — Scenario-Based Validation Agent
+- **New agent**: `agents/os-architect-tester-agent.md` — runs pre-scripted scenario transcripts through os-architect via Copilot CLI and evaluates against 4 acceptance criteria (intent classification, dispatch gating, evals HARD-GATE, audit verification). 3 built-in scenarios.
+
+### improvement-intake-agent — Phase 4c + HANDOFF_BLOCK
+- **Phase 4c added**: After writing `run-config.json` and `session-brief.md`, agent registers itself in `context/agents.json` and emits `intake-complete` lifecycle event via `plugins/agent-agentic-os/scripts/kernel.py`
+- **HANDOFF_BLOCK added**: Phase 5 now emits a machine-readable handoff block consumed by `improvement-lifecycle-orchestrator`; replaces prose-only routing context
+- **Routing After Handoff updated**: Now references HANDOFF_BLOCK fields rather than a separate prose context block
+
+### triple-loop-architect — Phase 0 Intake Integration
+- **Phase 0.0 added**: Checks for `improvement/run-config.json` (written by improvement-intake-agent) and auto-populates all key variables (`TARGET_SKILL`, `PARTITION_ID`, `RUN_DEPTH`, `DISPATCH`) — skips user-prompted steps 0.1 and 0.2 when intake config is present
+- **Phase 0.4 added**: Seeds lab with gotchas from intake config and writes `invariants.json` into the sibling lab after Phase 1.2 initialization
+
+### Cleanup
+- Removed transitory patch files (`improvement-intake-phase4c-5-patch.md`, `triple-loop-architect-phase0-patch.md`) from source and `.agents/` — both patches are now fully applied
+
 ## [1.4.0] - 2026-04-04
 
 ### Deep Architecture & Triple-Loop Paradigm

@@ -48,7 +48,13 @@ The loop is autonomous and cost-effective: L2 uses GitHub Copilot's `gpt-5-mini`
 
 **Not all skills are good candidates** — the best targets have clear, objective routing criteria and adversarial eval cases. Use [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) to score a skill before running a loop.
 
-**To start a loop on any skill:**
+**To start any evolution activity — improvement loop, capability gap fill, or pattern abstraction:**
+```
+/os-architect
+```
+Describe what you want in plain language. The `os-architect` agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools. `os-evolution-planner` writes the task plan + delegation prompt. `os-architect-tester` validates after any changes.
+
+**To start a loop directly on a specific skill:**
 ```
 @triple-loop-architect
 
@@ -104,6 +110,11 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 The flagship operational framework. Implements the Dual-Flywheel architecture for autonomous skill evolution, memory management, eval-gated improvement loops, and session lifecycle protocols.
 
+**Evolution entry points (new):**
+- [`os-architect`](plugins/agent-agentic-os/skills/os-architect/SKILL.md) — front-door for all ecosystem evolution: classifies intent, audits capabilities, proposes Path A/B/C, dispatches work
+- [`os-evolution-planner`](plugins/agent-agentic-os/skills/os-evolution-planner/SKILL.md) — writes structured task plans + Copilot CLI delegation prompts for Path B/C; called by os-architect
+
+**Improvement loop skills:**
 - [`os-guide`](plugins/agent-agentic-os/skills/os-guide/SKILL.md) — master orientation + skill taxonomy
 - [`os-improvement-loop`](plugins/agent-agentic-os/skills/os-improvement-loop/SKILL.md) — OUTER flywheel: 7-step session improvement protocol
 - [`os-eval-lab-setup`](plugins/agent-agentic-os/skills/os-eval-lab-setup/SKILL.md) — bootstrap eval experiment dir (evals.json, results.tsv, program.md)
@@ -115,12 +126,14 @@ The flagship operational framework. Implements the Dual-Flywheel architecture fo
 - [`os-init`](plugins/agent-agentic-os/skills/os-init/SKILL.md) — OS bootstrap and kernel initialization
 - [`os-clean-locks`](plugins/agent-agentic-os/skills/os-clean-locks/SKILL.md) — directory lock recovery
 - [`todo-check`](plugins/agent-agentic-os/skills/todo-check/SKILL.md) — session TODO hygiene
-- [`optimize-agent-instructions`](plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md) — audit and rewrite CLAUDE.md, GEMINI.md, and copilot-instructions.md; applies Karpathy's four behavioral principles, strips stale/foreign content, detects installed Super-RAG layers, adds platform-specific sections
+- [`optimize-agent-instructions`](plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md) — audit and rewrite CLAUDE.md, GEMINI.md, and copilot-instructions.md
 
 **Agents:**
-- [`triple-loop-architect`](plugins/agent-agentic-os/agents/triple-loop-architect.md) — autonomous optimization laboratory setup
+- [`os-architect`](plugins/agent-agentic-os/agents/os-architect-agent.md) — interactive conductor: classifies intent, audits ecosystem, dispatches via run_agent.py
+- [`os-architect-tester`](plugins/agent-agentic-os/agents/os-architect-tester-agent.md) — validates os-architect via pre-scripted scenario transcripts; run after any os-architect changes
+- [`triple-loop-architect`](plugins/agent-agentic-os/agents/triple-loop-architect.md) — autonomous optimization laboratory setup; reads intake config from improvement-intake-agent
 - [`triple-loop-orchestrator`](plugins/agent-agentic-os/agents/triple-loop-orchestrator.md) — headless loop execution and evaluation
-- [`improvement-intake-agent`](plugins/agent-agentic-os/agents/improvement-intake-agent.md) — session friction analysis and intake
+- [`improvement-intake-agent`](plugins/agent-agentic-os/agents/improvement-intake-agent.md) — configures skill improvement runs; emits HANDOFF_BLOCK for triple-loop-architect
 - [`os-health-check`](plugins/agent-agentic-os/agents/os-health-check.md) — OS liveness metrics
 - [`agentic-os-setup`](plugins/agent-agentic-os/agents/agentic-os-setup.md) — OS initialization agent
 
@@ -388,4 +401,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*119 skills · 23 plugins · Dual-Flywheel architecture · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*119 skills · 23 plugins · Triple-Loop architecture · os-architect evolution front-door · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*

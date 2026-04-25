@@ -330,8 +330,8 @@ prompt before dispatching.
 - [x] B — os-architect SKILL.md
 - [x] C — evals.json
 - [x] D — Plugin documentation (README, plugin-level evals, intake agent pointer)
-- [ ] E — Apply improvement-intake-agent patch (manual)
-- [ ] F — Symlink audit + install (manual)
+- [x] E — Apply improvement-intake-agent patch (manual)
+- [x] F — Symlink audit + install (manual)
 - [x] Delegation prompt written (copilot_prompt_0019.md)
 - [x] G — os-architect-tester-agent.md
 - [x] H — os-evolution-planner skill
