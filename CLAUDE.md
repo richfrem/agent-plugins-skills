@@ -58,6 +58,46 @@ See `ADRs/` for authoritative architecture rules.
 
 ---
 
+## Plugin Evolution Entry Points
+
+The agent-agentic-os plugin provides a structured workflow for evolving any plugin,
+skill, or sub-agent in this repo. Three key capabilities:
+
+| Skill / Agent | Invoke as | Purpose |
+|---------------|-----------|---------|
+| `os-architect` | `/os-architect` | Front-door intake — start here for any evolution activity |
+| `os-evolution-planner` | called by os-architect | Writes task plans + Copilot CLI delegation prompts |
+| `os-architect-tester` | agent dispatch | Validates os-architect via pre-scripted scenario transcripts |
+
+### Evolution workflow (how tasks 0018 / 0019 were built)
+
+1. **Invoke `/os-architect`** — describe what you want to evolve in plain language
+2. **Intent classified** into one of 5 categories (pattern abstraction, research application, lab setup, gap fill, multi-loop)
+3. **Ecosystem audit** — os-architect checks what exists vs what's needed
+4. **Path proposed**: A (orchestrate existing) / B (update existing) / C (create new)
+5. **os-evolution-planner** writes the task plan + Copilot CLI delegation prompt
+6. **Dispatch** via `run_agent.py` with `claude-sonnet-4.6` (single premium request, batch everything)
+7. **Validate** via `os-architect-tester` after any changes to os-architect
+
+### Copilot CLI delegation pattern (canonical)
+
+```bash
+# 1. Heartbeat (free model — always first)
+python3 plugins/copilot-cli/scripts/run_agent.py \
+  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+
+# 2. Dispatch (one dense premium request — batch all workstreams)
+python3 plugins/copilot-cli/scripts/run_agent.py \
+  /dev/null tasks/todo/copilot_prompt_<task>.md temp/copilot_output_<task>.md \
+  "Generate all files exactly as specified. Use the Write tool to write files directly." \
+  claude-sonnet-4.6
+
+# 3. Verify output before claiming complete
+wc -l temp/copilot_output_<task>.md  # expect 100+ lines for multi-file output
+```
+
+---
+
 ## Behavior & Judgment (Karpathy Principles)
 
 These govern HOW to think, not just what to do. Apply before writing any code or content.

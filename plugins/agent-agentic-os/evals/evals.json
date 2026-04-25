@@ -1,0 +1,10 @@
+[
+  {"prompt": "I want to evolve one of my agents — where do I start?", "should_trigger": true},
+  {"prompt": "Help me apply a new pattern I found to my skill ecosystem", "should_trigger": true},
+  {"prompt": "Set up an improvement lab for my exploration-workflow skill", "should_trigger": true},
+  {"prompt": "I need a new capability that doesn't exist yet in my plugins", "should_trigger": true},
+  {"prompt": "Run multiple skill improvement loops in parallel", "should_trigger": true},
+  {"prompt": "What is the Agentic OS plugin?", "should_trigger": false},
+  {"prompt": "Fix the syntax error in my Python script", "should_trigger": false},
+  {"prompt": "Review my pull request for the auth service", "should_trigger": false}
+]

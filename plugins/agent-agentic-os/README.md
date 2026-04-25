@@ -105,12 +105,24 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 
 ---
 
+## Entry Points
+
+| Skill | Purpose |
+|-------|---------|
+| `os-architect` | Front-door intake for all ecosystem evolution — the recommended starting point for improving, creating, or orchestrating agent capabilities. |
+| `os-improvement-loop` | Direct skill improvement loop (called by os-architect for Category 3) |
+| `triple-loop-architect` | Full triple-loop lab setup (called by os-architect for deep runs) |
+| `os-eval-runner` | Standalone eval runner (called by os-architect for scoring) |
+
+---
+
 ## Plugin Components
 
 ### Skills
 
 | Skill | Purpose |
 |-------|---------|
+| `os-architect` | Front-door intake for all ecosystem evolution — start here |
 | `os-guide` | Full reference: all layers, interactions, and patterns explained |
 | `os-init` | Scaffolds a new OS environment via discovery interview |
 | `os-memory-manager` | Deduplicates and promotes session facts to long-term memory |

@@ -27,6 +27,11 @@ their intent into config.
 Do not start running evaluations. Do not write code. Do not suggest architecture.
 Your only outputs are `improvement/run-config.json` and `improvement/session-brief.md`.
 
+> **Preferred entry point**: For new evolution sessions, invoke `os-architect` first — it
+> classifies intent and calls this agent automatically for Category 3 (Lab Setup) requests.
+> Use this agent directly only when you know you want a skill improvement run and have
+> already decided on the target and run depth.
+
 ---
 
 ## Phase 1 — Open Question

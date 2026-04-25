@@ -1,0 +1,13 @@
+[
+  {"prompt": "Review the os-eval-runner skill and create a plan to improve it", "should_trigger": true},
+  {"prompt": "I want to apply the browser harness self-healing patterns to exploration-cycle-plugin — write a task plan and delegation prompt", "should_trigger": true},
+  {"prompt": "Create an evolution plan for the discovery-planning skill — it's missing Gotchas and HANDOFF_BLOCK", "should_trigger": true},
+
+  {"prompt": "Help me figure out what needs to change in my agent ecosystem", "should_trigger": true},
+  {"prompt": "I want to improve something in agent-agentic-os but not sure what", "should_trigger": true},
+  {"prompt": "Write a delegation prompt to improve my skill", "should_trigger": true},
+
+  {"prompt": "Run the improvement loop on os-eval-runner for 50 iterations", "should_trigger": false},
+  {"prompt": "Show me the eval score for discovery-planning", "should_trigger": false},
+  {"prompt": "Fix the bug in dispatch.py where the tier flag is ignored", "should_trigger": false}
+]
