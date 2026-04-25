@@ -72,12 +72,12 @@ All WS paths are relative to `plugins/agent-agentic-os/`.
 
 ## Status
 
-- [ ] A — evals.json classification upgrade
-- [ ] B — Path bug fix
-- [ ] C — Category 5 Phase 3 spec
-- [ ] D — os-evolution-planner WS ordering enforcement
-- [ ] E — Confidence-aware classification
-- [ ] F — No-op path
+- [x] A — evals.json classification upgrade
+- [x] B — Path bug fix
+- [x] C — Category 5 Phase 3 spec
+- [x] D — os-evolution-planner WS ordering enforcement
+- [x] E — Confidence-aware classification
+- [x] F — No-op path
 - [ ] G — improvement-intake patch (manual)
-- [ ] Symlink audit
-- [ ] Commit and PR
+- [ ] Symlink audit + plugin_add.py install
+- [x] Commit (dispatch agent committed: 9714cd92)
