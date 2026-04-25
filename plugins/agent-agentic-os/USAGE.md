@@ -4,19 +4,54 @@
 ---
 
 ## 1. The Human / Caller Entry Point
-The Agentic OS is a "Control-Plane as a Service." The caller does not need to manage the State Machine directly. The practical entry point is a task submission command that kicks off the sequence:
 
-```bash
-# Example invocation
-os-runner submit \
-  --skill "refactor-memory-gc" \
-  --partition "os-memory-manager" \
-  --hypothesis "rarity_score should weight inverse global frequency"
+### Recommended: `/os-architect`
+
+The practical entry point for any evolution activity is:
+
+```
+/os-architect
 ```
 
-**What this does:**
-This command translates directly into the `IDLE → RUNNING` state transition. 
-A caller submits a scoped task targeting a specific skill, assigns it to a partition ID, and supplies an initial hypothesis. The `kernel.py` acquires a lease, registers the partition as `RUNNING`, and the evaluation loop begins. Everything else—circuit breakers, gotchas, clean-room backports—is governed autonomously inside that lifecycle.
+Describe what you want in plain language. The os-architect agent classifies your intent into one of 5 categories, audits what capabilities already exist, proposes the right evolution path (orchestrate existing / update existing / create new), and dispatches implementation work via your available CLI tools. You do not need to know which sub-agent to invoke, whether a capability exists, or how to configure a run.
+
+**Intent categories os-architect handles:**
+1. Pattern Abstraction — applying a new way of working to existing skills/agents
+2. Research Application — incorporating techniques from papers or external research
+3. Lab Setup / Improvement Loop — running eval iterations on an existing skill
+4. Capability Gap Fill — creating a new skill or agent that doesn't exist yet
+5. Multi-Loop Orchestration — coordinating parallel improvement loops
+
+### Advanced: Direct sub-agent invocation
+
+For users who know exactly what they want, sub-agents can be invoked directly:
+
+```bash
+# Configure a skill improvement run directly
+# → improvement-intake-agent
+
+# Set up a full triple-loop eval lab
+# → triple-loop-architect agent
+
+# Run unattended overnight iterations
+# → triple-loop-orchestrator agent
+```
+
+### Low-level: kernel.py submission
+
+For programmatic or scripted invocation, the kernel accepts direct task submissions:
+
+```bash
+# Example low-level invocation
+python3 plugins/agent-agentic-os/scripts/kernel.py emit_event \
+  --agent improvement-intake-agent \
+  --type lifecycle \
+  --action intake-complete \
+  --status success \
+  --summary "target_skill — run depth configured"
+```
+
+This translates directly into the `IDLE → RUNNING` state transition. The `kernel.py` acquires a lease, registers the partition as `RUNNING`, and the evaluation loop begins. Everything else — circuit breakers, gotchas, clean-room backports — is governed autonomously inside that lifecycle.
 
 ---
 

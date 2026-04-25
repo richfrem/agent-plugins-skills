@@ -123,6 +123,7 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 | Skill | Purpose |
 |-------|---------|
 | `os-architect` | Front-door intake for all ecosystem evolution — start here |
+| `os-evolution-planner` | Writes structured task plans + Copilot CLI delegation prompts for Path B/C executions; called by os-architect |
 | `os-guide` | Full reference: all layers, interactions, and patterns explained |
 | `os-init` | Scaffolds a new OS environment via discovery interview |
 | `os-memory-manager` | Deduplicates and promotes session facts to long-term memory |
@@ -139,7 +140,12 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 
 | Agent | Purpose |
 |-------|---------|
+| `os-architect` | Interactive conductor for ecosystem evolution — classifies intent, audits capabilities, proposes Path A/B/C, dispatches via run_agent.py |
+| `os-architect-tester` | Validates os-architect via pre-scripted scenario transcripts; run after any changes to os-architect |
+| `improvement-intake-agent` | Configures a skill improvement run — called by os-architect for Category 3 (Lab Setup) requests |
 | `agentic-os-setup` | Conversational setup guide; runs the init interview |
+| `triple-loop-architect` | Sets up a full triple-loop eval lab interactively |
+| `triple-loop-orchestrator` | Runs unattended overnight improvement iterations |
 | `Triple-Loop Retrospective` | Post-session retrospective; mines friction, proposes and validates skill patches |
 | `os-health-check` | System diagnostics; inspects event log, memory state, lock status |
 
