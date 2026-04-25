@@ -63,6 +63,10 @@ Each confirmed gap becomes one workstream:
 | WS | Scope | Delegate to |
 ...
 
+**WS ordering rule**: Structural fixes (model identifiers, path bugs, security flags) MUST
+be listed as the first workstreams. Additive content (Gotchas, HANDOFF_BLOCK, domain
+patterns, smoke tests) comes after. The delegated agent executes workstreams in listed order.
+
 ## Delegation Plan
 1. Delegation prompt at tasks/todo/copilot_prompt_<slug>.md
 2. Dispatch via run_agent.py with claude-sonnet-4.6
@@ -74,7 +78,7 @@ Each confirmed gap becomes one workstream:
 ```
 
 **Delegation prompt** written to `tasks/todo/copilot_prompt_<slug>.md`:
-- One section per workstream with exact file paths and content specifications
+- One section per workstream with exact file paths and content specifications — listed in order: structural fixes first, then additive content
 - Global instruction: "Use the Write tool to write files directly — do not output delimiters"
 - Completion checklist section at the end with COMPLETION_REPORT format
 

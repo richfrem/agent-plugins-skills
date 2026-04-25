@@ -1,21 +1,26 @@
 [
-  {"prompt": "I found a new browser automation pattern I want to generalize and apply to my agents", "should_trigger": true},
-  {"prompt": "I came across the karpathy autoresearch approach — want to abstract the learnings and apply to my skill ecosystem", "should_trigger": true},
+  {"prompt": "I found a new browser automation pattern I want to generalize and apply to my agents", "should_trigger": true, "expected_category": 1},
+  {"prompt": "I came across the karpathy autoresearch approach — want to abstract the learnings and apply to my skill ecosystem", "should_trigger": true, "expected_category": 1},
   {"prompt": "Show me what patterns are currently documented in the domain-patterns layer", "should_trigger": false},
 
-  {"prompt": "I read a paper on meta-learning and want to apply those techniques to evolve my improvement loops", "should_trigger": true},
-  {"prompt": "Found research on agentic self-healing, want to incorporate it into my exploration workflow", "should_trigger": true},
+  {"prompt": "I read a paper on meta-learning and want to apply those techniques to evolve my improvement loops", "should_trigger": true, "expected_category": 2},
+  {"prompt": "Found research on agentic self-healing, want to incorporate it into my exploration workflow", "should_trigger": true, "expected_category": 2},
   {"prompt": "What research papers are most relevant to autonomous agent improvement?", "should_trigger": false},
 
-  {"prompt": "I want to improve my os-eval-runner skill — run 50 solid validation iterations", "should_trigger": true},
-  {"prompt": "Set up an eval lab for the discovery-planning skill and run a deep stress test", "should_trigger": true},
+  {"prompt": "I want to improve my os-eval-runner skill — run 50 solid validation iterations", "should_trigger": true, "expected_category": 3},
+  {"prompt": "Set up an eval lab for the discovery-planning skill and run a deep stress test", "should_trigger": true, "expected_category": 3},
   {"prompt": "Show me the current eval score for os-eval-runner", "should_trigger": false},
 
-  {"prompt": "I need an agent that automatically monitors plugin health and flags stale evals, it doesn't exist yet", "should_trigger": true},
-  {"prompt": "There's no skill for auditing cross-plugin dependencies — I want to create one", "should_trigger": true},
+  {"prompt": "I need an agent that automatically monitors plugin health and flags stale evals, it doesn't exist yet", "should_trigger": true, "expected_category": 4},
+  {"prompt": "There's no skill for auditing cross-plugin dependencies — I want to create one", "should_trigger": true, "expected_category": 4},
   {"prompt": "List all the agents we currently have in the agentic-os plugin", "should_trigger": false},
 
-  {"prompt": "Run improvement loops on both os-eval-runner and exploration-workflow at the same time", "should_trigger": true},
-  {"prompt": "I want to evolve my entire exploration pipeline — multiple loops running in parallel across skills", "should_trigger": true},
-  {"prompt": "What improvement loops are currently running?", "should_trigger": false}
+  {"prompt": "Run improvement loops on both os-eval-runner and exploration-workflow at the same time", "should_trigger": true, "expected_category": 5},
+  {"prompt": "I want to evolve my entire exploration pipeline — multiple loops running in parallel across skills", "should_trigger": true, "expected_category": 5},
+  {"prompt": "What improvement loops are currently running?", "should_trigger": false},
+
+  {"prompt": "I found a Karpathy video showing a new way to train agents — I want to apply that methodology to how we run our improvement loops", "should_trigger": true, "expected_category": 1, "note": "misrouting-risk: Cat1 vs Cat2 — pattern discovery from observed technique, not a formal paper"},
+  {"prompt": "I read an ACL paper on reflection-tuning that describes a pattern I want to abstract into a skill", "should_trigger": true, "expected_category": 2, "note": "misrouting-risk: Cat2 vs Cat1 — formal research paper drives the update, not first-hand pattern observation"},
+  {"prompt": "Run 10 improvement iterations on exploration-workflow and also set up a new skill for session quality tracking while we're at it", "should_trigger": true, "expected_category": 3, "note": "misrouting-risk: Cat3+Cat4 combined — primary is lab setup; gap fill is secondary, handle sequentially"},
+  {"prompt": "I want to get better at writing evals — can you help me understand how the eval runner works?", "should_trigger": false, "note": "misrouting-risk: sounds like Cat3 but is a help/explain request, not an evolution action"}
 ]

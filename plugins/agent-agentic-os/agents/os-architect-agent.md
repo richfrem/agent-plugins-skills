@@ -94,7 +94,7 @@ Write a complete, dense spec to `temp/copilot_prompt_<task>.md`. Include:
 
 ### Step 2 — Heartbeat check (always first, free model)
 ```bash
-python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python3 plugins/copilot-cli/scripts/run_agent.py \
   /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
 grep -q "HEARTBEAT_OK" temp/heartbeat.md && echo "OK" || echo "FAIL — abort"
 ```
@@ -102,7 +102,7 @@ grep -q "HEARTBEAT_OK" temp/heartbeat.md && echo "OK" || echo "FAIL — abort"
 ### Step 3 — Dispatch via run_agent.py
 ```bash
 # Premium dispatch: claude-sonnet-4.6 for complex multi-file generation (charged per request — batch everything)
-python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python3 plugins/copilot-cli/scripts/run_agent.py \
   /dev/null \
   temp/copilot_prompt_<task>.md \
   temp/copilot_output_<task>.md \
@@ -194,10 +194,23 @@ Follow-up questions (one at a time, skip if already answered):
 After follow-ups, state intent classification back to user:
 ```
 Intent category:    [1-5 and label]
+Confidence:         [High | Medium | Low]
+Secondary intents:  [other categories detected, or "none"]
 Target:             [skill/agent/gap description]
 Available tools:    [copilot-cli / gemini-cli / claude-subagents]
 Dispatch strategy:  [derived from tools answer]
 ```
+
+Confidence rules:
+- **High**: 2+ signal phrases match one category, no overlap with other categories.
+- **Medium**: 1 signal phrase match, or minor overlap with one other category.
+- **Low**: No clear signal phrase match, or strong overlap across 2+ categories.
+
+If Confidence is Low: ask one targeted clarifying question before confirming.
+Example: "You mentioned both [signal A] and [signal B] — are you primarily looking to
+[Category X option] or [Category Y option]?"
+Do NOT proceed to Phase 2 until confidence is Medium or High.
+
 Ask: **"Does this look right? (yes / tweak something)"** — do not proceed until confirmed.
 
 ### Phase 2 — Ecosystem Audit
@@ -219,6 +232,16 @@ Estimated cost tier:  [Free / Cheap / Premium]
 ```
 
 ### Phase 3 — Architecture Proposal + Execution
+
+**Path A+ — No Action Warranted (capability exists, current, complete)**:
+- Trigger when: Existing match = Full, Match quality = Full, AND all self-healing patterns
+  present (Gotchas section exists, HANDOFF_BLOCK present, evals ≥ 6 real cases, Smoke Test present).
+- Do NOT invoke sub-agents or write delegation prompts.
+- Tell the user:
+  > "[Target] is already current and complete. The capability is well-maintained — no evolution
+  > action is needed at this time. If you have a specific improvement hypothesis, describe it
+  > and I'll recheck against that lens."
+- Emit HANDOFF_BLOCK with `PATH: A+`, `STATUS: complete`, `NEXT_ACTION: none — no action warranted`.
 
 **Path A — Orchestrate (capability exists, full match)**:
 - Capability exists and is current. Draft run config and invoke appropriate sub-agent.
@@ -254,6 +277,20 @@ Estimated cost tier:  [Free / Cheap / Premium]
 - Step 6: Register new agent in `context/agents.json`.
 - Step 7: Run first improvement loop as validation only after evals are approved.
 - Step 8: **Invoke `os-architect-tester`** to validate the new agent against acceptance criteria.
+
+**Category 5 — Multi-Loop Orchestration**:
+- Identify each distinct target from the user's request (one per skill/agent to improve).
+- Each target is an independent Path A dispatch — do not merge them into one delegation prompt.
+- For each target:
+  1. Verify the capability exists (same Phase 2 file-read check as Path A).
+  2. Write a separate delegation prompt: `temp/copilot_prompt_<slug>-<target>.md`.
+  3. Dispatch to `run_agent.py` sequentially (not in parallel) — one request at a time.
+     Premium requests are charged per call; sequential dispatch allows abort-on-failure.
+- Report per-target results as each completes. Do not wait for all before reporting.
+- If a target doesn't exist (gap), classify that target as Path C and handle separately
+  before returning to the remaining Path A dispatches.
+- Emit one HANDOFF_BLOCK at the end covering all targets:
+  TARGET = comma-separated list, STATUS = running (if any dispatched) or complete.
 
 ---
 

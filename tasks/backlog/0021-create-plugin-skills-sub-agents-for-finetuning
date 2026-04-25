@@ -1,0 +1,17 @@
+Basically I want to take 
+
+/Users/richardfremmerlid/Projects/Project_Sanctuary/forge
+
+this content and in particular /Users/richardfremmerlid/Projects/Project_Sanctuary/forge/CUDA-ML-ENV-SETUP.md
+
+create a plugin, skills, sub-agents to move from fine-tuning with
+many manual steps to something done by a subagent calling many skills
+
+we should also explore through this process the potential improvement
+to make this faster /Users/richardfremmerlid/Projects/Project_Sanctuary/tasks/backlog/151_integrate_unsloth_for_finetuning.md
+
+unsloth improvement, we should also consider and incorporate into this plugin all the knowledge and work done in this other repo that is foundational /Users/richardfremmerlid/Projects/ML-Env-CUDA13/README.md
+
+i want skills to setup an cuda ooptimized ml environment, etc. the whole thing goes through all the key steps, has skills agents guiding all the way along skills and subagents for everything instead of a fully manual process.
+
+Ill need to use my windows pc with an nvdia cuda gpu but you can build a plan for this. 
