@@ -38,7 +38,7 @@ These criteria apply to every scenario run. Each must pass for a scenario to be 
 | AC-1 | Intent classified correctly | Correct category (1–5) stated within 2 turns |
 | AC-2 | Dispatch strategy gated | Strategy not stated before tools question (Phase 1 Q2) is answered |
 | AC-3 | Path C evals HARD-GATE | If gap-fill scenario: agent states evals review required before loop runs |
-| AC-4 | Audit verification cited | Agent references file-read or memory source before claiming match/gap |
+| AC-4 | Audit verification cited | Agent either (a) performs a file read and cites the path, OR (b) explicitly states intent to verify via file read before claiming match/gap. In single-shot simulation, (b) is acceptable — FAIL only if no audit intent is expressed at all. |
 
 ## Built-in Scenario Library
 

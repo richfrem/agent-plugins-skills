@@ -847,3 +847,30 @@
 {"time": "2026-04-25T09:35:36.695744Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-04-25T16:35:43.140129+00:00", "agent": "post_run_hook", "type": "metric", "action": "session_summary", "status": "success", "results": {"human_interventions": 0, "workflow_uncertainty": 0, "missed_steps": 0, "cli_errors": 0, "friction_events_total": 0, "hook_errors": 0, "correlation_id": "session", "session_id": "unknown"}}
 {"time": "2026-04-25T09:36:09.953565Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:16.320604Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:19.554387Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:22.373420Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:25.221704Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:29.811949Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:31.877673Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:34.833512Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:39.308596Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:36:44.490423Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:37:10.932795Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:37:14.952564Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:37:31.114452Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:38:09.448864Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:38:11.326946Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:39:25.686735Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:39:29.118360Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:39:31.547918Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:39:38.106854Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:39:48.271901Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:39:54.841583Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:40:02.347057Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:40:05.806650Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:40:55.610454Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:40:58.262540Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T09:41:11.194737Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-04-25T16:41:20.019271+00:00", "agent": "post_run_hook", "type": "metric", "action": "session_summary", "status": "success", "results": {"human_interventions": 0, "workflow_uncertainty": 0, "missed_steps": 0, "cli_errors": 0, "friction_events_total": 0, "hook_errors": 0, "correlation_id": "session", "session_id": "unknown"}}
+{"time": "2026-04-25T09:45:48.693927Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
