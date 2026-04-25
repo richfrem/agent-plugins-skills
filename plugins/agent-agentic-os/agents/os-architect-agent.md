@@ -229,13 +229,14 @@ Estimated cost tier:  [Free / Cheap / Premium]
 
 **Path B — Update (capability exists, partial match)**:
 - Capability exists but is outdated, has gaps, or is missing self-healing patterns.
-- Propose which specific sections to update and what to add.
-- Check if self-healing patterns are present (Gotchas, HANDOFF_BLOCK) — add if missing.
-- **Invoke `os-evolution-planner`** to write the structured task plan + delegation prompt.
-  Pass: target skill/agent name + list of gaps identified in audit.
+- Identify which specific sections need updating and what to add.
+- Check if self-healing patterns are present (Gotchas, HANDOFF_BLOCK) — note gaps.
+- **REQUIRED Step: Invoke `os-evolution-planner` skill.** Pass: target skill/agent name
+  + explicit list of gaps identified in audit. Do not describe dispatch steps yourself —
+  `os-evolution-planner` writes the task plan and delegation prompt.
 - `os-evolution-planner` writes `tasks/todo/<slug>-plan.md` and `tasks/todo/copilot_prompt_<slug>.md`.
-- Dispatch via `run_agent.py` (see Delegation Patterns section). Optionally run
-  `os-skill-improvement` or `os-improvement-loop` after update to validate.
+- Review the plan with the user, then dispatch via `run_agent.py`.
+- Optionally run `os-skill-improvement` or `os-improvement-loop` after update to validate.
 
 **Path C — Create (gap confirmed)**:
 - Capability does not exist. Must be created before any improvement loop can run.
@@ -258,7 +259,8 @@ Estimated cost tier:  [Free / Cheap / Premium]
 
 ## HANDOFF_BLOCK
 
-At session close, emit this machine-readable block:
+At session close, emit exactly these fields in exactly this order. Do not rename, add,
+or remove fields. Downstream agents parse this block programmatically.
 
 ```
 ## HANDOFF_BLOCK
