@@ -36,6 +36,7 @@ No arguments needed. Start with a plain-language description of what you want to
 
 | Path | When | Mechanism |
 |------|------|-----------|
+| A+ — No Action | audit shows full match + all patterns present | tell user, no dispatch |
 | A — Orchestrate | capability exists, current | route to existing agent/skill + run_agent.py |
 | B — Update | capability exists, outdated/incomplete | `os-evolution-planner` writes plan + prompt → dispatch + optional improvement loop |
 | C — Create | gap confirmed | `create-sub-agent` scaffold → `os-evolution-planner` plan + prompt → eval lab → evals HARD-GATE → `os-architect-tester` validates |
@@ -60,3 +61,4 @@ No arguments needed. Start with a plain-language description of what you want to
 1. Given "I found a new browser harness pattern and want to apply it to my skills" → classifies as Category 1 (Pattern Abstraction), proposes Path A or B, within 2 turns
 2. Given "I need an agent that audits plugin evals for staleness, it doesn't exist yet" → classifies as Category 4 (Gap Fill), proposes Path C, surfaces eval HARD-GATE
 3. Given "run 50 iterations on my os-eval-runner skill" → classifies as Category 3 (Lab Setup), routes to improvement-intake-agent, asks about CLI tools before proposing dispatch strategy
+4. Given "I want to explore improving how we generate agents and maybe create one" → agent identifies Low confidence (Cat 3 + Cat 4 overlap), asks clarifying question before proceeding to Phase 2
