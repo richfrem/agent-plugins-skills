@@ -135,7 +135,7 @@ Read `temp/test_output_<scenario-id>.md`. For each AC:
 - PASS if present in the ARCHITECT response following turn 2
 - FAIL if absent
 
-### Step 4 — Write test report
+### Step 4 — Write test report and log to experiment log
 
 Write to `temp/test_report_<scenario-id>.md`:
 
@@ -165,6 +165,17 @@ Model: claude-sonnet-4.6
 [Any failure observations that suggest a fix to os-architect-agent.md]
 ```
 
+After writing each individual report, and again after the consolidated report:
+```bash
+python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --source-type tester \
+  --report temp/test_report_consolidated.md \
+  --session-id "$(date +%Y-%m-%d)-tester" \
+  --target os-architect \
+  --triggered-by os-architect-tester
+```
+This persists qualitative AC pass/fail results to `context/experiment-log/index.md`.
+
 ## Running Multiple Scenarios
 
 To run all 3 built-in scenarios in sequence, run each through the Run Protocol above
@@ -173,6 +184,25 @@ total PASS/FAIL counts and any patterns across failures.
 
 If 2 or more ACs fail across 2 or more scenarios, flag this as a regression and
 recommend updating `os-architect-agent.md` before deploying.
+
+## Handoff to os-evolution-verifier
+
+After tester scenarios complete, hand off to `os-evolution-verifier` for the extended
+adversarial suite (8 scenarios including hallucination, gate bypass, and confidence model tests):
+
+```bash
+# Append tester results to experiment log first
+python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --report temp/test_report_consolidated.md \
+  --triggered-by os-architect-tester
+
+# Then dispatch evolution verifier for deeper coverage
+# Use copilot_prompt_0023_evolution_verification.md as the scenario prompt
+```
+
+The tester covers intent classification and routing correctness (AC-1 through AC-4).
+The verifier covers HANDOFF_BLOCK integrity, gate bypass resistance, and confidence model
+behavior — complementary, not redundant.
 
 ## Gotchas
 

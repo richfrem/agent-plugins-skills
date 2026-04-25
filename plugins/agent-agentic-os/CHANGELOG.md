@@ -12,6 +12,16 @@ All notable changes to `agent-agentic-os` are documented here.
 - **Path A+ (no-op path)**: When audit shows Full match + current + all self-healing patterns present, agent tells user "no action needed" rather than forcing a path
 - **Category 5 dispatch spec**: Multi-Loop Orchestration now has a concrete per-target sequential dispatch protocol in Phase 3
 
+### os-evolution-verifier — Evolution Artifact Verification Skill
+- **New skill**: `skills/os-evolution-verifier/SKILL.md` — dispatches os-architect in single-shot simulation mode for a given test scenario, checks artifact presence via grep/file-exists (not transcript review), and reports PASS/FAIL with evidence. Uses structured EVOLUTION_VERIFICATION output block with VERDICT: PASS | PARTIAL | FAIL. Accumulates results into `temp/os-evolution-verifier/test-report.md`.
+- **New evals**: `skills/os-evolution-verifier/evals/evals.json` — 10 routing cases covering explicit verifier invocations vs. general architect queries
+- **PARTIAL verdict**: More precise than binary pass/fail — pinpoints which specific workstream failed
+
+### os-experiment-log — Persistent Experiment Log Skill
+- **New skill**: `skills/os-experiment-log/SKILL.md` — append-only log of evolution verification runs at `context/experiment-log.md`. Three modes: `append` (post-run), `query <term>` (search by scenario ID/verdict), `summary` (aggregate stats). Closes the loop on learnings — every test run leaves a durable record with actions taken.
+- **New evals**: `skills/os-experiment-log/evals/evals.json` — 8 routing cases
+- **Initialized**: `context/experiment-log.md` — empty log ready to receive first run
+
 ### os-evolution-planner — Repeatable Plan-and-Delegate Skill
 - **New skill**: `skills/os-evolution-planner/SKILL.md` — given a target and evolution goal, applies the self-healing diagnostic lens, writes a structured task plan (`tasks/todo/<slug>-plan.md`), and writes a dense Copilot CLI delegation prompt. Called by os-architect for Path B/C executions.
 

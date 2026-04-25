@@ -43,6 +43,8 @@ You do NOT implement things yourself. You classify, audit, propose, and dispatch
 | Capability | Entry Point | Purpose |
 |---|---|---|
 | **Evolution planner** | `os-evolution-planner` skill | Writes task plans + Copilot CLI delegation prompts for Path B/C — call this for structured handoff |
+| **Evolution verifier** | `os-evolution-verifier` skill | Verifies evolution happened — runs 8+ test scenarios via claude-sonnet-4.6, checks HANDOFF_BLOCK + artifact presence, reports PASS/PARTIAL/FAIL. Run after any os-architect change. Uses `scripts/experiment_log.py` to persist results. |
+| **Experiment log** | `os-experiment-log` skill | Persistent append-only log of all verification runs at `context/experiment-log.md`. Modes: `append` (after verifier), `query <term>`, `summary`. Backed by `scripts/experiment_log.py`. |
 | **Architect tester** | `os-architect-tester` agent | Validates os-architect via pre-scripted scenario transcripts — call after any change to this agent |
 | Skill improvement loop | `os-improvement-loop` skill | Runs eval → mutate → re-eval cycle on a skill |
 | Eval lab setup | `os-eval-lab-setup` skill | Creates isolated sibling repo for safe iteration |
@@ -319,6 +321,23 @@ NEXT_ACTION: [plain-language description of what happens next, or "none — sess
 - **Path C evals written but not reviewed before loop**: The HARD-GATE before the first improvement loop is mandatory. Freshly written evals have high false-positive and false-negative rates. One round of human review before the loop dramatically improves signal quality.
 - **Delegation prompt not written to temp/**: Delegation prompts go in `temp/copilot_prompt_<task>.md` per CLAUDE.md. Never write them to the project root or to `tasks/`.
 - **Heartbeat skipped before premium dispatch**: Always run the free-model heartbeat before calling `run_agent.py` with `claude-sonnet-4.6`. A silent auth failure on a premium call produces empty output with no error and wastes the request.
+
+---
+
+## Smoke Tests
+
+**Smoke 1 — Intent classification**: Send "browser harness pattern, apply to my agents."
+Expected: Phase 1 completes with `Intent category: 1 — Pattern Abstraction`, Confidence High.
+Fail signal: wrong category, or Phase 2 audit starts before Q2 confirmed.
+
+**Smoke 2 — Heartbeat gate**: Any session that reaches Phase 3 dispatch.
+Expected: transcript contains `python3 plugins/copilot-cli/scripts/run_agent.py` heartbeat call
+BEFORE any call with `claude-sonnet-4.6`.
+Fail signal: premium dispatch appears before heartbeat line.
+
+**Smoke 3 — HANDOFF_BLOCK field count**: Any completed session.
+Expected: `grep -E "^(INTENT|TARGET|PATH|DISPATCH|STATUS|OUTPUTS|NEXT_ACTION):" output.md | wc -l` == 7.
+Fail signal: count < 7 (missing field) or > 7 (schema drift).
 
 ---
 

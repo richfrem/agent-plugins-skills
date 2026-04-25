@@ -104,6 +104,18 @@ python3 plugins/copilot-cli/scripts/run_agent.py \
 wc -l temp/copilot_output_<slug>.md  # expect 100+ lines for multi-workstream output
 ```
 
+After dispatch completes (or after plan is written if dispatch is off), log to experiment log:
+```bash
+python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --source-type planner \
+  --report tasks/todo/<slug>-plan.md \
+  --session-id "<slug>" \
+  --target "<target-skill-or-agent>" \
+  --triggered-by os-evolution-planner
+```
+This records the workstream count and gaps identified as a qualitative entry in
+`context/experiment-log/` — traceable alongside any subsequent verifier or tester runs.
+
 If dispatch flag is NOT set, present the plan and prompt paths and ask:
 > "Plan written to `tasks/todo/<slug>-plan.md` and delegation prompt to
 > `tasks/todo/copilot_prompt_<slug>.md`. Dispatch to Copilot CLI now? (yes / review first)"

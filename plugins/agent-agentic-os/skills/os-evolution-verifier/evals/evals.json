@@ -1,0 +1,13 @@
+[
+  {"prompt": "Run the evolution verifier on all test scenarios for os-architect", "should_trigger": true},
+  {"prompt": "Verify that os-architect actually created a new skill file after I dispatched it", "should_trigger": true},
+  {"prompt": "Check if the HANDOFF_BLOCK has all 7 required fields in the os-architect output", "should_trigger": true},
+  {"prompt": "After my last os-architect run, did it actually write a task plan and delegation prompt?", "should_trigger": true},
+  {"prompt": "Run TEST-3 from the evolution verifier scenarios and report PASS or FAIL", "should_trigger": true},
+  {"prompt": "I want to verify that os-architect's confidence model works — run the ambiguous prompt test", "should_trigger": true},
+
+  {"prompt": "Show me the current eval score for os-architect", "should_trigger": false},
+  {"prompt": "Run 50 improvement iterations on os-architect", "should_trigger": false},
+  {"prompt": "What does os-architect do when it gets a Category 5 request?", "should_trigger": false},
+  {"prompt": "List all the skills in the agent-agentic-os plugin", "should_trigger": false}
+]

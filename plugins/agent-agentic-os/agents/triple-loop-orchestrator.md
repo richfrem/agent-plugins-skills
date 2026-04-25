@@ -271,6 +271,18 @@ python $SKILL_EVAL_SOURCE/scripts/plot_eval_progress.py \
    - Any novel KEEP hypotheses flagged "Novel failure — tracking as candidate pattern." that should be promoted to the domain-pattern file.
    - Print path to `$LAB_PATH/wal.log` for review.
 
+**Log to experiment log** (always — before reporting to user):
+```bash
+python3 $APS_ROOT/plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --source-type orchestrator \
+  --report $LAB_PATH/LOG_PROGRESS.md \
+  --session-id "$(date +%Y-%m-%d)-${SKILL_NAME}" \
+  --target "$SKILL_NAME" \
+  --triggered-by triple-loop-orchestrator
+```
+This persists the numeric result (KEEP/DISCARD counts, best score, delta) to
+`context/experiment-log/` in the master repo before the lab is torn down.
+
 **Print:**
 ```
 === Triple-Loop Orchestrator — Run Complete ===
