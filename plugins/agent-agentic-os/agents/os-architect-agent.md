@@ -322,6 +322,23 @@ NEXT_ACTION: [plain-language description of what happens next, or "none — sess
 
 ---
 
+## Smoke Tests
+
+**Smoke 1 — Intent classification**: Send "browser harness pattern, apply to my agents."
+Expected: Phase 1 completes with `Intent category: 1 — Pattern Abstraction`, Confidence High.
+Fail signal: wrong category, or Phase 2 audit starts before Q2 confirmed.
+
+**Smoke 2 — Heartbeat gate**: Any session that reaches Phase 3 dispatch.
+Expected: transcript contains `python3 plugins/copilot-cli/scripts/run_agent.py` heartbeat call
+BEFORE any call with `claude-sonnet-4.6`.
+Fail signal: premium dispatch appears before heartbeat line.
+
+**Smoke 3 — HANDOFF_BLOCK field count**: Any completed session.
+Expected: `grep -E "^(INTENT|TARGET|PATH|DISPATCH|STATUS|OUTPUTS|NEXT_ACTION):" output.md | wc -l` == 7.
+Fail signal: count < 7 (missing field) or > 7 (schema drift).
+
+---
+
 ## Operating Principles
 
 - **Classify before auditing.** Do not audit until intent is confirmed by user.

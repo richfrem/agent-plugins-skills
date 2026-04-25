@@ -124,6 +124,8 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 |-------|---------|
 | `os-architect` | Front-door intake for all ecosystem evolution — start here |
 | `os-evolution-planner` | Writes structured task plans + Copilot CLI delegation prompts for Path B/C executions; called by os-architect |
+| `os-evolution-verifier` | Verifies that os-architect actually causes evolution — dispatches agent in simulation mode, checks artifact presence, reports PASS/FAIL with evidence |
+| `os-experiment-log` | Maintains a persistent append-only log of evolution experiments and verification results; supports append, query, and summary modes |
 | `os-guide` | Full reference: all layers, interactions, and patterns explained |
 | `os-init` | Scaffolds a new OS environment via discovery interview |
 | `os-memory-manager` | Deduplicates and promotes session facts to long-term memory |

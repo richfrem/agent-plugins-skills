@@ -1,0 +1,11 @@
+[
+  {"prompt": "Append the latest evolution verifier results to the experiment log", "should_trigger": true},
+  {"prompt": "Log the results from today's os-architect test run", "should_trigger": true},
+  {"prompt": "Query the experiment log for all T2-D failures", "should_trigger": true},
+  {"prompt": "Show me a summary of all experiment runs — how many passed vs failed", "should_trigger": true},
+  {"prompt": "Search the experiment log for hallucination failures", "should_trigger": true},
+
+  {"prompt": "Run the evolution verifier on all scenarios", "should_trigger": false},
+  {"prompt": "Show me the current eval score for os-architect", "should_trigger": false},
+  {"prompt": "What does os-architect do when it gets a Path C request?", "should_trigger": false}
+]
