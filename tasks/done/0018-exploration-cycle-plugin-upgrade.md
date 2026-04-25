@@ -91,13 +91,13 @@ Workstream G: Python script changes → delegate to Copilot Sonnet 4.6.
 
 ## Status
 
-- [ ] A — Model identifier fixes
-- [ ] B — Gotchas sections
-- [ ] C — Consistency fixes
-- [ ] D — HANDOFF_BLOCK signals
-- [ ] E — Domain patterns layer
-- [ ] F — Evals fill-in
-- [ ] G — dispatch.py improvements
-- [ ] H — session_end hook
-- [ ] Symlink audit
-- [ ] Commit and PR
+- [x] A — Model identifier fixes
+- [x] B — Gotchas sections
+- [x] C — Consistency fixes
+- [x] D — HANDOFF_BLOCK signals
+- [x] E — Domain patterns layer
+- [x] F — Evals fill-in
+- [x] G — dispatch.py improvements
+- [x] H — session_end hook
+- [x] Symlink audit
+- [x] Commit and PR (merged in PR #317 and #318)

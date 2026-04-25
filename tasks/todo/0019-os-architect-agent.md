@@ -333,8 +333,8 @@ prompt before dispatching.
 - [ ] E — Apply improvement-intake-agent patch (manual)
 - [ ] F — Symlink audit + install (manual)
 - [x] Delegation prompt written (copilot_prompt_0019.md)
-- [ ] G — os-architect-tester-agent.md
-- [ ] H — os-evolution-planner skill
-- [ ] I — CLAUDE.md / GEMINI.md / copilot-instructions.md awareness update
+- [x] G — os-architect-tester-agent.md
+- [x] H — os-evolution-planner skill
+- [x] I — CLAUDE.md / GEMINI.md / copilot-instructions.md awareness update
 - [x] G/H/I delegation prompt written (copilot_prompt_0019b.md)
-- [ ] Smoke test passed
+- [x] Smoke test passed (pattern-abstraction scenario run; AC-1/2/4 pass, IMP-1/2/3 applied)
