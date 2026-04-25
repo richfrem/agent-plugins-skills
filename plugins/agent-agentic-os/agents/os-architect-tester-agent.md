@@ -135,7 +135,7 @@ Read `temp/test_output_<scenario-id>.md`. For each AC:
 - PASS if present in the ARCHITECT response following turn 2
 - FAIL if absent
 
-### Step 4 — Write test report
+### Step 4 — Write test report and log to experiment log
 
 Write to `temp/test_report_<scenario-id>.md`:
 
@@ -164,6 +164,17 @@ Model: claude-sonnet-4.6
 ## Improvement Notes
 [Any failure observations that suggest a fix to os-architect-agent.md]
 ```
+
+After writing each individual report, and again after the consolidated report:
+```bash
+python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --source-type tester \
+  --report temp/test_report_consolidated.md \
+  --session-id "$(date +%Y-%m-%d)-tester" \
+  --target os-architect \
+  --triggered-by os-architect-tester
+```
+This persists qualitative AC pass/fail results to `context/experiment-log/index.md`.
 
 ## Running Multiple Scenarios
 
