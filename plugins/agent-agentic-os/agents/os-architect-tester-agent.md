@@ -174,6 +174,25 @@ total PASS/FAIL counts and any patterns across failures.
 If 2 or more ACs fail across 2 or more scenarios, flag this as a regression and
 recommend updating `os-architect-agent.md` before deploying.
 
+## Handoff to os-evolution-verifier
+
+After tester scenarios complete, hand off to `os-evolution-verifier` for the extended
+adversarial suite (8 scenarios including hallucination, gate bypass, and confidence model tests):
+
+```bash
+# Append tester results to experiment log first
+python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --report temp/test_report_consolidated.md \
+  --triggered-by os-architect-tester
+
+# Then dispatch evolution verifier for deeper coverage
+# Use copilot_prompt_0023_evolution_verification.md as the scenario prompt
+```
+
+The tester covers intent classification and routing correctness (AC-1 through AC-4).
+The verifier covers HANDOFF_BLOCK integrity, gate bypass resistance, and confidence model
+behavior — complementary, not redundant.
+
 ## Gotchas
 
 - **os-architect agent file not found**: The tester reads `plugins/agent-agentic-os/agents/os-architect-agent.md` to embed in the test prompt. If the file is missing (not yet installed to `.agents/`), the test prompt will be empty and the output will be meaningless. Always verify the agent file exists before running.

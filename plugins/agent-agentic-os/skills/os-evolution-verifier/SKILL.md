@@ -228,7 +228,7 @@ FAIL: Z
 After Phase 5 summary is written, always call os-experiment-log to persist the run:
 
 ```bash
-python3 plugins/agent-agentic-os/skills/os-experiment-log/scripts/experiment_log.py append \
+python3 scripts/experiment_log.py append \
   --report temp/os-evolution-verifier/test-report.md \
   --triggered-by os-evolution-verifier
 ```
