@@ -1,216 +1,239 @@
-# Agent Harness & Learning Layer (formerly Agentic OS)
+# Agent Harness & Learning Layer
 
-A developer **meta-harness** that gives your AI agent **persistent memory**, a **self-improving feedback loop**, and **cross-IDE orchestration** — helping solo developers coordinate workflows and continuously improve skills with every execution across multiple environments (VS Code, Cursor, Windsurf, Copilot).
+Persistent memory and continuous self-improvement for long-horizon Claude Code workflows.
+Structured memory survives and scales across hundreds of sessions; an eval-gated improvement
+loop evolves your skills and agents automatically — no subjective LLM "mental" testing.
 
-A *harness* controls what information a model sees at each step: prompting, context management, memory retrieval, and tool orchestration. A *meta-harness* adds an outer loop that searches over and improves the harness itself. This plugin is both: the memory and coordination layer is the harness; the `os-eval-runner` + `triple-loop-architect` orchestration is the meta-layer that evolves the harness's own skills and protocols continuously.
+Built as a discipline layer on top of Claude Code's native primitives (auto-memory, hooks,
+subagents) rather than replacing them. Solo developer, single machine, file-system only.
 
-This architecture is independently validated by Meta-Harness (Lee et al., arXiv:2603.28052, 2026), which demonstrates that code-space search over harness definitions — using an LLM proposer with access to prior candidates and evaluation traces — outperforms hand-designed harnesses by significant margins across benchmarks. See [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) for the full analysis.
-
-> **Positioning:** Anthropic now ships auto-memory, native hooks, and subagent coordination natively. This plugin is not an operating system, but rather an **opinionated discipline layer** on top of those primitives — a structured meta-harness for solo developer workflows. See [`SUMMARY.md`](./SUMMARY.md) for full context and known limitations.
-
----
-
-## The Problem
-
-Claude Code ships persistent memory. What it gives you is a 200-line `MEMORY.md` with no structured deduplication, no promotion logic, and no eval gate. That works for a few sessions. It breaks down when you have multiple agents, background loops, and workflows that span days or weeks where the quality of what gets remembered directly affects the quality of every future session.
-
-The harder problem: coordination. How does the background improvement agent share what it learned with the foreground session? How does an outer-loop supervisor pass context to an inner-loop worker? How do two agents write to shared memory without corrupting it?
-
-This plugin provides a system for that.
+> **Scope:** Academic/research quality — designed and tested for Claude Code on macOS/Linux.
+> See [SUMMARY.md](./SUMMARY.md) for scope, known limitations, and enterprise roadmap.
 
 ---
 
-## What It Does
+## Is This For You?
 
-### Structured Memory Hierarchy
+**Good fit:**
+- Multi-session projects where Claude Code runs across days or weeks
+- Workflows with multiple agents that need to share context and build on each other's outputs
+- Teams that want objective eval-gated skill improvement (not vibes-based)
+- Users who have Claude + at least one free-tier AI (Copilot CLI, Gemini CLI) to minimize token cost
 
-Every session writes structured logs to `context/events.jsonl` and `context/memory/`. At end-of-session, the `os-memory-manager` deduplicates and promotes important facts to `context/memory.md` - a curated long-term store that bootstraps every future session. Dedup IDs, conflict detection, and size limits prevent the memory from drifting into contradiction over hundreds of sessions.
-
-### Continuous Improvement Loop (The Meta-Harness Layer)
-
-### Continuous Improvement Loop (The Meta-Harness Layer)
-
-This is the system's core differentiator: a unified **Triple-Loop Learning System** that continuously improves the instructions the model receives based on objective evaluation.
-
-```text
-TRIPLE-LOOP (Outer Meta-Learning Orchestrator via os-improvement-loop/nightly-evolver):
-  Runs automated loops unattended
-    -> oversees all experiments and delegates strategic targets
-    -> reviews cross-loop patterns to improve OS-level protocols 
-
-DOUBLE-LOOP (Strategic Planner via os-skill-improvement):
-  Session runs
-    -> errors and friction logged to events.jsonl
-    -> formulates hypotheses and generates strategy packets 
-
-SINGLE-LOOP (Tactical Executor via os-eval-runner):
-    -> executes the patch against a SKILL.md (The Target)
-    -> scores it against locked evals/evals.json fixtures (Headless Evaluation)
-    -> if DISCARD: auto-reverted via git checkout; if KEEP: retained for next session
-```
-
-The loop relies strictly on headless evaluation — no subjective LLM "mental" testing — defeating Goodhart's Law. A test registry prevents re-testing falsified hypotheses. The plugin applies this loop to its own skills: it is a live lab as much as a tool.
-
-**Research basis:** This architecture implements the [Karpathy 3-file autoresearch pattern](./skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md) and is structurally equivalent to the Meta-Harness outer-loop described in [Lee et al., arXiv:2603.28052 (2026)](../../plugin-research/meta-harness/summary.md) — which independently validates that code-space search over harness definitions, gated by objective evaluation, produces improvements that text-space optimizers cannot reach. The key open enhancement (raw execution trace access for the proposer) is documented in [`plugin-research/meta-harness/implementation-plan.md`](../../plugin-research/meta-harness/implementation-plan.md).
-
-### Agent Signaling and Turn Management
-
-Three simple signaling patterns built into the system:
-
-**Inner/outer loop** - outer supervisor sets goals and reviews results; inner worker executes and signals completion in the shared event log. Context flows through shared memory, not tight coupling.
-
-**Background + foreground** - background agents (`Triple-Loop Retrospective`, `os-health-check`) run asynchronously with simple execution locks preventing collisions. Their findings surface in the next foreground session through promoted memory.
-
-**Sequential agent handoff** - Agent A writes structured output to the event log. Agent B reads the log to pick up where A left off. Agents coordinate their turns through the simple shared log, not through each other.
-
----
-
-## Who This Is For
-
-Developers running **long-horizon, multi-session workflows** — projects where Claude Code runs across days or weeks, with multiple agents that need to build on each other's context.
-
-This is NOT for:
-- Single-session tasks (native auto-memory is sufficient)
+**Not a fit:**
+- Single-session tasks (Claude Code's native auto-memory is sufficient)
 - Enterprise multi-machine deployments (see `references/architecture/vision.md`)
 - Framework-agnostic portability requirements
 
 ---
 
-## Scope
-
-- **Developer tool, single machine** - designed and tested for solo developer use
-- **No external dependencies** - file system only, standard library Python
-- **Academic/research quality** - clarity of implementation over production hardening
-- **Not enterprise scale** - for multi-machine coordination or high-throughput streaming, see `references/architecture/vision.md`
-
----
-
 ## 🚀 Start Here
 
-> **New to this plugin? Run this first — every time.**
+> **Every evolution task starts with one command:**
+>
+> ```
+> /os-architect
+> ```
+>
+> Describe what you want in plain language. os-architect classifies your intent,
+> audits what already exists, brainstorms approach options, and dispatches work.
+> You do not need to know which internal loop, lab, or intake agent to invoke.
 
-```
-/os-architect
-```
+**First-time setup (run once):**
 
-`os-architect` is your front door for all evolution work: improving a skill, creating a new agent, running an eval loop, applying a research pattern. Describe what you want in plain language and it handles the rest — classifying intent, auditing capabilities, proposing options, and dispatching work.
-
-**First-time setup sequence:**
-
-| Step | Command | What it does |
-|------|---------|--------------|
-| 1 | `"Set up an agentic OS for this project"` | Runs the setup interview, scaffolds memory + hooks |
-| 2 | `/os-architect` → "probe my environment" | Discovers which AI tools you have (Copilot, Gemini, etc.) and saves your profile |
-| 3 | `/os-architect` → describe your goal | Start any improvement or creation task |
+| Step | Do this |
+|------|---------|
+| 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the setup interview |
+| 2. Probe your environment | `/os-architect` → "probe my environment" — detects Copilot CLI, Gemini CLI, Cursor and saves a delegation strategy profile |
+| 3. Start evolving | `/os-architect` → describe your goal |
 
 **After each session:**
 ```bash
-/os-loop      # run improvement retrospective
-/os-memory    # manually trigger memory promotion (if needed)
+/os-loop      # improvement retrospective — evals, friction events, Triple-Loop trigger
+/os-memory    # memory promotion (if /os-loop didn't fire it)
 ```
 
-> You do not need to know which loop, intake agent, or eval runner to use.
-> `/os-architect` figures that out from your environment profile and your goal.
+→ Full day-to-day workflow: **[USAGE.md](./USAGE.md)**
 
 ---
 
-## Entry Points
+## Day-to-Day Usage
 
-| Skill | Purpose |
-|-------|---------|
-| `os-architect` | **Start here.** Front-door intake for all ecosystem evolution — classifies intent, audits capabilities, brainstorms options, dispatches work. |
-| `os-environment-probe` | Discovers your available AI tools (Copilot, Gemini, Cursor) and saves a delegation strategy profile. Run once after setup. |
-| `os-improvement-loop` | Direct skill improvement loop (called by os-architect for Category 3) |
-| `triple-loop-architect` | Full triple-loop eval lab setup (called by os-architect for deep runs) |
-| `os-eval-runner` | Standalone eval runner (called by os-architect for scoring) |
+| I want to... | Use this |
+|-------------|---------|
+| Start any improvement or creation task | `/os-architect` |
+| Discover which AI tools I have available | `/os-architect` → "probe my environment" |
+| Improve a specific skill with evals | `/os-architect` → describe the skill + goal |
+| Run an unattended overnight eval loop | `triple-loop-architect` agent → then `triple-loop-orchestrator` |
+| See eval score trends and progress charts | `os-improvement-report` skill |
+| Search experiment and verification history | `python3 scripts/experiment_log.py query <term>` |
+| Promote session learnings to long-term memory | `/os-memory` |
+| Check system health (event log, locks, memory) | `os-health-check` agent |
+| Fix a deadlocked agent (stale lock files) | `os-clean-locks` skill |
+| Verify os-architect still works after a change | `os-architect-tester` agent |
+| Get a full explanation of how the OS works | `os-guide` skill |
+| Audit files for unresolved TODOs | `todo-check` skill |
 
 ---
 
-## Plugin Components
+## What's in the Box
 
-### Skills
+### Front Door
 
-| Skill | Purpose |
-|-------|---------|
-| `os-architect` | **Start here** — front-door intake for all ecosystem evolution |
-| `os-environment-probe` | Discovers available AI environments (Copilot CLI, Gemini CLI, Cursor), verifies each with a probe command, and writes `context/memory/environment.md`; read by os-architect and os-evolution-planner to select the cheapest brainstorm model and right dispatch backend |
-| `os-evolution-planner` | Brainstorms 2-3 approach options using the cheapest available model, presents them for selection, then writes a structured task plan + Copilot CLI delegation prompt for the chosen approach; called by os-architect for Path B/C executions |
-| `os-evolution-verifier` | Verifies that os-architect actually causes evolution — dispatches agent in simulation mode, checks artifact presence, reports PASS/FAIL with evidence |
-| `os-experiment-log` | Maintains a persistent append-only log of evolution experiments and verification results; supports append, query, and summary modes |
-| `os-guide` | Full reference: all layers, interactions, and patterns explained |
-| `os-init` | Scaffolds a new OS environment via discovery interview |
-| `os-memory-manager` | Deduplicates and promotes session facts to long-term memory |
-| `os-eval-runner` | Scores proposed skill patches against objective evals before applying |
-| `os-eval-lab-setup` | Bootstraps the testing arena for a specific skill |
-| `os-eval-backport` | Exports test results back to an external ledger |
-| `os-clean-locks` | Removes stale execution locks that block agent execution |
-| `os-improvement-loop` | Orchestrates the autonomous testing and fixing loop |
-| `os-improvement-report` | Generates improvement metrics from eval history |
-| `os-skill-improvement` | Applies Test-Driven Development logic to agent instructions |
-| `todo-check` | Audits files for unresolved TODO items |
+Start here for all evolution and improvement work. Everything else is called by these.
+
+| | Invoke as | Purpose |
+|-|-----------|---------|
+| `os-architect` | `/os-architect` or agent dispatch | Classifies intent, audits capabilities, brainstorms options using cheapest available model, dispatches work via Copilot CLI or Claude subagent |
+| `os-environment-probe` | via os-architect or directly | Discovers available AI tools (Copilot CLI, Gemini CLI, Cursor), probes each, writes `context/memory/environment.md` with cheapest-model delegation strategy |
+
+---
 
 ### Agents
 
+**Invoke directly:**
+
 | Agent | Purpose |
 |-------|---------|
-| `os-architect` | Interactive conductor for ecosystem evolution — classifies intent, audits capabilities, proposes Path A/B/C, dispatches via run_agent.py |
-| `os-architect-tester` | Validates os-architect via pre-scripted scenario transcripts; run after any changes to os-architect |
-| `improvement-intake-agent` | Configures a skill improvement run — called by os-architect for Category 3 (Lab Setup) requests |
-| `agentic-os-setup` | Conversational setup guide; runs the init interview |
-| `triple-loop-architect` | Sets up a full triple-loop eval lab interactively |
-| `triple-loop-orchestrator` | Runs unattended overnight improvement iterations |
-| `Triple-Loop Retrospective` | Post-session retrospective; mines friction, proposes and validates skill patches |
-| `os-health-check` | System diagnostics; inspects event log, memory state, lock status |
+| `agentic-os-setup` | Conversational setup guide — scaffolds memory, hooks, and CLAUDE.md hierarchy for a new project |
+| `os-health-check` | System diagnostics — inspects event log, memory state, lock status |
+| `triple-loop-architect` | Interactive setup for a full skill eval lab (Triple-Loop Learning System) |
+| `triple-loop-orchestrator` | Unattended overnight improvement orchestrator — oversees autonomous INNER loop iterations |
 
-### Hooks
+**Internal (called by os-architect — do not invoke directly):**
 
-`hooks/hooks.json` registers hooks:
-- `post_run_metrics.py` - captures session errors and friction events to the event log automatically
-- `update_memory.py` - triggers memory promotion after significant sessions
-
-### Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/os-init` | Initialize or repair the OS environment |
-| `/os-loop` | Run the improvement loop retrospective |
-| `/os-memory` | Manually run memory management |
+| Agent | Called for |
+|-------|-----------|
+| `improvement-intake-agent` | Category 3 (Lab Setup) requests — configures a skill improvement run |
+| `os-architect-tester` | Validation after any change to os-architect — runs 8 pre-scripted scenario transcripts |
 
 ---
 
-## Architecture
+### Skills
 
-The OS metaphor explains the design: the context window is finite RAM. Every byte consumed by infrastructure is a byte unavailable for actual work. The architecture is built around that constraint.
+#### Setup & Environment
 
-```
-CONTEXT WINDOW (RAM - finite, cleared every session)
-  Always present: skill metadata headers, CLAUDE.md, soul.md, user.md
+| Skill | Purpose |
+|-------|---------|
+| `os-init` | Scaffolds the OS environment — called by the setup agent or `/os-init` |
+| `os-environment-probe` | Discovers AI environments; writes delegation strategy to `context/memory/environment.md` |
+| `os-guide` | Full OS reference — layers, interactions, patterns. Trigger: "explain agentic os" |
 
-DISK (context/ folder - persistent across sessions)
-  context/memory.md          <- L3 long-term curated facts
-  context/memory/YYYY-MM-DD.md  <- L2 session logs
-  context/events.jsonl       <- event log / audit trail
-  context/os-state.json      <- system registry
-  context/.locks/            <- execution locks
+#### Planning & Evolution
 
-SKILLS (loaded into RAM only when triggered)
-  skills/*/SKILL.md          <- full body stays on disk until invoked
+| Skill | Purpose |
+|-------|---------|
+| `os-architect` | SME-facing front-door skill — invokes the os-architect interview flow |
+| `os-evolution-planner` | Brainstorms 2-3 approach options (cheapest model), presents for selection, writes task plan + Copilot CLI delegation prompt |
+| `os-evolution-verifier` | Verifies os-architect causes actual evolution — simulation dispatch, artifact checks, PASS/PARTIAL/FAIL with evidence |
+| `os-experiment-log` | Persistent folder-based log of all experiment runs; `append / query / summary`; `result_type: numeric\|qualitative\|mixed` |
 
-HOOKS (fire on every tool call)
-  PreToolUse                 <- inspect, block, or log before execution
-  PostToolUse                <- audit results, capture metrics
-```
+#### Evaluation & Improvement
 
-For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY.md`](./SUMMARY.md).
+| Skill | Purpose |
+|-------|---------|
+| `os-eval-lab-setup` | Bootstraps an isolated sibling-repo eval lab for safe iteration |
+| `os-eval-runner` | Stateless eval engine — scores proposed skill patches against locked `evals.json`; KEEP/DISCARD gate |
+| `os-eval-backport` | Reviews completed lab run; backports approved changes to master plugin sources |
+| `os-improvement-loop` | Orchestrates the full eval → mutate → re-eval cycle (Triple-Loop Pattern 5) |
+| `os-skill-improvement` | RED-GREEN-REFACTOR cycle for a single skill — no full lab required |
+| `os-improvement-report` | Generates improvement charts and trend data from eval history |
 
-### Architecture Diagrams
+#### Memory & Observability
 
-| Diagram | Description |
+| Skill | Purpose |
+|-------|---------|
+| `os-memory-manager` | Deduplicates and promotes session facts to long-term memory (`context/memory.md`) |
+
+#### Utilities
+
+| Skill | Purpose |
+|-------|---------|
+| `optimize-agent-instructions` | Audits and rewrites AI agent instruction files (CLAUDE.md, GEMINI.md, copilot-instructions.md) in any repo |
+| `os-clean-locks` | Removes stale lock files from `context/.locks/` to resolve deadlocked agents |
+| `todo-check` | Audits files for TODO comments and unresolved technical debt markers |
+
+---
+
+### Slash Commands
+
+| Command | What it does |
 |---------|-------------|
-| ![Overview](./assets/diagrams/agentic-os-overview.png) | Conceptual OS structure |
-| ![Structure](./assets/diagrams/agentic-os-structure.png) | Physical plugin architecture |
-| ![Triple Loop](./assets/diagrams/triple-loop-learning-system.mmd) | The Unified Triple-Loop Architecture |
-| ![Memory subsystem](./assets/diagrams/agentic-os-memory-subsystem.png) | Memory promotion flowchart |
+| `/os-init` | Bootstrap the project — triggers `agentic-os-setup` conversational architect |
+| `/os-loop` | Run full OS improvement cycle: eval, emit friction events, trigger Triple-Loop Retrospective if threshold crossed |
+| `/os-memory` | Force memory garbage collection and conflict resolution on the tiered memory system |
+
+---
+
+### Automatic Hooks — no action needed
+
+These fire on every session without any user invocation.
+
+| Event | Script | Effect |
+|-------|--------|--------|
+| `SessionStart` | `session_start.py` | Surfaces memory context at the start of each session |
+| `PostToolUse` | `update_memory.py` | Triggers memory promotion after significant tool use |
+| `Stop` | `post_run_metrics.py` | Captures session errors and friction events to `context/events.jsonl` |
+
+---
+
+## How It Works
+
+### Triple-Loop Learning System
+
+Three nested loops run over your skills: the **outer Triple-Loop** (meta-learning orchestrator)
+manages strategy and targets; the **middle Double-Loop** (os-skill-improvement) formulates
+hypotheses and patches; the **inner Single-Loop** (os-eval-runner) tests each patch against
+locked evals and keeps or discards it. The eval gate defeats Goodhart's Law — no subjective
+testing, no test registry re-use.
+
+→ Full detail: [references/operations/triple-loop.md](./references/operations/triple-loop.md)
+→ Diagram: [assets/diagrams/triple-loop-learning-system.mmd](./assets/diagrams/triple-loop-learning-system.mmd)
+
+### Memory System
+
+Every session writes structured logs to `context/events.jsonl`. At end-of-session,
+`os-memory-manager` deduplicates and promotes the most important facts to `context/memory.md` —
+a curated long-term store that bootstraps every future session. Dedup IDs and size limits
+prevent drift and contradiction over hundreds of sessions.
+
+→ Diagram: [assets/diagrams/agentic-os-memory-subsystem.mmd](./assets/diagrams/agentic-os-memory-subsystem.mmd)
+
+### Agent Coordination
+
+Agents share state through `context/events.jsonl` and `context/.locks/` — not tight
+coupling. Outer supervisors set goals and review results; inner workers execute and signal
+completion in the shared log. Background agents surface findings in the next foreground
+session through promoted memory.
+
+→ Full architecture: **[SUMMARY.md](./SUMMARY.md)**
+
+---
+
+## Research Foundation
+
+The improvement loop implements the [Karpathy 3-file autoresearch pattern](./references/meta/research/karpathy-autoresearch-3-file-eval.md)
+(eval / program / results). The architecture is independently validated by
+[Lee et al., arXiv:2603.28052 (2026)](./references/meta/research/meta-harness-lee-2026.md),
+which demonstrates that code-space search over harness definitions — using an LLM proposer
+gated by objective evaluation — outperforms hand-designed harnesses across benchmarks.
+
+→ Full research library: [references/meta/research/](./references/meta/research/)
+
+---
+
+## References
+
+| Document | Contents |
+|---------|---------|
+| [USAGE.md](./USAGE.md) | Day-to-day workflow, experiment log close steps, append commands |
+| [SUMMARY.md](./SUMMARY.md) | Full architecture, OS analogy, three-tier lazy loading, scope and limitations |
+| [references/architecture/](./references/architecture/) | Canonical file structure, CLAUDE.md hierarchy, context folder patterns |
+| [references/operations/](./references/operations/) | Triple-loop strategy, operating protocols, loop scheduler, skill optimization guide |
+| [references/memory/](./references/memory/) | Memory specs, hygiene guide, promotion guide, metrics |
+| [references/testing/](./references/testing/) | Test registry protocol, test scenario seeds |
+| [references/meta/research/](./references/meta/research/) | Karpathy autoresearch, Lee 2026 Meta-Harness, Koubaa 2025, Sharma 2026 |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history |
 
 ---
 
@@ -218,27 +241,5 @@ For the full OS analogy table and three-tier lazy loading details, see [`SUMMARY
 
 | Plugin | Role |
 |--------|------|
-| `agent-scaffolders` | Spec - what ecosystem artifacts are |
-| `agent-scaffolders` | Factory - how to create them |
-| **`agent-agentic-os`** | **Operations - how to run and improve the environment** |
-
----
-
-## Acknowledgements
-
-The self-healing patterns in this plugin's v5 architecture — specifically the **contribute-back reflex** (every friction discovery becomes a skill artifact), **gotchas embedded in the artifact** (field-tested failures live in `SKILL.md` not an external log), and the **thin-core / extensible domain-layer** separation (see `references/domain-patterns/`) — were informed by studying the design of [`browser-use/browser-harness`](https://github.com/browser-use/browser-harness), an elegant self-healing CDP harness where agents extend the harness itself mid-task.
-
-browser-harness is MIT licensed. Patterns were adapted conceptually, not by copying code.
-
----
-
-## Key References
-
-- [`SUMMARY.md`](./SUMMARY.md) - scope, architecture, OS analogy, how-to
-- [`references/architecture/vision.md`](./references/architecture/vision.md) - where this pattern is heading; what enterprise and hyperscaler solutions will need to solve
-- [`references/operations/triple-loop.md`](./references/operations/triple-loop.md) - the Triple-Loop system strategy packets and verification protocols
-- [`references/operations/operating-protocols.md`](./references/operations/operating-protocols.md) - **Canonical** test arenas (sibling-repo) and overnight orchestrator execution paths
-- [`skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md`](./skills/os-eval-runner/references/research/karpathy-autoresearch-3-file-eval.md) - foundational 3-file autoresearch pattern
-- [`plugin-research/meta-harness/`](../../plugin-research/meta-harness/) - Meta-Harness paper analysis, artifact code review, and enhancement implementation plan (Lee et al., arXiv:2603.28052, 2026)
-- [Anthropic CLAUDE.md docs](https://docs.anthropic.com/en/docs/claude-code/memory)
-- [Anthropic /loop scheduler](https://docs.anthropic.com/en/docs/claude-code/loop)
+| `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
+| **`agent-agentic-os`** | **Operations — how to run and continuously improve the environment** |
