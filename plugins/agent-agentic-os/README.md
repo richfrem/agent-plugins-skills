@@ -85,23 +85,32 @@ This is NOT for:
 
 ---
 
----
+## 🚀 Start Here
 
-## Quick Start
-
-After installation, ask your agent:
+> **New to this plugin? Run this first — every time.**
 
 ```
-"Set up an agentic OS for this project"
+/os-architect
 ```
 
-The `agentic-os-setup` agent runs a discovery interview and scaffolds the environment. Then:
+`os-architect` is your front door for all evolution work: improving a skill, creating a new agent, running an eval loop, applying a research pattern. Describe what you want in plain language and it handles the rest — classifying intent, auditing capabilities, proposing options, and dispatching work.
 
+**First-time setup sequence:**
+
+| Step | Command | What it does |
+|------|---------|--------------|
+| 1 | `"Set up an agentic OS for this project"` | Runs the setup interview, scaffolds memory + hooks |
+| 2 | `/os-architect` → "probe my environment" | Discovers which AI tools you have (Copilot, Gemini, etc.) and saves your profile |
+| 3 | `/os-architect` → describe your goal | Start any improvement or creation task |
+
+**After each session:**
 ```bash
-/os-loop      # run improvement retrospective after a session
-/os-memory    # manually trigger memory promotion
-/os-init      # re-initialize or repair the environment
+/os-loop      # run improvement retrospective
+/os-memory    # manually trigger memory promotion (if needed)
 ```
+
+> You do not need to know which loop, intake agent, or eval runner to use.
+> `/os-architect` figures that out from your environment profile and your goal.
 
 ---
 
@@ -109,9 +118,10 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 
 | Skill | Purpose |
 |-------|---------|
-| `os-architect` | Front-door intake for all ecosystem evolution — the recommended starting point for improving, creating, or orchestrating agent capabilities. |
+| `os-architect` | **Start here.** Front-door intake for all ecosystem evolution — classifies intent, audits capabilities, brainstorms options, dispatches work. |
+| `os-environment-probe` | Discovers your available AI tools (Copilot, Gemini, Cursor) and saves a delegation strategy profile. Run once after setup. |
 | `os-improvement-loop` | Direct skill improvement loop (called by os-architect for Category 3) |
-| `triple-loop-architect` | Full triple-loop lab setup (called by os-architect for deep runs) |
+| `triple-loop-architect` | Full triple-loop eval lab setup (called by os-architect for deep runs) |
 | `os-eval-runner` | Standalone eval runner (called by os-architect for scoring) |
 
 ---
@@ -122,8 +132,9 @@ The `agentic-os-setup` agent runs a discovery interview and scaffolds the enviro
 
 | Skill | Purpose |
 |-------|---------|
-| `os-architect` | Front-door intake for all ecosystem evolution — start here |
-| `os-evolution-planner` | Writes structured task plans + Copilot CLI delegation prompts for Path B/C executions; called by os-architect |
+| `os-architect` | **Start here** — front-door intake for all ecosystem evolution |
+| `os-environment-probe` | Discovers available AI environments (Copilot CLI, Gemini CLI, Cursor), verifies each with a probe command, and writes `context/memory/environment.md`; read by os-architect and os-evolution-planner to select the cheapest brainstorm model and right dispatch backend |
+| `os-evolution-planner` | Brainstorms 2-3 approach options using the cheapest available model, presents them for selection, then writes a structured task plan + Copilot CLI delegation prompt for the chosen approach; called by os-architect for Path B/C executions |
 | `os-evolution-verifier` | Verifies that os-architect actually causes evolution — dispatches agent in simulation mode, checks artifact presence, reports PASS/FAIL with evidence |
 | `os-experiment-log` | Maintains a persistent append-only log of evolution experiments and verification results; supports append, query, and summary modes |
 | `os-guide` | Full reference: all layers, interactions, and patterns explained |

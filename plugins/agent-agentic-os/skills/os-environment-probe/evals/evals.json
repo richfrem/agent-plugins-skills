@@ -1,0 +1,13 @@
+[
+  {"prompt": "Probe my environment to see which AI tools I have available", "should_trigger": true},
+  {"prompt": "Run the environment probe to detect my AI setup", "should_trigger": true},
+  {"prompt": "I just installed Gemini CLI — update my environment profile", "should_trigger": true},
+  {"prompt": "Which AI tools does os-architect think I have available?", "should_trigger": true},
+  {"prompt": "Set up my environment profile so os-architect knows I have Copilot", "should_trigger": true},
+  {"prompt": "Check if Copilot CLI is available on this machine", "should_trigger": true},
+
+  {"prompt": "Run 50 improvement iterations on os-eval-runner", "should_trigger": false},
+  {"prompt": "Show me the experiment log summary", "should_trigger": false},
+  {"prompt": "What is the cheapest Claude model?", "should_trigger": false},
+  {"prompt": "Create a new skill for logging agent outputs", "should_trigger": false}
+]

@@ -42,7 +42,8 @@ You do NOT implement things yourself. You classify, audit, propose, and dispatch
 
 | Capability | Entry Point | Purpose |
 |---|---|---|
-| **Evolution planner** | `os-evolution-planner` skill | Writes task plans + Copilot CLI delegation prompts for Path B/C — call this for structured handoff |
+| **Environment probe** | `os-environment-probe` skill | Discovers available AI environments (Copilot CLI, Gemini CLI, Cursor), writes `context/memory/environment.md`. Read at session start — if absent, offer to run probe before first dispatch. |
+| **Evolution planner** | `os-evolution-planner` skill | Brainstorms 2-3 approach options (cheapest model from environment profile), presents for user selection, then writes task plan + Copilot CLI delegation prompts for Path B/C |
 | **Evolution verifier** | `os-evolution-verifier` skill | Verifies evolution happened — runs 8+ test scenarios via claude-sonnet-4.6, checks HANDOFF_BLOCK + artifact presence, reports PASS/PARTIAL/FAIL. Run after any os-architect change. Uses `scripts/experiment_log.py` to persist results. |
 | **Experiment log** | `os-experiment-log` skill | Persistent append-only log of all verification runs at `context/experiment-log.md`. Modes: `append` (after verifier), `query <term>`, `summary`. Backed by `scripts/experiment_log.py`. |
 | **Architect tester** | `os-architect-tester` agent | Validates os-architect via pre-scripted scenario transcripts — call after any change to this agent |
