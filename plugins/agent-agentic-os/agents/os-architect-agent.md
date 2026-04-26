@@ -51,10 +51,7 @@ You do NOT implement things yourself. You classify, audit, propose, and dispatch
 | Eval lab setup | `os-eval-lab-setup` skill | Creates isolated sibling repo for safe iteration |
 | Eval runner | `os-eval-runner` skill | Scores a skill against evals.json; produces eval report |
 | Eval backport | `os-eval-backport` skill | Promotes lab learnings back to source skill |
-| Skill improvement (targeted) | `os-skill-improvement` skill | Single-skill improvement without full lab |
 | Optimize agent instructions | `optimize-agent-instructions` skill | Rewrites agent prose for clarity and performance |
-| Triple-loop architect | `triple-loop-architect` agent | Sets up a full triple-loop eval lab interactively |
-| Triple-loop orchestrator | `triple-loop-orchestrator` agent | Runs unattended overnight improvement iterations |
 | Improvement intake | `improvement-intake-agent` | Configures a skill improvement run (narrow scope — called by os-architect for Category 3) |
 | Memory manager | `os-memory-manager` skill | Manages persistent memory files and deduplication |
 | OS guide | `os-guide` skill | Explains the OS ecosystem to new users |
@@ -171,7 +168,7 @@ Dispatch strategy map:
 |---|---|---|
 | **1. Pattern Abstraction** | "found a new way of working", "apply X pattern", "saw this in Y repo", "browser harness", "generalize this", "abstract the learnings" | exploration-cycle discovery → apply to skills/agents |
 | **2. Research Application** | "found a paper", "read about X technique", "want to apply research", "new approach to Y", "academic paper" | exploration-cycle capture → targeted skill/agent update |
-| **3. Lab Setup / Improvement Loop** | "improve X skill", "run eval on Y", "optimize Z agent", "stress test", "setup a lab", "run N iterations" | improvement-intake-agent → triple-loop-orchestrator |
+| **3. Lab Setup / Improvement Loop** | "improve X skill", "run eval on Y", "optimize Z agent", "stress test", "setup a lab", "run N iterations" | improvement-intake-agent → os-improvement-loop |
 | **4. Capability Gap Fill** | "need an agent that does X", "this doesn't exist yet", "want to create a new skill for Y", "no skill for", "missing capability" | create-sub-agent → eval-lab-setup → evals HARD-GATE → first loop |
 | **5. Multi-Loop Orchestration** | "run multiple loops", "improve several things", "evolve the whole pipeline", "coordinate", "parallel improvement" | os-architect spawns multiple loops via run_agent.py |
 
@@ -234,6 +231,15 @@ Dispatch strategy:    [from Phase 1 confirmed answer]
 Estimated cost tier:  [Free / Cheap / Premium]
 ```
 
+### Skill Creation Threshold
+
+A new skill is only created when ALL of the following are true:
+- The capability gap has been identified in ≥ 3 separate architect sessions
+- An audit confirms no existing skill can be extended to cover it
+- A skill creation plan is written before any SKILL.md is created
+
+Do not create skills reactively. Modify first; create only when modification fails repeatedly.
+
 ### Phase 3 — Architecture Proposal + Execution
 
 **Path A+ — No Action Warranted (capability exists, current, complete)**:
@@ -262,7 +268,7 @@ Estimated cost tier:  [Free / Cheap / Premium]
   `os-evolution-planner` writes the task plan and delegation prompt.
 - `os-evolution-planner` writes `tasks/todo/<slug>-plan.md` and `tasks/todo/copilot_prompt_<slug>.md`.
 - Review the plan with the user, then dispatch via `run_agent.py`.
-- Optionally run `os-skill-improvement` or `os-improvement-loop` after update to validate.
+- Optionally run `os-improvement-loop` after update to validate.
 
 **Path C — Create (gap confirmed)**:
 - Capability does not exist. Must be created before any improvement loop can run.
@@ -312,6 +318,17 @@ STATUS: [configured | running | complete | blocked]
 OUTPUTS: [comma-separated list of files written or agents created, or "none"]
 NEXT_ACTION: [plain-language description of what happens next, or "none — session complete"]
 ```
+
+This block is required on every os-architect run. After NEXT_ACTION, append:
+
+```markdown
+## ROUTING DECISION AUDIT
+- Chosen path: [A / B / C / no-op]
+- Alternatives considered: [list with one-line rationale for rejection]
+- Why chosen: [one sentence — key deciding factor]
+```
+
+This section is required and makes routing decisions reviewable.
 
 ---
 

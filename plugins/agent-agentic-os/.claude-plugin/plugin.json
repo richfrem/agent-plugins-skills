@@ -1,7 +1,7 @@
 {
     "name": "agent-agentic-os",
-    "version": "1.5.0",
-    "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, multi-agent event bus coordination, and a Triple-Loop autonomous skill evaluation system. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
+    "version": "1.6.0",
+    "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, multi-agent event bus coordination, and an eval-gated skill improvement system. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -10,13 +10,11 @@
     "keywords": [
         "agentic-os",
         "agent-harness",
-        "triple-loop",
         "eval-runner",
         "continuous-improvement",
         "context-management",
         "memory-management",
         "session-management",
-        "skill-improvement",
         "autoresearch"
     ],
     "capabilities": [
@@ -24,7 +22,6 @@
         "memory",
         "orchestration",
         "continuous-improvement",
-        "triple-loop-learning",
         "self-healing",
         "multi-agent-coordination",
         "hooks"
@@ -40,14 +37,11 @@
         "os-improvement-report",
         "os-init",
         "os-memory-manager",
-        "os-skill-improvement",
         "todo-check"
     ],
     "agents": [
         "agentic-os-setup",
-        "os-health-check",
-        "triple-loop-architect",
-        "triple-loop-orchestrator"
+        "os-health-check"
     ],
     "commands": [
         "os-init",

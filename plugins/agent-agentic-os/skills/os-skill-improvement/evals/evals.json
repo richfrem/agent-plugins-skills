@@ -1,8 +1,0 @@
-[
-  {"prompt": "The skill routing accuracy is low and I need to improve the skill triggers", "should_trigger": true},
-  {"prompt": "Fix skill description — the skill is not triggering when it should", "should_trigger": true},
-  {"prompt": "Improve skill routing precision using the RED-GREEN-REFACTOR cycle", "should_trigger": true},
-  {"prompt": "Run os-eval-runner on this skill to measure its baseline score", "should_trigger": false},
-  {"prompt": "Scaffold a new skill from scratch with discovery interview", "should_trigger": false},
-  {"prompt": "Run the learning loop to update skills based on what we learned this session", "should_trigger": false}
-]

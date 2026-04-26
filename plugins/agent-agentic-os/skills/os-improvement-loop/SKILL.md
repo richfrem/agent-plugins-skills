@@ -50,13 +50,13 @@ There are **two distinct Triple-Loop orchestration cycles** operating at differe
 ┌────────────────────▼────────────────────────────────────┐
 │  TRIPLE-LOOP EXECUTOR — Individual Skill Improvement           │
 │                                                          │
-│  os-eval-runner + os-skill-improvement evaluate and      │
-│  improve a specific target SKILL.md (routing accuracy,   │
+│  os-eval-runner evaluates and improves a specific        │
+│  target SKILL.md (routing accuracy,                     │
 │  trigger descriptions, example blocks).                  │
 │                                                          │
 │  Target: a single skill's description and routing.       │
 │  Eval gate: os-eval-runner scores the target skill.      │
-│  Improvement: os-skill-improvement runs RED-GREEN-REFACTOR│
+│  Improvement: os-eval-runner runs RED-GREEN-REFACTOR     │
 │  until score ≥ threshold.                                │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -71,13 +71,13 @@ and decides which Triple-Loop to invoke. `os-improvement-loop` (skill) is the ex
 protocol that agents follow once a target has been identified. Do not conflate them.
 
 **Session Lifecycle Invariant**: The OUTER loop owns session lifecycle. INNER loop work
-(`os-eval-runner`, `os-skill-improvement`) never closes a session. A session is incomplete
+(`os-eval-runner`) never closes a session. A session is incomplete
 until Phase 6 (os-memory-manager) is executed. An INNER loop that completes without running
 Phase 6/7 has silently discarded its learnings.
 
 Each Triple-Loop has its own eval targets, its own memory artifacts, and its own close protocol.
 A session that runs INNER loop work must still close through the OUTER loop's Phase 6/7
-(os-memory-manager + os-skill-improvement) to persist learnings and harden OS-level routing.
+(os-memory-manager + os-eval-runner) to persist learnings and harden OS-level routing.
 
 See `assets/diagrams/triple-loop-learning-system.mmd` for the full visual.
 
@@ -226,7 +226,7 @@ Use when:
 - You want every cycle to produce measurable improvement and persistent memory
 
 Do NOT use for:
-- Single-session work (use `learning-loop` or `triple-loop` instead)
+- Single-session work on a well-understood problem (use os-eval-runner directly)
 - Signal-only coordination with no eval, survey, or memory steps
 
 ---
@@ -271,6 +271,20 @@ Companion skills (all required for a complete loop):
 
 > [!TIP]
 > See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
+
+---
+
+### Evaluation Budget Guard (enforced)
+
+These limits are hard constraints enforced by the orchestrator, not guidelines:
+
+| Limit | Value | Rationale |
+|-------|-------|-----------|
+| max_iterations_per_lab | 10 | Prevents runaway cost; sufficient for signal |
+| max_eval_datasets_per_run | 3 | base + holdout + adversarial only |
+| critic_invocations_per_iteration | 1 | One cheap-model challenge per mutation |
+
+Labs that exceed these limits must be split into separate sessions.
 
 ---
 
@@ -897,7 +911,9 @@ Surveys compared — if both agents report same confusion point, Triple-Loop Ret
 
 ## References
 
-- [triple-loop protocol](references/operations/triple-loop.md) - strategy packet format, correction packets, verification (inlined from agent-loops)
+- This skill delegates to [agent-loops Pattern 5 (triple-loop-learning)](../../agent-loops/skills/triple-loop-learning/SKILL.md)
+  for the inner loop execution pattern. agent-loops is the execution substrate;
+  os-improvement-loop adds the eval gate, experiment log, and lab isolation on top.
 - [os-eval-runner SKILL](../os-eval-runner/SKILL.md) - eval_runner.py, KEEP/DISCARD, results.tsv
 - [os-memory-manager SKILL](../os-memory-manager/SKILL.md) - session log template, L2/L3 promotion
 - [Triple-Loop Retrospective agent](../../agents/Triple-Loop Retrospective.md) - root cause analysis, Full Loop patching
