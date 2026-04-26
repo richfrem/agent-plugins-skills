@@ -19,6 +19,21 @@ claude-sonnet-4.6. Results logged to `context/experiment-log/` after each run.
 - EXP-16 added to WS-L: explicit crashed-vs-paused scenario for os-architect-tester
 - Dispatch guard added to all delegation commands: hard FAIL on missing/empty output file
 
+**Additional fixes applied (v3 — 2026-04-26, post multi-reviewer feedback):**
+- Confirmed: EXP-07 idempotency guard is shipped — `_session_already_logged()` + `sys.exit(1)` present in `experiment_log.py` since round5 commit c268d081
+- Bug fix: dispatch guard replaced `/dev/stdin` (unreliable as Path) with temp file `temp/crash_guard_<WS>_<ts>.md`
+- EXP-01b added: triple-loop-architect + triple-loop-orchestrator now have a defined hypothesis and pass condition (were "WS-A smoke" with no EXP number)
+- WS-D os-improvement-report smoke clarified: checks clean-exit on empty log, not chart generation
+- EXP-10 pass condition lowered to ≥1 KEEP (same as EXP-08/09) — ≥2 was unjustified
+- EXP-11 Category 3 fallback defined: alternate validation chain if architect routes to improvement-intake-agent
+- Phase gate enforcement added: explicit `experiment_log.py query FAIL` check + human checkpoint between phases
+- WS-K decision matrix added: 5-dimension comparison table replaces "if identical → deprecate"
+- WS-N (Failure Injection) added: 6 adversarial experiments testing graceful degradation
+- EXP-17 (Baseline Stability) added: run same eval 3× before Phase 3, verify variance ≤ 0.03
+- EXP-08+ upgrade: holdout + adversarial eval split added; overfit detection rule added
+- Stop conditions added: 3 consecutive FAILs in same WS triggers pause; critical path failures halt downstream
+- "Unexpected behaviors" capture field added to each WS log entry
+
 ---
 
 ## Approach Selected
@@ -48,10 +63,10 @@ Option C = deep single-skill focus, misses the coverage goal.)
 
 | WS | Phase | Scope | Skills/Agents Tested | Runs via |
 |----|-------|-------|---------------------|---------|
-| WS-A | Smoke | Agent smoke tests (4 user-facing agents) | agentic-os-setup, os-health-check, triple-loop-architect, triple-loop-orchestrator | Copilot CLI |
+| WS-A | Smoke | Agent smoke tests — 4 user-facing + EXP-01b for triple-loop agents | agentic-os-setup, os-health-check, triple-loop-architect, triple-loop-orchestrator | Copilot CLI |
 | WS-B | Smoke | Skill smoke tests — Setup & Environment group | os-init, os-environment-probe, os-guide | Copilot CLI |
 | WS-C | Smoke | Skill smoke tests — Planning & Evolution group | os-architect (skill), os-evolution-planner, os-evolution-verifier, os-experiment-log | Copilot CLI |
-| WS-D | Smoke | Skill smoke tests — Eval & Improvement group | os-eval-lab-setup, os-eval-runner, os-eval-backport, os-improvement-loop, os-skill-improvement, os-improvement-report | Copilot CLI |
+| WS-D | Smoke | Skill smoke tests — Eval & Improvement group (os-improvement-report: clean-exit only, no chart expected) | os-eval-lab-setup, os-eval-runner, os-eval-backport, os-improvement-loop, os-skill-improvement, os-improvement-report | Copilot CLI |
 | WS-E | Smoke | Skill smoke tests — Memory & Utilities group | os-memory-manager, os-clean-locks, todo-check, optimize-agent-instructions | Copilot CLI |
 | WS-F | Integration | Full architect pipeline end-to-end | os-architect (agent), os-evolution-planner, os-evolution-verifier, os-experiment-log, improvement-intake-agent | Copilot CLI |
 | WS-G | Integration | Setup + memory chain | agentic-os-setup, os-init, os-memory-manager, os-health-check | Copilot CLI |
@@ -61,6 +76,7 @@ Option C = deep single-skill focus, misses the coverage goal.)
 | WS-K | Assessment | Value overlap: os-skill-improvement vs os-improvement-loop | os-skill-improvement, os-improvement-loop | Manual review |
 | WS-L | Assessment | os-architect-tester 8-scenario run + EXP-16 crashed/paused distinction | os-architect-tester, improvement-intake-agent, os-evolution-verifier | Copilot CLI |
 | WS-M | Report | os-improvement-report on all logged numeric results | os-improvement-report, experiment_log.py | Direct script |
+| WS-N | Failure Injection | Adversarial degradation tests — corrupted state, missing files, partial outputs | os-init, os-experiment-log, os-memory-manager, os-clean-locks, os-eval-runner | Copilot CLI |
 
 ---
 
@@ -98,8 +114,42 @@ memory state in a single structured report.
 
 **Expected outputs:** Report containing sections: Event Bus, Locks, Memory State.
 
-**Validation:** `grep -c "Event Bus\|Lock\|Memory" output` ≥ 3 matches.
-**Pass condition:** All 3 sections present, no ERROR lines in output.
+**Validation (semantic, not just presence):**
+```bash
+# Section presence
+grep -c "Event Bus\|Lock\|Memory" output  # expect >= 3
+# Cross-check event count against actual file
+ACTUAL_EVENTS=$(wc -l < context/events.jsonl)
+grep "events" output | grep -o "[0-9]+" | head -1  # should match ACTUAL_EVENTS ± 1
+```
+**Pass condition:** All 3 sections present; event count in report matches actual `events.jsonl` line count.
+**Note:** Presence grep is necessary but not sufficient — count must match reality.
+**Result type:** qualitative
+
+---
+
+### EXP-01b — triple-loop-architect + triple-loop-orchestrator Dry Run (WS-A)
+
+**Hypothesis:** triple-loop-architect accepts a dry-run invocation for `todo-check` skill
+and produces a readable lab setup plan without crashing. triple-loop-orchestrator accepts
+a 1-iteration dry-run invocation and emits a LOG_PROGRESS entry.
+
+**Single change measured:** None (baseline smoke test for both agents).
+
+**Inputs:**
+- triple-loop-architect: `"Set up a triple-loop eval lab for todo-check — dry run only, do not dispatch"`
+- triple-loop-orchestrator: `"Run 1 iteration of the triple-loop on todo-check lab — dry run only"`
+
+**Expected outputs:**
+- triple-loop-architect: output ≥ 50 lines, contains "lab" and "todo-check", no ERROR
+- triple-loop-orchestrator: output ≥ 30 lines, contains "LOG_PROGRESS" or "KEEP\|DISCARD" reference
+
+**Validation:**
+```bash
+wc -l temp/validation/triple-loop-architect-smoke.md  # expect >= 50
+grep -i "log_progress\|KEEP\|DISCARD" temp/validation/triple-loop-orchestrator-smoke.md
+```
+**Pass condition:** Both outputs meet line thresholds; no crash or empty output.
 **Result type:** qualitative
 
 ---
@@ -180,42 +230,76 @@ grep "Approach Selected" tasks/todo/*os-guide*.md  # expect 1 match
 **Hypothesis:** Calling `append` twice for the same session ID aborts with WARNING and
 does not create a duplicate row; `query` returns correct results; `summary` counts match.
 
+**Confirmed shipped:** `_session_already_logged()` + `sys.exit(1)` present in
+`experiment_log.py` since round5 commit `c268d081`. This EXP verifies behavior, not presence.
+
 **Test sequence:**
 1. Append a test verifier entry with session ID `test-idempotency-01`
 2. Append the same entry again — expect sys.exit(1) with WARNING
 3. Run `query test-idempotency-01` — expect exactly 1 result
-4. Run `summary` — count matches
+4. Run `summary` — count before and after must match
 
 **Validation:**
 ```bash
 python3 scripts/experiment_log.py append ... --session-id test-idempotency-01
-# second call should print WARNING and exit 1
-python3 scripts/experiment_log.py query test-idempotency-01 | grep -c "###"  # expect 1
+EXIT_CODE=$?
+# second call
+python3 scripts/experiment_log.py append ... --session-id test-idempotency-01 2>&1 | grep "WARNING"
+SECOND_EXIT=$?
+[ $SECOND_EXIT -eq 0 ]  # grep found WARNING → guard fired
+python3 scripts/experiment_log.py query test-idempotency-01 | grep -c "###"  # expect exactly 1
 ```
-**Pass condition:** Duplicate blocked, query returns 1 result, summary count correct.
+**Pass condition:** Second append exits 1 with WARNING; query returns exactly 1 result; summary unchanged.
 **Result type:** qualitative
 
 ---
 
-### EXP-08 — os-eval-runner 10-Iteration Lab: todo-check (WS-H)
+### EXP-08+ — os-eval-runner 10-Iteration Lab: todo-check (WS-H) [Upgraded]
 
-**Hypothesis:** Running 10 eval iterations on todo-check produces at least 1 KEEP and
-no regression below baseline. The eval gate correctly rejects regressions.
+**Hypothesis:** Improvements to todo-check increase accuracy on both the base eval set
+AND an unseen holdout set, without overfitting. The eval gate correctly rejects regressions
+and any iteration that improves base score while degrading holdout is force-discarded.
 
 **Setup:** os-eval-lab-setup creates sibling lab at `../agent-plugins-skills-lab-todo-check/`
 
-**Metric:** eval score (0.0–1.0), KEEP/DISCARD count, delta from baseline.
-**Single change per iteration:** One SKILL.md mutation proposed by Copilot free model.
-**Baseline:** Run evaluate.py before first iteration; record score.
+**Three eval datasets (create before running):**
+- `evals/evals.json` — base set (existing, 10 cases) — drives KEEP/DISCARD gate
+- `evals/evals_holdout.json` — holdout set (5 new cases, not seen during iterations) — generalization check
+- `evals/evals_adversarial.json` — adversarial set (5 edge cases: ambiguous TODOs, conflicting tasks, noise injection) — robustness check
 
-**Expected outcome:** delta ≥ 0.0 after 10 iterations (no regression); at least 1 KEEP.
+**Single change per iteration:** One SKILL.md mutation proposed by cheapest available model.
+
+**Baseline (run 3× before first mutation — EXP-17 prerequisite):**
+```bash
+for i in 1 2 3; do python3 scripts/evaluate.py; done  # record variance
+```
+Variance > 0.03 → baseline is unstable → stop, investigate before running iterations.
+
+**Metrics tracked per iteration:**
+| Metric | Source | Notes |
+|--------|--------|-------|
+| `base_score` | evals.json | Drives KEEP/DISCARD |
+| `holdout_score` | evals_holdout.json | Not used for gate; logged only |
+| `adversarial_score` | evals_adversarial.json | Not used for gate; logged only |
+| `overfit_flag` | base↑ && holdout↓ | Forces DISCARD even if base improves |
+
+**Overfit detection rule:**
+```
+IF base_score > prev_base AND holdout_score < prev_holdout → OVERFIT → DISCARD
+```
+
+**Pass conditions:**
+- 10 iterations complete
+- `final_base_score ≥ baseline_base` (no regression)
+- `final_holdout_score ≥ baseline_holdout` (no overfitting)
+- At least 1 KEEP with positive holdout impact
+- Variance across 3 baseline runs ≤ 0.03
 
 **Validation:**
 ```bash
-python3 scripts/experiment_log.py query todo-check  # numeric entry with delta
-cat results.tsv  # 10 rows, each KEEP or DISCARD
+python3 scripts/experiment_log.py query todo-check  # numeric entry
+cat results.tsv  # 10 rows; check OVERFIT column if present
 ```
-**Pass condition:** 10 iterations complete, delta ≥ 0, experiment log numeric entry written.
 **Result type:** numeric
 **Logged as:** orchestrator source type
 
@@ -234,11 +318,12 @@ Same structure as EXP-08 with target = os-clean-locks.
 
 ### EXP-10 — os-eval-runner 10-Iteration Lab: optimize-agent-instructions (WS-J)
 
-**Hypothesis:** optimize-agent-instructions has room for improvement; 10 iterations
-find at least 2 KEEPs.
+**Hypothesis:** optimize-agent-instructions improves with 10 iterations; eval gate
+functions correctly; no regression below baseline.
 
-Same structure as EXP-08 with target = optimize-agent-instructions.
-**Expected:** ≥ 2 KEEPs in 10 iterations.
+Same structure as EXP-08+ with target = optimize-agent-instructions.
+**Pass condition:** ≥ 1 KEEP (same bar as EXP-08/09), delta ≥ 0, holdout ≥ baseline_holdout.
+**Note (v3 fix):** Previous ≥ 2 KEEP requirement was unjustified — lowered to match other labs.
 **Result type:** numeric
 
 ---
@@ -253,13 +338,20 @@ delegation prompt, verifier runs and passes, log records a qualitative entry.
 **Skills/agents exercised:** os-architect (agent + skill), improvement-intake-agent (if
 Category 3 is triggered), os-evolution-planner, os-evolution-verifier, os-experiment-log.
 
-**Validation chain:**
-1. Architect output contains intent classification + path selection
-2. Plan file exists at tasks/todo/ with Approach Selected section
-3. Verifier produces EVOLUTION_VERIFICATION block with at least PARTIAL verdict
-4. experiment_log.py summary shows new planner + verifier entries
+**Path B validation chain (primary):**
+1. Architect output contains `PATH: B` and intent classification
+2. Plan file at tasks/todo/ with `## Approach Selected` section
+3. Verifier EVOLUTION_VERIFICATION block with VERDICT ≥ PARTIAL
+4. `experiment_log.py summary` shows new planner + verifier entries
 
-**Pass condition:** All 4 validation points pass.
+**Category 3 fallback chain (if architect routes to improvement-intake-agent instead):**
+- NOT an automatic FAIL — Category 3 is a legitimate classification for this input
+- Check: `improvement-intake-agent` produces `improvement/run-config.json`
+- Check: HANDOFF_BLOCK contains `PATH: C` or `PATH: B` with `improvement-intake-agent` as next agent
+- Substitute validation points 2-4 with run-config.json existence check
+
+**Pass condition (Path B):** All 4 validation points pass.
+**Pass condition (Category 3 route):** run-config.json written, HANDOFF_BLOCK valid. Not a FAIL.
 **Result type:** qualitative
 
 ---
@@ -352,13 +444,132 @@ one is redundant and should be deprecated.
 2. Run os-improvement-loop on the same target for 3 iterations
 3. Compare: outputs, token cost, setup overhead, distinctness
 
-**Criteria for "distinct value":**
-- Different setup overhead? (os-improvement-loop requires lab setup; os-skill-improvement does not)
-- Different output quality?
-- Different use case (single session vs multi-session)?
+**5-dimension decision matrix:**
 
-**Decision:** If both produce identical outputs with the same setup, deprecate os-skill-improvement.
+| Dimension | os-skill-improvement | os-improvement-loop |
+|-----------|---------------------|---------------------|
+| Setup cost | Low — no lab, runs inline | High — requires sibling lab |
+| Iteration depth | Single session, SME reviews each mutation | Multi-session, autonomous; evaluate.py gates all |
+| Automation level | Semi-manual | Fully automated KEEP/DISCARD gate |
+| Failure containment | Changes land in main repo immediately | Changes isolated to lab — zero contamination risk |
+| Best use case | Quick targeted single-session tweak | Sustained improvement campaign over days/weeks |
+
+**Decision criteria:**
+- If outputs from the same target are *functionally identical* → deprecate os-skill-improvement
+- If setup overhead is the *only* difference → merge into os-improvement-loop with a `--no-lab` flag
+- If distinct use case is confirmed → document it and keep both, update README to clarify routing
+
 **Result type:** qualitative (assessment)
+
+---
+
+### EXP-17 — Baseline Stability Check (prerequisite for WS-H/I/J)
+
+**Hypothesis:** The eval score for each lab target is stable across 3 identical runs before
+any mutations are applied. Variance > 0.03 indicates the eval itself is flawed (non-determinism,
+prompt sensitivity) and the lab should not proceed.
+
+**Run for each eval lab target before starting iterations:**
+```bash
+for TARGET in todo-check os-clean-locks optimize-agent-instructions; do
+  for i in 1 2 3; do
+    python3 scripts/evaluate.py --target "$TARGET" >> "temp/baseline_variance_$TARGET.txt"
+  done
+  # Check variance
+  python3 -c "
+import statistics, re
+scores = [float(s) for s in re.findall(r'Score: ([0-9.]+)', open('temp/baseline_variance_$TARGET.txt').read())]
+v = statistics.variance(scores) if len(scores) > 1 else 0
+print(f'{TARGET}: scores={scores}, variance={v:.4f}, stable={v <= 0.03}')
+"
+done
+```
+
+**Pass condition:** Variance ≤ 0.03 for all 3 targets. If any target fails, halt that lab,
+log the instability to experiment log, investigate eval design before running iterations.
+**Result type:** qualitative (gate check, not an improvement run)
+
+---
+
+### WS-N — Failure Injection Experiments
+
+Six adversarial tests verifying graceful degradation when components receive corrupted or
+partial state. These test error detection and recovery messaging, not happy-path behavior.
+
+---
+
+#### N-01 — Corrupted events.jsonl
+
+**Input:** Inject 3 malformed JSON lines into `context/events.jsonl` (invalid JSON, missing
+required fields, truncated record).
+**Expected:** os-health-check detects and reports the malformed lines; does not crash;
+includes "malformed" or "corrupt" in output. os-memory-manager skips bad lines without
+silent data loss.
+**Validation:**
+```bash
+grep -i "malformed\|corrupt\|invalid\|error" temp/ws-n-01-output.md  # expect >= 1
+wc -l temp/ws-n-01-output.md  # expect >= 30 (full report, not just stack trace)
+```
+**Pass condition:** Health-check reports issue, does not crash. Memory manager skips bad lines.
+
+---
+
+#### N-02 — Missing context/memory.md
+
+**Input:** Rename `context/memory.md` to `context/memory.md.bak` before running
+os-memory-manager and os-health-check.
+**Expected:** Both tools report missing memory gracefully (error message, not crash);
+os-memory-manager offers to create fresh memory.md rather than exiting with exception.
+**Pass condition:** No unhandled exception; both tools describe the missing state in output.
+
+---
+
+#### N-03 — Conflicting stale lock files
+
+**Input:** Create 3 stale lock files in `context/.locks/` (files with timestamps > 30 min old).
+**Expected:** os-health-check flags stale locks; os-clean-locks removes them successfully;
+post-clean health-check shows 0 locks.
+```bash
+touch -t $(date -v-1H +%Y%m%d%H%M) context/.locks/test-stale-{1,2,3}.lock
+```
+**Pass condition:** Stale locks detected and removed; no false-positive on active locks.
+
+---
+
+#### N-04 — Malformed improvement/run-config.json
+
+**Input:** Write a `improvement/run-config.json` missing the required `target` field.
+**Expected:** os-improvement-loop detects missing field, emits a clear validation error,
+does not attempt to run with incomplete config.
+**Validation:**
+```bash
+grep -i "missing\|required\|invalid config" temp/ws-n-04-output.md  # expect >= 1
+```
+**Pass condition:** Validation error surfaced; no partial run started.
+
+---
+
+#### N-05 — Truncated task plan file
+
+**Input:** Write a `tasks/todo/test-truncated-plan.md` that starts correctly but is cut
+off mid-section (no `## Validation` or `## Pass Conditions` section).
+**Expected:** os-evolution-planner detects missing sections and reports a schema validation
+error rather than dispatching on incomplete instructions.
+**Pass condition:** "missing section" or similar error surfaced; no Copilot CLI dispatch fired.
+
+---
+
+#### N-06 — Partial evals.json (missing should_trigger field)
+
+**Input:** Write an `evals/evals.json` with 5 cases where `should_trigger` is absent on
+2 of them (legacy `expected_behavior` format instead).
+**Expected:** os-eval-runner detects the schema mismatch, reports "0% accuracy warning" or
+similar for the malformed cases, does not use them in KEEP/DISCARD gate.
+**Validation:**
+```bash
+grep -i "schema\|missing.*should_trigger\|0%\|legacy" temp/ws-n-06-output.md  # expect >= 1
+```
+**Pass condition:** Malformed evals detected and skipped; gate uses only valid cases.
 
 ---
 
@@ -385,18 +596,22 @@ python3 plugins/copilot-cli/scripts/run_agent.py \
 OUTPUT="temp/copilot_output_<WS>.md"
 if [ ! -f "$OUTPUT" ] || [ "$(wc -l < "$OUTPUT")" -lt 20 ]; then
   echo "DISPATCH GUARD FAIL: $OUTPUT missing or < 20 lines — logging FAIL to experiment log"
-  python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
-    --source-type verifier \
-    --report /dev/stdin \
-    --session-id "2026-04-26-<WS>-guard-fail" \
-    --target "<skill-or-agent>" \
-    --triggered-by dispatch-guard <<'EOF'
+  # Write crash report to temp file (NOT /dev/stdin — Path.read_text() cannot read stdin)
+  CRASH_REPORT="temp/crash_guard_<WS>_$(date +%s).md"
+  cat > "$CRASH_REPORT" <<'CRASHEOF'
+## os-evolution-verifier Test Report
 ## EVOLUTION_VERIFICATION
 SESSION_COMPLETE: false
 STATUS: crashed
 VERDICT: FAIL
 NOTES: Dispatch output missing or < 20 lines — silent crash or timeout
-EOF
+CRASHEOF
+  python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+    --source-type verifier \
+    --report "$CRASH_REPORT" \
+    --session-id "2026-04-26-<WS>-guard-fail" \
+    --target "<skill-or-agent>" \
+    --triggered-by dispatch-guard
   exit 1
 fi
 ```
@@ -422,9 +637,30 @@ Phase 1 (Smoke):     WS-A → WS-B → WS-C → WS-D → WS-E   [all qualitative
 Phase 2 (Integration): WS-F → WS-G                         [qualitative, medium]
 Phase 3 (Eval Labs):  WS-H → WS-I → WS-J                  [numeric, ~10 iterations each]
 Phase 4 (Assessment): WS-K → WS-L → WS-M                  [qualitative + report]
+Phase 5 (Failure Injection): WS-N                           [adversarial, qualitative]
 ```
 
-Stop after each phase, review experiment log, proceed if no critical failures.
+**Phase gate — run between each phase (human checkpoint required):**
+
+```bash
+# Query all FAILs accumulated so far
+python3 plugins/agent-agentic-os/scripts/experiment_log.py query FAIL
+
+# Count FAILs in the just-completed phase
+FAIL_COUNT=$(python3 plugins/agent-agentic-os/scripts/experiment_log.py query FAIL | grep -c "###")
+echo "Phase FAIL count: $FAIL_COUNT"
+
+# Rule: any critical-path FAIL halts downstream WS; 3 consecutive FAILs in same WS triggers pause
+# Critical path: WS-A, WS-C, WS-F. A FAIL in these halts the phase that depends on them.
+# Non-critical: WS-B, WS-D, WS-E, WS-G. Log and continue.
+```
+
+Human checkpoint: review query output. Investigate root causes before proceeding. Record decision in `temp/phase-gate-notes.md`.
+
+**Stop conditions:**
+- 3 consecutive FAILs in the same WS → pause that WS, open a root-cause task before continuing
+- Any FAIL in WS-A (agent smoke), WS-C (evolution planner/verifier), or WS-F (integration) → halt all downstream WS in that phase until resolved
+- WS-H/I/J: if baseline variance > 0.03 (EXP-17) → halt that eval lab, investigate eval stability before iterating
 
 ---
 
@@ -434,8 +670,8 @@ Stop after each phase, review experiment log, proceed if no critical failures.
 |-----------|-----|-------|-------------|
 | agentic-os-setup (agent) | EXP-01, EXP-12 | Smoke, Integration | WS-A, WS-G |
 | os-health-check (agent) | EXP-02, EXP-12 | Smoke, Integration | WS-A, WS-G |
-| triple-loop-architect (agent) | WS-A smoke | Smoke | WS-A |
-| triple-loop-orchestrator (agent) | WS-A smoke | Smoke | WS-A |
+| triple-loop-architect (agent) | EXP-01b | Smoke | WS-A |
+| triple-loop-orchestrator (agent) | EXP-01b | Smoke | WS-A |
 | improvement-intake-agent (internal) | EXP-11, EXP-14 | Integration, Validation | WS-F, WS-L |
 | os-architect-tester (internal) | EXP-14 | Validation | WS-L |
 | os-init (skill) | EXP-12 | Integration | WS-G |
@@ -456,6 +692,12 @@ Stop after each phase, review experiment log, proceed if no critical failures.
 | todo-check (skill) | EXP-08 | Eval Lab | WS-H |
 | optimize-agent-instructions (skill) | EXP-10 | Eval Lab | WS-J |
 
+| os-init (skill) | N-02 (memory missing) | Failure Injection | WS-N |
+| os-experiment-log (skill) | N-01 (corrupt events) | Failure Injection | WS-N |
+| os-memory-manager (skill) | N-01, N-02 | Failure Injection | WS-N |
+| os-clean-locks (skill) | N-03 | Failure Injection | WS-N |
+| os-eval-runner (skill) | N-06 | Failure Injection | WS-N |
+
 **Coverage:** 17/17 skills ✓ — 7/7 agents (4 user-facing + 3 internal) ✓
 
 ---
@@ -475,3 +717,4 @@ Stop after each phase, review experiment log, proceed if no critical failures.
 - [ ] WS-K: Value assessment — os-skill-improvement vs os-improvement-loop
 - [ ] WS-L: os-architect-tester 8-scenario run + EXP-16 crashed/paused distinction (internal agents: improvement-intake-agent, os-architect-tester, os-evolution-verifier)
 - [ ] WS-M: os-improvement-report on all logged numeric results
+- [ ] WS-N: Failure injection — 6 adversarial experiments (N-01 through N-06)
