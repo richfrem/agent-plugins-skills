@@ -22,9 +22,9 @@ Source types and result kinds:
     survey        post_run_survey: session friction + north star metrics     result_type=mixed
 
 Result type determines how downstream tools parse entries:
-    numeric      → contains score fields (best_score, keeps, discards) suitable for chart/trend
-    qualitative  → contains PASS/FAIL/PARTIAL verdicts and gap analysis prose
-    mixed        → contains both; agents must check which fields are present before parsing
+    numeric      → score fields (best_score, keeps, discards, delta) suitable for chart/trend
+    qualitative  → PASS/FAIL/PARTIAL verdicts and gap analysis prose
+    mixed        → both; agents must check which fields are present before parsing
 """
 
 import argparse
@@ -51,6 +51,15 @@ RESULT_TYPES = {
     "orchestrator": "numeric",
     "planner": "qualitative",
     "survey": "mixed",
+}
+
+# Expected header tokens to validate report files before parsing
+EXPECTED_HEADERS = {
+    "verifier": ["EVOLUTION_VERIFICATION", "os-evolution-verifier"],
+    "tester": ["os-architect Test Report", "AC-"],
+    "orchestrator": ["LOG_PROGRESS", "KEEP", "DISCARD"],
+    "planner": ["## Workstreams", "WS-"],
+    "survey": [],  # surveys have no fixed header
 }
 
 INDEX_HEADER = (
@@ -87,12 +96,49 @@ def _read_report(path: Path) -> str:
     return path.read_text()
 
 
+def _validate_report(source_type: str, text: str) -> None:
+    """Abort if the report doesn't look like the expected format.
+    Catches interleaved shell output or wrong file passed as --report."""
+    tokens = EXPECTED_HEADERS.get(source_type, [])
+    if not tokens:
+        return
+    if not any(tok in text for tok in tokens):
+        print(
+            f"ERROR: Report for source-type '{source_type}' does not contain expected "
+            f"header tokens: {tokens}\n"
+            f"First 200 chars of file:\n{text[:200]}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _session_already_logged(session_id: str) -> bool:
+    """Return True if session_id already appears in index.md."""
+    if not INDEX_FILE.exists():
+        return False
+    return session_id in INDEX_FILE.read_text()
+
+
 def _append_index_row(date: str, session_id: str, source: str, target: str,
                        result_type: str, verdict: str, filename: Path):
     row = (f"| {date} | {session_id} | {source} | {target} "
            f"| {result_type} | {verdict} | [{filename.name}]({filename.name}) |\n")
     with INDEX_FILE.open("a") as f:
         f.write(row)
+
+
+def _extract_section(text: str, start_heading: str) -> str:
+    """Extract text from start_heading to the next same-level heading (or EOF)."""
+    m = re.match(r"^(#+)", start_heading)
+    level = len(m.group(1)) if m else 1
+    next_heading = re.compile(rf"^#{{1,{level}}} ", re.MULTILINE)
+    start = text.find(start_heading)
+    if start == -1:
+        return ""
+    body_start = text.find("\n", start) + 1
+    rest = text[body_start:]
+    end_match = next_heading.search(rest)
+    return rest[: end_match.start()] if end_match else rest
 
 
 # ---------------------------------------------------------------------------
@@ -109,22 +155,44 @@ def _parse_verifier(text: str) -> dict:
 
 
 def _parse_tester(text: str) -> dict:
-    passes = len(re.findall(r"\bPASS\b", text))
-    fails = len(re.findall(r"\bFAIL\b", text))
+    # Restrict PASS/FAIL scan to the Results table section only
+    section = _extract_section(text, "## Results")
+    if not section:
+        section = text  # fallback if format differs
+    passes = len(re.findall(r"\bPASS\b", section))
+    fails = len(re.findall(r"\bFAIL\b", section))
+    # N/A rows don't count toward total
     total = passes + fails
-    scenarios = len(re.findall(r"(?m)^## (?:Scenario|TEST)", text))
+    scenarios = len(re.findall(r"(?m)^## (?:Scenario|TEST|Overall)", text))
     verdict_str = f"{passes}P/{fails}F of {total} ACs"
     return {"passes": passes, "fails": fails, "total": total,
             "scenarios": scenarios, "verdict_str": verdict_str}
 
 
 def _parse_orchestrator(text: str) -> dict:
-    keeps = len(re.findall(r"\bKEEP\b", text))
-    discards = len(re.findall(r"\bDISCARD\b", text))
-    scores = re.findall(r"\b0\.\d+\b", text)
-    best = max((float(s) for s in scores), default=0.0)
+    """Parse LOG_PROGRESS.md markdown table — column-aware, not free-text float scan."""
+    keeps = 0
+    discards = 0
+    scores: list[float] = []
+
+    for line in text.splitlines():
+        # Match markdown table data rows: | iter | score | verdict | reason |
+        cells = [c.strip() for c in line.split("|") if c.strip()]
+        if len(cells) >= 3:
+            verdict_cell = cells[2].upper()
+            score_cell = cells[1]
+            if verdict_cell == "KEEP":
+                keeps += 1
+                try:
+                    scores.append(float(score_cell))
+                except ValueError:
+                    pass
+            elif verdict_cell == "DISCARD":
+                discards += 1
+
+    best = max(scores, default=0.0)
     baseline_match = re.search(r"[Bb]aseline[:\s]+([0-9.]+)", text)
-    baseline = float(baseline_match.group(1)) if baseline_match else 0.0
+    baseline = float(baseline_match.group(1)) if baseline_match else (scores[0] if scores else 0.0)
     delta = round(best - baseline, 4)
     verdict_str = f"{keeps}K/{discards}D baseline={baseline:.3f} best={best:.3f} delta={delta:+.3f}"
     return {"keeps": keeps, "discards": discards, "best_score": best,
@@ -133,7 +201,9 @@ def _parse_orchestrator(text: str) -> dict:
 
 def _parse_planner(text: str) -> dict:
     workstreams = len(re.findall(r"(?m)^\| WS-[A-Z]", text))
-    gaps = len(re.findall(r"(?m)^- \*\*", text))
+    # Restrict gap count to the Gaps Identified section only
+    gaps_section = _extract_section(text, "## Gaps Identified")
+    gaps = len(re.findall(r"(?m)^[-*]\s+", gaps_section)) if gaps_section else 0
     verdict_str = f"{workstreams} workstreams, {gaps} gaps"
     return {"workstreams": workstreams, "gaps": gaps, "verdict_str": verdict_str}
 
@@ -197,7 +267,7 @@ def cmd_append(args):
     source_type = args.source_type
     if source_type not in PARSERS:
         print(f"ERROR: unknown source-type '{source_type}'. "
-              f"Valid: {', '.join(PARSERS)}", file=sys.stderr)
+              f"Valid: {', '.join(sorted(PARSERS))}", file=sys.stderr)
         sys.exit(1)
 
     report_path = Path(args.report) if args.report else DEFAULT_REPORTS[source_type]
@@ -206,13 +276,26 @@ def cmd_append(args):
         sys.exit(1)
 
     report_text = _read_report(report_path)
-    metrics = PARSERS[source_type](report_text)
+    _validate_report(source_type, report_text)
+
     session_id = args.session_id or datetime.now().strftime("%Y-%m-%d-%H%M")
     target = args.target or "unknown"
     triggered_by = args.triggered_by or source_type
 
-    result_type = RESULT_TYPES[source_type]
     _ensure_log_dir()
+
+    # Idempotency guard — abort if this session was already logged
+    if _session_already_logged(session_id):
+        print(
+            f"WARNING: session '{session_id}' already appears in {INDEX_FILE}.\n"
+            f"Use --session-id with a unique value to log a second run, or "
+            f"remove the existing entry first.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    metrics = PARSERS[source_type](report_text)
+    result_type = RESULT_TYPES[source_type]
     filename = _dated_filename(source_type, session_id)
     entry = _build_entry(source_type, session_id, target, triggered_by,
                           report_text, metrics, result_type)
@@ -237,19 +320,23 @@ def cmd_query(args):
             continue
         text = f.read_text()
         if term in text.lower():
-            # Extract header block for context
             header_match = re.search(r"^---\n(.*?)\n---", text, re.DOTALL)
             header = header_match.group(1) if header_match else "(no header)"
-            matches.append((f.name, header))
+            # Also surface Actions Taken for FAIL entries
+            actions_match = re.search(r"### Actions Taken\n(.*?)(?=\n---|$)", text, re.DOTALL)
+            actions = actions_match.group(1).strip() if actions_match else ""
+            matches.append((f.name, header, actions))
 
     if not matches:
         print(f"No matches for '{term}' in {LOG_DIR}/")
         return
 
     print(f"Found {len(matches)} file(s) matching '{term}':\n")
-    for fname, header in matches:
+    for fname, header, actions in matches:
         print(f"### {fname}")
         print(header)
+        if actions and "_[fill in" not in actions:
+            print(f"\nActions Taken:\n{actions}")
         print()
 
 
