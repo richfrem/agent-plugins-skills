@@ -1,13 +1,15 @@
 # Agent Harness & Learning Layer
 
-Persistent memory and continuous self-improvement for long-horizon Claude Code workflows.
+Persistent memory and continuous self-improvement for long-horizon AI agent workflows.
 Structured memory survives and scales across hundreds of sessions; an eval-gated improvement
-loop evolves your skills and agents automatically — no subjective LLM "mental" testing.
+loop evolves your skills and agents automatically — no subjective "mental" testing.
 
-Built as a discipline layer on top of Claude Code's native primitives (auto-memory, hooks,
-subagents) rather than replacing them. Solo developer, single machine, file-system only.
+Runs in Claude Code but orchestrates across whatever AI environments you have available:
+Copilot CLI (free GPT-4o-mini tier), Gemini CLI, Cursor — using the cheapest model for
+brainstorming and the right model for each job. A discipline layer, not a replacement.
 
-> **Scope:** Academic/research quality — designed and tested for Claude Code on macOS/Linux.
+> **Scope:** Designed and tested primarily with Claude Code on macOS/Linux, but the
+> delegation layer works with any CLI-accessible AI. File-system only, no external services.
 > See [SUMMARY.md](./SUMMARY.md) for scope, known limitations, and enterprise roadmap.
 
 ---
@@ -15,13 +17,13 @@ subagents) rather than replacing them. Solo developer, single machine, file-syst
 ## Is This For You?
 
 **Good fit:**
-- Multi-session projects where Claude Code runs across days or weeks
-- Workflows with multiple agents that need to share context and build on each other's outputs
-- Teams that want objective eval-gated skill improvement (not vibes-based)
-- Users who have Claude + at least one free-tier AI (Copilot CLI, Gemini CLI) to minimize token cost
+- Multi-session projects running across days or weeks with any primary AI environment
+- Workflows with multiple agents or AI tools that need to share context and build on each other's outputs
+- Developers who want objective eval-gated skill improvement — measurable, repeatable, traceable
+- Users who have access to more than one AI environment and want to minimize premium token spend
 
 **Not a fit:**
-- Single-session tasks (Claude Code's native auto-memory is sufficient)
+- Single-session tasks (your primary AI's native auto-memory is sufficient)
 - Enterprise multi-machine deployments (see `references/architecture/vision.md`)
 - Framework-agnostic portability requirements
 
@@ -63,10 +65,12 @@ subagents) rather than replacing them. Solo developer, single machine, file-syst
 |-------------|---------|
 | Start any improvement or creation task | `/os-architect` |
 | Discover which AI tools I have available | `/os-architect` → "probe my environment" |
+| Propose hypotheses and design experiments for a problem | `/os-architect` → "explore why X fails" or "generate hypotheses for Y" |
 | Improve a specific skill with evals | `/os-architect` → describe the skill + goal |
 | Run an unattended overnight eval loop | `triple-loop-architect` agent → then `triple-loop-orchestrator` |
 | See eval score trends and progress charts | `os-improvement-report` skill |
-| Search experiment and verification history | `python3 scripts/experiment_log.py query <term>` |
+| Search experiment history (what was tested, what changed) | `python3 scripts/experiment_log.py query <term>` |
+| See a summary of all experiment results | `python3 scripts/experiment_log.py summary` |
 | Promote session learnings to long-term memory | `/os-memory` |
 | Check system health (event log, locks, memory) | `os-health-check` agent |
 | Fix a deadlocked agent (stale lock files) | `os-clean-locks` skill |
@@ -84,8 +88,8 @@ Start here for all evolution and improvement work. Everything else is called by 
 
 | | Invoke as | Purpose |
 |-|-----------|---------|
-| `os-architect` | `/os-architect` or agent dispatch | Classifies intent, audits capabilities, brainstorms options using cheapest available model, dispatches work via Copilot CLI or Claude subagent |
-| `os-environment-probe` | via os-architect or directly | Discovers available AI tools (Copilot CLI, Gemini CLI, Cursor), probes each, writes `context/memory/environment.md` with cheapest-model delegation strategy |
+| `os-architect` | `/os-architect` or agent dispatch | Classifies intent, audits capabilities, brainstorms options using cheapest available model, dispatches work across Copilot CLI, Gemini CLI, or primary AI subagent — whichever fits your environment profile |
+| `os-environment-probe` | via os-architect or directly | Discovers available AI tools (Copilot CLI, Gemini CLI, Cursor), probes each, writes `context/memory/environment.md` with cheapest-model-per-task delegation strategy |
 
 ---
 
