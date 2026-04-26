@@ -180,6 +180,7 @@ Each scenario result uses the structured EVOLUTION_VERIFICATION block:
 ## EVOLUTION_VERIFICATION
 SESSION_ID: [from HANDOFF_BLOCK TARGET field or scenario id]
 SESSION_COMPLETE: [true | false — false means session still in Phase 1/2, no HANDOFF_BLOCK expected]
+STATUS: [complete | intentional_pause | crashed]
 PATH: [A | A+ | B | C | pending]
 OUTPUTS_DECLARED: [N — count of files mentioned in HANDOFF_BLOCK OUTPUTS field]
 OUTPUTS_VERIFIED: [N — count that passed artifact check]
@@ -192,9 +193,19 @@ VERDICT: [PASS | PARTIAL | FAIL]
 NOTES: [any file-level anomalies or ordering violations]
 ```
 
-When `SESSION_COMPLETE: false`, `HANDOFF_BLOCK_VALID` must be `N/A` — the session is correctly
-incomplete (gated by a clarifying question or HARD-GATE). A missing HANDOFF_BLOCK in this state
-is expected behavior, not a schema violation.
+**STATUS field values — required, disambiguates SESSION_COMPLETE: false:**
+
+| STATUS | When to use | VERDICT |
+|--------|-------------|---------|
+| `complete` | SESSION_COMPLETE: true; HANDOFF_BLOCK present and valid | PASS or PARTIAL |
+| `intentional_pause` | SESSION_COMPLETE: false; agent asked a clarifying question or hit a documented HARD-GATE; output > 50 lines | PASS (gate behavior is correct) |
+| `crashed` | SESSION_COMPLETE: false; output < 50 lines, no clarifying question, no HANDOFF_BLOCK, or run_agent.py returned non-zero | FAIL |
+
+When `SESSION_COMPLETE: false` and `STATUS: intentional_pause`, `HANDOFF_BLOCK_VALID` must be `N/A` —
+a missing HANDOFF_BLOCK is expected behavior, not a schema violation.
+
+When `SESSION_COMPLETE: false` and `STATUS: crashed`, `VERDICT` must be `FAIL` regardless of
+any other fields — a silent crash must never be reported as PARTIAL or PASS.
 
 Use **PARTIAL** when some outputs are present but not all — it pinpoints exactly which
 workstream failed rather than collapsing everything into a binary pass/fail.
@@ -290,9 +301,12 @@ Confirm all 7 fields found. Time: <5s.
 - **Confidence model check is order-sensitive**: The clarifying question must appear BEFORE any
   audit output. Line-number comparison is required; simple `grep -q` is insufficient.
 
-- **`temp/` files are ephemeral**: If the session was resumed in a new shell, temp output files
-  may be gone. Treat a missing `temp/copilot_output_*.md` as PARTIAL (inconclusive), not FAIL.
-  Only `tasks/` and `plugins/` artifacts are durable enough for hard FAIL verdicts.
+- **`temp/` files are ephemeral — distinguish shell restart from crash**: If a run was
+  interrupted by a shell restart and `temp/copilot_output_*.md` is missing, set
+  `STATUS: intentional_pause`, `VERDICT: PARTIAL (inconclusive)` — the run never completed.
+  If the file is present but < 50 lines AND run_agent.py returned non-zero, set
+  `STATUS: crashed`, `VERDICT: FAIL` — the agent halted unexpectedly. Never report a
+  silent crash as PARTIAL.
 
 - **OUTPUTS field path normalization**: HANDOFF_BLOCK OUTPUTS lists paths relative to project
   root. Normalize before checking (strip leading `./`, resolve `~`). A path mismatch between
