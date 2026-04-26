@@ -67,7 +67,7 @@ brainstorming and the right model for each job. A discipline layer, not a replac
 | Discover which AI tools I have available | `/os-architect` → "probe my environment" |
 | Propose hypotheses and design experiments for a problem | `/os-architect` → "explore why X fails" or "generate hypotheses for Y" |
 | Improve a specific skill with evals | `/os-architect` → describe the skill + goal |
-| Run an unattended overnight eval loop | `triple-loop-architect` agent → then `triple-loop-orchestrator` |
+| Run an unattended improvement loop | `/os-architect` → "improve X skill with a lab" → os-improvement-loop |
 | See eval score trends and progress charts | `os-improvement-report` skill |
 | Search experiment history (what was tested, what changed) | `python3 scripts/experiment_log.py query <term>` |
 | See a summary of all experiment results | `python3 scripts/experiment_log.py summary` |
@@ -101,8 +101,6 @@ Start here for all evolution and improvement work. Everything else is called by 
 |-------|---------|
 | `agentic-os-setup` | Conversational setup guide — scaffolds memory, hooks, and CLAUDE.md hierarchy for a new project |
 | `os-health-check` | System diagnostics — inspects event log, memory state, lock status |
-| `triple-loop-architect` | Interactive setup for a full skill eval lab (Triple-Loop Learning System) |
-| `triple-loop-orchestrator` | Unattended overnight improvement orchestrator — oversees autonomous INNER loop iterations |
 
 **Internal (called by os-architect — do not invoke directly):**
 
@@ -121,7 +119,6 @@ Start here for all evolution and improvement work. Everything else is called by 
 |-------|---------|
 | `os-init` | Scaffolds the OS environment — called by the setup agent or `/os-init` |
 | `os-environment-probe` | Discovers AI environments; writes delegation strategy to `context/memory/environment.md` |
-| `os-guide` | Full OS reference — layers, interactions, patterns. Trigger: "explain agentic os" |
 
 #### Planning & Evolution
 
@@ -139,8 +136,7 @@ Start here for all evolution and improvement work. Everything else is called by 
 | `os-eval-lab-setup` | Bootstraps an isolated sibling-repo eval lab for safe iteration |
 | `os-eval-runner` | Stateless eval engine — scores proposed skill patches against locked `evals.json`; KEEP/DISCARD gate |
 | `os-eval-backport` | Reviews completed lab run; backports approved changes to master plugin sources |
-| `os-improvement-loop` | Orchestrates the full eval → mutate → re-eval cycle (Triple-Loop Pattern 5) |
-| `os-skill-improvement` | RED-GREEN-REFACTOR cycle for a single skill — no full lab required |
+| `os-improvement-loop` | Orchestrates the full eval → mutate → re-eval cycle |
 | `os-improvement-report` | Generates improvement charts and trend data from eval history |
 
 #### Memory & Observability
@@ -149,13 +145,14 @@ Start here for all evolution and improvement work. Everything else is called by 
 |-------|---------|
 | `os-memory-manager` | Deduplicates and promotes session facts to long-term memory (`context/memory.md`) |
 
-#### Utilities
+#### Utilities (support tools — not part of the core loop)
 
 | Skill | Purpose |
 |-------|---------|
-| `optimize-agent-instructions` | Audits and rewrites AI agent instruction files (CLAUDE.md, GEMINI.md, copilot-instructions.md) in any repo |
-| `os-clean-locks` | Removes stale lock files from `context/.locks/` to resolve deadlocked agents |
-| `todo-check` | Audits files for TODO comments and unresolved technical debt markers |
+| `optimize-agent-instructions` | Audits and rewrites AI agent instruction files |
+| `os-clean-locks` | Removes stale lock files to resolve deadlocked agents |
+| `todo-check` | Audits files for TODO comments |
+| `os-guide` | Full OS reference — layers, interactions, patterns |
 
 ---
 
@@ -183,16 +180,18 @@ These fire on every session without any user invocation.
 
 ## How It Works
 
-### Triple-Loop Learning System
+### Learning Loop
 
-Three nested loops run over your skills: the **outer Triple-Loop** (meta-learning orchestrator)
-manages strategy and targets; the **middle Double-Loop** (os-skill-improvement) formulates
-hypotheses and patches; the **inner Single-Loop** (os-eval-runner) tests each patch against
-locked evals and keeps or discards it. The eval gate defeats Goodhart's Law — no subjective
-testing, no test registry re-use.
+The core learning cycle: **os-improvement-loop** orchestrates multi-iteration improvement
+runs against a locked eval set. **os-eval-runner** scores each mutation (KEEP/DISCARD).
+**os-eval-lab-setup** isolates each run in a sibling repo. **os-eval-backport** provides
+the human review gate before any winning change reaches production.
+
+Execution pattern delegates to [agent-loops Pattern 5](../agent-loops/skills/triple-loop-learning/)
+for inner loop mechanics. agent-loops provides the loop substrate; this plugin adds the
+eval gate, experiment log, and lab isolation.
 
 → Full detail: [references/operations/triple-loop.md](./references/operations/triple-loop.md)
-→ Diagram: [assets/diagrams/triple-loop-learning-system.mmd](./assets/diagrams/triple-loop-learning-system.mmd)
 
 ### Memory System
 
@@ -246,4 +245,6 @@ gated by objective evaluation — outperforms hand-designed harnesses across ben
 | Plugin | Role |
 |--------|------|
 | `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
-| **`agent-agentic-os`** | **Operations — how to run and continuously improve the environment** |
+| **`agent-agentic-os`** | **Operations — eval-gated improvement loop, experiment log, memory** |
+| `agent-loops` | Execution patterns — loop substrate used by os-improvement-loop |
+```

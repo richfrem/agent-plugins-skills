@@ -1,13 +1,12 @@
 # agent-agentic-os Simplification Plan
 
-**Context:** This document responds to three rounds of external architectural critique.
-Round 1 proposed a value hierarchy for pruning components. Round 2 proposed a full
-6-component rewrite. Round 3 reviewed the v1 plan and proposed five enhancements plus
-one structural tweak. This plan accepts Round 1's cuts, accepts Round 2's mental model
-shift, rejects Round 2's implementation, and integrates Round 3 selectively — accepting
-four proposals, pushing back on two, and flagging two as already implemented.
+**Context:** This document responds to five rounds of external architectural critique across
+GPT, Gemini, and Claude reviewers. Round 1 proposed a value hierarchy for pruning.
+Round 2 proposed a 6-component rewrite (rejected). Rounds 3–4 proposed targeted upgrades
+(selectively accepted). Round 5 (all three reviewers) confirmed the core is sound and
+surfaced operational gaps in manifests, synthesis rigor, and the verifier contract.
 
-**Version:** v3 — updated with Round 4 feedback response.
+**Version:** v4 — updated with Round 5 feedback (Gemini + Claude + GPT).
 
 ---
 
@@ -437,14 +436,19 @@ minimum threshold:
 
 ```
 PASS: pipeline produces ≥ 1 artifact at the declared path AND HANDOFF_BLOCK is valid AND
-      STATUS is not 'crashed' AND EVOLUTION_VERIFICATION verdict is PASS or PARTIAL
-FAIL: any of the above conditions not met
+      STATUS is not 'crashed' AND EVOLUTION_VERIFICATION verdict is PASS
+      (PARTIAL is logged but treated as FAIL for gating — Round 5 tightening)
+FAIL: any of the above conditions not met, OR verdict is PARTIAL
 ```
 
 WS-N failure injection experiments (N-01 through N-06) provide the adversarial test scenarios.
-The verifier must fail these inputs — if it passes N-04 (malformed run-config), it is not
-doing its job. At least 3 of 6 adversarial scenarios must produce FAIL verdicts for the
-verifier to be considered operational.
+**Round 5 threshold (Claude reviewer):** The threshold of "3 of 6" was too low — a verifier
+that only catches obvious crashes (N-01/N-02/N-03) while missing schema drift and path mismatch
+still passes. New threshold:
+
+- **Critical scenarios** (all must produce FAIL): N-04 (malformed run-config), N-05 (truncated plan), N-06 (bad evals schema) — these test whether the verifier catches *structural failures*, not just crashes
+- **Overall threshold**: ≥ 4 of 6 adversarial scenarios must produce FAIL verdicts
+- A verifier that passes all 6 adversarial inputs is not operational
 
 ---
 
@@ -453,17 +457,26 @@ verifier to be considered operational.
 Round 4 identified the most important remaining gap: the experiment log records what happened
 but does not feed patterns back into the system. Logging is not learning.
 
-**Change:** Add a periodic synthesis step (run after every 5 experiments or at session close):
+**Change:** Add a periodic synthesis step. **Round 5 trigger (Claude reviewer):** "every 5 experiments or at session close" are different triggers — sessions with 3 experiments never hit 5. Canonical trigger: **at session close if ≥ 3 new experiments since last synthesis**. This ensures the synthesis runs on enough data (minimum signal threshold) without requiring a human to remember to invoke it.
 
+Synthesis output must be **data-backed** (GPT reviewer — prevents narrative-over-signal):
 ```md
 ## SYNTHESIZED LEARNINGS — [date]
 ### Patterns that consistently improve performance
-- [pattern] → seen in [session IDs], avg delta +[X]
+- pattern: [description]
+  supporting sessions: [IDs]
+  avg delta: +[X]
+  sample size: [N]  ← discard this pattern if N < 3
 ### Patterns that cause regressions
-- [pattern] → seen in [session IDs], avg delta -[X]
+- pattern: [description]
+  supporting sessions: [IDs]
+  avg delta: -[X]
+  sample size: [N]  ← discard this pattern if N < 3
 ### Recommended updates to core skills
-- [skill] → [specific change suggested by pattern]
+- [skill] → [specific change] (supported by [session IDs])
 ```
+
+Patterns with sample_size < 3 are silently dropped — they are noise, not signal.
 
 The synthesis output is fed to `os-memory-manager` for promotion to long-term memory.
 This closes the loop: experiments → patterns → memory → better future decisions.
@@ -479,11 +492,20 @@ handles promotion — it just needs the structured input.
 With the critic, holdout sets, adversarial sets, and multiple eval datasets now in play,
 cost per iteration compounds quickly.
 
-**Change:** Enforce hard limits at the orchestrator level:
+**Change:** Enforce hard limits at the orchestrator level. **Round 5 note (Claude reviewer):** these values were asserted without rationale. Rationale added below:
+
 ```
-max_eval_iterations_per_lab: 10  (already in validation plan — formalize as enforced rule)
-max_eval_datasets_per_run: 3     (base + holdout + adversarial — no more)
-critic_invocations_per_iteration: 1  (one cheap-model call only)
+max_eval_iterations_per_lab: 10
+  rationale: 10 iterations provides enough signal for a learning curve without
+             runaway cost; the validation plan established this empirically (0024)
+
+max_eval_datasets_per_run: 3
+  rationale: exactly base + holdout + adversarial — one of each kind; adding
+             more datasets fragments the signal without improving the gate
+
+critic_invocations_per_iteration: 1
+  rationale: one cheap-model challenge per mutation is sufficient; multiple critic
+             calls on the same mutation amplify the same signal, not different ones
 ```
 
 These are not suggestions — the orchestrator must reject lab configurations that exceed
@@ -511,45 +533,197 @@ it is not designed in advance.
 
 ---
 
+## Round 5 Feedback — Accepted (Gemini + Claude + GPT)
+
+### 1. Plugin manifest cleanup (Gemini — critical, missed by prior rounds)
+
+`plugins/agent-agentic-os/.claude-plugin/plugin.json` currently lists `triple-loop-architect`,
+`triple-loop-orchestrator`, and `os-skill-improvement` in its `agents` and `skills` arrays.
+If these remain in the manifest after the files are deleted, `os-architect` may hallucinate
+routes to them during Category 3 or 5 requests. This must be cleaned up as part of Phase 1.
+
+**Changes to plugin.json:**
+- Remove from `agents`: `triple-loop-architect`, `triple-loop-orchestrator`
+- Remove from `skills`: `os-skill-improvement`
+- Remove from `keywords`: `triple-loop`, `skill-improvement`
+- Remove from `capabilities`: `triple-loop-learning`
+- Update `description`: remove "Triple-Loop autonomous skill evaluation system"
+- Bump version: `1.5.0` → `1.6.0`
+
+**Changes to `skills/os-init/runtime/agents.json`:**
+- `Triple-Loop Retrospective` entry: this refers to the retrospective *phase* of
+  os-improvement-loop, not the deleted agents. Rename to `os-improvement-loop-retrospective`
+  for clarity. Do not delete it.
+
+---
+
+### 2. System dependency map (GPT — prevents silent coupling drift)
+
+The system looks modular but has implicit couplings: os-architect decisions affect eval
+frequency; os-memory-manager outputs influence future architect decisions; os-improvement-loop
+depends on experiment log structure. Without an explicit map, a change to one component
+silently breaks another.
+
+Add `references/architecture/dependency-map.md` to the plugin:
+
+```md
+## SYSTEM DEPENDENCY MAP
+
+| Component | Reads from | Writes to | Side effects on |
+|-----------|-----------|-----------|-----------------|
+| os-architect | context/memory/environment.md, context/memory.md | HANDOFF_BLOCK (stdout) | Routes to os-improvement-loop, os-evolution-planner |
+| os-improvement-loop | HANDOFF_BLOCK, improvement/run-config.json | context/experiment-log/ | Invokes os-eval-runner, os-eval-lab-setup |
+| os-eval-runner | evals/evals.json, evals/evals_holdout.json | results.tsv, stdout KEEP/DISCARD | Gating decision for os-improvement-loop |
+| os-eval-backport | results.tsv, lab SKILL.md | plugins/ (main repo) | Human checkpoint — nothing automatic |
+| os-experiment-log | --report file (temp/) | context/experiment-log/index.md, entry .md | Consumed by os-improvement-report, synthesize |
+| os-memory-manager | context/events.jsonl, synthesis output | context/memory.md | Influences future os-architect routing |
+| os-eval-lab-setup | HANDOFF_BLOCK | sibling repo (../lab-*/) | Isolates all subsequent eval-runner calls |
+```
+
+**Coupling rules derived from map:**
+- Changing experiment log schema requires updating `os-improvement-report` and `synthesize` together
+- Changing memory.md format requires updating `os-architect`'s Phase 1 read
+- Never write directly to `plugins/` from inside the loop — only os-eval-backport does this
+
+---
+
+### 3. Anti-proliferation tracking location (Claude — implementation gap closed)
+
+The rule "create a skill only if the gap persists across ≥ 3 separate architect sessions"
+was committed without specifying where the recurrence count lives. Closing the gap:
+
+**Decision: os-memory-manager promoted memory.** When os-architect identifies a capability
+gap and routes Path C, it writes a structured gap record to `context/events.jsonl`:
+```json
+{"event": "capability_gap_detected", "gap": "monitoring plugin health", "session": "...", "date": "..."}
+```
+os-memory-manager promotes recurring gaps (same gap string, ≥ 3 events) to `context/memory.md`
+under a `## Recurring Gaps` section. os-architect checks this section in Phase 2 before
+proposing Path C. If the gap is NOT in Recurring Gaps, os-architect proposes modifying an
+existing skill instead.
+
+This is automatable — no manual tracking required.
+
+---
+
+### 4. Routing Pattern Analysis — periodic, not passive (GPT)
+
+The Routing Decision Audit block logs decisions but does not feed back into architect improvements.
+After every ~10 runs, a synthesis pass should produce:
+
+```md
+## ROUTING PATTERN ANALYSIS — [date]
+- Most common misroutes: [path X → should have been path Y, N occurrences]
+- Conditions where routing struggled: [input pattern]
+- Suggested rule updates: [specific change to os-architect Phase 2]
+```
+
+This feeds into `os-architect-agent.md` updates via the normal os-evolution-planner path.
+It is not automatic — it is a human-triggered analysis using the audit log as input.
+
+---
+
+### 5. Confidence tracking in eval outcomes (GPT)
+
+Not all improvements carry the same signal quality. A +0.02 score improvement with variance
+0.02 is strong signal; the same delta with variance 0.08 is noise. Add to os-eval-runner output:
+
+```json
+{
+  "score": 0.82,
+  "confidence": 0.91,
+  "variance": 0.02,
+  "verdict": "KEEP"
+}
+```
+
+`confidence` = 1 - (variance / score); `variance` is computed from the 3× baseline runs
+(EXP-17). Human reviewers should weight KEEP decisions by confidence, not just score delta.
+Low-confidence KEEPs (confidence < 0.7) are still KEEPs but flagged for extra scrutiny in
+os-eval-backport.
+
+---
+
+## Round 5 Feedback — Pushbacks
+
+### 1. Skill deprecation as automated removal (GPT) — rejected, human-trigger only
+
+GPT proposed: automatically deprecate skills that show no improvement across N experiments
+or are never selected by os-architect across M sessions.
+
+**Rejected because:** Selection frequency depends on the kinds of requests users make, not
+on skill quality. `os-eval-backport` would rarely be selected if users don't run improvement
+labs often — that doesn't make it worthless, it means it's rarely needed. Automated removal
+based on selection frequency would delete infrastructure components during quiet periods.
+
+**What IS accepted:** A human-readable "skill health report" produced by `experiment_log.py synthesize`
+that flags skills with zero improvement across 10+ experiments and zero routing hits across
+20+ sessions. A human decides whether to deprecate. The system flags; the human cuts.
+
+---
+
+### 2. Cross-session budget limits (GPT) — reject as system constraints
+
+GPT proposed: `max_total_tokens_per_session` and `max_experiments_per_day` as soft limits.
+
+**Rejected because:** The system does not have access to token counts (Copilot CLI does not
+expose them), and "max_experiments_per_day" is an operational practice, not a system invariant.
+Enforcing it at the code level would require a persistent counter that creates more state
+management overhead than it prevents. The per-lab limits already in the plan (10 iterations,
+3 datasets) address the token-cost risk at the right scope. Cross-session limits belong in
+a usage guide, not the system.
+
+---
+
 ## Summary
 
-**Round 1** correctly identified the dead weight. Cuts accepted.
-**Round 2** correctly identified the mental model problem. Mental model accepted; implementation rejected.
-**Round 3** correctly identified four gaps (architect validation, global overfitting, skill proliferation, critic mode). Two items flagged as already implemented (experiment log query, EXP-17).
-**Round 4** confirmed the core is sound. Accepted four targeted upgrades (routing audit, verifier binary contract, experiment synthesis, budget guard). Scope-limited one (decision quality metrics require data first).
-**The merger question**: not a merge — agent-agentic-os uses agent-loops as execution substrate; owns the eval gate, experiment log, and improvement infrastructure.
+**Round 1:** Cut dead weight (triple-loop agents, os-skill-improvement). Accepted.
+**Round 2:** Mental model shift (one learning system, not 17 equals). Mental model accepted; rewrite implementation rejected.
+**Round 3:** Routing accuracy, global overfitting gate, skill creation threshold, critic mode. All accepted with modifications.
+**Round 4:** Routing decision audit, verifier binary contract, experiment synthesis, budget guard. All accepted with one scope limit (decision quality metrics require data first).
+**Round 5:** Plugin manifest cleanup, system dependency map, synthesis rigor, verifier threshold tightened, anti-proliferation tracking location defined. All accepted. Skill auto-deprecation and cross-session budget limits rejected.
+**Plugin merger:** Use, not merge — agent-loops is the execution substrate; agent-agentic-os owns the eval gate, experiment log, and improvement infrastructure.
 
-**The right execution in priority order:**
-**Round 2** correctly identified the mental model problem. Mental model accepted; implementation rejected.
-**Round 3** correctly identified four gaps (architect validation, global overfitting, skill proliferation, critic mode). Also surfaced two items already implemented (experiment log query, reproducibility check).
-**The merger question**: not a merge — a cleaner dependency relationship. agent-agentic-os
-delegates to agent-loops for execution patterns; agent-agentic-os owns the eval gate,
-experiment log, and improvement infrastructure.
+**Execution priority:**
 
-**The right execution in priority order:**
+*Phase 1 — Execute now (task 0025 copilot dispatch):*
+1. Delete triple-loop-architect, triple-loop-orchestrator agent files
+2. Delete os-skill-improvement skill directory
+3. Update plugin.json manifest (remove deprecated entries, bump to v1.6.0)
+4. Update agents.json (rename Triple-Loop Retrospective entry to `os-improvement-loop-retrospective` with an explicit description: "Retrospective phase of os-improvement-loop — analyzes friction events and feeds next iteration", pointing to `os-improvement-loop` skill)
+5. Update os-architect-agent.md:
+   - Remove deprecated rows and explicitly route Category 3 to `improvement-intake-agent → os-improvement-loop`
+   - Path B: Replace optional `os-skill-improvement` validator with `os-improvement-loop`
+   - Add Routing Decision Audit block (must appear immediately after every `emit HANDOFF_BLOCK` line in Paths A, B, and C):
+     ```md
+     ## ROUTING DECISION AUDIT
+     - Chosen path: [A+ / A / B / C]
+     - Alternatives considered: [list, or "none — single clear match"]
+     - Why chosen: [one sentence citing the match quality and signal that determined path]
+     ```
+   - Add skill creation threshold
+6. Update os-improvement-loop SKILL.md (remove os-skill-improvement refs in lifecycle close protocol, add budget guard with rationales, add agent-loops relationship note)
+7. Update README.md, CHANGELOG.md, and SUMMARY.md (remove deprecated components, add Utilities section, reframe How It Works, update plugin triad table, and document stale component list post-cleanup)
 
-*Immediate (pre-execution):*
-1. Make Round 1's cuts: remove triple-loop agents, os-skill-improvement; demote utility skills
-2. Apply Round 2's mental model to the docs — one learning system, not 17 equal components
-3. Clarify agent-loops / agent-agentic-os relationship: use, not merge; remove triple-loop duplication
+*Phase 2 — High priority (before Phase 3 eval labs):*
+8. Add routing accuracy eval set to os-architect-tester (Round 3)
+9. Enforce global overfitting detection in os-eval-runner as hard gate (Round 3)
+10. Define binary PASS/FAIL + PARTIAL=FAIL for gating in os-evolution-verifier (Rounds 4+5)
+11. Add confidence tracking (score + confidence + variance) to os-eval-runner output (Round 5)
+12. Add `references/architecture/dependency-map.md` (Round 5)
+13. Add gap event logging to os-architect for anti-proliferation tracking (fires when Path C is concluded; write `{"event":"capability_gap_detected","gap":"<description>","session":"<date>"}` to `context/events.jsonl`)
 
-*High priority (before Phase 3 eval labs):*
-4. Add routing accuracy eval set to os-architect-tester (Round 3) + Routing Decision Audit block (Round 4)
-5. Enforce global overfitting detection in os-eval-runner as a hard gate (Round 3)
-6. Define binary PASS/FAIL contract for os-evolution-verifier with WS-N threshold (Round 4)
-7. Enforce evaluation budget guard at orchestrator level (Round 4)
+*Phase 3 — Medium priority (after first 5 experiments):*
+14. Add `experiment_log.py synthesize` with data-backed format and sample_size < 3 filter (Rounds 4+5)
+15. Add structured tags to experiment log schema
 
-*Medium priority (after first 5 experiments complete):*
-8. Add `experiment_log.py synthesize` command + os-memory-manager integration (Round 4)
-9. Add skill creation threshold rule to os-architect (Round 3)
-10. Add structured tags to experiment log schema (Round 3 enhancement)
+*Future (after 20+ logged runs):*
+16. Add critic mode as scored predictor (non-gating) to os-improvement-loop (Rounds 3+4)
+17. Add Routing Pattern Analysis trigger after every ~10 runs (Round 5)
+18. Add routing decision quality metrics once 50+ audit logs exist (Round 4 scope-limited)
 
-*Future (after core loop validated with 20+ runs):*
-11. Add critic mode as scored predictor in improvement loop, non-gating (Rounds 3 + 4)
-12. Add routing decision quality metrics once 50+ audit logs exist (Round 4 scope-limited)
-
-*Never touch:*
-- Eval gate (os-eval-runner KEEP/DISCARD logic)
-- Human backport gate (os-eval-backport review step)
-- Lab isolation (os-eval-lab-setup sibling repo)
-- Experiment log core schema and append/query commands
+*Invariants — never change without a documented architectural decision:*
+- **Eval gate** (os-eval-runner KEEP/DISCARD): changing this invalidates all historical comparison baselines
+- **Human backport gate** (os-eval-backport): removing human review creates a self-modifying system with no safety checkpoint
+- **Lab isolation** (os-eval-lab-setup sibling repo): without it, a failed mutation contaminates production
+- **Experiment log core schema** (append/query commands): schema changes break query and summary across existing entries without a migration
