@@ -1,13 +1,31 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-## Project Overview
+**123 skills · 23 plugins** — a self-improving, cross-platform library of reusable AI agent
+capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
-A strictly cross-platform (Windows, Mac, Ubuntu) library that serves as the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks:
+---
 
-- **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
-- *Now universally supporting the single `.agents/` folder standard (no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc).*
+## Platforms
 
-**119 skills** across **23 plugins** — all maintained from a single hub-and-spoke source tree.
+A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
+
+*All plugins deploy to the single `.agents/` folder standard — no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc.*
+
+---
+
+## Installation
+
+> [!IMPORTANT]
+> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default.
+>
+> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Marketplace / Extension CLI**) are now consolidated in a single authoritative guide:
+>
+> ### 👉 [Go to INSTALL.md](./INSTALL.md)
+
+**Quick install (all plugins):**
+```bash
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+```
 
 ---
 
@@ -21,60 +39,25 @@ Frameworks like `agent-agentic-os` and `spec-kitty` are treated as **Transitiona
 
 ---
 
-## Installation
+## Architecture
 
-> [!IMPORTANT]
-> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default.
->
-> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Marketplace / Extension CLI**) are now consolidated in a single authoritative guide:
->
-> ### 👉 [Go to INSTALL.md](./INSTALL.md)
+### Pillar 1: The Improvement OS (`agent-agentic-os`)
 
----
+The OS implements an eval-gated improvement pipeline for autonomous skill evolution:
 
-## Architecture Highlights
-
-### Triple-Loop Autonomous Skill Improvement
-
-The `agent-agentic-os` plugin implements a **Triple-Loop** architecture for continuous, autonomous skill improvement:
-
-| Layer | Agent | Role |
-|:---|:---|:---|
-| **L0** | `triple-loop-architect` (Claude) | Interactive setup: scaffolds isolated sibling lab, seeds all files, launches L1 |
-| **L1** | Gemini CLI (`gemini --yolo --model gemini-3-flash-preview`) | Headless orchestrator: reads `eval-instructions.md`, runs the loop, gates via `evaluate.py` |
-| **L2** | Copilot CLI (`gpt-5-mini`) | Cheap mutation proposer: proposes SKILL.md edits using free Copilot quota |
-
-The loop is autonomous and cost-effective: L2 uses GitHub Copilot's `gpt-5-mini` (free quota), enabling 20–80 mutation proposals per run at near-zero cost. L1 (Gemini Flash) orchestrates unattended overnight. `evaluate.py` is the absolute gate — exit 0 = KEEP, exit 1 = DISCARD + auto-revert.
-
-**Not all skills are good candidates** — the best targets have clear, objective routing criteria and adversarial eval cases. Use [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) to score a skill before running a loop.
-
-**To start any evolution activity — improvement loop, capability gap fill, or pattern abstraction:**
 ```
-/os-architect
+os-architect           ← intent classifier + ecosystem router
+    ↓
+os-improvement-loop    ← learning engine: orchestrates multi-iteration improvement
+    ↓
+os-eval-runner         ← inner gate: KEEP/DISCARD per iteration (evaluate.py)
+    ↓
+os-eval-backport       ← human gate: review before lab winner → production
+    ↓
+os-experiment-log      ← scientific backbone: longitudinal tracking + synthesis
 ```
-Describe what you want in plain language. The `os-architect` agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools. `os-evolution-planner` writes the task plan + delegation prompt. `os-architect-tester` validates after any changes.
 
-**To start a loop directly on a specific skill:**
-```
-@triple-loop-architect
-
-Kick off a 10-iteration Triple-Loop optimization run targeting the `<skill-name>` skill
-inside the `<plugin-folder>` plugin. Use gemini-3-flash-preview as L1 and gpt-5-mini as L2.
-```
-See the full sample prompt: [`references/sample-prompts/triple-loop-architect-prompt.md`](plugins/agent-agentic-os/references/sample-prompts/triple-loop-architect-prompt.md)
-
-**Live example — `convert-mermaid` skill, 26 iterations across 2 rounds: 0.61 → 1.00**
-
-![convert-mermaid eval progress](plugins/mermaid-to-png/skills/convert-mermaid/evals/eval_progress.png)
-
-Each blue diamond is a baseline anchor (one per session). Green = new best score. Amber = kept but not a record. The two-segment shape shows a fresh re-baseline for round 2 — the plotter handles this automatically.
-
-Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.py --tsv <lab>/evals/ --live`
-
-**Flywheel layers:**
-- **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
-- **INNER flywheel** (`os-eval-runner` + `os-skill-improvement`): improves individual skill routing accuracy within a session
-- **Overnight** (`os-nightly-evolver`): runs the INNER flywheel unattended — see [`agents/os-nightly-evolver.md`](plugins/agent-agentic-os/agents/os-nightly-evolver.md)
+**Entry point:** `/os-architect` — describe what you want in plain language. The agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools. `os-evolution-planner` writes the task plan + delegation prompt. `os-architect-tester` validates after any changes.
 
 ### Karpathy Autoresearch Loop
 
@@ -84,19 +67,33 @@ Skills that score HIGH on the autoresearch viability rubric (objectivity + speed
 mutate SKILL.md → evaluate.py → exit 0 (KEEP) or exit 1 (DISCARD) → repeat
 ```
 
-**Ecosystem Fitness Sweep v1 is complete** — all 116/120 production skills scored for autoresearch viability. Results:
+**Not all skills are good candidates** — use [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) to score a skill before running a loop.
 
-| Verdict | Count | Loop Type breakdown |
-|---|---|---|
-| HIGH | 9 | DETERMINISTIC: 41 · LLM_IN_LOOP: 59 · HYBRID: 16 |
-| MEDIUM | 52 | |
-| LOW | 42 | |
-| NOT_VIABLE | 13 | |
+**Live example — `convert-mermaid` skill, 26 iterations across 2 rounds: 0.61 → 1.00**
 
-Full ranked list: [`summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
-Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-report.md`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/autoresearch-opportunities-report.md)
+![convert-mermaid eval progress](plugins/mermaid-to-png/skills/convert-mermaid/evals/eval_progress.png)
 
-**First live autoresearch loop**: `verification-before-completion` from `obra/superpowers` (35/40 HIGH) — golden task set + `evaluate.py` scaffolded, ready to run.
+Each blue diamond is a baseline anchor (one per session). Green = new best score. Amber = kept but not a record. The two-segment shape shows a fresh re-baseline for round 2.
+
+Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.py --tsv <lab>/evals/ --live`
+
+**Flywheel layers:**
+- **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
+- **INNER flywheel** (`os-eval-runner`): evaluate.py KEEP/DISCARD gate per iteration within a session
+
+### Pillar 2: Execution Patterns (`agent-loops`)
+
+5 composable primitives used as the execution substrate by the Improvement OS and standalone by any agent workflow:
+
+`learning-loop` · `dual-loop` · `agent-swarm` · `red-team-review` · `triple-loop-learning`
+
+### Pillar 3: Super-RAG 3-Tier Retrieval
+
+O(1) RLM keyword → O(log N) vector semantic → wiki concept nodes.
+
+**Super-RAG stack:** `rlm-factory` (O(1) keyword) + `vector-db` (O(log N) semantic) + `obsidian-wiki-engine` (full concept nodes)
+
+Each plugin works **standalone** (Mode A) or combined for full Super-RAG power. Init agents detect what is installed in `.agents/skills/` and configure only the available layers.
 
 ### Hub-and-Spoke ADR
 
@@ -104,48 +101,97 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (23 plugins · 119 skills)
+## Plugin Ecosystem (23 plugins · 123 skills)
 
-### Agentic OS — Continuous Self-Improvement
+### Group 1: The Improvement OS
 
-The flagship operational framework. Implements the Dual-Flywheel architecture for autonomous skill evolution, memory management, eval-gated improvement loops, and session lifecycle protocols.
+#### agent-agentic-os — Continuous Self-Improvement
 
-**Evolution entry points (new):**
-- [`os-architect`](plugins/agent-agentic-os/skills/os-architect/SKILL.md) — front-door for all ecosystem evolution: classifies intent, audits capabilities, proposes Path A/B/C, dispatches work
-- [`os-evolution-planner`](plugins/agent-agentic-os/skills/os-evolution-planner/SKILL.md) — writes structured task plans + Copilot CLI delegation prompts for Path B/C; called by os-architect
+The flagship operational framework. Eval-gated improvement loops, memory management, session lifecycle, and ecosystem evolution orchestration.
 
-**Improvement loop skills:**
-- [`os-guide`](plugins/agent-agentic-os/skills/os-guide/SKILL.md) — master orientation + skill taxonomy
-- [`os-improvement-loop`](plugins/agent-agentic-os/skills/os-improvement-loop/SKILL.md) — OUTER flywheel: 7-step session improvement protocol
-- [`os-eval-lab-setup`](plugins/agent-agentic-os/skills/os-eval-lab-setup/SKILL.md) — bootstrap eval experiment dir (evals.json, results.tsv, program.md)
-- [`os-eval-runner`](plugins/agent-agentic-os/skills/os-eval-runner/SKILL.md) — INNER flywheel gate: evaluate.py KEEP/DISCARD engine
-- [`os-skill-improvement`](plugins/agent-agentic-os/skills/os-skill-improvement/SKILL.md) — RED-GREEN-REFACTOR skill mutation
-- [`os-eval-backport`](plugins/agent-agentic-os/skills/os-eval-backport/SKILL.md) — backport approved improvements to master plugin sources
-- [`os-memory-manager`](plugins/agent-agentic-os/skills/os-memory-manager/SKILL.md) — Phase 6/7 learning promotion to persistent memory
-- [`os-improvement-report`](plugins/agent-agentic-os/skills/os-improvement-report/SKILL.md) — progress charts and score trajectory reports
-- [`os-init`](plugins/agent-agentic-os/skills/os-init/SKILL.md) — OS bootstrap and kernel initialization
-- [`os-clean-locks`](plugins/agent-agentic-os/skills/os-clean-locks/SKILL.md) — directory lock recovery
-- [`todo-check`](plugins/agent-agentic-os/skills/todo-check/SKILL.md) — session TODO hygiene
-- [`optimize-agent-instructions`](plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md) — audit and rewrite CLAUDE.md, GEMINI.md, and copilot-instructions.md
+**Skills (16):** [`os-architect`](plugins/agent-agentic-os/skills/os-architect/SKILL.md) · [`os-evolution-planner`](plugins/agent-agentic-os/skills/os-evolution-planner/SKILL.md) · [`os-guide`](plugins/agent-agentic-os/skills/os-guide/SKILL.md) · [`os-improvement-loop`](plugins/agent-agentic-os/skills/os-improvement-loop/SKILL.md) · [`os-eval-lab-setup`](plugins/agent-agentic-os/skills/os-eval-lab-setup/SKILL.md) · [`os-eval-runner`](plugins/agent-agentic-os/skills/os-eval-runner/SKILL.md) · [`os-eval-backport`](plugins/agent-agentic-os/skills/os-eval-backport/SKILL.md) · [`os-environment-probe`](plugins/agent-agentic-os/skills/os-environment-probe/SKILL.md) · [`os-evolution-verifier`](plugins/agent-agentic-os/skills/os-evolution-verifier/SKILL.md) · [`os-experiment-log`](plugins/agent-agentic-os/skills/os-experiment-log/SKILL.md) · [`os-memory-manager`](plugins/agent-agentic-os/skills/os-memory-manager/SKILL.md) · [`os-improvement-report`](plugins/agent-agentic-os/skills/os-improvement-report/SKILL.md) · [`os-init`](plugins/agent-agentic-os/skills/os-init/SKILL.md) · [`os-clean-locks`](plugins/agent-agentic-os/skills/os-clean-locks/SKILL.md) · [`todo-check`](plugins/agent-agentic-os/skills/todo-check/SKILL.md) · [`optimize-agent-instructions`](plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md)
 
-**Agents:**
-- [`os-architect`](plugins/agent-agentic-os/agents/os-architect-agent.md) — interactive conductor: classifies intent, audits ecosystem, dispatches via run_agent.py
-- [`os-architect-tester`](plugins/agent-agentic-os/agents/os-architect-tester-agent.md) — validates os-architect via pre-scripted scenario transcripts; run after any os-architect changes
-- [`triple-loop-architect`](plugins/agent-agentic-os/agents/triple-loop-architect.md) — autonomous optimization laboratory setup; reads intake config from improvement-intake-agent
-- [`triple-loop-orchestrator`](plugins/agent-agentic-os/agents/triple-loop-orchestrator.md) — headless loop execution and evaluation
-- [`improvement-intake-agent`](plugins/agent-agentic-os/agents/improvement-intake-agent.md) — configures skill improvement runs; emits HANDOFF_BLOCK for triple-loop-architect
-- [`os-health-check`](plugins/agent-agentic-os/agents/os-health-check.md) — OS liveness metrics
-- [`agentic-os-setup`](plugins/agent-agentic-os/agents/agentic-os-setup.md) — OS initialization agent
+**Agents:** [`os-architect-agent`](plugins/agent-agentic-os/agents/os-architect-agent.md) · [`os-architect-tester-agent`](plugins/agent-agentic-os/agents/os-architect-tester-agent.md) · [`improvement-intake-agent`](plugins/agent-agentic-os/agents/improvement-intake-agent.md) · [`os-health-check`](plugins/agent-agentic-os/agents/os-health-check.md) · [`agentic-os-setup`](plugins/agent-agentic-os/agents/agentic-os-setup.md)
 
-### Agent Loops — Execution Patterns
+---
 
-Routing architecture unifying state management across complex agent executions with shared closure.
+### Group 2: Engineering Workflows
 
-- [`orchestrator`](plugins/agent-loops/skills/orchestrator/SKILL.md) — intelligent task router and lifecycle manager
-- [`learning-loop`](plugins/agent-loops/skills/learning-loop/SKILL.md) — research, contextual integration, memory persistence
-- [`dual-loop`](plugins/agent-loops/skills/dual-loop/SKILL.md) — inner execution / outer verification for multi-step tasks
-- [`agent-swarm`](plugins/agent-loops/skills/agent-swarm/SKILL.md) — parallelized concurrent sub-agents on independent worktrees
-- [`red-team-review`](plugins/agent-loops/skills/red-team-review/SKILL.md) — adversarial multi-agent evaluation
+#### spec-kitty-plugin — Spec-Driven Development
+
+Enterprise-grade `Spec → Plan → Tasks → Implement → Review → Merge` pipeline.
+
+**Skills (19):** [`spec-kitty-specify`](plugins/spec-kitty-plugin/skills/spec-kitty-specify/SKILL.md) · [`spec-kitty-plan`](plugins/spec-kitty-plugin/skills/spec-kitty-plan/SKILL.md) · [`spec-kitty-tasks`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks/SKILL.md) · [`spec-kitty-implement`](plugins/spec-kitty-plugin/skills/spec-kitty-implement/SKILL.md) · [`spec-kitty-review`](plugins/spec-kitty-plugin/skills/spec-kitty-review/SKILL.md) · [`spec-kitty-merge`](plugins/spec-kitty-plugin/skills/spec-kitty-merge/SKILL.md) · [`spec-kitty-analyze`](plugins/spec-kitty-plugin/skills/spec-kitty-analyze/SKILL.md) · [`spec-kitty-accept`](plugins/spec-kitty-plugin/skills/spec-kitty-accept/SKILL.md) · [`spec-kitty-clarify`](plugins/spec-kitty-plugin/skills/spec-kitty-clarify/SKILL.md) · [`spec-kitty-research`](plugins/spec-kitty-plugin/skills/spec-kitty-research/SKILL.md) · [`spec-kitty-dashboard`](plugins/spec-kitty-plugin/skills/spec-kitty-dashboard/SKILL.md) · [`spec-kitty-status`](plugins/spec-kitty-plugin/skills/spec-kitty-status/SKILL.md) · [`spec-kitty-checklist`](plugins/spec-kitty-plugin/skills/spec-kitty-checklist/SKILL.md) · [`spec-kitty-constitution`](plugins/spec-kitty-plugin/skills/spec-kitty-constitution/SKILL.md) · [`spec-kitty-tasks-outline`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-outline/SKILL.md) · [`spec-kitty-tasks-finalize`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-finalize/SKILL.md) · [`spec-kitty-tasks-packages`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-packages/SKILL.md) · [`spec-kitty-workflow`](plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md) · [`spec-kitty-sync-plugin`](plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/SKILL.md)
+
+**Agents:** [`spec-kitty-agent`](plugins/spec-kitty-plugin/agents/spec-kitty-agent.md) · [`spec-kitty-setup`](plugins/spec-kitty-plugin/agents/spec-kitty-setup.md)
+
+#### exploration-cycle-plugin — Discovery & Requirements
+
+Autonomous discovery loop: idea framing → business requirements → user stories → prototype → handoff into formal engineering specs.
+
+**Skills (11):** [`exploration-workflow`](plugins/exploration-cycle-plugin/skills/exploration-workflow/SKILL.md) · [`exploration-session-brief`](plugins/exploration-cycle-plugin/skills/exploration-session-brief/SKILL.md) · [`discovery-planning`](plugins/exploration-cycle-plugin/skills/discovery-planning/SKILL.md) · [`business-requirements-capture`](plugins/exploration-cycle-plugin/skills/business-requirements-capture/SKILL.md) · [`business-workflow-doc`](plugins/exploration-cycle-plugin/skills/business-workflow-doc/SKILL.md) · [`user-story-capture`](plugins/exploration-cycle-plugin/skills/user-story-capture/SKILL.md) · [`exploration-handoff`](plugins/exploration-cycle-plugin/skills/exploration-handoff/SKILL.md) · [`exploration-optimizer`](plugins/exploration-cycle-plugin/skills/exploration-optimizer/SKILL.md) · [`prototype-builder`](plugins/exploration-cycle-plugin/skills/prototype-builder/SKILL.md) · [`visual-companion`](plugins/exploration-cycle-plugin/skills/visual-companion/SKILL.md) · [`subagent-driven-prototyping`](plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/SKILL.md)
+
+**Agents (11):** `business-rule-audit-agent` · `discovery-planning-agent` · `exploration-cycle-orchestrator-agent` · `handoff-preparer-agent` · `intake-agent` · `planning-doc-agent` · `problem-framing-agent` · `prototype-builder-agent` · `prototype-companion-agent` · `requirements-doc-agent` · `requirements-scribe-agent`
+
+---
+
+### Group 3: Execution Patterns
+
+#### agent-loops — Composable Loop Primitives
+
+5 execution primitives used as the substrate for the Improvement OS and standalone agent workflows.
+
+**Skills (6):** [`orchestrator`](plugins/agent-loops/skills/orchestrator/SKILL.md) · [`learning-loop`](plugins/agent-loops/skills/learning-loop/SKILL.md) · [`dual-loop`](plugins/agent-loops/skills/dual-loop/SKILL.md) · [`agent-swarm`](plugins/agent-loops/skills/agent-swarm/SKILL.md) · [`red-team-review`](plugins/agent-loops/skills/red-team-review/SKILL.md) · [`triple-loop-learning`](plugins/agent-loops/skills/triple-loop-learning/SKILL.md)
+
+**Agents:** [`orchestrator`](plugins/agent-loops/agents/orchestrator.md)
+
+---
+
+### Group 4: Code Quality & Safety
+
+#### coding-conventions — Standards Enforcement *(34/40 HIGH)*
+
+Centralized rules engine for file headers, naming conventions, and linting across Python, TypeScript, and C#.
+
+**Skills (1):** [`coding-conventions-agent`](plugins/coding-conventions/skills/coding-conventions-agent/SKILL.md) · **Agent:** `coding-conventions-agent`
+
+#### agent-scaffolders — Boilerplate & Audit (25 skills)
+
+Interactive creators for exact file hierarchies + structured audit framework for plugin architectural maturity.
+
+**Scaffolding skills:** [`create-plugin`](plugins/agent-scaffolders/skills/create-plugin/SKILL.md) · [`create-skill`](plugins/agent-scaffolders/skills/create-skill/SKILL.md) · [`create-sub-agent`](plugins/agent-scaffolders/skills/create-sub-agent/SKILL.md) · [`create-command`](plugins/agent-scaffolders/skills/create-command/SKILL.md) · [`create-hook`](plugins/agent-scaffolders/skills/create-hook/SKILL.md) · [`create-github-action`](plugins/agent-scaffolders/skills/create-github-action/SKILL.md) · [`create-agentic-workflow`](plugins/agent-scaffolders/skills/create-agentic-workflow/SKILL.md) · [`create-azure-agent`](plugins/agent-scaffolders/skills/create-azure-agent/SKILL.md) · [`create-docker-skill`](plugins/agent-scaffolders/skills/create-docker-skill/SKILL.md) · [`create-mcp-integration`](plugins/agent-scaffolders/skills/create-mcp-integration/SKILL.md) · [`create-stateful-skill`](plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md)
+
+**Audit & analysis skills:** [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md) · [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) · [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) · [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md) · [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md) · [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md) · [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md)
+
+#### link-checker — Documentation Hygiene
+
+Continuous markdown hyperlink validation with multi-stage pipeline (inventory → extract → audit → fix).
+
+**Skills (2):** [`link-checker-agent`](plugins/link-checker/skills/link-checker-agent/SKILL.md) · [`symlink-manager`](plugins/link-checker/skills/symlink-manager/SKILL.md) · **Agent:** `link-checker-agent`
+
+---
+
+### Group 5: CLI Sub-Agents
+
+Dispatch specialized analysis to isolated fresh model contexts via CLI tools (security audits, architecture review, QA).
+
+#### claude-cli
+
+**Skills (3):** [`claude-cli-agent`](plugins/claude-cli/skills/claude-cli-agent/SKILL.md) · [`claude-project-setup`](plugins/claude-cli/skills/claude-project-setup/SKILL.md) · [`optimize-context`](plugins/claude-cli/skills/optimize-context/SKILL.md)
+
+**Agents (3):** `architect-review` · `refactor-expert` · `security-auditor`
+
+#### copilot-cli
+
+**Skills (1):** [`copilot-cli-agent`](plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md) — GPT-5 mini via Copilot CLI; used in autoresearch mutation delegation
+
+**Agents (3):** `architect-review` · `refactor-expert` · `security-auditor`
+
+#### gemini-cli
+
+**Skills (2):** [`gemini-cli-agent`](plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md) · [`antigravity-project-setup`](plugins/gemini-cli/skills/antigravity-project-setup/SKILL.md)
+
+**Agents (3):** `architect-review` · `refactor-expert` · `security-auditor`
 
 ### Execution Disciplines — Safety & Quality
 
@@ -155,189 +201,87 @@ Behavioural guardrails enforcing best practices on every coding session. These s
 
 Skills available via superpowers: `verification-before-completion` · `test-driven-development` · `using-git-worktrees` · `systematic-debugging` · `finishing-a-development-branch` · `requesting-code-review`
 
-### Agent Scaffolders — Boilerplate Generators
+---
 
-Interactive creators for exact file hierarchies across all plugin/skill types.
+### Group 6: Knowledge & Memory
 
-- [`create-plugin`](plugins/agent-scaffolders/skills/create-plugin/SKILL.md) · [`create-skill`](plugins/agent-scaffolders/skills/create-skill/SKILL.md) · [`create-sub-agent`](plugins/agent-scaffolders/skills/create-sub-agent/SKILL.md)
-- [`create-command`](plugins/agent-scaffolders/skills/create-command/SKILL.md) · [`create-hook`](plugins/agent-scaffolders/skills/create-hook/SKILL.md) · [`create-github-action`](plugins/agent-scaffolders/skills/create-github-action/SKILL.md)
-- [`create-agentic-workflow`](plugins/agent-scaffolders/skills/create-agentic-workflow/SKILL.md) · [`create-azure-agent`](plugins/agent-scaffolders/skills/create-azure-agent/SKILL.md)
-- [`create-docker-skill`](plugins/agent-scaffolders/skills/create-docker-skill/SKILL.md) · [`create-mcp-integration`](plugins/agent-scaffolders/skills/create-mcp-integration/SKILL.md)
-- [`create-stateful-skill`](plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md)
+#### obsidian-wiki-engine — Karpathy LLM Wiki + Super-RAG
 
-### Agent Plugin Analyzer — Plugin Quality Audits
+Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown sources into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal.
 
-Structured audit framework for assessing plugin architectural maturity and compliance.
+**Wiki skills:** [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) · [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) · [`obsidian-query-agent`](plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md) · [`obsidian-wiki-linter`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md)
 
-- [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) — 39-point L5 maturity matrix audit
-- [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md)
-- [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) *(32/40 HIGH)*
-- [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md)
-- [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md)
-- [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) — score any skill for Karpathy autoresearch loop viability; update `summary-ranked-skills.json` *(25/40 MEDIUM)*
+**Vault skills:** [`obsidian-init`](plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md) · [`obsidian-vault-crud`](plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/SKILL.md) · [`obsidian-canvas-architect`](plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/SKILL.md) · [`obsidian-graph-traversal`](plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/SKILL.md) · [`obsidian-markdown-mastery`](plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/SKILL.md) · [`obsidian-bases-manager`](plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/SKILL.md)
 
-### CLI Sub-Agents — Isolated Model Contexts
+**Setup agents:** `wiki-init-agent` · `wiki-build-agent` · `wiki-distill-agent` · `wiki-lint-agent` · `wiki-query-agent` · `super-rag-setup-agent`
 
-Dispatch specialized analysis to fresh model contexts via CLI tools (security audits, architecture review, QA).
+#### rlm-factory — O(1) Keyword Search
 
-- [`claude-cli-agent`](plugins/claude-cli/skills/claude-cli-agent/SKILL.md) · [`claude-project-setup`](plugins/claude-cli/skills/claude-project-setup/SKILL.md)
-- [`copilot-cli-agent`](plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md) — GPT-5 mini via Copilot CLI; used in autoresearch mutation delegation
-- [`gemini-cli-agent`](plugins/gemini-cli/skills/gemini-cli-agent/SKILL.md) · [`antigravity-project-setup`](plugins/gemini-cli/skills/antigravity-project-setup/SKILL.md)
+Dense per-file summaries with zero external dependencies. Works standalone or as Phase 1 of the Super-RAG stack.
 
-### Coding Conventions
+**Skills (6):** [`rlm-init`](plugins/rlm-factory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/rlm-factory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/rlm-factory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/rlm-factory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/rlm-factory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/rlm-factory/skills/rlm-audit/SKILL.md)
 
-Centralized rules engine for file headers, naming conventions, and linting across Python, TypeScript, and C#. *(autoresearch score: 34/40 HIGH)*
+**Setup agent:** `rlm-factory-init-agent` (guided setup, Modes A–D)
 
-- [`coding-conventions-agent`](plugins/coding-conventions/skills/coding-conventions-agent/SKILL.md)
+#### vector-db — Semantic Search
 
-### Context Bundler — Context Packaging
+ChromaDB-driven semantic embedding indexing with Parent-Child retrieval. Supports In-Process mode (zero server setup) and HTTP Server mode. Works standalone or as Phase 2 of the Super-RAG stack.
 
-Package deep directory contexts and code traces into single payloads for external LLM review.
+**Skills (6):** [`vector-db-init`](plugins/vector-db/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/vector-db/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/vector-db/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/vector-db/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/vector-db/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/vector-db/skills/vector-db-audit/SKILL.md)
 
-- [`context-bundler`](plugins/context-bundler/skills/context-bundler/SKILL.md) *(29/40 MEDIUM)*
-- [`red-team-bundler`](plugins/context-bundler/skills/red-team-bundler/SKILL.md) — structured red team review payload generator
+**Setup agent:** `vector-db-init-agent` — guided wizard (Modes A–D)
 
-### Dependency Management
-
-Cross-platform pip-compile workflows with strict `.in` → `.txt` lockfile discipline.
-
-- [`dependency-management`](plugins/dependency-management/skills/dependency-management/SKILL.md)
-
-### Excel / CSV
-
-Use Anthropic's canonical skill: [`anthropics/skills — xlsx`](https://github.com/anthropics/skills/tree/main/skills/xlsx)
-
-### Exploration Cycle — Discovery & Requirements
-
-Autonomous discovery loop for idea framing, business requirements, user stories, prototyping, and handoff into formal engineering specs.
-
-- [`exploration-workflow`](plugins/exploration-cycle-plugin/skills/exploration-workflow/SKILL.md) · [`exploration-session-brief`](plugins/exploration-cycle-plugin/skills/exploration-session-brief/SKILL.md) · [`discovery-planning`](plugins/exploration-cycle-plugin/skills/discovery-planning/SKILL.md)
-- [`business-requirements-capture`](plugins/exploration-cycle-plugin/skills/business-requirements-capture/SKILL.md) · [`business-workflow-doc`](plugins/exploration-cycle-plugin/skills/business-workflow-doc/SKILL.md)
-- [`user-story-capture`](plugins/exploration-cycle-plugin/skills/user-story-capture/SKILL.md) · [`exploration-handoff`](plugins/exploration-cycle-plugin/skills/exploration-handoff/SKILL.md)
-- [`exploration-optimizer`](plugins/exploration-cycle-plugin/skills/exploration-optimizer/SKILL.md) · [`prototype-builder`](plugins/exploration-cycle-plugin/skills/prototype-builder/SKILL.md)
-- [`visual-companion`](plugins/exploration-cycle-plugin/skills/visual-companion/SKILL.md) · [`subagent-driven-prototyping`](plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/SKILL.md)
-
-### Feature-Driven Engineering — Spec Kitty Suite
-
-Enterprise-grade Spec-Driven Development: `Spec → Plan → Tasks → Implement → Review → Merge`.
-
-- [`spec-kitty-specify`](plugins/spec-kitty-plugin/skills/spec-kitty-specify/SKILL.md) · [`spec-kitty-plan`](plugins/spec-kitty-plugin/skills/spec-kitty-plan/SKILL.md) · [`spec-kitty-tasks`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks/SKILL.md)
-- [`spec-kitty-implement`](plugins/spec-kitty-plugin/skills/spec-kitty-implement/SKILL.md) · [`spec-kitty-review`](plugins/spec-kitty-plugin/skills/spec-kitty-review/SKILL.md) · [`spec-kitty-merge`](plugins/spec-kitty-plugin/skills/spec-kitty-merge/SKILL.md)
-- [`spec-kitty-analyze`](plugins/spec-kitty-plugin/skills/spec-kitty-analyze/SKILL.md) · [`spec-kitty-accept`](plugins/spec-kitty-plugin/skills/spec-kitty-accept/SKILL.md) · [`spec-kitty-clarify`](plugins/spec-kitty-plugin/skills/spec-kitty-clarify/SKILL.md)
-- [`spec-kitty-research`](plugins/spec-kitty-plugin/skills/spec-kitty-research/SKILL.md) · [`spec-kitty-dashboard`](plugins/spec-kitty-plugin/skills/spec-kitty-dashboard/SKILL.md) · [`spec-kitty-status`](plugins/spec-kitty-plugin/skills/spec-kitty-status/SKILL.md)
-- [`spec-kitty-checklist`](plugins/spec-kitty-plugin/skills/spec-kitty-checklist/SKILL.md) · [`spec-kitty-constitution`](plugins/spec-kitty-plugin/skills/spec-kitty-constitution/SKILL.md)
-- [`spec-kitty-tasks-outline`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-outline/SKILL.md) · [`spec-kitty-tasks-finalize`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-finalize/SKILL.md) · [`spec-kitty-tasks-packages`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-packages/SKILL.md)
-- [`spec-kitty-workflow`](plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md) · [`spec-kitty-sync-plugin`](plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/SKILL.md)
-
-### Link Checker — Documentation Hygiene
-
-Continuous markdown hyperlink validation with multi-stage pipeline (inventory → extract → audit → fix).
-
-- [`link-checker-agent`](plugins/link-checker/skills/link-checker-agent/SKILL.md)
-
-### Markdown to MSWord
-
-Use Anthropic's canonical skill: [`anthropics/skills — docx`](https://github.com/anthropics/skills/blob/main/skills/docx/SKILL.md)
-
-### Memory Management
+#### memory-management — Multi-Tiered Cognition
 
 Multi-tiered cognition and context caching between long-term persistent storage and active memory.
 
-- [`memory-management`](plugins/memory-management/skills/memory-management/SKILL.md)
+**Skills (1):** [`memory-management`](plugins/memory-management/skills/memory-management/SKILL.md)
 
-### Mermaid to PNG
+---
 
-Diagram exporter and renderer using headless browser.
+### Group 7: Infrastructure & Utilities
 
-- [`convert-mermaid`](plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md) *(autoresearch score: 30/40 MEDIUM — Triple-Loop eval run complete: 0.61 → 1.00 in 26 iterations)*
+#### plugin-manager — Ecosystem Sync
 
-### Obsidian Wiki Engine — Karpathy LLM Wiki + Super-RAG
+**Skills (3):** [`plugin-installer`](plugins/plugin-manager/skills/plugin-installer/SKILL.md) · [`plugin-remover`](plugins/plugin-manager/skills/plugin-remover/SKILL.md) · [`plugin-syncer`](plugins/plugin-manager/skills/plugin-syncer/SKILL.md)
 
-Karpathy-style LLM wiki with cross-source concept synthesis and 3-tier Super-RAG retrieval (RLM keyword → vector semantic → grep exact). Transforms raw markdown sources into structured, queryable concept nodes. Includes full Obsidian vault CRUD, canvas, and graph traversal.
+#### task-manager
 
-**Super-RAG stack:** `rlm-factory` (O(1) keyword) + `vector-db` (O(log N) semantic) + wiki nodes (full concept)
+**Skills (1):** [`task-agent`](plugins/task-manager/skills/task-agent/SKILL.md)
 
-Each plugin works **standalone** (Mode A) or combined for full Super-RAG power. Init agents detect what is actually installed in `.agents/skills/` and configure only the available layers — any combination works.
+#### dependency-management — pip-compile Workflows
 
-**Wiki skills:**
-- [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) — build Karpathy nodes (ingest → concept synthesis → format)
-- [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) — generate RLM summary layers per concept
-- [`obsidian-query-agent`](plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md) — 3-phase query with `--save-as` (file outputs back)
-- [`obsidian-wiki-linter`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md) — semantic health check (inconsistencies, gaps, stale articles)
+Cross-platform pip-compile with strict `.in` → `.txt` lockfile discipline.
 
-**Vault skills:**
-- [`obsidian-init`](plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md) · [`obsidian-vault-crud`](plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/SKILL.md)
-- [`obsidian-canvas-architect`](plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/SKILL.md) · [`obsidian-graph-traversal`](plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/SKILL.md)
-- [`obsidian-markdown-mastery`](plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/SKILL.md) · [`obsidian-bases-manager`](plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/SKILL.md)
+**Skills (1):** [`dependency-management`](plugins/dependency-management/skills/dependency-management/SKILL.md)
 
-**Setup agents:** `wiki-init-agent` (guided init, Modes A–D) · `rlm-factory-init-agent` (guided init, Modes A–D) · `vector-db-init-agent` (guided init, Modes A–D) · `super-rag-setup-agent` (full 3-plugin orchestrator)
+#### context-bundler — Context Packaging
 
-### Plugin Manager — Ecosystem Sync
+Package deep directory contexts and code traces into single payloads for external LLM review.
 
-Authoritative suite for ecosystem health, synchronization, and artifact bootstrapping.
+**Skills (2):** [`context-bundler`](plugins/context-bundler/skills/context-bundler/SKILL.md) · [`red-team-bundler`](plugins/context-bundler/skills/red-team-bundler/SKILL.md)
 
-- [`plugin-installer`](plugins/plugin-manager/skills/plugin-installer/SKILL.md) — install plugins from source directories into agent environments
-- [`plugin-remover`](plugins/plugin-manager/skills/plugin-remover/SKILL.md) — uninstall plugins and cleanly wipe associated artifacts
-- [`plugin-syncer`](plugins/plugin-manager/skills/plugin-syncer/SKILL.md) — full registry sync updating mapped plugins and cleaning orphans
+#### mermaid-to-png
 
-### RLM Factory — Reverse Language Modeling
+**Skills (1):** [`convert-mermaid`](plugins/mermaid-to-png/skills/convert-mermaid/SKILL.md) *(autoresearch score: 30/40 MEDIUM — eval run complete: 0.61 → 1.00 in 26 iterations)*
 
-O(1) keyword search over dense per-file summaries. Zero external dependencies — works standalone or as Phase 1 of the Super-RAG stack.
+#### adr-manager — Architecture Decision Records
 
-- [`rlm-init`](plugins/rlm-factory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/rlm-factory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/rlm-factory/skills/rlm-search/SKILL.md)
-- [`rlm-distill-agent`](plugins/rlm-factory/skills/rlm-distill-agent/SKILL.md) · [`rlm-distill-ollama`](plugins/rlm-factory/skills/rlm-distill-ollama/SKILL.md) · [`rlm-cleanup-agent`](plugins/rlm-factory/skills/rlm-cleanup-agent/SKILL.md)
-- [`ollama-launch`](plugins/rlm-factory/skills/ollama-launch/SKILL.md)
+**Skills (1):** [`adr-management`](plugins/adr-manager/skills/adr-management/SKILL.md)
 
-**Setup agent:** `rlm-factory-init-agent` (guided setup, Modes A–D: standalone → partial → full Super-RAG)
+#### huggingface-utils — HuggingFace Lifecycle
 
-### RSVP Speed Reader
+**Skills (2):** [`hf-init`](plugins/huggingface-utils/skills/hf-init/SKILL.md) · [`hf-upload`](plugins/huggingface-utils/skills/hf-upload/SKILL.md)
+
+#### voice-writer — Tone & Humanization
+
+**Skills (1):** [`humanize`](plugins/voice-writer/skills/humanize/SKILL.md)
+
+#### rsvp-speed-reader
 
 Token-stream speed reading with pause/resume, comprehension check-ins, and session management.
 
-- [`rsvp-reading`](plugins/rsvp-speed-reader/skills/rsvp-reading/SKILL.md) · [`rsvp-comprehension-agent`](plugins/rsvp-speed-reader/skills/rsvp-comprehension-agent/SKILL.md)
-
-### Agent Skill Open Specifications
-
-Canonical documentation for compliant skill and directory architecture construction.
-
-- [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md)
-- [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md)
-
-### Task Manager
-
-Kanban board synchronization and task lane transitions.
-
-- [`task-agent`](plugins/task-manager/skills/task-agent/SKILL.md)
-
-
-
-### Vector DB
-
-ChromaDB-driven semantic embedding indexing with Parent-Child retrieval. Works standalone or as Phase 2 of the Super-RAG stack. Supports In-Process mode (zero server setup) and HTTP Server mode. Profile-driven via `.agent/learning/vector_profiles.json`.
-
-- [`vector-db-init`](plugins/vector-db/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/vector-db/skills/vector-db-launch/SKILL.md)
-- [`vector-db-ingest`](plugins/vector-db/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/vector-db/skills/vector-db-search/SKILL.md)
-- [`vector-db-cleanup`](plugins/vector-db/skills/vector-db-cleanup/SKILL.md)
-
-**Setup agent:** `vector-db-init-agent` — guided wizard (Modes A–D), detects installed Super-RAG layers, provisions only what's present
-
-### Voice Writer
-
-Tone mapping and humanization for AI-generated content.
-
-- [`humanize`](plugins/voice-writer/skills/humanize/SKILL.md)
-
-### HuggingFace Utils
-
-Snapshot persistence and HuggingFace repository lifecycle.
-
-- [`hf-init`](plugins/huggingface-utils/skills/hf-init/SKILL.md) · [`hf-upload`](plugins/huggingface-utils/skills/hf-upload/SKILL.md)
-
-### ADR Manager
-
-Automatically draft and syndicate Architecture Decision Records.
-
-- [`adr-management`](plugins/adr-manager/skills/adr-management/SKILL.md)
+**Skills (2):** [`rsvp-reading`](plugins/rsvp-speed-reader/skills/rsvp-reading/SKILL.md) · [`rsvp-comprehension-agent`](plugins/rsvp-speed-reader/skills/rsvp-comprehension-agent/SKILL.md)
 
 ---
 
@@ -374,7 +318,7 @@ python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (23 plugins, 119 skills)
+plugins/                    ← upstream source (23 plugins, 123 skills)
   <plugin>/
     plugin.json
     skills/<skill>/
@@ -401,4 +345,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*119 skills · 23 plugins · Triple-Loop architecture · os-architect evolution front-door · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*123 skills · 23 plugins · Improvement OS (os-architect) · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
