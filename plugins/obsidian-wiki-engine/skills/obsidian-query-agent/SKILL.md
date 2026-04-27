@@ -1,5 +1,6 @@
 ---
 name: obsidian-query-agent
+plugin: obsidian-wiki-engine
 description: "Progressive-disclosure query against the Obsidian LLM wiki. Returns RLM summary first, expands to bullets, then full wiki node on demand. Use when looking up concepts, searching the wiki, or getting instant context from the knowledge graph."
 allowed-tools: Bash, Read, Write
 ---

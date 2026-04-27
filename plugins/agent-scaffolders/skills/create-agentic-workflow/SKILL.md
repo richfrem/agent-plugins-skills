@@ -1,5 +1,6 @@
 ---
 name: create-agentic-workflow
+plugin: agent-scaffolders
 description: Scaffold a GitHub agentic workflow from an existing skill
 argument-hint: "[skill-dir] [mode: ide|cicd|both]"
 allowed-tools: Bash, Read, Write

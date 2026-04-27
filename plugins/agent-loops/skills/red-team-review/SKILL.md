@@ -1,5 +1,6 @@
 ---
 name: red-team-review
+plugin: agent-loops
 description: "(Industry standard: Review and Critique Pattern) Primary Use Case: Iterative generation paired with adversarial review, continuing until an 'Approved' verdict is reached. Orchestrated adversarial review loop. Use when: research, designs, architectures, or decisions need to be reviewed by red team agents (human, browser, or CLI). Iterates in rounds of research → bundle → review → feedback until approved."
 allowed-tools: Bash, Read, Write
 ---

@@ -1,5 +1,6 @@
 ---
 name: os-architect
+plugin: agent-agentic-os
 description: >
   SME-facing front-door skill for Agentic OS ecosystem evolution. Invokes the os-architect
   interview flow: classifies intent, audits existing capabilities, proposes evolution path

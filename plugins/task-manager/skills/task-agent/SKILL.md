@@ -1,5 +1,6 @@
 ---
 name: task-agent
+plugin: task-manager
 description: >
   Task management agent. Auto-invoked for task creation, status tracking,
   and kanban board operations using Markdown files across lane directories.

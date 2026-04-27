@@ -3,9 +3,9 @@ concept: adr-004-self-contained-plugins---no-cross-plugin-script-dependencies
 source: plugin-code
 source_file: /Users/richardfremmerlid/Projects/agent-plugins-skills/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.624341+00:00
+generated_at: 2026-04-27T05:21:03.733165+00:00
 cluster: plugin-code
-content_hash: be963a9c0cd817de
+content_hash: 6dc669ed8ca0e391
 ---
 
 # ADR-004: Self-Contained Plugins - No Cross-Plugin Script Dependencies
@@ -104,15 +104,15 @@ For each CONNECTORS.md that declares a cross-plugin script dependency:
 
 ## See Also
 
-- [[adr-001-cross-plugin-script-dependencies]]
-- [[adr-001-cross-plugin-script-dependencies]]
-- [[adr-001-cross-plugin-script-dependencies]]
-- [[adr-001-cross-plugin-script-dependencies]]
-- [[adr-manager-plugin]]
-- [[adr-002-multi-skill-script-centralization]]
+- [[add-script-dir-to-path-to-import-plugin-inventory]]
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]]
+- [[simple-tasks-no---model-flag-defaults-to-freecheap-model-gpt-5-mini-via-copilot]]
+- [[exploration-cycle-plugin-hooks]]
+- [[install-from-the-local-repo-select-plugins-interactively]]
+- [[install-plugin-in-a-different-repo-eg-context-bundler-specifically]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `/Users/richardfremmerlid/Projects/agent-plugins-skills/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md`
-- **Indexed:** 2026-04-17T06:42:09.624341+00:00
+- **Indexed:** 2026-04-27T05:21:03.733165+00:00

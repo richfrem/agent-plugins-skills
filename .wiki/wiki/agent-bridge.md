@@ -3,9 +3,9 @@ concept: agent-bridge
 source: plugin-code
 source_file: spec-kitty-plugin/.agents/skills/plugin-installer/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.188601+00:00
+generated_at: 2026-04-27T05:21:04.305208+00:00
 cluster: plugin
-content_hash: 91704c85fb9f7f9a
+content_hash: 78c6b860c476c217
 ---
 
 # Agent Bridge
@@ -112,15 +112,15 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 
 ## See Also
 
-- [[agent-harness-learning-layer-formerly-agentic-os]]
-- [[agent-harness-summary]]
-- [[os-health-check-sub-agent]]
-- [[global-agent-kernel]]
-- [[template-post-run-agent-self-assessment]]
-- [[research-summary-agent-operating-systems-agent-os]]
+- [[1-read-the-agent-instructions-and-strip-yaml-frontmatter]]
+- [[agent-agentic-os-hooks]]
+- [[agent-harness-learning-layer]]
+- [[agent-loops-execution-primitives]]
+- [[agent-loops-hooks]]
+- [[agent-scaffolders-spec-factory]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `spec-kitty-plugin/.agents/skills/plugin-installer/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.188601+00:00
+- **Indexed:** 2026-04-27T05:21:04.305208+00:00

@@ -1,11 +1,11 @@
 ---
 concept: triple-loop-learning-system-outer-orchestrator-inner-execution
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/os-improvement-loop/references/operations/triple-loop.md
+source_file: agent-agentic-os/references/operations/triple-loop.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.164472+00:00
+generated_at: 2026-04-27T05:21:03.694492+00:00
 cluster: packet
-content_hash: 4357ccc4676d4480
+content_hash: d179078e4393932c
 ---
 
 # Triple-Loop Learning System (Outer Orchestrator + Inner Execution)
@@ -17,6 +17,11 @@ content_hash: 4357ccc4676d4480
 - *(Bullets pending — run /wiki-distill)*
 
 ## Details
+
+> **DEPRECATED**: The `triple-loop-architect` and `triple-loop-orchestrator` agents described
+> in this document have been removed as of v1.6.0. The capability is now handled by
+> `os-improvement-loop`. This document is retained for historical reference only.
+> For current operations, see [os-improvement-loop SKILL.md](../../skills/os-improvement-loop/SKILL.md).
 
 # Triple-Loop Learning System (Outer Orchestrator + Inner Execution)
 
@@ -64,15 +69,15 @@ Diagram: [`references/diagrams/triple-loop-learning-system.mmd`](../assets/diagr
 
 ## See Also
 
-- [[triple-loop-learning-system---architecture-overview]]
-- [[triple-loop-learning-system---architecture-overview]]
 - [[triple-loop-learning-meta-learning-system]]
-- [[triple-loop-learning-system---architecture-overview]]
-- [[triple-loop-learning-meta-learning-system]]
-- [[triple-loop-orchestrator-unattended-supervisor]]
+- [[learning-loop]]
+- [[learning-loop-retrospective-post-seal]]
+- [[orchestrator-loop-router-lifecycle-manager]]
+- [[agent-harness-learning-layer]]
+- [[agent-loops-execution-primitives]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/os-improvement-loop/references/operations/triple-loop.md`
-- **Indexed:** 2026-04-17T06:42:10.164472+00:00
+- **File:** `agent-agentic-os/references/operations/triple-loop.md`
+- **Indexed:** 2026-04-27T05:21:03.694492+00:00

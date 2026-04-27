@@ -1,5 +1,6 @@
 ---
 name: os-improvement-report
+plugin: agent-agentic-os
 description: >
   Trigger with "show me the improvement chart", "how are we improving", "progress report",
   "graph the eval scores", "show cycle of improvement", "what's the trend", "are we getting

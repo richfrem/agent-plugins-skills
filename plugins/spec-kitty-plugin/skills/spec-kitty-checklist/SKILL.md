@@ -1,5 +1,6 @@
 ---
 name: spec-kitty-checklist
+plugin: spec-kitty-plugin
 description: A standard Spec-Kitty workflow routine.
 ---
 

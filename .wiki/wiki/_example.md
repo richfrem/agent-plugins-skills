@@ -1,11 +1,12 @@
 ---
 cluster: example
-concepts: 1
-generated_at: 2026-04-17T06:42:21.342354+00:00
+concepts: 2
+generated_at: 2026-04-27T05:21:04.711907+00:00
 ---
 
 # Example
 
-*1 concepts in this cluster.*
+*2 concepts in this cluster.*
 
-- [[exploration-orchestrator-interactive-selection]] — Exploration Orchestrator (Interactive Selection)
+- [[http-server]] — Http Server
+- [[whitelist]] — Whitelist

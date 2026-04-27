@@ -3,9 +3,9 @@ concept: obsidian-wiki-engine-plugin
 source: plugin-code
 source_file: obsidian-wiki-engine/README.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.633486+00:00
-cluster: plugin-code
-content_hash: b5230afef64fbc5e
+generated_at: 2026-04-27T05:21:04.006874+00:00
+cluster: rightarrow
+content_hash: 1b1364abdd0a2014
 ---
 
 # Obsidian Wiki Engine Plugin
@@ -20,85 +20,99 @@ content_hash: b5230afef64fbc5e
 
 # Obsidian Wiki Engine Plugin
 
-**Karpathy-style LLM Wiki with Super-RAG retrieval stack.**
+**The "Active Cognitive Graph" for Enterprise Knowledge.**
 
-Transforms raw markdown sources into a structured, queryable knowledge base using
-cross-source concept synthesis, RLM summaries, and optional vector-db semantic search.
-Inspired by Karpathy's LLM Wiki: raw → compile → query → file outputs back.
+Transforms raw markdown, Word, and PDF sources into a structured, queryable knowledge base. This is more than a database; it is a **Karpathy-style "Compile" step** for your repository—converting fragmented data into a synthesized "Senior Staff Architect" understanding of your project.
 
-## Start Here
+## 🧠 The Super-RAG Value Proposition (Why Mode D?)
 
-**Skills run from `.agents/skills/` (the deployed runtime), not from `plugins/`.**
-The `plugins/` directory is the source repo — skills there are inactive until installed.
+Standard RAG systems operate "context-blind," chopping files into random chunks and hoping for a semantic match. They often fail on complex architectural rules and consume massive amounts of tokens by re-reading raw files. 
+
+By combining **Mode D (Full Super-RAG)**, you transform your repository into a highly efficient **Active Cognitive Graph**:
+
+1.  **Layer 1: RLM-Factory (The "Why")**
+    * **Concept**: Pre-summarizes everything into a multi-layer cache (Summary $\rightarrow$ Bullets $\rightarrow$ Deep Dive).
+    * **Efficiency**: Your agent doesn't have to "read the whole chapter" every time. It recurse into details only when required.
+    * **Token Savings**: Pay the "analysis fee" once. Future queries use pre-distilled summaries instead of raw source bloat.
+2.  **Layer 2: Vector DB (The "Where")**
+    * **Concept**: Maps searches to intent rather than just exact keywords.
+    * **Precision**: By ingesting RLM summaries, semantic search finds the right "needle" without the noise of raw code or formatting.
+3.  **Layer 3: LLM Wiki (The "Synthesized Whole")**
+    * **Concept**: The "Index at the back of the book." It merges multiple raw sources into authoritative **Concept Nodes**.
+    * **Synthesis**: Implements the Karpathy metaphor—N raw files $\rightarrow$ M compiled concept nodes ($M \le N$).
+
+**The Result:** A lightning-fast, dead-accurate knowledge layer that provides **Just-in-Time context** without the bloat of rich formatting like PDF or Word.
+
+---
+
+## 🚀 Start Here
+
+**Skills run from `.agents/skills/`, not from `plugins/`.**
+The `plugins/` directory is the source—skills are inactive until installed.
 
 ```bash
-# Verify this plugin is installed and active
+# Verify the plugin is installed and active
 ls .agents/skills/obsidian-wiki-builder/   # should exist
 ls .agents/agents/wiki-init-agent.md        # should exist
 
-# If missing — install via:
+# If missing — install via uvx:
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-# or: npx skills add richfrem/agent-plugins-skills
-# or: see INSTALL.md
 ```
 
-**To initialize:** invoke `wiki-init-agent` (or say "initialize wiki" / "set up my wiki").
+**To initialize:** invoke `wiki-init-agent` (or say "set up my wiki" / `/wiki-init`).
 
-## Standalone vs Combined
+---
 
-**This plugin works completely standalone.** No other plugins required for core wiki functionality.
+## 🛠 Setup Modes
 
-| Mode | What you get | External deps required |
-|:-----|:-------------|:-----------------------|
-| **A — Wiki only** | `/wiki-build`, `/wiki-query` with grep search, concept synthesis | None |
-| **B — Wiki + RLM** | + `/wiki-distill`, RLM keyword pre-filter in queries | `rlm-factory` in `.agents/` |
-| **C — Wiki + Vector** | + semantic Phase 2 search in `/wiki-query` | `vector-db` in `.agents/` |
-| **D — Full Super-RAG** | All three phases: keyword → semantic → concept node | Both above |
+| Mode | Retrieval Depth | Dependencies Required |
+|:-----|:----------------|:----------------------|
+| **A — Standalone** | `/wiki-build` + Grep search | None |
+| **B — Wiki + RLM** | + `/wiki-distill` (Summary Cache) | `rlm-factory` |
+| **C — Wiki + Vector** | + Semantic Phase 2 search | `vector-db` |
+| **D — Super-RAG** | **Full Active Cognitive Graph** | All of the above |
 
-The `wiki-init-agent` asks which mode you want upfront and only provisions what's needed.
-Use `super-rag-setup-agent` if you want all three plugins configured in one session.
+---
 
-## The Super-RAG Value Proposition (Why Mode D?)
+## 🏗 Core Pipeline
 
-Standard AI assistants and basic RAG systems often operate context-blind at query time — they chop files into random chunks, run basic semantic searches, and try to guess answers from fragmented paragraphs. They hallucinate, miss architectural rules, and fail on complex questions. 
-
-By combining all three layers in **Mode D (Full Super-RAG)**, you eliminate these blind spots and transform the repository into an **Active Cognitive Graph**:
-
-1. **Layer 1: The RLM Cache (`rlm-factory`) — The "Why"**
-   Indexes raw code by explicitly writing out its purpose, dependencies, and rules. When injected into the Vector DB, scattered code chunks become highly dense, pre-summarized knowledge. This practically eliminates AI hallucination.
-   *(O(1) keyword lookup across dense summaries)*
-2. **Layer 2: The Vector DB (`vector-db`) — The "Where"**
-   Maps searches to intent rather than requiring exact grep keywords. By ingesting the rich RLM summaries, the semantic search understands the concept behind your query and pulls the right, highly accurate context needle from the haystack.
-   *(O(log N) semantic embedding search)*
-3. **Layer 3: The LLM Wiki (`obsidian-wiki-engine`) — The "Synthesized Whole"**
-   Code is organized for compilers; human knowledge is organized by concepts. The Wiki Engine connects the fragmented dots across raw code and RLM summaries to pre-compute Karpathy-style Concept Nodes offline. 
-   *(Karpathy-style full concept nodes)*
-
-**The Result:** It pre-computes the "Senior Staff Architect" understanding of the codebase. Instead of dragging 30 massive source files into a context window, the AI quickly reads the synthesized concept nodes and RLM pre-filters. Every future query is lightning-fast, highly token-efficient, and dead-accurate to your specific ecosystem rules.
-
-
-## Core Pipeline
-
+```mermaid
+graph TD
+    A[Raw Sources: MD/PDF/Word] --> B[ingest.py: Normalize & Hash]
+    B --> C[concept_extractor.py: Cross-Source Synthesis]
+    C --> D[wiki_builder.py: Build Karpathy Nodes]
+    D --> E[wiki-root/wiki/: Compiled Knowledge Base]
+    E --> F[RLM Cache: Summary / Bullets / Deep]
 ```
-raw sources (rlm_wiki_raw_sources_manifest.json)
-    ↓ ingest.py          — read files, hash for staleness, emit ParsedRecords
-    ↓ concept_extractor  — group by concept slug, merge multi-source records
-    ↓ wiki_builder.py    — format Karpathy nodes, build clusters + index
-    ↓ {wiki-root}/wiki/  — {concept}.md, _index
+* **Cross-Source Synthesis**: Files from different sources about the same concept are merged into one authoritative node.
+* **Token Efficiency**: Converting PDF/Word to Markdown consumes significantly fewer tokens and provides cleaner context for agents.
+
+---
+
+## 💻 Commands
+
+| Command | Description |
+|:--------|:------------|
+| `/wiki-init` | Guided wizard for sources, wiki-root, and profile provisioning. |
+| `/wiki-build` | Full build: Ingest $\rightarrow$ Synthesis $\rightarrow$ Wiki Nodes. |
+| `/wiki-distill` | Generate RLM summary layers (summary, bullets, full). |
+| `/wiki-query` | 3-phase search (Keyword $\rightarrow$ Vector $\rightarrow$ Wiki Node). |
+| `/wiki-audit` | Structural health check (orphans, missing summaries, broken links). |
+| `/wiki-lint` | Semantic health check (cont
 
 *(content truncated)*
 
 ## See Also
 
-- [[plugin-dependencies-obsidian-wiki-engine]]
-- [[obsidian-wiki-builder]]
-- [[obsidian-wiki-linter]]
-- [[adr-manager-plugin]]
-- [[optimizer-engine-patterns-reference-design]]
-- [[test-scenario-bank-agentic-os-plugin]]
+- [[re-use-engine-detection-llm-call-from-distill-wiki]]
+- [[add-script-dir-to-path-to-import-plugin-inventory]]
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]]
+- [[adr-004-self-contained-plugins---no-cross-plugin-script-dependencies]]
+- [[engine-registry-strict-cheap-model-only]]
+- [[exploration-cycle-plugin-hooks]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `obsidian-wiki-engine/README.md`
-- **Indexed:** 2026-04-17T06:42:09.633486+00:00
+- **Indexed:** 2026-04-27T05:21:04.006874+00:00

@@ -1,5 +1,6 @@
 ---
 name: obsidian-markdown-mastery
+plugin: obsidian-wiki-engine
 description: "Core markdown syntax skill for Obsidian. Enforces strict parsing and authoring of Obsidian proprietary syntax (Wikilinks, Blocks, Headings, Aliases, Embeds, Callouts). Use when reading, writing, or validating Obsidian-flavored markdown."
 allowed-tools: Bash, Read, Write
 ---

@@ -1,5 +1,6 @@
 ---
 name: link-checker-agent
+plugin: link-checker
 description: >
   Specialized Quality Assurance Operator for documentation link integrity and scans.
   Automatically handles automated link validation, auditing, fixing, and repairing broken documentation

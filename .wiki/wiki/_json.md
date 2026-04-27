@@ -1,13 +1,18 @@
 ---
 cluster: json
-concepts: 3
-generated_at: 2026-04-17T06:42:21.339081+00:00
+concepts: 8
+generated_at: 2026-04-27T05:21:04.703892+00:00
 ---
 
 # Json
 
-*3 concepts in this cluster.*
+*8 concepts in this cluster.*
 
-- [[acceptance-criteria-obsidian-canvas-architect]] — Acceptance Criteria: Obsidian Canvas Architect
-- [[acceptance-criteria-obsidian-canvas-architect]] — Acceptance Criteria: Obsidian Canvas Architect
-- [[acceptance-criteria-obsidian-canvas-architect]] — Acceptance Criteria: Obsidian Canvas Architect
+- [[1-handle-absolute-paths-from-repo-root]] — 1. Handle absolute paths (from repo root)
+- [[1-parse-the-hook-payload]] — 1. Parse the hook payload
+- [[add-project-root-to-syspath]] — Add project root to sys.path
+- [[expected-minimums-per-fixture]] — Expected minimums per fixture
+- [[manifest-index]] — Manifest Index
+- [[prefer-remaining-broken-linksjson-post-fix-output-from-step-4-if-present-and]] — Prefer remaining_broken_links.json (post-fix output from Step 4) if present and
+- [[rlm-profiles]] — Rlm Profiles
+- [[support-both-layouts-eval-dirs-directly-under-benchmark-dir-or-under-runs]] — Support both layouts: eval dirs directly under benchmark_dir, or under runs/

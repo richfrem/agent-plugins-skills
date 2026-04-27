@@ -1,5 +1,6 @@
 ---
 name: rsvp-reading
+plugin: rsvp-speed-reader
 description: Converts an input document (.txt, .md, .pdf, .docx) into a structured RSVP token stream with ORP alignment and configurable WPM. Use when a user wants to speed-read a document, prepare a reading session, or generate a token stream for a speed-reading UI.
 disable-model-invocation: false
 user-invocable: true

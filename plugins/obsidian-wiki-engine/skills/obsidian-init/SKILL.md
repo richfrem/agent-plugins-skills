@@ -1,5 +1,6 @@
 ---
 name: obsidian-init
+plugin: obsidian-wiki-engine
 description: "Initialize and onboard a new project repository as an Obsidian Vault. Covers prerequisite installation, vault configuration, exclusion filters, and validation. Use when setting up Obsidian for the first time in a project."
 allowed-tools: Bash, Read, Write
 ---

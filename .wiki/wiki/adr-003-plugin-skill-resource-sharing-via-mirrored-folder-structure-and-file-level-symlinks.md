@@ -3,9 +3,9 @@ concept: adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and
 source: plugin-code
 source_file: /Users/richardfremmerlid/Projects/agent-plugins-skills/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.623893+00:00
+generated_at: 2026-04-27T05:21:03.732806+00:00
 cluster: plugin-code
-content_hash: 1e84e516ccc7ceb4
+content_hash: ee0a3584e4b23c3c
 ---
 
 # ADR-003: Plugin Skill Resource Sharing via Mirrored Folder Structure and File-Level Symlinks
@@ -102,21 +102,21 @@ ln -s ../../../references/fallback-tree.md fallback-tree.md   # 3 levels up
 ```
 
 DO NOT symlink entire directories. npx resolves file-level symlinks by copying the real content at
-install time. Directory-level symlink
+install time. Directory-level symlinks
 
 *(content truncated)*
 
 ## See Also
 
-- [[adr-005-plugin-separation-of-concerns-and-loose-coupling]]
-- [[adr-005-plugin-separation-of-concerns-and-loose-coupling]]
-- [[adr-005-plugin-separation-of-concerns-and-loose-coupling]]
-- [[adr-005-plugin-separation-of-concerns-and-loose-coupling]]
-- [[adr-manager-plugin]]
-- [[canonical-agentic-os-file-structure]]
+- [[only-process-plugin-root-level-files-not-skill-files]]
+- [[plugin-files-and-symlinks-inventory]]
+- [[adr-004-self-contained-plugins---no-cross-plugin-script-dependencies]]
+- [[1-check-root-structure]]
+- [[1-initialize-a-custom-manifest-in-a-temp-folder]]
+- [[1-inspect-workbook-for-sheets-and-tables-using-openpyxl]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `/Users/richardfremmerlid/Projects/agent-plugins-skills/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md`
-- **Indexed:** 2026-04-17T06:42:09.623893+00:00
+- **Indexed:** 2026-04-27T05:21:03.732806+00:00

@@ -1,5 +1,6 @@
 ---
 name: vector-db-launch
+plugin: vector-db
 description: Start the Native Python ChromaDB background server. Use when semantic search returns connection refused on port 8110, or when the user wants to enable concurrent agent read/writes.
 allowed-tools: Bash, Read, Write
 ---

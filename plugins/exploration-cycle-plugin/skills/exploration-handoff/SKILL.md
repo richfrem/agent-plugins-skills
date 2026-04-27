@@ -1,5 +1,6 @@
 ---
 name: exploration-handoff
+plugin: exploration-cycle-plugin
 description: >
   Interactive co-authoring skill for the narrow end of the exploration funnel.
   Synthesizes session briefs, BRDs, story sets, and prototype notes into a

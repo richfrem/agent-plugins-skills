@@ -1,5 +1,6 @@
 ---
 name: os-clean-locks
+plugin: agent-agentic-os
 description: >
   Safely removes all agent lock files from the context/.locks/ directory to resolve
   deadlocks caused by crashed agents leaving stale locks behind. Use when the user says

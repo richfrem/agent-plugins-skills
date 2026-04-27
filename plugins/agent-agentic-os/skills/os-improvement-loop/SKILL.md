@@ -1,5 +1,6 @@
 ---
 name: os-improvement-loop
+plugin: agent-agentic-os
 version: 0.5.0
 description: >
   Pattern 5: Concurrent Event-Driven Multi-Agent Loop. Coordinates multiple Claude sessions

@@ -1,5 +1,6 @@
 ---
 name: create-command
+plugin: agent-scaffolders
 description: >
   This skill should be used when the user asks to "create a slash command", "add a command",
   "write a custom command", "define a command with arguments", "create a command that runs

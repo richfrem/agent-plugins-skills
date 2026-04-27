@@ -1,5 +1,6 @@
 ---
 name: ecosystem-standards
+plugin: agent-scaffolders
 description: Provides active execution protocols to rigorously audit how code, directory structures, and agent actions comply with the authoritative ecosystem specs. Trigger when validating new skills, plugins, or workflows.
 allowed-tools: Bash, Read, Write
 ---

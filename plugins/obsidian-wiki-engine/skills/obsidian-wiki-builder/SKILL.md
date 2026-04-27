@@ -1,5 +1,6 @@
 ---
 name: obsidian-wiki-builder
+plugin: obsidian-wiki-engine
 description: "Transforms raw source files registered in wiki_sources.json into Karpathy-style LLM wiki nodes inside the wiki-root. Generates concept pages, cluster pages, index, and table of contents. Use when building or rebuilding the wiki from raw content."
 allowed-tools: Bash, Read, Write
 ---

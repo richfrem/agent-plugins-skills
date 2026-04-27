@@ -1,5 +1,6 @@
 ---
 name: obsidian-wiki-linter
+plugin: obsidian-wiki-engine
 description: "Runs a semantic health check over the Obsidian LLM wiki using the cheapest available LLM CLI. Finds inconsistencies, missing concepts, stale articles, connection candidates, and new article suggestions. Writes a structured report to meta/lint-report.md. Use when the wiki is large enough to have quality drift, or as a periodic maintenance step."
 allowed-tools: Bash, Read, Write
 ---

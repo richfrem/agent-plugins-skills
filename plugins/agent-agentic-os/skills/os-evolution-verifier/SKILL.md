@@ -1,5 +1,6 @@
 ---
 name: os-evolution-verifier
+plugin: agent-agentic-os
 description: >
   Verifies that os-architect actually causes evolution — not just words.
   Dispatches os-architect in single-shot simulation mode for a given test scenario,

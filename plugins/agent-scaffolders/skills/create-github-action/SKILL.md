@@ -1,5 +1,6 @@
 ---
 name: create-github-action
+plugin: agent-scaffolders
 description: Scaffold a deterministic GitHub Actions CI/CD workflow
 argument-hint: "[workflow-type: test|build|deploy|lint|release|security]"
 allowed-tools: Bash, Read, Write

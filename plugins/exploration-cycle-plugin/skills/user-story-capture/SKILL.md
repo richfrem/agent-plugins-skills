@@ -1,5 +1,6 @@
 ---
 name: user-story-capture
+plugin: exploration-cycle-plugin
 description: >
   Derives, groups, and refines user stories from exploration work, prototype behavior,
   and business context, with prioritization for the first implementation slice.

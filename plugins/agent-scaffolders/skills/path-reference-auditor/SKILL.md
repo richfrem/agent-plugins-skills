@@ -1,5 +1,6 @@
 ---
 name: path-reference-auditor
+plugin: agent-scaffolders
 description: >
   Audit file path references in plugins and skills. Trigger with "audit path references",
   "check file references", "find broken references", "path reference audit", "verify paths",

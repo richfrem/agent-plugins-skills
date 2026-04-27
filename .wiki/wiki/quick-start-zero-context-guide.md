@@ -1,11 +1,11 @@
 ---
 concept: quick-start-zero-context-guide
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/os-eval-runner/SKILL.md
+source_file: agent-agentic-os/skills/os-eval-runner/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.146622+00:00
+generated_at: 2026-04-27T05:21:03.708908+00:00
 cluster: skill
-content_hash: eed17c4c9a8ba9ee
+content_hash: bc1fbd4c8a52a967
 ---
 
 # Quick Start — Zero Context Guide
@@ -21,35 +21,37 @@ content_hash: eed17c4c9a8ba9ee
 ---
 name: os-eval-runner
 description: >
-  Trigger: "evaluate this skill", "run autoresearch loop on", "optimize this skill".
-  Use when an agent proposes a change to an existing skill and needs empirical validation.
-
-  <example>
-  Context: Start autonomous improvement loop on a skill.
-  user: "Run the autoresearch loop on <SKILL_PATH> for 20 iterations"
-  assistant: [triggers os-eval-runner, runs Mode 1 intake]
-  </example>
-
-  <example>
-  Context: Incomplete optimize request.
-  user: "Optimize the commit skill"
-  assistant: [triggers os-eval-runner, runs Phase 0 intake interview]
-  </example>
-
-  <example>
-  Context: `Triple-Loop Retrospective` proposes a skill edit.
-  assistant: [autonomously] "Before I apply this description change, I'll run os-eval-runner to confirm."
-  </example>
-
-  <example>
-  Context: An agent is asking for general information about a skill, not evaluating a proposed change.
-  agentic-os-setup: "Tell me about the os-clean-locks skill."
-  assistant: "It cleans up stale lock files..."
-  
-  </example>
-argument-hint: "[path/to/SKILL.md or skill-name] [--iterations N] [--until-score 0.95]"
-allowed-tools: Bash, Read, Write
+  Stateless evaluation engine that scores and gates skill improvement iterations using
+  headless Python evaluation scripts. Use when the user says "evaluate this skill",
+  "run autoresearch loop on", "optimize this skill", "run the eval loop", or when
+  another agent proposes a change to an existing skill and needs empirical validation
+  before applying it. Supports autonomous loop mode for iterative improvement and
+  single-shot QA mode for validating one specific proposed change. Requires Python 3.8+
+  and a git repository.
 ---
+
+<example>
+<commentary>Start autonomous improvement loop on a skill.</commentary>
+user: "Run the autoresearch loop on plugins/link-checker/skills/link-checker-agent for 20 iterations"
+assistant: [triggers os-eval-runner, runs Mode 1 intake, establishes baseline, begins iteration loop]
+</example>
+
+<example>
+<commentary>Incomplete optimize request — runs intake interview first.</commentary>
+user: "Optimize the commit skill"
+assistant: [triggers os-eval-runner, runs Phase 0 intake interview to gather path, mode, and iteration count]
+</example>
+
+<example>
+<commentary>Another agent proposes a skill edit and needs validation.</commentary>
+assistant: [autonomously] "Before I apply this description change, I'll run os-eval-runner to confirm the score doesn't regress."
+</example>
+
+<example>
+<commentary>Negative — user is asking about a skill, not evaluating a proposed change.</commentary>
+user: "Tell me about the os-clean-locks skill."
+assistant: "It cleans up stale lock files..." [does NOT trigger os-eval-runner]
+</example>
 
 ## Dependencies
 
@@ -102,30 +104,19 @@ your-experiment-dir/                           <-- YOUR EXPERIMENT (wherever mak
     .lock.hashes         SHA256 snapshot of locked files — written by evaluate.py --baseline
     traces/              Per-iteration diagnostic JSON — written by evaluate.py each run
       iter_001_KEEP_score0.87.json    mutation diff + per-input routing verdicts
-      iter_002_DISCARD_score0.71.json failure_reason for each incorrect routing
-      milestone_025.md   Milestone summary — written every 25 iterations by generate_milestone.py
-```
-
-## Setup: Start a New Experiment (4 steps)
-
-**Step 0 — Hardened Bootstrap (Fresh Repo Only):**
-Before running any loops in a new environment, ensure it is clean and correctly linked:
-1. **Check Git Remote**: `git remote -v`. If blank, ask the user for the repo URL.
-2. **Initialize Local Git**: `git init && git add . 
+      iter_002_DISCARD_score0.71.json failure_reason f
 
 *(content truncated)*
 
 ## See Also
 
-- [[bae-quick-start-guided-exploration-process]]
-- [[context-folder-patterns]]
-- [[memory-promotion-decision-guide]]
-- [[context-status-specification-contextstatusmd]]
-- [[chart-reading-guide]]
-- [[os-eval-backport-phase-guide]]
+- [[agentic-os-guide]]
+- [[agentic-os-operational-guide-usage]]
+- [[install-plugin-in-a-different-repo-eg-context-bundler-specifically]]
+- [[try-to-import-rlm-for-code-context-injection]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/os-eval-runner/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.146622+00:00
+- **File:** `agent-agentic-os/skills/os-eval-runner/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.708908+00:00

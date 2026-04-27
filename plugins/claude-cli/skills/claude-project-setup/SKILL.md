@@ -1,5 +1,6 @@
 ---
 name: claude-project-setup
+plugin: claude-cli
 description: >-
   Interactive skill to scaffold and optimize the .claude/ directory for any
   project. Sets up CLAUDE.md, .claude/rules/, .claude/settings.json with best

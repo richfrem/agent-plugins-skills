@@ -1,5 +1,6 @@
 ---
 name: optimize-agent-instructions
+plugin: agent-agentic-os
 description: >
   Audits and rewrites AI agent instruction files (CLAUDE.md, GEMINI.md,
   .github/copilot-instructions.md) in any repo. Strips stale or foreign content,

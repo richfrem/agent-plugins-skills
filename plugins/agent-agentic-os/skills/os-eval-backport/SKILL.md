@@ -1,5 +1,6 @@
 ---
 name: os-eval-backport
+plugin: agent-agentic-os
 description: >
   Reviews a completed os-eval-runner lab run and backports approved changes to master
   plugin sources. Trigger with "backport the eval results", "review the lab run",

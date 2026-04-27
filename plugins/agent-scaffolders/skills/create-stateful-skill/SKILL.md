@@ -1,5 +1,6 @@
 ---
 name: create-stateful-skill
+plugin: agent-scaffolders
 description: Scaffold an advanced stateful agent skill with L4 patterns
 argument-hint: "[skill-name]"
 allowed-tools: Bash, Read, Write

@@ -3,9 +3,9 @@ concept: changelog
 source: plugin-code
 source_file: agent-agentic-os/CHANGELOG.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.121293+00:00
-cluster: added
-content_hash: 59822d41cbefff54
+generated_at: 2026-04-27T05:21:03.685977+00:00
+cluster: skill
+content_hash: 1d8bea0d1c22f622
 ---
 
 # Changelog
@@ -22,39 +22,46 @@ content_hash: 59822d41cbefff54
 
 All notable changes to `agent-agentic-os` are documented here.
 
-## [1.4.0] - 2026-04-04
+## v1.6.0
 
-### Deep Architecture & Triple-Loop Paradigm
-- **Full Pattern 5 Deprecation**: Formally sunset the legacy "Flywheel" and "Pattern 5" orchestration methodologies in favor of the unified **Triple-Loop Orchestrator** framework.
-- **Dynamic Sibling-Repo Evaluations**: Migrated automated code evaluations entirely to isolated, headless sibling-labs via `evaluate.py`. Removed obsolete subjective testing instructions from `test-scenarios-seed.md` and deprecated `init_flywheel_files.py`.
-- **Reference & Taxonomy Healing**: Restructured the 24 flat file `references/` directory into highly organized semantic subfolders (`architecture/`, `operations/`, `memory/`, `testing/`, `meta/`), executing a cross-plugin automated parser to safely heal every markdown text link and symlink within the `.agents/skills` isolation boundaries.
-- **Hook Portability**: Re-engineered shell-script hooks (`session-start.sh`) into clean, inherently cross-platform Python binaries (`session_start.py`) ensuring full Windows and MacOS resilience.
-- **Metric Normalzation**: Transformed logging metrics within `post_run_metrics.py` to correctly surface Triple Loop progression rather than "Fast Cycle" phases.
+### Removed
+- `agents/triple-loop-architect.md` — merged into os-improvement-loop as `--lab` invocation mode
+- `agents/triple-loop-orchestrator.md` — same; os-improvement-loop handles multi-iteration runs natively
+- `skills/os-skill-improvement/` — function absorbed by os-improvement-loop; not a distinct capability
+- `references/sample-prompts/triple-loop-architect-prompt.md`
 
-## [1.3.1] - 2026-03-19
+### Changed
+- `agents/os-architect-agent.md`: Category 3 routing now delegates to os-improvement-loop directly;
+  Routing Decision Audit block added to all HANDOFF_BLOCK outputs; skill creation threshold added
+- `skills/os-improvement-loop/SKILL.md`: os-skill-improvement references removed; eval budget guard added
+- `plugin.json`: deprecated entries removed from agents, skills, keywords, capabilities
+- `README.md`: triple-loop rows removed; Utilities section added; How It Works reframed
 
-### Bug Fixes (claude-4.6 review of v1.3.0)
-- **Triple-Loop Retrospective.md Phase 1**: Lock acquisition (`acquire_lock kernel`) is now conditional — skipped entirely in Fast Path mode. Previously Fast Path held the kernel write lock while doing a read-only analysis, defeating the lightweight intent.
-- **AUTO-APPLY ZONE**: Replaced vague "low-risk" with four concrete, enumerable conditions that must ALL be true for auto-apply (user-confirmed this session, pure addition, factual not policy, non-strict mode). Conditions are now present in both the CLAUDE.md template comment and the SANDBOX PROTECTION RULE in `Triple-Loop Retrospective.md` so the agent has them at decision time.
+## [1.5.0] - 2026-04-25
 
-## [1.3.0] - 2026-03-19
+### os-architect — Front-Door Evolution Intake
+- **New agent**: `agents/os-architect-agent.md` — interactive conductor that classifies user intent into 5 categories (Pattern Abstraction, Research Application, Lab Setup, Gap Fill, Multi-Loop Orchestration), audits the ecosystem, proposes Path A/B/C, and dispatches via `run_agent.py`. Replaces the "where do I start" problem in agent-agentic-os.
+- **New skill**: `skills/os-architect/SKILL.md` — slash command entry point (`/os-architect`)
+- **New evals**: `skills/os-architect/evals/evals.json` — 19 routing cases with `expected_category` field (1–5) on all TP cases and 4 misrouting-risk boundary cases
+- **Confidence-aware classification**: Phase 1 classification block includes `Confidence: High | Medium | Low`; Low confidence triggers a clarifying question before proceeding to audit
+- **Path A+ (no-op path)**: When audit shows Full match + current + all self-healing patterns present, agent tells user "no action needed" rather than forcing a path
+- **Category 5 dispatch spec**: Multi-Loop Orchestration now has a concrete per-target sequential dispatch protocol in Phase 3
 
-### Execution Tiers (Issue: process overhead for lightweight use cases)
-- **os-state.json template**: Added `execution_mode` (`lightweight` | `standard` | `strict`, default `standard`), `hook_sample_rate` (default 1 = every call), and `lock_timeout_seconds` (default 1800) fields.
-- **update_memory.py**: Added `_check_execution_gate()` — skips hook entirely when `execution_mode=lightweight`; skips `N-1` of every `N` calls when `hook_sample_rate > 1` (counter stored in `os-state.json["hook_call_count"]`).
-- **CLAUDE_MD_PROJECT.md template**: Added `## [AUTO-APPLY ZONE]` append-only section; the learning loop may write low-risk facts here without manual approval when `execution_mode != strict`.
-- **Triple-Loop Retrospective.md**: Added "Fast Path (Passive Analyzer)" mode — default for routine sessions. Completes Phases 0-2 and emits a `FINDINGS:` block without acquiring write locks or modifying files. Full loop only on explicit user request or 3+ same-type friction events.
+### os-evolution-verifier — Evolution Artifact Verification Skill
+- **New skill**: `skills/os-evolution-verifier/SKILL.md` — dispatches os-architect in single-shot simulation mode for a given test scenario, checks artifact presence via grep/file-exists (not transcript review), and reports PASS/FAIL with evidence. Uses structured EVOLUTION_VERIFICATION output block with VERDICT: PASS | PARTIAL | FAIL. Accumulates results into `temp/os-evolution-verifier/test-report.md`.
+- **New evals**: `skills/os-evolution-verifier/evals/evals.json` — 10 routing cases covering explicit verifier invocations vs. general architect queries
+- **PARTIAL verdict**: More precise than binary pass/fail — pinpoints which specific workstream failed
 
-### Hook Visibility (Issue: silent failures unnoticed)
-- **post_run_metrics.py**: Added `count_hook_errors()` that reads `context/memory/hook-errors.log`; hook error count included in Stop-hook summary line and in the emitted metric event (`results.hook_errors`). Failures are now visible at session end.
+### os-experiment-log — Persistent Experiment Log Skill
+- **New skill**: `skills/os-experiment-log/SKILL.md` — append-only log of evolution verification runs at `context/experiment-log.md`. Three modes: `append` (post-run), `query <term>` (search by scenario ID/verdict), `summary` (aggregate stats). Closes the loop on learnings — every test run leaves a durable record with actions taken.
+- **New evals**: `skills/os-experiment-log/evals/evals.json` — 8 routing cases
+- **Initialized**: `context/experiment-log.md` — empty log ready to receive first run
 
-### Memory Schema (Issue: freeform drift)
-- **os-memory-manager/SKILL.md**: Added Option B — structured JSONL format (`context/memory.jsonl`) as an alternative to freeform markdown. Benefits: unambiguous deduplication by `id`, machine-queryable, easier `<SUPERSEDE>` enforcement.
+### os-evolution-planner — Repeatable Plan-and-Delegate Skill
+- **New skill**: `skills/os-evolution-planner/SKILL.md` — given a target and evolution goal, applies the self-healing diagnostic lens, writes a structured task plan (`tasks/todo/<slug>-plan.md`), and writes a dense Copilot CLI delegation prompt. Called by os-architect for Path B/C executions.
 
-### Backlog (architectural, deferred to v2.0)
-- `temp/backlog/agentic-os-backlog-kernel-split.md` — split `kernel.py` into `lock_manager`, `event_bus`, `state_manager`
-- `temp/backlog/agentic-os-backlog-sqlite-backend.md` — SQLite backend for `events.jsonl` and `context/memory.md`
-- `temp/backlog/agentic-os-backlog-embedding-routing.md` — TF-IDF / embedding-based skill routing replacing keyword heuri
+### os-architect-tester — Scenario-Based Validation Agent
+- **New agent**: `agents/os-architect-tester-agent.md` — runs pre-scripted scenario transcripts through os-architect via Copilot CLI and evaluates against 4 acceptance criteria 
 
 *(content truncated)*
 
@@ -66,4 +73,4 @@ All notable changes to `agent-agentic-os` are documented here.
 
 - **Source:** `plugin-code`
 - **File:** `agent-agentic-os/CHANGELOG.md`
-- **Indexed:** 2026-04-17T06:42:09.121293+00:00
+- **Indexed:** 2026-04-27T05:21:03.685977+00:00

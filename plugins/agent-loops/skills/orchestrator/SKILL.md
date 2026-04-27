@@ -1,5 +1,6 @@
 ---
 name: orchestrator
+plugin: agent-loops
 description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations. Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
 allowed-tools: Bash, Read, Write
 ---

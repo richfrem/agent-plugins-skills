@@ -1,5 +1,6 @@
 ---
 name: spec-kitty-sync-plugin
+plugin: spec-kitty-plugin
 description: Full-cycle install or update of the Spec-Kitty framework - upgrades the CLI, refreshes templates, syncs the plugin, reconciles custom knowledge, and bridges to agent environments. Custom skill (not from upstream spec-kitty).
 allowed-tools: Bash, Read, Write
 ---

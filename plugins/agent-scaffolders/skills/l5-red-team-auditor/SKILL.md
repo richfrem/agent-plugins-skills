@@ -1,5 +1,6 @@
 ---
 name: l5-red-team-auditor
+plugin: agent-scaffolders
 description: >
   Performs an uncompromising L5 Enterprise Red Team Audit on a given plugin
   against the 39-point architectural maturity matrix. Trigger when the user

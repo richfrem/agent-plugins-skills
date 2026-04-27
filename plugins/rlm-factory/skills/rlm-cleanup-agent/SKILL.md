@@ -1,5 +1,6 @@
 ---
 name: rlm-cleanup-agent
+plugin: rlm-factory
 description: |
   Removes stale and orphaned entries from the RLM Summary Ledger.
   Use after files are deleted, renamed, or moved to keep the ledger in sync with the filesystem.

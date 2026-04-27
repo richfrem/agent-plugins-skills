@@ -1,5 +1,6 @@
 ---
 name: mine-plugins
+plugin: agent-scaffolders
 description: >
   Trigger with "mine plugins", "analyze plugin collection", "run the full analysis pipeline",
   "inventory and analyze all plugins", "mine patterns from this directory", or when you want
