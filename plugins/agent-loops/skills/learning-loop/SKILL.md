@@ -82,7 +82,7 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 **Option B: Dual Loop**
 *   **Action**: Delegate execution to a scoped, isolated Inner Loop agent.
-*   **Command**: Open the `triple-loop` SKILL. Execute according to its instructions.
+*   **Command**: Open the `triple-loop-learning` SKILL. Execute according to its instructions.
 *   **Return**: Once Inner Loop finishes, resume here at **Phase V (Synthesis)**.
 
 ---
@@ -92,72 +92,20 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 > **This loop is now complete.** You must formally exit the loop and return control to the Orchestrator.
 > Skipping any close step means the next agent starts blind and the flywheel stalls.
 
-### Phase V: Self-Assessment Survey (MANDATORY)
+### Phase V: Completion & Handoff
 
-Before handoff, you MUST complete the Post-Run Self-Assessment Survey
-(`references/memory/post_run_survey.md`). Answer every question — do not summarize or skip sections.
+> **The specific learning cycle is finished. You must now return control.**
 
-Survey sections (all mandatory):
-
-**Run Metadata**: date, task type, task complexity, skill/capability under test
-
-**Completion Outcome**:
-- Did you complete the full intended workflow end to end? (Yes/No)
-- Did the run require major human rescue? (Yes/No)
-
-**Count-Based Signals (Karpathy Parity)**:
-- How many times did you not know what to do next?
-- How many times did you miss or skip a required step?
-- How many times did you use the wrong CLI syntax?
-- How many times were you redirected by a human?
-- Total Friction Events
-
-**Qualitative Friction**:
-1. At what point were you most uncertain about what to do next?
-2. Which instruction, rule, or workflow step felt ambiguous or underspecified?
-3. Which command, tool, or template was most confusing in practice?
-4. What was the single biggest source of friction in this run?
-5. Which failure felt avoidable with a better prompt, skill, or rule?
-6. What is the smallest workflow change that would have improved this run the most?
-
-**Improvement Recommendation**:
-- What one change should be tested before the next run?
-- What evidence from this run supports that change?
-- Target (Skill/Prompt/Script/Rule)?
-
-Save completed survey to:
-`${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_[AGENT].md`
-
-Emit survey completion event:
-```bash
-python context/kernel.py emit_event --agent Triple-Loop Retrospective \
-  --type learning --action survey_completed \
-  --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
-```
-
-### Phase VI: Post-Run Metrics
-
-Run the automated metric collector:
-```bash
-python "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"
-```
-
-This emits a `type: metric` event capturing: human_interventions, workflow_uncertainty,
-missed_steps, cli_errors, friction_events_total, hook_errors. These feed the Triple-Loop Retrospective
-auto-trigger: 3+ friction events of same type = Full Loop improvement before next cycle.
-
-### Phase VII: Memory Persistence
-
-Run `session-memory-manager` to write the dated session log and promote key findings to L3:
-- Write `context/memory/YYYY-MM-DD.md` including survey outcomes and metric counts
-- Promote architectural decisions and new conventions to `context/memory.md` with dedup IDs
-- Reference the survey file in the session log for future cycles to read at orientation
-
-### Phase VIII: Handoff
-
-1.  **Verify Exit Condition**: Confirm research/synthesis acceptance criteria met, survey saved, metrics emitted, memory written.
-2.  **Return Data**: Pass synthesized documents and context back up to the Orchestrator.
-3.  **Terminate Loop**: Explicitly state "Learning Loop Complete. Survey saved. Metrics emitted. Passing control to Orchestrator."
+1. **Verify Completion**: Ensure the research or analysis goal you set out to achieve has been genuinely met.
+2. **Save Retrospective**: Save any retrospective or survey findings to a local file (e.g., `./retrospective-[date].md`) or stdout.
+3. **Hand off**: Stop generating new actions and explicitly pass your findings back to the Orchestrator.
+4. **DO NOT**:
+   - Do not generate `learning_package_snapshot.md` (the primary agent's RLM Synthesizer does this).
+   - Do not run `context-bundler` to seal the session (the primary agent does this).
+   - Do not push traces to HuggingFace or update Vector DBs (the primary agent does this).
+   - Do not commit to Git (the primary agent does this).
+5. **Memory promotion** is the responsibility of the calling system (e.g., agent-agentic-os).
+6. **Terminate Loop**: Explicitly state "Learning Loop Complete. Passing control to Orchestrator."
 
 ---
 
@@ -169,10 +117,7 @@ Run `session-memory-manager` to write the dated session log and promote key find
 | II | Synthesis | Create/modify research artifacts |
 | III | Strategic Gate | Obtain "Proceed" from User |
 | IV | Red Team Audit | Compile packet for adversary review |
-| V | Self-Assessment Survey | Answer all sections, save to retrospectives/, emit event |
-| VI | Post-Run Metrics | Run post_run_metrics.py, emit metric event |
-| VII | Memory Persistence | Session log + L3 promotion via session-memory-manager |
-| VIII | Handoff | Return control to Orchestrator |
+| V | Completion & Handoff | Verify completion, save retrospective locally, return control to Orchestrator |
 
 ---
 
@@ -201,4 +146,4 @@ When a Learning Loop runs inside a Dual-Loop session:
 
 **Key rule**: The Inner Loop does NOT run Learning Loop phases. All cognitive continuity is the Outer Loop's responsibility.
 
-**Cross-reference**: [dual-loop SKILL](../triple-loop/SKILL.md)
+**Cross-reference**: [dual-loop SKILL](../dual-loop/SKILL.md)

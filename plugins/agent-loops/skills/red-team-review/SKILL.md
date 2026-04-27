@@ -37,7 +37,8 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 ## Dependencies
 
 - **`context-bundler`** — Required for creating review packets
-- **Personas** — Adversarial personas in `personas/` directory (e.g., `security-audit.md`, `architect-review.md`)
+- **Adversarial personas**: user-supplied system prompt, or from an installed CLI agent plugin
+  (e.g., agent-personas). The `personas/` directory is no longer bundled with agent-loops.
 
 ## Diagram
 

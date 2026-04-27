@@ -38,7 +38,7 @@
 - [ ] ...
 
 ## 4. Meta-Learning (Actionable Improvements)
-- **Keep:** (e.g. "The new ADR 088 worked perfectly")
+- **Keep:** (e.g. "[What worked well this loop — cite specific evidence]")
 - **Change:** (e.g. "Ingestion takes too long, investigate parallelization")
 
 ## 5. Next Loop Primer

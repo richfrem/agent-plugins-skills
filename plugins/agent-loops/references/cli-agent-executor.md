@@ -44,30 +44,36 @@ The CLI runs in a **separate context** — no access to agent tools or memory.
 ### 3. Output to File
 Always redirect output to a file (`> output.md`), then review with `view_file`.
 
-## 🎭 Persona Categories
+## 🎭 Specialization via System Prompts
 
-| Category | Personas | Use For |
-|:---|:---|:---|
-| Security | security-auditor | Red team, vulnerability scanning |
-| Development | 14 personas | Backend, frontend, React, Python, Go, etc. |
-| Quality | architect-review, code-reviewer, qa-expert, test-automator, debugger | Design validation, test planning |
-| Data/AI | 8 personas | ML, data engineering, DB optimization |
-| Infrastructure | 5 personas | Cloud, CI/CD, incident response |
-| Business | product-manager | Product strategy |
-| Specialization | api-documenter, documentation-expert | Technical writing |
+Specialized behavior is achieved by passing a system prompt file to the CLI agent. The source
+of that system prompt is up to you — user-supplied, from an installed persona plugin
+(e.g., `agent-personas`), or inline in the command.
 
-All personas are physically located inside their respective installed CLI skill directories (e.g., `.agents/skills/claude-cli-agent/personas/`, `.agents/skills/gemini-cli-agent/personas/`). Use standard `/ls` equivalents to find the exact markdown file needed for your pipeline.
+```bash
+# With a system prompt file:
+cat system_prompt.md | claude -p "Review this PR" < pr.md > review.md
+
+# Without a system prompt (general-purpose):
+claude -p "Analyze this code for security issues" < input.md > analysis.md
+
+# Gemini equivalent:
+cat system_prompt.md | gemini -p "Audit this architecture" < bundle.md > audit.md
+```
 
 ## 🔄 Recommended Audit Loop
-When asked to perform a comprehensive "Audit Loop", you should construct a sequence of CLI dispatches passing the SAME `bundle.md` or context code block to three consecutive personas.
 
-1. **Red Team**
-   `cat ././security-auditor.md | claude -p "ACT AS THE SECURITY AUDITOR. Do NOT use tools. Do NOT search filesystem." < bundle.md > audit_01_security.md`
-   
-2. **Architect**
-   `cat ././architect-review.md | claude -p "ACT AS THE ARCHITECT REVIEWER. Focus on complexity, patterns, scalability. Do NOT use tools." < bundle.md > audit_02_architecture.md`
-   
-3. **QA Expert**
-   `cat ././qa-expert.md | claude -p "ACT AS THE QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
+When asked to perform a comprehensive "Audit Loop", construct a sequence of CLI dispatches
+passing the SAME `bundle.md` or context block to consecutive specialist prompts.
 
-Always run the Architect **AFTER** the Red Team to catch any security-driven side effects that may have artificially inflated the system's complexity.
+1. **Security Review**
+   `cat security_prompt.md | claude -p "ACT AS SECURITY AUDITOR. Do NOT use tools." < bundle.md > audit_01_security.md`
+
+2. **Architecture Review**
+   `cat architect_prompt.md | claude -p "ACT AS ARCHITECT REVIEWER. Focus on complexity and patterns. Do NOT use tools." < bundle.md > audit_02_architecture.md`
+
+3. **QA Review**
+   `cat qa_prompt.md | claude -p "ACT AS QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
+
+Always run the Architect **AFTER** the Security review to catch any security-driven side effects
+that may have artificially inflated the system's complexity.

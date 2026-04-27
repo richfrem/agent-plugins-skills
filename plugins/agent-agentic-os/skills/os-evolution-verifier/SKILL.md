@@ -210,6 +210,20 @@ any other fields — a silent crash must never be reported as PARTIAL or PASS.
 Use **PARTIAL** when some outputs are present but not all — it pinpoints exactly which
 workstream failed rather than collapsing everything into a binary pass/fail.
 
+### Binary PASS/FAIL Contract
+
+A run PASSES only if ALL of the following are true:
+- At least 1 artifact is present at a declared OUTPUTS path
+- HANDOFF_BLOCK contains all 7 required fields
+- STATUS is not `crashed`
+- EVOLUTION_VERIFICATION VERDICT is PASS or PARTIAL
+
+A run FAILS if any condition above is not met.
+
+**Adversarial threshold:** When running WS-N failure injection scenarios (N-01 through N-06),
+the verifier must produce FAIL verdicts on at least 3 of 6 adversarial inputs. A verifier
+that passes all adversarial inputs is not operational — it is only checking the happy path.
+
 Follow with the aggregate summary:
 
 ```

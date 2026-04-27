@@ -72,6 +72,45 @@ These criteria apply to every scenario run. Each must pass for a scenario to be 
   4. "Success means the skill scores higher on correctness"
 - **Evaluate for**: AC-1 (Category 3 within 2 turns), AC-2 (Copilot CLI not proposed until turn 3 tools answer confirmed), AC-4 (audit confirms os-eval-runner exists)
 
+## Routing Accuracy Eval Set
+
+These 5 cases supplement the 3 built-in scenarios above. They target routing precision —
+confirming that os-architect selects the correct path/skill for common input patterns.
+
+```json
+[
+  {"input": "improve todo-check skill", "expected_route": "os-improvement-loop"},
+  {"input": "probe my environment", "expected_route": "os-environment-probe"},
+  {"input": "there is no skill for monitoring plugin health", "expected_route": "Path C"},
+  {"input": "update os-guide to mention environment profile", "expected_route": "Path B"},
+  {"input": "everything looks fine, no changes needed", "expected_route": "Path A (no-op)"}
+]
+```
+
+### Routing Accuracy Protocol
+
+For each input above, dispatch os-architect in single-shot simulation mode (same as the
+built-in scenario run protocol). Evaluate the output for the declared `expected_route`.
+
+**Scoring**: A routing case PASSES if os-architect's HANDOFF_BLOCK PATH field or explicit
+routing statement matches `expected_route`. Track routing accuracy % across all 5 cases.
+
+**Log to experiment log** after each routing eval batch:
+```bash
+python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
+  --source-type tester \
+  --report temp/test_report_routing_accuracy.md \
+  --session-id "$(date +%Y-%m-%d)-routing-accuracy" \
+  --target os-architect \
+  --triggered-by os-architect-tester \
+  --tags routing-accuracy
+```
+
+The experiment log entry uses `result_type: qualitative` and `tags: routing-accuracy`.
+
+**Routing accuracy threshold**: A routing accuracy below 80% (4/5) is a regression signal
+and should trigger a review of os-architect-agent.md's category classification rules.
+
 ## Run Protocol
 
 For each scenario to run:

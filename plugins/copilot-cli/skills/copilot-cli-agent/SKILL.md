@@ -1,9 +1,9 @@
 ---
 name: copilot-cli-agent
 description: >
-  Copilot CLI sub-agent system for persona-based analysis. Use when piping
-  large contexts to GitHub Copilot models for security audits, architecture reviews,
-  QA analysis, or any specialized analysis requiring a fresh model context.
+  Copilot CLI sub-agent system for dispatching tasks and persona-based analysis to
+  GitHub Copilot models. Use for task delegation (agent reads/writes files directly),
+  security audits, architecture reviews, or any work requiring a fresh model context.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -38,9 +38,41 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 # Signature:
-python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL]
-#                                                                                           ^ optional 5th arg
+python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL] [isolated]
+#                                                                                           ^        ^
+#                                                                                           optional optional (default: false)
 ```
+
+### Two dispatch modes
+
+**Task dispatch** (default — agent has full filesystem access via `--yolo`):
+```bash
+# Agent reads/writes files directly. Pass the task prompt as INPUT_FILE.
+python plugins/copilot-cli/scripts/run_agent.py \
+  /dev/null \
+  tasks/todo/copilot_prompt_0025.md \
+  temp/copilot_output_0025.md \
+  "Implement all changes specified in the prompt." \
+  claude-sonnet-4.6
+```
+
+**Isolated analysis** (no filesystem tools — text output only):
+```bash
+# Pass isolated=true as 6th arg. Agent generates text output only.
+python plugins/copilot-cli/scripts/run_agent.py \
+  agents/security-auditor.md target.py security.md \
+  "Find vulnerabilities." gpt-5-mini true
+```
+
+### Prompt assembly (handled automatically by `run_agent.py`)
+
+| Inputs present | Assembled prompt |
+|:---|:---|
+| persona + input | `persona / ---SOURCE--- input / ---INSTRUCTION--- instruction` |
+| input only (task dispatch) | `input / ---INSTRUCTION--- instruction` |
+| instruction only (heartbeat) | `instruction` |
+
+Passing `/dev/null` for persona or input skips that block cleanly.
 
 ---
 

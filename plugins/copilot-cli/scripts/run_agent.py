@@ -10,36 +10,35 @@ Purpose:
 Layer: Codify
 
 Usage Examples:
-    python./scripts/run_agent.py agents/security-auditor.md target.py output.md "Review this."
-    ./scripts/run_agent.py agents/refactor-expert.md main.py refactor.md "Optimize logic."
+    # Task dispatch (agent uses filesystem tools — default behaviour):
+    python scripts/run_agent.py /dev/null tasks/todo/my_prompt.md temp/out.md \
+        "Implement all changes." claude-sonnet-4.6
 
-Supported Object Types:
-    - Markdown (Persona prompts)
-    - Python, JS, TS, C#, etc. (Source code inputs)
-    - Text-based documentation
+    # Analysis only (isolated, no tools):
+    python scripts/run_agent.py agents/security-auditor.md target.py output.md \
+        "Review this." gpt-5-mini false
+
+    # Heartbeat check:
+    python scripts/run_agent.py /dev/null /dev/null temp/hb.md \
+        "HEARTBEAT CHECK: Respond with HEARTBEAT_OK only."
+
+Prompt assembly rules:
+    - persona present + input present  → persona / ---SOURCE--- input / ---INSTRUCTION--- instruction
+    - input present, no persona        → input / ---INSTRUCTION--- instruction  (task-dispatch mode)
+    - instruction only (both /dev/null)→ instruction only
+    - isolated=true appends:          "You are operating as an isolated sub-agent. Do NOT use tools."
 
 CLI Arguments:
-    - persona_file: Path to the markdown file containing the agent persona.
-    - input_file: Path to the source code or text file to be analyzed.
-    - output_file: Path where the agent's analysis will be saved.
-    - instruction: A specific instruction string for the sub-task.
-
-Input Files:
-    - Persona markdown files (from agents/ directory)
-    - Source code files for analysis
-
-Output:
-    - Analysis markdown files (customizable via output_file arg)
-
-Key Functions:
-    - resolve_path(): Handles relative path lookup for personas.
-    - run_agent(): Main orchestration routine for CLI invocation.
+    persona_file  Path to agent persona markdown, or /dev/null to skip.
+    input_file    Path to task prompt or source file, or /dev/null to skip.
+    output_file   Path where output is saved (streamed live to stdout as well).
+    instruction   Specific task instruction string.
+    model         AI model identifier (default: gpt-5-mini).
+    isolated      "true" to block tool use; default "false". Pass explicitly when
+                  running analysis-only tasks where filesystem writes are unsafe.
 
 Script Dependencies:
-    - subprocess
-    - os
-    - sys
-    - tempfile
+    subprocess, os, sys, tempfile
 
 Consumed by:
     - Antigravity AI Agent
@@ -51,84 +50,94 @@ import os
 import subprocess
 import tempfile
 
-# --- PATH RESOLUTION ---
+
 def resolve_path(provided_path: str) -> str:
-    """
-    Resolves the provided file path against the current working directory,
-    falling back to the plugin's root (one level up from this script's directory).
-
-    Args:
-        provided_path: The file path provided by the user (relative or absolute).
-
-    Returns:
-        The resolved absolute or relative path that exists on disk.
-    """
-    # 1. Try relative to CWD
+    """Resolve path against CWD then plugin root, return as-is if neither exists."""
     if os.path.exists(provided_path):
         return provided_path
-    
-    # 2. Try resolving relative to the script's directory (Plugin Root)
     script_dir = os.path.dirname(os.path.realpath(__file__))
     plugin_root = os.path.dirname(script_dir)
-    fallback_path = os.path.join(plugin_root, provided_path)
-    
-    if os.path.exists(fallback_path):
-        return fallback_path
-        
-    return provided_path
+    fallback = os.path.join(plugin_root, provided_path)
+    return fallback if os.path.exists(fallback) else provided_path
 
-# --- AGENT ORCHESTRATION ---
-def run_agent(persona_file: str, input_file: str, output_file: str, instruction: str, model: str = "gpt-5-mini") -> None:
+
+def read_file_or_empty(path: str) -> str:
+    """Read file content; return empty string for /dev/null or missing files."""
+    if path in ("/dev/null", "nul", "") or not os.path.exists(path):
+        return ""
+    try:
+        with open(path, 'r') as f:
+            return f.read()
+    except (OSError, IOError):
+        return ""
+
+
+def build_prompt(persona_content: str, input_content: str, instruction: str, isolated: bool) -> str:
     """
-    Orchestrates a Copilot CLI sub-agent execution by assembling a combined prompt.
+    Assemble the final prompt from available parts.
+
+    Three modes:
+      - Full (persona + input): persona / ---SOURCE--- input / ---INSTRUCTION--- instruction
+      - Task dispatch (input only): input / ---INSTRUCTION--- instruction
+      - Instruction only (heartbeat etc.): instruction
+    """
+    parts = []
+
+    has_persona = bool(persona_content.strip())
+    has_input = bool(input_content.strip())
+    has_instruction = bool(instruction.strip())
+
+    if has_persona:
+        parts.append(persona_content)
+
+    if has_input:
+        # Wrap in SOURCE block only when a persona is also present
+        parts.append(f"---SOURCE---\n{input_content}" if has_persona else input_content)
+
+    if has_instruction:
+        label = "---INSTRUCTION---\n" if (has_persona or has_input) else ""
+        parts.append(f"{label}{instruction}")
+
+    if isolated:
+        parts.append(
+            "You are operating as an isolated sub-agent. "
+            "Do NOT use tools. Do NOT access filesystem. Only use the provided input."
+        )
+
+    # Leading newline prevents CLI from misinterpreting a prompt starting with '---' as a flag
+    return "\n\n".join(["\n"] + parts)
+
+
+def run_agent(
+    persona_file: str,
+    input_file: str,
+    output_file: str,
+    instruction: str,
+    model: str = "gpt-5-mini",
+    isolated: bool = False,
+) -> None:
+    """
+    Orchestrate a Copilot CLI sub-agent execution.
 
     Args:
-        persona_file: Path to the persona markdown file.
-        input_file: Path to the input source file.
-        output_file: Path to save the resulting analysis.
-        instruction: Specific task instruction for the model.
-        model: AI model to use (defaults to gpt-5-mini).
-
-    Raises:
-        FileNotFoundError: If the persona or input files cannot be resolved.
-        subprocess.CalledProcessError: If the copilot CLI execution fails.
+        persona_file: Persona markdown path, or /dev/null to skip.
+        input_file:   Task prompt / source file path, or /dev/null to skip.
+        output_file:  Path where output is saved.
+        instruction:  Task instruction string.
+        model:        Copilot model identifier.
+        isolated:     When True, appends isolation footer blocking tool use.
+                      Default False — agent may use filesystem tools via --yolo.
     """
-    persona_path = resolve_path(persona_file)
-    input_path = resolve_path(input_file)
+    persona_content = read_file_or_empty(resolve_path(persona_file))
+    input_content = read_file_or_empty(resolve_path(input_file))
 
-    try:
-        with open(persona_path, 'r') as f:
-            persona_content = f.read()
-        with open(input_path, 'r') as f:
-            input_content = f.read()
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    prompt = build_prompt(persona_content, input_content, instruction, isolated)
 
-    # Note: For Copilot, we must ensure the prompt string is passed correctly.
-    # Prepend a newline to prevent the CLI from misinterpreting a prompt starting with '---' as a flag.
-    # We enforce sub-agent isolation in the final combined prompt.
-    prompt = (
-        f"\n{persona_content}\n\n"
-        f"---SOURCE---\n{input_content}\n\n"
-        f"---INSTRUCTION---\n{instruction}\n\n"
-        "You are operating as an isolated sub-agent. Do NOT use tools. "
-        "Do NOT access filesystem. Only use the provided input."
-    )
-
-    # Use a temporary file for the prompt to avoid shell argument length limits
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as tf:
         tf.write(prompt)
         prompt_tmp_path = tf.name
 
     try:
-        # Run Copilot CLI in non-interactive mode
-        # --yolo ensures all tool permissions are granted for headless execution
-        # Dynamic OS handling:
-        #   Windows: copilot is a .ps1 script; use PowerShell to read the temp file
-        #            via Get-Content -Raw and pass the string directly to avoid the
-        #            Windows 32K command-line argument length limit.
-        #   macOS/Linux: copilot is a shell script; use @<path> file-reference syntax.
         if sys.platform == "win32":
             ps_script = (
                 f'$p = Get-Content -Raw "{prompt_tmp_path}"; '
@@ -137,22 +146,35 @@ def run_agent(persona_file: str, input_file: str, output_file: str, instruction:
             cmd = ["powershell", "-NoProfile", "-Command", ps_script]
         else:
             cmd = ["copilot", "--yolo", "--model", model, "-p", f"@{prompt_tmp_path}"]
-        
-        with open(output_file, 'w') as out:
-            subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, check=True)
-        
+
+        # Stream output live to stdout and write to output_file simultaneously
+        os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
+        with open(output_file, 'w') as out_f:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            for line in proc.stdout:
+                sys.stdout.write(line)
+                sys.stdout.flush()
+                out_f.write(line)
+            proc.wait()
+
+        if proc.returncode != 0:
+            print(f"Error: copilot exited with code {proc.returncode}")
+            sys.exit(proc.returncode)
+
         print(f"Agent execution complete. Output saved to {output_file}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing Copilot CLI: {e}")
-        sys.exit(1)
     finally:
         if os.path.exists(prompt_tmp_path):
             os.remove(prompt_tmp_path)
 
+
 if __name__ == "__main__":
-    if len(sys.argv) < 5 or len(sys.argv) > 6:
-        print("Usage: pythonrun_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> \"<INSTRUCTION>\" [MODEL_NAME]")
+    if len(sys.argv) < 5 or len(sys.argv) > 7:
+        print(
+            "Usage: run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "
+            '"<INSTRUCTION>" [MODEL] [isolated=false]'
+        )
         sys.exit(1)
-    
-    model_name = sys.argv[5] if len(sys.argv) == 6 else "gpt-5-mini"
-    run_agent(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], model_name)
+
+    _model = sys.argv[5] if len(sys.argv) >= 6 else "gpt-5-mini"
+    _isolated = sys.argv[6].lower() == "true" if len(sys.argv) == 7 else False
+    run_agent(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], _model, _isolated)

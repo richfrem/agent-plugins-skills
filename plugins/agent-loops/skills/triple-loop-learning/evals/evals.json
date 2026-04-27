@@ -1,0 +1,8 @@
+[
+  {"prompt": "Build a continuous improvement loop that tests hypothesis changes against a headless benchmark and only promotes improvements that pass the baseline.", "should_trigger": true},
+  {"prompt": "I want to identify workflow friction across sessions, generate improvement hypotheses, test them objectively, and merge only what improves the score.", "should_trigger": true},
+  {"prompt": "Set up a meta-learning orchestrator that runs outer/mid/inner loop delegation with headless evaluation gates to autonomously evolve agent instructions.", "should_trigger": true},
+  {"prompt": "Run a single research synthesis on the latest TypeScript patterns and summarize the findings.", "should_trigger": false},
+  {"prompt": "Send this implementation plan to the red team for adversarial critique before we ship.", "should_trigger": false},
+  {"prompt": "Partition this feature work across multiple agents in parallel worktrees and merge when done.", "should_trigger": false}
+]

@@ -2,6 +2,21 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.6.0
+
+### Removed
+- `agents/triple-loop-architect.md` — merged into os-improvement-loop as `--lab` invocation mode
+- `agents/triple-loop-orchestrator.md` — same; os-improvement-loop handles multi-iteration runs natively
+- `skills/os-skill-improvement/` — function absorbed by os-improvement-loop; not a distinct capability
+- `references/sample-prompts/triple-loop-architect-prompt.md`
+
+### Changed
+- `agents/os-architect-agent.md`: Category 3 routing now delegates to os-improvement-loop directly;
+  Routing Decision Audit block added to all HANDOFF_BLOCK outputs; skill creation threshold added
+- `skills/os-improvement-loop/SKILL.md`: os-skill-improvement references removed; eval budget guard added
+- `plugin.json`: deprecated entries removed from agents, skills, keywords, capabilities
+- `README.md`: triple-loop rows removed; Utilities section added; How It Works reframed
+
 ## [1.5.0] - 2026-04-25
 
 ### os-architect — Front-Door Evolution Intake
