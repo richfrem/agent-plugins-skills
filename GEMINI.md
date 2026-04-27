@@ -70,7 +70,7 @@ skill, or sub-agent in this repo. Three key capabilities:
 | `os-evolution-planner` | called by os-architect | Writes task plans + Copilot CLI delegation prompts |
 | `os-architect-tester` | agent dispatch | Validates os-architect via pre-scripted scenario transcripts |
 
-### Evolution workflow (how tasks 0018 / 0019 were built)
+### Evolution workflow
 
 1. **Invoke `/os-architect`** — describe what you want to evolve in plain language
 2. **Intent classified** into one of 5 categories (pattern abstraction, research application, lab setup, gap fill, multi-loop)
@@ -79,6 +79,55 @@ skill, or sub-agent in this repo. Three key capabilities:
 5. **os-evolution-planner** writes the task plan + Copilot CLI delegation prompt
 6. **Dispatch** via `run_agent.py` with `claude-sonnet-4.6` (single premium request, batch everything)
 7. **Validate** via `os-architect-tester` after any changes to os-architect
+
+---
+
+## Plugin State — Current Versions
+
+### agent-agentic-os (v1.6.0) — simplified
+
+Core improvement loop:
+```
+os-architect → os-improvement-loop → os-eval-runner → os-eval-backport → os-experiment-log
+```
+
+**Active skills (16):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
+os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
+os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
+os-clean-locks, todo-check, optimize-agent-instructions
+
+**Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
+agentic-os-setup, os-health-check
+
+**Removed in v1.6.0 — do not reference or attempt to invoke:**
+- `triple-loop-architect` — merged into os-improvement-loop
+- `triple-loop-orchestrator` — same
+- `os-skill-improvement` — absorbed by os-improvement-loop
+
+For unattended multi-iteration improvement, use `os-improvement-loop` directly.
+
+---
+
+### agent-loops (v2.1.0) — OS-decoupled
+
+**5 execution primitives:** learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning
+
+**Removed in v2.1.0 — do not reference:**
+- `personas/` directory — deleted; supply your own system prompt or install an agent-personas plugin
+- `rlm-distill-ollama`, `ollama-launch` — no longer in source
+- OS-level hooks: `context/kernel.py`, `session-memory-manager`, `/sanctuary-seal` — scrubbed
+
+**Plugin boundary (important):** agent-loops provides execution patterns — no eval gate, no
+experiment log, no memory persistence. agent-agentic-os owns all measurement. os-improvement-loop
+delegates its inner loop to `triple-loop-learning` as the execution substrate:
+
+```
+agent-loops/triple-loop-learning   ← execution only (outer/mid/inner loop)
+        ↓ used by
+agent-agentic-os/os-improvement-loop  + eval gate + experiment log + lab isolation
+```
+
+Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-loops skills.
 
 ### Copilot CLI delegation pattern (canonical)
 
