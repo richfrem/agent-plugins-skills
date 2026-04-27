@@ -7,12 +7,13 @@ Each run writes one dated file to context/experiment-log/.
 An index.md tracks all runs for fast querying.
 
 Usage:
-    python3 experiment_log.py append --source-type verifier [--report PATH] [--session-id ID] [--target NAME]
-    python3 experiment_log.py append --source-type tester   [--report PATH] [--session-id ID] [--target NAME]
-    python3 experiment_log.py append --source-type orchestrator [--report PATH] [--session-id ID] [--target NAME]
-    python3 experiment_log.py append --source-type planner  [--report PATH] [--session-id ID] [--target NAME]
+    python3 experiment_log.py append --source-type verifier [--report PATH] [--session-id ID] [--target NAME] [--tags TAG1,TAG2]
+    python3 experiment_log.py append --source-type tester   [--report PATH] [--session-id ID] [--target NAME] [--tags TAG1,TAG2]
+    python3 experiment_log.py append --source-type orchestrator [--report PATH] [--session-id ID] [--target NAME] [--tags TAG1,TAG2]
+    python3 experiment_log.py append --source-type planner  [--report PATH] [--session-id ID] [--target NAME] [--tags TAG1,TAG2]
     python3 experiment_log.py query <term>
     python3 experiment_log.py summary
+    python3 experiment_log.py synthesize [--last N] [--output PATH]
 
 Source types and result kinds:
     verifier      os-evolution-verifier: EVOLUTION_VERIFICATION blocks      result_type=qualitative
@@ -231,8 +232,9 @@ PARSERS = {
 
 def _build_entry(source_type: str, session_id: str, target: str,
                   triggered_by: str, report_text: str, metrics: dict,
-                  result_type: str) -> str:
+                  result_type: str, tags: str = "") -> str:
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    tags_line = f"tags: {tags}\n" if tags else ""
     return (
         f"---\n"
         f"type: {source_type}\n"
@@ -242,6 +244,7 @@ def _build_entry(source_type: str, session_id: str, target: str,
         f"source: {triggered_by}\n"
         f"target: {target}\n"
         f"verdict: {metrics['verdict_str']}\n"
+        f"{tags_line}"
         f"---\n\n"
         f"## Experiment — {timestamp} | {source_type} | {target}\n\n"
         f"| Field | Value |\n"
@@ -296,9 +299,10 @@ def cmd_append(args):
 
     metrics = PARSERS[source_type](report_text)
     result_type = RESULT_TYPES[source_type]
+    tags = getattr(args, "tags", "") or ""
     filename = _dated_filename(source_type, session_id)
     entry = _build_entry(source_type, session_id, target, triggered_by,
-                          report_text, metrics, result_type)
+                          report_text, metrics, result_type, tags)
     filename.write_text(entry)
 
     date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -379,6 +383,94 @@ def cmd_summary(args: argparse.Namespace) -> None:
     print(f"  Files: {len(files)}")
 
 
+def cmd_synthesize(args: argparse.Namespace) -> None:
+    """Query last N entries and produce a structured synthesis block."""
+    _ensure_log_dir()
+    last_n = getattr(args, "last", 5) or 5
+
+    files = [f for f in sorted(LOG_DIR.glob("*.md")) if f.name != "index.md"]
+    if not files:
+        print(f"No experiment runs found in {LOG_DIR}/")
+        return
+
+    recent = files[-last_n:]
+
+    by_target: dict[str, dict] = {}
+    for f in recent:
+        text = f.read_text()
+        header_match = re.search(r"^---\n(.*?)\n---", text, re.DOTALL)
+        if not header_match:
+            continue
+        header = dict(
+            line.split(": ", 1) for line in header_match.group(1).splitlines()
+            if ": " in line
+        )
+        target = header.get("target", "unknown")
+        session_id = header.get("session_id", f.stem)
+        verdict = header.get("verdict", "?")
+        tags = header.get("tags", "")
+        entry = by_target.setdefault(target, {"keeps": [], "discards": [], "sessions": []})
+        entry["sessions"].append(session_id)
+        # Count KEEP/DISCARD from verdict string or raw iteration lines
+        keeps = len(re.findall(r"\bKEEP\b", text))
+        discards = len(re.findall(r"\bDISCARD\b", text))
+        if keeps > discards:
+            entry["keeps"].append((session_id, verdict, tags))
+        elif discards > 0:
+            entry["discards"].append((session_id, verdict, tags))
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    lines = [f"## SYNTHESIZED LEARNINGS — {date_str}", ""]
+
+    lines.append("### Patterns that consistently improve performance")
+    any_keep = False
+    for target, data in sorted(by_target.items()):
+        for session_id, verdict, tags in data["keeps"]:
+            # Extract positive delta from verdict_str if present
+            delta_match = re.search(r"delta=([+\-][0-9.]+)", verdict)
+            delta_str = f"avg delta {delta_match.group(1)}" if delta_match else "see verdict"
+            tag_str = f" [{tags}]" if tags else ""
+            lines.append(f"- {target} → seen in {session_id}, {delta_str}{tag_str}")
+            any_keep = True
+    if not any_keep:
+        lines.append("- (no KEEP patterns in last N entries)")
+
+    lines.append("")
+    lines.append("### Patterns that cause regressions")
+    any_discard = False
+    for target, data in sorted(by_target.items()):
+        for session_id, verdict, tags in data["discards"]:
+            delta_match = re.search(r"delta=([+\-][0-9.]+)", verdict)
+            delta_str = f"avg delta {delta_match.group(1)}" if delta_match else "see verdict"
+            tag_str = f" [{tags}]" if tags else ""
+            lines.append(f"- {target} → seen in {session_id}, {delta_str}{tag_str}")
+            any_discard = True
+    if not any_discard:
+        lines.append("- (no DISCARD patterns in last N entries)")
+
+    lines.append("")
+    lines.append("### Recommended updates to core skills")
+    for target in sorted(by_target.keys()):
+        data = by_target[target]
+        if data["discards"]:
+            lines.append(f"- {target} → review recent DISCARD patterns; consider prompt revision")
+        elif data["keeps"]:
+            lines.append(f"- {target} → stable; no immediate action required")
+
+    synthesis_text = "\n".join(lines) + "\n"
+
+    output_path_arg = getattr(args, "output", None)
+    if output_path_arg:
+        output_path = Path(output_path_arg)
+    else:
+        output_path = LOG_DIR / f"synthesis-{date_str}.md"
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(synthesis_text)
+    print(f"Synthesis written to {output_path}")
+    print(synthesis_text)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Evolution experiment log manager")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -391,11 +483,17 @@ def main():
     ap.add_argument("--session-id", help="Session identifier (used in filename)")
     ap.add_argument("--target", help="Skill/agent under test")
     ap.add_argument("--triggered-by", help="Agent or skill that triggered the run")
+    ap.add_argument("--tags", help="Comma-separated tags (e.g. skill-improvement,overfitting-detected,path-b)")
 
     qp = sub.add_parser("query", help="Search experiment log files")
     qp.add_argument("term", help="Search term (scenario ID, verdict, keyword)")
 
     sub.add_parser("summary", help="Print aggregate statistics across all runs")
+
+    sp = sub.add_parser("synthesize", help="Synthesize patterns from last N log entries")
+    sp.add_argument("--last", type=int, default=5,
+                    help="Number of most recent entries to include (default: 5)")
+    sp.add_argument("--output", help="Output path (default: context/experiment-log/synthesis-[date].md)")
 
     args = parser.parse_args()
 
@@ -405,6 +503,8 @@ def main():
         cmd_query(args)
     elif args.cmd == "summary":
         cmd_summary(args)
+    elif args.cmd == "synthesize":
+        cmd_synthesize(args)
 
 
 if __name__ == "__main__":

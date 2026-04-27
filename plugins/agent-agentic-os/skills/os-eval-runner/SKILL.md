@@ -365,8 +365,34 @@ python ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
 ```
 `eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 
+### Phase 2b: Overfitting Gate (hard override — runs before Phase 3)
+
+After `evaluate.py` completes, read the scores from `evals/results.tsv` for the current
+iteration AND the previous baseline row. Apply this rule:
+
+```
+IF base_score > prev_base AND holdout_score < prev_holdout → OVERFIT → force DISCARD
+```
+
+This gate overrides any KEEP decision from `evaluate.py`. Overfitting is always a DISCARD
+regardless of how the lab was configured. The holdout set is a **required** input — a run
+without a holdout set cannot pass the overfitting gate and must be flagged as incomplete.
+
+```python
+# Pseudocode for the overfitting check
+if base_score > prev_base and holdout_score < prev_holdout:
+    print(f"OVERFIT DETECTED: base={base_score:.3f} (+{base_score - prev_base:.3f}) "
+          f"holdout={holdout_score:.3f} ({holdout_score - prev_holdout:.3f})")
+    print("Forcing DISCARD — overfitting always overrides KEEP.")
+    # Treat as DISCARD: revert SKILL.md and report failure
+    exit_code = 1
+```
+
+Report the overfitting event to the orchestrator with both base and holdout deltas so the
+pattern is visible in the experiment log.
+
 ### Phase 3: The Revert/Reset Protocol
-1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD).
+1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD) after overfitting gate.
 2. **If `DISCARD`**: `evaluate.py` already ran `git checkout -- SKILL.md` automatically before exiting 1. Verify the file is restored (read its frontmatter). Report the `DISCARD` failure to the orchestrator with the score delta.
 3. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk, proceed to Phase 4.
 
