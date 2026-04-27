@@ -1,11 +1,11 @@
 ---
 concept: dependency-management
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/workflows/dependency-management_dependency-management.md
+source_file: spec-kitty-plugin/.agents/skills/dependency-management/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.320333+00:00
+generated_at: 2026-04-27T05:21:04.396965+00:00
 cluster: file
-content_hash: d0b789d05f0cc035
+content_hash: 0a0cb078bd6ffe7a
 ---
 
 # Dependency Management
@@ -18,6 +18,7 @@ content_hash: d0b789d05f0cc035
 
 ## Details
 
+<!-- Source: plugin-code/spec-kitty-plugin/.agents/skills/dependency-management/SKILL.md -->
 ---
 name: dependency-management
 description: >
@@ -101,17 +102,34 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
 
 *(content truncated)*
 
+<!-- Source: plugin-code/spec-kitty-plugin/.agents/workflows/dependency-management_dependency-management.md -->
+---
+name: dependency-management
+description: >
+  Python dependency and environment management for multi-service or monorepo python backends.
+  Use when: (1) adding, upgrading, or removing a Python package, (2) responding to Dependabot
+  or security vulnerability alerts (GHSA/CVE), (3) creating a new service that needs its
+  own requirements files, (4) debugging pip install failures or Docker build issues related
+  to dependencies, (5) reviewing or auditing the dependency tree, (6) running pip-compile.
+  Enforces the pip-compile locked-file workflow and tiered dependency hierarchy.
+allowed-tools: Bash, Read, Write
+---
+
+## Dependencies
+
+This skill requires **Python 3.8+** and standard library only. No external packages needed.
+
+**To install this skill's dependen
+
+*(combined content truncated)*
+
 ## See Also
 
-- [[dependency-management-guide]]
-- [[dependency-management-plugin]]
-- [[python-dependency-management-guide]]
-- [[dependency-management-policy-detailed-reference]]
-- [[procedural-fallback-tree-dependency-management]]
-- [[dependency-management-guide]]
+- [[optional-dependency-for-frontmatter]]
+- [[scripts-adr-management-skills-adr-manager]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/workflows/dependency-management_dependency-management.md`
-- **Indexed:** 2026-04-17T06:42:10.320333+00:00
+- **File:** `spec-kitty-plugin/.agents/skills/dependency-management/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:04.396965+00:00

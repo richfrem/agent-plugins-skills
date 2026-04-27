@@ -1,11 +1,11 @@
 ---
 concept: business-requirements-capture
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/agents/exploration-cycle-plugin-requirements-doc-agent.md
+source_file: exploration-cycle-plugin/agents/requirements-doc-agent.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.310795+00:00
+generated_at: 2026-04-27T05:21:03.973087+00:00
 cluster: decision
-content_hash: 120d396d1cdf812a
+content_hash: a54d5998e78a86e3
 ---
 
 # Business Requirements Capture
@@ -97,15 +97,13 @@ If the session brief contains a `Decision Pre-fills` section with filled answers
 
 ## See Also
 
-- [[acceptance-criteria-business-requirements-capture]]
-- [[acceptance-criteria-business-requirements-capture]]
-- [[acceptance-criteria-business-requirements-capture]]
-- [[acceptance-criteria-business-requirements-capture]]
-- [[asynchronous-benchmark-metric-capture]]
-- [[asynchronous-benchmark-metric-capture]]
+- [[business-requirements-document-brd]]
+- [[business-rule-audit-agent]]
+- [[capture-optional-leading-so-image-links-are-preserved-correctly]]
+- [[complex-regex-to-capture-wikilinks-while-avoiding-transclusions]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/agents/exploration-cycle-plugin-requirements-doc-agent.md`
-- **Indexed:** 2026-04-17T06:42:10.310795+00:00
+- **File:** `exploration-cycle-plugin/agents/requirements-doc-agent.md`
+- **Indexed:** 2026-04-27T05:21:03.973087+00:00

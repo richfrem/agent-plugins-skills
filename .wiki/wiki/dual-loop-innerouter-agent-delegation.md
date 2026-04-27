@@ -1,11 +1,11 @@
 ---
 concept: dual-loop-innerouter-agent-delegation
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/exploration-workflow/references/dual-loop-skill.md
+source_file: agent-loops/skills/dual-loop/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.088048+00:00
-cluster: inner
-content_hash: 342e85c42dcd0e1b
+generated_at: 2026-04-27T05:21:03.726361+00:00
+cluster: plugin-code
+content_hash: b828effeb6ef7849
 ---
 
 # Dual-Loop (Inner/Outer Agent Delegation)
@@ -19,7 +19,7 @@ content_hash: 342e85c42dcd0e1b
 ## Details
 
 ---
-name: triple-loop
+name: dual-loop
 description: "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, and repeating if necessary. Inner/outer agent delegation pattern. Use when: work needs to be delegated from a strategic controller (Outer Loop) to a tactical executor (Inner Loop) via strategy packets, with verification and correction loops."
 allowed-tools: Bash, Read, Write
 ---
@@ -71,7 +71,7 @@ flowchart LR
     Correct -->|Delta Fix| Receive
 ```
 
-**Reference**: [Architecture Diagram](../assets/diagrams/dual_loop_architecture.mmd)
+**Reference**: [Architecture Diagram](../../assets/diagrams/dual_loop_architecture.mmd)
 
 ---
 
@@ -102,23 +102,23 @@ flowchart LR
 
 ### Step 4: Hand-off (The Bridge)
 
-The Outer Loop invokes the Inner Loop. Depending on the environment, this is either done by spawning a sub-process (e.g., `claude "Read handoffs/task_packet_001.md"`), calling an API, or asking the Human User to switch terminals.
+*(Best Practice: Run a functional CLI heartbeat using a simple health prompt to verify end-to-end connectivity before the first hand-off).*
 
-### Step 5: E
+The Outer Loop invokes the Inner Loop. To ensure stability and avoid shell fragility (e.g., quoting/pi
 
 *(content truncated)*
 
 ## See Also
 
 - [[concurrent-agent-loop]]
-- [[dual-loop-meta-tasks]]
-- [[acceptance-criteria-dual-loop]]
-- [[procedural-fallback-tree-dual-loop]]
-- [[agent-loop-patterns]]
-- [[dual-loop-pattern-overview]]
+- [[1-read-the-agent-instructions-and-strip-yaml-frontmatter]]
+- [[agent-agentic-os-hooks]]
+- [[agent-bridge]]
+- [[agent-harness-learning-layer]]
+- [[agent-loops-execution-primitives]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/exploration-workflow/references/dual-loop-skill.md`
-- **Indexed:** 2026-04-17T06:42:10.088048+00:00
+- **File:** `agent-loops/skills/dual-loop/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.726361+00:00

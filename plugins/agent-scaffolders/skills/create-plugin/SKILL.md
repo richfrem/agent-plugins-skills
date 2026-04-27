@@ -1,5 +1,6 @@
 ---
 name: create-plugin
+plugin: agent-scaffolders
 description: Scaffold a complete Claude Code plugin from scratch
 argument-hint: "[plugin-name]"
 allowed-tools: Bash, Read, Write

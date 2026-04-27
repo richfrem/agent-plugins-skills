@@ -1,5 +1,6 @@
 ---
 name: audit-plugin
+plugin: agent-scaffolders
 description: >
   This skill should be used when the user asks to "audit a plugin", "validate my plugin",
   "check plugin structure", "verify plugin is correct", "validate .claude-plugin/plugin.json", "check if

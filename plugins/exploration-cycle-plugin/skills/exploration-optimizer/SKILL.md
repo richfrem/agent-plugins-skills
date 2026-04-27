@@ -1,5 +1,6 @@
 ---
 name: exploration-optimizer
+plugin: exploration-cycle-plugin
 description: Evaluates and improves the exploration-cycle skills, prompts, routing, and artifact quality using baseline-first, one-hypothesis iteration loops with keep-discard decisions and experiment ledgers.
 allowed-tools: Bash, Read, Write
 ---

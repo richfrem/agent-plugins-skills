@@ -1,5 +1,6 @@
 ---
 name: vector-db-ingest
+plugin: vector-db
 description: |
   Ingests repository files into the ChromaDB vector store. Builds or updates the vector index from a manifest or directory scan using ingest.py.
   Use when new files need to be indexed or the vector store is out of date.

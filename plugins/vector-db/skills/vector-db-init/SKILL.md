@@ -1,5 +1,6 @@
 ---
 name: vector-db-init
+plugin: vector-db
 description: Interactively initializes the Vector DB plugin. Guided discovery asks which folders to index, confirms the manifest, then scaffolds vector_profiles.json for high-performance In-Process or Native Server connections. Mandatory first step before ingestion or search.
 allowed-tools: Bash, Read, Write
 ---

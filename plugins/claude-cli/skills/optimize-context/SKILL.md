@@ -1,5 +1,6 @@
 ---
 name: optimize-context
+plugin: claude-cli
 description: >-
   Reduces Claude Code context bloat across three dimensions: (1) duplicate skill
   deduplication — clears .claude/ copies since Claude Code already reads from

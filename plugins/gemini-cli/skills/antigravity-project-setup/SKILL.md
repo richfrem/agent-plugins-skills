@@ -1,5 +1,6 @@
 ---
 name: antigravity-project-setup
+plugin: gemini-cli
 description: >-
   Interactive skill to scaffold and optimize the .agents/ directory for any
   project mapping up Antigravity configuration. Sets up .gemini/GEMINI.md, skills/,

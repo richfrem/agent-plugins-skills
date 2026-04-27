@@ -1,5 +1,6 @@
 ---
 name: rsvp-comprehension-agent
+plugin: rsvp-speed-reader
 description: Session manager for RSVP speed reading. Orchestrates reading sessions with pause, resume, speed adjustment, and comprehension check-ins. Invoke after generating an RSVP token stream with the rsvp-reading skill.
 tools:
   - Bash

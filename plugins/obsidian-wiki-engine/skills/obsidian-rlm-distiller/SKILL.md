@@ -1,5 +1,6 @@
 ---
 name: obsidian-rlm-distiller
+plugin: obsidian-wiki-engine
 description: "Distills wiki source files into the RLM summary layer (summary.md, bullets.md, deep.md) using the cheapest available LLM CLI. Routes to Copilot gpt-5-mini first, then Claude Haiku, then Gemini Flash. Never uses Ollama. Use when wiki nodes need RLM summaries generated or refreshed."
 allowed-tools: Bash, Read, Write
 ---

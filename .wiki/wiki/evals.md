@@ -1,0 +1,149 @@
+---
+concept: evals
+source: plugin-code
+source_file: agent-agentic-os/skills/os-improvement-report/evals/evals.json
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+generated_at: 2026-04-27T05:21:04.438239+00:00
+cluster: prompt
+content_hash: 2ddf3146cfa1063f
+---
+
+# Evals
+
+> *Summary pending — run /wiki-distill*
+
+## Key Ideas
+
+- *(Bullets pending — run /wiki-distill)*
+
+## Details
+
+<!-- Source: plugin-code/agent-agentic-os/skills/os-improvement-report/evals/evals.json -->
+{
+  "skill_name": "os-improvement-report",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Show me the improvement chart for the agentic-os loop. Are the eval scores trending up?",
+      "expected_output": "Runs generate_report.py, reports the chart path, and prints the text summary inline.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Generate the progress report. I want to see how os-memory-manager is improving cycle by cycle.",
+      "expected_output": "Runs generate_report.py filtered to os-memory-manager, reports chart and per-skill delta table.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Are we actually getting better? Show me the cycle of improvement across all the skills we've been testing.",
+      "expected_output": "Checks data availability, runs the script, prints combined summary across all skills.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Run the loop progress report and show me which survey friction items actually led to score improvements.",
+      "expected_output": "Surfaces Section 2 of the improvement ledger (survey-to-action trace) alongside the chart.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "What's our autonomous completion rate trend? Graph it for me.",
+      "expected_output": "Runs the report and highlights the North Star (Section 3) trend line from generate_report.py output.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "How are we doing overall? Show me the improvement data -- eval scores, friction events, all of it.",
+      "expected_output": "Full report: chart path, text summary with all three ledger sections highlighted.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "How does the improvement tracking work? Explain the ledger to me.",
+      "expected_output": "Provides an explanation of the three ledger sections. Does NOT run generate_report.py.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "What's the eval score for os-memory-manager right now?",
+      "expected_output": "Reads the ledger or results.tsv and reports the most recent score. Does not generate a chart.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Run the learning loop on the os-eval-runner skill.",
+      "expected_output": "Triggers Triple-Loop Retrospective or os-eval-runner, NOT os-improvement-report.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Show me the test registry. What hypotheses have been confirmed?",
+      "expected_output": "Reads context/memory/tests/registry.md directly. Does NOT trigger os-improvement-report.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "The improvement ledger is empty, we haven't run any cycles yet. Can you still show me the chart?",
+      "expected_output": "Detects empty ledger, informs user no cycles completed, explains how to run the first cycle. Does not run the script.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "Generate the progress report but only for the exploration-cycle-plugin, not agentic-os.",
+      "expected_output": "Runs generate_report.py with exploration-cycle-plugin's project dir and plugin dir rather than agentic-os.",
+      "files": []
+    }
+  ]
+}
+
+
+<!-- Source: plugin-code/spec-kitty-plugin/.agents/skills/os-improvement-report/evals/evals.json -->
+{
+  "skill_name": "os-improvement-report",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Show me the improvement chart for the agentic-os loop. Are the eval scores trending up?",
+      "expected_output": "Runs generate_report.py, reports the chart path, and prints the text summary inline.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Generate the progress report. I want to see how os-memory-manager is improving cycle by cycle.",
+      "expected_output": "Runs generate_report.py filtered to os-memory-manager, reports chart and per-skill delta table.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Are we actually getting better? Show me the cycle of improvement across all the skills we've been testing.",
+      "expected_output": "Checks data availability, runs the script, prints combined summary across all skills.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Run the loop progress report and show me which survey friction items actually led to score improvements.",
+      "expected_output": "Surfaces Section 2 of the improvement ledger (survey-to-action trace) alongside the chart.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "What's our autonomous completion rate trend? Graph it for me.",
+      "expected_output": "Runs the report and highlights the North Star (Section 3) trend line from generate_report.py output.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "How are we doing overall? Show me the improvement data -
+
+*(combined content truncated)*
+
+## See Also
+
+*(No related concepts found yet)*
+
+## Raw Source
+
+- **Source:** `plugin-code`
+- **File:** `agent-agentic-os/skills/os-improvement-report/evals/evals.json`
+- **Indexed:** 2026-04-27T05:21:04.438239+00:00

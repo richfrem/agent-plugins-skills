@@ -1,23 +1,13 @@
 ---
 cluster: source
-concepts: 13
-generated_at: 2026-04-17T06:42:21.338268+00:00
+concepts: 3
+generated_at: 2026-04-27T05:21:04.705882+00:00
 ---
 
 # Source
 
-*13 concepts in this cluster.*
+*3 concepts in this cluster.*
 
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[command-template-spec-kittytasks-research-mission]] — Command Template: /spec-kitty.tasks (Research Mission)
-- [[concept-title]] — {concept_title}
-- [[obsidian-wiki-builder]] — Obsidian Wiki Builder
-- [[wiki-ingest]] — /wiki-ingest
+- [[after-os-evolution-verifier-run]] — After os-evolution-verifier run
+- [[business-requirements-document-brd]] — Business Requirements Document (BRD)
+- [[marketplace]] — Marketplace

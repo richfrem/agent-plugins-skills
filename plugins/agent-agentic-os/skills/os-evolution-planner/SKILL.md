@@ -1,5 +1,6 @@
 ---
 name: os-evolution-planner
+plugin: agent-agentic-os
 description: >
   Codifies the plan-and-delegate workflow for evolving plugins, skills, and agents.
   Given a target (plugin/skill/agent name) and an evolution goal, this skill first

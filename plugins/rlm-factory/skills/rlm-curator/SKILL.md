@@ -1,5 +1,6 @@
 ---
 name: rlm-curator
+plugin: rlm-factory
 description: >
   Knowledge Curator agent skill for the RLM Factory. Auto-invoked when tasks involve
   distilling code summaries, querying the semantic ledger, auditing cache coverage, or

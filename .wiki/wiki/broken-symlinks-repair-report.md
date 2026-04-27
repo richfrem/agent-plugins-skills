@@ -3,9 +3,9 @@ concept: broken-symlinks-repair-report
 source: plugin-code
 source_file: spec-kitty-plugin/.agents/skills/path-reference-auditor/references/broken_symlinks_repair_report.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.187251+00:00
-cluster: manual
-content_hash: 0dab899fd3f9577d
+generated_at: 2026-04-27T05:21:04.299596+00:00
+cluster: target
+content_hash: 30acd3b503437bc3
 ---
 
 # Broken Symlinks Repair Report
@@ -45,15 +45,15 @@ content_hash: 0dab899fd3f9577d
 
 ## See Also
 
+- [[check-for-broken-symlinks]]
+- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]]
+- [[broken-path-string]]
 - [[loop-progress-report]]
-- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]]
-- [[portability-audit-report]]
-- [[portability-audit-report]]
-- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]]
-- [[adr-003-plugin-skill-resource-sharing-via-mirrored-folder-structure-and-file-level-symlinks]]
+- [[os-architect-test-report-scenario-id]]
+- [[plugin-files-and-symlinks-inventory]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `spec-kitty-plugin/.agents/skills/path-reference-auditor/references/broken_symlinks_repair_report.md`
-- **Indexed:** 2026-04-17T06:42:10.187251+00:00
+- **Indexed:** 2026-04-27T05:21:04.299596+00:00

@@ -1,5 +1,6 @@
 ---
 name: vector-db-cleanup
+plugin: vector-db
 description: |
   Removes stale and orphaned chunks from the ChromaDB vector store for files that have been deleted or renamed.
   Use after files are removed or moved to keep the vector index in sync with the filesystem.

@@ -1,11 +1,11 @@
 ---
 concept: concurrent-agent-loop
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/os-improvement-loop/SKILL.md
+source_file: agent-agentic-os/skills/os-improvement-loop/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.161144+00:00
-cluster: cycle
-content_hash: 991d0e751c56d16f
+generated_at: 2026-04-27T05:21:03.716471+00:00
+cluster: plugin-code
+content_hash: 6992396ef92dc5f2
 ---
 
 # Concurrent Agent Loop
@@ -70,13 +70,13 @@ There are **two distinct Triple-Loop orchestration cycles** operating at differe
 ┌────────────────────▼────────────────────────────────────┐
 │  TRIPLE-LOOP EXECUTOR — Individual Skill Improvement           │
 │                                                          │
-│  os-eval-runner + os-skill-improvement evaluate and      │
-│  improve a specific target SKILL.md (routing accuracy,   │
+│  os-eval-runner evaluates and improves a specific        │
+│  target SKILL.md (routing accuracy,                     │
 │  trigger descriptions, example blocks).                  │
 │                                                          │
 │  Target: a single skill's description and routing.       │
 │  Eval gate: os-eval-runner scores the target skill.      │
-│  Improvement: os-skill-improvement runs RED-GREEN-REFACTOR│
+│  Improvement: os-eval-runner runs RED-GREEN-REFACTOR     │
 │  until score ≥ threshold.                                │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -90,21 +90,21 @@ trigger/diagnostic layer — it analyzes friction events, identifies improvement
 and decides which Triple-Loop to invoke. `os-improvement-loop` (skill) is the execution
 protocol that agents follow once a target has been identified. Do not conflate them.
 
-**Session Lifecycle Invariant**: The OUTER loop owns session lifecy
+**Session Lifecycle Invariant**: The OUTER loop owns session lifecycl
 
 *(content truncated)*
 
 ## See Also
 
 - [[dual-loop-innerouter-agent-delegation]]
-- [[agent-loop-patterns]]
-- [[dual-loop-innerouter-agent-delegation]]
-- [[dual-loop-innerouter-agent-delegation]]
-- [[dual-loop-innerouter-agent-delegation]]
-- [[agent-harness-learning-layer-formerly-agentic-os]]
+- [[1-read-the-agent-instructions-and-strip-yaml-frontmatter]]
+- [[agent-agentic-os-hooks]]
+- [[agent-bridge]]
+- [[agent-harness-learning-layer]]
+- [[agent-loops-execution-primitives]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/os-improvement-loop/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.161144+00:00
+- **File:** `agent-agentic-os/skills/os-improvement-loop/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.716471+00:00

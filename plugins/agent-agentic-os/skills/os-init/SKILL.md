@@ -1,5 +1,6 @@
 ---
 name: os-init
+plugin: agent-agentic-os
 description: >
   Trigger: "set up agentic OS", "initialize agent harness", "init my project for AI agents",
   "where do I put CLAUDE.md", "create my agent environment", "set up persistent memory".

@@ -1,5 +1,6 @@
 ---
 name: spec-kitty-analyze
+plugin: spec-kitty-plugin
 description: A standard Spec-Kitty workflow routine.
 ---
 

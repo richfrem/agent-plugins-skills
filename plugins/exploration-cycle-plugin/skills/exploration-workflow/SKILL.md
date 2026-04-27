@@ -1,5 +1,6 @@
 ---
 name: exploration-workflow
+plugin: exploration-cycle-plugin
 description: >
   SME-facing orchestrator for the Business Exploration Loop. Supports 4 session
   types (greenfield, brownfield, discovery-only, spike) with adaptive phase

@@ -1,5 +1,6 @@
 ---
 name: prototype-builder
+plugin: exploration-cycle-plugin
 description: >
   Orchestrates the full prototype build cycle for a Subject Matter Expert. Coordinates layout confirmation and component building — it does not build components directly. Acts as the single entry point for all prototype-related requests. Trigger phrases: "build a prototype", "create a working prototype", "show me a working version", "prototype to clarify scope", "build an exploratory prototype"
 allowed-tools: Bash, Read, Write

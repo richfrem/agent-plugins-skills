@@ -1,5 +1,6 @@
 ---
 name: triple-loop-learning
+plugin: agent-loops
 description: "(Industry standard: Meta-Learning System / Automated Autoresearch) Primary Use Case: Continuous, self-improving orchestration of an agentic system over multiple sessions. Use when: building a continuous improvement layer that autonomously identifies workflow friction, postulates hypotheses, and tests improved instructions/coding skills against an objective headless benchmark before merging and persisting."
 allowed-tools: Bash, Read, Write
 ---

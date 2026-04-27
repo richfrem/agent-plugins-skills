@@ -1,11 +1,11 @@
 ---
 concept: learning-loop
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/learning-loop/SKILL.md
+source_file: agent-loops/skills/learning-loop/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.103889+00:00
-cluster: phase
-content_hash: d13b6bf32f3e1e48
+generated_at: 2026-04-27T05:21:03.727299+00:00
+cluster: agent
+content_hash: b37defd33f67c414
 ---
 
 # Learning Loop
@@ -102,7 +102,7 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 **Option B: Dual Loop**
 *   **Action**: Delegate execution to a scoped, isolated Inner Loop agent.
-*   **Command**: Open the `triple-loop` SKILL. Execute according to its instructions.
+*   **Command**: Open the `triple-loop-learning` SKILL. Execute according to its instructions.
 *   **Return**: Once Inner Loop finishes, resume here at **Phase V (Synthesis)**.
 
 ---
@@ -112,23 +112,23 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 > **This loop is now complete.** You must formally exit the loop and return control to the Orchestrator.
 > Skipping any close step means the next agent starts blind and the flywheel stalls.
 
-### Phase V: Self-Assessment Survey (MANDATORY)
+### Phase V: Completion & Handoff
 
-Before handoff, you MUST complete the Post-Run Self-Assessment
+> **The specific learning cycle is finished. You must now return co
 
 *(content truncated)*
 
 ## See Also
 
-- [[triple-loop-learning-system---architecture-overview]]
-- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
-- [[triple-loop-learning-system---architecture-overview]]
-- [[learning-loop-meta-tasks]]
 - [[learning-loop-retrospective-post-seal]]
-- [[learning-loop---detailed-phase-instructions]]
+- [[triple-loop-learning-meta-learning-system]]
+- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
+- [[agent-harness-learning-layer]]
+- [[concurrent-agent-loop]]
+- [[dual-loop-innerouter-agent-delegation]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/learning-loop/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.103889+00:00
+- **File:** `agent-loops/skills/learning-loop/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.727299+00:00

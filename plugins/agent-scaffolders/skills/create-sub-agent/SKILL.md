@@ -1,5 +1,6 @@
 ---
 name: create-sub-agent
+plugin: agent-scaffolders
 description: Design and scaffold a Claude Code sub-agent
 argument-hint: "[agent-name or use-case description]"
 allowed-tools: Bash, Read, Write

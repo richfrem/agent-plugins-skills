@@ -1,5 +1,6 @@
 ---
 name: claude-cli-agent
+plugin: claude-cli
 description: >
   Claude CLI sub-agent system for persona-based analysis. Use when piping
   large contexts to Anthropic models for security audits, architecture reviews,

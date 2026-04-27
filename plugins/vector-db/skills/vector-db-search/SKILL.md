@@ -1,5 +1,6 @@
 ---
 name: vector-db-search
+plugin: vector-db
 description: "Semantic search skill for retrieving code and documentation from the ChromaDB vector store. Use when you need concept-based search across the repository (Phase 2 of the 3-phase search protocol). V2 includes L4/L5 retrieval constraints."
 allowed-tools: Bash, Read
 ---

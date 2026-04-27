@@ -1,5 +1,6 @@
 ---
 name: coding-conventions-agent
+plugin: coding-conventions
 description: >
   Coding conventions enforcement agent. Auto-invoked when writing new code,
   reviewing code quality, adding headers, or checking documentation compliance

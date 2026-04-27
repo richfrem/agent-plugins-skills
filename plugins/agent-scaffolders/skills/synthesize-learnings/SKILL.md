@@ -1,5 +1,6 @@
 ---
 name: synthesize-learnings
+plugin: agent-scaffolders
 description: >
   Convert raw plugin analysis results into actionable improvement recommendations for agent-scaffolders
   and agent-scaffolders. Trigger with "synthesize learnings", "generate improvement

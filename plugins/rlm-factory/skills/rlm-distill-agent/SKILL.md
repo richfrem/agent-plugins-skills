@@ -1,5 +1,6 @@
 ---
 name: rlm-distill-agent
+plugin: rlm-factory
 description: |
   Distills uncached files into the Recursive Language Model(RLM) Summary cache Ledger. You (the agent) ARE the distillation engine.
   Read each file deeply, write a high-quality 1-sentence summary, inject it via inject_summary.py.  The purpose is if you read the full file once and produce a great summary once it will avoid the need to read the file every time you need to know what the script does or what the details of the file are.  most cases the RLM summary should be sufficient. 

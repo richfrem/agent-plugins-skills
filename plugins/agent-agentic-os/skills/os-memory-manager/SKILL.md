@@ -1,5 +1,6 @@
 ---
 name: os-memory-manager
+plugin: agent-agentic-os
 description: >
   Trigger with "remember this", "update memory", "what should we record from this session", 
   "capture learnings", "write a session log", or when closing a session.

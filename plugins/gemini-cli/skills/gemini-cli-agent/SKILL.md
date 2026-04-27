@@ -1,5 +1,6 @@
 ---
 name: gemini-cli-agent
+plugin: gemini-cli
 description: >
   Gemini CLI sub-agent system for persona-based analysis. Use when piping
   large contexts to Google Gemini models for security audits, architecture reviews,

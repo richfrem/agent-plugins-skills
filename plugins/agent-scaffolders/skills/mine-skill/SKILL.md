@@ -1,5 +1,6 @@
 ---
 name: mine-skill
+plugin: agent-scaffolders
 description: >
   Trigger with "mine this skill", "analyze this skill", "run targeted skill analysis",
   "extract patterns from this skill", or when you want focused analysis on a single Agent

@@ -1,5 +1,6 @@
 ---
 name: dependency-management
+plugin: dependency-management
 description: >
   Python dependency and environment management for multi-service or monorepo python backends.
   Use when: (1) adding, upgrading, or removing a Python package, (2) responding to Dependabot

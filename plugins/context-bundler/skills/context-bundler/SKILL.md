@@ -1,5 +1,6 @@
 ---
 name: context-bundler
+plugin: context-bundler
 description: Interactively creates technical bundles of code, design, and documentation for external review or context sharing. It conducts a brief discovery phase to confirm the targets and format, presents a plan, and then packages multiple project files into a single Markdown file or a portable `.zip` archive.
 allowed-tools: Bash, Read, Write
 ---

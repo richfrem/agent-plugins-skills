@@ -1,5 +1,6 @@
 ---
 name: os-environment-probe
+plugin: agent-agentic-os
 description: >
   Discovers and persists the user's available AI environments (Claude, Copilot CLI,
   Gemini CLI, Cursor, etc.) to context/memory/environment.md. Run once after OS setup

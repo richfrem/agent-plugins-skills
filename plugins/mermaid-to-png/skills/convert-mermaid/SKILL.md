@@ -1,5 +1,6 @@
 ---
 name: convert-mermaid
+plugin: mermaid-to-png
 description: Translate .mmd diagram files into PNG images with configurable resolution (retina/HQ/scale), supporting rasterization (raster, rasterize, rasterization). V2 includes L5 Delegated Constraint Verification via verify_png for strict binary linting and Puppeteer-based rendering.
 allowed-tools: Bash, Read, Write
 examples:

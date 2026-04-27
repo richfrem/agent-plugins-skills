@@ -3,9 +3,9 @@ concept: architectural-patterns-adapted-from-obrasuperpowers-mit-httpsgithubcomo
 source: plugin-code
 source_file: exploration-cycle-plugin/skills/discovery-planning/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.589330+00:00
-cluster: discovery
-content_hash: baa85d33bd457b89
+generated_at: 2026-04-27T05:21:03.983351+00:00
+cluster: session
+content_hash: 05e23f7383300eee
 ---
 
 # Architectural patterns adapted from obra/superpowers (MIT) https://github.com/obra/superpowers
@@ -92,15 +92,15 @@ Route to the correct track
 
 ## See Also
 
-- [[context-folder-patterns]]
-- [[optimizer-engine-patterns-reference-design]]
-- [[optimizer-engine-patterns-reference-design]]
-- [[context-folder-patterns]]
-- [[context-folder-patterns]]
-- [[optimizer-engine-patterns]]
+- [[1-configuration-setup-dynamic-from-profile]]
+- [[1-handle-absolute-paths-from-repo-root]]
+- [[domain-patterns]]
+- [[domain-patterns-exploration-cycle]]
+- [[domain-patterns-exploration-session-failures]]
+- [[domain-patterns-routing-skills]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `exploration-cycle-plugin/skills/discovery-planning/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:09.589330+00:00
+- **Indexed:** 2026-04-27T05:21:03.983351+00:00

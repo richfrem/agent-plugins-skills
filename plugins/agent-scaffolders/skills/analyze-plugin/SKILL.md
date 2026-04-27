@@ -1,5 +1,6 @@
 ---
 name: analyze-plugin
+plugin: agent-scaffolders
 description: >
   Systematically analyze agent plugins and skills to extract design patterns, architectural
   decisions, and reusable techniques. Trigger with "analyze this plugin", "mine patterns from",

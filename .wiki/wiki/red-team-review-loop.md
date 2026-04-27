@@ -1,11 +1,11 @@
 ---
 concept: red-team-review-loop
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/red-team-review/SKILL.md
+source_file: agent-loops/skills/red-team-review/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.193032+00:00
+generated_at: 2026-04-27T05:21:03.729608+00:00
 cluster: research
-content_hash: 52c032306f7f535f
+content_hash: 2a7f7947f083b13c
 ---
 
 # Red Team Review Loop
@@ -57,7 +57,8 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 ## Dependencies
 
 - **`context-bundler`** — Required for creating review packets
-- **Personas** — Adversarial personas in `personas/` directory (e.g., `security-audit.md`, `architect-review.md`)
+- **Adversarial personas**: user-supplied system prompt, or from an installed CLI agent plugin
+  (e.g., agent-personas). The `personas/` directory is no longer bundled with agent-loops.
 
 ## Diagram
 
@@ -66,15 +67,15 @@ See: [red_team_review_loop.mmd](../../assets/diagrams/red_team_review_loop.mmd)
 
 ## See Also
 
-- [[acceptance-criteria-red-team-review]]
 - [[procedural-fallback-tree-red-team-review]]
-- [[red-team-review-agent-plugin-analyzer-meta-plugin]]
-- [[round-2-red-team-review-refactored-agent-plugin-analyzer]]
-- [[round-3-red-team-review-claude-46-opus]]
-- [[round-3-red-team-review-agent-plugin-analyzer-v3]]
+- [[concurrent-agent-loop]]
+- [[dual-loop-innerouter-agent-delegation]]
+- [[learning-loop]]
+- [[learning-loop-retrospective-post-seal]]
+- [[loop-progress-report]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/red-team-review/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.193032+00:00
+- **File:** `agent-loops/skills/red-team-review/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.729608+00:00

@@ -1,5 +1,6 @@
 ---
 name: spec-kitty-clarify
+plugin: spec-kitty-plugin
 description: Identify underspecified areas in the current feature spec by asking up
 ---
 

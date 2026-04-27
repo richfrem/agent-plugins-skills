@@ -1,5 +1,6 @@
 ---
 name: business-requirements-capture
+plugin: exploration-cycle-plugin
 description: >
   Captures and refines business requirements, including functional requirements,
   non-functional requirements, business rules, constraints, assumptions, and

@@ -1,11 +1,11 @@
 ---
 concept: exploration-handoff-interactive-co-authoring
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/exploration-handoff/SKILL.md
+source_file: exploration-cycle-plugin/skills/exploration-handoff/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.076996+00:00
-cluster: plugin-code
-content_hash: ac8d66872335d025
+generated_at: 2026-04-27T05:21:03.984943+00:00
+cluster: session
+content_hash: 8b10345bccfac5bf
 ---
 
 # Exploration Handoff (Interactive Co-Authoring)
@@ -27,6 +27,22 @@ description: >
   (e.g., formal software specs, strategic roadmaps, or process documentation).
 allowed-tools: Bash, Read, Write
 ---
+
+## Dashboard Intercept
+
+Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
+
+- **If the file EXISTS:** Read it silently and check the `**Status:**` line.
+  - If `**Status:** Complete` → the prior session has ended. Proceed with this skill's
+    standalone flow as normal.
+  - Otherwise → an active session is in progress. Stop immediately. Do not continue here.
+    Announce to the user:
+    > "It looks like you have an active Exploration Session in progress. Let me take you back
+    > to your session dashboard so we can keep your progress on track."
+    **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
+    After invoking it, stop generating output from this skill — do not continue below.
+
+- **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
 
 <example>
 <commentary>User has finished exploration and wants to produce a handoff package.</commentary>
@@ -50,54 +66,40 @@ Agent: [invokes exploration-session-brief, NOT exploration-handoff]
 
 > **Note:** This skill runs fully interactively via Claude — no script needed. `execute.py` is a planned batch-mode convenience wrapper that hasn't been built yet, but the core skill works now. The [handoff-preparer-agent](../../agents/handoff-preparer-agent.md) provides an alternative agentic dispatch path.
 
+## When This Phase Is Required vs Optional
+
+- **Greenfield (Type 1):** Always required — the handoff package is how the engineering team knows what to build.
+- **Brownfield (Type 2):** Optional — if the same person/agent is doing both exploration and implementation, formal handoff may be unnecessary. The SME decides during session setup.
+- **Analysis/Docs (Type 3):** Always required — the handoff IS the primary output of the session (requirements, process maps, analysis reports, stories, rules, workflow diagrams, or whatever the non-software deliverable is).
+- **Spike (Type 4):** Optional — depends on whether findings need to be communicated to others.
+
+If this phase was skipped during session setup, it will be marked `- [~]` in the dashboard and the orchestrator will not route here.
+
 This skill provides a structured, 3-stage interactive workflow for synthesizing exploration artifacts into a concise Handoff Package.
 
 **Important Note for Agents:** Do NOT passively run a bash script or dump a massive block of markdown. You must guide the user through the following 3 stages.
 
-## Stage 1: Context Gathering (Routing)
-Before synthesizing anything, establish what you're working with and where it's going. Ask both questions in a single message:
+## Stage 0: Scribe Activities (Automated Capture Before Synthesis)
 
-1. **Target audience:** Who receives this handoff and what will they do with it?
-   - *Engineering team* — writing a formal spec or implementation plan
-   - *Executive or sponsor* — making a go/no-go or budget decision
-   - *Operations or process team* — updating a workflow or policy
-   - *Product or design team* — scoping a discovery sprint or prototype
-   - *Other* — describe briefly
+First, read the dashboard `**Session Type:**` field. This determines what Stage 0 does.
 
-2. **Available artifacts:** Which exploration documents exist? (Check `exploration/` directory — list what you find.) Common sources: session brief, BRD draft, prototype notes, user story set, business-workflow diagrams.
-
-After the user responds: read each artifact file they identify. If a file doesn't exist, note it explicitly and ask whether to proceed without it or pause until it's available. Do not invent content for missing artifacts.
-
-## Stage 1.5: Risk & Rigor Assessment
-Before synthesis, perform a mandatory risk assessment to determine the "Rigor Tier" for the downstream execution phase:
-
-- **Tier 1 (Low Risk)**: Internal R&D, limited data. Lightweight, self-assessed development cycle.
-- **Tier 2 (Moderate Risk)**: Internal data, standard tools. Requires security team review, mandatory red teaming, and context sanitization.
-- **Tier 3 (High Risk)**: PII/Sensitive data, high-privilege tools (Bash). Mandatory full `spec-kitty` engineering cycle with architectural hardening (e.g., **Countermind** SBL, **Pro2Guard** sidecar enforcement).
-
-Ask the user to categorize the project based on these tiers and document the result in the handoff package.
-
-## Stage 2: Synthesis and Iterative Refinement
-Your job is to extract the signal relevant to the target audience — not to copy-paste source documents.
-
-**Signal** = confirmed decisions, hard constraints, and questions that block the next phase.
-**Noise** = background context, rationale already obvious to the audience, and anything marked `[UNCONFIRMED]` in source documents.
-
-1. **Outline First:** Propose
+**Non-software sessions** (session type contains "process", "strategic", "risk/compliance", or "legacy analysis"):
+- Skip prototype-related captures.
+- Check whether `exploration/captures/` contains any of: problem-framing.md, brd-draft.md, workflow-diagram.md.
+- If captures are missing, announce: *"Before I package the hand
 
 *(content truncated)*
 
 ## See Also
 
-- [[exploration-session-brief-interactive-co-authoring]]
-- [[exploration-session-brief-interactive-co-authoring]]
-- [[prototype-builder-interactive-co-authoring]]
-- [[acceptance-criteria-exploration-handoff]]
-- [[acceptance-criteria-exploration-handoff]]
-- [[exploration-cycle-plugin-handoff-preparer-agent]]
+- [[domain-patterns-exploration-cycle]]
+- [[domain-patterns-exploration-session-failures]]
+- [[exploration-cycle-plugin-hooks]]
+- [[exploration-workflow-sme-orchestrator]]
+- [[pre-parse-for---headless-to-set-non-interactive-backend-before-pyplot-import]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/exploration-handoff/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.076996+00:00
+- **File:** `exploration-cycle-plugin/skills/exploration-handoff/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.984943+00:00
