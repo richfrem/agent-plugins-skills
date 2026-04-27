@@ -1,8 +1,26 @@
-[
-  {"prompt": "Speed read my file notes.md at 300 WPM.", "should_trigger": true},
-  {"prompt": "RSVP this article: research.pdf", "should_trigger": true},
-  {"prompt": "Convert report.md into an RSVP token stream at 500 WPM with ORP alignment.", "should_trigger": true},
-  {"prompt": "What are some good speed reading tips and techniques?", "should_trigger": false},
-  {"prompt": "Can you summarize this report.pdf for me?", "should_trigger": false},
-  {"prompt": "Find code related to authentication in the repository.", "should_trigger": false}
-]
+{
+  "benchmark": {
+    "script": "test_orp_engine.py",
+    "type": "quantitative",
+    "description": "ORP calculation accuracy over 50 edge-case words covering hyphenated, quoted, alphanumeric, symbolic, and empty tokens. Script outputs a float in [0.0, 1.0] to stdout. Run from lab root: python3 test_orp_engine.py",
+    "baseline_score": 1.0,
+    "mutation_constraint": "Mutate strictly ONE variable or logic block per iteration to maintain scientific rigor"
+  },
+  "evaluations": [
+    {"prompt": "Speed read my file notes.md at 300 WPM.", "should_trigger": true},
+    {"prompt": "RSVP this article: research.pdf", "should_trigger": true},
+    {"prompt": "Convert report.md into an RSVP token stream at 500 WPM with ORP alignment.", "should_trigger": true},
+    {"prompt": "Read chapter 3 of my book.epub in RSVP mode at 400 words per minute.", "should_trigger": true},
+    {"prompt": "Flash-read these paragraphs at 250 WPM with sentence-end pauses.", "should_trigger": true},
+    {"prompt": "Generate an RSVP stream from presentation.txt for speed reading practice.", "should_trigger": true},
+    {"prompt": "Speed-read this document using the Spritz ORP algorithm.", "should_trigger": true},
+    {"prompt": "Apply Rapid Serial Visual Presentation to my lecture notes.", "should_trigger": true},
+    {"prompt": "What are some good speed reading tips and techniques?", "should_trigger": false},
+    {"prompt": "Can you summarize this report.pdf for me?", "should_trigger": false},
+    {"prompt": "Find code related to authentication in the repository.", "should_trigger": false},
+    {"prompt": "Translate this document into Spanish.", "should_trigger": false},
+    {"prompt": "What is the word count of my essay?", "should_trigger": false},
+    {"prompt": "Format this text as a bulleted list.", "should_trigger": false},
+    {"prompt": "Check the grammar in this paragraph.", "should_trigger": false}
+  ]
+}
