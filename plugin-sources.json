@@ -1,7 +1,7 @@
 {
   "sources": [
     {
-      "source": "richfrem/agent-plugins-skills",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
         "adr-manager",
         "agent-agentic-os",

@@ -1,7 +1,7 @@
 # Copilot Prompt — 0025: agent-agentic-os Simplification
 
 **Model:** claude-sonnet-4.6
-**Status:** DRAFT — Phase 1 sections are final; Phase 2+ marked [PENDING reviewer feedback]
+**Status:** PHASE 2 ACTIVE — Phase 1 committed as v1.6.0; Phase 2 workstreams now executing
 **Plan reference:** tasks/todo/0025-agentic-os-simplification-plan.md
 **Triggered by:** os-architect (simplification + restructure initiative)
 
@@ -228,16 +228,100 @@ eval gate, experiment log, and lab isolation.
 | `agent-loops` | Execution patterns — loop substrate used by os-improvement-loop |
 ```
 
+**7. Update CHANGELOG.md** — prepend a new v1.6.0 entry:
+
+```markdown
+## v1.6.0
+
+### Removed
+- `agents/triple-loop-architect.md` — merged into os-improvement-loop as `--lab` invocation mode
+- `agents/triple-loop-orchestrator.md` — same; os-improvement-loop handles multi-iteration runs natively
+- `skills/os-skill-improvement/` — function absorbed by os-improvement-loop; not a distinct capability
+- `references/sample-prompts/triple-loop-architect-prompt.md`
+
+### Changed
+- `agents/os-architect-agent.md`: Category 3 routing now delegates to os-improvement-loop directly;
+  Routing Decision Audit block added to all HANDOFF_BLOCK outputs; skill creation threshold added
+- `skills/os-improvement-loop/SKILL.md`: os-skill-improvement references removed; eval budget guard added
+- `plugin.json`: deprecated entries removed from agents, skills, keywords, capabilities
+- `README.md`: triple-loop rows removed; Utilities section added; How It Works reframed
+```
+
+**8. Update SUMMARY.md** — if the file lists components under Skills or Agents sections,
+remove `triple-loop-architect`, `triple-loop-orchestrator`, and `os-skill-improvement`. If SUMMARY.md
+contains a "Deprecated" or "Removed" section, add entries for the removed components. If SUMMARY.md
+has a component count, update it to reflect the current state.
+
 ---
 
-## PHASE 2 — Structural Upgrades [PENDING — finalize after reviewer feedback]
+### WS-1F: Update .claude-plugin/plugin.json
 
-These sections are drafted but not finalized. Do NOT implement until the plan has been
-reviewed by Claude and Gemini and Phase 1 changes are merged.
+File: `plugins/agent-agentic-os/.claude-plugin/plugin.json`
+
+Read the file first. Then make these targeted changes:
+
+**1. Remove from `agents` array:** `triple-loop-architect`, `triple-loop-orchestrator`
+
+**2. Remove from `skills` array:** `os-skill-improvement`
+
+**3. Remove from `keywords` array:** `triple-loop`, `skill-improvement`
+
+**4. Remove from `capabilities` array:** `triple-loop-learning`
+
+**5. Update `description` field:** Remove the phrase "Triple-Loop autonomous skill evaluation system"
+from wherever it appears in the description string.
+
+**6. Bump version:** `1.5.0` → `1.6.0`
+
+Verify the file is valid JSON after editing:
+```bash
+python3 -c "import json; json.load(open('plugins/agent-agentic-os/.claude-plugin/plugin.json')); print('OK')"
+```
+
+Verify the deprecated entries are gone:
+```bash
+python3 -c "
+import json
+p = json.load(open('plugins/agent-agentic-os/.claude-plugin/plugin.json'))
+print('version:', p.get('version'))
+print('agents:', p.get('agents', []))
+print('skills:', p.get('skills', []))
+print('keywords:', p.get('keywords', []))
+print('capabilities:', p.get('capabilities', []))
+"
+```
+
+Expected: version is `1.6.0`; none of `triple-loop-architect`, `triple-loop-orchestrator`,
+`os-skill-improvement`, `triple-loop`, `skill-improvement`, `triple-loop-learning` appear in any array.
 
 ---
 
-### WS-2A: os-evolution-verifier — Binary PASS/FAIL contract [PENDING]
+### WS-1G: Update skills/os-init/runtime/agents.json
+
+File: `plugins/agent-agentic-os/skills/os-init/runtime/agents.json`
+
+Read the file first. Find the entry for `Triple-Loop Retrospective` (it refers to the retrospective
+phase of os-improvement-loop, NOT the deleted agents — do not delete this entry).
+
+**Rename and update the entry:**
+- Change `name` (or the display key): `Triple-Loop Retrospective` → `os-improvement-loop-retrospective`
+- Change `description`: `Retrospective phase of os-improvement-loop — analyzes friction events and feeds next iteration`
+- Ensure the entry points to `os-improvement-loop` (not any deleted agent)
+
+Verify the file is valid JSON after editing:
+```bash
+python3 -c "import json; json.load(open('plugins/agent-agentic-os/skills/os-init/runtime/agents.json')); print('OK')"
+```
+
+---
+
+## PHASE 2 — Structural Upgrades [EXECUTE NOW]
+
+Phase 1 is committed as v1.6.0. Implement all WS-2A through WS-2D workstreams now.
+
+---
+
+### WS-2A: os-evolution-verifier — Binary PASS/FAIL contract [EXECUTE]
 
 File: `plugins/agent-agentic-os/skills/os-evolution-verifier/SKILL.md`
 
@@ -261,7 +345,7 @@ that passes all adversarial inputs is not operational — it is only checking th
 
 ---
 
-### WS-2B: os-eval-runner — Global overfitting detection [PENDING]
+### WS-2B: os-eval-runner — Global overfitting detection [EXECUTE]
 
 File: `plugins/agent-agentic-os/skills/os-eval-runner/SKILL.md`
 
@@ -277,7 +361,7 @@ lab was configured.
 
 ---
 
-### WS-2C: experiment_log.py — Add synthesize command [PENDING]
+### WS-2C: experiment_log.py — Add synthesize command [EXECUTE]
 
 File: `plugins/agent-agentic-os/scripts/experiment_log.py`
 
@@ -302,7 +386,7 @@ comma-separated strings: `tags: skill-improvement, overfitting-detected, path-b`
 
 ---
 
-### WS-2D: os-architect-tester — Routing accuracy eval set [PENDING]
+### WS-2D: os-architect-tester — Routing accuracy eval set [EXECUTE]
 
 File: `plugins/agent-agentic-os/agents/os-architect-tester-agent.md`
 
@@ -349,16 +433,38 @@ ls plugins/agent-agentic-os/skills/ | grep "os-skill-improvement"
 
 # 5. README line count (should be 130-180 lines after edits)
 wc -l plugins/agent-agentic-os/README.md
+
+# 6. plugin.json is valid and clean
+python3 -c "
+import json
+p = json.load(open('plugins/agent-agentic-os/.claude-plugin/plugin.json'))
+deprecated = ['triple-loop-architect','triple-loop-orchestrator','os-skill-improvement','triple-loop','skill-improvement','triple-loop-learning']
+found = [d for d in deprecated if any(d in str(v) for v in [p.get('agents',[]),p.get('skills',[]),p.get('keywords',[]),p.get('capabilities',[])])]
+print('version:', p.get('version'))
+print('deprecated still present:', found or 'NONE — clean')
+"
+# Expected: version 1.6.0, deprecated still present: NONE — clean
+
+# 7. agents.json entry renamed
+python3 -c "
+import json
+data = json.load(open('plugins/agent-agentic-os/skills/os-init/runtime/agents.json'))
+entries = data if isinstance(data, list) else data.get('agents', [])
+names = [e.get('name','') for e in entries]
+print('Triple-Loop Retrospective still present:', 'Triple-Loop Retrospective' in names)
+print('os-improvement-loop-retrospective present:', any('os-improvement-loop-retrospective' in n for n in names))
+"
+# Expected: Triple-Loop Retrospective still present: False
+#           os-improvement-loop-retrospective present: True
 ```
 
 ---
 
 ## Output Contract
 
-After completing Phase 1, write a summary to `temp/copilot_output_0025_phase1.md` with:
-- List of files deleted
-- List of files modified with brief description of each change
+After completing Phase 2, write a summary to `temp/copilot_output_0025_phase2.md` with:
+- List of files modified in Phase 2 with brief description of each change (WS-2A through WS-2D)
 - Output of all verification commands above
-- Any anomalies found (broken refs, unexpected content)
+- Any anomalies found (broken refs, unexpected content, JSON parse errors)
 
 Do NOT write a HANDOFF_BLOCK — this is a direct implementation task, not an architect session.
