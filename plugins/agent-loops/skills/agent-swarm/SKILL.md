@@ -1,5 +1,6 @@
 ---
 name: agent-swarm
+plugin: agent-loops
 description: "(Industry standard: Parallel Agent) Primary Use Case: Work that can be partitioned into independent sub-tasks running concurrently across multiple agents. Parallel multi-agent execution pattern. Use when: work can be partitioned into independent tasks that N agents can execute simultaneously across worktrees. Includes routing (sequential vs parallel), merge verification, and correction loops."
 allowed-tools: Bash, Read, Write
 ---

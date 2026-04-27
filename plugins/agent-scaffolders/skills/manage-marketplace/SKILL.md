@@ -1,5 +1,6 @@
 ---
 name: manage-marketplace
+plugin: agent-scaffolders
 description: >
   This skill should be used when the user wants to "create a marketplace", 
   "setup a marketplace catalog", "scaffold marketplace.json", "initialize 

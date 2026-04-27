@@ -1,5 +1,6 @@
 ---
 name: business-workflow-doc
+plugin: exploration-cycle-plugin
 description: >
   Generate Mermaid flowcharts documenting business processes, state machines,
   and workflow logic from session captures. Use when you need to map multi-step

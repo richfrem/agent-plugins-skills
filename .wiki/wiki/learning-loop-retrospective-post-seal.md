@@ -3,9 +3,9 @@ concept: learning-loop-retrospective-post-seal
 source: plugin-code
 source_file: agent-loops/assets/templates/loop_retrospective_template.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.194183+00:00
+generated_at: 2026-04-27T05:21:03.722597+00:00
 cluster: plugin-code
-content_hash: 4128c96edc300e42
+content_hash: 603c06c093a7b713
 ---
 
 # Learning Loop Retrospective (Post-Seal)
@@ -58,7 +58,7 @@ content_hash: 4128c96edc300e42
 - [ ] ...
 
 ## 4. Meta-Learning (Actionable Improvements)
-- **Keep:** (e.g. "The new ADR 088 worked perfectly")
+- **Keep:** (e.g. "[What worked well this loop — cite specific evidence]")
 - **Change:** (e.g. "Ingestion takes too long, investigate parallelization")
 
 ## 5. Next Loop Primer
@@ -68,15 +68,15 @@ content_hash: 4128c96edc300e42
 
 ## See Also
 
-- [[triple-loop-learning-system---architecture-overview]]
-- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
-- [[triple-loop-learning-system---architecture-overview]]
-- [[learning-loop-meta-tasks]]
-- [[learning-loop---detailed-phase-instructions]]
 - [[learning-loop]]
+- [[triple-loop-learning-meta-learning-system]]
+- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
+- [[agent-harness-learning-layer]]
+- [[concurrent-agent-loop]]
+- [[dual-loop-innerouter-agent-delegation]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `agent-loops/assets/templates/loop_retrospective_template.md`
-- **Indexed:** 2026-04-17T06:42:09.194183+00:00
+- **Indexed:** 2026-04-27T05:21:03.722597+00:00

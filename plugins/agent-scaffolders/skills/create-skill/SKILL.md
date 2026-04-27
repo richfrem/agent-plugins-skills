@@ -1,5 +1,6 @@
 ---
 name: create-skill
+plugin: agent-scaffolders
 description: >
   Scaffolds the filesystem structure for a new agent skill: creates the directory layout,
   writes a starter SKILL.md, generates evals/evals.json, references/, scripts/, and assets/

@@ -1,15 +1,11 @@
 ---
 cluster: agents
-concepts: 5
-generated_at: 2026-04-17T06:42:21.333849+00:00
+concepts: 1
+generated_at: 2026-04-27T05:21:04.712073+00:00
 ---
 
 # Agents
 
-*5 concepts in this cluster.*
+*1 concepts in this cluster.*
 
-- [[architecture]] — Architecture
-- [[plugins-research]] — Plugins Research
-- [[plugins-research]] — Plugins Research
-- [[plugins-research]] — Plugins Research
-- [[skills]] — Skills
+- [[install-plugin-in-a-different-repo-eg-context-bundler-specifically]] — install plugin in a different repo e.g. context-bundler specifically

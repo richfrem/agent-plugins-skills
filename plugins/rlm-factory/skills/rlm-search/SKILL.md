@@ -1,5 +1,6 @@
 ---
 name: rlm-search
+plugin: rlm-factory
 description: >
   3-Phase Knowledge Search strategy for the RLM Factory ecosystem. Auto-invoked
   when tasks involve finding code, documentation, or architecture context in the

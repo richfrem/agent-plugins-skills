@@ -1,5 +1,6 @@
 ---
 name: audit-plugin-l5
+plugin: agent-scaffolders
 description: Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.
 allowed-tools: Bash, Read, Write
 ---

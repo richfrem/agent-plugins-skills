@@ -1,12 +1,11 @@
 ---
 cluster: event
-concepts: 2
-generated_at: 2026-04-17T06:42:21.345481+00:00
+concepts: 1
+generated_at: 2026-04-27T05:21:04.709309+00:00
 ---
 
 # Event
 
-*2 concepts in this cluster.*
+*1 concepts in this cluster.*
 
-- [[agent-scaffolders-create-hook]] — Agent Scaffolders Create Hook
-- [[agent-scaffolders-create-hook]] — Agent Scaffolders Create Hook
+- [[data-is-a-dict-of-id-iso-timestamp-prune-entries-outside-dedup-window]] — data is a dict of {id: iso_timestamp}; prune entries outside dedup window

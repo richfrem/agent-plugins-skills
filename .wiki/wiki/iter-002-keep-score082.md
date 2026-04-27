@@ -1,0 +1,177 @@
+---
+concept: iter-002-keep-score082
+source: plugin-code
+source_file: agent-scaffolders/skills/fix-plugin-paths/evals/traces/iter_002_KEEP_score0.82.json
+wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
+generated_at: 2026-04-27T05:21:04.237351+00:00
+cluster: plugin
+content_hash: e34f8911f1f8e9a5
+---
+
+# Iter 002 Keep Score0.82
+
+> *Summary pending — run /wiki-distill*
+
+## Key Ideas
+
+- *(Bullets pending — run /wiki-distill)*
+
+## Details
+
+<!-- Source: plugin-code/agent-scaffolders/skills/fix-plugin-paths/evals/traces/iter_002_KEEP_score0.82.json -->
+{
+  "iteration": 2,
+  "verdict": "KEEP",
+  "score": 0.825,
+  "baseline_score": 0.795,
+  "delta": 0.03,
+  "desc": "continuing audit: self-audit.md fix + tracker updates + 21 files processed",
+  "mutation_diff": "diff --git a/plugins/agent-scaffolders/skills/fix-plugin-paths/evals/results.tsv b/plugins/agent-scaffolders/skills/fix-plugin-paths/evals/results.tsv\nindex 8a4a1958..136a3067 100644\n--- a/plugins/agent-scaffolders/skills/fix-plugin-paths/evals/results.tsv\n+++ b/plugins/agent-scaffolders/skills/fix-plugin-paths/evals/results.tsv\n@@ -1,3 +1,4 @@\n timestamp\tcommit\tscore\tbaseline\taccuracy\theuristic\tf1\tstatus\tdescription\n 2026-04-03T16:15:31.447381\ted37eec5\t0.7950\t0.0000\t0.7500\t0.9000\t0.8421\tBASELINE\tinitial baseline: post task-tracker workflow + self-referential path fixes\n 2026-04-03T16:17:49.250390\t73b567cc\t0.8250\t0.7950\t0.7500\t1.0000\t0.8421\tKEEP\tmajor upgrade: intake + mode C in-session evolution + self-assessment + operating principles\n+2026-04-03T16:21:25.653401\t55f17c25\t0.8250\t0.7950\t0.7500\t1.0000\t0.8421\tKEEP\tcontinuing audit: self-audit.md fix + tracker updates + 21 files processed\n",
+  "routing_detail": [
+    {
+      "input": "fix the plugin path references in this skill.md",
+      "should_trigger": true,
+      "matched_keywords": [
+        "path",
+        "plugin",
+        "references",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "audit all plugin files for broken path references",
+      "should_trigger": true,
+      "matched_keywords": [
+        "audit",
+        "broken",
+        "files",
+        "path",
+        "plugin",
+        "references"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "standardize path references after installing this skill",
+      "should_trigger": true,
+      "matched_keywords": [
+        "after",
+        "installing",
+        "path",
+        "references",
+        "skill",
+        "standardize"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "there are hardcoded plugins/ paths in my skill files \u2014 fix them",
+      "should_trigger": true,
+      "matched_keywords": [
+        "files",
+        "hardcoded",
+        "paths",
+        "plugins",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "prepare these plugin files for distribution via npx skills add",
+      "should_trigger": true,
+      "matched_keywords": [
+        "distribution",
+        "files",
+        "plugin",
+        "skills"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "i see /users/richardfremmerlid in my skill.md \u2014 remove the machine path",
+      "should_trigger": true,
+      "matched_keywords": [
+        "machine",
+        "path",
+        "skill",
+        "users"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "fix cross-plugin path dependencies in agent-agentic-os",
+      "should_trigger": true,
+      "matched_keywords": [
+        "agent",
+        "cross",
+        "dependencies",
+        "path",
+        "plugin"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "run a portability audit on all skill.md files in this repo",
+      "should_trigger": true,
+      "matched_keywords": [
+        "audit",
+        "files",
+        "portability",
+        "skill"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "there are broken symlinks in my installed skills folder",
+      "should_trigger": false,
+      "matched_keywords": [
+        "broken",
+        "installed",
+        "skills"
+      ],
+      "triggered": true,
+      "correct": false,
+      "failure_reason": "false positive \u2014 keywords ['broken', 'installed', 'skills'] matched a should_trigger=false input"
+    },
+    {
+      "input": "create a new plugin skill for link checking",
+      "should_trigger": false,
+      "
+
+*(content truncated)*
+
+<!-- Source: plugin-code/spec-kitty-plugin/.agents/skills/fix-plugin-paths/evals/traces/iter_002_KEEP_score0.82.json -->
+{
+  "iteration": 2,
+  "verdict": "KEEP",
+  "score": 0.825,
+  "baseline_score": 0.795,
+  "delta": 0.03,
+  "desc": "continuing audit: self-audit.md fix + tracker updates + 21 files processed",
+  "mutation_diff": "diff --git a/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/evals/results.tsv b/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/evals/results.tsv\nindex 8a4a1958..136a3067 100644\n--- a/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/evals/results.tsv\n+++ b/plugins/agent-plugin-analyzer/skills/fix-plugin-paths/evals/results.tsv\n@@ -1,3 +1,4 @@\n timestamp\tcommit\tscore\tbaseline\taccuracy\theuristic\tf1\tstatus\tdescription\n 2026-04-03T16:15:31.447381\ted37eec5\t0.7950\t0.0000\t0.7500\t0.9000\t0.8421\t
+
+*(combined content truncated)*
+
+## See Also
+
+- [[iter-001-keep-score082]]
+- [[iter-003-keep-score082]]
+- [[iter-004-keep-score082]]
+- [[iter-005-keep-score082]]
+- [[iter-001-keep-score068]]
+- [[improve-iter-1]]
+
+## Raw Source
+
+- **Source:** `plugin-code`
+- **File:** `agent-scaffolders/skills/fix-plugin-paths/evals/traces/iter_002_KEEP_score0.82.json`
+- **Indexed:** 2026-04-27T05:21:04.237351+00:00

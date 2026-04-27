@@ -1,5 +1,6 @@
 ---
 name: create-docker-skill
+plugin: agent-scaffolders
 description: Scaffold an agent skill with Docker runtime support
 argument-hint: "[skill-name]"
 allowed-tools: Bash, Read, Write

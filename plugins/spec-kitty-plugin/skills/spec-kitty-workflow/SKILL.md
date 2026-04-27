@@ -1,5 +1,6 @@
 ---
 name: spec-kitty-workflow
+plugin: spec-kitty-plugin
 description: Standard operating procedures for the Spec Kitty agentic workflow (Plan -> Implement -> Review -> Merge).
 allowed-tools: Bash, Read, Write
 ---

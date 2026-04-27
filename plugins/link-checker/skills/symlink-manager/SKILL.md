@@ -1,5 +1,6 @@
 ---
 name: symlink-manager
+plugin: link-checker
 description: >
   Create, audit, repair, and document cross-platform symlinks that work correctly
   on both Windows and macOS/Linux. Use this skill whenever the user mentions symlinks,

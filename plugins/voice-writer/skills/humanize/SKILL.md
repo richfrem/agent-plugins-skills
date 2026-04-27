@@ -1,5 +1,6 @@
 ---
 name: humanize
+plugin: voice-writer
 description: >
   This skill should be used when the user wants to "humanize this", "make this
   sound less AI", "rewrite this naturally", "remove AI patterns", "make this

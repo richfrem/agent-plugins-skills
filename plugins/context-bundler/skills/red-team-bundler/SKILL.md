@@ -1,5 +1,6 @@
 ---
 name: red-team-bundler
+plugin: context-bundler
 description: Interactively prepares a targeted Red Team Review package. It conducts a brief discovery interview to determine the threat model, generates a strict security auditor prompt, compiles a manifest of relevant project files, and bundles them into a single Markdown artifact or ZIP archive ready for an external LLM (like Grok, ChatGPT, or Gemini) or a human reviewer.
 allowed-tools: Bash, Read, Write
 ---

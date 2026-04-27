@@ -1,5 +1,6 @@
 ---
 name: os-eval-lab-setup
+plugin: agent-agentic-os
 description: >
   Bootstraps a skill evaluation lab repo for an autoresearch improvement run. Trigger with
   "set up an eval lab", "bootstrap the eval repo", "prepare the test repo for skill evaluation",

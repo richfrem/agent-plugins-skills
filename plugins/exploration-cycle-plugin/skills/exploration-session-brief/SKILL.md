@@ -1,5 +1,6 @@
 ---
 name: exploration-session-brief
+plugin: exploration-cycle-plugin
 description: >
   Interactive co-authoring skill for the wide end of the exploration funnel.
   Captures and refines the core intent, whether the outcome is a software app,

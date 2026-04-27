@@ -1,5 +1,6 @@
 ---
 name: spec-kitty-implement
+plugin: spec-kitty-plugin
 description: A standard Spec-Kitty workflow routine.
 ---
 

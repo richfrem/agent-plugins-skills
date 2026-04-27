@@ -1,5 +1,6 @@
 ---
 name: plugin-syncer
+plugin: plugin-manager
 description: >
   Synchronizes the agent environments. Looks at the inventory (plugin-sources.json) 
   and reinstalls all skills and plugins from the sources indicated. Also cleans up 

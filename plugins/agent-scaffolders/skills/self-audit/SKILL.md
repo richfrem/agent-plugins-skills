@@ -1,5 +1,6 @@
 ---
 name: self-audit
+plugin: agent-scaffolders
 description: >
   Trigger with "run self-audit", "test the analyzer", "regression test the plugin analyzer",
   "audit the agent-scaffolders", or "verify the analyzer works correctly". Runs the

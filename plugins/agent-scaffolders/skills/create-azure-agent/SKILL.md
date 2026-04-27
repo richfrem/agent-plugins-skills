@@ -1,5 +1,6 @@
 ---
 name: create-azure-agent
+plugin: agent-scaffolders
 description: Deploy a skill as an Azure AI Foundry hosted agent
 argument-hint: "[skill-dir]"
 allowed-tools: Bash, Write, Read

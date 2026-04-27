@@ -1,5 +1,6 @@
 ---
 name: todo-check
+plugin: agent-agentic-os
 description: >
   Audit a file for TODO comments, pending work items, or technical debt markers. 
   Useful for checking code readiness before a commit or reviewing task status.

@@ -174,6 +174,41 @@ def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
                 print(f"    ! Skipped locked file: {dst_item.name}")
 
 
+def _inject_plugin_field(skill_md_path: Path, plugin_name: str) -> None:
+    """Stamp 'plugin: <plugin-name>' into the SKILL.md frontmatter after the name field.
+
+    This lets AI assistants see which plugin owns a skill and know to invoke it
+    by its flat name (e.g. Skill("obsidian-wiki-builder"), not "obsidian-wiki-engine:obsidian-wiki-builder").
+    Skips files that already have the field or lack a valid frontmatter block.
+    """
+    if not skill_md_path.exists():
+        return
+    try:
+        content = skill_md_path.read_text(encoding="utf-8")
+    except OSError:
+        return
+    # Must start with ---
+    if not content.startswith("---"):
+        return
+    # Already stamped
+    if f"\nplugin: {plugin_name}" in content or f"\nplugin: " in content:
+        return
+    # Inject after the name: line inside the frontmatter block
+    lines = content.splitlines(keepends=True)
+    inserted = False
+    for i, line in enumerate(lines):
+        if line.startswith("name:") and not inserted:
+            lines.insert(i + 1, f"plugin: {plugin_name}\n")
+            inserted = True
+            break
+    if not inserted:
+        return
+    try:
+        skill_md_path.write_text("".join(lines), encoding="utf-8")
+    except OSError:
+        pass
+
+
 def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
                      root: Path, env_name: str) -> bool:
     if dry_run:
@@ -435,6 +470,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                 dest = central_skills / item.name
                 if not dry_run:
                     _copy_resolving_pointers(item, dest)
+                    _inject_plugin_field(dest / "SKILL.md", plugin_name)
                     print(f"  \u2713 Universal central copy: {dest.relative_to(root)}")
                 else:
                     print(f"  [DRY RUN] Universal central copy: .agents/skills/{item.name}")

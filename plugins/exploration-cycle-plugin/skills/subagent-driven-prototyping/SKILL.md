@@ -1,5 +1,6 @@
 ---
 name: subagent-driven-prototyping
+plugin: exploration-cycle-plugin
 description: >
   Builds a prototype component by component, self-reviewing each component against the Discovery Plan before moving to the next. Invoked by prototype-builder after the layout direction is confirmed. Trigger phrases: "build the prototype", "let's build it", "start building". Also invoked by prototype-builder-agent after visual-companion confirms layout.
 allowed-tools: Bash, Read, Write

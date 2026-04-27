@@ -1,11 +1,11 @@
 ---
 concept: agentic-os-guide
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/os-guide/SKILL.md
+source_file: agent-agentic-os/skills/os-guide/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.152449+00:00
-cluster: session
-content_hash: 1cfde29db99c6465
+generated_at: 2026-04-27T05:21:03.713413+00:00
+cluster: memory
+content_hash: 4f34fd90df0eeffb
 ---
 
 # Agentic OS Guide
@@ -74,7 +74,7 @@ full operating system metaphor.
 | **Evaluation** | `os-eval-runner` | Autoresearch eval engine — scores and gates SKILL.md iterations |
 | **Evaluation** | `os-eval-lab-setup` | Bootstraps isolated lab repos for eval runs |
 | **Evaluation** | `os-eval-backport` | Reviews lab results, applies approved changes to master |
-| **Mutation** | `os-skill-improvement` | RED-GREEN-REFACTOR routing accuracy improvement |
+| **Mutation** | `os-improvement-loop` | RED-GREEN-REFACTOR routing accuracy improvement |
 | **Memory** | `os-memory-manager` | Session log writing, L2→L3 promotion, deduplication |
 | **Reporting** | `os-improvement-report` | Progress charts from results.tsv + improvement ledger |
 | **Bootstrap** | `os-init` | Deploys kernel.py, agents.json, Triple-Loop files to new project |
@@ -101,21 +101,21 @@ Execute these phases in order. Do not skip phases. This skill uses **Progressive
 **What Anthropic ships natively:**
 - CLAUDE.md layered discovery (global, org, project, local, subdirectory scopes - most specific wins)
 - Auto-memory (`MEMORY.md`) - Claude writes this itself with build commands, style prefs, architecture decisions
-- `/loop` command for cron
+- `/loop` command for cron-
 
 *(content truncated)*
 
 ## See Also
 
-- [[agent-harness-learning-layer-formerly-agentic-os]]
-- [[agentic-os-setup-orchestrator]]
-- [[agentic-os-architecture]]
-- [[canonical-agentic-os-file-structure]]
-- [[agentic-os---future-vision]]
-- [[agentic-os-improvement-backlog]]
+- [[agentic-os-operational-guide-usage]]
+- [[agent-agentic-os-hooks]]
+- [[after-os-evolution-verifier-run]]
+- [[os-architect-test-report-scenario-id]]
+- [[os-state-json]]
+- [[quick-start-zero-context-guide]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/os-guide/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.152449+00:00
+- **File:** `agent-agentic-os/skills/os-guide/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.713413+00:00

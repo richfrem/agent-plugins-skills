@@ -1,5 +1,6 @@
 ---
 name: create-hook
+plugin: agent-scaffolders
 description: Design and scaffold an event-driven Claude Code hook
 argument-hint: "[event-type or use case]"
 allowed-tools: Bash, Read, Write

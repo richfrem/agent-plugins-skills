@@ -1,5 +1,6 @@
 ---
 name: plugin-installer
+plugin: plugin-manager
 description: >-
   Installs plugin components (skills, commands/workflows, rules, hooks, MCP)
   into the .agents/ central store and symlinks them to agent environments that

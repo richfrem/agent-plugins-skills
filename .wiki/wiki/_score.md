@@ -1,15 +1,11 @@
 ---
 cluster: score
-concepts: 5
-generated_at: 2026-04-17T06:42:21.321042+00:00
+concepts: 1
+generated_at: 2026-04-27T05:21:04.712889+00:00
 ---
 
 # Score
 
-*5 concepts in this cluster.*
+*1 concepts in this cluster.*
 
-- [[chart-reading-guide]] — Chart Reading Guide
-- [[chart-reading-guide]] — Chart Reading Guide
-- [[chart-reading-guide]] — Chart Reading Guide
-- [[skill-optimization-guide-karpathy-loop]] — Skill Optimization Guide (Karpathy Loop)
-- [[skill-optimization-guide-karpathy-loop]] — Skill Optimization Guide (Karpathy Loop)
+- [[only-include-those-appearing-in-2-of-the-last-n-traces]] — Only include those appearing in 2+ of the last N traces

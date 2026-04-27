@@ -1,5 +1,6 @@
 ---
 name: plugin-remover
+plugin: plugin-manager
 description: Interactively select and uninstall agent plugins and skills from the local .agents/ environment.
 ---
 

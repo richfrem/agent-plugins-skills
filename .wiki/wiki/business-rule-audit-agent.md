@@ -1,11 +1,11 @@
 ---
 concept: business-rule-audit-agent
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/agents/exploration-cycle-plugin-business-rule-audit-agent.md
+source_file: exploration-cycle-plugin/agents/business-rule-audit-agent.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.307883+00:00
+generated_at: 2026-04-27T05:21:03.971228+00:00
 cluster: prototype
-content_hash: 00786f53e1b2e91d
+content_hash: b08ea7acbeb074b5
 ---
 
 # Business Rule Audit Agent
@@ -99,15 +99,15 @@ List every CONTRADICTED and UNCERTAIN rule here with a one-sentence explanation 
 
 ## See Also
 
-- [[agent-harness-learning-layer-formerly-agentic-os]]
-- [[agent-harness-summary]]
-- [[os-health-check-sub-agent]]
-- [[global-agent-kernel]]
-- [[template-post-run-agent-self-assessment]]
-- [[research-summary-agent-operating-systems-agent-os]]
+- [[1-read-the-agent-instructions-and-strip-yaml-frontmatter]]
+- [[agent-agentic-os-hooks]]
+- [[agent-bridge]]
+- [[agent-harness-learning-layer]]
+- [[agent-loops-execution-primitives]]
+- [[agent-loops-hooks]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/agents/exploration-cycle-plugin-business-rule-audit-agent.md`
-- **Indexed:** 2026-04-17T06:42:10.307883+00:00
+- **File:** `exploration-cycle-plugin/agents/business-rule-audit-agent.md`
+- **Indexed:** 2026-04-27T05:21:03.971228+00:00

@@ -1,5 +1,6 @@
 ---
 name: vector-db-audit
+plugin: vector-db
 description: Audit Vector DB coverage -- compares the live filesystem manifest against the ChromaDB index to identify coverage gaps.
 allowed-tools: Bash, Read, Write
 ---

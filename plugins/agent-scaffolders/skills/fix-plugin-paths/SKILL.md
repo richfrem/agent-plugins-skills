@@ -1,5 +1,6 @@
 ---
 name: fix-plugin-paths
+plugin: agent-scaffolders
 description: >
   Fixes broken path references in plugin skill and agent files to ensure portability
   across installed environments. Use when you see "plugins/" paths in SKILL.md or agent

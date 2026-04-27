@@ -1,5 +1,6 @@
 ---
 name: eval-autoresearch-fit
+plugin: agent-scaffolders
 description: >
   Trigger with "evaluate autoresearch fit", "score this skill for karpathy loop",
   "is this a good autoresearch candidate", "assess autoresearch viability for",

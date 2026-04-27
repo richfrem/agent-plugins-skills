@@ -1,5 +1,6 @@
 ---
 name: os-eval-runner
+plugin: agent-agentic-os
 description: >
   Stateless evaluation engine that scores and gates skill improvement iterations using
   headless Python evaluation scripts. Use when the user says "evaluate this skill",

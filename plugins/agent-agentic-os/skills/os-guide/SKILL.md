@@ -1,5 +1,6 @@
 ---
 name: os-guide
+plugin: agent-agentic-os
 description: >
   Trigger with "explain agentic os", "how do I set up a persistent agent environment", 
   "what is the CLAUDE.md hierarchy", "explain the context folder structure", 

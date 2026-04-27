@@ -1,11 +1,11 @@
 ---
 concept: loop-progress-report
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/os-improvement-report/SKILL.md
+source_file: agent-agentic-os/skills/os-improvement-report/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.165967+00:00
+generated_at: 2026-04-27T05:21:03.718166+00:00
 cluster: improvement
-content_hash: 39134797a941aa88
+content_hash: bfbb0b729c1c67bf
 ---
 
 # Loop Progress Report
@@ -61,13 +61,14 @@ This skill produces the same chart for agentic-os and exploration-cycle-plugin i
 
 ## What It Reads
 
-| Source | Content |
-|--------|---------|
-| `context/memory/improvement-ledger.md` | Eval score progression (Section 1), survey-to-action trace (Section 2), north star metric (Section 3) |
-| `.agents/skills/*/evals/results.tsv` | Per-skill detailed eval score history (supplement to ledger) |
+| Source | Priority | Content |
+|--------|----------|---------|
+| `context/experiment-log/index.md` | **Primary** | All logged runs; filter `result_type: numeric` for KEEP/DISCARD/score data from orchestrator runs |
+| `context/memory/improvement-ledger.md` | Legacy fallback | Eval score progression written by os-improvement-loop Stage 4.7; used if experiment log has no numeric entries |
+| `.agents/skills/*/evals/results.tsv` | Supplement | Per-skill detailed eval score history |
 
-The improvement ledger is the primary source. It is written at every loop close (Stage 4.7
-of os-improvement-loop). See `references/memory/improvement-ledger-spec.md` for the format.
+The experiment log is the unified source of truth for numeric results. The improvement ledger
+is a legacy format maintained for backward compatibility with older loop runs.
 
 ---
 
@@ -82,7 +83,43 @@ of os-improvement-loop). See `references/memory/improvement-ledger-spec.md` for 
 
 ## Execution Flow
 
-### Phase 1: Check data availability
+### Phase 0: Read experiment log for numeric entries
+
+```bash
+python3 plugins/agent-agentic-os/scripts/experiment_log.py summary
+```
+
+Then read `context/experiment-log/index.md` and filter for rows where the `Result Type`
+column is `numeric`. For each matching row, read the linked `.md` file and extract from
+its YAML header:
+
+```
+keeps:    (integer — from verdict string "NNK/NND ...")
+discards: (integer)
+baseline: (float)
+best_score: (float)
+delta:    (float, signed)
+target:   (string — the skill/agent under test)
+date:     (string)
+```
+
+Parse the verdict string with this pattern:
+```
+(\d+)K/(\d+)D baseline=([0-9.]+) best=([0-9.]+) delta=([+-][0-9.]+)
+```
+
+If 1+ numeric entries exist, use them as the primary data source for the chart.
+If 0 numeric entries exist, fall through to Phase 1 (legacy ledger).
+
+**Bridge step:** If the legacy `generate_report.py` script is being used, write the
+extracted numeric data into `improvement-ledger.md` Section 1 format so the script
+can consume it. Each numeric experiment log entry maps to one row:
+
+```
+| <date> | <target> | <baseline> | <best_score> | <delta> | <keeps> KEEP, <discards> DISCARD |
+```
+
+### Phase 1: Check legacy data availability (fallback only)
 
 ```bash
 LEDGER="${CLAUDE_PROJECT_DIR}/context/memory/improvement-ledger.md"
@@ -96,59 +133,21 @@ wc -l "$LEDGER"
 
 If the ledger exists but Section 1 table is empty (no rows beyond the header), inform the
 user that no cycles have been completed yet and the first loop run will establish the baseline.
-Do not run the report script on an empty ledger — it will produce an empty chart.
-
-### Phase 2: Run the report
-
-```bash
-PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)/.agents/skills/agent-agentic-os}"
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-
-python "${PLUGIN_DIR}/skills/os-improvement-report/scripts/generate_report.py" \
-  --project-dir "$PROJECT_DIR" \
-  --plugin-dir "$PLUGIN_DIR" \
-  [--skill SESSION-MEMORY-MANAGER]   # optional: filter to one skill
-```
-
-The script exits 0 on success and prints the chart path and text summary to stdout.
-
-### Phase 3: Surface the output
-
-After the script completes:
-
-1. Report the chart path to the user: `context/memory/reports/progress_[TIMESTAMP].png`
-2. Print the text summary inline (it is concise — top hits table, north star trend).
-3. Ask: "Would you like me to open the chart image or show the per-skill detail?"
-
-### Phase 4: Cross-plugin reporting (optional)
-
-If the user wants improvement tracking across both `agent-agentic-os` AND `exploration-cycle-plugin`,
-run the report twice — once per plugin — passing each plugin's project dir:
-
-```bash
-# agentic-os cycles
-python "$SCRIPT" --project-dir "$AGENTIC_OS_PROJECT" --plugin-dir "$AGENTIC_OS_PLUGIN"
-
-# exploration-cycle cycles
-python "$SCRIPT" --project-dir "$EXPLORATION_PROJECT" --plugin-dir "$EXPLORATION_PLUGIN"
-```
-
-Both plugins write to `context/memory/improvement-ledger.md` in their respective project dirs.
-Each pr
+Do not run the report script on an empty ledger — it will produce an empt
 
 *(content truncated)*
 
 ## See Also
 
-- [[triple-loop-architect-sibling-lab-setup]]
-- [[triple-loop-orchestrator-unattended-supervisor]]
-- [[skill-display-name-eval-skill-improvement-loop-instructions]]
-- [[os-loop-command]]
-- [[triple-loop-learning-system---architecture-overview]]
-- [[loop-scheduler-and-heartbeat-pattern]]
+- [[broken-symlinks-repair-report]]
+- [[concurrent-agent-loop]]
+- [[dual-loop-innerouter-agent-delegation]]
+- [[learning-loop]]
+- [[learning-loop-retrospective-post-seal]]
+- [[no-session-in-progress-suggest-starting-one]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/os-improvement-report/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:10.165967+00:00
+- **File:** `agent-agentic-os/skills/os-improvement-report/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.718166+00:00

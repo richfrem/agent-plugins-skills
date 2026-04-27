@@ -1,5 +1,6 @@
 ---
 name: visual-companion
+plugin: exploration-cycle-plugin
 description: >
   Presents layout options to the SME in plain language before any prototype construction begins. Invoked after the Discovery Plan is approved to confirm visual structure and direction. Trigger phrases: "what should it look like", "show me some layout options", "let me see the design options before we build". Also invoked by prototype-builder after plan approval.
 allowed-tools: Read, Write

@@ -1,5 +1,6 @@
 ---
 name: create-mcp-integration
+plugin: agent-scaffolders
 description: Add an MCP server integration to a plugin
 argument-hint: "[mcp-server-name or service]"
 allowed-tools: Bash, Read, Write

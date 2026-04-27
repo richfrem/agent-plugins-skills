@@ -1,15 +1,14 @@
 ---
 cluster: name
-concepts: 5
-generated_at: 2026-04-17T06:42:21.333669+00:00
+concepts: 4
+generated_at: 2026-04-27T05:21:04.708626+00:00
 ---
 
 # Name
 
-*5 concepts in this cluster.*
+*4 concepts in this cluster.*
 
-- [[agent-scaffolders-create-plugin]] — Agent Scaffolders Create Plugin
-- [[agent-scaffolders-create-plugin]] — Agent Scaffolders Create Plugin
-- [[agent-scaffolders-create-sub-agent]] — Agent Scaffolders Create Sub Agent
-- [[agent-scaffolders-create-sub-agent]] — Agent Scaffolders Create Sub Agent
-- [[create-skill-skill-scaffolding-executor]] — create-skill: Skill Scaffolding Executor
+- [[check-for-broken-symlinks]] — Check For Broken Symlinks
+- [[plugin-files-and-symlinks-inventory]] — Plugin Files And Symlinks Inventory
+- [[skip-hidden-files]] — Skip hidden files
+- [[trigger-block-builders]] — --- Trigger block builders ---

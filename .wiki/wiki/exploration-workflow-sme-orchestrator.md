@@ -3,9 +3,9 @@ concept: exploration-workflow-sme-orchestrator
 source: plugin-code
 source_file: exploration-cycle-plugin/skills/exploration-workflow/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:09.598678+00:00
+generated_at: 2026-04-27T05:21:03.987966+00:00
 cluster: phase
-content_hash: 9a67a62ea7a1a136
+content_hash: 2fb087e951337912
 ---
 
 # Exploration Workflow — SME Orchestrator
@@ -101,15 +101,15 @@ If the SME has no Copilot or Gemini CLI (strategy = `claude-subagents` or `direc
 
 ## See Also
 
-- [[sme-orchestrator-option-15-detailed-implementation-plan]]
-- [[option-15-sme-orchestrator-implementation---copilot-prompt]]
-- [[post-run-survey-exploration-workflow]]
-- [[exploration-orchestrator-interactive-selection]]
-- [[acceptance-criteria-exploration-orchestrator]]
-- [[post-run-survey-exploration-orchestrator]]
+- [[domain-patterns-exploration-cycle]]
+- [[domain-patterns-exploration-session-failures]]
+- [[exploration-cycle-plugin-hooks]]
+- [[exploration-handoff-interactive-co-authoring]]
+- [[orchestrator-loop-router-lifecycle-manager]]
+- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
 - **File:** `exploration-cycle-plugin/skills/exploration-workflow/SKILL.md`
-- **Indexed:** 2026-04-17T06:42:09.598678+00:00
+- **Indexed:** 2026-04-27T05:21:03.987966+00:00

@@ -1,5 +1,6 @@
 ---
 name: adr-management
+plugin: adr-manager
 description: >
   ADR management skill. Auto-invoked for generating architecture decisions,
   documenting design rationale, and maintaining the decision record log.

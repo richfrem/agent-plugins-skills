@@ -1,5 +1,6 @@
 ---
 name: ecosystem-authoritative-sources
+plugin: agent-scaffolders
 description: Provides information about how to create, structure, install, and audit Agent Skills, Plugins, Antigravity Workflows, and Sub-agents. Trigger this when specifications, rules, or best practices for the ecosystem are required.
 allowed-tools: Bash, Read, Write
 ---

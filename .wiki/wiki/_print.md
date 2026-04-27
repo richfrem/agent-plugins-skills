@@ -1,13 +1,14 @@
 ---
 cluster: print
-concepts: 3
-generated_at: 2026-04-17T06:42:21.340519+00:00
+concepts: 4
+generated_at: 2026-04-27T05:21:04.707897+00:00
 ---
 
 # Print
 
-*3 concepts in this cluster.*
+*4 concepts in this cluster.*
 
-- [[fallback-tree]] — Fallback Tree
-- [[fallback-tree]] — Fallback Tree
-- [[fallback-tree]] — Fallback Tree
+- [[build-capability-index]] — Build Capability Index
+- [[schema-validation-every-entry-must-use-the-new-flat-source-key]] — Schema validation: every entry must use the new flat "source" key
+- [[separator-line-used-in-report-output]] — Separator line used in report output
+- [[split-markdown-lines-into-frontmatter-lines-and-body-lines-around-----delimiters]] — Split markdown lines into frontmatter lines and body lines around --- delimiters

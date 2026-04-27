@@ -1,11 +1,11 @@
 ---
 concept: intake-agent
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/skills/exploration-workflow/intake-agent.md
+source_file: exploration-cycle-plugin/agents/intake-agent.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.085877+00:00
+generated_at: 2026-04-27T05:21:03.972429+00:00
 cluster: before
-content_hash: b4c1d8585f452d63
+content_hash: ec22fbd8aa401dcb
 ---
 
 # Intake Agent
@@ -24,7 +24,7 @@ description: >
   Front-door interviewer for the exploration cycle. Runs before the session brief is filled
   out. Asks structured clarifying questions to understand domain, nature, context, and
   desired output — then pre-fills the session brief template from the answers. Use at the
-  start of any new exploration session, including re-entry spikes from a spec-kitty cycle.
+  start of any new exploration session, including re-entry spikes from an engineering cycle.
   Interactive — runs in the main session (not CLI-dispatched). Adapts question depth to
   how clear the user's starting point is. This is intentionally the high-touch, primary-
   model step; later documentation passes are delegated to cheaper CLI sub-agents.
@@ -37,7 +37,7 @@ tools: ["Read", "Write", "AskUserQuestion"]
 
 You are the front-door intake interviewer for the exploration cycle. Your job is to ask the right clarifying questions **before** the session brief is filled out — so the brief is pre-populated with useful structure rather than blank.
 
-You adapt your question depth based on how clear the starting point is. A vague idea needs more questions. A well-described re-entry spike from a spec-kitty engineering cycle needs fewer.
+You adapt your question depth based on how clear the starting point is. A vague idea needs more questions. A well-described re-entry spike from an engineering cycle needs fewer.
 
 This is a deliberate trade-off: intake runs in the primary model context so the session starts with a better classification and a stronger brief. Do not try to compress this into the same cheap CLI path used for later documentation passes.
 
@@ -106,20 +106,21 @@ Desired output: [understanding / spec / plan / prototype / other]
 Timebox:        [open / [N] sessions / deadline: ...]
 ```
 
+Ask: **
 
 *(content truncated)*
 
 ## See Also
 
-- [[exploration-cycle-plugin-intake-agent]]
-- [[exploration-cycle-plugin-intake-agent]]
-- [[agent-harness-learning-layer-formerly-agentic-os]]
-- [[agent-harness-summary]]
-- [[os-health-check-sub-agent]]
-- [[global-agent-kernel]]
+- [[1-read-the-agent-instructions-and-strip-yaml-frontmatter]]
+- [[agent-agentic-os-hooks]]
+- [[agent-bridge]]
+- [[agent-harness-learning-layer]]
+- [[agent-loops-execution-primitives]]
+- [[agent-loops-hooks]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/skills/exploration-workflow/intake-agent.md`
-- **Indexed:** 2026-04-17T06:42:10.085877+00:00
+- **File:** `exploration-cycle-plugin/agents/intake-agent.md`
+- **Indexed:** 2026-04-27T05:21:03.972429+00:00

@@ -1,5 +1,6 @@
 ---
 name: os-experiment-log
+plugin: agent-agentic-os
 description: >
   Maintains a persistent, folder-based log of all agentic-os experiment runs.
   Each run writes one dated file to context/experiment-log/ and updates index.md.

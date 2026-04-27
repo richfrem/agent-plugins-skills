@@ -1,5 +1,6 @@
 ---
 name: copilot-cli-agent
+plugin: copilot-cli
 description: >
   Copilot CLI sub-agent system for dispatching tasks and persona-based analysis to
   GitHub Copilot models. Use for task delegation (agent reads/writes files directly),

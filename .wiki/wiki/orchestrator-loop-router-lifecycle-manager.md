@@ -1,11 +1,11 @@
 ---
 concept: orchestrator-loop-router-lifecycle-manager
 source: plugin-code
-source_file: spec-kitty-plugin/.agents/agents/agent-loops-orchestrator.md
+source_file: agent-loops/skills/orchestrator/SKILL.md
 wiki_root: /Users/richardfremmerlid/Projects/agent-plugins-skills/.wiki
-generated_at: 2026-04-17T06:42:10.305751+00:00
+generated_at: 2026-04-27T05:21:03.728555+00:00
 cluster: agent
-content_hash: 1b3a0bd9908d009c
+content_hash: 7b62992f00e2e06e
 ---
 
 # Orchestrator: Loop Router & Lifecycle Manager
@@ -101,15 +101,15 @@ Use this to select the correct loop pattern:
 
 ## See Also
 
-- [[triple-loop-orchestrator-unattended-supervisor]]
 - [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
-- [[triple-loop-orchestrator-unattended-supervisor]]
-- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
-- [[triple-loop-learning-system-outer-orchestrator-inner-execution]]
-- [[triple-loop-orchestrator-unattended-supervisor]]
+- [[concurrent-agent-loop]]
+- [[dual-loop-innerouter-agent-delegation]]
+- [[exploration-workflow-sme-orchestrator]]
+- [[learning-loop]]
+- [[learning-loop-retrospective-post-seal]]
 
 ## Raw Source
 
 - **Source:** `plugin-code`
-- **File:** `spec-kitty-plugin/.agents/agents/agent-loops-orchestrator.md`
-- **Indexed:** 2026-04-17T06:42:10.305751+00:00
+- **File:** `agent-loops/skills/orchestrator/SKILL.md`
+- **Indexed:** 2026-04-27T05:21:03.728555+00:00
