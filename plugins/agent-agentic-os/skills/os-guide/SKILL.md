@@ -54,7 +54,7 @@ full operating system metaphor.
 | **Evaluation** | `os-eval-runner` | Autoresearch eval engine — scores and gates SKILL.md iterations |
 | **Evaluation** | `os-eval-lab-setup` | Bootstraps isolated lab repos for eval runs |
 | **Evaluation** | `os-eval-backport` | Reviews lab results, applies approved changes to master |
-| **Mutation** | `os-skill-improvement` | RED-GREEN-REFACTOR routing accuracy improvement |
+| **Mutation** | `os-improvement-loop` | RED-GREEN-REFACTOR routing accuracy improvement |
 | **Memory** | `os-memory-manager` | Session log writing, L2→L3 promotion, deduplication |
 | **Reporting** | `os-improvement-report` | Progress charts from results.tsv + improvement ledger |
 | **Bootstrap** | `os-init` | Deploys kernel.py, agents.json, Triple-Loop files to new project |
@@ -114,7 +114,7 @@ loop completions — must close through this two-phase protocol. **Do not consid
 complete without running both phases.**
 
 > **Session Lifecycle Invariant**: The OUTER loop (`os-improvement-loop`) owns session
-> lifecycle. INNER loops (`os-eval-runner`, `os-skill-improvement`) never close a session.
+> lifecycle. INNER loops (`os-eval-runner`) never close a session.
 > A session is incomplete until Phase 6 is executed. `Triple-Loop Retrospective` (agent) is the
 > trigger/diagnostic layer that feeds both Triple-Loop orchestration cycles — it detects friction and identifies
 > targets; `os-improvement-loop` (skill) is the execution protocol the agents follow once
@@ -150,30 +150,13 @@ Where it writes:
 - Agent's native `MEMORY.md` system — cross-session feedback entries
 - Survey save path rule: lab/eval sessions write surveys to `temp/retrospectives/`; loop sessions (os-improvement-loop) write to `context/memory/retrospectives/`. post_run_metrics.py only scans `context/memory/retrospectives/` — lab surveys are not counted in loop metrics.
 
-### Phase 7: Continuous Skill Improvement (os-skill-improvement)
+### Phase 7: Continuous Improvement (os-improvement-loop)
 
-> [!NOTE] Dependency: Requires **os-skill-improvement** (agent-agentic-os plugin).
-> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions.
+When routing accuracy reveals a weak skill, invoke `os-improvement-loop` with the target skill
+and a locked eval set. The loop runs mutate→eval→KEEP/DISCARD cycles until improvement is
+confirmed, then `os-eval-backport` gates the winner to production.
 
-After memory is captured, check whether any skill's routing or trigger accuracy was
-found to be weak during the session:
-
-```
-If any skill mis-triggered, failed to trigger, or scored below 0.90 on eval:
-→ Invoke os-skill-improvement on that skill
-→ Run RED-GREEN-REFACTOR to harden the description and trigger phrases
-→ Run os-eval-runner to verify the score improvement before committing
-```
-
-Apply the improvement filter — only invoke if:
-- A skill failed to route correctly during the session
-- An eval score was below threshold (< 0.90 quality_score, or accuracy/F1 below the established baseline in results.tsv)
-- A trigger description was found to be too broad or too narrow
-- A new `<example>` block or keyword was identified that would close a routing gap
-
-Skip if:
-- All skills routed correctly and eval scores held
-- The session was purely additive (new files, no existing skill changes)
+→ See [os-improvement-loop SKILL.md](../os-improvement-loop/SKILL.md) for invocation details.
 
 ### The Full Triple-Loop
 
@@ -181,7 +164,7 @@ Skip if:
 1. Work / Eval Run / Backport
 2. os-eval-backport     → ACCEPT/ADAPT/REJECT each change, apply to master
 3. os-memory-manager    → Session log + promote non-obvious findings (Phase 6)
-4. os-skill-improvement → Harden any skill whose routing was found weak (Phase 7)
+4. os-improvement-loop → Harden any skill whose routing was found weak (Phase 7)
 5. Commit + push        → Close the loop in git history
 ```
 

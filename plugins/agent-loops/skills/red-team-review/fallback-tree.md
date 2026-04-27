@@ -5,8 +5,10 @@ If `context-bundler` generates a file too massive for the Red Team agent's conte
 - **Action**: Refine the `manifest.json`. Exclude massive unstructured logs or irrelevant boilerplate. Re-run the bundler. Adhere to the principle of "minimum viable context" for the reviewer.
 
 ## 2. Reviewer Persona is Missing
-If instructed to use a specific persona (e.g., `personas/security/security-auditor.md`) but the file cannot be found:
-- **Action**: Check the `personas/` directory to see if it was renamed. If completely missing, use a generic "Adversarial Code Reviewer" system prompt inline and notify the user that the specific persona file is missing.
+If instructed to use a specific persona but the file cannot be found, ask the user to
+supply a system prompt directly or install an agent persona plugin.
+The `qa-expert` and `security-auditor` persona stubs have been removed — supply your own
+system prompt for specialized review agents.
 
 ## 3. Continuous Review Deadlock
 If the Red Team agent rejects the research 3 or more times consecutively for the same core issue that cannot be resolved:

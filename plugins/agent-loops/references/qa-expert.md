@@ -1,1 +1,0 @@
-../../../personas/quality-testing/qa-expert.md

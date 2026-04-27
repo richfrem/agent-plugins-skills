@@ -26,7 +26,7 @@ assistant: [triggers optimize-agent-instructions, identifies foreign content, st
 <example>
 <commentary>Negative — user wants to update a specific skill, not instruction files.</commentary>
 user: "Improve the trigger description for my link-checker skill"
-assistant: [triggers os-skill-improvement, not optimize-agent-instructions]
+assistant: [triggers os-improvement-loop, not optimize-agent-instructions]
 </example>
 
 # optimize-agent-instructions

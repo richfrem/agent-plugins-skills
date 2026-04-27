@@ -1,3 +1,8 @@
+> **DEPRECATED**: The `triple-loop-architect` and `triple-loop-orchestrator` agents described
+> in this document have been removed as of v1.6.0. The capability is now handled by
+> `os-improvement-loop`. This document is retained for historical reference only.
+> For current operations, see [os-improvement-loop SKILL.md](../../skills/os-improvement-loop/SKILL.md).
+
 # Triple-Loop Learning System (Outer Orchestrator + Inner Execution)
 
 Canonical reference for the overarching orchestrator, strategy packet (Double-Loop), and tactical verification protocol (Single-Loop) used by `os-improvement-loop`.

@@ -79,7 +79,7 @@ Each Triple-Loop has its own eval targets, its own memory artifacts, and its own
 A session that runs INNER loop work must still close through the OUTER loop's Phase 6/7
 (os-memory-manager + os-eval-runner) to persist learnings and harden OS-level routing.
 
-See `assets/diagrams/triple-loop-learning-system.mmd` for the full visual.
+See `assets/diagrams/agent-agentic-os-architecture.mmd` for the plugin structure overview.
 
 ---
 
