@@ -124,7 +124,7 @@ Once the Inner Loop signals completion, the Outer Loop must verify the results:
    - 🟡 **MODERATE**: The feature works, but violates project architecture, ADRs, or performance standards.
    - 🟢 **MINOR**: The feature works and follows architecture, but has minor naming or stylistic issues.
 2. The Outer Loop loops back to Step 4, handing the Correction Packet to the Inner Loop.
-3. **Emit Friction Event**: Every Verification FAIL should be logged via `context/kernel.py` to maintain an observability trail for the stalling loop.
+3. **Emit Friction Event**: Every Verification FAIL should be logged to a local friction log (e.g., `./friction-log.md`) for the Orchestrator to review at handoff.
 
 ### Step 7: Self-Assessment Survey (MANDATORY — Outer Loop and Inner Loop)
 
@@ -140,14 +140,7 @@ What was the biggest source of friction? What one change would have helped most?
 **Improvement Recommendation**: What one change should be tested before the next run?
 What is the target (Skill/Prompt/Script/Rule)?
 
-Save to: `${CLAUDE_PROJECT_DIR}/context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_[AGENT].md`
-
-Emit survey completion:
-```bash
-python context/kernel.py emit_event --agent <ROLE> \
-  --type learning --action survey_completed \
-  --summary "retrospectives/survey_[DATE]_[TIME]_[AGENT].md"
-```
+Save to a local file (e.g., `./retrospective-[YYYYMMDD]-[HHMM]-[AGENT].md`) or stdout.
 
 If any single friction cause appears 3+ times this cycle, flag for `Triple-Loop Retrospective`
 Full Loop before the next cycle begins.
@@ -155,8 +148,8 @@ Full Loop before the next cycle begins.
 ### Step 8: Completion & Handoff
 
 Once all Work Packages are verified and surveys saved, the Dual-Loop pattern is complete.
-The Outer Loop terminates and returns control to the global lifecycle manager (Orchestrator)
-for memory persistence via `session-memory-manager` and ecosystem sealing.
+The Outer Loop terminates and returns control to the global lifecycle manager (Orchestrator).
+Memory promotion is the responsibility of the calling system.
 
 ---
 

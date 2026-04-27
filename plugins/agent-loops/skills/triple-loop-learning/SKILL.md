@@ -6,7 +6,10 @@ allowed-tools: Bash, Read, Write
 
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. It requires the `context-bundler` and a functional metrics engine (e.g. `eval_runner.py`).
+This skill requires **Python 3.8+** and standard library only.
+
+**Evaluation gate**: NOT included in this primitive. The calling system (e.g., agent-agentic-os
+os-improvement-loop) is responsible for wrapping this skill with an eval gate and experiment log.
 
 ---
 # Triple-Loop Learning (Meta-Learning System)
@@ -20,9 +23,9 @@ This architecture is entirely framework-agnostic. While originally developed for
 ```mermaid
 flowchart TD
     subgraph Outer["Outer Loop (Meta-Learning & Orchestration)"]
-        Diagnose[Friction Aggregation] --> Hypothesize[Hypothesis Generation]
-        Hypothesize --> StrategyBridge[Strategy Packet]
-        EvalBridge[Objective Score Analysis] --> Persist[Keep/Discard & L3 Memory]
+        Hypothesize[Hypothesis Generation] --> StrategyBridge[Strategy Packet]
+        Report --> EvalBridge[Score Analysis]
+        EvalBridge --> Conclude[Accept / Reject Hypothesis]
     end
 
     subgraph Mid["Strategic Planner (Dual-Loop Integration)"]
@@ -36,7 +39,6 @@ flowchart TD
     end
 
     StrategyBridge --> Plan
-    Report --> EvalBridge
     TacticalBridge --> Execute
     ResultBridge --> Result
 ```

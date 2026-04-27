@@ -166,18 +166,13 @@ Once the loop is complete and learning has been extracted, the Orchestrator MUST
 
 These are environment-specific actions owned entirely by the **Primary Agent**.
 
-#### Chained Command Handoff
+#### Session Closure
 
-When the Orchestrator loop is complete, it must use **Chained Command Invocation** to offer the user the explicit next steps to seal the ecosystem. Output this block:
+**Session Closure**
 
-```markdown
-## Orchestration Complete. Offer Next Steps:
-
-The Inner Loop has successfully executed and verified the task. Please trigger the closure sequence:
-- **"/sanctuary-seal"**: To capture the learning snapshot and update RLMs.
-- **"/sanctuary-persist"**: To backup the soul to HuggingFace.
-- **"Run Retrospective"**: If you wish to review the friction log.
-```
+Execution complete. Run your environment's standard session closure sequence. If you are
+using `agent-agentic-os`, trigger `os-improvement-loop` closure. If you are in a standalone
+project, save any outputs to your preferred persistence location and close the session.
 
 ---
 
