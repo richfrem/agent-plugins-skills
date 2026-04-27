@@ -2199,7 +2199,9 @@
     },
     {
       "src": "plugins\\plugin-manager\\scripts\\sync_with_inventory.py",
-      "dst": "plugins\\plugin-manager\\skills\\plugin-syncer\\scripts\\sync_with_inventory.py"
+      "dst": "plugins\\plugin-manager\\skills\\plugin-syncer\\scripts\\sync_with_inventory.py",
+      "strategy": "symlink",
+      "description": ""
     },
     {
       "src": "plugins\\rlm-factory\\assets\\resources\\distiller_manifest.json",
@@ -3196,7 +3198,12 @@
       "dst": "plugins\\vector-db\\skills\\vector-db-search\\scripts\\vector_consistency_check.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins\\agent-agentic-os\\references\\sample-claude-md",
+      "dst": "plugins\\agent-agentic-os\\skills\\optimize-agent-instructions\\references\\sample-claude-md",
+      "strategy": "symlink",
+      "description": ""
     }
-  ],
-  "symlinks": []
+  ]
 }

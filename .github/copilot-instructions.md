@@ -3,16 +3,80 @@
 > Authoritative rules for all AI agents (Claude Code, Copilot, Gemini) working in this repo.
 > Mirrors CLAUDE.md — keep in sync.
 
-## Purpose
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## Project-Specific Rules
+
+### Purpose
 Upstream source monorepo for a cross-platform library of reusable AI agent plugins and skills.
 Plugins are authored here and deployed into target projects via the bridge installer.
 Individual skills must be **fully self-contained** — no runtime cross-plugin dependencies.
 
----
-
-## Key Commands
-
+### Key Commands
 ```bash
 # Install plugins into any project (recommended)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
@@ -29,18 +93,16 @@ python plugins/plugin-manager/scripts/plugin_add.py --all -y
 # Local installation testing via uvx (uses remote script but local plugin files)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/agent-scaffolders
-
-
-# Dependencies (per plugin)
-pip-compile ./requirements.in && pip install -r ./requirements.txt
 ```
 
 > **Windows**: Never use `npx skills add` — use `uvx` or `bootstrap.py` instead.
 
----
+```bash
+# Dependencies (per plugin)
+pip-compile ./requirements.in && pip install -r ./requirements.txt
+```
 
-## Architecture
-
+### Architecture
 ```
 plugins/<plugin>/           ← canonical source
   skills/<skill>/SKILL.md   ← skill definition
@@ -51,7 +113,6 @@ plugins/<plugin>/           ← canonical source
 .agents/                    ← bridge installer output (hard copies, symlinks resolved)
   skills/ agents/ workflows/
 ```
-
 > Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. The `plugins/` directory
 > is the source. Files there are inactive until installed via `plugin_add.py` or `uvx`.
 
@@ -174,20 +235,14 @@ Define success criteria first. For evals: write `evals.json` routing criteria be
 - **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files
 - **ADR-004**: Installed artifacts must be self-contained — no runtime cross-plugin paths
 
----
-
-## Skill Standards (always applied)
-
+### Skill Standards (always applied)
 - Skill `name`: kebab-case, matches directory name exactly, 1–64 chars
 - Skill `description`: third person ("Extracts text", not "I extract text")
 - `evals.json`: must use `should_trigger: true/false` — legacy `expected_behavior` produces 0% accuracy
-- SKILL.md: under ~500 lines; extra detail in `references/`
-- Helper scripts: Python only — never `.sh` bash scripts
+- SKILL.md: under ~500 lines; extra detail goes in `references/` files
+- Helper scripts: Python only — never generate `.sh` bash scripts
 
----
-
-## Scaffolding New Plugins/Skills
-
+### Scaffolding New Plugins/Skills
 Use these skills rather than hand-rolling structure:
 - `create-plugin` — full plugin scaffold with discovery interview
 - `create-skill` — skill scaffold with evals, references, acceptance-criteria
@@ -195,22 +250,5 @@ Use these skills rather than hand-rolling structure:
 
 Then run `plugin_add.py` to deploy.
 
----
-
-## Scratch Output
-
+### Scratch Output
 Write temporary files and analysis output to `temp/` — never to the project root directly.
-
----
-
-## Context Retrieval Protocol (Super-RAG)
-
-Before reading source files blindly or running grep, follow the 3-phase protocol:
-
-| Phase | Command | When to use |
-|:------|:--------|:------------|
-| **1 — Keyword (O(1))** | `/rlm-factory:search "term"` | Always start here. Dense summaries of every file. |
-| **2 — Semantic (O(log N))** | `/vector-db:search "term"` | When Phase 1 finds the right area but needs deeper retrieval. |
-| **3 — Concept node** | `/wiki-query "concept"` | Full synthesized understanding of a concept. |
-
-Only fall back to raw `grep` if all three phases miss entirely.
