@@ -1,4 +1,3 @@
-# rlm-audit
 ---
 name: rlm-audit
 description: Audit RLM cache coverage - compare manifest against filesystem
@@ -9,6 +8,8 @@ trigger_phrases:
   - "show missing rlm files"
   - "check rlm gap"
 ---
+
+# rlm-audit
 
 ## Purpose
 Systematically audit the RLM (Recursive Language Model) semantic cache to identify gaps between the project manifest and the actual summary files stored on disk. 
@@ -22,9 +23,9 @@ Systematically audit the RLM (Recursive Language Model) semantic cache to identi
 ## Usage
 Run the audit for a specific profile to see what's missing:
 
-`ash
+```bash
 python scripts/audit_cache.py --profile wiki --report audit_report.txt --csv missing_files.csv
-`
+```
 
 ## Related
 - **rlm-distill-agent**: Use to fill the gaps identified by this audit.
