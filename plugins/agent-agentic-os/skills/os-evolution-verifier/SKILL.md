@@ -216,13 +216,21 @@ A run PASSES only if ALL of the following are true:
 - At least 1 artifact is present at a declared OUTPUTS path
 - HANDOFF_BLOCK contains all 7 required fields
 - STATUS is not `crashed`
-- EVOLUTION_VERIFICATION VERDICT is PASS or PARTIAL
+- EVOLUTION_VERIFICATION VERDICT is PASS
+  (PARTIAL counts as FAIL for gating — logged but does not unblock pipeline)
 
-A run FAILS if any condition above is not met.
+A run FAILS if any condition above is not met, OR if VERDICT is PARTIAL.
+PARTIAL means outputs are incomplete — this is a FAIL for any gating decision,
+even though it is logged separately for diagnostic purposes.
 
 **Adversarial threshold:** When running WS-N failure injection scenarios (N-01 through N-06),
-the verifier must produce FAIL verdicts on at least 3 of 6 adversarial inputs. A verifier
+the verifier must produce FAIL verdicts on at least 4 of 6 adversarial inputs. A verifier
 that passes all adversarial inputs is not operational — it is only checking the happy path.
+
+**Critical scenario requirement**: N-04 (malformed run-config), N-05 (truncated plan), and
+N-06 (bad evals schema) MUST ALL produce FAIL verdicts. These test structural failures, not
+just crashes. A verifier that catches crashes (N-01/N-02/N-03) but misses structural failures
+(N-04/N-05/N-06) has a ceiling of 3/6 and is not detecting the important failure modes.
 
 Follow with the aggregate summary:
 

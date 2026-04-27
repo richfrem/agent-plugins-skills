@@ -88,7 +88,7 @@ _Last updated: YYYY-MM-DD_
 | Brainstorm options (cheap) | <cheapest model> | claude-haiku-4-5-20251001 |
 | Single-file delegation | Copilot CLI | Claude subagent |
 | Multi-workstream delegation | Copilot CLI claude-sonnet-4-6 | Claude subagent (sonnet) |
-| Overnight unattended loop | triple-loop-orchestrator | — |
+| Overnight unattended loop | os-improvement-loop | — |
 ```
 
 ---

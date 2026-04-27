@@ -23,7 +23,7 @@ context/experiment-log/
   index.md                                     ← one row per run (date, source, target, verdict)
   2026-04-25-verifier-os-architect-round1.md   ← from os-evolution-verifier
   2026-04-25-tester-os-architect.md            ← from os-architect-tester
-  2026-04-25-orchestrator-os-eval-runner.md    ← from triple-loop-orchestrator
+  2026-04-25-os-improvement-loop-os-eval-runner.md    ← from os-improvement-loop
   2026-04-25-planner-0024.md                   ← from os-evolution-planner
   2026-04-25-survey-session.md                 ← from post_run_survey
 ```
@@ -38,7 +38,7 @@ Agents must check `result_type` in a log entry's header before parsing it:
 |---|---|---|---|
 | `verifier` | os-evolution-verifier | `qualitative` | PASS/PARTIAL/FAIL counts, HANDOFF_BLOCK validity |
 | `tester` | os-architect-tester | `qualitative` | AC-1–4 pass/fail per scenario |
-| `orchestrator` | triple-loop-orchestrator | `numeric` | best_score, baseline, delta, KEEP/DISCARD counts |
+| `orchestrator` | os-improvement-loop | `numeric` | best_score, baseline, delta, KEEP/DISCARD counts |
 | `planner` | os-evolution-planner | `qualitative` | workstream count, gaps identified |
 | `survey` | post_run_survey | `mixed` | friction item count, north_star metric |
 
@@ -77,13 +77,13 @@ python3 scripts/experiment_log.py append \
   --target os-architect \
   --triggered-by os-architect-tester
 
-# After triple-loop-orchestrator run (numeric — has score delta)
+# After os-improvement-loop run (numeric — has score delta)
 python3 scripts/experiment_log.py append \
   --source-type orchestrator \
   --report temp/logs/run-log.md \
   --session-id 2026-04-25-os-eval-runner \
   --target os-eval-runner \
-  --triggered-by triple-loop-orchestrator
+  --triggered-by os-improvement-loop
 
 # After os-evolution-planner writes a task plan
 python3 scripts/experiment_log.py append \
