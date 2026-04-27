@@ -47,18 +47,7 @@ Run these checks silently before asking anything:
 ls CLAUDE.md GEMINI.md .github/copilot-instructions.md 2>/dev/null
 ```
 
-**2. Which Super-RAG layers are installed?** Check `.agents/skills/` only — NOT `plugins/`.
-Files in `plugins/` are the source repo and are inactive until installed via `plugin_add.py` or `uvx`.
-```bash
-ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
-ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
-```
-
-Store which layers are installed. The Super-RAG protocol section in the output files will
-**only include phases for installed layers**. If none are installed, omit the section entirely.
-
-**3. Ask the user:**
+**2. Ask the user:**
 - What platform(s) they use (Claude Code, Copilot, Gemini CLI) — determines which files to touch
 - Any project-specific rules to preserve (coding standards, ADRs, naming conventions)
 
@@ -73,37 +62,29 @@ Read each file, then score it against the **Quality Checklist**:
 ### Quality Checklist
 
 **Structure**
-- [ ] Has a `## Purpose` section (what the repo does)
-- [ ] Has a `## Key Commands` section (install, run, test)
-- [ ] Has a `## Architecture` section (directory layout, key paths)
-- [ ] Has a `## Behavior & Judgment` section with Karpathy's four principles
-- [ ] Has a `## Coding Rules` section (project-specific constraints)
-
-**Content quality**
+- [ ] Merges Karpathy's behavioral guidelines with project-specific instructions as needed
 - [ ] No stale AI-session artifacts ("Would you like X configured?", "Here is a summary of...")
 - [ ] No foreign rules from other projects (spec-kitty constitution, unrelated frameworks)
 - [ ] No self-referential framing ("this file reproduces CLAUDE.md...", "this is a copy of...")
 - [ ] All paths and commands are current and correct
 - [ ] Platform-specific notes are present where relevant (Windows caveats, tool name mapping)
 
-**Karpathy Principles** — verify all four are present and specific to this repo:
-- [ ] **Think Before Acting**: states what to clarify before starting, what to ask
-- [ ] **Simplicity First**: gives concrete limits (e.g. "SKILL.md under 500 lines")
-- [ ] **Surgical Changes**: clear rule about not touching adjacent code
-- [ ] **Goal-Driven Execution**: defines success criteria pattern (evals before content, etc.)
+**Karpathy Principles** — verify all four are present:
+- [ ] **1. Think Before Coding**: States what to clarify before starting, what to ask. Surfacing tradeoffs.
+- [ ] **2. Simplicity First**: Minimum code that solves the problem. Nothing speculative.
+- [ ] **3. Surgical Changes**: Touch only what you must. Clean up only your own mess. Match existing style.
+- [ ] **4. Goal-Driven Execution**: Define success criteria. Loop until verified. Verify goals.
 
 **Platform-specific (if applicable)**
 - [ ] Gemini: has tool name mapping table (Read→read_file, Bash→run_shell_command, etc.)
 - [ ] Copilot: is authoritative (not framed as "a copy of CLAUDE.md")
-- [ ] Super-RAG table present only if layers are installed in `.agents/skills/` — and only lists installed layers (detected, not assumed)
 
 Report the audit score before rewriting. Example:
 ```
-CLAUDE.md: 8/12 checks pass
+CLAUDE.md: 6/8 checks pass
   ✗ No Karpathy principles section
   ✗ Stale artifact at EOF
-  ✗ References spec-kitty rules (foreign project)
-  ✓ Key commands present
+  ✓ No self-referential framing
   ...
 ```
 
@@ -111,7 +92,7 @@ CLAUDE.md: 8/12 checks pass
 
 ## Phase 3 — Rewrite Plan
 
-For each file that scored below 10/12, propose changes:
+For each file that scored poorly, propose changes:
 
 - State what will be **removed** (foreign content, stale artifacts)
 - State what will be **added** (Karpathy section, platform notes)
@@ -123,66 +104,84 @@ Get confirmation before writing. Show the full proposed content for each file.
 
 ## Phase 4 — Write
 
-Write each file using the canonical structure below. Adapt sections to what the
-repo actually needs — do not add sections that don't apply.
+Before rewriting any files, read the Karpathy principles example at `references/sample-claude-md`. This file contains the authoritative representation of the principles derived from [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/CLAUDE.md).
+
+Write each file using the canonical structure below.
 
 ### Canonical Structure
 
 ```markdown
-# <Title>
+# <Title (e.g., CLAUDE.md or Copilot Instructions)>
 
-> <One-line purpose — what is this file? Who is it for?>
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
-## Purpose
-<What the repo does. Why it exists. What makes it unusual.>
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+` ` `
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+` ` `
+(Note: Do not escape backticks in actual file, use regular markdown codeblock formatting)
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
 ---
 
-## Key Commands
-<Install, run, test, deploy. Bash code blocks. Keep current.>
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
 ---
 
-## Architecture
-<Directory tree or prose. Explain the canonical source vs runtime distinction if applicable.>
-
----
-
-## Behavior & Judgment (Karpathy Principles)
-<The four principles, adapted to this repo's domain. Not generic — specific.>
-
-### 1. Think Before Acting
-### 2. Simplicity First
-### 3. Surgical Changes
-### 4. Goal-Driven Execution
-
----
-
-## Coding Rules (always applied)
-<Project-specific rules. Link to ADRs if they exist.>
-
----
-
-## Skill/Component Standards (if applicable)
-<Naming conventions, file limits, schema requirements.>
-
----
-
-## Scratch Output
-<Where to write temp files. "Never to project root.">
-
----
-
-## Context Retrieval Protocol (Super-RAG)
-<Only include this section if at least one layer is installed. Only include rows for installed layers.>
-
-| Phase | Command | When to use |
-|:------|:--------|:------------|
-| **1 — Keyword (O(1))** | `/rlm-factory:search "term"` | [only if rlm-factory installed] |
-| **2 — Semantic (O(log N))** | `/vector-db:search "term"` | [only if vector-db installed] |
-| **3 — Concept node** | `/wiki-query "concept"` | [only if obsidian-wiki-engine installed] |
-
-Only fall back to raw `grep` if all installed phases miss entirely.
+## Project-Specific Rules
+<Project-specific rules. Keep existing rules from previous versions, or omit section if none exist.>
 ```
 
 ### Platform-Specific Sections
@@ -219,7 +218,7 @@ When executing skills via Gemini, translate tool references using the table abov
 After writing, re-run the Quality Checklist mentally. Confirm:
 
 1. No stale artifacts remain
-2. All four Karpathy principles are present in each file
+2. All four Karpathy principles are present exactly as prescribed
 3. Platform-specific sections are correct
 4. Files are authoritative — none frame themselves as copies of another
 
@@ -228,25 +227,24 @@ Report:
 === optimize-agent-instructions Complete ===
 
 Files updated:
-  ✓ CLAUDE.md       — 12/12 checks pass
-  ✓ GEMINI.md       — 12/12 checks pass
-  ✓ .github/copilot-instructions.md — 12/12 checks pass
+  ✓ CLAUDE.md       — 8/8 checks pass
+  ✓ GEMINI.md       — 8/8 checks pass
+  ✓ .github/copilot-instructions.md — 8/8 checks pass
 
 Karpathy principles: ✓ all four present in all files
 Stale artifacts removed: 2
 Foreign content removed: 1
-Platform sections added: Gemini tool mapping, Super-RAG protocol
+Platform sections added: Gemini tool mapping
 ```
 
 ---
 
 ## Rules
 
-- Never remove valid project-specific rules — only remove foreign or stale content
+- Never remove valid project-specific rules — move them to `## Project-Specific Rules`.
 - Never create files that don't exist (CLAUDE.md, GEMINI.md, copilot-instructions.md) unless the user explicitly asks
 - Always read before writing — never write a file you haven't read this session
-- Keep all three files in sync on shared content (Purpose, Architecture, Coding Rules)
-- The Karpathy principles should be adapted to the repo's domain, not copy-pasted verbatim
+- Keep all three files in sync on shared content (Karpathy principles, Project-specific rules)
 - Gemini tool mapping only goes in GEMINI.md — not in CLAUDE.md or copilot-instructions.md
 
 ---
