@@ -185,10 +185,10 @@ def _create_windows_symlink(src: Path, dst: Path) -> tuple[bool, str, LinkStrate
     """
     # Calculate relative path from dst's parent directory to src
     try:
-        rel_path = os.path.relpath(src, dst.parent)
+        rel_path = os.path.relpath(src, dst.parent).replace("\\", "/")
     except ValueError:
         # On Windows, relpath can fail if src and dst are on different drives
-        rel_path = str(src)
+        rel_path = str(src).replace("\\", "/")
 
     if can_create_symlinks():
         try:
@@ -396,8 +396,8 @@ def cmd_create(args: argparse.Namespace) -> None:
 
     if ok:
         entry = LinkEntry(
-            src=str(src),
-            dst=str(dst),
+            src=str(src).replace("\\", "/"),
+            dst=str(dst).replace("\\", "/"),
             strategy=strategy,
             description=args.description or "",
         )
