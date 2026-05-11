@@ -5,17 +5,11 @@
  * Purpose:
  *     {{description}}
  *
- * Layer: Frontend / UI / Layout
+ * Layer: Frontend / UI / Components
  *
  * Usage Examples:
- *     <{{component_name}} />
- *
- * Props:
- * {{props}}
+ *     <{{component_name}} {{props}} />
  *
  * Key Functions:
- * {{key_functions}}
- *
- * Consumed by:
- * {{consumed_by}}
+ *     - {{function_name}}() - {{function_description}}
  */
