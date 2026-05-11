@@ -49,6 +49,7 @@ Context Bundle Plan:
 - Proposed Files/Directories:
   1. src/main.py (Core logic)
   2. docs/architecture.md (Design reference)
+- Exclusions: (e.g., exclude .png, node_modules, or large JSON artifacts)
   
 Does this look right? (yes / adjust / exclude certain extensions)
 ```
@@ -63,6 +64,10 @@ Once confirmed, formulate the actual `file-manifest.json` on disk.
 {
   "title": "Bundle Title",
   "description": "Short explanation of the bundle's goal.",
+  "excludes": [
+    "**/large_artifact.json",
+    "**/*.png"
+  ],
   "files": [
     {
       "path": "docs/architecture.md",

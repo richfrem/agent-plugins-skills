@@ -1,12 +1,44 @@
 #!/usr/bin/env python
 """
-bundle_zip.py
+bundle_zip.py (CLI)
 =====================================
-Purpose: Reads a JSON manifest file and archives targets into a .zip file.
-[v2.2] Adds symlink deduplication: symlinked files whose real path was already archived
-       are listed in the manifest notes but NOT added to the zip again.
-[v2.1] Adds manifest 'excludes', large-file tracking, and cumulative tokens.
+
+Purpose:
+    Reads a JSON manifest file and archives targets into a compressed .zip file.
+
+Layer: Context / Technical Documentation
+
+Usage Examples:
+    python bundle_zip.py --manifest manifest.json --bundle output.zip
+
+Supported Object Types:
+    Files (binary and text), Directories (recursive)
+
+CLI Arguments:
+    --manifest: Path to the JSON manifest file
+    --bundle: Output path for the generated ZIP archive
+
+Input Files:
+    - JSON manifest specifying files/directories to include
+    - .gitignore (for default exclusion logic)
+
+Output:
+    - Compressed ZIP file containing all source files
+    - _manifest_notes.md (embedded metadata and index)
+
+Key Functions:
+    - generate_zip_bundle(): Primary orchestrator for resolution and archiving
+    - load_gitignore_patterns(): Parses exclusion rules
+    - is_ignored(): Validates files against glob patterns
+
+Script Dependencies:
+    - Python 3.8+ Standard Library only (os, sys, json, argparse, zipfile, fnmatch, pathlib)
+
+Consumed by:
+    - Context Bundler Plugin
+    - Red Team Reviewers
 """
+
 
 import os
 import sys
@@ -17,10 +49,30 @@ import fnmatch
 from pathlib import Path
 from datetime import datetime
 
+# Windows encoding safety: ensures emojis/unicode don't crash the console
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, Exception):
+        pass
+
+
 MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB safety limit for ZIPs
 
 
+# Logic: Resolves .gitignore patterns to avoid archiving system junk
 def load_gitignore_patterns(project_root: Path) -> list:
+    """
+    Parses the local .gitignore file and adds common system defaults.
+    
+    Args:
+        project_root: The base directory of the repository.
+        
+    Returns:
+        List of glob patterns to ignore.
+    """
+
     patterns = ['.git', '__pycache__', 'node_modules', '.env', '*.zip']
     gi_path = project_root / '.gitignore'
     if gi_path.exists():
@@ -35,7 +87,20 @@ def load_gitignore_patterns(project_root: Path) -> list:
     return patterns
 
 
+# Logic: Determines if a file should be excluded from the archive
 def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
+    """
+    Checks a file path against a list of ignore patterns.
+    
+    Args:
+        file_path: Absolute path to the file.
+        project_root: Root directory for relative path calculation.
+        patterns: List of fnmatch-compatible patterns.
+        
+    Returns:
+        True if the file matches any ignore pattern.
+    """
+
     try:
         rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
     except ValueError:
@@ -51,7 +116,16 @@ def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
     return False
 
 
+# Logic: Primary orchestration of the archiving process
 def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
+    """
+    Reads the manifest, resolves files (handling symlinks), and creates a ZIP archive.
+    
+    Args:
+        manifest_path: Path to the JSON manifest.
+        output_path: Destination path for the .zip archive.
+    """
+
     try:
         with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = json.load(f)

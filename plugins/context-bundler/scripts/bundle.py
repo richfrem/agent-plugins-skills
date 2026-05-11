@@ -1,12 +1,44 @@
 #!/usr/bin/env python
 """
-bundle.py
+bundle.py (CLI)
 =====================================
-Purpose: Reads a JSON manifest file and concatenates contents into a single Markdown artifact.
-[v2.2] Adds symlink deduplication: symlinked files whose real path was already included are
-       noted in the index but their content is NOT repeated.
-[v2.1] Adds manifest 'excludes', 5MB large-file safety, cumulative tokens, and expanded lang map.
+
+Purpose:
+    Reads a JSON manifest file and concatenates file contents into a single 
+    Markdown artifact for LLM context sharing.
+
+Layer: Context / Technical Documentation
+
+Usage Examples:
+    python bundle.py --manifest manifest.json --bundle output.md
+
+Supported Object Types:
+    Files (text, markdown, code), Directories (recursive)
+
+CLI Arguments:
+    --manifest: Path to the JSON manifest file
+    --bundle: Output path for the generated Markdown bundle
+
+Input Files:
+    - JSON manifest specifying files/directories to include
+    - .gitignore (for default exclusion logic)
+
+Output:
+    - Single Markdown file with title, metadata, index, and fenced code blocks
+
+Key Functions:
+    - bundle_files(): Primary orchestrator for resolution and bundling
+    - load_gitignore_patterns(): Parses exclusion rules
+    - is_ignored(): Validates files against glob patterns
+
+Script Dependencies:
+    - Python 3.8+ Standard Library only (os, sys, json, argparse, fnmatch, pathlib)
+
+Consumed by:
+    - Context Bundler Plugin
+    - Technical Review Sub-agents
 """
+
 
 import os
 import sys
@@ -27,7 +59,18 @@ if sys.platform == "win32":
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB safety limit
 
 
+# Logic: Resolves .gitignore patterns to avoid bundling system junk
 def load_gitignore_patterns(project_root: Path) -> list:
+    """
+    Parses the local .gitignore file and adds common system defaults.
+    
+    Args:
+        project_root: The base directory of the repository.
+        
+    Returns:
+        List of glob patterns to ignore.
+    """
+
     patterns = ['.git', '__pycache__', 'node_modules', '.env']
     gi_path = project_root / '.gitignore'
     if gi_path.exists():
@@ -42,7 +85,20 @@ def load_gitignore_patterns(project_root: Path) -> list:
     return patterns
 
 
+# Logic: Determines if a file should be excluded from the bundle
 def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
+    """
+    Checks a file path against a list of ignore patterns.
+    
+    Args:
+        file_path: Absolute path to the file.
+        project_root: Root directory for relative path calculation.
+        patterns: List of fnmatch-compatible patterns.
+        
+    Returns:
+        True if the file matches any ignore pattern.
+    """
+
     try:
         rel_path = str(file_path.relative_to(project_root)).replace('\\', '/')
     except ValueError:
@@ -58,7 +114,16 @@ def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
     return False
 
 
+# Logic: Primary orchestration of the bundling process
 def bundle_files(manifest_path: Path, output_path: Path) -> None:
+    """
+    Reads the manifest, resolves all files (handling symlinks), and writes the Markdown bundle.
+    
+    Args:
+        manifest_path: Path to the JSON manifest.
+        output_path: Destination path for the .md bundle.
+    """
+
     try:
         with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = json.load(f)

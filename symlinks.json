@@ -3210,6 +3210,18 @@
       "dst": "plugins/coding-conventions/skills/coding-conventions-agent/assets/templates/tsx-tool-header-template.tsx",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/scaffold_apm.py",
+      "dst": "plugins/agent-scaffolders/skills/create-apm-package/scripts/scaffold_apm.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/migrate_to_apm.py",
+      "dst": "plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/migrate_to_apm.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
