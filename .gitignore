@@ -54,6 +54,7 @@ plugins/**/temp/
 .amazonq/
 .github/*
 !.github/workflows/
+!.github/agents/
 .kittify/.dashboard
 .kittify/missions/__pycache__/
 
