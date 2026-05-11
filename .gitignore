@@ -52,7 +52,8 @@ plugins/**/temp/
 .augment/
 .roo/
 .amazonq/
-.github/
+.github/*
+!.github/workflows/
 .kittify/.dashboard
 .kittify/missions/__pycache__/
 
