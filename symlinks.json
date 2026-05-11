@@ -3204,6 +3204,12 @@
       "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/sample-claude-md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/coding-conventions/assets/templates/tsx-tool-header-template.tsx",
+      "dst": "plugins/coding-conventions/skills/coding-conventions-agent/assets/templates/tsx-tool-header-template.tsx",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
