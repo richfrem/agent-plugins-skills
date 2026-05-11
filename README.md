@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-**123 skills · 23 plugins** — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 23 Plugins · 128 Skills · 47 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 ---
@@ -155,7 +155,7 @@ Centralized rules engine for file headers, naming conventions, and linting acros
 
 **Skills (1):** [`coding-conventions-agent`](plugins/coding-conventions/skills/coding-conventions-agent/SKILL.md) · **Agent:** `coding-conventions-agent`
 
-#### agent-scaffolders — Boilerplate & Audit (25 skills)
+#### agent-scaffolders — Boilerplate & Audit (30 skills)
 
 Interactive creators for exact file hierarchies + structured audit framework for plugin architectural maturity.
 
