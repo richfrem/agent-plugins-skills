@@ -53,6 +53,7 @@ plugins/**/temp/
 .roo/
 .amazonq/
 .github/
+!.github/workflows/
 .kittify/.dashboard
 .kittify/missions/__pycache__/
 
