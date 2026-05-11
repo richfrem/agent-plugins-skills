@@ -34,8 +34,9 @@ You enforce coding conventions and documentation standards for all code in the p
 6. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
 
 ## 📂 Header Templates
-- **Python**: `./scripts/python-tool-header-template.py` (in this skill's ./scripts/)
-- **JS/TS**: `./scripts/js-tool-header-template.js` (in this skill's ./scripts/)
+- **Python**: `../../assets/templates/python-tool-header-template.py`
+- **JS/TS**: `../../assets/templates/js-tool-header-template.js`
+- **TSX (React)**: `../../assets/templates/tsx-tool-header-template.tsx`
 
 ## 📝 File Headers
 
@@ -67,6 +68,28 @@ Usage:
  *
  * Key Functions/Classes:
  *   - functionName() - Brief description
+ */
+```
+
+### TSX (React Components)
+```javascript
+/**
+ * ComponentName (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Component responsibility and role in the UI.
+ *
+ * Layer: Frontend / UI / Layout
+ *
+ * Usage Examples:
+ *     <ComponentName />
+ *
+ * Props:
+ *     - propName: description
+ *
+ * Key Functions:
+ *     - handleEvent() - Description
  */
 ```
 
