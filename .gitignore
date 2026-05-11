@@ -52,7 +52,7 @@ plugins/**/temp/
 .augment/
 .roo/
 .amazonq/
-.github/copilot/
+.github/
 .kittify/.dashboard
 .kittify/missions/__pycache__/
 
@@ -79,3 +79,9 @@ node_modules/
 !.agent/rules/
 !.agent/rules/**
 .agents/
+
+# APM artifacts
+apm_modules/
+apm.yml
+apm.lock.yaml
+apm-*-test/

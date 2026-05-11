@@ -53,8 +53,9 @@ def convert_mermaid(input_file: str, output_file: str, scale: int = 1, theme: st
 
     # Use npx to lazily execute mermaid-cli so the user doesn't need to globally install it
     # We use -y to accept the npx installation prompt if it's the first time
+    npx_cmd = "npx.cmd" if os.name == "nt" else "npx"
     command = [
-        "npx", "-y", "@mermaid-js/mermaid-cli",
+        npx_cmd, "-y", "@mermaid-js/mermaid-cli",
         "-i", input_file,
         "-o", output_file,
         "-s", str(scale),
