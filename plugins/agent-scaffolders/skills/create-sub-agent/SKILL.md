@@ -37,6 +37,15 @@ system prompt targeting 500-3,000 characters.
 
 **Local/project agents**: `.claude/agents/<agent-name>.md` (also flat, no subdirectory).
 
+## Discovery & Publication
+
+To make an agent visible to GitHub Copilot or Claude Code for this repository, follow the **Discovery-First Publication** pattern:
+1. Materialize the agent into `.github/agents/` (Copilot) or `.claude/agents/` (Claude).
+2. Ensure `.gitignore` allows the specific agent file or subdirectory.
+3. Commit the materialized file to the repository.
+
+See [Agent Discovery and Publication Pattern](../../references/agent-discovery-and-publication.md) for details.
+
 ## Edge Cases
 
 - If `$ARGUMENTS` is empty: conduct the full Phase 1 design interview — do not pre-fill
