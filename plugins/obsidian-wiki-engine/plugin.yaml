@@ -1,0 +1,29 @@
+name: obsidian-wiki-engine
+version: 3.1.0
+description: "Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph with vault ops, concept synthesis, wiki generation, semantic linting, and graph traversal."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - vault_ops
+  - wiki_builder
+  - distill_wiki
+  - query_wiki
+  - lint_wiki
+  - graph_ops
+  - canvas_gen
+  - bases_ops
+skills:
+  - obsidian-bases-manager
+  - obsidian-canvas-architect
+  - obsidian-graph-traversal
+  - obsidian-init
+  - obsidian-markdown-mastery
+  - obsidian-query-agent
+  - obsidian-rlm-distiller
+  - obsidian-vault-crud
+  - obsidian-wiki-builder
+  - obsidian-wiki-linter

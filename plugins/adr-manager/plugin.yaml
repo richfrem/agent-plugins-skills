@@ -1,0 +1,13 @@
+name: adr-manager
+version: 2.0.0
+description: "ADR management — generates architecture decision records, documents design rationale, and maintains the decision log."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - adr_manager
+skills:
+  - adr-management

@@ -1,0 +1,19 @@
+name: agent-loops
+version: 2.1.0
+description: "Composable agent loop architectures — learning loops, 0-to-N inner agent orchestration, and red team coordination. Framework-agnostic."
+author: Richard Fremmerlid
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - agent_orchestrator
+  - swarm_run
+skills:
+  - agent-swarm
+  - dual-loop
+  - learning-loop
+  - orchestrator
+  - red-team-review
+  - triple-loop-learning

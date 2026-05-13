@@ -1,0 +1,16 @@
+name: link-checker
+version: 2.0.0
+description: "QA agent for documentation link integrity — checks, fixes, and audits links across a repository using a deterministic Map-Fix-Verify workflow."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - audit_broken_links
+  - autofix_unique_links
+  - symlink_manager
+skills:
+  - link-checker-agent
+  - symlink-manager
