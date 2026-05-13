@@ -58,7 +58,7 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
    def register(ctx) -> None:
        # Register skills
        ctx.register_skill(
-           name="<plugin-name>:<skill-name>",
+           name="<skill-name>",   # bare name only — hermes auto-prefixes plugin name as namespace
            path=_HERE / "skills" / "<skill-name>",
        )
        # Register tools (if scripts expose callable tools)
