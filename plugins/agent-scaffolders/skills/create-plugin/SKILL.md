@@ -27,7 +27,28 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
    - Verify each hook appears in the `hooks` list.
    - Add any missing entries immediately — do NOT wait for the user to ask.
    - Report: *"All components are registered in `plugin.json`. ✅"* or list additions made.
-4. Report the created plugin directory and verification checklist results
+4. **plugin.yaml (Hermes compatibility — always generate):** After `plugin.json` is finalized, scaffold a `plugin.yaml` at the plugin root for hermes-agent compatibility. Format:
+   ```yaml
+   name: <plugin-name>
+   version: <version>
+   description: "<description>"
+   author: <author>
+   kind: backend  # or standalone (no Python scripts)
+   platforms:
+     - linux
+     - macos
+     - windows
+   provides_tools:          # list script basenames (no .py) that expose callable tools
+     - script_name
+   skills:                  # list skill directory names under skills/
+     - skill-name
+   ```
+   - `kind: standalone` — plugin has no Python scripts that hermes calls directly
+   - `kind: backend` — plugin has scripts in `scripts/` that hermes invokes as tools
+   - Only include `provides_tools` if `scripts/` contains callable tool scripts
+   - Skills list must match actual directory names under `skills/`
+   - Report: *"`plugin.yaml` created for hermes compatibility. ✅"*
+5. Report the created plugin directory and verification checklist results
 
 ## Output
 
