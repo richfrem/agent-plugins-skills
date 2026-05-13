@@ -48,7 +48,30 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
    - Only include `provides_tools` if `scripts/` contains callable tool scripts
    - Skills list must match actual directory names under `skills/`
    - Report: *"`plugin.yaml` created for hermes compatibility. ✅"*
-5. Report the created plugin directory and verification checklist results
+5. **`__init__.py` (Hermes tool/hook wiring — generate when plugin has scripts):** If the plugin has callable Python scripts in `scripts/`, scaffold a root-level `__init__.py` with a `register(ctx)` function following this pattern:
+   ```python
+   from __future__ import annotations
+   from pathlib import Path
+
+   _HERE = Path(__file__).resolve().parent
+
+   def register(ctx) -> None:
+       # Register skills
+       ctx.register_skill(
+           name="<plugin-name>:<skill-name>",
+           path=_HERE / "skills" / "<skill-name>",
+       )
+       # Register tools (if scripts expose callable tools)
+       # ctx.register_tool(name, toolset, schema, handler)
+       # Register hooks (if plugin needs lifecycle hooks)
+       # ctx.register_hook("post_tool_call", handler)
+   ```
+   - Always include `register_skill()` calls for every skill in the plugin
+   - Only add `register_tool()` if the plugin provides callable Python tools
+   - Only add `register_hook()` if the plugin needs lifecycle hooks
+   - Without `__init__.py`, hermes shows "No `__init__.py`" warning and the plugin won't activate
+   - Report: *"`__init__.py` created with register() function. ✅"*
+6. Report the created plugin directory and verification checklist results
 
 ## Output
 
