@@ -1,0 +1,16 @@
+name: rsvp-speed-reader
+version: 1.0.0
+description: "Converts documents into word-by-word RSVP token streams with ORP alignment for speed reading. Supports .txt, .md, .pdf, and .docx."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - execute
+  - orp_engine
+  - parse_document
+skills:
+  - rsvp-comprehension-agent
+  - rsvp-reading

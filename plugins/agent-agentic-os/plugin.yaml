@@ -1,0 +1,25 @@
+name: agent-agentic-os
+version: 1.6.0
+description: "Opinionated learning layer above Claude Code — structured memory hierarchy, continuous improvement loop, multi-agent event bus coordination, and eval-gated skill improvement."
+author: Richard Fremmerlid
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - eval_runner
+  - experiment_log
+  - init_agentic_os
+skills:
+  - optimize-agent-instructions
+  - os-clean-locks
+  - os-eval-backport
+  - os-eval-lab-setup
+  - os-eval-runner
+  - os-guide
+  - os-improvement-loop
+  - os-improvement-report
+  - os-init
+  - os-memory-manager
+  - todo-check

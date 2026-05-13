@@ -1,0 +1,18 @@
+name: plugin-manager
+version: 2.0.0
+description: "Orchestration hub for the plugin ecosystem — structural audits, agent environment sync, cross-repo replication, and Universal Bridge Installation for 30+ target environments."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - plugin_add
+  - plugin_installer
+  - plugin_remove
+  - sync_with_inventory
+skills:
+  - plugin-installer
+  - plugin-remover
+  - plugin-syncer

@@ -1,0 +1,11 @@
+name: dependency-management
+version: 2.0.0
+description: "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+skills:
+  - dependency-management

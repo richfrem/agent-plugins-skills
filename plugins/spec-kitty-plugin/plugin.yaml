@@ -1,0 +1,32 @@
+name: spec-kitty-plugin
+version: 2.0.0
+description: "Spec-Driven Development lifecycle + Universal Bridge sync engine — flagship workflow plugin for AI-assisted feature development."
+author: Richard Fremmerlid
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - sync_configuration
+  - verify_workflow_state
+skills:
+  - spec-kitty-accept
+  - spec-kitty-analyze
+  - spec-kitty-checklist
+  - spec-kitty-clarify
+  - spec-kitty-constitution
+  - spec-kitty-dashboard
+  - spec-kitty-implement
+  - spec-kitty-merge
+  - spec-kitty-plan
+  - spec-kitty-research
+  - spec-kitty-review
+  - spec-kitty-specify
+  - spec-kitty-status
+  - spec-kitty-sync-plugin
+  - spec-kitty-tasks
+  - spec-kitty-tasks-finalize
+  - spec-kitty-tasks-outline
+  - spec-kitty-tasks-packages
+  - spec-kitty-workflow

@@ -1,0 +1,42 @@
+name: agent-scaffolders
+version: 2.0.0
+description: "Ecosystem generation primitives — scaffolds agent skills, plugins, CLI sub-agents, GitHub workflows, Azure Foundry agents, and more."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - scaffold
+  - scaffold_github_action
+  - scaffold_azure_agent
+  - scaffold_agentic_workflow
+  - audit
+  - inventory_plugin
+skills:
+  - analyze-plugin
+  - audit-plugin
+  - audit-plugin-l5
+  - create-agentic-workflow
+  - create-azure-agent
+  - create-command
+  - create-docker-skill
+  - create-github-action
+  - create-hook
+  - create-mcp-integration
+  - create-plugin
+  - create-skill
+  - create-stateful-skill
+  - create-sub-agent
+  - ecosystem-authoritative-sources
+  - ecosystem-standards
+  - eval-autoresearch-fit
+  - fix-plugin-paths
+  - l5-red-team-auditor
+  - manage-marketplace
+  - mine-plugins
+  - mine-skill
+  - path-reference-auditor
+  - self-audit
+  - synthesize-learnings

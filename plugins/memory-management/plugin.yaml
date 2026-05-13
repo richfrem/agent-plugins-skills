@@ -1,0 +1,11 @@
+name: memory-management
+version: 2.0.0
+description: "Tiered memory system for cognitive continuity across agent sessions — hot cache (boot-loaded) and deep storage (on-demand) with configurable promotion/demotion rules."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+skills:
+  - memory-management

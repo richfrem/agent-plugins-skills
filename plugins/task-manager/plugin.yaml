@@ -1,0 +1,14 @@
+name: task-manager
+version: 2.0.0
+description: "Lightweight directory-backed kanban board with zero dependencies. V2 enforces Kanban Sovereignty constraints preventing manual task file edits."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - task_manager
+  - next_number
+skills:
+  - task-agent
