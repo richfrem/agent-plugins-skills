@@ -75,6 +75,10 @@ This implements the core Karpathy "compile" metaphor: N raw files → M concept 
 
 ## Usage
 
+Note about repo-scoped inspection
+
+- The installer and helper agents should ask for and confirm the repository or filesystem scope before running discovery. By default prefer searching the project root only (e.g. /Users/you/projects/agent-plugins-skills). For broader searches (whole home or system), prompt the user and explain the expected runtime cost.
+
 ### Build wiki nodes from all registered sources
 ```bash
 python ./scripts/wiki_builder.py --wiki-root /path/to/wiki-root
