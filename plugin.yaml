@@ -1,0 +1,33 @@
+name: agent-plugins-skills
+version: 2.0.0
+description: "Plugin ecosystem for AI agents — skills, scaffolders, loops, memory, vector search, spec-driven dev, and more. Install individual plugins or the full suite."
+author: Richard Fremmerlid
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows
+skills_dirs:
+  - plugins/adr-manager/skills
+  - plugins/agent-agentic-os/skills
+  - plugins/agent-loops/skills
+  - plugins/agent-scaffolders/skills
+  - plugins/claude-cli/skills
+  - plugins/coding-conventions/skills
+  - plugins/context-bundler/skills
+  - plugins/copilot-cli/skills
+  - plugins/dependency-management/skills
+  - plugins/exploration-cycle-plugin/skills
+  - plugins/gemini-cli/skills
+  - plugins/huggingface-utils/skills
+  - plugins/link-checker/skills
+  - plugins/memory-management/skills
+  - plugins/mermaid-to-png/skills
+  - plugins/obsidian-wiki-engine/skills
+  - plugins/plugin-manager/skills
+  - plugins/rlm-factory/skills
+  - plugins/rsvp-speed-reader/skills
+  - plugins/spec-kitty-plugin/skills
+  - plugins/task-manager/skills
+  - plugins/vector-db/skills
+  - plugins/voice-writer/skills
