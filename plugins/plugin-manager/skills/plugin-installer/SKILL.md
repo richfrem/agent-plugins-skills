@@ -254,6 +254,11 @@ python scripts/plugin_installer.py \
 
 ### Phase 1: Pre-flight Check
 
+User-scope confirmation
+
+- When the user requests a search or install, confirm the filesystem scope before running any discovery. Present the chosen path in plain text and ask for explicit approval (e.g. "Search only /Users/me/projects/agent-plugins-skills — proceed? (Y/n)").
+- Prefer repository-scoped scans by default unless the user explicitly requests a wider scope (home dir or system-wide).
+
 Before running the bridge, verify:
 
 1. Plugin path exists and has `./plugin.json`
