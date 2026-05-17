@@ -21,7 +21,8 @@ Follow the `create-sub-agent` skill workflow to design and generate a Claude Cod
    maxTokens, color, lifecycle hooks, placement), present design summary, confirm,
    then generate the agent `.md` file
 3. Validate the generated agent with `validate_agent.py`
-4. Report the created agent path, triggering conditions, and next steps
+4. **Publication Check**: Ask if the agent should be visible to GitHub Copilot or Claude Code for this repository. If yes, materialize it into `.github/agents/` or `.claude/agents/` and ensure the path is tracked in `.gitignore`.
+5. Report the created agent path, triggering conditions, and next steps
 
 ## Output
 
@@ -36,6 +37,15 @@ system prompt targeting 500-3,000 characters.
 - Confirmed against Anthropic official plugins (`feature-dev`, `code-simplifier`, `hookify`).
 
 **Local/project agents**: `.claude/agents/<agent-name>.md` (also flat, no subdirectory).
+
+## Discovery & Publication
+
+To make an agent visible to GitHub Copilot or Claude Code for this repository, follow the **Discovery-First Publication** pattern:
+1. Materialize the agent into `.github/agents/` (Copilot) or `.claude/agents/` (Claude).
+2. Ensure `.gitignore` allows the specific agent file or subdirectory.
+3. Commit the materialized file to the repository.
+
+See [Agent Discovery and Publication Pattern](../../references/agent-discovery-and-publication.md) for details.
 
 ## Edge Cases
 
