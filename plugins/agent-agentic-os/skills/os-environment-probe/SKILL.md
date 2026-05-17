@@ -133,3 +133,16 @@ If the user adds a new environment later, they can run this skill again. It over
   `gh extension install github/gh-copilot`. Confirm CLI specifically, not just Copilot.
 - **Free tier is not always guaranteed**: Copilot free tier quotas reset monthly and
   may be exhausted. The profile marks availability at probe time, not permanently.
+
+---
+
+## Support files
+
+This skill now includes two convenience support files to make repro and re-probing easier. Inspect or run them from the skill directory (the agent may invoke them when safe):
+
+- scripts/probe_environments.sh — a small, non-interactive shell probe that runs the same read-only commands listed above (gemini --version, cursor --version, gh copilot explain "test") and prints a short summary. It is safe (non-billing) and tolerant of missing commands.
+
+- references/gemini-detection-example.md — a short session-specific note showing an observed gemini probe result (example output captured during an interactive session). Use this as an example snippet when building or testing environment.md content.
+
+Write any additional probe outputs to the references/ directory so downstream skills (os-architect, os-evolution-planner) can read concrete examples when deciding delegation.
+
