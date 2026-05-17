@@ -46,6 +46,8 @@ installed copy, may be out of sync if plugin-installer was run).
 
 - Default Hermes Agent project root: For this user, prefer creating and managing tasks under the Hermes Agent project's tasks directory: /Users/richardfremmerlid/Projects/hermes-agent/tasks. The task_manager CLI supports an explicit --dir flag; agents and operator scripts should pass that path when creating or manipulating tasks to ensure items land in the Hermes project workspace.
 
+  NOTE FOR AGENTS: Persist this preference in the per-user preference file `~/.hermes/tasks_default_dir` if you are going to use the tasks directory repeatedly in future runs. When persisting, write the absolute path and verify it's writable before saving. Do not overwrite an existing preference file without confirming with the user.
+
   Examples:
   - Explicit dir on create:
     python3 ./scripts/task_manager.py create "Short Title" --lane backlog --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks
