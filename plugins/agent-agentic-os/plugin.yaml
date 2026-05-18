@@ -1,5 +1,5 @@
 name: agent-agentic-os
-version: 1.6.0
+version: 1.7.0
 description: "Opinionated learning layer above Claude Code — structured memory hierarchy, continuous improvement loop, multi-agent event bus coordination, and eval-gated skill improvement."
 author: Richard Fremmerlid
 kind: standalone
@@ -22,4 +22,5 @@ skills:
   - os-improvement-report
   - os-init
   - os-memory-manager
+  - self-evolution
   - todo-check
