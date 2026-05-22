@@ -1,6 +1,6 @@
 # Architectural Fitness & Precedence Rules
 
-This document establishes the canonical Architectural Fitness Function rules and Truth Precedence for all reengineering operations within the `exploration-cycle-plugin` environment. All agents and automated refactoring pipelines must strictly validate their work against these rules.
+This document establishes the canonical Architectural Fitness Function rules, Truth Precedence, and boundary locks for all reengineering operations within the `exploration-cycle-plugin` environment. All agents and automated refactoring pipelines must strictly validate their work against these rules.
 
 ---
 
@@ -36,6 +36,11 @@ To prevent semantic drift, conflicting specifications, and design decay, the fol
 4. **Handoff/Spec docs:** Derived and synthesized artifacts for engineers.
 5. **Prototype Code:** Exploratory evidence only. The prototype is **never** the source of truth, only evidence that a feature's basic flow was explored.
 
+### 1.1 Truth Conflict Detector Protocol
+Before any slice can be certified, a formal cross-reference check must verify that assertions in `tests/characterization/` do not silently contradict quantitative validation bounds or definitions inside `specs/REQS.md`. 
+*   **Conflict Trigger:** If a characterization test passes against legacy behavior that `REQS.md` explicitly prohibits or restricts, a truth conflict is triggered.
+*   **Resolution Gate:** The conflict must be logged as `HUMAN_REQUIRED` in the ambiguity ledger. The lower-precedence artifact must be refactored to align with the higher-precedence artifact, or a human architect must sign off on an exception.
+
 ---
 
 ## 2. Layered Architecture & Import Boundaries
@@ -43,22 +48,22 @@ To prevent semantic drift, conflicting specifications, and design decay, the fol
 To ensure clean architecture and avoid framework, UI, or database leakage, the following static import rules are continuously audited by the `domain-purity-auditor`:
 
 ### 2.1 Core Domain Layer (`/domain`)
-The domain layer holds pure business logic. It must remain 100% technology-agnostic.
-* **Forbidden Imports:**
-  - UI Frameworks: `react`, `vue`, `svelte`, `angular`, `@angular/*`
-  - HTTP/Server Frameworks: `express`, `koa`, `fastify`, `nest`
-  - ORM/Database Adapters: `prisma`, `sequelize`, `typeorm`, `mongoose`, `pg`, `mysql2`
-  - Vendor/Platform SDKs: `aws-sdk`, `@google-cloud/*`, `firebase-admin`
-  - I/O & Networking: `axios`, `fetch`, `http`, `fs` (use abstraction interfaces instead)
+The domain layer holds pure business logic. It must remain 100% technology-agnostic and network-agnostic.
+* **Forbidden Imports / Symbols:**
+  - UI Frameworks: `react`, `vue`, `svelte`, `angular`, `@angular/*`, `useState`, `useEffect`, `jsx`, `tsx` (containing UI markup)
+  - HTTP/Server/Routing: `express`, `koa`, `fastify`, `nest`, `router`, `req`, `res`, `http`, `cors`
+  - ORM/Database Clients: `prisma`, `sequelize`, `typeorm`, `mongoose`, `pg`, `mysql2`, `select *`, `insert into`, `connect()`, `Client()`
+  - Vendor/Platform SDKs: `aws-sdk`, `@google-cloud/*`, `firebase-admin`, `@stripe/*`, `stripe`
+  - I/O & Networking: `axios`, `fetch`, `http`, `fs`, `node:fs`, `node:http`, `node:https` (domain must use Port interface abstractions instead)
 * **Coupling Rules:**
-  - May *only* import from other domain sub-folders.
-  - Zero dependencies on external layers (`/application`, `/infrastructure`, `/presentation`).
+  - May *only* import from other domain sub-folders or pure, mathematical shared utility helpers (e.g. `/shared-pure`).
+  - Zero dependencies on external layers (`/application`, `/infrastructure`, `/presentation`, or `/node_modules` dependencies outside pure helper libraries).
 
 ### 2.2 Application Layer (`/application`)
 The application layer coordinates user stories, orchestrates domain flows, and handles use cases.
 * **Forbidden Imports:**
   - UI Frameworks: `react`, `vue`, `svelte`, `angular`
-  - Direct database clients (e.g. `prisma` client initialization; must use Port interfaces and receive Repository adapters via Dependency Injection).
+  - Direct database client instances (e.g. concrete `prisma` client initialization; must use Port interfaces and receive Repository adapters via Dependency Injection).
 * **Coupling Rules:**
   - May import from `/domain`.
   - Zero dependencies on `/infrastructure` or `/presentation` concrete implementations.
@@ -75,12 +80,23 @@ The presentation layer handles HTTP endpoints, UI components, CLI routers, and s
 
 ## 3. Autonomous Rewrite Boundaries
 
-AI agents are strictly forbidden from rewriting the following categories autonomously. If any changes are needed in these files/routes, they **MUST be marked AUTONOMOUS_REWRITE_FORBIDDEN** and require manual human validation:
+AI agents are strictly forbidden from rewriting the following categories autonomously. 
 
-1. **Authentication & Authorization (`/auth`, `/jwt`, sessions, OAuth login flows).**
-2. **Financial Calculations & Billing (`/billing`, payment gateway integrations, math modules).**
-3. **Cryptography & Security (`/crypto`, hashing, salt generators, key rotations).**
-4. **Compliance & Auditing (`/audit`, regulatory logging, data retention rules).**
+### 3.1 Absolute Category Block (Pre-emption Rules)
+This designation is an **absolute category block**. It pre-empts and completely overrides any numeric coupling risk score. Even if a vertical slice has low coupling and high test coverage, it **MUST be blocked from autonomous write operations** if it matches any of the following paths, filenames, symbols, imports, or behaviors:
+
+1. **Authentication & Authorization:** Paths containing `auth`, `login`, `session`, `jwt`, `oauth`, `saml`. Content referencing `JWT`, `bcrypt`, `argon2`, `pbkdf2`, `session cookie`, `OAuth token`, `access control list`.
+2. **Financial Calculations & Billing:** Paths containing `billing`, `payment`, `invoice`. Content referencing `payment intent`, `card number`, `stripe`, `@stripe/*`.
+3. **Cryptography & Security:** Paths containing `crypto`, `hash`, `encrypt`. Content referencing `encryption key`, `salt generator`, `key rotation`, `cipher`.
+4. **Compliance & Auditing:** Paths containing `compliance`, `pii`, `audit`, `gdpr`, `hipaa`. Content referencing regulatory logs or personal identification tracking.
+
+### 3.2 Human Approval Bindings
+No changes inside these forbidden categories can proceed without a valid `human-approval.json` file in the workspace. This file must include:
+*   `approver`: Name of human architect.
+*   `approved_files`: Specific file paths approved.
+*   `approved_operation`: Exact description of the change.
+*   `artifact_version`: Cryptographic or file content hash at the time of approval.
+*   `expiry_condition`: The approval expires immediately if the target file contents are changed after approval.
 
 ---
 

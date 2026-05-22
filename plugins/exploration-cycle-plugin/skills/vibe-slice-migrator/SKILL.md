@@ -60,9 +60,13 @@ Before any slice migration can be considered complete, you must compile and exec
 
 ## 3. Migration Steps
 
+### Step 0: Absolute Safety Pre-Checks
+1. Scan the targeted slice files, directories, and symbols against the `AUTONOMOUS_REWRITE_FORBIDDEN` rules inside `references/architecture-rules.md` (specifically searching for Auth, Billing, Crypto, Compliance paths or keyword symbols).
+2. If ANY matches are found, **HALT** execution unconditionally. Do not calculate risk scores or attempt to rewrite. Report the safety violation immediately and hand over to human review.
+
 ### Step 1: Isolate the Slice Boundary & Perform Risk Scoring
 1. Select a single, discrete business feature or HTTP route (e.g., `POST /api/portfolios`).
-2. Score the slice across complexity, coupling, and dependency dimensions. If classified as **AUTONOMOUS_REWRITE_FORBIDDEN**, stop and request explicit human approval.
+2. Score the slice across complexity, coupling, and dependency dimensions.
 
 ### Step 2: Implement Clean Core Layers
 Move the isolated business behavior to the appropriate clean architecture layer:
@@ -76,6 +80,7 @@ Move the isolated business behavior to the appropriate clean architecture layer:
 ### Step 4: Run Governance Audits
 1. Trigger the `domain-purity-auditor` agent to scan the migrated domain files.
 2. Trigger the `semantic-drift-auditor` agent to scan code symbols against the canonical contract `specs/REQS.md`.
+3. Trigger the `runtime-observer` agent to verify fixture portability and dynamic observation results.
 
 ### Step 5: Execute Safety Net Tests
 1. Run Jest/Pytest characterization tests for this specific slice.
@@ -83,13 +88,10 @@ Move the isolated business behavior to the appropriate clean architecture layer:
 
 ### Step 6: Deprecate Legacy Code & Certify
 1. Update route mapping to point to the new Clean controller.
-2. Verify all certification criteria are checked off.
-3. Write a file `temp/slice-<name>-certification.md` containing the checklist and declare:
-   ```yaml
-   slice-name: portfolio-retrieval
-   slice-certified: true
-   ```
-4. Commit the clean slice and proceed to the next.
+2. Delegate all certification checklist verification to the independent `certification-verifier` sub-agent. The migrator agent is strictly forbidden from self-certifying.
+3. Verify that the `certification-verifier` agent has successfully generated `temp/slice-certification-report.json` and `session-memory/certification-ledger.md` with `slice-certified: true`. If this marker is missing or false, block the final migration step and report the verification errors.
+4. Write a file `temp/slice-<name>-certification-receipt.md` confirming the receipt of certification from the verifier.
+5. Commit the clean slice and proceed to the next.
 
 ---
 
