@@ -51,29 +51,32 @@ flowchart TD
         direction TB
         Phase5["🧠 skill: vibe-domain-extractor<br>─────────────────────────<br>Extract pure logic from prototype controllers"]
         P5Domain["🧩 Generate /domain/ entities & rules<br>Enforce zero framework & zero I/O imports"]
-        Phase5 --> P5Domain
+        P5Purity{"🔬 domain-purity-auditor v2<br>Verify zero framework/DB leakage"}
+        Phase5 --> P5Domain --> P5Purity
     end
 
-    P5Domain --> Phase6
+    P5Purity --> Phase6
 
     subgraph P6Box ["Phase 6: target Sandbox Scaffolding"]
         direction TB
-        Phase6["📦 skill: vibe-spec-packager<br>─────────────────────────<br>Compile specifications into Spec-Kit"]
-        P6Sandbox["🏗️ Bootstrap clean codebase sandbox target<br>Expose Port interfaces for DB & routing adapters"]
-        Phase6 --> P6Sandbox
+        Phase6["📦 skill: vibe-spec-packager v2<br>─────────────────────────<br>Compile specs into Spec Kit & Superpowers briefs"]
+        P6Sandbox["🏗️ Bootstrap target sandbox folders<br>/domain, /tests, /speckit, /superpowers"]
+        P6Align{"🔬 alignment-validator<br>Trace every task to spec requirement"}
+        Phase6 --> P6Sandbox --> P6Align
     end
 
-    P6Sandbox --> Phase7
+    P6Align --> Phase7
 
     subgraph P7Box ["Phase 7: Vertical Slice Migration"]
         direction TB
         Phase7["🔪 skill: vibe-slice-migrator<br>─────────────────────────<br>Progressive feature migration slice-by-slice"]
-        P7Loop["🔄 Loop for each feature:<br>• Extract logic to App Use-cases<br>• Implement Concrete Infra Adapters<br>• Run Safety Net Characterization Tests<br>• Deprecate old legacy code paths"]
-        P7Verify["✅ Final Safety Net Verification<br>Confirm 100% test pass against clean code"]
-        Phase7 --> P7Loop --> P7Verify
+        P7Loop["🔄 Loop for each feature:<br>• Step 0: Forbidden file pre-checks<br>• Extract logic to App Use-cases<br>• Implement Concrete Infra Adapters<br>• Run Safety Net Characterization Tests<br>• Deprecate old legacy code paths"]
+        P7Verify["✅ Safety Net & Drift Auditor Verification<br>Confirm 100% test pass & no alias drift"]
+        P7Cert{"🔬 certification-verifier subagent<br>Independent slice verification"}
+        Phase7 --> P7Loop --> P7Verify --> P7Cert
     end
 
-    P7Verify --> Done([✅ Hardened Production Clean Codebase Ready])
+    P7Cert --> Done([✅ Hardened Production Clean Codebase Ready])
 
     %% Styles
     classDef startStyle fill:#f3f4f6,stroke:#374151,stroke-width:2px
@@ -93,7 +96,7 @@ flowchart TD
     class Phase3,P3QA p3Style
     class Phase4,P4Docs p4Style
     class TierGate gateStyle
-    class Phase5,P5Domain p5Style
-    class Phase6,P6Sandbox p6Style
-    class Phase7,P7Loop,P7Verify p7Style
+    class Phase5,P5Domain,P5Purity p5Style
+    class Phase6,P6Sandbox,P6Align p6Style
+    class Phase7,P7Loop,P7Verify,P7Cert p7Style
     class Done endStyle
