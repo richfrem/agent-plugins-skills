@@ -14,13 +14,13 @@ Mutation target: `OVERVIEW.md` — you may ONLY edit this file each iteration.
 One focused change per iteration. No bulk rewrites.
 
 Locked (never modify during the loop):
-- `/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py`
-- `/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os/skills/os-eval-runner/scripts/eval_runner.py`
+- `../agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py`
+- `../agent-agentic-os/skills/os-eval-runner/scripts/eval_runner.py`
 - `evals/evals.json`
 
 How to run one iteration:
 1. Edit `OVERVIEW.md` (one focused change)
-2. `python /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py --skill /Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin/OVERVIEW.md --desc "what you changed"`
+2. `python3 ../agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py --skill OVERVIEW.md --desc "what you changed"`
 3. If KEEP (exit 0): `git add OVERVIEW.md && git commit -m "keep: score=X <description>"`
 4. If DISCARD (exit 1): evaluate.py already reverted `OVERVIEW.md` automatically
 

@@ -31,9 +31,11 @@ To build an industrial-grade safety net, you must leverage the `runtime-observer
 *   Capture raw HTTP request headers, query arguments, body payloads, response status, headers, and body payloads.
 *   Isolate external third-party SDK API endpoints (e.g. Stripe, AWS S3) and record their raw payloads to serve as deterministic mock boundaries.
 
-### 1.3 Fixture Generation
+### 1.3 Fixture Generation & Portability Validation
 *   Serialize all captured network response bodies and DB records into static JSON files under `tests/characterization/fixtures/<slice-name>/`.
 *   Ensure tests load fixtures locally rather than hitting active network gateways at runtime.
+*   **Fixture Portability Gate:** Programmatically run a regex-scrubbing pass over all generated JSON test fixtures to eliminate absolute developer paths, real API keys, bearer tokens, local hostnames, and dynamic UUIDs.
+*   **Verification:** Validate that `temp/fixture-portability-report.json` indicates zero scrubbing violations.
 
 ### 1.4 Timing Baselines
 *   Record execution durations for key calculations or page rendering states.
@@ -51,10 +53,11 @@ To build an industrial-grade safety net, you must leverage the `runtime-observer
 1. Trigger the `runtime-observer` agent to run observation hooks during manual exploration or browser test exercises.
 2. Verify that `temp/runtime-telemetry-report.md` and standard JSON mocks are created in `/fixtures`.
 
-### Step 3: Synthesize Executable Characterization Tests
-Generate TypeScript/Jest test suites directly under `tests/characterization/` (or the language-appropriate test directory, e.g., Python `tests/characterization/test_*.py`). 
+### Step 3: Synthesize Executable Characterization Tests & Parameterize Mocks
+1. Generate TypeScript/Jest test suites directly under `tests/characterization/` (or the language-appropriate test directory, e.g., Python `tests/characterization/test_*.py`).
+2. Run the `runtime-observer` validation pass to inspect every compiled fixture. Confirm that `temp/fixture-portability-report.json` indicates `fixtures_portable: true`. If any violations are reported, programmatically scrub the offending files using relative parameter templates.
 
-Ensure each test load fixtures locally and follows the strict outline below:
+Ensure each test loads fixtures locally and follows the strict outline below:
 
 ```typescript
 import request from 'supertest';
@@ -96,4 +99,4 @@ describe('Characterization Test: Portfolio Update Flow', () => {
 
 1.  **Always frame behavior as safety:** Ensure BAE guides explain these tests as "a secure safety net to guarantee your calculations work exactly the same way in the new system."
 2.  **Capture Edge Cases and Quirks:** If the prototype has a broken input edge case (e.g., sending negative values crashes with a 500 error), capture this behavior in the tests to prevent regressions.
-3.  **Ensure Fixture Portability:** All file path lookups and config properties must be relative. Do not hardcode Richard's home directory (`/Users/richardfremmerlid/...`).
+3.  **Ensure Fixture Portability:** All file path lookups, URLs, and authentication tokens must be fully parameterized. Enforce zero absolute path references (such as `/Users/` or `/home/`) inside generated code and static JSON fixtures, replacing them with standard `${FIXTURE_ROOT}`, `${BASE_URL}`, or `${MOCK_TOKEN}` variables.

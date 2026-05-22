@@ -1,8 +1,10 @@
 # Architecture Decision Record (ADR)
 
-*   **Status**: [Proposed | Approved | Rejected | Deprecated | Superceded]
+*   **Status**: [Proposed | Approved | Rejected | Deprecated | Superseded]
 *   **Deciders**: [Human architect, agents involved]
 *   **Date**: [YYYY-MM-DD]
+*   **Supersedes**: [ADR-NNN | N/A]
+*   **Superseded By**: [ADR-NNN | active | N/A]
 
 ---
 
