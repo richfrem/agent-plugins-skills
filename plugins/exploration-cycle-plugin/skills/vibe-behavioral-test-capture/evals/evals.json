@@ -1,0 +1,9 @@
+[
+  {"prompt": "capture behavioral tests for my legacy user sign-up flow", "should_trigger": true},
+  {"prompt": "generate characterization tests under tests/characterization/ to lock down calculations", "should_trigger": true},
+  {"prompt": "record HTTP response status and state mutations from the running prototype", "should_trigger": true},
+  {"prompt": "build an executable safety net for my local running app behavior", "should_trigger": true},
+  {"prompt": "scaffold a fresh postgresql schema and setup docker containers", "should_trigger": false},
+  {"prompt": "extract clean domain models and value objects separated from frameworks", "should_trigger": false},
+  {"prompt": "run vertical slice migration loop to deprecate legacy routes", "should_trigger": false}
+]

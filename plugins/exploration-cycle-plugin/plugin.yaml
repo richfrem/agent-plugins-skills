@@ -27,6 +27,11 @@ skills:
   - subagent-driven-prototyping
   - user-story-capture
   - vibe-browser-audit
+  - vibe-behavioral-test-capture
+  - vibe-domain-extractor
+  - vibe-slice-migrator
+  - vibe-reengineer
   - vibe-spec-packager
   - vibe-togaf-architect
   - visual-companion
+

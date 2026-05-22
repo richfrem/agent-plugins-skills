@@ -1,0 +1,9 @@
+[
+  {"prompt": "extract pure domain models from the active rapid prototype files", "should_trigger": true},
+  {"prompt": "isolate business invariants and value objects into /domain with zero express imports", "should_trigger": true},
+  {"prompt": "refactor legacy calculations into framework-free pure functions", "should_trigger": true},
+  {"prompt": "create pure domain services without any database or I/O imports", "should_trigger": true},
+  {"prompt": "launch browser-harness to audit my frontend dashboard at localhost:3000", "should_trigger": false},
+  {"prompt": "run vertical slice migration loop to deprecate legacy routes", "should_trigger": false},
+  {"prompt": "capture behavioral tests for my legacy user sign-up flow", "should_trigger": false}
+]
