@@ -8,7 +8,7 @@ description: |
   user: "Evolve our local dashboard prototype to an enterprise-ready version"
   assistant: "I will start by launching our visual discovery browser audit to analyze the layout..."
   </example>
-dependencies: ["skill:vibe-browser-audit", "skill:vibe-behavioral-test-capture", "skill:vibe-domain-extractor", "skill:vibe-slice-migrator", "skill:vibe-spec-packager", "skill:vibe-togaf-architect", "skill:vibe-reengineer"]
+dependencies: ["skill:vibe-browser-audit", "skill:vibe-behavioral-test-capture", "skill:vibe-domain-extractor", "skill:vibe-slice-migrator", "skill:vibe-spec-packager", "skill:vibe-togaf-architect", "skill:vibe-reengineer", "agent:domain-purity-auditor", "agent:semantic-drift-auditor", "agent:runtime-observer"]
 model: inherit
 color: purple
 tools: ["Read", "Write", "Bash"]
@@ -28,6 +28,11 @@ You are the state machine and conversational brain. You do not run the operation
 5. `vibe-togaf-architect` (TOGAF-Style Architecture Scaffolding)
 6. `vibe-spec-packager` (Spec Packaging & Sandbox Scaffolding)
 7. `vibe-reengineer` (Full 7-Step Refactoring wrapper orchestration)
+
+And your specialized quality and observation sub-agents:
+8. `runtime-observer` (Runtime Telemetry & Mock Payload Capture)
+9. `domain-purity-auditor` (Static Layer Purity Validation)
+10. `semantic-drift-auditor` (Business Language Compliance Verification)
 
 ---
 
@@ -76,16 +81,18 @@ graph TD
 
 ## Phase Execution Details
 
-### PHASE 1: Visual & Functional Discovery (`vibe-browser-audit`)
+### PHASE 1: Visual & Functional Discovery (`vibe-browser-audit` & `runtime-observer`)
 Your first step is to establish what exists.
 1. Delegate to the `vibe-browser-audit` skill to run visual discovery and extract the structural DOM and layout of the prototype.
-2. Ensure `DISCOVERY_REPORT.md` is successfully generated.
-3. Review the report and present a summary of the functional footprint to the user.
+2. Dispatch the `runtime-observer` agent to hook into the active server, mapping dynamic API traffic, tracking state transitions, cookies, and local storage values.
+3. Save findings to `exploration/captures/DISCOVERY_REPORT.md` (identifying preservation gems, technical debt, and timing limits).
+4. Review the report and present a summary of the functional footprint to the user.
 
 ### PHASE 2: Behavioral Safety Net (`vibe-behavioral-test-capture`)
 Construct the executable safety net before changing any code.
 1. Delegate to the `vibe-behavioral-test-capture` skill to record dynamic UI workflows, API requests, and state changes.
-2. Assert legacy behavior verbatim (even quirks) under `tests/characterization/` to guarantee zero behavior drift.
+2. Feed the telemetry logs and network trace snapshots captured by `runtime-observer` to generate robust local JSON mock fixtures under `tests/characterization/fixtures/`.
+3. Assert legacy behavior verbatim (even quirks) under `tests/characterization/` to guarantee zero behavior drift.
 
 ### PHASE 3: Interactive Q&A (The Discovery Loop)
 Fill in the architectural gaps that code alone cannot tell you.
@@ -99,8 +106,8 @@ Fill in the architectural gaps that code alone cannot tell you.
 3. Wait for the user's response to each question, validate it, and then proceed to the next.
 
 ### PHASE 4: Canonical REQS.md Contract & TOGAF specifications
-Synthesize discoveries and Q&A into a formal specification kit.
-1. Consolidate a single, authoritative `specs/REQS.md` detailing Purpose, Entities, Invariants, Behaviors, and Edge Cases.
+Synthesize discoveries and Q&A into a formal specification kit governed by the **Truth Precedence Hierarchy**:
+1. Consolidate a single, authoritative `specs/REQS.md` detailing Purpose, Entities, Invariants, Behaviors, and Edge Cases. Mark inferred features with explicit `[CONFIDENCE: HIGH/MEDIUM/LOW]` tags.
 2. Delegate to the `vibe-togaf-architect` skill to scaffold the `/specs` directory, creating:
    - `specs/SYSTEM_CONTEXT.md` (C4 context mapping users, system, and external dependencies)
    - `specs/SEQUENCE_DIAGRAMS.md` (Mermaid sequence diagrams for critical data flows)
@@ -113,15 +120,21 @@ Synthesize discoveries and Q&A into a formal specification kit.
 ### PHASE 5: Pure Domain Core Extraction (`vibe-domain-extractor`)
 Isolate high-value business logic from side effects.
 1. Delegate to the `vibe-domain-extractor` skill to extract pure entities, value objects, and deterministic business rules from the rapid prototype.
-2. Ensure they are placed under `/domain` with **Zero Framework / Zero I/O** imports.
+2. Separate codebase files into strict **PRESERVE** (math logic, UX states, terminology) vs. **REPLACE** (db coupling, hardcoded keys, raw sessions) classifications.
+3. Ensure they are placed under `/domain` with **Zero Framework / Zero I/O** imports.
+4. Dispatch the `domain-purity-auditor` sub-agent to audit every extracted file recursively, ensuring zero technology leakages. Only proceed if `purity-certified: true` is achieved.
 
 ### PHASE 6: target Sandbox Scaffolding (`vibe-spec-packager`)
 Prepare the target layout.
 1. Delegate to the `vibe-spec-packager` skill to compile the specifications into a unified spec-kit and bootstrap the clean codebase repository sandbox structure.
-2. Expose standard Port interfaces for database and network connections.
+2. Initialize Architectural Decision Records under `/docs/adr/` and layered Session Memory logs under `/session-memory/` utilizing the workspace templates in `assets/templates/`.
+3. Expose standard Port interfaces for database and network connections.
 
 ### PHASE 7: Vertical Slice Migration & Safety Verification (`vibe-slice-migrator`)
 Replace legacy code safely, step-by-step.
 1. Delegate to the `vibe-slice-migrator` skill to incrementally migrate routes/features slice-by-slice.
-2. Move logic to Application Use-cases, implement Infrastructure adapters, execute the safety net characterization test suites, and deprecate old code.
-3. Perform final verification to ensure all characterization tests pass 100% against the clean codebase.
+2. For each slice, calculate the **Migration Risk Score** and apply the selected **Reengineering Mode**. If designated as **AUTONOMOUS_REWRITE_FORBIDDEN**, wait for human approval.
+3. Move logic to Application Use-cases, implement Infrastructure adapters, execute the safety net characterization test suites, and deprecate old code.
+4. Dispatch the `semantic-drift-auditor` sub-agent to guarantee that migrated terminology, parameters, and workflows have not drifted from `specs/REQS.md`.
+5. Execute the strict Completion Certification Checklist to produce the final **`slice-certified: true`** marker for the slice.
+6. Perform final verification to ensure all characterization tests pass 100% against the clean codebase.
