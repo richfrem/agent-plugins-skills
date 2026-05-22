@@ -32,6 +32,13 @@ The cost of exploration drops from tens of thousands of dollars and weeks of cal
 
 ## Core Principles
 
+### 0. The Two Delivery Paths: Greenfield vs. Rescue
+The framework supports two distinct user starting points:
+- **Path 1: Pre-Build Discovery (Greenfield/Brownfield)**: For visionaries starting with *no code*. It guides them through problem framing, visual blueprinting, and structured prototyping.
+- **Path 2: Vibe-to-Enterprise Rescue (Existing Prototypes)**: For developers or BAEs who *already vibe-coded a working prototype* (often containing technical debt, incomplete rules, or raw code). Instead of throwing it away, it runs a visual & functional audit to salvage domain gems, isolate debt, and scaffold production specs and code sandbox.
+
+**Resilient Unhappy Path Redirection:** If a user enters Path 1 but already has active, hacky vibe-coded structures, the **Intake Agent** (`intake-agent.md`) and **Orchestrator** (`exploration-cycle-orchestrator-agent.md`) will immediately intervene and redirect them to Path 2, ensuring they are picked up and put back on a good path without losing progress.
+
 ### 1. Right Problem First (The Inner Double Diamond)
 
 The most expensive mistake in software development is building the right thing for the wrong problem. The UK's Blue Badge digitization project nearly built a sophisticated document verification portal — until service designers discovered the real problem was confusing policy language. A rewrite of the questions saved millions.
@@ -216,6 +223,9 @@ exploration-cycle-plugin/
 ├── OVERVIEW.md                     # Deeper conceptual dive into the GenAI Double Diamond
 ├── BAE-start-guide.md              # Quick start guide for Business Area Experts
 ├── agents/                         # Vision Translators and Scribes
+│   ├── intake-agent.md             # Front-door interviewer (Path 1) with Vibe-Coded Catch
+│   ├── vibe-orchestrator-agent.md  # State machine for Path 2 Vibe-to-Enterprise Rescue
+│   └── ...
 ├── assets/
 │   ├── diagrams/                   # Technical flowcharts (Mermaid)
 │   ├── resources/design-thinking/  # Framework infographics and references
@@ -232,11 +242,10 @@ exploration-cycle-plugin/
 │   ├── subagent-driven-prototyping/# Phase 3 builder: component-by-component construction
 │   ├── exploration-handoff/        # Phase 4: Synthesis, TierGate, and handoff packaging
 │   ├── exploration-workflow/       # Orchestrator: state machine managing the full loop
-│   ├── business-requirements-capture/
-│   ├── business-workflow-doc/
-│   ├── exploration-optimizer/
-│   ├── exploration-session-brief/
-│   └── user-story-capture/
+│   ├── vibe-browser-audit/         # Path 2 visual & functional DOM and API crawler
+│   ├── vibe-togaf-architect/       # Path 2 C4 Context & Sequence blueprint generator
+│   ├── vibe-spec-packager/         # Path 2 package builder and codebase sandbox bootstrapper
+│   └── ...
 └── requirements.in                 # Python dependencies
 ```
 

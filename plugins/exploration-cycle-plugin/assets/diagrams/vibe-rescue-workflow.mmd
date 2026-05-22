@@ -1,0 +1,66 @@
+flowchart TD
+    %% --- PATH 2: VIBE-TO-ENTERPRISE RESCUE ---
+    Start([💡 Pre-Existing Vibe-Coded Prototype<br>e.g., localhost:3000 or raw code]) --> Phase1
+
+    subgraph P1Box ["Phase 1: Visual & Functional Discovery"]
+        direction TB
+        Phase1["🔍 skill: vibe-browser-audit<br>─────────────────────────<br>Crawl running application UI<br>Identify DOM structure & routes"]
+        P1Analyze["💎 Salvage core domain logic (Preservation Gems)<br>⚠️ Identify security gaps & brittle patterns (Technical Debt)"]
+        P1Report["📄 Generate DISCOVERY_REPORT.md"]
+        Phase1 --> P1Analyze --> P1Report
+    end
+
+    P1Report --> Phase2
+
+    subgraph P2Box ["Phase 2: Interactive Extraction Loop"]
+        direction TB
+        Phase2["💬 State Machine: vibe-orchestrator-agent<br>─────────────────────────<br>Converts vibe audit to architectural scope"]
+        P2QA[" Elicit key dimensions via interactive Q&A:<br>1. Scale & Tenancy<br>2. Data Sensitivity (PII/Security)<br>3. Ephemeral & State Storage<br>4. External APIs & Services<br>5. Cloud or On-Premises Target"]
+        Phase2 --> P2QA
+    end
+
+    P2QA --> Phase3
+
+    subgraph P3Box ["Phase 3: TOGAF Architectural Specifications"]
+        direction TB
+        Phase3["🏗️ skill: vibe-togaf-architect<br>─────────────────────────<br>Scaffold specifications structure"]
+        P3Docs["📝 Write specs/ folder:<br>• REQUIREMENTS.md (Functional & NFR)<br>• SYSTEM_CONTEXT.md (C4 Context)<br>• SEQUENCE_DIAGRAMS.md (Mermaid sequences)<br>• TECH_MAPPING.md & DEPLOYMENT.md"]
+        Phase3 --> P3Docs
+    end
+
+    P3Docs --> TierGate
+
+    subgraph GateBox ["🛑 Risk & Rigor Gate"]
+        direction TB
+        TierGate{"Confirm Alignment Check<br>─────────────────────────<br>SME/BAE reviews C4 specs & NFR maps"}
+        TierGate -->|Refine / Gaps| Phase2
+    end
+
+    TierGate -->|Approved & Signed Off| Phase4
+
+    subgraph P4Box ["Phase 4: Handoff & Sandbox Scaffolding"]
+        direction TB
+        Phase4["📦 skill: vibe-spec-packager<br>─────────────────────────<br>Compile specifications into Spec-Kit"]
+        P4Sandbox["🏗️ Bootstrap clean codebase sandbox target<br>• Purge quarantined technical debt<br>• Cleanly integrate salvaged domain gems"]
+        P4Handoff["🚀 Final engineering handoff instructions<br>(e.g. ready for obra/superpowers execution)"]
+        Phase4 --> P4Sandbox --> P4Handoff
+    end
+
+    P4Handoff --> Done([✅ Hardened Specification Sandbox Ready])
+
+    %% Styles
+    classDef startStyle fill:#f3f4f6,stroke:#374151,stroke-width:2px
+    classDef p1Style fill:#eff6ff,stroke:#3b82f6,stroke-width:1px
+    classDef p2Style fill:#fdf4ff,stroke:#9333ea,stroke-width:1px
+    classDef p3Style fill:#f0fdf4,stroke:#16a34a,stroke-width:1px
+    classDef gateStyle fill:#fff7ed,stroke:#ea580c,stroke-width:2px
+    classDef p4Style fill:#fefce8,stroke:#ca8a04,stroke-width:1px
+    classDef endStyle fill:#dcfce7,stroke:#15803d,stroke-width:3px
+
+    class Start startStyle
+    class Phase1,P1Analyze,P1Report p1Style
+    class Phase2,P2QA p2Style
+    class Phase3,P3Docs p3Style
+    class TierGate gateStyle
+    class Phase4,P4Sandbox,P4Handoff p4Style
+    class Done endStyle
