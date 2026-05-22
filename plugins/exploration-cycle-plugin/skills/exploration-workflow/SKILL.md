@@ -154,10 +154,14 @@ Match on **intent**, not keywords. When uncertain, default to the type with more
 | Fix a broken business process, improve a workflow | Type 3 (Analysis/Docs — process) — but run Intervention Check first | Often NOT a software problem |
 | Requirements gathering or documenting for an upcoming project | Type 3 (Analysis/Docs — requirements) | Deliverable is documents |
 | Strategic planning, market entry, go-to-market, business decision | Type 3 (Analysis/Docs — strategic) | No code output |
-| Policy, compliance, regulatory, risk assessment | Type 3 (Analysis/Docs — risk/compliance) | Deliverable is policy or risk doc |
+| Already built a vibe-coded prototype and need to clean/harden it | Re-route to vibe-orchestrator agent | Vibe-coded app exists (Path 2) |
 | Should we build vs. buy? What are our options? | Type 4 (Spike) | Decision support, may not lead to building |
 | I'm not sure if we even need software | Type 4 (Spike) or start Phase 1 directly — the Intervention Check will clarify | Do not force a type prematurely |
 | Research a technology, validate a hypothesis | Type 4 (Spike) | Exploratory, outcome open |
+
+**"Already vibe-coded a prototype" (Path 2) path:**
+> "Since you already have a working vibe-coded prototype, we shouldn't start our clean-sheet pre-build discovery loop (Path 1). Instead, let's trigger our Vibe-to-Enterprise Transition Orchestrator (Path 2). I'll route you to the specialized vibe-orchestrator agent to run visual discovery and construct formal C4/TOGAF architectural specs."
+Trigger the `vibe-orchestrator` agent directly.
 
 **"Not sure if software is the answer" path:**
 > "That's actually the most important question — let's not assume software is the answer yet. Let's start with Phase 1 and figure out what kind of solution actually fits. I'll ask a specific question about that during our planning conversation."

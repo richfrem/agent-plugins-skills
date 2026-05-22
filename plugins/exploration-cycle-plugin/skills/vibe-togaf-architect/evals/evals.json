@@ -1,0 +1,10 @@
+[
+  {"prompt": "generate C4 context diagrams and sequence diagrams using Mermaid syntax", "should_trigger": true},
+  {"prompt": "scaffold the TOGAF-style spec-kit inside the /specs directory", "should_trigger": true},
+  {"prompt": "synthesize discovery findings and user NFRs into specs and run through the Tier Gate", "should_trigger": true},
+  {"prompt": "create a system context diagram mapping system boundaries and database servers", "should_trigger": true},
+  {"prompt": "launch Playwright on localhost:5173 to extract DOM and run UI audits", "should_trigger": false},
+  {"prompt": "scaffold the target repository sandbox structure and setup superpowers", "should_trigger": false},
+  {"prompt": "package our finished C4 specifications into a standard OpenSpec format", "should_trigger": false},
+  {"prompt": "audit an existing plugin's file layout and symlinks structure", "should_trigger": false}
+]
