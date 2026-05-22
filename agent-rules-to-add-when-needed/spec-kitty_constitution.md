@@ -1,0 +1,1 @@
+../../.agents/rules/spec-kitty_constitution.md
