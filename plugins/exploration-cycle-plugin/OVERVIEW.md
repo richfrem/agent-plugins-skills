@@ -35,12 +35,14 @@ The framework supports two distinct operational entry points inside the First Di
     - **Tier 2 (Moderate):** Internal data + standard tools. Red-Teaming mandatory.
     - **Tier 3 (High):** PII/Sensitive data + High-privilege access. Full architectural audit and hardening required.
 - **Gatekeeping:** Ensures Tier 3 projects are handed off to a formalized engineering harness (e.g., spec-kits, superpowers) for lifecycle management.
-- **Path 2 Spec Packaging:** For rescue tracks, the `vibe-spec-packager` compiles the specs into a production-grade spec-kit and bootstraps a clean target directory sandbox (purging quarantined debt while cleanly housing salvaged gems).
+- **Path 2 Unified Reengineering Bridge:** The `vibe-to-speckit-superpowers` skill compiles extracted domain rules into production-grade **Spec Kit** governance specifications and simultaneously bootstraps a clean code sandbox powered by a **Superpowers** execution harness (generating TDD briefs and testing workflows). This ensures complete isolation from legacy technical debt while carrying over verified domain logic.
 
 ## 3. The Second Diamond: Execution (Solidification)
 **Goal:** Structural builds and enterprise-grade validation.
 **Role:** The "Static Map."
 - **Solidification:** We use a specification layer and execution harness to convert the exploration's output into formal specifications and verified work packages.
+- **Uncompromising Validation Loop:** We enforce rigorous quality gates during reengineering using three specialized v2 auditors (`domain-purity-auditor`, `semantic-drift-auditor`, `runtime-observer-agent`) that analyze the implementation for structural leakage, concept misalignment, and test portability defects.
+- **Verification & Certification Gate:** A dedicated two-stage `certification-verifier` sub-agent acts as the final gatekeeper, mathematically and behaviorally certifying that the migrated slices fully conform to the BRD and spec sheets before merging.
 - **Logic Drift Audit:** Our `business-rule-audit-agent` cross-references prototype behavior against captured BRDs to ensure the "Fast" build remains "Safe."
 
 ---
