@@ -1,0 +1,9 @@
+[
+  {"prompt": "clean up and reengineer our rapid prototype at localhost:3000", "should_trigger": true},
+  {"prompt": "run the 7-step vibe-reengineer pipeline on my active running local code", "should_trigger": true},
+  {"prompt": "rebuild our prototype into production-grade clean architecture using specs/REQS.md", "should_trigger": true},
+  {"prompt": "execute vibe-reengineer to audit, capture tests, extract domain, and migrate slices", "should_trigger": true},
+  {"prompt": "launch browser-harness to audit my frontend dashboard at localhost:3000", "should_trigger": false},
+  {"prompt": "extract pure domain models from the active rapid prototype files", "should_trigger": false},
+  {"prompt": "capture behavioral tests for my legacy user sign-up flow", "should_trigger": false}
+]

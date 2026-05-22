@@ -8,26 +8,35 @@ A concise how-to for Business Area Experts (BAEs) to start a guided exploration 
 
 How to start
 ------------
-Just say it in plain language. The canonical phrase is:
+Just say it in plain language depending on your starting point:
 
-> **"Let's explore [your idea]."**
-
-Or any of these:
+### Path 1: Clean-Sheet Discovery (No code yet)
+If you have a fresh idea but haven't built anything yet, say:
+- **"Let's explore [your idea]."** (canonical)
 - "I have an idea I want to explore"
-- "Start an exploration session"
 - "Let's think through this before building anything"
 - "Help me figure out what we should build"
 
-The `exploration-workflow` skill takes it from there. It asks one question at a time, keeps you in control at every gate, and adapts to what you actually need — whether that's a working prototype, a set of requirements, a process map, or a "don't build this" conclusion.
+### Path 2: Prototype Rescue & Hardening (Existing code)
+If you or a developer already built a rapid or vibe-coded prototype (e.g. running on localhost:3000 or sitting in a repository) and you want to clean it up and prepare it for production-grade engineering:
+- **"Harden our local prototype."**
+- "I have a running prototype at localhost:3000 that needs an architecture spec"
+- "Take this vibe-coded app and prepare it for enterprise delivery"
+- "Rescue our local mockup and clean it up"
+
+> [!TIP]
+> **Automatic Rescue Safeguard**: If you start in Path 1 but mention during conversation that you already have a mock codebase or running prototype, the assistant will automatically redirect you to Path 2 to save you time and preserve your progress.
 
 ---
 
 What happens next
 -----------------
-The session runs in four phases. You only move forward when you say so.
+The session runs in four structured steps. You only move forward when you say so.
+
+### Path 1 — Clean-Sheet Discovery Steps
 
 **Phase 1 — Problem Framing**
-Five guided questions that establish what problem you're solving, who's affected, and whether software is even the right answer. Produces a Discovery Plan you approve before anything else happens.
+Five guided questions that establish what problem you're solving, who's affected, and whether building software is even the right answer. Produces a Discovery Plan you approve before anything else happens.
 
 **Phase 2 — Visual Blueprinting** *(optional for some session types)*
 You see layout or structure options in plain language before anything is built. You pick one. Nothing gets built until you confirm.
@@ -40,16 +49,33 @@ The session wraps up with a risk check (four yes/no questions) and a packaged ou
 
 ---
 
-The four session types
+### Path 2 — Prototype Rescue Steps
+
+**Phase 1 — Browser Discovery**
+An automated browser reviewer runs a visual and functional audit of your running prototype. It lists **Preservation Gems** (important business logic, interface designs, or calculations to keep) and identifies **Risky/Brittle Areas** (security gaps or fragile code to clean up). Produces a clear Discovery Report.
+
+**Phase 2 — Interactive Interview**
+The assistant asks you 5 quick questions (one at a time) about aspects code alone cannot tell us: scaling needs, target audience, sensitive data, external connections, and hosting targets.
+
+**Phase 3 — Architectural Blueprinting**
+The assistant creates formal architectural blueprints under `/specs` (including user system maps and data sequence flows in plain language). You review these and must provide your explicit sign-off to continue. **Nothing proceeds past this gate without your approval.**
+
+**Phase 4 — Specification Packaging**
+The assistant packages the final blueprints into a formal specification kit and sets up a clean, production-ready target isolated workspace (removing the risky, brittle parts while cleanly housing your preserved gems).
+
+---
+
+The five session types
 ----------------------
 Tell the assistant which type fits, or it will ask:
 
-| Type | Use when | Phases |
-|------|----------|--------|
-| **New app** | Building something from scratch | All 4 |
-| **Feature for existing app** | Adding to something that already exists | Phase 1 required, rest flexible |
-| **Analysis or documentation** | No code — requirements, process maps, policies, reports | Phases 1 & 4, Phase 2 optional |
-| **Spike** | Exploring a question or technology | Phase 1 required, rest flexible |
+| Type | Use when | Path / Phases |
+|------|----------|---------------|
+| **New app** | Building something from scratch | Path 1 (All 4 phases) |
+| **Feature for existing app** | Adding to something that already exists | Path 1 (Phase 1 required, rest flexible) |
+| **Analysis or documentation** | No code — requirements, process maps, policies, reports | Path 1 (Phases 1 & 4, Phase 2 optional) |
+| **Spike** | Exploring a question or technology | Path 1 (Phase 1 required, rest flexible) |
+| **Prototype Rescue** | Cleaning, auditing, and hardening a vibe-coded prototype | Path 2 (All 4 rescue phases) |
 
 ---
 
@@ -71,6 +97,7 @@ The session will never move forward without your explicit sign-off. You'll see t
 
 - **Discovery Plan approval** — Phase 1 cannot complete until you say "looks good". Nothing gets built before this.
 - **Layout confirmation** — Phase 2 requires you to choose a direction before building starts.
+- **Architectural blueprint sign-off (Path 2 only)** — Phase 3 requires you to review C4 context specs and give formal approval before the specifications sandbox is created.
 - **Phase completion gates** — after each phase, the assistant presents a plain-language summary and waits for your confirmation before marking it complete.
 
 If you say "this isn't going to work" at any point — the session closes cleanly, saves what was learned, and that's a valid outcome.
@@ -119,6 +146,8 @@ Key files and locations
 ------------------------
 - `exploration/exploration-dashboard.md` — your session state; tracks which phases are done
 - `exploration/discovery-plans/` — approved Discovery Plans (the hard gate)
+- `DISCOVERY_REPORT.md` — Path 2 visual and functional review findings
+- `specs/` — Path 2 user system context maps, sequence blueprints, and requirements
 - `exploration/captures/` — requirements, stories, workflow maps, prototype notes
 - `exploration/handoffs/handoff-package.md` — final output of the session
 - `exploration/planning-drafts/` — optional pre-draft specs for engineering handoff (if applicable)
@@ -137,3 +166,4 @@ Best practices
 Need a walkthrough?
 -------------------
 Say: "Walk me through an exploration session for [your idea]" and the assistant will guide you step by step.
+

@@ -1,0 +1,10 @@
+[
+  {"prompt": "compile our TOGAF specs into a standard unified spec-kit.md", "should_trigger": true},
+  {"prompt": "scaffold the codebase sandbox structure matching the approved tech mapping", "should_trigger": true},
+  {"prompt": "bootstrap empty directory structure for FastAPI and postgresql backend app", "should_trigger": true},
+  {"prompt": "instruct the user on invoking the obra/superpowers engineering harness", "should_trigger": true},
+  {"prompt": "launch browser-harness and extract DOM payload from the local server UI", "should_trigger": false},
+  {"prompt": "conduct a visual audit and log CSS and Tailwind layouts", "should_trigger": false},
+  {"prompt": "generate system context diagram and Mermaid database flows", "should_trigger": false},
+  {"prompt": "interview the SME one by one to determine security and tenancy baselines", "should_trigger": false}
+]
