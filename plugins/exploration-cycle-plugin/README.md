@@ -35,7 +35,13 @@ The cost of exploration drops from tens of thousands of dollars and weeks of cal
 ### 0. The Two Delivery Paths: Greenfield vs. Rescue
 The framework supports two distinct user starting points:
 - **Path 1: Pre-Build Discovery (Greenfield/Brownfield)**: For visionaries starting with *no code*. It guides them through problem framing, visual blueprinting, and structured prototyping.
-- **Path 2: Vibe-to-Enterprise Rescue (Existing Prototypes)**: For developers or BAEs who *already vibe-coded a working prototype* (often containing technical debt, incomplete rules, or raw code). Instead of throwing it away, it runs a visual & functional audit to salvage domain gems, isolate debt, and scaffold production specs and code sandbox.
+- **Path 2: Vibe-to-Enterprise Rescue (Existing Prototypes)**: For developers or BAEs who *already vibe-coded a working prototype* (often containing technical debt, incomplete rules, or raw code). Instead of discarding it, the system executes an automated, gated **10-step reengineering pipeline** (`vibe-to-speckit-superpowers`) to salvage domain invariants, quarantine legacy technical debt, and scaffold a production-grade spec and isolated code sandbox.
+
+During this pipeline, a suite of **active validators** enforces strict transition gates:
+* **Purity Validator (v2)**: Detects and rejects domain core imports of network/filesystem/framework utilities, enforcing 100% technology-decoupled domain models.
+* **Semantic Drift Validator (v2)**: Employs near-miss regex search and case-normalization checks to guarantee symbols match approved business lexicon aliases.
+* **Fixture Portability Validator**: Scrubs developer home paths (`/Users/`), secrets, and ephemeral ports to generate portable characterization tests.
+* **Alignment Validator**: Assures strict bidirectional traceability between Spec Kit requirements and Superpowers TDD tasks.
 
 **Resilient Unhappy Path Redirection:** If a user enters Path 1 but already has active, hacky vibe-coded structures, the **Intake Agent** (`intake-agent.md`) and **Orchestrator** (`exploration-cycle-orchestrator-agent.md`) will immediately intervene and redirect them to Path 2, ensuring they are picked up and put back on a good path without losing progress.
 
@@ -76,9 +82,15 @@ Phase 2 (Visual Blueprinting) adapts too — presenting UI layouts for software,
 Even prototypes need validation — the prototype is the **evidence** that the exploration captured the right thing. If the prototype doesn't match the Discovery Plan, the SME reviews the wrong behavior, the handoff describes the wrong system, and the engineering team builds from a flawed spec.
 
 But validation doesn't mean heavyweight process. The execution discipline scales with the session:
-- **Greenfield/Brownfield**: Git worktree isolation, TDD per component, two-stage code review (plan alignment + quality), structured branch finishing
-- **Analysis/Docs**: Outputs validated against Discovery Plan requirements, checked for completeness and contradictions
-- **Spike**: Flexible — the SME decides what validation is appropriate as the investigation unfolds
+- **Greenfield/Brownfield**: Git worktree isolation, TDD per component, two-stage code review (plan alignment + quality), structured branch finishing.
+- **Vibe-to-Enterprise Rescue (Path 2)**: Runs a sequential, gated **10-step reengineering pipeline** (`vibe-to-speckit-superpowers`) validated by automated v2 safety checkers:
+  - **Purity Validator (v2)**: Crawls dynamic imports to reject DB/framework couplings in the pure domain core.
+  - **Semantic Drift Validator (v2)**: Enforces case-normalization near-miss checks against the domain lexicon.
+  - **Fixture Portability Validator**: Scrubs secrets and absolute paths (`/Users/`) from characterization test mock payloads.
+  - **Alignment Validator**: Validates task-to-spec traceability.
+  - **Certification Gate**: Evaluated by the two-stage independent `certification-verifier` sub-agent before branch finishing.
+- **Analysis/Docs**: Outputs validated against Discovery Plan requirements, checked for completeness and contradictions.
+- **Spike**: Flexible — the SME decides what validation is appropriate as the investigation unfolds.
 
 ### 4. Cheap Exploration, Smart Dispatch
 
@@ -222,9 +234,10 @@ exploration-cycle-plugin/
 ├── README.md                       # This file — vision, principles, architecture
 ├── OVERVIEW.md                     # Deeper conceptual dive into the GenAI Double Diamond
 ├── BAE-start-guide.md              # Quick start guide for Business Area Experts
-├── agents/                         # Vision Translators and Scribes
+├── agents/                         # Vision Translators, Scribes, and Quality Gates
 │   ├── intake-agent.md             # Front-door interviewer (Path 1) with Vibe-Coded Catch
 │   ├── vibe-orchestrator-agent.md  # State machine for Path 2 Vibe-to-Enterprise Rescue
+│   ├── certification-verifier.md   # Two-stage verification and slice compliance certifier
 │   └── ...
 ├── assets/
 │   ├── diagrams/                   # Technical flowcharts (Mermaid)
@@ -245,6 +258,7 @@ exploration-cycle-plugin/
 │   ├── vibe-browser-audit/         # Path 2 visual & functional DOM and API crawler
 │   ├── vibe-togaf-architect/       # Path 2 C4 Context & Sequence blueprint generator
 │   ├── vibe-spec-packager/         # Path 2 package builder and codebase sandbox bootstrapper
+│   ├── vibe-to-speckit-superpowers/# Path 2 unified reengineering bridge to Spec Kit + Superpowers
 │   └── ...
 └── requirements.in                 # Python dependencies
 ```
