@@ -52,7 +52,31 @@
     "should_trigger": false
   },
   {
-    "prompt": "Optimise the database query on line 87 in users.py.",
+    "prompt": "take my vibe app to production using superpowers",
+    "should_trigger": true
+  },
+  {
+    "prompt": "reengineer this prototype and prepare a superpowers handoff",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run the full vibe-to-speckit-superpowers pipeline on localhost:3000",
+    "should_trigger": true
+  },
+  {
+    "prompt": "prepare this codebase for formal engineering via superpowers",
+    "should_trigger": true
+  },
+  {
+    "prompt": "launch browser-harness to audit my frontend",
+    "should_trigger": false
+  },
+  {
+    "prompt": "extract domain models from the prototype",
+    "should_trigger": false
+  },
+  {
+    "prompt": "generate user stories from the BRD",
     "should_trigger": false
   }
 ]

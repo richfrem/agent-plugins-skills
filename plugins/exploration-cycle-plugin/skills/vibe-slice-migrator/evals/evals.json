@@ -1,0 +1,9 @@
+[
+  {"prompt": "run vertical slice migration loop to deprecate legacy routes", "should_trigger": true},
+  {"prompt": "progressively migrate portfolio retrieval to clean application layer slice-by-slice", "should_trigger": true},
+  {"prompt": "refactor route handlers to use clean architecture application ports and adapters", "should_trigger": true},
+  {"prompt": "verify migrated routes against generated safety-net characterization tests", "should_trigger": true},
+  {"prompt": "launch browser-harness to audit my frontend dashboard at localhost:3000", "should_trigger": false},
+  {"prompt": "extract pure domain models from the active rapid prototype files", "should_trigger": false},
+  {"prompt": "capture behavioral tests for my legacy user sign-up flow", "should_trigger": false}
+]

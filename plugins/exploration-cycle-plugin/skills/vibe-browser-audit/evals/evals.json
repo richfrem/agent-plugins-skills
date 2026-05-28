@@ -1,0 +1,10 @@
+[
+  {"prompt": "launch browser-harness to audit my frontend dashboard at localhost:3000", "should_trigger": true},
+  {"prompt": "crawl the prototype using playwright and generate a DISCOVERY_REPORT.md", "should_trigger": true},
+  {"prompt": "use puppeteer to capture network logs and DOM elements from the running prototype", "should_trigger": true},
+  {"prompt": "perform a visual and functional audit on the active UI local server", "should_trigger": true},
+  {"prompt": "scaffold a postgresql and redis codebase target repository layout", "should_trigger": false},
+  {"prompt": "synthesize NFR questions and map out C4 sequence diagrams", "should_trigger": false},
+  {"prompt": "format our C4 specifications into standard spec-kit and configure superpowers", "should_trigger": false},
+  {"prompt": "run a link validation scan across the wiki markdown files", "should_trigger": false}
+]
