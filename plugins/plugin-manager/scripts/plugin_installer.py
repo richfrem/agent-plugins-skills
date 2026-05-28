@@ -144,10 +144,37 @@ def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
     Directories listed in COPY_EXCLUDE_DIRS (node_modules, venv, __pycache__,
     .git, dist, etc.) are silently skipped — they are runtime artifacts that
     are large, irrelevant to agent operation, and would cause very slow installs.
+
+    Real symlinks (Windows NTFS symlinks with relative targets) are handled
+    explicitly: the target is resolved relative to the symlink's own parent
+    directory, NOT the CWD. On Windows, Path.is_file() / Path.exists() return
+    False for relative symlinks when evaluated from a different working directory,
+    so without this branch those files are silently dropped during install.
     """
     dst_dir.mkdir(parents=True, exist_ok=True)
     for item in src_dir.iterdir():
         dst_item = dst_dir / item.name
+
+        # --- Explicit symlink branch (must come BEFORE is_dir / is_file checks) ---
+        # On Windows, a symlink with a relative target evaluates is_file()/exists()
+        # relative to the CWD, not the symlink's location — so both return False when
+        # the installer is not run from inside the plugin tree. We resolve the target
+        # ourselves (relative to the symlink's parent) and copy the real content.
+        if item.is_symlink():
+            try:
+                raw_target = os.readlink(str(item))
+                real_src = (item.parent / raw_target).resolve()
+                if real_src.is_dir():
+                    if real_src.name not in COPY_EXCLUDE_DIRS:
+                        _copy_resolving_pointers(real_src, dst_item)
+                elif real_src.is_file():
+                    shutil.copy2(real_src, dst_item)
+                # If target doesn't exist, skip silently (broken symlink in source)
+            except (OSError, PermissionError) as e:
+                print(f"    ! Could not resolve symlink {item.name}: {e}")
+            continue
+        # ---------------------------------------------------------------------------
+
         if item.is_dir():
             if item.name in COPY_EXCLUDE_DIRS:
                 continue  # skip heavy runtime artifact dirs (node_modules, venv, etc.)
