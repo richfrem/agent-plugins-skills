@@ -1,108 +1,215 @@
-# Design Specification: Hardened Control Plane, Sandboxing, and Critical Security Patches v1.2
+# Design Specification: Hardened Control Plane, Sandboxing, and Critical Security Patches v1.3
 
 ## 1. Executive Summary
 
-This design specification details the architecture and hardening measures for the **Control Plane, Sandboxing, and Critical Security Patches v1.2** in the Agentic OS ecosystem. 
-
-To prevent split-brain state drift, guarantee secure gating, and avoid security-bypass vulnerabilities, we establish a rigid, deterministic system of record. The primary control plane state will transition to a hardened SQLite database residing at a fixed path relative to the plugin root. Under no circumstances will fallback paths or soft failures be permitted; if the target control plane is unavailable or non-writable, the system will execute a fail-closed sequence, terminating all active orchestration cycles immediately.
+This design specification details the architecture, schemas, and hardening measures for the **Control Plane, Sandboxing, and Critical Security Patches v1.3** in the Agentic OS ecosystem. It consolidates the findings of the Red Team audits (Opus and GPT-5.5) to patch vulnerabilities, move system state from human-editable markdown to a local transactional SQLite database, and enforce macOS-compatible process-level capability sandboxing.
 
 ---
 
-## 2. System Architecture & Component Interactions
+## 2. Phase 0: Critical Security Hotfixes
 
-The hardened control plane guarantees that all orchestrators, subagents, and dashboard projectors interact with a single, highly-secured, transactional database.
+Prior to database migration, the following pre-existing vulnerabilities in `agent-agentic-os` and `exploration-cycle-plugin` must be resolved.
+
+### 2.1. `update_memory.py` Lockless State Write & Fallback Bypass
+- **Vulnerabilities (C-1, C-3)**: `update_memory.py` performs a lockless read-modify-write on `os-state.json`, clobbering updates written by the kernel under lock. Additionally, if `kernel.py` is missing, it falls back to direct append to `events.jsonl` with no write locks, validation, or size caps.
+- **Fix**: Remove the fallback code path entirely. If `kernel.py` is not found, the hook fails closed immediately. Route state modifications through `kernel.py state_update` via `sys.executable` to ensure spinlock acquisition.
+
+### 2.2. TOCTOU Lock Theft in `_spinlock` & PID Recycling
+- **Vulnerabilities (C-2, L-1)**: Spinlock cleanup removes stale lock directories non-atomically. If Spinner B acquires the lock during Spinner A's cleanup, Spinner A will delete Spinner B's `meta.json` and rmdir the lock, causing a double-acquisition window.
+- **Fix**: Implement `_safe_clear_stale` which reads PID from `meta.json`, checks if that process is active, double-checks the meta file's integrity, and cleans up only if verification passes. Verify process start times using `ps` to prevent recycled PID collisions.
+
+### 2.3. Event Size Check & Rotation Race Check
+- **Vulnerability (H-1)**: Emitters check size and perform rotation before acquiring the write lock, creating a TOCTOU race.
+- **Fix**: Move the file size check and rename operations entirely inside the `events_write.lock` transaction block, eliminating `events_rotate.lock`.
+
+### 2.4. Default Privilege Level & Multi-Block Frontmatter Injection
+- **Vulnerabilities (H-2, M-1 / C-NEW-4)**: `dispatch.py` defaults to Tier 1, appending `--dangerously-skip-permissions` to Claude CLI. Regex frontmatter stripping only removes the first block, allowing injected YAML frontmatter blocks to bypass filters.
+- **Fix**: Invert the default risk level to Tier 2 (require confirmation prompts). Implement a strict frontmatter parser that only strips YAML blocks starting at byte 0, bounded by `---`, and ending before the first non-frontmatter heading. Add a frontmatter injection detector that fails closed if a secondary YAML-like block is detected after the body begins.
+
+### 2.5. Evaluator Baseline Integrity & Symlink Trace Spoofing
+- **Vulnerabilities (H-3, L-2)**: Baseline runs bypass SHA256 integrity verification. Predictable trace filenames are vulnerable to symlink redirection attacks.
+- **Fix**: Verify files against `git HEAD` during baseline runs to check for uncommitted changes. Open trace files using `os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW` with random nonces on name collision.
+
+---
+
+## 3. The SQLite Control Plane & Schema (Phase 1)
+
+All active session state is migrated from `exploration-dashboard.md` to `active_session.sqlite`, located at a project-scoped context path: `${CLAUDE_PROJECT_DIR}/context/exploration/active_session.sqlite` (C-NEW-2). The path is added to `.gitignore`. Dashboard markdown files will serve as read-only projections.
 
 ```mermaid
 graph TD
-    subgraph "Untrusted / Sandbox Boundary"
-        Orchestrator[Exploration Orchestrator]
-        Subagent[Subagents / Workers]
-        Projector[Dashboard Projector]
-    end
-
-    subgraph "Hardened Security Perimeter"
-        DB_Dir["plugins/exploration-cycle-plugin/context/"]
-        DB[("active_session.sqlite")]
-    end
-
-    Orchestrator -->|Read/Write Session State| DB
-    Subagent -->|Read Gating Policies| DB
-    Projector -->|Query Analytics & Status| DB
-    DB_Dir -.->|Rigid Directory Lock & Permissions| DB
+    Orchestrator[Exploration Orchestrator] -->|Query State / Lease Tasks| DB[(active_session.sqlite)]
+    Subagent[Subagents] -->|Query Gating / Commit Progress| DB
+    DB -->|Trigger Projection| Projector[Dashboard Projector]
+    Projector -->|Generate| MD[exploration-dashboard.md]
+    MD -.->|Deterministic Checkbox Check| Validator[Checkbox Validator]
+    Validator -->|Assert Sync| DB
 ```
 
-### Component Roles
-1. **Exploration Orchestrator**: The primary conductor of exploration cycles. It writes session state, step history, and gating metadata directly to the SQLite database.
-2. **Subagents**: Execute specific, bounded tasks in sandboxed subprocesses. They read active gating rules and validation criteria from the control plane database to ensure dynamic security limits are enforced.
-3. **Dashboard Projectors**: Project near real-time telemetry and state changes to external views. They query the SQLite database via read-only transactions.
+### 3.1. Database Schema
+```sql
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    session_name TEXT NOT NULL,
+    status TEXT CHECK(status IN ('in_progress', 'complete', 'suspended')) DEFAULT 'in_progress',
+    awaiting_human_validation BOOLEAN DEFAULT 0,
+    premium_calls_used INTEGER DEFAULT 0,
+    parallel_agents_running INTEGER DEFAULT 0,
+    review_passes_used INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    phase_ordinal INTEGER NOT NULL,
+    phase_name TEXT NOT NULL,
+    component_name TEXT NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'leased', 'complete', 'failed')) DEFAULT 'pending',
+    assigned_subagent_id TEXT DEFAULT NULL,
+    version INTEGER DEFAULT 1, -- Optimistic concurrency token
+    payload_hash TEXT DEFAULT NULL,
+    lease_expires_at TIMESTAMP DEFAULT NULL,
+    leased_at TIMESTAMP DEFAULT NULL,
+    completed_at TIMESTAMP DEFAULT NULL,
+    retry_count INTEGER DEFAULT 0,
+    last_error TEXT DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(session_id) REFERENCES sessions(id)
+);
+
+CREATE TABLE IF NOT EXISTS approvals (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    approved_actions TEXT NOT NULL,      -- JSON list of approved actions
+    allowed_paths TEXT NOT NULL,        -- JSON list of read/write glob paths
+    spec_hash TEXT NOT NULL,            -- Hash of the specification document
+    spec_source_path TEXT NOT NULL,     -- File path of the spec document
+    is_active BOOLEAN DEFAULT 1,        -- Revocation flag
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    used_at TIMESTAMP DEFAULT NULL,
+    revoked_at TIMESTAMP DEFAULT NULL,
+    revocation_reason TEXT DEFAULT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    FOREIGN KEY(session_id) REFERENCES sessions(id),
+    CHECK(expires_at <= datetime(created_at, '+1 hour')) -- Cap TTL to max 1 hour
+);
+
+CREATE TABLE IF NOT EXISTS artifacts (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    original_sha256 TEXT NOT NULL,
+    sanitized_sha256 TEXT NOT NULL,
+    sanitizer_version TEXT NOT NULL,
+    sanitization_report TEXT NOT NULL,
+    artifact_type TEXT NOT NULL,
+    created_by TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(task_id) REFERENCES tasks(id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id TEXT PRIMARY KEY,
+    artifact_id TEXT NOT NULL,
+    reviewer TEXT NOT NULL,
+    review_type TEXT CHECK(review_type IN ('spec_alignment', 'code_quality', 'runtime_observer', 'semantic_drift', 'domain_purity')) NOT NULL,
+    verdict TEXT CHECK(verdict IN ('pass', 'fail', 'warning')) NOT NULL,
+    artifact_sha256 TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(artifact_id) REFERENCES artifacts(id)
+);
+
+CREATE TABLE IF NOT EXISTS dispatches (
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    approval_id TEXT,
+    envelope_hash TEXT NOT NULL,
+    status TEXT CHECK(status IN ('queued', 'running', 'complete', 'failed', 'rejected')) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(task_id) REFERENCES tasks(id),
+    FOREIGN KEY(approval_id) REFERENCES approvals(id)
+);
+
+CREATE TABLE IF NOT EXISTS policy_decisions (
+    id TEXT PRIMARY KEY,
+    dispatch_id TEXT NOT NULL,
+    decision TEXT CHECK(decision IN ('allow', 'deny', 'defer')) NOT NULL,
+    reason_code TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(dispatch_id) REFERENCES dispatches(id)
+);
+```
+
+### 3.2. Concurrency Safety & Network FS Check
+To handle high write contention:
+1. **WAL mode check**: Initialize with `PRAGMA journal_mode=WAL;`. If the WAL mode setup fails (e.g. because of filesystem constraints), fail closed and abort immediately since concurrency guarantees cannot be met.
+2. **Busy Timeout**: Configure `PRAGMA busy_timeout=5000;`.
+3. **Write Retries**: Implement an exponential backoff loop for `BEGIN IMMEDIATE` operations (up to 5 retries).
+4. **Task-Hijacking Prevention**: Mutate task status with leased validation filters (GPT-5.5 Critique 1):
+   ```sql
+   UPDATE tasks
+   SET status = 'complete',
+       payload_hash = ?,
+       version = version + 1,
+       completed_at = CURRENT_TIMESTAMP
+   WHERE id = ?
+     AND status = 'leased'
+     AND assigned_subagent_id = ?
+     AND version = ?
+   ```
+
+### 3.3. Deterministic Dashboard Validator & Projector
+- Avoid parsing checkbox markdown using LLM text comprehension.
+- Implement a regex-based checkbox parser inside `state_engine.py` to deterministically validate markdown checkboxes against the database status and halt if discrepancies are found.
+- Projector: The markdown dashboard is rendered as a read-only projection from SQLite. If manual edit/drift is detected, regenerate from the DB. Only halt if manual edits or regeneration fails.
+
+### 3.4. One-Time Migration Strategy
+- Create a migration utility that parses any existing `exploration-dashboard.md` in active sessions, inserts the session/task rows into SQLite, and renames the old file to `.md.migrated`.
 
 ---
 
-## 3. Core Technical Decisions
+## 4. Scoped Sandboxing & HMAC Envelope Validation (Phase 2)
 
-### 3.1. SQLite Control Plane Database
-- **Fixed Database Path**: The control plane resides strictly at `plugins/exploration-cycle-plugin/context/active_session.sqlite`.
-- **No Dynamic / Fallback Paths**: Dynamic session directories or temporary directories (e.g., `/tmp` or OS-specific cache directories) are prohibited to eliminate split-brain anomalies and security-bypass vectors.
-- **Single-System-of-Record**: Standardizes telemetry, transaction logs, and checkpointing for orchestrators, subagents, and monitoring projectors.
+### 4.1. macOS Sandboxing & Process Hygiene (`sandbox_runner.py`)
+Provides two-tiered execution boundaries:
+1. **Process Hygiene Mode (Default - Not a Security Boundary)**: Clears `os.environ` and runs subprocesses with `shell=False`, passing only an explicit whitelist: `PATH`, `HOME`, `TMPDIR`, `LANG`, `LC_ALL`. Explicitly blocks system parameters: `PYTHONPATH`, `PYTHONSTARTUP`, `PYTHONHOME`, `LD_PRELOAD`, `DYLD_INSERT_LIBRARIES`, `DYLD_LIBRARY_PATH`, `NODE_OPTIONS`, `NODE_PATH`.
+2. **Containerized Sandbox (Optional)**: If Docker is available, wraps execution inside a read-only container with `--network=none`, CPU/memory limits (`--cpus=1.0`, `--memory=512m`), and restricted folder mounts.
+3. **macOS Container Lifecycle & Cleanup**: Track container IDs using Docker labels (`agentic_os_session=<id>`, `agentic_os_dispatch=<id>`). Stale containers are removed on start/shutdown.
+4. **Graceful Timeout & Orphan Tracking**: Terminates processes exceeding 300 seconds using `SIGTERM` first (10-second grace window) before executing a final `SIGKILL`. Enforces process tracking to terminate orphans if the parent exits.
 
-### 3.2. Directory Gating & Write Validation
-- Prior to database initialization or connection, the plugin environment must perform an explicit write verification check on `plugins/exploration-cycle-plugin/context/`.
-- If the directory does not exist, it is created with strict user-only read/write/execute permissions (`0700`).
-- If the directory is read-only, lacks adequate disk space, or is otherwise non-writable, the control plane raises a `HardenedControlPlaneWriteError` and halts the process.
+### 4.2. HMAC Signed Envelopes
+All messages on the local dispatch bus are validated using timing-safe SHA256 HMAC tokens:
+- **Timing-Safe Checks**: Validate tokens using `hmac.compare_digest()`.
+- **Key File Storage (Option B)**: Derive session keys using `os.urandom(32)` at session start. Save the key to `${CLAUDE_PROJECT_DIR}/context/exploration/.secrets/session_hmac.key` with permissions `0600` (readable/writable only by owner). Rotate per session and delete on close.
+- **Nonce Bounds**: Track message nonces inside a size-capped cache to prevent memory bloat.
 
----
-
-## 4. Hardened Security Gating & Error Handling
-
-### 4.1. Fail-Closed Gating
-We strictly enforce a "fail-closed" security posture. If the control plane database becomes corrupt, unwritable, or locked:
-1. **Immediate Execution Halt**: Raise an uncatchable fatal exception.
-2. **Subprocess Termination**: Send `SIGKILL` to all active child processes and sandboxed tasks.
-3. **Transaction Rollback**: Any uncommitted changes are discarded to maintain absolute state integrity.
-4. **No Fallback Gating**: A backup or fallback database path is **explicitly rejected** as it violates strict state gating guarantees and allows attackers to bypass security enforcement.
-
-### 4.2. Concrete Exception Class
-```python
-class HardenedControlPlaneWriteError(Exception):
-    """
-    Raised when the designated SQLite control plane directory/file is not writable.
-    Triggers an immediate, fail-closed system termination to prevent security bypass.
-    """
-    pass
-```
+### 4.3. Economic Loop Constraints
+Enforce budget controls directly inside `state_engine.py` during leasing queries:
+- Query active parallel tasks and block if `parallel_agents_running >= max_parallel_agents` (default 2).
+- Query session premium call count and block if `premium_calls_used >= max_premium_calls_per_phase` (default 1).
+- Invalidate/reject dispatches if the artifact has been modified since its associated review hash was recorded.
 
 ---
 
 ## 5. Approaches & Trade-Off Analysis
 
-During the design phase, three primary architectural patterns for database location and error recovery were evaluated:
+A formal Architecture Decision Record (ADR) will be compiled under `docs/adr/ADR-001-sqlite-path-strategy.md` to analyze path allocation and error recovery options.
 
-| Dimension / Metric | Approach A: Dynamic Session Directory | Approach B: Fixed Path with Fallback Path | Approach C: Hardened Fixed Path & Fail-Closed (Selected) |
+| Dimension | Approach A: Dynamic Path | Approach B: Fixed Path + Fallback | Approach C: Hardened Fixed Path & Fail-Closed (Selected) |
 | :--- | :--- | :--- | :--- |
-| **Database Path** | Dynamically allocated per session (e.g., `context/sessions/session_xyz.sqlite`). | Fixed path with dynamic fallback to `/tmp` if non-writable. | Fixed relative path: `plugins/exploration-cycle-plugin/context/active_session.sqlite`. |
-| **Availability Risk** | **High**: Hard to coordinate state between independent subagents and external dashboard projectors. | **Medium**: Avoids crashes but introduces state synchronization gaps. | **Low**: High visibility; guarantees single system of record. |
-| **Security Integrity** | **Low**: Difficult to apply consistent OS-level access control controls dynamically. | **Critical Violation**: Opens doors to security-bypass and split-brain attacks. | **Maximum**: Fail-closed ensures no operation proceeds under unvalidated environments. |
-| **Operational Impact** | Complex path negotiation required for every subagent startup. | High chance of silent state drift and data loss. | Direct, predictable, and robust. Requires writable local disk structure. |
+| **Path Allocation** | Dynamically allocated per session. | Fixed path with dynamic fallback to `/tmp` on lock. | Fixed path: `${CLAUDE_PROJECT_DIR}/context/exploration/active_session.sqlite`. |
+| **Gating Security** | Low: Dynamic directory permissions are hard to secure. | Critical Failure: Bypassing paths opens holes to split-brain drift and injection. | Maximum: Fail-closed guarantees execution halts on permission/write failure. |
+| **Transactional Concurrency** | Prone to file lock errors under concurrent runs. | Silent state drift occurs on fallback paths. | Enforced busy timeout (5000ms) and retry loops handle concurrent writer access. |
 
 ---
 
-## 6. Implementation Checklist & Verification
+## 6. Verification & Implementation Roadmap
 
-1. **Permissions Gating Check**:
-   Implement synchronous check before opening the database:
-   ```python
-   import os
-   
-   db_dir = "plugins/exploration-cycle-plugin/context"
-   os.makedirs(db_dir, exist_ok=True)
-   
-   # Explicit write permission validation
-   if not os.access(db_dir, os.W_OK | os.X_OK):
-       raise HardenedControlPlaneWriteError(
-           f"Security Gate Failure: Control plane directory '{db_dir}' is not writable. Fail-closed triggered."
-       )
-   ```
-
-2. **SQLite WAL Mode & Locking**:
-   - Enable **Write-Ahead Logging (WAL)** for high concurrency across the orchestrator and projectors.
-   - Use strict `IMMEDIATE` transaction locking to prevent write collisions and deadlocks.
+1. **Phase 0 Hotfixes**: Patch `update_memory.py`, `kernel.py`, `evaluate.py`, and `dispatch.py`.
+2. **SQLite State Setup**: Create `state_engine.py` with tables, WAL check, retry loop, and projector. Include Task 2.0 migration script.
+3. **Sandboxing & Envelopes**: Create `sandbox_runner.py` with environment whitelist, timeouts, and HMAC token validation.
+4. **Integration & Audit**: Refactor `dispatch.py` and `SKILL.md` to lease tasks, verify approvals, and project dashboard. Run `audit.py` to confirm compliance.
