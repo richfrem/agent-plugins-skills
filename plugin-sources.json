@@ -32,6 +32,12 @@
         "gemini-cli",
         "link-checker"
       ]
+    },
+    {
+      "source": "obra/superpowers",
+      "plugins": [
+        "superpowers"
+      ]
     }
   ]
 }

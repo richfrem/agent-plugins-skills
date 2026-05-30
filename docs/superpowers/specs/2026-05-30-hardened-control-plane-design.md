@@ -177,8 +177,8 @@ To handle high write contention:
 ### 4.1. macOS Sandboxing & Process Hygiene (`sandbox_runner.py`)
 Provides two-tiered execution boundaries:
 1. **Process Hygiene Mode (Default - Not a Security Boundary)**: Clears `os.environ` and runs subprocesses with `shell=False`, passing only an explicit whitelist: `PATH`, `HOME`, `TMPDIR`, `LANG`, `LC_ALL`. Explicitly blocks system parameters: `PYTHONPATH`, `PYTHONSTARTUP`, `PYTHONHOME`, `LD_PRELOAD`, `DYLD_INSERT_LIBRARIES`, `DYLD_LIBRARY_PATH`, `NODE_OPTIONS`, `NODE_PATH`.
-2. **Containerized Sandbox (Optional)**: If Docker is available, wraps execution inside a read-only container with `--network=none`, CPU/memory limits (`--cpus=1.0`, `--memory=512m`), and restricted folder mounts.
-3. **macOS Container Lifecycle & Cleanup**: Track container IDs using Docker labels (`agentic_os_session=<id>`, `agentic_os_dispatch=<id>`). Stale containers are removed on start/shutdown.
+2. **Containerized Sandbox (Optional)**: If Podman or Docker is available, wraps execution inside a read-only container with `--network=none`, CPU/memory limits (`--cpus=1.0`, `--memory=512m`), and restricted folder mounts. Supports `podman` as primary and `docker` as fallback.
+3. **macOS Container Lifecycle & Cleanup**: Track container IDs using labels (`agentic_os_session=<id>`, `agentic_os_dispatch=<id>`). Stale containers are removed on start/shutdown.
 4. **Graceful Timeout & Orphan Tracking**: Terminates processes exceeding 300 seconds using `SIGTERM` first (10-second grace window) before executing a final `SIGKILL`. Enforces process tracking to terminate orphans if the parent exits.
 
 ### 4.2. HMAC Signed Envelopes

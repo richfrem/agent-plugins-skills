@@ -114,7 +114,19 @@ nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/nu
 
 ---
 
-## 🔄 How to Manage Gemini CLI
+## 🔄 How to Manage Gemini & Antigravity CLIs
+
+### CLI Mapping & Selection Rule
+- **Antigravity (`agy`) CLI**: Use this for **frontier models** (such as Gemini 3.5 Flash or higher models).
+- **Gemini (`gemini`) CLI**: Use this for **cheaper, older models** (such as Gemini 3 Flash / `gemini-3-flash-preview` and prior releases) to conserve token budgets.
+
+### Antigravity (`agy`) CLI (Frontier Models)
+- **Check Path**: `which agy` (commonly installed at `/opt/homebrew/bin/agy` or on the system PATH).
+- **Run non-interactively**: `agy -p "your prompt"` or `agy --prompt "your prompt"`.
+- **Run in Sandbox Mode**: `agy --sandbox -p "prompt"`
+- **Skip Permissions**: `agy --dangerously-skip-permissions -p "prompt"` (used for headless subagent dispatches).
+
+### Legacy Gemini CLI (`gemini`) (Cheaper Models)
 - **Update CLI**: Run `npm install -g @google/gemini-cli@latest`.
 - **Install Plugin Suite**: Run `gemini extensions install https://github.com/richfrem/agent-plugins-skills`.
 - **Using NPX**: Use `npx @google/gemini-cli` to automatically pull the latest version.
@@ -124,5 +136,9 @@ nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/nu
 ## ✅ Smoke Test
 
 ```bash
-python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
+# Using agy CLI for frontier models
+agy -p "hello"
+
+# Using gemini CLI for cheaper models
+gemini -p "hello"
 ```
