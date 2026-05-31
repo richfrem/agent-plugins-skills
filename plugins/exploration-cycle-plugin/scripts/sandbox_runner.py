@@ -123,3 +123,56 @@ def _cleanup_stale_containers(session_id: str) -> None:
                 subprocess.run([runtime, "rm", "-f", cid], capture_output=True, timeout=10)
     except Exception:
         pass
+
+
+# ---------------------------------------------------------------------------
+# HMAC Envelope Sign / Verify
+# ---------------------------------------------------------------------------
+
+def generate_session_key(key_path: Path) -> bytes:
+    """Generate a 32-byte random session key, written atomically with mode 0600."""
+    key = os.urandom(32)
+    key_path.parent.mkdir(parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    fd = os.open(str(key_path), flags, 0o600)
+    try:
+        os.write(fd, key)
+    finally:
+        os.close(fd)
+    return key
+
+
+def load_session_key(key_path: Path) -> bytes:
+    return key_path.read_bytes()
+
+
+def cleanup_session_key(key_path: Path) -> None:
+    """Overwrite then delete session key file (secure erasure)."""
+    if key_path.exists():
+        key_path.write_bytes(os.urandom(key_path.stat().st_size))
+        key_path.unlink()
+
+
+def sign_envelope(payload: dict, key: bytes) -> dict:
+    nonce = secrets.token_hex(16)
+    payload_bytes = json.dumps(payload, sort_keys=True).encode()
+    token = _hmac.new(key, payload_bytes + nonce.encode(), hashlib.sha256).hexdigest()
+    return {"payload": payload, "nonce": nonce, "token": token}
+
+
+def verify_envelope(envelope: dict, key: bytes, nonce_cache: OrderedDict) -> bool:
+    """Timing-safe HMAC verification with nonce deduplication."""
+    nonce = envelope.get("nonce", "")
+    if not nonce or nonce in nonce_cache:
+        return False
+    token = envelope.get("token") or ""
+    if not isinstance(token, str):
+        return False
+    payload_bytes = json.dumps(envelope.get("payload", {}), sort_keys=True).encode()
+    expected = _hmac.new(key, payload_bytes + nonce.encode(), hashlib.sha256).hexdigest()
+    if not _hmac.compare_digest(expected, token):
+        return False
+    if len(nonce_cache) >= NONCE_CACHE_MAX:
+        nonce_cache.popitem(last=False)
+    nonce_cache[nonce] = True
+    return True

@@ -72,3 +72,46 @@ def test_run_containerized_splits_mounts(monkeypatch):
         assert "/read/path:/read/path:ro" in cmd_str
         assert "/write/path:/write/path" in cmd_str
         assert "/write/path:/write/path:ro" not in cmd_str
+
+
+def test_sign_and_verify_envelope_roundtrip():
+    key = os.urandom(32)
+    nonce_cache = OrderedDict()
+    envelope = SR.sign_envelope({"task_id": "t1", "action": "complete"}, key)
+    assert SR.verify_envelope(envelope, key, nonce_cache) is True
+
+
+def test_verify_rejects_tampered_payload():
+    key = os.urandom(32)
+    nonce_cache = OrderedDict()
+    envelope = SR.sign_envelope({"task_id": "t1"}, key)
+    envelope["payload"]["task_id"] = "evil"
+    assert SR.verify_envelope(envelope, key, nonce_cache) is False
+
+
+def test_verify_rejects_wrong_key():
+    key_a, key_b = os.urandom(32), os.urandom(32)
+    envelope = SR.sign_envelope({"x": 1}, key_a)
+    assert SR.verify_envelope(envelope, key_b, OrderedDict()) is False
+
+
+def test_verify_rejects_nonce_replay():
+    key = os.urandom(32)
+    nonce_cache = OrderedDict()
+    envelope = SR.sign_envelope({"x": 1}, key)
+    assert SR.verify_envelope(envelope, key, nonce_cache) is True
+    assert SR.verify_envelope(envelope, key, nonce_cache) is False
+
+
+def test_session_key_written_with_0600_permissions(tmp_path):
+    key_path = tmp_path / ".secrets" / "session_hmac.key"
+    SR.generate_session_key(key_path)
+    assert key_path.exists()
+    assert oct(key_path.stat().st_mode)[-3:] == "600"
+
+
+def test_cleanup_session_key_removes_file(tmp_path):
+    key_path = tmp_path / ".secrets" / "session_hmac.key"
+    SR.generate_session_key(key_path)
+    SR.cleanup_session_key(key_path)
+    assert not key_path.exists()
