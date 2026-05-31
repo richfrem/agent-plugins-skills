@@ -4,7 +4,18 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
         "adr-manager",
+        "agent-agentic-os",
+        "agent-loops",
+        "agent-scaffolders",
+        "claude-cli",
+        "coding-conventions",
+        "context-bundler",
+        "copilot-cli",
+        "dependency-management",
+        "exploration-cycle-plugin",
+        "gemini-cli",
         "huggingface-utils",
+        "link-checker",
         "memory-management",
         "mermaid-to-png",
         "obsidian-wiki-engine",
@@ -18,30 +29,9 @@
       ]
     },
     {
-      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
-      "plugins": [
-        "agent-agentic-os",
-        "agent-loops",
-        "agent-scaffolders",
-        "claude-cli",
-        "coding-conventions",
-        "context-bundler",
-        "copilot-cli",
-        "dependency-management",
-        "gemini-cli",
-        "link-checker"
-      ]
-    },
-    {
       "source": "obra/superpowers",
       "plugins": [
         "superpowers"
-      ]
-    },
-    {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
-      "plugins": [
-        "exploration-cycle-plugin"
       ]
     }
   ]
