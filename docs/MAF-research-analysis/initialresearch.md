@@ -198,16 +198,18 @@ Both ship as **native, first-class** features at 1.0 — not bolt-on integration
 
 Six providers at 1.0, swappable with a **one-line change**: [\[digitalapplied.com\]](https://www.digitalapplied.com/blog/microsoft-agent-framework-1-0-dotnet-python-guide)
 
-| Provider         | Package                                                   |
-| ---------------- | --------------------------------------------------------- |
-| Azure OpenAI     | `Microsoft.Agents.AI.Foundry` / `agent_framework.foundry` |
-| OpenAI (direct)  | `Microsoft.Agents.AI.OpenAI` / `agent_framework.openai`   |
-| Anthropic Claude | Via `IChatClient` adapter                                 |
-| Amazon Bedrock   | `agent_framework.bedrock`                                 |
-| Google Gemini    | Via `IChatClient` adapter                                 |
-| Ollama (local)   | Via OpenAI-compatible endpoint                            |
+| Provider         | Package                                                    | Notes |
+| ---------------- | ---------------------------------------------------------- | ----- |
+| Azure OpenAI     | `Microsoft.Agents.AI.Foundry` / `agent_framework.foundry`  | Requires Azure subscription + Foundry resource |
+| OpenAI (direct)  | `Microsoft.Agents.AI.OpenAI` / `agent_framework.openai`    | Plain API key — no Azure required |
+| Anthropic Claude | Via `IChatClient` adapter                                  | |
+| Amazon Bedrock   | `agent_framework.bedrock`                                  | |
+| Google Gemini    | Via OpenAI-compatible endpoint (no extra package needed)   | Use `OpenAIClient` pointed at `generativelanguage.googleapis.com/v1beta/openai/` — confirmed working in .NET with `Microsoft.Agents.AI.OpenAI` only |
+| Ollama (local)   | Via OpenAI-compatible endpoint                             | |
 
 The key abstraction is `IChatClient` (.NET) from `Microsoft.Extensions.AI` — any model backend that implements this interface works with MAF agents, workflows, and middleware. [\[devleader.ca\]](https://www.devleader.ca/2026/03/04/mcp-tool-integration-in-microsoft-agent-framework-in-c)
+
+> **Practical note (confirmed hands-on):** Azure/Foundry is NOT required to get started. The `01_Basics` examples all run with a plain `OPENAI_API_KEY` or `GEMINI_API_KEY`. Foundry is only needed for hosted deployment or Azure-specific features. See the [MAF Learning Repo](https://github.com/deployed-in-azure/MicrosoftAgentFramework) for working examples.
 
 ***
 

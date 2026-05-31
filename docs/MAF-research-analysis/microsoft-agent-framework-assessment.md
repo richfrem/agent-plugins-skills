@@ -24,6 +24,8 @@ Microsoft's Agent Framework (MAF) v1.0 is marketed as a unified, model-agnostic 
 
 **Recommendation:** Do not adopt MAF. Adopt AGT and OpenTelemetry independently (both are framework-agnostic). Continue using frontier model CLIs at full native power with portable `.md` agent definitions and standalone Python enforcement scripts.
 
+> **Hands-on learning reference:** The [MAF Learning Repo](https://github.com/deployed-in-azure/MicrosoftAgentFramework) contains working .NET examples covering all core MAF concepts (hello world through workflows). Key finding from hands-on testing: Foundry/Azure is NOT required for the basics — plain OpenAI or Gemini API keys work with zero Azure setup. Gemini works via the OpenAI-compatible endpoint using the standard `Microsoft.Agents.AI.OpenAI` package (no additional adapter needed).
+
 ---
 
 ## Part 1: The Frontier SDK Landscape (May 2026)
