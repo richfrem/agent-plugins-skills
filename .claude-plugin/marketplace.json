@@ -127,28 +127,12 @@
       "tags": ["memory", "context", "cognitive-continuity", "tiered-storage", "session-management"]
     },
     {
-      "name": "claude-cli",
-      "description": "Claude CLI sub-agent system for persona-based analysis. Pipes large contexts to Anthropic models for security audits, architecture reviews, and QA analysis.",
-      "source": "./plugins/claude-cli",
+      "name": "cli-agents",
+      "description": "Unified CLI sub-agent Conductor Suite. Orchestrates task delegation to Claude, Copilot, and Gemini CLI engines with integrated AGF/AGT security controls.",
+      "source": "./plugins/cli-agents",
       "strict": true,
       "category": "cli-agents",
-      "tags": ["claude", "anthropic", "cli", "sub-agent", "persona", "security-audit"]
-    },
-    {
-      "name": "gemini-cli",
-      "description": "Gemini CLI sub-agent system for persona-based analysis. Pipes large contexts to Google Gemini models for security audits, architecture reviews, and QA analysis.",
-      "source": "./plugins/gemini-cli",
-      "strict": true,
-      "category": "cli-agents",
-      "tags": ["gemini", "google-gemini", "cli", "sub-agent", "persona", "security-audit"]
-    },
-    {
-      "name": "copilot-cli",
-      "description": "Copilot CLI sub-agent system for persona-based analysis. Pipes large contexts to GitHub Copilot models for security audits, architecture reviews, and QA analysis.",
-      "source": "./plugins/copilot-cli",
-      "strict": true,
-      "category": "cli-agents",
-      "tags": ["copilot", "github-copilot", "cli", "sub-agent", "persona", "security-audit"]
+      "tags": ["claude", "gemini", "copilot", "cli", "sub-agent", "conductor", "security"]
     },
     {
       "name": "mermaid-to-png",
