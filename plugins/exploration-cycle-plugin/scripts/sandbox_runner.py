@@ -10,6 +10,7 @@ import secrets
 import shutil
 import signal
 import subprocess
+import tempfile
 import time
 from collections import OrderedDict
 from pathlib import Path
@@ -23,6 +24,16 @@ BLOCKED_ENV = frozenset({
 TIMEOUT_SECONDS = 300
 GRACE_SECONDS = 10
 NONCE_CACHE_MAX = 10_000
+
+
+def _assert_under_root(full: Path, root: Path, label: str = "path") -> None:
+    """Fail-closed descendant path check. resolve() eliminates symlink escapes."""
+    try:
+        full.resolve().relative_to(root.resolve())
+    except ValueError:
+        raise PermissionError(
+            f"Path traversal rejected: {full} is outside {root} ({label})"
+        )
 
 
 def _build_clean_env(extra_vars: dict | None = None) -> dict:
@@ -51,18 +62,22 @@ def _terminate_with_grace(proc: subprocess.Popen, grace: int = GRACE_SECONDS) ->
 def run_hygienic(cmd: list, timeout: int = TIMEOUT_SECONDS,
                  extra_vars: dict | None = None) -> subprocess.CompletedProcess:
     env = _build_clean_env(extra_vars)
-    proc = subprocess.Popen(cmd, shell=False, env=env,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cwd = tempfile.mkdtemp(prefix="agentic_sandbox_")
     try:
-        stdout, stderr = proc.communicate(timeout=timeout)
-        return subprocess.CompletedProcess(
-            args=cmd, returncode=proc.returncode,
-            stdout=stdout, stderr=stderr,
-        )
-    except subprocess.TimeoutExpired:
-        _terminate_with_grace(proc, grace=GRACE_SECONDS)
-        stdout, stderr = proc.communicate()
-        raise
+        proc = subprocess.Popen(cmd, shell=False, env=env, cwd=cwd,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout)
+            return subprocess.CompletedProcess(
+                args=cmd, returncode=proc.returncode,
+                stdout=stdout, stderr=stderr,
+            )
+        except subprocess.TimeoutExpired:
+            _terminate_with_grace(proc)
+            proc.wait()
+            raise
+    finally:
+        shutil.rmtree(cwd, ignore_errors=True)
 
 
 def _detect_container_runtime() -> str | None:
@@ -86,6 +101,7 @@ def run_containerized(cmd: list, session_id: str, dispatch_id: str,
         "--network=none", "--cpus=1.0", "--memory=512m", "--read-only",
         f"--label=agentic_os_session={session_id}",
         f"--label=agentic_os_dispatch={dispatch_id}",
+        *_container_user_flag(),
     ]
     for path in (allowed_paths_ro or []):
         container_cmd.extend(["-v", f"{path}:{path}:ro"])
@@ -106,6 +122,14 @@ def run_containerized(cmd: list, session_id: str, dispatch_id: str,
         _terminate_with_grace(proc, grace=GRACE_SECONDS)
         _stdout, _stderr = proc.communicate()
         raise
+
+
+def _container_user_flag() -> list[str]:
+    """Return --user uid:gid for the current process. Falls back to nobody on envs without getuid."""
+    try:
+        return ["--user", f"{os.getuid()}:{os.getgid()}"]
+    except AttributeError:
+        return ["--user", "65534:65534"]  # nobody:nogroup
 
 
 def _cleanup_stale_containers(session_id: str) -> None:

@@ -42,6 +42,15 @@ CREATE TABLE IF NOT EXISTS tasks (
     retry_count INTEGER DEFAULT 0,
     last_error TEXT DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    requires_premium BOOLEAN DEFAULT 0,
+    FOREIGN KEY(session_id) REFERENCES sessions(id)
+);
+
+CREATE TABLE IF NOT EXISTS phase_metrics (
+    session_id TEXT NOT NULL,
+    phase_ordinal INTEGER NOT NULL,
+    premium_calls_used INTEGER DEFAULT 0,
+    PRIMARY KEY (session_id, phase_ordinal),
     FOREIGN KEY(session_id) REFERENCES sessions(id)
 );
 
@@ -128,6 +137,12 @@ def init_db(db_path: str) -> sqlite3.Connection:
     conn.execute("PRAGMA busy_timeout=5000;")
     conn.execute("PRAGMA foreign_keys=ON;")  # Must be set on connection, not in executescript
     conn.executescript(SCHEMA_SQL)
+    # Migration: add requires_premium column if upgrading from v1.3
+    try:
+        conn.execute("ALTER TABLE tasks ADD COLUMN requires_premium BOOLEAN DEFAULT 0")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # Column already exists
     return conn
 
 
@@ -171,12 +186,14 @@ def create_session(conn: sqlite3.Connection, session_id: str, session_name: str)
 
 
 def add_task(conn: sqlite3.Connection, task_id: str, session_id: str,
-             phase_ordinal: int, phase_name: str, component_name: str) -> None:
+             phase_ordinal: int, phase_name: str, component_name: str,
+             requires_premium: bool = False) -> None:
     with _immediate_transaction(conn) as c:
         c.execute(
-            "INSERT INTO tasks (id, session_id, phase_ordinal, phase_name, component_name) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (task_id, session_id, phase_ordinal, phase_name, component_name),
+            "INSERT INTO tasks (id, session_id, phase_ordinal, phase_name, "
+            "component_name, requires_premium) VALUES (?, ?, ?, ?, ?, ?)",
+            (task_id, session_id, phase_ordinal, phase_name,
+             component_name, int(requires_premium)),
         )
 
 
@@ -185,7 +202,8 @@ def lease_task(conn: sqlite3.Connection, task_id: str, subagent_id: str,
     """Atomically lease a pending task. Increments parallel_agents_running on success."""
     with _immediate_transaction(conn) as c:
         row = c.execute(
-            "SELECT s.parallel_agents_running, s.premium_calls_used "
+            "SELECT s.parallel_agents_running, t.requires_premium, "
+            "t.phase_ordinal, t.session_id "
             "FROM sessions s JOIN tasks t ON t.session_id = s.id WHERE t.id = ?",
             (task_id,)
         ).fetchone()
@@ -193,10 +211,17 @@ def lease_task(conn: sqlite3.Connection, task_id: str, subagent_id: str,
             raise RuntimeError(
                 f"parallel_agents_running limit ({MAX_PARALLEL_AGENTS}) exceeded"
             )
-        if row and row["premium_calls_used"] >= MAX_PREMIUM_CALLS_PER_PHASE:
-            raise RuntimeError(
-                f"premium_calls_used limit ({MAX_PREMIUM_CALLS_PER_PHASE}) exceeded"
-            )
+        if row and row["requires_premium"]:
+            phase_row = c.execute(
+                "SELECT premium_calls_used FROM phase_metrics "
+                "WHERE session_id = ? AND phase_ordinal = ?",
+                (row["session_id"], row["phase_ordinal"])
+            ).fetchone()
+            phase_premium = phase_row["premium_calls_used"] if phase_row else 0
+            if phase_premium >= MAX_PREMIUM_CALLS_PER_PHASE:
+                raise RuntimeError(
+                    f"premium_calls_used per phase limit ({MAX_PREMIUM_CALLS_PER_PHASE}) exceeded"
+                )
         result = c.execute(
             "UPDATE tasks SET status='leased', assigned_subagent_id=?, "
             "lease_expires_at=datetime('now', ?), leased_at=CURRENT_TIMESTAMP, "
@@ -218,6 +243,7 @@ def lease_task(conn: sqlite3.Connection, task_id: str, subagent_id: str,
 def commit_task_complete(conn: sqlite3.Connection, task_id: str, subagent_id: str,
                          version: int, payload_hash: str) -> bool:
     """CAS completion. Decrements parallel_agents_running on success."""
+    completed = False
     with _immediate_transaction(conn) as c:
         result = c.execute(
             "UPDATE tasks "
@@ -234,18 +260,36 @@ def commit_task_complete(conn: sqlite3.Connection, task_id: str, subagent_id: st
                 "WHERE id = (SELECT session_id FROM tasks WHERE id = ?)",
                 (task_id,)
             )
-            return True
-        return False
+            completed = True
+    # checkpoint AFTER the transaction closes — not inside it
+    if completed:
+        checkpoint_wal(conn)
+    return completed
 
 
-def record_premium_call(conn: sqlite3.Connection, session_id: str) -> None:
-    """Increment premium_calls_used. Call once per premium model invocation."""
+def record_premium_call(conn: sqlite3.Connection, session_id: str,
+                        phase_ordinal: int | None = None) -> None:
+    """Increment premium call counter. Per-phase when phase_ordinal provided."""
     with _immediate_transaction(conn) as c:
-        c.execute(
-            "UPDATE sessions SET premium_calls_used = premium_calls_used + 1, "
-            "updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-            (session_id,)
-        )
+        if phase_ordinal is not None:
+            c.execute(
+                "INSERT INTO phase_metrics (session_id, phase_ordinal, premium_calls_used) "
+                "VALUES (?, ?, 1) "
+                "ON CONFLICT(session_id, phase_ordinal) DO UPDATE SET "
+                "premium_calls_used = premium_calls_used + 1",
+                (session_id, phase_ordinal),
+            )
+        else:
+            c.execute(
+                "UPDATE sessions SET premium_calls_used = premium_calls_used + 1, "
+                "updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (session_id,)
+            )
+
+
+def checkpoint_wal(conn: sqlite3.Connection) -> None:
+    """Flush WAL pages to main DB. Call outside any active transaction."""
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 
 
 def verify_review_current(conn: sqlite3.Connection, artifact_id: str) -> bool:

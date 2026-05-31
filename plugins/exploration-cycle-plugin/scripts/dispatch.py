@@ -241,6 +241,40 @@ def check_dispatch_authorization(
     return True, ""
 
 
+def build_agent_index(agents_dir: Path) -> dict[str, Path]:
+    """Build alias index: stem, stem-without-agent, frontmatter name: — all → same file."""
+    index: dict[str, Path] = {}
+    for md_file in sorted(agents_dir.glob("*.md")):
+        stem = md_file.stem
+        index[stem] = md_file
+        if stem.endswith("-agent"):
+            index.setdefault(stem[:-6], md_file)
+        content = md_file.read_text(encoding="utf-8")
+        m = re.search(r"^name:\s*(.+)$", content, re.MULTILINE)
+        if m:
+            index.setdefault(m.group(1).strip(), md_file)
+    return index
+
+
+def build_handoff_envelope(
+    from_agent: str, to_agent: str, reason: str,
+    user_message: str, transcript: list[tuple[str, str]],
+    turns: int = 8, chars_per_turn: int = 300,
+) -> str:
+    context = "\n".join(
+        f"{role}: {text[:chars_per_turn]}"
+        for role, text in transcript[-turns:]
+    )
+    return (
+        f"You are receiving a handoff from {from_agent}.\n"
+        f"Reason: {reason}\n\n"
+        f"Recent conversation:\n{context}\n\n"
+        f"User's latest message: \"{user_message}\"\n\n"
+        f"Continue according to your own agent manifest. "
+        f"Do not repeat {from_agent}'s intake questions."
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Return the configured argument parser. Exposed for testing."""
     parser = argparse.ArgumentParser(description="Exploration Cycle CLI Dispatch Wrapper")
@@ -261,11 +295,49 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Risk tier (1=low, 2=moderate, 3=high). Tier 2/3 require human gate "
                              "before bash-capable dispatch. Only Tier 1 uses --dangerously-skip-permissions. "
                              "Default: 2.")
+    # Authorization gate arguments (required for secure dispatch)
+    parser.add_argument("--db-path", required=True,
+        help="Path to active_session.sqlite")
+    parser.add_argument("--approval-id", required=True,
+        help="UUID of the active approval record in the DB")
+    parser.add_argument("--dispatch-action", default="run_agent",
+        help="Action being dispatched for allowlist check (default: run_agent)")
+    parser.add_argument("--target-path", default=None,
+        help="File path target for path allowlist check (optional)")
+    parser.add_argument("--spec-path", default=None,
+        help="Path to spec document for hash integrity check (optional)")
+    parser.add_argument("--envelope-json", required=True,
+        help="JSON-serialized HMAC envelope from sandbox_runner.make_envelope()")
+    parser.add_argument("--hmac-key-path", required=True,
+        help="Path to the session HMAC key file")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
+
+    # Authorization gate — fail-closed. No dispatch without valid approval + HMAC.
+    from state_engine import init_db
+    from sandbox_runner import load_session_key
+
+    conn = init_db(args.db_path)
+    key = load_session_key(Path(args.hmac_key_path))
+    envelope = json.loads(args.envelope_json)
+    nonce_cache: OrderedDict = OrderedDict()
+
+    ok, reason = check_dispatch_authorization(
+        conn,
+        args.approval_id,
+        args.dispatch_action,
+        args.target_path,
+        args.spec_path,
+        envelope,
+        key,
+        nonce_cache,
+    )
+    if not ok:
+        print(f"Error: dispatch authorization failed: {reason}", file=sys.stderr)
+        sys.exit(1)
 
     # 1. Read the agent instructions and strip YAML frontmatter.
     # Frontmatter (---\n...\n---) is metadata, not instructions. Passing it verbatim
