@@ -22,10 +22,10 @@ CLI Arguments:
 
 Input Files:
     - context/os-state.json
-    - context/events.jsonl
 
 Output:
-    - Appends events inside context/events.jsonl via direct lock appends
+    - Routes events through kernel.py (fail-closed if kernel.py is absent or errors)
+    - context/events.jsonl is written by kernel.py, not by this hook
 
 Key Functions:
     _check_execution_gate() Determines lightweight vs heavy mode execution paths
@@ -151,45 +151,24 @@ def main() -> None:
         project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
         memory_dir = Path(project_dir) / "context" / "memory"
         
-        # 2.5 Update OS State
-        os_state_file = Path(project_dir) / "context" / "os-state.json"
-        if os_state_file.exists():
-            try:
-                with open(os_state_file, "r", encoding="utf-8") as f:
-                    os_state = json.load(f)
-                
-                os_state["active_agent"] = "background-hook"
-                os_state["mode"] = payload.get("event", "unknown")
-                os_state["last_hook_execution"] = datetime.now().isoformat()
-                
-                with open(os_state_file, "w", encoding="utf-8") as f:
-                    json.dump(os_state, f, indent=2)
-            except Exception:
-                pass
-        
         # Silently create directory if it doesn't exist
         os.makedirs(memory_dir, exist_ok=True)
-        
-        # 3. Use Kernel Controller to emit event to the bus
+
+        # 3. Route event through kernel.py — fail closed if kernel absent (C-3 fix)
         kernel_script = Path(project_dir) / "context" / "kernel.py"
-        if kernel_script.exists():
-            import subprocess
-            cmd = [
-                sys.executable, str(kernel_script), "emit_event",
-                "--agent", event_doc["agent"],
-                "--type", event_doc["type"],
-                "--action", event_doc["action"],
-                "--status", event_doc.get("status", "success")
-            ]
-            if "summary" in event_doc:
-                cmd.extend(["--summary", event_doc["summary"]])
-                
-            subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        else:
-            # Fallback for systems that haven't fully initialized the v10 kernel yet
-            events_file = Path(project_dir) / "context" / "events.jsonl"
-            with open(events_file, "a", encoding="utf-8") as f:
-                f.write(json.dumps(event_doc) + "\n")
+        if not kernel_script.exists():
+            return  # Fail closed — no fallback writes
+        import subprocess
+        cmd = [
+            sys.executable, str(kernel_script), "emit_event",
+            "--agent", event_doc["agent"],
+            "--type", event_doc["type"],
+            "--action", event_doc["action"],
+            "--status", event_doc.get("status", "success")
+        ]
+        if "summary" in event_doc:
+            cmd.extend(["--summary", event_doc["summary"]])
+        subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
             
     except Exception as e:
