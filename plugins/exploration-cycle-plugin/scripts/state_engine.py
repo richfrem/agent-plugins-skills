@@ -170,6 +170,136 @@ def create_session(conn: sqlite3.Connection, session_id: str, session_name: str)
         )
 
 
+def add_task(conn: sqlite3.Connection, task_id: str, session_id: str,
+             phase_ordinal: int, phase_name: str, component_name: str) -> None:
+    with _immediate_transaction(conn) as c:
+        c.execute(
+            "INSERT INTO tasks (id, session_id, phase_ordinal, phase_name, component_name) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (task_id, session_id, phase_ordinal, phase_name, component_name),
+        )
+
+
+def lease_task(conn: sqlite3.Connection, task_id: str, subagent_id: str,
+               ttl_seconds: int = 300) -> bool:
+    """Atomically lease a pending task. Increments parallel_agents_running on success."""
+    with _immediate_transaction(conn) as c:
+        row = c.execute(
+            "SELECT s.parallel_agents_running, s.premium_calls_used "
+            "FROM sessions s JOIN tasks t ON t.session_id = s.id WHERE t.id = ?",
+            (task_id,)
+        ).fetchone()
+        if row and row["parallel_agents_running"] >= MAX_PARALLEL_AGENTS:
+            raise RuntimeError(
+                f"parallel_agents_running limit ({MAX_PARALLEL_AGENTS}) exceeded"
+            )
+        if row and row["premium_calls_used"] >= MAX_PREMIUM_CALLS_PER_PHASE:
+            raise RuntimeError(
+                f"premium_calls_used limit ({MAX_PREMIUM_CALLS_PER_PHASE}) exceeded"
+            )
+        result = c.execute(
+            "UPDATE tasks SET status='leased', assigned_subagent_id=?, "
+            "lease_expires_at=datetime('now', ?), leased_at=CURRENT_TIMESTAMP, "
+            "version=version+1, updated_at=CURRENT_TIMESTAMP "
+            "WHERE id=? AND status='pending'",
+            (subagent_id, f"+{ttl_seconds} seconds", task_id),
+        )
+        if result.rowcount == 1:
+            c.execute(
+                "UPDATE sessions SET parallel_agents_running = parallel_agents_running + 1, "
+                "updated_at = CURRENT_TIMESTAMP "
+                "WHERE id = (SELECT session_id FROM tasks WHERE id = ?)",
+                (task_id,)
+            )
+            return True
+        return False
+
+
+def commit_task_complete(conn: sqlite3.Connection, task_id: str, subagent_id: str,
+                         version: int, payload_hash: str) -> bool:
+    """CAS completion. Decrements parallel_agents_running on success."""
+    with _immediate_transaction(conn) as c:
+        result = c.execute(
+            "UPDATE tasks "
+            "SET status='complete', payload_hash=?, version=version+1, "
+            "completed_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP "
+            "WHERE id=? AND status='leased' AND assigned_subagent_id=? AND version=?",
+            (payload_hash, task_id, subagent_id, version),
+        )
+        if result.rowcount == 1:
+            c.execute(
+                "UPDATE sessions SET "
+                "parallel_agents_running = MAX(parallel_agents_running - 1, 0), "
+                "updated_at = CURRENT_TIMESTAMP "
+                "WHERE id = (SELECT session_id FROM tasks WHERE id = ?)",
+                (task_id,)
+            )
+            return True
+        return False
+
+
+def record_premium_call(conn: sqlite3.Connection, session_id: str) -> None:
+    """Increment premium_calls_used. Call once per premium model invocation."""
+    with _immediate_transaction(conn) as c:
+        c.execute(
+            "UPDATE sessions SET premium_calls_used = premium_calls_used + 1, "
+            "updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (session_id,)
+        )
+
+
+def verify_review_current(conn: sqlite3.Connection, artifact_id: str) -> bool:
+    """Returns True if the artifact's sanitized_sha256 matches the most recent review's hash."""
+    row = conn.execute("""
+        SELECT a.sanitized_sha256, r.artifact_sha256
+        FROM artifacts a
+        JOIN reviews r ON r.artifact_id = a.id
+        WHERE a.id = ?
+        ORDER BY r.created_at DESC LIMIT 1
+    """, (artifact_id,)).fetchone()
+    if not row:
+        return False
+    return row[0] == row[1]
+
+
+def reclaim_expired_leases(conn: sqlite3.Connection, max_retries: int = 3) -> int:
+    """Move expired leases back to pending, or to failed if retry limit exceeded.
+
+    Also decrements parallel_agents_running for the owning session.
+    Returns total number of tasks transitioned.
+    """
+    with _immediate_transaction(conn) as c:
+        expired = c.execute(
+            "SELECT id, session_id, retry_count FROM tasks "
+            "WHERE status='leased' AND lease_expires_at < datetime('now')"
+        ).fetchall()
+        count = 0
+        for row in expired:
+            task_id, session_id, retries = row["id"], row["session_id"], row["retry_count"]
+            if retries < max_retries:
+                c.execute("""
+                    UPDATE tasks SET status='pending', assigned_subagent_id=NULL,
+                        lease_expires_at=NULL, leased_at=NULL,
+                        retry_count=retry_count+1, updated_at=CURRENT_TIMESTAMP
+                    WHERE id=?
+                """, (task_id,))
+            else:
+                c.execute("""
+                    UPDATE tasks SET status='failed',
+                        last_error='Max retries exceeded after lease expiry',
+                        updated_at=CURRENT_TIMESTAMP
+                    WHERE id=?
+                """, (task_id,))
+            c.execute(
+                "UPDATE sessions SET "
+                "parallel_agents_running = MAX(parallel_agents_running - 1, 0), "
+                "updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (session_id,)
+            )
+            count += 1
+    return count
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="State Engine CLI")
@@ -204,10 +334,17 @@ if __name__ == "__main__":
         init_db(args.db_path)
         print(f"Database initialized at {args.db_path}")
     elif args.command == "lease-task":
-        raise NotImplementedError("lease-task: added in Task 6")
+        conn = init_db(args.db_path)
+        ok = lease_task(conn, args.task_id, args.subagent_id, args.ttl)
+        print(json.dumps({"ok": ok}))
     elif args.command == "commit-complete":
-        raise NotImplementedError("commit-complete: added in Task 6")
+        conn = init_db(args.db_path)
+        ok = commit_task_complete(conn, args.task_id, args.subagent_id,
+                                  args.version, args.payload_hash)
+        print(json.dumps({"ok": ok}))
     elif args.command == "project-dashboard":
         raise NotImplementedError("project-dashboard: added in Task 7")
     elif args.command == "reclaim-expired":
-        raise NotImplementedError("reclaim-expired: added in Task 6")
+        conn = init_db(args.db_path)
+        count = reclaim_expired_leases(conn)
+        print(json.dumps({"reclaimed": count}))

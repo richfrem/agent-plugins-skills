@@ -100,3 +100,129 @@ def test_state_engine_cli_init(tmp_path):
     )
     assert result.returncode == 0, f"CLI init failed: {result.stderr}"
     assert Path(db_path).exists(), "DB file must exist after CLI init"
+
+
+def test_create_session_and_add_task(mem_conn):
+    SE.create_session(mem_conn, "sess-1", "Test Session")
+    SE.add_task(mem_conn, "task-1", "sess-1", 1, "Phase 1", "Comp A")
+    row = mem_conn.execute("SELECT * FROM tasks WHERE id='task-1'").fetchone()
+    assert row is not None
+    assert row["status"] == "pending"
+
+
+def test_lease_task_increments_parallel_counter(mem_conn):
+    """Successful lease must increment sessions.parallel_agents_running."""
+    SE.create_session(mem_conn, "sess-2", "Session 2")
+    SE.add_task(mem_conn, "task-2", "sess-2", 1, "Phase 1", "Comp B")
+    before = mem_conn.execute(
+        "SELECT parallel_agents_running FROM sessions WHERE id='sess-2'"
+    ).fetchone()["parallel_agents_running"]
+
+    SE.lease_task(mem_conn, "task-2", "subagent-abc", ttl_seconds=300)
+
+    after = mem_conn.execute(
+        "SELECT parallel_agents_running FROM sessions WHERE id='sess-2'"
+    ).fetchone()["parallel_agents_running"]
+    assert after == before + 1
+
+
+def test_commit_task_complete_decrements_parallel_counter(mem_conn):
+    """Completion must decrement sessions.parallel_agents_running."""
+    SE.create_session(mem_conn, "sess-3", "Session 3")
+    SE.add_task(mem_conn, "task-3", "sess-3", 1, "Phase 1", "Comp C")
+    SE.lease_task(mem_conn, "task-3", "subagent-x", ttl_seconds=300)
+    row = mem_conn.execute("SELECT version FROM tasks WHERE id='task-3'").fetchone()
+
+    SE.commit_task_complete(mem_conn, "task-3", "subagent-x", row["version"], "hash1")
+
+    after = mem_conn.execute(
+        "SELECT parallel_agents_running FROM sessions WHERE id='sess-3'"
+    ).fetchone()["parallel_agents_running"]
+    assert after == 0
+
+
+def test_commit_task_complete_cas_guard(mem_conn):
+    SE.create_session(mem_conn, "sess-4", "Session 4")
+    SE.add_task(mem_conn, "task-4", "sess-4", 1, "Phase 1", "Comp D")
+    SE.lease_task(mem_conn, "task-4", "subagent-x", ttl_seconds=300)
+    row = mem_conn.execute("SELECT version FROM tasks WHERE id='task-4'").fetchone()
+    version = row["version"]
+
+    assert SE.commit_task_complete(mem_conn, "task-4", "wrong-agent", version, "h") is False
+    assert SE.commit_task_complete(mem_conn, "task-4", "subagent-x", version + 99, "h") is False
+    assert SE.commit_task_complete(mem_conn, "task-4", "subagent-x", version, "h") is True
+
+
+def test_budget_gate_blocks_over_parallel_limit(mem_conn):
+    SE.create_session(mem_conn, "sess-5", "Session 5")
+    mem_conn.execute(
+        "UPDATE sessions SET parallel_agents_running=? WHERE id='sess-5'",
+        (SE.MAX_PARALLEL_AGENTS,)
+    )
+    mem_conn.commit()
+    SE.add_task(mem_conn, "task-5", "sess-5", 1, "Phase 1", "Comp E")
+    with pytest.raises(RuntimeError, match="parallel_agents_running"):
+        SE.lease_task(mem_conn, "task-5", "subagent-over-limit", ttl_seconds=300)
+
+
+def test_record_premium_call_increments_counter(mem_conn):
+    SE.create_session(mem_conn, "sess-6", "Session 6")
+    SE.record_premium_call(mem_conn, "sess-6")
+    used = mem_conn.execute(
+        "SELECT premium_calls_used FROM sessions WHERE id='sess-6'"
+    ).fetchone()["premium_calls_used"]
+    assert used == 1
+
+
+def test_verify_review_current_detects_mismatch(mem_conn):
+    """verify_review_current must return False when artifact hash doesn't match review hash."""
+    SE.create_session(mem_conn, "sess-7", "Session 7")
+    SE.add_task(mem_conn, "task-7", "sess-7", 1, "Phase 1", "Comp F")
+    artifact_id = str(uuid.uuid4())
+    mem_conn.execute(
+        "INSERT INTO artifacts (id, task_id, path, original_sha256, sanitized_sha256, "
+        "sanitization_report, artifact_type, created_by, sanitizer_version) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (artifact_id, "task-7", "/tmp/file.py", "aaa", "bbb", "{}", "code", "agent-1", "1.0")
+    )
+    review_id = str(uuid.uuid4())
+    mem_conn.execute(
+        "INSERT INTO reviews (id, artifact_id, reviewer, review_type, verdict, artifact_sha256) "
+        "VALUES (?,?,?,?,?,?)",
+        (review_id, artifact_id, "reviewer-1", "code_quality", "pass", "DIFFERENT_HASH")
+    )
+    mem_conn.commit()
+    assert SE.verify_review_current(mem_conn, artifact_id) is False
+
+
+def test_reclaim_expired_leases_returns_tasks_to_pending(mem_conn):
+    SE.create_session(mem_conn, "sess-8", "Session 8")
+    SE.add_task(mem_conn, "task-8", "sess-8", 1, "Phase 1", "Comp G")
+    SE.lease_task(mem_conn, "task-8", "subagent-crash", ttl_seconds=300)
+    # Manually expire the lease
+    mem_conn.execute(
+        "UPDATE tasks SET lease_expires_at=datetime('now', '-1 second') WHERE id='task-8'"
+    )
+    mem_conn.commit()
+    count = SE.reclaim_expired_leases(mem_conn)
+    assert count >= 1
+    row = mem_conn.execute("SELECT status FROM tasks WHERE id='task-8'").fetchone()
+    assert row["status"] == "pending"
+
+
+def test_state_engine_cli_lease_task(tmp_path):
+    """CLI lease-task command must work end-to-end (dual-runtime invariant, ADR-002)."""
+    import subprocess
+    import json
+    db_path = str(tmp_path / "cli.sqlite")
+    conn = SE.init_db(db_path)
+    SE.create_session(conn, "cli-sess", "CLI Test")
+    SE.add_task(conn, "cli-task", "cli-sess", 1, "Phase 1", "Comp A")
+    conn.close()
+    result = subprocess.run(
+        [sys.executable, str(Path(SE.__file__)), "lease-task",
+         "--db-path", db_path, "--task-id", "cli-task", "--subagent-id", "gemini-1"],
+        capture_output=True, text=True, timeout=10,
+    )
+    assert result.returncode == 0, f"CLI lease-task failed: {result.stderr}"
+    assert json.loads(result.stdout)["ok"] is True
