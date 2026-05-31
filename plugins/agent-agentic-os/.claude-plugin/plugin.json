@@ -25,36 +25,5 @@
         "self-healing",
         "multi-agent-coordination",
         "hooks"
-    ],
-    "skills": [
-        "optimize-agent-instructions",
-        "os-architect",
-        "os-clean-locks",
-        "os-environment-probe",
-        "os-eval-backport",
-        "os-eval-lab-setup",
-        "os-eval-runner",
-        "os-evolution-planner",
-        "os-evolution-verifier",
-        "os-experiment-log",
-        "os-guide",
-        "os-improvement-loop",
-        "os-improvement-report",
-        "os-init",
-        "os-memory-manager",
-        "self-evolution",
-        "todo-check"
-    ],
-    "agents": [
-        "agentic-os-setup",
-        "improvement-intake-agent",
-        "os-architect-agent",
-        "os-architect-tester-agent",
-        "os-health-check"
-    ],
-    "commands": [
-        "os-init",
-        "os-loop",
-        "os-memory"
     ]
 }

@@ -72,7 +72,7 @@ def emit_event(project_root: Path, event_data: dict) -> None:
             summary_payload = summary_payload[:2048]
 
         cmd = [
-            "python, str(kernel_path), "emit_event",
+            "python3", str(kernel_path), "emit_event",
             "--agent", event_data["agent"],
             "--type", event_type,
             "--action", event_data["action"],
@@ -198,7 +198,7 @@ def main() -> None:
     if kernel_path.exists():
         try:
             subprocess.run([
-                "python, str(kernel_path), "emit_event",
+                "python3", str(kernel_path), "emit_event",
                 "--agent", "post_run_hook",
                 "--type", "metric",
                 "--action", "north_star_check_pending",
