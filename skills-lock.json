@@ -123,14 +123,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "business-workflow-doc": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "claude-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -343,7 +343,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-06T18:55:47.414076Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "dispatching-parallel-agents": {
       "source": "https://github.com/obra/superpowers",
@@ -474,14 +474,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "exploration-optimizer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "exploration-orchestrator": {
       "source": "exploration-cycle-plugin",
@@ -495,14 +495,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "exploration-workflow": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "finishing-a-development-branch": {
       "source": "https://github.com/obra/superpowers",
@@ -988,7 +988,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "receiving-code-review": {
       "source": "https://github.com/obra/superpowers",
@@ -1340,7 +1340,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-06T18:55:47.414076Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "symlink-manager": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1424,7 +1424,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:41.764342Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "using-git-worktrees": {
       "source": "https://github.com/obra/superpowers",
@@ -1508,21 +1508,21 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T16:09:31.570265Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-browser-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T15:50:19.636122Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-domain-extractor": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T16:09:31.570265Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-orchestrator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1536,42 +1536,42 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T16:09:31.570265Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-slice-migrator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T16:09:31.570265Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-spec-packager": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T15:50:19.636122Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-to-speckit-superpowers": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T19:13:31.238310Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "vibe-togaf-architect": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T15:50:19.636122Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "visual-companion": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-06T18:55:47.414076Z",
-      "updatedAt": "2026-05-22T19:14:46.273373Z"
+      "updatedAt": "2026-05-31T04:22:07.071090Z"
     },
     "writing-plans": {
       "source": "https://github.com/obra/superpowers",

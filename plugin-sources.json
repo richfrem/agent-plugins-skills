@@ -28,7 +28,6 @@
         "context-bundler",
         "copilot-cli",
         "dependency-management",
-        "exploration-cycle-plugin",
         "gemini-cli",
         "link-checker"
       ]
@@ -37,6 +36,12 @@
       "source": "obra/superpowers",
       "plugins": [
         "superpowers"
+      ]
+    },
+    {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "plugins": [
+        "exploration-cycle-plugin"
       ]
     }
   ]
