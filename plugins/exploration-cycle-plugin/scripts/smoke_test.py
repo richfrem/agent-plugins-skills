@@ -3,23 +3,21 @@
 smoke_test.py — Standalone end-to-end smoke test for state_engine.py.
 
 No pytest required. Run directly:
-    python3 plugins/exploration-cycle-plugin/tests/smoke_test.py
+    python3 plugins/exploration-cycle-plugin/scripts/smoke_test.py
 
-Complements the pytest suite (test_state_engine.py) with a human-readable
-pass/fail walkthrough of the full session → task → dashboard → budget-gate flow.
+Complements the pytest suite (tests/test_state_engine.py) with a human-readable
+pass/fail walkthrough of the full session -> task -> dashboard -> budget-gate flow.
 Cleans up its DB after every run.
 """
 import sys
 import uuid
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).parent))
 from state_engine import (
     init_db, create_session, add_task, lease_task, project_dashboard,
     MAX_PARALLEL_AGENTS,
 )
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 PASS = "\033[32mPASS\033[0m"
 FAIL = "\033[31mFAIL\033[0m"
@@ -32,8 +30,6 @@ def check(label: str, condition: bool, detail: str = "") -> None:
     results.append((label, condition))
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-
 def main() -> None:
     db_path = Path(__file__).parent / "smoke_test.sqlite"
     db_path.unlink(missing_ok=True)
@@ -41,7 +37,6 @@ def main() -> None:
     conn = None
     try:
         print("── Setup ─────────────────────────────────────────────────────")
-
         conn = init_db(str(db_path))
         check("init_db", True)
 
@@ -61,7 +56,7 @@ def main() -> None:
         count = conn.execute(
             "SELECT COUNT(*) FROM tasks WHERE session_id=?", (session_id,)
         ).fetchone()[0]
-        check("add_task × 3", count == 3, f"{count} rows")
+        check("add_task x3", count == 3, f"{count} rows")
 
         print("\n── Dashboard ─────────────────────────────────────────────────")
         dashboard = project_dashboard(conn, session_id)
@@ -105,7 +100,7 @@ def main() -> None:
 
     print("\n── Summary ───────────────────────────────────────────────────")
     for label, ok in results:
-        print(f"  {'✓' if ok else '✗'}  {label}")
+        print(f"  {'checkmark' if ok else 'x'}  {label}")
     passed = sum(1 for _, ok in results if ok)
     total = len(results)
     print(f"\n  {passed}/{total} checks passed")
