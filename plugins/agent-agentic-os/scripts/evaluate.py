@@ -37,6 +37,8 @@ import argparse
 import csv
 import hashlib
 import json
+import os
+import secrets
 import subprocess
 import sys
 from datetime import datetime
@@ -124,6 +126,33 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: fh.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _write_trace_exclusive(traces_dir: Path, filename: str, content: str) -> None:
+    """Write trace file with O_CREAT|O_EXCL|O_NOFOLLOW to prevent symlink attacks (L-2 fix)."""
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+
+    path = traces_dir / filename
+    try:
+        fd = os.open(str(path), flags, 0o644)
+    except FileExistsError:
+        stem, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
+        nonce = secrets.token_hex(4)
+        nonce_name = f"{stem}_{nonce}.{ext}" if ext else f"{stem}_{nonce}"
+        path = traces_dir / nonce_name
+        fd = os.open(str(path), flags, 0o644)
+
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(content)
+    except Exception:
+        try:
+            os.close(fd)
+        except Exception:
+            pass
+        raise
 
 
 def save_lock_hashes(results_tsv: Path, files_to_hash: list[Path]) -> None:
@@ -310,7 +339,7 @@ def write_trace(results_tsv: Path, skill_root: Path, score: float, baseline_scor
 
     trace_filename = f"iter_{iteration:03d}_{status}_score{score:.2f}.json"
     try:
-        (traces_dir / trace_filename).write_text(json.dumps(trace, indent=2))
+        _write_trace_exclusive(traces_dir, trace_filename, json.dumps(trace, indent=2))
     except Exception as e:
         print(f"WARNING: could not write trace file: {e}", file=sys.stderr)
 
@@ -350,11 +379,11 @@ def main() -> None:
     locked_files_to_hash = LOCKED_FILES + [evals_json]
 
     check_locked_files(skill_root, evals_json, results_tsv)
-    # Skip SHA256 snapshot check when re-baselining — the baseline run itself
-    # overwrites .lock.hashes, so blocking it creates a deadlock when evals.json
-    # has been intentionally updated. (Issue 6 fix, field-tested in round 1.)
     if not args.baseline:
         check_sha256_hashes(results_tsv, locked_files_to_hash)
+    else:
+        # During baseline: still verify gate scripts; allow evals.json to change
+        check_sha256_hashes(results_tsv, LOCKED_FILES)
 
     commit = get_commit(skill_root)
     data = run_eval_runner(skill_root)

@@ -5,6 +5,37 @@ capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agen
 
 ---
 
+## v1.3 Hardened Control Plane
+
+The `agent-agentic-os` control plane was hardened in two phases on branch `chore/baseline-v1.3-control-plane`.
+
+### Phase 0 — Security patches (4 files)
+
+| ID | File | Fix |
+|---|---|---|
+| C-1 | `update_memory.py` | Removed lockless os-state write — fail-closed |
+| C-3 | `update_memory.py` | Removed `events.jsonl` fallback — fail-closed |
+| C-2 / L-1 | `kernel.py` | TOCTOU-safe stale lock clearing with double-read + PID recycling detection; rotation moved inside write lock |
+| H-2 | `dispatch.py` | Default tier changed to `"2"`; frontmatter injection detection added (M-1 / C-NEW-4) |
+| H-3 / L-2 | `evaluate.py` | SHA256 gate on `--baseline` script check; O_EXCL trace writes with nonce fallback |
+
+### Phase 1 — SQLite state engine (`state_engine.py`)
+
+New file. 7-table SQLite schema with WAL mode, FK enforcement, and CHECK constraints.
+Key capabilities: transactional task leasing with CAS (compare-and-swap) completion, parallel agent cap + premium call budget enforcement, dashboard projection, checkbox validation, markdown migration, atomic O_EXCL writes, fail-closed WAL init.
+
+### Phase 2 — Process sandbox (`sandbox_runner.py`)
+
+New file. Environment hygiene via allowlist-only env (`PATH`, `HOME`, `TMPDIR`, `LANG`, `LC_ALL`). Container wrapping (podman/docker) with split ro/rw mounts. HMAC envelope sign/verify with nonce replay protection. 5-layer approval gate: approval status, action allowlist, path glob, spec hash, HMAC.
+
+### Architecture note
+
+Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. Patterns informed by analysis of Microsoft Agent Framework (MAF) and Agent Governance Toolkit (AGT), achieving equivalent structural guarantees (transactional state, CAS concurrency, HMAC identity, budget enforcement, process sandboxing) while preserving full runtime portability across Claude Code, Copilot CLI, Gemini CLI, and Antigravity CLI.
+
+**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [docs/microsoft-agent-framework-assessment.md](docs/microsoft-agent-framework-assessment.md)
+
+---
+
 ## Platforms
 
 A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.

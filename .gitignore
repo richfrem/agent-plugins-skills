@@ -87,3 +87,9 @@ apm_modules/
 apm.yml
 apm.lock.yaml
 apm-*-test/
+
+# Agentic OS runtime state — never commit
+context/exploration/active_session.sqlite
+context/exploration/active_session.sqlite-wal
+context/exploration/active_session.sqlite-shm
+context/exploration/.secrets/

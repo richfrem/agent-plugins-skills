@@ -46,7 +46,7 @@ Script Dependencies:
 Consumed by:
     - All background hooks and sub-agents
 """
-import os, sys, json, time, uuid, random, argparse
+import os, sys, json, time, uuid, random, argparse, subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -117,6 +117,57 @@ def _clear(lock_path):
         pass
 
 
+def _pid_started_after(pid: int, acquired_at_str: str) -> bool:
+    """Returns True if the PID's process started after acquired_at_str (recycled PID)."""
+    if not acquired_at_str:
+        return False
+    try:
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "lstart="],
+            capture_output=True, text=True, timeout=2
+        )
+        if result.returncode != 0:
+            return True  # Process not found — dead/recycled
+        ps_start = time.strptime(result.stdout.strip(), "%a %b %d %H:%M:%S %Y")
+        ps_epoch = time.mktime(ps_start)
+        acq_clean = acquired_at_str.rstrip("Z").split("+")[0]
+        acq_epoch = datetime.fromisoformat(acq_clean).timestamp()
+        return ps_epoch > acq_epoch + 1
+    except Exception:
+        return False
+
+
+def _safe_clear_stale(lock_path: Path) -> bool:
+    """Clear a stale lock with TOCTOU protection (C-2 / L-1 fix).
+
+    Double-reads meta.json with a pause. If meta changed between reads,
+    another process acquired the lock — abort without clearing.
+    Returns True if cleared, False if the lock appears live or was concurrently acquired.
+    """
+    meta_path = lock_path / "meta.json"
+    meta1 = _load(meta_path, {})
+    pid1 = meta1.get("pid")
+
+    if pid1:
+        alive = _pid_alive(int(pid1))
+        if alive and not _pid_started_after(int(pid1), meta1.get("acquired_at", "")):
+            return False  # Genuinely alive
+
+    if meta1.get("expires_at", 0) >= time.time() and pid1 and _pid_alive(int(pid1)):
+        return False
+
+    time.sleep(0.02)
+    meta2 = _load(meta_path, {})
+    if meta1 != meta2:
+        return False  # Concurrent acquisition detected
+
+    try:
+        _clear(lock_path)
+        return True
+    except OSError:
+        return False
+
+
 def _spinlock(lock_path, timeout=30):
     """Directory spinlock. Returns True on success."""
     os.makedirs(LOCKS_DIR, exist_ok=True)
@@ -127,8 +178,8 @@ def _spinlock(lock_path, timeout=30):
             return True
         except FileExistsError:
             try:
-                if time.time() - Path(lock_path).stat().st_mtime > 20:
-                    _clear(lock_path)
+                if _is_stale(lock_path):
+                    _safe_clear_stale(lock_path)
             except OSError:
                 pass
             time.sleep(random.uniform(0.05, 0.15))
@@ -152,8 +203,11 @@ def acquire_lock(name, ttl=None):
     os.makedirs(LOCKS_DIR, exist_ok=True)
     if lock.exists():
         if _is_stale(lock):
-            _clear(lock)
-            print(f"[Kernel] Stale lock cleared: {name}")
+            if _safe_clear_stale(lock):
+                print(f"[Kernel] Stale lock cleared: {name}")
+            else:
+                print(f"[Kernel] Lock busy (stale but owner live or concurrent acquisition): {name}", file=sys.stderr)
+                sys.exit(1)
         else:
             print(f"[Kernel] Lock busy: {name}", file=sys.stderr)
             sys.exit(1)
@@ -181,33 +235,26 @@ def emit_event(agent, type_, action, status=None, summary=None,
                to=None, correlation_id=None):
     if not _validate_agent(agent):
         sys.exit(1)
-    # Rotate if over size limit
-    if EVENTS_FILE.exists() and EVENTS_FILE.stat().st_size > EVENTS_MAX_BYTES:
-        archive = KERNEL_DIR / "events-archive"
-        os.makedirs(archive, exist_ok=True)
-        rotate_lock = LOCKS_DIR / "events_rotate.lock"
-        try:
-            os.mkdir(rotate_lock)
-            try:
-                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-                os.rename(EVENTS_FILE, archive / f"events-{ts}.jsonl")
-                print(f"[Kernel] Rotated events.jsonl")
-            finally:
-                _clear(rotate_lock)
-        except FileExistsError:
-            pass
     event = {"id": str(uuid.uuid4()), "time": _now(),
              "agent": agent, "type": type_, "action": action}
     if to:             event["to"]             = to
     if correlation_id: event["correlation_id"] = correlation_id
     if status:         event["status"]         = status
     if summary:        event["summary"]        = summary
+
     write_lock = LOCKS_DIR / "events_write.lock"
     if not _spinlock(write_lock):
         print("[Kernel] Events write lock timeout", file=sys.stderr)
         sys.exit(1)
     try:
         os.makedirs(KERNEL_DIR, exist_ok=True)
+        # Size check and rotation inside the write lock (H-1 fix — eliminates events_rotate.lock)
+        if EVENTS_FILE.exists() and EVENTS_FILE.stat().st_size > EVENTS_MAX_BYTES:
+            archive = KERNEL_DIR / "events-archive"
+            os.makedirs(archive, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            os.rename(EVENTS_FILE, archive / f"events-{ts}.jsonl")
+            print(f"[Kernel] Rotated events.jsonl")
         with open(EVENTS_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(event) + "\n")
     finally:
