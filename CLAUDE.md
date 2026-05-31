@@ -259,6 +259,10 @@ Define success criteria first. Loop until verified.
 - **ADR-002**: Within-plugin multi-skill script sharing via hub-and-spoke (plugin root `scripts/`)
 - **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files
 - **ADR-004**: Installed artifacts must be self-contained — no runtime cross-plugin paths
+- **ADR-007**: MAF is an optional certified runtime adapter — `.md` manifests are the source of truth, portable across Claude Code / Copilot CLI / Gemini CLI / MAF. Do not make MAF the primary orchestration kernel.
+
+### Security-sensitive control plane (exploration-cycle-plugin)
+`plugins/exploration-cycle-plugin/scripts/` contains the Python control plane: `dispatch.py`, `state_engine.py`, `sandbox_runner.py`. These files have active security work (v1.3 shipped; v1.4 in progress). Before modifying them, read `ADRs/007_maf_adapter_runtime_decision.md` and `docs/superpowers/specs/2026-05-31-maf-synthesis-v1.4-spec.md` for the current security model and planned changes. Do not add casual convenience bypasses to the authorization gate or path enforcement.
 
 ### Skill Standards (always applied)
 - Skill `name`: kebab-case, matches directory name exactly, 1–64 chars

@@ -3,36 +3,32 @@
 <!-- ECOSYSTEM_STATS_START -->**Current Scale:** 23 Plugins · 137 Skills · 52 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
+> **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026)
+
 ---
 
-## v1.3 Hardened Control Plane
+## Architecture Evolution
 
-The `agent-agentic-os` control plane was hardened in two phases on branch `chore/baseline-v1.3-control-plane`.
+### v1.3 — Hardened Control Plane (May 2026)
 
-### Phase 0 — Security patches (4 files)
+Replaced fragile markdown-based state with a transactional SQLite control plane (`state_engine.py`), added strong process sandboxing (`sandbox_runner.py`), HMAC-signed envelopes, approval gating, and WAL concurrency safety. Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. This made the custom Python kernel production-grade and laid the foundation for the v1.4 hybrid strategy.
 
-| ID | File | Fix |
-|---|---|---|
-| C-1 | `update_memory.py` | Removed lockless os-state write — fail-closed |
-| C-3 | `update_memory.py` | Removed `events.jsonl` fallback — fail-closed |
-| C-2 / L-1 | `kernel.py` | TOCTOU-safe stale lock clearing with double-read + PID recycling detection; rotation moved inside write lock |
-| H-2 | `dispatch.py` | Default tier changed to `"2"`; frontmatter injection detection added (M-1 / C-NEW-4) |
-| H-3 / L-2 | `evaluate.py` | SHA256 gate on `--baseline` script check; O_EXCL trace writes with nonce fallback |
+### v1.4 — MAF Synthesis & Hybrid Strategy (May 31, 2026)
 
-### Phase 1 — SQLite state engine (`state_engine.py`)
+After extensive MAF research and 12 hands-on C# experiments (including full loading of real `exploration-cycle-plugin` manifests), we pivoted from "do not adopt MAF" to a **hybrid architecture**:
 
-New file. 7-table SQLite schema with WAL mode, FK enforcement, and CHECK constraints.
-Key capabilities: transactional task leasing with CAS (compare-and-swap) completion, parallel agent cap + premium call budget enforcement, dashboard projection, checkbox validation, markdown migration, atomic O_EXCL writes, fail-closed WAL init.
+> **Manifest-first. Multiple certified runtime adapters second.**
 
-### Phase 2 — Process sandbox (`sandbox_runner.py`)
+**Key outcomes:**
+- Kept the hardened Python control plane as the authoritative kernel
+- Adopted AGT (Agent Governance Toolkit) for deterministic policy enforcement
+- Ported 4 high-value patterns from MAF: alias resolution, standardized handoff envelopes, per-agent skill scoping, per-phase premium call budgets
+- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](ADRs/007_maf_adapter_runtime_decision.md))
+- All `.md` agent manifests and `SKILL.md` files remain fully portable
 
-New file. Environment hygiene via allowlist-only env (`PATH`, `HOME`, `TMPDIR`, `LANG`, `LC_ALL`). Container wrapping (podman/docker) with split ro/rw mounts. HMAC envelope sign/verify with nonce replay protection. 5-layer approval gate: approval status, action allowlist, path glob, spec hash, HMAC.
+This hybrid approach gives us the best of both worlds: battle-tested custom safety primitives + selective leverage of Microsoft's well-engineered patterns.
 
-### Architecture note
-
-Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. Patterns informed by analysis of Microsoft Agent Framework (MAF) and Agent Governance Toolkit (AGT), achieving equivalent structural guarantees (transactional state, CAS concurrency, HMAC identity, budget enforcement, process sandboxing) while preserving full runtime portability across Claude Code, Copilot CLI, Gemini CLI, and Antigravity CLI.
-
-**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [docs/microsoft-agent-framework-assessment.md](docs/microsoft-agent-framework-assessment.md)
+**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
 
 ---
 
@@ -58,6 +54,8 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstr
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 ```
 
+> **v1.4 note:** If upgrading from v1.3, run `uv sync` (or `pip install -r requirements.txt`) after pulling latest — the per-phase budget enforcement and AGT governance patterns add new dependencies to `exploration-cycle-plugin`.
+
 ---
 
 ## Core Philosophy: Transitional Architectures & Decoupled Skills
@@ -65,6 +63,13 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 This repository is built on a pragmatic acceptance of the current AI engineering landscape: **the ecosystem changes weekly, and workflows that were revolutionary six months ago are obsolete today.**
 
 Frameworks like `agent-agentic-os` and `spec-kitty` are treated as **Transitional Architectures** — bridges between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
+
+The MAF research (May 2026) reinforced this view: instead of choosing between a custom kernel and a framework, we now deliberately pursue a **hybrid model**:
+
+- Portable `.md` manifests and `SKILL.md` files remain the source of truth across all runtimes
+- Multiple runtime adapters (Claude Code, Copilot CLI, Gemini CLI, **MAF**) are supported side-by-side
+- Strong custom control plane for safety and governance that no hosted framework currently matches
+- Selective adoption of excellent patterns from frontier frameworks (e.g. MAF's typed handoffs and AGT governance)
 
 **Skills are Applications; the SDK is the OS.** Individual skills must function in complete isolation — no hard dependencies on sibling plugins, no assumptions about which framework is running.
 
