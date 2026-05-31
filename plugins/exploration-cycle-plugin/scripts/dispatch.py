@@ -51,10 +51,18 @@ Consumed by:
 """
 
 import argparse
+import fnmatch
+import hashlib
+import json
 import re
+import sqlite3
 import subprocess
 import os
 import sys
+from collections import OrderedDict
+from pathlib import Path
+
+from sandbox_runner import verify_envelope
 
 MIN_OUTPUT_CHARS = 500
 
@@ -166,6 +174,71 @@ def validate_output(content: str, output_path: str) -> str | None:
         )
         return None
     return content
+
+
+def check_approval(conn: sqlite3.Connection, approval_id: str) -> tuple[bool, str]:
+    """Verify an approval is active, not revoked, and not expired."""
+    row = conn.execute(
+        "SELECT is_active, expires_at < datetime('now') AS is_expired "
+        "FROM approvals WHERE id=?",
+        (approval_id,)
+    ).fetchone()
+    if row is None:
+        return False, f"Approval '{approval_id}' not found"
+    if not row[0]:
+        return False, f"Approval '{approval_id}' has been revoked"
+    if row[1]:
+        return False, f"Approval '{approval_id}' has expired"
+    return True, ""
+
+
+def check_dispatch_authorization(
+    conn: sqlite3.Connection,
+    approval_id: str,
+    action: str,
+    target_path: str | None,
+    spec_path: str | None,
+    envelope: dict,
+    key: bytes,
+    nonce_cache: OrderedDict,
+) -> tuple[bool, str]:
+    """Full dispatch authorization: approval validity + action + path + spec hash + HMAC."""
+    # 1. Basic approval validity
+    is_valid, reason = check_approval(conn, approval_id)
+    if not is_valid:
+        return False, reason
+
+    row = conn.execute(
+        "SELECT approved_actions, allowed_paths, spec_hash FROM approvals WHERE id=?",
+        (approval_id,)
+    ).fetchone()
+    if row is None:
+        return False, f"Approval '{approval_id}' disappeared during authorization"
+
+    # 2. Approved actions check
+    approved_actions = json.loads(row[0])
+    if action not in approved_actions:
+        return False, f"Action '{action}' not in approved_actions {approved_actions}"
+
+    # 3. Allowed paths check
+    allowed_paths = json.loads(row[1])
+    if target_path and not any(fnmatch.fnmatch(target_path, p) for p in allowed_paths):
+        return False, f"Path '{target_path}' not in allowed_paths {allowed_paths}"
+
+    # 4. Spec hash integrity check (fail closed when file is absent)
+    if spec_path:
+        spec_file = Path(spec_path)
+        if not spec_file.exists():
+            return False, f"Spec file not found: {spec_path}"
+        actual_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest()
+        if actual_hash != row[2]:
+            return False, f"Spec hash mismatch for {spec_path}"
+
+    # 5. HMAC envelope verification (timing-safe + nonce dedup)
+    if not verify_envelope(envelope, key, nonce_cache):
+        return False, "HMAC envelope verification failed (tampered payload or replayed nonce)"
+
+    return True, ""
 
 
 def build_parser() -> argparse.ArgumentParser:
