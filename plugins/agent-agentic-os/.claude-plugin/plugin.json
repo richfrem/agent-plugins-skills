@@ -47,6 +47,5 @@
         "os-init",
         "os-loop",
         "os-memory"
-    ],
-    "hooks": true
+    ]
 }
