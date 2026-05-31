@@ -86,6 +86,37 @@ def write_file(filepath: str, content: str) -> None:
             f.write('\n')
 
 
+def _strip_frontmatter(content: str) -> str:
+    """Strip YAML frontmatter only if it starts at byte 0."""
+    match = re.match(r'^---[ \t]*\r?\n.*?\r?\n---[ \t]*\r?\n', content, re.DOTALL)
+    if match:
+        return content[match.end():]
+    return content
+
+
+def _detect_frontmatter_injection(content: str) -> bool:
+    """Detect YAML-like blocks injected after the document body begins.
+
+    Returns True if a secondary '---' delimiter followed by key: value lines
+    is found after the leading frontmatter. Lone horizontal rules are not flagged.
+    """
+    body = _strip_frontmatter(content)
+    lines = body.splitlines()
+    i = 0
+    while i < len(lines):
+        if lines[i].strip() == "---":
+            for rest_line in lines[i + 1:]:
+                stripped = rest_line.strip()
+                if stripped == "---":
+                    break
+                if re.match(r'^[A-Za-z][\w-]*\s*:', stripped):
+                    return True
+                if stripped and not stripped.startswith("#"):
+                    break
+        i += 1
+    return False
+
+
 def strip_leading_prose(content: str) -> str:
     """Strips conversational preamble before the first markdown section header.
 
@@ -137,7 +168,8 @@ def validate_output(content: str, output_path: str) -> str | None:
     return content
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    """Return the configured argument parser. Exposed for testing."""
     parser = argparse.ArgumentParser(description="Exploration Cycle CLI Dispatch Wrapper")
     parser.add_argument("--agent", required=True, help="Path to the agent markdown file")
     parser.add_argument("--context", nargs='+', default=[], help="Required context files — missing file is a fatal error")
@@ -152,18 +184,24 @@ def main() -> None:
     parser.add_argument("--model", default=None,
                         help="Model to use (optional). When --cli copilot, appended as '--model <model>'. "
                              "Example: claude-sonnet-4.6")
-    parser.add_argument("--tier", default="1", choices=["1", "2", "3"],
+    parser.add_argument("--tier", default="2", choices=["1", "2", "3"],
                         help="Risk tier (1=low, 2=moderate, 3=high). Tier 2/3 require human gate "
                              "before bash-capable dispatch. Only Tier 1 uses --dangerously-skip-permissions. "
-                             "Default: 1 (backward compatible).")
+                             "Default: 2.")
+    return parser
 
-    args = parser.parse_args()
+
+def main() -> None:
+    args = build_parser().parse_args()
 
     # 1. Read the agent instructions and strip YAML frontmatter.
     # Frontmatter (---\n...\n---) is metadata, not instructions. Passing it verbatim
     # to CLI tools that treat --- as an argument delimiter (e.g. claude) causes parse failures.
     agent_content = read_file(args.agent)
-    agent_content = re.sub(r'^---[\r\n]+.*?[\r\n]+---[\r\n]+', '', agent_content, count=1, flags=re.DOTALL)
+    if _detect_frontmatter_injection(agent_content):
+        print("Error: Frontmatter injection detected in agent file — failing closed.", file=sys.stderr)
+        sys.exit(1)
+    agent_content = _strip_frontmatter(agent_content)
 
     # 2. Read required context files (missing = fatal)
     context_chunks = []
