@@ -94,7 +94,7 @@ python ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
 
 | Issue | Symptom in /doctor | Root cause |
 |---|---|---|
-| `plugin.json` has `skills`/`agents`/`hooks`/`commands` arrays | `Invalid input` | Validator rejects these — auto-discovery handles them |
+| `plugin.json` has `skills`/`agents`/`hooks`/`commands` field (any value — array, boolean `true`, object) | `Invalid input` | Validator rejects these entirely — auto-discovery handles them; `"hooks": true` is a common mistake |
 | `hooks.json` is `{}` (empty object) | `expected record, received undefined` | Must be `{"hooks": {}}` |
 | `hooks.json` is `[]` (array) | `expected object received array` | Must be an object |
 | `hooks.json` flat format `{"EventName":{...}}` | `expected record, received undefined` | Must be nested under `"hooks"` key |
@@ -258,6 +258,27 @@ grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
 ```
 "Review my skill at skills/skill-name/SKILL.md"
 ```
+
+---
+
+## Step 4b: Marketplace Source Path Audit
+
+If the repo contains a `.claude-plugin/marketplace.json`, run this check to ensure
+every plugin entry points to a directory that actually exists. Missing directories
+silently fail during `/plugin` install with no helpful error message.
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py <repo_root>
+# or from the repo root:
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py .
+```
+
+**Common causes of missing paths:**
+- Plugin directory renamed but `marketplace.json` not updated (e.g. `obsidian-integration` → `obsidian-wiki-engine`)
+- Plugin entry added to marketplace before the plugin directory was created
+- Plugin directory deleted but marketplace entry not removed
+
+**Fix:** Either update the `source` path to match the real directory name, or remove the entry.
 
 ---
 
