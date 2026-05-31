@@ -39,9 +39,5 @@
         "rlm_profiles_path": ".agent/learning/rlm_profiles.json",
         "vector_profiles_path": ".agent/learning/vector_profiles.json",
         "vector_knowledge_manifest": ".agent/learning/vector_knowledge_manifest.json"
-    },
-    "dependencies": {
-        "plugins": ["rlm-factory"],
-        "plugins_optional": ["vector-db"]
     }
 }
