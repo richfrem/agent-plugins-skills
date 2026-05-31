@@ -226,3 +226,42 @@ def test_state_engine_cli_lease_task(tmp_path):
     )
     assert result.returncode == 0, f"CLI lease-task failed: {result.stderr}"
     assert json.loads(result.stdout)["ok"] is True
+
+
+def test_project_dashboard_round_trips(mem_conn):
+    SE.create_session(mem_conn, "sess-d1", "My Session")
+    SE.add_task(mem_conn, "task-d1a", "sess-d1", 1, "Phase 1", "Component Alpha")
+    SE.add_task(mem_conn, "task-d1b", "sess-d1", 1, "Phase 1", "Component Beta")
+    md = SE.project_dashboard(mem_conn, "sess-d1")
+    assert "My Session" in md
+    assert "Component Alpha" in md
+    assert "Component Beta" in md
+
+
+def test_validate_dashboard_detects_drift(mem_conn):
+    SE.create_session(mem_conn, "sess-d2", "Drift Session")
+    SE.add_task(mem_conn, "task-d2", "sess-d2", 1, "Phase 1", "Comp X")
+    fake_md = "- [x] Comp X\n"  # DB says pending, md says complete
+    assert SE.validate_dashboard_checkboxes(fake_md, mem_conn, "sess-d2") is False
+
+
+def test_migrate_dashboard_parses_tasks(mem_conn, tmp_path):
+    dashboard = tmp_path / "exploration-dashboard.md"
+    dashboard.write_text(
+        "# Exploration Session: Test Migration\n"
+        "## Phase 1: Discovery\n"
+        "- [ ] Task Alpha\n"
+        "- [x] Task Beta\n"
+        "- [~] Task Gamma\n"  # skipped — must be ignored
+    )
+    SE.migrate_dashboard(dashboard, mem_conn)
+    tasks = mem_conn.execute(
+        "SELECT component_name, status FROM tasks ORDER BY phase_ordinal"
+    ).fetchall()
+    names = {t["component_name"] for t in tasks}
+    assert "Task Alpha" in names
+    assert "Task Beta" in names
+    assert "Task Gamma" not in names  # [~] skipped lines not migrated
+    beta = next(t for t in tasks if t["component_name"] == "Task Beta")
+    assert beta["status"] == "complete"
+    assert (tmp_path / "exploration-dashboard.md.migrated").exists()
