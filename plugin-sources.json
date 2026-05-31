@@ -4,7 +4,6 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
         "adr-manager",
-        "agent-agentic-os",
         "agent-loops",
         "agent-scaffolders",
         "claude-cli",
@@ -32,6 +31,12 @@
       "source": "obra/superpowers",
       "plugins": [
         "superpowers"
+      ]
+    },
+    {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "plugins": [
+        "agent-agentic-os"
       ]
     }
   ]
