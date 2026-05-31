@@ -1,0 +1,19 @@
+name: cli-agents
+version: 1.0.0
+description: "Unified CLI sub-agent Conductor Suite. Orchestrates task delegation to Claude, Copilot, and Gemini CLI engines with integrated AGF/AGT security controls."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - run_agent
+  - maf_harness
+skills:
+  - claude-cli-agent
+  - copilot-cli-agent
+  - gemini-cli-agent
+  - project-setup
+  - maf-adapter
+  - agt-security
