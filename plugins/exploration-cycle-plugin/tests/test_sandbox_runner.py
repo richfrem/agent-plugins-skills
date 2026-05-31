@@ -8,9 +8,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 import sandbox_runner as SR
 
 
-def test_clean_env_only_has_allowed_keys():
-    os.environ["PYTHONPATH"] = "/injected"
-    os.environ["DYLD_INSERT_LIBRARIES"] = "/evil.dylib"
+def test_clean_env_only_has_allowed_keys(monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", "/injected")
+    monkeypatch.setenv("DYLD_INSERT_LIBRARIES", "/evil.dylib")
     env = SR._build_clean_env()
     assert "PYTHONPATH" not in env
     assert "DYLD_INSERT_LIBRARIES" not in env
@@ -29,8 +29,8 @@ def test_run_hygienic_executes_command():
     assert result.returncode == 0
 
 
-def test_run_hygienic_env_is_clean():
-    os.environ["PYTHONPATH"] = "/should-not-leak"
+def test_run_hygienic_env_is_clean(monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", "/should-not-leak")
     result = SR.run_hygienic(
         [sys.executable, "-c",
          "import os, sys; sys.exit(0 if 'PYTHONPATH' not in os.environ else 1)"],
