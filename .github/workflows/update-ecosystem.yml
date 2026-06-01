@@ -1,7 +1,7 @@
 name: Update Ecosystem Index
 
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths:
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
