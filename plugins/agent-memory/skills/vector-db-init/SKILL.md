@@ -68,11 +68,11 @@ Run from the project root:
 
 ```bash
 # Regenerate the lockfile from the intent file (only needed when requirements.in changes):
-python -m piptools compile plugins/vector-db/requirements.in \
-    --output-file plugins/vector-db/requirements.txt
+python -m piptools compile plugins/agent-memory/requirements.in \
+    --output-file plugins/agent-memory/requirements.txt
 
 # Install all dependencies (always run this on first setup):
-python -m pip install -r plugins/vector-db/requirements.txt
+python -m pip install -r plugins/agent-memory/requirements.txt
 ```
 
 > **Note:** `pip-tools` itself must be installed first if not present:

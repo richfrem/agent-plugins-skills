@@ -1,713 +1,852 @@
 {
-  "metadata": {
-    "generated_at": "2026-03-09T08:39:11.576352",
-    "source": "plugins/",
-    "description": "Auto-discovered scripts from the plugins/ hierarchy"
-  },
-  "plugins": {
-    "adr-manager": {
-      "count": 2,
-      "scripts": [
-        {
-          "name": "adr_manager.py",
-          "path": "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "next_number.py",
-          "path": "plugins/adr-manager/skills/adr-management/scripts/next_number.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+  "version": "1.0",
+  "generated": "2026-05-31",
+  "tools": [
+    {
+      "name": "experiment_log",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/experiment_log.py",
+      "type": "script"
     },
-    "agent-loops": {
-      "count": 4,
-      "scripts": [
-        {
-          "name": "swarm_run.py",
-          "path": "plugins/agent-loops/scripts/swarm_run.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "swarm_run.py",
-          "path": "plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "agent_orchestrator.py",
-          "path": "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "swarm_run.py",
-          "path": "plugins/agent-loops/skills/orchestrator/scripts/swarm_run.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "check_todos",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/check_todos.py",
+      "type": "script"
     },
-    "agent-scaffolders": {
-      "count": 7,
-      "scripts": [
-        {
-          "name": "analyze_scripts.py",
-          "path": "plugins/agent-scaffolders/scripts/analyze_scripts.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "auto_fix_local_links.py",
-          "path": "plugins/agent-scaffolders/scripts/auto_fix_local_links.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "validate_local_links.py",
-          "path": "plugins/agent-scaffolders/scripts/validate_local_links.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inventory_plugin.py",
-          "path": "plugins/agent-scaffolders/skills/analyze-plugin/scripts/inventory_plugin.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "execute.py",
-          "path": "plugins/agent-scaffolders/skills/audit-plugin-l5/scripts/execute.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "bad_script.py",
-          "path": "plugins/agent-scaffolders/tests/flawed-plugin/scripts/bad_script.py",
-          "purpose": "Deliberately flawed script for testing security detection.",
-          "type": "python"
-        },
-        {
-          "name": "danger.sh",
-          "path": "plugins/agent-scaffolders/tests/flawed-plugin/scripts/danger.sh",
-          "purpose": "",
-          "type": "bash"
-        }
-      ]
+    {
+      "name": "generate_milestone",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/generate_milestone.py",
+      "type": "script"
     },
-    "agent-scaffolders": {
-      "count": 7,
-      "scripts": [
-        {
-          "name": "scaffold.py",
-          "path": "plugins/agent-scaffolders/scripts/scaffold.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "audit.py",
-          "path": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "scaffold_agentic_workflow.py",
-          "path": "plugins/agent-scaffolders/skills/create-agentic-workflow/scripts/scaffold_agentic_workflow.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "scaffold_azure_agent.py",
-          "path": "plugins/agent-scaffolders/skills/create-azure-agent/scripts/scaffold_azure_agent.py",
-          "purpose": "scaffold_azure_agent.py",
-          "type": "python"
-        },
-        {
-          "name": "scaffold_github_action.py",
-          "path": "plugins/agent-scaffolders/skills/create-github-action/scripts/scaffold_github_action.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "scaffold.py",
-          "path": "plugins/agent-scaffolders/skills/create-stateful-skill/scripts/scaffold.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "scaffold.py",
-          "path": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/scaffold.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "init_agentic_os",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/init_agentic_os.py",
+      "type": "script"
     },
-    "coding-conventions": {
-      "count": 2,
-      "scripts": [
-        {
-          "name": "js-tool-header-template.js",
-          "path": "plugins/coding-conventions/templates/js-tool-header-template.js",
-          "purpose": "",
-          "type": "javascript"
-        },
-        {
-          "name": "python-tool-header-template.py",
-          "path": "plugins/coding-conventions/templates/python-tool-header-template.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "kernel",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/kernel.py",
+      "type": "script"
     },
-    "context-bundler": {
-      "count": 8,
-      "scripts": [
-        {
-          "name": "manifest_manager.py",
-          "path": "plugins/context-bundler/scripts/manifest_manager.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "path_resolver.py",
-          "path": "plugins/context-bundler/scripts/path_resolver.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "bundle.py",
-          "path": "plugins/context-bundler/skills/context-bundling/scripts/bundle.py",
-          "purpose": "Context Bundler Engine",
-          "type": "python"
-        },
-        {
-          "name": "manifest_manager.py",
-          "path": "plugins/context-bundler/skills/context-bundling/scripts/manifest_manager.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "path_resolver.py",
-          "path": "plugins/context-bundler/skills/context-bundling/scripts/path_resolver.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "bundle_zip.py",
-          "path": "plugins/context-bundler/skills/zip-bundling/scripts/bundle_zip.py",
-          "purpose": "Context Bundler Engine - ZIP Archiver",
-          "type": "python"
-        },
-        {
-          "name": "manifest_manager.py",
-          "path": "plugins/context-bundler/skills/zip-bundling/scripts/manifest_manager.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "path_resolver.py",
-          "path": "plugins/context-bundler/skills/zip-bundling/scripts/path_resolver.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "post_run_metrics",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/post_run_metrics.py",
+      "type": "script"
     },
-    "huggingface-utils": {
-      "count": 5,
-      "scripts": [
-        {
-          "name": "hf_config.py",
-          "path": "plugins/huggingface-utils/scripts/hf_config.py",
-          "purpose": "Single source of truth for HuggingFace credentials, repo IDs, and",
-          "type": "python"
-        },
-        {
-          "name": "hf_config.py",
-          "path": "plugins/huggingface-utils/skills/hf-init/scripts/hf_config.py",
-          "purpose": "Single source of truth for HuggingFace credentials, repo IDs, and",
-          "type": "python"
-        },
-        {
-          "name": "hf_init.py",
-          "path": "plugins/huggingface-utils/skills/hf-init/scripts/hf_init.py",
-          "purpose": "Validates environment, tests API connectivity, ensures dataset structure",
-          "type": "python"
-        },
-        {
-          "name": "hf_config.py",
-          "path": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_config.py",
-          "purpose": "Single source of truth for HuggingFace credentials, repo IDs, and",
-          "type": "python"
-        },
-        {
-          "name": "hf_upload.py",
-          "path": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_upload.py",
-          "purpose": "Consolidated upload operations extracted from the legacy archive.",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "generate_eval_instructions",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/generate_eval_instructions.py",
+      "type": "script"
     },
-    "link-checker": {
-      "count": 5,
-      "scripts": [
-        {
-          "name": "check_broken_paths.py",
-          "path": "plugins/link-checker/skills/link-checker-agent/scripts/check_broken_paths.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "enrich_links_v2.py",
-          "path": "plugins/link-checker/skills/link-checker-agent/scripts/enrich_links_v2.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "find_source_links.py",
-          "path": "plugins/link-checker/skills/link-checker-agent/scripts/find_source_links.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "map_repository_files.py",
-          "path": "plugins/link-checker/skills/link-checker-agent/scripts/map_repository_files.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "smart_fix_links.py",
-          "path": "plugins/link-checker/skills/link-checker-agent/scripts/smart_fix_links.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "generate_report",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/generate_report.py",
+      "type": "script"
     },
-    "mermaid-to-png": {
-      "count": 2,
-      "scripts": [
-        {
-          "name": "convert.py",
-          "path": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "verify_png.py",
-          "path": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/verify_png.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "eval_runner",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/eval_runner.py",
+      "type": "script"
     },
-    "obsidian-integration": {
-      "count": 7,
-      "scripts": [
-        {
-          "name": "parser.py",
-          "path": "plugins/obsidian-integration/obsidian-parser/parser.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "test_parser.py",
-          "path": "plugins/obsidian-integration/obsidian-parser/tests/test_parser.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "bases_ops.py",
-          "path": "plugins/obsidian-integration/skills/obsidian-bases-manager/scripts/bases_ops.py",
-          "purpose": "Read and manipulate Obsidian Bases (.base) files.",
-          "type": "python"
-        },
-        {
-          "name": "canvas_ops.py",
-          "path": "plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py",
-          "purpose": "Programmatically create and manipulate Obsidian Canvas (.canvas) files",
-          "type": "python"
-        },
-        {
-          "name": "graph_ops.py",
-          "path": "plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py",
-          "purpose": "Builds an in-memory graph index from wikilinks found across vault .md files.",
-          "type": "python"
-        },
-        {
-          "name": "init_vault.py",
-          "path": "plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py",
-          "purpose": "Bootstrap any project directory as an Obsidian Vault.",
-          "type": "python"
-        },
-        {
-          "name": "vault_ops.py",
-          "path": "plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py",
-          "purpose": "Safe Create/Read/Update/Append operations for Obsidian Vault notes.",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "plot_eval_progress",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/plot_eval_progress.py",
+      "type": "script"
     },
-    "plugin-manager": {
-      "count": 12,
-      "scripts": [
-        {
-          "name": "plugin_installer.py",
-          "path": "plugins/plugin-manager/scripts/plugin_installer.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "install_all_plugins.py",
-          "path": "plugins/plugin-manager/scripts/install_all_plugins.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "plugin_installer.py",
-          "path": "plugins/plugin-manager/skills/plugin-installer/scripts/plugin_installer.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "install_all_plugins.py",
-          "path": "plugins/plugin-manager/skills/plugin-installer/scripts/install_all_plugins.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "audit_structure.py",
-          "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/audit_structure.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "plugin_installer.py",
-          "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/plugin_installer.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "generate_readmes.py",
-          "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/generate_readmes.py",
-          "purpose": "Generate Plugin READMEs",
-          "type": "python"
-        },
-        {
-          "name": "plugin_bootstrap.py",
-          "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/plugin_bootstrap.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "plugin_inventory.py",
-          "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/plugin_inventory.py",
-          "purpose": "Plugin Inventory Generator",
-          "type": "python"
-        },
-        {
-          "name": "sync_with_inventory.py",
-          "path": "plugins/plugin-manager/skills/maintain-plugins/scripts/sync_with_inventory.py",
-          "purpose": "Sync Plugins with Inventory",
-          "type": "python"
-        },
-        {
-          "name": "bulk_replicator.py",
-          "path": "plugins/plugin-manager/skills/replicate-plugin/scripts/bulk_replicator.py",
-          "purpose": "Bulk Plugin Replicator",
-          "type": "python"
-        },
-        {
-          "name": "plugin_replicator.py",
-          "path": "plugins/plugin-manager/skills/replicate-plugin/scripts/plugin_replicator.py",
-          "purpose": "Plugin Replicator",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "evaluate",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/evaluate.py",
+      "type": "script"
     },
-    "rlm-factory": {
-      "count": 19,
-      "scripts": [
-        {
-          "name": "inventory.py",
-          "path": "plugins/rlm-factory/scripts/inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "cleanup_cache.py",
-          "path": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inventory.py",
-          "path": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "debug_rlm.py",
-          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inventory.py",
-          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inject_summary.py",
-          "path": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inventory.py",
-          "path": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "distiller.py",
-          "path": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inventory.py",
-          "path": "plugins/rlm-factory/skills/rlm-init/scripts/inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/skills/rlm-init/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "inventory.py",
-          "path": "plugins/rlm-factory/skills/rlm-search/scripts/inventory.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "query_cache.py",
-          "path": "plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "plugins/rlm-factory/skills/rlm-search/scripts/rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "test_rlm_config.py",
-          "path": "plugins/rlm-factory/tests/test_rlm_config.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "init_autoresearch",
+      "plugin": "agent-agentic-os",
+      "path": "plugins/agent-agentic-os/scripts/init_autoresearch.py",
+      "type": "script"
     },
-    "rsvp-speed-reader": {
-      "count": 3,
-      "scripts": [
-        {
-          "name": "execute.py",
-          "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/execute.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "orp_engine.py",
-          "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/orp_engine.py",
-          "purpose": "orp_engine.py",
-          "type": "python"
-        },
-        {
-          "name": "parse_document.py",
-          "path": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/parse_document.py",
-          "purpose": "parse_document.py",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "swarm_run",
+      "plugin": "agent-loops",
+      "path": "plugins/agent-loops/scripts/swarm_run.py",
+      "type": "script"
     },
-    "spec-kitty-plugin": {
-      "count": 2,
-      "scripts": [
-        {
-          "name": "sync_configuration.py",
-          "path": "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py",
-          "purpose": "Spec Kitty Configuration Sync",
-          "type": "python"
-        },
-        {
-          "name": "verify_workflow_state.py",
-          "path": "plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/verify_workflow_state.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "agent_orchestrator",
+      "plugin": "agent-loops",
+      "path": "plugins/agent-loops/scripts/agent_orchestrator.py",
+      "type": "script"
     },
-    "task-manager": {
-      "count": 1,
-      "scripts": [
-        {
-          "name": "task_manager.py",
-          "path": "plugins/task-manager/skills/task-agent/scripts/task_manager.py",
-          "purpose": "",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "closure_guard",
+      "plugin": "agent-loops",
+      "path": "plugins/agent-loops/scripts/closure_guard.py",
+      "type": "script"
     },
-    "vector-db": {
-      "count": 18,
-      "scripts": [
-        {
-          "name": "operations.py",
-          "path": "plugins/vector-db/scripts/operations.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_config.py",
-          "path": "plugins/vector-db/scripts/vector_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_consistency_check.py",
-          "path": "plugins/vector-db/scripts/vector_consistency_check.py",
-          "purpose": "Vector Consistency Stabilizer",
-          "type": "python"
-        },
-        {
-          "name": "cleanup.py",
-          "path": "plugins/vector-db/skills/vector-db-cleanup/scripts/cleanup.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "query.py",
-          "path": "plugins/vector-db/skills/vector-db-cleanup/scripts/query.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_config.py",
-          "path": "plugins/vector-db/skills/vector-db-cleanup/scripts/vector_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_consistency_check.py",
-          "path": "plugins/vector-db/skills/vector-db-cleanup/scripts/vector_consistency_check.py",
-          "purpose": "Vector Consistency Stabilizer",
-          "type": "python"
-        },
-        {
-          "name": "ingest.py",
-          "path": "plugins/vector-db/skills/vector-db-ingest/scripts/ingest.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "ingest_code_shim.py",
-          "path": "plugins/vector-db/skills/vector-db-ingest/scripts/ingest_code_shim.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "operations.py",
-          "path": "plugins/vector-db/skills/vector-db-ingest/scripts/operations.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "query.py",
-          "path": "plugins/vector-db/skills/vector-db-ingest/scripts/query.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_config.py",
-          "path": "plugins/vector-db/skills/vector-db-ingest/scripts/vector_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_consistency_check.py",
-          "path": "plugins/vector-db/skills/vector-db-ingest/scripts/vector_consistency_check.py",
-          "purpose": "Vector Consistency Stabilizer",
-          "type": "python"
-        },
-        {
-          "name": "init.py",
-          "path": "plugins/vector-db/skills/vector-db-init/scripts/init.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "operations.py",
-          "path": "plugins/vector-db/skills/vector-db-search/scripts/operations.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "query.py",
-          "path": "plugins/vector-db/skills/vector-db-search/scripts/query.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_config.py",
-          "path": "plugins/vector-db/skills/vector-db-search/scripts/vector_config.py",
-          "purpose": "",
-          "type": "python"
-        },
-        {
-          "name": "vector_consistency_check.py",
-          "path": "plugins/vector-db/skills/vector-db-search/scripts/vector_consistency_check.py",
-          "purpose": "Vector Consistency Stabilizer",
-          "type": "python"
-        }
-      ]
+    {
+      "name": "query_cache",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/query_cache.py",
+      "type": "script"
+    },
+    {
+      "name": "vector_config",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/vector_config.py",
+      "type": "script"
+    },
+    {
+      "name": "ingest",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/ingest.py",
+      "type": "script"
+    },
+    {
+      "name": "check_cached",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/check_cached.py",
+      "type": "script"
+    },
+    {
+      "name": "ingest_code_shim",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/ingest_code_shim.py",
+      "type": "script"
+    },
+    {
+      "name": "query",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/query.py",
+      "type": "script"
+    },
+    {
+      "name": "inject_summary",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/inject_summary.py",
+      "type": "script"
+    },
+    {
+      "name": "swarm_run",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/swarm_run.py",
+      "type": "script"
+    },
+    {
+      "name": "distill_one",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/distill_one.py",
+      "type": "script"
+    },
+    {
+      "name": "rlm_config",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/rlm_config.py",
+      "type": "script"
+    },
+    {
+      "name": "vector_consistency_check",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/vector_consistency_check.py",
+      "type": "script"
+    },
+    {
+      "name": "cleanup",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/cleanup.py",
+      "type": "script"
+    },
+    {
+      "name": "operations",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/operations.py",
+      "type": "script"
+    },
+    {
+      "name": "distiller",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/distiller.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_cache",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/audit_cache.py",
+      "type": "script"
+    },
+    {
+      "name": "debug_rlm",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/debug_rlm.py",
+      "type": "script"
+    },
+    {
+      "name": "cleanup_cache",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/cleanup_cache.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_vector",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/audit_vector.py",
+      "type": "script"
+    },
+    {
+      "name": "init",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/init.py",
+      "type": "script"
+    },
+    {
+      "name": "inventory",
+      "plugin": "agent-memory",
+      "path": "plugins/agent-memory/scripts/inventory.py",
+      "type": "script"
+    },
+    {
+      "name": "apply_symlink_repairs",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/apply_symlink_repairs.py",
+      "type": "script"
+    },
+    {
+      "name": "run_eval",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/run_eval.py",
+      "type": "script"
+    },
+    {
+      "name": "validate_write",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/validate_write.py",
+      "type": "script"
+    },
+    {
+      "name": "generate_review",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/generate_review.py",
+      "type": "script"
+    },
+    {
+      "name": "cleanup_stacked_references",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/cleanup_stacked_references.py",
+      "type": "script"
+    },
+    {
+      "name": "update_ranked_skills",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/update_ranked_skills.py",
+      "type": "script"
+    },
+    {
+      "name": "fix_descriptions",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/fix_descriptions.py",
+      "type": "script"
+    },
+    {
+      "name": "build_explicit_inventory",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/build_explicit_inventory.py",
+      "type": "script"
+    },
+    {
+      "name": "check_skill_boundaries",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/check_skill_boundaries.py",
+      "type": "script"
+    },
+    {
+      "name": "audit",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/audit.py",
+      "type": "script"
+    },
+    {
+      "name": "scaffold_azure_agent",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/scaffold_azure_agent.py",
+      "type": "script"
+    },
+    {
+      "name": "fix_inside_plugin_symlinks",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/fix_inside_plugin_symlinks.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_plugin_structure",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/audit_plugin_structure.py",
+      "type": "script"
+    },
+    {
+      "name": "improve_description",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/improve_description.py",
+      "type": "script"
+    },
+    {
+      "name": "validate_bash",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/validate_bash.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_plugin_paths",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/audit_plugin_paths.py",
+      "type": "script"
+    },
+    {
+      "name": "aggregate_benchmark",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
+      "type": "script"
+    },
+    {
+      "name": "test_hook",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/test_hook.py",
+      "type": "script"
+    },
+    {
+      "name": "execute",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/execute.py",
+      "type": "script"
+    },
+    {
+      "name": "validate_local_links",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/validate_local_links.py",
+      "type": "script"
+    },
+    {
+      "name": "inventory_plugin",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/inventory_plugin.py",
+      "type": "script"
+    },
+    {
+      "name": "fix_plugin_load_errors",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/fix_plugin_load_errors.py",
+      "type": "script"
+    },
+    {
+      "name": "path_reference_auditor",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/path_reference_auditor.py",
+      "type": "script"
+    },
+    {
+      "name": "run_loop",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/run_loop.py",
+      "type": "script"
+    },
+    {
+      "name": "scaffold_apm",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/scaffold_apm.py",
+      "type": "script"
+    },
+    {
+      "name": "scaffold_agentic_workflow",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/scaffold_agentic_workflow.py",
+      "type": "script"
+    },
+    {
+      "name": "check_skill_lengths",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/check_skill_lengths.py",
+      "type": "script"
+    },
+    {
+      "name": "validate_agent",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/validate_agent.py",
+      "type": "script"
+    },
+    {
+      "name": "generate_report",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/generate_report.py",
+      "type": "script"
+    },
+    {
+      "name": "utils",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/utils.py",
+      "type": "script"
+    },
+    {
+      "name": "validate_hook_schema",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/validate_hook_schema.py",
+      "type": "script"
+    },
+    {
+      "name": "scaffold_github_action",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/scaffold_github_action.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_marketplace_sources",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/audit_marketplace_sources.py",
+      "type": "script"
+    },
+    {
+      "name": "scaffold",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/scaffold.py",
+      "type": "script"
+    },
+    {
+      "name": "validate_apm_package",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/validate_apm_package.py",
+      "type": "script"
+    },
+    {
+      "name": "check_for_broken_symlinks",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/check_for_broken_symlinks.py",
+      "type": "script"
+    },
+    {
+      "name": "auto_fix_local_links",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/auto_fix_local_links.py",
+      "type": "script"
+    },
+    {
+      "name": "migrate_to_apm",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/migrate_to_apm.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_plugin_l5_execute",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/audit_plugin_l5_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "hook_linter",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/hook_linter.py",
+      "type": "script"
+    },
+    {
+      "name": "check_plugin_boundaries",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/check_plugin_boundaries.py",
+      "type": "script"
+    },
+    {
+      "name": "assert_audit",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/assert_audit.py",
+      "type": "script"
+    },
+    {
+      "name": "update_ecosystem_index",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/update_ecosystem_index.py",
+      "type": "script"
+    },
+    {
+      "name": "analyze_scripts",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/analyze_scripts.py",
+      "type": "script"
+    },
+    {
+      "name": "load_context",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/load_context.py",
+      "type": "script"
+    },
+    {
+      "name": "path_security",
+      "plugin": "cli-agents",
+      "path": "plugins/cli-agents/scripts/path_security.py",
+      "type": "script"
+    },
+    {
+      "name": "test_harness",
+      "plugin": "cli-agents",
+      "path": "plugins/cli-agents/scripts/test_harness.py",
+      "type": "script"
+    },
+    {
+      "name": "conductor",
+      "plugin": "cli-agents",
+      "path": "plugins/cli-agents/scripts/conductor.py",
+      "type": "script"
+    },
+    {
+      "name": "agt_ops",
+      "plugin": "cli-agents",
+      "path": "plugins/cli-agents/scripts/agt_ops.py",
+      "type": "script"
+    },
+    {
+      "name": "05_report_unfixable_links",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/05_report_unfixable_links.py",
+      "type": "script"
+    },
+    {
+      "name": "adr_manager",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/adr_manager.py",
+      "type": "script"
+    },
+    {
+      "name": "01_build_file_inventory",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/01_build_file_inventory.py",
+      "type": "script"
+    },
+    {
+      "name": "bundle",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/bundle.py",
+      "type": "script"
+    },
+    {
+      "name": "verify_png",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/verify_png.py",
+      "type": "script"
+    },
+    {
+      "name": "manifest_manager",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/manifest_manager.py",
+      "type": "script"
+    },
+    {
+      "name": "symlink_manager",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/symlink_manager.py",
+      "type": "script"
+    },
+    {
+      "name": "convert",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/convert.py",
+      "type": "script"
+    },
+    {
+      "name": "hf_init",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/hf_init.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_scripts_conventions",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/audit_scripts_conventions.py",
+      "type": "script"
+    },
+    {
+      "name": "bulk_symlink_fixer",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/bulk_symlink_fixer.py",
+      "type": "script"
+    },
+    {
+      "name": "task_manager",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/task_manager.py",
+      "type": "script"
+    },
+    {
+      "name": "hf_config",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/hf_config.py",
+      "type": "script"
+    },
+    {
+      "name": "hf_upload",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/hf_upload.py",
+      "type": "script"
+    },
+    {
+      "name": "path_resolver",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/path_resolver.py",
+      "type": "script"
+    },
+    {
+      "name": "fix_all_skills_comprehensive",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/fix_all_skills_comprehensive.py",
+      "type": "script"
+    },
+    {
+      "name": "bundle_zip",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/bundle_zip.py",
+      "type": "script"
+    },
+    {
+      "name": "02_extract_link_references",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/02_extract_link_references.py",
+      "type": "script"
+    },
+    {
+      "name": "next_number",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/next_number.py",
+      "type": "script"
+    },
+    {
+      "name": "03_audit_broken_links",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/03_audit_broken_links.py",
+      "type": "script"
+    },
+    {
+      "name": "fix_all_skills",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/fix_all_skills.py",
+      "type": "script"
+    },
+    {
+      "name": "04_autofix_unique_links",
+      "plugin": "dev-utils",
+      "path": "plugins/dev-utils/scripts/04_autofix_unique_links.py",
+      "type": "script"
+    },
+    {
+      "name": "state_engine",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/state_engine.py",
+      "type": "script"
+    },
+    {
+      "name": "smoke_test",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/smoke_test.py",
+      "type": "script"
+    },
+    {
+      "name": "user_story_capture_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/user_story_capture_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "exploration_optimizer_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/exploration_optimizer_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "business_requirements_capture_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/business_requirements_capture_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "dispatch",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/dispatch.py",
+      "type": "script"
+    },
+    {
+      "name": "exploration_orchestrator_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/exploration_orchestrator_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "sandbox_runner",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
+      "type": "script"
+    },
+    {
+      "name": "check_gaps",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/check_gaps.py",
+      "type": "script"
+    },
+    {
+      "name": "generate_workflow",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/generate_workflow.py",
+      "type": "script"
+    },
+    {
+      "name": "exploration_handoff_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/exploration_handoff_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "prototype_builder_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/prototype_builder_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "exploration_session_brief_execute",
+      "plugin": "exploration-cycle-plugin",
+      "path": "plugins/exploration-cycle-plugin/scripts/exploration_session_brief_execute.py",
+      "type": "script"
+    },
+    {
+      "name": "raw_manifest",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/raw_manifest.py",
+      "type": "script"
+    },
+    {
+      "name": "ingest",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/ingest.py",
+      "type": "script"
+    },
+    {
+      "name": "canvas_gen",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/canvas_gen.py",
+      "type": "script"
+    },
+    {
+      "name": "audit",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/audit.py",
+      "type": "script"
+    },
+    {
+      "name": "concept_extractor",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/concept_extractor.py",
+      "type": "script"
+    },
+    {
+      "name": "bases_ops",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/bases_ops.py",
+      "type": "script"
+    },
+    {
+      "name": "distill_wiki",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/distill_wiki.py",
+      "type": "script"
+    },
+    {
+      "name": "parser",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/parser.py",
+      "type": "script"
+    },
+    {
+      "name": "init_vault",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/init_vault.py",
+      "type": "script"
+    },
+    {
+      "name": "vault_ops",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/vault_ops.py",
+      "type": "script"
+    },
+    {
+      "name": "canvas_ops",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/canvas_ops.py",
+      "type": "script"
+    },
+    {
+      "name": "graph_ops",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/graph_ops.py",
+      "type": "script"
+    },
+    {
+      "name": "query_wiki",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/query_wiki.py",
+      "type": "script"
+    },
+    {
+      "name": "wiki_builder",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/wiki_builder.py",
+      "type": "script"
+    },
+    {
+      "name": "lint_wiki",
+      "plugin": "obsidian-wiki-engine",
+      "path": "plugins/obsidian-wiki-engine/scripts/lint_wiki.py",
+      "type": "script"
+    },
+    {
+      "name": "plugin_installer",
+      "plugin": "plugin-manager",
+      "path": "plugins/plugin-manager/scripts/plugin_installer.py",
+      "type": "script"
+    },
+    {
+      "name": "sync_with_inventory",
+      "plugin": "plugin-manager",
+      "path": "plugins/plugin-manager/scripts/sync_with_inventory.py",
+      "type": "script"
+    },
+    {
+      "name": "plugin_add",
+      "plugin": "plugin-manager",
+      "path": "plugins/plugin-manager/scripts/plugin_add.py",
+      "type": "script"
+    },
+    {
+      "name": "test_plugin_lifecycle",
+      "plugin": "plugin-manager",
+      "path": "plugins/plugin-manager/scripts/test_plugin_lifecycle.py",
+      "type": "script"
+    },
+    {
+      "name": "plugin_remove",
+      "plugin": "plugin-manager",
+      "path": "plugins/plugin-manager/scripts/plugin_remove.py",
+      "type": "script"
+    },
+    {
+      "name": "verify_workflow_state",
+      "plugin": "spec-kitty-plugin",
+      "path": "plugins/spec-kitty-plugin/scripts/verify_workflow_state.py",
+      "type": "script"
+    },
+    {
+      "name": "sync_configuration",
+      "plugin": "spec-kitty-plugin",
+      "path": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
+      "type": "script"
     }
-  }
+  ]
 }

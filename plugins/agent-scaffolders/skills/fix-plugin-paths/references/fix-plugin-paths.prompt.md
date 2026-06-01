@@ -19,7 +19,7 @@ These are environment-specific and break across installations.
 ## Rule 3: Cross-skill `plugins/<plugin>/skills/<skill>/` paths → `.agents/skills/<skill>/`
 When referencing another skill's files, use the installed location.
 
-**BEFORE:** `plugins/copilot-cli/skills/copilot-cli-agent/references/foo.md`
+**BEFORE:** `plugins/cli-agents/skills/copilot-cli-agent/references/foo.md`
 **AFTER:**  `.agents/skills/copilot-cli-agent/references/foo.md`
 
 ---

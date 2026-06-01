@@ -163,13 +163,13 @@ If `--dispatch` flag is set (or user confirms dispatch), run the heartbeat then 
 
 ```bash
 # Heartbeat first
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null temp/heartbeat_<slug>.md \
   "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
 grep -q "HEARTBEAT_OK" temp/heartbeat_<slug>.md || (echo "HEARTBEAT FAIL — aborting dispatch" && exit 1)
 
 # Dispatch
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null \
   tasks/todo/copilot_prompt_<slug>.md \
   temp/copilot_output_<slug>.md \

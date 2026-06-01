@@ -29,7 +29,7 @@ Copilot CLI charges **per request**, not per token. This changes everything abou
 - **Wrong:** 3 separate `claude-sonnet-4.6` calls for 3 related tasks = 3 premium charges
 - **Right:** 1 dense call with all 3 tasks fully specified = 1 premium charge
 
-**Rule:** Before making any Copilot premium model call, ask: "Can I combine this with anything else I'll need in the next few turns?" If yes — combine first, then call once. See `plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md` for the full batching discipline and `===FILE:===` delimiter pattern.
+**Rule:** Before making any Copilot premium model call, ask: "Can I combine this with anything else I'll need in the next few turns?" If yes — combine first, then call once. See `plugins/cli-agents/skills/copilot-cli-agent/SKILL.md` for the full batching discipline and `===FILE:===` delimiter pattern.
 
 ## Task Complexity Guide
 

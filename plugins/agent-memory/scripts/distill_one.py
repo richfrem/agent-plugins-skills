@@ -22,7 +22,7 @@ Usage:
     python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/capabilities-matrix.md --engine claude --model haiku-4.5
 
     # Dry-run: print the prompt but don't call the CLI:
-    python ./scripts/distill_one.py --profile wiki --file plugins/adr-manager/README.md --dry-run
+    python ./scripts/distill_one.py --profile wiki --file plugins/dev-utils/README.md --dry-run
 
 Related:
     - inject_summary.py  (cache persistence)

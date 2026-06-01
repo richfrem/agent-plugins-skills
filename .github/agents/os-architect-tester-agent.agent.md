@@ -144,7 +144,7 @@ ARCHITECT:
 ### Step 2 — Dispatch to Copilot CLI
 
 ```bash
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null \
   temp/test_prompt_<scenario-id>.md \
   temp/test_output_<scenario-id>.md \

@@ -192,7 +192,7 @@ def fix_symlinks(issues: list[SymlinkIssue]) -> tuple[int, int, int]:
     for issue in issues:
         # For text-file stand-ins, convert the local relative path to repo-relative path
         # issue.target is relative to the file's directory (e.g., "../../scripts/file.py")
-        # We need to convert it to repo-relative (e.g., "plugins/link-checker/scripts/file.py")
+        # We need to convert it to repo-relative (e.g., "plugins/dev-utils/scripts/file.py")
 
         # Resolve from the file's directory
         file_dir = issue.path.parent

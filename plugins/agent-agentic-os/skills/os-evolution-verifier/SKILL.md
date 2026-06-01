@@ -69,7 +69,7 @@ The user turn is the scenario prompt.
 
 ```bash
 # 1. Heartbeat (free model — always first)
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null temp/os-evolution-verifier/heartbeat.md \
   "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
 
@@ -80,7 +80,7 @@ grep -q "HEARTBEAT_OK" temp/os-evolution-verifier/heartbeat.md || \
 # 2. Dispatch os-architect in single-shot simulation mode
 OUTPUT_FILE="temp/os-evolution-verifier/output_${SCENARIO_ID}.md"
 
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   plugins/agent-agentic-os/agents/os-architect-agent.md \
   /dev/null \
   "$OUTPUT_FILE" \

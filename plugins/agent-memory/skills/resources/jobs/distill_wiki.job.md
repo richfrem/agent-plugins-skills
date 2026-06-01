@@ -4,9 +4,9 @@ workers: 2
 timeout: 120
 max_retries: 3
 ext: [".md", ".py", ".js", ".mmd"]
-check_cmd: python ./plugins/rlm-factory/scripts/check_cached.py {file}
+check_cmd: python ./plugins/agent-memory/scripts/check_cached.py {file}
 post_cmd: >-
-  python ./plugins/rlm-factory/scripts/inject_summary.py
+  python ./plugins/agent-memory/scripts/inject_summary.py
   --profile wiki --file {file} --summary {output}
 vars:
   profile: wiki

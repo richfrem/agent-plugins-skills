@@ -136,7 +136,7 @@ but contain only a relative path (e.g. `../../../scripts/execute.py`). They are 
 **Run the bulk scanner** from the link-checker plugin:
 
 ```bash
-python plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
+python plugins/dev-utils/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
 ```
 
 The scanner detects both:
