@@ -1,0 +1,31 @@
+# agent-memory Dependencies (Intent File)
+# Workflow (run from project root):
+#   1. Edit this file
+#   2. python -m piptools compile plugins/agent-memory/requirements.in --output-file plugins/agent-memory/requirements.txt
+#   3. python -m pip install -r plugins/agent-memory/requirements.txt
+
+# Core
+python-frontmatter
+pydantic
+
+# Core Chroma DB
+chromadb
+
+# LangChain Base
+langchain
+
+# LangChain Integration
+langchain-chroma
+langchain-huggingface
+langchain-community
+langchain-text-splitters
+
+# Embeddings
+sentence-transformers
+einops
+
+# Security Overrides
+protobuf>=4.25.3
+langchain-core>=0.3.0
+requests>=2.32.2
+Pygments>=2.17.2

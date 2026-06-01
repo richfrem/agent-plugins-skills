@@ -1,0 +1,1 @@
+../../../references/project-folder-structure-guidance.md

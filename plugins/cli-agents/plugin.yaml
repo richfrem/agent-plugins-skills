@@ -1,0 +1,18 @@
+name: cli-agents
+version: 1.0.0
+description: "Consolidated CLI sub-agent system — dispatches tasks and persona-based analysis to Claude, Copilot, and Gemini CLI models. Includes project setup scaffolding for Claude and Antigravity environments."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - run_agent
+skills:
+  - agy-cli-agent
+  - claude-cli-agent
+  - copilot-cli-agent
+  - gemini-cli-agent
+  - claude-project-setup
+  - antigravity-project-setup

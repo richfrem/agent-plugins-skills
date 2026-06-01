@@ -1,0 +1,1 @@
+../../../references/shared-block-component-pattern.md

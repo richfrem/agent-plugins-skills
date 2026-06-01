@@ -1,0 +1,29 @@
+{
+    "name": "cli-agents",
+    "version": "1.1.0",
+    "description": "Consolidated CLI sub-agent system — dispatches persona-based analysis and task execution to Claude CLI (haiku-4.5), GitHub Copilot (gpt-5-mini), Gemini CLI (gemini-3-flash-preview), and Antigravity agy (frontier Gemini 3.5 Flash+). Includes project setup scaffolding for Claude and Antigravity environments.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "claude-cli",
+        "copilot-cli",
+        "gemini-cli",
+        "antigravity",
+        "agy",
+        "sub-agent",
+        "persona",
+        "security-audit",
+        "code-review",
+        "project-setup"
+    ],
+    "capabilities": [
+        "cli-integration",
+        "claude-cli",
+        "copilot-cli",
+        "gemini-cli",
+        "antigravity-agy"
+    ]
+}

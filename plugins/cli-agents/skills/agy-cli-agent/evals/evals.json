@@ -1,0 +1,13 @@
+[
+  {"prompt": "Use agy to run a security audit on this codebase", "should_trigger": true},
+  {"prompt": "Dispatch this to antigravity for an architecture review", "should_trigger": true},
+  {"prompt": "Run a code review using the agy CLI sub-agent", "should_trigger": true},
+  {"prompt": "Use a frontier Gemini model to analyze this large context", "should_trigger": true},
+  {"prompt": "Pipe this bundle to agy for QA analysis", "should_trigger": true},
+  {"prompt": "Send this to agy with the security-auditor persona", "should_trigger": true},
+  {"prompt": "Run an architecture review using Gemini CLI", "should_trigger": false},
+  {"prompt": "Use gemini-3-flash-preview to review this file", "should_trigger": false},
+  {"prompt": "Install the agy CLI on my machine", "should_trigger": false},
+  {"prompt": "What is the Antigravity CLI?", "should_trigger": false},
+  {"prompt": "Summarize this file for me", "should_trigger": false}
+]

@@ -1,0 +1,29 @@
+name: dev-utils
+version: 1.0.0
+description: "Unified Developer Utilities Suite. Collection of stateless tools for context bundling, diagram rendering, Kanban board task management, ADR auditing, and markdown link verification."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - bundle
+  - adr
+  - kanban
+  - link_checker
+skills:
+  - adr-management
+  - coding-conventions-agent
+  - context-bundler
+  - convert-mermaid
+  - hf-init
+  - hf-upload
+  - humanize
+  - link-checker-agent
+  - red-team-bundler
+  - rsvp-comprehension-agent
+  - rsvp-reading
+  - optimize-context
+  - symlink-manager
+  - task-agent

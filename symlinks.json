@@ -434,56 +434,20 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/references/ADRs/001_cross_plugin_script_dependencies.md",
-      "dst": "plugins/link-checker/skills/symlink-manager/references/001_cross_plugin_script_dependencies.md",
+      "src": "plugins/agent-memory/resources/jobs/distill_wiki.job.md",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/resources/jobs/distill_wiki.job.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/references/ADRs/002_multi_skill_script_centralization.md",
-      "dst": "plugins/link-checker/skills/symlink-manager/references/002_multi_skill_script_centralization.md",
+      "src": "plugins/agent-memory/scripts/check_cached.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/check_cached.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/references/ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "dst": "plugins/link-checker/skills/symlink-manager/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "dst": "plugins/link-checker/skills/symlink-manager/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "dst": "plugins/link-checker/skills/symlink-manager/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/ADRs/006_python_native_plugin_bootstrap_installer.md",
-      "dst": "plugins/link-checker/skills/symlink-manager/references/006_python_native_plugin_bootstrap_installer.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/resources/jobs/distill_wiki.job.md",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/jobs/distill_wiki.job.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/check_cached.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/check_cached.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/distill_one.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/distill_one.py",
+      "src": "plugins/agent-memory/scripts/distill_one.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/distill_one.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -562,24 +526,6 @@
     {
       "src": "plugins/obsidian-wiki-engine/scripts/lint_wiki.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/scripts/lint_wiki.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/adr-manager/assets/templates/adr-template.md",
-      "dst": "plugins/adr-manager/skills/adr-management/assets/templates/adr-template.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/adr-manager/scripts/adr_manager.py",
-      "dst": "plugins/adr-manager/skills/adr-management/scripts/adr_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/adr-manager/scripts/next_number.py",
-      "dst": "plugins/adr-manager/skills/adr-management/scripts/next_number.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1544,114 +1490,6 @@
       "description": ""
     },
     {
-      "src": "plugins/claude-cli/scripts/run_agent.py",
-      "dst": "plugins/claude-cli/skills/claude-cli-agent/scripts/run_agent.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/coding-conventions/assets/templates/js-tool-header-template.js",
-      "dst": "plugins/coding-conventions/skills/coding-conventions-agent/assets/templates/js-tool-header-template.js",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/coding-conventions/assets/templates/python-tool-header-template.py",
-      "dst": "plugins/coding-conventions/skills/coding-conventions-agent/assets/templates/python-tool-header-template.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/assets/resources/file-manifest-schema.json",
-      "dst": "plugins/context-bundler/skills/context-bundler/assets/resources/file-manifest-schema.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/assets/resources/file-manifest.json",
-      "dst": "plugins/context-bundler/skills/context-bundler/assets/resources/file-manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/bundle.py",
-      "dst": "plugins/context-bundler/skills/context-bundler/scripts/bundle.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/bundle_zip.py",
-      "dst": "plugins/context-bundler/skills/context-bundler/scripts/bundle_zip.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/manifest_manager.py",
-      "dst": "plugins/context-bundler/skills/context-bundler/scripts/manifest_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/path_resolver.py",
-      "dst": "plugins/context-bundler/skills/context-bundler/scripts/path_resolver.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/assets/resources/file-manifest-schema.json",
-      "dst": "plugins/context-bundler/skills/red-team-bundler/assets/resources/file-manifest-schema.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/assets/resources/file-manifest.json",
-      "dst": "plugins/context-bundler/skills/red-team-bundler/assets/resources/file-manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/bundle.py",
-      "dst": "plugins/context-bundler/skills/red-team-bundler/scripts/bundle.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/bundle_zip.py",
-      "dst": "plugins/context-bundler/skills/red-team-bundler/scripts/bundle_zip.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/manifest_manager.py",
-      "dst": "plugins/context-bundler/skills/red-team-bundler/scripts/manifest_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/context-bundler/scripts/path_resolver.py",
-      "dst": "plugins/context-bundler/skills/red-team-bundler/scripts/path_resolver.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/copilot-cli/scripts/run_agent.py",
-      "dst": "plugins/copilot-cli/skills/copilot-cli-agent/scripts/run_agent.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/excel-to-csv/scripts/convert.py",
-      "dst": "plugins/excel-to-csv/skills/excel-to-csv/scripts/convert.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/excel-to-csv/scripts/verify_csv.py",
-      "dst": "plugins/excel-to-csv/skills/excel-to-csv/scripts/verify_csv.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/exploration-cycle-plugin/scripts/business_requirements_capture_execute.py",
       "dst": "plugins/exploration-cycle-plugin/skills/business-requirements-capture/scripts/execute.py",
       "strategy": "symlink",
@@ -1696,306 +1534,6 @@
     {
       "src": "plugins/exploration-cycle-plugin/scripts/user_story_capture_execute.py",
       "dst": "plugins/exploration-cycle-plugin/skills/user-story-capture/scripts/execute.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/gemini-cli/scripts/run_agent.py",
-      "dst": "plugins/gemini-cli/skills/gemini-cli-agent/scripts/run_agent.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/huggingface-utils/scripts/hf_config.py",
-      "dst": "plugins/huggingface-utils/skills/hf-init/scripts/hf_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/huggingface-utils/scripts/hf_init.py",
-      "dst": "plugins/huggingface-utils/skills/hf-init/scripts/hf_init.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/huggingface-utils/scripts/hf_config.py",
-      "dst": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/huggingface-utils/scripts/hf_upload.py",
-      "dst": "plugins/huggingface-utils/skills/hf-upload/scripts/hf_upload.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/assets/diagrams/link-checker-workflow.mmd",
-      "dst": "plugins/link-checker/skills/link-checker-agent/assets/diagrams/link-checker-workflow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/assets/diagrams/logic.mmd",
-      "dst": "plugins/link-checker/skills/link-checker-agent/assets/diagrams/logic.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/assets/diagrams/workflow.mmd",
-      "dst": "plugins/link-checker/skills/link-checker-agent/assets/diagrams/workflow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/01_build_file_inventory.py",
-      "dst": "plugins/link-checker/skills/link-checker-agent/scripts/01_build_file_inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/02_extract_link_references.py",
-      "dst": "plugins/link-checker/skills/link-checker-agent/scripts/02_extract_link_references.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/03_audit_broken_links.py",
-      "dst": "plugins/link-checker/skills/link-checker-agent/scripts/03_audit_broken_links.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/04_autofix_unique_links.py",
-      "dst": "plugins/link-checker/skills/link-checker-agent/scripts/04_autofix_unique_links.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/05_report_unfixable_links.py",
-      "dst": "plugins/link-checker/skills/link-checker-agent/scripts/05_report_unfixable_links.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/bulk_symlink_fixer.py",
-      "dst": "plugins/link-checker/skills/symlink-manager/scripts/bulk_symlink_fixer.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/link-checker/scripts/symlink_manager.py",
-      "dst": "plugins/link-checker/skills/symlink-manager/scripts/symlink_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/markdown-to-msword-converter/scripts/folders_to_convert.json",
-      "dst": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/folders_to_convert.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/markdown-to-msword-converter/scripts/md_to_docx.py",
-      "dst": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/md_to_docx.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py",
-      "dst": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/run_bulk_md_to_docx.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/markdown-to-msword-converter/scripts/verify_docx.py",
-      "dst": "plugins/markdown-to-msword-converter/skills/markdown-to-msword-converter/scripts/verify_docx.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/memory-management/assets/diagrams/memory_architecture.mmd",
-      "dst": "plugins/memory-management/skills/memory-management/assets/resources/memory_architecture.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/memory-management/assets/diagrams/memory_lookup_flow.mmd",
-      "dst": "plugins/memory-management/skills/memory-management/assets/resources/memory_lookup_flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/memory-management/assets/diagrams/memory_session_lifecycle.mmd",
-      "dst": "plugins/memory-management/skills/memory-management/assets/resources/memory_session_lifecycle.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/mermaid-to-png/scripts/convert.py",
-      "dst": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/convert.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/mermaid-to-png/scripts/verify_png.py",
-      "dst": "plugins/mermaid-to-png/skills/convert-mermaid/scripts/verify_png.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/architecture-background.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-bases-manager/assets/resources/architecture-background.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/kepano-analysis-summary.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-bases-manager/assets/resources/kepano-analysis-summary.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/safety-learnings.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-bases-manager/assets/resources/safety-learnings.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/bases_ops.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-bases-manager/scripts/bases_ops.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/architecture-background.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-canvas-architect/assets/resources/architecture-background.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/kepano-analysis-summary.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-canvas-architect/assets/resources/kepano-analysis-summary.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/safety-learnings.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-canvas-architect/assets/resources/safety-learnings.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/canvas_ops.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/canvas_ops.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/vault_ops.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-canvas-architect/scripts/vault_ops.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/architecture-background.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-graph-traversal/assets/resources/architecture-background.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/kepano-analysis-summary.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-graph-traversal/assets/resources/kepano-analysis-summary.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/safety-learnings.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-graph-traversal/assets/resources/safety-learnings.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/graph_ops.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/graph_ops.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/architecture-background.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-init/assets/resources/architecture-background.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/kepano-analysis-summary.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-init/assets/resources/kepano-analysis-summary.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/safety-learnings.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-init/assets/resources/safety-learnings.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/init_vault.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-init/scripts/init_vault.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/vault_ops.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-init/scripts/vault_ops.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/architecture-background.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-markdown-mastery/assets/resources/architecture-background.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/kepano-analysis-summary.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-markdown-mastery/assets/resources/kepano-analysis-summary.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/safety-learnings.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-markdown-mastery/assets/resources/safety-learnings.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-markdown-mastery/scripts/parser.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/architecture-background.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-vault-crud/assets/resources/architecture-background.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/kepano-analysis-summary.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-vault-crud/assets/resources/kepano-analysis-summary.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/assets/resources/safety-learnings.md",
-      "dst": "plugins/obsidian-integration/skills/obsidian-vault-crud/assets/resources/safety-learnings.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-integration/scripts/vault_ops.py",
-      "dst": "plugins/obsidian-integration/skills/obsidian-vault-crud/scripts/vault_ops.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -2204,548 +1742,410 @@
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/ollama-launch/resources/distiller_manifest.json",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_late_binding_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/diagrams/rlm_late_binding_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/ollama-launch/resources/manifest-index.json",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/diagrams/rlm_tool_enrichment_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/ollama-launch/resources/prompts/rlm/rlm_summarize_general.md",
+      "src": "plugins/agent-memory/assets/resources/distiller_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/resources/distiller_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/ollama-launch/resources/prompts/rlm/rlm_summarize_tool.md",
+      "src": "plugins/agent-memory/assets/resources/manifest-index.json",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/resources/manifest-index.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/ollama-launch/resources/rlm_manifest.json",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_general.md",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/resources/prompts/rlm/rlm_summarize_general.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_late_binding_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/assets/diagrams/rlm_late_binding_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/resources/prompts/rlm/rlm_summarize_tool.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/rlm_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/assets/resources/rlm_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/resources/distiller_manifest.json",
+      "src": "plugins/agent-memory/scripts/cleanup_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/resources/manifest-index.json",
+      "src": "plugins/agent-memory/scripts/distiller.py",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/scripts/distiller.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/resources/prompts/rlm/rlm_summarize_general.md",
+      "src": "plugins/agent-memory/scripts/inject_summary.py",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/scripts/inject_summary.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/resources/prompts/rlm/rlm_summarize_tool.md",
+      "src": "plugins/agent-memory/scripts/inventory.py",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/scripts/inventory.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/resources/rlm_manifest.json",
+      "src": "plugins/agent-memory/scripts/query_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/scripts/query_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/cleanup_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/cleanup_cache.py",
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/rlm-cleanup-agent/scripts/rlm_config.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/distiller.py",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/distiller.py",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_late_binding_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/diagrams/rlm_late_binding_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inject_summary.py",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/inject_summary.py",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/diagrams/rlm_tool_enrichment_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inventory.py",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/inventory.py",
+      "src": "plugins/agent-memory/assets/resources/distiller_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/resources/distiller_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/query_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/query_cache.py",
+      "src": "plugins/agent-memory/assets/resources/manifest-index.json",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/resources/manifest-index.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/rlm_config.py",
-      "dst": "plugins/rlm-factory/skills/rlm-cleanup-agent/scripts/rlm_config.py",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_general.md",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/resources/prompts/rlm/rlm_summarize_general.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_late_binding_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/assets/diagrams/rlm_late_binding_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/resources/prompts/rlm/rlm_summarize_tool.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/rlm_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-curator/assets/resources/rlm_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/resources/distiller_manifest.json",
+      "src": "plugins/agent-memory/scripts/cleanup_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/cleanup_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/resources/manifest-index.json",
+      "src": "plugins/agent-memory/scripts/debug_rlm.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/debug_rlm.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/resources/prompts/rlm/rlm_summarize_general.md",
+      "src": "plugins/agent-memory/scripts/distiller.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/distiller.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/resources/prompts/rlm/rlm_summarize_tool.md",
+      "src": "plugins/agent-memory/scripts/inject_summary.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/inject_summary.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/resources/rlm_manifest.json",
+      "src": "plugins/agent-memory/scripts/inventory.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/inventory.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/cleanup_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py",
+      "src": "plugins/agent-memory/scripts/query_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/query_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/debug_rlm.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/debug_rlm.py",
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/rlm-curator/scripts/rlm_config.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/distiller.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_late_binding_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/diagrams/rlm_late_binding_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inject_summary.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/diagrams/rlm_tool_enrichment_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inventory.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py",
+      "src": "plugins/agent-memory/assets/resources/distiller_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/resources/distiller_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/query_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py",
+      "src": "plugins/agent-memory/assets/resources/manifest-index.json",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/resources/manifest-index.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/rlm_config.py",
-      "dst": "plugins/rlm-factory/skills/rlm-curator/scripts/rlm_config.py",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_general.md",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/resources/prompts/rlm/rlm_summarize_general.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_late_binding_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/assets/diagrams/rlm_late_binding_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/resources/prompts/rlm/rlm_summarize_tool.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/rlm_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/assets/resources/rlm_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/distiller_manifest.json",
+      "src": "plugins/agent-memory/scripts/cleanup_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/cleanup_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/manifest-index.json",
+      "src": "plugins/agent-memory/scripts/distiller.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/distiller.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/prompts/rlm/rlm_summarize_general.md",
+      "src": "plugins/agent-memory/scripts/inject_summary.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/inject_summary.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/prompts/rlm/rlm_summarize_tool.md",
+      "src": "plugins/agent-memory/scripts/inventory.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/inventory.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/resources/rlm_manifest.json",
+      "src": "plugins/agent-memory/scripts/query_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/query_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/cleanup_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/cleanup_cache.py",
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/rlm-distill-agent/scripts/rlm_config.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/distiller.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/distiller.py",
+      "src": "plugins/agent-memory/assets/references/examples/rlm_profiles.json",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/rlm_profiles.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inject_summary.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/inject_summary.py",
+      "src": "plugins/agent-memory/assets/references/examples/rlm_summary_cache_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/rlm_summary_cache_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inventory.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/inventory.py",
+      "src": "plugins/agent-memory/assets/references/examples/rlm_tools_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/rlm_tools_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/query_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/query_cache.py",
+      "src": "plugins/agent-memory/assets/resources/distiller_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/resources/distiller_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/rlm_config.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-agent/scripts/rlm_config.py",
+      "src": "plugins/agent-memory/assets/resources/manifest-index.json",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/resources/manifest-index.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_late_binding_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/assets/diagrams/rlm_late_binding_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_general.md",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/resources/prompts/rlm/rlm_summarize_general.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/resources/prompts/rlm/rlm_summarize_tool.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/resources/distiller_manifest.json",
+      "src": "plugins/agent-memory/assets/resources/rlm_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-init/assets/resources/rlm_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/resources/manifest-index.json",
+      "src": "plugins/agent-memory/scripts/cleanup_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-init/scripts/cleanup_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/resources/prompts/rlm/rlm_summarize_general.md",
+      "src": "plugins/agent-memory/scripts/distiller.py",
+      "dst": "plugins/agent-memory/skills/rlm-init/scripts/distiller.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/resources/prompts/rlm/rlm_summarize_tool.md",
+      "src": "plugins/agent-memory/scripts/inject_summary.py",
+      "dst": "plugins/agent-memory/skills/rlm-init/scripts/inject_summary.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/resources/rlm_manifest.json",
+      "src": "plugins/agent-memory/scripts/inventory.py",
+      "dst": "plugins/agent-memory/skills/rlm-init/scripts/inventory.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/cleanup_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/cleanup_cache.py",
+      "src": "plugins/agent-memory/scripts/query_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-init/scripts/query_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/distiller.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/distiller.py",
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/rlm-init/scripts/rlm_config.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inject_summary.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/inject_summary.py",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_late_binding_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/diagrams/rlm_late_binding_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/inventory.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/inventory.py",
+      "src": "plugins/agent-memory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/diagrams/rlm_tool_enrichment_flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/query_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/query_cache.py",
+      "src": "plugins/agent-memory/assets/diagrams/search_process.mmd",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/diagrams/search_process.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/rlm_config.py",
-      "dst": "plugins/rlm-factory/skills/rlm-distill-ollama/scripts/rlm_config.py",
+      "src": "plugins/agent-memory/assets/resources/distiller_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/resources/distiller_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/references/examples/rlm_profiles.json",
-      "dst": "plugins/rlm-factory/skills/rlm-init/assets/rlm_profiles.json",
+      "src": "plugins/agent-memory/assets/resources/manifest-index.json",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/resources/manifest-index.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/references/examples/rlm_summary_cache_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-init/assets/rlm_summary_cache_manifest.json",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_general.md",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/resources/prompts/rlm/rlm_summarize_general.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/references/examples/rlm_tools_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-init/assets/rlm_tools_manifest.json",
+      "src": "plugins/agent-memory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/resources/prompts/rlm/rlm_summarize_tool.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-init/resources/distiller_manifest.json",
+      "src": "plugins/agent-memory/assets/resources/rlm_manifest.json",
+      "dst": "plugins/agent-memory/skills/rlm-search/assets/resources/rlm_manifest.json",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/rlm-init/resources/manifest-index.json",
+      "src": "plugins/agent-memory/scripts/cleanup_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-search/scripts/cleanup_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/rlm-init/resources/prompts/rlm/rlm_summarize_general.md",
+      "src": "plugins/agent-memory/scripts/distiller.py",
+      "dst": "plugins/agent-memory/skills/rlm-search/scripts/distiller.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/rlm-init/resources/prompts/rlm/rlm_summarize_tool.md",
+      "src": "plugins/agent-memory/scripts/inject_summary.py",
+      "dst": "plugins/agent-memory/skills/rlm-search/scripts/inject_summary.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-init/resources/rlm_manifest.json",
+      "src": "plugins/agent-memory/scripts/inventory.py",
+      "dst": "plugins/agent-memory/skills/rlm-search/scripts/inventory.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/cleanup_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-init/scripts/cleanup_cache.py",
+      "src": "plugins/agent-memory/scripts/query_cache.py",
+      "dst": "plugins/agent-memory/skills/rlm-search/scripts/query_cache.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/rlm-factory/scripts/distiller.py",
-      "dst": "plugins/rlm-factory/skills/rlm-init/scripts/distiller.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/inject_summary.py",
-      "dst": "plugins/rlm-factory/skills/rlm-init/scripts/inject_summary.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/inventory.py",
-      "dst": "plugins/rlm-factory/skills/rlm-init/scripts/inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/query_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-init/scripts/query_cache.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/rlm_config.py",
-      "dst": "plugins/rlm-factory/skills/rlm-init/scripts/rlm_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm-factory-architecture.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-search/assets/diagrams/rlm-factory-architecture.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm-factory-dual-path.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-search/assets/diagrams/rlm-factory-dual-path.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_late_binding_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-search/assets/diagrams/rlm_late_binding_flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/diagrams/rlm_tool_enrichment_flow.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-search/assets/diagrams/rlm_tool_enrichment_flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/diagrams/search_process.mmd",
-      "dst": "plugins/rlm-factory/skills/rlm-search/assets/diagrams/search_process.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/resources/distiller_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-search/resources/distiller_manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/resources/manifest-index.json",
-      "dst": "plugins/rlm-factory/skills/rlm-search/resources/manifest-index.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_general.md",
-      "dst": "plugins/rlm-factory/skills/rlm-search/resources/prompts/rlm/rlm_summarize_general.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/resources/prompts/rlm/rlm_summarize_tool.md",
-      "dst": "plugins/rlm-factory/skills/rlm-search/resources/prompts/rlm/rlm_summarize_tool.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/assets/resources/rlm_manifest.json",
-      "dst": "plugins/rlm-factory/skills/rlm-search/resources/rlm_manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/cleanup_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-search/scripts/cleanup_cache.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/distiller.py",
-      "dst": "plugins/rlm-factory/skills/rlm-search/scripts/distiller.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/inject_summary.py",
-      "dst": "plugins/rlm-factory/skills/rlm-search/scripts/inject_summary.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/inventory.py",
-      "dst": "plugins/rlm-factory/skills/rlm-search/scripts/inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/query_cache.py",
-      "dst": "plugins/rlm-factory/skills/rlm-search/scripts/query_cache.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rlm-factory/scripts/rlm_config.py",
-      "dst": "plugins/rlm-factory/skills/rlm-search/scripts/rlm_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rsvp-speed-reader/scripts/execute.py",
-      "dst": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/execute.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rsvp-speed-reader/scripts/orp_engine.py",
-      "dst": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/orp_engine.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/rsvp-speed-reader/scripts/parse_document.py",
-      "dst": "plugins/rsvp-speed-reader/skills/rsvp-reading/scripts/parse_document.py",
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/rlm-search/scripts/rlm_config.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -2888,326 +2288,8 @@
       "description": ""
     },
     {
-      "src": "plugins/task-manager/assets/templates/task-template.md",
-      "dst": "plugins/task-manager/skills/task-agent/assets/templates/task-template.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/task-manager/scripts/next_number.py",
-      "dst": "plugins/task-manager/skills/task-agent/scripts/next_number.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/task-manager/scripts/task_manager.py",
-      "dst": "plugins/task-manager/skills/task-agent/scripts/task_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/architecture_sequence.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/assets/resources/architecture_sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/deployment_model.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/assets/resources/deployment_model.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/rag_design_choices.md",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/assets/resources/rag_design_choices.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/README.md",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/assets/resources/stabilizers/README.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/vector_consistency_check.md",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/assets/resources/stabilizers/vector_consistency_check.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/cleanup.py",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/scripts/cleanup.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/init.py",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/scripts/init.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/query.py",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/scripts/query.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/vector_config.py",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/scripts/vector_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/vector_consistency_check.py",
-      "dst": "plugins/vector-db/skills/vector-db-cleanup/scripts/vector_consistency_check.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/architecture_sequence.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/assets/resources/architecture_sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/deployment_model.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/assets/resources/deployment_model.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/rag_design_choices.md",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/assets/resources/rag_design_choices.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/README.md",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/assets/resources/stabilizers/README.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/vector_consistency_check.md",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/assets/resources/stabilizers/vector_consistency_check.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/ingest.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/ingest.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/ingest_code_shim.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/ingest_code_shim.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/init.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/init.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/operations.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/operations.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/query.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/query.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/vector_config.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/vector_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/vector_consistency_check.py",
-      "dst": "plugins/vector-db/skills/vector-db-ingest/scripts/vector_consistency_check.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/architecture_sequence.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/resources/architecture_sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/deployment_model.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/resources/deployment_model.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/rag_design_choices.md",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/resources/rag_design_choices.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/README.md",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/resources/stabilizers/README.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/vector_consistency_check.md",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/resources/stabilizers/vector_consistency_check.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/references/examples/vector_knowledge_manifest.json",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/vector_knowledge_manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/references/examples/vector_profiles.json",
-      "dst": "plugins/vector-db/skills/vector-db-init/assets/vector_profiles.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/init.py",
-      "dst": "plugins/vector-db/skills/vector-db-init/scripts/init.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/query.py",
-      "dst": "plugins/vector-db/skills/vector-db-init/scripts/query.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/architecture_sequence.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-launch/assets/resources/architecture_sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/deployment_model.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-launch/assets/resources/deployment_model.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/rag_design_choices.md",
-      "dst": "plugins/vector-db/skills/vector-db-launch/assets/resources/rag_design_choices.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/README.md",
-      "dst": "plugins/vector-db/skills/vector-db-launch/assets/resources/stabilizers/README.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/vector_consistency_check.md",
-      "dst": "plugins/vector-db/skills/vector-db-launch/assets/resources/stabilizers/vector_consistency_check.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/operations.py",
-      "dst": "plugins/vector-db/skills/vector-db-launch/scripts/operations.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/query.py",
-      "dst": "plugins/vector-db/skills/vector-db-launch/scripts/query.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/architecture_sequence.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-search/assets/resources/architecture_sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/diagrams/deployment_model.mmd",
-      "dst": "plugins/vector-db/skills/vector-db-search/assets/resources/deployment_model.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/rag_design_choices.md",
-      "dst": "plugins/vector-db/skills/vector-db-search/assets/resources/rag_design_choices.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/README.md",
-      "dst": "plugins/vector-db/skills/vector-db-search/assets/resources/stabilizers/README.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/assets/resources/stabilizers/vector_consistency_check.md",
-      "dst": "plugins/vector-db/skills/vector-db-search/assets/resources/stabilizers/vector_consistency_check.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/ingest.py",
-      "dst": "plugins/vector-db/skills/vector-db-search/scripts/ingest.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/init.py",
-      "dst": "plugins/vector-db/skills/vector-db-search/scripts/init.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/operations.py",
-      "dst": "plugins/vector-db/skills/vector-db-search/scripts/operations.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/query.py",
-      "dst": "plugins/vector-db/skills/vector-db-search/scripts/query.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/vector_config.py",
-      "dst": "plugins/vector-db/skills/vector-db-search/scripts/vector_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/vector-db/scripts/vector_consistency_check.py",
-      "dst": "plugins/vector-db/skills/vector-db-search/scripts/vector_consistency_check.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-agentic-os/references/sample-claude-md",
       "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/sample-claude-md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/coding-conventions/assets/templates/tsx-tool-header-template.tsx",
-      "dst": "plugins/coding-conventions/skills/coding-conventions-agent/assets/templates/tsx-tool-header-template.tsx",
       "strategy": "symlink",
       "description": ""
     },
@@ -3220,6 +2302,354 @@
     {
       "src": "plugins/agent-scaffolders/scripts/migrate_to_apm.py",
       "dst": "plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/migrate_to_apm.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/reference.md",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/references/reference.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/convert-mermaid-flow.mmd",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/references/convert-mermaid-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/convert-mermaid-flow.png",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/references/convert-mermaid-flow.png",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/verify_png.py",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/scripts/verify_png.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/convert.py",
+      "dst": "plugins/dev-utils/skills/convert-mermaid/scripts/convert.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/token-stream-schema.md",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/references/token-stream-schema.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/architecture.md",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/references/architecture.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/diagrams/rsvp-reading-flow.mmd",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/references/diagrams/rsvp-reading-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/execute.py",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/scripts/execute.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/parse_document.py",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/scripts/parse_document.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/orp_engine.py",
+      "dst": "plugins/dev-utils/skills/rsvp-reading/scripts/orp_engine.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/troubleshooting.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/troubleshooting.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/004_self_contained_plugins_no_cross_plugin_dependencies.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "ADRs/006_python_native_plugin_bootstrap_installer.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/006_python_native_plugin_bootstrap_installer.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "ADRs/001_cross_plugin_script_dependencies.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/001_cross_plugin_script_dependencies.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "ADRs/002_multi_skill_script_centralization.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/002_multi_skill_script_centralization.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "ADRs/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/symlink_manager.py",
+      "dst": "plugins/dev-utils/skills/symlink-manager/scripts/symlink_manager.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/bulk_symlink_fixer.py",
+      "dst": "plugins/dev-utils/skills/symlink-manager/scripts/bulk_symlink_fixer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/hf-upload/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/hf-upload/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/hf_config.py",
+      "dst": "plugins/dev-utils/skills/hf-upload/scripts/hf_config.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/hf_upload.py",
+      "dst": "plugins/dev-utils/skills/hf-upload/scripts/hf_upload.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/bundle.py",
+      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/bundle.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/manifest_manager.py",
+      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/manifest_manager.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/path_resolver.py",
+      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/path_resolver.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/bundle_zip.py",
+      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/bundle_zip.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/resources/file-manifest-schema.json",
+      "dst": "plugins/dev-utils/skills/red-team-bundler/assets/resources/file-manifest-schema.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/resources/file-manifest.json",
+      "dst": "plugins/dev-utils/skills/red-team-bundler/assets/resources/file-manifest.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/adr-management/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/adr-management/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/adr_manager.py",
+      "dst": "plugins/dev-utils/skills/adr-management/scripts/adr_manager.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/next_number.py",
+      "dst": "plugins/dev-utils/skills/adr-management/scripts/next_number.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/adr-template.md",
+      "dst": "plugins/dev-utils/skills/adr-management/assets/templates/adr-template.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/humanize-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/humanize/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/channel-rules.md",
+      "dst": "plugins/dev-utils/skills/humanize/references/channel-rules.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/patterns.md",
+      "dst": "plugins/dev-utils/skills/humanize/references/patterns.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/voice-profile/README.md",
+      "dst": "plugins/dev-utils/skills/humanize/references/voice-profile/README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/voice-profile/my-voice.md",
+      "dst": "plugins/dev-utils/skills/humanize/references/voice-profile/my-voice.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/hf-init/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/hf-init/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/hf_init.py",
+      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_init.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/hf_config.py",
+      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_config.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/assistant_preferences.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/assistant_preferences.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/per-user-tasks-default.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/per-user-tasks-default.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/user-hermes-tasks-root.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/user-hermes-tasks-root.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/terminal-backgrounding.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/terminal-backgrounding.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/task_manager.py",
+      "dst": "plugins/dev-utils/skills/task-agent/scripts/task_manager.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/next_number.py",
+      "dst": "plugins/dev-utils/skills/task-agent/scripts/next_number.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/task-template.md",
+      "dst": "plugins/dev-utils/skills/task-agent/assets/templates/task-template.md",
       "strategy": "symlink",
       "description": ""
     }

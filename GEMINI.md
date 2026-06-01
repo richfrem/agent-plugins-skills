@@ -1,5 +1,7 @@
 # GEMINI.md
 
+> **June 18, 2026 — Gemini CLI consumer sunset:** Free, Pro, and Ultra users lose access to the `gemini` binary on this date. Enterprise Gemini Code Assist licenses are unaffected. Use the **Antigravity (`agy`) CLI** for frontier models going forward — see `cli-agents/skills/agy-cli-agent`.
+
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
@@ -140,62 +142,82 @@ skill, or sub-agent in this repo. Three key capabilities:
 
 ---
 
-## Plugin State — Current Versions
+## Plugin State — Current Versions (11 plugins · 137 skills)
 
-### agent-agentic-os (v1.6.0) — simplified
+### agent-agentic-os (v1.7.0)
 
 Core improvement loop:
 ```
 os-architect → os-improvement-loop → os-eval-runner → os-eval-backport → os-experiment-log
 ```
 
-**Active skills (16):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
+**Active skills (17):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
 os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions
+os-clean-locks, todo-check, optimize-agent-instructions, self-evolution
 
 **Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
 agentic-os-setup, os-health-check
 
-**Removed in v1.6.0 — do not reference or attempt to invoke:**
-- `triple-loop-architect` — merged into os-improvement-loop
-- `triple-loop-orchestrator` — same
-- `os-skill-improvement` — absorbed by os-improvement-loop
-
-For unattended multi-iteration improvement, use `os-improvement-loop` directly.
+**Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`, `os-skill-improvement`
 
 ---
 
 ### agent-loops (v2.1.0) — OS-decoupled
 
-**5 execution primitives:** learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning
+**6 execution primitives:** orchestrator, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning
 
-**Removed in v2.1.0 — do not reference:**
-- `personas/` directory — deleted; supply your own system prompt or install an agent-personas plugin
-- `rlm-distill-ollama`, `ollama-launch` — no longer in source
-- OS-level hooks: `context/kernel.py`, `session-memory-manager`, `/sanctuary-seal` — scrubbed
-
-**Plugin boundary (important):** agent-loops provides execution patterns — no eval gate, no
-experiment log, no memory persistence. agent-agentic-os owns all measurement. os-improvement-loop
-delegates its inner loop to `triple-loop-learning` as the execution substrate:
-
-```
-agent-loops/triple-loop-learning   ← execution only (outer/mid/inner loop)
-        ↓ used by
-agent-agentic-os/os-improvement-loop  + eval gate + experiment log + lab isolation
-```
+**Plugin boundary:** agent-loops provides execution patterns only — no eval gate, no memory.
+os-improvement-loop delegates its inner loop to `triple-loop-learning` as the execution substrate.
 
 Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-loops skills.
 
+---
+
+### cli-agents (v1.1.0) — consolidated from claude-cli, copilot-cli, gemini-cli
+
+**Skills (6):** agy-cli-agent, claude-cli-agent, copilot-cli-agent, gemini-cli-agent,
+claude-project-setup, antigravity-project-setup
+
+**Note:** `gemini-cli-agent` — Gemini CLI consumer access ends June 18, 2026. Use `agy-cli-agent` for frontier models going forward.
+
+**Scripts:** Each skill has its own `scripts/run_agent.py` for its respective CLI tool.
+
+**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.
+
+---
+
+### agent-memory (v1.0.0) — consolidated from rlm-factory, vector-db, memory-management
+
+**Skills (13):** rlm-init, rlm-curator, rlm-search, rlm-distill-agent, rlm-cleanup-agent,
+rlm-audit, vector-db-init, vector-db-launch, vector-db-ingest, vector-db-search,
+vector-db-cleanup, vector-db-audit, memory-management
+
+**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.
+
+---
+
+### dev-utils (v1.1.0) — consolidated from 9 standalone plugins
+
+**Skills (12):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
+hf-init, hf-upload, humanize, link-checker-agent, optimize-context, red-team-bundler,
+symlink-manager, task-agent
+
+**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,
+`plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,
+`plugins/task-manager`, `plugins/voice-writer` — all deleted.
+
 ### Copilot CLI delegation pattern (canonical)
 
+> **June 2026:** `gpt-5-mini` remains included (no AI Credits cost). All other models consume credits per token. Plan first — fewer requests saves quality, not necessarily credits. See `cli-agents/skills/copilot-cli-agent` for updated model table.
+
 ```bash
-# 1. Heartbeat (free model — always first)
-python3 plugins/copilot-cli/scripts/run_agent.py \
+# 1. Heartbeat (included model — always first, zero credit cost)
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
 
-# 2. Dispatch (one dense premium request — batch all workstreams)
-python3 plugins/copilot-cli/scripts/run_agent.py \
+# 2. Dispatch (plan well, batch for coherence)
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null tasks/todo/copilot_prompt_<task>.md temp/copilot_output_<task>.md \
   "Generate all files exactly as specified. Use the Write tool to write files directly." \
   claude-sonnet-4.6

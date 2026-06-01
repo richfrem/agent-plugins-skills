@@ -1,0 +1,33 @@
+{
+    "name": "dev-utils",
+    "version": "1.1.0",
+    "description": "Unified Developer Utilities Suite — 12 skills consolidated from 9 standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, HuggingFace upload/init, text humanization, link validation, symlink management, task tracking, agent context hygiene (optimize-context), and red-team context bundling.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "dev-utils",
+        "utilities",
+        "context-bundler",
+        "task-manager",
+        "adr-manager",
+        "link-checker",
+        "huggingface",
+        "mermaid",
+        "coding-conventions",
+        "humanize",
+        "symlink-manager",
+        "optimize-context"
+    ],
+    "capabilities": [
+        "context-bundling",
+        "task-management",
+        "adr-auditing",
+        "link-checking",
+        "diagram-rendering",
+        "context-hygiene",
+        "code-conventions"
+    ]
+}

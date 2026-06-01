@@ -1,1 +1,0 @@
-../../../scripts/parse_document.py
