@@ -289,7 +289,7 @@ def _clone_repo(owner_repo: str, dest: Path) -> Path:
     if result.returncode != 0:
         print(red(f"\n  Clone failed:\n{result.stderr}"))
         sys.exit(1)
-    print(f"  {green('Cloned')} → {dim(str(dest))}")
+    print(f"  {green('Cloned')} -> {dim(str(dest))}")
     return dest
 
 
@@ -507,7 +507,7 @@ def main():
         desc = f"  {dim(p['description'][:50])}" if p["description"] else ""
         print(f"   {green('•')} {cyan(p['name'])}{ver}{desc}")
     print(f"  {dim('─' * 48)}")
-    print(f"  {green(str(len(selected_plugins)))} plugin(s) → {dim('.agents/')} (skills + agents + commands + hooks)")
+    print(f"  {green(str(len(selected_plugins)))} plugin(s) -> {dim('.agents/')} (skills + agents + commands + hooks)")
     print()
 
     if not args.yes and not args.dry_run:
@@ -531,7 +531,7 @@ def main():
     fail_count = 0
 
     for plugin in selected_plugins:
-        print(f"\n  {bold('→')} {cyan(plugin['name'])}")
+        print(f"\n  {bold('->')} {cyan(plugin['name'])}")
         cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin["path"])]
         if args.dry_run:
             cmd.append("--dry-run")

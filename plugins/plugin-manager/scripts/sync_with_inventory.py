@@ -148,7 +148,7 @@ def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> No
         return
     try:
         subprocess.run(cmd, check=True)
-        print(f"  [SYNC] OK: {source_key} → {plugins}")
+        print(f"  [SYNC] OK: {source_key} -> {plugins}")
     except subprocess.CalledProcessError as e:
         print(f"  [ERROR] Failed syncing source '{source_key}': {e}")
 
@@ -180,7 +180,7 @@ def main() -> None:
 
     print(f"  {len(registered_set)} registered plugins across {len(sources_data)} sources:")
     for s in sources_data:
-        print(f"    [{s['source']}] → {', '.join(s['plugins'])}")
+        print(f"    [{s['source']}] -> {', '.join(s['plugins'])}")
 
 # plugin_inventory dependency removed
 
@@ -196,7 +196,7 @@ def main() -> None:
             src_path = Path(src) if src.startswith("/") else root / src
             if not src_path.exists():
                 stale.update(s["plugins"])
-                print(f"  Stale source (path gone): {src} → {s['plugins']}")
+                print(f"  Stale source (path gone): {src} -> {s['plugins']}")
 
     if stale:
         print(f"  Cleaning {len(stale)} stale plugin(s)...")
