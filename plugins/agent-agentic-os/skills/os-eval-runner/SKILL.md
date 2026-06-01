@@ -13,7 +13,7 @@ description: >
 
 <example>
 <commentary>Start autonomous improvement loop on a skill.</commentary>
-user: "Run the autoresearch loop on plugins/link-checker/skills/link-checker-agent for 20 iterations"
+user: "Run the autoresearch loop on plugins/dev-utils/skills/link-checker-agent for 20 iterations"
 assistant: [triggers os-eval-runner, runs Mode 1 intake, establishes baseline, begins iteration loop]
 </example>
 

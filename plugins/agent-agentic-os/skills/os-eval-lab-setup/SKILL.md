@@ -129,7 +129,7 @@ The plugin path from Q2 has the form `plugins/<plugin-folder>/skills/<skill-fold
 Parse it explicitly using `cut` — do NOT infer PLUGIN_NAME from the `plugins/` root word:
 ```bash
 APS_ROOT=<abs-path-to-agent-plugins-skills>          # from Q6
-PLUGIN_PATH=plugins/<plugin-name>                    # from Q2, e.g. plugins/mermaid-to-png
+PLUGIN_PATH=plugins/<plugin-name>                    # from Q2, e.g. plugins/dev-utils
 SKILL_NAME=<skill-folder-name>                       # from Q3, e.g. convert-mermaid
 
 # Extract plugin folder name (segment 2, NOT segment 1 which is 'plugins')

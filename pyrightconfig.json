@@ -1,6 +1,6 @@
 {
-    "extraPaths": [
-        "plugins/rlm-factory/skills/rlm-curator/scripts",
-        "plugins/vector-db/skills/vector-db-agent/scripts"
-    ]
+  "extraPaths": [
+    "plugins/agent-memory/skills/rlm-curator/scripts",
+    "plugins/agent-memory/scripts"
+  ]
 }

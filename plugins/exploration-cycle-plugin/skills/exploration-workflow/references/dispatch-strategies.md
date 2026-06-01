@@ -9,7 +9,7 @@
 - Simple/mechanical tasks → `gpt-5-mini` (free, no per-request cost)
 - Complex reasoning/multi-file generation → `claude-sonnet-4-6` or `claude-opus-4-6` (premium)
 - **Critical cost model: charged per REQUEST, not per token.** One dense prompt with 7 file specs costs the same as one small prompt. Always batch everything into a single call.
-- Full batching discipline and `===FILE:===` delimiter pattern: `plugins/copilot-cli/skills/copilot-cli-agent/SKILL.md`
+- Full batching discipline and `===FILE:===` delimiter pattern: `plugins/cli-agents/skills/copilot-cli-agent/SKILL.md`
 
 ## Gemini CLI (`gemini-cli`)
 

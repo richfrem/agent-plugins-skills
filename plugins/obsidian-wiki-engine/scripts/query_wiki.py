@@ -69,7 +69,7 @@ def _find_vdb_query_script() -> Optional[Path]:
     Resolution order (mirrors how rlm-distill-agent is discovered):
         1. .agent/learning/ sibling to vector_profiles.json (installed skills)
         2. .agents/skills/vector-db-search/scripts/query.py
-        3. plugins/vector-db/scripts/query.py (dev tree)
+        3. plugins/agent-memory/scripts/query.py (dev tree)
 
     Returns:
         Resolved Path to query.py, or None if not found.

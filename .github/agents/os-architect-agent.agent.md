@@ -94,7 +94,7 @@ Write a complete, dense spec to `temp/copilot_prompt_<task>.md`. Include:
 
 ### Step 2 — Heartbeat check (always first, free model)
 ```bash
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
 grep -q "HEARTBEAT_OK" temp/heartbeat.md && echo "OK" || echo "FAIL — abort"
 ```
@@ -102,7 +102,7 @@ grep -q "HEARTBEAT_OK" temp/heartbeat.md && echo "OK" || echo "FAIL — abort"
 ### Step 3 — Dispatch via run_agent.py
 ```bash
 # Premium dispatch: claude-sonnet-4.6 for complex multi-file generation (charged per request — batch everything)
-python3 plugins/copilot-cli/scripts/run_agent.py \
+python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null \
   temp/copilot_prompt_<task>.md \
   temp/copilot_output_<task>.md \
@@ -349,7 +349,7 @@ Expected: Phase 1 completes with `Intent category: 1 — Pattern Abstraction`, C
 Fail signal: wrong category, or Phase 2 audit starts before Q2 confirmed.
 
 **Smoke 2 — Heartbeat gate**: Any session that reaches Phase 3 dispatch.
-Expected: transcript contains `python3 plugins/copilot-cli/scripts/run_agent.py` heartbeat call
+Expected: transcript contains `python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py` heartbeat call
 BEFORE any call with `claude-sonnet-4.6`.
 Fail signal: premium dispatch appears before heartbeat line.
 
