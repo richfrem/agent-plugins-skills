@@ -1,0 +1,22 @@
+{
+  "exit_reason": "max_iterations (2)",
+  "iterations": [
+    {
+      "iteration": 1,
+      "eval_seconds": 11.41,
+      "improve_seconds": 16.482,
+      "train_score": "1/2",
+      "test_score": "1/2",
+      "decision": "keep"
+    },
+    {
+      "iteration": 2,
+      "eval_seconds": 10.187,
+      "improve_seconds": 0.0,
+      "train_score": "1/2",
+      "test_score": "1/2",
+      "decision": "discard"
+    }
+  ],
+  "total_duration_seconds": 38.08
+}

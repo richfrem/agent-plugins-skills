@@ -1,6 +1,6 @@
 name: cli-agents
 version: 1.0.0
-description: "Unified CLI sub-agent Conductor Suite. Orchestrates task delegation to Claude, Copilot, and Gemini CLI engines with integrated AGF/AGT security controls."
+description: "Consolidated CLI sub-agent system — dispatches tasks and persona-based analysis to Claude, Copilot, and Gemini CLI models. Includes project setup scaffolding for Claude and Antigravity environments."
 author: Richard Fremmerlid
 kind: backend
 platforms:
@@ -9,11 +9,10 @@ platforms:
   - windows
 provides_tools:
   - run_agent
-  - maf_harness
 skills:
+  - agy-cli-agent
   - claude-cli-agent
   - copilot-cli-agent
   - gemini-cli-agent
-  - project-setup
-  - maf-adapter
-  - agt-security
+  - claude-project-setup
+  - antigravity-project-setup

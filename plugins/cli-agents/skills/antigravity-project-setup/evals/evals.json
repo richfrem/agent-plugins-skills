@@ -1,0 +1,8 @@
+[
+  {"prompt": "Set up antigravity for this project — scaffold the .agents folder and configure Gemini.", "should_trigger": true},
+  {"prompt": "Scaffold the .agents directory with GEMINI.md and config.json using ADK best practices.", "should_trigger": true},
+  {"prompt": "Create agentic workflows for my Python project using the Gemini CLI Antigravity configuration.", "should_trigger": true},
+  {"prompt": "Run a Gemini model inference call to summarize this document.", "should_trigger": false},
+  {"prompt": "Initialize a new GitHub Actions workflow for CI/CD.", "should_trigger": false},
+  {"prompt": "Set up a Docker Compose environment for my web application.", "should_trigger": false}
+]

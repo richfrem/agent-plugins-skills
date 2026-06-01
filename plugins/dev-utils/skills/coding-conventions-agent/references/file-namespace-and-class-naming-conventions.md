@@ -1,0 +1,1 @@
+../../../references/file-namespace-and-class-naming-conventions.md

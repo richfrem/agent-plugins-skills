@@ -1,0 +1,1025 @@
+{
+  "exit_reason": "max_iterations (10)",
+  "original_description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+  "best_description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+  "best_score": "1/2",
+  "best_train_score": "2/4",
+  "best_test_score": "1/2",
+  "final_description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+  "iterations_run": 10,
+  "holdout": 0.34,
+  "train_size": 4,
+  "test_size": 2,
+  "history": [
+    {
+      "iteration": 1,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C3BC:3EBD66:619EBE:782106:69B4B90A)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C3F8:F6B56:5FCBD6:766022:69B4B91A)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C430:1F7845:5F0E7B:75A524:69B4B929)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "iteration": 4,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C469:32182B:6142E1:77EFD7:69B4B93D)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "iteration": 5,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C49C:38375C:5D8EB2:744553:69B4B94D)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "iteration": 6,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C4DC:319693:62288B:78E83B:69B4B95C)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ]
+    },
+    {
+      "iteration": 7,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C50D:247E83:62B272:797B7B:69B4B96B)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "iteration": 8,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C54A:3E6871:65141A:7BD10E:69B4B97B)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ]
+    },
+    {
+      "iteration": 9,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "crash",
+      "notes": "improvement backend failure: copilot -p exited 1\nstderr: Error: Authentication failed (Request ID: C57C:282F08:5F32C4:7607F9:69B4B98A)\n\nYour GitHub token may be invalid, expired, or lacking the required permissions.\n\nTo resolve this, try the following:\n  \u2022 Start 'copilot' and run the '/login' command to re-authenticate\n  \u2022 If using a Fine-Grained PAT, ensure it has the 'Copilot Requests' permission enabled\n  \u2022 If using COPILOT_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN environment variable, verify the token is valid and not expired\n  \u2022 Run 'gh auth status' to check your current authentication status\n",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "iteration": 10,
+      "description": "Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.",
+      "decision": "discard",
+      "notes": "regression/no gain; keep last known good description",
+      "train_passed": 2,
+      "train_failed": 2,
+      "train_total": 4,
+      "train_results": [
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ],
+      "test_passed": 1,
+      "test_failed": 1,
+      "test_total": 2,
+      "test_results": [
+        {
+          "query": "Use Copilot CLI with a persona prompt to review architecture findings.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "Explain binary search in simple terms.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        }
+      ],
+      "passed": 2,
+      "failed": 2,
+      "total": 4,
+      "results": [
+        {
+          "query": "Write a SQL migration for users table.",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Run a security audit by delegating to a Copilot CLI sub-agent persona.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        },
+        {
+          "query": "What is the weather in Oslo today?",
+          "should_trigger": false,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": true
+        },
+        {
+          "query": "Pipe this large log to copilot -p and save output for QA analysis.",
+          "should_trigger": true,
+          "trigger_rate": 0.0,
+          "triggers": 0,
+          "runs": 1,
+          "pass": false
+        }
+      ]
+    }
+  ]
+}

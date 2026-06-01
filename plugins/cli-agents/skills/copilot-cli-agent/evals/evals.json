@@ -1,0 +1,50 @@
+[
+  {
+    "prompt": "Run a security audit on this codebase using Copilot CLI",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Use Copilot to do an architecture review on this large context",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Pipe this bundle to Copilot for QA analysis",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a persona-based analysis using the Copilot CLI sub-agent",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Use GitHub Copilot CLI to review this file for security issues",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Send this large context to Copilot for a fresh model perspective",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a QA scan using copilot -p on this code bundle",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Install the copilot CLI tool on my machine",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Help me write a GitHub Actions workflow",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run a security audit using Gemini CLI instead",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Summarize this file for me",
+    "should_trigger": false
+  },
+  {
+    "prompt": "What is GitHub Copilot?",
+    "should_trigger": false
+  }
+]

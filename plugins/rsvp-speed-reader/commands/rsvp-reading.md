@@ -1,1 +1,0 @@
-../skills/rsvp-reading/SKILL.md

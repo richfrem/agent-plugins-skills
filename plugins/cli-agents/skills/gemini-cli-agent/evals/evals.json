@@ -1,0 +1,50 @@
+[
+  {
+    "prompt": "Run an architecture review on this large codebase using Gemini CLI",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Use gemini -p to do a security audit on this bundle",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Pipe this context to Gemini for QA analysis",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Use the fastest Gemini model for a quick QA scan",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a persona-based analysis using the Gemini CLI sub-agent",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Send this large file to Gemini CLI for a fresh model context review",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Use Gemini to analyze this codebase — pipe it, don't load it into memory",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Install the Gemini CLI on my machine",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run a security audit using Copilot instead",
+    "should_trigger": false
+  },
+  {
+    "prompt": "What is Google Gemini?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Write a Python script for me",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Help me set up my Google Cloud account",
+    "should_trigger": false
+  }
+]

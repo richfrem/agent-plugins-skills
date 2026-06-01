@@ -14,22 +14,6 @@
       "tags": ["sdd", "workflow", "kanban", "worktree", "bridge"]
     },
     {
-      "name": "task-manager",
-      "description": "Lightweight kanban task board — directory-backed with zero dependencies. Enforces Kanban Sovereignty constraints preventing manual task file edits.",
-      "source": "./plugins/task-manager",
-      "strict": true,
-      "category": "workflow",
-      "tags": ["tasks", "kanban", "todo", "project-management"]
-    },
-    {
-      "name": "adr-manager",
-      "description": "ADR management skill for generating architecture decisions, documenting design rationale, and maintaining the decision record log.",
-      "source": "./plugins/adr-manager",
-      "strict": true,
-      "category": "workflow",
-      "tags": ["adr", "architecture", "decisions", "documentation"]
-    },
-    {
       "name": "exploration-cycle-plugin",
       "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
       "source": "./plugins/exploration-cycle-plugin",
@@ -39,11 +23,11 @@
     },
     {
       "name": "agent-agentic-os",
-      "description": "Canonical reference and operational guide for the Agentic OS pattern. Covers CLAUDE.md hierarchy, persistent context layers, memory management, session bootstrapping, and hooks-based auto-learning.",
+      "description": "Eval-gated continuous improvement OS — structured memory hierarchy, improvement loops, session lifecycle, and ecosystem evolution orchestration.",
       "source": "./plugins/agent-agentic-os",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["agentic-os", "agent-harness", "claude-md", "context-management", "memory-management"]
+      "tags": ["agentic-os", "agent-harness", "claude-md", "context-management", "memory-management", "eval-runner"]
     },
     {
       "name": "agent-loops",
@@ -62,6 +46,38 @@
       "tags": ["scaffolder", "plugin-generator", "skill-generator", "agent-tooling"]
     },
     {
+      "name": "agent-memory",
+      "description": "Unified Cognitive Memory & Retrieval Suite — 13 skills across RLM keyword search, ChromaDB vector semantic search, and multi-tiered session memory management.",
+      "source": "./plugins/agent-memory",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["memory", "vector-db", "chromadb", "rlm", "distill", "cache", "session-continuity", "rag"]
+    },
+    {
+      "name": "obsidian-wiki-engine",
+      "description": "Obsidian Agent Integration Suite — vault operations, markdown parsing, canvas creation, graph traversal, and bases management for AI-assisted Obsidian workflows.",
+      "source": "./plugins/obsidian-wiki-engine",
+      "strict": true,
+      "category": "memory-context",
+      "tags": ["obsidian", "vault", "knowledge-graph", "markdown", "canvas", "pkm", "super-rag"]
+    },
+    {
+      "name": "cli-agents",
+      "description": "Consolidated CLI sub-agent orchestration — dispatches to Claude CLI, GitHub Copilot, Gemini CLI, and Antigravity (agy) for persona-based analysis, task delegation, security audits, and project setup scaffolding.",
+      "source": "./plugins/cli-agents",
+      "strict": true,
+      "category": "cli-agents",
+      "tags": ["claude", "copilot", "gemini", "antigravity", "agy", "cli", "sub-agent", "persona", "security-audit"]
+    },
+    {
+      "name": "dev-utils",
+      "description": "Unified Developer Utilities Suite — 12 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, HuggingFace integration, text humanization, link validation, task tracking, symlink management, and agent context hygiene.",
+      "source": "./plugins/dev-utils",
+      "strict": true,
+      "category": "workflow",
+      "tags": ["adr", "bundler", "mermaid", "tasks", "huggingface", "links", "conventions", "writing", "optimize-context"]
+    },
+    {
       "name": "plugin-manager",
       "description": "Orchestration hub for the plugin ecosystem. Manages canonical source-keyed installations, unified package removal, and synchronized updates across all agent environments.",
       "source": "./plugins/plugin-manager",
@@ -70,109 +86,12 @@
       "tags": ["orchestration", "sync", "installer", "package-manager", "deployment"]
     },
     {
-      "name": "coding-conventions",
-      "description": "Coding standards, documentation conventions, and header templates for Python, TypeScript/JavaScript, and C#/.NET.",
-      "source": "./plugins/coding-conventions",
-      "strict": true,
-      "category": "analysis",
-      "tags": ["coding", "conventions", "standards", "documentation", "headers"]
-    },
-    {
       "name": "dependency-management",
       "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends.",
       "source": "./plugins/dependency-management",
       "strict": true,
       "category": "analysis",
-      "tags": ["dependencies", "pip-compile", "python", "requirements", "security"]
-    },
-    {
-      "name": "link-checker",
-      "description": "Quality assurance agent for documentation link integrity. Checks, fixes, and audits documentation links across a repository using a deterministic Map-Fix-Verify workflow.",
-      "source": "./plugins/link-checker",
-      "strict": true,
-      "category": "analysis",
-      "tags": ["links", "documentation", "validation", "auto-repair", "markdown"]
-    },
-    {
-      "name": "context-bundler",
-      "description": "Bundle source files and documentation into single-file LLM context packages (Markdown or ZIP archives) for portable AI agent distribution.",
-      "source": "./plugins/context-bundler",
-      "strict": true,
-      "category": "memory-context",
-      "tags": ["bundler", "context", "llm", "packaging", "agent-tools"]
-    },
-    {
-      "name": "rlm-factory",
-      "description": "Recursive Language Model factory — distill repository files into semantic summaries using Ollama for instant context retrieval.",
-      "source": "./plugins/rlm-factory",
-      "strict": true,
-      "category": "memory-context",
-      "tags": ["rlm", "summarization", "ollama", "context", "memory", "ledger"]
-    },
-    {
-      "name": "vector-db",
-      "description": "Local Semantic Search Engine powered by ChromaDB with Super-RAG context injection via RLM summaries. Ingest, query, and maintain a persistent vector store.",
-      "source": "./plugins/vector-db",
-      "strict": true,
-      "category": "memory-context",
-      "tags": ["vector-db", "chromadb", "semantic-search", "rag", "embeddings"]
-
-    },
-    {
-      "name": "memory-management",
-      "description": "Tiered memory system for cognitive continuity across agent sessions. Manages hot cache and deep storage with configurable promotion/demotion rules.",
-      "source": "./plugins/memory-management",
-      "strict": true,
-      "category": "memory-context",
-      "tags": ["memory", "context", "cognitive-continuity", "tiered-storage", "session-management"]
-    },
-    {
-      "name": "cli-agents",
-      "description": "Unified CLI sub-agent Conductor Suite. Orchestrates task delegation to Claude, Copilot, and Gemini CLI engines with integrated AGF/AGT security controls.",
-      "source": "./plugins/cli-agents",
-      "strict": true,
-      "category": "cli-agents",
-      "tags": ["claude", "gemini", "copilot", "cli", "sub-agent", "conductor", "security"]
-    },
-    {
-      "name": "mermaid-to-png",
-      "description": "Convert Mermaid diagrams (.mmd) into high-resolution PNG images via headless Puppeteer.",
-      "source": "./plugins/mermaid-to-png",
-      "strict": true,
-      "category": "conversion",
-      "tags": ["mermaid", "diagrams", "png", "convert", "visualization", "puppeteer"]
-    },
-    {
-      "name": "obsidian-wiki-engine",
-      "description": "Obsidian Agent Integration Suite — vault operations, markdown parsing, canvas creation, graph traversal, and bases management for AI-assisted Obsidian workflows.",
-      "source": "./plugins/obsidian-wiki-engine",
-      "strict": true,
-      "category": "integrations",
-      "tags": ["obsidian", "vault", "knowledge-graph", "markdown", "canvas", "pkm"]
-    },
-    {
-      "name": "huggingface-utils",
-      "description": "HuggingFace integration utilities for Soul persistence — validates credentials, manages dataset structure, and provides upload primitives with exponential backoff.",
-      "source": "./plugins/huggingface-utils",
-      "strict": true,
-      "category": "integrations",
-      "tags": ["huggingface", "hf-hub", "soul-persistence", "upload", "dataset"]
-    },
-    {
-      "name": "rsvp-speed-reader",
-      "description": "Converts documents into word-by-word RSVP token streams with ORP alignment for speed reading. Supports .txt, .md, .pdf, and .docx input files.",
-      "source": "./plugins/rsvp-speed-reader",
-      "strict": true,
-      "category": "integrations",
-      "tags": ["rsvp", "speed-reading", "documents", "pdf", "docx"]
-    },
-    {
-      "name": "voice-writer",
-      "description": "Transform AI-generated or over-polished writing into authentic human voice. Supports voice profile calibration so the agent learns your specific style.",
-      "source": "./plugins/voice-writer",
-      "strict": true,
-      "category": "writing",
-      "tags": ["writing", "humanize", "voice", "tone", "ai-patterns", "content"]
+      "tags": ["dependencies", "pip-compile", "python", "requirements"]
     }
   ]
 }

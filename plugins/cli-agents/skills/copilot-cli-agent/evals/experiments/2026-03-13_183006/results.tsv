@@ -1,0 +1,2 @@
+iteration	train_score	test_score	decision	notes	description
+1	1/2	1/2	keep	new best on train set	Copilot CLI sub-agent system for persona-based analysis. Use when piping large contexts to GitHub Copilot models for security audits, architecture reviews, QA analysis, or any specialized analysis requiring a fresh model context.

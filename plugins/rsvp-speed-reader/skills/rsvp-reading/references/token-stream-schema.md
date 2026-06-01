@@ -1,1 +1,0 @@
-../../../references/token-stream-schema.md

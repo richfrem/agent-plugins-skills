@@ -1,0 +1,25 @@
+{
+  "name": "agent-memory",
+  "version": "1.0.0",
+  "description": "Unified Cognitive Memory & Retrieval Suite. Integrates RLM distills (summarization), ChromaDB vector semantic search, and session caching / tiered promotion-demotion memory management.",
+  "author": {
+    "name": "Richard Fremmerlid"
+  },
+  "repository": "https://github.com/richfrem/agent-plugins-skills",
+  "license": "MIT",
+  "keywords": [
+    "memory",
+    "vector-db",
+    "chromadb",
+    "rlm-factory",
+    "distill",
+    "cache",
+    "session-continuity",
+    "rag"
+  ],
+  "capabilities": [
+    "semantic-search",
+    "cache-management",
+    "summarization"
+  ]
+}

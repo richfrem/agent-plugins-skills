@@ -3,26 +3,16 @@
     {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
-        "adr-manager",
         "agent-loops",
+        "agent-memory",
         "agent-scaffolders",
         "cli-agents",
-        "coding-conventions",
-        "context-bundler",
         "dependency-management",
+        "dev-utils",
         "exploration-cycle-plugin",
-        "huggingface-utils",
-        "link-checker",
-        "memory-management",
-        "mermaid-to-png",
         "obsidian-wiki-engine",
         "plugin-manager",
-        "rlm-factory",
-        "rsvp-speed-reader",
-        "spec-kitty",
-        "task-manager",
-        "vector-db",
-        "voice-writer"
+        "spec-kitty"
       ]
     },
     {
