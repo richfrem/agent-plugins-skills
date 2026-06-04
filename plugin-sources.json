@@ -15,12 +15,17 @@
         "agent-scaffolders",
         "cli-agents",
         "dependency-management",
-        "dev-utils",
         "exploration-cycle-plugin",
         "obsidian-wiki-engine",
         "plugin-manager",
         "rlm-factory",
         "spec-kitty"
+      ]
+    },
+    {
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": [
+        "dev-utils"
       ]
     }
   ]

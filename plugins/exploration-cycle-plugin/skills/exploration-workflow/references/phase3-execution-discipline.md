@@ -5,8 +5,20 @@
 
 ## Superpowers Availability Check
 
-Before invoking any superpowers skill, silently check whether it is available (e.g.,
-try to resolve `superpowers:using-git-worktrees`). If superpowers is **not installed**:
+Before the availability check turns into Phase 3 planning, inventory the exploration artifacts that define the execution contract for the current session. Treat the brief, dashboard, discovery plan, and execution-critical captures as mandatory inputs to any Superpowers-backed design, plan, or task decomposition. If the SME changed scope, priorities, or expected outputs since the last plan draft, rewrite the task ledger from those artifacts before any worker is dispatched.
+
+Before invoking any superpowers skill, silently check whether the required
+Superpowers skills are resolvable in the current host environment. Install location
+may vary by marketplace-managed installs, runtime skill directories such as
+`.agents`, or other host-managed locations, so do not assume one fixed path.
+
+Treat this as a capability check for these skills:
+
+- `superpowers:using-git-worktrees`
+- `superpowers:subagent-driven-prototyping`
+- `superpowers:finishing-a-development-branch`
+
+If those required skills are **not available**:
 
 - **Greenfield sessions:** Warn the SME: *"I recommend installing the superpowers plugin
   for isolated workspaces and build discipline. For now, I'll proceed without it, but
