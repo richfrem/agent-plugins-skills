@@ -33,7 +33,7 @@ agent: [invokes discovery-planning directly, NOT exploration-workflow]
 
 # Exploration Workflow — SME Orchestrator
 
-This skill is the single canonical entry point for the Business Exploration Loop. It manages all session state via `exploration-dashboard.md`, enforces phase gates, and routes work to the correct child skill at each phase. The SME never needs to invoke any other skill directly.
+This skill is the single canonical entry point for the Business Exploration Loop. It manages all session state via `exploration-dashboard.md`, enforces phase gates, maintains a living task list as the session evolves, and routes work to the correct child skill at each phase. The SME never needs to invoke any other skill directly.
 
 ## Session Types
 
@@ -50,8 +50,12 @@ The workflow adapts to four session types, each with different phase requirement
 
 ## Execution Disciplines (powered by orba/superpowers)
 
-> **Required dependency:** The `orba/superpowers` plugin MUST be installed alongside this
-> plugin. See the plugin README for installation instructions.
+> **Required dependency:** The `orba/superpowers` plugin MUST be installed in the
+> current host environment before the full Phase 3 execution discipline is available.
+> Depending on the host, this may be exposed through a marketplace install, `.agents`,
+> or another host-managed runtime location. Do not assume one fixed install path;
+> determine availability by resolving the required Superpowers skills in the current
+> environment. See the plugin README for installation guidance.
 
 When Phase 3 is active, read `references/phase3-execution-discipline.md` for the full
 execution discipline protocol (superpowers availability check, worktree isolation,
@@ -62,14 +66,33 @@ work to `subagent-driven-prototyping`. That skill owns component decomposition, 
 two-stage review, and TDD. When it signals complete, the orchestrator invokes
 `finishing-a-development-branch` for merge/PR options.
 
+Before any implementation, scaffolding, or documentation-heavy execution slice, the orchestrator must produce a concise logical plan and task list, then keep that task list current as the SME corrects scope, sequence, or priorities. Planning stays in the higher-context orchestrator path; repetitive execution and document production should be delegated to cheaper agents or models whenever the chosen dispatch strategy allows it.
+
+Before any downstream Superpowers design, plan, or implementation request, the orchestrator must inventory the exploration artifacts that define the current scope and treat them as required planning inputs rather than optional context. At minimum this inventory should include the current brief, dashboard, discovery plan, and any captures that define domain findings, architecture boundaries, data contracts, renderer constraints, or other execution-critical evidence.
+
+## Task Ledger Discipline
+
+Maintain a living task list throughout the session so the SME does not need to restate the work:
+
+- Create an initial task list during bootstrap once session type and desired output are known.
+- Update the task list immediately when the SME adds corrections, constraints, or new priorities.
+- Before Phase 3 or any direct implementation request, rewrite the task list into a logical execution plan with the current slice, next slice, and deferred items clearly separated.
+- Before revising a Superpowers design, plan, or task packet, record which exploration artifacts were inventoried and ensure the revised work products trace back to them.
+- If the SME changes output expectations, scope boundaries, or implementation order, rewrite the task list before implementation resumes instead of patching the old list in place.
+- Use the primary model for planning, decomposition, review, and hard-gate decisions.
+- Use cheaper delegated agents or models for repeatable document generation, extraction, and implementation slices when the dispatch strategy supports it.
+- If `orba/superpowers` is available and the session is heading into build or implementation, use it during planning and decomposition before dispatching worker agents.
+
 ---
 
 ## Block 0 — Pre-Flight & Dispatch Strategy (ask once during bootstrap)
 
 > Dispatch strategy details: `references/dispatch-strategies.md`
-> Environment check: `references/environment-check.md`
 
-**Run the environment check silently first** (see `references/environment-check.md`). Only surface results if something is missing or needs a fallback. Do not mention the check to the SME unless action is needed.
+**Run the Superpowers availability check silently first.** Resolve the required
+Superpowers skills in the current host environment rather than checking one fixed
+filesystem path. Only surface results if something is missing or needs a fallback.
+Do not mention the check to the SME unless action is needed.
 
 **For Analysis/Docs sessions:** Skip the dispatch strategy question. Default to `direct`.
 
@@ -133,6 +156,7 @@ not just at handoff. The earlier it happens, the more valuable it is.
    - If the SME corrects or says "not quite": take their word for it. Always defer to SME judgment.
    - If the SME says "I'm not sure" or "you tell me": present the **full type menu** (see below) with examples.
    - Update `**Session Type:**` in the dashboard to the confirmed type.
+   - Create an initial task list in the dashboard or session notes capturing the current objective, immediate next step, known follow-up work, and any explicit execution expectations from intake.
    - **Immediately pre-mark non-applicable phases as `- [~]`** based on the confirmed session type. Use the Active Phases table in the Session Types section above to determine which phases to skip. Add a parenthetical reason: `(Skipped — [reason])`. Do this before finalizing the dashboard — the SME should never see a phase as "upcoming" if this session type will never use it.
    - Write the final dashboard, then proceed to Block 3.
 3. **If the file EXISTS:** Proceed to Block 2.
@@ -291,10 +315,13 @@ When invoking a child skill, pass this structured context block — do NOT bury 
 - Active phase: Phase [N] — [phase name]
 - Discovery Plan: [path to most recent discovery-plan-*.md, or "not yet written"]
 - Dispatch strategy: [value from **Dispatch Strategy:** in dashboard]
+- Current task slice: [the current planned work items for this phase]
 - Return signal: When this phase is complete, announce "PHASE [N] COMPLETE" then invoke the exploration-workflow skill to continue.
 ```
 
 Child skills must read `Session type` and adapt their question tracks and outputs accordingly before doing anything else.
+
+If the phase involves implementation or dense document production and the dispatch strategy is not `direct`, decompose the work first, then hand the repetitive or low-context slices to cheaper agents or models. Do not keep all execution in the main orchestrator path unless the SME explicitly chose direct handling.
 
 ---
 
@@ -340,6 +367,7 @@ Using the Write tool, update `exploration/exploration-dashboard.md`:
 2. Update `**Current Phase:**` to the name of the next phase, or to `Complete` if Phase 4 was just finished.
 3. Update `**Status:**` to `In Progress` (or `Complete` if all phases are done).
 4. In the Session Log table, fill in the completed phase row with today's date and a one-sentence note describing what was produced.
+5. Refresh the living task list to reflect what is now done, what became current, and what new follow-up items were introduced by the phase outcome or SME corrections.
 
 Then loop back to **Block 3** to orient the SME for the next phase.
 
@@ -352,6 +380,7 @@ Then loop back to **Block 3** to orient the SME for the next phase.
 - **Phase routing after kill-session**: Early-exit writes `[~]` to remaining phases but if the write is incomplete (crash, context loss), Block 2 may re-route to a killed phase. Always confirm `**Status:** Complete` is written before announcing completion.
 - **Mid-session revision back-pointer**: When a phase is reopened with `- [↩]`, the Outcome file path is cleared to TBD. If the SME later asks "where are my files", they may not find them. Always log the prior file path in the Session Log revision note even when clearing the Outcome field.
 - **Tier message mismatch**: If Phase 4 is skipped but a prototype exists, the Completion Block may default to "Tier 3" message. Read the dashboard `**Session Type:**` field first — brownfield self-build completions use the brownfield message, not the tier message.
+- **Task list drift**: If the SME corrects scope mid-session and the task list is not updated immediately, the orchestrator can appear forgetful and force the SME to repeat instructions. Treat task-list updates as mandatory state maintenance, not optional notes.
 
 ## Completion Block
 

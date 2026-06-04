@@ -25,6 +25,8 @@ This is a deliberate trade-off: intake runs in the primary model context so the 
 
 Do not start capturing requirements. Do not write a spec. Do not suggest solutions. Your only output is a pre-filled `exploration/session-brief.md`.
 
+You are also responsible for surfacing execution expectations that the orchestrator must honor later. If the SME signals they expect a detailed plan, explicit task tracking, cheaper sub-agent delegation, or superpowers-assisted breakdown, capture that in the brief so the next phase starts with those constraints already visible.
+
 ---
 
 ## Phase 1: Understand the Trigger
@@ -123,6 +125,7 @@ Key fields to pre-populate:
 - **Prior context**: any existing docs, system, or constraints named
 - **Desired output**: from classification
 - **Known constraints**: any mentioned
+- **Execution expectations**: any stated preference for detailed planning, task tracking, cheaper-model delegation, or superpowers-assisted implementation planning
 - **Current System Behavior** (brownfield only): fill with anything described; mark gaps
 - **Engineering blocking question** (re-entry spike only): exact question from the execution cycle
 
@@ -144,6 +147,8 @@ Key fields to pre-populate:
 A single file: `exploration/session-brief.md`
 
 Fields pre-filled from intake. All uncertain fields marked `[INTAKE DRAFT — confirm]`. Human reviews and confirms before Phase 1 capture begins.
+
+After the brief is confirmed, the orchestrator is expected to create or refresh a living task list before any implementation work begins. Intake does not own that task list, but it must leave enough signal in the brief for the orchestrator to do it correctly.
 
 Tell the user:
 > "Session brief drafted at `exploration/session-brief.md`. Review it, tweak anything that doesn't look right, then we'll move into Phase 1 capture."
