@@ -108,12 +108,13 @@ python ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
     "SessionStart": [
       {
         "matcher": "",
-        "hooks": [{ "type": "command", "command": "python ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }]
+        "hooks": [{ "type": "command", "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/script.py || python ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }]
       }
     ]
   }
 }
 ```
+Note: use `python3 ... || python ...` — not bare `python` — so hooks work on both macOS/Linux and Windows.
 
 **Empty hooks (no hooks needed):**
 ```json
@@ -246,6 +247,10 @@ grep -rn "password\|api_key\|secret\|token" --include="*.md" --include="*.json" 
 # Ensure no hardcoded paths in hook commands or MCP config
 grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
 ```
+
+**Hook script quality (for any `.py` files wired as hooks):**
+- Does the hook command use `python3 ... || python ...` for cross-platform compatibility?
+- Does `main()` have an early-exit project-type guard (e.g. `if not (project_root / "context").exists(): return`) so it skips silently in projects that haven't initialized the plugin?
 
 **Naming conventions:**
 - Plugin name: kebab-case (`my-plugin`, not `MyPlugin` or `my_plugin`)

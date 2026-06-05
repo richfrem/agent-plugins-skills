@@ -26,6 +26,25 @@ Follow the `create-hook` skill workflow to design and generate a hook configurat
 `hooks.json` entry or SKILL.md frontmatter block with complete hook configuration
 (event, matcher, handler type, command/prompt body, output schema).
 
+## Hook Script Standards
+
+When generating a Python hook script, always apply these two rules:
+
+**Cross-platform python command** — use `python3 ... || python ...` in hooks.json so the hook works on both macOS/Linux (python3) and Windows (python):
+```json
+{ "type": "command", "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/script.py || python ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }
+```
+
+**Project-type guard** — hooks run in every project, not just ones that have initialized this plugin. Add an early-exit guard at the top of `main()` so the script skips silently in projects that lack the required context:
+```python
+def main():
+    project_root = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()))
+    if not (project_root / "context").exists():
+        return  # Not an initialized project — skip silently
+    ...
+```
+Adapt the guard to whatever directory/file your hook requires (e.g. `.agent/`, `context/os-state.json`).
+
 ## Edge Cases
 
 - If `$ARGUMENTS` is empty: begin with the event selection question in Phase 1
