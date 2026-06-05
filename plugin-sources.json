@@ -9,23 +9,23 @@
     {
       "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills",
       "plugins": [
+        "rlm-factory"
+      ]
+    },
+    {
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": [
         "agent-agentic-os",
         "agent-loops",
         "agent-memory",
         "agent-scaffolders",
         "cli-agents",
         "dependency-management",
+        "dev-utils",
         "exploration-cycle-plugin",
         "obsidian-wiki-engine",
         "plugin-manager",
-        "rlm-factory",
         "spec-kitty"
-      ]
-    },
-    {
-      "source": "richfrem/agent-plugins-skills",
-      "plugins": [
-        "dev-utils"
       ]
     }
   ]
