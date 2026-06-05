@@ -19,6 +19,7 @@ skills:
   - convert-mermaid
   - hf-init
   - hf-upload
+  - hf-download
   - humanize
   - link-checker-agent
   - red-team-bundler
