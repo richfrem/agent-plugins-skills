@@ -568,8 +568,13 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
     # MCP merge (future -- log intent for now)
     mcp_file = plugin_path / ".mcp.json"
     if mcp_file.exists():
-        print(f"  ⚠ .mcp.json found but merge not yet implemented - "
-              f"manually merge {mcp_file} into ./.mcp.json")
+        try:
+            mcp_data = json.loads(mcp_file.read_text(encoding="utf-8"))
+            if mcp_data.get("mcpServers"):
+                print(f"  ⚠ .mcp.json found but merge not yet implemented - "
+                      f"manually merge {mcp_file} into ./.mcp.json")
+        except Exception:
+            pass
               
     return installed_skills
 
