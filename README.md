@@ -211,6 +211,8 @@ All CLI sub-agent tooling consolidated into one plugin. Each tool has its own `r
 - [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) — scaffold `.claude/` for any project
 - [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) — scaffold `.agents/` for Gemini/Antigravity
 
+**Local LLM Bridge:** Routes Claude Code, Copilot CLI, Antigravity, and Codex traffic through a local Gemma 4 12B instance (Apple Metal/CUDA/ROCm). KV Cache Orchestrator (`kv_cache_orchestrator.py`) eliminates cold prefill for repeated system prompts — SHA-256 keyed slot save/restore, 4 GiB disk budget. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4) (`ds4_kvstore.c`) — credit to Salvador Sanfilippo.
+
 **Agents (12):** `claude/architect-review` · `claude/refactor-expert` · `claude/security-auditor` · `copilot/architect-review` · `copilot/refactor-expert` · `copilot/security-auditor` · `gemini/architect-review` · `gemini/refactor-expert` · `gemini/security-auditor` · `agy/architect-review` · `agy/refactor-expert` · `agy/security-auditor`
 
 > **June 2026 billing note:** GitHub Copilot moves to AI Credits (per-token) on June 1. `gpt-5-mini`, `gpt-4.1`, `gpt-4o` remain included (no credit cost). All other models consume credits — see `copilot-cli-agent` SKILL.md for updated model table.

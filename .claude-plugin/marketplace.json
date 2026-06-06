@@ -63,11 +63,11 @@
     },
     {
       "name": "cli-agents",
-      "description": "Consolidated CLI sub-agent orchestration — dispatches to Claude CLI, GitHub Copilot, Gemini CLI, and Antigravity (agy) for persona-based analysis, task delegation, security audits, and project setup scaffolding.",
+      "description": "Consolidated CLI sub-agent orchestration — dispatches to Claude CLI, GitHub Copilot, Gemini CLI, and Antigravity (agy). Includes global local LLM proxy routing (Anthropic Messages & OpenAI Chat Completions), setup scaffolding, and custom CLI wrappers.",
       "source": "./plugins/cli-agents",
       "strict": true,
       "category": "cli-agents",
-      "tags": ["claude", "copilot", "gemini", "antigravity", "agy", "cli", "sub-agent", "persona", "security-audit"]
+      "tags": ["claude", "copilot", "gemini", "antigravity", "agy", "cli", "sub-agent", "persona", "security-audit", "local-llm", "proxy", "routing"]
     },
     {
       "name": "dev-utils",

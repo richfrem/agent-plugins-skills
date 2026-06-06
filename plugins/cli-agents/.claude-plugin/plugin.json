@@ -1,7 +1,7 @@
 {
     "name": "cli-agents",
     "version": "1.1.0",
-    "description": "Consolidated CLI sub-agent system — dispatches persona-based analysis and task execution to Claude CLI (haiku-4.5), GitHub Copilot (gpt-5-mini), Gemini CLI (gemini-3-flash-preview), and Antigravity agy (frontier Gemini 3.5 Flash+). Includes project setup scaffolding for Claude and Antigravity environments.",
+    "description": "Consolidated CLI sub-agent system — dispatches persona-based analysis and task execution to Claude CLI, GitHub Copilot, Gemini CLI, and Antigravity. Includes global local LLM routing proxy (Anthropic Messages & OpenAI Chat Completions protocols), setup scaffolding, and custom CLI adapters.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -17,13 +17,19 @@
         "persona",
         "security-audit",
         "code-review",
-        "project-setup"
+        "project-setup",
+        "local-llm",
+        "proxy",
+        "routing",
+        "openai-completions",
+        "anthropic-messages"
     ],
     "capabilities": [
         "cli-integration",
         "claude-cli",
         "copilot-cli",
         "gemini-cli",
-        "antigravity-agy"
+        "antigravity-agy",
+        "local-llm-proxy"
     ]
 }
