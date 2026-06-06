@@ -44,13 +44,16 @@ class KVCacheOrchestrator:
         budget_bytes: int = _DEFAULT_BUDGET_BYTES,
         slot: int = 0,
         quant_config: Optional[dict] = None,
+        max_tokens_per_entry: Optional[int] = None,
     ) -> None:
         self.cache_dir = cache_dir
         self.llama_base_url = llama_base_url.rstrip("/")
         self.budget_bytes = budget_bytes
         self.slot = slot
         self.quant_config = quant_config  # e.g. {"ctk": "q8_0", "ctv": "q8_0"}
+        self.max_tokens_per_entry = max_tokens_per_entry
         self._lock = threading.Lock()
+        self._slot_lock = threading.Lock()  # serializes save/restore API calls on single slot
         os.makedirs(cache_dir, exist_ok=True)
 
     # ------------------------------------------------------------------ #
@@ -58,13 +61,21 @@ class KVCacheOrchestrator:
     # ------------------------------------------------------------------ #
 
     def cache_key(self, messages: list) -> str:
-        """SHA-256 of concatenated system message content (newline-joined)."""
-        system_text = "\n".join(
-            m.get("content", "")
-            for m in messages
-            if isinstance(m, dict) and m.get("role") == "system"
-        )
-        return hashlib.sha256(system_text.encode("utf-8")).hexdigest()
+        """SHA-256 of system message content, handling string and parts-array formats."""
+        parts = []
+        for m in messages:
+            if not isinstance(m, dict) or m.get("role") != "system":
+                continue
+            content = m.get("content", "")
+            if isinstance(content, str):
+                parts.append(content)
+            elif isinstance(content, list):
+                # OpenAI multimodal format: [{"type": "text", "text": "..."}]
+                parts.append(" ".join(
+                    p.get("text", "") for p in content
+                    if isinstance(p, dict) and p.get("type") == "text"
+                ))
+        return hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()
 
     # ------------------------------------------------------------------ #
     #  File paths                                                          #
@@ -112,8 +123,9 @@ class KVCacheOrchestrator:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                ok = resp.status < 400
+            with self._slot_lock:
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    ok = resp.status < 400
             if ok:
                 self._record_hit(key)
             return ok
@@ -132,6 +144,10 @@ class KVCacheOrchestrator:
         tokens: estimated prompt token count — used in eviction scoring.
         Returns True on HTTP 2xx.
         """
+        if self.max_tokens_per_entry and tokens > self.max_tokens_per_entry:
+            print(f"[kv-cache] SKIP {key[:8]}... {tokens} tokens > limit "
+                  f"({self.max_tokens_per_entry}), skipping save")
+            return False
         path = self._bin_path(key)
         payload = json.dumps({"filename": path}).encode("utf-8")
         req = urllib.request.Request(
@@ -141,8 +157,9 @@ class KVCacheOrchestrator:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                ok = resp.status < 400
+            with self._slot_lock:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    ok = resp.status < 400
             if ok:
                 self._write_meta(key, "cold", tokens=tokens)
                 self._maybe_evict()

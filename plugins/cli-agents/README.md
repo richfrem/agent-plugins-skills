@@ -31,7 +31,8 @@ cli-agents/
 │   ├── enable_global_routing.py  # Install proxy daemon (launchd/NSSM/systemd)
 │   ├── disable_global_routing.py # Remove proxy daemon (cross-platform)
 │   ├── kv_cache_orchestrator.py  # KV slot save/restore middleware (ds4-inspired, stdlib only)
-│   ├── test_kv_cache.py          # 25 TDD tests for kv_cache_orchestrator
+│   ├── test_kv_cache.py          # 31 TDD tests for kv_cache_orchestrator
+│   ├── smoke_test_kv_cache.py    # End-to-end smoke test: timing + MISS/HIT log check
 │   └── adapters/                 # Lightweight provider CLI adapters
 │       ├── claude_adapter.py
 │       ├── copilot_adapter.py

@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from unittest.mock import MagicMock, patch, call
@@ -77,6 +78,25 @@ class TestCacheKeyGeneration(unittest.TestCase):
         ]
         expected = hashlib.sha256("part one\npart two".encode("utf-8")).hexdigest()
         self.assertEqual(self.cache.cache_key(msgs), expected)
+
+    def test_content_as_parts_array_produces_stable_key(self):
+        msgs = [{"role": "system", "content": [{"type": "text", "text": "You are helpful."}]}]
+        key1 = self.cache.cache_key(msgs)
+        key2 = self.cache.cache_key(msgs)
+        self.assertEqual(key1, key2)
+        self.assertEqual(len(key1), 64)
+
+    def test_content_as_parts_and_string_same_text_same_key(self):
+        text = "You are a helpful assistant."
+        string_msgs = [{"role": "system", "content": text}]
+        parts_msgs = [{"role": "system", "content": [{"type": "text", "text": text}]}]
+        self.assertEqual(self.cache.cache_key(string_msgs), self.cache.cache_key(parts_msgs))
+
+    def test_content_as_parts_array_no_text_type_gives_empty_string(self):
+        # Parts with no "text" type (e.g. image-only) → treated as empty system content
+        msgs = [{"role": "system", "content": [{"type": "image_url", "image_url": "..."}]}]
+        no_system_msgs = [{"role": "user", "content": "hello"}]
+        self.assertEqual(self.cache.cache_key(msgs), self.cache.cache_key(no_system_msgs))
 
 
 class TestCacheHitSkipsPrefill(unittest.TestCase):
@@ -399,6 +419,101 @@ class TestQuantValidation(unittest.TestCase):
         meta = json.loads(open(os.path.join(self.tmpdir, f"{key}.json")).read())
         self.assertEqual(meta["quant_config"], quant)
         self.assertEqual(meta["tokens"], 750)
+
+
+class TestSlotLock(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+        self.cache = _make_cache(self.tmpdir)
+
+    def _plant_bin(self, key):
+        path = os.path.join(self.tmpdir, f"{key}.bin")
+        with open(path, "wb") as f:
+            f.write(b"fake kv state")
+
+    def test_slot_lock_serializes_concurrent_slot_operations(self):
+        key = self.cache.cache_key([{"role": "system", "content": "lock test"}])
+        self._plant_bin(key)
+
+        order = []
+        save_in_urlopen = threading.Event()
+        save_may_finish = threading.Event()
+
+        def recording_urlopen(req, timeout=None):
+            if "save" in req.full_url:
+                order.append("save-start")
+                save_in_urlopen.set()
+                save_may_finish.wait(timeout=3)
+                order.append("save-end")
+            else:
+                order.append("restore")
+            return _mock_urlopen_ok()
+
+        def fake_save_urlopen(req, timeout=None):
+            with open(os.path.join(self.tmpdir, f"{key}.bin"), "wb") as f:
+                f.write(b"saved")
+            return recording_urlopen(req, timeout)
+
+        with patch("urllib.request.urlopen", side_effect=recording_urlopen):
+            save_thread = threading.Thread(
+                target=lambda: self.cache.save_slot(key, tokens=100)
+            )
+            save_thread.start()
+            save_in_urlopen.wait(timeout=3)  # wait until save holds _slot_lock
+
+            restore_thread = threading.Thread(
+                target=lambda: self.cache.restore_slot(key)
+            )
+            restore_thread.start()
+            time.sleep(0.03)  # give restore time to block on _slot_lock
+            save_may_finish.set()
+
+            save_thread.join(timeout=3)
+            restore_thread.join(timeout=3)
+
+        restore_idx = order.index("restore")
+        save_end_idx = order.index("save-end")
+        self.assertGreater(restore_idx, save_end_idx,
+            "restore must wait for save to release _slot_lock before calling llama-server")
+
+
+class TestMaxTokensGuard(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def test_save_skips_oversized_entry(self):
+        cache = KVCacheOrchestrator(
+            cache_dir=self.tmpdir,
+            llama_base_url="http://localhost:8089",
+            max_tokens_per_entry=4000,
+        )
+        key = cache.cache_key([{"role": "system", "content": "oversized prompt"}])
+
+        with patch("urllib.request.urlopen") as mock_open:
+            result = cache.save_slot(key, tokens=5000)
+
+        self.assertFalse(result, "save_slot should return False when tokens exceeds limit")
+        mock_open.assert_not_called()
+
+    def test_save_proceeds_within_limit(self):
+        cache = KVCacheOrchestrator(
+            cache_dir=self.tmpdir,
+            llama_base_url="http://localhost:8089",
+            max_tokens_per_entry=4000,
+        )
+        key = cache.cache_key([{"role": "system", "content": "within limit prompt"}])
+
+        def fake_urlopen(req, timeout=None):
+            with open(os.path.join(self.tmpdir, f"{key}.bin"), "wb") as f:
+                f.write(b"saved state")
+            return _mock_urlopen_ok()
+
+        with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+            result = cache.save_slot(key, tokens=3999)
+
+        self.assertTrue(result, "save_slot should proceed when tokens is within limit")
 
 
 if __name__ == "__main__":
