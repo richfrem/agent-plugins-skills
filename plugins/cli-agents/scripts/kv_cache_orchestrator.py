@@ -6,7 +6,9 @@ Architectural pattern adapted from antirez/ds4 ds4_kvstore.c:
   - SHA-256 keyed disk-persistent cache (ds4 uses SHA-1)
   - Hit-frequency exponential decay with 6-hour half-life
   - Budget-based eviction by ascending score (lowest effective value evicted first)
-  - Eviction score: (effective_hits + 1) * 1 / file_size  (ds4 includes token count)
+  - Eviction score: (effective_hits + base) * tokens / file_size  (ds4 post-PR #177)
+    base = 4.0 for anchor reasons (cold/evict/shutdown), 1.0 otherwise
+  - Quant compatibility: saves record ctk/ctv; restore rejects if server config changed
 
 Integration path: routing_proxy.py calls check_cache() → restore_slot() before
 forwarding, then save_slot() in a background thread after the stream completes.
@@ -41,11 +43,13 @@ class KVCacheOrchestrator:
         llama_base_url: str = "http://localhost:8089",
         budget_bytes: int = _DEFAULT_BUDGET_BYTES,
         slot: int = 0,
+        quant_config: Optional[dict] = None,
     ) -> None:
         self.cache_dir = cache_dir
         self.llama_base_url = llama_base_url.rstrip("/")
         self.budget_bytes = budget_bytes
         self.slot = slot
+        self.quant_config = quant_config  # e.g. {"ctk": "q8_0", "ctv": "q8_0"}
         self._lock = threading.Lock()
         os.makedirs(cache_dir, exist_ok=True)
 
@@ -89,7 +93,16 @@ class KVCacheOrchestrator:
         POST /slots/{slot}/restore to llama-server.
 
         Returns True on HTTP 2xx, False on any error (caller treats as miss).
+        Rejects with False (no API call) if the saved quant config differs from
+        the current server config — prevents silent garbage output on param changes.
         """
+        if self.quant_config:
+            meta = self._read_meta(key)
+            if meta and meta.get("quant_config") and meta["quant_config"] != self.quant_config:
+                print(f"[kv-cache] REJECT {key[:8]}... quant mismatch: "
+                      f"saved={meta['quant_config']} current={self.quant_config}")
+                return False
+
         path = self._bin_path(key)
         payload = json.dumps({"filename": path}).encode("utf-8")
         req = urllib.request.Request(
@@ -111,11 +124,12 @@ class KVCacheOrchestrator:
     #  Save (cache miss path, call after stream completes)                #
     # ------------------------------------------------------------------ #
 
-    def save_slot(self, key: str) -> bool:
+    def save_slot(self, key: str, tokens: int = 0) -> bool:
         """
         POST /slots/{slot}/save to llama-server.
 
         Writes metadata sidecar and runs budget eviction on success.
+        tokens: estimated prompt token count — used in eviction scoring.
         Returns True on HTTP 2xx.
         """
         path = self._bin_path(key)
@@ -130,7 +144,7 @@ class KVCacheOrchestrator:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 ok = resp.status < 400
             if ok:
-                self._write_meta(key, "cold")
+                self._write_meta(key, "cold", tokens=tokens)
                 self._maybe_evict()
             return ok
         except Exception:
@@ -149,7 +163,7 @@ class KVCacheOrchestrator:
             with open(meta_path, "w") as f:
                 json.dump(meta, f)
 
-    def _write_meta(self, key: str, reason: str) -> None:
+    def _write_meta(self, key: str, reason: str, tokens: int = 0) -> None:
         meta_path = self._meta_path(key)
         bin_path = self._bin_path(key)
         now = int(time.time())
@@ -167,7 +181,10 @@ class KVCacheOrchestrator:
                 "created_at": existing.get("created_at", now),
                 "last_used": now,
                 "file_size": file_size,
+                "tokens": tokens,
             }
+            if self.quant_config:
+                meta["quant_config"] = self.quant_config
             with open(meta_path, "w") as f:
                 json.dump(meta, f)
 
@@ -187,10 +204,11 @@ class KVCacheOrchestrator:
         """
         Higher score = higher value = keep.  Lower score = evict first.
 
-        Adapts ds4's formula:
+        Matches ds4 post-PR #177:
           effective_hits = hits * exp2(-elapsed / HALF_LIFE_SECONDS)
-          score = (effective_hits + 1) / file_size
-          anchor reasons get 2× multiplier
+          base = 4.0 for anchor reasons (cold/evict/shutdown), 1.0 otherwise
+          score = (effective_hits + base) * tokens / file_size
+        tokens falls back to 1 if not recorded (entries saved before this fix).
         """
         hits = float(meta.get("hits", 0))
         last_used = meta.get("last_used") or meta.get("created_at", 0)
@@ -201,10 +219,9 @@ class KVCacheOrchestrator:
             if hits < _MIN_EFFECTIVE_HITS:
                 hits = 0.0
         file_size = max(meta.get("file_size", 1), 1)
-        score = (hits + 1.0) / file_size
-        if meta.get("reason") in _ANCHOR_REASONS:
-            score *= 2.0
-        return score
+        base = 4.0 if meta.get("reason") in _ANCHOR_REASONS else 1.0
+        tokens = max(meta.get("tokens", 0), 1)
+        return (hits + base) * tokens / file_size
 
     def _maybe_evict(self) -> None:
         """Remove lowest-score entries until total disk usage is within budget."""

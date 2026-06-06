@@ -19,11 +19,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 from kv_cache_orchestrator import KVCacheOrchestrator, HALF_LIFE_SECONDS
 
 
-def _make_cache(tmpdir, budget_bytes=4 * 1024 * 1024 * 1024):
+def _make_cache(tmpdir, budget_bytes=4 * 1024 * 1024 * 1024, quant_config=None):
     return KVCacheOrchestrator(
         cache_dir=tmpdir,
         llama_base_url="http://localhost:8089",
         budget_bytes=budget_bytes,
+        quant_config=quant_config,
     )
 
 
@@ -181,6 +182,7 @@ class TestCacheMissSavesAfterResponse(unittest.TestCase):
         self.assertEqual(meta["hits"], 0)
         self.assertIn("created_at", meta)
         self.assertIn("file_size", meta)
+        self.assertIn("tokens", meta)
 
     def test_save_returns_false_on_server_error(self):
         key = self.cache.cache_key([{"role": "system", "content": "fail case"}])
@@ -199,7 +201,7 @@ class TestDiskBudgetEviction(unittest.TestCase):
         # 1 MiB budget — three 500 KiB entries will exceed it
         self.cache = _make_cache(self.tmpdir, budget_bytes=1024 * 1024)
 
-    def _plant_entry(self, label, hits, age_hours):
+    def _plant_entry(self, label, hits, age_hours, tokens=1000):
         key = hashlib.sha256(label.encode()).hexdigest()
         bin_path = os.path.join(self.tmpdir, f"{key}.bin")
         with open(bin_path, "wb") as f:
@@ -211,6 +213,7 @@ class TestDiskBudgetEviction(unittest.TestCase):
             "created_at": int(time.time()) - int(age_hours * 3600),
             "last_used": int(time.time()) - int(age_hours * 3600),
             "file_size": 512 * 1024,
+            "tokens": tokens,
         }
         with open(os.path.join(self.tmpdir, f"{key}.json"), "w") as f:
             json.dump(meta, f)
@@ -250,6 +253,22 @@ class TestDiskBudgetEviction(unittest.TestCase):
         if not os.path.isfile(os.path.join(self.tmpdir, f"{k0}.bin")):
             self.assertFalse(os.path.isfile(os.path.join(self.tmpdir, f"{k0}.json")),
                              "JSON sidecar must be removed alongside .bin on eviction")
+
+    def test_high_token_entry_outscores_low_token_entry(self):
+        # Same hits, same file_size, same age — more tokens = higher eviction score = kept longer
+        def _meta(tokens):
+            return {
+                "reason": "cold",
+                "hits": 1,
+                "created_at": int(time.time()),
+                "last_used": int(time.time()),
+                "file_size": 512 * 1024,
+                "tokens": tokens,
+            }
+        score_low = self.cache._eviction_score(_meta(tokens=100))
+        score_high = self.cache._eviction_score(_meta(tokens=5000))
+        self.assertGreater(score_high, score_low,
+            "Entry that saved more tokens should have higher eviction score (kept longer)")
 
 
 class TestDifferentPromptsDifferentKeys(unittest.TestCase):
@@ -298,6 +317,88 @@ class TestDifferentPromptsDifferentKeys(unittest.TestCase):
 
         self.assertIn("/slots/0/restore", url0)
         self.assertIn("/slots/1/restore", url1)
+
+
+class TestQuantValidation(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def _plant_bin(self, key):
+        path = os.path.join(self.tmpdir, f"{key}.bin")
+        with open(path, "wb") as f:
+            f.write(b"fake kv state")
+
+    def _plant_meta(self, key, quant_config, tokens=500):
+        meta = {
+            "key": key,
+            "reason": "cold",
+            "hits": 2,
+            "created_at": int(time.time()),
+            "last_used": int(time.time()),
+            "file_size": 13,
+            "tokens": tokens,
+            "quant_config": quant_config,
+        }
+        with open(os.path.join(self.tmpdir, f"{key}.json"), "w") as f:
+            json.dump(meta, f)
+
+    def test_restore_rejects_mismatched_quant(self):
+        cache = _make_cache(self.tmpdir, quant_config={"ctk": "q4_0", "ctv": "q4_0"})
+        key = cache.cache_key([{"role": "system", "content": "test prompt"}])
+        self._plant_bin(key)
+        self._plant_meta(key, quant_config={"ctk": "q8_0", "ctv": "q8_0"})
+
+        with patch("urllib.request.urlopen") as mock_open:
+            result = cache.restore_slot(key)
+
+        self.assertFalse(result, "Should reject without API call when quant config differs")
+        mock_open.assert_not_called()
+
+    def test_restore_accepts_matching_quant(self):
+        quant = {"ctk": "q8_0", "ctv": "q8_0"}
+        cache = _make_cache(self.tmpdir, quant_config=quant)
+        key = cache.cache_key([{"role": "system", "content": "test prompt"}])
+        self._plant_bin(key)
+        self._plant_meta(key, quant_config=quant)
+
+        with patch("urllib.request.urlopen", return_value=_mock_urlopen_ok()):
+            result = cache.restore_slot(key)
+
+        self.assertTrue(result, "Should proceed to API call when quant config matches")
+
+    def test_restore_accepts_entry_with_no_quant_recorded(self):
+        # Entries saved before the quant fix have no quant_config in sidecar — don't reject them
+        cache = _make_cache(self.tmpdir, quant_config={"ctk": "q8_0", "ctv": "q8_0"})
+        key = cache.cache_key([{"role": "system", "content": "legacy entry"}])
+        self._plant_bin(key)
+        # Plant meta without quant_config field
+        meta = {"key": key, "reason": "cold", "hits": 0, "created_at": 0,
+                "last_used": 0, "file_size": 13, "tokens": 0}
+        with open(os.path.join(self.tmpdir, f"{key}.json"), "w") as f:
+            json.dump(meta, f)
+
+        with patch("urllib.request.urlopen", return_value=_mock_urlopen_ok()):
+            result = cache.restore_slot(key)
+
+        self.assertTrue(result, "Legacy entries without quant_config should not be rejected")
+
+    def test_save_records_quant_config_in_sidecar(self):
+        quant = {"ctk": "q8_0", "ctv": "q8_0"}
+        cache = _make_cache(self.tmpdir, quant_config=quant)
+        key = cache.cache_key([{"role": "system", "content": "quant save test"}])
+
+        def fake_urlopen(req, timeout=None):
+            with open(os.path.join(self.tmpdir, f"{key}.bin"), "wb") as f:
+                f.write(b"saved state")
+            return _mock_urlopen_ok()
+
+        with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+            cache.save_slot(key, tokens=750)
+
+        meta = json.loads(open(os.path.join(self.tmpdir, f"{key}.json")).read())
+        self.assertEqual(meta["quant_config"], quant)
+        self.assertEqual(meta["tokens"], 750)
 
 
 if __name__ == "__main__":

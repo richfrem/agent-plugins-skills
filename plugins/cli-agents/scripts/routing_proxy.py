@@ -114,6 +114,7 @@ def _init_kv_cache() -> None:
             cache_dir=cache_dir,
             llama_base_url="http://localhost:8089",
             budget_bytes=4 * 1024 * 1024 * 1024,  # 4 GB disk budget
+            quant_config={"ctk": "q8_0", "ctv": "q8_0"},  # matches run_server.py -ctk/-ctv
         )
         print(f"[kv-cache] Orchestrator initialized (dir={cache_dir}, budget=4GB)")
     except ImportError:
@@ -154,12 +155,28 @@ def _try_restore(key: str) -> bool:
     return False
 
 
-def _save_in_background(key: str) -> None:
+def _estimate_tokens(parsed_body: dict | None) -> int:
+    """Rough token count from message content (4 chars ≈ 1 token). Handles str and part arrays."""
+    if not parsed_body:
+        return 0
+    total = 0
+    for m in parsed_body.get("messages", []):
+        content = m.get("content", "")
+        if isinstance(content, str):
+            total += len(content)
+        elif isinstance(content, list):
+            for part in content:
+                if isinstance(part, dict):
+                    total += len(str(part.get("text", "")))
+    return max(total // 4, 1)
+
+
+def _save_in_background(key: str, tokens: int = 0) -> None:
     """Save KV slot to disk in a background thread (non-blocking)."""
     if _kv_cache is None or key is None:
         return
     def _do_save():
-        success = _kv_cache.save_slot(key)
+        success = _kv_cache.save_slot(key, tokens=tokens)
         if success:
             print(f"[kv-cache] MISS {key[:8]}... saved")
         else:
@@ -331,7 +348,7 @@ class RoutingProxy(BaseHTTPRequestHandler):
     def _route_to_local(self, raw_body: bytes) -> None:
         """Relay the request to the local llama-server, with KV cache restore/save."""
         # --- KV cache: extract key and attempt restore ---
-        cache_key, _ = _extract_cache_key(raw_body)
+        cache_key, parsed_body = _extract_cache_key(raw_body)
         kv_hit = _try_restore(cache_key)
 
         try:
@@ -385,14 +402,14 @@ class RoutingProxy(BaseHTTPRequestHandler):
 
         # --- KV cache: save on miss (background, non-blocking) ---
         if not kv_hit and cache_key:
-            _save_in_background(cache_key)
+            _save_in_background(cache_key, tokens=_estimate_tokens(parsed_body))
 
     def _route_to_local_openai(self, raw_body: bytes) -> None:
         """Relay OpenAI Chat Completions requests to llama-server, with KV cache."""
         llama_openai_url = "http://localhost:8089/v1/chat/completions"
 
         # --- KV cache: extract key and attempt restore ---
-        cache_key, _ = _extract_cache_key(raw_body)
+        cache_key, parsed_body = _extract_cache_key(raw_body)
         kv_hit = _try_restore(cache_key)
 
         req = urllib.request.Request(
@@ -436,7 +453,7 @@ class RoutingProxy(BaseHTTPRequestHandler):
 
         # --- KV cache: save on miss (background, non-blocking) ---
         if not kv_hit and cache_key:
-            _save_in_background(cache_key)
+            _save_in_background(cache_key, tokens=_estimate_tokens(parsed_body))
 
     # Emit a 503 with start instructions when the local server is unreachable
     def _send_local_offline_error(self) -> None:
