@@ -1,0 +1,1 @@
+../../../../scripts/enable_global_routing.py

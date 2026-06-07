@@ -2706,6 +2706,36 @@
       "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/test_run_agent.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_server.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/run_server.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/enable_global_routing.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/enable_global_routing.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/disable_global_routing.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/disable_global_routing.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/routing_proxy.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/routing_proxy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

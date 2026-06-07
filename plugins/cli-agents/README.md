@@ -27,10 +27,18 @@ cli-agents/
 │   └── plugin.json               # Plugin manifest
 ├── README.md                     # This file
 ├── agents/
-│   ├── refactor-expert.md
-│   ├── security-auditor.md
-│   ├── architect-review.md
-│   └── local-llm-setup.md        # Cross-platform local LLM setup agent
+│   ├── refactor-expert.md        # Code quality — SOLID/DRY smell taxonomy
+│   ├── security-auditor.md       # OWASP vulnerability audit, severity classification
+│   ├── architect-review.md       # C4/SOLID structural review, coupling, layer violations
+│   ├── red-team-reviewer.md      # Adversarial exploit scenarios, attack surface analysis
+│   ├── compliance-reviewer.md    # Project conventions, coding standards, drift detection
+│   ├── pr-reviewer.md            # Diff review — correctness, risk, ship/hold decision
+│   ├── test-writer.md            # Unit test generation — happy/boundary/edge/failure paths
+│   ├── debate-synthesizer.md     # Multi-perspective dialectical synthesis, conflict resolution
+│   ├── output-validator.md       # Output guardrail — hallucination, schema, policy checks
+│   ├── self-critic.md            # Reflection loop — task-fit, completeness, assumption check
+│   ├── performance-analyst.md    # Bottleneck analysis — Big-O, I/O amplification, scale
+│   └── local-llm-setup.md        # Cross-platform local LLM setup agent (user-invocable)
 ├── references/
 │   ├── local_llm_debrief.md      # Technical history: optimization battles + architecture
 │   ├── routing_latency_findings.md # Measured timing data: Mode A vs Mode B comparison
@@ -60,7 +68,8 @@ cli-agents/
     ├── gemini-cli-agent/         # cli=gemini backend — Gemini CLI task delegation
     ├── agy-cli-agent/            # cli=agy backend — Antigravity CLI task delegation
     ├── codex-cli-agent/          # cli=codex backend — Codex/OpenAI-compatible task delegation
-    ├── local-llm-bridge/         # cli=llama backend — direct Gemma 4 12B, no proxy, 2–5s
+    ├── local-llm-bridge/         # cli=llama backend — direct Gemma 4 12B, no proxy, ~2s
+    ├── local-llm-setup/          # Cross-platform setup wizard — llama-server + Mode B config
     ├── project-setup/            # Unifies project setups
     ├── maf-adapter/              # MAF adapter specifications & simulation
     └── agt-security/             # AGT sandboxing, HMAC controls
@@ -69,11 +78,13 @@ cli-agents/
 ## Features
 
 1. **Multi-LLM Task Router**: `run_agent.py` routes one bounded task to one selected backend. Named-flag interface (`--cli`, `--model`, `--max-tokens`, `--isolated`) + legacy positional compat. 37 TDD tests covering command builders, isolated-flag security contract, and llama HTTP payload. 76 total tests across 3 test files.
-2. **Local Gemma Direct Bridge**: `cli=llama` POSTs a lean prompt directly to `http://localhost:8089/v1/chat/completions`. No proxy, no 20K system prompt overhead. Measured: 2–5s typical vs 46s average through Mode A with a 20K prompt.
-3. **API Compatibility Proxy**: `routing_proxy.py` (port 4000) routes `claude-*` → Anthropic API, `gemma-*` → llama-server. Used for Mode A interactive sessions only — not for task delegation.
-4. **KV Cache Orchestrator**: `kv_cache_orchestrator.py` eliminates cold prefill for repeated calls with the same system prompt via llama-server's slot save/restore REST API. SHA-256 keyed, 4 GiB budget. 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4) — credit to Salvador Sanfilippo.
-5. **Secure by Default**: Sub-agents default to isolated execution (no tool access). Tool execution requires explicit validation.
-6. **Path Traversal Protection**: `path_security.py` checks target paths before passing to CLIs.
+2. **Local Gemma Direct Bridge**: `cli=llama` POSTs a lean prompt directly to `http://localhost:8089/v1/chat/completions`. No proxy, no 29K system prompt overhead. **Measured: ~2s wall clock** vs 30–60s through Mode A.
+3. **11 Expert Agent Personas** (`agents/`): refactor-expert, security-auditor, architect-review, red-team-reviewer, compliance-reviewer, pr-reviewer, test-writer, debate-synthesizer, output-validator, self-critic, performance-analyst. Each has a structured analytical framework, severity taxonomy, and output format.
+4. **Adversarial Pattern Family**: red-team-reviewer (attack surface), debate-synthesizer (dialectical synthesis), output-validator (guardrail), self-critic (reflection loop) — implements the adversarial collaboration and guardrail pattern families.
+5. **API Compatibility Proxy**: `routing_proxy.py` (port 4000) routes `claude-*` → Anthropic API, `gemma-*` → llama-server. Mode A only (interactive sessions). Not used for task delegation.
+6. **KV Cache Orchestrator**: `kv_cache_orchestrator.py` eliminates cold prefill for repeated calls with the same system prompt. SHA-256 keyed, 4 GiB budget. 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4).
+7. **Secure by Default**: Sub-agents default to isolated execution. `--isolated` flag suppresses `--yolo` and `--dangerously-skip-permissions` per backend.
+8. **Local LLM Setup Skill**: `skills/local-llm-setup/` — cross-platform setup wizard with scripts/ symlinks for Day 1 bootstrap and Day 2+ reconfiguration.
 
 ## Testing & Benchmarking
 
