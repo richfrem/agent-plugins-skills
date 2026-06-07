@@ -2652,6 +2652,30 @@
       "dst": "plugins/dev-utils/skills/task-agent/assets/templates/task-template.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/gemini-cli-agent/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
