@@ -63,11 +63,11 @@
     },
     {
       "name": "cli-agents",
-      "description": "Consolidated CLI sub-agent orchestration — dispatches to Claude CLI, GitHub Copilot, Gemini CLI, and Antigravity (agy). Includes global local LLM proxy routing (Anthropic Messages & OpenAI Chat Completions), setup scaffolding, and custom CLI wrappers.",
+      "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to 6 backends: Claude, Copilot, Gemini, Agy, Codex, and direct local Gemma 4 12B (llama-server, 2–5s). Includes API compatibility proxy for interactive model-replacement and KV cache orchestrator for cold-prefill elimination.",
       "source": "./plugins/cli-agents",
       "strict": true,
       "category": "cli-agents",
-      "tags": ["claude", "copilot", "gemini", "antigravity", "agy", "cli", "sub-agent", "persona", "security-audit", "local-llm", "proxy", "routing"]
+      "tags": ["task-router", "run-agent", "claude", "copilot", "gemini", "antigravity", "agy", "codex", "local-llm", "llama-server", "gemma", "cli", "sub-agent", "persona", "kv-cache", "proxy"]
     },
     {
       "name": "dev-utils",

@@ -2676,6 +2676,36 @@
       "dst": "plugins/cli-agents/skills/claude-cli-agent/scripts/run_agent.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_agent.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/run_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/kv_cache_orchestrator.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/kv_cache_orchestrator.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/run_server.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/run_server.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/test_run_agent.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/test_run_agent.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

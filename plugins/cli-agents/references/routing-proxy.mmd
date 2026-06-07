@@ -1,84 +1,27 @@
-sequenceDiagram
-    actor User
-    participant ZSH as .zshrc<br/>ANTHROPIC_BASE_URL=:4000
-    participant CC as Claude Code<br/>(any project)
-    participant RP as Routing Proxy<br/>~/.claude/proxy/<br/>port 4000
-    participant LD as launchd<br/>auto-start on login
-    participant ANT as Anthropic API<br/>api.anthropic.com
-    participant LS as llama-server<br/>port 8089
-    participant GPU as Local GPU<br/>gemma-4-12b-UD-Q4_K_XL.gguf
-
-    Note over LD,RP: macOS login — launchd starts routing proxy automatically
-    LD->>RP: python3 ~/.claude/proxy/routing_proxy.py
-    RP->>LS: GET /health (startup check)
-    alt llama-server is running
-        LS-->>RP: 200 OK
-        RP->>RP: log "llama-server status: ONLINE ✓"
-    else llama-server is offline
-        RP->>RP: log "llama-server status: OFFLINE — gemma requests return 503"
+---
+title: Local LLM Bench — Architecture (Mode A + Mode B)
+---
+flowchart TD
+    subgraph ModeA["Mode A — Interactive Model Replacement"]
+        direction TB
+        A["Claude Code\nANTHROPIC_BASE_URL=:4000"] -->|all API calls| P["routing_proxy.py\nport 4000\nauto-starts via launchd"]
+        P -->|GET /v1/models| M["Anthropic API\n→ prepend gemma-4-12b\n→ merged list"]
+        P -->|POST /v1/messages\nmodel: claude-*| C["api.anthropic.com\nCloud API"]
+        P -->|POST /v1/messages\nmodel: gemma-*| L["llama-server :8089\nGemma 4 12B UD-Q4_K_XL\n-ngl 99 -fa on -ctk q8_0"]
+        P -->|POST /v1/chat/completions\nmodel: gemma-*| L
+        KV["kv_cache_orchestrator.py\nSHA-256 keyed\ndisk-persistent slot cache"] -.->|restore before / save after| P
     end
 
-    Note over User,CC: User launches Claude Code (any project)
-    User->>CC: claude --model gemma-4-12b<br/>or: claude (uses default Sonnet)
-    ZSH-->>CC: ANTHROPIC_BASE_URL=http://localhost:4000
-    CC->>CC: stored API key loaded (from claude login)<br/>No ANTHROPIC_AUTH_TOKEN needed
-
-    rect rgb(230, 245, 230)
-        Note over CC,ANT: Model validation — Claude Code calls GET /v1/models before first request
-        CC->>RP: GET /v1/models<br/>x-api-key: sk-ant-... (real key)
-        RP->>ANT: GET /v1/models (forwarded)
-        ANT-->>RP: real Claude model list
-        RP->>RP: prepend gemma-4-12b to list
-        RP-->>CC: merged model list (gemma-4-12b + Claude models)
-        CC->>CC: model validated ✓
+    subgraph ModeB["Mode B — Subtask Delegation"]
+        direction TB
+        F["Cloud Agent\nClaude Code / Copilot"] -->|run_agent.py| R{"--cli ?"}
+        R -->|llama\ndirect HTTP\n2-5s| DH["llama-server :8089\nlean prompt only\n7+ tok/s"]
+        R -->|copilot| CP["GitHub Copilot CLI"]
+        R -->|gemini| GM["Gemini CLI"]
+        R -->|claude| CL["Claude CLI"]
+        R -->|agy| AG["Agy CLI"]
+        R -->|codex\nstdin| CD["Codex CLI\ncodex exec --model M -"]
     end
 
-    rect rgb(210, 232, 255)
-        Note over User,ANT: Scenario A — claude-* model (Sonnet / Opus / Haiku)
-        User->>CC: claude (default) or claude --model claude-opus-4-8
-        User->>CC: prompt or tool call
-        CC->>RP: POST /v1/messages<br/>model: "claude-sonnet-4-6"<br/>x-api-key: sk-ant-... (real key)
-        RP->>RP: model starts with "claude-" → passthrough
-        RP->>ANT: POST /v1/messages<br/>(body + headers forwarded unchanged)
-        ANT-->>RP: Anthropic SSE stream
-        RP-->>CC: SSE stream (unmodified passthrough)
-        CC-->>User: streamed response
-    end
-
-    rect rgb(210, 255, 220)
-        Note over User,GPU: Scenario B — gemma-4-12b (local, free, llama-server online)
-        User->>CC: python3 run_claude.py (launches claude --model gemma-4-12b)
-        User->>CC: prompt
-        CC->>RP: POST /v1/messages<br/>model: "gemma-4-12b"
-        RP->>RP: model != "claude-*" → route to local
-        RP->>RP: Pop "thinking" & pop default "temperature"
-        RP->>LS: POST /v1/messages<br/>(Anthropic format, with local overrides)
-        LS->>GPU: Metal GPU inference<br/>-ngl 99, ctx 32768, --reasoning off
-        GPU-->>LS: token stream
-        LS-->>RP: Anthropic SSE stream (native)
-        RP-->>CC: Anthropic SSE stream (adds Connection: close)
-        CC-->>User: streamed response
-    end
-
-    rect rgb(255, 224, 210)
-        Note over User,RP: Scenario C — gemma-4-12b, llama-server offline
-        User->>CC: python3 run_claude.py
-        User->>CC: prompt
-        CC->>RP: POST /v1/messages<br/>model: "gemma-4-12b"
-        RP->>LS: POST /v1/messages
-        LS-->>RP: OSError: ConnectionRefused
-        RP->>RP: catch OSError → friendly error response
-        RP-->>CC: 503 + Anthropic error JSON<br/>"llama-server offline — run python3 run_server.py"
-        CC-->>User: error message with start instructions
-    end
-
-    rect rgb(240, 240, 255)
-        Note over CC,RP: Scenario D — smallFastModel background task<br/>(commit message, /compact, summary — only in local-llm-bench project)
-        CC->>RP: POST /v1/messages<br/>model: "gemma-4-12b"<br/>(from .claude/settings.json smallFastModel)
-        RP->>RP: model != "claude-*" → route to local
-        RP->>LS: POST /v1/messages
-        LS->>GPU: inference
-        GPU-->>LS: response
-        LS-->>RP: Anthropic response
-        RP-->>CC: Anthropic response
-    end
+    NA["Mode A: Claude Code IS Gemma\n~29K token system prompt per session\n~1.2 tok/s generation\nKV cache orchestrator active"]
+    NB["Mode B: Cloud agent DELEGATES to Gemma\nLean prompt only 50-500 tokens\n7+ tok/s  2-5s typical\nNo proxy  no system prompt overhead"]

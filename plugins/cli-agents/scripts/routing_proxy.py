@@ -62,9 +62,9 @@ Script Dependencies:
     urllib, http.server, json, socketserver, ssl, threading
 
 Consumed by:
-    run_claude.py, run_copilot.py, run_agy.py, run_codex.py
-    Claude Code, GitHub Copilot CLI, Antigravity, Aider, Goose, and any
-    OpenAI-compatible CLI client routed through ANTHROPIC_BASE_URL or OPENAI_BASE_URL
+    Claude Code (via ANTHROPIC_BASE_URL=:4000), any OpenAI-compatible client
+    (via OPENAI_BASE_URL=:4000). Mode A only — run_agent.py bypasses this proxy entirely.
+    (run_claude.py, run_copilot.py, run_agy.py, run_codex.py were deleted; see run_agent.py.)
 """
 
 import json
@@ -126,14 +126,22 @@ def _init_kv_cache() -> None:
 def _extract_cache_key(raw_body: bytes) -> tuple[str | None, dict | None]:
     """Extract system messages from request body and compute cache key.
 
-    Returns (cache_key, parsed_body) or (None, None) on failure.
+    Returns (cache_key, parsed_body) or (None, body) when no non-empty system
+    message exists (avoids all-requests colliding on the empty-string hash).
+    Returns (None, None) on parse failure.
     """
     if _kv_cache is None:
         return None, None
     try:
         body = json.loads(raw_body.decode("utf-8"))
         messages = body.get("messages", [])
-        if not messages:
+        system_messages = [
+            m for m in messages
+            if isinstance(m, dict)
+            and m.get("role") == "system"
+            and str(m.get("content", "")).strip()
+        ]
+        if not system_messages:
             return None, body
         key = _kv_cache.cache_key(messages)
         return key, body
