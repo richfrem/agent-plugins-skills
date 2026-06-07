@@ -92,7 +92,7 @@ Write a complete, dense spec to `temp/copilot_prompt_<task>.md`. Include:
 - Instruction to write files directly via Write tool (not output delimiters)
 - A Completion Checklist section at the end
 
-### Step 2 — Heartbeat check (always first, free model)
+### Step 2 — Heartbeat check (always first, cheapest model)
 ```bash
 python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
@@ -130,11 +130,14 @@ python plugins/exploration-cycle-plugin/scripts/dispatch.py \
 ```
 
 ### Token efficiency rules
+
+> See `references/cheapest_models.md` for current model costs — none are free as of June 2026 except self-hosted `llama`.
+
 | Model | Cost | Use for |
 |-------|------|---------|
-| `gpt-5-mini` (default, no model arg) | Free | Scaffolding, docs, stubs, simple edits |
+| `gpt-5-mini` (default, no model arg) | Paid (AI Credits) | Scaffolding, docs, stubs, simple edits |
 | `claude-sonnet-4.6` | Per request | Complex multi-file generation, logic, synthesis |
-| Copilot `--yolo` | Free tier | Interactive simpler tasks |
+| Copilot `--yolo` | Per-token | Interactive simpler tasks |
 
 **Never make iterative premium requests.** Batch everything into one dense call.
 

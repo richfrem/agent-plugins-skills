@@ -234,7 +234,9 @@ Ask the user how they want to run the loop:
 Run this exact bash command from your active workspace:
 ```bash
 # Run from within the lab repository
-nohup gemini --yolo --model gemini-3-flash-preview -p "You are the L1 Triple-Loop Orchestrator. Read eval-instructions.md completely and follow every step precisely. You are running headlessly — do NOT pause to ask for human confirmation on the evals.json setup; populate the JSON yourself and immediately execute all 10 iteration loops using copilot (gpt-mini with --allow-all-paths --allow-all-urls -y) as your L2 proposer. Generate eval_progress.png at the end." > gemini_orchestrator_<skill-name>.log 2>&1 < /dev/null &
+# NOTE: standalone 'gemini' CLI deprecated June 18, 2026 — use 'agy' instead.
+# See references/cheapest_models.md for current model names.
+nohup agy --yolo -p "You are the L1 Triple-Loop Orchestrator. Read eval-instructions.md completely and follow every step precisely. You are running headlessly — do NOT pause to ask for human confirmation on the evals.json setup; populate the JSON yourself and immediately execute all 10 iteration loops using copilot as your L2 proposer. Generate eval_progress.png at the end." > agy_orchestrator_<skill-name>.log 2>&1 < /dev/null &
 ```
 
 > [!IMPORTANT]

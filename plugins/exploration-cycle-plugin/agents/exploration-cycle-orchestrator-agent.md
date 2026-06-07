@@ -148,7 +148,7 @@ digraph orchestrator_routing {
 The requirements-doc-agent runs as a cheap Copilot CLI sub-agent. Call it once per focused capture task — never try to capture everything in a single invocation:
 
 ```bash
-# Simple tasks: no --model flag → defaults to free/cheap model (gpt-5-mini via Copilot)
+# Simple tasks: no --model flag → defaults to cheapest model (see references/cheapest_models.md)
 # Complex tasks: --model claude-sonnet-4.6 → 1 premium request (batch dense for value)
 # --tier flag: 1=low risk (default), 2=moderate, 3=high (omits --dangerously-skip-permissions)
 

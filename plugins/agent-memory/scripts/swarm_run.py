@@ -124,6 +124,25 @@ except ImportError:
     print("[ERROR] PyYAML not found. Run: python -m pip install pyyaml")
     sys.exit(1)
 
+# ─── Model resolution ────────────────────────────────────────────────────────
+
+def _load_cheapest_model(engine: str, fallback: str, ref_path: "Path | None" = None) -> str:
+    """Return the cheapest model for engine from cheapest_models.json, or fallback.
+
+    Consult references/cheapest_models.json for current model recommendations —
+    model names change over time and should not be hardcoded inline.
+    """
+    try:
+        if ref_path is None:
+            script_dir = Path(__file__).resolve().parent
+            ref_path = script_dir.parent / "references" / "cheapest_models.json"
+        if ref_path.exists():
+            data = json.loads(ref_path.read_text())
+            return data.get(engine, {}).get("model", fallback)
+    except Exception:
+        pass
+    return fallback
+
 # ─── AUGMENT PATH for subprocesses ──────────────────────────────────────────
 # Ensures CLI tools like `copilot`, `gemini`, `claude` are discoverable when
 # this script is invoked by agents that strip the shell PATH.
@@ -316,12 +335,12 @@ def execute_worker(
         # Engine-specific CLI arguments
         cmd_args = [engine.lower()]
         
-        # Apply intelligent default models if the 'haiku' placeholder or no model is provided
+        # Resolve model — consult cheapest_models.json rather than hardcoding
         effective_model = model
         if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = "gemini-3-pro-preview"
+            effective_model = _load_cheapest_model("gemini", "gemini-3-pro-preview")
         elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = "gpt-5-mini"
+            effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
 
         payload = content
         if engine.lower() == "claude":

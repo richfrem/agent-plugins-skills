@@ -108,8 +108,8 @@ For all other session types, ask the SME after session type selection:
 
 > "One more thing — how should I handle the heavy lifting when we get to building?
 >
-> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (free). Complex tasks use `claude-sonnet-4.6` or `claude-opus-4.6` (1 premium request — all related tasks batched into one dense call).
-> 2. **I have Gemini CLI** — Simple tasks use `gemini-3.1-flash-lite-preview` (cheap). Complex tasks use `gemini-3.1-pro-preview`.
+> 1. **I have GitHub Copilot Pro** — I'll use Copilot CLI. Simple tasks use `gpt-5-mini` (paid, AI Credits). Complex tasks use `claude-sonnet-4.6` or `claude-opus-4.6` (1 premium request — all related tasks batched into one dense call).
+> 2. **I have Agy CLI** — Simple tasks use the cheapest model (see `references/cheapest_models.md`). Complex tasks use the premium tier. Note: standalone `gemini` CLI shut down June 18, 2026 — use `agy` instead.
 > 3. **Claude only** — I'll use Claude sub-agents. Simple tasks use `haiku-4.5` (cheapest). Complex tasks use `sonnet`.
 > 4. **I'll handle it myself** — Everything happens directly in this session."
 

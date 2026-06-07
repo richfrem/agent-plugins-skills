@@ -8,16 +8,18 @@ should only do coordination work — delegate everything else to the cheapest mo
 
 The SME chooses a strategy during Block 0 of `exploration-workflow`. Choices:
 
-| Strategy | When | Free/cheap model | Premium model | Cost model |
+| Strategy | When | Cheapest model | Premium model | Cost model |
 |---|---|---|---|---|
-| `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (free) | `claude-sonnet-4.6` or `claude-opus-4.6` | **Per request** — batch everything into 1 dense call |
-| `gemini-cli` | User has Gemini CLI | `gemini-3.1-flash-lite-preview` (cheap) | `gemini-3.1-pro-preview` | Per token — standard |
-| `claude-subagents` | Claude Code only, no external CLI | `haiku-4.5` (cheapest) | `sonnet` / `claude-sonnet-4.6` | Per token — standard |
+| `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (paid, AI Credits) | `claude-sonnet-4.6` or `claude-opus-4.6` | **Per request** — batch everything into 1 dense call |
+| `agy-cli` | User has Agy CLI (Antigravity) | `gemini-3.5-flash` (paid, per-token) | `gemini-pro` | Per token — standard |
+| `claude-subagents` | Claude Code only, no external CLI | `haiku-4.5` (paid, cheapest) | `sonnet` / `claude-sonnet-4.6` | Per token — standard |
 | `direct` | No sub-agent tooling / all in-session | This session's model | This session's model | This session's cost model |
 
-> **Model names change.** The identifiers above are current as of the plugin version date. Always verify against:
+> **None of these are free as of June 2026.** Only self-hosted `llama` (Gemma 4) is zero-cost. See `references/cheapest_models.md` for current model names and costs.
+> The standalone `gemini` CLI was deprecated and shut down June 18, 2026 — use `agy-cli` instead.
+> **Model names change.** Always verify current identifiers against:
 > - Copilot CLI: `copilot --help` or [GitHub Copilot model docs](https://docs.github.com/en/copilot/using-github-copilot/ai-models)
-> - Gemini CLI: `gemini --help` or Google AI docs
+> - Agy CLI: `agy --help` or Antigravity docs
 > - Claude sub-agents: check `haiku` model alias or use full model ID from Anthropic docs
 
 Record the resolved strategy in `exploration/exploration-dashboard.md` as `**Dispatch Strategy:**`.
@@ -127,14 +129,14 @@ Agent({
 ### Copilot CLI — `copilot-cli` strategy
 
 ```bash
-# Simple capture task — gpt-5-mini (free tier)
+# Simple capture task — gpt-5-mini (low cost, AI Credits)
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals." \
   --output exploration/captures/problem-framing.md
 
-# Q&A clarification pass — gpt-5-mini (free tier)
+# Q&A clarification pass — gpt-5-mini (low cost, AI Credits)
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
   --context exploration/captures/brd-draft.md \

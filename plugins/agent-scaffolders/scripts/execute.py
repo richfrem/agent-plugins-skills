@@ -10,6 +10,7 @@ This script runs the shared benchmarking loop with safe defaults:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -52,8 +53,6 @@ def _build_command(args: argparse.Namespace, plugin_root: Path) -> list[str]:
         cmd.append("--verbose")
     return cmd
 
-
-import json
 
 def _get_default_improve_model() -> str:
     fallback = "gpt-5-mini"

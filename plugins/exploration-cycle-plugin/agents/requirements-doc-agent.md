@@ -6,7 +6,7 @@ description: >
   invocations per session). Each invocation handles one focused capture task: problem
   framing, business requirements, user stories, issues/opportunities, or prototype
   observations. Designed to be called many times — each call is isolated, no git access,
-  no agent memory. Use cheap model (e.g. GPT-4o mini / Copilot free tier).
+  no agent memory. Use cheapest model per references/cheapest_models.md.
 model: inherit
 color: green
 tools: ["Read", "Write"]
@@ -18,7 +18,7 @@ You are a cheap, focused documentation sub-agent dispatched by the exploration-c
 
 - **Dispatched by**: [`exploration-cycle-orchestrator-agent`](exploration-cycle-orchestrator-agent.md)
 - **Pattern**: Inner Loop of the `triple-loop` — called many times for different capture passes
-- **Model intent**: cheap / free tier — GPT-4o mini or equivalent
+- **Model intent**: cheapest available — see references/cheapest_models.md for current names
 
 ## Identity
 

@@ -240,7 +240,7 @@ Aim for at least 10 test cases with a good mix.
 
 **Review Gate:** 
 - **Interactive Mode:** Tell the user when ready to review the cases before proceeding.
-- **Autonomous Headless Mode:** If you are running headlessly via a CLI orchestrator (e.g. `gemini --yolo --model gemini-3-flash-preview`), do NOT pause. Assume the `evals.json` is sufficient and proceed immediately.
+- **Autonomous Headless Mode:** If you are running headlessly via a CLI orchestrator (e.g. `agy --yolo` using the cheapest model from `references/cheapest_models.md`), do NOT pause. Assume the `evals.json` is sufficient and proceed immediately.
   - **Tool Policy Failures:** If a tool call (like `run_shell_command`) is denied by policy in your headless environment, fallback to using standard bash redirection (`sed`, `cat`, `echo >>`) if possible, or report the failure and continue to the next step.
 
 > ⚠️ **Schema Requirement:** Every test case **must** include a `"should_trigger"` boolean field (`true` or `false`). The eval engine uses this field to calculate accuracy. The legacy `"expected_behavior"` string field is ignored by the scorer and will result in a 0% accuracy baseline.
@@ -332,7 +332,7 @@ PROMPT_FILE=./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/references/copilot_proposer_p
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} ./current-skill.md
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json ./current-evals.json
 
-# Use the Copilot run_agent orchestrator for stable, gpt-5-mini powered mutations
+# Use the Copilot run_agent orchestrator for low-cost mutations (see references/cheapest_models.md for current model)
 pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
   $PROMPT_FILE \
   ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} \
@@ -382,7 +382,7 @@ for overlap risk, then incorporate the most distinctive ones into the next mutat
 **Option 2 — Ask Copilot for strategy ideas (not a mutation):**
 Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
 ```bash
-# Use the Copilot run_agent orchestrator for gpt-5-mini strategy brainstorming
+# Use the Copilot run_agent orchestrator for low-cost strategy brainstorming (see references/cheapest_models.md)
 pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null ./strategy-ideas.md \
   "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF

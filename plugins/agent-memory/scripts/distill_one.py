@@ -30,6 +30,7 @@ Related:
     - swarm_run.py       (batch version of this script)
 """
 
+import json
 import sys
 import shlex
 import argparse
@@ -95,11 +96,30 @@ except ImportError as e:
     sys.exit(1)
 
 # ─── ENGINE DEFAULTS ─────────────────────────────────────────────────────────
-ENGINE_DEFAULTS = {
-    "copilot": "gpt-5-mini",
-    "gemini":  "gemini-3-flash-preview",
-    "claude":  "claude-haiku-4-5",
-}
+# Model names change over time. Consult references/cheapest_models.json for
+# current recommendations — do not hardcode model names inline.
+
+def _load_engine_defaults(ref_path: "Path | None" = None) -> dict:
+    """Load per-engine cheapest model names from cheapest_models.json, with fallbacks."""
+    fallbacks = {
+        "copilot": "gpt-5-mini",
+        "gemini":  "gemini-3-flash-preview",
+        "claude":  "claude-haiku-4-5",
+    }
+    try:
+        if ref_path is None:
+            script_dir = Path(__file__).resolve().parent
+            ref_path = script_dir.parent / "references" / "cheapest_models.json"
+        if ref_path.exists():
+            data = json.loads(ref_path.read_text())
+            for engine, info in data.items():
+                if "model" in info and engine in fallbacks:
+                    fallbacks[engine] = info["model"]
+    except Exception:
+        pass
+    return fallbacks
+
+ENGINE_DEFAULTS = _load_engine_defaults()
 
 
 def build_llm_cmd(engine: str, model: str, prompt_payload: str) -> tuple[list[str], str]:
@@ -136,23 +156,32 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Single-file RLM distillation smoke test"
     )
-    parser.add_argument("--profile",  required=True,  help="RLM profile name (from rlm_profiles.json)")
-    parser.add_argument("--file",     required=True,  help="Path to the file to summarize (relative to project root)")
+    parser.add_argument("--profile",  required=False, default=None, help="RLM profile name (from rlm_profiles.json)")
+    parser.add_argument("--file",     required=False, default=None, help="Path to the file to summarize (relative to project root)")
     parser.add_argument("--engine",   default="copilot", choices=["copilot", "gemini", "claude"],
                         help="AI CLI engine to use (default: copilot)")
     parser.add_argument("--model",    default=None,
-                        help="Model override. Defaults to engine's recommended free model.")
+                        help="Model override. Defaults to cheapest model per references/cheapest_models.json.")
     parser.add_argument("--dry-run",  action="store_true",
                         help="Print the prompt payload but do not call the CLI or write cache.")
+    parser.add_argument("--mock",     action="store_true",
+                        help="Resolve model from cheapest_models.json, print JSON, and exit without running the CLI.")
     args = parser.parse_args()
+
+    model = args.model or ENGINE_DEFAULTS.get(args.engine, "gpt-5-mini")
+
+    if args.mock:
+        print(json.dumps({"engine": args.engine, "model": model}))
+        sys.exit(0)
+
+    if not args.profile or not args.file:
+        parser.error("--profile and --file are required unless --mock is used")
 
     # ─── RESOLVE CONFIG ──────────────────────────────────────────────────────
     try:
         config = RLMConfig(profile_name=args.profile)
     except SystemExit:
         sys.exit(1)
-
-    model = args.model or ENGINE_DEFAULTS.get(args.engine, "gpt-5-mini")
 
     file_path = PROJECT_ROOT / args.file
     if not file_path.exists():

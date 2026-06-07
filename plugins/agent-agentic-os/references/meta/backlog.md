@@ -66,7 +66,7 @@
 **Impact**: The improvement ledger can show rising scores for a skill that is getting worse at its actual job. Keyword stuffing would pass F1 gate if negative evals don't cover the stuffed words. The F1 fix (v38) closes one vector but the fundamental problem remains: no LLM judge.
 **Options**:
 - A) One LLM API call per eval cycle via `claude-api` skill: submit the SKILL.md diff + one positive prompt and get a one-sentence routing judgment. Fills `llm_routing_score`. Cost: ~$0.001 per cycle. Requires API key in env.
-- B) Use the existing `gemini-cli-agent` or `copilot-cli-agent` as a free-tier judge. More setup, less reliable, but zero API cost.
+- B) Use the existing `agy-cli-agent` or `copilot-cli-agent` as a low-cost judge. More setup, less reliable. See `references/cheapest_models.md` for current per-token costs — none are free as of June 2026.
 - C) Add LLM-based routing to `eval_runner.py` as an optional `--llm-judge` flag. Only fires when explicitly requested (Standard Cycle). Triple-Loop cycle stays keyword-only.
 - D) Accept keyword-only for now. The F1 gate + adversarial negative evals provide meaningful regression protection even without semantic judgment. Add LLM judge when a skill passes keyword eval but fails in practice (event-driven).
 **Recommendation**: Option C + D combined. Default to keyword-only (fast). Add `--llm-judge` flag for Standard Cycle. Trigger it when a KEEP skill degrades in practice (a new friction event pattern).
