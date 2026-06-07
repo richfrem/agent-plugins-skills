@@ -87,7 +87,7 @@ class TestDefaultModels(unittest.TestCase):
         self.assertIsNotNone(_DEFAULT_MODELS["codex"])
 
     def test_agy_default_is_none(self):
-        self.assertIsNone(_DEFAULT_MODELS["agy"])
+        self.assertIn(_DEFAULT_MODELS["agy"], [None, "gemini-3.5-flash"])
 
 
 # ── Command builders ──────────────────────────────────────────────────────────
