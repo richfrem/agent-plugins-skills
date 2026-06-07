@@ -30,10 +30,11 @@ LLM CLI** — never a local Ollama server.
 ## Cheap-Model Fallback Chain (Strict)
 
 ```
-1. copilot CLI available?  → use gpt-5-mini        (fastest, free with Copilot Pro)
-2. claude CLI available?   → use claude-haiku-4-5  (fallback)
-3. gemini CLI available?   → use gemini-3-flash-preview (final fallback)
+1. copilot CLI available?  → use gpt-5-mini        (fastest, Paid - AI Credits)
+2. claude CLI available?   → use claude-haiku-4-5  (fallback, Paid)
+3. gemini CLI available?   → use gemini-3-flash-preview (final fallback, Paid)
 4. none found              → exit with instructions
+
 ```
 
 > `rlm-distill-ollama` is fully deprecated. Only `rlm-distill-agent` pointing

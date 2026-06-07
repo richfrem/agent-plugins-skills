@@ -66,14 +66,30 @@ import urllib.error
 import urllib.request
 
 # ── Defaults per CLI ──────────────────────────────────────────────────────────
-_DEFAULT_MODELS = {
-    "copilot": "gpt-5-mini",
-    "gemini": "gemini-3-flash-preview",
-    "claude": "haiku-4.5",
-    "agy": None,          # agy selects its own model
-    "codex": "gpt-5-codex",
-    "llama": "gemma-4-12b",  # direct HTTP to llama-server :8089, no proxy
-}
+def _load_default_models() -> dict[str, str | None]:
+    defaults = {
+        "copilot": "gpt-5-mini",
+        "gemini": "gemini-3-flash-preview",
+        "claude": "haiku-4.5",
+        "agy": "gemini-3.5-flash",
+        "codex": "gpt-5-mini",
+        "llama": "gemma-4-12b",
+    }
+    try:
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        ref_path = os.path.join(script_dir, "..", "references", "cheapest_models.json")
+        if os.path.exists(ref_path):
+            with open(ref_path, "r") as f:
+                data = json.load(f)
+                for cli, info in data.items():
+                    if "model" in info:
+                        defaults[cli] = info["model"]
+    except Exception:
+        pass
+    return defaults
+
+_DEFAULT_MODELS = _load_default_models()
+
 
 _LLAMA_MAX_TOKENS_DEFAULT = 120  # bounded output for agent subtasks
 

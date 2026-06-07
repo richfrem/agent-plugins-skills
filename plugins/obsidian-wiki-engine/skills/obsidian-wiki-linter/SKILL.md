@@ -64,9 +64,10 @@ python ./scripts/lint_wiki.py --wiki-root /path/to/wiki-root --dry-run
 
 Same strict cheap-model chain as `obsidian-rlm-distiller`:
 ```
-1. copilot  → gpt-5-mini        (free with Copilot Pro)
-2. claude   → claude-haiku-4-5  (fallback)
-3. gemini   → gemini-3-flash-preview (final fallback)
+1. copilot  → gpt-5-mini        (Paid, AI Credits)
+2. claude   → claude-haiku-4-5  (fallback, Paid)
+3. gemini   → gemini-3-flash-preview (final fallback, Paid)
+
 ```
 
 ## Output

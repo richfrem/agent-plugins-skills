@@ -491,7 +491,17 @@ def main() -> None:
     if not args.improve_model:
         args.improve_model = args.model
     if args.improve_engine == "copilot" and not args.improve_model:
-        args.improve_model = "gpt-5-mini"
+        fallback = "gpt-5-mini"
+        try:
+            script_dir = Path(__file__).resolve().parent
+            ref_path = script_dir.parents[1] / "references" / "cheapest_models.json"
+            if ref_path.exists():
+                data = json.loads(ref_path.read_text())
+                fallback = data.get("copilot", {}).get("model", fallback)
+        except Exception:
+            pass
+        args.improve_model = fallback
+
 
     eval_set = json.loads(Path(args.eval_set).read_text())
     skill_path = Path(args.skill_path)
