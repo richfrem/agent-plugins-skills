@@ -1,0 +1,27 @@
+{
+  "llama": {
+    "model": "gemma-4-12b",
+    "cost": "Free (self-hosted)",
+    "description": "Local inference on port 8089"
+  },
+  "copilot": {
+    "model": "gpt-5-mini",
+    "cost": "Paid (AI Credits)",
+    "description": "Standard low-cost reasoning tier — free tier ended June 2026"
+  },
+  "agy": {
+    "model": "gemini-3.5-flash",
+    "cost": "Paid (Per-token / Pro quotas)",
+    "description": "Antigravity CLI (replaces deprecated gemini CLI)"
+  },
+  "claude": {
+    "model": "claude-haiku-4-5",
+    "cost": "Paid (Per-token)",
+    "description": "High context window ($1/$5 per MTok)"
+  },
+  "codex": {
+    "model": "gpt-5-mini",
+    "cost": "Paid (Per-token)",
+    "description": "OpenAI-compatible endpoints"
+  }
+}

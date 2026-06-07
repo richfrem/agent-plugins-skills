@@ -68,7 +68,7 @@ The system prompt is the full content of `plugins/agent-agentic-os/agents/os-arc
 The user turn is the scenario prompt.
 
 ```bash
-# 1. Heartbeat (free model — always first)
+# 1. Heartbeat (cheapest model — always first)
 python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null temp/os-evolution-verifier/heartbeat.md \
   "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."

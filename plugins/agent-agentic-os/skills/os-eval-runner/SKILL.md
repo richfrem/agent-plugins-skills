@@ -112,7 +112,7 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 - `evals/evals.json` — replace the `REPLACE` placeholders with real test inputs and `should_trigger` values
 
 **Step 3 — Establish baseline and start the loop:**
-*(Best Practice: Run a functional CLI heartbeat using `run_agent.py` and a cheap model like `gpt-5-mini` to verify end-to-end connectivity before starting a long loop.)*
+*(Best Practice: Run a functional CLI heartbeat using `run_agent.py` and the cheapest available model (see `references/cheapest_models.md`) to verify end-to-end connectivity before starting a long loop.)*
 ```bash
 python ./scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
@@ -185,7 +185,7 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 
 ## Phase 0: Intake Interview
 
-*(Note: Triple-Loop architectures require a functional CLI Heartbeat before starting unattended loops. If you are starting an unattended loop, ensure `run_agent.py` and your AI models like `gpt-5-mini` or `gemini-3-flash-preview` are reachable).*
+*(Note: Triple-Loop architectures require a functional CLI Heartbeat before starting unattended loops. If you are starting an unattended loop, ensure `run_agent.py` and your AI CLI backends are reachable — see `references/cheapest_models.md` for current model names.)*
 
 Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
 
@@ -305,7 +305,7 @@ The agent will:
 
    Call pattern (incorporating Triple-Loop Orchestrator stability patterns):
    ```bash
-   # Explicitly delegate to a cost-effective CLI sub-agent (e.g., gpt-5-mini or gemini-flash)
+   # Explicitly delegate to a cost-effective CLI sub-agent (see references/cheapest_models.md for current model names)
    # Use run_agent.py for stability instead of raw CLI calls to avoid quoting/piping fragility
    python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
      <experiment-dir>/references/copilot_proposer_prompt.md \

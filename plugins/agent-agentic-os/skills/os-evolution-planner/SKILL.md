@@ -40,7 +40,7 @@ Before doing anything else, check `context/memory/environment.md`:
   - **Dispatch backend** (Copilot CLI or Claude subagent)
 - If it does not exist, default to Claude-only mode and note:
   > "No environment profile found — defaulting to Claude-only. Run `os-environment-probe`
-  > to unlock free-tier Copilot or Gemini brainstorming."
+  > to unlock low-cost Copilot or Agy brainstorming."
 
 ---
 
@@ -54,10 +54,12 @@ key tradeoff.
 
 **Model selection** (use first that is available per environment profile):
 
-| Priority | Model | How to invoke |
-|----------|-------|---------------|
-| 1 | Copilot free tier (gpt-4o-mini) | `gh copilot suggest "<brainstorm prompt>"` |
-| 2 | Gemini free tier (gemini-flash-2.0) | `gemini -m gemini-2.0-flash-exp "<brainstorm prompt>"` |
+> Consult `references/cheapest_models.md` for current model names and costs.
+
+| Priority | Engine | How to invoke |
+|----------|--------|---------------|
+| 1 | Copilot CLI (gpt-5-mini) | `run_agent.py --cli copilot` |
+| 2 | Agy CLI (gemini-3.5-flash) | `run_agent.py --cli agy` |
 | 3 | Claude Haiku subagent | Spawn `Agent(subagent_type="haiku", prompt=...)` |
 
 **Brainstorm prompt template:**

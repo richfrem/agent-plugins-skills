@@ -123,6 +123,22 @@ except ImportError:
     print("❌ PyYAML not found. Run: pip install pyyaml")
     sys.exit(1)
 
+# ─── Model resolution ─────────────────────────────────────────────────────────
+
+def _load_cheapest_model(engine: str, fallback: str, ref_path: "Path | None" = None) -> str:
+    """Return the cheapest model for engine from cheapest_models.json, or fallback."""
+    try:
+        if ref_path is None:
+            script_dir = Path(__file__).resolve().parent
+            ref_path = script_dir.parent / "references" / "cheapest_models.json"
+        if ref_path.exists():
+            data = json.loads(ref_path.read_text())
+            return data.get(engine, {}).get("model", fallback)
+    except Exception:
+        pass
+    return fallback
+
+
 # ─── LOGGING ───────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -285,27 +301,9 @@ def execute_worker(
         # Apply intelligent default models if the 'haiku' placeholder or no model is provided
         effective_model = model
         if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
-            fallback = "gemini-3-pro-preview"
-            try:
-                script_dir = Path(__file__).resolve().parent
-                ref_path = script_dir.parent / "references" / "cheapest_models.json"
-                if ref_path.exists():
-                    data = json.loads(ref_path.read_text())
-                    fallback = data.get("gemini", {}).get("model", fallback)
-            except Exception:
-                pass
-            effective_model = fallback
+            effective_model = _load_cheapest_model("gemini", "gemini-3-pro-preview")
         elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
-            fallback = "gpt-5-mini"
-            try:
-                script_dir = Path(__file__).resolve().parent
-                ref_path = script_dir.parent / "references" / "cheapest_models.json"
-                if ref_path.exists():
-                    data = json.loads(ref_path.read_text())
-                    fallback = data.get("copilot", {}).get("model", fallback)
-            except Exception:
-                pass
-            effective_model = fallback
+            effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
 
 
         payload = content

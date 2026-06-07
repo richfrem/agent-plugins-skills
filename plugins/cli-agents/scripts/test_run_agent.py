@@ -15,7 +15,7 @@ import os
 import sys
 import tempfile
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 sys.path.insert(0, os.path.dirname(__file__))
 from run_agent import (
@@ -28,6 +28,7 @@ from run_agent import (
     _build_cmd_copilot,
     _build_cmd_gemini,
     _call_llama_direct,
+    _load_default_models,
     build_prompt,
 )
 
@@ -80,14 +81,25 @@ class TestDefaultModels(unittest.TestCase):
         for backend in self.ALL_BACKENDS:
             self.assertIn(backend, _DEFAULT_MODELS, f"Missing backend: {backend}")
 
-    def test_llama_default_is_gemma(self):
-        self.assertEqual(_DEFAULT_MODELS["llama"], "gemma-4-12b")
+    def test_defaults_match_cheapest_models_json(self):
+        """Loaded defaults must equal what cheapest_models.json declares.
 
-    def test_codex_default_set(self):
-        self.assertIsNotNone(_DEFAULT_MODELS["codex"])
-
-    def test_agy_default_is_none(self):
-        self.assertIn(_DEFAULT_MODELS["agy"], [None, "gemini-3.5-flash"])
+        When you update cheapest_models.json the test self-updates — no
+        model name is hardcoded here.
+        """
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        ref_path = os.path.join(script_dir, "..", "references", "cheapest_models.json")
+        if not os.path.exists(ref_path):
+            self.skipTest("cheapest_models.json not present")
+        with open(ref_path) as f:
+            json_models = json.load(f)
+        for engine, info in json_models.items():
+            if "model" in info and engine in _DEFAULT_MODELS:
+                self.assertEqual(
+                    _DEFAULT_MODELS[engine],
+                    info["model"],
+                    f"{engine} default should match cheapest_models.json",
+                )
 
 
 # ── Command builders ──────────────────────────────────────────────────────────
@@ -266,6 +278,42 @@ class TestConstants(unittest.TestCase):
 
     def test_llama_max_tokens_default(self):
         self.assertEqual(_LLAMA_MAX_TOKENS_DEFAULT, 120)
+
+
+# ── _load_default_models JSON override behavior ───────────────────────────────
+
+class TestLoadDefaultModels(unittest.TestCase):
+
+    def test_returns_all_six_backends_when_json_absent(self):
+        with patch("os.path.exists", return_value=False):
+            result = _load_default_models()
+        self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "llama"})
+
+    def test_returns_hardcoded_llama_model_when_json_absent(self):
+        with patch("os.path.exists", return_value=False):
+            result = _load_default_models()
+        self.assertEqual(result["llama"], "gemma-4-12b")
+
+    def test_overrides_default_from_valid_json(self):
+        json_data = json.dumps({"llama": {"model": "custom-model-1b"}})
+        with patch("os.path.exists", return_value=True), \
+             patch("builtins.open", mock_open(read_data=json_data)):
+            result = _load_default_models()
+        self.assertEqual(result["llama"], "custom-model-1b")
+
+    def test_ignores_entry_without_model_key(self):
+        json_data = json.dumps({"llama": {"description": "no model key"}})
+        with patch("os.path.exists", return_value=True), \
+             patch("builtins.open", mock_open(read_data=json_data)):
+            result = _load_default_models()
+        self.assertEqual(result["llama"], "gemma-4-12b")
+
+    def test_returns_hardcoded_defaults_on_malformed_json(self):
+        with patch("os.path.exists", return_value=True), \
+             patch("builtins.open", mock_open(read_data="not valid json{{{")):
+            result = _load_default_models()
+        self.assertEqual(result["llama"], "gemma-4-12b")
+        self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "llama"})
 
 
 if __name__ == "__main__":

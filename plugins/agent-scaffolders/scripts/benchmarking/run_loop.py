@@ -79,6 +79,20 @@ from run_eval import find_project_root, run_eval
 from utils import parse_skill_md
 
 
+def _load_cheapest_model(engine: str, fallback: str, ref_path: "Path | None" = None) -> str:
+    """Load cheapest model for engine from cheapest_models.json, falling back gracefully."""
+    try:
+        if ref_path is None:
+            script_dir = Path(__file__).resolve().parent
+            ref_path = script_dir.parents[2] / "references" / "cheapest_models.json"
+        if ref_path.exists():
+            data = json.loads(ref_path.read_text())
+            return data.get(engine, {}).get("model", fallback)
+    except Exception:
+        pass
+    return fallback
+
+
 def _ensure_results_tsv(results_tsv_path: Path) -> None:
     """Create results.tsv with a header if it does not exist."""
     if results_tsv_path.exists():
@@ -483,6 +497,7 @@ def main() -> None:
     parser.add_argument("--verbose", action="store_true", help="Print progress to stderr")
     parser.add_argument("--report", default="auto", help="Generate HTML report at this path (default: 'auto' for temp file, 'none' to disable)")
     parser.add_argument("--results-dir", default=None, help="Save all outputs (results.json, report.html, log.txt) to a timestamped subdirectory here")
+    parser.add_argument("--mock", action="store_true", help="Resolve models from cheapest_models.json, print JSON, and exit without running the loop.")
     args = parser.parse_args()
 
     # Backward-compatible model routing
@@ -491,16 +506,11 @@ def main() -> None:
     if not args.improve_model:
         args.improve_model = args.model
     if args.improve_engine == "copilot" and not args.improve_model:
-        fallback = "gpt-5-mini"
-        try:
-            script_dir = Path(__file__).resolve().parent
-            ref_path = script_dir.parents[1] / "references" / "cheapest_models.json"
-            if ref_path.exists():
-                data = json.loads(ref_path.read_text())
-                fallback = data.get("copilot", {}).get("model", fallback)
-        except Exception:
-            pass
-        args.improve_model = fallback
+        args.improve_model = _load_cheapest_model("copilot", "gpt-5-mini")
+
+    if args.mock:
+        print(json.dumps({"improve_model": args.improve_model, "eval_model": args.eval_model}))
+        sys.exit(0)
 
 
     eval_set = json.loads(Path(args.eval_set).read_text())

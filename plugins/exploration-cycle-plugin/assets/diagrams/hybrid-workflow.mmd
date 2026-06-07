@@ -21,7 +21,7 @@ flowchart TD
         Spike --> Dispatch
 
         Dispatch{"Dispatch Strategy?"}
-        Dispatch -->|"Copilot Pro"| CopilotCLI["copilot-cli<BR>gpt-5-mini (free)<BR>claude-sonnet (premium)"]
+        Dispatch -->|"Copilot Pro"| CopilotCLI["copilot-cli<BR>gpt-5-mini (paid AI Credits)<BR>claude-sonnet (premium)"]
         Dispatch -->|"No Copilot"| ClaudeSub["claude-subagents<BR>haiku (cheap)<BR>sonnet (mid)"]
         Dispatch -->|"Keep it simple"| Direct["direct<BR>Current model does all"]
     end
