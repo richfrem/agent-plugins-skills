@@ -74,3 +74,64 @@ cli-agents/
 4. **KV Cache Orchestrator**: `kv_cache_orchestrator.py` eliminates cold prefill for repeated calls with the same system prompt via llama-server's slot save/restore REST API. SHA-256 keyed, 4 GiB budget. 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4) — credit to Salvador Sanfilippo.
 5. **Secure by Default**: Sub-agents default to isolated execution (no tool access). Tool execution requires explicit validation.
 6. **Path Traversal Protection**: `path_security.py` checks target paths before passing to CLIs.
+
+## Testing & Benchmarking
+
+### Unit tests (no server required)
+
+```bash
+cd plugins/cli-agents/scripts
+
+python3 -m pytest test_run_agent.py -v        # 37 tests — command builders + isolated security contract
+python3 -m pytest test_kv_cache.py -v         # 31 tests — KV cache orchestrator
+python3 -m pytest test_routing_proxy.py -v    # 8 tests  — cache collision guard
+
+# All at once — expect 76 passing
+python3 -m pytest test_run_agent.py test_kv_cache.py test_routing_proxy.py -v
+```
+
+### Start llama-server (required for live tests)
+
+```bash
+# In a dedicated terminal — from local-llm-bench workspace
+./run_server.sh
+curl http://localhost:8089/health    # must return {"status":"ok"}
+```
+
+### Mode B — task delegation speed test (the fast path)
+
+```bash
+time python3 plugins/cli-agents/scripts/run_agent.py \
+  /dev/null /dev/null /tmp/test_b.md \
+  "List three capital cities. Be terse." \
+  --cli llama
+cat /tmp/test_b.md
+```
+
+**Measured result: ~2s wall clock, 7+ tok/s.** Example output:
+
+```
+Paris, Tokyo, Ottawa.
+[run_agent] llama complete → /tmp/test_b.md
+python3 ... --cli llama  0.06s user 0.03s system 4% cpu 1.977 total
+```
+
+### Mode A — interactive proxy comparison (the slow path)
+
+```bash
+# Proxy must be running: launchctl list | grep richfrem
+time claude --model gemma-4-12b -p "List three capital cities. Be terse."
+```
+
+**Typical result: 40–60s cold** (29K token system prompt prefill at ~30 tok/s), then ~5–10s generation.
+
+**Why Mode B is ~20–30x faster:** Mode A injects Claude Code's full 29K-token system prompt on every request. Mode B sends only the task — typically 50–500 tokens. Same hardware, same GGUF. Context size is the bottleneck.
+
+### KV cache smoke test (proxy + orchestrator)
+
+```bash
+python3 plugins/cli-agents/scripts/smoke_test_kv_cache.py
+tail -20 ~/.claude/proxy/logs/proxy.log
+# First call: [kv-cache] MISS → save
+# Second call: [kv-cache] HIT → restore (skips prefill)
+```
