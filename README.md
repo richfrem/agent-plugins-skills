@@ -3,7 +3,7 @@
 <!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 145 Skills · 55 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
-> **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026)
+> **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026)
 
 ---
 
@@ -29,6 +29,18 @@ After extensive MAF research and 12 hands-on C# experiments (including full load
 This hybrid approach gives us the best of both worlds: battle-tested custom safety primitives + selective leverage of Microsoft's well-engineered patterns.
 
 **References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
+
+### v1.5 — CLI Agents Major Update (June 2026)
+
+`cli-agents` plugin promoted from a basic CLI dispatcher to a full multi-LLM task routing suite with adversarial agent pattern support.
+
+**Key outcomes:**
+- `run_agent.py` task router: 6 backends, argparse v2, `--isolated` security contract, codex stdin pattern. **76 TDD tests across 3 files.**
+- **~2s wall clock** for `--cli llama` direct HTTP to llama-server (measured: 1.977s). 20–30x faster than Mode A proxy path.
+- **11 expert agent personas** with structured analytical frameworks: OWASP, C4, SOLID, Big-O, TOGAF-level depth. Adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic.
+- `local-llm-setup` skill with scripts/ symlinks: Day 1 bootstrap for macOS Metal / Windows CUDA/Vulkan / Linux CUDA/ROCm.
+- KV Cache Orchestrator (P0 collision fix): `_extract_cache_key()` returns `None` for system-prompt-free requests. 8 new proxy tests.
+- Plugin manifests (`plugin.yaml`, `plugin.json`, `marketplace.json`) fully corrected and aligned.
 
 ---
 
@@ -197,25 +209,46 @@ Interactive creators for exact file hierarchies + structured audit framework for
 
 ### Group 5: CLI Sub-Agents
 
-Dispatch tasks and persona-based analysis to isolated model contexts via four CLI tools.
+#### cli-agents — Multi-LLM Task Router (v2.0.0) — June 2026 Major Update
 
-#### cli-agents — Unified CLI Dispatcher (v1.1.0)
+`run_agent.py` dispatches bounded tasks to 6 backends. **Measured: ~2s wall clock** for `--cli llama` (direct HTTP to llama-server, no proxy, no 29K system prompt overhead).
 
-All CLI sub-agent tooling consolidated into one plugin. Each tool has its own `run_agent.py`, its own agent personas (with tool-appropriate default model), and its own SKILL.md.
+**Skills (12):**
+- [`local-llm-bridge`](plugins/cli-agents/skills/local-llm-bridge/SKILL.md) — `--cli llama`: direct Gemma 4 12B, **~2s**, no proxy
+- [`local-llm-setup`](plugins/cli-agents/skills/local-llm-setup/SKILL.md) — cross-platform setup wizard; scripts/ symlinks for Day 1 bootstrap + Mode B config
+- [`codex-cli-agent`](plugins/cli-agents/skills/codex-cli-agent/SKILL.md) — `--cli codex`: Codex/OpenAI-compatible, prompt piped via stdin
+- [`agy-cli-agent`](plugins/cli-agents/skills/agy-cli-agent/SKILL.md) — `--cli agy`: Antigravity CLI, frontier Gemini models
+- [`claude-cli-agent`](plugins/cli-agents/skills/claude-cli-agent/SKILL.md) — `--cli claude`: Claude CLI, Haiku 4.5 default
+- [`copilot-cli-agent`](plugins/cli-agents/skills/copilot-cli-agent/SKILL.md) — `--cli copilot`: GitHub Copilot CLI, gpt-5-mini ⚠️ AI Credits June 2026
+- [`gemini-cli-agent`](plugins/cli-agents/skills/gemini-cli-agent/SKILL.md) — `--cli gemini`: Gemini CLI, gemini-3-flash-preview
+- [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) · [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) · [`project-setup`](plugins/cli-agents/skills/project-setup/SKILL.md) · [`maf-adapter`](plugins/cli-agents/skills/maf-adapter/SKILL.md) · [`agt-security`](plugins/cli-agents/skills/agt-security/SKILL.md)
 
-**Skills (6):**
-- [`agy-cli-agent`](plugins/cli-agents/skills/agy-cli-agent/SKILL.md) — Antigravity `agy` CLI, frontier Gemini models (2.5 Flash+)
-- [`claude-cli-agent`](plugins/cli-agents/skills/claude-cli-agent/SKILL.md) — Claude CLI, Haiku 4.5 default
-- [`copilot-cli-agent`](plugins/cli-agents/skills/copilot-cli-agent/SKILL.md) — GitHub Copilot CLI, gpt-5-mini default (included, no credits)
-- [`gemini-cli-agent`](plugins/cli-agents/skills/gemini-cli-agent/SKILL.md) — Gemini CLI, gemini-3-flash-preview ⚠️ consumer sunset June 18, 2026
-- [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) — scaffold `.claude/` for any project
-- [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) — scaffold `.agents/` for Gemini/Antigravity
+**11 Expert Agent Personas** (flat `agents/` directory, shared across all backends):
 
-**Local LLM Bridge:** Routes Claude Code, Copilot CLI, Antigravity, and Codex traffic through a local Gemma 4 12B instance (Apple Metal/CUDA/ROCm). KV Cache Orchestrator (`kv_cache_orchestrator.py`) eliminates cold prefill for repeated system prompts — SHA-256 keyed slot save/restore, 4 GiB disk budget. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4) (`ds4_kvstore.c`) — credit to Salvador Sanfilippo.
+| Persona | Role | Pattern Family |
+|---------|------|---------------|
+| `refactor-expert` | Code quality — SOLID/DRY smell taxonomy | Code Review |
+| `security-auditor` | OWASP vulnerability audit | Code Review |
+| `architect-review` | C4/SOLID structural review, layer violations | Code Review |
+| `compliance-reviewer` | Coding standards drift detection | Code Review |
+| `pr-reviewer` | Diff review — ship/hold decision | Code Review |
+| `test-writer` | Unit test generation — all path types | Code Review |
+| `performance-analyst` | Bottleneck analysis — Big-O, I/O amplification | Code Review |
+| `red-team-reviewer` | Adversarial exploit analysis, attack surface | Adversarial |
+| `debate-synthesizer` | Dialectical synthesis, conflict resolution | Adversarial |
+| `output-validator` | Output guardrail — hallucination/schema/policy | Adversarial |
+| `self-critic` | Reflection loop — task-fit, completeness check | Adversarial |
 
-**Agents (12):** `claude/architect-review` · `claude/refactor-expert` · `claude/security-auditor` · `copilot/architect-review` · `copilot/refactor-expert` · `copilot/security-auditor` · `gemini/architect-review` · `gemini/refactor-expert` · `gemini/security-auditor` · `agy/architect-review` · `agy/refactor-expert` · `agy/security-auditor`
+**KV Cache Orchestrator:** `kv_cache_orchestrator.py` — SHA-256 keyed slot save/restore, 4 GiB budget, 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4).
 
-> **June 2026 billing note:** GitHub Copilot moves to AI Credits (per-token) on June 1. `gpt-5-mini`, `gpt-4.1`, `gpt-4o` remain included (no credit cost). All other models consume credits — see `copilot-cli-agent` SKILL.md for updated model table.
+**What changed in v2.0.0 (June 2026):**
+- 12 duplicate agent files (3 personas × 4 backends) → 11 deep flat personas with OWASP/C4/SOLID analytical frameworks
+- Added adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic
+- `run_agent.py` argparse v2: `--cli`, `--model`, `--max-tokens`, `--isolated` + legacy positional compat
+- Security contract: `--isolated` suppresses `--yolo`/`--dangerously-skip-permissions` per backend
+- Codex stdin: `codex exec --model M -` (avoids ARG_MAX + process listing exposure)
+- `local-llm-setup` skill with scripts/ symlinks for Day 1 bootstrap
+- `plugin.yaml` stale skills list corrected (4 non-existent `local-llm-bridge-*` removed; all 12 real skills listed)
 
 ### Execution Disciplines — Safety & Quality
 
