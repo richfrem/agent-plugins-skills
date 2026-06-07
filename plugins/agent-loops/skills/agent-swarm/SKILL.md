@@ -53,12 +53,13 @@ Each worktree can be assigned to a different worker type based on task complexit
 |--------|------|----------|
 | **High-reasoning CLI** (Opus, Ultra, GPT-5.3) | High | Complex logic, architecture |
 | **Fast CLI** (Haiku, Flash 2.0) | Low | Tests, docs, routine tasks |
-| **Free Tier: Copilot gpt-5-mini** | **$0** | Bulk summarization, zero-cost batch jobs |
-| **Free Tier: Gemini gemini-3-pro-preview** | **$0** | Large context batch jobs |
+| **Low-cost CLI** (gpt-5-mini, gemini-3.5-flash) | Low | Standard low-cost reasoning tier |
+| **Free CLI: llama gemma-4-12b** | **$0** | Self-hosted local inference, zero-cost batch jobs |
 | **Deterministic Script** | None | Formatting, linting, data transforms |
 | **Human** | N/A | Judgment calls, creative decisions |
 
-> **Zero-Cost Batch Strategy**: For bulk summarization or distillation jobs, use `--engine copilot` (gpt-5-mini) or `--engine gemini` (gemini-3-pro-preview). Both are free-tier models available via their respective CLIs. Gemini Flash 2.0 is also very cheap if more capacity is needed. Use `--workers 2` for Copilot (rate-limit safe) and `--workers 5` for Gemini.
+> **Cost Optimization Strategy**: For bulk summarization or distillation jobs, use `--engine llama` (local Gemma 4) if you have local Metal/CUDA acceleration set up. It is the only truly zero-cost path. Cloud CLIs like `--engine copilot` (gpt-5-mini) or `--engine agy` (gemini-3.5-flash) are low-cost but paid (consuming AI Credits or per-token billing). Use `--workers 2` for cloud CLIs (rate-limit safe) and `--workers 1` for local `llama` to avoid context swapping on 16GB Macs.
+
 
 ## Implementation: ./../scripts/swarm_run.py
 

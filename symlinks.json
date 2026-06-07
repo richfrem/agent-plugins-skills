@@ -2736,6 +2736,138 @@
       "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/run_agent.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-loops/references/cheapest_models.md",
+      "dst": "plugins/agent-loops/skills/agent-swarm/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-loops/references/cheapest_models.json",
+      "dst": "plugins/agent-loops/skills/agent-swarm/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
+      "dst": "plugins/spec-kitty-plugin/.agents/skills/agent-swarm/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
+      "dst": "plugins/spec-kitty-plugin/.agents/skills/agent-swarm/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
+      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-distill-agent/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
+      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-distill-agent/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
+      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
+      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

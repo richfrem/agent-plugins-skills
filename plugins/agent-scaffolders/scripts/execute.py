@@ -53,6 +53,22 @@ def _build_command(args: argparse.Namespace, plugin_root: Path) -> list[str]:
     return cmd
 
 
+import json
+
+def _get_default_improve_model() -> str:
+    fallback = "gpt-5-mini"
+    try:
+        script_dir = Path(__file__).resolve().parent
+        ref_path = script_dir.parent / "references" / "cheapest_models.json"
+        if ref_path.exists():
+            with open(ref_path, "r") as f:
+                data = json.load(f)
+                return data.get("copilot", {}).get("model", fallback)
+    except Exception:
+        pass
+    return fallback
+
+
 def main() -> None:
     """Parse args and run the optimization loop."""
     parser = argparse.ArgumentParser(
@@ -71,11 +87,12 @@ def main() -> None:
     parser.add_argument("--eval-engine", default="claude", choices=["claude"])
     parser.add_argument("--improve-engine", default="copilot", choices=["claude", "copilot"])
     parser.add_argument("--eval-model", default=None)
-    parser.add_argument("--improve-model", default="gpt-5-mini")
+    parser.add_argument("--improve-model", default=_get_default_improve_model())
     parser.add_argument("--report", default="none")
     parser.add_argument("--results-dir", required=True, help="Base results directory")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
+
 
     plugin_root = Path(__file__).resolve().parents[3]
     command = _build_command(args, plugin_root)

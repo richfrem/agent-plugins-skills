@@ -285,9 +285,28 @@ def execute_worker(
         # Apply intelligent default models if the 'haiku' placeholder or no model is provided
         effective_model = model
         if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = "gemini-3-pro-preview"
+            fallback = "gemini-3-pro-preview"
+            try:
+                script_dir = Path(__file__).resolve().parent
+                ref_path = script_dir.parent / "references" / "cheapest_models.json"
+                if ref_path.exists():
+                    data = json.loads(ref_path.read_text())
+                    fallback = data.get("gemini", {}).get("model", fallback)
+            except Exception:
+                pass
+            effective_model = fallback
         elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = "gpt-5-mini"
+            fallback = "gpt-5-mini"
+            try:
+                script_dir = Path(__file__).resolve().parent
+                ref_path = script_dir.parent / "references" / "cheapest_models.json"
+                if ref_path.exists():
+                    data = json.loads(ref_path.read_text())
+                    fallback = data.get("copilot", {}).get("model", fallback)
+            except Exception:
+                pass
+            effective_model = fallback
+
 
         payload = content
         if engine.lower() == "claude":
