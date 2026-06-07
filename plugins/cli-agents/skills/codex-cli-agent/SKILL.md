@@ -22,8 +22,10 @@ Dispatches bounded tasks to the Codex CLI (`codex` binary). Uses the `run_agent.
 ```bash
 python ./scripts/run_agent.py \
   <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
-  codex [model=gpt-5-codex]
+  --cli codex --model gpt-5-codex
 ```
+
+The prompt is piped to `codex exec` via stdin — not passed as a positional arg — to avoid OS ARG_MAX limits and process listing exposure.
 
 ### Example
 
@@ -33,7 +35,7 @@ python ./scripts/run_agent.py \
   target.py \
   refactor.md \
   "Refactor this function and explain the top 3 changes." \
-  codex
+  --cli codex
 ```
 
 ### With a different model
@@ -44,7 +46,7 @@ python ./scripts/run_agent.py \
   target.py \
   security.md \
   "Find vulnerabilities. Rate severity: CRITICAL / MODERATE / MINOR." \
-  codex gpt-4o
+  --cli codex --model gpt-4o
 ```
 
 ---
@@ -72,8 +74,8 @@ python ./scripts/run_agent.py \
 ## Smoke Test
 
 ```bash
-codex exec --model gpt-5-codex "Say hello in one sentence."
-python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Summarize this file." codex
+echo "Say hello in one sentence." | codex exec --model gpt-5-codex -
+python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Summarize this file." --cli codex
 ```
 
 ---

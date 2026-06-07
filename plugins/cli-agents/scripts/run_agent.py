@@ -160,8 +160,11 @@ def _build_cmd_agy(prompt_file: str, isolated: bool = False) -> list[str]:
     return ["agy", "--dangerously-skip-permissions", "-p", f"@{prompt_file}"]
 
 
-def _build_cmd_claude(model: str, prompt: str) -> list[str]:
-    return ["claude", "--model", model, "-p", prompt]
+def _build_cmd_claude(model: str, prompt: str, isolated: bool = False) -> list[str]:
+    """Claude CLI. --dangerously-skip-permissions is suppressed when isolated=True."""
+    if isolated:
+        return ["claude", "--model", model, "-p", prompt]
+    return ["claude", "--dangerously-skip-permissions", "--model", model, "-p", prompt]
 
 
 def _build_cmd_codex(model: str) -> list[str]:
@@ -259,7 +262,7 @@ def run_agent(
         elif cli == "codex":
             cmd = _build_cmd_codex(model)
         else:  # claude
-            cmd = _build_cmd_claude(model, prompt)
+            cmd = _build_cmd_claude(model, prompt, isolated)
 
         if cli in _STREAMING_CLIS:
             with open(output_file, "w") as out_f:

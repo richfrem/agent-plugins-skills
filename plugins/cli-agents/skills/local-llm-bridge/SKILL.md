@@ -41,7 +41,7 @@ Default `max_tokens=120` keeps responses terse. Override via code if needed.
 ```bash
 python ./scripts/run_agent.py \
   <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
-  llama
+  --cli llama --max-tokens 120
 ```
 
 ### Example — code review
@@ -52,10 +52,10 @@ python ./scripts/run_agent.py \
   target.py \
   review.md \
   "List the top 3 issues in this code. Be terse." \
-  llama
+  --cli llama
 ```
 
-### Example — summarize a diff
+### Example — summarize a diff (longer output)
 
 ```bash
 python ./scripts/run_agent.py \
@@ -63,7 +63,7 @@ python ./scripts/run_agent.py \
   changes.diff \
   summary.md \
   "Summarize this diff in 2 sentences. Focus on risk." \
-  llama
+  --cli llama --max-tokens 200
 ```
 
 ### Example — instruction only (no input file)
@@ -73,7 +73,7 @@ python ./scripts/run_agent.py \
   /dev/null /dev/null \
   answer.md \
   "What is the capital of France? One word." \
-  llama
+  --cli llama --max-tokens 10
 ```
 
 ---
@@ -124,7 +124,7 @@ All scripts are symlinked from the canonical `plugins/cli-agents/scripts/` so th
 | `run_agent.py` | Task router — `cli=llama` dispatches here |
 | `kv_cache_orchestrator.py` | KV slot save/restore for repeated persona calls |
 | `run_server.py` | Start llama-server with authoritative parameters |
-| `test_run_agent.py` | 28 tests for the task router |
+| `test_run_agent.py` | 37 tests: command builders, isolated-flag security contract, llama payload |
 
 > `routing_proxy.py` is NOT included — it is the Mode A API compatibility shim and is not part of this skill's execution path.
 
@@ -134,7 +134,7 @@ All scripts are symlinked from the canonical `plugins/cli-agents/scripts/` so th
 
 ```bash
 curl http://localhost:8089/health
-python ./scripts/run_agent.py /dev/null /dev/null /tmp/test.md "Say hello in one word." llama
+python ./scripts/run_agent.py /dev/null /dev/null /tmp/test.md "Say hello in one word." --cli llama
 cat /tmp/test.md
 ```
 

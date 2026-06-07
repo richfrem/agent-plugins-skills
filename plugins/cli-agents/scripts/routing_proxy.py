@@ -197,9 +197,9 @@ class RoutingProxy(BaseHTTPRequestHandler):
     """
     HTTP request handler that routes Anthropic API requests by model name.
 
-    Handles POST /v1/messages only. Both claude-* and gemma-* paths are
-    pure transparent relays — no format translation needed since llama-server
-    speaks native Anthropic Messages API.
+    Routes POST /v1/messages (Anthropic protocol) and POST /v1/chat/completions
+    (OpenAI protocol). Both claude-* and gemma-* paths are pure transparent
+    relays — no format translation needed since llama-server speaks both APIs natively.
     """
 
     # Required for Claude Code's Node.js HTTP client — without HTTP/1.1, the
@@ -210,7 +210,12 @@ class RoutingProxy(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
         """Log each request with model name and resolved destination."""
         model = getattr(self, "_last_model", "?")
-        dest = "local" if not model.startswith("claude-") else "anthropic"
+        # claude-local routes local despite starting with "claude-"
+        is_local = (
+            not model.startswith("claude-")
+            or model.startswith("claude-local")
+        )
+        dest = "local" if is_local else "anthropic"
         print(f"[proxy] {self.command} {self.path} model={model} → {dest}")
 
     # Handle GET requests — /v1/models returns merged list so Claude Code accepts gemma-4-12b
@@ -224,7 +229,7 @@ class RoutingProxy(BaseHTTPRequestHandler):
         """
         path_clean = self.path.split("?")[0]
         if path_clean != "/v1/models":
-            self.send_error(404, "Only /v1/models and POST /v1/messages are supported")
+            self.send_error(404, "Only GET /v1/models, POST /v1/messages, POST /v1/chat/completions are supported")
             return
 
         api_key = self.headers.get("x-api-key", "")

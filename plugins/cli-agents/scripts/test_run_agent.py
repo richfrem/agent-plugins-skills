@@ -154,6 +154,14 @@ class TestCommandBuilders(unittest.TestCase):
         self.assertIn("haiku-4.5", cmd)
         self.assertIn("Review this.", cmd)
 
+    def test_claude_includes_dangerous_flag_when_not_isolated(self):
+        cmd = _build_cmd_claude("haiku-4.5", "Review this.", isolated=False)
+        self.assertIn("--dangerously-skip-permissions", cmd)
+
+    def test_claude_excludes_dangerous_flag_when_isolated(self):
+        cmd = _build_cmd_claude("haiku-4.5", "Review this.", isolated=True)
+        self.assertNotIn("--dangerously-skip-permissions", cmd)
+
     def test_codex_includes_model(self):
         cmd = _build_cmd_codex("gpt-5-codex")
         self.assertIn("codex", cmd)

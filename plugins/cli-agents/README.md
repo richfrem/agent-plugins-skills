@@ -36,8 +36,9 @@ cli-agents/
 │   ├── routing_latency_findings.md # Measured timing data: Mode A vs Mode B comparison
 │   └── routing-proxy.mmd         # Sequence diagram: full routing flow
 ├── scripts/
-│   ├── run_agent.py              # Task router — 6 backends, 28 TDD tests
-│   ├── test_run_agent.py         # 28 tests: command builders, prompt assembly, llama payload
+│   ├── run_agent.py              # Task router — 6 backends, argparse v2, isolated security contract
+│   ├── test_run_agent.py         # 37 tests: command builders, isolated-flag contract, llama payload
+│   ├── test_routing_proxy.py     # 8 tests: _extract_cache_key empty-system collision guard
 │   ├── conductor.py              # Unified execution conductor
 │   ├── path_security.py          # Path boundary assertions
 │   ├── test_harness.py           # MAF adapter test simulator
@@ -67,7 +68,7 @@ cli-agents/
 
 ## Features
 
-1. **Multi-LLM Task Router**: `run_agent.py` routes one bounded task to one selected backend. Same interface — different backend. 28 TDD tests covering command builders, prompt assembly, and llama HTTP payload.
+1. **Multi-LLM Task Router**: `run_agent.py` routes one bounded task to one selected backend. Named-flag interface (`--cli`, `--model`, `--max-tokens`, `--isolated`) + legacy positional compat. 37 TDD tests covering command builders, isolated-flag security contract, and llama HTTP payload. 76 total tests across 3 test files.
 2. **Local Gemma Direct Bridge**: `cli=llama` POSTs a lean prompt directly to `http://localhost:8089/v1/chat/completions`. No proxy, no 20K system prompt overhead. Measured: 2–5s typical vs 46s average through Mode A with a 20K prompt.
 3. **API Compatibility Proxy**: `routing_proxy.py` (port 4000) routes `claude-*` → Anthropic API, `gemma-*` → llama-server. Used for Mode A interactive sessions only — not for task delegation.
 4. **KV Cache Orchestrator**: `kv_cache_orchestrator.py` eliminates cold prefill for repeated calls with the same system prompt via llama-server's slot save/restore REST API. SHA-256 keyed, 4 GiB budget. 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4) — credit to Salvador Sanfilippo.
