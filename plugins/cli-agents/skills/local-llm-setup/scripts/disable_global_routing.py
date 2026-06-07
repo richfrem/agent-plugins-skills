@@ -1,0 +1,1 @@
+../../../../scripts/disable_global_routing.py

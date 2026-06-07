@@ -1,6 +1,6 @@
 name: cli-agents
-version: 1.0.0
-description: "Consolidated CLI sub-agent system — dispatches tasks and persona-based analysis to Claude, Copilot, and Gemini CLI models. Includes project setup scaffolding for Claude and Antigravity environments."
+version: 2.0.0
+description: "Multi-LLM Task Router Suite — run_agent.py dispatches bounded tasks to 6 backends (Claude, Copilot, Gemini, Agy, Codex, local Gemma 4 12B). 11 expert agent personas (security auditor, red-team reviewer, architect, compliance, PR reviewer, test writer, debate synthesizer, output validator, self-critic, performance analyst, refactor expert). Includes API compatibility proxy and KV cache orchestrator."
 author: Richard Fremmerlid
 kind: backend
 platforms:
@@ -11,8 +11,14 @@ provides_tools:
   - run_agent
 skills:
   - agy-cli-agent
+  - agt-security
+  - antigravity-project-setup
   - claude-cli-agent
+  - claude-project-setup
+  - codex-cli-agent
   - copilot-cli-agent
   - gemini-cli-agent
-  - claude-project-setup
-  - antigravity-project-setup
+  - local-llm-bridge
+  - local-llm-setup
+  - maf-adapter
+  - project-setup

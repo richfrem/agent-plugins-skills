@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 142 Skills · 43 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 145 Skills · 55 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 > **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026)
@@ -210,6 +210,8 @@ All CLI sub-agent tooling consolidated into one plugin. Each tool has its own `r
 - [`gemini-cli-agent`](plugins/cli-agents/skills/gemini-cli-agent/SKILL.md) — Gemini CLI, gemini-3-flash-preview ⚠️ consumer sunset June 18, 2026
 - [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) — scaffold `.claude/` for any project
 - [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) — scaffold `.agents/` for Gemini/Antigravity
+
+**Local LLM Bridge:** Routes Claude Code, Copilot CLI, Antigravity, and Codex traffic through a local Gemma 4 12B instance (Apple Metal/CUDA/ROCm). KV Cache Orchestrator (`kv_cache_orchestrator.py`) eliminates cold prefill for repeated system prompts — SHA-256 keyed slot save/restore, 4 GiB disk budget. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4) (`ds4_kvstore.c`) — credit to Salvador Sanfilippo.
 
 **Agents (12):** `claude/architect-review` · `claude/refactor-expert` · `claude/security-auditor` · `copilot/architect-review` · `copilot/refactor-expert` · `copilot/security-auditor` · `gemini/architect-review` · `gemini/refactor-expert` · `gemini/security-auditor` · `agy/architect-review` · `agy/refactor-expert` · `agy/security-auditor`
 

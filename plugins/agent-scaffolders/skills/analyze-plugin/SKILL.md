@@ -153,6 +153,8 @@ For each SKILL.md, evaluate:
 - Do they have `--help` documentation?
 - Do they handle errors gracefully?
 - Are they cross-platform compatible?
+- **If the script is wired as a hook**: Does the hooks.json command use `python3 ... || python ...` (not bare `python`) for macOS/Linux + Windows compatibility?
+- **If the script is wired as a hook**: Does `main()` include an early-exit project-type guard so it skips silently in projects that haven't initialized the plugin (e.g. `if not required_dir.exists(): return`)?
 
 ### Phase 4: Pattern Extraction
 

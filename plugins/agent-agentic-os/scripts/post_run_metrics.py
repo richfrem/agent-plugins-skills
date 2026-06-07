@@ -55,6 +55,8 @@ def emit_event(project_root: Path, event_data: dict) -> None:
     if not kernel_path.exists():
         # Fallback to appending directly if kernel is missing
         events_log = project_root / "context" / "events.jsonl"
+        if not events_log.parent.exists():
+            return  # Not an Agentic OS project — skip silently
         with open(events_log, "a") as f:
             f.write(json.dumps(event_data) + "\n")
         return
@@ -186,6 +188,9 @@ def main() -> None:
     target_dir = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     project_root = Path(target_dir).resolve()
     events_log = project_root / "context" / "events.jsonl"
+
+    if not events_log.parent.exists():
+        return  # Not an Agentic OS project — skip silently
 
     counts = _count_events(events_log, correlation_id=args.correlation_id)
     hook_errors = count_hook_errors(project_root)

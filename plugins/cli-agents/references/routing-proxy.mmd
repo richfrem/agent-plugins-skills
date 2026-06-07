@@ -1,0 +1,27 @@
+---
+title: Local LLM Bench — Architecture (Mode A + Mode B)
+---
+flowchart TD
+    subgraph ModeA["Mode A — Interactive Model Replacement"]
+        direction TB
+        A["Claude Code\nANTHROPIC_BASE_URL=:4000"] -->|all API calls| P["routing_proxy.py\nport 4000\nauto-starts via launchd"]
+        P -->|GET /v1/models| M["Anthropic API\n→ prepend gemma-4-12b\n→ merged list"]
+        P -->|POST /v1/messages\nmodel: claude-*| C["api.anthropic.com\nCloud API"]
+        P -->|POST /v1/messages\nmodel: gemma-*| L["llama-server :8089\nGemma 4 12B UD-Q4_K_XL\n-ngl 99 -fa on -ctk q8_0"]
+        P -->|POST /v1/chat/completions\nmodel: gemma-*| L
+        KV["kv_cache_orchestrator.py\nSHA-256 keyed\ndisk-persistent slot cache"] -.->|restore before / save after| P
+    end
+
+    subgraph ModeB["Mode B — Subtask Delegation"]
+        direction TB
+        F["Cloud Agent\nClaude Code / Copilot"] -->|run_agent.py| R{"--cli ?"}
+        R -->|llama\ndirect HTTP\n2-5s| DH["llama-server :8089\nlean prompt only\n7+ tok/s"]
+        R -->|copilot| CP["GitHub Copilot CLI"]
+        R -->|gemini| GM["Gemini CLI"]
+        R -->|claude| CL["Claude CLI"]
+        R -->|agy| AG["Agy CLI"]
+        R -->|codex\nstdin| CD["Codex CLI\ncodex exec --model M -"]
+    end
+
+    NA["Mode A: Claude Code IS Gemma\n~29K token system prompt per session\n~1.2 tok/s generation\nKV cache orchestrator active"]
+    NB["Mode B: Cloud agent DELEGATES to Gemma\nLean prompt only 50-500 tokens\n7+ tok/s  2-5s typical\nNo proxy  no system prompt overhead"]
