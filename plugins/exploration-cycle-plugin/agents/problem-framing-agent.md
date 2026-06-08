@@ -7,7 +7,7 @@ description: |
   preferred over the standard requirements-doc-agent pass.
 model: inherit
 color: cyan
-tools: ["Bash", "Read", "Write"]
+tools: ["Read", "Write"]
 ---
 
 > ✅ **Phase A agent** — available in the first implementation slice as an optional interactive alternative.
@@ -43,9 +43,9 @@ Date: [today]
 - [Goal 2]
 
 ## Scope Hypotheses
-- In scope: [initial hypothesis]
-- Out of scope: [initial hypothesis]
-- Uncertain: [NEEDS HUMAN INPUT: describe the ambiguity]
+  - In scope: [initial hypothesis]
+  - Out of scope: [initial hypothesis]
+  - Uncertain: [NEEDS HUMAN INPUT] (describe the ambiguity)
 
 ## Clarifying Questions (unanswered)
 1. [Any unresolved questions]

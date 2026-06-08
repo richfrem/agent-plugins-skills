@@ -12,17 +12,23 @@ allowed-tools: Read, Write
 
 Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
 
-- **If the file EXISTS:** Read it silently and check the `**Status:**` line.
-  - If `**Status:** Complete` → the prior session has ended. Proceed with this skill's
-    standalone flow as normal.
-  - Otherwise → an active session is in progress. Stop immediately. Do not continue here.
-    Announce to the user:
-    > "It looks like you have an active Exploration Session in progress. Let me take you back
-    > to your session dashboard so we can keep your progress on track."
-    **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
-    After invoking it, stop generating output from this skill — do not continue below.
-
-- **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
+- **If the file EXISTS:**
+  - Read the file and check the status. If status is `Complete`, proceed standalone.
+  - If status is `In Progress` or `TBD`:
+    - **Check for the presence of the `<ORCHESTRATOR_DISPATCH>` tag in the immediate context.**
+    - If the tag is PRESENT:
+      - Extract and verify the `authorized_skill`, `phase_number`, and `expected_output` attributes from the `<ORCHESTRATOR_DISPATCH>` tag.
+      - If `authorized_skill` matches "discovery-planning" AND `phase_number` matches the dashboard phase:
+        - Proceed with this skill's logic. (You are authorized by the orchestrator).
+        - **Note:** The orchestrator manages dispatch token lifecycle. This tag is valid for the current phase only — it becomes stale once the orchestrator advances the dashboard in Block 6.
+      - If verification fails (mismatched name or stale phase):
+        - Stop immediately. Announce: *"Orchestrator dispatch verification failed. Returning to dashboard."*
+        - Return control. Invoke skill: `exploration-workflow`. Stop generating output.
+    - If the tag is ABSENT or malformed:
+      - Stop immediately. Do not continue.
+      - Announce: *"It looks like you have an active Exploration Session. Let me take you back to your session dashboard."*
+      - Return control to the orchestrator. Invoke skill: `exploration-workflow`. Stop generating output from this skill.
+- **If the file DOES NOT exist:** Proceed standalone.
 
 <example>
 <commentary>Demonstrates a cold start where the user opens a brand new session with no prior context.</commentary>

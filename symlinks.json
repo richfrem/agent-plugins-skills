@@ -2868,6 +2868,12 @@
       "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.json",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/scripts/validate_phase_gate.py",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/validate_phase_gate.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

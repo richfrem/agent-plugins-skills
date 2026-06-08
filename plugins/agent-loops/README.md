@@ -5,7 +5,7 @@ From simple single-agent learning loops to complex parallel swarms and hierarchi
 
 It provides "LEGO bricks" for orchestration — bringing industry-standard agentic patterns (like Routing, Review-Critique, Parallel Swarm, and Inner/Outer Delegation) into concrete, runnable loops.
 
-> **Scope:** Designed to work with any CLI-accessible AI (Claude Code, Copilot CLI, Gemini CLI, local models). It strictly provides *how* to loop. It does **not** provide personas, memory persistence, or evaluation infrastructure.
+> **Scope:** Designed to work with any CLI-accessible AI (Claude Code, Copilot CLI, Antigravity (agy) CLI, local models). It strictly provides *how* to loop. It does **not** provide personas, memory persistence, or evaluation infrastructure.
 
 ---
 

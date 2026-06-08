@@ -88,4 +88,7 @@ Once all sections are drafted and approved, stress-test the brief before writing
 - Never fake user personas or edge cases; derive them strictly from the user's Context Gathering dump.
 
 ## Final Output Destination
-Write the approved, refined markdown content to: `exploration/sessions/session-brief.md` (or a timestamped equivalent).
+Write the approved, refined markdown content to: `exploration/session-brief.md`
+
+Use the **Canonical Session Brief Schema** headers defined in `agents/intake-agent.md` so that
+`exploration-workflow` Block 1 can silently read and hydrate the dashboard without re-asking setup questions.

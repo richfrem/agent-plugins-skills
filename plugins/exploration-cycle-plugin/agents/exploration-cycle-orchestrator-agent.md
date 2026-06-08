@@ -1,16 +1,23 @@
 ---
 name: exploration-cycle-orchestrator
 description: >
-  Phase A orchestrator for Path 1 (Pre-build Discovery) of the exploration cycle. Coordinates discovery sessions from
-  session brief through structured requirements capture to handoff package. Dispatches
-  requirements-doc-agent via Copilot CLI (cheap model, many invocations per session).
-  Can run independently — no Spec-Kitty CLI required. Use when starting a new exploration
-  session, re-entering discovery mid-engineering, or running a greenfield/brownfield/spike.
+  CLI Execution Director for Path 1 (Pre-build Discovery). Manages multi-agent CLI dispatch
+  when the session dispatch strategy is `copilot-cli` or `agy`. Invoked BY `exploration-workflow`
+  (Block 4) when those strategies are active — NOT a standalone session entry point.
+  Dispatches requirements-doc-agent, prototype-companion-agent, business-rule-audit-agent,
+  and handoff-preparer-agent via CLI sub-agent invocations.
 dependencies: ["skill:exploration-workflow", "skill:agent-loop-patterns"]
 model: inherit
 color: purple
 tools: ["Bash", "Read", "Write"]
 ---
+
+> [!IMPORTANT]
+> **This agent is NOT the canonical session entry point.**
+> To start or resume an exploration session, invoke the **`exploration-workflow` skill** directly.
+> This agent is dispatched by `exploration-workflow` Block 4 when the SME has selected a
+> `copilot-cli` or `agy` dispatch strategy. Invoking this agent directly bypasses the bootstrap,
+> session-brief hydration, phase gate enforcement, and dashboard state machine.
 
 ## Ecosystem Role: Path 1 Exploration Director
 
@@ -148,8 +155,10 @@ digraph orchestrator_routing {
 The requirements-doc-agent runs as a cheap Copilot CLI sub-agent. Call it once per focused capture task — never try to capture everything in a single invocation:
 
 ```bash
-# Simple tasks: no --model flag → defaults to cheapest model (see references/cheapest_models.md)
-# Complex tasks: --model claude-sonnet-4.6 → 1 premium request (batch dense for value)
+# CLI dispatch model selection:
+# - copilot-cli strategy: --model flag uses copilot model names
+# - agy strategy: --model flag uses agy model names (see references/cheapest_models.md)
+# NOTE: The standalone `gemini` CLI was shut down June 18, 2026. Use `agy` instead.
 # --tier flag: 1=low risk (default), 2=moderate, 3=high (omits --dangerously-skip-permissions)
 
 # Pass 1: Problem framing (simple → cheap model)
@@ -191,41 +200,43 @@ python scripts/dispatch.py \
 # Prototype observations (simple → cheap model)
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-prototype-companion-agent/SKILL.md \
-  --context exploration/captures/brd-draft.md \
-  --instruction "Capture implied requirements, assumptions, and edge cases from the prototype session." \
+  --context exploration/captures/walkthrough-notes.md \
+  --optional-context exploration/captures/brd-draft.md \
+  --instruction "Capture implied requirements, assumptions, and edge cases from the walkthrough transcript." \
   --output exploration/captures/prototype-notes.md
 
 # Business Rule Audit — simple → cheap model
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-business-rule-audit-agent/SKILL.md \
-  --context exploration/captures/brd-draft.md exploration/captures/prototype-notes.md \
+  --context exploration/captures/brd-draft.md \
+  --optional-context exploration/captures/prototype-notes.md \
   --instruction "Audit the prototype behavior against the business rules. Detect logic drift." \
-  --output exploration/captures/audit-findings.md
+  --output exploration/captures/business-rule-audit.md
 
 # Synthesis for handoff — COMPLEX: batch all captures, 1 premium request
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
   --context exploration/captures/*.md \
   --instruction "Synthesize all captures into a handoff package." \
-  --output exploration/handoff/exploration-handoff.md \
-  --model claude-sonnet-4.6
+  --output exploration/handoffs/handoff-package.md \
+  --model claude-sonnet-4-5
 
 # --- OPTIONAL: only if engineering harness plugin is present ---------------------
 # Phase 5a: pre-draft spec.md — COMPLEX: batch spec+plan+tasks into ONE premium request
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/handoff/exploration-handoff.md \
+  --context exploration/handoffs/handoff-package.md \
   --instruction "Mode: spec-draft. Pre-draft spec.md from this handoff. Mark gaps with [NEEDS HUMAN INPUT]." \
   --output exploration/planning-drafts/spec-draft.md \
-  --model claude-sonnet-4.6
+  --model claude-sonnet-4-5
 
 # Phase 5b: pre-draft plan.md
 python scripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/handoff/exploration-handoff.md \
+  --context exploration/handoffs/handoff-package.md \
   --instruction "Mode: plan-draft. Pre-draft plan.md with phases and WP hints. Mark gaps." \
   --output exploration/planning-drafts/plan-draft.md \
-  --model claude-sonnet-4.6
+  --model claude-sonnet-4-5
 
 # Phase 5c: WP tasks outline (simple → cheap model)
 python scripts/dispatch.py \
@@ -240,7 +251,7 @@ python scripts/dispatch.py \
   --context "" \
   --instruction "CONTEXT: [describe ambiguity]. Mode: re-entry-scope. Identify the exploration gap. Draft a session brief for a new cycle." \
   --output exploration/session-brief-reentry-$(date +%Y%m%d).md
-# → Feed output back to Phase 0 for a new exploration run
+# → Feed output to exploration-workflow skill for a new exploration run
 ```
 
 ## Session Flow

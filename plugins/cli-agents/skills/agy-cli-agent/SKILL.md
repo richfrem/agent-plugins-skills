@@ -45,7 +45,7 @@ Do NOT use tools. Do NOT access filesystem." > review.md
 ## Orchestration Pattern: `run_agent.py`
 
 ```bash
-python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
+python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" --cli agy
 ```
 
 `run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously.
@@ -54,14 +54,14 @@ python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRU
 ```bash
 agy -p "HEARTBEAT CHECK: Respond with HEARTBEAT_OK only."
 # or via run_agent.py:
-python ./scripts/run_agent.py /dev/null /dev/null ./heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+python ./scripts/run_agent.py /dev/null /dev/null ./heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." --cli agy
 grep -q "HEARTBEAT_OK" ./heartbeat.md && echo "OK" || echo "FAIL"
 ```
 
 ### Example
 ```bash
 python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
-"Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
+"Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR." --cli agy
 ```
 
 ---
@@ -106,5 +106,5 @@ nohup agy --dangerously-skip-permissions -p "..." >> log.txt 2>&1 < /dev/null &
 
 ```bash
 agy -p "hello"
-python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
+python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code." --cli agy
 ```

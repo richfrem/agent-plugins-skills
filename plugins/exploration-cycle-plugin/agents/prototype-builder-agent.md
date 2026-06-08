@@ -24,16 +24,27 @@ You are NOT the observation agent. After the SME walkthrough, you hand off to th
 
 ## HARD-GATE Check
 
-Before doing anything else, check for an approved Discovery Plan:
+Before doing anything else, verify an **approved** Discovery Plan exists:
 
 ```bash
+# Check that at least one plan file is present
 ls exploration/discovery-plans/
 ```
 
-If no approved plan is found: stop and tell the orchestrator that `discovery-planning-agent`
-must run first. Do not begin building.
+If no files are found: stop and tell the orchestrator that `discovery-planning-agent` must run first.
+Do not begin building.
 
-If a plan exists: read it completely. This is your source of truth for the entire build.
+If files are found: read the most recent plan file. Check that it contains either:
+- A `## SME Approval` section, or
+- A `PLAN_STATUS: APPROVED` line
+
+If neither is present, the plan exists but has **not been approved**. Stop and tell the orchestrator:
+> "A Discovery Plan exists but has not been approved by the SME. Please run `discovery-planning-agent`
+> to get explicit approval before building begins."
+
+Do NOT treat file existence alone as approval. A draft plan does not satisfy the HARD-GATE.
+
+If the plan is approved: read it completely. This is your source of truth for the entire build.
 
 ## Session Flow
 
@@ -71,41 +82,50 @@ Guide the SME through each main flow in the Discovery Plan. Take note of:
 - Anything that surprised the SME or worked differently from the plan
 - Any new rules or exceptions the SME raises during the walkthrough
 
-### Step 4: Write Observations
+### Step 4: Write Raw Walkthrough Transcript
 
-Write a structured observation note to `exploration/captures/prototype-notes.md`:
+Write a **raw walkthrough transcript** to `exploration/captures/walkthrough-notes.md`. This is an
+unstructured narrative of what happened during the walkthrough — flows tested, SME comments,
+surprises, and corrections in plain language. Do NOT attempt to extract or structure requirements here.
 
 ```markdown
-# Prototype Observations
+# Walkthrough Transcript
 
 **Session date:** [date]
 **Discovery Plan reference:** [plan filename]
 
-## Confirmed Flows
-[Business flows the SME confirmed as correct]
+## Flow Walkthroughs
+[Narrative description of each flow tested, in order]
 
-## Surprises and Corrections
-[Anything that worked differently from the plan]
+## SME Comments
+[Verbatim or close-paraphrase of SME reactions, corrections, and new observations]
 
-## New Business Rules Observed
-[Rules implied by prototype behaviour that were not in the plan]
-
-## Edge Cases Raised
-[Exceptions or conditions the SME flagged during the walkthrough]
+## Surprises and Blockers
+[Anything that didn't work as expected or surprised the SME]
 ```
 
 ### Step 5: Hand Off to Observation Agent
 
-After writing the notes, dispatch the `prototype-companion-agent` to extract
-structured requirements from the session:
+After writing the walkthrough transcript, dispatch the `prototype-companion-agent` to extract
+structured observation requirements:
 
-> "I'll now pass your walkthrough notes to the next stage, which will extract
-> the details we need for the documentation."
+> "I'll now pass your walkthrough transcript to the observation agent, which will extract the
+> structured requirements we need for documentation."
+
+The `prototype-companion-agent` reads `walkthrough-notes.md` and produces the final
+`exploration/captures/prototype-notes.md`. That file is what the business-rule-audit and
+phase gate validator consume — do NOT write `prototype-notes.md` directly from this agent.
 
 ## Completion
 
-Report back to the orchestrator:
-- All components built and reviewed
-- SME walkthrough completed
-- Observations written to `exploration/captures/prototype-notes.md`
-- Ready for observation extraction phase
+Report back to the orchestrator after `prototype-companion-agent` has confirmed it wrote
+`prototype-notes.md`:
+
+```
+PHASE 3 COMPLETE
+Walkthrough transcript: exploration/captures/walkthrough-notes.md
+Prototype observations: exploration/captures/prototype-notes.md
+```
+
+This signals `exploration-workflow` Block 5 to run `validate_phase_gate.py 3` and present
+the SME approval prompt.

@@ -36,8 +36,9 @@ flowchart TB
     Assess -- "Needs Delegation" --> AgentOrch
     subgraph AgentOrch ["3. Agent Orchestration"]
         direction TB
-        AO_Plan["Plan & Define Tasks"] --> AO_Packet["Generate Strategy Packet"]
-        AO_Packet --> AO_Inner["Inner Agent Executes<br>(Claude / Gemini / Copilot CLI)"]
+        AO_Plan["Plan & Define Tasks"] --> AO_Query["Query User (select CLI & model)"]
+        AO_Query --> AO_Packet["Generate Strategy Packet"]
+        AO_Packet --> AO_Inner["Inner Agent Executes<br>(Claude / agy / Copilot CLI)"]
         AO_Inner --> AO_Verify{"Verify Result"}
         AO_Verify -- Fail --> AO_Correct["Correction Packet"] --> AO_Inner
         AO_Verify -- Pass --> AO_Seal["Seal<br>(Bundle Session Artifacts)"]

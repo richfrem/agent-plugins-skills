@@ -3,11 +3,12 @@
 
 ## Phase A: Strategy (Outer Loop)
 - [ ] **Verify planning artifacts**: Confirm spec, plan, and task documents exist
+- [ ] **Query User**: Select the LLM CLI backend (e.g., `agy`, `claude`) and specific model to use
 - [ ] **Create worktree**: Create an isolated workspace for the Inner Loop (or use branch-direct mode)
 - [ ] **Generate Strategy Packet**: Create a targeted markdown packet holding context and acceptance criteria for the inner loop
 
 ## Phase B: Hand-off & Execution
-- [ ] **Hand off to Inner Loop**: Launch the inner agent with the strategy packet (e.g., `claude "Read handoffs/task_packet_NNN.md. Execute the mission. Do NOT use git."`)
+- [ ] **Hand off to Inner Loop**: Launch the inner agent with the strategy packet using `run_agent.py` with redirected stdin (e.g., `python scripts/run_agent.py handoffs/task_packet_NNN.md <target_file> handoffs/result_packet.md "Execute strategy packet" --cli <selected_cli> --model "<selected_model>" < /dev/null`)
 - [ ] **Inner Loop completes**: All acceptance criteria met, no git commands used
 
 ## Phase C: Verification (Outer Loop)

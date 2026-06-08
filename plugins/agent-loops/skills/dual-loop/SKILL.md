@@ -37,13 +37,15 @@ This architecture is entirely framework-agnostic and can be utilized by any AI a
 flowchart LR
     subgraph Outer["Outer Loop (Strategy & Protocol)"]
         Scout[Scout & Plan] --> Spec[Define Tasks]
-        Spec --> Packet[Generate Strategy Packet]
+        Spec --> Query[Query User]
+        Query --> Packet[Generate Strategy Packet]
         Verify[Verify Result] -->|Pass| Commit[Seal & Commit]
         Verify -->|Fail| Correct[Generate Correction Packet]
     end
 
     subgraph Inner["Inner Loop (Execution)"]
-        Receive[Read Packet] --> Execute[Write Code & Run Tests]
+        Receive[Read Packet] --> Plan[Commit to Plan]
+        Plan --> Execute[Write Code & Run Tests]
         Execute -->|No Git| Done[Signal Done]
     end
 
@@ -63,6 +65,16 @@ flowchart LR
 1. **Orientation**: The Outer Loop agent reads the project requirements or goals.
 2. **Decomposition**: Break the goal down into distinct Work Packages (WPs) or sub-tasks.
 3. **Verification**: Confirm that the tasks are atomic, testable, and do not overlap.
+
+### Step 1.5: Interactively Determine CLI and Model (Outer Loop)
+
+Before generating the Strategy Packet or executing commands, you must interactively ask the user:
+1. **"Which LLM CLI backend would you like to use for the inner loop execution?"**
+   - Options: `agy` (Antigravity CLI), `claude` (Claude CLI), `copilot` (GitHub Copilot CLI), `codex` (OpenAI-compatible CLI), or `llama` (local Gemma host).
+2. **"Which specific model should be used?"**
+   - Prompt them with standard defaults or allow them to specify a custom model name (e.g., `Gemini 3.5 Flash (Low)`).
+
+Once confirmed, record this configuration and use the selected CLI and model in the sub-agent delegation command.
 
 ### Step 2: Prepare Execution Environment
 
@@ -85,18 +97,20 @@ flowchart LR
 
 *(Best Practice: Run a functional CLI heartbeat using a simple health prompt to verify end-to-end connectivity before the first hand-off).*
 
-The Outer Loop invokes the Inner Loop. To ensure stability and avoid shell fragility (e.g., quoting/piping issues), the Outer Loop should explicitly delegate to a cost-effective CLI sub-agent (e.g., `gpt-5-mini` or `gemini-flash`) using `run_agent.py`:
+The Outer Loop invokes the Inner Loop. To ensure stability, avoid shell process hangs in background/headless environments (which freeze when attempting to read standard input without redirection), and target the chosen LLM backend, the Outer Loop must run `run_agent.py` using relative pathing and passing the user's selected CLI and model. Always append `< /dev/null` to the command to prevent `SIGTTIN` halts:
 
 ```bash
-# Explicitly delegate inner-loop execution for stability
-python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+# Explicitly delegate inner-loop execution with redirected stdin and chosen model
+python scripts/run_agent.py \
   handoffs/task_packet_001.md \
   <target_file_to_modify> \
   handoffs/result_packet.md \
-  "Execute the strategy packet instructions exactly."
+  "Execute the strategy packet instructions exactly." \
+  --cli <selected_cli> \
+  --model "<selected_model>" < /dev/null
 ```
 
-If `run_agent.py` is unavailable, this is done by spawning a sub-process (e.g., `gemini -p "Read handoffs/task_packet_001.md"`), calling an API, or asking the Human User to switch terminals.
+If `run_agent.py` is unavailable, this is done by spawning a sub-process (e.g., `agy -p "Read handoffs/task_packet_001.md" < /dev/null`), calling an API, or asking the Human User to switch terminals.
 
 ### Step 5: Execute (Inner Loop)
 
@@ -110,10 +124,12 @@ The Inner Loop agent:
 
 ### Step 6: Verify (Outer Loop)
 
-Once the Inner Loop signals completion, the Outer Loop must verify the results:
-1. **Delta Check**: Inspect the changes (e.g., via diff tools or system state checks) to see what the Inner Loop actually altered.
-2. **Test Check**: Run the test suite mechanically to ensure nothing broke.
-3. **Lint Check**: Validate the syntax.
+Once the Inner Loop signals completion, the Outer Loop must verify the results under the **Trust But Verify** and **TDD** principles:
+
+1. **No Blind Trust**: Never accept the sub-agent's work without direct validation. You bear full responsibility for the stability and accuracy of the code.
+2. **Delta Check**: Inspect the changes (e.g., via `git diff` or system state checks) to see exactly what files the Inner Loop altered. Ensure no unexpected files were modified, no stubs were left, and no security regressions were introduced.
+3. **TDD / Test Check**: Run the unit and integration test suite mechanically. If new functionality was added, ensure corresponding tests exist and pass. Do not proceed without functional test validation.
+4. **Lint & Placeholder Scan**: Validate syntax and scan the code for stub placeholders ("TODO", "TBD", "[NEEDS INPUT]"). Reject any incomplete work.
 
 #### On Verification PASS:
 1. The Outer Loop accepts the changes.

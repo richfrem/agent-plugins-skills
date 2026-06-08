@@ -34,14 +34,20 @@ Parallel or pipelined execution across multiple agents and worktrees. The orches
 2. **Route** -- Decide execution mode:
    - **Sequential Pipeline** -- Tasks depend on each other (A -> B -> C)
    - **Parallel Swarm** -- Tasks are independent (A | B | C)
+2.5. **Interactively Determine CLI and Model (ask once during bootstrap)**: Before dispatching the swarm workers, you must ask the user:
+   - *"Which LLM CLI engine would you like to run the swarm workers through?"* (Options: `agy`, `claude`, `copilot`, `gemini`, `llama`).
+   - *"Which specific model should be used?"* (Options/defaults per engine, e.g., `Gemini 3.5 Flash (Low)` or `gemini-3.5-flash` for `agy`).
+   - Construct the `swarm_run.py` invocation with `--engine` and `--model` matching their choices, appending `< /dev/null` to prevent TTY input halts (`SIGTTIN`).
 3. **Dispatch** -- Create a worktree per task. Assign each to an agent:
-   - CLI agent (Claude, Gemini, Copilot)
+   - CLI agent (Claude, Gemini, Copilot, Antigravity) using the selected setup
    - Deterministic script
    - Human
 4. **Execute** -- Each agent works in isolation. No cross-worktree communication.
-5. **Verify & Merge** -- Orchestrator checks each worktree's output against acceptance criteria.
+5. **Verify & Merge (Trust But Verify & TDD)** -- Orchestrator checks each worktree's output against acceptance criteria. **No blind trust is allowed.**
+   - **TDD Enforcement**: Prioritize running unit and integration tests to ensure no regressions were introduced.
+   - **Delta Inspection**: Check modified files directly for stubs, stales, or placeholders.
+   - **Verify Quality**: If verification fails, generate a correction packet, reject, and re-dispatch.
    - **Pass** -> Merge into main branch
-   - **Fail** -> Generate correction packet, re-dispatch
 6. **Seal** -- Bundle all merged artifacts
 7. **Retrospective** -- Did the partition strategy work? Was parallelism effective?
 
@@ -71,7 +77,7 @@ The **./../scripts/swarm_run.py** script is the universal engine for executing t
 - **Intelligent Retry** -- Exponential backoff for rate limits.
 - **Verification Skip** -- Use `check_cmd` in the job file to short-circuit work if a file is already processed (e.g. exists in cache).
 - **Dry Run** -- Test your file discovery and template substitution without cost.
-- **Engine Flag** -- `--engine [claude|gemini|copilot]` switches CLI backends at runtime.
+- **Engine Flag** -- `--engine [claude|gemini|copilot|agy]` switches CLI backends at runtime.
 
 ### Usage
 

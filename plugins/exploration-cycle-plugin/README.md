@@ -43,7 +43,7 @@ During this pipeline, a suite of **active validators** enforces strict transitio
 * **Fixture Portability Validator**: Scrubs developer home paths (`/Users/`), secrets, and ephemeral ports to generate portable characterization tests.
 * **Alignment Validator**: Assures strict bidirectional traceability between Spec Kit requirements and Superpowers TDD tasks.
 
-**Resilient Unhappy Path Redirection:** If a user enters Path 1 but already has active, hacky vibe-coded structures, the **Intake Agent** (`intake-agent.md`) and **Orchestrator** (`exploration-cycle-orchestrator-agent.md`) will immediately intervene and redirect them to Path 2, ensuring they are picked up and put back on a good path without losing progress.
+**Resilient Unhappy Path Redirection:** If a user enters Path 1 but already has active, hacky vibe-coded structures, the **Intake Agent** (`intake-agent.md`) and **Orchestrator Skill** (`exploration-workflow`) will immediately intervene and redirect them to Path 2, ensuring they are picked up and put back on a good path without losing progress.
 
 ### 1. Right Problem First (The Inner Double Diamond)
 
@@ -98,9 +98,12 @@ The plugin uses a tiered dispatch strategy to minimize token cost without sacrif
 
 | Dispatch Strategy | Simple/Mechanical Tasks | Complex/Multi-File Tasks | Orchestration/Planning |
 |---|---|---|---|
-| **Copilot CLI** (recommended if available) | `gpt-5-mini` — paid (AI Credits, see `references/cheapest_models.md`) | `claude-sonnet` — 1 premium request, batched dense | Current model (orchestrator) |
+| **Copilot CLI** (recommended if available) | `gpt-5-mini` — paid (AI Credits, see `references/cheapest_models.md`) | `claude-sonnet-4-5` — 1 premium request, batched dense | Current model (orchestrator) |
+| **agy CLI** | Cheapest agy model | Standard agy model | Current model (orchestrator) |
 | **Claude Sub-agents** | `haiku` — cheapest | `sonnet` — mid-tier | Current model (orchestrator) |
 | **Direct** | Inline | Inline | Inline |
+
+> **Note:** The standalone `gemini` CLI was shut down June 18, 2026. Use `agy` instead for agy-based dispatch.
 
 The key insight: Copilot Pro charges per **request**, not per token. One dense prompt with 7 file specifications costs the same as one small prompt. The orchestrator (this skill, running on the primary model) never delegates judgment — only implementation.
 
@@ -221,7 +224,7 @@ The `exploration-cycle-plugin` is independently authored and not affiliated with
 All documentation sub-agents are invoked via a dedicated `dispatch.py` wrapper for cost efficiency and context isolation:
 
 ```bash
-python ./skills/exploration-workflow/scripts/dispatch.py \
+python ./plugins/exploration-cycle-plugin/scripts/dispatch.py \
   --agent ./agents/requirements-doc-agent.md \
   --context exploration/session-brief.md exploration/captures/problem-framing.md \
   --instruction "Mode: business-requirements. Extract functional requirements." \
@@ -236,8 +239,12 @@ exploration-cycle-plugin/
 ├── BAE-start-guide.md              # Quick start guide for Business Area Experts
 ├── agents/                         # Vision Translators, Scribes, and Quality Gates
 │   ├── intake-agent.md             # Front-door interviewer (Path 1) with Vibe-Coded Catch
+│   ├── exploration-cycle-orchestrator-agent.md  # CLI Execution Director (dispatched by exploration-workflow)
 │   ├── vibe-orchestrator-agent.md  # State machine for Path 2 Vibe-to-Enterprise Rescue
 │   ├── certification-verifier.md   # Two-stage verification and slice compliance certifier
+│   ├── deferred/                   # Phase B agents (not yet active — awaiting Phase A gate)
+│   │   ├── requirements-scribe-agent.md  # Future: live continuous requirements capture
+│   │   └── exploration-loop-orchestrator.md
 │   └── ...
 ├── assets/
 │   ├── diagrams/                   # Technical flowcharts (Mermaid)
@@ -248,13 +255,16 @@ exploration-cycle-plugin/
 │   ├── environment-check.md        # Pre-flight superpowers + dispatch strategy check
 │   ├── dispatch-strategies.md      # Dispatch tiers, task complexity guide, token efficiency
 │   └── agent-loop-patterns.md      # Loop architecture reference (dual-loop, learning-loop)
+├── scripts/
+│   └── validate_phase_gate.py      # Programmatic phase-gate validator (called by exploration-workflow Block 5)
 ├── skills/
 │   ├── discovery-planning/         # Phase 1: Problem framing with Intervention Check
 │   ├── visual-companion/           # Phase 2: Adaptive structure confirmation
 │   ├── prototype-builder/          # Phase 3 coordinator: orchestrates build cycle
 │   ├── subagent-driven-prototyping/# Phase 3 builder: component-by-component construction
 │   ├── exploration-handoff/        # Phase 4: Synthesis, TierGate, and handoff packaging
-│   ├── exploration-workflow/       # Orchestrator: state machine managing the full loop
+│   ├── exploration-workflow/       # Orchestrator: state machine managing the full loop (canonical entry point)
+│   ├── using-exploration-cycle/    # Bootstrap: session start, platform detection, context injection
 │   ├── vibe-browser-audit/         # Path 2 visual & functional DOM and API crawler
 │   ├── vibe-togaf-architect/       # Path 2 C4 Context & Sequence blueprint generator
 │   ├── vibe-spec-packager/         # Path 2 package builder and codebase sandbox bootstrapper
@@ -277,7 +287,7 @@ claude mcp add-plugin richfrem/agent-plugins-skills --path plugins/exploration-c
 **Manual installation:**
 1. Clone `https://github.com/obra/superpowers` into your plugins directory
 2. Clone or symlink `plugins/exploration-cycle-plugin` from this repo into your plugins directory
-3. Ensure both are discoverable by your agent harness (Claude Code, Copilot CLI, Gemini CLI, etc.)
+3. Ensure both are discoverable by your agent harness (Claude Code, Copilot CLI, agy, etc.)
 
 **Verification:**
 ```bash
@@ -291,7 +301,7 @@ claude mcp add-plugin richfrem/agent-plugins-skills --path plugins/exploration-c
 
 **For Business Area Experts:** See the [BAE Quick Start Guide](./BAE-start-guide.md) for a plain-language walkthrough.
 
-**For AI agents:** The canonical entry point is the `exploration-workflow` skill. Say "start an exploration" or "let's explore this idea" to begin.
+**For AI agents:** The canonical entry point is the **`exploration-workflow` skill**. Say "start an exploration" or "let's explore this idea" to begin. The `exploration-cycle-orchestrator-agent` is the CLI dispatch director — it is invoked by `exploration-workflow`, not directly.
 
 **Recommended first-time flow:** Start with the `intake-agent` for an interactive onboarding conversation, then let `exploration-workflow` guide the rest.
 

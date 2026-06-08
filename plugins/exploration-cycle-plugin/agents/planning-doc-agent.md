@@ -13,7 +13,7 @@ model: cheap
 tools: ["Read", "Write"]
 ---
 
-> ⚠️ **OPTIONAL** — This agent is only useful when an **execution harness plugin** is present and the **quantum double diamond framework** is in use. If you are running exploration as a standalone discovery tool (no execution harness, no double diamond), skip this agent entirely — your workflow ends at `exploration/handoff/exploration-handoff.md`.
+> ⚠️ **OPTIONAL** — This agent is only useful when an **execution harness plugin** is present and the **quantum double diamond framework** is in use. If you are running exploration as a standalone discovery tool (no execution harness, no double diamond), skip this agent entirely — your workflow ends at `exploration/handoffs/handoff-package.md`.
 
 ---
 
@@ -45,7 +45,7 @@ Pre-drafts `spec.md` from the handoff package. Output goes to staging — not di
 ```bash
 pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/handoff/exploration-handoff.md \
+  --context exploration/handoffs/handoff-package.md \
   --instruction "Mode: spec-draft. Pre-draft a spec.md from this exploration handoff. Follow Spec-Kitty spec format. Mark any gap with [NEEDS HUMAN INPUT]. Output to staging only." \
   --output exploration/planning-drafts/spec-draft.md
 ```
@@ -57,7 +57,7 @@ Pre-drafts `plan.md` with high-level phases and work package hints from the hand
 ```bash
 pythonscripts/dispatch.py \
   --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
-  --context exploration/handoff/exploration-handoff.md \
+  --context exploration/handoffs/handoff-package.md \
   --instruction "Mode: plan-draft. Pre-draft a plan.md with phases and WP hints from this handoff. Mark any gap with [NEEDS HUMAN INPUT]." \
   --output exploration/planning-drafts/plan-draft.md
 ```
@@ -86,7 +86,10 @@ pythonscripts/dispatch.py \
   --output exploration/session-brief-reentry-$(date +%Y%m%d).md
 ```
 
-The output session brief feeds back into the exploration-cycle-orchestrator for a new Phase 0 → Phase 4 run.
+The output session brief feeds back into the **`exploration-workflow` skill** (the canonical runtime
+entry point) for a new Phase 0 → Phase 4 run. Do NOT route re-entry back to the
+`exploration-cycle-orchestrator-agent` — that agent is the CLI dispatch director, not the session
+entry point.
 
 ---
 
@@ -134,9 +137,9 @@ These are **pre-drafts only**. Definitive artifacts are created via the engineer
 
 ## Usage Protocol
 
-1. Only run after `exploration/handoff/exploration-handoff.md` exists and has been reviewed at the Narrowing Gate.
+1. Only run after `exploration/handoffs/handoff-package.md` exists and has been reviewed at the Narrowing Gate.
 2. For Diamond 1 → Diamond 2 transition: run draft modes in sequence — `spec-draft` → `plan-draft` → `tasks-outline`.
-3. For Diamond 2 → Diamond 1 re-entry: run `re-entry-scope` mode only. The output session brief goes back to the exploration-cycle-orchestrator for a new exploration run.
+3. For Diamond 2 → Diamond 1 re-entry: run `re-entry-scope` mode only. The output session brief goes back to **`exploration-workflow`** (invoke the skill, not the orchestrator agent) for a new exploration run.
 4. Human reviews all staging drafts in `exploration/planning-drafts/` before any engineering CLI commands.
 5. After human approval: use drafts as **reference material** when running execution harness commands — do not pipe staging drafts directly as authoritative input.
 
