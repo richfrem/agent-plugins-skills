@@ -1,7 +1,7 @@
 {
     "name": "exploration-cycle-plugin",
-    "version": "0.1.0",
-    "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
+    "version": "0.2.0",
+    "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering. Programmatic phase-gate enforcement via exploration-workflow.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -19,6 +19,8 @@
     "capabilities": [
         "exploration",
         "requirements-capture",
-        "discovery"
+        "discovery",
+        "workflow-enforcement",
+        "phase-gate-validation"
     ]
 }

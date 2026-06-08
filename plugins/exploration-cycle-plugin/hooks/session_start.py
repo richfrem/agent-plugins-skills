@@ -2,85 +2,87 @@
 """
 session_start.py
 =====================================
-
 Purpose:
-    Checks if an exploration session brief exists. If not, emits an event to suggest starting the intake process.
-
-Layer: Hooks / Triggering
-
-Usage Examples:
-    python session_start.py
-
-Supported Object Types:
-    None
-
-CLI Arguments:
-    None
-
-Input Files:
-    - exploration/session-brief.md
-
-Output:
-    - Printed warning / suggested action to stdout.
-
-Key Functions:
-    None
-
-Script Dependencies:
-    - context/kernel.py (for emitting events)
-
-Consumed by:
-    - Exploration cycle hooks
+    Hook executed at session start. Injects the bootstrap constraints and 
+    active session context directly into the LLM system prompt.
 """
 import os
 import sys
+import json
 from pathlib import Path
 
 def main() -> None:
     try:
         project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
+        plugin_root = Path(__file__).resolve().parents[1]
+        
+        bootstrap_path = plugin_root / "skills" / "using-exploration-cycle" / "SKILL.md"
         dashboard_path = Path(project_dir) / "exploration" / "exploration-dashboard.md"
-
-        def emit_event(kernel_script: Path, summary: str) -> None:
-            if kernel_script.exists():
-                import subprocess
-                cmd = [
-                    sys.executable, str(kernel_script), "emit_event",
-                    "--agent", "exploration-plugin-hook",
-                    "--type", "intent",
-                    "--action", "suggest_intake",
-                    "--status", "success",
-                    "--summary", summary,
-                ]
-                subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        kernel_script = Path(project_dir) / "context" / "kernel.py"
-
-        if not dashboard_path.exists():
-            # No session in progress — suggest starting one
-            summary = "No exploration dashboard found. Suggesting exploration-workflow to start a session."
-            emit_event(kernel_script, summary)
-            print(
-                "\n[exploration-cycle] No session found at exploration/exploration-dashboard.md.\n"
-                "Suggested action: start a new exploration session.\n"
-                "  → Use skill: exploration-workflow\n"
-            )
+        
+        bootstrap_content = ""
+        if bootstrap_path.exists():
+            bootstrap_content = bootstrap_path.read_text(encoding="utf-8")
         else:
-            # Dashboard exists — check if the session is complete
-            content = dashboard_path.read_text(encoding="utf-8")
-            if "**Status:** Complete" in content:
-                summary = "Prior exploration session is complete. Ready to start a new one."
-                emit_event(kernel_script, summary)
-                print(
-                    "\n[exploration-cycle] Your last exploration session is complete.\n"
-                    "Suggested action: start a new session or review your handoff.\n"
-                    "  → Use skill: exploration-workflow  to start a new session.\n"
-                    "  → Check: exploration/handoffs/  for prior session outputs.\n"
-                )
-            # else: active session in progress — no suggestion needed, orchestrator handles it
+            bootstrap_content = "The exploration-cycle-plugin is active. Follow the exploration-workflow."
+            
+        session_context = f"<EXTREMELY_IMPORTANT>\nYou have the exploration-cycle-plugin installed.\n\n{bootstrap_content}\n"
+        
+        # Check active dashboard status with defensive parsing
+        if dashboard_path.exists():
+            try:
+                dashboard_content = dashboard_path.read_text(encoding="utf-8")
+                lines = dashboard_content.splitlines()
+                phase_line = next((line for line in lines if "**Current Phase:**" in line), "**Current Phase:** Phase 1 — Problem Framing")
+                status_line = next((line for line in lines if "**Status:**" in line), "**Status:** In Progress")
+                
+                session_context += "\n## Active Workspace State\n"
+                session_context += f"- {phase_line}\n"
+                session_context += f"- {status_line}\n"
+                session_context += "- An active exploration session is detected on disk. You MUST orient the user around this active session and run the exploration-workflow.\n"
+            except Exception:
+                session_context += "\n- An active exploration session exists but the dashboard is corrupt or parsing failed.\n"
+                
+        session_context += "</EXTREMELY_IMPORTANT>"
+        
+        # Output JSON format consumed by the IDE harnesses
+        # Deduplicate to prevent double injection in Claude Code
+        is_claude_code = "CLAUDE_PROJECT_DIR" in os.environ and "COPILOT_CLI" not in os.environ and "CURSOR_PLUGIN_ROOT" not in os.environ
+        is_copilot = "COPILOT_CLI" in os.environ
+        is_cursor = "CURSOR_PLUGIN_ROOT" in os.environ
 
-    except Exception:
-        pass  # Hooks must fail silently
+        if is_claude_code:
+            output_data = {
+                "hookSpecificOutput": {
+                    "hookEventName": "SessionStart",
+                    "additionalContext": session_context
+                }
+            }
+        elif is_copilot:
+            output_data = {
+                "additionalContext": session_context
+            }
+        elif is_cursor:
+            output_data = {
+                "additional_context": session_context
+            }
+        else:
+            # Fallback for general or unknown runners (like terminal or custom runners)
+            output_data = {
+                "additionalContext": session_context,
+                "hookSpecificOutput": {
+                    "hookEventName": "SessionStart",
+                    "additionalContext": session_context
+                }
+            }
+        
+        # Output as single-line JSON to ensure clean parsing by shell harnesses
+        sys.stdout.write(json.dumps(output_data) + "\n")
+        sys.stdout.flush()
+
+    except Exception as e:
+        # Fallback behavior when injection fails
+        sys.stderr.write(f"[exploration-cycle] Warning: SessionStart hook context injection failed: {str(e)}\n")
+        sys.exit(0) # Hooks must fail silently to avoid crashing startup
 
 if __name__ == "__main__":
     main()

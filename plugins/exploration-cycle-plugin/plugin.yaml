@@ -1,6 +1,6 @@
 name: exploration-cycle-plugin
-version: 0.2.0
-description: "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering."
+version: 0.3.0
+description: "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering. Programmatic phase-gate enforcement via exploration-workflow."
 author: Richard Fremmerlid
 kind: backend
 platforms:
@@ -26,6 +26,7 @@ skills:
   - prototype-builder
   - subagent-driven-prototyping
   - user-story-capture
+  - using-exploration-cycle
   - vibe-browser-audit
   - vibe-behavioral-test-capture
   - vibe-domain-extractor

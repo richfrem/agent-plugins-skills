@@ -32,10 +32,11 @@ python ./scripts/generate_workflow.py \
 ## Capture Pass (CLI dispatch pattern)
 
 ```bash
-cat exploration/session-brief.md exploration/captures/brd-draft.md \
-  | copilot -p "$(cat .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md)" \
-    "Mode: workflow-map. Generate a Mermaid flowchart diagram of the core business process described in this context. Use a flowchart TD layout. Label each step clearly. Include decision nodes for branches and validation gates." \
-  > exploration/captures/workflow-map.md
+python scripts/dispatch.py \
+  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --context exploration/session-brief.md exploration/captures/brd-draft.md \
+  --instruction "Mode: workflow-map. Generate a Mermaid flowchart diagram of the core business process described in this context. Use a flowchart TD layout. Label each step clearly. Include decision nodes for branches and validation gates." \
+  --output exploration/captures/workflow-map.md
 ```
 
 ## Output Format
@@ -63,7 +64,7 @@ flowchart TD
 ```
 
 ## Open Questions
-- [NEEDS HUMAN INPUT: step ordering unclear from captures]
+- [NEEDS HUMAN INPUT] (step ordering unclear from captures)
 ````
 
 ## Diagram Types

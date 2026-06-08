@@ -169,11 +169,15 @@ def _build_cmd_gemini(model: str, prompt: str, isolated: bool = False) -> list[s
     sys.exit(1)
 
 
-def _build_cmd_agy(prompt_file: str, isolated: bool = False) -> list[str]:
+def _build_cmd_agy(model: str, prompt_file: str, isolated: bool = False) -> list[str]:
     """Agy CLI. --dangerously-skip-permissions is suppressed when isolated=True."""
-    if isolated:
-        return ["agy", "-p", f"@{prompt_file}"]
-    return ["agy", "--dangerously-skip-permissions", "-p", f"@{prompt_file}"]
+    cmd = ["agy"]
+    if model:
+        cmd += ["--model", model]
+    if not isolated:
+        cmd += ["--dangerously-skip-permissions"]
+    cmd += ["-p", f"@{prompt_file}"]
+    return cmd
 
 
 def _build_cmd_claude(model: str, prompt: str, isolated: bool = False) -> list[str]:
@@ -274,7 +278,7 @@ def run_agent(
         elif cli == "gemini":
             cmd = _build_cmd_gemini(model, prompt, isolated)
         elif cli == "agy":
-            cmd = _build_cmd_agy(prompt_tmp, isolated)
+            cmd = _build_cmd_agy(model, prompt_tmp, isolated)
         elif cli == "codex":
             cmd = _build_cmd_codex(model)
         else:  # claude
@@ -282,7 +286,7 @@ def run_agent(
 
         if cli in _STREAMING_CLIS:
             with open(output_file, "w") as out_f:
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                 for line in (proc.stdout or []):
                     sys.stdout.write(line)
                     sys.stdout.flush()
@@ -297,7 +301,7 @@ def run_agent(
                 subprocess.run(cmd, stdin=stdin_f, stdout=out_f, stderr=subprocess.STDOUT, check=True)
         else:
             with open(output_file, "w") as out_f:
-                subprocess.run(cmd, stdout=out_f, stderr=subprocess.STDOUT, check=True)
+                subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=out_f, stderr=subprocess.STDOUT, check=True)
 
         print(f"[run_agent] {cli} complete → {output_file}")
 

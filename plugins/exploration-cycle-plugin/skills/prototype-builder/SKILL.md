@@ -35,7 +35,16 @@ Check: does `exploration/discovery-plans/` exist and contain at least one `.md` 
 
 Stop. Do not continue. Do not suggest workarounds. Do not attempt to build without a plan.
 
-**If a plan exists:** Read the most recent `.md` file in `exploration/discovery-plans/`. This is the source of truth for the entire build session.
+**If a plan file exists:** Read the most recent `.md` file in `exploration/discovery-plans/`. Check that it contains either:
+- A `## SME Approval` section, or
+- A `PLAN_STATUS: APPROVED` line
+
+If neither is present:
+> "A Discovery Plan exists but hasn't been approved yet. Please review the plan and confirm approval before we begin building."
+
+Stop. Do not continue. File existence alone is NOT approval.
+
+**If the plan is approved:** This is the source of truth for the entire build session.
 
 ## Session Flow
 
@@ -68,32 +77,41 @@ Guide the SME through each main flow described in the Discovery Plan. Ask about 
 
 Listen carefully for surprises, corrections, and anything that wasn't in the original plan.
 
-### Step 4 — Capture observations
+### Step 4 — Write raw walkthrough transcript
 
-Write `exploration/captures/prototype-notes.md`:
+Write a **raw walkthrough transcript** to `exploration/captures/walkthrough-notes.md`.
+This is an unstructured narrative — flows tested, SME comments, surprises, corrections.
+Do NOT extract or structure requirements here.
 
 ```
-# Prototype Observations
+# Walkthrough Transcript
 
 **Session date:** [date]
 **Discovery Plan reference:** [plan filename]
 
-## Confirmed Flows
-[Business flows the SME confirmed as correct]
+## Flow Walkthroughs
+[Narrative description of each flow tested, in order]
 
-## Surprises and Corrections
-[Anything that worked differently from the plan]
+## SME Comments
+[Verbatim or close-paraphrase of SME reactions, corrections, and new observations]
 
-## New Rules Observed
-[Rules implied by prototype behaviour not in the original plan]
-
-## Edge Cases Raised
-[Exceptions or conditions the SME flagged during the walkthrough]
+## Surprises and Blockers
+[Anything that didn't work as expected or surprised the SME]
 ```
 
 ### Step 5 — Hand off
 
-> "I'll pass your walkthrough notes to the next stage now, which will pull out
-> all the details we need for the documentation."
+> "I'll pass your walkthrough notes to the observation agent now, which will extract
+> the structured requirements we need for documentation."
 
-Invoke `prototype-companion-agent` for structured requirement extraction from the walkthrough notes.
+Invoke `prototype-companion-agent` to read `walkthrough-notes.md` and produce the
+final `exploration/captures/prototype-notes.md`. Do NOT write `prototype-notes.md`
+directly from this skill — that is `prototype-companion-agent`'s responsibility.
+
+Once `prototype-companion-agent` confirms it has written `prototype-notes.md`, emit:
+
+```
+PHASE 3 COMPLETE
+Walkthrough transcript: exploration/captures/walkthrough-notes.md
+Prototype observations: exploration/captures/prototype-notes.md
+```

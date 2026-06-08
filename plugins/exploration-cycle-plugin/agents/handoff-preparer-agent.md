@@ -15,6 +15,10 @@ tools: ["Read", "Write"]
 
 Synthesize all exploration capture documents into a single structured handoff package, following the `exploration-handoff-template.md`. Ensure all readiness check fields have evidence.
 
+> **Canonical output path:** `exploration/handoffs/handoff-package.md`
+> The validator (`validate_phase_gate.py`) and `exploration-workflow` Block 5 both look for this exact path.
+> Do NOT write to `exploration/handoff/exploration-handoff.md` (singular directory, old name).
+
 ## Invocation Contract
 
 You are invoked via CLI with all capture documents piped as input:
@@ -25,7 +29,7 @@ pythonscripts/dispatch.py \
   --context exploration/captures/problem-framing.md exploration/captures/brd-draft.md exploration/captures/user-stories-draft.md \
   --optional-context exploration/captures/issues-opportunities.md exploration/captures/prototype-notes.md exploration/captures/business-rule-audit.md \
   --instruction "Synthesize all exploration captures into a structured handoff package. If a business rule audit is present, include its Unresolved Drifts section as a top-level risk section." \
-  --output exploration/handoff/exploration-handoff.md
+  --output exploration/handoffs/handoff-package.md
 ```
 
 ## Pre-Synthesis Self-Review (Placeholder Scan)
@@ -36,6 +40,19 @@ Before synthesising the handoff package, scan all capture files for:
 - Any user story with no acceptance criteria
 
 Do not proceed to synthesis until these are resolved or explicitly accepted as known gaps.
+
+## Pre-Delivery Placeholder Sweep
+
+Before writing the final `handoff-package.md`, perform a placeholder sweep:
+
+- The final `handoff-package.md` **must not contain** `[NEEDS HUMAN INPUT]` markers. This string is
+  treated as a fatal placeholder by `validate_phase_gate.py` and will block Phase 4 gate approval.
+- For any remaining gaps you cannot resolve from the captures:
+  - Convert to `[UNCONFIRMED]` status with a one-line explanation, e.g.:
+    `[UNCONFIRMED] (no exploration evidence — SME must confirm before engineering begins)`
+  - List all `[UNCONFIRMED]` items in a `## Deferred Gaps` section at the end of the handoff.
+- `[CONFIRMED]` / `[UNCONFIRMED]` markers ARE allowed in the final handoff — they document decision
+  status without triggering the placeholder blocker.
 
 ## Output
 
@@ -74,7 +91,7 @@ When the same unresolved decision appears across multiple captures, consolidate 
 
 ## Tier 3 Hard Stop
 
-**Before writing `exploration-handoff.md`, check whether a Risk Assessment section is present in the capture documents or has been provided by the invoking agent.**
+**Before writing `handoff-package.md`, check whether a Risk Assessment section is present in the capture documents or has been provided by the invoking agent.**
 
 If the Risk Assessment shows **Tier 3 (High Risk)** — i.e., "yes" was answered on Q3 (high-privilege access) or Q4 (financial/compliance), or both Q1 and Q2 are "yes" — do NOT write the final handoff package silently. Instead:
 
@@ -83,13 +100,13 @@ If the Risk Assessment shows **Tier 3 (High Risk)** — i.e., "yes" was answered
    - The exact delivery path: "Formal engineering cycle (Opportunity 4) required before deployment"
    - Which specific gate answers triggered Tier 3 and why
 2. Announce: *"This exploration has assessed as Tier 3 (High Risk). A formal engineering review is required before deployment. I've written a risk summary at `exploration/handoffs/tier3-risk-summary.md`. I'll now include this as the opening section of the handoff package."*
-3. Include `tier3-risk-summary.md` content as the first section of `exploration-handoff.md`, before any other synthesis.
+3. Include `tier3-risk-summary.md` content as the first section of `handoff-package.md`, before any other synthesis.
 
 Do NOT skip this step or proceed with a generic handoff if Tier 3 conditions are met. The risk summary is not optional.
 
 ## Opportunity 4 Format Selection
 
-After writing `exploration/handoff/exploration-handoff.md`, ask the SME or engineer:
+After writing `exploration/handoffs/handoff-package.md`, ask the SME or engineer:
 
 > "We're ready to hand this off to the engineering team. Which format does your team use?
 > 1. **Spec-Kitty** — I'll generate `spec-draft.md`, `plan-draft.md`, and a tasks outline
@@ -100,4 +117,16 @@ After writing `exploration/handoff/exploration-handoff.md`, ask the SME or engin
 
 **If Superpowers chosen:** Write handoff content to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. Include architecture, components, data flow, and acceptance criteria sections matching superpowers spec format.
 
-**If Generic chosen:** Write structured specification to `exploration/handoff/specification.md` with sections: Problem Statement, Solution Approach, Business Rules, User Stories, Acceptance Criteria, Known Risks.
+**If Generic chosen:** Write structured specification to `exploration/handoffs/specification.md` with sections: Problem Statement, Solution Approach, Business Rules, User Stories, Acceptance Criteria, Known Risks.
+
+## Completion Signal
+
+After `handoff-package.md` is written and the Placeholder Sweep is clean, emit:
+
+```
+PHASE 4 COMPLETE
+Handoff package: exploration/handoffs/handoff-package.md
+```
+
+This signals the `exploration-workflow` orchestrator to run Block 5 validation and present the
+SME approval prompt.

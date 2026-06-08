@@ -10,7 +10,7 @@ description: >
   session or to resume an in-progress session.
   Trigger phrases: "start an exploration", "let's explore this idea",
   "resume my exploration", "where did we leave off", "start discovery".
-allowed-tools: Read, Write
+allowed-tools: Bash, Read, Write
 ---
 
 <example>
@@ -147,17 +147,27 @@ not just at handoff. The earlier it happens, the more valuable it is.
 1. Check for `exploration/exploration-dashboard.md`.
 2. **If the file does NOT exist:**
    - Create the `exploration/` directory if it does not already exist.
-   - **Beat 1 — Name and goal:** Ask:
-     > "What are we exploring today? Give it a short name so we can track it — and in a sentence or two, what are you hoping to achieve or solve?"
-   - When the SME responds, immediately write a provisional dashboard with `**Session:**` set and `**Session Type:** TBD`. This anchors the session name before classification.
-   - **Beat 2 — Session type:** Using the Scenario Routing Guide below, suggest a type with a one-sentence rationale:
-     > "That sounds like [Type X] — [why]. Does that fit, or would you describe it differently?"
-   - If the SME confirms: proceed with that type.
-   - If the SME corrects or says "not quite": take their word for it. Always defer to SME judgment.
-   - If the SME says "I'm not sure" or "you tell me": present the **full type menu** (see below) with examples.
-   - Update `**Session Type:**` in the dashboard to the confirmed type.
-   - Create an initial task list in the dashboard or session notes capturing the current objective, immediate next step, known follow-up work, and any explicit execution expectations from intake.
-   - **Immediately pre-mark non-applicable phases as `- [~]`** based on the confirmed session type. Use the Active Phases table in the Session Types section above to determine which phases to skip. Add a parenthetical reason: `(Skipped — [reason])`. Do this before finalizing the dashboard — the SME should never see a phase as "upcoming" if this session type will never use it.
+   - Check if `exploration/session-brief.md` exists.
+   - **If session-brief.md EXISTS:**
+     - Read the file contents silently.
+     - Extract the following fields from the brief (using regex fallback checks for header variations):
+       * Project / Session Title (e.g. from Epic/Title lines)
+       * Exploration Type (Greenfield / Brownfield / Spike / Analysis)
+       * Domain classification
+       * Desired output
+       * Known constraints and expectations
+     - Write the final `exploration/exploration-dashboard.md` using the extracted values. Initialize `**Status:** In Progress` and set `**Current Phase:** Phase 1 — Problem Framing`.
+     - Automatically pre-mark non-applicable phases as `- [~] (Skipped)` based on the Session Type.
+     - **Skip Beat 1 and Beat 2** entirely since this data is already hydrated. Proceed directly to Block 3 Orientation.
+   - **If session-brief.md DOES NOT exist:**
+     - **Beat 1 — Name and goal:** Ask:
+       > "What are we exploring today? Give it a short name so we can track it — and in a sentence or two, what are you hoping to achieve or solve?"
+     - When the SME responds, immediately write a provisional dashboard with `**Session:**` set and `**Session Type:** TBD`.
+     - **Beat 2 — Session type:** Suggest a type with a one-sentence rationale:
+       > "That sounds like [Type X] — [why]. Does that fit, or would you describe it differently?"
+     - Update `**Session Type:**` in the dashboard to the confirmed type.
+     - Create an initial task list in the dashboard or session notes.
+     - Pre-mark non-applicable phases as `- [~] (Skipped)`.
    - Write the final dashboard, then proceed to Block 3.
 3. **If the file EXISTS:** Proceed to Block 2.
 
@@ -311,17 +321,40 @@ When invoking a child skill, pass this structured context block — do NOT bury 
 
 ```
 ## Session Context (from orchestrator — read and act on before proceeding)
+<ORCHESTRATOR_DISPATCH authorized_skill="[child-skill name, e.g. discovery-planning]" session_id="[session-id-uuid]" phase_number="[N]" phase_name="[phase-name]" strategy="[dispatch-strategy]" expected_output="[path/to/artifact]" return_required="yes">
 - Session type: [exact value from **Session Type:** in dashboard]
 - Active phase: Phase [N] — [phase name]
 - Discovery Plan: [path to most recent discovery-plan-*.md, or "not yet written"]
-- Dispatch strategy: [value from **Dispatch Strategy:** in dashboard]
 - Current task slice: [the current planned work items for this phase]
 - Return signal: When this phase is complete, announce "PHASE [N] COMPLETE" then invoke the exploration-workflow skill to continue.
+</ORCHESTRATOR_DISPATCH>
 ```
 
 Child skills must read `Session type` and adapt their question tracks and outputs accordingly before doing anything else.
 
 If the phase involves implementation or dense document production and the dispatch strategy is not `direct`, decompose the work first, then hand the repetitive or low-context slices to cheaper agents or models. Do not keep all execution in the main orchestrator path unless the SME explicitly chose direct handling.
+
+### Direct Mode Agent Prompt Hydration (Degraded Fallback Mode)
+
+When the dashboard records `**Dispatch Strategy: direct**`, you do not have CLI-level subagent spawning capabilities. To prevent role contamination and context pollution:
+
+1. Identify the sub-agent required for the current phase task (e.g., `requirements-doc-agent.md`).
+2. Read the prompt file using the `Read` tool.
+3. Explicitly wrap the sub-agent task turn inside execution boundaries:
+   ```
+   BEGIN AGENT EXECUTION: [Agent Name]
+   [Paste Agent Prompt Instructions & Rules Here]
+   ---
+   Task Context: [Provide current files/artifacts]
+   Task Instruction: [Provide specific task slice]
+   ```
+4. Execute the generation and immediately write the output to `exploration/captures/` or the designated path.
+5. Upon writing the output — **and only if the sub-agent task is self-contained and requires no further clarification from the SME** — output the cleanup marker:
+   ```
+   END AGENT EXECUTION: [Agent Name]
+   ```
+   If the sub-agent output contains open questions for the SME (e.g., gaps in requirements, ambiguous instructions), **hold the persona open** and await the SME response before outputting the cleanup marker. Premature persona purge causes deadlock: the SME's reply is ingested by the Orchestrator, not the sub-agent, breaking the clarification loop.
+6. **Persona Purge:** Once `END AGENT EXECUTION` is output, clear the agent persona from your current reasoning thread. Announce: *"Execution complete. Returning to Exploration Orchestrator role."* Resume the standard orchestrator behavior.
 
 ---
 
@@ -351,10 +384,16 @@ If the SME asks to go back and change something in a completed phase (e.g., "Can
 
 `<HARD-GATE>` — This block runs when the child skill signals its phase is done.
 
-1. Present a plain-language summary of what was produced (1–3 bullets).
-2. Show the SME the Outcome file path.
-3. Ask for explicit approval:
-   > "Does everything look right? If you're happy with it, just say the word and I'll mark Phase [N] complete."
+1. **Run Programmatic Validation:** Run the phase gate validator script:
+   ```bash
+   python3 scripts/validate_phase_gate.py [active_phase_number]
+   ```
+2. **If validation fails:** Stop. Present the validation failure message to the SME. Re-route control to the child skill to fix the missing outputs. Do NOT prompt for approval.
+3. **If validation passes:**
+   - Present a plain-language summary of what was produced (1–3 bullets).
+   - Show the SME the Outcome file path.
+   - Ask for explicit approval:
+     > "Does everything look right? If you're happy with it, just say the word and I'll mark Phase [N] complete."
 4. **Do NOT update the dashboard until the SME gives a clear affirmation.** Accepted responses: "Yes", "Looks good", "Approved", "Go ahead", "That's right", or any equivalent clear confirmation.
 5. If the SME requests changes: return control to the child skill, apply changes, then re-present for approval. Repeat until satisfied.
 
@@ -368,6 +407,7 @@ Using the Write tool, update `exploration/exploration-dashboard.md`:
 3. Update `**Status:**` to `In Progress` (or `Complete` if all phases are done).
 4. In the Session Log table, fill in the completed phase row with today's date and a one-sentence note describing what was produced.
 5. Refresh the living task list to reflect what is now done, what became current, and what new follow-up items were introduced by the phase outcome or SME corrections.
+6. **Token Eviction:** Once the dashboard is updated to `[x]`, the prior `<ORCHESTRATOR_DISPATCH>` block for this phase is now stale. Any subsequent child skill invocation will require a new dispatch tag with the updated `phase_number`. Do not re-use the prior tag.
 
 Then loop back to **Block 3** to orient the SME for the next phase.
 

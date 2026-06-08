@@ -59,6 +59,10 @@ Use this to select the correct loop pattern:
 | Systemic rules generation, autonomous meta-optimizations | **Triple-Loop** | `triple-loop-learning` |
 
 ### Process Flow
+0.  **Interactively Determine CLI and Model (ask once during bootstrap)**: Before initiating delegation or preparing packets, you must interactively prompt the user to select their desired execution setup. Ask:
+    - *"Which LLM CLI backend would you like to use for sub-agent execution?"* (Options: `agy`, `claude`, `copilot`, `codex`, `llama`).
+    - *"Which specific model should be used?"* (Options/defaults per backend, e.g., `Gemini 3.5 Flash (Low)` or `gemini-3.5-flash` for `agy`).
+    Record their choice and pass it to the sub-agent runner (`run_agent.py`) using the `--cli` and `--model` flags, ensuring you append `< /dev/null` to prevent `SIGTTIN` process halts.
 1.  **Plan (Strategy)**: You define the work (Spec → Plan → Tasks). When planning scripts/pipelines, default to a "Modular Building Blocks" architecture (CLI wrappers + independent core modules).
 2.  **Delegate (Handoff)**: You pack the context into a **Task Packet** and assist the user in handing off to the Inner Loop.
 3.  **Execute (Tactics)**: The Inner Loop agent (which has *no* git access) writes code and runs tests.
@@ -98,12 +102,17 @@ python ./scripts/agent_orchestrator.py packet --wp <WP-ID> --spec-dir <PATH>
 ```
 This generates a markdown file in the `handoffs/` directory. You must then instruct the user/system to launch the Inner Loop with this file.
 
-### 3. Verification & Correction
+### 3. Verification & Correction (Trust But Verify & TDD)
 
-Check the Inner Loop's work against the packet using the `verify` command.
+You must check all outputs of the agents you orchestrate. **No blind trust is allowed.** Check the Inner Loop's work against the packet using the `verify` command:
 ```bash
 python ./scripts/agent_orchestrator.py verify --packet handoffs/task_packet_NNN.md --worktree <PATH>
 ```
+
+Follow these strict verification rules:
+- **TDD Enforcement**: Running tests is mandatory. Verify that code is functionally proven and passes the test suite. If tests are missing, reject the package until tests are written.
+- **Delta Inspection**: Check modified files directly. Review all logic adjustments for stubs, stales, or architectural regressions.
+- **Continuous Loop Improvement**: For any failure, evaluate the retrospective data and modify the templates, prompts, or reference instructions to prevent repeat failures (continuous learning).
 
 If the work fails criteria, use the **Severity-Stratified Output** schema to generate a structured correction packet:
 
@@ -180,7 +189,8 @@ project, save any outputs to your preferred persistence location and close the s
 
 ### 8. Sub-Agent Limitations
 - Be aware that `claude-cli-agent` has a hard stop on passing massive context bundles (~5MB+) either natively via stdin or `--file`. If your payload exceeds context windows, you must write a semantic chunking script instead of blindly dumping a `context-bundler` package into a prompt!
-- Automated sub-agent invocations will *silently fail* or throw an interactive block if you do not use `--dangerously-skip-permissions` or if the user is not authenticated natively using `claude login`.
+- Automated sub-agent invocations will *silently fail* or throw an interactive block if you do not use `--dangerously-skip-permissions` (for `agy` / `claude`) or if the user is not authenticated natively using `claude login`.
+- **CRITICAL**: When executing sub-agent commands in background or headless scripts (e.g., via `run_agent.py` or system subprocess runners), you must redirect standard input (e.g., `stdin=subprocess.DEVNULL` or `< /dev/null`) to prevent the operating system from suspending the process with a `SIGTTIN` signal, which hangs execution indefinitely.
 
 ## Lifecycle State Tracking
 

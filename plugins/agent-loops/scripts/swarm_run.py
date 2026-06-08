@@ -304,6 +304,8 @@ def execute_worker(
             effective_model = _load_cheapest_model("gemini", "gemini-3-pro-preview")
         elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
             effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
+        elif engine.lower() == "agy" and (not model or model == "haiku" or model.startswith("claude")):
+            effective_model = _load_cheapest_model("agy", "gemini-3.5-flash")
 
 
         payload = content
@@ -316,6 +318,12 @@ def execute_worker(
         elif engine.lower() == "gemini":
             cmd_args.extend([
                 "--model", effective_model,
+                "-p", prompt
+            ])
+        elif engine.lower() == "agy":
+            cmd_args.extend([
+                "--model", effective_model,
+                "--dangerously-skip-permissions",
                 "-p", prompt
             ])
         elif engine == "copilot":
@@ -406,7 +414,7 @@ def main() -> None:
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--workers", type=int)
     parser.add_argument("--model", type=str)
-    parser.add_argument("--engine", type=str, default="claude", choices=["claude", "gemini", "copilot"], help="The CLI engine to run workers through")
+    parser.add_argument("--engine", type=str, default="claude", choices=["claude", "gemini", "copilot", "agy"], help="The CLI engine to run workers through")
     parser.add_argument("--var", action="append", default=[])
     args = parser.parse_args()
 

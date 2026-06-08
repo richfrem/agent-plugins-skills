@@ -60,8 +60,9 @@ flowchart TD
 
 ### Step 3: Distribution (Strategic Planner)
 
-1. The Planner assigns disjoint code fixes to one or multiple Tactical Executors.
-2. Ensure test boundaries are defined.
+1. **Interactively Determine CLI and Model (ask once during bootstrap)**: Interactively prompt the user to select the CLI backend (`agy`, `claude`, `copilot`, etc.) and the specific model to run mutations and evaluation.
+2. The Planner assigns disjoint code fixes to one or multiple Tactical Executors using the selected CLI and model.
+3. Ensure test boundaries and standard input redirection (appending `< /dev/null` to commands) are defined to prevent SIGTTIN process freezes.
 
 ### Step 4: Mutation & Headless Scoring (Tactical Executor)
 
@@ -70,10 +71,12 @@ flowchart TD
 1. Apply the instruction set or code adjustment.
 2. Run pure, headless deterministic tests. Return an objective integer/float score, not opinions. 
 
-### Step 5: Verification & Promotion (Outer Loop)
+### Step 5: Verification & Promotion (Outer Loop - Trust But Verify)
 
-1. Read the objective score differentials. 
-2. **KEEP** only if Accuracy AND F1 score pass the current baseline. Reject otherwise.
-3. Postulate a retrospective mapping.
+1. Read the objective score differentials. **No blind trust is allowed.**
+2. **TDD / Test Check**: The promotion logic MUST be backed by headless evaluation. Run the full regression test suite on mutated code.
+3. **Delta Inspection**: Check the source diffs for any stub placeholders ("TODO", "TBD", "[NEEDS INPUT]") and verify syntax cleanliness.
+4. **KEEP** only if Accuracy AND F1 score pass the current baseline. Reject otherwise.
+5. Postulate a retrospective mapping for continuous system-wide instructions improvement.
 
 ---

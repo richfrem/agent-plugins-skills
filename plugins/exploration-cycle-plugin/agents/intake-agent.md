@@ -109,25 +109,66 @@ Do not proceed until confirmed.
 
 ---
 
+## Canonical Session Brief Schema
+
+The `exploration/session-brief.md` file you produce **must use these exact `##`-level headers** in
+order. The `exploration-workflow` skill reads this file silently at session start to auto-hydrate the
+dashboard — if headers are missing or renamed, the workflow falls back to asking Beat 1/Beat 2
+questions, defeating the optimization.
+
+```markdown
+# Exploration Session Brief
+
+## Session Title
+[Short name for tracking, e.g. "Staff Scheduling Tool"]
+
+## Exploration Type
+[Greenfield | Brownfield | Spike | Analysis/Docs]
+
+## Domain
+[software | research | business | architecture | general]
+
+## Desired Output
+[understanding | spec | plan | prototype | process-doc | other — one sentence]
+
+## Known Constraints
+- [Constraint 1]
+- [Constraint 2]
+
+## Execution Expectations
+[Any stated preference for task tracking, cheaper-model delegation, superpowers-assisted planning, etc.]
+
+## Current System Behavior
+(Brownfield only — describe what the existing system does; mark gaps with [NEEDS HUMAN INPUT])
+
+## Engineering Blocking Question
+(Re-entry spike only — exact question from the execution cycle that triggered this exploration)
+
+## Decision Pre-fills
+(Optional — confirmed decisions the SME has already made, listed as key: value pairs)
+```
+
+Mark any field you cannot fill from the intake conversation with `[NEEDS HUMAN INPUT]`.
+Do not rename or reorder headers.
+
+---
+
 ## Phase 4: Pre-fill the Session Brief
 
-Read `assets/templates/exploration-dashboard.md` for the dashboard structure, then pre-fill
-`exploration/session-brief.md` using the intake interview results. (The session-brief template
-is not a separate file — derive the brief structure from the intake classification fields
-documented in this agent's Output section below.) Fill in every field you can from the intake conversation. Mark anything uncertain with `[INTAKE DRAFT — confirm]`.
+Write `exploration/session-brief.md` using the **Canonical Session Brief Schema** above.
+Fill in every field you can from the intake conversation. Mark anything uncertain with
+`[INTAKE DRAFT — confirm]`.
 
-Write to `exploration/session-brief.md`.
-
-Key fields to pre-populate:
-- **Exploration type**: greenfield / brownfield / re-entry spike (from classification)
+Key mapping from intake to schema:
+- **Session Title**: short name from Phase 1 trigger
+- **Exploration Type**: from classification (greenfield / brownfield / re-entry spike → spike / analysis/docs)
 - **Domain**: from classification
-- **Trigger**: user's own words from Phase 1 (verbatim quote where possible)
-- **Prior context**: any existing docs, system, or constraints named
-- **Desired output**: from classification
-- **Known constraints**: any mentioned
-- **Execution expectations**: any stated preference for detailed planning, task tracking, cheaper-model delegation, or superpowers-assisted implementation planning
-- **Current System Behavior** (brownfield only): fill with anything described; mark gaps
-- **Engineering blocking question** (re-entry spike only): exact question from the execution cycle
+- **Desired Output**: from Phase 2 "Desired output" answer
+- **Known Constraints**: from Phase 2 "Prior context" + "Urgency / scope"
+- **Execution Expectations**: any stated preference for detailed planning, task tracking, cheaper-model
+  delegation, or superpowers-assisted implementation planning
+- **Current System Behavior**: brownfield only — from Phase 2 "Prior context"
+- **Engineering Blocking Question**: re-entry spike only — from Phase 1 trigger verbatim
 
 ---
 
@@ -144,11 +185,16 @@ Key fields to pre-populate:
 
 ## Output
 
-A single file: `exploration/session-brief.md`
+A single file: `exploration/session-brief.md` — written using the Canonical Session Brief Schema.
 
-Fields pre-filled from intake. All uncertain fields marked `[INTAKE DRAFT — confirm]`. Human reviews and confirms before Phase 1 capture begins.
+All uncertain fields marked `[INTAKE DRAFT — confirm]`. Human reviews and confirms before
+Phase 1 capture begins.
 
-After the brief is confirmed, the orchestrator is expected to create or refresh a living task list before any implementation work begins. Intake does not own that task list, but it must leave enough signal in the brief for the orchestrator to do it correctly.
+After the brief is confirmed, tell the user:
+> "Session brief drafted at `exploration/session-brief.md`. Review it and tweak anything that
+> doesn't look right. When you're ready, just say 'let's explore' or 'start the exploration' —
+> the `exploration-workflow` will read this brief automatically and skip the setup questions."
 
-Tell the user:
-> "Session brief drafted at `exploration/session-brief.md`. Review it, tweak anything that doesn't look right, then we'll move into Phase 1 capture."
+After the brief is confirmed, the orchestrator is expected to create or refresh a living task
+list before any implementation work begins. Intake does not own that task list, but it must
+leave enough signal in the brief for the orchestrator to do it correctly.

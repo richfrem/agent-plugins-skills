@@ -16,11 +16,15 @@ This reference describes specialized **Inner Loop Execution** patterns for the [
 
 ## Identity: The Sub-Agent Dispatcher 🎭
 
-You, the Antigravity agent, dispatch specialized analysis tasks to the CLI sub-agents natively supported by this ecosystem (claude-cli, gemini-cli, copilot-cli).
+You, the Antigravity agent, dispatch specialized analysis tasks to the CLI sub-agents natively supported by this ecosystem (claude-cli, agy-cli, copilot-cli).
 
 ## 🛠️ Core Pattern
 ```bash
-cat <PERSONA_PROMPT> | <CLI_ENGINE> -p "<INSTRUCTION>" < <INPUT> > <OUTPUT>
+# Recommended: Run via run_agent.py multi-LLM router
+python scripts/run_agent.py <PERSONA_PROMPT> <INPUT> <OUTPUT> "<INSTRUCTION>" --cli agy
+
+# Direct execution (using file-ref system prompt and stdin redirection):
+agy --dangerously-skip-permissions -p "$(cat <PERSONA_PROMPT>)" < <INPUT> > <OUTPUT>
 ```
 
 ## ⚠️ CLI Best Practices
@@ -51,14 +55,14 @@ of that system prompt is up to you — user-supplied, from an installed persona 
 (e.g., `agent-personas`), or inline in the command.
 
 ```bash
-# With a system prompt file:
-cat system_prompt.md | claude -p "Review this PR" < pr.md > review.md
+# With a system prompt file (running via run_agent.py router):
+python scripts/run_agent.py system_prompt.md pr.md review.md "Review this PR" --cli claude
 
-# Without a system prompt (general-purpose):
+# Without a system prompt (general-purpose direct execution):
 claude -p "Analyze this code for security issues" < input.md > analysis.md
 
-# Gemini equivalent:
-cat system_prompt.md | gemini -p "Audit this architecture" < bundle.md > audit.md
+# Antigravity (agy) equivalent:
+python scripts/run_agent.py system_prompt.md bundle.md audit.md "Audit this architecture" --cli agy
 ```
 
 ## 🔄 Recommended Audit Loop
@@ -67,13 +71,13 @@ When asked to perform a comprehensive "Audit Loop", construct a sequence of CLI 
 passing the SAME `bundle.md` or context block to consecutive specialist prompts.
 
 1. **Security Review**
-   `cat security_prompt.md | claude -p "ACT AS SECURITY AUDITOR. Do NOT use tools." < bundle.md > audit_01_security.md`
+   `python scripts/run_agent.py security_prompt.md bundle.md audit_01_security.md "ACT AS SECURITY AUDITOR. Focus on vulnerabilities." --cli agy`
 
 2. **Architecture Review**
-   `cat architect_prompt.md | claude -p "ACT AS ARCHITECT REVIEWER. Focus on complexity and patterns. Do NOT use tools." < bundle.md > audit_02_architecture.md`
+   `python scripts/run_agent.py architect_prompt.md bundle.md audit_02_architecture.md "ACT AS ARCHITECT REVIEWER. Focus on patterns and complexity." --cli agy`
 
 3. **QA Review**
-   `cat qa_prompt.md | claude -p "ACT AS QA EXPERT. Focus on testability and edge cases. Do NOT use tools." < bundle.md > audit_03_qa.md`
+   `python scripts/run_agent.py qa_prompt.md bundle.md audit_03_qa.md "ACT AS QA EXPERT. Focus on testability and edge cases." --cli agy`
 
 Always run the Architect **AFTER** the Security review to catch any security-driven side effects
 that may have artificially inflated the system's complexity.

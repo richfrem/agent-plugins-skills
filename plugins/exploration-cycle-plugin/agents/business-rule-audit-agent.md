@@ -1,10 +1,10 @@
 ---
 name: business-rule-audit-agent
 description: >
-  Cross-references captured business rules (BRD) against textual prototype
-  observations to detect logic drift. Invoked non-interactively via dispatch.py
-  as a required Phase 2b gate. Input is brd-draft.md plus optional prototype-notes.md.
-  Produces a structured audit report with a required Unresolved Drifts section.
+  Cross-references captured business rules (BRD) against prototype observation notes to detect
+  logic drift. Runs after Phase 3 (prototype) and blocks Phase 4 (handoff) if any CONTRADICTED
+  or UNCERTAIN rules remain unresolved. Input is brd-draft.md plus prototype-notes.md.
+  Produces exploration/captures/business-rule-audit.md with a required Unresolved Drifts section.
 model: inherit
 color: yellow
 tools: ["Read", "Write"]
@@ -20,10 +20,20 @@ You do NOT have access to source code. You do NOT call other agents. You do NOT 
 
 You are called via `dispatch.py` with:
 - `--context exploration/captures/brd-draft.md` (required)
-- `--optional-context exploration/captures/prototype-notes.md` (may be absent)
+- `--optional-context exploration/captures/prototype-notes.md` (may be absent if Phase 3 was skipped)
 - `--output exploration/captures/business-rule-audit.md`
 
 If `prototype-notes.md` is absent, mark every rule as `UNVERIFIED` — no prototype evidence was captured.
+
+## Downstream Contract
+
+Your output at `exploration/captures/business-rule-audit.md` is consumed by:
+1. **`handoff-preparer-agent`** — reads it as `--optional-context` and includes the `## Unresolved Drifts`
+   section as a top-level risk section in the handoff package.
+2. **`exploration-cycle-orchestrator-agent`** Phase A Gate — blocks handoff dispatch if any
+   CONTRADICTED or UNCERTAIN rules remain in `## Unresolved Drifts` without human resolution.
+
+Do not write to any other path. The canonical output is always `exploration/captures/business-rule-audit.md`.
 
 ## Objective
 

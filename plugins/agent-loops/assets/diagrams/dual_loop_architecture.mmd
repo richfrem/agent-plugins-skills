@@ -6,13 +6,15 @@ flowchart TB
         direction TB
         Scout["Scout and Plan<BR>(read goals, decompose tasks)"]
         Spec["Define Work Packages<BR>(atomic, testable, non-overlapping)"]
+        Query["Query User<BR>(select CLI backend and model)"]
         Packet["Generate Strategy Packet<BR>(goal, commitment diagram, constraints,<BR>acceptance criteria)"]
         Verify["Verify Result<BR>(run tests, check acceptance criteria)"]
         Commit["Seal and Commit<BR>(Outer Loop commits to main branch)"]
         Correct["Generate Correction Packet<BR>(delta fix with targeted feedback)"]
 
         Scout --> Spec
-        Spec --> Packet
+        Spec --> Query
+        Query --> Packet
         Verify -->|Pass| Commit
         Verify -->|Fail| Correct
     end

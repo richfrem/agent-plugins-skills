@@ -80,9 +80,11 @@ Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] 
 
 **Option A: Standard Agent (Single Loop)**
 *   **Action**: You write the code, run tests, and verify yourself.
+*   **Trust But Verify & TDD Constraints**: Do not bypass verification. You must write and execute comprehensive unit/integration tests (TDD). Perform a strict delta diff check on your own modifications to ensure no stubs or placeholders ("TODO", "TBD") are committed.
 
 **Option B: Dual Loop**
 *   **Action**: Delegate execution to a scoped, isolated Inner Loop agent.
+*   **CLI & Model Selection**: Interactively ask the user which LLM CLI backend (`agy`, `claude`, `copilot`, etc.) and specific model to use for the sub-agent. Pass these settings to the runner command, appending `< /dev/null` to prevent `SIGTTIN` process halts.
 *   **Command**: Open the `triple-loop-learning` SKILL. Execute according to its instructions.
 *   **Return**: Once Inner Loop finishes, resume here at **Phase V (Synthesis)**.
 
