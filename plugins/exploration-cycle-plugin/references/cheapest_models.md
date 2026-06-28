@@ -1,7 +1,7 @@
 # CLI Cheapest Models Reference
 
 This is the single source of truth for current model costs per CLI engine.
-Update here only — do not hardcode model names or cost claims in SKILL.md or other files.
+Update here only — do not hardcode model names or cost claims in SKILL.md or agent files.
 
 | CLI Engine | Model | Cost Tier | Notes |
 |---|---|---|---|
@@ -12,5 +12,5 @@ Update here only — do not hardcode model names or cost claims in SKILL.md or o
 | `codex` | `gpt-5-mini` | Paid (Per-token) | OpenAI-compatible endpoint. |
 
 > [!WARNING]
-> Only `llama` (self-hosted Gemma 4) is free. Copilot, Agy, and Claude all bill per token as of June 2026.
+> Only `llama` (self-hosted Gemma 4) is free. Copilot, Gemini/Agy, and Claude all bill per token as of June 2026.
 > The standalone `gemini` CLI (Google) was deprecated and shut down June 18, 2026 — use `agy` instead.
