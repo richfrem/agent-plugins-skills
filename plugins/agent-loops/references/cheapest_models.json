@@ -5,9 +5,9 @@
     "description": "Local inference on port 8089"
   },
   "copilot": {
-    "model": "gpt-5-mini",
+    "model": "gpt-5.4-nano",
     "cost": "Paid (AI Credits)",
-    "description": "Standard low-cost reasoning tier"
+    "description": "Cheapest OpenAI model (20 cr/1M input, 125 cr/1M output)"
   },
   "agy": {
     "model": "gemini-3.5-flash",
@@ -15,9 +15,9 @@
     "description": "Antigravity CLI (replaces old gemini CLI)"
   },
   "claude": {
-    "model": "claude-haiku-4-5",
+    "model": "claude-haiku-4.5",
     "cost": "Paid (Per-token)",
-    "description": "High context window ($1/$5 per MTok)"
+    "description": "Cheapest Anthropic model ($1/$5 per MTok input/output)"
   },
   "codex": {
     "model": "gpt-5-mini",

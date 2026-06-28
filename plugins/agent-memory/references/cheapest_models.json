@@ -11,9 +11,9 @@
     },
     {
       "cli": "copilot",
-      "model": "gpt-5-mini",
+      "model": "gpt-5.4-nano",
       "cost_tier": "paid_per_token",
-      "cost_note": "Copilot Pro free tier ended June 2026. Billed per AI Credits.",
+      "cost_note": "Cheapest Copilot model: 20 cr/1M input, 125 cr/1M output. All models billed per AI Credits (token-based, June 2026).",
       "deprecated": false
     },
     {
@@ -33,9 +33,9 @@
     },
     {
       "cli": "claude",
-      "model": "claude-haiku-4-5",
+      "model": "claude-haiku-4.5",
       "cost_tier": "paid_per_token",
-      "cost_note": "$1/MTok input, $5/MTok output.",
+      "cost_note": "$1/MTok input, $5/MTok output. Cheapest Anthropic model.",
       "deprecated": false
     },
     {

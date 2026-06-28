@@ -213,18 +213,21 @@ symlink-manager, task-agent
 
 ### Copilot CLI delegation pattern (canonical)
 
-> **June 2026:** `gpt-5-mini` remains included (no AI Credits cost). All other models consume credits per token. Plan first — fewer requests saves quality, not necessarily credits. See `cli-agents/skills/copilot-cli-agent` for updated model table.
+> **June 2026:** All Copilot models bill per AI Credits (token-based). Model selection should use
+> `plugins/cli-agents/references/copilot-models.json` — see the `strategy` field for tier recommendations
+> and `cost_tiers` for cheapest-to-most-expensive groupings. Plan first — fewer requests saves credits.
 
 ```bash
-# 1. Heartbeat (included model — always first, zero credit cost)
+# 1. Heartbeat — use cheapest model (see copilot-models.json strategy.heartbeat)
 python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." \
+  gpt-5.4-nano
 
-# 2. Dispatch (plan well, batch for coherence)
+# 2. Dispatch — pick model from copilot-models.json strategy field for the task tier
 python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null tasks/todo/copilot_prompt_<task>.md temp/copilot_output_<task>.md \
   "Generate all files exactly as specified. Use the Write tool to write files directly." \
-  claude-sonnet-4.6
+  claude-sonnet-4.6  # strategy.complex — see copilot-models.json
 
 # 3. Verify output before claiming complete
 wc -l temp/copilot_output_<task>.md  # expect 100+ lines for multi-file output

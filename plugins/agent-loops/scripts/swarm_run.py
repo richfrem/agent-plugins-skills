@@ -298,7 +298,7 @@ def execute_worker(
         # Apply intelligent default models if the 'haiku' placeholder or no model is provided
         effective_model = model
         if engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
+            effective_model = _load_cheapest_model("copilot", "gpt-5.4-nano")
         elif engine.lower() == "agy" and (not model or model == "haiku" or model.startswith("claude")):
             effective_model = _load_cheapest_model("agy", "gemini-3.5-flash")
 
