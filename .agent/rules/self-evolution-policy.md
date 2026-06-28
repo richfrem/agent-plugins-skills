@@ -1,6 +1,6 @@
 ---
 description: Universal rules for agent self-healing, selector repair, and error recovery policies.
-globs: ["plugins/**/SKILL.md", "plugins/**/scripts/*.py", "plugins/**/agents/*.md"]
+globs: ["**/*"]
 ---
 
 ## 🌀 Self-Evolution & Self-Healing Policy
@@ -70,7 +70,7 @@ because the agent bypassed friction, self-evolution handling is still required.
 
 **Required response — pick exactly one:**
 - Fix is small + inside allowed edit boundaries → patch it now, update The Map.
-- Fix is not safe or not small → log as **Map Debt** in the evolution log.
+- Fix is not safe or not small → record **Map Debt** in `<plugin>/references/map-debt.md` and append an audit row to the evolution log.
 - Friction is repeated or blocking → escalate to the user.
 
 ---
@@ -89,6 +89,7 @@ Before claiming a task is complete, output this block verbatim:
 
 ```
 PRE-COMPLETION GATE:
+  Capability check: Did I verify whether an existing repo capability was intended for this task? [YES/NO]
   1. Did any existing capability fail, get bypassed, or get manually replaced?  [YES/NO — 1 line if YES]
   2. Did I guess, assume, or get corrected on a repeatable process?              [YES/NO — 1 line if YES]
   3. Did I notice something the next agent will hit again if not fixed?          [YES/NO — 1 line if YES]
@@ -111,6 +112,7 @@ are resolved, aged, or escalated over time. Do not conflate the two.
 
 Each Map Debt entry must include:
 - Logged date (`YYYY-MM-DD`)
+- Cycle ID (from `events.jsonl`)
 - Artifact affected (file path or skill slug)
 - Friction observed (one sentence)
 - Why it was not fixed now
@@ -118,6 +120,8 @@ Each Map Debt entry must include:
 - Evidence or reproduction step
 - Severity: S / M / L
 - Repeat: YES / NO
+- Status: OPEN / RESOLVED / ESCALATED
 
-**Aging rule:** entries older than 3 cycles without resolution auto-escalate on the next run.
+**Aging rule:** At Phase 0 read, count completed cycles since entry's Cycle ID. If an `OPEN`
+entry is older than 3 completed cycles, auto-escalate before starting new work.
 **Repeat = YES:** must escalate on next encounter — no further deferral permitted.

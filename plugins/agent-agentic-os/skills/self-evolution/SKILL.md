@@ -24,9 +24,9 @@ trigger: >
 
 # Self-Evolution Skill
 
-**Trigger:** Any tool call or subprocess returns a failure that may be caused by a stale
-selector, missing helper, or broken script — and the fix is within the agent's allowed
-edit boundaries.
+**Trigger:** Any tool call, subprocess, workflow, skill, sub-agent, helper, or documented
+repo capability fails, behaves ambiguously, or is bypassed through a workaround, guess,
+or manual substitute — and the fix or Map Debt entry is within allowed boundaries.
 
 **Core principle:** The agent does not just retry — it learns. Every fix either patches
 a helper (so the failure can't recur) or updates a reference file (so future agents
@@ -300,14 +300,15 @@ the evolution log is the immutable audit trail. Do not double-count: one write t
 ```markdown
 # Map Debt
 
-| Logged | Artifact | Friction | Why Not Fixed | Recommended Fix | Severity | Repeat |
-|--------|----------|----------|---------------|-----------------|----------|--------|
+| Logged | Cycle ID | Artifact | Friction | Why Not Fixed | Recommended Fix | Severity | Repeat | Status |
+|--------|----------|----------|----------|---------------|-----------------|----------|--------|--------|
 
-| <YYYY-MM-DD> | <file path or skill slug> | <friction in one sentence> | <reason> | <recommended fix> | S/M/L | YES/NO |
+| <YYYY-MM-DD> | <CID from events.jsonl> | <file path or skill slug> | <friction in one sentence> | <reason> | <recommended fix> | S/M/L | YES/NO | OPEN |
 ```
 
-**Aging rule:** Map Debt entries older than 3 cycles without resolution auto-escalate on the
-next self-evolution run — regardless of the Repeat flag — and must be presented to the user.
+**Aging rule:** At Phase 0 read, count completed cycles since the entry's `Cycle ID`. If an
+`OPEN` entry is older than 3 completed cycles, auto-escalate before starting new work.
+Set `Status` to `RESOLVED` when fixed, `ESCALATED` when escalated to the user.
 
 If the log file doesn't exist yet, create it with the header:
 

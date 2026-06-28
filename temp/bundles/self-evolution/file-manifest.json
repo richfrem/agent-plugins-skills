@@ -1,0 +1,48 @@
+{
+  "title": "Self-Evolution Architecture — Round 5 Review",
+  "description": "All round 4 changes implemented: friction.resolved protocol, Cycle ID+Status in map-debt, broadened globs, bypass spec, skill count fixed.",
+  "excludes": [
+    "**/*.png",
+    "**/*.zip",
+    "**/node_modules/**",
+    "**/.DS_Store"
+  ],
+  "files": [
+    {
+      "path": "temp/prompts/self-evolution-design.md",
+      "note": "Round 5 design questions — read this first."
+    },
+    {
+      "path": "temp/bundles/self-evolution/reviews/round4/gpt.md",
+      "note": "Round 4 GPT review — drove these changes."
+    },
+    {
+      "path": "temp/bundles/self-evolution/reviews/round4/opus.md",
+      "note": "Round 4 Opus review — drove these changes."
+    },
+    {
+      "path": ".agent/rules/self-evolution-policy.md",
+      "note": "UPDATED: globs broadened to **/*; Tier 0 Map Debt wording; PRE-COMPLETION GATE capability check; Map Debt schema adds Cycle ID + Status."
+    },
+    {
+      "path": ".agent/rules/skill-deletion-guard.md",
+      "note": "Unchanged this round — reference for continuity."
+    },
+    {
+      "path": "plugins/agent-agentic-os/skills/self-evolution/SKILL.md",
+      "note": "UPDATED: body trigger text fixed; map-debt schema adds Cycle ID + Status + aging rule."
+    },
+    {
+      "path": "plugins/agent-agentic-os/skills/os-improvement-loop/SKILL.md",
+      "note": "UPDATED: Friction Resolution Event section added; INNER_AGENT step 8 requires friction.resolved before task.complete."
+    },
+    {
+      "path": ".agent/hooks/specs/bypass-detection-hook.md",
+      "note": "NEW: Bypass detection spec — 7 rules, registry format, implementation prerequisites. Deferred."
+    },
+    {
+      "path": "CLAUDE.md",
+      "note": "UPDATED: skill count fixed to Active(17) + Reference(1)."
+    }
+  ]
+}

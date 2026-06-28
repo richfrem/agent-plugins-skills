@@ -308,6 +308,26 @@ python "$KERNEL_PY" emit_event \
 These events are counted by `post_run_metrics.py` at close and drive the Triple-Loop Retrospective
 auto-trigger (3+ friction events of same type = Full Loop improvement automatically).
 
+### Friction Resolution Event
+
+Every `type: friction` event emitted during a cycle MUST be closed by a matching resolution
+event before `task.complete` or `loop.close`.
+
+```bash
+python "$KERNEL_PY" emit_event \
+  --agent INNER_AGENT --type friction --action friction.resolved \
+  --correlation-id "$CID" \
+  --summary "friction-id:<original-timestamp> outcome:FIX|MAP_DEBT|ESCALATE artifact:<path>"
+```
+
+Valid outcomes:
+- `FIX` — underlying artifact patched and Map updated
+- `MAP_DEBT` — recorded in `<plugin>/references/map-debt.md`
+- `ESCALATE` — user escalation required
+
+Stage 4.0 verifies: for each `friction` event in this cycle, exactly one `friction.resolved`
+exists with matching `correlation-id`.
+
 ---
 
 ## Bash Polling Pattern
@@ -507,7 +527,8 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 5. If DISCARD: revert edit, note failure in output file, emit `task.complete --status fail`.
 6. Write output to `handoffs/out-${CID}.md`.
 7. **Complete the Post-Run Self-Assessment Survey** (see Stage 4.2).
-8. Emit `task.complete` including score, output path, and survey path in summary.
+8. **Before emitting `task.complete`**, close every friction event emitted this cycle with a `friction.resolved` event (outcome: `FIX`, `MAP_DEBT`, or `ESCALATE`).
+9. Emit `task.complete` including score, output path, and survey path in summary.
 
 ### PEER_AGENT Eval Obligation
 
