@@ -220,6 +220,52 @@ python ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
 
 ---
 
+## Step 3b: Self-Evolution Policy Compliance Check
+
+Every plugin must comply with the continuous self-evolution policy at
+`.agent/rules/self-evolution-policy.md`. Check each of the following:
+
+**Required files (flag WARN if missing):**
+```bash
+# Check for self-evolution profile (required by Phase 0 before any autonomous edit)
+ls plugins/<plugin>/references/self-evolution-profile.md
+
+# Check for map-debt working queue (required by friction-driven evolution policy)
+ls plugins/<plugin>/references/map-debt.md
+
+# Check for evolution log (created by Phase 7 on first fix)
+ls plugins/<plugin>/references/evolution-log.md
+```
+
+**Evals schema (flag CRITICAL if wrong):**
+```bash
+# All evals.json must use should_trigger boolean schema — NOT legacy expected_behavior
+grep -r "expected_behavior\|expected_output\|\"expected\":" plugins/<plugin>/skills/*/evals/evals.json
+# Any match = wrong schema → fix immediately
+```
+
+**SKILL.md line count (flag WARN if over 500):**
+```bash
+wc -l plugins/<plugin>/skills/*/SKILL.md | sort -rn | head -10
+```
+
+**Stale skill references (flag WARN):**
+```bash
+# os-skill-improvement is methodology-only — any SKILL.md directing agents to invoke it
+# for active improvement should reference os-improvement-loop instead
+grep -rn "os-skill-improvement" plugins/<plugin>/skills/*/SKILL.md
+```
+
+**ADR-003 symlink check (flag CRITICAL if violated):**
+```bash
+# Only file-level symlinks permitted — no directory symlinks
+find plugins/<plugin> -type l | while read l; do
+  if [ -d "$l" ]; then echo "DIRECTORY SYMLINK (ADR-003 violation): $l"; fi
+done
+```
+
+---
+
 ## Step 4: Manual Checks
 
 For issues the scripts may not catch:
