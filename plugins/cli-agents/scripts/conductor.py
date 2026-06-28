@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-conductor.py
-============
-Unified CLI Conductor script. Orchestrates task delegation to Claude, Copilot, and Gemini
-CLI adapters with path validation, default isolation constraints, and safe file lifecycles.
+conductor.py — DEPRECATED
+=========================
+Use run_agent.py instead. conductor.py predates the multi-backend run_agent.py router
+and supports only claude/copilot/gemini via adapter classes. run_agent.py covers all
+backends (claude, copilot, agy, codex, llama, gemini) with a unified argparse interface,
+hub-and-spoke symlinks into each skill, and 76+ tests.
+
+This file is retained for backward compatibility only. Do not add new functionality here.
 """
 
 import os

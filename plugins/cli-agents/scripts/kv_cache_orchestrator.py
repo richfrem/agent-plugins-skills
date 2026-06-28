@@ -12,6 +12,16 @@ Architectural pattern adapted from antirez/ds4 ds4_kvstore.c:
 
 Integration path: routing_proxy.py calls check_cache() → restore_slot() before
 forwarding, then save_slot() in a background thread after the stream completes.
+
+Operational Limitations (read before assuming cache benefits):
+  - Cache key = SHA-256 of system message content ONLY (see cache_key()).
+  - Any change to the system prompt = cache miss. Stable system prompts required.
+  - CLI tools (Copilot, Claude Code, Agy) inject dynamic context into the system
+    prompt on every call — effective hit rate for CLI-driven sessions is near zero.
+  - Do NOT rely on KV cache for: CLI-driven sessions, multi-agent workflows,
+    or any session where system prompt varies per call.
+  - KV cache is effective only for: routing_proxy.py (Mode A) interactive sessions
+    where the same system prompt is reused across many turns.
 """
 
 import hashlib
