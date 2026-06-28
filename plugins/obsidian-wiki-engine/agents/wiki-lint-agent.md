@@ -1,1 +1,0 @@
-../skills/obsidian-wiki-linter/SKILL.md

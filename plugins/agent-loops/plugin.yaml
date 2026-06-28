@@ -17,3 +17,5 @@ skills:
   - orchestrator
   - red-team-review
   - triple-loop-learning
+agents:
+  - orchestrator

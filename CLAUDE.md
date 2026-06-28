@@ -144,7 +144,7 @@ skill, or sub-agent in this repo. Three key capabilities:
 
 ---
 
-## Plugin State — Current Versions (11 plugins · 137 skills)
+## Plugin State — Current Versions (11 plugins · 151 skills)
 
 ### agent-agentic-os (v1.7.0)
 

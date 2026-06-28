@@ -149,9 +149,6 @@ logger = logging.getLogger("swarm")
 
 # ─── HELPERS ────────────────────────────────────────────────────────────────
 
-def shell_quote(value: str) -> str:
-    """Safe shell quoting for templates."""
-    return "'" + value.replace("'", "'\\''") + "'"
 
 def get_relative_path(path: Path) -> str:
     root = Path.cwd().resolve()
@@ -197,7 +194,7 @@ def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
         try:
             resolved = Path(p).resolve()
             return root_dir in resolved.parents or resolved == root_dir
-        except:
+        except Exception:
             return False
 
     # 1. Explicit Files
@@ -212,7 +209,7 @@ def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
             text = bundle_path.read_text()
             try:
                 data = json.loads(text)
-            except:
+            except (json.JSONDecodeError, ValueError):
                 data = yaml.safe_load(text)
             
             if isinstance(data, dict): data = data.get("files", [])
@@ -300,9 +297,7 @@ def execute_worker(
         
         # Apply intelligent default models if the 'haiku' placeholder or no model is provided
         effective_model = model
-        if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = _load_cheapest_model("gemini", "gemini-3-pro-preview")
-        elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
+        if engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
             effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
         elif engine.lower() == "agy" and (not model or model == "haiku" or model.startswith("claude")):
             effective_model = _load_cheapest_model("agy", "gemini-3.5-flash")
@@ -314,11 +309,6 @@ def execute_worker(
                 "--model", effective_model,
                 "-p", prompt,
                 "--no-session-persistence"
-            ])
-        elif engine.lower() == "gemini":
-            cmd_args.extend([
-                "--model", effective_model,
-                "-p", prompt
             ])
         elif engine.lower() == "agy":
             cmd_args.extend([
@@ -333,7 +323,7 @@ def execute_worker(
             # Copilot CLI ignores stdin if -p is present. We must prepend the prompt.
             payload = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
 
-        cmd_str = " ".join([shell_quote(p) for p in cmd_args])
+
         try:
             proc = subprocess.run(
                 cmd_args, 
@@ -414,19 +404,19 @@ def main() -> None:
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--workers", type=int)
     parser.add_argument("--model", type=str)
-    parser.add_argument("--engine", type=str, default="claude", choices=["claude", "gemini", "copilot", "agy"], help="The CLI engine to run workers through")
+    parser.add_argument("--engine", type=str, default="claude", choices=["claude", "copilot", "agy"], help="The CLI engine to run workers through (gemini is deprecated — use agy)")
     parser.add_argument("--var", action="append", default=[])
     args = parser.parse_args()
 
     # Load Job
     full_text = args.job.read_text()
-    if not full_text.startswith("---"): 
+    # Use regex to safely parse frontmatter — split("---", 2) breaks on embedded --- in body
+    fm_match = re.match(r'^---\n(.*?)\n---\n(.*)$', full_text, re.DOTALL)
+    if not fm_match:
         print("❌ Invalid job file (no YAML frontmatter)")
         sys.exit(1)
-    
-    parts = full_text.split("---", 2)
-    job_config = yaml.safe_load(parts[1]) or {}
-    prompt = parts[2].strip()
+    job_config = yaml.safe_load(fm_match.group(1)) or {}
+    prompt = fm_match.group(2).strip()
 
     # Checkpoint logic
     checkpoint_path = Path(f".swarm_state_{args.job.stem}.json")

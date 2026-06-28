@@ -1,1 +1,1 @@
-../../../scripts/parser.py
+../../../scripts/obsidian-parser/parser.py

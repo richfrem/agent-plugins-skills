@@ -89,11 +89,8 @@ Use this to select the correct loop pattern:
 You orchestrate workflows by natively executing the `agent_orchestrator.py` script provided by this skill (located in `scripts/`).
 
 ### 1. Planning Status
-Use the `scan` command to inspect the state of the spec and readiness for delegation.
-```bash
-python ./scripts/agent_orchestrator.py scan --spec-dir <PATH>
-```
-*Tip: Always ensure you have a clear plan or spec before delegating tasks.*
+> ⚠️ **Note:** A `scan` CLI subcommand is not currently implemented in `agent_orchestrator.py`.
+> Perform spec readiness assessment manually or via native file reads before delegating.
 
 ### 2. Delegation (Handoff)
 When a task is ready for implementation, generate a Task Packet using the `packet` command.
@@ -143,11 +140,8 @@ flowchart LR
 ```
 
 ### 5. Red Team / Peer Review
-Use the `bundle` command to compile files for a human or 3rd-party agent review.
-```bash
-python ./scripts/agent_orchestrator.py bundle --files <file1> <file2> --output <OUTPUT_BUNDLE.md>
-```
-This creates a single markdown bundle ideal for "paste-to-chat" reviews.
+> ⚠️ **Note:** A `bundle` CLI subcommand is not currently implemented in `agent_orchestrator.py`.
+> Use the `context-bundler` skill from `dev-utils` to compile files for external review instead.
 
 ### 6. Retrospective (Post-Loop Learning)
 Generate a retrospective template to close the cognitive loop with structured learning, *before* signaling the environment to seal.

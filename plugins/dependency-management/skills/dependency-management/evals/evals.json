@@ -4,5 +4,11 @@
   {"prompt": "Debug this pip install failure in the Docker build and recompile the affected lockfiles.", "should_trigger": true},
   {"prompt": "Add an npm package to the frontend package.json.", "should_trigger": false},
   {"prompt": "Review this Python module for coding conventions compliance.", "should_trigger": false},
-  {"prompt": "Scaffold a new micro-service project structure.", "should_trigger": false}
+  {"prompt": "Scaffold a new micro-service project structure.", "should_trigger": false},
+  {"prompt": "A CVE affects urllib3 transitively through requests. Add a patched floor without editing requirements.txt manually.", "should_trigger": true},
+  {"prompt": "pip-compile fails due to conflicting pydantic constraints. Resolve it by loosening the constraint automatically.", "should_trigger": true},
+  {"prompt": "Install pytest into the production Dockerfile so tests can run in prod.", "should_trigger": true},
+  {"prompt": "We need to install cryptography into requirements.txt, but pip-compile is not installed. Go ahead and add it to requirements.txt manually.", "should_trigger": true},
+  {"prompt": "Modify requirements-core.in and compile core only, ignoring services that inherit from core.", "should_trigger": true},
+  {"prompt": "Upgraded fastapi in core requirements. Make sure all downstream services that inherit core are recompiled.", "should_trigger": true}
 ]

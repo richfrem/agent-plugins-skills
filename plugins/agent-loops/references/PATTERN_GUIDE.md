@@ -19,7 +19,7 @@ This guide maps the Agent-Loops skills to standard industry terminology (e.g., G
 
 The foundational pattern where a single agent repeatedly interacts with the environment (tools, research) to synthesize knowledge.
 
-![Learning Loop / Single Agent Architecture](resources/diagrams/learning_loop.png)
+![Learning Loop / Single Agent Architecture](resources/diagrams/learning_loop.mmd)
 
 ### Pros & Cons
 | Pros | Cons |
@@ -37,7 +37,7 @@ Use when a task requires pure exploratory research, basic document generation, o
 
 An outer/manager agent defines a strategy packet, hands it to an inner/worker agent, and verifies the output before continuing.
 
-![Sequential Agent / Dual Loop Architecture](resources/diagrams/inner_outer_loop.png)
+![Sequential Agent / Dual Loop Architecture](resources/diagrams/inner_outer_loop.mmd)
 
 ### Pros & Cons
 | Pros | Cons |
@@ -55,7 +55,7 @@ Use for feature implementations or bug fixes where a clear specification exists.
 
 Tasks are partitioned into independent chunks and delegated to N agents executing simultaneously, followed by an aggregation/merge step.
 
-![Parallel Agent / Agent Swarm Architecture](resources/diagrams/agent_swarm.png)
+![Parallel Agent / Agent Swarm Architecture](resources/diagrams/agent_swarm.mmd)
 
 ### Pros & Cons
 | Pros | Cons |
@@ -69,7 +69,7 @@ Use for bulk operations (RLM distillation, massive doc conversions) or partition
 
 ---
 
-## 5. Meta-Learning System (`triple-loop-learning`)
+## 4. Meta-Learning System (`triple-loop-learning`)
 
 The **Meta-Learning Loop** architecture automates the iterative improvement of an agentic system over long horizons using rigorous headless testing. Unlike simpler loops, it acts as an autonomous optimization engine continuously hunting for friction, hypothesizing process and rule improvements, deploying them safely to headless testing environments, and securely promoting the winning logic into systemic changes.
 
@@ -77,11 +77,11 @@ The **Meta-Learning Loop** architecture automates the iterative improvement of a
 
 ---
 
-## 4. Routing Agent / Hierarchical (`orchestrator`)
+## 5. Routing Agent / Hierarchical (`orchestrator`)
 
 An initial decision layer that analyzes the prompt or trigger and directs the query to the correct specialized sub-agent or pattern.
 
-![Routing Agent / Orchestrator Architecture](resources/diagrams/agent_loops_overview.png)
+![Routing Agent / Orchestrator Architecture](resources/diagrams/agent_loops_overview.mmd)
 
 ### Pros & Cons
 | Pros | Cons |
@@ -95,11 +95,11 @@ Use as the primary entry point for ambiguous human triggers. The Router decides 
 
 ---
 
-## 5. Review and Critique Pattern (`red-team-review`)
+## 6. Review and Critique Pattern (`red-team-review`)
 
 A specialized iterative pattern pairing a generator with an adversarial reviewer.
 
-![Review and Critique / Red Team Review Architecture](resources/diagrams/red_team_review_loop.png)
+![Review and Critique / Red Team Review Architecture](resources/diagrams/red_team_review_loop.mmd)
 
 ### Pros & Cons
 | Pros | Cons |

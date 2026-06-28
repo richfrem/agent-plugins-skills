@@ -1,1 +1,0 @@
-../skills/obsidian-wiki-builder/SKILL.md

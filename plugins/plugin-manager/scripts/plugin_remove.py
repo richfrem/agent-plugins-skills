@@ -209,29 +209,60 @@ AGENT_DIRS = {
 
 def remove_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> int:
     removed_count = 0
-    for agent, dirs in AGENT_DIRS.items():
-        for dir_path in dirs:
-            target_dir = root / dir_path
-            if not target_dir.exists():
-                continue
-
-            for item in target_dir.iterdir():
-                if item.is_dir() and item.name == plugin_name:
-                    print(f"    - Removing directory: {item.relative_to(root)}")
+    ownership_file = root / ".agents" / "ownership" / f"{plugin_name}.json"
+    
+    if ownership_file.exists():
+        print(f"    - Using ownership manifest: {ownership_file.relative_to(root)}")
+        try:
+            data = json.loads(ownership_file.read_text(encoding="utf-8"))
+            artifacts = data.get("artifacts", [])
+            
+            # Sort artifacts by length in descending order so files are unlinked/removed before parent directories
+            for art_rel in sorted(artifacts, key=len, reverse=True):
+                art_path = root / art_rel
+                if art_path.exists():
+                    print(f"    - Removing owned artifact: {art_rel}")
                     if not dry_run:
-                        if item.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(item)):
-                            item.unlink()
+                        if art_path.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(art_path)):
+                            art_path.unlink()
+                        elif art_path.is_dir():
+                            shutil.rmtree(art_path)
                         else:
-                            shutil.rmtree(item)
+                            art_path.unlink()
                     removed_count += 1
-                elif item.is_file():
-                    # Files: {plugin_name}_{command}.* or {plugin_name}-{agent}.*
-                    if item.name.startswith(f"{plugin_name}_") or item.name.startswith(f"{plugin_name}-"):
-                        print(f"    - Removing file: {item.relative_to(root)}")
+            if not dry_run:
+                ownership_file.unlink()
+                print(f"    - Removed ownership manifest: {ownership_file.relative_to(root)}")
+        except Exception as e:
+            print(f"    Warning: Failed to clean via ownership manifest: {e}")
+            # Fall back to legacy cleanup below
+            
+    # Legacy fallback if no ownership file exists or it failed
+    if not ownership_file.exists() or removed_count == 0:
+        for agent, dirs in AGENT_DIRS.items():
+            for dir_path in dirs:
+                target_dir = root / dir_path
+                if not target_dir.exists():
+                    continue
+
+                for item in target_dir.iterdir():
+                    if item.is_dir() and item.name == plugin_name:
+                        print(f"    - Removing legacy directory: {item.relative_to(root)}")
                         if not dry_run:
-                            item.unlink()
+                            if item.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(item)):
+                                item.unlink()
+                            else:
+                                shutil.rmtree(item)
                         removed_count += 1
+                    elif item.is_file():
+                        # Files: {plugin_name}_{command}.* or {plugin_name}-{agent}.*
+                        if item.name.startswith(f"{plugin_name}_") or item.name.startswith(f"{plugin_name}-"):
+                            print(f"    - Removing legacy file: {item.relative_to(root)}")
+                            if not dry_run:
+                                item.unlink()
+                            removed_count += 1
     return removed_count
+
 
 
 def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None:
