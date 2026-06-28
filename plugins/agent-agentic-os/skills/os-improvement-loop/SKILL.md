@@ -315,7 +315,7 @@ event before `task.complete` or `loop.close`.
 
 ```bash
 python "$KERNEL_PY" emit_event \
-  --agent INNER_AGENT --type friction --action friction.resolved \
+  --agent INNER_AGENT --type friction.resolved --action resolved \
   --correlation-id "$CID" \
   --summary "friction-id:<original-timestamp> outcome:FIX|MAP_DEBT|ESCALATE artifact:<path>"
 ```
@@ -325,8 +325,9 @@ Valid outcomes:
 - `MAP_DEBT` — recorded in `<plugin>/references/map-debt.md`
 - `ESCALATE` — user escalation required
 
-Stage 4.0 verifies: for each `friction` event in this cycle, exactly one `friction.resolved`
-exists with matching `correlation-id`.
+Stage 4.0 verifies by reading two distinct event types:
+- `--type friction` (encountered events) and `--type friction.resolved` (resolution events)
+- Count must match: every open must have exactly one close with matching `correlation-id`.
 
 ---
 
@@ -527,7 +528,7 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 5. If DISCARD: revert edit, note failure in output file, emit `task.complete --status fail`.
 6. Write output to `handoffs/out-${CID}.md`.
 7. **Complete the Post-Run Self-Assessment Survey** (see Stage 4.2).
-8. **Before emitting `task.complete`**, close every friction event emitted this cycle with a `friction.resolved` event (outcome: `FIX`, `MAP_DEBT`, or `ESCALATE`).
+8. **Before emitting `task.complete`**, close every friction event emitted this cycle with a `type: friction.resolved` event (outcome: `FIX`, `MAP_DEBT`, or `ESCALATE`).
 9. Emit `task.complete` including score, output path, and survey path in summary.
 
 ### PEER_AGENT Eval Obligation
@@ -578,17 +579,16 @@ Before `loop.close` may be emitted, ORCHESTRATOR must verify all friction events
 cycle are resolved. A loop cannot close with unhandled friction.
 
 ```bash
-# Read friction events for this cycle
-python "$KERNEL_PY" read_events --type friction --correlation-id "$CYCLE_ID"
+# Count friction encounters vs resolutions for this cycle
+OPEN=$(python "$KERNEL_PY" read_events --type friction --correlation-id "$CYCLE_ID" | python -c "import sys,json; print(len(json.load(sys.stdin)))")
+CLOSED=$(python "$KERNEL_PY" read_events --type friction.resolved --correlation-id "$CYCLE_ID" | python -c "import sys,json; print(len(json.load(sys.stdin)))")
+# Pass only if OPEN == CLOSED
 ```
 
-For each friction event, verify exactly one resolution exists:
-- Fixed and Map updated (`friction.resolved` with `outcome: FIX`)
-- Logged as Map Debt (`friction.resolved` with `outcome: MAP_DEBT`)
-- Escalated to user (`friction.resolved` with `outcome: ESCALATE`)
+For each `friction` event, verify exactly one `friction.resolved` event exists with matching
+`correlation-id`. Valid resolutions: `outcome: FIX`, `MAP_DEBT`, or `ESCALATE`.
 
-If any friction event has no corresponding `friction.resolved`, do **not** emit `loop.close`.
-Resolve or escalate before proceeding to 4.1.
+If `OPEN != CLOSED`, do **not** emit `loop.close`. Resolve or escalate before proceeding to 4.1.
 
 ### 4.1 Emit loop.close
 

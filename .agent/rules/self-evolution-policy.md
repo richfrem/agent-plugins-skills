@@ -124,4 +124,6 @@ Each Map Debt entry must include:
 
 **Aging rule:** At Phase 0 read, count completed cycles since entry's Cycle ID. If an `OPEN`
 entry is older than 3 completed cycles, auto-escalate before starting new work.
+If the entry's Cycle ID is from a prior session (not in current `events.jsonl`), fall back
+to the Logged date: auto-escalate if `(today - Logged) > 14 days`.
 **Repeat = YES:** must escalate on next encounter — no further deferral permitted.
