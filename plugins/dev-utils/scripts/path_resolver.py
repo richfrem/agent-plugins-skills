@@ -51,7 +51,7 @@ class PathResolver:
         
         Strategy:
         1. Check `PROJECT_ROOT` environment variable.
-        2. Traverse parents looking for `legacy-system` or `.agent` directories.
+        2. Traverse parents looking for `.git` or `plugins/` directories.
         3. Fallback to CWD if landmarks are missing.
 
         Returns:
@@ -65,11 +65,11 @@ class PathResolver:
             cls._project_root = os.environ["PROJECT_ROOT"]
             return cls._project_root
 
-        # 2. Heuristic: Find 'legacy-system' or '.agent' in parents
+        # 2. Heuristic: Find .git or plugins/ in parents
         current = os.path.abspath(os.getcwd())
         while True:
-            if os.path.exists(os.path.join(current, "legacy-system")) or \
-               os.path.exists(os.path.join(current, ".agent")):
+            if os.path.exists(os.path.join(current, ".git")) or \
+               os.path.exists(os.path.join(current, "plugins")):
                 cls._project_root = current
                 return current
             

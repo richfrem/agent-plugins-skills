@@ -4,5 +4,7 @@
   {"prompt": "Audit the agent-scaffolders plugin to check for regressions after my changes", "should_trigger": true},
   {"prompt": "Mine plugins from this directory and run the full analysis pipeline", "should_trigger": false},
   {"prompt": "Perform an L5 red team security audit on this plugin against the 39-point maturity matrix", "should_trigger": false},
-  {"prompt": "Analyze this single skill directory and extract its design patterns", "should_trigger": false}
+  {"prompt": "Analyze this single skill directory and extract its design patterns", "should_trigger": false},
+  {"prompt": "Audit my plugin — validate its structure and check plugin.json for compliance.", "should_trigger": false, "note": "discriminator: audit-plugin, not self-audit — external plugin, not the scaffolders auditing itself"},
+  {"prompt": "Run an L5 red team maturity audit on this plugin against the 39-point matrix.", "should_trigger": false, "note": "discriminator: audit-plugin-l5, not self-audit — maturity audit of external plugin"}
 ]

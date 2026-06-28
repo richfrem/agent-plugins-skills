@@ -4,5 +4,7 @@
   {"prompt": "Review plugin components after I modified the skill frontmatter — make sure this is right.", "should_trigger": true},
   {"prompt": "Analyze this plugin and mine its design patterns and architectural decisions.", "should_trigger": false},
   {"prompt": "Run an L5 red team audit on this plugin against the 39-point maturity matrix.", "should_trigger": false},
-  {"prompt": "Audit path references in my plugin skills and report any broken file links.", "should_trigger": false}
+  {"prompt": "Audit path references in my plugin skills and report any broken file links.", "should_trigger": false},
+  {"prompt": "Run self-audit to regression test the agent-scaffolders plugin against itself using the gold-standard fixture.", "should_trigger": false, "note": "discriminator: self-audit, not audit-plugin — target is agent-scaffolders itself"},
+  {"prompt": "Test the plugin analyzer by running it against its own test fixtures.", "should_trigger": false, "note": "discriminator: self-audit vocabulary — internal regression, not external compliance check"}
 ]

@@ -29,8 +29,7 @@ See `../../requirements.txt` for the dependency lockfile (currently empty — st
 # Plugin Auditor
 
 Performs comprehensive validation of a Claude Code plugin against structure standards,
-naming conventions, component requirements, and security best practices. Uses the
-`plugin-validator` agent for deep validation, supported by component-specific scripts.
+naming conventions, component requirements, and security best practices.
 
 ---
 
@@ -43,30 +42,25 @@ Establish the plugin root:
 
 ---
 
-## Step 2: Run plugin-validator Agent
+## Step 2: Run Component Validation Scripts
 
-> **Note**: The `plugin-validator` agent is defined in `agent-scaffolders`. If not installed,
-> skip this step and rely on the component scripts in Step 3 and manual checks in Step 4.
+Run the scripts bundled in this plugin (all in `scripts/`):
 
-Trigger the `plugin-validator` agent for comprehensive validation:
+```bash
+# Validate agent files
+python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
 
+# Validate hooks.json schema
+python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
+
+# Lint hook scripts
+python ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
 ```
-"Validate the plugin at <path>"
-```
 
-The agent checks all 10 categories automatically:
-1. Manifest (`../../../../.claude-plugin/plugin.json`) -- JSON syntax, required `name` field, kebab-case
-2. Directory structure -- components at root, not inside `.claude-plugin/`
-3. Commands (`commands/**/*.md`) -- frontmatter, `description`, `argument-hint`, `allowed-tools`
-4. Agents (`agents/**/*.md`) -- `name`, `description` with `<example>` blocks, `model`, `color`
-5. Skills (`skills/*/SKILL.md`) -- frontmatter, `name`, `description` (<= 1024 chars), supporting directories
-6. Hooks (`hooks/hooks.json`) -- JSON syntax, valid event names, matcher + hooks array
-7. MCP configuration (`.mcp.json`) -- server type, required fields, HTTPS enforcement
-8. File organization -- README.md, .gitignore, no node_modules or .DS_Store
-9. Security -- no hardcoded credentials, MCP uses HTTPS/WSS, no secrets in examples
-10. Positive findings -- note what's done well, not just what's broken
+Checks performed: frontmatter structure, required fields (name/description/model/color),
+`<example>` blocks in agent descriptions, hook event names, matcher + hooks array structure.
 
-**Output format from plugin-validator:**
+**Validation report format:**
 ```
 ## Plugin Validation Report
 ### Plugin: [name] | Location: [path]
@@ -187,7 +181,7 @@ are created at `plugins/exploration-cycle-plugin/references/`):
 
 ## Step 3: Run Component-Specific Scripts
 
-After plugin-validator, run targeted scripts for detailed checks:
+Run targeted scripts for detailed checks:
 
 **Validate each agent file:**
 ```bash

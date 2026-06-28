@@ -1,1 +1,0 @@
-../../../references/DEPENDENCY_MANAGEMENT.md

@@ -1,6 +1,6 @@
 name: dev-utils
-version: 1.0.0
-description: "Unified Developer Utilities Suite. Collection of stateless tools for context bundling, diagram rendering, Kanban board task management, ADR auditing, and markdown link verification."
+version: 1.2.0
+description: "Unified Developer Utilities Suite — 13 skills consolidated from 9 standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, HuggingFace download/upload/init, text humanization, link validation, symlink management, task tracking, context hygiene (optimize-context), and red-team context bundling."
 author: Richard Fremmerlid
 kind: backend
 platforms:

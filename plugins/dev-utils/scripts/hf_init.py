@@ -61,7 +61,7 @@ async def full_init(validate_only: bool = False) -> dict:
 
     # Step 2: Ensure dataset structure
     try:
-        sys.path.insert(0, str(Path(__file__).parent.parent.parent / "hf-upload" / "scripts"))
+        sys.path.insert(0, str(Path(__file__).parent))
         from hf_upload import ensure_dataset_structure, ensure_dataset_card
 
         config = get_hf_config()

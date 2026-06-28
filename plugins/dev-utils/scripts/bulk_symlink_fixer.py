@@ -179,7 +179,7 @@ def fix_symlinks(issues: list[SymlinkIssue]) -> tuple[int, int, int]:
     # Try installed location first, then plugin source as fallback
     symlink_manager = repo_root / ".agents" / "skills" / "symlink-manager" / "scripts" / "symlink_manager.py"
     if not symlink_manager.exists():
-        symlink_manager = repo_root / "plugins" / "link-checker" / "scripts" / "symlink_manager.py"
+        symlink_manager = repo_root / "plugins" / "dev-utils" / "scripts" / "symlink_manager.py"
 
     if not symlink_manager.exists():
         print(f"Error: symlink_manager.py not found at {symlink_manager}")

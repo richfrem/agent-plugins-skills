@@ -1,6 +1,28 @@
 ---
 name: ecosystem-index-agent
-description: Repository hygiene agent that maintains the Plugin Ecosystem index in README.md.
+description: |
+  Repository hygiene agent that maintains the Plugin Ecosystem index in README.md.
+  Use when a PR is merged to main or when plugins/ changes and the skill/agent counts need updating.
+
+  <example>
+  Context: a PR just merged adding a new plugin
+  user: "Update the ecosystem index in README"
+  assistant: "I'll use the ecosystem-index-agent to scan plugins/ and sync the counts."
+  </example>
+
+  <example>
+  Context: CI detected a count mismatch after merging feat/new-plugin
+  user: "The plugin count in README is wrong"
+  assistant: "I'll run the ecosystem-index-agent to regenerate the counts from the filesystem."
+  </example>
+model: inherit
+color: cyan
+tools:
+  - Bash
+  - Read
+  - Write
+  - Grep
+  - Glob
 ---
 # Ecosystem Index Agent
 

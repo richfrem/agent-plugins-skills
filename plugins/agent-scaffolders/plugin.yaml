@@ -40,3 +40,10 @@ skills:
   - path-reference-auditor
   - self-audit
   - synthesize-learnings
+  - compile-apm-package
+  - convert-plugin-to-apm
+  - create-apm-package
+  - install-apm-package
+  - update-ecosystem-index
+agents:
+  - ecosystem-index-agent

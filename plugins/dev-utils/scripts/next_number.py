@@ -47,20 +47,6 @@ from pathlib import Path
 
 # Configuration: artifact types and their locations/patterns
 ARTIFACT_TYPES = {
-    "br": {
-        "name": "Business Rule",
-        "directory": "legacy-system/business-rules",
-        "pattern": r"^BR-(\d{3})",
-        "format": "BR-{:03d}",
-        "prefix": "BR-"
-    },
-    "bw": {
-        "name": "Business Workflow",
-        "directory": "legacy-system/business-workflows",
-        "pattern": r"^BW-(\d{3})",
-        "format": "BW-{:03d}",
-        "prefix": "BW-"
-    },
     "task": {
         "name": "Maintenance Task",
         "directory": "tasks",
@@ -217,11 +203,12 @@ def main() -> None:
     
     args = parser.parse_args()
     
-    # Find project root
-    # ./scripts/next_number.py -> scripts -> adr-management -> skills -> adr-manager -> plugins -> root
+    # Find project root via .git sentinel walk-up (task_manager.py pattern)
     script_path = Path(__file__).resolve()
-    # Go up 5 levels to reach project root
-    project_root = script_path.parents[4]
+    project_root = next(
+        (p for p in [script_path] + list(script_path.parents) if (p / ".git").is_dir()),
+        script_path.parents[2]
+    )
 
     if args.type == 'all':
         show_all(project_root)
