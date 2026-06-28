@@ -1,1 +1,0 @@
-../skills/obsidian-rlm-distiller/SKILL.md
