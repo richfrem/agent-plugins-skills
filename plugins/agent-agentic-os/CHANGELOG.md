@@ -2,6 +2,26 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.7.0 — 2026-06-28
+
+### Added
+- `commands/os-architect.md` — `/os-architect` slash command (was documented but missing)
+- `skills/gpt55-critical-auditor/` — adversarial plugin audit skill
+- `skills/os-improvement-loop/references/stage-0` through `stage-4` — stage protocol extracted from SKILL.md
+- `skills/os-eval-runner/references/mode-1-loop-protocol.md`, `mode-2-qa-protocol.md`, `overfitting-gate.md`, `quickstart-setup.md`, `survey-protocol.md` — mode protocols extracted from SKILL.md
+- Lab Limits pointer in os-improvement-loop Stage Pointers
+
+### Changed
+- `plugin.yaml`: added 7 missing skills (os-architect, os-environment-probe, os-evolution-planner, os-evolution-verifier, os-experiment-log, os-skill-improvement, gpt55-critical-auditor) and `agents:` list
+- `.claude-plugin/plugin.json`: synced version to 1.7.0
+- `os-improvement-loop/SKILL.md`: split from 859 → 84 lines
+- `os-eval-runner/SKILL.md`: split from 453 → 72 lines
+- ADR-001: replaced direct `run_agent.py` script calls with skill delegation in os-architect-agent.md, os-architect-tester-agent.md, os-evolution-planner, os-evolution-verifier
+- `mode-1-loop-protocol.md`: replaced deprecated `gemini-cli-agent` reference with `agy-cli-agent`
+- `os-architect/evals/evals.json`: added 5 confidence-model cases (expected_confidence: Low/Medium)
+- `os-eval-runner/evals/evals.json`: added 3 orchestration-vocabulary false-positive cases
+- `gpt55-critical-auditor/evals/evals.json`: expanded from 3 → 10 cases
+
 ## v1.6.0
 
 ### Removed

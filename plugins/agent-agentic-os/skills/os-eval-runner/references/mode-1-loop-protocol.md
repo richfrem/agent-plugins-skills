@@ -34,7 +34,7 @@ The agent will execute these steps:
      
    cp /tmp/proposed-skill.md <skill>/SKILL.md
    ```
-   Use `gemini-cli-agent` instead of `copilot-cli-agent` if specified. Fall back to self-proposing only if neither CLI is available. If using raw CLI due to lack of `run_agent.py`, ensure prompts are piped appropriately. If the proposed file is identical to current, re-prompt with "try a different approach" and log a friction event via `context/kernel.py`.
+   Use `agy-cli-agent` instead of `copilot-cli-agent` if specified (the standalone `gemini` CLI was shut down June 2026 — `agy` is the replacement). Fall back to self-proposing only if neither CLI is available. If using raw CLI due to lack of `run_agent.py`, ensure prompts are piped appropriately. If the proposed file is identical to current, re-prompt with "try a different approach" and log a friction event via `context/kernel.py`.
 
    **Step B.1 — Evolve the proposer prompt (second-order mutation):**
    After 3 consecutive DISCARDs with the same failure type, consider that the *prompt itself* may be
