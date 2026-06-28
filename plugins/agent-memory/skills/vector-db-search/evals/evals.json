@@ -2,7 +2,11 @@
   {"prompt": "Find code related to markdown parsing using the vector store.", "should_trigger": true},
   {"prompt": "Search the repository semantically for authentication logic.", "should_trigger": true},
   {"prompt": "Run a concept-based query in ChromaDB for AWS S3 bucket operations.", "should_trigger": true},
+  {"prompt": "Use Phase 2 semantic search to find similar code to this function", "should_trigger": true},
   {"prompt": "Ingest the new documentation files into the vector database.", "should_trigger": false},
   {"prompt": "Set up and initialize the ChromaDB vector store for this project.", "should_trigger": false},
-  {"prompt": "Create a new kanban task for the database migration bug.", "should_trigger": false}
+  {"prompt": "Create a new kanban task for the database migration bug.", "should_trigger": false},
+  {"prompt": "Keyword search the RLM summary ledger for payment processing files", "should_trigger": false},
+  {"prompt": "What files are missing from the RLM cache after my refactor?", "should_trigger": false},
+  {"prompt": "Promote this knowledge to long-term memory storage for future sessions", "should_trigger": false}
 ]

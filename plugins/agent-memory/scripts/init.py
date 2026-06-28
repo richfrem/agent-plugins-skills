@@ -14,12 +14,13 @@ Usage:
     python init.py
 """
 
+import argparse
 import os
 import sys
 import json
 import subprocess
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Robustly discover the Project Root
 def _find_project_root(start_path: Path) -> Path:
@@ -34,15 +35,16 @@ PROJECT_ROOT = _find_project_root(Path(__file__))
 
 
 def install_dependencies() -> None:
-    """Installs required Python packages from the repository lockfile."""
+    """Installs required Python packages from the plugin lockfile."""
     print("[INIT] Installing Vector DB Dependencies from lockfile...")
-    req_txt = PROJECT_ROOT / "plugins" / "vector-db" / "requirements.txt"
-        
+    # Try plugin source path first, then installed .agents/ path
+    req_txt = PROJECT_ROOT / "plugins" / "agent-memory" / "requirements.txt"
     if not req_txt.exists():
         req_txt = PROJECT_ROOT / ".agents" / "skills" / "vector-db-init" / "requirements.txt"
         if not req_txt.exists():
-             print(f"[ERROR] Lockfile not found.")
-             return
+            print("[ERROR] Lockfile not found at plugins/agent-memory/requirements.txt or "
+                  ".agents/skills/vector-db-init/requirements.txt")
+            return
         
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(req_txt)])
@@ -128,7 +130,16 @@ def configure_profile() -> None:
 
 def main() -> None:
     """Main execution sequence."""
+    parser = argparse.ArgumentParser(description="Initialize Vector DB environment")
+    parser.add_argument(
+        "--install-deps", action="store_true",
+        help="Install Python dependencies from requirements.txt before configuring profile."
+    )
+    args = parser.parse_args()
+
     print("--- Initializing Dynamic Vector DB Environment ---")
+    if args.install_deps:
+        install_dependencies()
     configure_profile()
     print("--- Initialization Complete ---")
 

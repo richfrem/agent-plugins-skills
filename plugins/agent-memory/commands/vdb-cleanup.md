@@ -11,11 +11,11 @@ Remove orphaned chunks from the vector store for files that no longer exist on d
 ## Quick Reference
 
 ```bash
-# Dry run -- see what would be removed
-python ./scripts/cleanup.py --profile wiki--dry-run
+# Dry run (default) -- see what would be removed without deleting
+python ./scripts/cleanup.py --profile wiki
 
-# Apply
-python ./scripts/cleanup.py --profile wiki--apply
+# Apply -- actually delete stale chunks
+python ./scripts/cleanup.py --profile wiki --apply
 ```
 
 **Dry run by default.** Nothing is deleted without `--apply`.

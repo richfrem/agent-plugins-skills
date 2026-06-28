@@ -2,7 +2,10 @@
   {"prompt": "Inject a summary for auth.py into the RLM tool cache.", "should_trigger": true},
   {"prompt": "Run a batch distillation pass on the repository using the RLM curator.", "should_trigger": true},
   {"prompt": "Query the semantic ledger to check cache coverage for the payment module.", "should_trigger": true},
+  {"prompt": "Update the stale RLM summaries after my refactor", "should_trigger": true},
   {"prompt": "Search the vector store for code related to markdown parsing.", "should_trigger": false},
   {"prompt": "Create a new task for the login bug and assign it to the backlog.", "should_trigger": false},
-  {"prompt": "Convert my memo.md file to a Microsoft Word document.", "should_trigger": false}
+  {"prompt": "Convert my memo.md file to a Microsoft Word document.", "should_trigger": false},
+  {"prompt": "What files are missing from the RLM cache? Show me a coverage report.", "should_trigger": false},
+  {"prompt": "Remove stale orphaned entries from the RLM cache after I renamed files", "should_trigger": false}
 ]

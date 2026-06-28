@@ -1,6 +1,6 @@
 ---
 description: Search the vector database for semantically relevant code and documentation
-argument-hint: "\"search query\" [--profile knowledge] [--limit N] [--stats]"
+argument-hint: "\"search query\" [--profile knowledge] [--limit N]"
 ---
 
 # /vector-db:query
@@ -14,10 +14,10 @@ Semantic (meaning-based) search against the ChromaDB vector store.
 ```bash
 # Semantic search
 python ./scripts/query.py \
-  "your natural language question" --profile wiki--limit 5
+  "your natural language question" --profile wiki --limit 5
 
-# Check DB stats / health
-python ./scripts/query.py --profile wiki--stats
+# Increase result count
+python ./scripts/query.py "your question" --profile wiki --limit 10
 ```
 
 Results are ranked by cosine similarity and include file path, chunk content, and score.

@@ -2,7 +2,11 @@
   {"prompt": "Load the hot cache at session start — read the primer, boot digest, and snapshot files.", "should_trigger": true},
   {"prompt": "Remember this decision: we are using PostgreSQL for all persistence going forward.", "should_trigger": true},
   {"prompt": "Promote this research topic from deep storage to the hot cache because it's referenced every session.", "should_trigger": true},
+  {"prompt": "What did we work on last session? Load my session context.", "should_trigger": true},
+  {"prompt": "Demote this old architecture doc to cold storage — we no longer reference it.", "should_trigger": true},
   {"prompt": "Upload a sealed learning snapshot to HuggingFace for external soul persistence.", "should_trigger": false},
   {"prompt": "Search the codebase for all usages of the UserAuth class using semantic embeddings.", "should_trigger": false},
-  {"prompt": "Create a new Obsidian canvas file mapping the project architecture.", "should_trigger": false}
+  {"prompt": "Create a new Obsidian canvas file mapping the project architecture.", "should_trigger": false},
+  {"prompt": "Keyword search the RLM summary ledger for payment processing files", "should_trigger": false},
+  {"prompt": "Run a concept-based query in ChromaDB for AWS S3 bucket operations", "should_trigger": false}
 ]

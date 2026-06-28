@@ -42,17 +42,20 @@ except ImportError as e:
     sys.exit(1)
 
 
-def run_cleanup(cortex: VectorDBOperations) -> int:
+def run_cleanup(cortex: VectorDBOperations, dry_run: bool = True) -> int:
     """
     Scans the database and removes entries for files no longer on disk.
 
     Args:
         cortex: Initialized VectorDBOperations instance.
+        dry_run: When True (default), only reports stale entries without deleting.
+                 Pass False (via --apply) to perform actual deletion.
 
     Returns:
-        Number of chunks removed.
+        Number of chunks removed (or that would be removed in dry-run mode).
     """
-    print("[CLEANUP] Scanning for stale database entries...")
+    mode = "[DRY RUN]" if dry_run else "[CLEANUP]"
+    print(f"{mode} Scanning for stale database entries...")
     
     try:
         collection_name = cortex.child_collection_name
@@ -91,24 +94,39 @@ def run_cleanup(cortex: VectorDBOperations) -> int:
     if not stale_ids:
         print("   [OK] No stale entries found.")
         return 0
-    
+
     print(f"   Found {stale_count} missing files ({len(stale_ids)} chunks)")
-    
-    # Batch delete
+
+    if dry_run:
+        for rel_path in id_to_source:
+            full_path = cortex.project_root / rel_path
+            if not full_path.exists():
+                print(f"   [WOULD REMOVE] {rel_path} ({len(id_to_source[rel_path])} chunks)")
+        print(f"\n   [DRY RUN] {len(stale_ids)} chunks would be removed. Re-run with --apply to delete.")
+        return len(stale_ids)
+
+    # Batch delete (only reached when --apply is passed)
     batch_size = 5000
     for i in range(0, len(stale_ids), batch_size):
         batch = stale_ids[i:i + batch_size]
         collection.delete(ids=batch)
-    
+
     print(f"   [DONE] Removed {len(stale_ids)} stale chunks.")
     return len(stale_ids)
 
 
 def main() -> None:
     """Main entry point for the cleanup CLI."""
-    parser = argparse.ArgumentParser(description="Clean up stale chunks in Vector DB")
+    parser = argparse.ArgumentParser(
+        description="Clean up stale chunks in Vector DB. Dry-run by default — use --apply to delete."
+    )
     parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., wiki)")
+    parser.add_argument(
+        "--apply", action="store_true",
+        help="Perform actual deletion. Without this flag the command reports stale entries without deleting."
+    )
     args = parser.parse_args()
+    dry_run = not args.apply
     
     # 1. Configuration Setup (Dynamic from profile)
     vec_config = VectorConfig(profile_name=args.profile, project_root=str(PROJECT_ROOT))
@@ -128,7 +146,7 @@ def main() -> None:
         child_chunk_overlap=vec_config.child_chunk_overlap
     )
         
-    run_cleanup(cortex)
+    run_cleanup(cortex, dry_run=dry_run)
 
 
 if __name__ == "__main__":

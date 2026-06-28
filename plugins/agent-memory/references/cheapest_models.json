@@ -1,0 +1,49 @@
+{
+  "note": "Machine-readable source for model selection. cheapest_models.md is generated from this file. Update here only.",
+  "last_updated": "2026-06-28",
+  "engines": [
+    {
+      "cli": "llama",
+      "model": "gemma-4-12b",
+      "cost_tier": "free",
+      "cost_note": "Self-hosted on local llama-server (port 8089). Only truly zero-cost option.",
+      "deprecated": false
+    },
+    {
+      "cli": "copilot",
+      "model": "gpt-5-mini",
+      "cost_tier": "paid_per_token",
+      "cost_note": "Copilot Pro free tier ended June 2026. Billed per AI Credits.",
+      "deprecated": false
+    },
+    {
+      "cli": "agy",
+      "model": "gemini-3.5-flash",
+      "cost_tier": "paid_per_token",
+      "cost_note": "Antigravity CLI — replacement for deprecated standalone gemini CLI.",
+      "deprecated": false
+    },
+    {
+      "cli": "gemini",
+      "model": null,
+      "cost_tier": null,
+      "cost_note": "Standalone gemini CLI shut down June 18, 2026. Use agy instead.",
+      "deprecated": true,
+      "replacement": "agy"
+    },
+    {
+      "cli": "claude",
+      "model": "claude-haiku-4-5",
+      "cost_tier": "paid_per_token",
+      "cost_note": "$1/MTok input, $5/MTok output.",
+      "deprecated": false
+    },
+    {
+      "cli": "codex",
+      "model": "gpt-5-mini",
+      "cost_tier": "paid_per_token",
+      "cost_note": "OpenAI-compatible endpoint.",
+      "deprecated": false
+    }
+  ]
+}
