@@ -638,12 +638,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/assets/diagrams/triple-loop-learning-system.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/assets/diagrams/triple-loop-learning-system.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-agentic-os/scripts/eval_runner.py",
       "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/scripts/eval_runner.py",
       "strategy": "symlink",
@@ -682,18 +676,6 @@
     {
       "src": "plugins/agent-agentic-os/scripts/generate_report.py",
       "dst": "plugins/agent-agentic-os/skills/os-improvement-report/scripts/generate_report.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/diagrams/agentic-os-init-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-init/assets/diagrams/agentic-os-init-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/diagrams/agentic-os-init-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-init/assets/resources/agentic-os-init-flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
@@ -772,18 +754,6 @@
     {
       "src": "plugins/agent-agentic-os/scripts/init_agentic_os.py",
       "dst": "plugins/agent-agentic-os/skills/os-init/scripts/init_agentic_os.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/diagrams/session-memory-manager-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-memory-manager/assets/diagrams/session-memory-manager-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/diagrams/session-memory-manager-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-memory-manager/assets/resources/session-memory-manager-flow.mmd",
       "strategy": "symlink",
       "description": ""
     },
@@ -1718,20 +1688,14 @@
       "description": ""
     },
     {
-      "src": "plugins/plugin-manager/scripts/install_all_plugins.py",
-      "dst": "plugins/plugin-manager/skills/plugin-installer/references/install_all_plugins.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/plugin-manager/scripts/install_all_plugins.py",
-      "dst": "plugins/plugin-manager/skills/plugin-installer/scripts/install_all_plugins.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/plugin-manager/scripts/plugin_installer.py",
       "dst": "plugins/plugin-manager/skills/plugin-installer/scripts/plugin_installer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/scripts/plugin_add.py",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/scripts/plugin_add.py",
       "strategy": "symlink",
       "description": ""
     },
