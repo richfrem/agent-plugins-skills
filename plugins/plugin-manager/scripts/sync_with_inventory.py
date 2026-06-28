@@ -74,29 +74,51 @@ AGENT_DIRS = {
 def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> None:
     """Removes artifacts for a specific plugin from all agent directories."""
     print(f"  [CLEAN] Removing artifacts for '{plugin_name}'...")
+    ownership_file = root / ".agents" / "ownership" / f"{plugin_name}.json"
+    removed_count = 0
     
-    for agent, config in AGENT_DIRS.items():
-        for dir_path_str in config["dirs"]:
-            target_dir = root / dir_path_str
-            if not target_dir.exists():
-                continue
-                
-            # Pattern A: Directory match (skills/rules) -> delete folder {plugin_name}
-            # Pattern B: File match (workflows/prompts) -> delete files starting with {plugin_name}_
-            
-            if dir_path_str.endswith("skills") or dir_path_str.endswith("rules"):
-                target_subdir = target_dir / plugin_name
-                if target_subdir.exists() and target_subdir.is_dir():
-                    print(f"    - Deleting dir: {target_subdir}")
+    if ownership_file.exists():
+        print(f"    - Using ownership manifest: {ownership_file.relative_to(root)}")
+        try:
+            data = json.loads(ownership_file.read_text(encoding="utf-8"))
+            artifacts = data.get("artifacts", [])
+            for art_rel in sorted(artifacts, key=len, reverse=True):
+                art_path = root / art_rel
+                if art_path.exists():
+                    print(f"    - Deleting owned artifact: {art_rel}")
                     if not dry_run:
-                        shutil.rmtree(target_subdir)
-            else:
-                # File cleanup
-                for f in target_dir.iterdir():
-                    if f.is_file() and f.name.startswith(f"{plugin_name}_"):
-                        print(f"    - Deleting file: {f}")
+                        if art_path.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(art_path)):
+                            art_path.unlink()
+                        elif art_path.is_dir():
+                            shutil.rmtree(art_path)
+                        else:
+                            art_path.unlink()
+                    removed_count += 1
+            if not dry_run:
+                ownership_file.unlink()
+        except Exception as e:
+            print(f"    Warning: Failed to clean via ownership manifest: {e}")
+            
+    if not ownership_file.exists() or removed_count == 0:
+        for agent, config in AGENT_DIRS.items():
+            for dir_path_str in config["dirs"]:
+                target_dir = root / dir_path_str
+                if not target_dir.exists():
+                    continue
+                    
+                if dir_path_str.endswith("skills") or dir_path_str.endswith("rules"):
+                    target_subdir = target_dir / plugin_name
+                    if target_subdir.exists() and target_subdir.is_dir():
+                        print(f"    - Deleting legacy dir: {target_subdir}")
                         if not dry_run:
-                            f.unlink()
+                            shutil.rmtree(target_subdir)
+                else:
+                    for f in target_dir.iterdir():
+                        if f.is_file() and f.name.startswith(f"{plugin_name}_"):
+                            print(f"    - Deleting legacy file: {f}")
+                            if not dry_run:
+                                f.unlink()
+
 
 def run_plugin_installer(plugin_path: Path) -> None:
     """Runs plugin_installer.py for a specific plugin."""
@@ -151,6 +173,76 @@ def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> No
         print(f"  [SYNC] OK: {source_key} -> {plugins}")
     except subprocess.CalledProcessError as e:
         print(f"  [ERROR] Failed syncing source '{source_key}': {e}")
+
+
+def validate_agents_state(root: Path, registered_plugins: set) -> None:
+    """Scan installed directories and report validation issues."""
+    missing = []
+    unexpected = []
+    
+    # 1. Check for missing ownership manifests or central copies
+    for pname in registered_plugins:
+        ownership_file = root / ".agents" / "ownership" / f"{pname}.json"
+        central_dir = root / ".agents" / "skills" / pname
+        
+        if not ownership_file.exists():
+            # Fallback checks
+            lock_file = root / "skills-lock.json"
+            has_skills = False
+            if lock_file.exists():
+                try:
+                    lock = json.loads(lock_file.read_text(encoding="utf-8"))
+                    has_skills = any(k.startswith(pname) for k in lock.get("skills", {}).keys())
+                except Exception:
+                    pass
+            if has_skills and not central_dir.exists():
+                missing.append(f"{pname} (central copy missing)")
+        else:
+            try:
+                data = json.loads(ownership_file.read_text(encoding="utf-8"))
+                for art in data.get("artifacts", []):
+                    art_path = root / art
+                    if not art_path.exists():
+                        missing.append(f"{pname} (artifact missing: {art})")
+            except Exception:
+                pass
+                
+    # 2. Check for unexpected directories in .agents/skills/
+    skills_dir = root / ".agents" / "skills"
+    valid_skills = set()
+    for pname in registered_plugins:
+        ownership_file = root / ".agents" / "ownership" / f"{pname}.json"
+        if ownership_file.exists():
+            try:
+                data = json.loads(ownership_file.read_text(encoding="utf-8"))
+                for art in data.get("artifacts", []):
+                    path_parts = Path(art).parts
+                    if len(path_parts) >= 3 and path_parts[0] == ".agents" and path_parts[1] == "skills":
+                        valid_skills.add(path_parts[2])
+            except Exception:
+                pass
+        
+        # Fallback local discovery
+        plugin_src = root / "plugins" / pname
+        if plugin_src.exists() and (plugin_src / "skills").is_dir():
+            for item in (plugin_src / "skills").iterdir():
+                if item.is_dir():
+                    valid_skills.add(item.name)
+
+    if skills_dir.exists():
+        for item in skills_dir.iterdir():
+            if item.is_dir() and item.name not in valid_skills:
+                unexpected.append(f"Orphaned skill directory: {item.relative_to(root)}")
+
+                
+    if missing or unexpected:
+        print("  ⚠️ Validation issues detected:")
+        for m in missing:
+            print(f"    - Missing: {m}")
+        for u in unexpected:
+            print(f"    - Unexpected: {u}")
+    else:
+        print("  ✓ Verification Complete: All registered plugins are clean and accounted for.")
 
 
 def main() -> None:
@@ -219,6 +311,13 @@ def main() -> None:
                     sync_source(src, s["plugins"], root, args.dry_run)
     else:
         print("\nSkipping reinstall (--cleanup-only).")
+
+    # 5. Post-Sync Validation
+    print("\n--- 5. Post-Sync Validation ---")
+    if not args.dry_run:
+        validate_agents_state(root, registered_set)
+    else:
+        print("  [DRY RUN] Skipping validation check.")
 
     print("\nSync Complete.")
 

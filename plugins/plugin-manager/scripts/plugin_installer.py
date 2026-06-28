@@ -311,10 +311,11 @@ def _symlink_or_copy(src: Path, link_path: Path, dry_run: bool,
             return False
 
 def deploy_commands(plugin_path: Path, plugin_name: str, targets: list,
-                    root: Path, dry_run: bool = False) -> None:
+                    root: Path, dry_run: bool = False) -> list[Path]:
+    deployed = []
     commands_dir = plugin_path / "commands"
     if not commands_dir.exists():
-        return
+        return deployed
 
     central_workflows = root / ".agents" / "workflows"
     if not dry_run:
@@ -335,8 +336,7 @@ def deploy_commands(plugin_path: Path, plugin_name: str, targets: list,
         central_dest = central_workflows / f"{dest_name}.md"
         if not dry_run:
             shutil.copy2(cmd_file, central_dest)
-        else:
-            print(f"  [DRY RUN] copy command: {central_dest.relative_to(root)}")
+        deployed.append(central_dest)
 
         for target_dir_name in targets:
             config = DETECTABLE_AGENTS.get(target_dir_name)
@@ -353,14 +353,19 @@ def deploy_commands(plugin_path: Path, plugin_name: str, targets: list,
 
             target_link = cmd_dir / f"{dest_name}.md"
             _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+            deployed.append(target_link)
+            
+    return deployed
+
 
 
 def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
-                  root: Path, dry_run: bool = False) -> None:
+                  root: Path, dry_run: bool = False) -> list[Path]:
     """Deploy agent .md files to IDE-native agents directories (e.g. .claude/agents/)."""
+    deployed = []
     agents_dir_src = plugin_path / "agents"
     if not agents_dir_src.exists():
-        return
+        return deployed
 
     central_agents = root / ".agents" / "agents"
     if not dry_run:
@@ -373,8 +378,7 @@ def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
 
         if not dry_run:
             shutil.copy2(agent_file, central_dest)
-        else:
-            print(f"  [DRY RUN] central agent copy: .agents/agents/{dest_name}.md")
+        deployed.append(central_dest)
 
         for target_dir_name in targets:
             config = DETECTABLE_AGENTS.get(target_dir_name)
@@ -391,13 +395,17 @@ def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
 
             target_link = ide_agents / f"{dest_name}.md"
             _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+            deployed.append(target_link)
+            
+    return deployed
 
 
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
-                 root: Path, dry_run: bool = False) -> None:
+                 root: Path, dry_run: bool = False) -> list[Path]:
+    deployed = []
     rules_dir = plugin_path / "rules"
     if not rules_dir.exists():
-        return
+        return deployed
 
     central_rules = root / ".agents" / "rules"
     if not dry_run:
@@ -408,6 +416,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         central_dest = central_rules / dest_name
         if not dry_run:
             shutil.copy2(rule_file, central_dest)
+        deployed.append(central_dest)
 
         for target_dir_name in targets:
             config = DETECTABLE_AGENTS.get(target_dir_name)
@@ -424,6 +433,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                     rules_target_dir.mkdir(parents=True, exist_ok=True)
                 target_link = rules_target_dir / dest_name
                 _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+                deployed.append(target_link)
 
             elif config.get("rules_mode") == "append":
                 append_target = root / config["rules_append_target"]
@@ -434,12 +444,16 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                     if marker not in existing:
                         with open(append_target, "a", encoding="utf-8") as f:
                             f.write(f"\n{marker}\n{content}\n")
+                    deployed.append(append_target)
                 else:
                     try:
                         relative_path = append_target.relative_to(root)
+
                     except ValueError:
                         relative_path = append_target.name
                     print(f"  [DRY RUN] append rule to {relative_path}")
+    return deployed
+
 
 def write_project_lock(plugin_path: Path, metadata: dict,
                        installed_skills: list, root: Path, dry_run: bool = False) -> None:
@@ -474,6 +488,69 @@ def write_project_lock(plugin_path: Path, metadata: dict,
     print(f"  ✓ Updated skills-lock.json ({len(installed_skills)} skills)")
 
 
+def write_ownership_manifest(plugin_name: str, root: Path, deployed_paths: list, dry_run: bool = False) -> None:
+    if dry_run:
+        return
+    ownership_dir = root / ".agents" / "ownership"
+    ownership_dir.mkdir(parents=True, exist_ok=True)
+    manifest_file = ownership_dir / f"{plugin_name}.json"
+    
+    paths_str = []
+    for p in deployed_paths:
+        try:
+            paths_str.append(str(p.resolve().relative_to(root.resolve())))
+        except ValueError:
+            paths_str.append(str(p))
+            
+    data = {
+        "plugin": plugin_name,
+        "installed_at": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+        "artifacts": sorted(list(set(paths_str)))
+    }
+    manifest_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"  ✓ Recorded artifact ownership in {manifest_file.relative_to(root)}")
+
+
+def merge_mcp_config(plugin_path: Path, root: Path, dry_run: bool = False) -> None:
+    plugin_mcp = plugin_path / ".mcp.json"
+    if not plugin_mcp.exists():
+        plugin_mcp = plugin_path / "mcp.json"
+    if not plugin_mcp.exists():
+        return
+        
+    project_mcp = root / ".mcp.json"
+    if not project_mcp.exists():
+        project_mcp = root / "mcp.json"
+        
+    print(f"  ✓ Merging MCP configuration for {plugin_path.name}...")
+    
+    if dry_run:
+        print(f"  [DRY RUN] Would merge {plugin_mcp.name} into {project_mcp.name}")
+        return
+        
+    try:
+        plugin_data = json.loads(plugin_mcp.read_text(encoding="utf-8"))
+        plugin_servers = plugin_data.get("mcpServers", {})
+        if not plugin_servers:
+            return
+            
+        project_data = {}
+        if project_mcp.exists():
+            try:
+                project_data = json.loads(project_mcp.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+                
+        project_servers = project_data.setdefault("mcpServers", {})
+        for name, cfg in plugin_servers.items():
+            project_servers[name] = cfg
+            
+        project_mcp.write_text(json.dumps(project_data, indent=2) + "\n", encoding="utf-8")
+        print(f"  ✓ Successfully merged {len(plugin_servers)} MCP server(s) into {project_mcp.name}")
+    except Exception as e:
+        print(f"  ⚠ Failed to merge MCP configuration: {e}")
+
+
 def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list, dry_run: bool = False, install_rules: bool = False) -> list:
     root = Path.cwd()
     plugin_name = metadata.get("name", plugin_path.name)
@@ -483,6 +560,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
         agents_root.mkdir(exist_ok=True)
     
     installed_skills = []
+    deployed_paths = []
     
     # 2. Central Skills
     skills_dir = plugin_path / "skills"
@@ -498,11 +576,12 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                 if not dry_run:
                     _copy_resolving_pointers(item, dest)
                     _inject_plugin_field(dest / "SKILL.md", plugin_name)
-                    print(f"  \u2713 Universal central copy: {dest.relative_to(root)}")
+                    print(f"  ✓ Universal central copy: {dest.relative_to(root)}")
                 else:
                     print(f"  [DRY RUN] Universal central copy: .agents/skills/{item.name}")
                 
                 installed_skills.append(item.name)
+                deployed_paths.append(dest)
 
                 # 3. Iterate local agent folders and establish symlinks
                 for target_dir_name in targets:
@@ -520,6 +599,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                     
                     target_symlink = ide_skills / item.name
                     _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
+                    deployed_paths.append(target_symlink)
                     
     # 4. Standalone Agents:
     #    Agents are flat .md files with YAML frontmatter (name, description, tools, model, etc.)
@@ -543,6 +623,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             print(f"  ✓ Hook central copy: {dest.relative_to(root)}")
         else:
             print(f"  [DRY RUN] Hook central copy: .agents/hooks/{dest.name}")
+        deployed_paths.append(dest)
         
         for target_dir_name in targets:
             config = DETECTABLE_AGENTS.get(target_dir_name)
@@ -559,24 +640,42 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             
             target_symlink = ide_hooks / dest.name
             _symlink_or_copy(dest, target_symlink, dry_run, root, config["name"])
+            deployed_paths.append(target_symlink)
             
-    deploy_commands(plugin_path, plugin_name, targets, root, dry_run)
+    deployed_paths.extend(deploy_commands(plugin_path, plugin_name, targets, root, dry_run))
     if install_rules:
-        deploy_rules(plugin_path, plugin_name, targets, root, dry_run)
-    deploy_agents(plugin_path, plugin_name, targets, root, dry_run)
+        deployed_paths.extend(deploy_rules(plugin_path, plugin_name, targets, root, dry_run))
+    deployed_paths.extend(deploy_agents(plugin_path, plugin_name, targets, root, dry_run))
     
-    # MCP merge (future -- log intent for now)
-    mcp_file = plugin_path / ".mcp.json"
-    if mcp_file.exists():
-        try:
-            mcp_data = json.loads(mcp_file.read_text(encoding="utf-8"))
-            if mcp_data.get("mcpServers"):
-                print(f"  ⚠ .mcp.json found but merge not yet implemented - "
-                      f"manually merge {mcp_file} into ./.mcp.json")
-        except Exception:
-            pass
+    # MCP merge (fully implemented now)
+    merge_mcp_config(plugin_path, root, dry_run)
+    
+    # Write ownership manifest
+    write_ownership_manifest(plugin_name, root, deployed_paths, dry_run)
               
     return installed_skills
+
+
+
+def log_failure(tier: int, artifact: str, error: str) -> None:
+    import datetime
+    log_path = Path("plugins/plugin-manager/references/evolution-log.md")
+    if not log_path.exists():
+        candidate = Path(__file__).resolve()
+        while candidate != candidate.parent:
+            check = candidate.parent / "plugins/plugin-manager/references/evolution-log.md"
+            if check.exists():
+                log_path = check
+                break
+            candidate = candidate.parent
+    if log_path.parent.exists():
+        date_str = datetime.date.today().isoformat()
+        row = f"| {date_str} | Tier {tier} | Failure: {error} | None | None | FAILED |\n"
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(row)
+        except Exception:
+            pass
 
 
 def main() -> None:
@@ -615,8 +714,16 @@ def main() -> None:
     if args.dry_run:
         print(">>> DRY RUN MODE <<<")
 
-    installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run, args.install_rules)
-    write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
+    try:
+        installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run, args.install_rules)
+        write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
+    except Exception as e:
+        import traceback
+        err_msg = f"Installation crash for {plugin_path.name}: {str(e)}: {traceback.format_exc().splitlines()[-1]}"
+        print(f"Error: {err_msg}")
+        log_failure(tier=2, artifact=plugin_path.name, error=err_msg)
+        sys.exit(1)
     
 if __name__ == "__main__":
     main()
+

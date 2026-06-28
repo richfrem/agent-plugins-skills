@@ -293,6 +293,47 @@ def _clone_repo(owner_repo: str, dest: Path) -> Path:
     return dest
 
 
+def log_failure(tier: int, artifact: str, error: str) -> None:
+    import datetime
+    log_path = Path("plugins/plugin-manager/references/evolution-log.md")
+    if not log_path.exists():
+        candidate = Path(__file__).resolve()
+        while candidate != candidate.parent:
+            check = candidate.parent / "plugins/plugin-manager/references/evolution-log.md"
+            if check.exists():
+                log_path = check
+                break
+            candidate = candidate.parent
+    if log_path.parent.exists():
+        date_str = datetime.date.today().isoformat()
+        row = f"| {date_str} | Tier {tier} | Failure: {error} | None | None | FAILED |\n"
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(row)
+        except Exception:
+            pass
+
+
+def validate_plugin(plugin_path: Path) -> None:
+    # 1. Enforce manifest
+    manifest_exists = (plugin_path / ".claude-plugin" / "plugin.json").exists() or (plugin_path / "plugin.json").exists()
+    assert manifest_exists, f"Missing manifest (.claude-plugin/plugin.json or plugin.json) in {plugin_path.name}"
+    
+    # 2. Enforce skills dir
+    skills_dir = plugin_path / "skills"
+    assert skills_dir.is_dir(), f"Missing skills/ directory in {plugin_path.name}"
+    
+    # 3. Enforce SKILL.md and evals.json per skill folder
+    for skill_folder in skills_dir.iterdir():
+        if skill_folder.is_dir():
+            skill_md = skill_folder / "SKILL.md"
+            assert skill_md.is_file(), f"Skill directory '{skill_folder.name}' in plugin '{plugin_path.name}' is missing SKILL.md"
+            
+            # Enforce evals.json existence
+            evals_json = skill_folder / "evals" / "evals.json"
+            assert evals_json.is_file(), f"Skill '{skill_folder.name}' in plugin '{plugin_path.name}' is missing evals/evals.json"
+
+
 # ---------------------------------------------------------------------------
 # Plugin discovery
 # ---------------------------------------------------------------------------
@@ -532,6 +573,15 @@ def main():
 
     for plugin in selected_plugins:
         print(f"\n  {bold('->')} {cyan(plugin['name'])}")
+        
+        try:
+            validate_plugin(Path(plugin["path"]))
+        except AssertionError as ae:
+            print(f"    {red('✗')} Validation Failed: {ae}")
+            log_failure(tier=1, artifact=plugin["name"], error=str(ae))
+            fail_count += 1
+            continue
+
         cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin["path"])]
         if args.dry_run:
             cmd.append("--dry-run")
@@ -545,6 +595,7 @@ def main():
         else:
             print(f"    {red('✗')} Failed (exit {result.returncode})")
             fail_count += 1
+
 
     # ------------------------------------------------------------------
     # Record Subscription in plugin-sources.json

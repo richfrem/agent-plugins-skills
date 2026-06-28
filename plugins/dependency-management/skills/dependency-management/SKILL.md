@@ -28,17 +28,9 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 3. **One runtime per service.** Each isolated service owns its own `./requirements.txt` lockfile.
 
-## Plugin & Skill Script Architecture (Hub-and-Spoke)
+## Script Architecture & Packaging
 
-1. **DRY in source - Hub-and-Spoke.** One canonical script file lives at `plugins/<plugin-name>/scripts/`. Skills that need it use a file-level symlink in their own `scripts/` directory pointing back to the root (`ln -s ../../../scripts/foo.py`).
-2. **File-level symlinks only.** Never symlink entire directories. The Bridge Installer (`plugin_installer.py`) only resolves individual file-level symlinks. Directory-level symlinks are silently dropped by binary packaging tools.
-3. **Self-contained at install.** The installer (`plugin_installer.py`) resolves all symlinks to physical copies when deploying to `.agents/`. This ensures every skill is independently runnable regardless of the source mono-repo's presence.
-4. **Windows Compatibility.** The `plugin_installer.py` uses a 3-tier strategy for Windows:
-   - **Symlink** (if Developer Mode is on)
-   - **Junction** (fallback for directory-level logic, though file-level is preferred)
-   - **Full Copy** (ultimate fallback)
-   This resolution ensures the Hub-and-Spoke pattern works cross-platform.
-5. **No Cross-Plugin Script Execution.** A skill should never execute `python ../../other-plugin/scripts/foo.py`. If a cross-plugin capability is needed, use **Agent Skill Delegation**: instruct the Agent to invoke the target skill via the conversation layer. In the mono-repo source, cross-plugin file-level symlinks are acceptable for shared logic that the installer will then resolve.
+For plugin packaging, DRY script distribution, and Windows symlink/junction compatibility rules, see the authoritative shared plugin packaging guidelines.
 
 ## Repository Layout (Example)
 
@@ -49,13 +41,13 @@ src/
 ├── services/
 │   ├── auth_service/
 │   │   ├── requirements.in       # Tier 2: inherits core + auth deps
-│   │   └── ./requirements.txt
+│   │   └── requirements.txt
 │   ├── payments_service/
 │   │   ├── requirements.in
-│   │   └── ./requirements.txt
+│   │   └── requirements.txt
 │   └── database_service/
 │       ├── requirements.in
-│       └── ./requirements.txt
+│       └── requirements.txt
 ```
 
 ## Tiered Hierarchy
@@ -83,14 +75,20 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
 
    # Individual service (example: auth)
    pip-compile src/services/auth_service/requirements.in \
-     --output-file src/services/auth_service/./requirements.txt
+     --output-file src/services/auth_service/requirements.txt
    ```
    Because services inherit core via `-r`, recompiling a service also picks up core changes.
 
 3. **Sync** — Install locally to verify:
+   Preferred (if available):
    ```bash
-   pip install -r src/services/<service>/./requirements.txt
+   pip-sync src/services/<service>/requirements.txt
    ```
+   Fallback:
+   ```bash
+   pip install -r src/services/<service>/requirements.txt
+   ```
+
 
 4. **Verify** — Rebuild the affected Docker/Podman container to confirm stable builds.
 
@@ -123,14 +121,14 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
    # 2. Then each service
    for svc in auth_service payments_service database_service; do
      pip-compile "src/services/${svc}/requirements.in" \
-       --output-file "src/services/${svc}/./requirements.txt"
+       --output-file "src/services/${svc}/requirements.txt"
    done
    ```
 
 6. **Verify the patched version appears** in all affected `.txt` files:
    ```bash
    grep -i "package-name" src/requirements-core.txt \
-     src/services/*/./requirements.txt
+     src/services/*/requirements.txt
    ```
 
 7. **If no newer version exists** (e.g., inherent design risk like pickle deserialization),
@@ -138,9 +136,50 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
 
 ## Container / Dockerfile Constraints
 
-- Dockerfiles **only** use `COPY ./requirements.txt` + `RUN pip install -r ./requirements.txt`.
+- Dockerfiles **only** use `COPY requirements.txt` + `RUN pip install -r requirements.txt`.
 - No `RUN pip install <pkg>` commands. No manual installs.
-- Copy `./requirements.txt` **before** source code to preserve Docker layer caching.
+- Copy `requirements.txt` **before** source code to preserve Docker layer caching.
+
+## Non-Negotiable Execution Rules
+
+The agent MUST NOT:
+- Run `pip install <pkg>` directly to resolve dependency issues.
+- Modify `.txt` lockfiles manually.
+- Bypass `pip-compile` failures.
+- Ignore missing tools (e.g., `pip-compile` not installed).
+- Continue after dependency conflicts without resolution.
+
+If any of the above occurs:
+1. **HALT** execution immediately.
+2. Classify using the self-evolution profile.
+3. Either:
+   - Fix within allowed directories, OR
+   - Log to `map-debt.md`.
+4. Report explicitly to the user.
+
+Workarounds are considered Tier 0 Friction and must be logged.
+
+
+## Self-Evolution Requirements
+
+When this skill encounters friction, failure, ambiguity, or a workaround:
+1. Do not silently bypass the issue.
+2. Classify the issue using `references/self-evolution-profile.md`.
+3. If fixed within allowed directories, update the relevant skill/reference file.
+4. Add an entry to `references/evolution-log.md`.
+5. If not fixed, add an entry to `references/map-debt.md` with severity, repeat risk, and recommended fix.
+
+
+## When to Record Map Debt
+
+Log to `map-debt.md` when:
+- Tooling is missing (e.g. `pip-compile` is absent).
+- Conflicts require human resolution.
+- The dependency graph is ambiguous.
+- Instructions in this plugin are unclear or contradictory.
+
+Do not silently proceed.
+
 
 ## Common Pitfalls
 
@@ -148,3 +187,4 @@ Each service `.in` file usually begins with `-r ../../requirements-core.in` to i
 - **Pinning `==` instead of `>=`** for security floors — use `>=` so `pip-compile` can resolve freely.
 - **Adding dev tools to production `.in` files** — keep `pytest`, `ruff`, etc. in `requirements-dev.in`.
 - **Committing `.txt` without `.in`** — always commit them as a pair.
+

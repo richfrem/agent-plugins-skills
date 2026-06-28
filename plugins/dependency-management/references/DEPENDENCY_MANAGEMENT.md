@@ -31,7 +31,7 @@ Run `pip-compile` to generate the `.txt` file.
 pip-compile src/requirements-core.in --output-file src/requirements-core.txt
 
 # Example for Auth Service
-pip-compile src/services/auth_service/requirements.in --output-file src/services/auth_service/./requirements.txt
+pip-compile src/services/auth_service/requirements.in --output-file src/services/auth_service/requirements.txt
 ```
 
 ### Step 4: Install

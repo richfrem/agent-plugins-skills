@@ -1,13 +1,19 @@
-# the project Dependency Manifest
+# Example Dependency Manifest
 
-**Version:** 5.0 (Unified Dependency Architecture - Synchronized with Setup Script)
+> [!WARNING]
+> **This file is illustrative only. It is not canonical for the current repository.**
+> Do not install, pin, or audit dependencies based solely on this example.
+> Use the repository's actual `requirements.in` and lockfiles as the source of truth.
+
+**Version:** 5.0 (Unified Dependency Architecture - Example Template)
 **Generated:** 2025-11-15
 
 ## Preamble
 
-This document provides the canonical manifest of all Python dependencies for the project, reflecting the strategic decision to adopt a unified dependency architecture. This approach supersedes the previous poly-dependency model and prioritizes simplified environment setup and management for all developers and agents.
+This document provides an example template manifest of all Python dependencies, reflecting the strategic decision to adopt a unified dependency architecture. 
 
-In accordance with the clean code principles, each dependency is cataloged with its specific role and strategic purpose within the the project's unified architecture.
+In accordance with clean code principles, each dependency in this template is cataloged with its specific role and strategic purpose to demonstrate how a complex project can be modeled into clear, strategic dependency categories.
+
 
 ---
 
