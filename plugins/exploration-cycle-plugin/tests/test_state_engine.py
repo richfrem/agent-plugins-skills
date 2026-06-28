@@ -26,7 +26,7 @@ def test_wal_mode_enabled(tmp_path):
 
 def test_all_tables_created(mem_conn):
     expected = {"sessions", "tasks", "approvals", "artifacts", "reviews",
-                "dispatches", "policy_decisions", "phase_metrics"}
+                "dispatches", "policy_decisions", "phase_metrics", "nonces"}
     rows = mem_conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
     actual = {r[0] for r in rows}
     assert expected == actual, f"Missing tables: {expected - actual}"

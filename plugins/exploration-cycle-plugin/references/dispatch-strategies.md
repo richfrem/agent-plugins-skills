@@ -17,6 +17,7 @@ The SME chooses a strategy during Block 0 of `exploration-workflow`. Choices:
 
 > **None of these are free as of June 2026.** Only self-hosted `llama` (Gemma 4) is zero-cost. See `references/cheapest_models.md` for current model names and costs.
 > The standalone `gemini` CLI was deprecated and shut down June 18, 2026 — use `agy-cli` instead.
+> **`agy-cli` dispatch** goes through the `cli-agents` plugin's `agy-cli-agent` skill — NOT through `dispatch.py`. The `dispatch.py` script only handles `--cli claude`, `--cli copilot`, and `--cli gh-copilot`. See `plugins/cli-agents/skills/agy-cli-agent/SKILL.md` for `agy` invocation patterns.
 > **Model names change.** Always verify current identifiers against:
 > - Copilot CLI: `copilot --help` or [GitHub Copilot model docs](https://docs.github.com/en/copilot/using-github-copilot/ai-models)
 > - Agy CLI: `agy --help` or Antigravity docs

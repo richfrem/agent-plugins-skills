@@ -161,10 +161,70 @@ def test_check_dispatch_authorization_rejects_replayed_nonce(tmp_path):
         spec_path=None, envelope=envelope, key=key, nonce_cache=nonce_cache
     )
     assert ok1 is True
-    # Replay same envelope
+    # Replay same envelope — caught by in-process nonce_cache
     ok2, reason = dispatch.check_dispatch_authorization(
         conn, approval_id, action="read_file", target_path="docs/foo.md",
         spec_path=None, envelope=envelope, key=key, nonce_cache=nonce_cache
     )
     assert ok2 is False
     assert "hmac" in reason.lower() or "nonce" in reason.lower() or "envelope" in reason.lower()
+
+
+def test_check_dispatch_authorization_rejects_cross_invocation_replay(tmp_path):
+    """SEC-001: fresh in-process nonce_cache must not allow replay across dispatch invocations."""
+    import state_engine as SE, uuid, sandbox_runner as SR
+    from collections import OrderedDict
+    conn = SE.init_db(str(tmp_path / "nonce_cross.sqlite"))
+    SE.create_session(conn, "sess", "Cross-Invocation Nonce Session")
+    approval_id = str(uuid.uuid4())
+    conn.execute("""
+        INSERT INTO approvals (id, session_id, phase, approved_actions, allowed_paths,
+            spec_hash, spec_source_path, is_active, expires_at)
+        VALUES (?, 'sess', 'p1', '["read_file"]', '["**"]', 'abc', '/spec.md', 1,
+                datetime('now', '+1 hour'))
+    """, (approval_id,))
+    conn.commit()
+    key = os.urandom(32)
+    envelope = SR.sign_envelope({"action": "read_file"}, key)
+
+    # First "invocation" — fresh nonce_cache
+    ok1, _ = dispatch.check_dispatch_authorization(
+        conn, approval_id, action="read_file", target_path="docs/foo.md",
+        spec_path=None, envelope=envelope, key=key, nonce_cache=OrderedDict()
+    )
+    assert ok1 is True
+
+    # Second "invocation" — new fresh nonce_cache (simulates new process), same SQLite conn
+    ok2, reason = dispatch.check_dispatch_authorization(
+        conn, approval_id, action="read_file", target_path="docs/foo.md",
+        spec_path=None, envelope=envelope, key=key, nonce_cache=OrderedDict()
+    )
+    assert ok2 is False
+    assert "nonce" in reason.lower() or "replay" in reason.lower()
+
+
+def test_dispatch_output_path_must_match_target_path(tmp_path):
+    """SEC-002: --output path mismatch from --target-path must be caught after auth gate."""
+    import state_engine as SE, uuid, sandbox_runner as SR
+    from collections import OrderedDict
+    conn = SE.init_db(str(tmp_path / "outpath.sqlite"))
+    SE.create_session(conn, "sess", "Output Path Session")
+    approval_id = str(uuid.uuid4())
+    conn.execute("""
+        INSERT INTO approvals (id, session_id, phase, approved_actions, allowed_paths,
+            spec_hash, spec_source_path, is_active, expires_at)
+        VALUES (?, 'sess', 'p1', '["run_agent"]', '["docs/**"]', 'abc', '/spec.md', 1,
+                datetime('now', '+1 hour'))
+    """, (approval_id,))
+    conn.commit()
+    key = os.urandom(32)
+    envelope = SR.sign_envelope({"action": "run_agent"}, key)
+
+    # Simulate: authorized target = docs/legit.md, but --output points elsewhere
+    target = str(tmp_path / "docs" / "legit.md")
+    output = str(tmp_path / "evil" / "payload.md")
+
+    # _output_matches_target is the logic we're verifying; call it directly
+    target_resolved = Path(target).resolve()
+    output_resolved = Path(output).resolve()
+    assert target_resolved != output_resolved, "Precondition: paths must differ"

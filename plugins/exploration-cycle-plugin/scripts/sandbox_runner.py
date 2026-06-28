@@ -96,6 +96,8 @@ def run_containerized(cmd: list, session_id: str, dispatch_id: str,
     if not runtime:
         raise RuntimeError("No container runtime (podman/docker) available")
 
+    _cleanup_stale_containers(session_id)
+
     container_cmd = [
         runtime, "run", "--rm",
         "--network=none", "--cpus=1.0", "--memory=512m", "--read-only",
@@ -125,11 +127,23 @@ def run_containerized(cmd: list, session_id: str, dispatch_id: str,
 
 
 def _container_user_flag() -> list[str]:
-    """Return --user uid:gid for the current process. Falls back to nobody on envs without getuid."""
+    """Return --user uid:gid for the current process.
+
+    On Windows (no os.getuid), checks WINDOWS_CONTAINER_USER env var first.
+    Raises RuntimeError if neither is available — silent nobody:nogroup fallback
+    can run as effective root inside Docker Desktop on Windows (SEC-003).
+    """
     try:
         return ["--user", f"{os.getuid()}:{os.getgid()}"]
     except AttributeError:
-        return ["--user", "65534:65534"]  # nobody:nogroup
+        win_user = os.environ.get("WINDOWS_CONTAINER_USER")
+        if win_user:
+            return ["--user", win_user]
+        raise RuntimeError(
+            "Containerized dispatch on Windows requires the WINDOWS_CONTAINER_USER "
+            "environment variable (format: 'uid:gid'). Docker Desktop's user mapping "
+            "differs from Linux — verify the account is unprivileged before setting."
+        )
 
 
 def _cleanup_stale_containers(session_id: str) -> None:
@@ -171,7 +185,12 @@ def load_session_key(key_path: Path) -> bytes:
 
 
 def cleanup_session_key(key_path: Path) -> None:
-    """Overwrite then delete session key file (secure erasure)."""
+    """Overwrite then unlink session key file.
+
+    The overwrite pass reduces key recovery risk on HDDs with magnetic remnants.
+    It is NOT sufficient for SSDs with wear-leveling — the OS may write to a
+    different physical page and the original bytes may persist in spare blocks.
+    """
     if key_path.exists():
         key_path.write_bytes(os.urandom(key_path.stat().st_size))
         key_path.unlink()
