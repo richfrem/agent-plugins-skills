@@ -7,7 +7,7 @@ description: >
   as needed, and runs a discovery interview to capture name, purpose, and trigger phrases
   before writing any files. Use when the user says "create a new skill", "scaffold a skill",
   "generate a skill", "new skill setup", or "make a skill directory". Does not handle
-  content improvement for existing skills — that is handled by os-skill-improvement.
+  content improvement for existing skills — that is handled by os-improvement-loop.
 argument-hint: "[skill-name or use-case description]"
 allowed-tools: Bash, Read, Write
 ---
