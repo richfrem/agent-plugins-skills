@@ -113,12 +113,7 @@ Otherwise, using the error message, stack trace, and context, classify into exac
 ### Tier 0 — Friction / Workaround
 > "The task completed, but the system did not improve."
 
-**Signals:**
-- Agent bypassed an existing script, skill, sub-agent, or helper
-- Agent manually performed work that an existing repo capability should handle
-- Agent encountered ambiguity and guessed instead of improving instructions
-- Agent noticed an awkward or error-prone workflow but did not update The Map
-- Agent used a temporary workaround
+**Definition + signals:** see `.agent/rules/self-evolution-policy.md` § Tier 0.
 
 **Response:** If small + inside allowed edit boundaries — patch now, update The Map. If not safe or small — log as Map Debt (see Phase 7). If repeated or blocking — escalate.
 
@@ -308,6 +303,8 @@ the evolution log is the immutable audit trail. Do not double-count: one write t
 
 **Aging rule:** At Phase 0 read, count completed cycles since the entry's `Cycle ID`. If an
 `OPEN` entry is older than 3 completed cycles, auto-escalate before starting new work.
+If the Cycle ID is from a prior session (not in current `events.jsonl`), fall back to
+the Logged date: auto-escalate if `(today - Logged) > 14 days`.
 Set `Status` to `RESOLVED` when fixed, `ESCALATED` when escalated to the user.
 
 If the log file doesn't exist yet, create it with the header:
