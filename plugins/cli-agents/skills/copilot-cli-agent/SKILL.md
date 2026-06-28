@@ -19,12 +19,12 @@ allowed-tools: Bash, Read, Write
 
 ---
 
-## 🎭 Identity: The Sub-Agent Dispatcher (Standard: gpt-5-mini)
+## 🎭 Identity: The Sub-Agent Dispatcher
 
 You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI sub-agents.
 
 > [!IMPORTANT]
-> **Default model: `gpt-5-mini` (included — no credit cost).** As of June 1, 2026, GitHub moves to **AI Credits** (per-token billing), but `gpt-5-mini` is an included model that does not consume credits. Higher-multiplier models (e.g., `claude-sonnet-4.6`) do consume credits — see [💰 AI Credits & Cost Discipline](#-ai-credits--cost-discipline) before using them.
+> **Billing model: AI Credits (token-based, effective June 1 2026).** All models consume AI credits at per-token rates — there are no longer "included" or "free" models for chat/agent interactions. Code completions and Next Edit Suggestions remain unlimited for paid plans. Copilot CLI interactive default is `claude-sonnet-4.6`; `run_agent.py` defaults to `gpt-5-mini` for cost efficiency. See [💰 AI Credits & Cost Discipline](#-ai-credits--cost-discipline) and `references/copilot-models.json` for full pricing.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -90,46 +90,71 @@ Passing `/dev/null` for persona or input skips that block cleanly.
 
 ## 🔀 Model Selection Guide
 
-### Default: `gpt-5-mini` (included — no credit cost)
+> Full model data (identifiers, per-token costs, context windows): `references/copilot-models.json`
+
+### Default for `run_agent.py`: `gpt-5-mini` (cheapest, best for most tasks)
 
 ```bash
-# No model arg = gpt-5-mini (included model, does not consume credits)
+# No model arg = gpt-5-mini (25 credits/1M input, 200 credits/1M output)
 python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
   "Find vulnerabilities."
 ```
 
-### High-quality: `claude-sonnet-4.6` (9x multiplier — batch everything)
+### Value pick for coding tasks: `mai-code-1-flash` (new Jun 2026)
 
 ```bash
-# Pass model name as the 5th argument to override the default
+# Microsoft MAI-Code-1-Flash — Microsoft claims similar quality to claude-sonnet-4.6 at ~4× lower cost
+# Input: 75 credits/1M  Output: 450 credits/1M  (vs Sonnet: 300 input / 1500 output)
+python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
+  "Audit for OWASP Top 10 vulnerabilities." mai-code-1-flash
+```
+
+### Absolute cheapest: `gpt-5.4-nano`
+
+```bash
+# GPT-5.4 nano: 20 credits/1M input, 125 credits/1M output — cheapest in catalog
+python ./scripts/run_agent.py /dev/null /dev/null heartbeat.md \
+  "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." gpt-5.4-nano
+```
+
+### Complex reasoning / multi-file: `claude-sonnet-4.6`
+
+```bash
+# 300 credits/1M input, 1500 credits/1M output. Batch everything into one call.
 python ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_output.md \
   "Generate all files exactly as specified using ===FILE:=== delimiters." \
   claude-sonnet-4.6
 ```
 
+### Model Identifiers & Credit Costs (June 2026 — AI Credits billing)
+
 > [!NOTE]
-> **When to use `claude-sonnet-4.6`:** Complex multi-file generation, nuanced content requiring reasoning, tasks where output quality matters more than cost. See [💰 AI Credits & Cost Discipline](#-ai-credits--cost-discipline) for batching rules before calling.
+> 1 AI Credit = $0.01 USD. All costs are per 1 million tokens. Copilot CLI interactive session default is `claude-sonnet-4.6`; `run_agent.py` defaults to `gpt-5-mini`.
 
-### Known Model Identifiers (June 2026)
-
-| Model | Identifier | Credit cost |
-|:---|:---|:---|
-| GPT-5 mini | `gpt-5-mini` | Included (no credits) |
-| GPT-4.1 | `gpt-4.1` | Included (deprecation upcoming) |
-| GPT-4o | `gpt-4o` | Included |
-| Claude Haiku 4.5 | `claude-haiku-4.5` | Low |
-| GPT-5.4 | `gpt-5.4` | 6x |
-| GPT-5.4 mini | `gpt-5.4-mini` | 6x |
-| Claude Sonnet 4.5 | `claude-sonnet-4.5` | 9x |
-| Claude Sonnet 4.6 | `claude-sonnet-4.6` | 9x |
-| Gemini 3.5 Flash | `gemini-3.5-flash` | (verify current) |
-| Claude Opus 4.7 | `claude-opus-4.7` | 27x |
-| Claude Opus 4.8 | `claude-opus-4.8` | 27x |
+| Model | Identifier | Input cr/1M | Output cr/1M | Notes |
+|:---|:---|---:|---:|:---|
+| **GPT-5.4 nano** | `gpt-5.4-nano` | 20 | 125 | Cheapest overall |
+| **GPT-5 mini** | `gpt-5-mini` | 25 | 200 | Best default — fast, cheap |
+| Raptor mini | `raptor-mini` | 25 | 200 | GitHub fine-tuned, same cost as gpt-5-mini |
+| Gemini 3 Flash | `gemini-3-flash` | 50 | 300 | Preview |
+| **MAI-Code-1-Flash** | `mai-code-1-flash` | 75 | 450 | **New Jun 2026** — code-focused, 256K ctx, no cache write cost |
+| GPT-5.4 mini | `gpt-5.4-mini` | 75 | 450 | Same price tier as MAI-Code-1-Flash |
+| Claude Haiku 4.5 | `claude-haiku-4.5` | 100 | 500 | Cheapest Anthropic; +125 cr/1M cache write |
+| Gemini 2.5 Pro | `gemini-2.5-pro` | 125 | 1000 | Good reasoning at moderate cost |
+| Gemini 3.5 Flash | `gemini-3.5-flash` | 150 | 900 | Better via agy CLI |
+| GPT-5.3-Codex | `gpt-5.3-codex` | 175 | 1400 | Code-specialist, high output cost |
+| Gemini 3.1 Pro | `gemini-3.1-pro` | 200 | 1200 | Preview; long ctx doubles cost above 200K |
+| GPT-5.4 | `gpt-5.4` | 250 | 1500 | Long ctx doubles above 272K |
+| **Claude Sonnet 4.6** | `claude-sonnet-4.6` | 300 | 1500 | **Copilot default** — best reasoning; +375 cr/1M cache write |
+| Claude Sonnet 4.5 | `claude-sonnet-4.5` | 300 | 1500 | Prefer 4.6 (same price, newer) |
+| Claude Opus 4.8 | `claude-opus-4.8` | 500 | 2500 | Highest Anthropic quality; +625 cr/1M cache write |
+| Claude Opus 4.7 | `claude-opus-4.7` | 500 | 2500 | Same price as Opus 4.8; prefer 4.8 |
+| Claude Opus 4.6 | `claude-opus-4.6` | 500 | 2500 | Same price as Opus 4.8 |
+| GPT-5.5 | `gpt-5.5` | 500 | 3000 | Very expensive output; avoid unless justified |
+| Claude Fable 5 | `claude-fable-5` | 1000 | 5000 | **UNAVAILABLE** — currently withdrawn |
 
 > [!WARNING]
-> **Model identifiers use dots not dashes** — `claude-sonnet-4.6` not `claude-sonnet-4-6`. Identifiers change with Copilot CLI updates — run `copilot -i "list models"` or check the interactive model selector to confirm current names before any high-multiplier run.
->
-> **Deprecated (do not use):** `claude-sonnet-4` (deprecated May 7), `gpt-5.2` / `gpt-5.2-codex` (deprecated). GPT-4.1 deprecation upcoming.
+> **Model identifiers use dots not dashes in version numbers** — `claude-sonnet-4.6` not `claude-sonnet-4-6`. Verify current identifiers with `/model` in an interactive session before any expensive run. Deprecated: `gpt-4.1`, `gpt-4o`, `claude-sonnet-4`, `gpt-5.2`/`gpt-5.2-codex`.
 
 ---
 
@@ -154,7 +179,7 @@ Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run i
 - **Fix**: Run commands sequentially and verify output size with `wc -l`.
 
 ### 🧩 Force Agent Behavior & Model
-Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools. **Strictly use gpt-5-mini as the default model.**
+Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools. Default to `gpt-5-mini` for cost efficiency; use `mai-code-1-flash` for code tasks where quality matters.
 
 ### 4. 💡 Improve Quality
 To dramatically improve review results, add:
@@ -165,33 +190,36 @@ To dramatically improve review results, add:
 ## 💰 AI Credits & Cost Discipline
 
 > [!CAUTION]
-> **As of June 1, 2026, GitHub Copilot moves to AI Credits (per-token billing).** 1 Credit = $0.01. Credits do NOT roll over monthly. When credits are exhausted, Copilot stops — there is no fallback model. Set your additional-spend cap to $0 in GitHub billing settings to hard-stop at your monthly allotment.
+> **AI Credits billing (effective June 1, 2026): all models consume credits at per-token rates.** 1 Credit = $0.01 USD. Credits do NOT roll over monthly. When credits are exhausted, Copilot stops — no fallback model. Set additional-spend cap to $0 in GitHub billing settings to hard-stop at your allotment.
 >
-> **`gpt-5-mini`, `gpt-4.1`, and `gpt-4o` remain included models (no credit cost).** Annual plan subscribers stay on PRU-based pricing until their plan expires, then roll to the new Credit model. Code completions and Next Edit Suggestions never consume credits.
+> **Code completions and Next Edit Suggestions are excluded — still unlimited for paid plans.** Annual plan subscribers stay on legacy PRU pricing until their plan expires.
 
-### Credit Cost by Tier
+### Monthly Credit Allotments
 
-| Tier | Credits/month | Overage |
+| Plan | $/month | Credits/month | Notes |
+|:---|:---|:---|:---|
+| Copilot Pro | $10 | 1,000 | Individual |
+| Copilot Pro+ | $39 | 3,900 | Individual |
+| Copilot Business | $19/user | 1,900 (pooled) | Business (promotional: 3,000 Jun–Aug 2026) |
+| Copilot Enterprise | $39/user | 3,900 (pooled) | Enterprise (promotional: 7,000 Jun–Aug 2026) |
+
+### Model Strategy
+
+| Use case | Model | Reasoning |
 |:---|:---|:---|
-| Copilot Pro ($10/mo) | 1,000 | Optional, per credit |
-| Copilot Pro+ ($39/mo) | 3,900 | Optional, per credit |
-| Business ($19/user/mo) | $19 worth (pooled) | Optional |
+| Heartbeat / connectivity check | `gpt-5.4-nano` | Cheapest (20 cr/1M in) |
+| Default / high-frequency tasks | `gpt-5-mini` | 25 cr/1M — best routine default |
+| Code analysis / code review | `mai-code-1-flash` | 75 cr/1M — Microsoft claims Sonnet-level quality for code at 4× lower cost |
+| Claude quality, cost-efficient | `claude-haiku-4.5` | 100 cr/1M — best Claude reasoning per credit |
+| Complex reasoning / multi-file generation | `claude-sonnet-4.6` | 300 cr/1M — Copilot's default; best for nuanced work |
+| Critical / highest-quality tasks only | `claude-opus-4.8` | 500 cr/1M — 5× more than Sonnet; justify before using |
+| Avoid | `gpt-5.5` (long ctx), `claude-fable-5` | Extremely expensive; Fable 5 currently unavailable |
 
-### Strategy by Cost Tier
-
-| Model | Cost | Use when |
-|:---|:---|:---|
-| `gpt-5-mini`, `gpt-4.1`, `gpt-4o` | Included | Default — always prefer |
-| `claude-haiku-4.5` | Low credits | When Claude quality needed cheaply |
-| `gpt-5.4`, `gpt-5.4-mini` | Moderate credits | Moderate quality step-up |
-| `claude-sonnet-4.6` | High credits | Complex reasoning, multi-file generation |
-| `claude-opus-4.7`, `claude-opus-4.8` | Highest credits | Critical tasks only |
-
-### Rules for Credit-Consuming Models
+### Rules for All Model Calls (not just premium)
 
 1. **Plan before calling; batch for output quality.** Two distinct reasons to minimize requests:
-   - **Planning** reduces wasted tokens — a well-specified prompt avoids correction requests, which each re-pay the full context cost. Think through requirements before dispatching.
-   - **Batching** improves coherence and reduces round-trips — a single call generating 7 files produces internally consistent output that 7 separate calls won't. Under AI Credits the total token cost is the same either way, but the quality and latency are better batched.
+   - **Planning** reduces wasted tokens — a well-specified prompt avoids correction requests that each re-pay full context cost.
+   - **Batching** improves coherence — one call generating 7 files produces internally consistent output that 7 separate calls won't.
 2. **Use structured output delimiters** so one response parses into multiple files:
    ```
    ===FILE: [relative/path/to/file]===
@@ -199,9 +227,9 @@ To dramatically improve review results, add:
    ===ENDFILE===
    ```
 3. **Verify delimiter coverage before calling.** Count expected `===FILE:===` markers in your prompt — confirm the same count appears in output before parsing.
-4. **No follow-up requests for minor gaps.** Fill small omissions yourself. Only make a second high-multiplier request if a whole file is entirely missing.
-5. **Heartbeat with `gpt-5-mini`.** Run the heartbeat against the cheapest model only — it verifies connectivity without burning credits.
-6. **Do NOT background (`&`) high-multiplier calls.** Large prompts can silently produce empty output in background processes. Run foreground and verify with `wc -l` (expect 200+ lines for multi-file output).
+4. **No follow-up requests for minor gaps.** Fill small omissions yourself. Only make a second high-cost request if a whole file is entirely missing.
+5. **Heartbeat with `gpt-5.4-nano` or `gpt-5-mini`.** Run connectivity checks against the cheapest model — verifies Copilot CLI is working without spending meaningful credits.
+6. **Do NOT background (`&`) expensive model calls.** Large prompts can silently produce empty output in background processes. Run foreground and verify with `wc -l` (expect 200+ lines for multi-file output).
 
 ### Premium Model Invocation Pattern
 
