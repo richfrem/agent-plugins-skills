@@ -2312,54 +2312,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/token-stream-schema.md",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/references/token-stream-schema.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/architecture.md",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/references/architecture.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/diagrams/rsvp-reading-flow.mmd",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/references/diagrams/rsvp-reading-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/execute.py",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/scripts/execute.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/parse_document.py",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/scripts/parse_document.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/orp_engine.py",
-      "dst": "plugins/dev-utils/skills/rsvp-reading/scripts/orp_engine.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "ADRs/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "dst": "plugins/dev-utils/skills/symlink-manager/references/005_plugin_separation_of_concerns_and_loose_coupling.md",
       "strategy": "symlink",
