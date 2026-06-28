@@ -122,7 +122,7 @@ except ImportError:
 # Directory resolution (plugin-aware)
 # =====================================================
 # Check if resources/ exists in plugin dir (plugin mode)
-_plugin_resources = plugin_root / "resources"
+_plugin_resources = plugin_root / "assets" / "resources"
 if _plugin_resources.exists():
     # Running as a Claude Plugin
     MANIFEST_DIR = plugin_root

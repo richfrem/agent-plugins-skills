@@ -51,8 +51,7 @@ from pathlib import Path
 from datetime import datetime
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
-# scripts/ → adr-management/ → skills/ → adr-manager/
-PLUGIN_ROOT = SCRIPT_DIR.parents[2]
+PLUGIN_ROOT = SCRIPT_DIR.parent  # scripts/ → plugins/dev-utils/
 
 # Import next_number from sibling script
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -75,7 +74,7 @@ def _find_project_root() -> Path:
 PROJECT_ROOT = _find_project_root()
 # Matches next_number.py ARTIFACT_TYPES["adr"]["directory"]
 ADR_DIR = PROJECT_ROOT / "ADRs"
-TEMPLATE_PATH = PLUGIN_ROOT / "templates" / "adr-template.md"
+TEMPLATE_PATH = PLUGIN_ROOT / "assets" / "templates" / "adr-template.md"
 
 
 def create_adr(title: str, context: str = "", decision: str = "", 

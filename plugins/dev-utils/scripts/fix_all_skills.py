@@ -54,7 +54,7 @@ def find_skill_scripts_folders(repo_root: Path) -> list[Path]:
 
 def main() -> int:
     repo_root = find_repo_root()
-    bulk_fixer = repo_root / "plugins" / "link-checker" / "scripts" / "bulk_symlink_fixer.py"
+    bulk_fixer = repo_root / "plugins" / "dev-utils" / "scripts" / "bulk_symlink_fixer.py"
 
     if not bulk_fixer.exists():
         print(f"Error: bulk_symlink_fixer.py not found at {bulk_fixer}")

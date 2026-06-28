@@ -2270,20 +2270,8 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/reference.md",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/reference.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/dev-utils/references/acceptance-criteria.md",
       "dst": "plugins/dev-utils/skills/convert-mermaid/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -2378,12 +2366,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/hf-upload/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/dev-utils/scripts/hf_config.py",
       "dst": "plugins/dev-utils/skills/hf-upload/scripts/hf_config.py",
       "strategy": "symlink",
@@ -2434,12 +2416,6 @@
     {
       "src": "plugins/dev-utils/references/acceptance-criteria.md",
       "dst": "plugins/dev-utils/skills/adr-management/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/adr-management/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -2498,12 +2474,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/hf-init/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/dev-utils/scripts/hf_init.py",
       "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_init.py",
       "strategy": "symlink",
@@ -2530,12 +2500,6 @@
     {
       "src": "plugins/dev-utils/references/per-user-tasks-default.md",
       "dst": "plugins/dev-utils/skills/task-agent/references/per-user-tasks-default.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -2790,6 +2754,42 @@
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/validate_phase_gate.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/skills/adr-management/SKILL.md",
+      "dst": "plugins/dev-utils/commands/adr-management.md",
+      "strategy": "symlink",
+      "description": "Command alias \u2192 adr-management skill"
+    },
+    {
+      "src": "plugins/dev-utils/skills/convert-mermaid/SKILL.md",
+      "dst": "plugins/dev-utils/commands/convert-mermaid.md",
+      "strategy": "symlink",
+      "description": "Command alias \u2192 convert-mermaid skill"
+    },
+    {
+      "src": "plugins/dev-utils/skills/hf-init/SKILL.md",
+      "dst": "plugins/dev-utils/commands/hf-init.md",
+      "strategy": "symlink",
+      "description": "Command alias \u2192 hf-init skill"
+    },
+    {
+      "src": "plugins/dev-utils/skills/hf-upload/SKILL.md",
+      "dst": "plugins/dev-utils/commands/hf-upload.md",
+      "strategy": "symlink",
+      "description": "Command alias \u2192 hf-upload skill"
+    },
+    {
+      "src": "plugins/dev-utils/skills/coding-conventions-agent/SKILL.md",
+      "dst": "plugins/dev-utils/agents/coding-conventions-agent.md",
+      "strategy": "symlink",
+      "description": "Agent alias \u2192 coding-conventions-agent skill"
+    },
+    {
+      "src": "plugins/dev-utils/skills/link-checker-agent/SKILL.md",
+      "dst": "plugins/dev-utils/agents/link-checker-agent.md",
+      "strategy": "symlink",
+      "description": "Agent alias \u2192 link-checker-agent skill"
     }
   ]
 }
