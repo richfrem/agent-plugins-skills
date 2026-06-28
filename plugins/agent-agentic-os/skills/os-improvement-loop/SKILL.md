@@ -821,6 +821,7 @@ durable long-term knowledge about the user, project, and working patterns.
 3. Add/update pointer in `memory/MEMORY.md`
 
 **Checklist — ask before closing:**
+- [ ] Are there unhandled friction events from this cycle? → A loop **cannot close** while unhandled friction exists. Every friction event must be fixed, logged as Map Debt, or escalated before `loop.close` is emitted.
 - [ ] Did the user give explicit or implicit feedback on my approach? → `feedback_*.md`
 - [ ] Were structural decisions made (skills moved, plugins renamed, patterns adopted)? → `project_*.md`
 - [ ] Were there surprising findings that will matter next session? → `project_*.md` or `feedback_*.md`
