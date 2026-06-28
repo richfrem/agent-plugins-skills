@@ -18,39 +18,37 @@ import sys
 import json
 import re
 import os
+import fcntl
+
+try:
+    import yaml
+except ImportError:
+    print("ERROR: PyYAML not installed. Run: pip install pyyaml", file=sys.stderr)
+    sys.exit(1)
 
 LOOP_STATE_FILE = ".claude/agent-loop-state.local.md"
 
 
-# Parse simple key: value YAML frontmatter between the two --- delimiters
+# Parse YAML frontmatter using pyyaml for correctness (handles comments, quotes, types)
 def parse_frontmatter(content: str) -> dict:
     """
     Extract YAML frontmatter key-value pairs from a markdown string.
 
-    Supports only simple `key: value` lines; nested YAML is not parsed.
+    Uses yaml.safe_load for correct handling of comments, quoted values, and booleans.
 
     Args:
         content: Full file contents including frontmatter delimiters.
 
     Returns:
-        Dictionary mapping frontmatter keys to their string values.
+        Dictionary mapping frontmatter keys to their parsed values.
     """
-    lines = content.splitlines()
-    in_fm = False
-    fm_count = 0
-    result: dict = {}
-    for line in lines:
-        if line.strip() == "---":
-            fm_count += 1
-            in_fm = fm_count == 1
-            if fm_count == 2:
-                in_fm = False
-            continue
-        if in_fm:
-            m = re.match(r'^(\w+):\s*(.*)', line)
-            if m:
-                result[m.group(1)] = m.group(2).strip()
-    return result
+    m = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+    if not m:
+        return {}
+    try:
+        return yaml.safe_load(m.group(1)) or {}
+    except yaml.YAMLError:
+        return {}
 
 
 # Extract the body text that follows the closing --- of the frontmatter block
@@ -100,12 +98,13 @@ def main() -> None:
     fm = parse_frontmatter(content)
     iteration_str = fm.get("iteration", "")
     max_iterations_str = fm.get("max_iterations", "")
-    closure_done = fm.get("closure_done", "")
-    pattern = fm.get("pattern", "")
-
-    if closure_done == "true":
+    closure_done = fm.get("closure_done", False)
+    # yaml.safe_load parses 'true' as bool True; treat both bool True and str 'true'
+    if closure_done is True or str(closure_done).lower() == "true":
         os.remove(LOOP_STATE_FILE)
         sys.exit(0)
+
+    pattern = fm.get("pattern", "")
 
     if not re.match(r'^\d+$', iteration_str):
         print(json.dumps({
@@ -139,20 +138,29 @@ def main() -> None:
         }))
         sys.exit(0)
 
-    # Closure not done — block exit and increment iteration
-    prompt_text = get_body(content)
-    next_iteration = iteration + 1
+    # Closure not done — acquire exclusive lock, increment iteration, release
+    # This prevents TOCTOU races when multiple hook invocations fire concurrently
+    with open(LOOP_STATE_FILE, "r+") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        content = f.read()
+        fm = parse_frontmatter(content)  # re-parse under lock for freshness
+        iteration_str = fm.get("iteration", "0")
+        if not re.match(r'^\d+$', str(iteration_str)):
+            iteration_str = "0"
+        next_iteration = int(iteration_str) + 1
+        new_content = re.sub(
+            r'^iteration: .*',
+            f'iteration: {next_iteration}',
+            content,
+            flags=re.MULTILINE,
+        )
+        tmp_path = f"{LOOP_STATE_FILE}.tmp.{os.getpid()}"
+        with open(tmp_path, "w") as tmp:
+            tmp.write(new_content)
+        os.replace(tmp_path, LOOP_STATE_FILE)
+        # fcntl lock released on f.close() via context manager
 
-    new_content = re.sub(
-        r'^iteration: .*',
-        f'iteration: {next_iteration}',
-        content,
-        flags=re.MULTILINE,
-    )
-    tmp_path = f"{LOOP_STATE_FILE}.tmp.{os.getpid()}"
-    with open(tmp_path, "w") as f:
-        f.write(new_content)
-    os.replace(tmp_path, LOOP_STATE_FILE)
+    prompt_text = get_body(content)
 
     print(json.dumps({
         "decision": "block",
