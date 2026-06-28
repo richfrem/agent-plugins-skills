@@ -4,5 +4,7 @@
   {"prompt": "Give me a full L5 audit report for the math-helper plugin — check all 39 points.", "should_trigger": true},
   {"prompt": "Analyze the agent-loops plugin and extract its design patterns and reusable techniques.", "should_trigger": false},
   {"prompt": "Audit my plugin for structural compliance — validate plugin.json and directory layout.", "should_trigger": false},
-  {"prompt": "Find broken path references in this plugin's skill files.", "should_trigger": false}
+  {"prompt": "Find broken path references in this plugin's skill files.", "should_trigger": false},
+  {"prompt": "Run self-audit to regression test the agent-scaffolders plugin using the gold-standard and flawed fixtures.", "should_trigger": false, "note": "discriminator: self-audit, not L5 audit — internal regression not maturity review"},
+  {"prompt": "Audit my plugin — validate its structure and check plugin.json for compliance.", "should_trigger": false, "note": "discriminator: audit-plugin (L1), not L5 — no maturity matrix requested"}
 ]

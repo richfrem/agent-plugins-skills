@@ -8,8 +8,7 @@ allowed-tools: Bash, Read, Write, Glob, Grep
 # Plugin Auditor
 
 Performs comprehensive validation of a Claude Code plugin against structure standards,
-naming conventions, component requirements, and security best practices. Uses the
-`plugin-validator` agent for deep validation, supported by component-specific scripts.
+naming conventions, component requirements, and security best practices.
 
 ---
 
@@ -22,31 +21,38 @@ Establish the plugin root:
 
 ---
 
-## Step 2: Run plugin-validator Agent
+## Step 2: Run Component Validation Scripts
 
-> **Cross-plugin dependency**: The `plugin-validator` agent used in this step is defined in the
-> `agent-scaffolders` plugin, not this plugin. It must be installed for this step to work.
-> See `../CONNECTORS.md` for the dependency declaration and fallback instructions.
+Run the scripts bundled in this plugin to validate the target plugin's components.
+All scripts are in the `agent-scaffolders` plugin's own `scripts/` directory.
 
-Trigger the `plugin-validator` agent for comprehensive validation:
-
-```
-"Validate the plugin at <path>"
+**Validate agent files:**
+```bash
+python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
 ```
 
-The agent checks all 10 categories automatically:
-1. Manifest (`./././././././././././././plugin.json`) -- JSON syntax, required `name` field, kebab-case
-2. Directory structure -- components at root, not inside `.claude-plugin/`
-3. Commands (`commands/**/*.md`) -- frontmatter, `description`, `argument-hint`, `allowed-tools`
-4. Agents (`agents/**/*.md`) -- `name`, `description` with `<example>` blocks, `model`, `color`
-5. Skills (`skills/*/SKILL.md`) -- frontmatter, `name`, `description`, supporting directories
-6. Hooks (`hooks/hooks.json`) -- JSON syntax, valid event names, matcher + hooks array
-7. MCP configuration (`.mcp.json`) -- server type, required fields, HTTPS enforcement
-8. File organization -- README.md, .gitignore, no node_modules or .DS_Store
-9. Security -- no hardcoded credentials, MCP uses HTTPS/WSS, no secrets in examples
-10. Positive findings -- note what's done well, not just what's broken
+**Validate hooks.json schema:**
+```bash
+python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
+```
 
-**Output format from plugin-validator:**
+**Test a hook script directly:**
+```bash
+python ${CLAUDE_PLUGIN_ROOT}/scripts/test_hook.py \
+  --hook hooks/scripts/validate.py \
+  --event PreToolUse \
+  --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
+```
+
+**Lint hook scripts:**
+```bash
+python ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
+```
+
+Checks performed by validate_agent.py: frontmatter structure, required fields (name/description/model/color),
+name format (3-50 chars, lowercase + hyphens), `<example>` blocks in description, system prompt length.
+
+**Output format:**
 ```
 ## Plugin Validation Report
 ### Plugin: [name] | Location: [path]
@@ -60,38 +66,7 @@ The agent checks all 10 categories automatically:
 
 ---
 
-## Step 3: Run Component-Specific Scripts
-
-After plugin-validator, run targeted scripts for detailed checks:
-
-**Validate each agent file:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/validate_agent.py agents/my-agent.md
-```
-Checks: frontmatter structure, required fields (name/description/model/color), name format
-(3-50 chars, lowercase + hyphens), description has `<example>` blocks, system prompt
-length (minimum 20 chars, recommended 500-3,000).
-
-**Validate hooks.json schema:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/validate_hook_schema.py hooks/hooks.json
-```
-Checks: JSON syntax, valid event names, each hook has `matcher` + `hooks` array,
-hook type is `command` or `prompt`, command hooks reference existing scripts with
-`${CLAUDE_PLUGIN_ROOT}`.
-
-**Test a hook script directly:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/test_hook.py \
-  --hook hooks/scripts/validate.py \
-  --event PreToolUse \
-  --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
-```
-
-**Lint hook scripts for common issues:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/../agent-scaffolders/scripts/hook_linter.py hooks/
-```
+## Step 3: Additional Manual Checks
 
 ---
 
@@ -117,10 +92,12 @@ jq . ./././././././././././././plugin.json
 grep -rn "password\|api_key\|secret\|token" --include="*.md" --include="*.json" --include="*.sh" .
 ```
 
-**${CLAUDE_PLUGIN_ROOT} portability:**
+**Portability check:**
 ```bash
-# Ensure no hardcoded paths in hook commands or MCP config
+# No hardcoded paths in hook commands or MCP config
 grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
+# No cross-plugin sibling paths
+grep -rn "\.\./\.\." --include="*.md" --include="*.json" .
 ```
 
 **Naming conventions:**
