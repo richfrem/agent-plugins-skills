@@ -354,6 +354,7 @@ print(json.dumps(hits[0]) if hits else '')
    - Last session log: `context/memory/YYYY-MM-DD.md`
    - Last retrospective surveys: `context/memory/retrospectives/` (most recent per agent)
    - `context/events.jsonl` last 100 lines for friction patterns from prior cycle
+   - `plugins/<active-plugin>/references/map-debt.md` — open Map Debt entries; surface any with `Repeat: YES` as the first priority before writing the strategy packet
 2. **ORCHESTRATOR answers before writing any strategy packet:**
    - What does the improvement ledger show for this target's score trajectory? (flat = try a different approach; declining = revert last change)
    - Is the north star completion rate regressing 2+ sessions in a row? (if yes, trigger Triple-Loop Retrospective before this cycle)
@@ -549,6 +550,24 @@ On **DISCARD** verdict:
 ---
 
 ## Stage 4: Mandatory Loop Close (Every Cycle — No Exceptions)
+
+### 4.0 Friction Resolution Gate
+
+Before `loop.close` may be emitted, ORCHESTRATOR must verify all friction events from this
+cycle are resolved. A loop cannot close with unhandled friction.
+
+```bash
+# Read friction events for this cycle
+python "$KERNEL_PY" read_events --type friction --correlation-id "$CYCLE_ID"
+```
+
+For each friction event, verify exactly one resolution exists:
+- Fixed and Map updated (`friction.resolved` with `outcome: FIX`)
+- Logged as Map Debt (`friction.resolved` with `outcome: MAP_DEBT`)
+- Escalated to user (`friction.resolved` with `outcome: ESCALATE`)
+
+If any friction event has no corresponding `friction.resolved`, do **not** emit `loop.close`.
+Resolve or escalate before proceeding to 4.1.
 
 ### 4.1 Emit loop.close
 
@@ -821,7 +840,6 @@ durable long-term knowledge about the user, project, and working patterns.
 3. Add/update pointer in `memory/MEMORY.md`
 
 **Checklist — ask before closing:**
-- [ ] Are there unhandled friction events from this cycle? → A loop **cannot close** while unhandled friction exists. Every friction event must be fixed, logged as Map Debt, or escalated before `loop.close` is emitted.
 - [ ] Did the user give explicit or implicit feedback on my approach? → `feedback_*.md`
 - [ ] Were structural decisions made (skills moved, plugins renamed, patterns adopted)? → `project_*.md`
 - [ ] Were there surprising findings that will matter next session? → `project_*.md` or `feedback_*.md`

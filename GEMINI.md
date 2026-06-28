@@ -159,7 +159,9 @@ os-clean-locks, todo-check, optimize-agent-instructions, self-evolution
 **Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
 agentic-os-setup, os-health-check
 
-**Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`, `os-skill-improvement`
+**Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`
+
+**os-skill-improvement**: exists as a methodology/reference skill — **do not delete**. Prefer `os-improvement-loop` for active orchestration unless specifically improving skill routing methodology.
 
 ---
 
@@ -249,6 +251,9 @@ Define success criteria first. For evals: write `evals.json` routing criteria be
 
 ## Coding Rules (always applied)
 
+- **Friction = self-evolution event**: Any workaround, bypass, guess, or user correction requires fix / Map Debt / escalation before claiming done. Output the `PRE-COMPLETION GATE` block. Full rule: `.agent/rules/self-evolution-policy.md`
+- **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
+- **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/skill-deletion-guard.md`. If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
 - **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime
 - **ADR-002**: Within-plugin multi-skill script sharing via hub-and-spoke (plugin root `scripts/`)
 - **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files

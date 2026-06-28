@@ -85,34 +85,39 @@ as a self-evolution event. Silent bypass is a protocol violation.
 
 ### Pre-Completion Self-Evolution Gate
 
-Before claiming a task is complete, the agent must answer:
+Before claiming a task is complete, output this block verbatim:
 
-1. Did any script, skill, sub-agent, command, selector, eval, or workflow fail?
-2. Did I bypass or avoid an existing capability?
-3. Did I use a workaround?
-4. Did I guess because repo guidance was unclear?
-5. Did the user correct me on a repeatable process issue?
-6. Did I notice something that should be fixed for the next run?
+```
+PRE-COMPLETION GATE:
+  1. Did any existing capability fail, get bypassed, or get manually replaced?  [YES/NO — 1 line if YES]
+  2. Did I guess, assume, or get corrected on a repeatable process?              [YES/NO — 1 line if YES]
+  3. Did I notice something the next agent will hit again if not fixed?          [YES/NO — 1 line if YES]
 
-If any answer is YES, the agent must do one of:
-- Fix the underlying artifact now and update The Map.
-- Log unresolved Map Debt with evidence and next action.
-- Escalate if outside allowed boundaries.
+If any YES: action taken → FIX / MAP_DEBT / ESCALATE
+```
 
-The task is not complete until this gate is satisfied.
+The block must be emitted as literal text, not silent introspection. The task is not complete
+until every YES has a declared action.
 
 ---
 
 ### Map Debt
 
-If friction is real but cannot be fixed immediately, record it as Map Debt in the evolution log.
+If friction is real but cannot be fixed immediately, record it as Map Debt.
+
+Map Debt lives in `<plugin>/references/map-debt.md` — a working queue separate from the
+evolution log. The evolution log is append-only audit history. Map Debt is mutable: entries
+are resolved, aged, or escalated over time. Do not conflate the two.
 
 Each Map Debt entry must include:
-- Date
+- Logged date (`YYYY-MM-DD`)
 - Artifact affected (file path or skill slug)
 - Friction observed (one sentence)
 - Why it was not fixed now
 - Recommended fix
 - Evidence or reproduction step
 - Severity: S / M / L
-- Repeat: YES / NO (repeat = must escalate on next encounter, not defer again)
+- Repeat: YES / NO
+
+**Aging rule:** entries older than 3 cycles without resolution auto-escalate on the next run.
+**Repeat = YES:** must escalate on next encounter — no further deferral permitted.
