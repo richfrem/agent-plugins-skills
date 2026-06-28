@@ -53,11 +53,15 @@ def test_terminate_with_grace_kills_slow_process():
 
 
 def test_run_containerized_splits_mounts(monkeypatch):
-    """run_containerized must apply :ro suffix to read-only paths."""
+    """run_containerized must apply :ro suffix to read-only paths.
+
+    The cleanup call (_cleanup_stale_containers via subprocess.run→Popen) fires before
+    the actual container launch, so we search all captured calls for the volume mount args.
+    """
     calls = []
     monkeypatch.setattr(subprocess, "Popen", lambda cmd, **kw: calls.append(cmd) or
                         type("P", (), {"communicate": lambda s, **k: (b"", b""),
-                                       "returncode": 0})())
+                                       "returncode": 0, "poll": lambda s: 0})())
     try:
         SR.run_containerized(
             ["echo", "test"], "sess-1", "disp-1",
@@ -67,11 +71,16 @@ def test_run_containerized_splits_mounts(monkeypatch):
         )
     except Exception:
         pass
-    if calls:
-        cmd_str = " ".join(calls[0])
-        assert "/read/path:/read/path:ro" in cmd_str
-        assert "/write/path:/write/path" in cmd_str
-        assert "/write/path:/write/path:ro" not in cmd_str
+    # Find the container run command (not the cleanup ps/rm commands)
+    container_cmd = next(
+        (c for c in calls if any("/read/path" in str(a) or "/write/path" in str(a) for a in c)),
+        None,
+    )
+    assert container_cmd is not None, f"Container launch not found in calls: {calls}"
+    cmd_str = " ".join(container_cmd)
+    assert "/read/path:/read/path:ro" in cmd_str
+    assert "/write/path:/write/path" in cmd_str
+    assert "/write/path:/write/path:ro" not in cmd_str
 
 
 def test_sign_and_verify_envelope_roundtrip():

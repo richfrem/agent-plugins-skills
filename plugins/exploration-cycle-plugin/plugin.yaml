@@ -9,11 +9,7 @@ platforms:
   - windows
 provides_tools:
   - business_requirements_capture_execute
-  - exploration_handoff_execute
   - exploration_optimizer_execute
-  - exploration_orchestrator_execute
-  - exploration_session_brief_execute
-  - prototype_builder_execute
   - user_story_capture_execute
 skills:
   - business-requirements-capture

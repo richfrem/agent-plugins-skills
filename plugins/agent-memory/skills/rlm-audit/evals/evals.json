@@ -1,26 +1,11 @@
 [
-  {
-    "prompt": "Audit the RLM cache coverage for my project.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Check what files are missing from the RLM cache.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Show me which documentation files haven't been summarized yet.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Generate a CSV of missing files in the RLM semantic cache.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Distill all my project documentation into the RLM cache.",
-    "should_trigger": false
-  },
-  {
-    "prompt": "Remove stale entries from the RLM cache.",
-    "should_trigger": false
-  }
+  {"prompt": "Audit the RLM cache coverage for my project.", "should_trigger": true},
+  {"prompt": "Check what files are missing from the RLM cache.", "should_trigger": true},
+  {"prompt": "Show me which documentation files haven't been summarized yet.", "should_trigger": true},
+  {"prompt": "Generate a CSV of missing files in the RLM semantic cache.", "should_trigger": true},
+  {"prompt": "Report on RLM cache coverage — how complete is my summary ledger?", "should_trigger": true},
+  {"prompt": "Distill all my project documentation into the RLM cache.", "should_trigger": false},
+  {"prompt": "Remove stale entries from the RLM cache.", "should_trigger": false},
+  {"prompt": "Update the stale summaries in the RLM cache after my refactor", "should_trigger": false},
+  {"prompt": "Inject a new summary for auth.py into the RLM tool cache", "should_trigger": false}
 ]

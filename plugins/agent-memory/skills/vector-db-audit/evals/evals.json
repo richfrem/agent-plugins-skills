@@ -1,26 +1,11 @@
 [
-  {
-    "prompt": "Audit the vector database coverage for my project.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "What files are missing from the ChromaDB vector index?",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Check vector DB gaps and generate a CSV of missing documents.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Show me which files haven't been vectorized yet.",
-    "should_trigger": true
-  },
-  {
-    "prompt": "Add new documents to the vector database.",
-    "should_trigger": false
-  },
-  {
-    "prompt": "Remove orphaned chunks from ChromaDB.",
-    "should_trigger": false
-  }
+  {"prompt": "Audit the vector database coverage for my project.", "should_trigger": true},
+  {"prompt": "What files are missing from the ChromaDB vector index?", "should_trigger": true},
+  {"prompt": "Check vector DB gaps and generate a CSV of missing documents.", "should_trigger": true},
+  {"prompt": "Show me which files haven't been vectorized yet.", "should_trigger": true},
+  {"prompt": "Vector DB coverage report — what percentage of the repo is indexed?", "should_trigger": true},
+  {"prompt": "Add new documents to the vector database.", "should_trigger": false},
+  {"prompt": "Remove orphaned chunks from ChromaDB.", "should_trigger": false},
+  {"prompt": "Index my new plugin files into the vector database", "should_trigger": false},
+  {"prompt": "Run a full vector-db ingest to rebuild the ChromaDB index", "should_trigger": false}
 ]

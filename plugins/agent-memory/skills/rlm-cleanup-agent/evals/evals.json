@@ -2,7 +2,10 @@
   {"prompt": "clean up the RLM cache after I renamed some files", "should_trigger": true},
   {"prompt": "The RLM ledger has entries for files that no longer exist — prune them", "should_trigger": true},
   {"prompt": "remove stale and orphaned entries from the RLM Summary Ledger after a refactor", "should_trigger": true},
+  {"prompt": "Prune deleted file references from the RLM summary cache", "should_trigger": true},
   {"prompt": "summarize new plugin files into the RLM ledger that are missing", "should_trigger": false},
   {"prompt": "initialize the RLM cache for the first time in this project", "should_trigger": false},
-  {"prompt": "query the RLM ledger to find the summary for a specific file", "should_trigger": false}
+  {"prompt": "query the RLM ledger to find the summary for a specific file", "should_trigger": false},
+  {"prompt": "Check the RLM cache coverage — which files haven't been summarized yet?", "should_trigger": false},
+  {"prompt": "Update stale RLM summaries that have changed since last distillation", "should_trigger": false}
 ]

@@ -66,6 +66,22 @@ from sandbox_runner import verify_envelope
 
 MIN_OUTPUT_CHARS = 500
 
+# Allowlisted env vars passed to each CLI backend subprocess (SEC-006).
+# Keeps credentials scoped to the CLI that actually needs them.
+_BASE_ENV_KEYS: frozenset[str] = frozenset({"PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "TERM"})
+_CLI_ENV_KEYS: dict[str, frozenset[str]] = {
+    "claude": frozenset({"ANTHROPIC_API_KEY", "CLAUDE_API_KEY",
+                         "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"}),
+    "copilot": frozenset({"GITHUB_TOKEN", "GH_TOKEN"}),
+    "gh-copilot": frozenset({"GITHUB_TOKEN", "GH_TOKEN"}),
+}
+
+
+def _build_dispatch_env(cli: str) -> dict[str, str]:
+    """Build a minimal env dict for the CLI subprocess — no credential leakage via prompt injection."""
+    keys = _BASE_ENV_KEYS | _CLI_ENV_KEYS.get(cli, frozenset())
+    return {k: os.environ[k] for k in keys if k in os.environ}
+
 
 def read_file(filepath: str) -> str:
     """Reads a required file. Exits non-zero if missing."""
@@ -234,9 +250,14 @@ def check_dispatch_authorization(
         if actual_hash != row[2]:
             return False, f"Spec hash mismatch for {spec_path}"
 
-    # 5. HMAC envelope verification (timing-safe + nonce dedup)
+    # 5. HMAC envelope verification (timing-safe + in-process nonce dedup)
     if not verify_envelope(envelope, key, nonce_cache):
         return False, "HMAC envelope verification failed (tampered payload or replayed nonce)"
+
+    # 6. Persist nonce to SQLite — prevents cross-invocation replay (SEC-001)
+    from state_engine import record_nonce
+    if not record_nonce(conn, envelope.get("nonce", "")):
+        return False, "Nonce replay rejected (cross-invocation)"
 
     return True, ""
 
@@ -339,6 +360,18 @@ def main() -> None:
         print(f"Error: dispatch authorization failed: {reason}", file=sys.stderr)
         sys.exit(1)
 
+    # SEC-002: --output must match authorized --target-path (prevents path bypass)
+    if args.target_path:
+        output_resolved = Path(args.output).resolve()
+        target_resolved = Path(args.target_path).resolve()
+        if output_resolved != target_resolved:
+            print(
+                f"Error: --output path does not match authorized --target-path "
+                f"({args.output!r} != {args.target_path!r})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
     # 1. Read the agent instructions and strip YAML frontmatter.
     # Frontmatter (---\n...\n---) is metadata, not instructions. Passing it verbatim
     # to CLI tools that treat --- as an argument delimiter (e.g. claude) causes parse failures.
@@ -378,24 +411,32 @@ def main() -> None:
     combined_prompt = f"{full_prompt}\n\n---\n\nInstruction: {args.instruction}"
 
     if args.cli == "claude":
-        # Security: --dangerously-skip-permissions is only applied for Tier 1 (low risk) dispatches.
-        # Tier 2/3 workloads run with standard permissions — the caller must ensure required tool
-        # access is granted before dispatch. See references/architecture.md Rigor Tier table.
+        # --dangerously-skip-permissions only for Tier 1 (low risk) dispatches.
+        # Tier 2/3 run with standard permissions.
         cmd = ["claude", "-p", combined_prompt]
         if args.tier == "1":
             cmd.append("--dangerously-skip-permissions")
         else:
-            # Tier 2/3: no auto permission bypass — agent runs with standard permissions
             print(f"Info: Tier {args.tier} dispatch — not applying --dangerously-skip-permissions. "
                   f"Ensure required tool permissions are granted interactively.", file=sys.stderr)
     elif args.cli == "gh-copilot":
+        # SEC-004: Tier 3 dispatch refused for non-claude CLIs — no equivalent permission control.
+        if args.tier == "3":
+            print("Error: Tier 3 dispatch refused for gh-copilot — "
+                  "no equivalent permission gate. Use out-of-band human approval.", file=sys.stderr)
+            sys.exit(1)
         cmd = ["gh", "copilot", "suggest", "-t", "shell", combined_prompt]
     else:  # copilot (GitHub Copilot standalone CLI)
+        # SEC-004: Tier 3 dispatch refused for non-claude CLIs.
+        if args.tier == "3":
+            print("Error: Tier 3 dispatch refused for copilot — "
+                  "no equivalent permission gate. Use out-of-band human approval.", file=sys.stderr)
+            sys.exit(1)
         cmd = ["copilot", "-p", full_prompt, args.instruction]
         if args.model:
             cmd = ["copilot", "--model", args.model, "-p", full_prompt, args.instruction]
 
-    # 6. Invoke the CLI
+    # 6. Invoke the CLI with a curated env — prevents credential leakage via prompt injection (SEC-006)
     try:
         result = subprocess.run(
             cmd,
@@ -403,6 +444,7 @@ def main() -> None:
             text=True,
             check=True,
             timeout=args.timeout,
+            env=_build_dispatch_env(args.cli),
         )
         output_text = result.stdout
 

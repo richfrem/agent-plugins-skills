@@ -3,7 +3,7 @@
 state_engine.py — SQLite Control Plane for Exploration Cycle Plugin
 DB path: ${CLAUDE_PROJECT_DIR}/context/exploration/active_session.sqlite
 """
-import json, random, re, sqlite3, time, uuid
+import json, random, re, sqlite3, sys, time, uuid
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -119,6 +119,11 @@ CREATE TABLE IF NOT EXISTS policy_decisions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(dispatch_id) REFERENCES dispatches(id)
 );
+
+CREATE TABLE IF NOT EXISTS nonces (
+    nonce TEXT PRIMARY KEY,
+    used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 
@@ -141,8 +146,9 @@ def init_db(db_path: str) -> sqlite3.Connection:
     try:
         conn.execute("ALTER TABLE tasks ADD COLUMN requires_premium BOOLEAN DEFAULT 0")
         conn.commit()
-    except sqlite3.OperationalError:
-        pass  # Column already exists
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" not in str(e).lower():
+            raise
     return conn
 
 
@@ -150,7 +156,7 @@ def init_db(db_path: str) -> sqlite3.Connection:
 def _immediate_transaction(conn: sqlite3.Connection):
     """BEGIN IMMEDIATE with exponential backoff retry (up to MAX_RETRIES).
 
-    ROLLBACK failures are suppressed to avoid masking the original exception (FIX-2).
+    ROLLBACK failures are logged to stderr but do not mask the original exception.
     A safety raise after loop exhaustion makes the error explicit if MAX_RETRIES is 0.
     """
     for attempt in range(MAX_RETRIES):
@@ -163,8 +169,8 @@ def _immediate_transaction(conn: sqlite3.Connection):
             except Exception:
                 try:
                     conn.execute("ROLLBACK")
-                except Exception:
-                    pass  # Don't mask the original exception
+                except Exception as rollback_exc:
+                    sys.stderr.write(f"[state_engine] ROLLBACK failed: {rollback_exc}\n")
                 raise
         except sqlite3.OperationalError as e:
             if "locked" in str(e).lower() and attempt < MAX_RETRIES - 1:
@@ -175,6 +181,16 @@ def _immediate_transaction(conn: sqlite3.Connection):
     raise sqlite3.OperationalError(
         f"Failed to acquire IMMEDIATE transaction after {MAX_RETRIES} retries"
     )
+
+
+def record_nonce(conn: sqlite3.Connection, nonce: str) -> bool:
+    """Persist nonce to prevent cross-invocation replay. Returns False if already used (SEC-001)."""
+    try:
+        with _immediate_transaction(conn) as c:
+            c.execute("INSERT INTO nonces (nonce) VALUES (?)", (nonce,))
+        return True
+    except sqlite3.IntegrityError:
+        return False
 
 
 def create_session(conn: sqlite3.Connection, session_id: str, session_name: str) -> None:
