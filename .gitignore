@@ -93,3 +93,4 @@ context/exploration/active_session.sqlite
 context/exploration/active_session.sqlite-wal
 context/exploration/active_session.sqlite-shm
 context/exploration/.secrets/
+context/events.jsonl
