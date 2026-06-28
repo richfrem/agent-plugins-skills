@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Create a new APM package from scratch for my agent skills.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a fresh APM-native package using the .apm/ source structure.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Start a new agent package in the APM standard format.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Convert my existing plugin to use APM governance.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install my APM package into .agents/ and .claude/ directories.",
+    "should_trigger": false
+  }
+]

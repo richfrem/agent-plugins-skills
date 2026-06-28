@@ -1,1 +1,1 @@
-../../../../scripts/enable_global_routing.py
+../../../scripts/enable_global_routing.py

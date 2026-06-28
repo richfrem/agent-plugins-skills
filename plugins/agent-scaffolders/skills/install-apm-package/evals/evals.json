@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "Install the APM package into my project's runtime directories.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Deploy the APM skills into the .agents/ folder.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Materialize the APM package into .claude/ and .github/ using apm install.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Do a dry run of the APM install to preview what would be deployed.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Compile the APM package into a GEMINI.md top-level context file.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new APM package from scratch.",
+    "should_trigger": false
+  }
+]

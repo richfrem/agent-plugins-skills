@@ -1,1 +1,1 @@
-../../../../scripts/run_server.py
+../../../scripts/run_server.py

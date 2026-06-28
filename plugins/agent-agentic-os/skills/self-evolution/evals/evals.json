@@ -1,0 +1,30 @@
+[
+  {
+    "prompt": "A tool call failed with FileNotFoundError, help me fix and record it so it doesn't happen again.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I used a workaround to get this working because the helper script was broken — update the map.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "The DOM selector stopped finding the target element after a recent UI update.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Log this as a Map Debt entry and update the evolution log.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "A subprocess timed out, patch the helper so it doesn't time out again.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run the improvement loop on the os-eval-runner skill to improve its eval score.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill for my plugin.",
+    "should_trigger": false
+  }
+]

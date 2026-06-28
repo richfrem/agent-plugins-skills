@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Dispatch this code review task to Codex CLI using GPT-5 Codex.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run this refactoring job through the codex binary.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Route this security audit to the OpenAI-compatible endpoint via run_agent.py.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Dispatch this task to the Copilot CLI instead.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run this through the local Gemma model at localhost.",
+    "should_trigger": false
+  }
+]

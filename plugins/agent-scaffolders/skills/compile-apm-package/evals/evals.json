@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Compile the APM package into a GEMINI.md context file for my Gemini project.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate the AGENTS.md for my Codex project from APM primitives.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Merge all skill fragments into a single top-level context document.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Install the APM package into the .agents/ runtime directory.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new APM package from scratch.",
+    "should_trigger": false
+  }
+]

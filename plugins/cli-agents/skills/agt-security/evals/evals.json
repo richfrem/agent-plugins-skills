@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Verify the AGT sandbox is properly configured and environment variables are scrubbed.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Rotate the HMAC key for the local AGT control plane.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Check that the allowed path boundaries are enforcing out-of-bounds access exceptions.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a general security audit on my codebase for OWASP vulnerabilities.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Set up the local Gemma LLM server.",
+    "should_trigger": false
+  }
+]
