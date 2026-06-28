@@ -1,6 +1,6 @@
 {
     "name": "agent-agentic-os",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, multi-agent event bus coordination, and an eval-gated skill improvement system. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
     "author": {
         "name": "Richard Fremmerlid"

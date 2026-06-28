@@ -47,6 +47,7 @@ The execution details are split across modular references:
 - [Stage 3: Decision Logic](references/stage-3-decision.md) — KEEP/DISCARD actions and correction packets.
 - [Stage 4: Loop Close Checklist](references/stage-4-close.md) — Surveys, ledger updates, memory promotion, and retrospectives.
 - [Orchestrator Meta-Survey](references/orchestrator-meta-survey.md) — Meta-evaluation of loop coordination patterns.
+- [Lab Limits](references/lab-limits.md) — Hard caps on iterations, eval sets, and critic invocations per run.
 
 ---
 

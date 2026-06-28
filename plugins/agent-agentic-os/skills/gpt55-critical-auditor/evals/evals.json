@@ -8,7 +8,35 @@
     "should_trigger": true
   },
   {
+    "prompt": "Red-team the eval gate — find ways to force a KEEP without a real score improvement.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit the exploration-cycle-plugin for prompt injection vectors in the dispatch chain.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Check the plugin marketplace for sleeper agent patterns in submitted skills.",
+    "should_trigger": true
+  },
+  {
     "prompt": "Create a new sub-agent for code quality.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Review my code style and suggest improvements.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scan for typos in my SKILL.md files.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run a plugin health check and report stale evals.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Improve the trigger description on my link-checker skill.",
     "should_trigger": false
   }
 ]
