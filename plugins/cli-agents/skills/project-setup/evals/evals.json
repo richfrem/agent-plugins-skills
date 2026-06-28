@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Set up the Claude Code configuration files for my new project.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold the agent configuration for this monorepo — Claude Code and Google ADK.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create CLAUDE.md and .claude/settings.json for my Python backend project.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Install the agent-scaffolders plugin into this project.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill for my plugin.",
+    "should_trigger": false
+  }
+]

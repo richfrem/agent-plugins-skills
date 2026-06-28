@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Test my exploration-cycle skill inside the Microsoft Agent Framework locally.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Validate my plugin manifest for MAF v1.7 compatibility.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Simulate MAF execution for this skill using the local test harness.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Deploy my plugin to Azure Agent Service.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new agent skill from scratch.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Convert my vibe-coded prototype into a Spec Kit specification package.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Transform this undocumented rapid prototype into a certified Superpowers-ready handoff.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run the full vibe-to-speckit pipeline — discovery, behavioral tests, domain extraction, certification.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new feature spec from scratch using Spec Kitty.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Start a new exploration discovery session for my idea.",
+    "should_trigger": false
+  }
+]

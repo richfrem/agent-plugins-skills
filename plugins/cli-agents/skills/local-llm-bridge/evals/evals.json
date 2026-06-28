@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Send this task to the local Gemma model running at localhost:8089.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run this code review against the local LLM directly using cli=llama.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Dispatch a fast subtask to the local LLM — no proxy, no cloud API.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Set up the local LLM server and install the routing proxy daemon.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Route all Claude Code requests through the local model via Mode A proxy.",
+    "should_trigger": false
+  }
+]

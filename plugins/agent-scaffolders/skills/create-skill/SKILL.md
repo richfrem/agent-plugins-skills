@@ -21,7 +21,7 @@ assistant: [triggers create-skill, runs discovery interview, scaffolds directory
 <example>
 <commentary>Negative — user wants to improve an existing skill, not scaffold a new one.</commentary>
 user: "Improve the trigger description for my link-checker skill"
-assistant: [triggers os-skill-improvement, not create-skill]
+assistant: [triggers os-improvement-loop, not create-skill]
 </example>
 
 # create-skill: Skill Scaffolding Executor
@@ -31,7 +31,7 @@ operations, template rendering, name validation, and discovery — then hands of
 the TDD quality gate.
 
 **Scope**: This skill owns *structure*. It does not own *content quality* or *routing accuracy*.
-Those are governed by `os-skill-improvement` (see cross-plugin handoff below).
+Those are governed by `os-improvement-loop` (see cross-plugin handoff below).
 
 ---
 
@@ -110,22 +110,22 @@ Create the confirmed directory structure. Standards enforced by `acceptance-crit
 ## Phase 4: Quality Gate Handoff
 
 ## Dependencies
-- **os-skill-improvement** (agent-agentic-os plugin)
+- **os-improvement-loop** (agent-agentic-os plugin)
 
 > [!TIP]
 > See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 
-**If `os-skill-improvement` is available**, hand off immediately after scaffolding:
+**If `os-improvement-loop` is available**, hand off immediately after scaffolding:
 
 ```
-Invoke os-skill-improvement on the newly scaffolded skill at <path>.
+Invoke os-improvement-loop on the newly scaffolded skill at <path>.
 The RED scenario is: [trigger phrase from Phase 1 discovery].
 Run the RED-GREEN-REFACTOR cycle to verify routing accuracy before shipping.
 ```
 
 **If not available**, advise the user:
 ```
-Scaffold complete. To verify routing accuracy and trigger description quality, ensure **os-skill-improvement** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
+Scaffold complete. To verify routing accuracy and trigger description quality, ensure **os-improvement-loop** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
 ```
 
 ---

@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Set up Gemma 4 12B on my M1 Mac with Metal GPU acceleration.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Install llama-server and configure the routing proxy daemon.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Bootstrap the local LLM inference stack from scratch.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Download a model weight file from HuggingFace.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Send a task to the local Gemma model via the llama backend.",
+    "should_trigger": false
+  }
+]

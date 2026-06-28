@@ -1,1 +1,1 @@
-../../../../scripts/routing_proxy.py
+../../../scripts/routing_proxy.py

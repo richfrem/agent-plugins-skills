@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Download the Gemma 4 GGUF weights from HuggingFace.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Pull a single file from my HuggingFace dataset repository.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Download a folder snapshot from a HuggingFace model repo with exponential backoff.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Upload my fine-tuned model checkpoint to HuggingFace.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Initialize HuggingFace credentials and dataset structure for this project.",
+    "should_trigger": false
+  }
+]

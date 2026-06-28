@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Convert my existing Claude plugin to use APM governance.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add APM package management to my existing plugin without changing its layout.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Migrate my plugin to APM-native format.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a brand new APM package from scratch.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install my APM package into the runtime directories.",
+    "should_trigger": false
+  }
+]

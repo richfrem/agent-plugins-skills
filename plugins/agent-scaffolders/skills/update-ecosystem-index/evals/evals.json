@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Update the ecosystem index in README.md with current plugin and skill counts.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I added a new plugin — refresh the plugin count in the docs.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "The skill count in README.md is out of date, fix it.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit the plugin structure for structural issues.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new plugin.",
+    "should_trigger": false
+  }
+]

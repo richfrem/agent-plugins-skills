@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "I have an idea I want to explore — let's start a discovery session.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let's start a new exploration session for this feature.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "There's an active exploration session in progress, what phase are we in?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build me a React component for a data table.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run the billing audit on my portfolio.",
+    "should_trigger": false
+  }
+]
