@@ -10,6 +10,17 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+## Execution Contract
+
+> **See `references/execution-contract.md` (full rules) and `references/backend-capabilities.md` (backend selection).**
+>
+> Key rules: (1) One backend per task — no silent fallback. (2) Run `output-validator` or
+> `self-critic` when output quality is uncertain. (3) Architecture/high-risk tasks require
+> `architect-review` → `red-team-reviewer` → `debate-synthesizer`. (4) Backend failure →
+> halt and log to `references/map-debt.md`. No workarounds.
+
+---
+
 ## Identity: The Antigravity Sub-Agent Dispatcher (Frontier: Gemini 3.5 Flash+)
 
 You dispatch tasks to Google Gemini frontier models via the `agy` binary.
