@@ -1,0 +1,1 @@
+../../../../references/testing/test-registry-protocol.md
