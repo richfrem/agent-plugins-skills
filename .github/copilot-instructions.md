@@ -157,12 +157,12 @@ os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
 os-clean-locks, todo-check, optimize-agent-instructions, self-evolution
 
+**Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
+
 **Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
 agentic-os-setup, os-health-check
 
 **Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`
-
-**os-skill-improvement**: exists as a methodology/reference skill — **do not delete**. Prefer `os-improvement-loop` for active orchestration unless specifically improving skill routing methodology.
 
 ---
 
