@@ -1,7 +1,8 @@
 ---
 name: create-docker-skill
 plugin: agent-scaffolders
-description: Scaffold an agent skill with Docker runtime support
+description: >
+  Scaffolds an agent skill with a Docker runtime environment. NOT for normal local skills (use `create-skill`) and NOT for Azure hosted agents (use `create-azure-agent`).
 argument-hint: "[skill-name]"
 allowed-tools: Bash, Read, Write
 ---

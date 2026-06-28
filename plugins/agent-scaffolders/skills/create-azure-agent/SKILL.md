@@ -1,7 +1,8 @@
 ---
 name: create-azure-agent
 plugin: agent-scaffolders
-description: Deploy a skill as an Azure AI Foundry hosted agent
+description: >
+  Deploys a skill as an Azure AI Foundry hosted agent. NOT for Docker runtime skills (use `create-docker-skill`) and NOT for MCP server integrations (use `create-mcp-integration`).
 argument-hint: "[skill-dir]"
 allowed-tools: Bash, Write, Read
 ---

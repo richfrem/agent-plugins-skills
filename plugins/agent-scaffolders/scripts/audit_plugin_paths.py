@@ -10,6 +10,8 @@ def load_whitelist(whitelist_path: Path):
     try:
         with open(whitelist_path, 'r') as f:
             data = json.load(f)
+        if isinstance(data, list):
+            return data, {}
         return data.get("global_patterns", []), data.get("file_specific_patterns", {})
     except Exception as e:
         print(f"Error loading whitelist: {e}")

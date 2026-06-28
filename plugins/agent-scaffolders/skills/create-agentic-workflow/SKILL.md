@@ -1,7 +1,8 @@
 ---
 name: create-agentic-workflow
 plugin: agent-scaffolders
-description: Scaffold a GitHub agentic workflow from an existing skill
+description: >
+  Scaffolds a GitHub agentic workflow from an existing skill. NOT for deterministic CI/CD workflows (use `create-github-action`) and NOT for standalone sub-agents (use `create-sub-agent`).
 argument-hint: "[skill-dir] [mode: ide|cicd|both]"
 allowed-tools: Bash, Read, Write
 ---

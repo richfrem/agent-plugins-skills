@@ -1,8 +1,34 @@
 [
-  {"prompt": "Add an MCP server integration for postgres to my plugin.", "should_trigger": true},
-  {"prompt": "Scaffold a .mcp.json entry for the GitHub MCP server.", "should_trigger": true},
-  {"prompt": "Connect my Claude Code plugin to a Slack MCP server over SSE transport.", "should_trigger": true},
-  {"prompt": "Create a new sub-agent that handles database query analysis.", "should_trigger": false},
-  {"prompt": "Scaffold a Docker-based skill for containerized workflows.", "should_trigger": false},
-  {"prompt": "Create a GitHub Actions workflow to deploy the MCP server.", "should_trigger": false}
+  {
+    "prompt": "Add an MCP server integration for postgres to my plugin.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a .mcp.json entry for the GitHub MCP server.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Connect my Claude Code plugin to a Slack MCP server over SSE transport.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent that handles database query analysis.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a Docker-based skill for containerized workflows.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a GitHub Actions workflow to deploy the MCP server.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a brand-new plugin directory",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy a skill as an Azure AI Foundry hosted agent",
+    "should_trigger": false
+  }
 ]

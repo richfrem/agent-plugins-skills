@@ -1,7 +1,8 @@
 ---
 name: create-plugin
 plugin: agent-scaffolders
-description: Scaffold a complete Claude Code plugin from scratch
+description: >
+  Scaffolds a new top-level agent plugin directory. NOT for scaffolding single skills (use `create-skill`) and NOT for adding MCP integrations to existing plugins (use `create-mcp-integration`).
 argument-hint: "[plugin-name]"
 allowed-tools: Bash, Read, Write
 ---

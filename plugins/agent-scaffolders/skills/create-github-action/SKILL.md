@@ -1,7 +1,8 @@
 ---
 name: create-github-action
 plugin: agent-scaffolders
-description: Scaffold a deterministic GitHub Actions CI/CD workflow
+description: >
+  Scaffolds a deterministic GitHub Actions CI/CD workflow YAML. NOT for scaffolding interactive agentic workflows (use `create-agentic-workflow`) and NOT for local event-driven hooks (use `create-hook`).
 argument-hint: "[workflow-type: test|build|deploy|lint|release|security]"
 allowed-tools: Bash, Read, Write
 ---
