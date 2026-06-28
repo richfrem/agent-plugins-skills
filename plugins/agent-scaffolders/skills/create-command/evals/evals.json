@@ -1,8 +1,34 @@
 [
-  {"prompt": "Create a slash command that reviews pull requests.", "should_trigger": true},
-  {"prompt": "Add a /deploy command to my plugin with argument-hint for environment.", "should_trigger": true},
-  {"prompt": "Write a custom command that automates my deploy workflow using $ARGUMENTS.", "should_trigger": true},
-  {"prompt": "Create a new skill that validates link URLs.", "should_trigger": false},
-  {"prompt": "Design a PreToolUse event hook to block dangerous bash commands.", "should_trigger": false},
-  {"prompt": "Scaffold a complete new plugin with skills and commands.", "should_trigger": false}
+  {
+    "prompt": "Create a slash command that reviews pull requests.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add a /deploy command to my plugin with argument-hint for environment.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Write a custom command that automates my deploy workflow using $ARGUMENTS.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new skill that validates link URLs.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Design a PreToolUse event hook to block dangerous bash commands.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a complete new plugin with skills and commands.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new event-driven hook in a plugin",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  }
 ]

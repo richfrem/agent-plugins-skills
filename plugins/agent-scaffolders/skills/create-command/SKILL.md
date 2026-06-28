@@ -2,16 +2,7 @@
 name: create-command
 plugin: agent-scaffolders
 description: >
-  This skill should be used when the user asks to "create a slash command", "add a command",
-  "write a custom command", "define a command with arguments", "create a command that runs
-  bash", "add a /command to my plugin", "use $ARGUMENTS in a command", "set up
-  argument-hint", "create a workflow command", "interactive command", or needs guidance on
-  slash command structure, YAML frontmatter fields, file references, bash execution,
-  command organization, or command best practices. Use this skill whenever Claude Code
-  slash commands are mentioned even without the word "command" -- e.g. "I want a shortcut
-  that reviews PRs" or "automate my deploy workflow" should trigger this.
-  Do NOT use this for hooks (use create-hook), skills (use create-skill), or agents
-  (use create-sub-agent).
+  Scaffolds a new slash command in an existing plugin. NOT for creating event-driven hooks (use `create-hook`) and NOT for standard skills (use `create-skill`).
 allowed-tools: Bash, Read, Write
 ---
 

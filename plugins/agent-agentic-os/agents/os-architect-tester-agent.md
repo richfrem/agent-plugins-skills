@@ -96,15 +96,13 @@ built-in scenario run protocol). Evaluate the output for the declared `expected_
 routing statement matches `expected_route`. Track routing accuracy % across all 5 cases.
 
 **Log to experiment log** after each routing eval batch:
-```bash
-python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
-  --source-type tester \
-  --report temp/test_report_routing_accuracy.md \
-  --session-id "$(date +%Y-%m-%d)-routing-accuracy" \
-  --target os-architect \
-  --triggered-by os-architect-tester \
-  --tags routing-accuracy
-```
+Invoke the `os-experiment-log` skill in `append` mode with the following parameters:
+- **source-type**: `tester`
+- **report**: `temp/test_report_routing_accuracy.md`
+- **session-id**: `"<date>-routing-accuracy"`
+- **target**: `os-architect`
+- **triggered-by**: `os-architect-tester`
+- **tags**: `routing-accuracy`
 
 The experiment log entry uses `result_type: qualitative` and `tags: routing-accuracy`.
 
@@ -141,16 +139,17 @@ ARCHITECT:
 [HANDOFF_BLOCK here]
 ```
 
-### Step 2 — Dispatch to Copilot CLI
+### Step 2 — Dispatch via copilot-cli-agent skill
 
+Invoke the `copilot-cli-agent` skill with:
+- Context: `/dev/null`
+- Prompt file: `temp/test_prompt_<scenario-id>.md`
+- Output: `temp/test_output_<scenario-id>.md`
+- Instruction: `"Run the os-architect intake session exactly as scripted. Adopt the os-architect persona fully."`
+- Model: `claude-sonnet-4.6`
+
+After dispatch, verify output:
 ```bash
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null \
-  temp/test_prompt_<scenario-id>.md \
-  temp/test_output_<scenario-id>.md \
-  "Run the os-architect intake session exactly as scripted. Adopt the os-architect persona fully." \
-  claude-sonnet-4.6
-
 wc -l temp/test_output_<scenario-id>.md  # expect 40+ lines
 ```
 
@@ -205,14 +204,12 @@ Model: claude-sonnet-4.6
 ```
 
 After writing each individual report, and again after the consolidated report:
-```bash
-python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
-  --source-type tester \
-  --report temp/test_report_consolidated.md \
-  --session-id "$(date +%Y-%m-%d)-tester" \
-  --target os-architect \
-  --triggered-by os-architect-tester
-```
+Invoke the `os-experiment-log` skill in `append` mode with the following parameters:
+- **source-type**: `tester`
+- **report**: `temp/test_report_consolidated.md`
+- **session-id**: `"<date>-tester"`
+- **target**: `os-architect`
+- **triggered-by**: `os-architect-tester`
 This persists qualitative AC pass/fail results to `context/experiment-log/index.md`.
 
 ## Running Multiple Scenarios
@@ -229,15 +226,9 @@ recommend updating `os-architect-agent.md` before deploying.
 After tester scenarios complete, hand off to `os-evolution-verifier` for the extended
 adversarial suite (8 scenarios including hallucination, gate bypass, and confidence model tests):
 
-```bash
-# Append tester results to experiment log first
-python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
-  --report temp/test_report_consolidated.md \
-  --triggered-by os-architect-tester
-
+1. **Append tester results to experiment log first**: Invoke the `os-experiment-log` skill in `append` mode with parameters `report=temp/test_report_consolidated.md` and `triggered-by=os-architect-tester`.
 # Then dispatch evolution verifier for deeper coverage
 # Use copilot_prompt_0023_evolution_verification.md as the scenario prompt
-```
 
 The tester covers intent classification and routing correctness (AC-1 through AC-4).
 The verifier covers HANDOFF_BLOCK integrity, gate bypass resistance, and confidence model

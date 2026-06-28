@@ -1,8 +1,34 @@
 [
-  {"prompt": "Create a new skill called link-validator in the agent-scaffolders plugin.", "should_trigger": true},
-  {"prompt": "Scaffold a skill directory with SKILL.md and evals.json for a commit-message validator.", "should_trigger": true},
-  {"prompt": "Generate a new skill setup for my code-review automation use case.", "should_trigger": true},
-  {"prompt": "Create a brand-new plugin with multiple skills and commands.", "should_trigger": false},
-  {"prompt": "Improve the trigger description for my existing link-checker skill.", "should_trigger": false},
-  {"prompt": "Fix the routing accuracy on my commit skill.", "should_trigger": false}
+  {
+    "prompt": "Create a new skill called link-validator in the agent-scaffolders plugin.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a skill directory with SKILL.md and evals.json for a commit-message validator.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate a new skill setup for my code-review automation use case.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a brand-new plugin with multiple skills and commands.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Improve the trigger description for my existing link-checker skill.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Fix the routing accuracy on my commit skill.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a sub-agent that handles security reviews",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Build a stateful skill that maintains a session counter",
+    "should_trigger": false
+  }
 ]

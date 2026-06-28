@@ -87,7 +87,7 @@ def fix_file(filepath):
     print(f"Fixed {filepath}")
 
 def main():
-    root_dir = '/Users/richardfremmerlid/Projects/agent-plugins-skills'
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     for rel_path in files_to_fix:
         fix_file(os.path.join(root_dir, rel_path))
 

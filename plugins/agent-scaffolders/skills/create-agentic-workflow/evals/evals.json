@@ -1,8 +1,34 @@
 [
-  {"prompt": "Convert my link-checker skill into a GitHub agentic workflow.", "should_trigger": true},
-  {"prompt": "Scaffold an agentic workflow from my existing skill directory.", "should_trigger": true},
-  {"prompt": "Create an orchestrator-workers workflow pattern from this skill.", "should_trigger": true},
-  {"prompt": "Create a new GitHub Actions CI/CD pipeline for my project.", "should_trigger": false},
-  {"prompt": "Scaffold a brand-new plugin with skills and commands.", "should_trigger": false},
-  {"prompt": "Add a new skill to my agent-scaffolders plugin.", "should_trigger": false}
+  {
+    "prompt": "Convert my link-checker skill into a GitHub agentic workflow.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold an agentic workflow from my existing skill directory.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create an orchestrator-workers workflow pattern from this skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new GitHub Actions CI/CD pipeline for my project.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a brand-new plugin with skills and commands.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add a new skill to my agent-scaffolders plugin.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a deterministic GitHub Actions CI/CD workflow",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a sub-agent that handles security reviews",
+    "should_trigger": false
+  }
 ]

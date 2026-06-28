@@ -2,12 +2,7 @@
 name: create-skill
 plugin: agent-scaffolders
 description: >
-  Scaffolds the filesystem structure for a new agent skill: creates the directory layout,
-  writes a starter SKILL.md, generates evals/evals.json, references/, scripts/, and assets/
-  as needed, and runs a discovery interview to capture name, purpose, and trigger phrases
-  before writing any files. Use when the user says "create a new skill", "scaffold a skill",
-  "generate a skill", "new skill setup", or "make a skill directory". Does not handle
-  content improvement for existing skills — that is handled by os-improvement-loop.
+  Creates a new stateless skill in an existing plugin. Use this for procedural skills with no persistent state. NOT for sub-agents (use `create-sub-agent`) and NOT for skills that need stateful counters or session memory (use `create-stateful-skill`).
 argument-hint: "[skill-name or use-case description]"
 allowed-tools: Bash, Read, Write
 ---
@@ -135,8 +130,8 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 ```
 ✅ Scaffolded: plugins/<plugin>/skills/<skill-name>/
    Files created: SKILL.md, evals/evals.json, references/acceptance-criteria.md
-   Quality gate: [PASSED via ~~skill-improvement | SKIPPED — ~~eval-gate not installed]
-   Next: fill in REPLACE placeholders in evals/evals.json, then run ~~eval-gate baseline
+   Quality gate: [PASSED via os-improvement-loop | SKIPPED — os-eval-runner not installed]
+   Next: fill in REPLACE placeholders in evals/evals.json, then run os-eval-runner baseline
 ```
 
 ---
@@ -145,7 +140,7 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 
 - **Empty `$ARGUMENTS`**: begin with Phase 1 discovery — do not skip to scaffolding
 - **Existing directory**: dual-confirmation before any overwrite (see Phase 2)
-- **Improving an existing skill**: redirect to `~~skill-improvement` capability — that skill owns content
+- **Improving an existing skill**: redirect to `os-improvement-loop` capability — that skill owns content
   quality and routing improvement. `create-skill` is for net-new scaffolding only.
 - **Scaffold script crash**: read the Python stack trace, correct obvious errors, or surface
   the full trace to the user — do not silently skip
@@ -159,5 +154,5 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 - [`acceptance-criteria.md`](references/acceptance-criteria.md) — structural pass/fail criteria
 - [`fallback-tree.md`](fallback-tree.md) — error handling procedures
 - **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.
-- **`~~skill-improvement`** *(~~eval-gate capability — see CONNECTORS.md)*: TDD methodology, RED scenario protocol, eval gate.
-- **`~~eval-gate`** *(~~eval-gate capability — see CONNECTORS.md)*: autoresearch eval loop for skill optimization.
+- **`os-improvement-loop`**: TDD methodology, RED scenario protocol, eval gate.
+- **`os-eval-runner`**: autoresearch eval loop for skill optimization.
