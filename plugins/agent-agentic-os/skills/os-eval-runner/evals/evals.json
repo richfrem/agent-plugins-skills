@@ -16,6 +16,10 @@
     "should_trigger": true
   },
   {
+    "prompt": "measure the performance gain",
+    "should_trigger": true
+  },
+  {
     "prompt": "what is the weather?",
     "should_trigger": false
   },
@@ -24,15 +28,26 @@
     "should_trigger": false
   },
   {
-    "prompt": "measure the performance gain",
-    "should_trigger": true
-  },
-  {
     "prompt": "show me the eval scores from the last cycle",
     "should_trigger": false
   },
   {
     "prompt": "check if we have a skill for session memory",
     "should_trigger": false
+  },
+  {
+    "prompt": "coordinate two agents to run concurrent eval loops on os-eval-runner",
+    "should_trigger": false,
+    "note": "orchestration vocabulary — routes to os-improvement-loop, not os-eval-runner"
+  },
+  {
+    "prompt": "run a concurrent multi-agent eval loop across 3 skills",
+    "should_trigger": false,
+    "note": "multi-agent pattern — os-improvement-loop, not a single-skill eval run"
+  },
+  {
+    "prompt": "set up an improvement loop with ORCHESTRATOR and PEER_AGENT for os-guide",
+    "should_trigger": false,
+    "note": "ORCHESTRATOR/PEER_AGENT vocabulary signals os-improvement-loop"
   }
 ]

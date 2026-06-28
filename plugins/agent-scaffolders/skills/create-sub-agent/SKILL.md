@@ -1,7 +1,8 @@
 ---
 name: create-sub-agent
 plugin: agent-scaffolders
-description: Design and scaffold a Claude Code sub-agent
+description: >
+  Scaffolds a new autonomous sub-agent with its own prompt, system instructions, and tool permissions. NOT for stateless procedural skills (use `create-skill`) and NOT for creating GitHub Actions workflows (use `create-agentic-workflow`).
 argument-hint: "[agent-name or use-case description]"
 allowed-tools: Bash, Read, Write
 ---

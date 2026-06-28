@@ -44,7 +44,42 @@ Consumed by:
 import json
 import sys
 import argparse
+import re
 from pathlib import Path
+
+WHITELIST = [
+    # Example absolute paths from documentation/other machines
+    r"re:.*Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)
+    r"re:.*home/.*",            # Linux absolute paths
+    r"re:.*tasks/.*",           # Example task paths
+    r"re:.*\.kittify/.*",        # Example kittify runtime paths
+    r"re:.*constitution/.*",    # Virtual rules/constitution paths
+    r"re:.*[a-zA-Z]:/.*",       # Windows absolute paths (e.g. C:/...)
+    # Example placeholder filenames used in docs
+    "path/to/file.md",
+    "path/to/file.py",
+    "my-skill/SKILL.md",
+    "my-plugin",
+    # kitty-specs example paths
+    r"re:.*kitty-specs/.*",
+    # Dead-link documentation references
+    r"re:.*requirements-core\.in",
+    r"re:.*infinite-context-ecosystem\.mmd",
+    r"re:.*infinite-context-ecosystem\.png",
+    r"re:.*Agent_Workflow_Orchestration_Design\.md",
+]
+
+def is_whitelisted(reference: str) -> bool:
+    """Return True if the reference matches any whitelist pattern."""
+    for pattern in WHITELIST:
+        if pattern.startswith("re:"):
+            if re.match(pattern[3:], reference):
+                return True
+        else:
+            if reference == pattern or reference.startswith(pattern):
+                return True
+    return False
+
 
 def get_plugin_root(source_file_path: str) -> Path | None:
     """
@@ -164,6 +199,10 @@ def main() -> int:
         source_file = ref_item['source_file']
         reference = ref_item['reference']
         line = ref_item['line']
+
+        if is_whitelisted(reference):
+            skipped_count += 1
+            continue
 
         is_inside, resolved, plugin_root = is_reference_inside_plugin(source_file, reference, args.project)
 

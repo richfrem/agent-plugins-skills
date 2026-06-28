@@ -1,8 +1,34 @@
 [
-  {"prompt": "Scaffold an advanced stateful agent skill with L4 state management and lifecycle artifacts.", "should_trigger": true},
-  {"prompt": "Create a new skill with persistent state, chained commands, and escalation taxonomy.", "should_trigger": true},
-  {"prompt": "I need to build a stateful skill with lifecycle checkpoints and tone configuration — use create-stateful-skill.", "should_trigger": true},
-  {"prompt": "Create a simple skill without any state management.", "should_trigger": false},
-  {"prompt": "Design and scaffold a Claude Code sub-agent file.", "should_trigger": false},
-  {"prompt": "Install a plugin from the marketplace.", "should_trigger": false}
+  {
+    "prompt": "Scaffold an advanced stateful agent skill with L4 state management and lifecycle artifacts.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new skill with persistent state, chained commands, and escalation taxonomy.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I need to build a stateful skill with lifecycle checkpoints and tone configuration \u2014 use create-stateful-skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a simple skill without any state management.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Design and scaffold a Claude Code sub-agent file.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install a plugin from the marketplace.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new agentic workflow from an existing skill",
+    "should_trigger": false
+  }
 ]

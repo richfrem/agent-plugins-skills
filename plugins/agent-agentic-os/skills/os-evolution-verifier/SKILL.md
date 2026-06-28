@@ -67,26 +67,36 @@ For each scenario, dispatch os-architect via Copilot CLI in simulation mode.
 The system prompt is the full content of `plugins/agent-agentic-os/agents/os-architect-agent.md`.
 The user turn is the scenario prompt.
 
-```bash
-# 1. Heartbeat (cheapest model — always first)
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null temp/os-evolution-verifier/heartbeat.md \
-  "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+### Step 2 — Dispatch via copilot-cli-agent skill
 
-# Confirm heartbeat before dispatching
-grep -q "HEARTBEAT_OK" temp/os-evolution-verifier/heartbeat.md || \
-  { echo "HEARTBEAT FAILED — aborting test run"; exit 1; }
+Invoke the `copilot-cli-agent` skill with the following parameters:
 
-# 2. Dispatch os-architect in single-shot simulation mode
-OUTPUT_FILE="temp/os-evolution-verifier/output_${SCENARIO_ID}.md"
+1. **Heartbeat check** (always first):
+   - **prompt_file**: `/dev/null`
+   - **context**: `/dev/null`
+   - **output**: `temp/os-evolution-verifier/heartbeat.md`
+   - **instruction**: "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+   - **model**: `gpt-5-mini`
 
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  plugins/agent-agentic-os/agents/os-architect-agent.md \
-  /dev/null \
-  "$OUTPUT_FILE" \
-  "$SCENARIO_PROMPT" \
-  claude-sonnet-4.6
-```
+   Verify heartbeat before premium dispatch:
+   ```bash
+   grep -q "HEARTBEAT_OK" temp/os-evolution-verifier/heartbeat.md || \
+     { echo "HEARTBEAT FAILED — aborting test run"; exit 1; }
+   ```
+
+2. **Main Dispatch** (simulation of os-architect):
+   - **prompt_file**: `plugins/agent-agentic-os/agents/os-architect-agent.md`
+   - **context**: `/dev/null`
+   - **output**: `temp/os-evolution-verifier/output_${SCENARIO_ID}.md`
+   - **instruction**: "$SCENARIO_PROMPT"
+   - **model**: `claude-sonnet-4.6`
+   - **mode**: `non-interactive`
+
+   After dispatch, verify output before claiming complete:
+   ```bash
+   wc -l "temp/os-evolution-verifier/output_${SCENARIO_ID}.md"
+   test -s "temp/os-evolution-verifier/output_${SCENARIO_ID}.md" || echo "ERROR: empty output — copilot-cli-agent dispatch failed"
+   ```
 
 Wait for completion. Check output file is non-empty (expect 100+ lines for a real run):
 ```bash

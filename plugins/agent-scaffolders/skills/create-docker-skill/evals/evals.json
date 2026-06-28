@@ -1,8 +1,34 @@
 [
-  {"prompt": "Scaffold an agent skill that depends on a Docker container runtime.", "should_trigger": true},
-  {"prompt": "Create a skill with Docker pre-flight environment checks and subprocess execution.", "should_trigger": true},
-  {"prompt": "Build a containerized skill that uses Nextflow for HPC workflows.", "should_trigger": true},
-  {"prompt": "Create a GitHub Actions workflow that builds and publishes a Docker image.", "should_trigger": false},
-  {"prompt": "Add an MCP server integration for the postgres database.", "should_trigger": false},
-  {"prompt": "Scaffold a new plugin from scratch with a discovery interview.", "should_trigger": false}
+  {
+    "prompt": "Scaffold an agent skill that depends on a Docker container runtime.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a skill with Docker pre-flight environment checks and subprocess execution.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build a containerized skill that uses Nextflow for HPC workflows.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a GitHub Actions workflow that builds and publishes a Docker image.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add an MCP server integration for the postgres database.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new plugin from scratch with a discovery interview.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy a skill as an Azure AI Foundry hosted agent",
+    "should_trigger": false
+  }
 ]

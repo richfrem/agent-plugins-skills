@@ -1,8 +1,34 @@
 [
-  {"prompt": "Deploy my skill as an Azure AI Foundry hosted agent.", "should_trigger": true},
-  {"prompt": "Generate Azure AI Foundry deployment wrappers for my existing skill.", "should_trigger": true},
-  {"prompt": "Scaffold the Bicep templates and Azure deployment config for my agent skill.", "should_trigger": true},
-  {"prompt": "Create a new sub-agent that handles code review tasks.", "should_trigger": false},
-  {"prompt": "Deploy this skill as an AWS Lambda function.", "should_trigger": false},
-  {"prompt": "Scaffold a GitHub Actions workflow for CI/CD deployment.", "should_trigger": false}
+  {
+    "prompt": "Deploy my skill as an Azure AI Foundry hosted agent.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate Azure AI Foundry deployment wrappers for my existing skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold the Bicep templates and Azure deployment config for my agent skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent that handles code review tasks.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy this skill as an AWS Lambda function.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a GitHub Actions workflow for CI/CD deployment.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold an agent skill with Docker runtime support",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add an MCP server integration to my plugin",
+    "should_trigger": false
+  }
 ]

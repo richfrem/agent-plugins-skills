@@ -22,8 +22,7 @@ check_cmd() {
   fi
 }
 
-# NOTE: standalone 'gemini' CLI shut down June 18, 2026 — replaced by 'agy' (Antigravity CLI)
-check_cmd "Gemini CLI (deprecated)" "gemini --version"
+# Legacy 'gemini' CLI shut down June 18, 2026 — replaced by 'agy'.
 check_cmd "Agy CLI (gemini replacement)" "agy --version"
 check_cmd "Copilot CLI" "gh copilot explain \"test\" 2>&1 | head -n 3"
 check_cmd "Cursor CLI" "cursor --version"

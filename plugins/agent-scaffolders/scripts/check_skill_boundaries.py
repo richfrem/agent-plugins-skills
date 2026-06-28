@@ -63,6 +63,7 @@ WHITELIST = [
     r"re:/home/.*",            # Linux absolute paths
     r"re:/tasks/.*",           # Example task paths
     r"re:/.kittify/.*",        # Example kittify runtime paths
+    r"re:/constitution/.*",    # Virtual rules/constitution paths
     r"re:/[a-zA-Z]:/.*",       # Windows absolute paths (e.g. C:/...)
     # Example placeholder filenames used in docs
     "path/to/file.md",

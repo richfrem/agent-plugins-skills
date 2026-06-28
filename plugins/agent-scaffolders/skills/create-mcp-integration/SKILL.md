@@ -1,7 +1,8 @@
 ---
 name: create-mcp-integration
 plugin: agent-scaffolders
-description: Add an MCP server integration to a plugin
+description: >
+  Adds an MCP server integration configuration to an existing plugin. NOT for scaffolding a brand-new plugin (use `create-plugin`) and NOT for Azure hosted agents (use `create-azure-agent`).
 argument-hint: "[mcp-server-name or service]"
 allowed-tools: Bash, Read, Write
 ---

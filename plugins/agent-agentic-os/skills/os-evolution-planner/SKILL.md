@@ -159,27 +159,37 @@ patterns, smoke tests) comes after. The delegated agent executes workstreams in 
 
 ---
 
-## Phase 4 — Dispatch Step
+If the `--dispatch` flag is set (or the user confirms dispatch), run the heartbeat then dispatch:
 
-If `--dispatch` flag is set (or user confirms dispatch), run the heartbeat then dispatch:
+### Step 4 — Dispatch via copilot-cli-agent skill
 
-```bash
-# Heartbeat first
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null temp/heartbeat_<slug>.md \
-  "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
-grep -q "HEARTBEAT_OK" temp/heartbeat_<slug>.md || (echo "HEARTBEAT FAIL — aborting dispatch" && exit 1)
+Invoke the `copilot-cli-agent` skill with the following parameters:
 
-# Dispatch
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null \
-  tasks/todo/copilot_prompt_<slug>.md \
-  temp/copilot_output_<slug>.md \
-  "Generate all files exactly as specified. Use the Write tool to write files directly." \
-  claude-sonnet-4.6
+1. **Heartbeat check** (always first):
+   - **prompt_file**: `/dev/null`
+   - **context**: `/dev/null`
+   - **output**: `temp/heartbeat_<slug>.md`
+   - **instruction**: "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+   - **model**: `gpt-5-mini`
 
-wc -l temp/copilot_output_<slug>.md  # expect 100+ lines for multi-workstream output
-```
+   Verify heartbeat before premium dispatch:
+   ```bash
+   grep -q "HEARTBEAT_OK" temp/heartbeat_<slug>.md || (echo "HEARTBEAT FAIL — aborting dispatch" && exit 1)
+   ```
+
+2. **Main Dispatch**:
+   - **prompt_file**: `tasks/todo/copilot_prompt_<slug>.md`
+   - **context**: `/dev/null`
+   - **output**: `temp/copilot_output_<slug>.md`
+   - **instruction**: "Generate all files exactly as specified. Use the Write tool to write files directly."
+   - **model**: `claude-sonnet-4.6`
+   - **mode**: `non-interactive`
+
+   After dispatch, verify output before claiming complete:
+   ```bash
+   wc -l temp/copilot_output_<slug>.md  # expect 100+ lines for multi-workstream output
+   test -s temp/copilot_output_<slug>.md || echo "ERROR: empty output — copilot-cli-agent dispatch failed"
+   ```
 
 After dispatch completes (or after plan is written if dispatch is off), log to experiment log:
 ```bash

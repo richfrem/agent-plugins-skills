@@ -5,11 +5,11 @@ description: >
   (pattern abstraction, research application, lab setup, capability gap fill, or
   multi-loop orchestration), audits existing capabilities, proposes the right evolution
   path (orchestrate existing / update existing / create new), and dispatches work via
-  run_agent.py + Copilot CLI using the user's available tools. Use at the start of any
+  the copilot-cli-agent skill using the user's available tools. Use at the start of any
   agent, skill, or plugin evolution activity.
   <example>
   user: "I found a browser harness pattern I want to apply to my agents"
-  assistant: [os-architect-agent classifies as Pattern Abstraction, audits existing skills, proposes Path B with targeted update, writes delegation prompt and dispatches via run_agent.py]
+  assistant: [os-architect-agent classifies as Pattern Abstraction, audits existing skills, proposes Path B with targeted update, writes delegation prompt and dispatches via the copilot-cli-agent skill]
   </example>
   <example>
   user: "I need an agent that monitors plugin health automatically, it doesn't exist yet"
@@ -93,24 +93,26 @@ Write a complete, dense spec to `temp/copilot_prompt_<task>.md`. Include:
 - A Completion Checklist section at the end
 
 ### Step 2 — Heartbeat check (always first, cheapest model)
-```bash
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
-grep -q "HEARTBEAT_OK" temp/heartbeat.md && echo "OK" || echo "FAIL — abort"
-```
 
-### Step 3 — Dispatch via run_agent.py
-```bash
-# Premium dispatch: claude-sonnet-4.6 for complex multi-file generation (charged per request — batch everything)
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null \
-  temp/copilot_prompt_<task>.md \
-  temp/copilot_output_<task>.md \
-  "Generate all files exactly as specified. Use the Write tool to write files directly." \
-  claude-sonnet-4.6
+Invoke the `copilot-cli-agent` skill to run a heartbeat before any premium dispatch:
+- Output file: `temp/heartbeat.md`
+- Prompt: `"HEARTBEAT CHECK: Respond HEARTBEAT_OK only."`
+- After dispatch: `grep -q "HEARTBEAT_OK" temp/heartbeat.md && echo "OK" || echo "FAIL — abort"`
 
-# Verify output before claiming complete (expect 100+ lines for multi-file output)
-wc -l temp/copilot_output_<task>.md
+See `cli-agents/skills/copilot-cli-agent/SKILL.md` for the canonical dispatch invocation.
+
+### Step 3 — Dispatch via copilot-cli-agent skill
+
+Invoke the `copilot-cli-agent` skill with:
+- Context: `/dev/null`
+- Prompt file: `temp/copilot_prompt_<task>.md`
+- Output: `temp/copilot_output_<task>.md`
+- Instruction: `"Generate all files exactly as specified. Use the Write tool to write files directly."`
+- Model: `claude-sonnet-4.6` (batch all work into one premium request — never iterate)
+
+After dispatch, verify output before claiming complete:
+```bash
+wc -l temp/copilot_output_<task>.md  # expect 100+ lines for multi-file output
 ```
 
 ### Yolo mode (interactive, simpler tasks)
@@ -118,16 +120,7 @@ wc -l temp/copilot_output_<task>.md
 copilot --yolo -p "$(cat temp/copilot_prompt_<task>.md)"
 ```
 
-### Tier-aware dispatch (exploration-cycle sub-agents)
-```bash
-python plugins/exploration-cycle-plugin/scripts/dispatch.py \
-  --agent <agent-path> \
-  --context <context-file> \
-  --instruction "Mode: <mode>. <instruction>" \
-  --output <output-path> \
-  --tier 1                    # 1=low risk (default), 2=moderate, 3=high
-  --model claude-sonnet-4.6   # omit for free/cheap model
-```
+For tier-aware dispatch into the exploration-cycle-plugin, invoke the `dispatch` skill in that plugin via natural-language delegation.
 
 ### Token efficiency rules
 
@@ -352,9 +345,8 @@ Expected: Phase 1 completes with `Intent category: 1 — Pattern Abstraction`, C
 Fail signal: wrong category, or Phase 2 audit starts before Q2 confirmed.
 
 **Smoke 2 — Heartbeat gate**: Any session that reaches Phase 3 dispatch.
-Expected: transcript contains `python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py` heartbeat call
-BEFORE any call with `claude-sonnet-4.6`.
-Fail signal: premium dispatch appears before heartbeat line.
+Expected: transcript shows `copilot-cli-agent` skill invoked for heartbeat BEFORE any premium dispatch.
+Fail signal: premium model dispatch appears before heartbeat delegation.
 
 **Smoke 3 — HANDOFF_BLOCK field count**: Any completed session.
 Expected: `grep -E "^(INTENT|TARGET|PATH|DISPATCH|STATUS|OUTPUTS|NEXT_ACTION):" output.md | wc -l` == 7.

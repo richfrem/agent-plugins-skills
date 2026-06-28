@@ -1,8 +1,34 @@
 [
-  {"prompt": "Design and scaffold a Claude Code sub-agent for automated security auditing.", "should_trigger": true},
-  {"prompt": "Create a new sub-agent file with YAML frontmatter, tools, permissions, and a system prompt.", "should_trigger": true},
-  {"prompt": "Follow the create-sub-agent workflow to generate an agent .md file with escalation posture and lifecycle hooks.", "should_trigger": true},
-  {"prompt": "Scaffold an advanced stateful skill with L4 state management patterns.", "should_trigger": false},
-  {"prompt": "Create a simple skill using the create-skill scaffolder.", "should_trigger": false},
-  {"prompt": "Add a Python package dependency to requirements.in.", "should_trigger": false}
+  {
+    "prompt": "Design and scaffold a Claude Code sub-agent for automated security auditing.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent file with YAML frontmatter, tools, permissions, and a system prompt.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Follow the create-sub-agent workflow to generate an agent .md file with escalation posture and lifecycle hooks.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold an advanced stateful skill with L4 state management patterns.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a simple skill using the create-skill scaffolder.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add a Python package dependency to requirements.in.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new agentic workflow from an existing skill",
+    "should_trigger": false
+  }
 ]
