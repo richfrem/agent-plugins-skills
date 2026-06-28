@@ -294,7 +294,7 @@ Nine standalone plugins consolidated into one. All tools are stateless and self-
 
 **Skills (12):** [`adr-management`](plugins/dev-utils/skills/adr-management/SKILL.md) · [`coding-conventions-agent`](plugins/dev-utils/skills/coding-conventions-agent/SKILL.md) · [`context-bundler`](plugins/dev-utils/skills/context-bundler/SKILL.md) · [`convert-mermaid`](plugins/dev-utils/skills/convert-mermaid/SKILL.md) · [`hf-init`](plugins/dev-utils/skills/hf-init/SKILL.md) · [`hf-upload`](plugins/dev-utils/skills/hf-upload/SKILL.md) · [`humanize`](plugins/dev-utils/skills/humanize/SKILL.md) · [`link-checker-agent`](plugins/dev-utils/skills/link-checker-agent/SKILL.md) · [`optimize-context`](plugins/dev-utils/skills/optimize-context/SKILL.md) · [`red-team-bundler`](plugins/dev-utils/skills/red-team-bundler/SKILL.md) · [`symlink-manager`](plugins/dev-utils/skills/symlink-manager/SKILL.md) · [`task-agent`](plugins/dev-utils/skills/task-agent/SKILL.md)
 
-**Agents (3):** `coding-conventions-agent` · `link-checker-agent` · `rsvp-comprehension-agent`
+**Agents (2):** `coding-conventions-agent` · `link-checker-agent`
 
 #### plugin-manager — Ecosystem Sync
 
