@@ -110,8 +110,11 @@ plugins/<plugin>/           ← canonical source
 .agents/                    ← bridge installer output (hard copies, symlinks resolved)
   skills/ agents/ workflows/
 ```
-> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. The `plugins/` directory
-> is the source. Files there are inactive until installed via `plugin_add.py` or `uvx`.
+> **`plugins/` is the source of truth.** `.agents/` and the Claude Code marketplace/plugin system
+> contain installed copies only — never treat them as authoritative. All counts, skill lists, and
+> version references in this file must reflect what is in `plugins/`, not what is installed.
+> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. Files in `plugins/` are
+> inactive until installed via `plugin_add.py` or `uvx`.
 
 See `plugins/plugin-manager/scripts/` for ecosystem management scripts.
 See `ADRs/` for authoritative architecture rules.
@@ -158,7 +161,9 @@ os-clean-locks, todo-check, optimize-agent-instructions, self-evolution
 **Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
 agentic-os-setup, os-health-check
 
-**Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`, `os-skill-improvement`
+**Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`
+
+**os-skill-improvement**: exists as a methodology/reference skill — **do not delete**. Prefer `os-improvement-loop` for active orchestration unless specifically improving skill routing methodology.
 
 ---
 
@@ -275,6 +280,11 @@ Define success criteria first. Loop until verified.
 
 ## Coding Rules (always applied)
 
+- **Source of truth**: `plugins/` is authoritative. `.agents/`, the marketplace, and the Claude Code plugin system are installed copies — never use them to derive counts, versions, or skill lists.
+- **TDD**: No production code without a failing test first. Invoke `superpowers:test-driven-development` before writing any implementation. Full rule: `.agent/rules/test-driven-development.md`
+- **Friction = self-evolution event**: Any workaround, bypass, guess, or user correction requires fix / Map Debt / escalation before claiming done. Output the `PRE-COMPLETION GATE` block. Full rule: `.agent/rules/self-evolution-policy.md`
+- **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
+- **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/skill-deletion-guard.md`. If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
 - **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime
 - **ADR-002**: Within-plugin multi-skill script sharing via hub-and-spoke (plugin root `scripts/`)
 - **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files
@@ -292,20 +302,22 @@ Define success criteria first. Loop until verified.
 - Helper scripts: Python only — never generate `.sh` bash scripts
 
 ### After editing any skill or script in a plugin — audit symlinks
-Run immediately after any add/edit/delete of files in a plugin directory:
-```bash
-# Check for broken symlinks
-find plugins/<plugin-name> -type l | while read link; do
-  [ -e "$link" ] && echo "OK   $link" || echo "BROKEN $link -> $(readlink $link)"
-done
+**Never use `ln -s` directly. All symlink operations must go through `symlink_manager.py`.**
+(Full protocol: `.agent/rules/symlink-cross-platform.md`)
 
-# Check for ADR-003 violations (no directory symlinks)
-find plugins/<plugin-name> -type l | while read link; do
-  [ -d "$link" ] && echo "DIR-SYMLINK VIOLATION: $link"
-done
+```bash
+# 1. Diagnose first — always
+python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+
+# 2. Add new links to symlinks.json manifest (not by hand — via script)
+# 3. Restore all from manifest
+python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
+
+# 4. Verify — zero broken or real-file imposters before committing
+python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
 ```
 Fix any BROKEN entries before committing. A broken symlink in `plugins/` will silently fail at install time.
-Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add the symlink too.
+Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add it to `symlinks.json` then run `restore`.
 
 ### Scaffolding New Plugins/Skills
 Use these skills rather than hand-rolling structure:
@@ -314,6 +326,15 @@ Use these skills rather than hand-rolling structure:
 - `audit-plugin` — validate structure after scaffolding
 
 Then run `plugin_add.py` to deploy.
+
+### Active Rule Files
+Full rule definitions live in `.agent/rules/` — these are the authoritative source, CLAUDE.md carries only the key non-negotiables:
+- `coding-conventions.md` — dual-layer docs, file headers, type hints, naming, `tool_inventory.json` registration
+- `dependency-management.md` — pip-compile workflow, no manual pip install, tiered hierarchy
+- `plugin-architecture-policy.md` — decoupling, hub-and-spoke, relative paths, self-contained skills
+- `self-evolution-policy.md` — failure tiers, 3-attempt max, deletion prohibition, autonomy gates
+- `symlink-cross-platform.md` — `symlink_manager.py` protocol, symlinks.json manifest
+- `test-driven-development.md` — TDD iron law, test tier locations, anti-patterns
 
 ### Scratch Output
 Write temporary files and analysis output to `temp/` — never to the project root directly.

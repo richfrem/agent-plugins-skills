@@ -3,16 +3,20 @@ name: self-evolution
 plugin: agent-agentic-os
 version: 1.0.0
 description: >
-  Self-healing and self-evolving pattern for agents operating against external systems
-  (CDP automation, DOM-dependent tooling, web APIs). Classifies failures into three tiers —
-  Gap / Failure / Regression — applies repo-profile-gated edits with appropriate autonomy,
-  verifies the fix, and updates domain reference files ("The Map, not the Diary").
-  Invoke whenever a tool call or subprocess returns a failure that a patched helper could fix.
+  Self-healing and self-evolving pattern for agents operating against repo capabilities,
+  scripts, skills, sub-agents, selectors, workflows, and external systems. Classifies
+  evolution events into four tiers — Friction/Workaround, Gap, Failure, Regression —
+  applies repo-profile-gated edits with appropriate autonomy, verifies the fix, and
+  updates domain reference files ("The Map, not the Diary"). Invoke whenever a tool call,
+  subprocess, or workflow returns a failure OR whenever the agent used a workaround,
+  bypass, guess, or manual substitute for an existing repo capability.
 model: inherit
 color: orange
 tools: ["Bash", "Read", "Write", "Edit"]
 trigger: >
-  self-heal, self-evolving, stale selector, DOM changed, element not found,
+  self-heal, self-evolving, friction, workaround used, bypassed existing capability,
+  manual workaround, guessed because unclear, ambiguous instruction, friction encountered,
+  system did not improve, stale selector, DOM changed, element not found,
   selector not found, script broken, helper broken, CDP failure, automation failure,
   evolve skill, patch helper, update reference, domain playbook, map not diary,
   fix broken script, regression detected
@@ -39,12 +43,17 @@ Before doing anything else, locate and read the repo's self-evolution profile:
 <repo-root>/plugins/<plugin>/references/self-evolution-profile.md
 ```
 
-If no profile exists for the current repo/plugin, create a minimal one now using the
-template in Phase 0.1 below, then continue.
+If no profile exists for the current repo/plugin, create a conservative default one now
+using the template in Phase 0.1 below, then continue — but only proceed if the target
+edit is inside the default allowed directories.
+
+Also read `<plugin>/references/map-debt.md` if it exists. Surface any open entry that
+matches the current friction — if `Repeat: YES`, escalate immediately (go to Phase 6)
+instead of deferring again.
 
 The profile defines:
 - **Allowed edit directories** — the only dirs the agent may edit autonomously
-- **Error pattern → tier classification table** — maps known error signatures to Gap/Failure/Regression
+- **Error pattern → tier classification table** — maps known error signatures to tiers
 - **Domain playbook location** — where reference files ("The Map") live
 - **Evolution log path** — where to append the fix record
 
@@ -56,11 +65,26 @@ If no profile exists, write one at `<plugin>/references/self-evolution-profile.m
 # Self-Evolution Profile — <Plugin Name>
 
 ## Allowed Edit Directories
-# List dirs the agent may edit autonomously (relative to repo root)
+
+- plugins/<plugin>/skills/
+- plugins/<plugin>/scripts/
+- plugins/<plugin>/references/
+
+## Explicit Confirmation Required
+
+- plugin.json
+- CLAUDE.md
+- .agent/rules/
+- ADRs/
+- docs/
+- repository root files
+- any file outside this plugin
+- any rename, move, or deletion
 
 ## Error Pattern Classification
 | Pattern | Tier |
 |---------|------|
+| workaround used / bypassed capability | Friction |
 | element not found / selector missing | Regression |
 | function not exported / module not found | Gap |
 | TypeError / syntax error | Failure |
@@ -68,17 +92,35 @@ If no profile exists, write one at `<plugin>/references/self-evolution-profile.m
 | JSON parse error | Failure |
 
 ## Domain Playbook Location
-<path to references/ folder>
+plugins/<plugin>/references/
 
 ## Evolution Log
-<path>/evolution-log.md
+plugins/<plugin>/references/evolution-log.md
+
+## Map Debt
+plugins/<plugin>/references/map-debt.md
 ```
 
 ---
 
-## Phase 1 — Classify the Failure
+## Phase 1 — Classify the Evolution Event
 
-Using the error message, stack trace, and context, classify into exactly one tier:
+**First ask:** did the task succeed only because of a workaround, bypass, guess, or manual
+substitute for an existing repo capability? If yes → classify as **Tier 0** directly.
+
+Otherwise, using the error message, stack trace, and context, classify into exactly one tier:
+
+### Tier 0 — Friction / Workaround
+> "The task completed, but the system did not improve."
+
+**Signals:**
+- Agent bypassed an existing script, skill, sub-agent, or helper
+- Agent manually performed work that an existing repo capability should handle
+- Agent encountered ambiguity and guessed instead of improving instructions
+- Agent noticed an awkward or error-prone workflow but did not update The Map
+- Agent used a temporary workaround
+
+**Response:** If small + inside allowed edit boundaries — patch now, update The Map. If not safe or small — log as Map Debt (see Phase 7). If repeated or blocking — escalate.
 
 ### Tier 1 — Gap
 > "The capability doesn't exist yet."
@@ -125,6 +167,7 @@ Evidence collection is tier-dependent:
 
 | Tier | Evidence to collect |
 |------|-------------------|
+| Friction / Workaround | Intended capability, what was bypassed, workaround used, why the intended path was not used, reproduction step |
 | Gap | None — log the capability boundary in the evolution log |
 | Failure | Error message + stack trace (last 20 lines of stderr) + relevant source lines |
 | Regression | Screenshot of current UI state + DOM snapshot of the failing selector area + `git log --oneline -5` on the affected file |
@@ -247,8 +290,24 @@ Step-by-step: what works, what the exact selectors/timing are, why.
 Append one row to the evolution log (`evolution-log.md` from profile):
 
 ```markdown
-| <date> | <tier> | <what failed (one line)> | <what was patched> | <edit type> | <outcome: FIXED/ESCALATED> |
+| <date> | <tier> | <what failed or friction observed (one line)> | <what was patched, OR "Map Debt: <reason>"> | <edit type> | <outcome: FIXED/MAP_DEBT/ESCALATED> |
 ```
+
+When outcome is `MAP_DEBT`, also append an entry to `<plugin>/references/map-debt.md`
+(create with header if missing). Map Debt is a working queue — items are resolved over time;
+the evolution log is the immutable audit trail. Do not double-count: one write to each.
+
+```markdown
+# Map Debt
+
+| Logged | Artifact | Friction | Why Not Fixed | Recommended Fix | Severity | Repeat |
+|--------|----------|----------|---------------|-----------------|----------|--------|
+
+| <YYYY-MM-DD> | <file path or skill slug> | <friction in one sentence> | <reason> | <recommended fix> | S/M/L | YES/NO |
+```
+
+**Aging rule:** Map Debt entries older than 3 cycles without resolution auto-escalate on the
+next self-evolution run — regardless of the Repeat flag — and must be presented to the user.
 
 If the log file doesn't exist yet, create it with the header:
 

@@ -106,14 +106,16 @@ def is_ignored(file_path: Path, project_root: Path, patterns: list) -> bool:
     except ValueError:
         return False
 
+    ignored = False
     for pattern in patterns:
-        clean_pattern = pattern.strip('/')
+        negate = pattern.startswith('!')
+        clean_pattern = pattern.lstrip('!').strip('/')
         if (fnmatch.fnmatch(rel_path, clean_pattern) or
                 fnmatch.fnmatch(rel_path, f"{clean_pattern}/*") or
                 fnmatch.fnmatch(rel_path, f"*/{clean_pattern}/*") or
                 fnmatch.fnmatch(rel_path, f"*/{clean_pattern}")):
-            return True
-    return False
+            ignored = not negate
+    return ignored
 
 
 # Logic: Primary orchestration of the archiving process
@@ -214,7 +216,7 @@ def generate_zip_bundle(manifest_path: Path, output_path: Path) -> None:
         else:
             if not actual_path.exists():
                 resolved_files.append({'path': path_str, 'note': note, 'missing': True})
-            elif not is_ignored(actual_path, project_root, ignore_patterns):
+            elif True:  # explicit manifest entries always bypass gitignore
                 real_path = os.path.realpath(actual_path)
                 is_symlink = actual_path.is_symlink()
 
