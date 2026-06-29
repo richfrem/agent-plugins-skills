@@ -11,9 +11,7 @@ import os
 from pathlib import Path
 import sys
 
-# Add the scripts directory to the path so we can import it, or run via subprocess.
-# We will run the script via subprocess to test it exactly as invoked at runtime.
-SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "plugins" / "exploration-cycle-plugin" / "scripts"
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 VALIDATOR_PATH = SCRIPTS_DIR / "validate_phase_gate.py"
 
 class TestValidatePhaseGate(unittest.TestCase):
