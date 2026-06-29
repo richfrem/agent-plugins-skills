@@ -8,7 +8,7 @@ Agent MUST select backend based on task type. Do NOT use the default blindly.
 |---|---|---|---|---|
 | `claude` | `claude` | Highest reasoning, best instruction following | Cost, interactive-only without `--yolo` | Complex analysis, nuanced content, open-ended reasoning |
 | `copilot` | `copilot` | Multi-model selection, code-focused, IDE-native | Dynamic prompt injection kills KV cache; AI Credits cost | Code review, multi-file generation, structured output |
-| `agy` | `agy` | Frontier Gemini (3.5 Flash+), large context | Rate limits, `--dangerously-skip-permissions` required for headless | Long context tasks, frontier Gemini models |
+| `agy` | `agy` | All Gemini models (sole CLI since gemini binary retired June 2026); large context | Rate limits, `--dangerously-skip-permissions` required for headless; 3.5 Flash inflates tokens 3-5× | Long context tasks, all Gemini models — default to gemini-3.1-pro |
 | `codex` | `codex` | Code transformation, OpenAI models | Weaker language reasoning than Claude | Code-only tasks, diff generation, code analysis |
 | `llama` | `llama-server` (HTTP) | Fastest (~2s), zero API cost, private | Weaker reasoning than cloud models | Bounded loops, high-frequency local tasks, private data |
 | `gemini` | `gemini` | Older Gemini models, no AI Credits | Deprecated for frontier work — use `agy` | Cost-efficient older Gemini only (2.5-pro, 3-flash-preview) |

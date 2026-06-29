@@ -1,0 +1,129 @@
+{
+  "_meta": {
+    "source": "agy models (Antigravity CLI)",
+    "billing_model": "Google AI subscription / per-token via Antigravity",
+    "updated": "2026-06-28",
+    "notes": [
+      "agy is the sole Gemini CLI since the standalone gemini binary retired June 18 2026.",
+      "Thinking level (Low/Medium/High) is part of the model identity in agy — see display_name.",
+      "Flash is designed for speed, coding, tool use, and agentic workflows. Pro is for deep reasoning.",
+      "Flash is ~4x faster (tokens/sec) and cheaper per token than Pro.",
+      "Flash with high thinking levels can inflate tokens via Thought Preservation — use Low for CLI dispatch.",
+      "Gemini 3.1 Flash-Lite not available in agy as of 2026-06-28."
+    ]
+  },
+  "models": [
+    {
+      "display_name": "Gemini 3.5 Flash (Low)",
+      "cli_id": "gemini-3.5-flash-low",
+      "thinking_level": "low",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 1.50, "output": 9.00 },
+      "speed_relative": "4x faster than Pro",
+      "recommendation": "Default — cheapest per token, optimized for agentic/coding/tool-use tasks",
+      "notes": "Low thinking avoids Thought Preservation token inflation. Best choice for CLI dispatch loops."
+    },
+    {
+      "display_name": "Gemini 3.5 Flash (Medium)",
+      "cli_id": "gemini-3.5-flash",
+      "thinking_level": "medium",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 1.50, "output": 9.00 },
+      "speed_relative": "4x faster than Pro",
+      "recommendation": "Standard dispatch — good balance of reasoning and cost",
+      "notes": "Legacy cheapest_models.json default. Thought Preservation active but manageable. Monitor token spend on long loops."
+    },
+    {
+      "display_name": "Gemini 3.5 Flash (High)",
+      "cli_id": "gemini-3.5-flash-high",
+      "thinking_level": "high",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 1.50, "output": 9.00 },
+      "speed_relative": "4x faster than Pro",
+      "recommendation": "Single-shot deep tasks only — not for loops",
+      "notes": "Maximum Thought Preservation — token inflation risk. Avoid in high-frequency CLI dispatch."
+    },
+    {
+      "display_name": "Gemini 3.1 Pro (Low)",
+      "cli_id": "gemini-3.1-pro",
+      "thinking_level": "low",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 2.00, "output": 12.00 },
+      "speed_relative": "1x (baseline)",
+      "recommendation": "Deep reasoning, architecture decisions, expert-level analysis",
+      "notes": "Heavier flagship model. Superior at abstract reasoning, ARC-AGI, long-context comprehension. Slower and more expensive per token than Flash."
+    },
+    {
+      "display_name": "Gemini 3.1 Pro (High)",
+      "cli_id": "gemini-3.1-pro-high",
+      "thinking_level": "high",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 2.00, "output": 12.00 },
+      "speed_relative": "1x (baseline)",
+      "recommendation": "Most demanding reasoning tasks only",
+      "notes": "Maximum reasoning depth. High cost. Use for critical architecture reviews or complex novel problems."
+    },
+    {
+      "display_name": "Claude Sonnet 4.6 (Thinking)",
+      "cli_id": "claude-sonnet-4.6-thinking",
+      "thinking_level": "thinking",
+      "status": "available",
+      "pricing_usd_per_1m": null,
+      "speed_relative": null,
+      "recommendation": "Anthropic quality via agy when claude-cli-agent unavailable",
+      "notes": "Premium tier. Use claude-cli-agent for direct Claude access if available."
+    },
+    {
+      "display_name": "Claude Opus 4.6 (Thinking)",
+      "cli_id": "claude-opus-4.6-thinking",
+      "thinking_level": "thinking",
+      "status": "available",
+      "pricing_usd_per_1m": null,
+      "speed_relative": null,
+      "recommendation": "Critical tasks only",
+      "notes": "Highest tier in agy. Very expensive."
+    },
+    {
+      "display_name": "GPT-OSS 120B (Medium)",
+      "cli_id": "gpt-oss-120b",
+      "thinking_level": "medium",
+      "status": "available",
+      "pricing_usd_per_1m": null,
+      "speed_relative": null,
+      "recommendation": "OpenAI OSS tasks via agy",
+      "notes": "Large OpenAI OSS model. Use copilot-cli-agent for direct Copilot access."
+    }
+  ],
+  "flash_vs_pro": {
+    "flash_wins": [
+      "Speed (4x faster tokens/sec)",
+      "Per-token cost (cheaper)",
+      "Agentic tool use, MCP, terminal tasks",
+      "Coding: edit-test loops, Terminal-Bench",
+      "API handling",
+      "Multimodal perception",
+      "Max output tokens (65,536 vs 32,768)"
+    ],
+    "pro_wins": [
+      "Deep abstract reasoning (ARC-AGI)",
+      "Architecture planning and final code review",
+      "Complex multi-step logical deduction",
+      "Specialized academic / expert exams",
+      "Long-context comprehension"
+    ],
+    "guidance": "Default to Flash for CLI dispatch. Escalate to Pro for reasoning-heavy tasks."
+  },
+  "cost_tiers": {
+    "cheapest": ["gemini-3.5-flash-low", "gemini-3.5-flash"],
+    "moderate": ["gemini-3.5-flash-high", "gemini-3.1-pro"],
+    "expensive": ["gemini-3.1-pro-high"],
+    "premium": ["claude-sonnet-4.6-thinking", "claude-opus-4.6-thinking", "gpt-oss-120b"]
+  },
+  "strategy": {
+    "heartbeat": "gemini-3.5-flash",
+    "default": "gemini-3.5-flash",
+    "reasoning": "gemini-3.1-pro",
+    "architecture": "gemini-3.1-pro-high",
+    "anthropic_quality": "claude-sonnet-4.6-thinking"
+  }
+}

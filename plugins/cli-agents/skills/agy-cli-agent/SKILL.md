@@ -2,11 +2,12 @@
 name: agy-cli-agent
 plugin: cli-agents
 description: >
-  Antigravity (`agy`) CLI sub-agent system for frontier Google Gemini models.
-  Use when dispatching tasks to Gemini 3.5 Flash and above via the `agy` binary.
-  For cheaper/older Gemini models (gemini-3-flash-preview, gemini-3.1-pro-preview),
-  use gemini-cli-agent instead. Trigger with "use agy", "dispatch to antigravity",
-  "run with agy", "use frontier gemini model", or "agy sub-agent".
+  Antigravity (`agy`) CLI sub-agent system for all Google Gemini models and cross-model
+  access (Gemini, Claude, GPT-OSS) via the agy binary. Use when dispatching tasks to
+  Gemini 3.1 Pro (cheapest real-world), Gemini 3.5 Flash, or other agy-hosted models.
+  Replaces the deprecated gemini-cli-agent (gemini binary retired June 18 2026).
+  Trigger with "use agy", "dispatch to antigravity", "run with agy", "use gemini model",
+  "agy sub-agent", or "use cheapest gemini".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -21,26 +22,53 @@ allowed-tools: Bash, Read, Write
 
 ---
 
-## Identity: The Antigravity Sub-Agent Dispatcher (Frontier: Gemini 3.5 Flash+)
+## Identity: The Antigravity Sub-Agent Dispatcher
 
-You dispatch tasks to Google Gemini frontier models via the `agy` binary.
+You dispatch tasks to Google Gemini (and other) models via the `agy` binary.
 
 > [!IMPORTANT]
-> `agy` is the Antigravity CLI for **frontier models only** (Gemini 3.5 Flash and above). It is a separate binary from `gemini`. For cost-efficient older models, use `gemini-cli-agent`.
+> `agy` is the **sole Gemini CLI** since the standalone `gemini` binary retired June 18 2026.
+> All Gemini model work — including cost-efficient older models — routes through `agy`.
 
-### CLI Selection Rule
+### Model Strategy: Flash by Default, Pro for Deep Reasoning
 
-| Use case | CLI | Binary |
-|:---|:---|:---|
-| Frontier models (3.5 Flash+) | Antigravity | `agy` |
-| Cheaper/older models (3-flash, 2.5-pro) | Gemini CLI | `gemini` |
+> **See `references/agy-models.json`** for the full model catalog, cost tiers, and strategy field.
+
+```bash
+# Default (Flash — faster, cheaper/token, optimized for agentic/coding tasks)
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy
+# ↑ run_agent.py loads gemini-3.5-flash from references/cheapest_models.json
+
+# Explicit Low thinking (recommended for CLI loops to control Thought Preservation cost)
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model "Gemini 3.5 Flash (Low)"
+
+# Pro — escalate for deep reasoning / architecture decisions
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.1-pro
+```
+
+### Flash vs Pro: Which to Use
+
+| | **Gemini 3.5 Flash** | **Gemini 3.1 Pro** |
+|:---|:---:|:---:|
+| Price (in/out per 1M) | $1.50 / $9.00 | $2.00 / $12.00 |
+| Speed | **4× faster** | Baseline |
+| Agentic tool use / MCP / terminal | **Best** | Good |
+| Coding (edit-test loops) | **Best** | Better for final review |
+| Deep abstract reasoning | Good | **Best** |
+| Architecture planning | Good | **Best** |
+| Max output tokens | **65,536** | 32,768 |
+
+**Default: Flash.** Use Pro only when the task requires deep multi-step reasoning or expert-level judgment.
+
+> **Thinking level note:** Flash with High thinking can inflate tokens via Thought Preservation.
+> Use Low thinking level for high-frequency CLI dispatch loops.
 
 ---
 
 ## Minimal Working Pattern
 
 ```bash
-agy --dangerously-skip-permissions -p "$(cat agents/persona.md)
+agy --dangerously-skip-permissions --model "Gemini 3.1 Pro (Low)" -p "$(cat agents/persona.md)
 
 ---SOURCE CODE---
 $(cat target.py)
@@ -59,7 +87,7 @@ Do NOT use tools. Do NOT access filesystem." > review.md
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" --cli agy
 ```
 
-`run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously.
+`run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously. Loads model from `references/cheapest_models.json` (currently `gemini-3.1-pro`).
 
 ### Health Check
 ```bash
@@ -74,6 +102,23 @@ grep -q "HEARTBEAT_OK" ./heartbeat.md && echo "OK" || echo "FAIL"
 python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 "Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR." --cli agy
 ```
+
+---
+
+## Available Models
+
+| Display Name (agy models) | `--model` ID | Thinking | Rec |
+|:---|:---|:---:|:---|
+| **Gemini 3.5 Flash (Low)** | `gemini-3.5-flash-low` | Low | **Best for CLI loops — cheapest, fastest** |
+| Gemini 3.5 Flash (Medium) | `gemini-3.5-flash` | Medium | **Default** — standard dispatch |
+| Gemini 3.5 Flash (High) | `gemini-3.5-flash-high` | High | Single-shot deep tasks only |
+| Gemini 3.1 Pro (Low) | `gemini-3.1-pro` | Low | Deep reasoning, architecture |
+| Gemini 3.1 Pro (High) | `gemini-3.1-pro-high` | High | Most demanding reasoning only |
+| Claude Sonnet 4.6 (Thinking) | `claude-sonnet-4.6-thinking` | — | Anthropic quality via agy |
+| Claude Opus 4.6 (Thinking) | `claude-opus-4.6-thinking` | — | Critical tasks only |
+| GPT-OSS 120B (Medium) | `gpt-oss-120b` | Medium | OpenAI OSS via agy |
+
+> Full pricing data and strategy field: `references/agy-models.json`
 
 ---
 
@@ -92,6 +137,7 @@ python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 | Flag | Purpose |
 |:---|:---|
 | `-p "prompt"` / `--prompt "prompt"` | Pass prompt non-interactively |
+| `--model <id>` | Select model (see table above) |
 | `--dangerously-skip-permissions` | Headless mode — skip all permission prompts |
 | `--sandbox` | Run in sandboxed environment |
 
