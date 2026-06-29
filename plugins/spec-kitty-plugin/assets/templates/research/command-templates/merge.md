@@ -1,1 +1,0 @@
-../../../../../../.kittify/missions/research/command-templates/merge.md

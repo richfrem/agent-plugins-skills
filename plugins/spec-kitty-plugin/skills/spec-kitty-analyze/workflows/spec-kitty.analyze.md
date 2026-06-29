@@ -1,1 +1,0 @@
-../../../workflows/spec-kitty.analyze.md

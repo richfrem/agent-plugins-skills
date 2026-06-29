@@ -1,1 +1,0 @@
-../../../assets/templates/spec-kitty-meta-tasks.md

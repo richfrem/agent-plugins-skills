@@ -1,1 +1,0 @@
-../../spec-kitty-sync-plugin/references/AUGMENTED.md

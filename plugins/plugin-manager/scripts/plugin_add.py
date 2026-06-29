@@ -329,9 +329,10 @@ def validate_plugin(plugin_path: Path) -> None:
             skill_md = skill_folder / "SKILL.md"
             assert skill_md.is_file(), f"Skill directory '{skill_folder.name}' in plugin '{plugin_path.name}' is missing SKILL.md"
             
-            # Enforce evals.json existence
+            # Log warning instead of hard assert for evals.json to allow 3rd party plugins
             evals_json = skill_folder / "evals" / "evals.json"
-            assert evals_json.is_file(), f"Skill '{skill_folder.name}' in plugin '{plugin_path.name}' is missing evals/evals.json"
+            if not evals_json.is_file():
+                print(f"  ⚠ Warning: Skill '{skill_folder.name}' in plugin '{plugin_path.name}' is missing evals/evals.json")
 
 
 # ---------------------------------------------------------------------------

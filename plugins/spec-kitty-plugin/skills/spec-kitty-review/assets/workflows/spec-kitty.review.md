@@ -1,1 +1,0 @@
-../../../../../../.agents/skills/spec-kitty-review/workflows/spec-kitty.review.md

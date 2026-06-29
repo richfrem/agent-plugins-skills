@@ -11,3 +11,6 @@
 | 2026-06-28 | Tier 1 | Failure: Skill 'using-git-worktrees' in plugin 'obra_superpowers' is missing evals/evals.json | None | None | FAILED |
 | 2026-06-28 | Tier 1 | Failure: Skill 'using-git-worktrees' in plugin 'obra_superpowers' is missing evals/evals.json | None | None | FAILED |
 | 2026-06-28 | Tier 1 | Failure: Skill 'using-git-worktrees' in plugin 'obra_superpowers' is missing evals/evals.json | None | None | FAILED |
+| 2026-06-28 | Tier 1 | Failure: Skill 'using-git-worktrees' in plugin 'obra_superpowers' is missing evals/evals.json | None | None | FAILED |
+| 2026-06-28 | Tier 1 | Failure: Missing skills/ directory in spec-kitty-plugin | None | None | FAILED |
+| 2026-06-28 | Tier 1 | Failure: Skill 'using-git-worktrees' in plugin 'obra_superpowers' is missing evals/evals.json | None | None | FAILED |

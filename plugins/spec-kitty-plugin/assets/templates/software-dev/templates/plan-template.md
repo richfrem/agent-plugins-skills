@@ -1,1 +1,0 @@
-../../../../../../.kittify/missions/software-dev/templates/plan-template.md

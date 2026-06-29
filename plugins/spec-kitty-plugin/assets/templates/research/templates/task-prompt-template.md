@@ -1,1 +1,0 @@
-../../../../../../.kittify/missions/research/templates/task-prompt-template.md

@@ -99,3 +99,14 @@ context/events.jsonl
 *_probe_report.txt
 **/evals/.lock.hashes
 **/*_inventory.json
+.vibe/
+.pi/
+.letta/
+.kiro/
+.github/copilot/
+.kittify/charter/context-state.json
+.kittify/charter/directives.yaml
+.kittify/charter/governance.yaml
+.kittify/charter/metadata.yaml
+.kittify/charter/references.yaml
+.kittify/sync-state.json
