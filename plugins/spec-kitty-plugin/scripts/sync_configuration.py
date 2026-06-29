@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 """
-Spec Kitty Configuration Sync
-=============================
+Spec Kitty Configuration Sync (Legacy/Redundant)
+=================================================
+
+DEPRECATED: Spec Kitty v3.2.2+ supports Google Antigravity natively.
+Command templates, rules, and skills are managed globally and auto-integrated.
+This compilation script is bypassed and not required for native configurations.
 
 Synchronizes fresh artifacts from the local workspace back into the plugin's
 source of truth directories for distribution via the Bridge.
 
-Artifacts:
-1. Workflows (.windsurf/workflows -> ../../skills)
-2. Rules (.kittify/memory -> ../../rules)
-
-Assumptions:
-1. User has installed the 'spec-kitty' CLI: `pip install --upgrade spec-kitty-cli`
-2. User has initialized the repository: `spec-kitty init . --ai windsurf`
-3. Run this script to propagate updates into the plugin system.
-
-Usage:
+Usage (Legacy Windsurf mode):
     python ./scripts/sync_configuration.py
 """
 
