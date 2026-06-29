@@ -1,0 +1,12 @@
+project:
+  uuid: 61758b7a-3b05-4ebb-b7d1-c8243e4da76a
+  slug: agent-plugins-skills
+  node_id: 08a466af2f63
+  build_id: 6893165f-23eb-48e7-ac00-82339a293f39
+vcs:
+  type: git
+agents:
+  available:
+  - antigravity
+  auto_commit: true
+  lint_on_edit: false

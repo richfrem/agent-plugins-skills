@@ -14,11 +14,11 @@ description: >
   </example>
 
   <example>
-  Context: User updated `.windsurf/workflows` and needs agents to learn them.
-  user: "Sync my config changes to the agents."
-  assistant: "I'll run the spec-kitty-setup agent to sync your local workflows and deploy the updated skills."
+  Context: User wants to initialize or sync Spec Kitty for Antigravity.
+  user: "Sync my spec-kitty configs to the agents."
+  assistant: "I'll run the spec-kitty-setup agent to initialize the Antigravity configurations."
   <commentary>
-  User requesting a sync event. Trigger agent.
+  User requesting sync or init. Trigger agent.
   </commentary>
   </example>
 model: inherit
@@ -30,11 +30,11 @@ tools: ["Bash", "Read", "Write"]
 
 You are a specialized expert sub-agent.
 
-**Objective**: Orchestrate the installation, initialization, and synchronization of the `spec-kitty-cli` environment, guiding the user through the process.
+**Objective**: Orchestrate the installation, initialization, and synchronization of the `spec-kitty-cli` environment for Google Antigravity, guiding the user through the process.
 
 ## Execution Flow
 
-Execute these phases in order based on the user's needs. Do not skip phases unless the user specifically asks only for a sync or upgrade.
+Execute these phases in order based on the user's needs. Do not skip phases unless the user specifically asks only for an upgrade.
 
 ### Phase 1: Installation & Upgrade (Bootstrap)
 - Check if `spec-kitty-cli` is installed.
@@ -46,16 +46,13 @@ Execute these phases in order based on the user's needs. Do not skip phases unle
 ### Phase 2: Initialization (Configuration)
 - If the project is not initialized, generate the baseline configuration:
   ```bash
-  spec-kitty init . --ai windsurf --force --non-interactive
+  spec-kitty init . --ai antigravity --force --non-interactive
   ```
-- *This populates `.windsurf/workflows` and `.kittify/config.yaml`.*
+- *This populates .agent/ and .kittify/config.yaml.*
 
-### Phase 3: Synchronization (Propagate to Agents)
-- Sync local configurations:
-  ```bash
-  python ./sync_configuration.py
-  ```
-- *This automatically converts local workflows into Open Standard skills inside the plugin.*
+### Phase 3: Synchronization (Native to Antigravity)
+- Since Spec Kitty v3.2.2+ supports Google Antigravity natively, skills and commands are managed globally or auto-injected. No manual compilation of local workflow markdown files via sync scripts is required.
+- Proceed directly to deployment verification.
 
 ### Phase 4: Deploy to Agents (Centralized)
 - After synchronization, consult the central installation guide for the authoritative deployment logic:

@@ -67,35 +67,29 @@ Pull the latest command templates, mission configs, and scripts into `.kittify/`
 
 **INIT mode** (first time):
 ```bash
-spec-kitty init . --ai windsurf
+spec-kitty init . --ai antigravity
 ```
-*This creates `.kittify/`, `.windsurf/workflows/`, mission configs, and git hooks.*
+*This creates `.kittify/`, mission configs, and git hooks.*
 
 **UPDATE mode** (existing project):
 ```bash
-spec-kitty init . --ai windsurf --force
+spec-kitty init . --ai antigravity --force
 ```
 *This refreshes existing templates without affecting project-specific configs.*
 
-### Step 3: Sync to Spec-Kitty Plugin (Automated)
+### Step 3: Sync to Spec-Kitty Plugin (Legacy/Bypassed)
 
-Convert the refreshed `.kittify/` templates into distributable plugin components inside the `spec-kitty-plugin` directory:
-```bash
-python ./scripts/sync_configuration.py
-```
-This generates skills, rules, and templates that agents can consume.
-
-**IMPORTANT**: This step ONLY touches auto-generated files (14 command skill SKILL.md files, rules, templates). It does NOT touch custom skills listed below.
+*Note: Since Spec Kitty v3.2.2+ supports Google Antigravity natively, global commands are registered natively by the CLI. Converting `.kittify/` templates via `sync_configuration.py` into local custom workflow directories is legacy and bypassed for Antigravity.*
 
 ### Step 3b: Review & Reconcile Custom Knowledge (Agent-Reviewed)
 
-**This is the intelligence step.** After the automated sync, you MUST review what changed and reconcile with custom augmented skills.
+**This is the intelligence step.** After the template refresh, you MUST review what changed in the configuration or templates and reconcile with custom augmented skills.
 
 #### 3b.1: Identify What Changed
 
 Compare the new `.kittify/` content against what was there before:
 ```bash
-git diff --stat -- .kittify/ .windsurf/ ../../
+git diff --stat -- .kittify/ ../../
 ```
 Summarize the key changes for the user (new commands, removed commands, changed templates, updated mission configs).
 

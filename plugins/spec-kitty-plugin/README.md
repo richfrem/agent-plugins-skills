@@ -2,7 +2,7 @@
 
 The flagship workflow plugin — **Spec-Driven Development lifecycle** + **Universal Bridge sync engine**.
 
-> **⚠️ CRITICAL REQUIREMENT**: This plugin is entirely dependent on the host machine having `spec-kitty-cli` installed and initialized locally via `spec-kitty init . --ai windsurf`. Do not install this plugin if those prerequisites are not met.
+> **⚠️ CRITICAL REQUIREMENT**: This plugin is entirely dependent on the host machine having `spec-kitty-cli` installed and initialized locally via `spec-kitty init . --ai antigravity`. Do not install this plugin if those prerequisites are not met.
 
 Source repo [https://github.com/Priivacy-ai/spec-kitty](https://github.com/Priivacy-ai/spec-kitty)
 
@@ -15,17 +15,17 @@ pip install spec-kitty-cli  # or: uv tool install spec-kitty-cli
 pip install spec-kitty-cli --upgrade
 
 # Initialize in project
-spec-kitty init . --ai windsurf
+spec-kitty init . --ai antigravity
 ```
 
 ### 1. Initializing Spec Kitty (First Time)
-Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-init` skill:
-> "Hey Assistant, run spec-kitty-init to set up this repository."
+Once the plugin is installed, you can ask your agent to trigger the `spec-kitty-sync-plugin` skill:
+> "Hey Assistant, run spec-kitty-sync-plugin to set up this repository."
 
 The agent will autonomously:
-1. Run the `spec-kitty init` CLI command.
-2. Synchronize the generated `.windsurf/workflows` into the plugin's `commands/` directory.
-3. Synchronize the generated `.kittify/memory` rules into the plugin's `rules/` directory.
+1. Run the `spec-kitty init . --ai antigravity` CLI command.
+2. Verify the configuration under `.kittify/` is ready.
+3. Automatically load the global commands/skills for Google Antigravity.
 4. Redeploy the updated bundle into your IDE so the slash commands become active.
 
 ## Active Skills (19)
@@ -84,29 +84,19 @@ All workflow skills are invocable as slash commands once deployed to your agent 
 
 This plugin enforces strict **Workflow Provenance** to maintain a single source of truth for all Spec-Driven Development routines.
 
-Rather than duplicating workflow files (which leads to drift and destructive overwrites), the plugin utilizes a central asset mapping architecture driven by `sync_configuration.py`. 
-
-The upstream master `*.md` files live in `.windsurf/workflows/`. When you execute `python scripts/sync_configuration.py`, the script:
-1. Generates master symlinks within `spec-kitty-plugin/workflows/` mapping back to the `.windsurf/workflows/` master definitions.
-2. Creates isolated nested `workflows/` symlinks within each individual `skills/*` directory.
-3. Injects a deterministic `[./workflows/spec-kitty.<feature>.md](./workflows/...)` provenance header into every compiled `SKILL.md`.
-
-This ensures that any augmented best practices or custom ecosystem strategies are inherently bundled directly into the upstream source files, eliminating the need for standalone side-files while preventing blind `.kittify` template overwrites.
+With native Google Antigravity support in Spec Kitty v3.2.2+, command and skill templates are served globally by the CLI or integrated directly. The configuration layout is simplified:
 
 ```text
 spec-kitty-plugin/
 ├── agents/
-│   ├── spec-kitty-agent.md   (SDD lifecycle orchestrator)
-│   └── spec-kitty-setup.md   (install/sync orchestrator)
-├── rules/ (Synced from .kittify/memory/)
-├── workflows/ (Master symlinks → .windsurf/workflows/)
+│   ├── spec-kitty-agent.md     (SDD lifecycle orchestrator)
+│   └── spec-kitty-setup.md     (install/sync orchestrator)
+├── rules/                      (Synced from .agent/ rules)
 ├── references/
-├── scripts/
-│   └── sync_configuration.py (Idempotent provenance generator)
-└── skills/                   (19 total)
+└── skills/                     (19 total)
     ├── spec-kitty-sync-plugin/ (custom — install/update)
     ├── spec-kitty-workflow/    (custom — SDD SOPs)
-    └── ... (17 auto-synced skills from CLI via sync_configuration.py)
+    └── ...                     (17 auto-synced skills)
 ```
 
 ## License

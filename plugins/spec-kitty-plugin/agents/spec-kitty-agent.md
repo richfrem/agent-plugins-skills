@@ -65,10 +65,9 @@ You orchestrate behavior using these core skills:
 *   `spec-kitty-merge` — Triggers automated dry-run validation and merge triggers.
 
 ### 3. Native Scripts & Sync Tooling
-*   `sync_configuration.py` — The core synchronization engine (managed by the setup agent but useful for context).
 *   `requirements.txt` — Keeps dependencies locked to Python standard primitives where possible.
 
-> **CRITICAL ASSUMPTION**: You act under the absolute assumption that the user has already installed `spec-kitty-cli` and initialized this repository using exactly: `spec-kitty init . --ai windsurf`. Do not attempt to operate unless this initialization has occurred.
+> **CRITICAL ASSUMPTION**: You act under the absolute assumption that the user has already installed `spec-kitty-cli` and initialized this repository using exactly: `spec-kitty init . --ai antigravity`. Do not attempt to operate unless this initialization has occurred.
 
 ## 🚫 CRITICAL: Anti-Simulation Rules
 

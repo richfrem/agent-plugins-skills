@@ -108,7 +108,7 @@ Before starting, display the following visual map to commit to the workflow stat
 *Check the box corresponding to your current execution phase.*
 
 ### Step 0a: Specify
-To specify a feature, read the workflow instructions in `.windsurf/workflows/spec-kitty.specify.md` or use the CLI:
+To specify a feature, use the CLI command or run the `/spec-kitty.specify` slash command:
 ```bash
 spec-kitty agent feature create-feature "<slug>"
 ```
@@ -117,7 +117,7 @@ spec-kitty agent feature create-feature "<slug>"
 > ⛔ **HUMAN GATE 0**: Show the user `spec.md` and STOP. Do NOT proceed to plan until the user explicitly approves with "Proceed", "Go", or "Execute".
 
 ### Step 0b: Plan
-To plan a feature, read the workflow instructions in `.windsurf/workflows/spec-kitty.plan.md` or use the CLI:
+To plan a feature, use the CLI command or run the `/spec-kitty.plan` slash command:
 ```bash
 spec-kitty agent feature setup-plan --feature <SLUG>
 ```
@@ -126,7 +126,7 @@ spec-kitty agent feature setup-plan --feature <SLUG>
 > ⛔ **HUMAN GATE 1**: Show the user `plan.md` and STOP. Do NOT proceed to task generation until the user explicitly approves.
 
 ### Step 0c: Tasks
-To generate tasks, read the workflow instructions in `.windsurf/workflows/spec-kitty.tasks.md`.
+To generate tasks, run the `/spec-kitty.tasks` slash command:
 ```bash
 /spec-kitty.tasks
 ```
