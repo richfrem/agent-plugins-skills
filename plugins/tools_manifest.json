@@ -835,18 +835,6 @@
       "plugin": "plugin-manager",
       "path": "plugins/plugin-manager/scripts/plugin_remove.py",
       "type": "script"
-    },
-    {
-      "name": "verify_workflow_state",
-      "plugin": "spec-kitty-plugin",
-      "path": "plugins/spec-kitty-plugin/scripts/verify_workflow_state.py",
-      "type": "script"
-    },
-    {
-      "name": "sync_configuration",
-      "plugin": "spec-kitty-plugin",
-      "path": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "type": "script"
     }
   ]
 }
