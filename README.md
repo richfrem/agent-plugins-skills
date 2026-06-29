@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 147 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 128 Skills · 48 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 > **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026)
@@ -165,13 +165,11 @@ The flagship operational framework. Eval-gated improvement loops, memory managem
 
 ### Group 2: Engineering Workflows
 
-#### spec-kitty-plugin — Spec-Driven Development
+#### spec-kitty-plugin — Spec-Driven Development (DEPRECATED)
 
-Enterprise-grade `Spec → Plan → Tasks → Implement → Review → Merge` pipeline.
-
-**Skills (19):** [`spec-kitty-specify`](plugins/spec-kitty-plugin/skills/spec-kitty-specify/SKILL.md) · [`spec-kitty-plan`](plugins/spec-kitty-plugin/skills/spec-kitty-plan/SKILL.md) · [`spec-kitty-tasks`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks/SKILL.md) · [`spec-kitty-implement`](plugins/spec-kitty-plugin/skills/spec-kitty-implement/SKILL.md) · [`spec-kitty-review`](plugins/spec-kitty-plugin/skills/spec-kitty-review/SKILL.md) · [`spec-kitty-merge`](plugins/spec-kitty-plugin/skills/spec-kitty-merge/SKILL.md) · [`spec-kitty-analyze`](plugins/spec-kitty-plugin/skills/spec-kitty-analyze/SKILL.md) · [`spec-kitty-accept`](plugins/spec-kitty-plugin/skills/spec-kitty-accept/SKILL.md) · [`spec-kitty-clarify`](plugins/spec-kitty-plugin/skills/spec-kitty-clarify/SKILL.md) · [`spec-kitty-research`](plugins/spec-kitty-plugin/skills/spec-kitty-research/SKILL.md) · [`spec-kitty-dashboard`](plugins/spec-kitty-plugin/skills/spec-kitty-dashboard/SKILL.md) · [`spec-kitty-status`](plugins/spec-kitty-plugin/skills/spec-kitty-status/SKILL.md) · [`spec-kitty-checklist`](plugins/spec-kitty-plugin/skills/spec-kitty-checklist/SKILL.md) · [`spec-kitty-constitution`](plugins/spec-kitty-plugin/skills/spec-kitty-constitution/SKILL.md) · [`spec-kitty-tasks-outline`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-outline/SKILL.md) · [`spec-kitty-tasks-finalize`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-finalize/SKILL.md) · [`spec-kitty-tasks-packages`](plugins/spec-kitty-plugin/skills/spec-kitty-tasks-packages/SKILL.md) · [`spec-kitty-workflow`](plugins/spec-kitty-plugin/skills/spec-kitty-workflow/SKILL.md) · [`spec-kitty-sync-plugin`](plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/SKILL.md)
-
-**Agents:** [`spec-kitty-agent`](plugins/spec-kitty-plugin/agents/spec-kitty-agent.md) · [`spec-kitty-setup`](plugins/spec-kitty-plugin/agents/spec-kitty-setup.md)
+> ⚠️ **Deprecated**: Integrated natively. Spec Kitty v3.2.2+ manages all agent workspaces (including Google Antigravity) natively via the CLI.
+> Run `spec-kitty init . --ai antigravity` to set up rules and all 50+ dynamic `spk-*` skills natively.
+> See the [spec-kitty-plugin README](plugins/spec-kitty-plugin/README.md) for the migration guide.
 
 #### exploration-cycle-plugin — Discovery & Requirements
 
