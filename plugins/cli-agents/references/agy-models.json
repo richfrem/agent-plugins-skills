@@ -1,0 +1,125 @@
+{
+  "_meta": {
+    "source": "agy models (Antigravity CLI)",
+    "billing_model": "Google AI subscription / per-token via Antigravity",
+    "updated": "2026-06-28",
+    "notes": [
+      "agy is the sole Gemini CLI since the standalone gemini binary retired June 18 2026.",
+      "Thinking level (Low/Medium/High) is part of the model identity in agy — see display_name.",
+      "List price alone is misleading: Gemini 3.5 Flash's Thought Preservation feature carries reasoning context forward across turns, inflating real-world token spend 3-5x vs 3.1 Pro.",
+      "Gemini 3.1 Flash-Lite not available in agy as of 2026-06-28 — cheapest available model is Gemini 3.1 Pro (Low).",
+      "Model IDs for --model flag: use display_name exactly (e.g. 'Gemini 3.1 Pro (Low)') or kebab shortform where documented."
+    ]
+  },
+  "models": [
+    {
+      "display_name": "Gemini 3.1 Pro (Low)",
+      "cli_id": "gemini-3.1-pro",
+      "thinking_level": "low",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 2.00, "output": 12.00 },
+      "avg_turns_per_agentic_task": 26,
+      "avg_context_per_task_k": 650,
+      "recommendation": "Default — cheapest real-world agentic cost",
+      "notes": "Low thinking strips excessive reasoning loops. Best cost/quality ratio for CLI dispatch tasks."
+    },
+    {
+      "display_name": "Gemini 3.1 Pro (High)",
+      "cli_id": "gemini-3.1-pro-high",
+      "thinking_level": "high",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 2.00, "output": 12.00 },
+      "avg_turns_per_agentic_task": null,
+      "avg_context_per_task_k": null,
+      "recommendation": "Use for complex multi-step reasoning tasks",
+      "notes": "Same list price as Low; more expensive in practice due to higher token throughput per turn."
+    },
+    {
+      "display_name": "Gemini 3.5 Flash (Low)",
+      "cli_id": "gemini-3.5-flash-low",
+      "thinking_level": "low",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 1.50, "output": 9.00 },
+      "avg_turns_per_agentic_task": 39,
+      "avg_context_per_task_k": 1400,
+      "recommendation": "Avoid for CLI dispatch loops",
+      "notes": "Lower list price but Thought Preservation still inflates tokens even at Low. 3-5x more expensive than 3.1 Pro in practice."
+    },
+    {
+      "display_name": "Gemini 3.5 Flash (Medium)",
+      "cli_id": "gemini-3.5-flash",
+      "thinking_level": "medium",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 1.50, "output": 9.00 },
+      "avg_turns_per_agentic_task": null,
+      "avg_context_per_task_k": null,
+      "recommendation": "Legacy default — do not use",
+      "notes": "Previous cheapest_models.json default. Replaced by gemini-3.1-pro. Avoid: token burn from agentic loops."
+    },
+    {
+      "display_name": "Gemini 3.5 Flash (High)",
+      "cli_id": "gemini-3.5-flash-high",
+      "thinking_level": "high",
+      "status": "available",
+      "pricing_usd_per_1m": { "input": 1.50, "output": 9.00 },
+      "avg_turns_per_agentic_task": null,
+      "avg_context_per_task_k": null,
+      "recommendation": "Do not use",
+      "notes": "Maximum token inflation. Only viable for single-shot reasoning tasks, not CLI loops."
+    },
+    {
+      "display_name": "Claude Sonnet 4.6 (Thinking)",
+      "cli_id": "claude-sonnet-4.6-thinking",
+      "thinking_level": "thinking",
+      "status": "available",
+      "pricing_usd_per_1m": null,
+      "avg_turns_per_agentic_task": null,
+      "avg_context_per_task_k": null,
+      "recommendation": "High-value tasks requiring Anthropic quality via agy",
+      "notes": "Premium tier. Use claude-cli-agent for direct Claude access if available."
+    },
+    {
+      "display_name": "Claude Opus 4.6 (Thinking)",
+      "cli_id": "claude-opus-4.6-thinking",
+      "thinking_level": "thinking",
+      "status": "available",
+      "pricing_usd_per_1m": null,
+      "avg_turns_per_agentic_task": null,
+      "avg_context_per_task_k": null,
+      "recommendation": "Critical tasks only",
+      "notes": "Highest tier available in agy. Very expensive."
+    },
+    {
+      "display_name": "GPT-OSS 120B (Medium)",
+      "cli_id": "gpt-oss-120b",
+      "thinking_level": "medium",
+      "status": "available",
+      "pricing_usd_per_1m": null,
+      "avg_turns_per_agentic_task": null,
+      "avg_context_per_task_k": null,
+      "recommendation": "OpenAI OSS tasks via agy",
+      "notes": "Large OpenAI OSS model. Use copilot-cli-agent for direct Copilot access."
+    }
+  ],
+  "cost_tiers": {
+    "cheapest": ["gemini-3.1-pro"],
+    "moderate": ["gemini-3.1-pro-high", "gemini-3.5-flash-low"],
+    "expensive": ["gemini-3.5-flash", "gemini-3.5-flash-high"],
+    "premium": ["claude-sonnet-4.6-thinking", "claude-opus-4.6-thinking", "gpt-oss-120b"]
+  },
+  "strategy": {
+    "heartbeat": "gemini-3.1-pro",
+    "default": "gemini-3.1-pro",
+    "complex": "gemini-3.1-pro-high",
+    "anthropic_quality": "claude-sonnet-4.6-thinking"
+  },
+  "agentic_token_trap": {
+    "description": "Gemini 3.5 Flash's Thought Preservation feature carries reasoning context forward across turns by design. This causes hyper-inflation of input tokens during multi-step CLI operations even when effort is set to Low.",
+    "data": {
+      "gemini_3_5_flash": { "avg_turns": 39, "avg_context_k": 1400, "relative_cost": "3-5x" },
+      "gemini_3_1_pro_low": { "avg_turns": 26, "avg_context_k": 650, "relative_cost": "1x" }
+    },
+    "why_list_price_misleads": "Flash ($1.50/M) appears cheaper than Pro ($2.00/M) on list. In agentic CLI loops, Flash's token inflation makes it 3-5x more expensive per completed task.",
+    "recommendation": "Always use gemini-3.1-pro for CLI dispatch. Reserve Flash models for single-shot or interactive use only."
+  }
+}

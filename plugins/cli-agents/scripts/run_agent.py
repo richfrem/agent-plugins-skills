@@ -71,7 +71,7 @@ def _load_default_models() -> dict[str, str | None]:
         "copilot": "gpt-5-mini",
         "gemini": "gemini-3-flash-preview",
         "claude": "haiku-4.5",
-        "agy": "gemini-3.5-flash",
+        "agy": "gemini-3.1-pro",
         "codex": "gpt-5-mini",
         "llama": "gemma-4-12b",
     }
