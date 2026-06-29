@@ -5,125 +5,31 @@ globs: ["**/*"]
 
 ## 🌀 Self-Evolution & Self-Healing Policy
 
-**Full execution protocol (Phases 0–7) → `plugins/agent-agentic-os/skills/self-evolution/SKILL.md`**  
-**Skill/directory deletion rules → `.agent/rules/skill-deletion-guard.md`**
+**Full context and execution loop → `plugins/agent-agentic-os/skills/self-evolution/SKILL.md`**
 
-This policy states the always-on safety gates. They apply before any skill is invoked and
-regardless of whether a self-evolution run is in progress.
+This policy governs how agents must respond when a tool call, subprocess, web automation step, or selector query encounters a failure. Rather than just retrying or patching silently, the agent must treat failures as evolution events.
 
-### Hard Gates (always active)
+### Non-Negotiables
 
-1. **Edit boundaries first**: Before any autonomous edit, verify the target file is inside
-   the plugin's permitted edit directories (`plugins/<plugin>/skills/`, `scripts/`, `references/`).
-   If no `self-evolution-profile.md` exists for the plugin, use that conservative default.
-   Anything outside those dirs requires explicit user confirmation.
+1. **Verify Edit Boundaries First**: Before making any autonomous edits to repair a failure, check the permitted edit boundaries in `<plugin>/references/self-evolution-profile.md`. If a repair requires modifying code outside these directories, **escalate to the user immediately**—do not ask for forgiveness.
+2. **Classify Failures by Tier**: Group all failures into exactly one tier to determine the required action:
+   * **Tier 1 (Gap)**: Capability doesn't exist yet (build missing piece, no evidence needed).
+   * **Tier 2 (Failure)**: Code exists but is broken or returns errors (patch minimal code, save stack traces).
+   * **Tier 3 (Regression)**: External change broke previously working behavior, e.g., stale DOM selectors or API mutations (collect DOM/network/screenshot evidence first, then patch with primary + fallback selector paths).
+3. **Three-Attempt Maximum**: Do not loop or retry a failing repair silently. Attempt to fix a problem up to **three times**. If the third attempt fails, **hard stop** and present the formal Escalation Template to the user with the evidence bundle.
+4. **Update The Map, Not Just the Diary**: A fix that is not recorded is a future regression waiting to happen. You must:
+   * Update the relevant domain playbooks and references (`references/<topic>-playbook.md`) with updated selectors or timing rules.
+   * Log the evolution step in `evolution-log.md` with the exact tier, target, and outcome.
+5. **Autonomy & Permission Gates**:
+   * **Auto-approved**: Adding new functions/exports, fallback selectors, and appending diffs for modified functions.
+   * **Explicit Confirmation Gated**: Renaming or moving files.
+   * **Hard Gated**: **Deletions of any file or function are strictly forbidden** without explicit human permission.
+6. **One Logical Fix at a Time**: Apply one clean fix per execution pass. Never bundle multiple refactoring changes or unrelated patches together.
 
-2. **Three-attempt maximum**: Attempt a repair up to three times. On the third failure,
-   hard stop and present the Escalation Template with the full evidence bundle.
+7. **Fix Forward, Never Skip**: When a tool, script, or automation step fails, fix it at the source immediately and update the relevant playbook. Do NOT work around failures, add retries without understanding the root cause, or leave the fix for later. Every session must end with the same capabilities working as reliably as they started. The goal is smooth, issue-free runs in every future session — compound the fixes, not the workarounds.
 
-3. **Update The Map, not just the Diary**: Every fix must update the relevant domain playbook
-   or reference file. A fix that is not recorded is a future regression.
+8. **Synchronize Sweep Templates on Thesis/Strategy Changes**: Whenever the core investment thesis, sub-strategies, or target weights are modified:
+   * You MUST update the "Core Portfolio Thesis Background" section inside both the daily sweep template (`plugins/portfolio-advisor/assets/templates/daily_sweep.md.template`) and the weekly sweep template (`plugins/portfolio-advisor/assets/templates/weekly_sweep.md.template`).
+   * Regenerate the final prompt outputs to verify they align with the updated strategies.
 
-4. **Autonomy gates**:
-   - Auto-approved: adding new functions/exports, fallback selectors, appending to existing files
-   - Explicit confirmation required: renaming or moving any file
-   - **Hard gated — always requires explicit human permission**: any deletion of any file,
-     function, skill, SKILL.md, eval, or reference. See `skill-deletion-guard.md`.
-
-5. **The Absorption Fallacy — always wrong**: Concluding that a skill, file, or directory is
-   "redundant", "absorbed", "consolidated", or "superseded" and deleting it autonomously.
-   Overlap is never evidence that deletion is safe. Flag it; never act on it.
-
-6. **One logical change per pass**: Never bundle multiple independent repairs in a single
-   execution pass.
-
----
-
-### Friction-Driven Self-Evolution (always active)
-
-Agents must not silently work around broken, unclear, missing, or awkward repo capabilities.
-
-A self-evolution event is required when **any** of the following occurs:
-
-- A script, helper, command, skill, sub-agent, selector, eval, or documented workflow fails.
-- The agent avoids an existing capability and performs the work manually instead.
-- The agent uses a workaround because the intended path was broken, unclear, or ambiguous.
-- The agent has to guess because instructions, profiles, schemas, or routing are unclear.
-- The user corrects the agent on a repeatable process problem.
-- The agent notices a missing helper, stale reference, stale agent instruction, or broken skill invocation.
-
-**Successful task completion does not waive this requirement.** If the task succeeded only
-because the agent bypassed friction, self-evolution handling is still required.
-
----
-
-### Tier 0 — Friction / Workaround
-
-> "The task completed, but the system did not improve."
-
-**Signals:**
-- Agent bypassed an existing script, skill, sub-agent, or helper
-- Agent manually performed work that an existing repo capability should handle
-- Agent encountered ambiguity and guessed instead of improving instructions
-- Agent noticed an awkward or error-prone workflow but did not update The Map
-- Agent used a temporary workaround
-
-**Required response — pick exactly one:**
-- Fix is small + inside allowed edit boundaries → patch it now, update The Map.
-- Fix is not safe or not small → record **Map Debt** in `<plugin>/references/map-debt.md` and append an audit row to the evolution log.
-- Friction is repeated or blocking → escalate to the user.
-
----
-
-### No Silent Bypass Rule
-
-If an existing repo capability is intended for the task, the agent must use it.
-If the capability fails, the agent may use a workaround only after recording the failure
-as a self-evolution event. Silent bypass is a protocol violation.
-
----
-
-### Pre-Completion Self-Evolution Gate
-
-Before claiming a task is complete, output this block verbatim:
-
-```
-PRE-COMPLETION GATE:
-  Capability check: Did I verify whether an existing repo capability was intended for this task? [YES/NO]
-  1. Did any existing capability fail, get bypassed, or get manually replaced?  [YES/NO — 1 line if YES]
-  2. Did I guess, assume, or get corrected on a repeatable process?              [YES/NO — 1 line if YES]
-  3. Did I notice something the next agent will hit again if not fixed?          [YES/NO — 1 line if YES]
-
-If any YES: action taken → FIX / MAP_DEBT / ESCALATE
-```
-
-The block must be emitted as literal text, not silent introspection. The task is not complete
-until every YES has a declared action.
-
----
-
-### Map Debt
-
-If friction is real but cannot be fixed immediately, record it as Map Debt.
-
-Map Debt lives in `<plugin>/references/map-debt.md` — a working queue separate from the
-evolution log. The evolution log is append-only audit history. Map Debt is mutable: entries
-are resolved, aged, or escalated over time. Do not conflate the two.
-
-Each Map Debt entry must include:
-- Logged date (`YYYY-MM-DD`)
-- Cycle ID (from `events.jsonl`)
-- Artifact affected (file path or skill slug)
-- Friction observed (one sentence)
-- Why it was not fixed now
-- Recommended fix
-- Evidence or reproduction step
-- Severity: S / M / L
-- Repeat: YES / NO
-- Status: OPEN / RESOLVED / ESCALATED
-
-**Aging rule:** At Phase 0 read, count completed cycles since entry's Cycle ID. If an `OPEN`
-entry is older than 3 completed cycles, auto-escalate before starting new work.
-If the entry's Cycle ID is from a prior session (not in current `events.jsonl`), fall back
-to the Logged date: auto-escalate if `(today - Logged) > 14 days`.
-**Repeat = YES:** must escalate on next encounter — no further deferral permitted.
+9. **Refine Prompt Templates on Ingesting Grok Responses**: Every time you ingest and process a Grok sweep response, you MUST evaluate its quality (checking for grouped tickers, lazy placeholders, or TA-related errors) and immediately update the prompt templates (`daily_sweep.md.template` and `weekly_sweep.md.template`) to guard against any observed deficiencies.
