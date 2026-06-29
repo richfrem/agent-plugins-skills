@@ -391,6 +391,8 @@ def _discover_plugins(search_root: Path) -> list:
                 continue
             if p.name in SKIP:
                 continue
+            if not _has_plugin_manifest(p):
+                continue
             plugins.append(_read_plugin_meta(p))
         return plugins
 
