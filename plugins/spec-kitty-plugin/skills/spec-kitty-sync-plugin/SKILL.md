@@ -159,7 +159,7 @@ If **ANY** protected file is missing or `ls` returns an error, trigger the Escal
 
 > Which plugins should I install/update?
 > 1. **Only spec-kitty-plugin** (just the updated spec-kitty commands)
-> 2. **All plugins** (full ecosystem sync across all 80+ plugins)
+> 2. **All plugins** (full ecosystem sync across all 11 plugins / 147 skills)
 
 ### Step 4: Deploy to Agent Environments (Universal)
 
@@ -169,7 +169,7 @@ After performing the sync, you must deploy the updated plugin to your agent envi
 > **Zero Inline Commands**: See the central installation guide for the authoritative deployment logic:
 > ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
-This handles both forced re-installation and full ecosystem synchronization across all 80+ plugins.
+This handles both forced re-installation and full ecosystem synchronization across all 11 plugins / 147 skills.
 
 ### Step 5: Confirmation
 

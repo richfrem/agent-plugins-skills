@@ -28,25 +28,57 @@ The agent will autonomously:
 3. Synchronize the generated `.kittify/memory` rules into the plugin's `rules/` directory.
 4. Redeploy the updated bundle into your IDE so the slash commands become active.
 
-## Active Skills (2)
-These skills automate the administration of the framework itself.
+## Active Skills (19)
+Two categories: **2 custom/admin skills** (hand-maintained) and **17 auto-synced workflow skills** (generated from `.kittify/` templates by `sync_configuration.py`).
 
+### Admin Skills (custom — never overwritten by sync)
 | Skill | Description |
 |:---|:---|
-| `spec-kitty-init` | Initialize the Spec-kitty environment and deploy the slash commands. |
-| `spec-kitty-update`| Update an existing environment, pulling new templates and redeploying. |
+| `spec-kitty-sync-plugin` | Full-cycle install **or** update — upgrades CLI, refreshes templates, syncs plugin, reconciles custom knowledge, and bridges to agent environments. |
+| `spec-kitty-workflow` | End-to-end SDD workflow SOPs, safety steps, and best practices. |
 
-## Slash Command Workflows (14)
+### Workflow Skills (auto-synced from `.kittify/` via `sync_configuration.py`)
+| Skill | Description |
+|:---|:---|
+| `spec-kitty-specify` | Phase 0 — draft feature specification |
+| `spec-kitty-plan` | Phase 0 — generate implementation plan |
+| `spec-kitty-tasks` | Phase 0 — generate work packages |
+| `spec-kitty-tasks-outline` | Work package outline generation |
+| `spec-kitty-tasks-packages` | Work package packaging |
+| `spec-kitty-tasks-finalize` | Finalize and lock work packages |
+| `spec-kitty-implement` | Phase 1 — create worktree for WP |
+| `spec-kitty-review` | Phase 1 — submit WP for review |
+| `spec-kitty-accept` | Validate feature readiness |
+| `spec-kitty-merge` | Automated batch merge |
+| `spec-kitty-status` | Show kanban board |
+| `spec-kitty-analyze` | Analyze specification or codebase |
+| `spec-kitty-checklist` | Generate pre-merge checklist |
+| `spec-kitty-clarify` | Identify spec ambiguities |
+| `spec-kitty-constitution` | Enforce workflow constitution rules |
+| `spec-kitty-dashboard` | Project health dashboard |
+| `spec-kitty-research` | Research and discovery phase |
+
+## Slash Commands (17)
+All workflow skills are invocable as slash commands once deployed to your agent environment.
 | Command | Description |
 |:---|:---|
 | `/spec-kitty:specify` | Create feature specification |
 | `/spec-kitty:plan` | Generate implementation plan |
 | `/spec-kitty:tasks` | Generate work packages |
+| `/spec-kitty:tasks-outline` | Work package outline |
+| `/spec-kitty:tasks-packages` | Work package packaging |
+| `/spec-kitty:tasks-finalize` | Finalize work packages |
 | `/spec-kitty:implement` | Create worktree for WP |
 | `/spec-kitty:review` | Submit WP for review |
 | `/spec-kitty:accept` | Validate feature readiness |
 | `/spec-kitty:merge` | Automated batch merge |
 | `/spec-kitty:status` | Show kanban board |
+| `/spec-kitty:analyze` | Analyze specification or codebase |
+| `/spec-kitty:checklist` | Generate pre-merge checklist |
+| `/spec-kitty:clarify` | Identify spec ambiguities |
+| `/spec-kitty:constitution` | Enforce workflow constitution |
+| `/spec-kitty:dashboard` | Project health dashboard |
+| `/spec-kitty:research` | Research and discovery phase |
 
 ## Architecture (Workflow Provenance)
 
@@ -63,22 +95,18 @@ This ensures that any augmented best practices or custom ecosystem strategies ar
 
 ```text
 spec-kitty-plugin/
-├── .claude-plugin/plugin.json
 ├── agents/
+│   ├── spec-kitty-agent.md   (SDD lifecycle orchestrator)
+│   └── spec-kitty-setup.md   (install/sync orchestrator)
 ├── rules/ (Synced from .kittify/memory/)
-├── workflows/ (Master symlinks mapping to .windsurf/workflows/)
-├── commands/
+├── workflows/ (Master symlinks → .windsurf/workflows/)
 ├── references/
 ├── scripts/
 │   └── sync_configuration.py (Idempotent provenance generator)
-└── skills/
-    ├── spec-kitty-implement/
-    │   ├── SKILL.md (Auto-generated with provenance header)
-    │   └── workflows/
-    │       └── spec-kitty.implement.md -> ../../workflows/...
-    ├── spec-kitty-sync-plugin/ (Install/update sync)
-    ├── spec-kitty-workflow/  (SDD workflow SOPs)
-    └── ... (13 auto-synced skills from CLI)
+└── skills/                   (19 total)
+    ├── spec-kitty-sync-plugin/ (custom — install/update)
+    ├── spec-kitty-workflow/    (custom — SDD SOPs)
+    └── ... (17 auto-synced skills from CLI via sync_configuration.py)
 ```
 
 ## License
