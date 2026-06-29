@@ -1,1 +1,0 @@
-../../../../../../.agents/skills/spec-kitty-analyze/workflows/spec-kitty.analyze.md

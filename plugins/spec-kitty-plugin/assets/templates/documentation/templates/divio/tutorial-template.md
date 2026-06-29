@@ -1,1 +1,0 @@
-../../../../../../../.kittify/missions/documentation/templates/divio/tutorial-template.md

@@ -1,6 +1,6 @@
 """agent-plugins-skills — hermes plugin registration.
 
-Registers all 11 plugin skill directories so they are discoverable
+Registers all 10 plugin skill directories so they are discoverable
 via 'agent-plugins-skills:<skill>' inside hermes sessions.
 Hermes auto-prefixes the plugin name as the namespace.
 """
@@ -161,26 +161,6 @@ _SKILL_DIRS = [
     ("plugin-manager",           "plugin-remover"),
     ("plugin-manager",           "plugin-syncer"),
 
-    # spec-kitty-plugin (19 skills)
-    ("spec-kitty-plugin",        "spec-kitty-accept"),
-    ("spec-kitty-plugin",        "spec-kitty-analyze"),
-    ("spec-kitty-plugin",        "spec-kitty-checklist"),
-    ("spec-kitty-plugin",        "spec-kitty-clarify"),
-    ("spec-kitty-plugin",        "spec-kitty-constitution"),
-    ("spec-kitty-plugin",        "spec-kitty-dashboard"),
-    ("spec-kitty-plugin",        "spec-kitty-implement"),
-    ("spec-kitty-plugin",        "spec-kitty-merge"),
-    ("spec-kitty-plugin",        "spec-kitty-plan"),
-    ("spec-kitty-plugin",        "spec-kitty-research"),
-    ("spec-kitty-plugin",        "spec-kitty-review"),
-    ("spec-kitty-plugin",        "spec-kitty-specify"),
-    ("spec-kitty-plugin",        "spec-kitty-status"),
-    ("spec-kitty-plugin",        "spec-kitty-sync-plugin"),
-    ("spec-kitty-plugin",        "spec-kitty-tasks"),
-    ("spec-kitty-plugin",        "spec-kitty-tasks-finalize"),
-    ("spec-kitty-plugin",        "spec-kitty-tasks-outline"),
-    ("spec-kitty-plugin",        "spec-kitty-tasks-packages"),
-    ("spec-kitty-plugin",        "spec-kitty-workflow"),
 ]
 
 

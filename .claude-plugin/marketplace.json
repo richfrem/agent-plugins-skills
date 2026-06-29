@@ -6,14 +6,6 @@
   },
   "plugins": [
     {
-      "name": "spec-kitty",
-      "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine — the flagship workflow plugin for AI-assisted feature development.",
-      "source": "./plugins/spec-kitty-plugin",
-      "strict": true,
-      "category": "workflow",
-      "tags": ["sdd", "workflow", "kanban", "worktree", "bridge"]
-    },
-    {
       "name": "exploration-cycle-plugin",
       "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
       "source": "./plugins/exploration-cycle-plugin",

@@ -1,1 +1,0 @@
-../../../../../../.kittify/missions/documentation/command-templates/review.md

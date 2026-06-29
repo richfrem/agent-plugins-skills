@@ -1,1 +1,0 @@
-../../../../../../.kittify/missions/software-dev/command-templates/implement.md

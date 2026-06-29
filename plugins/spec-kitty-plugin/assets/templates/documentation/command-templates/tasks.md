@@ -1,1 +1,0 @@
-../../../../../../.kittify/missions/documentation/command-templates/tasks.md
