@@ -18,9 +18,9 @@
     },
     {
       "cli": "agy",
-      "model": "gemini-3.1-pro",
+      "model": "gemini-3.5-flash",
       "cost_tier": "paid_per_token",
-      "cost_note": "Cheapest real-world agentic model. 3.5 Flash burns 3-5x more tokens via Thought Preservation.",
+      "cost_note": "Flash: faster (4x tokens/sec), cheaper/token, optimized for agentic/tool-use/coding tasks. Use Low thinking level to control cost.",
       "deprecated": false
     },
     {

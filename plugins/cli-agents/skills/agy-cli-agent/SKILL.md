@@ -30,31 +30,38 @@ You dispatch tasks to Google Gemini (and other) models via the `agy` binary.
 > `agy` is the **sole Gemini CLI** since the standalone `gemini` binary retired June 18 2026.
 > All Gemini model work — including cost-efficient older models — routes through `agy`.
 
-### Model Strategy: Use `gemini-3.1-pro` by Default
+### Model Strategy: Flash by Default, Pro for Deep Reasoning
 
 > **See `references/agy-models.json`** for the full model catalog, cost tiers, and strategy field.
 
 ```bash
-# Default (cheapest real-world agentic cost)
+# Default (Flash — faster, cheaper/token, optimized for agentic/coding tasks)
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy
-# ↑ run_agent.py loads gemini-3.1-pro from references/cheapest_models.json
+# ↑ run_agent.py loads gemini-3.5-flash from references/cheapest_models.json
 
-# Explicit model override
+# Explicit Low thinking (recommended for CLI loops to control Thought Preservation cost)
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model "Gemini 3.5 Flash (Low)"
+
+# Pro — escalate for deep reasoning / architecture decisions
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.1-pro
 ```
 
-### Agentic Token Trap — Why Flash Costs 3–5× More
+### Flash vs Pro: Which to Use
 
-Gemini 3.5 Flash has a "Thought Preservation" feature that carries reasoning context forward
-across turns. In multi-step CLI operations this **hyper-inflates input tokens** even at Low thinking:
+| | **Gemini 3.5 Flash** | **Gemini 3.1 Pro** |
+|:---|:---:|:---:|
+| Price (in/out per 1M) | $1.50 / $9.00 | $2.00 / $12.00 |
+| Speed | **4× faster** | Baseline |
+| Agentic tool use / MCP / terminal | **Best** | Good |
+| Coding (edit-test loops) | **Best** | Better for final review |
+| Deep abstract reasoning | Good | **Best** |
+| Architecture planning | Good | **Best** |
+| Max output tokens | **65,536** | 32,768 |
 
-| Model | List Price (in/out per 1M) | Avg Turns/Task | Avg Context/Task | Real Cost |
-|:---|:---:|:---:|:---:|:---:|
-| **Gemini 3.1 Pro (Low)** | $2.00 / $12.00 | ~26 | ~650K tokens | **1× (baseline)** |
-| Gemini 3.5 Flash (Low) | $1.50 / $9.00 | ~39 | ~1.4M tokens | **3–5× more expensive** |
+**Default: Flash.** Use Pro only when the task requires deep multi-step reasoning or expert-level judgment.
 
-**Bottom line:** Flash looks cheaper on list price but is far more expensive per completed task.
-Use `gemini-3.1-pro` for all CLI dispatch. Reserve Flash for single-shot or interactive sessions.
+> **Thinking level note:** Flash with High thinking can inflate tokens via Thought Preservation.
+> Use Low thinking level for high-frequency CLI dispatch loops.
 
 ---
 
@@ -102,11 +109,11 @@ python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 
 | Display Name (agy models) | `--model` ID | Thinking | Rec |
 |:---|:---|:---:|:---|
-| **Gemini 3.1 Pro (Low)** | `gemini-3.1-pro` | Low | **Default — cheapest overall** |
-| Gemini 3.1 Pro (High) | `gemini-3.1-pro-high` | High | Complex reasoning tasks |
-| Gemini 3.5 Flash (Low) | `gemini-3.5-flash-low` | Low | Avoid in CLI loops |
-| Gemini 3.5 Flash (Medium) | `gemini-3.5-flash` | Medium | Avoid — legacy default |
-| Gemini 3.5 Flash (High) | `gemini-3.5-flash-high` | High | Avoid — max token burn |
+| **Gemini 3.5 Flash (Low)** | `gemini-3.5-flash-low` | Low | **Best for CLI loops — cheapest, fastest** |
+| Gemini 3.5 Flash (Medium) | `gemini-3.5-flash` | Medium | **Default** — standard dispatch |
+| Gemini 3.5 Flash (High) | `gemini-3.5-flash-high` | High | Single-shot deep tasks only |
+| Gemini 3.1 Pro (Low) | `gemini-3.1-pro` | Low | Deep reasoning, architecture |
+| Gemini 3.1 Pro (High) | `gemini-3.1-pro-high` | High | Most demanding reasoning only |
 | Claude Sonnet 4.6 (Thinking) | `claude-sonnet-4.6-thinking` | — | Anthropic quality via agy |
 | Claude Opus 4.6 (Thinking) | `claude-opus-4.6-thinking` | — | Critical tasks only |
 | GPT-OSS 120B (Medium) | `gpt-oss-120b` | Medium | OpenAI OSS via agy |

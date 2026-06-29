@@ -10,9 +10,9 @@
     "description": "Cheapest OpenAI model (20 cr/1M input, 125 cr/1M output)"
   },
   "agy": {
-    "model": "gemini-3.1-pro",
+    "model": "gemini-3.5-flash",
     "cost": "Paid (Per-token)",
-    "description": "Cheapest real-world agentic model (3.5 Flash burns 3-5x more tokens)"
+    "description": "Flash: faster, cheaper/token, optimized for agentic/tool-use tasks. Use Low thinking level."
   },
   "claude": {
     "model": "claude-haiku-4.5",

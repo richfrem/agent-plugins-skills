@@ -36,7 +36,7 @@ Flags (named-flag mode):
                     copilot → gpt-5-mini
                     gemini  → gemini-3-flash-preview
                     claude  → haiku-4.5
-                    agy     → (agy selects its own)
+                    agy     → gemini-3.5-flash (loaded from cheapest_models.json)
                     codex   → gpt-5-codex
                     llama   → gemma-4-12b
     --max-tokens  Max output tokens for cli=llama (default: 120).
@@ -71,7 +71,7 @@ def _load_default_models() -> dict[str, str | None]:
         "copilot": "gpt-5-mini",
         "gemini": "gemini-3-flash-preview",
         "claude": "haiku-4.5",
-        "agy": "gemini-3.1-pro",
+        "agy": "gemini-3.5-flash",
         "codex": "gpt-5-mini",
         "llama": "gemma-4-12b",
     }
