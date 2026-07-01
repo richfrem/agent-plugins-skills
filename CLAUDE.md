@@ -118,6 +118,7 @@ plugins/<plugin>/           ← canonical source
 
 See `plugins/plugin-manager/scripts/` for ecosystem management scripts.
 See `ADRs/` for authoritative architecture rules.
+See `architecture.md` for the full repo architecture overview (project structure, plugin-by-plugin breakdown, ADR summary, symlink system, runtime state layout).
 
 ---
 
