@@ -117,6 +117,7 @@ plugins/<plugin>/           ← canonical source
 > is the source. Files there are inactive until installed via `plugin_add.py` or `uvx`.
 
 See `ADRs/` for authoritative architecture rules.
+See `architecture.md` for the full repo architecture overview (project structure, plugin-by-plugin breakdown, ADR summary, symlink system, runtime state layout).
 
 ---
 
