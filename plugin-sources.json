@@ -15,6 +15,12 @@
     {
       "source": "richfrem/agent-plugins-skills",
       "plugins": [
+        "spec-kitty"
+      ]
+    },
+    {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "plugins": [
         "agent-agentic-os",
         "agent-loops",
         "agent-memory",
@@ -24,8 +30,7 @@
         "dev-utils",
         "exploration-cycle-plugin",
         "obsidian-wiki-engine",
-        "plugin-manager",
-        "spec-kitty"
+        "plugin-manager"
       ]
     }
   ]
