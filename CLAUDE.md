@@ -285,8 +285,8 @@ Define success criteria first. Loop until verified.
 ## Coding Rules (always applied)
 
 - **Source of truth**: `plugins/` is authoritative. `.agents/`, the marketplace, and the Claude Code plugin system are installed copies — never use them to derive counts, versions, or skill lists.
-- **TDD**: No production code without a failing test first. Invoke `superpowers:test-driven-development` before writing any implementation. Full rule: `.agent/rules/test-driven-development.md`
-- **Friction = self-evolution event**: Any workaround, bypass, guess, or user correction requires fix / Map Debt / escalation before claiming done. Output the `PRE-COMPLETION GATE` block. Full rule: `.agent/rules/self-evolution-policy.md`
+- **TDW (TDD & TDO)**: No code development or orchestration execution without a failing test or success contract first. Full rule: `.agent/rules/test-driven-development.md`
+- **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Full rule: `.agent/rules/self-evolution-policy.md`
 - **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
 - **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/skill-deletion-guard.md`. If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
 - **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime

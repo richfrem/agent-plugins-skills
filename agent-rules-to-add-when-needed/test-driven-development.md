@@ -1,130 +1,108 @@
 ---
 description: >
-  Enforce Test-Driven Development for all new code in this project.
-  No implementation code is written before a failing test exists.
-  The superpowers TDD skill MUST be invoked before writing any feature,
-  bugfix, or script. Tests live in the canonical tier locations defined
-  in the test suite vision spec.
+  Enforce Test-Driven Work (TDW) for all new code development (TDD) and orchestration flows (TDO).
+  No implementation code is written or orchestration executed before a success contract or failing test exists.
 globs:
-  - "investment_screener/backend/py_services/*.py"
-  - "investment_screener/backend/src/**/*.ts"
-  - "investment_screener/frontend/src/**/*.tsx"
-  - "plugins/**/scripts/*.py"
-  - "plugins/**/node/**/*.js"
+  - "src/**/*"
+  - "tests/**/*"
+  - "plugins/**/*"
+  - "backend/**/*"
+  - "frontend/**/*"
 ---
 
-# Rule: Test-Driven Development — Tests Before Code
+# Rule: Test-Driven Work (TDW) — Tests & Contracts Before Execution
 
 ## Why This Rule Exists
 
-A silent import bug (`validate_weights` missing from `py_services/`) was introduced
-when `helpers.ts` was refactored to call `portfolio_action.py` via `bridge.ts`.
-A one-line unit test for `getPythonActions()` would have caught it in under a minute.
-Instead it was discovered during an unrelated session, after the code had already
-been committed.
+A silent logic, path resolution, or orchestration contract bug is easily introduced during development or refactoring. Verification contracts written before execution force clarity of intent, define clear success boundaries, and catch bugs before any work is committed.
 
-**Tests written after code only verify what you remember to check.
-Tests written before code verify what you actually require.**
+**Verification contracts written after the work only verify what you remember to check.  
+Verification contracts written before the work verify what you actually require.**
 
 ---
 
 ## The Iron Law
 
 ```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
+NO CODE DEVELOPMENT OR ORCHESTRATION EXECUTION WITHOUT A FAILING TEST OR SUCCESS CONTRACT FIRST.
 ```
 
 This applies to:
-- New Python services in `py_services/`
-- New Express routes and middleware
-- New TradingView CDP automation functions in `node/core/trading.js`
-- New plugin scripts in `plugins/*/scripts/`
-- Bug fixes to any of the above
+- **Code Development (TDD)**: New service modules, functions, API routes, automation scripts, and bug fixes to any of these.
+- **Orchestration & Workflows (TDW/TDO)**: New prompt templates, agent tool execution paths, coordinator scripts, workflow engines, and task runners.
 
 It does NOT apply to:
-- Throwaway exploration/prototyping (throw the prototype away before implementing)
-- Configuration files and JSON data files
-- Generated boilerplate (migration files, etc.)
-- SKILL.md files and agent prompts (untestable by nature)
+- Throwaway exploration or prototyping (which must be discarded before the actual implementation begins)
+- Static, non-executable configuration files and JSON/YAML data files
+- Automatically generated code (migration files, boilerplate, etc.)
+- Declarative task checklists or static documents (unless executable)
 
 ---
 
-## Mandatory Pre-Implementation Step
+## Mandatory Pre-Execution Step
 
-**Before writing any implementation code**, invoke the superpowers TDD skill:
+**Before writing any implementation code or executing any new orchestration flow**, establish the verification contract:
 
-```
-Skill: superpowers:test-driven-development
-```
+1. **For Code**: Write a failing unit or integration test first.
+2. **For Orchestration**: Write a mock evaluation scenario, an assertions list, or an expected output schema validator first.
+3. **Skill Tooling**: If the workspace contains a custom test-driven development skill or test runner (such as `superpowers:test-driven-development`), invoke it:
+   ```
+   Skill: superpowers:test-driven-development (if available)
+   ```
 
-This is not optional. The skill enforces the Red-Green-Refactor cycle and blocks
-the rationalization patterns ("too simple to test", "I'll test after", etc.) that
-always lead to untested, broken code.
-
-If you find yourself writing implementation before invoking this skill, stop.
-The code you wrote is invalid. Delete it and start over.
+This enforces the Red-Green-Refactor cycle and blocks the rationalization patterns ("too simple to test", "I'll do it after") that lead to broken systems. If you start the work before writing the contract, it is invalid. Delete it and start over.
 
 ---
 
 ## Test Tier Locations
 
-When writing tests, place them in the correct tier:
+Place tests in the correct tier directory designated for the project. Always locate the project's existing test structure (e.g. `tests/`, `test/`, `spec/`) first and follow its naming patterns. Typical default locations:
 
 | What you're building | Test location | Test file naming |
 |---|---|---|
-| Python service in `py_services/` | `investment_screener/backend/tests/py_services/` | `test_<script_name>.py` |
-| Express route in `src/routes/` | `investment_screener/backend/tests/api/` | `test_<route_name>_routes.py` |
-| TradingView CDP function in `trading.js` | `plugins/tradingview/tests/` | `tv_test_harness.py` (Section 0–5) |
-| Plugin script in `plugins/*/scripts/` | `plugins/<plugin>/tests/` | `test_<script_name>.py` |
-| React component | `investment_screener/frontend/tests/` | `<ComponentName>.spec.ts` |
-
-**Reference:** `docs/superpowers/specs/2026-05-17-test-suite-vision-design.md`
+| Pure business logic / services | `/tests/unit/` or `/test/` | `test_<module_name>.py` / `<ModuleName>.spec.ts` |
+| API routes / Controllers | `/tests/integration/` or `/tests/api/` | `test_<route_name>_routes.py` / `<RouteName>.spec.ts` |
+| UI components | `/tests/ui/` or `/tests/frontend/` | `<ComponentName>.spec.ts` |
+| Script automation / CLI tools | `/tests/cli/` or `/tests/` | `test_<script_name>.py` |
 
 ---
 
-## What a Passing Test Looks Like Here
+## What a Passing Test Looks Like
 
-### Python service (pure function)
+### 1. Pure Function (Deterministic Unit Test)
 ```python
 # WRITE THIS FIRST — watch it fail
-def test_derive_action_exit_with_ai_override():
-    result = derive_action("NVDA", current_pct=5.0, target_pct=0.0, ai_upside=15.0)
-    assert result == "REVIEW"  # AI conflict overrides EXIT
+def test_calculate_total_with_override():
+    result = calculate_total(base_amount=100.0, tax_rate=0.05, discount=10.0)
+    assert result == 95.0  # discount applied before tax
 
-# THEN write the implementation in portfolio_action.py
+# THEN write the implementation in calculations.py
 ```
 
-### Python service (CLI arg validation — no TV required)
+### 2. CLI Argument Validation (Integration Test)
 ```python
 # WRITE THIS FIRST
-def test_place_order_cancel_requires_order_id():
+def test_tool_requires_target_argument():
     result = subprocess.run(
-        ["python3", PLACE_ORDER_PY, "--cancel"],
+        ["python3", "cli_tool.py", "--action", "sync"],
         capture_output=True, text=True
     )
     assert result.returncode != 0
-    assert "--order-id is required" in result.stderr
+    assert "--target is required" in result.stderr
 ```
 
-### TradingView CDP function
-```python
-# WRITE THIS FIRST in tv_test_harness.py Section 5
-def test_5_1_cancel_nonexistent_order():
-    result = cancel_order(order_id="00000000-0000-0000-0000-000000000000")
-    assert result["cancelled"] is False
-    # THEN implement the error path in trading.js
-```
-
-### Express route (backend must be running)
-```python
-# WRITE THIS FIRST
-def test_preflight_blocked_when_tv_offline():
-    r = requests.post(f"{BASE}/api/trading/preflight", json={
-        "ticker": "AAPL", "action": "buy", "shares": 1,
-        "orderType": "market", "account": "tfsa"
-    })
-    assert r.status_code == 422
-    assert r.json()["state"] == "PREFLIGHT_BLOCKED"
+### 3. API Route Test (Backend Server)
+```javascript
+// WRITE THIS FIRST
+describe('POST /api/payment/preflight', () => {
+  it('should block transaction when balance is insufficient', async () => {
+    const res = await request(app)
+      .post('/api/payment/preflight')
+      .send({ accountId: '123', amount: 1000.0 });
+    expect(res.status).toBe(422);
+    expect(res.body.state).toBe('INSUFFICIENT_FUNDS');
+  });
+});
 ```
 
 ---
@@ -132,24 +110,23 @@ def test_preflight_blocked_when_tv_offline():
 ## What Counts as a Valid Failing Test
 
 A test only satisfies the TDD requirement if — **before** any implementation is written:
-1. The test executes without syntax error
-2. The test **fails** for the expected reason
-3. The failure **proves** the feature or bugfix does not yet exist
+1. The test executes without syntax/runtime compilation errors.
+2. The test **fails** for the expected reason (e.g., assertion error, missing function).
+3. The failure **proves** the feature or bugfix does not yet exist.
 
 **Invalid examples — these do NOT satisfy TDD:**
-
 ```python
-assert True  # trivial — proves nothing
+assert True  # Trivial — proves nothing
 ```
 ```python
-with pytest.raises(Exception): ...  # too broad — doesn't verify failure reason
+with pytest.raises(Exception): ...  # Too broad — does not verify the specific failure cause
 ```
 ```python
 mock_fn.return_value = expected_value
-assert mock_fn() == expected_value  # tests the mock, not the real path
+assert mock_fn() == expected_value  # Tests the mock, not the actual code path
 ```
 ```python
-@pytest.mark.skip  # skipped test — not a failing test
+@pytest.mark.skip  # Skipped test — does not prove a failure
 pass
 ```
 
@@ -157,137 +134,85 @@ pass
 
 ---
 
-## Test Categories — Different Standards Apply
-
-### Category A — Pure deterministic tests
-Fast, isolated, no I/O (e.g., `derive_action()`, valuation math, ticker normalization).
-- Exhaustive branch coverage + edge cases
-- Mocking acceptable
-- No network, no broker
-
-### Category B — Runtime integration tests
-Real subprocess execution, real files, real CLI (e.g., `portfolio_action.py`, `place_order.py`, `extractJson()`, Express route transitions).
-- **Subprocess-first** — do not mock the execution path
-- Real stdout/stderr parsing with real fixture files
-- See "Critical Runtime Paths" section below
-
-### Category C — Live broker automation tests
-TradingView/Questrade automation that places real orders.
-- Explicit `--live --i-understand-live-broker-test` opt-in required
-- Orphan cleanup ledger required before any order attempt
-- Safe-price enforcement (≤ min($1.00, 1% of market price))
-- CRITICAL severity gate — suite aborts if any CRITICAL fails first
-- Never market orders in tests
-
----
-
 ## Critical Runtime Paths — No Mocking Allowed
 
-These paths must be tested with **real subprocess execution and real file resolution** in Category B tests:
+Certain critical paths must be tested with **real subprocess execution, real file system resolution, and actual I/O** rather than synthetic mocks:
 
-- `spawnPythonScript()` in `bridge.ts`
-- `portfolio_action.py` (via subprocess, from `py_services/` path)
-- `place_order.py` (via subprocess, each mode independently)
-- `tv_cancel_order.py`, `tv_modify_order.py`, `tv_get_orders.py`
-- `extractJson()` in `trading.ts` (with captured real stdout fixtures)
-- `sys.path` bootstrap logic and `Path(__file__).resolve()` path resolution
+- Script execution wrappers and bridges (e.g., spawning helper scripts or subprocesses)
+- File system path resolution logic and directory setup
+- File readers and parsers handling external formats
+- External API client boundaries
 
 **Do NOT mock these in the primary integration test:**
 ```python
-# FORBIDDEN for Category B tests:
+# FORBIDDEN for critical integration paths:
 mock_subprocess_run.return_value = ...
-mock_spawn_python_script.return_value = ...
 mock_os_path_exists.return_value = True
+mock_file_read.return_value = "fake file content"
 ```
 
-**Reason:** The original `portfolio_action.py` production bug was caused by runtime path resolution through subprocess. Mocking these layers would have hidden the bug entirely.
+**Reason:** Production bugs are frequently caused by runtime path resolution and formatting anomalies. Mocking these layers hides the bug entirely.
 
 ---
 
 ## Anti-Patterns — Stop and Start Over
 
-These patterns break TDD and will introduce bugs:
-
 | Pattern | What it produces |
 |---|---|
-| Writing the function, then writing a test that calls it | Tests that only verify what you built, not what's required |
-| Adding `sys.path` manipulation without a test that imports the module | Silent import failures in production (the exact bug this rule exists to prevent) |
-| Refactoring a bridge/helper without a test that calls it end-to-end | Path bugs invisible until runtime |
-| Testing only the happy path | Missed error handling, bad argument handling |
-| Testing via the Express API when the Python function is the real unit | Slow tests that hide where the failure is |
-| Testing internal implementation details instead of observable behavior | Brittle tests that fail on refactor but miss real regressions |
+| Writing the function first, then writing a test | Tests that only verify what you built, not what was required |
+| Modifying paths or imports without verifying via an import test | Silent import and runtime load failures |
+| Refactoring a bridge/helper without an end-to-end integration test | Invisible path or argument mismatch bugs |
+| Testing only the happy path | Missed edge cases, poor error handling, and silent crashes |
+| Testing via a heavy API when a unit test is more appropriate | Slow test suites that hide where the actual failure lies |
+| Testing internal private methods instead of observable behavior | Brittle tests that break during refactoring without protecting against regression |
 
-**Observable behavior is the contract.** Test exit codes, API response fields, JSON output shape, and state transitions — not internal flags, private fields, or cache internals.
-
-Bad: `assert helper._cache["x"] == value`  
-Good: `assert response.json()["state"] == "PREFLIGHT_PASSED"`
-
-**Full anti-pattern reference:** `superpowers:test-driven-development` → `testing-anti-patterns.md`
+**Observable behavior is the contract.** Test exit codes, API response structures, JSON schemas, and state transitions—not internal flags, private variables, or cache internals.
 
 ---
 
 ## Mutation Safety Rule
 
-Any change touching these areas **must** include a regression test that reproduces the pre-change behavior AND an assertion for the new expected behavior:
-
-- Order execution path (preflight → execute → submit)
-- Valuation calculations or DCF thresholds
-- Portfolio action classification (ACCUMULATE/TRIM/EXIT bands)
-- Broker automation (TradingView CDP)
-- State machine transitions in `trading.ts`
-- Stale-data gates (freshness checks, exit code 4)
-
-No existing CRITICAL-path test coverage may be reduced by a mutation. If you need to refactor a test, the refactored version must cover at least the same cases.
+Any change touching core business logic or security boundaries **must** include a regression test that reproduces the pre-change behavior AND an assertion for the new expected behavior. No existing critical-path test coverage may be reduced. If you refactor a test, the new version must cover at least the same cases.
 
 ---
 
 ## Prefer Replay Fixtures Over Synthetic Mocks
 
 When capturing external behavior for tests, prefer **recorded real output** over fabricated mocks:
+- Captured stdout/stderr logs from tools
+- Raw API response payloads (saved as local JSON/YAML fixtures)
+- Sample static files and databases
 
-- Captured `place_order.py` stdout (all modes)
-- Captured TradingView DOM snippets
-- Captured API responses
-- Captured projection JSON files
-- Captured audit log entries
-
-Store in `tests/fixtures/stdout_samples/` or appropriate fixture directory. Real captures preserve formatting quirks and edge cases that synthetic mocks routinely miss.
+Real captures preserve formatting quirks, character encodings, and edge cases that synthetic mocks routinely miss.
 
 ---
 
 ## Red Flags — Stop Immediately
 
-These thoughts mean you are rationalizing. Stop and invoke the TDD skill.
+If you think any of the following, you are rationalizing. Stop and write the test first:
+- *"This is just a quick script, tests would be overkill"*
+- *"I'll add tests after I see if this approach works"*
+- *"I manually ran it in my terminal and it worked"*
+- *"It's just a path change, nothing could break"*
+- *"The test is too hard to write before I know the interface"*
 
-- "This is just a quick script, tests would be overkill"
-- "I'll add tests after I see if this approach works"
-- "I manually ran it and it worked"
-- "It's just a path change, nothing could break"
-- "The test is too hard to write before I know the interface"
-
-The last one especially: if you don't know the interface, write the test that describes
-the interface you want. That IS the design.
+The last one especially: if you don't know the interface, write the test that describes **the interface you want**. That IS the design.
 
 ---
 
-## Minimum Test Coverage Per Code Type
+## Test-Driven Orchestration (TDO) & Prompt-Driven Work — Success Contracts First
 
-| Code type | Minimum tests required before merge |
-|---|---|
-| Pure Python function (no I/O) | All branches + error inputs |
-| Python CLI script | Valid args → expected exit code; missing required args → non-zero exit |
-| Express route (GET) | 200 happy path; 404 for unknown resource |
-| Express route (POST) | 400 for missing required fields; expected state on success |
-| New CDP function in trading.js | Section in `tv_test_harness.py` (at minimum dry-run) |
-| New plugin script | Smoke test: valid input → valid JSON output |
+For coordinator scripts, workflow engines, master orchestrators, agent prompts, and tool execution flows:
+- **Define the Orchestration Contract First**: Before writing any coordination logic or sequencing scripts, write an integration test or schema assertion that verifies parameter propagation between sub-components, execution orders, and error bubbling.
+- **Prompt & Output Schema Assertions**: When developing LLM prompts or templates, first define the exact output structure (e.g., JSON schema, markdown headings, or exact tone boundaries). Write validation checks (e.g., matching keys, non-empty outputs, schema compliance) before finalizing the prompt instruction.
+- **Safety and Boundary Invariance**: Assert that critical safety boundaries (e.g., user confirmations, budget caps, authorization gates, and data privacy limits) cannot be bypassed by any code path, flag override, or exception handler in the orchestrator.
+- **Runnable Integration Scenarios**: Every orchestrated workflow or skill must have a matching runnable evaluation scenario. Mock input fixtures must trigger the flow and verify that the output payload matches expectations in an offline or sandboxed environment.
 
 ---
 
 ## Related Rules and References
 
-- `.agent/rules/no-inline-python.md` — extraction policy for scripts (complement: if it's worth extracting, it's worth testing)
-- `.agent/rules/coding-conventions.md` — file headers and docstrings that make tests easier to write
-- `docs/superpowers/specs/2026-05-17-test-suite-vision-design.md` — full test suite vision (Tier 1–5)
-- `docs/adrs/023-tradingview-test-harness.md` — TV harness design decisions
-- `docs/adrs/010-testing-approach.md` — original testing ADR (pre broker-automation)
-- `superpowers:test-driven-development` skill — invoke BEFORE writing any implementation
+- `<project_root>/.agent/rules/no-inline-python.md` (or local script extraction policy) — extraction policy for scripts
+- `<project_root>/.agent/rules/coding-conventions.md` (or local style guides) — coding conventions and documentation standards
+- `<project_root>/docs/architecture/` (or project design docs) — system architecture details and design specifications
+- `superpowers:test-driven-development` skill (if available) — invoke BEFORE writing any implementation
