@@ -1,6 +1,13 @@
 ---
-trigger: always_on
-description: Enforces test-driven methodologies for both code development and orchestration workflows.
+description: >
+  Enforce Test-Driven Work (TDW) for all new code development (TDD) and orchestration flows (TDO).
+  No implementation code is written or orchestration executed before a success contract or failing test exists.
+globs:
+  - "src/**/*"
+  - "tests/**/*"
+  - "plugins/**/*"
+  - "backend/**/*"
+  - "frontend/**/*"
 ---
 
 # Rule: Test-Driven Work (TDW) — Tests & Contracts Before Execution

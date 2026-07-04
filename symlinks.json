@@ -764,6 +764,12 @@
       "description": ""
     },
     {
+      "src": "plugins/agent-agentic-os/scripts/audit_map_debt.py",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/audit_map_debt.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
       "src": "plugins/agent-agentic-os/scripts/check_todos.py",
       "dst": "plugins/agent-agentic-os/skills/todo-check/scripts/check_todos.py",
       "strategy": "symlink",
@@ -1507,30 +1513,7 @@
       "strategy": "symlink",
       "description": ""
     },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-build-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-distill-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-lint-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-query-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
+
     {
       "src": "plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md",
       "dst": "plugins/obsidian-wiki-engine/commands/obsidian-init.md",
@@ -2113,144 +2096,7 @@
       "strategy": "symlink",
       "description": ""
     },
-    {
-      "src": ".agents/skills/spec-kitty-accept/workflows/spec-kitty.accept.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-accept/assets/workflows/spec-kitty.accept.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-analyze/workflows/spec-kitty.analyze.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-analyze/assets/workflows/spec-kitty.analyze.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-checklist/workflows/spec-kitty.checklist.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-checklist/assets/workflows/spec-kitty.checklist.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-constitution/workflows/spec-kitty.constitution.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-constitution/assets/workflows/spec-kitty.constitution.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-dashboard/workflows/spec-kitty.dashboard.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-dashboard/assets/workflows/spec-kitty.dashboard.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-implement/workflows/spec-kitty.implement.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-implement/assets/workflows/spec-kitty.implement.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-implement/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-merge/workflows/spec-kitty.merge.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-merge/assets/workflows/spec-kitty.merge.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-merge/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-plan/workflows/spec-kitty.plan.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-plan/assets/workflows/spec-kitty.plan.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-plan/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-research/workflows/spec-kitty.research.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-research/assets/workflows/spec-kitty.research.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-review/workflows/spec-kitty.review.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-review/assets/workflows/spec-kitty.review.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-review/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-specify/workflows/spec-kitty.specify.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-specify/assets/workflows/spec-kitty.specify.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-specify/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-status/workflows/spec-kitty.status.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-status/assets/workflows/spec-kitty.status.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/assets/diagrams/standard-spec-kitty-workflow.mmd",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/assets/diagrams/standard-spec-kitty-workflow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks-finalize/workflows/spec-kitty.tasks-finalize.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks-finalize/assets/workflows/spec-kitty.tasks-finalize.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks-outline/workflows/spec-kitty.tasks-outline.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks-outline/assets/workflows/spec-kitty.tasks-outline.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks-packages/workflows/spec-kitty.tasks-packages.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks-packages/assets/workflows/spec-kitty.tasks-packages.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks/workflows/spec-kitty.tasks.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks/assets/workflows/spec-kitty.tasks.md",
-      "strategy": "symlink",
-      "description": ""
-    },
+
     {
       "src": "plugins/agent-agentic-os/references/sample-claude-md",
       "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/sample-claude-md",
@@ -2710,42 +2556,6 @@
     {
       "src": "plugins/agent-loops/references/cheapest_models.json",
       "dst": "plugins/agent-loops/skills/agent-swarm/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/agent-swarm/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/agent-swarm/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-distill-agent/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-distill-agent/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.json",
       "strategy": "symlink",
       "description": ""
     },
