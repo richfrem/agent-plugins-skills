@@ -1,1 +1,1 @@
-../../../references/destructive-action-guard.md
+../../../rules/destructive-action-guard.md

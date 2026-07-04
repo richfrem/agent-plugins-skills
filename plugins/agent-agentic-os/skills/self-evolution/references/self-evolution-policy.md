@@ -1,1 +1,1 @@
-../../../references/self-evolution-policy.md
+../../../rules/self-evolution-policy.md
