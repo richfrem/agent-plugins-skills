@@ -1,4 +1,10 @@
 ---
+trigger: always_on
+description: Universal rules for agent self-healing, selector repair, and error recovery policies.
+globs: ["**/*"]
+---
+
+---
 description: Universal rules for agent self-healing, selector repair, and error recovery policies.
 globs: ["**/*"]
 ---
