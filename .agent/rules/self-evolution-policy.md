@@ -5,32 +5,31 @@ globs: ["**/*"]
 
 ## 🌀 Self-Evolution & Self-Healing Policy
 
-**Full execution protocol (Phases 0–7) → `plugins/agent-agentic-os/skills/self-evolution/SKILL.md`**  
-**Skill/directory deletion rules → `.agent/rules/skill-deletion-guard.md`**
+**Full execution protocol (Phases 0–7) → `<project_root>/.agent/skills/self-evolution/SKILL.md` (if available)**  
+**Skill/directory deletion rules → `<project_root>/.agent/rules/skill-deletion-guard.md` (if available)**
 
-This policy states the always-on safety gates. They apply before any skill is invoked and
+This policy states the always-on safety gates. They apply before any skill or script is invoked and
 regardless of whether a self-evolution run is in progress.
 
 ### Hard Gates (always active)
 
 1. **Edit boundaries first**: Before any autonomous edit, verify the target file is inside
-   the plugin's permitted edit directories (`plugins/<plugin>/skills/`, `scripts/`, `references/`).
-   If no `self-evolution-profile.md` exists for the plugin, use that conservative default.
-   Anything outside those dirs requires explicit user confirmation.
+   the project's permitted edit directories (e.g., `<project_root>/` or designated module directories).
+   Anything outside the designated directories or workspace scope requires explicit user confirmation.
 
 2. **Three-attempt maximum**: Attempt a repair up to three times. On the third failure,
    hard stop and present the Escalation Template with the full evidence bundle.
 
-3. **Update The Map, not just the Diary**: Every fix must update the relevant domain playbook
-   or reference file. A fix that is not recorded is a future regression.
+3. **Update The Map, not just the Diary**: Every fix must update the relevant domain playbook,
+   rules, or reference file. A fix that is not recorded is a future regression.
 
 4. **Autonomy gates**:
-   - Auto-approved: adding new functions/exports, fallback selectors, appending to existing files
+   - Auto-approved: adding new functions/exports, fallback routines, appending to existing files
    - Explicit confirmation required: renaming or moving any file
    - **Hard gated — always requires explicit human permission**: any deletion of any file,
-     function, skill, SKILL.md, eval, or reference. See `skill-deletion-guard.md`.
+     function, skill, rules, manifest, eval, or reference. See `skill-deletion-guard.md` if available.
 
-5. **The Absorption Fallacy — always wrong**: Concluding that a skill, file, or directory is
+5. **The Absorption Fallacy — always wrong**: Concluding that a skill, rule, file, or directory is
    "redundant", "absorbed", "consolidated", or "superseded" and deleting it autonomously.
    Overlap is never evidence that deletion is safe. Flag it; never act on it.
 
@@ -69,8 +68,8 @@ because the agent bypassed friction, self-evolution handling is still required.
 - Agent used a temporary workaround
 
 **Required response — pick exactly one:**
-- Fix is small + inside allowed edit boundaries → patch it now, update The Map.
-- Fix is not safe or not small → record **Map Debt** in `<plugin>/references/map-debt.md` and append an audit row to the evolution log.
+- Fix is small + inside allowed edit boundaries → patch it now, update The Map (rules/docs).
+- Fix is not safe or not small → record **Map Debt** in the project's designated map-debt register (e.g., `<project_root>/.agent/map-debt.md` or local rules equivalent) and append an audit row to the evolution log.
 - Friction is repeated or blocking → escalate to the user.
 
 ---
@@ -106,14 +105,12 @@ until every YES has a declared action.
 
 If friction is real but cannot be fixed immediately, record it as Map Debt.
 
-Map Debt lives in `<plugin>/references/map-debt.md` — a working queue separate from the
-evolution log. The evolution log is append-only audit history. Map Debt is mutable: entries
-are resolved, aged, or escalated over time. Do not conflate the two.
+Map Debt lives in a project-level designated debt file (e.g., `<project_root>/.agent/map-debt.md` or local rules equivalent) — a working queue separate from the evolution log. The evolution log is append-only audit history. Map Debt is mutable: entries are resolved, aged, or escalated over time. Do not conflate the two.
 
 Each Map Debt entry must include:
 - Logged date (`YYYY-MM-DD`)
-- Cycle ID (from `events.jsonl`)
-- Artifact affected (file path or skill slug)
+- Cycle/Session ID (if tracked in execution logs)
+- Artifact affected (file path, rule, or skill slug)
 - Friction observed (one sentence)
 - Why it was not fixed now
 - Recommended fix
@@ -122,8 +119,5 @@ Each Map Debt entry must include:
 - Repeat: YES / NO
 - Status: OPEN / RESOLVED / ESCALATED
 
-**Aging rule:** At Phase 0 read, count completed cycles since entry's Cycle ID. If an `OPEN`
-entry is older than 3 completed cycles, auto-escalate before starting new work.
-If the entry's Cycle ID is from a prior session (not in current `events.jsonl`), fall back
-to the Logged date: auto-escalate if `(today - Logged) > 14 days`.
+**Aging rule:** If an `OPEN` entry is older than 3 completed execution cycles or 14 days `(today - Logged) > 14 days`, auto-escalate before starting new work.
 **Repeat = YES:** must escalate on next encounter — no further deferral permitted.
