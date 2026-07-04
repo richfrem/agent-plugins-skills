@@ -1,1 +1,0 @@
-../../../scripts/validate-agent.sh

@@ -1513,7 +1513,6 @@
       "strategy": "symlink",
       "description": ""
     },
-
     {
       "src": "plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md",
       "dst": "plugins/obsidian-wiki-engine/commands/obsidian-init.md",
@@ -2096,7 +2095,6 @@
       "strategy": "symlink",
       "description": ""
     },
-
     {
       "src": "plugins/agent-agentic-os/references/sample-claude-md",
       "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/sample-claude-md",
@@ -2600,6 +2598,162 @@
       "dst": "plugins/dev-utils/agents/link-checker-agent.md",
       "strategy": "symlink",
       "description": "Agent alias \u2192 link-checker-agent skill"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/self-evolution-policy.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/test-driven-development.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/test-driven-development.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/self-evolution-policy.md",
+      "dst": ".agent/rules/self-evolution-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/test-driven-development.md",
+      "dst": ".agent/rules/test-driven-development.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": ".agent/map-debt.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active map debt"
+    },
+    {
+      "src": "plugins/dev-utils/references/symlink-cross-platform.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/symlink-cross-platform.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/symlink-cross-platform.md",
+      "dst": ".agent/rules/symlink-cross-platform.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/dev-utils/references/coding-conventions.md",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/coding-conventions.md",
+      "dst": ".agent/rules/coding-conventions.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/dependency-management/references/dependency-management.md",
+      "dst": "plugins/dependency-management/skills/dependency-management/references/dependency-management.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dependency-management/references/dependency-management.md",
+      "dst": ".agent/rules/dependency-management.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/plugin-architecture-policy.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/plugin-architecture-policy.md",
+      "dst": ".agent/rules/plugin-architecture-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-deletion-guard.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/skill-deletion-guard.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-deletion-guard.md",
+      "dst": ".agent/rules/skill-deletion-guard.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/destructive-action-guard.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/destructive-action-guard.md",
+      "dst": ".agent/rules/destructive-action-guard.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/dev-utils/references/git-operations.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/git-operations.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/git-operations.md",
+      "dst": ".agent/rules/git-operations.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/dev-utils/references/spec-driven-development-policy.md",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/spec-driven-development-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/spec-driven-development-policy.md",
+      "dst": ".agent/rules/spec-driven-development-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Workspace active rules"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/validate_agent.py",
+      "dst": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/validate_agent.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-sub-agent skill script (replaces validate-agent.sh)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/validate_write.py",
+      "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/validate_write.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-hook skill script (replaces validate-write.sh)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/hook_linter.py",
+      "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/hook_linter.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-hook skill script (replaces hook-linter.sh)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/test_hook.py",
+      "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/test_hook.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-hook skill script (replaces test-hook.sh)"
     }
   ]
 }

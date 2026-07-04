@@ -15,3 +15,28 @@ Two usage patterns:
   After finishing the work, close the Op with the command printed in the capsule
   (`spec-kitty profile-invocation complete --invocation-id <id> --outcome <done|failed|abandoned>`).
 <!-- /spec-kitty:orientation -->
+
+---
+
+## Plugin Reinstall Rule (always active)
+
+> **After modifying any skill, script, reference, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes.
+> The skills in `.agents/skills/` are what agents actually run — edits to `plugins/` are inactive until synced.
+
+```bash
+# Reinstall all plugins (recommended after multi-plugin edits)
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+
+# Reinstall a single plugin only
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
+```
+
+Skip reinstall only for: documentation-only edits to `references/`, `ADRs/`, or `docs/` that contain no agent-executable content.
+
+---
+
+## Architecture Reference
+
+See [`architecture.md`](./architecture.md) for the full repo architecture overview — project structure, plugin-by-plugin breakdown, ADR summary, symlink system, and runtime state layout.
+
+`plugins/` is the **source of truth**. `.agents/` contains installed copies only — never derive counts, versions, or skill lists from installed artifacts.

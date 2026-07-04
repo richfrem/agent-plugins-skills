@@ -102,6 +102,21 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugi
 pip-compile ./requirements.in && pip install -r ./requirements.txt
 ```
 
+### Plugin Reinstall Rule (always active)
+
+> **After modifying any skill, script, reference, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes.
+> The skills in `.agents/skills/` are what agents actually run — edits to `plugins/` are inactive until synced.
+
+```bash
+# Reinstall all plugins (recommended after multi-plugin edits)
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+
+# Reinstall a single plugin only
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
+```
+
+Skip reinstall only for: documentation-only edits to `references/`, `ADRs/`, or `docs/` that contain no agent-executable content.
+
 ### Architecture
 ```
 plugins/<plugin>/           ← canonical source
