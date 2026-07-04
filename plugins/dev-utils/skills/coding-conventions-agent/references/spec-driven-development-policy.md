@@ -1,1 +1,1 @@
-../../../references/spec-driven-development-policy.md
+../../../rules/spec-driven-development-policy.md

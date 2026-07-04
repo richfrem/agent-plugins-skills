@@ -1,1 +1,1 @@
-../../../references/plugin-architecture-policy.md
+../../../rules/plugin-architecture-policy.md

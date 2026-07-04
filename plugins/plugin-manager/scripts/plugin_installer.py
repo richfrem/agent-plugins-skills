@@ -432,7 +432,11 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                 if not dry_run:
                     rules_target_dir.mkdir(parents=True, exist_ok=True)
                 target_link = rules_target_dir / dest_name
-                _symlink_or_copy(central_dest, target_link, dry_run, root, config["name"])
+                if not dry_run:
+                    if target_link.is_symlink() or target_link.exists() or os.path.lexists(str(target_link)):
+                        target_link.unlink()
+                    shutil.copy2(rule_file, target_link)
+                print(f"    -> Copied rule for {config['name']}: {target_link.relative_to(root)}")
                 deployed.append(target_link)
 
             elif config.get("rules_mode") == "append":

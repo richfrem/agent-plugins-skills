@@ -1,3 +1,9 @@
+---
+trigger: always_on
+description: Enforce symlink_manager.py for all symlink creation, repair, and auditing.
+globs: ["**/*"]
+---
+
 # Rule: Always Use symlink_manager.py for Symlink Operations
 
 ## Mandatory Protocol
@@ -48,14 +54,13 @@ Zero `? regular file` or `✗ broken symlink` entries must remain before committ
 
 ---
 
-## Canonical Source Locations (portfolio-advisor plugin)
+## Canonical Source Locations (Ecosystem Standard)
 
 | File | Canonical Master | All skills get a symlink |
 |------|-----------------|--------------------------|
-| `*.py` scripts | `plugins/portfolio-advisor/scripts/` | → `skills/<skill>/scripts/` |
-| `investment_thesis.md` | `plugins/portfolio-advisor/references/` | → `skills/<skill>/references/` |
-| `portfolio.json` | `investment_screener/frontend/src/data/` | → `skills/<skill>/references/` |
-| `PortfolioAnalysisRecommendations.md` | `plugins/portfolio-advisor/assets/templates/` | → `skills/<skill>/assets/templates/` |
+| `*.py` scripts | `plugins/<plugin-name>/scripts/` | → `skills/<skill>/scripts/` |
+| references | `plugins/<plugin-name>/references/` | → `skills/<skill>/references/` |
+| templates/assets | `plugins/<plugin-name>/assets/` | → `skills/<skill>/assets/` |
 
 ---
 

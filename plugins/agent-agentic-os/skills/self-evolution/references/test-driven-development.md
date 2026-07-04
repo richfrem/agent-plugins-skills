@@ -1,1 +1,1 @@
-../../../references/test-driven-development.md
+../../../rules/test-driven-development.md

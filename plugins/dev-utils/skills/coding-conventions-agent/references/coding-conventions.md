@@ -1,1 +1,1 @@
-../../../references/coding-conventions.md
+../../../rules/coding-conventions.md

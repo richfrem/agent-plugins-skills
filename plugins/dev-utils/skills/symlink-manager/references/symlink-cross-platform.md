@@ -1,1 +1,1 @@
-../../../references/symlink-cross-platform.md
+../../../rules/symlink-cross-platform.md

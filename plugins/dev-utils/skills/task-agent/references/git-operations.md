@@ -1,1 +1,1 @@
-../../../references/git-operations.md
+../../../rules/git-operations.md

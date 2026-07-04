@@ -1,1 +1,1 @@
-../../../references/dependency-management.md
+../../../rules/dependency-management.md

@@ -73,13 +73,9 @@ claude-skills-temp/
 node_modules/
 
 
-# Agent environment directories (Windows: deployed copies, symlink junctions — not source)
-# Installed artifacts live here; the canonical source is plugins/
-.agent/
-!.agent/learning/
-!.agent/learning/**
-!.agent/rules/
-!.agent/rules/**
+# Agent environment transient directories
+.agent/hooks/
+.agent/learning/
 .agents/
 
 # APM artifacts

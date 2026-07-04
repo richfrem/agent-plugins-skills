@@ -1,5 +1,7 @@
 ---
 trigger: always_on
+description: Policy for Spec-Driven Development (SDD) lifecycle and human-gate approval enforcement.
+globs: ["**/*"]
 ---
 
 # Spec-Driven Development (SDD) Policy

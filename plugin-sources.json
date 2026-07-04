@@ -22,7 +22,6 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
         "agent-agentic-os",
-        "agent-loops",
         "agent-memory",
         "agent-scaffolders",
         "cli-agents",
