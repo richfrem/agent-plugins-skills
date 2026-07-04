@@ -1,0 +1,1 @@
+../../../references/symlink-cross-platform.md

@@ -1,4 +1,7 @@
-# Map Debt — Agent Agentic OS
+# Map Debt Registry
 
-| Logged | Cycle ID | Artifact | Friction | Why Not Fixed | Recommended Fix | Severity | Repeat | Status |
-|--------|----------|----------|----------|---------------|-----------------|----------|--------|--------|
+This registry tracks technical debt, process friction, and workarounds.
+Entries must be resolved, aged, or escalated. 
+Do not delete resolved items; set `Status: RESOLVED` to maintain history.
+
+---

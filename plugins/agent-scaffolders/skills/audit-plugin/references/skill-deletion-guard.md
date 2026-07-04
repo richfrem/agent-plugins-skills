@@ -1,0 +1,1 @@
+../../../references/skill-deletion-guard.md

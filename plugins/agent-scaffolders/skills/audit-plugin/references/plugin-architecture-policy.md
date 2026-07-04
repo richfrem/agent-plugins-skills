@@ -1,0 +1,1 @@
+../../../references/plugin-architecture-policy.md
