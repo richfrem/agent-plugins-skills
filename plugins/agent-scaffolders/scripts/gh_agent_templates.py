@@ -32,11 +32,18 @@ def agent_md_github(
         "target": target,
         "user-invocable": user_invocable,
         "disable-model-invocation": disable_model_invocation,
+        "generator": "scaffold_github_agent.py v2.1.0",
     }
+    
+    # per GitHub .agent.md spec:
+    # - Unset (omitted / None) -> defaults to all tools.
+    # - Explicit empty list [] -> zero tools are permitted (none).
+    # - Specific list -> only those tools are permitted.
     if tools is not None:
         fm["tools"] = tools
     else:
         fm["tools"] = ["github", "terminal"]
+        
     if model:
         fm["model"] = model
     if mcp_servers:
@@ -64,6 +71,7 @@ def gh_aw_workflow_md(
     fm = {
         "on": on_trigger,
         "engine": engine,
+        "generator": "scaffold_github_agent.py v2.1.0",
     }
     if permissions:
         fm["permissions"] = permissions
@@ -73,10 +81,15 @@ def gh_aw_workflow_md(
             "issues": "read",
             "pull-requests": "read",
         }
-    if tools:
+        
+    # tools structure:
+    # - Unset (omitted / None) -> defaults to {"github": {"toolsets": ["issues", "pull-requests"]}}
+    # - Empty list [] or dict {} -> no tools.
+    if tools is not None:
         fm["tools"] = tools
     else:
         fm["tools"] = {"github": {"toolsets": ["issues", "pull-requests"]}}
+        
     if safe_outputs:
         fm["safe-outputs"] = safe_outputs
     else:
@@ -125,10 +138,13 @@ If a critical failure or validation violation is detected, you MUST output the f
     fm = {
         "name": name,
         "description": description,
+        "generator": "scaffold_github_agent.py v2.1.0",
     }
     fm_yaml = yaml.dump(fm, sort_keys=False).strip()
     
-    return f"---\n{fm_yaml}\n---\n\n{body}\n\n{escalation_taxonomy.strip()}\n\n{kill_switch_section.strip()}\n"
+    comment_header = "# NOTE: This is a prompt configuration executed headless via Copilot CLI,\n# not a selectable/invocable chat agent.\n"
+    
+    return f"---\n{fm_yaml}\n---\n\n{comment_header}\n{body}\n\n{escalation_taxonomy.strip()}\n\n{kill_switch_section.strip()}\n"
 
 
 def runner_yml(

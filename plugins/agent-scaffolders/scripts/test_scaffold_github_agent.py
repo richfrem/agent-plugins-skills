@@ -215,6 +215,104 @@ class TestGHAgentScaffolder(unittest.TestCase):
         errors = validator.validate_target_c(fm, body, kill_switch="STOP_EXECUTION")
         self.assertEqual(len(errors), 0)
 
+    def test_tools_flag_empty_list(self):
+        sys_argv_backup = sys.argv
+        from io import StringIO
+        stdout_backup = sys.stdout
+        
+        sys.argv = [
+            "scaffold_github_agent.py",
+            "--target", "A",
+            "--name", "test-no-tools",
+            "--description", "No tools test",
+            "--tools", "",
+            "--output-dir", str(self.output_path),
+            "--force"
+        ]
+        try:
+            sys.stdout = StringIO()
+            scaffolder.main()
+        finally:
+            sys.stdout = stdout_backup
+            sys.argv = sys_argv_backup
+
+        agent_file = self.output_path / ".github" / "agents" / "test-no-tools.agent.md"
+        self.assertTrue(agent_file.exists())
+        content = agent_file.read_text(encoding="utf-8")
+        fm, body = validator.parse_frontmatter(content)
+        self.assertEqual(fm.get("tools"), [])
+
+        sys.argv = [
+            "scaffold_github_agent.py",
+            "--target", "A",
+            "--name", "test-some-tools",
+            "--description", "Some tools test",
+            "--tools", "github",
+            "--output-dir", str(self.output_path),
+            "--force"
+        ]
+        try:
+            sys.stdout = StringIO()
+            scaffolder.main()
+        finally:
+            sys.stdout = stdout_backup
+            sys.argv = sys_argv_backup
+
+        agent_file = self.output_path / ".github" / "agents" / "test-some-tools.agent.md"
+        self.assertTrue(agent_file.exists())
+        content = agent_file.read_text(encoding="utf-8")
+        fm, body = validator.parse_frontmatter(content)
+        self.assertEqual(fm.get("tools"), ["github"])
+
+    def test_validator_rejects_skill_frontmatter_in_workflows(self):
+        skill_content = """---
+name: create-agentic-workflow
+argument-hint: "[skill-dir]"
+allowed-tools: Bash, Read, Write
+disable-model-invocation: false
+---
+Some body text
+"""
+        fm, body = validator.parse_frontmatter(skill_content)
+        errors = validator.validate_target_b(fm, body, filepath_str="/path/to/.github/workflows/workflow.md")
+        self.assertTrue(any("Skill-style frontmatter in .github/workflows/" in err for err in errors))
+
+    def test_validator_rejects_ghaw_keys_in_agent_md(self):
+        invalid_agent_content = """---
+description: Test agent
+on:
+  schedule: daily
+---
+Some body
+"""
+        fm, body = validator.parse_frontmatter(invalid_agent_content)
+        errors = validator.validate_target_a(fm, body)
+        self.assertTrue(any("must not contain gh-aw keys" in err for err in errors))
+        
+        errors_c = validator.validate_target_c(fm, body, kill_switch="STOP")
+        self.assertTrue(any("must not contain gh-aw keys" in err for err in errors_c))
+
+    def test_scaffold_self_validates(self):
+        original_template = templates.agent_md_github
+        templates.agent_md_github = lambda **kwargs: "---\ndescription: Test\non:\n  push: {}\n---\n"
+        
+        sys_argv_backup = sys.argv
+        sys.argv = [
+            "scaffold_github_agent.py",
+            "--target", "A",
+            "--name", "invalid-self-val",
+            "--output-dir", str(self.output_path),
+            "--force"
+        ]
+        
+        try:
+            with self.assertRaises(SystemExit) as cm:
+                scaffolder.main()
+            self.assertEqual(cm.exception.code, 1)
+        finally:
+            templates.agent_md_github = original_template
+            sys.argv = sys_argv_backup
+
 
 if __name__ == "__main__":
     unittest.main()

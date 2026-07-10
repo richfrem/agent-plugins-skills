@@ -4,7 +4,7 @@ scaffold_github_agent.py
 =====================================
 Purpose:
     Dispatcher script to generate GitHub AI Agents (Target A, B, or C).
-    Writes files and outputs a JSON manifest of created artifacts.
+    Writes files, self-validates each output, and outputs a JSON manifest.
 """
 
 import os
@@ -18,8 +18,9 @@ import yaml
 # Resolve imports cleanly from the real directory (resolving symlinks)
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
-# Import templates
+# Import templates and validator
 import gh_agent_templates as templates
+import validate_github_agent as validator
 
 
 def parse_frontmatter(content: str) -> tuple[dict, str]:
@@ -60,6 +61,7 @@ def main() -> None:
         default=[],
         help="Triggers (e.g. pull_request push schedule issues release) or custom cron schedule",
     )
+    parser.add_argument("--tools", help="Comma-separated tools (e.g. 'github,terminal' or '' for none)")
     parser.add_argument("--safe-outputs", help="Comma-separated safe outputs (e.g. add-comment,create-issue)")
     parser.add_argument("--kill-switch", help="Verbatim Kill Switch phrase for Target C")
     parser.add_argument("--skill-dir", help="Path to a skill directory containing SKILL.md to extract info from")
@@ -96,9 +98,22 @@ def main() -> None:
             print(f"Error reading SKILL.md: {e}", file=sys.stderr)
             sys.exit(1)
 
+    # Process tools argument
+    tools_target_a = None
+    tools_target_b = None
+    if args.tools is not None:
+        if args.tools == "":
+            tools_target_a = []
+            tools_target_b = []
+        else:
+            tools_list = [t.strip() for t in args.tools.split(",") if t.strip()]
+            tools_target_a = tools_list
+            tools_target_b = {t: {} for t in tools_list}
+
     created_files = []
     skipped_files = []
     next_steps = []
+    kill_switch = args.kill_switch or f"CRITICAL FAILURE: {name.upper().replace('-', '_')}"
 
     def write_file_safe(file_path: Path, content: str) -> None:
         if file_path.exists() and not args.force:
@@ -108,6 +123,29 @@ def main() -> None:
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content, encoding="utf-8")
         created_files.append(str(file_path.relative_to(output_root)))
+
+        # Only validate configuration markdown files
+        filepath_str = file_path.resolve().as_posix()
+        if file_path.name.endswith(".agent.md") or ("/workflows/" in filepath_str and file_path.suffix == ".md"):
+            fm_parsed, body_parsed = validator.parse_frontmatter(content)
+            
+            if args.target == "A":
+                errs = validator.validate_target_a(fm_parsed, body_parsed, filepath_str)
+            elif args.target == "B":
+                errs = validator.validate_target_b(fm_parsed, body_parsed, filepath_str)
+            elif args.target == "C":
+                errs = validator.validate_target_c(fm_parsed, body_parsed, kill_switch, filepath_str)
+            else:
+                errs = []
+                
+            if errs:
+                # Remove the invalid file immediately so we never emit it
+                try:
+                    file_path.unlink()
+                except Exception:
+                    pass
+                print(f"Error: Self-validation failed for {file_path.name}: {', '.join(errs)}", file=sys.stderr)
+                sys.exit(1)
 
     # Target A: Custom Copilot Agent
     if args.target == "A":
@@ -119,10 +157,11 @@ def main() -> None:
             description=description,
             body=body,
             target="both",
-            tools=["github", "terminal"],
+            tools=tools_target_a,
             model=args.model,
         )
         write_file_safe(agents_dir / f"{name}.agent.md", agent_content)
+        # Note: prompts are just starting stubs, no validation required
         write_file_safe(prompts_dir / f"{name}.prompt.md", f"---\nagent: {name}\n---\n")
         
         next_steps.extend([
@@ -165,6 +204,7 @@ def main() -> None:
             instructions=body,
             on_trigger=on_trigger,
             engine=args.engine,
+            tools=tools_target_b,
             safe_outputs=safe_outputs,
         )
         write_file_safe(workflows_dir / f"{name}.md", workflow_content)
@@ -181,8 +221,6 @@ def main() -> None:
         agents_dir = output_root / ".github" / "agents"
         workflows_dir = output_root / ".github" / "workflows"
 
-        kill_switch = args.kill_switch or f"CRITICAL FAILURE: {name.upper().replace('-', '_')}"
-
         agent_content = templates.smart_failure_agent_md(
             name=name,
             description=description,
@@ -198,6 +236,7 @@ def main() -> None:
             triggers=triggers,
             model=args.model,
         )
+        # Note: .yml config file is not markdown, so write_file_safe will skip validator run on it
         write_file_safe(workflows_dir / f"{name}-agent.yml", runner_content)
 
         next_steps.extend([
