@@ -12,7 +12,6 @@ import unittest
 import tempfile
 import json
 from pathlib import Path
-import yaml
 
 # Resolve imports cleanly from the real directory (resolving symlinks)
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -167,7 +166,12 @@ class TestGHAgentScaffolder(unittest.TestCase):
         self.assertTrue(workflow_file.exists())
 
         # Test validate round-trip validation
-        fm, body = validator.parse_frontmatter(workflow_file.read_text(encoding="utf-8"))
+        raw_content = workflow_file.read_text(encoding="utf-8")
+        self.assertTrue(any(q in raw_content for q in ("'on':", '"on":')))  # Proves the YAML quoting fix at the generation level
+        
+        fm, body = validator.parse_frontmatter(raw_content)
+        self.assertIn("on", fm)
+        self.assertIsInstance(fm["on"], dict)
         errors = validator.validate_target_b(fm, body)
         self.assertEqual(len(errors), 0)
 
@@ -203,11 +207,14 @@ class TestGHAgentScaffolder(unittest.TestCase):
         self.assertTrue(runner_file.exists())
 
         # Validate agent files
-        fm, body = validator.parse_frontmatter(agent_file.read_text(encoding="utf-8"))
+        agent_content = agent_file.read_text(encoding="utf-8")
+        self.assertIn("STOP_EXECUTION", agent_content)  # Verifies kill switch is present verbatim
+        self.assertIn("Escalation Trigger Taxonomy", agent_content)
+
+        fm, body = validator.parse_frontmatter(agent_content)
         errors = validator.validate_target_c(fm, body, kill_switch="STOP_EXECUTION")
         self.assertEqual(len(errors), 0)
 
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
     unittest.main()

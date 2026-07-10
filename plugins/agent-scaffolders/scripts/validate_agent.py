@@ -17,6 +17,12 @@ import sys
 import os
 import re
 
+# Ensure Unicode output works on Windows terminals that default to cp1252
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 _SEPARATOR = "━" * 40
 _VALID_MODELS = frozenset({"inherit", "sonnet", "opus", "haiku"})
 _VALID_COLORS = frozenset({"blue", "cyan", "green", "yellow", "magenta", "red"})
