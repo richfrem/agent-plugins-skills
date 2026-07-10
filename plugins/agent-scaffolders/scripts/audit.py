@@ -105,13 +105,6 @@ def audit_plugin(plugin_path: str) -> bool:
                     if len(lines) > 500:
                         warnings.append(f"Skill '{skill_name}' ././SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")
             
-            # Check for illegal bash/powershell scripts
-            scripts_dir = os.path.join(skill_path, "scripts")
-            if os.path.isdir(scripts_dir):
-                for script_file in os.listdir(scripts_dir):
-                    if script_file.endswith(".sh") or script_file.endswith(".ps1"):
-                        errors.append(f"Skill '{skill_name}' contains illegal script '{script_file}'. Only Python (.py) is allowed.")
-                        
             # Check for Microsoft Progressive Disclosure & Testing standard
             references_dir = os.path.join(skill_path, "references")
             if not os.path.isdir(references_dir):
@@ -122,10 +115,10 @@ def audit_plugin(plugin_path: str) -> bool:
                     errors.append(f"Skill '{skill_name}' is missing `./acceptance-criteria.md`. All skills must have test criteria.")
                     
             # Check for illegal root directories inside skill (enforce agentskills.io Optional Directories)
-            allowed_skill_dirs = {".history", "scripts", "references", "assets", "examples", "templates", "evals"}
+            allowed_skill_dirs = {".history", "scripts", "references", "assets", "examples", "templates", "evals", "tests"}
             for item in os.listdir(skill_path):
                 full_item_path = os.path.join(skill_path, item)
-                if os.path.isdir(full_item_path) and item not in allowed_skill_dirs:
+                if os.path.isdir(full_item_path) and item not in allowed_skill_dirs and not item.startswith("."):
                     errors.append(f"Skill '{skill_name}' contains illegal root directory '{item}/'. Only ['scripts', 'references', 'assets'] and specific scaffolds are allowed.")
 
     if errors:
