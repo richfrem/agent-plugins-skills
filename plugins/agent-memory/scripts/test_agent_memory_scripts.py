@@ -96,7 +96,7 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
         self.assertIn("claude", result)
 
     def test_overrides_engine_model_from_json(self):
-        ref = self._tmp_json({"copilot": {"model": "gpt-5-nano"}})
+        ref = self._tmp_json({"engines": [{"cli": "copilot", "model": "gpt-5-nano"}]})
         try:
             result = _load_engine_defaults(ref_path=ref)
             self.assertEqual(result["copilot"], "gpt-5-nano")
@@ -104,7 +104,7 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
             ref.unlink()
 
     def test_unmentioned_engines_keep_hardcoded_fallback(self):
-        ref = self._tmp_json({"copilot": {"model": "gpt-5-nano"}})
+        ref = self._tmp_json({"engines": [{"cli": "copilot", "model": "gpt-5-nano"}]})
         try:
             result = _load_engine_defaults(ref_path=ref)
             self.assertIsNotNone(result["claude"])
@@ -172,7 +172,8 @@ class TestDistillOneMockFlag(unittest.TestCase):
         ref = PLUGIN_REFS / "cheapest_models.json"
         if not ref.exists():
             self.skipTest("cheapest_models.json not present")
-        expected = json.loads(ref.read_text())["copilot"]["model"]
+        engines = json.loads(ref.read_text()).get("engines", [])
+        expected = next(e["model"] for e in engines if e["cli"] == "copilot")
         result = self._run_mock(["--engine", "copilot"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         data = json.loads(result.stdout)
@@ -182,7 +183,8 @@ class TestDistillOneMockFlag(unittest.TestCase):
         ref = PLUGIN_REFS / "cheapest_models.json"
         if not ref.exists():
             self.skipTest("cheapest_models.json not present")
-        expected = json.loads(ref.read_text())["claude"]["model"]
+        engines = json.loads(ref.read_text()).get("engines", [])
+        expected = next(e["model"] for e in engines if e["cli"] == "claude")
         result = self._run_mock(["--engine", "claude"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         data = json.loads(result.stdout)

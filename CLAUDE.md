@@ -99,6 +99,21 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugi
 pip-compile ./requirements.in && pip install -r ./requirements.txt
 ```
 
+### Plugin Reinstall Rule (always active)
+
+> **After modifying any skill, script, reference, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes.
+> The skills in `.agents/skills/` are what agents actually run — edits to `plugins/` are inactive until synced.
+
+```bash
+# Reinstall all plugins (recommended after multi-plugin edits)
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+
+# Reinstall a single plugin only
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
+```
+
+Skip reinstall only for: documentation-only edits to `references/`, `ADRs/`, or `docs/` that contain no agent-executable content.
+
 ### Architecture
 ```
 plugins/<plugin>/           ← canonical source
@@ -118,6 +133,7 @@ plugins/<plugin>/           ← canonical source
 
 See `plugins/plugin-manager/scripts/` for ecosystem management scripts.
 See `ADRs/` for authoritative architecture rules.
+See `architecture.md` for the full repo architecture overview (project structure, plugin-by-plugin breakdown, ADR summary, symlink system, runtime state layout).
 
 ---
 
@@ -144,7 +160,7 @@ skill, or sub-agent in this repo. Three key capabilities:
 
 ---
 
-## Plugin State — Current Versions (11 plugins · 151 skills)
+## Plugin State — Current Versions (10 plugins · 128 skills)
 
 ### agent-agentic-os (v1.7.0)
 
@@ -284,8 +300,8 @@ Define success criteria first. Loop until verified.
 ## Coding Rules (always applied)
 
 - **Source of truth**: `plugins/` is authoritative. `.agents/`, the marketplace, and the Claude Code plugin system are installed copies — never use them to derive counts, versions, or skill lists.
-- **TDD**: No production code without a failing test first. Invoke `superpowers:test-driven-development` before writing any implementation. Full rule: `.agent/rules/test-driven-development.md`
-- **Friction = self-evolution event**: Any workaround, bypass, guess, or user correction requires fix / Map Debt / escalation before claiming done. Output the `PRE-COMPLETION GATE` block. Full rule: `.agent/rules/self-evolution-policy.md`
+- **TDW (TDD & TDO)**: No code development or orchestration execution without a failing test or success contract first. Full rule: `.agent/rules/test-driven-development.md`
+- **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Full rule: `.agent/rules/self-evolution-policy.md`
 - **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
 - **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/skill-deletion-guard.md`. If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
 - **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime

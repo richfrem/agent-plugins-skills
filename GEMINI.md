@@ -101,6 +101,21 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugi
 pip-compile ./requirements.in && pip install -r ./requirements.txt
 ```
 
+### Plugin Reinstall Rule (always active)
+
+> **After modifying any skill, script, reference, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes.
+> The skills in `.agents/skills/` are what agents actually run — edits to `plugins/` are inactive until synced.
+
+```bash
+# Reinstall all plugins (recommended after multi-plugin edits)
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+
+# Reinstall a single plugin only
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
+```
+
+Skip reinstall only for: documentation-only edits to `references/`, `ADRs/`, or `docs/` that contain no agent-executable content.
+
 ### Architecture
 ```
 plugins/<plugin>/           ← canonical source
@@ -112,10 +127,15 @@ plugins/<plugin>/           ← canonical source
 .agents/                    ← bridge installer output (hard copies, symlinks resolved)
   skills/ agents/ workflows/
 ```
-> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. The `plugins/` directory
-> is the source. Files there are inactive until installed via `plugin_add.py` or `uvx`.
+> **`plugins/` is the source of truth.** `.agents/` and the Claude Code marketplace/plugin system
+> contain installed copies only — never treat them as authoritative. All counts, skill lists, and
+> version references in this file must reflect what is in `plugins/`, not what is installed.
+> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. Files in `plugins/` are
+> inactive until installed via `plugin_add.py` or `uvx`.
 
+See `plugins/plugin-manager/scripts/` for ecosystem management scripts.
 See `ADRs/` for authoritative architecture rules.
+See `architecture.md` for the full repo architecture overview (project structure, plugin-by-plugin breakdown, ADR summary, symlink system, runtime state layout).
 
 ---
 
@@ -142,7 +162,7 @@ skill, or sub-agent in this repo. Three key capabilities:
 
 ---
 
-## Plugin State — Current Versions (11 plugins · 128 skills)
+## Plugin State — Current Versions (10 plugins · 128 skills)
 
 ### agent-agentic-os (v1.7.0)
 
@@ -211,18 +231,21 @@ symlink-manager, task-agent
 
 ### Copilot CLI delegation pattern (canonical)
 
-> **June 2026:** `gpt-5-mini` remains included (no AI Credits cost). All other models consume credits per token. Plan first — fewer requests saves quality, not necessarily credits. See `cli-agents/skills/copilot-cli-agent` for updated model table.
+> **June 2026:** All Copilot models bill per AI Credits (token-based). Model selection should use
+> `plugins/cli-agents/references/copilot-models.json` — see the `strategy` field for tier recommendations
+> and `cost_tiers` for cheapest-to-most-expensive groupings. Plan first — fewer requests saves credits.
 
 ```bash
-# 1. Heartbeat (included model — always first, zero credit cost)
+# 1. Heartbeat — use cheapest model (see copilot-models.json strategy.heartbeat)
 python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only."
+  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." \
+  gpt-5.4-nano
 
-# 2. Dispatch (plan well, batch for coherence)
+# 2. Dispatch — pick model from copilot-models.json strategy field for the task tier
 python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null tasks/todo/copilot_prompt_<task>.md temp/copilot_output_<task>.md \
   "Generate all files exactly as specified. Use the Write tool to write files directly." \
-  claude-sonnet-4.6
+  claude-sonnet-4.6  # strategy.complex — see copilot-models.json
 
 # 3. Verify output before claiming complete
 wc -l temp/copilot_output_<task>.md  # expect 100+ lines for multi-file output
@@ -251,7 +274,9 @@ Define success criteria first. For evals: write `evals.json` routing criteria be
 
 ## Coding Rules (always applied)
 
-- **Friction = self-evolution event**: Any workaround, bypass, guess, or user correction requires fix / Map Debt / escalation before claiming done. Output the `PRE-COMPLETION GATE` block. Full rule: `.agent/rules/self-evolution-policy.md`
+- **Source of truth**: `plugins/` is authoritative. `.agents/`, the marketplace, and the Claude Code plugin system are installed copies — never use them to derive counts, versions, or skill lists.
+- **TDW (TDD & TDO)**: No code development or orchestration execution without a failing test or success contract first. Full rule: `.agent/rules/test-driven-development.md`
+- **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Full rule: `.agent/rules/self-evolution-policy.md`
 - **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
 - **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/skill-deletion-guard.md`. If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
 - **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime
@@ -270,6 +295,24 @@ Define success criteria first. For evals: write `evals.json` routing criteria be
 - SKILL.md: under ~500 lines; extra detail goes in `references/` files
 - Helper scripts: Python only — never generate `.sh` bash scripts
 
+### After editing any skill or script in a plugin — audit symlinks
+**Never use `ln -s` directly. All symlink operations must go through `symlink_manager.py`.**
+(Full protocol: `.agent/rules/symlink-cross-platform.md`)
+
+```bash
+# 1. Diagnose first — always
+python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+
+# 2. Add new links to symlinks.json manifest (not by hand — via script)
+# 3. Restore all from manifest
+python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
+
+# 4. Verify — zero broken or real-file imposters before committing
+python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+```
+Fix any BROKEN entries before committing. A broken symlink in `plugins/` will silently fail at install time.
+Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add it to `symlinks.json` then run `restore`.
+
 ### Scaffolding New Plugins/Skills
 Use these skills rather than hand-rolling structure:
 - `create-plugin` — full plugin scaffold with discovery interview
@@ -277,6 +320,15 @@ Use these skills rather than hand-rolling structure:
 - `audit-plugin` — validate structure after scaffolding
 
 Then run `plugin_add.py` to deploy.
+
+### Active Rule Files
+Full rule definitions live in `.agent/rules/` — these are the authoritative source, GEMINI.md carries only the key non-negotiables:
+- `coding-conventions.md` — dual-layer docs, file headers, type hints, naming, `tool_inventory.json` registration
+- `dependency-management.md` — pip-compile workflow, no manual pip install, tiered hierarchy
+- `plugin-architecture-policy.md` — decoupling, hub-and-spoke, relative paths, self-contained skills
+- `self-evolution-policy.md` — failure tiers, 3-attempt max, deletion prohibition, autonomy gates
+- `symlink-cross-platform.md` — `symlink_manager.py` protocol, symlinks.json manifest
+- `test-driven-development.md` — TDD iron law, test tier locations, anti-patterns
 
 ### Scratch Output
 Write temporary files and analysis output to `temp/` — never to the project root directly.

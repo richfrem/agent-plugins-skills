@@ -764,6 +764,12 @@
       "description": ""
     },
     {
+      "src": "plugins/agent-agentic-os/scripts/audit_map_debt.py",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/audit_map_debt.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
       "src": "plugins/agent-agentic-os/scripts/check_todos.py",
       "dst": "plugins/agent-agentic-os/skills/todo-check/scripts/check_todos.py",
       "strategy": "symlink",
@@ -1508,30 +1514,6 @@
       "description": ""
     },
     {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-build-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-distill-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-lint-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md",
-      "dst": "plugins/obsidian-wiki-engine/agents/wiki-query-agent.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md",
       "dst": "plugins/obsidian-wiki-engine/commands/obsidian-init.md",
       "strategy": "symlink",
@@ -1539,7 +1521,7 @@
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/obsidian-parser/parser.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/scripts/parser.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1563,7 +1545,7 @@
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/obsidian-parser/parser.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/scripts/parser.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1587,7 +1569,7 @@
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/obsidian-parser/parser.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/scripts/parser.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1611,7 +1593,7 @@
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/obsidian-parser/parser.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/scripts/parser.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1635,7 +1617,7 @@
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/obsidian-parser/parser.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/scripts/parser.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1652,7 +1634,7 @@
       "description": ""
     },
     {
-      "src": "plugins/obsidian-wiki-engine/scripts/parser.py",
+      "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/references/parser.py",
       "strategy": "symlink",
       "description": ""
@@ -1665,7 +1647,7 @@
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/obsidian-parser/parser.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/scripts/parser.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -2110,144 +2092,6 @@
     {
       "src": "plugins/agent-memory/scripts/rlm_config.py",
       "dst": "plugins/agent-memory/skills/rlm-search/scripts/rlm_config.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-accept/workflows/spec-kitty.accept.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-accept/assets/workflows/spec-kitty.accept.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-analyze/workflows/spec-kitty.analyze.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-analyze/assets/workflows/spec-kitty.analyze.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-checklist/workflows/spec-kitty.checklist.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-checklist/assets/workflows/spec-kitty.checklist.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-constitution/workflows/spec-kitty.constitution.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-constitution/assets/workflows/spec-kitty.constitution.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-dashboard/workflows/spec-kitty.dashboard.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-dashboard/assets/workflows/spec-kitty.dashboard.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-implement/workflows/spec-kitty.implement.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-implement/assets/workflows/spec-kitty.implement.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-implement/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-merge/workflows/spec-kitty.merge.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-merge/assets/workflows/spec-kitty.merge.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-merge/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-plan/workflows/spec-kitty.plan.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-plan/assets/workflows/spec-kitty.plan.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-plan/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-research/workflows/spec-kitty.research.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-research/assets/workflows/spec-kitty.research.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-review/workflows/spec-kitty.review.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-review/assets/workflows/spec-kitty.review.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-review/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-specify/workflows/spec-kitty.specify.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-specify/assets/workflows/spec-kitty.specify.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-specify/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-status/workflows/spec-kitty.status.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-status/assets/workflows/spec-kitty.status.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/assets/diagrams/standard-spec-kitty-workflow.mmd",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/assets/diagrams/standard-spec-kitty-workflow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/scripts/sync_configuration.py",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-sync-plugin/scripts/sync_configuration.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks-finalize/workflows/spec-kitty.tasks-finalize.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks-finalize/assets/workflows/spec-kitty.tasks-finalize.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks-outline/workflows/spec-kitty.tasks-outline.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks-outline/assets/workflows/spec-kitty.tasks-outline.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks-packages/workflows/spec-kitty.tasks-packages.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks-packages/assets/workflows/spec-kitty.tasks-packages.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": ".agents/skills/spec-kitty-tasks/workflows/spec-kitty.tasks.md",
-      "dst": "plugins/spec-kitty-plugin/skills/spec-kitty-tasks/assets/workflows/spec-kitty.tasks.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -2714,42 +2558,6 @@
       "description": ""
     },
     {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/agent-swarm/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/agent-swarm/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-distill-agent/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-distill-agent/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.md",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/spec-kitty-plugin/references/cheapest_models.json",
-      "dst": "plugins/spec-kitty-plugin/.agents/skills/rlm-curator/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/exploration-cycle-plugin/scripts/validate_phase_gate.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/validate_phase_gate.py",
       "strategy": "symlink",
@@ -2790,6 +2598,96 @@
       "dst": "plugins/dev-utils/agents/link-checker-agent.md",
       "strategy": "symlink",
       "description": "Agent alias \u2192 link-checker-agent skill"
+    },
+    {
+      "src": "plugins/agent-agentic-os/rules/self-evolution-policy.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/rules/test-driven-development.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/test-driven-development.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/rules/symlink-cross-platform.md",
+      "dst": "plugins/dev-utils/skills/symlink-manager/references/symlink-cross-platform.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/rules/coding-conventions.md",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dependency-management/rules/dependency-management.md",
+      "dst": "plugins/dependency-management/skills/dependency-management/references/dependency-management.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-scaffolders/rules/plugin-architecture-policy.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-scaffolders/rules/skill-deletion-guard.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/skill-deletion-guard.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/rules/git-operations.md",
+      "dst": "plugins/dev-utils/skills/task-agent/references/git-operations.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/dev-utils/rules/spec-driven-development-policy.md",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/spec-driven-development-policy.md",
+      "strategy": "symlink",
+      "description": "Plugin reference \u2192 Skill reference"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/validate_agent.py",
+      "dst": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/validate_agent.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-sub-agent skill script (replaces validate-agent.sh)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/validate_write.py",
+      "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/validate_write.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-hook skill script (replaces validate-write.sh)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/hook_linter.py",
+      "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/hook_linter.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-hook skill script (replaces hook-linter.sh)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/test_hook.py",
+      "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/test_hook.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 create-hook skill script (replaces test-hook.sh)"
     }
   ]
 }

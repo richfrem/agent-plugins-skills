@@ -148,16 +148,16 @@ class TestCommandBuilders(unittest.TestCase):
         self.assertNotIn("--yolo", cmd)
 
     def test_agy_includes_file_ref(self):
-        cmd = _build_cmd_agy("/tmp/prompt.txt")
+        cmd = _build_cmd_agy("agy-3.5-sonnet", "/tmp/prompt.txt")
         self.assertIn("agy", cmd)
         self.assertTrue(any("prompt.txt" in arg for arg in cmd))
 
     def test_agy_includes_dangerous_flag_when_not_isolated(self):
-        cmd = _build_cmd_agy("/tmp/prompt.txt", isolated=False)
+        cmd = _build_cmd_agy("agy-3.5-sonnet", "/tmp/prompt.txt", isolated=False)
         self.assertIn("--dangerously-skip-permissions", cmd)
 
     def test_agy_excludes_dangerous_flag_when_isolated(self):
-        cmd = _build_cmd_agy("/tmp/prompt.txt", isolated=True)
+        cmd = _build_cmd_agy("agy-3.5-sonnet", "/tmp/prompt.txt", isolated=True)
         self.assertNotIn("--dangerously-skip-permissions", cmd)
 
     def test_claude_includes_model_and_prompt(self):

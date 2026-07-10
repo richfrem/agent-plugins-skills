@@ -1,0 +1,1 @@
+../../../rules/destructive-action-guard.md

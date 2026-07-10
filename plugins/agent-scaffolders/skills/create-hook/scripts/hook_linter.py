@@ -1,0 +1,1 @@
+../../../scripts/hook_linter.py

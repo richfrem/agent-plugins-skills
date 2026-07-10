@@ -48,6 +48,20 @@ def audit_plugin(plugin_path: str) -> bool:
     errors = []
     warnings = []
 
+    # 0. Detect deprecated stub plugins (no skills/ directory + README marked DEPRECATED)
+    skills_dir_check = os.path.join(plugin_path, "skills")
+    readme_check = os.path.join(plugin_path, "README.md")
+    if not os.path.isdir(skills_dir_check):
+        is_deprecated = False
+        if os.path.isfile(readme_check):
+            with open(readme_check, "r", encoding="utf-8") as f:
+                if "DEPRECATED" in f.read():
+                    is_deprecated = True
+        if is_deprecated:
+            print(f"\n✅ AUDIT PASSED - Deprecated stub (no skills, README marked DEPRECATED) ✅")
+            print(f"\nInfo: '{plugin_name}' is a deprecated stub and was skipped for full compliance checks.")
+            return True
+
     # 1. Check Root Structure
     claude_plugin_dir = os.path.join(plugin_path, ".claude-plugin")
     if not os.path.isdir(claude_plugin_dir):
