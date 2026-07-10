@@ -40,7 +40,7 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     return fm, body
 
 
-def validate_target_a(fm: dict, body: str) -> list[str]:
+def validate_target_a(fm: dict, body: str, filepath_str: str = "") -> list[str]:
     """
     Validate Target A: Custom Copilot Agent (.agent.md) [GitHub schema, GA]
     """
@@ -61,10 +61,14 @@ def validate_target_a(fm: dict, body: str) -> list[str]:
     if len(body) > 30000:
         errors.append(f"Body length ({len(body)} chars) exceeds maximum allowed size of 30,000 chars.")
 
+    # Poka-yoke: A .agent.md file MUST NOT contain gh-aw keys (on or safe-outputs)
+    if "on" in fm or "safe-outputs" in fm:
+        errors.append("GitHub agent file (.agent.md) must not contain gh-aw keys ('on' or 'safe-outputs').")
+
     return errors
 
 
-def validate_target_b(fm: dict, body: str) -> list[str]:
+def validate_target_b(fm: dict, body: str, filepath_str: str = "") -> list[str]:
     """
     Validate Target B: GitHub Agentic Workflow (gh-aw) [technical preview]
     """
@@ -81,10 +85,18 @@ def validate_target_b(fm: dict, body: str) -> list[str]:
     if "safe-outputs" in fm and not isinstance(fm["safe-outputs"], dict):
         errors.append("'safe-outputs' must be a dictionary.")
 
+    # Poka-yoke: workflows/ path checking
+    if filepath_str and "/workflows/" in filepath_str and filepath_str.endswith(".md"):
+        skill_keys = {"argument-hint", "allowed-tools", "disable-model-invocation"}
+        has_skill_keys = any(k in fm for k in skill_keys)
+        missing_workflow_keys = "on" not in fm or "engine" not in fm
+        if has_skill_keys and missing_workflow_keys:
+            errors.append("Skill-style frontmatter in .github/workflows/ — run scaffold_github_agent.py --target B; do not hand-author.")
+
     return errors
 
 
-def validate_target_c(fm: dict, body: str, kill_switch: str = None) -> list[str]:
+def validate_target_c(fm: dict, body: str, kill_switch: str = None, filepath_str: str = "") -> list[str]:
     """
     Validate Target C: CI/CD Smart Failure Agent
     """
@@ -102,6 +114,10 @@ def validate_target_c(fm: dict, body: str, kill_switch: str = None) -> list[str]
     # Check for Escalation Trigger Taxonomy (case-insensitive)
     if "escalation trigger taxonomy" not in body_lower:
         errors.append("Smart Failure Agent must define an 'Escalation Trigger Taxonomy' section in the body.")
+
+    # Poka-yoke: Target C .agent.md file MUST NOT contain gh-aw keys
+    if "on" in fm or "safe-outputs" in fm:
+        errors.append("GitHub agent file (.agent.md) must not contain gh-aw keys ('on' or 'safe-outputs').")
 
     return errors
 
@@ -140,13 +156,14 @@ def main() -> None:
         sys.exit(1)
 
     fm, body = parse_frontmatter(content)
+    filepath_str = filepath.resolve().as_posix()
     
     if args.target == "A":
-        errors = validate_target_a(fm, body)
+        errors = validate_target_a(fm, body, filepath_str)
     elif args.target == "B":
-        errors = validate_target_b(fm, body)
+        errors = validate_target_b(fm, body, filepath_str)
     elif args.target == "C":
-        errors = validate_target_c(fm, body, args.kill_switch)
+        errors = validate_target_c(fm, body, args.kill_switch, filepath_str)
     else:
         errors = ["Unknown target type"]
 
