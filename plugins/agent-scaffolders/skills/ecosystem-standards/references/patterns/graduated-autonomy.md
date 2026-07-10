@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/graduated-autonomy.md
+../../../../references/patterns/graduated-autonomy.md

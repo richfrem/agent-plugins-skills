@@ -1,1 +1,1 @@
-../azure-foundry-agents.md
+../../../../references/research/azure-foundry-agents.md

@@ -1,7 +1,7 @@
 {
     "name": "agent-scaffolders",
-    "version": "2.0.0",
-    "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
+    "version": "2.1.0",
+    "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, custom GitHub Copilot agents, GitHub Agentic Workflows (gh-aw), CI/CD Smart Failure agents, and Azure Foundry agents.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -11,7 +11,9 @@
         "scaffolder",
         "plugin-generator",
         "skill-generator",
-        "agent-tooling"
+        "agent-tooling",
+        "github-agents",
+        "gh-aw"
     ],
     "capabilities": [
         "skill-scaffolding",

@@ -2,39 +2,45 @@
 name: create-agentic-workflow
 plugin: agent-scaffolders
 description: >
-  Scaffolds a GitHub agentic workflow from an existing skill. NOT for deterministic CI/CD workflows (use `create-github-action`) and NOT for standalone sub-agents (use `create-sub-agent`).
-argument-hint: "[skill-dir] [mode: ide|cicd|both]"
+  Scaffolds a Copilot GitHub agent, an agent that runs in GitHub Actions, a GitHub workflow agent, a GitHub Copilot Agent, or a GitHub Agentic Workflow (gh-aw) from an existing skill. Supports three target configurations: Target A (Custom Copilot agent), Target B (GitHub Agentic Workflow), and Target C (CI/CD Smart Failure agent).
+argument-hint: "[skill-dir] [--target A|B|C] [--name name] [--engine copilot|claude|codex]"
 allowed-tools: Bash, Read, Write
+disable-model-invocation: false
 ---
 
-Follow the `create-agentic-workflow` skill workflow to convert a local skill into a
-GitHub-native agentic workflow.
+Follow the `create-agentic-workflow` skill workflow to convert a local skill into a GitHub-native agentic configuration (Target A, B, or C).
 
 ## Inputs
 
-- `$1` — path to the existing skill directory to convert
-- `$2` — optional mode: `ide` (Copilot Chat slash command), `cicd` (autonomous quality gate),
-  or `both`. Defaults to guided selection if omitted.
+- `$1` (or `--skill-dir`) — path to the existing skill directory to convert
+- `--target` — target type: `A` (Custom Copilot Agent `.agent.md`), `B` (GitHub Agentic Workflow `gh-aw`), or `C` (CI/CD Smart Failure agent)
+- `--name` — custom name for the generated agent/workflow
+- `--engine` — engine to use: `copilot` (default), `claude`, or `codex`
 
 ## Steps
 
-1. Run the Phase 0 complexity gate — confirm the task warrants agent complexity
-2. If `$1` provides a skill directory, resolve and validate the path; otherwise ask
-3. Follow the create-agentic-workflow discovery phase: select workflow pattern
-   (Sequential / Orchestrator-Workers / Evaluator-Optimizer / Stateful), agent type,
-   trigger events for CI/CD, and orchestration design for parallel patterns
-4. Run `scaffold_agentic_workflow.py` with the gathered parameters
-5. Provide post-scaffold next steps (secrets, `gh aw compile`, etc.)
+1. **Resolve Input Skill**: Confirm the source skill directory contains a valid `SKILL.md`.
+2. **Progressive Discovery (Interactive Interview)**:
+   - **Target Mode**: Ask the user to select Target A, B, or C. *Smart-default Target B (gh-aw) if the user says "runs in GitHub".*
+   - **Trigger Event**: Define the events (push, pull_request, schedule, issues, release) or schedule details.
+   - **AI Engine**: Select `copilot` (default), `claude`, or `codex`.
+   - **Safe Outputs / Write Operations (Target B)**: Define allowed write actions (e.g. `add-comment`, `create-issue`, `add-labels`).
+   - **MCP Servers & Tooling (Target A)**: Identify which tools/MCP servers to grant permission to.
+3. **Recap Gate**: Present a summary of the configuration. Ask the user: *"Does this look right? yes / adjust"*. Proceed only on confirmation.
+4. **Scaffolder Execution**: Run `scaffold_github_agent.py` to write the target files.
+5. **Validation & Compilation Gate**:
+   - Run `validate_github_agent.py` to verify schema compliance.
+   - **Accuracy Caveat**: For Target B, since `gh-aw` is in public preview and frontmatter schemas may drift, ALWAYS attempt to compile using `gh aw compile` after generation and treat compile errors as the source of truth over templates.
 
 ## Output
 
-Generated GitHub workflow YAML and/or Copilot agent definition files, with implementation
-notes for the chosen agent type and pattern.
+Generated agent metadata, prompt companion files, workflow YAMLs, or markdown configurations depending on target selection:
+- **Target A**: `.github/agents/<name>.agent.md` + `.github/prompts/<name>.prompt.md`
+- **Target B**: `.github/workflows/<name>.md` + `.github/workflows/<name>.lock.yml`
+- **Target C**: `.github/agents/<name>.agent.md` + `.github/workflows/<name>-agent.yml`
 
 ## Edge Cases
 
-- If `$ARGUMENTS` is empty: begin with Phase 0 complexity gate, then guided discovery
-- If the skill directory does not exist: ask for the correct path
-- If the task is better served by a simple command: recommend it and stop (Phase 0 gate)
-- Subagents in Orchestrator-Workers do not inherit parent permissions — remind user to
-  configure each worker's permissions or use a PermissionRequest hook
+- **Target B Compilation**: If `gh-aw` CLI is not installed locally, output warning and instructions for `gh extension install github/gh-aw`.
+- **Target C Kill Switch**: Ensure the custom Kill Switch phrase appears verbatim in both the `.agent.md` body and the workflow runner's grep condition, along with the Escalation Trigger Taxonomy.
+- **Tools Frontmatter Difference**: Highlight that Target A uses standard GitHub agent frontmatter keys (e.g., `tools: [github, terminal]`), NOT the Claude-style frontmatter keys (e.g., `permissions.allowedTools`) generated by `create-sub-agent`.

@@ -1,1 +1,1 @@
-../../../../assets/references/research/summary.md
+../../../../references/research/summary.md

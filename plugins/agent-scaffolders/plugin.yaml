@@ -1,6 +1,6 @@
 name: agent-scaffolders
-version: 2.0.0
-description: "Ecosystem generation primitives — scaffolds agent skills, plugins, CLI sub-agents, GitHub workflows, Azure Foundry agents, and more."
+version: 2.1.0
+description: "Ecosystem generation primitives — scaffolds agent skills, plugins, CLI sub-agents, custom GitHub Copilot agents, GitHub Agentic Workflows (gh-aw), CI/CD Smart Failure agents, and Azure Foundry agents."
 author: Richard Fremmerlid
 kind: backend
 platforms:
@@ -12,6 +12,7 @@ provides_tools:
   - scaffold_github_action
   - scaffold_azure_agent
   - scaffold_agentic_workflow
+  - scaffold_github_agent
   - audit
   - inventory_plugin
 skills:

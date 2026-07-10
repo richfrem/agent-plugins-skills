@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/output-classification.md
+../../../../references/patterns/output-classification.md

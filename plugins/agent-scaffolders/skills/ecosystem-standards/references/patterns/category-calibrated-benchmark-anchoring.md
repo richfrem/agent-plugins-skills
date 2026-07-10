@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/category-calibrated-benchmark-anchoring.md
+../../../../references/patterns/category-calibrated-benchmark-anchoring.md

@@ -1,1 +1,1 @@
-../plugins.md
+../../../../references/reference/plugins.md

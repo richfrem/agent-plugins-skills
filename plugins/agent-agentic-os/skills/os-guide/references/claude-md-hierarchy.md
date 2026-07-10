@@ -1,1 +1,1 @@
-../../../references/architecture/claude-md-hierarchy.md
+../../../references/claude-md-hierarchy.md

@@ -1,1 +1,1 @@
-../../../assets/references/BLUEPRINT.md
+../../../references/BLUEPRINT.md

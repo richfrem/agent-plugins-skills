@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/tiered-source-authority.md
+../../../../references/patterns/tiered-source-authority.md

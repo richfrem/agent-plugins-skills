@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/graduated-source-attributed-elicitation.md
+../../../../references/patterns/graduated-source-attributed-elicitation.md

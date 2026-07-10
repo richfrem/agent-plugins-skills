@@ -1,1 +1,1 @@
-../hooks.md
+../../../../references/reference/hooks.md

@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/chained-commands.md
+../../../../references/patterns/chained-commands.md

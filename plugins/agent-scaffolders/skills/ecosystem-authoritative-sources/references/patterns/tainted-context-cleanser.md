@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/tainted-context-cleanser.md
+../../../../references/patterns/tainted-context-cleanser.md

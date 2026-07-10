@@ -1,1 +1,1 @@
-examples/simple-commands.md
+../../../references/simple-commands.md

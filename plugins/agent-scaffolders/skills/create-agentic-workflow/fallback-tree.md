@@ -15,3 +15,12 @@ If Jinja2 or the internal string templater fails to render constraints due to ma
 ## 4. Name Collision
 If the user requests a generation that shares a name with an already existing skill or plugin in the exact same path:
 - **Action**: Do NOT overwrite the existing directory without an explicit dual-confirmation loop. Ask the user: "Warning: Directory already exists. Do you want to recursively overwrite it? (yes/no)".
+
+## 5. Validation Failure
+If `validate_github_agent.py` flags schema errors in the generated `.agent.md` or `.md` configuration:
+- **Action**: Locate the failing key in the validation JSON report. Re-run the scaffolder with corrected inputs or manually repair the specific frontmatter key. Do not present the malformed agent configuration to the user as successful.
+
+## 6. Target B Compile Error
+If `gh aw compile` fails to generate the `.lock.yml` due to YAML/frontmatter schema drift or missing dependencies:
+- **Action**: Read the specific compilation error from the terminal output. Treat it as the source of truth, correct the Markdown frontmatter of the workflow intent file, and re-run compilation.
+

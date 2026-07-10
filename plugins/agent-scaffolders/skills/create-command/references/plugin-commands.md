@@ -1,1 +1,1 @@
-examples/plugin-commands.md
+../../../references/plugin-commands.md

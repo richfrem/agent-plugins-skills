@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/source-transparency.md
+../../../../references/patterns/source-transparency.md

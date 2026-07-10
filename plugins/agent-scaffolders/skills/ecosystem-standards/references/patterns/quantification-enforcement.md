@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/quantification-enforcement.md
+../../../../references/patterns/quantification-enforcement.md

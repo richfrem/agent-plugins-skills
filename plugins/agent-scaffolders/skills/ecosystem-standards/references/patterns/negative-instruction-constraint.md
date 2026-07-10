@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/negative-instruction-constraint.md
+../../../../references/patterns/negative-instruction-constraint.md

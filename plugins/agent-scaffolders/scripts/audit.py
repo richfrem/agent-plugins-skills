@@ -41,6 +41,13 @@ import argparse
 import os
 import json
 import glob
+import sys
+
+# Ensure Unicode output works on Windows terminals that default to cp1252
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 def audit_plugin(plugin_path: str) -> bool:
     print(f"Auditing Plugin at: {plugin_path}")
@@ -100,7 +107,7 @@ def audit_plugin(plugin_path: str) -> bool:
             if not os.path.isfile(skill_md):
                 errors.append(f"Skill '{skill_name}' is missing `././SKILL.md`.")
             else:
-                with open(skill_md, "r") as f:
+                with open(skill_md, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                     if len(lines) > 500:
                         warnings.append(f"Skill '{skill_name}' ././SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")

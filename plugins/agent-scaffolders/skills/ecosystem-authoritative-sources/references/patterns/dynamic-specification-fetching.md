@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/dynamic-specification-fetching.md
+../../../../references/patterns/dynamic-specification-fetching.md

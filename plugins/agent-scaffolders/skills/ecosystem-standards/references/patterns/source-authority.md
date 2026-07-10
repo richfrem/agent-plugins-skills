@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/source-authority.md
+../../../../references/patterns/source-authority.md

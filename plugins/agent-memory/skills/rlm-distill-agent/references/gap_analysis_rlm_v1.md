@@ -1,1 +1,1 @@
-../../../assets/references/gap_analysis_rlm_v1.md
+../../../references/gap_analysis_rlm_v1.md
