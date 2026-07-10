@@ -1,1 +1,1 @@
-../github-prompts.md
+../../../../references/reference/github-prompts.md

@@ -1,1 +1,1 @@
-../../../create-stateful-skill/SKILL.md
+../../../../references/examples/SKILL.md

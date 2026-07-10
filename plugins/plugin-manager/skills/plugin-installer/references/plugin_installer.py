@@ -1,1 +1,1 @@
-../scripts/plugin_installer.py
+../../../references/plugin_installer.py

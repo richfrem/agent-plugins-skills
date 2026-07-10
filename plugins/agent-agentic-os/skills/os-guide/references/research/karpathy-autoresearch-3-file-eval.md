@@ -1,1 +1,1 @@
-../../../../references/meta/research/karpathy-autoresearch-3-file-eval.md
+../../../../references/research/karpathy-autoresearch-3-file-eval.md

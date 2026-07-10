@@ -1,1 +1,1 @@
-../../../references/architecture/sub-agents-and-hooks.md
+../../../references/sub-agents-and-hooks.md

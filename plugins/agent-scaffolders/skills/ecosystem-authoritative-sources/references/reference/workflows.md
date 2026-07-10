@@ -1,1 +1,1 @@
-../workflows.md
+../../../../references/reference/workflows.md

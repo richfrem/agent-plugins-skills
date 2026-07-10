@@ -12,6 +12,18 @@
     "should_trigger": true
   },
   {
+    "prompt": "Create a Copilot GitHub agent from this skill",
+    "should_trigger": true
+  },
+  {
+    "prompt": "scaffold a GitHub Agentic Workflow gh-aw from my repo",
+    "should_trigger": true
+  },
+  {
+    "prompt": "setup an agent that runs in GitHub Actions to validate code",
+    "should_trigger": true
+  },
+  {
     "prompt": "Create a new GitHub Actions CI/CD pipeline for my project.",
     "should_trigger": false
   },

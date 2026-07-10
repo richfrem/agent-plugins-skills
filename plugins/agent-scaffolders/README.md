@@ -52,7 +52,7 @@ These skills build ecosystem-compliant components from scratch.
 | `create-hook` | "add a PreToolUse hook" | Validated `hooks.json` entries or skill-scoped hook frontmatter |
 | `create-mcp-integration` | "setup mcp server" | `.mcp.json` or plugin `mcpServers` block |
 | `create-stateful-skill` | "stateful skill" | L4-pattern skill with epistemic trust and artifact lifecycle |
-| `create-agentic-workflow`| "convert to copilot" | GitHub Agentic Workflow files (IDE or CI/CD) |
+| `create-agentic-workflow`| "convert to copilot" | Custom Copilot agent (.agent.md), GitHub Agentic Workflow (gh-aw), or CI/CD Smart Failure agent |
 | `create-github-action` | "scaffold CI workflow" | Deterministic GitHub Actions YAML |
 | `create-docker-skill` | "docker skill" | Dockerfile and pre-flight security overrides |
 | `create-azure-agent` | "azure ai foundry" | Azure AI Foundry agent boilerplate |

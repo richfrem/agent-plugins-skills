@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/complexity-tiered-output.md
+../../../../references/patterns/complexity-tiered-output.md

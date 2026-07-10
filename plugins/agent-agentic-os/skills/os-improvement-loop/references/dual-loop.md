@@ -1,1 +1,1 @@
-../../../references/operations/triple-loop.md
+../../../references/dual-loop.md

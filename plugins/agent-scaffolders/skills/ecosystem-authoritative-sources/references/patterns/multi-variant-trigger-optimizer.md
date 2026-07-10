@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/multi-variant-trigger-optimizer.md
+../../../../references/patterns/multi-variant-trigger-optimizer.md

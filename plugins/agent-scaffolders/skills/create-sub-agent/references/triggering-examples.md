@@ -1,1 +1,1 @@
-../../../references/examples/triggering-examples.md
+../../../references/triggering-examples.md

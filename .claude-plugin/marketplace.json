@@ -31,11 +31,11 @@
     },
     {
       "name": "agent-scaffolders",
-      "description": "Meta-plugin containing ecosystem generation primitives. Scaffolding for agent skills, plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
+      "description": "Meta-plugin containing ecosystem generation primitives. Scaffolding for agent skills, plugins, CLI sub-agents, custom GitHub Copilot agents, GitHub Agentic Workflows (gh-aw), CI/CD Smart Failure agents, and Azure Foundry agents.",
       "source": "./plugins/agent-scaffolders",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["scaffolder", "plugin-generator", "skill-generator", "agent-tooling"]
+      "tags": ["scaffolder", "plugin-generator", "skill-generator", "agent-tooling", "github-agents", "gh-aw"]
     },
     {
       "name": "agent-memory",

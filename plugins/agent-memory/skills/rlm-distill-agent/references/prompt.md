@@ -1,1 +1,1 @@
-../../../assets/references/prompt.md
+../../../references/prompt.md

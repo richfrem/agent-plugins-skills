@@ -1,1 +1,1 @@
-../sub-agents.md
+../../../../references/reference/sub-agents.md

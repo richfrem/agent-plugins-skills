@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/priority-ordered-scanning.md
+../../../../references/patterns/priority-ordered-scanning.md

@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/multi-actor-operational-coordination-manifest.md
+../../../../references/patterns/multi-actor-operational-coordination-manifest.md

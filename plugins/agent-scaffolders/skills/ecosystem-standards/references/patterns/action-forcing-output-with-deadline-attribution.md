@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/action-forcing-output-with-deadline-attribution.md
+../../../../references/patterns/action-forcing-output-with-deadline-attribution.md

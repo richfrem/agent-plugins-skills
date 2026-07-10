@@ -40,3 +40,23 @@ Skip reinstall only for: documentation-only edits to `references/`, `ADRs/`, or 
 See [`architecture.md`](./architecture.md) for the full repo architecture overview — project structure, plugin-by-plugin breakdown, ADR summary, symlink system, and runtime state layout.
 
 `plugins/` is the **source of truth**. `.agents/` contains installed copies only — never derive counts, versions, or skill lists from installed artifacts.
+
+---
+
+## Pre-Push Audit & Verification Rule (always active)
+
+> **Before pushing any changes to GitHub or concluding updates to plugins or skills**, you MUST run standard compliance and structural audits on all affected plugins, and resolve any flagged errors or symlink issues.
+
+```bash
+# 1. Run compliance audit on your modified plugin:
+python plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
+
+# 2. Run structural audit to verify symlink and resource compliance:
+python plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+
+# 3. Run cross-platform symlink check:
+python .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+```
+
+Fix any reported errors, missing references, or duplicate files (moving duplicates to the plugin root `references/` folder and symlinking them via the symlink manager) before proposing or pushing the code.
+

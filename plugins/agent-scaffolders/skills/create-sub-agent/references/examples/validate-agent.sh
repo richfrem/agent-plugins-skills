@@ -1,1 +1,1 @@
-../../../../scripts/validate-agent.sh
+../../../../references/examples/validate-agent.sh

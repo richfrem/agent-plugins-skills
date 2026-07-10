@@ -1,1 +1,1 @@
-../../../references/operations/loop-scheduler.md
+../../../references/loop-scheduler.md

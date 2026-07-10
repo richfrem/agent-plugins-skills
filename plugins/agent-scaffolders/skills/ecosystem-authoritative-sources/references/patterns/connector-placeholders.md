@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/connector-placeholders.md
+../../../../references/patterns/connector-placeholders.md

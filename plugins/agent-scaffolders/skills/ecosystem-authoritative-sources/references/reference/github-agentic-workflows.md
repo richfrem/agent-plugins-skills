@@ -1,1 +1,1 @@
-../github-agentic-workflows.md
+../../../../references/reference/github-agentic-workflows.md

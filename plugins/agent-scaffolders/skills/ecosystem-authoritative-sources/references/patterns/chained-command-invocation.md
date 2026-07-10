@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/chained-command-invocation.md
+../../../../references/patterns/chained-command-invocation.md

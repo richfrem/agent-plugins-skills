@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/sub-action-multiplexing.md
+../../../../references/patterns/sub-action-multiplexing.md

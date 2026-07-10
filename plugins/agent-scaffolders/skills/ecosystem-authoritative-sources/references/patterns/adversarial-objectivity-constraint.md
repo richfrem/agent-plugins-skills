@@ -1,1 +1,1 @@
-﻿../../../../references/patterns/adversarial-objectivity-constraint.md
+../../../../references/patterns/adversarial-objectivity-constraint.md

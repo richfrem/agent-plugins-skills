@@ -1,1 +1,1 @@
-../plugin-features-reference.md
+../../../../references/examples/plugin-features-reference.md

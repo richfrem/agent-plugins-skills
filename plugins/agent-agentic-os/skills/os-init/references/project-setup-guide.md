@@ -1,1 +1,1 @@
-../../../references/operations/project-setup-guide.md
+../../../references/project-setup-guide.md
