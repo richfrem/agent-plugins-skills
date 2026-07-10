@@ -1,6 +1,6 @@
 # GitHub Agent Types
 
-## Understanding the Two GitHub Agent Types
+## Understanding the Three GitHub Agent Types
 
 | | Type 1: IDE / UI Agent | Type 2: CI/CD — Smart Failure | Type 3: CI/CD — Official Format |
 |---|---|---|---|

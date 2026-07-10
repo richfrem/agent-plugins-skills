@@ -9,7 +9,7 @@ Purpose:
 Layer: Meta-Execution
 
 Usage Examples:
-    pythonudit.py --path <plugin-directory>
+    python audit.py --path <plugin-directory>
 
 Supported Object Types:
     - .claude-plugin formatted directories
@@ -102,7 +102,7 @@ def audit_plugin(plugin_path: str) -> bool:
             if not os.path.isdir(skill_path):
                 continue
             
-            skill_md = os.path.join(skill_path, "././SKILL.md")
+            skill_md = os.path.realpath(os.path.join(skill_path, "././SKILL.md"))
 
             if not os.path.isfile(skill_md):
                 errors.append(f"Skill '{skill_name}' is missing `././SKILL.md`.")
@@ -113,11 +113,11 @@ def audit_plugin(plugin_path: str) -> bool:
                         warnings.append(f"Skill '{skill_name}' ././SKILL.md exceeds 500 lines ({len(lines)} lines). Extract logic to scripts.")
             
             # Check for Microsoft Progressive Disclosure & Testing standard
-            references_dir = os.path.join(skill_path, "references")
+            references_dir = os.path.realpath(os.path.join(skill_path, "references"))
             if not os.path.isdir(references_dir):
                 warnings.append(f"Skill '{skill_name}' is missing a `references/` directory. Progressive Disclosure is highly recommended.")
             else:
-                acceptance_file = os.path.join(references_dir, "acceptance-criteria.md")
+                acceptance_file = os.path.realpath(os.path.join(references_dir, "acceptance-criteria.md"))
                 if not os.path.isfile(acceptance_file):
                     errors.append(f"Skill '{skill_name}' is missing `./acceptance-criteria.md`. All skills must have test criteria.")
                     
@@ -126,7 +126,7 @@ def audit_plugin(plugin_path: str) -> bool:
             for item in os.listdir(skill_path):
                 full_item_path = os.path.join(skill_path, item)
                 if os.path.isdir(full_item_path) and item not in allowed_skill_dirs and not item.startswith("."):
-                    errors.append(f"Skill '{skill_name}' contains illegal root directory '{item}/'. Only ['scripts', 'references', 'assets'] and specific scaffolds are allowed.")
+                    errors.append(f"Skill '{skill_name}' contains illegal root directory '{item}/'. Only ['scripts', 'references', 'assets', 'examples', 'templates', 'evals', 'tests'] and specific scaffolds are allowed.")
 
     if errors:
         print("\n❌ AUDIT FAILED ❌")
