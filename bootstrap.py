@@ -83,6 +83,60 @@ def fetch_file(url: str, dest: Path):
         print(red(f"  {e}"))
         sys.exit(1)
 
+def _resolve_args(primary_script_name: str, raw_args: list) -> list:
+    """Resolve CLI args to pass through, defaulting plugin_add's source when piped from curl."""
+    args = raw_args
+
+    # If no args were passed and we are piped from curl, sys.argv is just ['-']
+    # Default to richfrem/agent-plugins-skills if no source provided for plugin_add
+    if primary_script_name == "plugin_add.py":
+        if not args or args == ["-"]:
+            args = ["richfrem/agent-plugins-skills"]
+        if args and args[0] == "-":
+            args = args[1:]
+            if not args:
+                args = ["richfrem/agent-plugins-skills"]
+    elif args and args[0] == "-":
+        args = args[1:]
+    return args
+
+
+def _run_local(local_script: Path, args: list, title: str) -> None:
+    """Execute the locally cloned script (uvx / git-clone case)."""
+    print(f"  {green('✓ Using cloned scripts')}", flush=True)
+    print(f"  {dim(f'Launching {title}...')}\n")
+    cmd = [sys.executable, str(local_script)] + args
+    try:
+        sys.exit(subprocess.call(cmd))
+    except KeyboardInterrupt:
+        print(red("\n  Cancelled."))
+        sys.exit(0)
+
+
+def _run_downloaded(required_scripts: list, primary_script_name: str, args: list, title: str) -> None:
+    """Download required scripts to a temp dir and execute the primary script (curl-pipe / pypi case)."""
+    with tempfile.TemporaryDirectory(prefix="plugin_manager_env_") as tmpdir:
+        tmp_path = Path(tmpdir)
+
+        print(f"  {dim('Downloading core scripts... (standalone)')}", flush=True)
+        base_raw_url = "https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main"
+
+        # Download the required files side-by-side
+        for file_path in required_scripts:
+            filename = Path(file_path).name
+            fetch_file(f"{base_raw_url}/{file_path}", tmp_path / filename)
+
+        print(f"  {green('✓ Bootstrapped.')} Launching {title}...\n")
+
+        cmd = [sys.executable, str(tmp_path / primary_script_name)] + args
+
+        try:
+            sys.exit(subprocess.call(cmd))
+        except KeyboardInterrupt:
+            print(red("\n  Cancelled."))
+            sys.exit(0)
+
+
 def run_script(primary_script_name: str, required_scripts: list, title: str):
     """Download scripts and execute the primary installer script."""
     print(bold(f"\n  Initializing {title}..."))
@@ -99,56 +153,17 @@ def run_script(primary_script_name: str, required_scripts: list, title: str):
     # Check if we're running from a cloned git repo (uvx case)
     bootstrap_dir = Path(__file__).parent
     local_script = bootstrap_dir / "plugins" / "plugin-manager" / "scripts" / primary_script_name
-
-    # Determine args to pass along
-    args = sys.argv[1:]
-    
-    # If no args were passed and we are piped from curl, sys.argv is just ['-']
-    # Default to richfrem/agent-plugins-skills if no source provided for plugin_add
-    if primary_script_name == "plugin_add.py":
-        if not args or args == ["-"]:
-            args = ["richfrem/agent-plugins-skills"]
-        if args and args[0] == "-":
-            args = args[1:]
-            if not args:
-                args = ["richfrem/agent-plugins-skills"]
-    elif args and args[0] == "-":
-        args = args[1:]
+    args = _resolve_args(primary_script_name, sys.argv[1:])
 
     # If running from cloned repo (uvx case), use local scripts directly
     if local_script.exists():
-        print(f"  {green('✓ Using cloned scripts')}", flush=True)
-        print(f"  {dim(f'Launching {title}...')}\n")
-        cmd = [sys.executable, str(local_script)] + args
-        try:
-            sys.exit(subprocess.call(cmd))
-        except KeyboardInterrupt:
-            print(red("\n  Cancelled."))
-            sys.exit(0)
+        _run_local(local_script, args, title)
     else:
         # Running from curl pipe or pypi install — download from main
-        with tempfile.TemporaryDirectory(prefix="plugin_manager_env_") as tmpdir:
-            tmp_path = Path(tmpdir)
-
-            print(f"  {dim('Downloading core scripts... (standalone)')}", flush=True)
-            base_raw_url = "https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main"
-            
-            # Download the required files side-by-side
-            for file_path in required_scripts:
-                filename = Path(file_path).name
-                fetch_file(f"{base_raw_url}/{file_path}", tmp_path / filename)
-
-            print(f"  {green('✓ Bootstrapped.')} Launching {title}...\n")
-
-            cmd = [sys.executable, str(tmp_path / primary_script_name)] + args
-
-            try:
-                sys.exit(subprocess.call(cmd))
-            except KeyboardInterrupt:
-                print(red("\n  Cancelled."))
-                sys.exit(0)
+        _run_downloaded(required_scripts, primary_script_name, args, title)
 
 def add_main():
+    """Entry point for plugin installation (default when run as `python bootstrap.py`)."""
     run_script(
         primary_script_name="plugin_add.py",
         required_scripts=[
@@ -159,6 +174,7 @@ def add_main():
     )
 
 def remove_main():
+    """Entry point for plugin uninstallation."""
     run_script(
         primary_script_name="plugin_remove.py",
         required_scripts=[
@@ -168,6 +184,7 @@ def remove_main():
     )
 
 def sync_main():
+    """Entry point for plugin sync and cleanup."""
     run_script(
         primary_script_name="sync_with_inventory.py",
         required_scripts=[
