@@ -308,6 +308,7 @@ def run_eval(
 
 
 def main() -> None:
+    """Parse CLI arguments and execute trigger evaluation on the skill."""
     parser = argparse.ArgumentParser(description="Run trigger evaluation for a skill description")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

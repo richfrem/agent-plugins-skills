@@ -1,10 +1,22 @@
 #!/usr/bin/env python
+"""
+audit_plugin_paths.py
+
+Purpose:
+    Audits plugin file paths for correctness and compliance with whitelist patterns.
+
+Key Input Dependencies:
+    - whitelist JSON file (optional) with allowed path patterns
+    - Plugin source files and directory structure
+    - json and pathlib modules for file I/O
+"""
 import sys
 import re
 import json
 from pathlib import Path
 
 def load_whitelist(whitelist_path: Path):
+    """Load whitelist patterns from JSON file."""
     if not whitelist_path.exists():
         return [], {}
     try:
@@ -18,6 +30,7 @@ def load_whitelist(whitelist_path: Path):
         return [], {}
 
 def is_whitelisted(line, file_path_str, global_patterns, file_specific_patterns):
+    """Check if a line matches any whitelist patterns."""
     for pattern in global_patterns:
         if re.search(pattern, line, re.IGNORECASE):
             return True
@@ -95,6 +108,7 @@ def audit_runtime_paths(target_dir: Path):
 
 
 def audit_directory(target_dir: Path, global_patterns, file_specific_patterns):
+    """Audit directory files for non-whitelisted path references."""
     issues = {}
     issue_count = 0
     
@@ -149,6 +163,7 @@ def audit_directory(target_dir: Path, global_patterns, file_specific_patterns):
     return issues, issue_count
 
 def write_report(issues, runtime_issues, report_path: Path):
+    """Write audit report to file."""
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write("# Portability Audit Report\n\n")
 
@@ -182,6 +197,7 @@ def write_report(issues, runtime_issues, report_path: Path):
 
 
 def main():
+    """Parse CLI arguments and audit plugin paths."""
     target_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
     whitelist_path = Path(__file__).resolve().parent / "plugin_paths_whitelist.json"
     report_path = Path(__file__).resolve().parent / "portability-audit-report.md"

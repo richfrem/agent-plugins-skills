@@ -25,7 +25,7 @@ CLI Arguments:
     get <number>            View a specific ADR fully by its numeric ID
     search <query>          Search ADR bodies using exact matching keywords
 
-Input Files:
+Key Input Dependencies:
     - templates/adr-template.md
 
 Output:

@@ -2,9 +2,16 @@
 """
 scaffold_github_agent.py
 =====================================
+
 Purpose:
     Dispatcher script to generate GitHub AI Agents (Target A, B, or C).
     Writes files, self-validates each output, and outputs a JSON manifest.
+
+Key Input Dependencies:
+    - gh_agent_templates module - template generation for GitHub Actions
+    - validate_github_agent module - validation logic for generated agents
+    - SKILL.md (optional) - for extracting agent metadata from skill definitions
+    - PyYAML - for frontmatter parsing
 """
 
 import os
@@ -24,6 +31,7 @@ import validate_github_agent as validator
 
 
 def parse_frontmatter(content: str) -> tuple[dict, str]:
+    """Parse YAML frontmatter from markdown content, normalizing YAML 1.1 boolean quirks."""
     fm = {}
     body = content
     match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
@@ -45,6 +53,7 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
 
 
 def main() -> None:
+    """Parse CLI arguments and dispatch to appropriate GitHub Agent scaffolding target."""
     parser = argparse.ArgumentParser(description="Scaffold a GitHub Agent (Target A, B, or C).")
     parser.add_argument(
         "--target",
@@ -116,6 +125,7 @@ def main() -> None:
     kill_switch = args.kill_switch or f"CRITICAL FAILURE: {name.upper().replace('-', '_')}"
 
     def write_file_safe(file_path: Path, content: str) -> None:
+        """Write file to disk, validating markdown agents, and tracking created/skipped files."""
         if file_path.exists() and not args.force:
             skipped_files.append(str(file_path.relative_to(output_root)))
             return

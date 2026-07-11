@@ -8,6 +8,10 @@ Purpose:
     required fields (name, description, model, color), field format constraints,
     system prompt length and style, and example block presence.
 
+Key Input Dependencies:
+    - Agent markdown file with YAML frontmatter (.agent.md, .agent.md)
+    - sys, os, re modules for file I/O and regex validation
+
 Layer: Investigate
 
 Usage:

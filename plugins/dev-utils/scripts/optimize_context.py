@@ -259,23 +259,25 @@ def patch_claudeignore(
 # ---------------------------------------------------------------------------
 
 def _print_header(label: str) -> None:
+    """Print a formatted section header to stdout."""
     print(f"\n{'=' * 60}")
     print(f"  {label}")
     print(f"{'=' * 60}")
 
 
 def _print_duplicate(slug: str, plugin_path: Path, local_path: Path) -> None:
+    """Print detail information for a duplicate skill conflict."""
     print(f"  ⚠  DUPLICATE: {slug!r}")
     print(f"       canonical : {plugin_path}")
     print(f"       suppressed: {local_path}")
 
 
 # ---------------------------------------------------------------------------
-# CLI entry-point
+# CLI helpers
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    """Parse CLI arguments and run the optimize-context pipeline."""
+def _parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for optimize-context."""
     parser = argparse.ArgumentParser(
         prog="optimize-context",
         description=(
@@ -305,14 +307,11 @@ def main() -> None:
         metavar="PATH",
         help="Path to .claudeignore (default: <project-root>/.claudeignore).",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    project_root = Path(args.project_root).resolve()
-    plugins_dir = project_root / "plugins"
-    local_skills_dir = project_root / ".agents" / "skills"
-    ignore_file = Path(args.ignore_file) if args.ignore_file else project_root / ".claudeignore"
 
-    # --- Discovery ---
+def _run_discovery(project_root: Path, plugins_dir: Path, local_skills_dir: Path, verbose: bool) -> tuple[dict[str, Path], dict[str, Path]]:
+    """Discover plugin-canonical and local skills."""
     _print_header("optimize-context: skill scan")
     print(f"  project root : {project_root}")
     print(f"  plugins dir  : {plugins_dir} {'(found)' if plugins_dir.exists() else '(not found)'}")
@@ -321,15 +320,24 @@ def main() -> None:
     plugin_skills = collect_plugin_skills(plugins_dir)
     local_skills = collect_skills(local_skills_dir)
 
-    if args.verbose:
+    if verbose:
         _print_header("All plugin-canonical skills")
         for slug in sorted(plugin_skills):
             print(f"  ✓ {slug}")
         _print_header("All .agents/skills (local) skills")
         for slug in sorted(local_skills):
             print(f"  ✓ {slug}")
+            
+    return plugin_skills, local_skills
 
-    # --- Duplicate detection ---
+
+def _run_duplicate_check(
+    plugin_skills: dict[str, Path],
+    local_skills: dict[str, Path],
+    ignore_file: Path,
+    project_root: Path,
+) -> tuple[list[tuple[str, Path, Path]], list[tuple[str, Path, Path]]]:
+    """Analyze and partition duplicates by suppression status."""
     all_duplicates = find_duplicates(plugin_skills, local_skills)
 
     _print_header("Duplicate analysis")
@@ -346,6 +354,25 @@ def main() -> None:
         print(f"  ℹ  {len(already_suppressed)} duplicate(s) already suppressed in .claudeignore (skipped):")
         for slug, _, local_path in already_suppressed:
             print(f"       {slug!r} → {local_path}")
+            
+    return unsuppressed, already_suppressed
+
+
+# ---------------------------------------------------------------------------
+# CLI entry-point
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    """Parse CLI arguments and run the optimize-context pipeline."""
+    args = _parse_args()
+
+    project_root = Path(args.project_root).resolve()
+    plugins_dir = project_root / "plugins"
+    local_skills_dir = project_root / ".agents" / "skills"
+    ignore_file = Path(args.ignore_file) if args.ignore_file else project_root / ".claudeignore"
+
+    plugin_skills, local_skills = _run_discovery(project_root, plugins_dir, local_skills_dir, args.verbose)
+    unsuppressed, already_suppressed = _run_duplicate_check(plugin_skills, local_skills, ignore_file, project_root)
 
     if unsuppressed:
         print(f"  ⚠  {len(unsuppressed)} unsuppressed duplicate(s) found:")

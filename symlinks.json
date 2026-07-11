@@ -2630,6 +2630,12 @@
       "description": "Plugin reference \u2192 Skill reference"
     },
     {
+      "src": "plugins/dev-utils/scripts/workspace_conventions_auditor.py",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py",
+      "strategy": "symlink",
+      "description": "Plugin script \u2192 Skill script"
+    },
+    {
       "src": "plugins/dependency-management/rules/dependency-management.md",
       "dst": "plugins/dependency-management/skills/dependency-management/references/dependency-management.md",
       "strategy": "symlink",

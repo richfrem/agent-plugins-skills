@@ -1,8 +1,36 @@
 #!/usr/bin/env python
+"""
+check_skill_lengths.py
+=====================================
+
+Purpose:
+    Analyze SKILL.md files across the plugin ecosystem to report on description field lengths.
+    Flags files exceeding 800 characters (warning) and 1024 characters (failure).
+
+Layer: Investigate / Audit
+
+Usage Examples:
+    python check_skill_lengths.py
+
+Input Files:
+    - SKILL.md files in all plugins/*/skills/*/
+
+Output:
+    - Terminal stdout with length analysis report
+
+Key Functions:
+    - get_description_length(): Parse SKILL.md frontmatter and extract description length
+    - main(): Scan all skills and report on length compliance
+
+Key Input Dependencies:
+    None
+"""
+
 import os
 import glob
 
 def get_description_length(filepath):
+    """Parse SKILL.md and return the character length of the description field."""
     try:
         with open(filepath, 'r') as f:
             lines = f.readlines()
@@ -41,6 +69,7 @@ def get_description_length(filepath):
     return -1
 
 def main():
+    """Scan all SKILL.md files and report on description field length compliance."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     plugins_dir = os.path.abspath(os.path.join(script_dir, '..', '..'))
     

@@ -109,6 +109,7 @@ output projectConnectionString string = aiProject.properties.workspaceId
 '''
 
 def main() -> None:
+    """Scaffold Azure AI Foundry Agent boilerplate for a given skill."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--skill", required=True, help="Path to the target skill directory")
     args = parser.parse_args()

@@ -148,6 +148,7 @@ class ObsidianParser:
         return '\n'.join(callout_lines) + '\n'
 
 def main() -> None:
+    """Parse CLI arguments and execute analyze or callout subcommand."""
     parser = argparse.ArgumentParser(description="Obsidian Markdown Parser")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

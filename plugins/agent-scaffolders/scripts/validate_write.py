@@ -14,6 +14,14 @@ Layer: Codify
 
 Usage:
     echo '<pretooluse-json>' | python validate_write.py
+
+Key Input Dependencies:
+    - stdin (PreToolUse hook JSON payload)
+    - Configured system directories and sensitive patterns
+
+Key Functions:
+    - _respond(): Write hook decision to stderr and exit.
+    - main(): Parse stdin and validate file write path.
 """
 import sys
 import json

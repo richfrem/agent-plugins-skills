@@ -37,6 +37,7 @@ import argparse
 import sys
 
 def main() -> None:
+    """Create and refine exploration session brief with problem and scope details."""
     parser = argparse.ArgumentParser(description="Creates and refines an exploration session brief capturing problem statement, goals, users, issues, opportunities, scope hypotheses, and open questions.")
     # Add your arguments here
     parser.add_argument("--example", help="Example argument")

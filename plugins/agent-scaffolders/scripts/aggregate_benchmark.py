@@ -2,11 +2,14 @@
 """
 Aggregate individual run results into benchmark summary statistics.
 
-Reads grading.json files from run directories and produces:
-- run_summary with mean, stddev, min, max for each metric
-- delta between with_skill and without_skill configurations
+Purpose:
+    Reads grading.json files from run directories and produces benchmark statistics
+    (mean, stddev, min, max for each metric) and delta between with_skill/without_skill configurations.
 
-Credits: Inspired by and adapted from Anthropic's skill-creator.
+Key Input Dependencies:
+    - grading.json files in run directories (from evaluation runs)
+    - Benchmark directory structure with eval-N subdirectories
+    - json module for reading grading data
 
 Usage:
     python aggregate_benchmark.py <benchmark_dir>
@@ -338,6 +341,7 @@ def generate_markdown(benchmark: dict) -> str:
 
 
 def main() -> None:
+    """Parse CLI arguments and aggregate benchmark results into summary statistics."""
     parser = argparse.ArgumentParser(
         description="Aggregate benchmark run results into summary statistics"
     )

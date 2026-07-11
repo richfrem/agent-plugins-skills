@@ -2,6 +2,17 @@
 """
 state_engine.py — SQLite Control Plane for Exploration Cycle Plugin
 DB path: ${CLAUDE_PROJECT_DIR}/context/exploration/active_session.sqlite
+
+Purpose:
+    Manages the SQLite-backed state machine for the exploration cycle plugin.
+    Provides atomic task leasing, session management, premium call tracking,
+    approval gating, nonce deduplication, and WAL checkpointing for safe
+    concurrent multi-agent access.
+
+Key Input Dependencies:
+    active_session.sqlite (runtime DB, path passed as argument to init_db)
+        — sessions, tasks, phase_metrics, approvals, nonces tables
+    dashboard markdown file (optional, for migrate_dashboard / validate_dashboard_checkboxes)
 """
 import json, random, re, sqlite3, sys, time, uuid
 from contextlib import contextmanager
@@ -194,6 +205,7 @@ def record_nonce(conn: sqlite3.Connection, nonce: str) -> bool:
 
 
 def create_session(conn: sqlite3.Connection, session_id: str, session_name: str) -> None:
+    """Insert a new session row with 'in_progress' status."""
     with _immediate_transaction(conn) as c:
         c.execute(
             "INSERT INTO sessions (id, session_name) VALUES (?, ?)",
@@ -204,6 +216,7 @@ def create_session(conn: sqlite3.Connection, session_id: str, session_name: str)
 def add_task(conn: sqlite3.Connection, task_id: str, session_id: str,
              phase_ordinal: int, phase_name: str, component_name: str,
              requires_premium: bool = False) -> None:
+    """Insert a new task row in 'pending' status for the given session and phase."""
     with _immediate_transaction(conn) as c:
         c.execute(
             "INSERT INTO tasks (id, session_id, phase_ordinal, phase_name, "

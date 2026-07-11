@@ -4,12 +4,22 @@ build_explicit_inventory.py
 =====================================
 
 Purpose:
-    Generates complete repository file/symlink inventory listings.
+    Generates complete repository file/symlink inventory listings and analyzes
+    broken symlinks to suggest fixes.
 
 Layer: Investigate / Codify
 
 Usage:
-    pythonbuild_explicit_inventory.py
+    python build_explicit_inventory.py
+
+Key Input Dependencies:
+    - plugins/ directory structure (repository)
+    - Symlink target resolutions
+
+Key Functions:
+    - os.walk() - Scans plugin tree for files and symlinks
+    - Gap analysis - Detects broken symlinks and suggests fixes
+    - Output generation - Creates JSON inventory and repair report
 """
 
 import os

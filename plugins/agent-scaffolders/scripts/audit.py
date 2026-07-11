@@ -50,6 +50,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 def audit_plugin(plugin_path: str) -> bool:
+    """Audit a plugin directory for Agent Skills Open Standard compliance."""
     print(f"Auditing Plugin at: {plugin_path}")
     plugin_name = os.path.basename(os.path.normpath(plugin_path))
     errors = []

@@ -79,6 +79,7 @@ def process_skill_files(project_root: str | Path, dry_run: bool = True) -> list[
     return updated_files
 
 def main() -> None:
+    """Parse CLI arguments and execute cleanup on skill files."""
     parser = argparse.ArgumentParser(description='Cleanup stacked reference paths')
     parser.add_argument('--project', default='.', help='Project root')
     parser.add_argument('--dry-run', action='store_true', help='Preview changes only')

@@ -49,6 +49,7 @@ from pathlib import Path
 EXEC_RX = re.compile(r'(python|bash) (plugins/[a-zA-Z0-9_\-]+/(?:skills/[a-zA-Z0-9_\-]+/)?)([^ ]+)')
 
 def resolve_project_root() -> Path:
+    """Find the project root by walking up the directory tree."""
     current = Path(__file__).resolve().parent
     for _ in range(10):
         if (current / ".git").exists() or current.name == "agent-plugins-skills":
@@ -76,6 +77,7 @@ def fix_file(file_path: Path) -> int:
             continue
             
         def replacer(match: re.Match) -> str:
+            """Replace hardcoded plugin paths with relative paths."""
             cmd = match.group(1)
             target = match.group(3)
             state['replacements'] += 1
@@ -100,6 +102,7 @@ def fix_file(file_path: Path) -> int:
     return state['replacements']
 
 def main() -> None:
+    """Scan and fix hardcoded plugin paths in markdown files."""
     root = resolve_project_root()
     plugins_dir = root / "plugins"
     print(f"🔧 Starting auto-fix for hardcoded markdown paths in {plugins_dir}...")

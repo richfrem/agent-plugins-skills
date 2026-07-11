@@ -1,0 +1,1 @@
+../../../scripts/workspace_conventions_auditor.py

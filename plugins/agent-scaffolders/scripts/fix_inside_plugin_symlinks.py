@@ -59,6 +59,7 @@ from collections import defaultdict
 
 class InsidePluginSymlinkFixer:
     def __init__(self, inventory_file: str | Path, project_root: str | Path) -> None:
+        """Initialize the fixer with inventory file and project root paths."""
         self.inventory_file = Path(inventory_file)
         self.project_root = Path(project_root).resolve()
         self.violations = []
@@ -295,6 +296,7 @@ class InsidePluginSymlinkFixer:
         return len(self.violations)
 
 def main() -> None:
+    """Parse CLI arguments and execute symlink repairs."""
     parser = argparse.ArgumentParser(description='Fix inside-plugin symlink violations')
     parser.add_argument('inventory', help='Path to inventory.json')
     parser.add_argument('--project', default='.', help='Project root')

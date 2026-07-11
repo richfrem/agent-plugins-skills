@@ -8,6 +8,13 @@ Purpose:
     wiki_sources.json, normalizes content, and produces ParsedRecord dicts
     ready for wiki_builder.py. Also updates agent-memory.json with fresh hashes.
 
+Key Input Dependencies:
+    - wiki_sources.json (source configuration with paths and patterns)
+    - agent-memory.json (for tracking file hashes and staleness)
+    - Raw content files from configured source directories
+    - raw_manifest.py (WikiSourceConfig loader and utilities)
+    - concept_extractor.py (for cluster inference)
+
 Layer: Ingest / Wiki
 
 Usage:

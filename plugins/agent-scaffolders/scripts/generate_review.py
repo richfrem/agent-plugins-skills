@@ -4,8 +4,14 @@ generate_review.py
 =====================================
 
 Purpose:
-    Generates and serves a standalone self-contained review page dashboard 
+    Generates and serves a standalone self-contained review page dashboard
     using embeds of evaluation runs outputs and dynamic HTTP saves for local audits.
+
+Key Input Dependencies:
+    - workspace directory containing run outputs (JSON, metrics, transcripts)
+    - viewer.html template (sibling file for static HTML rendering)
+    - MIME type configuration for file embedding and rendering
+    - BaseHTTPRequestHandler for HTTP server implementation
 
 Layer: Investigate / Synthesis
 
@@ -24,22 +30,14 @@ CLI Arguments:
     --benchmark: Include benchmark result file displays.
     --static|-s: Standalone dump without daemon server start.
 
-Input Files:
-    - workspace/* (outputs/)
-    - viewer.html (template sibling)
-
 Output:
-    Runs localhost daemon server with dynamic state synchronizations.
+    Runs localhost daemon server with dynamic state synchronizations, or generates static HTML.
 
 Key Functions:
     - generate_html()
     - find_runs()
     - ReviewHandler.do_GET()
     - ReviewHandler.do_POST()
-
-Script Dependencies:
-    - argparse, json, base64, mimetypes, os, re, sys, time, webbrowser
-    - http.server.HTTPServer / BaseHTTPRequestHandler
 
 Consumed by:
     Interactivity-driven code evaluation browser cycles.
@@ -83,6 +81,7 @@ MIME_OVERRIDES = {
 
 
 def get_mime_type(path: Path) -> str:
+    """Retrieve MIME type for a file, using overrides where applicable."""
     ext = path.suffix.lower()
     if ext in MIME_OVERRIDES:
         return MIME_OVERRIDES[ext]
@@ -99,6 +98,7 @@ def find_runs(workspace: Path) -> list[dict]:
 
 
 def _find_runs_recursive(root: Path, current: Path, runs: list[dict]) -> None:
+    """Recursively scan directories for run outputs, populating runs list."""
     if not current.is_dir():
         return
 
@@ -355,6 +355,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
         *args,
         **kwargs,
     ) -> None:
+        """Initialize ReviewHandler with workspace and config context."""
         self.workspace = workspace
         self.skill_name = skill_name
         self.feedback_path = feedback_path
@@ -363,6 +364,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
         super().__init__(*args, **kwargs)
 
     def do_GET(self) -> None:
+        """Handle GET requests: serve HTML dashboard or feedback JSON."""
         if self.path == "/" or self.path == "/index.html":
             # Regenerate HTML on each request (re-scans workspace for new outputs)
             runs = find_runs(self.workspace)
@@ -392,6 +394,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self) -> None:
+        """Handle POST requests: save feedback JSON to disk."""
         if self.path == "/api/feedback":
             length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(length)
@@ -413,11 +416,12 @@ class ReviewHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def log_message(self, format: str, *args: object) -> None:
-        # Suppress request logging to keep terminal clean
+        """Suppress HTTP server logging to keep terminal clean."""
         pass
 
 
 def main() -> None:
+    """Parse CLI arguments and start review dashboard server or generate static HTML."""
     parser = argparse.ArgumentParser(description="Generate and serve eval review")
     parser.add_argument("workspace", type=Path, help="Path to workspace directory")
     parser.add_argument("--port", "-p", type=int, default=3117, help="Server port (default: 3117)")

@@ -90,6 +90,7 @@ def _scan_dir(
     findings: list,
     depth: int = 0,
 ) -> None:
+    """Recursively scan a resource directory and flag real files found inside skills."""
     for entry in sorted(directory.iterdir()):
         if entry.name.startswith(".") or entry.name in SKIP_DIRS:
             continue
@@ -158,6 +159,7 @@ def suggest_fix(finding: dict, plugin_root: Path) -> None:
 
 
 def main() -> None:
+    """Parse CLI arguments and run the audit on the specified plugin directory."""
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <plugin-dir>")
         sys.exit(1)

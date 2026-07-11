@@ -2,9 +2,15 @@
 """
 symlink_manager.py — Cross-platform symlink creation and management.
 
-Works on Windows (with Developer Mode or admin), macOS, and Linux.
-Stores a symlinks.json manifest so links can be restored after git reset --hard
-or on a fresh checkout on a different OS.
+Purpose:
+    Provides a utility to create, manage, diagnose, and restore cross-platform
+    symbolic links (and Windows junctions/hardlinks) in the workspace. It ensures
+    symlinks can be tracked in version control via a JSON manifest.
+
+Layer: Dev Utils / Symlink Management
+
+Key Input Dependencies:
+    - symlinks.json (JSON manifest recording source-to-target links)
 
 Usage:
   python symlink_manager.py diagnose

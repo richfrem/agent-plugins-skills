@@ -15,6 +15,14 @@ Usage:
     python test_hook.py [options] <hook-script> <test-input.json>
     python test_hook.py --create-sample PreToolUse
     python test_hook.py -v -t 30 validate_write.py write-input.json
+
+Key Input Dependencies:
+    - Hook script path (e.g., validate_write.py, validate_bash.py)
+    - Test input JSON file (Claude Code hook event payload)
+
+Key Functions:
+    - create_sample(): Generate sample hook payloads for testing
+    - test_hook(): Execute hook script and parse results
 """
 import sys
 import os
