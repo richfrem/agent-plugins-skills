@@ -1,8 +1,32 @@
 # Documentation Convention Audit & Fix - Session Guide
 
+## PURPOSE
+
+**Enable fresh agent sessions to understand what scripts do without running them or reading full implementations.**
+
+When an agent joins a new session, it needs to quickly understand:
+- What does this script do?
+- What files/data does it need?
+- What does it output?
+- What are the key functions?
+
+By ensuring **every script has a complete module docstring** (Purpose + Key Input Dependencies + Key Functions), agents can read the top 20 lines of any script and immediately know:
+1. **Purpose:** What problem it solves
+2. **Key Input Dependencies:** What files/APIs/data it needs
+3. **Key Functions:** What capabilities are available
+4. **Usage Examples:** How to invoke it
+
+This eliminates the need for agents to:
+- Run `help()` or introspect the script
+- Read through 100+ lines of implementation
+- Execute the script to discover what it does
+- Spend time context-gathering before taking action
+
+---
+
 ## Overview
 
-**Project Goal:** Audit all Python scripts in the agent-plugins-skills repository against coding-conventions.md standards and fix documentation violations.
+**Project Goal:** Ensure 100% of scripts in agent-plugins-skills are documented with complete module and function docstrings so agents can understand them at a glance.
 
 **Current Session Status:** IN PROGRESS  
 **Branch:** `feat/updated-coding-conventions.md`
@@ -11,12 +35,47 @@
 
 ## What We're Doing
 
-We use the **workspace_conventions_auditor.py** script to scan all Python files in the repository and identify violations of coding standards, then systematically fix them by adding:
-- Missing module docstrings (with `Purpose:` and `Key Input Dependencies:` sections)
-- Missing function docstrings (one-line summaries)
-- Other documentation issues
+We use the **workspace_conventions_auditor.py** script to scan all Python files and identify missing documentation, then systematically add:
+- **Module docstrings** with mandatory sections:
+  - `Purpose:` - What the script does (2-3 sentences)
+  - `Key Input Dependencies:` - What files/APIs it requires
+  - `Key Functions:` - List of main functions with brief descriptions
+  - `Usage Examples:` - How to invoke it
+- **Function docstrings** - One-line summary for every function
+- Other documentation
 
-**Important Constraint:** We only add documentation/docstrings. We do NOT refactor code or fix functions exceeding 50 lines (unless explicitly requested to refactor).
+**Important Constraint:** We only add documentation/docstrings. We do NOT refactor code or fix functions exceeding 50 lines (unless explicitly requested).
+
+---
+
+## Why This Matters: The Fresh Agent Scenario
+
+### Without Documentation ❌
+```
+Agent joins new session → Needs to run: plugins/agent-scaffolders/scripts/audit.py
+Problem: Agent doesn't know what it does, what it needs, or what output to expect
+Solution: Agent wastes time reading 100+ lines of code or running --help
+```
+
+### With Documentation ✅
+```
+Agent joins new session → Sees at top of audit.py:
+
+Purpose:
+    Audit plugins against the Agent Skills Open Standard to ensure 
+    architectural and resource compliance.
+
+Key Input Dependencies:
+    - ./plugin.json
+    - ././SKILL.md files
+
+Usage Examples:
+    python audit.py --path <plugin-directory>
+
+Result: Agent understands exactly what to do in < 30 seconds, no experimentation needed
+```
+
+**This speeds up agent productivity by 10-100x** - agents can immediately decide whether a script is relevant, what dependencies to prepare, and how to invoke it.
 
 ---
 
