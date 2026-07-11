@@ -42,6 +42,7 @@ MARKER = "[NEEDS HUMAN INPUT]"
 
 
 def count_gaps(filepaths: list[str]) -> tuple[int, dict[str, int]]:
+    """Count MARKER occurrences per file and in total; exit 1 if any file is missing."""
     total = 0
     per_file = {}
     missing = []
@@ -61,6 +62,7 @@ def count_gaps(filepaths: list[str]) -> tuple[int, dict[str, int]]:
 
 
 def main() -> None:
+    """Parse CLI arguments, count gap markers across files, and exit 1 if over threshold."""
     parser = argparse.ArgumentParser(description="Gap marker checker for exploration captures")
     parser.add_argument("--files", nargs="+", required=True, help="Capture files to check")
     parser.add_argument("--threshold", type=int, default=3, help="Max allowed gap markers (default: 3)")
