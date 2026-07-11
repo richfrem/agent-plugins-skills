@@ -1,8 +1,16 @@
-# Documentation Convention Audit & Fix - Session Guide
+# Coding Policy Alignment Audit & Fix - Session Guide
 
 ## PURPOSE
 
-**Enable fresh agent sessions to understand what scripts do without running them or reading full implementations.**
+**Ensure ALL code in the repository aligns with established coding conventions and policies.**
+
+Every script must comply with:
+- **coding-conventions.md** - Documentation standards
+- **self-evolution-policy.md** - Code quality standards  
+- **plugin-architecture-policy.md** - Architecture rules
+- **test-driven-development.md** - Testing standards
+
+**Secondary Benefit:** When all code aligns with policy, fresh agent sessions can understand what scripts do without running them or reading full implementations.
 
 When an agent joins a new session, it needs to quickly understand:
 - What does this script do?
@@ -26,7 +34,10 @@ This eliminates the need for agents to:
 
 ## Overview
 
-**Project Goal:** Ensure 100% of scripts in agent-plugins-skills are documented with complete module and function docstrings so agents can understand them at a glance.
+**Audit Type:** Codebase-wide compliance with established coding policies  
+**Policy Authority:** `.agent/rules/` directory (coding-conventions.md, self-evolution-policy.md, etc.)  
+**Auditor Tool:** `workspace_conventions_auditor.py` scans all Python/JS/TS/C# files  
+**Scope:** 454 files currently violating policy (442 remaining after fixes)
 
 **Current Session Status:** IN PROGRESS  
 **Branch:** `feat/updated-coding-conventions.md`
@@ -35,16 +46,26 @@ This eliminates the need for agents to:
 
 ## What We're Doing
 
-We use the **workspace_conventions_auditor.py** script to scan all Python files and identify missing documentation, then systematically add:
-- **Module docstrings** with mandatory sections:
-  - `Purpose:` - What the script does (2-3 sentences)
-  - `Key Input Dependencies:` - What files/APIs it requires
-  - `Key Functions:` - List of main functions with brief descriptions
-  - `Usage Examples:` - How to invoke it
-- **Function docstrings** - One-line summary for every function
-- Other documentation
+We audit the entire codebase against `.agent/rules/coding-conventions.md` using the **workspace_conventions_auditor.py** tool.
 
-**Important Constraint:** We only add documentation/docstrings. We do NOT refactor code or fix functions exceeding 50 lines (unless explicitly requested).
+**The auditor checks for compliance with:**
+1. **Module docstrings** - Every file must have Purpose + Key Input Dependencies + Key Functions
+2. **Function docstrings** - Every function must have a one-line summary
+3. **File headers** - Required format with proper sections
+4. **Function length** - Flags functions exceeding 50 lines (requires refactoring decision)
+5. **Naming conventions** - snake_case (Python), camelCase (JS/TS), PascalCase (C#)
+
+**This Session: Phase 1 - Documentation Compliance**
+
+We systematically fix files by adding:
+- **Module docstrings** with:
+  - `Purpose:` - What the script does
+  - `Key Input Dependencies:` - What data/files/APIs it needs
+  - `Key Functions:` - List of main capabilities
+  - `Usage Examples:` - How to invoke
+- **Function docstrings** - One-line descriptions
+
+**Important Constraint:** We ONLY add documentation/docstrings to achieve policy alignment. We do NOT refactor code, fix functions exceeding 50 lines, or make code changes (unless explicitly requested for policy compliance).
 
 ---
 
