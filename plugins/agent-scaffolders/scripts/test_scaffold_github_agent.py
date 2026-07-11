@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-test_scaffold_github_agent.py
-=====================================
-Unit and integration tests for scaffold_github_agent, gh_agent_templates,
-and validate_github_agent scripts.
+Purpose:
+    Unit and integration tests for scaffold_github_agent, gh_agent_templates,
+    and validate_github_agent scripts. Tests cover template generation, validation,
+    and scaffolding workflows for GitHub agents (Targets A, B, and C).
+
+Key Input Dependencies:
+    - scaffold_github_agent.py module
+    - gh_agent_templates.py module
+    - validate_github_agent.py module
+
+Key Functions:
+    - None (this is a test module with test methods only)
 """
 
 import os
@@ -24,6 +32,7 @@ import scaffold_github_agent as scaffolder
 class TestGHAgentTemplates(unittest.TestCase):
 
     def test_target_a_template(self):
+        """Verify agent_md_github template generation for Target A."""
         result = templates.agent_md_github(
             name="test-agent",
             description="Test Target A description: containing colons",
@@ -38,6 +47,7 @@ class TestGHAgentTemplates(unittest.TestCase):
         self.assertEqual(body.strip(), "Step 1: Run checks")
 
     def test_target_b_template(self):
+        """Verify gh_aw_workflow_md template generation for Target B."""
         result = templates.gh_aw_workflow_md(
             name="test-workflow",
             description="Test Target B description",
@@ -51,6 +61,7 @@ class TestGHAgentTemplates(unittest.TestCase):
         self.assertIn("Run workflow", body)
 
     def test_target_c_template(self):
+        """Verify smart_failure_agent_md template generation for Target C."""
         result = templates.smart_failure_agent_md(
             name="test-fail",
             description="Test Target C description",
@@ -65,18 +76,21 @@ class TestGHAgentTemplates(unittest.TestCase):
 class TestGHAgentValidator(unittest.TestCase):
 
     def test_validate_target_a_missing_desc(self):
+        """Verify validation fails when description is missing for Target A."""
         fm = {"name": "test-agent"}
         body = "body content"
         errors = validator.validate_target_a(fm, body)
         self.assertTrue(any("description" in err for err in errors))
 
     def test_validate_target_b_missing_on(self):
+        """Verify validation fails when 'on' trigger key is missing for Target B."""
         fm = {"engine": "copilot"}
         body = "body content"
         errors = validator.validate_target_b(fm, body)
         self.assertTrue(any("on" in err for err in errors))
 
     def test_validate_target_b_boolean_on_trap(self):
+        """Verify YAML 1.1 round-trip normalizes boolean 'on' to proper dict structure."""
         # YAML 1.1 round-trip: "on:" loads as boolean True
         # Parse frontmatter should normalize True -> "on"
         raw_yaml = "---\non:\n  push:\n    branches: [main]\nengine: copilot\n---\nbody content"
@@ -85,12 +99,14 @@ class TestGHAgentValidator(unittest.TestCase):
         self.assertEqual(fm["on"], {"push": {"branches": ["main"]}})
 
     def test_validate_target_c_missing_kill_switch(self):
+        """Verify validation fails when kill switch value is missing for Target C."""
         fm = {"name": "test"}
         body = "escalation trigger taxonomy"
         errors = validator.validate_target_c(fm, body, kill_switch="KILL")
         self.assertTrue(any("kill" in err.lower() for err in errors))
 
     def test_validate_target_c_case_insensitive(self):
+        """Verify kill switch validation is case-insensitive for Target C."""
         # Should pass even if case differs
         fm = {"name": "test"}
         body = "ESCALATION TRIGGER TAXONOMY\nkill switch: FAILED_TEST"
@@ -101,13 +117,16 @@ class TestGHAgentValidator(unittest.TestCase):
 class TestGHAgentScaffolder(unittest.TestCase):
 
     def setUp(self):
+        """Create a temporary directory for test output."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.output_path = Path(self.temp_dir.name)
 
     def tearDown(self):
+        """Clean up temporary directory after test."""
         self.temp_dir.cleanup()
 
     def test_scaffold_target_a_writes_files(self):
+        """Verify Target A scaffolding creates agent and prompt files."""
         sys_argv_backup = sys.argv
         sys.argv = [
             "scaffold_github_agent.py",
@@ -138,6 +157,7 @@ class TestGHAgentScaffolder(unittest.TestCase):
         self.assertTrue(prompt_file.exists())
 
     def test_scaffold_target_b_writes_files_and_validates(self):
+        """Verify Target B scaffolding creates workflow file and passes validation."""
         sys_argv_backup = sys.argv
         sys.argv = [
             "scaffold_github_agent.py",
@@ -176,6 +196,7 @@ class TestGHAgentScaffolder(unittest.TestCase):
         self.assertEqual(len(errors), 0)
 
     def test_scaffold_target_c_writes_files_and_validates(self):
+        """Verify Target C scaffolding creates agent and runner files with kill switch."""
         sys_argv_backup = sys.argv
         sys.argv = [
             "scaffold_github_agent.py",
@@ -216,6 +237,7 @@ class TestGHAgentScaffolder(unittest.TestCase):
         self.assertEqual(len(errors), 0)
 
     def test_tools_flag_empty_list(self):
+        """Verify --tools flag correctly handles empty list and single tool values."""
         sys_argv_backup = sys.argv
         from io import StringIO
         stdout_backup = sys.stdout
@@ -265,6 +287,7 @@ class TestGHAgentScaffolder(unittest.TestCase):
         self.assertEqual(fm.get("tools"), ["github"])
 
     def test_validator_rejects_skill_frontmatter_in_workflows(self):
+        """Verify validator rejects SKILL.md frontmatter in workflow files."""
         skill_content = """---
 name: create-agentic-workflow
 argument-hint: "[skill-dir]"
@@ -278,6 +301,7 @@ Some body text
         self.assertTrue(any("Skill-style frontmatter in .github/workflows/" in err for err in errors))
 
     def test_validator_rejects_ghaw_keys_in_agent_md(self):
+        """Verify validator rejects GitHub Actions Workflow keys in agent files."""
         invalid_agent_content = """---
 description: Test agent
 on:
@@ -293,6 +317,7 @@ Some body
         self.assertTrue(any("must not contain gh-aw keys" in err for err in errors_c))
 
     def test_scaffold_self_validates(self):
+        """Verify scaffolder exits with error when generated files fail validation."""
         original_template = templates.agent_md_github
         templates.agent_md_github = lambda **kwargs: "---\ndescription: Test\non:\n  push: {}\n---\n"
         

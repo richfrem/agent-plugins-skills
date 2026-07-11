@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """
-test_run_loop.py — integration tests for run_loop.py model resolution
+Purpose:
+    Integration tests for run_loop.py model resolution.
+    Tests use the --mock flag so the full eval loop never executes.
+    All tests are subprocess-based (Category B: real execution path, no mocks).
 
-Tests use the --mock flag so the full eval loop never executes.
-All tests are subprocess-based (Category B: real execution path, no mocks).
+Key Input Dependencies:
+    - run_loop.py (in the same directory)
+    - cheapest_models.json (in plugin/references/)
+    - Temporary eval.json and skill directory fixtures
 
-Covers:
-  - --mock exits 0 and emits valid JSON
-  - improve_model resolves from cheapest_models.json when present
-  - improve_model falls back to hardcoded default when JSON absent
-  - path resolution is correct (plugin root / references/, not scripts/references/)
+Key Functions:
+    - _make_fixtures(): Create temporary eval.json and skill directory for tests
+    - _run_mock(): Run run_loop.py with --mock flag in subprocess
+
+Tests cover:
+    - --mock exits 0 and emits valid JSON
+    - improve_model resolves from cheapest_models.json when present
+    - improve_model falls back to hardcoded default when JSON absent
+    - path resolution is correct (plugin root / references/, not scripts/references/)
 """
 
 import json
@@ -35,6 +44,7 @@ def _make_fixtures(tmp: Path) -> tuple[Path, Path]:
 
 
 def _run_mock(extra_args: list, env_overrides: dict | None = None) -> subprocess.CompletedProcess:
+    """Run run_loop.py with --mock flag and return subprocess result."""
     with tempfile.TemporaryDirectory() as tmp_str:
         tmp = Path(tmp_str)
         eval_set, skill_dir = _make_fixtures(tmp)
@@ -54,10 +64,12 @@ def _run_mock(extra_args: list, env_overrides: dict | None = None) -> subprocess
 class TestRunLoopMockFlag(unittest.TestCase):
 
     def test_mock_flag_exits_zero(self):
+        """Verify --mock flag causes run_loop.py to exit with code 0."""
         result = _run_mock(["--improve-engine", "copilot"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
     def test_mock_output_is_valid_json(self):
+        """Verify --mock output contains valid JSON with improve_model and eval_model keys."""
         result = _run_mock(["--improve-engine", "copilot"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         try:
@@ -68,6 +80,7 @@ class TestRunLoopMockFlag(unittest.TestCase):
         self.assertIn("eval_model", data)
 
     def test_mock_copilot_model_matches_cheapest_models_json(self):
+        """Verify improve_model resolves from cheapest_models.json, not hardcoded fallback."""
         if not CANONICAL_JSON.exists():
             self.skipTest("cheapest_models.json not present in plugin references/")
         expected = json.loads(CANONICAL_JSON.read_text())["copilot"]["model"]
