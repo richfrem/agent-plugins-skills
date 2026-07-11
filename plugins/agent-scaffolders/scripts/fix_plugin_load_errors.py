@@ -28,6 +28,16 @@ NOTE: Claude Code scans ALL cached plugin versions under ~/.claude/plugins/cache
 Usage:
     python fix_plugin_load_errors.py <plugin_root>
     python fix_plugin_load_errors.py .
+
+Key Input Dependencies:
+    - Plugin root directory with plugin.json, hooks.json, SKILL.md files
+    - Write permissions to modify plugin configuration files
+
+Key Functions:
+    - fix_plugin_json(): Remove banned fields from plugin.json
+    - fix_hooks_json(): Fix malformed hooks.json structures
+    - fix_skill_md(): Remove comments before SKILL.md frontmatter
+    - scan_and_fix(): Recursively scan and fix all plugins
 """
 import sys
 import json
@@ -50,6 +60,7 @@ def fix_literal_newlines(content: str) -> tuple[str, bool]:
 
 
 def fix_plugin_json(path: Path) -> list[str]:
+    """Remove banned fields from plugin.json that Claude Code validator rejects."""
     fixes = []
     try:
         text = path.read_text(encoding="utf-8")
@@ -70,6 +81,7 @@ def fix_plugin_json(path: Path) -> list[str]:
 
 
 def fix_hooks_json(path: Path) -> list[str]:
+    """Fix malformed hooks.json structures (literal newlines, array format, missing wrapper)."""
     fixes = []
     try:
         raw = path.read_text(encoding="utf-8")
@@ -169,6 +181,7 @@ def fix_skill_md(path: Path) -> list[str]:
 
 
 def scan_and_fix(plugin_root: Path) -> int:
+    """Scan plugin directory and apply all applicable fixes, return count of fixes."""
     all_fixes = []
 
     # 1. plugin.json
@@ -213,6 +226,7 @@ def scan_and_fix(plugin_root: Path) -> int:
 
 
 def main() -> None:
+    """Parse CLI argument and execute plugin load error fixes."""
     plugin_root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
 
     if not plugin_root.is_dir():
