@@ -1,11 +1,23 @@
 #!/usr/bin/env python
 """
-Bootstrap script for Universal Agent Plugins Installer.
+Purpose:
+    Bootstrap script for Universal Agent Plugins Installer.
+    Acts as the entry point for both `uvx` and `curl -sL ... | python -`.
+    Securely downloads required installer scripts into an ephemeral directory
+    and executes them, enabling zero-clone installation that mirrors `npx skills add`.
 
-This script acts as the entry point for both `uvx` and `curl -sL ... | python -`.
-Its sole purpose is to securely download the required installer scripts into an
-ephemeral directory and execute them, enabling a zero-clone installation experience
-that mirrors `npx skills add`.
+Key Input Dependencies:
+    - GitHub repository (richfrem/agent-plugins-skills on main branch)
+    - Internet connectivity to download scripts
+    - Python 3.7+
+    - uv package manager (optional, but recommended)
+
+Key Functions:
+    - _col(): ANSI color wrapper for terminal output
+    - cyan/green/yellow/dim/bold/red(): Color helper functions
+    - suggest_uv(): Recommend uv package manager installation
+    - fetch_file(): Download scripts from GitHub
+    - run_script(): Execute installer script with proper arguments
 
 Usage:
     curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
@@ -23,16 +35,34 @@ from pathlib import Path
 
 # ANSI colour helpers
 def _col(code: str, text: str) -> str:
+    """Wrap text in ANSI escape sequence if stdout is a TTY."""
     # Disable color if piped or windows without support
     if not sys.stdout.isatty(): return text
     return f"\033[{code}m{text}\033[0m"
 
-def cyan(t: str) -> str: return _col("96", t)
-def green(t: str) -> str: return _col("92", t)
-def yellow(t: str) -> str: return _col("93", t)
-def dim(t: str) -> str: return _col("2", t)
-def bold(t: str) -> str: return _col("1", t)
-def red(t: str) -> str: return _col("91", t)
+def cyan(t: str) -> str:
+    """Return text formatted in bright cyan."""
+    return _col("96", t)
+
+def green(t: str) -> str:
+    """Return text formatted in bright green."""
+    return _col("92", t)
+
+def yellow(t: str) -> str:
+    """Return text formatted in bright yellow."""
+    return _col("93", t)
+
+def dim(t: str) -> str:
+    """Return text formatted in dim gray."""
+    return _col("2", t)
+
+def bold(t: str) -> str:
+    """Return text formatted in bold."""
+    return _col("1", t)
+
+def red(t: str) -> str:
+    """Return text formatted in bright red."""
+    return _col("91", t)
 
 def suggest_uv():
     """If uv isn't installed, gently suggest it as the better path."""
@@ -54,6 +84,7 @@ def fetch_file(url: str, dest: Path):
         sys.exit(1)
 
 def run_script(primary_script_name: str, required_scripts: list, title: str):
+    """Download scripts and execute the primary installer script."""
     print(bold(f"\n  Initializing {title}..."))
 
     # Enable ANSI escape sequences on Windows

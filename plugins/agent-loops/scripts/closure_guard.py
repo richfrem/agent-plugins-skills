@@ -9,6 +9,15 @@ Purpose:
     frontmatter, and emits a JSON `block` decision until the closure sequence
     (Seal → Persist → Retrospective) is completed and `closure_done: true` is set.
 
+Key Input Dependencies:
+    - .claude/agent-loop-state.local.md (learning loop state file with YAML frontmatter)
+    - Hook JSON input via stdin (Claude Code hook protocol)
+    - PyYAML library (for frontmatter parsing)
+
+Key Functions:
+    - parse_frontmatter(): Extract YAML frontmatter from markdown file
+    - check_closure_done(): Check if loop is ready for session exit
+
 Layer: Investigate
 
 Usage:

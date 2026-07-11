@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 """
-test_swarm_run.py — unit tests for swarm_run.py
+Purpose:
+    Unit tests for swarm_run.py model loading and configuration functions.
+    Verifies correct model resolution from cheapest_models.json with fallbacks.
+
+Key Input Dependencies:
+    - swarm_run.py module (_load_cheapest_model function)
+    - Temporary JSON files for test fixtures
+
+Key Functions:
+    - _write_json(): Write test JSON fixture to temporary file
 
 Tests cover:
-  - _load_cheapest_model: JSON load, fallback, malformed JSON, missing engine key
+    - _load_cheapest_model: JSON load, fallback, malformed JSON, missing engine key
 """
 
 import json
@@ -20,6 +29,7 @@ from swarm_run import _load_cheapest_model
 class TestLoadCheapestModel(unittest.TestCase):
 
     def _write_json(self, data: dict) -> Path:
+        """Write test data to temporary JSON file and return path."""
         f = tempfile.NamedTemporaryFile(
             mode="w", suffix=".json", delete=False
         )

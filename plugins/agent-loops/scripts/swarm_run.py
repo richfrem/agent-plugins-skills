@@ -8,6 +8,18 @@ Purpose:
     input files, each worker running Claude with a prompt defined in a Job File,
     then optionally pipes the output through a post-command (e.g. cache injector).
 
+Key Input Dependencies:
+    - Job File (.md file with YAML frontmatter + prompt body)
+    - Input files (discovered via --files, --dir, --bundle, or --files-from)
+    - Claude CLI installed and configured
+    - Optional: context-bundler manifest (JSON/YAML)
+    - Optional: shell commands for post-processing (post_cmd, check_cmd)
+
+Key Functions:
+    - get_relative_path(): Convert absolute path to relative
+    - resolve_files(): Discover input files from various sources
+    - run_worker(): Execute Claude with prompt and handle output
+
 WHAT IS A JOB FILE?
     A Job File is a single Markdown file (.md) that bundles ALL configuration
     and the prompt together. It has two parts:
@@ -151,6 +163,7 @@ logger = logging.getLogger("swarm")
 
 
 def get_relative_path(path: Path) -> str:
+    """Convert absolute path to relative path from current working directory."""
     root = Path.cwd().resolve()
     try:
         return str(path.resolve().relative_to(root))

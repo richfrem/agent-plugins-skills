@@ -1,9 +1,22 @@
 """
 HuggingFace Download Primitives
 
-Purpose: Consolidated download operations for HuggingFace assets.
-All HF-consuming plugins (Primary Agent, local-llm-bench, etc.) use these primitives.
-Includes exponential backoff and support for downloading files, folders, and model checkpoints.
+Purpose:
+    Consolidated download operations for HuggingFace assets.
+    All HF-consuming plugins (Primary Agent, local-llm-bench, etc.) use these primitives.
+    Includes exponential backoff and support for downloading files, folders, and model checkpoints.
+
+Key Input Dependencies:
+    - hf_config module (for HuggingFace configuration and API credentials)
+    - HuggingFace hub library (huggingface_hub)
+    - Environment variables (HF_HOME, HF_TOKEN)
+    - Local cache directory for downloaded models
+
+Key Functions:
+    - _download_with_backoff(): Execute HF API calls with exponential backoff
+    - download_file(): Download single file from HuggingFace
+    - download_folder(): Download entire folder/dataset from HuggingFace
+    - download_model_checkpoint(): Download model checkpoint with cache support
 """
 import os
 import sys

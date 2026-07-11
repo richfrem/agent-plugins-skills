@@ -186,6 +186,7 @@ def show_all(project_root: Path) -> None:
 
 
 def main() -> None:
+    """Parse CLI arguments and find next available number for artifact types or directories."""
     parser = argparse.ArgumentParser(
         description='Get next available number for artifact types or arbitrary directories.',
         formatter_class=argparse.RawDescriptionHelpFormatter,

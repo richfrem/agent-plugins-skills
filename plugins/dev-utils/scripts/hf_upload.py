@@ -1,9 +1,22 @@
 """
 HuggingFace Upload Primitives
 
-Purpose: Consolidated upload operations extracted from the legacy archive.
-All HF-consuming plugins (Primary Agent, Forge Soul, etc.) use these primitives.
-Includes exponential backoff, dataset card management, and JSONL append.
+Purpose:
+    Consolidated upload operations extracted from the legacy archive.
+    All HF-consuming plugins (Primary Agent, Forge Soul, etc.) use these primitives.
+    Includes exponential backoff, dataset card management, and JSONL append.
+
+Key Input Dependencies:
+    - hf_config module (for HuggingFace configuration and API credentials)
+    - HuggingFace hub library (huggingface_hub)
+    - Environment variables (HF_HOME, HF_TOKEN, HUGGING_FACE_PROJECT_NAME)
+    - Local files/folders to upload (JSONL, dataset, model checkpoints)
+
+Key Functions:
+    - _build_dataset_readme(): Generate dataset README.md from config
+    - upload_file(): Upload single file to HuggingFace
+    - upload_folder(): Upload entire folder/dataset to HuggingFace
+    - append_jsonl(): Append rows to HuggingFace dataset via JSONL
 """
 import os
 import sys

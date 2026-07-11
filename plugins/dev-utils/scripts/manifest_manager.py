@@ -387,6 +387,7 @@ def search_files(pattern: str, manifest_path: Optional[str] = None, base_type: O
         print(f"❓ No matches for '{pattern}' in manifest.")
 
 def update_file(path, note=None, new_path=None, manifest_path=None, base_type=None):
+    """Update file entry in manifest with new path or note."""
     manifest = load_manifest(manifest_path, base_type)
     if base_type:
         target_path = get_base_manifest_path(base_type)
