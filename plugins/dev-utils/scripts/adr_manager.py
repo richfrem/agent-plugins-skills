@@ -174,6 +174,7 @@ def search_adrs(query: str) -> None:
 
 
 def main() -> None:
+    """Parse CLI arguments and execute ADR management commands (create, list, get)."""
     parser = argparse.ArgumentParser(description="Architecture Decision Record Manager")
     subparsers = parser.add_subparsers(dest="command")
 

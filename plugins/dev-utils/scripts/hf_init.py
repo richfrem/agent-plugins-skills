@@ -84,6 +84,7 @@ async def full_init(validate_only: bool = False) -> dict:
 
 
 def main() -> None:
+    """Validate HuggingFace environment and initialize dataset structure."""
     parser = argparse.ArgumentParser(description="HuggingFace Init")
     parser.add_argument("--validate-only", action="store_true", help="Validate without making changes")
     args = parser.parse_args()
