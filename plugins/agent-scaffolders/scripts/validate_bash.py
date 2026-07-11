@@ -13,6 +13,14 @@ Layer: Codify
 
 Usage:
     echo '<pretooluse-json>' | python validate_bash.py
+
+Key Input Dependencies:
+    - stdin (PreToolUse hook JSON payload)
+    - Configured safe/dangerous command patterns
+
+Key Functions:
+    - _respond(): Write hook decision to stderr and exit.
+    - main(): Parse stdin and validate Bash command.
 """
 import sys
 import json
