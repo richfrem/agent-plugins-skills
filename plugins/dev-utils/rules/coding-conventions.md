@@ -1,6 +1,18 @@
 ---
-description: Universal coding conventions for Python, TypeScript, and C#.
+description: PROJECT CODING POLICY - Universal conventions for Python, TypeScript, and C#.
 globs: ["*.py", "*.ts", "*.js", "*.cs"]
+enforcement: Mandatory - All code must comply. Audited by workspace_conventions_auditor.py
+---
+
+## ⚖️ AUTHORITY & SCOPE
+
+**This is PROJECT POLICY** - Not a style guide. Binding on all development.
+
+- **Applies to:** All Python, TypeScript, JavaScript, and C# in repository
+- **No exemptions:** Every script, every function, every file
+- **Auditor:** `workspace_conventions_auditor.py` enforces across entire codebase
+- **Current Status:** 442/454 files in violation (in progress remediation)
+
 ---
 
 ## 📝 Coding Conventions (Summary)
