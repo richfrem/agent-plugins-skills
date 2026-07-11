@@ -8,6 +8,17 @@ Purpose:
   Handles strategy packet generation, verification, correction, bundling, and scanning.
   Zero external dependencies (uses only stdlib).
 
+Key Input Dependencies:
+  - Strategy packet template (embedded)
+  - Git working directory (for diff scanning)
+  - Optional: acceptance criteria file
+  - Optional: context bundle JSON
+
+Key Functions:
+  - generate_packet(): Create strategy packet from parameters
+  - verify_worktree(): Check git diff against criteria
+  - correct_packet(): Generate correction/delta packet
+
 Commands:
   packet    -> Generate strategy packet from inputs
   verify    -> Check worktree diff against criteria
@@ -205,6 +216,7 @@ def cmd_retro(args: argparse.Namespace) -> None:
 # --- Main ---
 
 def main() -> None:
+    """Parse CLI arguments and execute agent orchestrator commands (packet, verify, correct, retro)."""
     parser = argparse.ArgumentParser(description="Agent Orchestrator CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
     
