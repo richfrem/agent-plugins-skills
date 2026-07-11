@@ -1,4 +1,14 @@
-# plugins/exploration-cycle-plugin/tests/test_phase_premium_counter.py
+"""
+Purpose:
+    Unit test verifying that premium-call budget tracking in state_engine is
+    scoped per-phase, so a later phase's premium tasks aren't blocked by an
+    earlier phase's counter.
+
+Key Input Dependencies:
+    - state_engine.py module (init_db, create_session, add_task, lease_task,
+      record_premium_call)
+    - pytest tmp_path fixture
+"""
 import pytest
 from pathlib import Path
 import sys

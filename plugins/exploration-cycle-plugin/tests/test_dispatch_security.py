@@ -1,4 +1,14 @@
-# plugins/exploration-cycle-plugin/tests/test_dispatch_security.py
+"""
+Purpose:
+    Security-focused unit tests for dispatch.py: default tier enforcement,
+    frontmatter injection detection, approval expiry/revocation checks, and
+    the check_dispatch_authorization gate (unknown actions, path enforcement,
+    nonce replay protection, cross-invocation replay, output/target mismatch).
+
+Key Input Dependencies:
+    - dispatch.py, state_engine.py, sandbox_runner.py modules (all in scripts/)
+    - pytest tmp_path fixture
+"""
 import sys, textwrap, os
 from pathlib import Path
 import pytest
@@ -60,6 +70,7 @@ def test_clean_document_not_flagged():
 
 
 def test_check_approval_rejects_expired(tmp_path):
+    """Verify an approval past its expires_at timestamp is rejected."""
     sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
     import state_engine as SE, uuid
     conn = SE.init_db(str(tmp_path / "test.sqlite"))
@@ -77,6 +88,7 @@ def test_check_approval_rejects_expired(tmp_path):
 
 
 def test_check_approval_rejects_revoked(tmp_path):
+    """Verify an approval with is_active=0 (revoked) is rejected."""
     sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
     import state_engine as SE, uuid
     conn = SE.init_db(str(tmp_path / "revoked.sqlite"))
@@ -94,6 +106,7 @@ def test_check_approval_rejects_revoked(tmp_path):
 
 
 def test_check_dispatch_authorization_rejects_unknown_action(tmp_path):
+    """Verify an action not in the approval's approved_actions list is rejected."""
     import state_engine as SE, uuid, sandbox_runner as SR
     from collections import OrderedDict
     conn = SE.init_db(str(tmp_path / "auth.sqlite"))
@@ -118,6 +131,7 @@ def test_check_dispatch_authorization_rejects_unknown_action(tmp_path):
 
 
 def test_check_dispatch_authorization_rejects_path_outside_allowed(tmp_path):
+    """Verify a target_path outside the approval's allowed_paths glob is rejected."""
     import state_engine as SE, uuid, sandbox_runner as SR
     from collections import OrderedDict
     conn = SE.init_db(str(tmp_path / "path.sqlite"))
@@ -141,6 +155,7 @@ def test_check_dispatch_authorization_rejects_path_outside_allowed(tmp_path):
 
 
 def test_check_dispatch_authorization_rejects_replayed_nonce(tmp_path):
+    """Verify replaying the same signed envelope within a process is rejected by nonce_cache."""
     import state_engine as SE, uuid, sandbox_runner as SR
     from collections import OrderedDict
     conn = SE.init_db(str(tmp_path / "nonce.sqlite"))
