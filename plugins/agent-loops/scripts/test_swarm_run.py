@@ -38,11 +38,13 @@ class TestLoadCheapestModel(unittest.TestCase):
         return Path(f.name)
 
     def test_returns_fallback_when_json_absent(self):
+        """Verify fallback model returned when cheapest_models.json does not exist."""
         absent = Path(tempfile.mkdtemp()) / "does_not_exist.json"
         result = _load_cheapest_model("copilot", "gpt-5-mini", ref_path=absent)
         self.assertEqual(result, "gpt-5-mini")
 
     def test_loads_model_for_requested_engine(self):
+        """Verify model correctly loaded for the requested engine from JSON."""
         ref = self._write_json({"copilot": {"model": "gpt-5-nano"}})
         try:
             result = _load_cheapest_model("copilot", "gpt-5-mini", ref_path=ref)
@@ -51,6 +53,7 @@ class TestLoadCheapestModel(unittest.TestCase):
             ref.unlink()
 
     def test_returns_fallback_when_engine_not_in_json(self):
+        """Verify fallback returned when the requested engine key is absent from JSON."""
         ref = self._write_json({"copilot": {"model": "gpt-5-mini"}})
         try:
             result = _load_cheapest_model("gemini", "gemini-fallback", ref_path=ref)
@@ -59,6 +62,7 @@ class TestLoadCheapestModel(unittest.TestCase):
             ref.unlink()
 
     def test_returns_fallback_on_malformed_json(self):
+        """Verify fallback returned when cheapest_models.json contains malformed JSON."""
         f = tempfile.NamedTemporaryFile(
             mode="w", suffix=".json", delete=False
         )
@@ -72,6 +76,7 @@ class TestLoadCheapestModel(unittest.TestCase):
             ref.unlink()
 
     def test_returns_fallback_when_model_key_absent(self):
+        """Verify fallback returned when the engine entry has no 'model' key."""
         ref = self._write_json({"copilot": {"description": "no model key"}})
         try:
             result = _load_cheapest_model("copilot", "gpt-5-mini", ref_path=ref)

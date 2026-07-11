@@ -1,4 +1,13 @@
-# plugins/exploration-cycle-plugin/tests/test_dispatch_authorization_gate.py
+"""
+Purpose:
+    Unit tests verifying dispatch.py's authorization gate fires before any
+    subprocess call, plus agent alias index resolution and handoff envelope
+    truncation limits.
+
+Key Input Dependencies:
+    - dispatch.py (in ../scripts/, invoked both as subprocess and imported directly)
+    - pytest tmp_path fixture
+"""
 import json, subprocess, sys, unittest.mock
 from pathlib import Path
 import pytest
@@ -12,6 +21,7 @@ MINIMAL_ARGS = [
 ]
 
 def _base_cmd(extra: list) -> list:
+    """Build a dispatch.py subprocess command line with MINIMAL_ARGS plus extra flags."""
     return [sys.executable, str(DISPATCH)] + MINIMAL_ARGS + extra
 
 def test_dispatch_blocks_without_approval(tmp_path):
@@ -66,6 +76,7 @@ def test_dispatch_gate_fires_before_subprocess(tmp_path):
     mock_run.assert_not_called()
 
 def test_alias_index_three_way_resolution(tmp_path):
+    """Verify build_agent_index resolves an agent by stem, stem-without-suffix, and frontmatter name."""
     agents = tmp_path / "agents"
     agents.mkdir()
     (agents / "intake-agent.md").write_text("---\nname: Intake Agent\n---\nBody")
@@ -78,6 +89,7 @@ def test_alias_index_three_way_resolution(tmp_path):
     assert idx["intake-agent"] == idx["intake"] == idx["Intake Agent"]
 
 def test_handoff_envelope_caps_turns_and_chars():
+    """Verify build_handoff_envelope caps transcript to 8 lines and 300 chars per line."""
     transcript = [("user", "x" * 500), ("agent", "y" * 500)] * 10
     from dispatch import build_handoff_envelope
     env = build_handoff_envelope("intake-agent", "vibe-orchestrator",

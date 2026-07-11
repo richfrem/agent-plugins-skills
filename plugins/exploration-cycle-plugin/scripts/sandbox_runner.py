@@ -1,6 +1,17 @@
-# plugins/exploration-cycle-plugin/scripts/sandbox_runner.py
 """
 sandbox_runner.py — Process Hygiene, Container Wrapping, and HMAC Envelopes
+
+Purpose:
+    Security-sensitive control plane component (see ADR-007) providing:
+    fail-closed path boundary enforcement, hygienic subprocess execution with
+    a stripped environment and isolated cwd, optional container-wrapped
+    execution (podman/docker), and HMAC-signed envelopes with nonce replay
+    protection for dispatch authorization.
+
+Key Input Dependencies:
+    - subprocess/container runtime (podman or docker, for run_containerized)
+    - Session HMAC key file (generated via generate_session_key)
+    - OrderedDict nonce_cache (caller-managed, for verify_envelope replay protection)
 """
 import hashlib
 import hmac as _hmac
@@ -37,6 +48,7 @@ def _assert_under_root(full: Path, root: Path, label: str = "path") -> None:
 
 
 def _build_clean_env(extra_vars: dict | None = None) -> dict:
+    """Build an environment dict containing only ALLOWED_ENV keys plus safe extra_vars."""
     env = {k: os.environ[k] for k in ALLOWED_ENV if k in os.environ}
     if extra_vars:
         for k, v in extra_vars.items():
@@ -46,6 +58,7 @@ def _build_clean_env(extra_vars: dict | None = None) -> dict:
 
 
 def _terminate_with_grace(proc: subprocess.Popen, grace: int = GRACE_SECONDS) -> None:
+    """Send SIGTERM and wait up to grace seconds before force-killing the process."""
     if proc.poll() is not None:
         return
     proc.send_signal(signal.SIGTERM)
@@ -61,6 +74,7 @@ def _terminate_with_grace(proc: subprocess.Popen, grace: int = GRACE_SECONDS) ->
 
 def run_hygienic(cmd: list, timeout: int = TIMEOUT_SECONDS,
                  extra_vars: dict | None = None) -> subprocess.CompletedProcess:
+    """Run cmd with a stripped environment and an isolated, auto-cleaned-up cwd."""
     env = _build_clean_env(extra_vars)
     cwd = tempfile.mkdtemp(prefix="agentic_sandbox_")
     try:
@@ -81,6 +95,7 @@ def run_hygienic(cmd: list, timeout: int = TIMEOUT_SECONDS,
 
 
 def _detect_container_runtime() -> str | None:
+    """Return the first available container runtime ('podman' or 'docker'), or None."""
     for runtime in ("podman", "docker"):
         if shutil.which(runtime) is not None:
             return runtime
@@ -147,6 +162,7 @@ def _container_user_flag() -> list[str]:
 
 
 def _cleanup_stale_containers(session_id: str) -> None:
+    """Force-remove any containers labeled with this session_id from a prior run."""
     runtime = _detect_container_runtime()
     if not runtime:
         return
@@ -181,6 +197,7 @@ def generate_session_key(key_path: Path) -> bytes:
 
 
 def load_session_key(key_path: Path) -> bytes:
+    """Read the raw session HMAC key bytes from key_path."""
     return key_path.read_bytes()
 
 
@@ -197,6 +214,7 @@ def cleanup_session_key(key_path: Path) -> None:
 
 
 def sign_envelope(payload: dict, key: bytes) -> dict:
+    """Sign payload with a random nonce and HMAC-SHA256 token; return the envelope dict."""
     nonce = secrets.token_hex(16)
     payload_bytes = json.dumps(payload, sort_keys=True).encode()
     token = _hmac.new(key, payload_bytes + nonce.encode(), hashlib.sha256).hexdigest()

@@ -1,4 +1,16 @@
-# plugins/exploration-cycle-plugin/tests/test_state_engine.py
+"""
+Purpose:
+    Unit tests for state_engine.py: schema/constraint enforcement (WAL mode,
+    table creation, status/FK/TTL CHECK constraints), concurrency (busy-retry
+    transactions, parallel-agent budget gates), task lifecycle (lease, commit,
+    CAS guard, expired-lease reclaim), review/artifact hash verification,
+    dashboard round-trip and migration, and CLI subcommand invocation
+    (dual-runtime invariant, ADR-002).
+
+Key Input Dependencies:
+    - state_engine.py module (in ../scripts/)
+    - pytest tmp_path fixture, mem_conn fixture (file-backed SQLite, WAL mode)
+"""
 import sys, sqlite3, uuid, time, threading
 from pathlib import Path
 import pytest
@@ -17,6 +29,7 @@ def mem_conn(tmp_path):
 
 
 def test_wal_mode_enabled(tmp_path):
+    """Verify init_db enables WAL journal mode."""
     db_path = tmp_path / "wal.sqlite"
     conn = SE.init_db(str(db_path))
     result = conn.execute("PRAGMA journal_mode;").fetchone()
@@ -25,6 +38,7 @@ def test_wal_mode_enabled(tmp_path):
 
 
 def test_all_tables_created(mem_conn):
+    """Verify init_db creates all expected schema tables."""
     expected = {"sessions", "tasks", "approvals", "artifacts", "reviews",
                 "dispatches", "policy_decisions", "phase_metrics", "nonces"}
     rows = mem_conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
@@ -33,6 +47,7 @@ def test_all_tables_created(mem_conn):
 
 
 def test_session_status_constraint(mem_conn):
+    """Verify sessions.status rejects values outside the allowed CHECK constraint set."""
     with pytest.raises(sqlite3.IntegrityError):
         mem_conn.execute(
             "INSERT INTO sessions (id, session_name, status) VALUES (?, ?, ?)",
@@ -65,6 +80,7 @@ def test_approval_ttl_capped_at_one_hour(mem_conn):
 
 
 def test_immediate_transaction_retries_on_busy(tmp_path):
+    """Verify _immediate_transaction retries when the database is locked by another connection."""
     db_path = tmp_path / "retry.sqlite"
     conn1 = SE.init_db(str(db_path))
     conn2 = SE.init_db(str(db_path))
@@ -74,6 +90,7 @@ def test_immediate_transaction_retries_on_busy(tmp_path):
     retry_count = []
 
     def write_with_conn2():
+        """Attempt an immediate transaction on conn2 while conn1 holds an exclusive lock."""
         try:
             with SE._immediate_transaction(conn2) as c:
                 retry_count.append(1)
@@ -103,6 +120,7 @@ def test_state_engine_cli_init(tmp_path):
 
 
 def test_create_session_and_add_task(mem_conn):
+    """Verify create_session and add_task insert rows with expected default status."""
     SE.create_session(mem_conn, "sess-1", "Test Session")
     SE.add_task(mem_conn, "task-1", "sess-1", 1, "Phase 1", "Comp A")
     row = mem_conn.execute("SELECT * FROM tasks WHERE id='task-1'").fetchone()
@@ -142,6 +160,7 @@ def test_commit_task_complete_decrements_parallel_counter(mem_conn):
 
 
 def test_commit_task_complete_cas_guard(mem_conn):
+    """Verify commit_task_complete's compare-and-swap guard rejects wrong agent/version."""
     SE.create_session(mem_conn, "sess-4", "Session 4")
     SE.add_task(mem_conn, "task-4", "sess-4", 1, "Phase 1", "Comp D")
     SE.lease_task(mem_conn, "task-4", "subagent-x", ttl_seconds=300)
@@ -154,6 +173,7 @@ def test_commit_task_complete_cas_guard(mem_conn):
 
 
 def test_budget_gate_blocks_over_parallel_limit(mem_conn):
+    """Verify lease_task raises when parallel_agents_running is at MAX_PARALLEL_AGENTS."""
     SE.create_session(mem_conn, "sess-5", "Session 5")
     mem_conn.execute(
         "UPDATE sessions SET parallel_agents_running=? WHERE id='sess-5'",
@@ -166,6 +186,7 @@ def test_budget_gate_blocks_over_parallel_limit(mem_conn):
 
 
 def test_record_premium_call_increments_counter(mem_conn):
+    """Verify record_premium_call increments sessions.premium_calls_used."""
     SE.create_session(mem_conn, "sess-6", "Session 6")
     SE.record_premium_call(mem_conn, "sess-6")
     used = mem_conn.execute(
@@ -196,6 +217,7 @@ def test_verify_review_current_detects_mismatch(mem_conn):
 
 
 def test_reclaim_expired_leases_returns_tasks_to_pending(mem_conn):
+    """Verify reclaim_expired_leases resets tasks with an expired lease back to pending."""
     SE.create_session(mem_conn, "sess-8", "Session 8")
     SE.add_task(mem_conn, "task-8", "sess-8", 1, "Phase 1", "Comp G")
     SE.lease_task(mem_conn, "task-8", "subagent-crash", ttl_seconds=300)
@@ -229,6 +251,7 @@ def test_state_engine_cli_lease_task(tmp_path):
 
 
 def test_project_dashboard_round_trips(mem_conn):
+    """Verify project_dashboard renders session name and component names into markdown."""
     SE.create_session(mem_conn, "sess-d1", "My Session")
     SE.add_task(mem_conn, "task-d1a", "sess-d1", 1, "Phase 1", "Component Alpha")
     SE.add_task(mem_conn, "task-d1b", "sess-d1", 1, "Phase 1", "Component Beta")
@@ -239,6 +262,7 @@ def test_project_dashboard_round_trips(mem_conn):
 
 
 def test_validate_dashboard_detects_drift(mem_conn):
+    """Verify validate_dashboard_checkboxes detects mismatch between DB status and markdown."""
     SE.create_session(mem_conn, "sess-d2", "Drift Session")
     SE.add_task(mem_conn, "task-d2", "sess-d2", 1, "Phase 1", "Comp X")
     fake_md = "- [x] Comp X\n"  # DB says pending, md says complete
@@ -246,6 +270,7 @@ def test_validate_dashboard_detects_drift(mem_conn):
 
 
 def test_migrate_dashboard_parses_tasks(mem_conn, tmp_path):
+    """Verify migrate_dashboard parses checkbox tasks and skips [~] lines."""
     dashboard = tmp_path / "exploration-dashboard.md"
     dashboard.write_text(
         "# Exploration Session: Test Migration\n"
