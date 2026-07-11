@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-import argparse
-import subprocess
-import sys
-import os
-
 """
 convert.py (CLI)
 =====================================
@@ -11,10 +6,17 @@ convert.py (CLI)
 Purpose:
     Converts a mermaid (.mmd/.mermaid) file to a PNG utilizing standard headless integration.
 
+Key Input Dependencies:
+    - Input .mmd or .mermaid file
+    - npx @mermaid-js/mermaid-cli (installed via npm)
+
+Key Functions:
+    - convert_mermaid(): Convert mermaid diagram to PNG using headless browser
+
 Layer: Tools & Generation
 
 Usage Examples:
-    pythonconvert.py -i input.mmd -o output.png -s 2 -t dark
+    python convert.py -i input.mmd -o output.png -s 2 -t dark
 
 Supported Object Types:
     - Mermaid standard (.mmd)
@@ -26,22 +28,17 @@ CLI Arguments:
     -s, --scale: Resolution scale factor (default: 1)
     -t, --theme: Theme variant (default, forest, dark, neutral)
 
-Input Files:
-    - Raw text file containing Mermaid syntax.
-
 Output:
     - PNG file.
-
-Key Functions:
-    - convert_mermaid(): The subprocess caller wrapping headless execution.
-
-Script Dependencies:
-    - npx @mermaid-js/mermaid-cli
 
 Consumed by:
     - User (CLI)
     - convert-mermaid (Agent Skill)
 """
+import argparse
+import subprocess
+import sys
+import os
 
 def convert_mermaid(input_file: str, output_file: str, scale: int = 1, theme: str = "default") -> None:
     """

@@ -40,6 +40,7 @@ import re
 import os
 
 def check_todos(file_path: str) -> int:
+    """Scan file for TODO/FIXME/HACK markers and return count of issues found."""
     if not os.path.isfile(file_path):
         print(f"Error: {file_path} not found.")
         return 1

@@ -7,6 +7,14 @@ Purpose:
     Generates the eval-instructions.md file for a target skill evaluation lab
     by rendering a template file with the provided skill metadata and paths.
 
+Key Input Dependencies:
+    - Template file (eval-instructions-template.md or custom template)
+    - Skill metadata (name, description, version)
+    - Output directory path
+
+Key Functions:
+    - generate_instructions(): Render template with variable substitution
+
 Layer: Investigate / Codify / Curate / Retrieve
     Codify
 
