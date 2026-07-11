@@ -1,0 +1,282 @@
+# Documentation Convention Audit & Fix - Session Guide
+
+## Overview
+
+**Project Goal:** Audit all Python scripts in the agent-plugins-skills repository against coding-conventions.md standards and fix documentation violations.
+
+**Current Session Status:** IN PROGRESS  
+**Branch:** `feat/updated-coding-conventions.md`
+
+---
+
+## What We're Doing
+
+We use the **workspace_conventions_auditor.py** script to scan all Python files in the repository and identify violations of coding standards, then systematically fix them by adding:
+- Missing module docstrings (with `Purpose:` and `Key Input Dependencies:` sections)
+- Missing function docstrings (one-line summaries)
+- Other documentation issues
+
+**Important Constraint:** We only add documentation/docstrings. We do NOT refactor code or fix functions exceeding 50 lines (unless explicitly requested to refactor).
+
+---
+
+## Progress Tracking
+
+### Audit Results Timeline
+
+| Date | Violations | Fixes | Cumulative Fixed |
+|------|-----------|-------|------------------|
+| Session Start | 454 | - | - |
+| After Batch 1 | 444 | 10 | 10 |
+| After Batch 2 | 443 | 1 | 11 |
+| Current | 442 | 1 | 12 |
+
+### Files Fixed (12 total)
+
+✅ **Agent-Scaffolders Scripts (13/40+ fixed):**
+1. audit.py - Added function docstring
+2. cleanup_stacked_references.py - Added main() docstring
+3. scaffold_azure_agent.py - Added main() docstring
+4. validate_local_links.py - Added main() docstring
+5. auto_fix_local_links.py - Added 3 function docstrings (resolve_project_root, replacer, main)
+6. audit_plugin_l5_execute.py - Added main() docstring
+7. inventory_plugin.py - Added main() docstring
+8. check_skill_lengths.py - Added module docstring + 2 function docstrings
+9. fix_descriptions.py - Added module docstring + 2 function docstrings
+10. update_ecosystem_index.py - Added module docstring + 2 function docstrings
+11. execute.py - Updated module docstring + added _get_default_improve_model() docstring
+12. audit_plugin_structure.py - Added _scan_dir() and main() docstrings
+13. path_reference_auditor.py - Added __init__() and main() docstrings
+
+✅ **Dev-Utils Scripts:**
+- workspace_conventions_auditor.py - Fixed backtick escaping in f-strings (line 217-218)
+
+### Violations Remaining (442 files)
+
+**By Category:**
+- Missing module docstrings: ~80 files
+- Missing function docstrings: ~200+ functions  
+- Functions exceeding 50 lines (requires refactoring): ~150+ functions
+- Other violations: ~50 files
+
+**By Plugin:**
+- agent-scaffolders: ~30 scripts remaining
+- agent-agentic-os: ~20 scripts remaining
+- obsidian-wiki-engine: ~30+ scripts remaining
+- bootstrap.py, __init__.py: Need module headers
+- Test files: Multiple violations
+- Others: spread across remaining plugins
+
+---
+
+## How to Use This Guide
+
+### Starting a New Session
+
+1. **Read this file** to understand the context
+2. **Check the current audit status:**
+   ```bash
+   python3 plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py
+   head -10 temp/workspace_conventions_report.md  # See summary
+   ```
+
+3. **Pick a script to fix** from the violations list
+4. **Follow the fix pattern** (see below)
+5. **Commit and update progress** in this file
+
+### Fix Pattern for Each Script
+
+```bash
+# 1. Read the script
+read <path-to-script>
+
+# 2. Identify what's missing (from audit report):
+grep -A 5 "<script-name>" temp/workspace_conventions_report.md
+
+# 3. Add docstrings:
+# - Module docstring with Purpose: and Key Input Dependencies:
+# - Function docstrings (one-line summaries)
+
+# 4. Re-audit to verify it passes:
+python3 plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py 2>&1 | grep "<script-name>"
+# Should return: (no output = pass!)
+
+# 5. Commit:
+git add <script-file>
+git commit -m "docs: add missing docstrings to <script-name>"
+```
+
+---
+
+## Applicable Skills & Rules
+
+### Core Skills for This Task
+
+**Primary Skill:**
+- `dev-utils:coding-conventions-agent` - Enforces documentation standards
+  - Location: `plugins/dev-utils/skills/coding-conventions-agent/SKILL.md`
+  - Auditor Script: `plugins/dev-utils/scripts/workspace_conventions_auditor.py`
+
+### Applicable Rules
+
+**Coding Conventions Rules:**
+- `.agent/rules/coding-conventions.md` - Master documentation standards
+  - Module docstring format: Purpose + Key Input Dependencies
+  - Function docstring format: One-line summaries
+  - File header templates for Python, JS/TS, C#
+  - Naming conventions, type hints, refactoring thresholds
+
+**Related Rules:**
+- `.agent/rules/self-evolution-policy.md` - Guides autonomous fixes
+- `.agent/rules/plugin-architecture-policy.md` - Plugin structure
+- `.agent/rules/test-driven-development.md` - Testing standards
+
+### Reference Files
+
+- `plugins/dev-utils/skills/coding-conventions-agent/SKILL.md` - Full standards definition
+- `plugins/dev-utils/rules/coding-conventions.md` - Summary of standards
+
+---
+
+## Scripts in Play
+
+### Primary Auditor Script
+**Path:** `plugins/dev-utils/scripts/workspace_conventions_auditor.py`
+
+**What it does:**
+- Scans all .py, .ts, .tsx, .js files in workspace
+- Checks for missing docstrings, headers, function length violations
+- Generates report to `temp/workspace_conventions_report.md`
+
+**Usage:**
+```bash
+python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+```
+
+**Output:** Detailed report in `temp/workspace_conventions_report.md`
+
+### Scripts Needing Fixes
+
+**High Priority (agent-scaffolders, most violations):**
+- aggregate_benchmark.py - 4 functions exceed 50 lines
+- generate_review.py - 3 functions exceed 50 lines
+- run_loop.py - 2 functions exceed 50 lines (299/120 lines)
+- scaffold_github_agent.py - main() exceeds 50 lines (231 lines)
+- validate_agent.py - validate() exceeds 50 lines (147 lines)
+- generate_report.py - generate_html() exceeds 50 lines (285 lines)
+
+**Medium Priority:**
+- test files (16+ missing docstrings)
+- obsidian-wiki-engine scripts
+- bootstrap.py (9+ missing docstrings)
+
+**Low Priority:**
+- Individual __init__.py files
+- Reference script files
+
+---
+
+## Known Issues
+
+### SyntaxWarning: Invalid Escape Sequence
+
+**Status:** Unresolved  
+**Location:** workspace_conventions_auditor.py line 70  
+**Severity:** Low (doesn't prevent auditor from working)  
+**Attempted Fix:** Changed backticks to repr() in output (line 217-218)  
+**Result:** Warning persists (likely false positive from Python parser)  
+**Action:** Can be investigated in future session if needed
+
+---
+
+## Best Practices for This Work
+
+### DO ✅
+- Add one-line docstrings to all functions
+- Include module docstrings with Purpose: and Key Input Dependencies:
+- Use the auditor script to verify fixes
+- Commit after fixing 5-10 files
+- Update this progress file after each session
+
+### DON'T ❌
+- Refactor code or change function implementations
+- Fix functions exceeding 50 lines (unless refactoring is requested)
+- Add error handling or validation beyond documentation
+- Create new abstractions or helper functions
+- Delete code (no cleanup unless asked)
+
+---
+
+## Next Steps
+
+### Immediate (This Session or Next)
+
+1. **Continue with agent-scaffolders scripts** (30+ remaining)
+   - Focus on scripts with only docstring violations first
+   - Skip length-related violations for now
+
+2. **Then move to agent-agentic-os** (~20 scripts)
+
+3. **Then obsidian-wiki-engine** (~30+ scripts)
+
+### Medium Term
+
+- Fix test files (test_scaffold_github_agent.py, test_execute.py, etc.)
+- Add missing module docstrings to bootstrap.py, __init__.py files
+- Address dev-utils and other plugins
+
+### Long Term
+
+- Consider batch refactoring for functions exceeding 50 lines
+- Update CLAUDE.md with lessons learned
+- Document any new patterns discovered
+
+---
+
+## Session Cleanup Checklist
+
+Before ending a session:
+
+- [ ] Run auditor to get current violation count
+- [ ] Commit all changes with descriptive message
+- [ ] Update progress table in this file
+- [ ] Note which scripts are complete
+- [ ] Document any blockers or issues found
+- [ ] Record the branch state
+
+---
+
+## Useful Commands
+
+```bash
+# Run the auditor
+python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+
+# Check a specific script's violations
+grep -A 10 "scripts/audit.py" temp/workspace_conventions_report.md
+
+# See all violations in agent-scaffolders
+grep "plugins/agent-scaffolders/scripts/" temp/workspace_conventions_report.md | head -30
+
+# Commit documentation fixes
+git add plugins/
+git commit -m "docs: add missing docstrings to <scripts>"
+
+# Check current audit status
+head -6 temp/workspace_conventions_report.md
+```
+
+---
+
+## Contact & Questions
+
+If starting a new session:
+1. Read this entire file
+2. Run the auditor to see current state
+3. Check the git log to see recent commits
+4. Pick 5-10 scripts from the remaining list
+5. Follow the "Fix Pattern for Each Script" section
+6. Update this file with new progress
+
+**Last Updated:** Current Session  
+**Status:** ONGOING - 442/454 files remaining (12 fixed)
