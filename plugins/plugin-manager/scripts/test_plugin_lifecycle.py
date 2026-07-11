@@ -95,6 +95,44 @@ def verify_no_duplicates(plugin_name: str) -> None:
     print(f"  PASS No duplicates for '{plugin_name}'")
 
 
+def _run_github_phases(python_exec: str, add_script: str, remove_script: str, sync_script: str,
+                        github_source: str, plugin_name: str) -> None:
+    """Run phases 1-4: GitHub install, idempotency check, sync, and remove."""
+    print("\n[Phase 1] Install via GitHub source")
+    run_command([python_exec, add_script, github_source, "--plugins", plugin_name, "--yes"])
+    verify_sources("After GitHub install", plugin_name, expect_present=True)
+
+    print("\n[Phase 2] Re-install (idempotency)")
+    run_command([python_exec, add_script, github_source, "--plugins", plugin_name, "--yes"])
+    verify_sources("After re-install", plugin_name, expect_present=True)
+    verify_no_duplicates(plugin_name)
+
+    print("\n[Phase 3] Sync via inventory script")
+    run_command([python_exec, sync_script])
+    verify_sources("After sync", plugin_name, expect_present=True)
+    verify_no_duplicates(plugin_name)
+
+    print("\n[Phase 4] Remove via headless flag")
+    run_command([python_exec, remove_script, "--plugins", plugin_name, "--yes"])
+    verify_sources("After remove", plugin_name, expect_present=False)
+
+
+def _run_local_phases(python_exec: str, add_script: str, remove_script: str, sync_script: str,
+                       local_source: str, plugin_name: str) -> None:
+    """Run phases 5-7: local install, local sync, and local remove."""
+    print("\n[Phase 5] Install via local source")
+    run_command([python_exec, add_script, local_source, "--yes"])
+    verify_sources("After local install", plugin_name, expect_present=True)
+
+    print("\n[Phase 6] Sync local inventory")
+    run_command([python_exec, sync_script])
+    verify_sources("After local sync", plugin_name, expect_present=True)
+
+    print("\n[Phase 7] Remove local install")
+    run_command([python_exec, remove_script, "--plugins", plugin_name, "--yes"])
+    verify_sources("After local remove", plugin_name, expect_present=False)
+
+
 def main() -> None:
     """Run the 7-phase plugin lifecycle test using agent-loops as the test subject.
 
@@ -115,42 +153,8 @@ def main() -> None:
     local_source = "plugins/agent-loops"
     plugin_name = "agent-loops"
 
-    # Phase 1: GitHub install
-    print("\n[Phase 1] Install via GitHub source")
-    run_command([python_exec, add_script, github_source, "--plugins", plugin_name, "--yes"])
-    verify_sources("After GitHub install", plugin_name, expect_present=True)
-
-    # Phase 2: Idempotency check
-    print("\n[Phase 2] Re-install (idempotency)")
-    run_command([python_exec, add_script, github_source, "--plugins", plugin_name, "--yes"])
-    verify_sources("After re-install", plugin_name, expect_present=True)
-    verify_no_duplicates(plugin_name)
-
-    # Phase 3: Sync Inventory
-    print("\n[Phase 3] Sync via inventory script")
-    run_command([python_exec, sync_script])
-    verify_sources("After sync", plugin_name, expect_present=True)
-    verify_no_duplicates(plugin_name)
-
-    # Phase 4: Remove
-    print("\n[Phase 4] Remove via headless flag")
-    run_command([python_exec, remove_script, "--plugins", plugin_name, "--yes"])
-    verify_sources("After remove", plugin_name, expect_present=False)
-
-    # Phase 5: Local install
-    print("\n[Phase 5] Install via local source")
-    run_command([python_exec, add_script, local_source, "--yes"])
-    verify_sources("After local install", plugin_name, expect_present=True)
-
-    # Phase 6: Sync Inventory locally
-    print("\n[Phase 6] Sync local inventory")
-    run_command([python_exec, sync_script])
-    verify_sources("After local sync", plugin_name, expect_present=True)
-
-    # Phase 7: Remove again
-    print("\n[Phase 7] Remove local install")
-    run_command([python_exec, remove_script, "--plugins", plugin_name, "--yes"])
-    verify_sources("After local remove", plugin_name, expect_present=False)
+    _run_github_phases(python_exec, add_script, remove_script, sync_script, github_source, plugin_name)
+    _run_local_phases(python_exec, add_script, remove_script, sync_script, local_source, plugin_name)
 
     print("\n" + "=" * 52)
     print("  All Lifecycle Tests Passed!")

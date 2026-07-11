@@ -5,6 +5,17 @@ gh_agent_templates.py
 Purpose:
     Pure template functions for generating GitHub AI Agent configurations.
     Contains no I/O, making it fully unit-testable.
+
+Layer: Codify
+
+Key Input Dependencies:
+    - YAML configuration data (agent metadata, tools, models, MCP servers)
+    - GitHub AI Agent specification format
+
+Key Functions:
+    - agent_md_github(): Generate Target A Custom Copilot Agent frontmatter
+    - gh_aw_workflow_md(): Generate GitHub Actions Workflow template
+    - runner_yml(): Generate GitHub Actions runner configuration
 """
 
 import re

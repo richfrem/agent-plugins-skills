@@ -131,6 +131,88 @@ def _load_installed(data: dict) -> list:
 # ---------------------------------------------------------------------------
 # Interactive multi-select (grouped by source, mirrors plugin_add.py)
 # ---------------------------------------------------------------------------
+def _multiselect_filtered(items: list, search: str) -> list:
+    """Filter items by current search query (case-insensitive name/source match)."""
+    q = search.lower()
+    return [i for i in items if q in i["name"].lower() or q in i.get("source", "").lower()]
+
+
+def _multiselect_render(title: str, items: list, filtered: list, selected: set,
+                         cursor: int, search: str, first_render: bool = False) -> int:
+    """Render the TUI removal menu (grouped by source) and return the number of printed lines."""
+    PAGE = 18
+    lines = []
+    lines.append(bold(title))
+    lines.append(dim("  \u2191\u2193 move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
+    if search:
+        lines.append(f"  {dim('Search:')} {cyan(search)}_")
+    else:
+        lines.append(dim("  Type / to search"))
+
+    visible = filtered[max(0, cursor - PAGE // 2): cursor + PAGE]
+    offset = max(0, cursor - PAGE // 2)
+    last_src = None
+
+    for idx, item in enumerate(visible):
+        abs_idx = offset + idx
+        src = item.get("source", "")
+        if src != last_src:
+            lines.append(f"  {dim('─── ' + src + ' ───')}")
+            last_src = src
+        is_cursor = abs_idx == cursor
+        is_selected = item["name"] in selected
+        check = red("[x]") if is_selected else dim("[ ]")
+        name  = cyan(item["name"]) if is_cursor else item["name"]
+        arrow = ">" if is_cursor else " "
+        lines.append(f"  {arrow} {check} {name}")
+
+    count = len(selected)
+    lines.append("")
+    lines.append(f"  {red(str(count))} of {len(filtered)} selected for removal")
+
+    if not first_render:
+        _clear_lines(len(lines))
+    print("\n".join(lines), flush=True)
+    return len(lines)
+
+
+def _multiselect_process_key(key: str, cursor: int, selected: set, search: str,
+                              items: list, filtered: list) -> tuple[int, set, str, bool]:
+    """Handle one keypress in the removal TUI and return updated (cursor, selected, search, should_break)."""
+    if key == "UP":
+        cursor = max(0, cursor - 1)
+    elif key == "DOWN":
+        cursor = min(len(filtered) - 1, cursor + 1)
+    elif key == " ":
+        if filtered and 0 <= cursor < len(filtered):
+            name = filtered[cursor]["name"]
+            if name in selected:
+                selected.discard(name)
+            else:
+                selected.add(name)
+    elif key in ("\r", "\n", ""):
+        return cursor, selected, search, True
+    elif key in ("q", "Q", "\x03"):
+        print(red("\nCancelled."))
+        sys.exit(0)
+    elif key == "a":
+        if len(selected) == len(items):
+            selected.clear()
+        else:
+            selected = {i["name"] for i in items}
+    elif key == "/":
+        search = ""
+        cursor = 0
+    elif key == "\x7f":
+        search = search[:-1]
+        cursor = 0
+    elif key and len(key) == 1 and key.isprintable():
+        if not (search == "" and key == "/"):
+            search += key
+            cursor = 0
+    return cursor, selected, search, False
+
+
 def _multiselect(title: str, items: list) -> list:
     """Interactive arrow-key multi-select TUI for choosing plugins to remove.
 
@@ -151,95 +233,19 @@ def _multiselect(title: str, items: list) -> list:
     selected = set()
     cursor = 0
     search = ""
-    PAGE = 18
 
-    def _filtered() -> list:
-        """Filter items by current search query (case-insensitive name/source match)."""
-        q = search.lower()
-        return [i for i in items if q in i["name"].lower() or q in i.get("source", "").lower()]
-
-    def _render(filtered: list, first_render: bool = False) -> int:
-        """Render the TUI removal menu and return the number of printed lines."""
-        lines = []
-        lines.append(bold(title))
-        lines.append(dim("  \u2191\u2193 move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
-        if search:
-            lines.append(f"  {dim('Search:')} {cyan(search)}_")
-        else:
-            lines.append(dim("  Type / to search"))
-
-        visible = filtered[max(0, cursor - PAGE // 2): cursor + PAGE]
-        offset = max(0, cursor - PAGE // 2)
-        last_src = None
-
-        for idx, item in enumerate(visible):
-            abs_idx = offset + idx
-            src = item.get("source", "")
-            if src != last_src:
-                lines.append(f"  {dim('─── ' + src + ' ───')}")
-                last_src = src
-            is_cursor = abs_idx == cursor
-            is_selected = item["name"] in selected
-            check = red("[x]") if is_selected else dim("[ ]")
-            name  = cyan(item["name"]) if is_cursor else item["name"]
-            arrow = ">" if is_cursor else " "
-            lines.append(f"  {arrow} {check} {name}")
-
-        count = len(selected)
-        lines.append("")
-        lines.append(f"  {red(str(count))} of {len(filtered)} selected for removal")
-
-        if not first_render:
-            _clear_lines(len(lines))
-        print("\n".join(lines), flush=True)
-        return len(lines)
-
-    filtered = _filtered()
-    _render(filtered, first_render=True)
+    filtered = _multiselect_filtered(items, search)
+    _multiselect_render(title, items, filtered, selected, cursor, search, first_render=True)
 
     while True:
         key = _read_key()
-        filtered = _filtered()
-        if not filtered:
-            cursor = 0
-        else:
-            cursor = min(cursor, len(filtered) - 1)
+        filtered = _multiselect_filtered(items, search)
+        cursor = min(cursor, len(filtered) - 1) if filtered else 0
 
-        if key == "UP":
-            cursor = max(0, cursor - 1)
-        elif key == "DOWN":
-            cursor = min(len(filtered) - 1, cursor + 1)
-        elif key == " ":
-            if filtered and 0 <= cursor < len(filtered):
-                name = filtered[cursor]["name"]
-                if name in selected:
-                    selected.discard(name)
-                else:
-                    selected.add(name)
-        elif key in ("\r", "\n", ""):
+        cursor, selected, search, done = _multiselect_process_key(key, cursor, selected, search, items, filtered)
+        if done:
             break
-        elif key in ("q", "Q", "\x03"):
-            print(red("\nCancelled."))
-            sys.exit(0)
-        elif key == "a":
-            if len(selected) == len(items):
-                selected.clear()
-            else:
-                selected = {i["name"] for i in items}
-        elif key == "/":
-            search = ""
-            cursor = 0
-        elif key == "\x7f":
-            search = search[:-1]
-            cursor = 0
-        elif key and len(key) == 1 and key.isprintable():
-            if search == "" and key == "/":
-                pass
-            else:
-                search += key
-                cursor = 0
-
-        _render(filtered)
+        _multiselect_render(title, items, filtered, selected, cursor, search)
 
     print()
     return [i for i in items if i["name"] in selected]
@@ -254,6 +260,63 @@ AGENT_DIRS = {
     "gemini": [".gemini/commands", ".gemini/skills", ".gemini/rules"],
     "claude": [".claude/commands", ".claude/skills", ".claude/rules", ".claude/agents", ".claude/hooks"]
 }
+
+def _remove_via_ownership_manifest(ownership_file: Path, root: Path, dry_run: bool) -> int:
+    """Remove all artifacts listed in a plugin's ownership manifest; return count removed."""
+    removed_count = 0
+    print(f"    - Using ownership manifest: {ownership_file.relative_to(root)}")
+    try:
+        data = json.loads(ownership_file.read_text(encoding="utf-8"))
+        artifacts = data.get("artifacts", [])
+
+        # Sort artifacts by length in descending order so files are unlinked/removed before parent directories
+        for art_rel in sorted(artifacts, key=len, reverse=True):
+            art_path = root / art_rel
+            if art_path.exists():
+                print(f"    - Removing owned artifact: {art_rel}")
+                if not dry_run:
+                    if art_path.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(art_path)):
+                        art_path.unlink()
+                    elif art_path.is_dir():
+                        shutil.rmtree(art_path)
+                    else:
+                        art_path.unlink()
+                removed_count += 1
+        if not dry_run:
+            ownership_file.unlink()
+            print(f"    - Removed ownership manifest: {ownership_file.relative_to(root)}")
+    except Exception as e:
+        print(f"    Warning: Failed to clean via ownership manifest: {e}")
+    return removed_count
+
+
+def _remove_via_legacy_scan(plugin_name: str, root: Path, dry_run: bool) -> int:
+    """Fallback cleanup: scan AGENT_DIRS for items matching the plugin name pattern; return count removed."""
+    removed_count = 0
+    for agent, dirs in AGENT_DIRS.items():
+        for dir_path in dirs:
+            target_dir = root / dir_path
+            if not target_dir.exists():
+                continue
+
+            for item in target_dir.iterdir():
+                if item.is_dir() and item.name == plugin_name:
+                    print(f"    - Removing legacy directory: {item.relative_to(root)}")
+                    if not dry_run:
+                        if item.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(item)):
+                            item.unlink()
+                        else:
+                            shutil.rmtree(item)
+                    removed_count += 1
+                elif item.is_file():
+                    # Files: {plugin_name}_{command}.* or {plugin_name}-{agent}.*
+                    if item.name.startswith(f"{plugin_name}_") or item.name.startswith(f"{plugin_name}-"):
+                        print(f"    - Removing legacy file: {item.relative_to(root)}")
+                        if not dry_run:
+                            item.unlink()
+                        removed_count += 1
+    return removed_count
+
 
 def remove_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> int:
     """Delete all deployed files for a plugin from the agent environment directories.
@@ -271,57 +334,15 @@ def remove_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> int:
         Count of artifact paths removed (or that would be removed in dry-run).
     """
     ownership_file = root / ".agents" / "ownership" / f"{plugin_name}.json"
-    
-    if ownership_file.exists():
-        print(f"    - Using ownership manifest: {ownership_file.relative_to(root)}")
-        try:
-            data = json.loads(ownership_file.read_text(encoding="utf-8"))
-            artifacts = data.get("artifacts", [])
-            
-            # Sort artifacts by length in descending order so files are unlinked/removed before parent directories
-            for art_rel in sorted(artifacts, key=len, reverse=True):
-                art_path = root / art_rel
-                if art_path.exists():
-                    print(f"    - Removing owned artifact: {art_rel}")
-                    if not dry_run:
-                        if art_path.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(art_path)):
-                            art_path.unlink()
-                        elif art_path.is_dir():
-                            shutil.rmtree(art_path)
-                        else:
-                            art_path.unlink()
-                    removed_count += 1
-            if not dry_run:
-                ownership_file.unlink()
-                print(f"    - Removed ownership manifest: {ownership_file.relative_to(root)}")
-        except Exception as e:
-            print(f"    Warning: Failed to clean via ownership manifest: {e}")
-            # Fall back to legacy cleanup below
-            
-    # Legacy fallback if no ownership file exists or it failed
-    if not ownership_file.exists() or removed_count == 0:
-        for agent, dirs in AGENT_DIRS.items():
-            for dir_path in dirs:
-                target_dir = root / dir_path
-                if not target_dir.exists():
-                    continue
+    removed_count = 0
 
-                for item in target_dir.iterdir():
-                    if item.is_dir() and item.name == plugin_name:
-                        print(f"    - Removing legacy directory: {item.relative_to(root)}")
-                        if not dry_run:
-                            if item.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(item)):
-                                item.unlink()
-                            else:
-                                shutil.rmtree(item)
-                        removed_count += 1
-                    elif item.is_file():
-                        # Files: {plugin_name}_{command}.* or {plugin_name}-{agent}.*
-                        if item.name.startswith(f"{plugin_name}_") or item.name.startswith(f"{plugin_name}-"):
-                            print(f"    - Removing legacy file: {item.relative_to(root)}")
-                            if not dry_run:
-                                item.unlink()
-                            removed_count += 1
+    if ownership_file.exists():
+        removed_count = _remove_via_ownership_manifest(ownership_file, root, dry_run)
+
+    # Legacy fallback if no ownership file exists or it removed nothing
+    if not ownership_file.exists() or removed_count == 0:
+        removed_count += _remove_via_legacy_scan(plugin_name, root, dry_run)
+
     return removed_count
 
 
@@ -377,21 +398,20 @@ def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None
              print(yellow(f"    Warning: Failed updating skills-lock.json: {e}"))
 
 
-def main() -> None:
-    """CLI entry point: load installed plugins, prompt for selection, remove artifacts.
+def _print_removal_banner() -> None:
+    """Print the ASCII art plugin remover banner."""
+    print()
+    print(bold("  ██████╗ ███████╗███╗   ███╗ ██████╗ ██╗   ██╗███████╗"))
+    print(bold("  ██╔══██╗██╔════╝████╗ ████║██╔═══██╗██║   ██║██╔════╝"))
+    print(bold("  ██████╔╝█████╗  ██╔████╔██║██║   ██║██║   ██║█████╗  "))
+    print(bold("  ██╔══██╗██╔══╝  ██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██╔══╝  "))
+    print(bold("  ██║  ██║███████╗██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ███████╗"))
+    print(bold("  ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝"))
+    print()
 
-    Reads plugin-sources.json to build the installed plugin list, presents the
-    interactive TUI (or uses --plugins/--all for headless mode), calls
-    remove_plugin_artifacts and _remove_from_registries for each selected plugin.
-    """
-    parser = argparse.ArgumentParser(description="Interactive plugin remover")
-    parser.add_argument("--dry-run", action="store_true", help="Preview deletions without removing")
-    parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts (headless)")
-    parser.add_argument("--all", "-a", action="store_true", help="Select all plugins without prompting")
-    parser.add_argument("--plugins", type=str, help="Comma-separated list of plugins to remove (headless filtering)")
-    args = parser.parse_args()
 
-    project_root = Path.cwd()
+def _load_installed_or_exit(project_root: Path) -> list:
+    """Read plugin-sources.json and return the installed plugin list, or exit if unavailable."""
     sources_file = project_root / "plugin-sources.json"
 
     if not sources_file.exists():
@@ -410,36 +430,55 @@ def main() -> None:
         print(yellow("No plugins currently recorded in plugin-sources.json."))
         sys.exit(0)
 
+    return installed_plugins
+
+
+def _select_plugins_to_remove(installed_plugins: list, args) -> list:
+    """Return the subset of installed plugins to remove based on CLI flags or TUI."""
     if args.plugins:
         allowed = set(p.strip() for p in args.plugins.split(","))
-        selected = [p for p in installed_plugins if p["name"] in allowed]
-    elif args.all or args.yes:
-        selected = installed_plugins
-    else:
-        print()
-        print(bold("  ██████╗ ███████╗███╗   ███╗ ██████╗ ██╗   ██╗███████╗"))
-        print(bold("  ██╔══██╗██╔════╝████╗ ████║██╔═══██╗██║   ██║██╔════╝"))
-        print(bold("  ██████╔╝█████╗  ██╔████╔██║██║   ██║██║   ██║█████╗  "))
-        print(bold("  ██╔══██╗██╔══╝  ██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██╔══╝  "))
-        print(bold("  ██║  ██║███████╗██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ███████╗"))
-        print(bold("  ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝"))
-        print()
+        return [p for p in installed_plugins if p["name"] in allowed]
+    if args.all or args.yes:
+        return installed_plugins
+    _print_removal_banner()
+    return _multiselect("  Select plugins to remove", installed_plugins)
 
-        selected = _multiselect("  Select plugins to remove", installed_plugins)
+
+def _remove_selected_plugins(selected: list, project_root: Path, dry_run: bool) -> None:
+    """Remove artifacts and registry entries for each selected plugin."""
+    print(f"\nProceeding to remove {len(selected)} plugins...")
+    for p in selected:
+        pname = p["name"]
+        print(f"\n{bold(pname)}:")
+        artifacts_removed = remove_plugin_artifacts(pname, project_root, dry_run)
+        _remove_from_registries(pname, project_root, dry_run)
+        if artifacts_removed == 0:
+            print(dim("    (no file artifacts found)"))
+
+
+def main() -> None:
+    """CLI entry point: load installed plugins, prompt for selection, remove artifacts.
+
+    Reads plugin-sources.json to build the installed plugin list, presents the
+    interactive TUI (or uses --plugins/--all for headless mode), calls
+    remove_plugin_artifacts and _remove_from_registries for each selected plugin.
+    """
+    parser = argparse.ArgumentParser(description="Interactive plugin remover")
+    parser.add_argument("--dry-run", action="store_true", help="Preview deletions without removing")
+    parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts (headless)")
+    parser.add_argument("--all", "-a", action="store_true", help="Select all plugins without prompting")
+    parser.add_argument("--plugins", type=str, help="Comma-separated list of plugins to remove (headless filtering)")
+    args = parser.parse_args()
+
+    project_root = Path.cwd()
+    installed_plugins = _load_installed_or_exit(project_root)
+    selected = _select_plugins_to_remove(installed_plugins, args)
 
     if not selected:
         print(yellow("  No plugins selected. Exiting."))
         sys.exit(0)
 
-    print(f"\nProceeding to remove {len(selected)} plugins...")
-    
-    for p in selected:
-        pname = p["name"]
-        print(f"\n{bold(pname)}:")
-        artifacts_removed = remove_plugin_artifacts(pname, project_root, args.dry_run)
-        _remove_from_registries(pname, project_root, args.dry_run)
-        if artifacts_removed == 0:
-             print(dim("    (no file artifacts found)"))
+    _remove_selected_plugins(selected, project_root, args.dry_run)
 
     print()
     if args.dry_run:

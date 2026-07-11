@@ -182,16 +182,13 @@ def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> No
         print(f"  [ERROR] Failed syncing source '{source_key}': {e}")
 
 
-def validate_agents_state(root: Path, registered_plugins: set) -> None:
-    """Scan installed directories and report validation issues."""
+def _find_missing_artifacts(root: Path, registered_plugins: set) -> list:
+    """Return descriptions of missing ownership-tracked artifacts or central copies."""
     missing = []
-    unexpected = []
-    
-    # 1. Check for missing ownership manifests or central copies
     for pname in registered_plugins:
         ownership_file = root / ".agents" / "ownership" / f"{pname}.json"
         central_dir = root / ".agents" / "skills" / pname
-        
+
         if not ownership_file.exists():
             # Fallback checks
             lock_file = root / "skills-lock.json"
@@ -213,8 +210,12 @@ def validate_agents_state(root: Path, registered_plugins: set) -> None:
                         missing.append(f"{pname} (artifact missing: {art})")
             except Exception:
                 pass
-                
-    # 2. Check for unexpected directories in .agents/skills/
+    return missing
+
+
+def _find_unexpected_skill_dirs(root: Path, registered_plugins: set) -> list:
+    """Return descriptions of orphaned directories under .agents/skills/."""
+    unexpected = []
     skills_dir = root / ".agents" / "skills"
     valid_skills = set()
     for pname in registered_plugins:
@@ -228,7 +229,7 @@ def validate_agents_state(root: Path, registered_plugins: set) -> None:
                         valid_skills.add(path_parts[2])
             except Exception:
                 pass
-        
+
         # Fallback local discovery
         plugin_src = root / "plugins" / pname
         if plugin_src.exists() and (plugin_src / "skills").is_dir():
@@ -240,8 +241,14 @@ def validate_agents_state(root: Path, registered_plugins: set) -> None:
         for item in skills_dir.iterdir():
             if item.is_dir() and item.name not in valid_skills:
                 unexpected.append(f"Orphaned skill directory: {item.relative_to(root)}")
+    return unexpected
 
-                
+
+def validate_agents_state(root: Path, registered_plugins: set) -> None:
+    """Scan installed directories and report validation issues."""
+    missing = _find_missing_artifacts(root, registered_plugins)
+    unexpected = _find_unexpected_skill_dirs(root, registered_plugins)
+
     if missing or unexpected:
         print("  ⚠️ Validation issues detected:")
         for m in missing:
@@ -250,6 +257,65 @@ def validate_agents_state(root: Path, registered_plugins: set) -> None:
             print(f"    - Unexpected: {u}")
     else:
         print("  ✓ Verification Complete: All registered plugins are clean and accounted for.")
+
+
+def _read_sources_registry(root: Path) -> tuple:
+    """Read plugin-sources.json and return (registered_plugin_names, sources_data).
+
+    Supports both the new schema ({"source": ..., "plugins": [...]}) and
+    legacy schema ({"local"/"github"/"name": ..., "plugins": [...]}).
+    """
+    registered_set = get_installed_plugin_names(root)
+    sources_file = root / "plugin-sources.json"
+    sources_data = []
+    if sources_file.exists():
+        try:
+            raw = json.loads(sources_file.read_text(encoding="utf-8"))
+            for s in raw.get("sources", []):
+                src = s.get("source") or s.get("github") or s.get("local") or s.get("name", "")
+                plugs = s.get("plugins", [])
+                if src and isinstance(plugs, list) and plugs:
+                    sources_data.append({"source": src, "plugins": plugs})
+        except Exception as e:
+            print(f"  Error reading plugin-sources.json: {e}")
+
+    print(f"  {len(registered_set)} registered plugins across {len(sources_data)} sources:")
+    for s in sources_data:
+        print(f"    [{s['source']}] -> {', '.join(s['plugins'])}")
+    return registered_set, sources_data
+
+
+def _cleanup_stale_sources(sources_data: list, root: Path, dry_run: bool) -> None:
+    """Detect locally-sourced plugins whose source directory is gone and clean them up."""
+    stale = set()
+    for s in sources_data:
+        src = s["source"]
+        # Only check stale for local paths (not GitHub slugs)
+        if src.startswith("/") or src.startswith("./") or src.startswith("plugins/"):
+            src_path = Path(src) if src.startswith("/") else root / src
+            if not src_path.exists():
+                stale.update(s["plugins"])
+                print(f"  Stale source (path gone): {src} -> {s['plugins']}")
+
+    if stale:
+        print(f"  Cleaning {len(stale)} stale plugin(s)...")
+        for plugin in sorted(stale):
+            clean_plugin_artifacts(plugin, root, dry_run)
+    else:
+        print("  No stale local sources detected.")
+
+
+def _sync_all_registered_sources(sources_data: list, root: Path, dry_run: bool) -> None:
+    """Call sync_source for every registered source entry to reinstall its plugins."""
+    if not sources_data:
+        print("  No sources registered in plugin-sources.json. Nothing to sync.")
+        print("  Run plugin_add.py to register and install plugins first.")
+        return
+    for s in sources_data:
+        if s["plugins"]:
+            src = s["source"]
+            print(f"\n  Source: {src}")
+            sync_source(src, s["plugins"], root, dry_run)
 
 
 def main() -> None:
@@ -267,66 +333,18 @@ def main() -> None:
 
     root = Path.cwd()
 
-    # 1. Read plugin-sources.json — authoritative registry of ALL installed plugins
     print("--- 1. Reading plugin-sources.json Registry ---")
-    registered_set = get_installed_plugin_names(root)
-    sources_file = root / "plugin-sources.json"
-    sources_data = []
-    if sources_file.exists():
-        try:
-            raw = json.loads(sources_file.read_text(encoding="utf-8"))
-            for s in raw.get("sources", []):
-                # Support both new (source) and legacy (local/github/name) schema
-                src = s.get("source") or s.get("github") or s.get("local") or s.get("name", "")
-                plugs = s.get("plugins", [])
-                if src and isinstance(plugs, list) and plugs:
-                    sources_data.append({"source": src, "plugins": plugs})
-        except Exception as e:
-            print(f"  Error reading plugin-sources.json: {e}")
+    registered_set, sources_data = _read_sources_registry(root)
 
-    print(f"  {len(registered_set)} registered plugins across {len(sources_data)} sources:")
-    for s in sources_data:
-        print(f"    [{s['source']}] -> {', '.join(s['plugins'])}")
-
-# plugin_inventory dependency removed
-
-    # 3. Cleanup: plugins in registry that no longer have a local source dir
-    #    (only applies to locally-sourced plugins where the dir was deleted)
     print("\n--- 3. Cleanup Analysis ---")
-    # Detect locally-sourced plugins whose source dir is gone
-    stale = set()
-    for s in sources_data:
-        src = s["source"]
-        # Only check stale for local paths (not GitHub slugs)
-        if src.startswith("/") or src.startswith("./") or src.startswith("plugins/"):
-            src_path = Path(src) if src.startswith("/") else root / src
-            if not src_path.exists():
-                stale.update(s["plugins"])
-                print(f"  Stale source (path gone): {src} -> {s['plugins']}")
+    _cleanup_stale_sources(sources_data, root, args.dry_run)
 
-    if stale:
-        print(f"  Cleaning {len(stale)} stale plugin(s)...")
-        for plugin in sorted(stale):
-            clean_plugin_artifacts(plugin, root, args.dry_run)
-    else:
-        print("  No stale local sources detected.")
-
-    # 4. Reinstall — call plugin_add.py per source entry so all plugins are redeployed
     if not args.cleanup_only:
         print(f"\n--- 4. Syncing All Registered Plugins ---")
-        if not sources_data:
-            print("  No sources registered in plugin-sources.json. Nothing to sync.")
-            print("  Run plugin_add.py to register and install plugins first.")
-        else:
-            for s in sources_data:
-                if s["plugins"]:
-                    src = s["source"]
-                    print(f"\n  Source: {src}")
-                    sync_source(src, s["plugins"], root, args.dry_run)
+        _sync_all_registered_sources(sources_data, root, args.dry_run)
     else:
         print("\nSkipping reinstall (--cleanup-only).")
 
-    # 5. Post-Sync Validation
     print("\n--- 5. Post-Sync Validation ---")
     if not args.dry_run:
         validate_agents_state(root, registered_set)
