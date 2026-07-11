@@ -175,3 +175,12 @@ module/
 - [ ] Type hints are complete
 - [ ] Docstrings follow Google style
 - [ ] Dual-layer documentation applied (comment + docstring)
+
+## 🔍 Automated Compliance Checks
+
+To check files across the workspace for alignment with these conventions, run the developer conventions auditor utility:
+```bash
+python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+```
+This utility parses AST trees for Python and matches regex structures for JavaScript and TypeScript files, generating a comprehensive report under `temp/workspace_conventions_report.md`.
+
