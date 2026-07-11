@@ -169,6 +169,7 @@ def filter_references(references: list[dict], skill_filter: str) -> list[dict]:
     return filtered
 
 def main() -> int:
+    """Parse CLI arguments and check skill boundaries for external references."""
     parser = argparse.ArgumentParser(description='Skill Boundary Checker')
     parser.add_argument('inventory', help='Path to inventory.json')
     parser.add_argument('--project', default='.', help='Project root directory')
