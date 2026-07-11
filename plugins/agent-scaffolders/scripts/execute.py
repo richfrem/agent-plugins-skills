@@ -1,10 +1,25 @@
 #!/usr/bin/env python
-"""Execution wrapper for continuous skill optimization loops.
+"""
+execute.py
+=====================================
 
-This script runs the shared benchmarking loop with safe defaults:
-- baseline-first iteration governance
-- keep/discard/crash ledger output
-- optional Copilot improvement backend with token-precedence cleanup
+Purpose:
+    Execution wrapper for continuous skill optimization loops.
+    Runs the shared benchmarking loop with safe defaults for skill improvement.
+
+Layer: Meta-Execution
+
+Usage Examples:
+    python execute.py --skill-path ./path/to/skill --eval-set evals.json
+
+Key Functions:
+    - _build_command(): Construct run_loop invocation with all parameters.
+    - _get_default_improve_model(): Load default model from cheapest_models.json.
+    - main(): Parse CLI arguments and execute the optimization loop.
+
+Key Input Dependencies:
+    - cheapest_models.json (optional reference for default model)
+    - run_loop.py (shared benchmarking orchestrator)
 """
 
 from __future__ import annotations
@@ -55,6 +70,7 @@ def _build_command(args: argparse.Namespace, plugin_root: Path) -> list[str]:
 
 
 def _get_default_improve_model() -> str:
+    """Load default improvement model from cheapest_models.json or return fallback."""
     fallback = "gpt-5-mini"
     try:
         script_dir = Path(__file__).resolve().parent

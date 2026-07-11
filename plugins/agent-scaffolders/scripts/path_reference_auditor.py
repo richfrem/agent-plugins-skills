@@ -52,6 +52,7 @@ from datetime import datetime
 
 class PathReferenceAuditor:
     def __init__(self, project_root: str | Path, inventory_file: str | Path = 'temp/inventory.json') -> None:
+        """Initialize the auditor with project root and inventory file paths."""
         self.project_root = Path(project_root).resolve()
         self.inventory_file = Path(inventory_file)
         self.inventory = {
@@ -324,6 +325,7 @@ class PathReferenceAuditor:
 
 
 def main() -> None:
+    """Parse CLI arguments and execute the specified audit phase."""
     parser = argparse.ArgumentParser(description='Path Reference Auditor - 2 Phase Audit')
     parser.add_argument('--project', required=True, help='Project root directory')
     parser.add_argument('--phase', choices=['scan', 'verify', 'report'], required=True,

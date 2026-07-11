@@ -8,6 +8,11 @@ Purpose:
     ecosystem. Each repair force-creates a file-level symlink at the
     destination path, replacing any pre-existing link or file.
 
+Key Input Dependencies:
+    - symlinks.json manifest (repairs configuration)
+    - Source and destination file paths for symlink creation
+    - pathlib and os modules for file operations
+
 Layer: Codify
 
 Usage:

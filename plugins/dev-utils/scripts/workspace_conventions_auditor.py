@@ -28,7 +28,7 @@ WORKSPACE_ROOT = Path(os.getcwd())
 # Directories to exclude from the scan
 EXCLUDE_DIRS = {
     "node_modules", "dist", "build", ".git", ".next", "venv", 
-    "__pycache__", "out", "coverage", ".agents"
+    "__pycache__", "out", "coverage", ".agents", "temp", "apm_modules"
 }
 
 # File extensions to scan
@@ -77,14 +77,10 @@ def scan_python_file(file_path: Path) -> List[str]:
     return errors
 
 
-# External comment: Audit JS/TS files for block headers and function sizes
-def scan_js_ts_file(file_path: Path) -> List[str]:
-    """Audits a JavaScript/TypeScript/TSX file using regex checks."""
+# External comment: Audit JS/TS header comment structure
+def _audit_js_ts_header(file_path: Path, content: str) -> List[str]:
+    """Helper to check block headers on JS/TS files."""
     errors = []
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    # 1. Header checks
     header_match = re.match(r"^\s*/\*\*([\s\S]*?)\*/", content)
     if not header_match:
         errors.append("Missing block comment header (/** ... */) at the top of the file.")
@@ -99,8 +95,13 @@ def scan_js_ts_file(file_path: Path) -> List[str]:
         needs_deps = any(kw in str(file_path).lower() for kw in ["routes", "services", "scripts", "pages"])
         if needs_deps and "key input dependencies:" not in header_text and "dependencies:" not in header_text:
             errors.append("Header is missing 'Key Input Dependencies:' section (required for routing/data-access files).")
+    return errors
 
-    # 2. Approximate function checks
+
+# External comment: Audit JS/TS function brace blocks and lengths
+def _audit_js_ts_functions(content: str) -> List[str]:
+    """Helper to analyze functions and verify length compliance."""
+    errors = []
     func_pattern = re.compile(
         r"(?:function\s+(\w+)|const\s+(\w+)\s*=\s*(?:\([^)]*\)|[^=]*)\s*=>)", 
         re.MULTILINE
@@ -131,8 +132,29 @@ def scan_js_ts_file(file_path: Path) -> List[str]:
         length = end_line - start_line + 1
         if length > 50:
             errors.append(f"Function/Component '{func_name}' exceeds 50 lines ({length} lines). Needs refactoring.")
-
+            
     return errors
+
+
+# External comment: Audit JS/TS files for block headers and function sizes
+def scan_js_ts_file(file_path: Path) -> List[str]:
+    """Audits a JavaScript/TypeScript/TSX file using regex checks."""
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    errors = _audit_js_ts_header(file_path, content)
+    errors.extend(_audit_js_ts_functions(content))
+    return errors
+
+
+# External comment: Check if a file is a relative pointer file
+def is_pointer_file(path: Path) -> bool:
+    """Check if the file is a relative pointer file (single line starting with ../)."""
+    try:
+        content = path.read_text(encoding="utf-8", errors="ignore").strip()
+        return "\n" not in content and content.startswith("../")
+    except Exception:
+        return False
 
 
 # External comment: Scans files recursively in the workspace directory
@@ -149,6 +171,9 @@ def run_audit() -> Dict[str, List[Dict[str, Any]]]:
             suffix = file_path.suffix.lower()
             
             if suffix in SUPPORTED_EXTENSIONS:
+                if is_pointer_file(file_path):
+                    continue
+                    
                 ext_key = suffix[1:]
                 
                 is_symlink = file_path.is_symlink()
@@ -189,8 +214,8 @@ def write_report(results: Dict[str, List[Dict[str, Any]]]) -> Path:
                 continue
             f.write(f"## {ext.upper()} Files ({len(files)} items)\n\n")
             for item in files:
-                sym_str = f" *(Symlink -> `{item['canonical']}`)*" if item['is_symlink'] else ""
-                f.write(f"### 📄 `{item['file']}`{sym_str}\n")
+                sym_str = f" *(Symlink -> {repr(item['canonical'])})*" if item['is_symlink'] else ""
+                f.write(f"### 📄 {repr(item['file'])}{sym_str}\n")
                 for err in item['errors']:
                     f.write(f"- {err}\n")
                 f.write("\n")

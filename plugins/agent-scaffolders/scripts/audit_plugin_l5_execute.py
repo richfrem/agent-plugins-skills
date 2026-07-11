@@ -39,6 +39,7 @@ import argparse
 import sys
 
 def main() -> None:
+    """Trigger the L5 Red Team Sub-Agent for plugin audit."""
     parser = argparse.ArgumentParser(description="Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.")
     # Add your arguments here
     parser.add_argument("--example", help="Example argument")

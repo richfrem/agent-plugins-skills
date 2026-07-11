@@ -8,6 +8,12 @@ Purpose:
     Validates the new plugin-sources.json schema (flat "source" key).
     Runs non-interactively using --yes flags.
 
+Key Input Dependencies:
+    plugin-sources.json                                     — asserted for correct schema after each phase
+    plugins/plugin-manager/scripts/plugin_add.py            — invoked as subprocess for install phases
+    plugins/plugin-manager/scripts/plugin_remove.py         — invoked as subprocess for removal phases
+    plugins/plugin-manager/scripts/sync_with_inventory.py   — invoked as subprocess for sync phases
+
 Layer: Development / Testing
 
 Usage:
@@ -90,6 +96,12 @@ def verify_no_duplicates(plugin_name: str) -> None:
 
 
 def main() -> None:
+    """Run the 7-phase plugin lifecycle test using agent-loops as the test subject.
+
+    Phases: GitHub install -> idempotency -> sync -> remove -> local install
+    -> local sync -> local remove. Asserts plugin-sources.json state and
+    schema correctness after each phase. Exits non-zero on any failure.
+    """
     print("=" * 52)
     print("  Plugin Lifecycle Test Harness")
     print("=" * 52)

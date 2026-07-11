@@ -25,6 +25,14 @@ CLI Arguments:
     --output: file path to save the generated output
     --timeout: subprocess timeout in seconds (default: 120)
 
+Key Input Dependencies:
+    Agent markdown file (--agent)           — agent instructions, YAML frontmatter stripped before dispatch
+    Context files (--context)               — required payload files; missing file is a fatal error
+    Optional context files (--optional-context) — supplemental payload; missing files silently skipped
+    active_session.sqlite (--db-path)       — SQLite DB checked by authorization gate
+    HMAC key file (--hmac-key-path)         — session signing key for envelope verification
+    HMAC envelope JSON (--envelope-json)    — serialized envelope from sandbox_runner.make_envelope()
+
 Input Files:
     - Agent instructions (.md)
     - Context payload files (.md, .txt)
@@ -282,6 +290,24 @@ def build_handoff_envelope(
     user_message: str, transcript: list[tuple[str, str]],
     turns: int = 8, chars_per_turn: int = 300,
 ) -> str:
+    """Build a plain-text handoff message for passing control between agents.
+
+    Summarises the tail of the conversation transcript and prepends the
+    handoff reason so the receiving agent has context without repeating
+    the source agent's intake flow.
+
+    Args:
+        from_agent: Name/ID of the agent handing off.
+        to_agent: Name/ID of the receiving agent (used for future routing).
+        reason: Human-readable reason for the handoff.
+        user_message: The user's most recent message to carry forward.
+        transcript: List of (role, text) conversation turns.
+        turns: How many tail turns to include in the summary.
+        chars_per_turn: Max characters per turn to include.
+
+    Returns:
+        Formatted handoff envelope string for injection into the next agent prompt.
+    """
     context = "\n".join(
         f"{role}: {text[:chars_per_turn]}"
         for role, text in transcript[-turns:]
@@ -335,6 +361,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    """CLI entry point: authorize, load context, invoke CLI backend, write output.
+
+    Validates HMAC envelope and approval record before any dispatch. Reads
+    agent instructions (stripping YAML frontmatter), assembles required and
+    optional context files, builds the CLI command for the selected backend
+    (claude / gh-copilot / copilot), invokes it as a subprocess, validates
+    the output, and writes the artifact. Exits non-zero on any failure.
+    """
     args = build_parser().parse_args()
 
     # Authorization gate — fail-closed. No dispatch without valid approval + HMAC.

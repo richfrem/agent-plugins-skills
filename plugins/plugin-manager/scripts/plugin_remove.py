@@ -8,6 +8,11 @@ Purpose:
     select which to remove, and then safely deletes them from the agent
     environments (.agents/, .claude/, etc) and tracking registries.
 
+Key Input Dependencies:
+    plugin-sources.json         — tracks which plugins are installed and from which source
+    .agents/ownership/{name}.json — per-plugin artifact manifests listing every deployed file
+    skills-lock.json            — plugin install lock file updated on removal
+
 Layer: Plugin Manager / Deletion
 
 Usage Examples:
@@ -39,19 +44,42 @@ if sys.platform == "win32":
 _ANSI = sys.stdout.isatty() if hasattr(sys.stdout, "isatty") else True
 
 def _col(code: str, text: str) -> str:
+    """Wrap text in an ANSI escape sequence if stdout is a TTY."""
     return f"\033[{code}m{text}\033[0m" if _ANSI else text
 
-def cyan(t: str) -> str:    return _col("96", t)
-def green(t: str) -> str:   return _col("92", t)
-def yellow(t: str) -> str:  return _col("93", t)
-def dim(t: str) -> str:     return _col("2", t)
-def bold(t: str) -> str:    return _col("1", t)
-def red(t: str) -> str:     return _col("91", t)
+def cyan(t: str) -> str:
+    """Return text formatted in bright cyan."""
+    return _col("96", t)
+
+def green(t: str) -> str:
+    """Return text formatted in bright green."""
+    return _col("92", t)
+
+def yellow(t: str) -> str:
+    """Return text formatted in bright yellow."""
+    return _col("93", t)
+
+def dim(t: str) -> str:
+    """Return text formatted in dim/faint style."""
+    return _col("2", t)
+
+def bold(t: str) -> str:
+    """Return text formatted in bold."""
+    return _col("1", t)
+
+def red(t: str) -> str:
+    """Return text formatted in bright red."""
+    return _col("91", t)
 
 # ---------------------------------------------------------------------------
 # Terminal raw-mode helpers
 # ---------------------------------------------------------------------------
-def _read_key():
+def _read_key() -> str:
+    """Read one raw keypress from stdin and return a string token.
+
+    Returns 'UP' or 'DOWN' for arrow keys, the character for printable keys,
+    or special tokens like ESC. Works on both Windows (msvcrt) and Unix (termios).
+    """
     if sys.platform == "win32":
         import msvcrt
         ch = msvcrt.getwch()
@@ -73,7 +101,12 @@ def _read_key():
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
-def _clear_lines(n: int):
+def _clear_lines(n: int) -> None:
+    """Rewind the terminal cursor N lines up and clear to end-of-screen.
+
+    Used by the multiselect TUI to re-render the menu in place.
+    No-ops when _ANSI is False (non-TTY output).
+    """
     if _ANSI:
         sys.stdout.write(f"\033[{n}A\033[J")
         sys.stdout.flush()
@@ -99,6 +132,19 @@ def _load_installed(data: dict) -> list:
 # Interactive multi-select (grouped by source, mirrors plugin_add.py)
 # ---------------------------------------------------------------------------
 def _multiselect(title: str, items: list) -> list:
+    """Interactive arrow-key multi-select TUI for choosing plugins to remove.
+
+    Renders a scrollable, source-grouped list with space-to-toggle selection.
+    Supports arrow navigation, '/' search, 'a' to toggle all, 'q' to quit.
+    Items are grouped visually by their source (GitHub repo or local path).
+
+    Args:
+        title: Header text displayed above the list.
+        items: List of dicts with keys 'name' and 'source'.
+
+    Returns:
+        Subset of items the user selected for removal.
+    """
     if not items:
         return []
 
@@ -107,11 +153,13 @@ def _multiselect(title: str, items: list) -> list:
     search = ""
     PAGE = 18
 
-    def _filtered():
+    def _filtered() -> list:
+        """Filter items by current search query (case-insensitive name/source match)."""
         q = search.lower()
         return [i for i in items if q in i["name"].lower() or q in i.get("source", "").lower()]
 
-    def _render(filtered, first_render=False):
+    def _render(filtered: list, first_render: bool = False) -> int:
+        """Render the TUI removal menu and return the number of printed lines."""
         lines = []
         lines.append(bold(title))
         lines.append(dim("  \u2191\u2193 move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
@@ -208,7 +256,20 @@ AGENT_DIRS = {
 }
 
 def remove_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> int:
-    removed_count = 0
+    """Delete all deployed files for a plugin from the agent environment directories.
+
+    First attempts to use the ownership manifest (.agents/ownership/{name}.json)
+    for precise file-level cleanup. Falls back to scanning AGENT_DIRS for items
+    whose names match {plugin_name}_* or {plugin_name}-* if no manifest exists.
+
+    Args:
+        plugin_name: The plugin slug to remove.
+        root: Repository root path context.
+        dry_run: If True, print planned deletions without removing files.
+
+    Returns:
+        Count of artifact paths removed (or that would be removed in dry-run).
+    """
     ownership_file = root / ".agents" / "ownership" / f"{plugin_name}.json"
     
     if ownership_file.exists():
@@ -266,7 +327,16 @@ def remove_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> int:
 
 
 def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None:
-    # 1. plugin-sources.json
+    """Remove plugin_name from plugin-sources.json and skills-lock.json.
+
+    Migrates legacy schema entries on read. Prunes empty source entries after
+    removal. Silently warns on parse or write errors without crashing.
+
+    Args:
+        plugin_name: The plugin slug to deregister.
+        root: Repository root where the registry files live.
+        dry_run: If True, compute changes but do not write files.
+    """
     sources_file = root / "plugin-sources.json"
     if sources_file.exists():
         try:
@@ -307,7 +377,13 @@ def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None
              print(yellow(f"    Warning: Failed updating skills-lock.json: {e}"))
 
 
-def main():
+def main() -> None:
+    """CLI entry point: load installed plugins, prompt for selection, remove artifacts.
+
+    Reads plugin-sources.json to build the installed plugin list, presents the
+    interactive TUI (or uses --plugins/--all for headless mode), calls
+    remove_plugin_artifacts and _remove_from_registries for each selected plugin.
+    """
     parser = argparse.ArgumentParser(description="Interactive plugin remover")
     parser.add_argument("--dry-run", action="store_true", help="Preview deletions without removing")
     parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts (headless)")

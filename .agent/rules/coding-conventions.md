@@ -17,3 +17,10 @@ globs: ["*.py", "*.ts", "*.js", "*.cs"]
 5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers.
 6. **Tool registration** — all `plugins/` scripts registered in `plugins/tool_inventory.json`.
 7. **Manifest schema** — use simple `{title, description, files}` format (ADR 097).
+
+### 🔍 Automated Compliance Checks
+To audit workspace source code compliance against these rules, run the developer conventions auditor script:
+```bash
+python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+```
+This utility outputs a detailed audit breakdown under `temp/workspace_conventions_report.md`.

@@ -142,6 +142,7 @@ def scan_hardcoded_paths(root: Path) -> List[Tuple[str, int, str]]:
     return violations
 
 def main() -> None:
+    """Validate local symlinks and detect hardcoded plugin paths."""
     root = resolve_project_root()
     print(f"🔍 Analyzing Symlink Architecture starting from: {root}\n")
     

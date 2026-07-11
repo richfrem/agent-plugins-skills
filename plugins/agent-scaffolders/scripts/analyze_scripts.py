@@ -5,8 +5,13 @@ analyze_scripts.py
 
 Purpose:
     Analyzer script for the plugin ecosystem. Evaluates Python script usage,
-    symlink structures, and verifies alignment with ADR-001 (Cross-Plugin) 
+    symlink structures, and verifies alignment with ADR-001 (Cross-Plugin)
     and ADR-002 (Multi-Skill Script Centralization) architectural conventions.
+
+Key Input Dependencies:
+    - Plugin directory structure (plugins/*/scripts/)
+    - Python source files for analysis
+    - os and pathlib modules for directory traversal
 
 Layer: Investigate / Audit
 

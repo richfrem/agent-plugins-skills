@@ -1,4 +1,32 @@
 #!/usr/bin/env python
+"""
+fix_descriptions.py
+=====================================
+
+Purpose:
+    Fix overly long skill descriptions by removing commentary and example blocks.
+    Ensures skill descriptions stay under 1024 character limit.
+
+Layer: Investigate / Repair
+
+Usage Examples:
+    python fix_descriptions.py
+
+Input Files:
+    - SKILL.md files listed in files_to_fix array.
+
+Output:
+    - Console logs of fixed skill files.
+
+Key Functions:
+    - fix_file(): Process and fix a single SKILL.md description field.
+    - main(): Execute fixes on all target files.
+
+Key Input Dependencies:
+    - os (standard library)
+    - re (standard library)
+"""
+
 import os
 
 files_to_fix = [
@@ -15,6 +43,7 @@ files_to_fix = [
 ]
 
 def fix_file(filepath):
+    """Parse and fix description field in a SKILL.md file by removing XML blocks."""
     if not os.path.exists(filepath):
         print(f"Not found: {filepath}")
         return
@@ -87,6 +116,7 @@ def fix_file(filepath):
     print(f"Fixed {filepath}")
 
 def main():
+    """Execute fix_file on all target skill files."""
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     for rel_path in files_to_fix:
         fix_file(os.path.join(root_dir, rel_path))

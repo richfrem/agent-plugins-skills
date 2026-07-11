@@ -80,15 +80,38 @@ _ANSI = sys.stdout.isatty() if hasattr(sys.stdout, "isatty") else True
 
 
 def _col(code: str, text: str) -> str:
+    """Wrap text in an ANSI escape sequence if stdout is a TTY."""
     return f"\033[{code}m{text}\033[0m" if _ANSI else text
 
 
-def cyan(t: str) -> str:    return _col("96", t)
-def green(t: str) -> str:   return _col("92", t)
-def yellow(t: str) -> str:  return _col("93", t)
-def dim(t: str) -> str:     return _col("2", t)
-def bold(t: str) -> str:    return _col("1", t)
-def red(t: str) -> str:     return _col("91", t)
+def cyan(t: str) -> str:
+    """Return text formatted in bright cyan."""
+    return _col("96", t)
+
+
+def green(t: str) -> str:
+    """Return text formatted in bright green."""
+    return _col("92", t)
+
+
+def yellow(t: str) -> str:
+    """Return text formatted in bright yellow."""
+    return _col("93", t)
+
+
+def dim(t: str) -> str:
+    """Return text formatted in dim/faint style."""
+    return _col("2", t)
+
+
+def bold(t: str) -> str:
+    """Return text formatted in bold."""
+    return _col("1", t)
+
+
+def red(t: str) -> str:
+    """Return text formatted in bright red."""
+    return _col("91", t)
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +141,12 @@ def _read_key():
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
-def _clear_lines(n: int):
+def _clear_lines(n: int) -> None:
+    """Rewind the terminal cursor N lines up and clear to end-of-screen.
+
+    Used by the multiselect TUI to re-render the menu in place.
+    No-ops when _ANSI is False (non-TTY output).
+    """
     if _ANSI:
         sys.stdout.write(f"\033[{n}A\033[J")
         sys.stdout.flush()
@@ -128,9 +156,17 @@ def _clear_lines(n: int):
 # Interactive multi-select (space = toggle, enter = confirm, / = search)
 # ---------------------------------------------------------------------------
 def _multiselect(title: str, items: list) -> list:
-    """
-    items: list of {"name": str, "description": str, "path": Path}
-    Returns selected subset.
+    """Interactive arrow-key multi-select TUI for choosing plugins.
+
+    Renders a scrollable, filterable list with space-to-toggle selection.
+    Supports arrow navigation, '/' search, 'a' to toggle all, 'q' to quit.
+
+    Args:
+        title: Header text displayed above the list.
+        items: List of dicts with keys 'name', 'description', 'path'.
+
+    Returns:
+        Subset of items the user selected, preserving original order.
     """
     if not items:
         return []
@@ -140,11 +176,13 @@ def _multiselect(title: str, items: list) -> list:
     search = ""
     PAGE = 18                   # visible rows
 
-    def _filtered():
+    def _filtered() -> list:
+        """Filter items by current search query (case-insensitive name/description match)."""
         q = search.lower()
         return [i for i in items if q in i["name"].lower() or q in i.get("description", "").lower()]
 
-    def _render(filtered, first_render=False):
+    def _render(filtered: list, first_render: bool = False) -> int:
+        """Render the TUI menu and return the number of printed lines."""
         lines = []
         lines.append(bold(title))
         lines.append(dim("  ↑↓ move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
@@ -176,52 +214,55 @@ def _multiselect(title: str, items: list) -> list:
         print("\n".join(lines), flush=True)
         return len(lines)
 
-    filtered = _filtered()
-    line_count = _render(filtered, first_render=True)
+    def _process_key(key: str, cursor: int, selected: set, search: str) -> tuple[int, set, str, bool]:
+        """Handle one keypress and return updated (cursor, selected, search, should_break).
 
-    while True:
-        key = _read_key()
-        filtered = _filtered()
-        if not filtered:
-            cursor = 0
-        else:
-            cursor = min(cursor, len(filtered) - 1)
+        Args:
+            key: Keypress token from _read_key().
+            cursor: Current cursor row index in the filtered list.
+            selected: Set of currently selected item names.
+            search: Current search query string.
 
+        Returns:
+            Updated (cursor, selected, search, should_break).
+        """
+        f = _filtered()
+        n = len(f)
         if key == "UP":
             cursor = max(0, cursor - 1)
         elif key == "DOWN":
-            cursor = min(len(filtered) - 1, cursor + 1)
+            cursor = min(n - 1, cursor + 1)
         elif key == " ":
-            if filtered and 0 <= cursor < len(filtered):
-                name = filtered[cursor]["name"]
-                if name in selected:
-                    selected.discard(name)
-                else:
-                    selected.add(name)
+            if f and 0 <= cursor < n:
+                name = f[cursor]["name"]
+                selected.discard(name) if name in selected else selected.add(name)
         elif key in ("\r", "\n", ""):
-            break
+            return cursor, selected, search, True
         elif key in ("q", "Q", "\x03"):
             print(red("\nCancelled."))
             sys.exit(0)
         elif key == "a":
-            if len(selected) == len(items):
-                selected.clear()
-            else:
-                selected = {i["name"] for i in items}
+            selected = set() if len(selected) == len(items) else {i["name"] for i in items}
         elif key == "/":
-            search = ""
-            cursor = 0
-        elif key == "\x7f":          # backspace
-            search = search[:-1]
-            cursor = 0
+            search, cursor = "", 0
+        elif key == "\x7f":
+            search, cursor = search[:-1], 0
         elif key and len(key) == 1 and key.isprintable():
-            if search == "" and key == "/":
-                pass
-            else:
-                search += key
-                cursor = 0
+            search += key
+            cursor = 0
+        return cursor, selected, search, False
 
-        line_count = _render(filtered)
+    filtered = _filtered()
+    _render(filtered, first_render=True)
+
+    while True:
+        key = _read_key()
+        cursor, selected, search, done = _process_key(key, cursor, selected, search)
+        filtered = _filtered()
+        cursor = min(cursor, len(filtered) - 1) if filtered else 0
+        if done:
+            break
+        _render(filtered)
 
     print()
     return [i for i in items if i["name"] in selected]
@@ -279,6 +320,17 @@ def _parse_github_source(source: str):
 
 
 def _clone_repo(owner_repo: str, dest: Path) -> Path:
+    """Shallow-clone a GitHub repo into dest and return the cloned path.
+
+    Exits the process with code 1 if git clone fails.
+
+    Args:
+        owner_repo: GitHub 'owner/repo' string.
+        dest: Destination directory path for the clone.
+
+    Returns:
+        dest after successful clone.
+    """
     url = f"https://github.com/{owner_repo}.git"
     print(f"\n  {cyan('Source:')} https://github.com/{owner_repo}")
     print(f"  {dim('Cloning repository...')}", flush=True)
@@ -294,6 +346,17 @@ def _clone_repo(owner_repo: str, dest: Path) -> Path:
 
 
 def log_failure(tier: int, artifact: str, error: str) -> None:
+    """Append a failure row to the plugin-manager evolution log.
+
+    Walks up the directory tree to locate evolution-log.md and appends a
+    Markdown table row recording the date, tier, and error. Silently no-ops
+    if the log cannot be found or written.
+
+    Args:
+        tier: Failure tier level (0-3 per self-evolution policy).
+        artifact: Name of the plugin or artifact that failed.
+        error: Error message string to record.
+    """
     import datetime
     log_path = Path("plugins/plugin-manager/references/evolution-log.md")
     if not log_path.exists():
@@ -315,7 +378,19 @@ def log_failure(tier: int, artifact: str, error: str) -> None:
 
 
 def validate_plugin(plugin_path: Path) -> None:
-    # 1. Enforce manifest
+    """Assert that a plugin directory meets minimum structural requirements.
+
+    Checks for a plugin.json manifest, a skills/ directory, and a SKILL.md
+    inside each skill subfolder. Missing evals.json produces a warning rather
+    than a hard failure, to accommodate third-party plugins.
+
+    Args:
+        plugin_path: Path to the plugin directory to validate.
+
+    Raises:
+        AssertionError: If the manifest or skills/ directory is missing, or
+            any skill subfolder lacks a SKILL.md file.
+    """
     manifest_exists = (plugin_path / ".claude-plugin" / "plugin.json").exists() or (plugin_path / "plugin.json").exists()
     assert manifest_exists, f"Missing manifest (.claude-plugin/plugin.json or plugin.json) in {plugin_path.name}"
     
@@ -385,6 +460,7 @@ def _discover_plugins(search_root: Path) -> list:
     SKIP = frozenset({"node_modules", "venv", "env", ".venv", "__pycache__", ".git"})
 
     def _scan_dir(root: Path) -> list[dict]:
+        """Scan root for immediate subdirectories that look like valid plugins."""
         plugins = []
         for p in sorted(root.iterdir()):
             if not p.is_dir() or p.name.startswith(".") or p.name.startswith("__"):
@@ -423,7 +499,8 @@ def _discover_plugins(search_root: Path) -> list:
 # ---------------------------------------------------------------------------
 # Banner
 # ---------------------------------------------------------------------------
-def _print_banner(source_label: str):
+def _print_banner(source_label: str) -> None:
+    """Print the ASCII art plugin manager banner with the resolved source label."""
     print()
     print(bold("  ██████╗ ██╗     ██╗   ██╗ ██████╗ ██╗███╗  ██╗███████╗"))
     print(bold("  ██╔══██╗██║     ██║   ██║██╔════╝ ██║████╗ ██║██╔════╝"))
@@ -439,14 +516,223 @@ def _print_banner(source_label: str):
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-def main():
+def _resolve_source(args) -> tuple[Path, Path | None]:
+    """Resolve the plugin source to a local directory, cloning if GitHub.
+
+    Args:
+        args: Parsed argparse namespace with 'source' attribute.
+
+    Returns:
+        Tuple of (plugins_root, temp_dir). temp_dir is set if a clone was
+        performed and must be removed by the caller after installation.
+    """
+    if args.source and _is_github_source(args.source):
+        owner_repo, subpath = _parse_github_source(args.source)
+        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
+        temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
+        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
+        return (repo_root / subpath if subpath else repo_root), temp_dir
+    if args.source:
+        source_path = Path(args.source).resolve()
+        _print_banner(str(source_path))
+        return source_path, None
+    cwd = Path.cwd()
+    candidate = cwd
+    for _ in range(4):
+        if (candidate / "plugins").is_dir() or (candidate / ".claude-plugin").is_dir():
+            break
+        candidate = candidate.parent
+    _print_banner(str(candidate))
+    return candidate, None
+
+
+def _select_plugins(all_plugins: list, args) -> list:
+    """Return the subset of plugins to install based on CLI flags or TUI.
+
+    Args:
+        all_plugins: Full list of discovered plugin metadata dicts.
+        args: Parsed argparse namespace (--plugins, --all, --yes).
+
+    Returns:
+        List of selected plugin dicts.
+    """
+    if args.plugins:
+        allowed = set(p.strip() for p in args.plugins.split(","))
+        chosen = [p for p in all_plugins if p["name"] in allowed]
+        print(f"  {green('✓')} Installing {len(chosen)} requested plugins")
+        return chosen
+    if args.all or args.yes:
+        print(f"  {green('✓')} Installing all {len(all_plugins)} plugins")
+        return all_plugins
+    return _multiselect("  Select plugins to install", all_plugins)
+
+
+def _confirm_install(selected_plugins: list, args, temp_dir: Path | None) -> None:
+    """Print installation summary and prompt for confirmation unless --yes.
+
+    Exits the process with code 0 if the user declines.
+
+    Args:
+        selected_plugins: List of plugin dicts about to be installed.
+        args: Parsed argparse namespace (--dry_run, --yes).
+        temp_dir: Temp directory to clean up on cancellation, or None.
+    """
+    tag = " [DRY RUN]" if args.dry_run else ""
+    print()
+    print(bold(f"  Installation Plan{tag}"))
+    print(f"  {dim('─' * 48)}")
+    for p in selected_plugins:
+        ver = f"  {dim('v' + p['version'])}" if p["version"] else ""
+        desc = f"  {dim(p['description'][:50])}" if p["description"] else ""
+        print(f"   {green('•')} {cyan(p['name'])}{ver}{desc}")
+    print(f"  {dim('─' * 48)}")
+    print(f"  {green(str(len(selected_plugins)))} plugin(s) -> {dim('.agents/')} (skills + agents + commands + hooks)")
+    print()
+    if args.yes or args.dry_run:
+        return
+    try:
+        answer = input(f"  Proceed? [{green('y')}/n] ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print(red("\n  Cancelled."))
+        if temp_dir:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        sys.exit(0)
+    if answer and answer not in ("y", "yes"):
+        print(yellow("  Cancelled."))
+        if temp_dir:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        sys.exit(0)
+
+
+def _install_plugins(selected_plugins: list, args) -> tuple[int, int]:
+    """Run plugin_installer.py for each selected plugin and return counts.
+
+    Args:
+        selected_plugins: List of plugin metadata dicts with 'path' and 'name'.
+        args: Parsed argparse namespace (--dry_run, --install_rules).
+
+    Returns:
+        Tuple of (success_count, fail_count).
+    """
+    success_count = 0
+    fail_count = 0
+    for plugin in selected_plugins:
+        print(f"\n  {bold('->')} {cyan(plugin['name'])}")
+        try:
+            validate_plugin(Path(plugin["path"]))
+        except AssertionError as ae:
+            print(f"    {red('✗')} Validation Failed: {ae}")
+            log_failure(tier=1, artifact=plugin["name"], error=str(ae))
+            fail_count += 1
+            continue
+        cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin["path"])]
+        if args.dry_run:
+            cmd.append("--dry-run")
+        if args.install_rules:
+            cmd.append("--install-rules")
+        result = subprocess.run(cmd, text=True)
+        if result.returncode == 0:
+            print(f"    {green('✓')} Done")
+            success_count += 1
+        else:
+            print(f"    {red('✗')} Failed (exit {result.returncode})")
+            fail_count += 1
+    return success_count, fail_count
+
+
+def _update_sources_registry(selected_plugins: list, args, plugins_root: Path, project_root: Path) -> None:
+    """Record installed plugin names in plugin-sources.json.
+
+    Normalises the source key (GitHub owner/repo or local path), migrates
+    any legacy schema entries, moves plugins to their new source, and upserts
+    the current selection. No-ops in dry-run mode.
+
+    Args:
+        selected_plugins: List of successfully installed plugin metadata dicts.
+        args: Parsed argparse namespace (source, dry_run).
+        plugins_root: Resolved local plugins directory used for installation.
+        project_root: Repository root where plugin-sources.json lives.
+    """
+    sources_file = project_root / "plugin-sources.json"
+    try:
+        data: dict = {"sources": []}
+        if sources_file.exists():
+            try:
+                raw = json.loads(sources_file.read_text(encoding="utf-8"))
+                migrated = []
+                for s in raw.get("sources", []):
+                    src = s.get("source") or s.get("github") or s.get("local") or ""
+                    if src:
+                        migrated.append({"source": src, "plugins": s.get("plugins", [])})
+                data = {"sources": migrated}
+            except ValueError:
+                pass
+        sources = data.setdefault("sources", [])
+        if args.source and _is_github_source(args.source):
+            source_key, _ = _parse_github_source(args.source)
+        elif args.source:
+            resolved = Path(args.source).resolve()
+            parts = resolved.parts
+            if "plugins" in parts:
+                plugins_idx = len(parts) - 1 - parts[::-1].index("plugins")
+                source_key = str(Path(*parts[:plugins_idx + 1]))
+            else:
+                source_key = str(resolved)
+        else:
+            source_key = str(plugins_root)
+        installed_names = [p["name"] for p in selected_plugins]
+        for s in sources:
+            if s.get("source") != source_key:
+                s["plugins"] = [p for p in s.get("plugins", []) if p not in installed_names]
+        data["sources"] = [s for s in sources if isinstance(s.get("plugins"), list) and s["plugins"]]
+        sources = data["sources"]
+        existing = next((s for s in sources if s.get("source") == source_key), None)
+        if not existing:
+            existing = {"source": source_key, "plugins": []}
+            sources.append(existing)
+        existing["plugins"] = sorted(list(set(existing.get("plugins", []) + installed_names)))
+        sources_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    except Exception as e:
+        print(f"  {yellow('Warning:')} Failed to update plugin-sources.json: {e}")
+
+
+def _print_results(success_count: int, fail_count: int, dry_run: bool) -> None:
+    """Print the final installation summary banner.
+
+    Args:
+        success_count: Number of plugins successfully installed.
+        fail_count: Number of plugins that failed to install.
+        dry_run: If True, label the output as a dry-run completion.
+    """
+    print()
+    print(f"  {dim('═' * 48)}")
+    status = "DRY RUN complete" if dry_run else "Installation complete"
+    print(f"  {bold(status)}")
+    print(f"  {green('✓ Success:')} {success_count}")
+    if fail_count:
+        print(f"  {red('✗ Failed: ')} {fail_count}")
+    print(f"  {dim('═' * 48)}")
+    print()
+    if not dry_run and success_count:
+        print(f"  {dim('Tip:')} Run {cyan('git add .agents/ .claude/')} to track installed plugins.")
+        print(f"  {dim('Tip:')} Restart your agent to pick up new commands and hooks.")
+        print()
+
+
+def main() -> None:
+    """CLI entry point: resolve source, discover plugins, select, install, record.
+
+    Parses CLI arguments, resolves the plugin source (local path or GitHub
+    shorthand with auto-clone), optionally initialises .claude/ for new
+    projects, presents an interactive TUI for plugin selection (or headless
+    --all / --plugins mode), runs plugin_installer.py for each chosen plugin,
+    updates plugin-sources.json, and prints a final summary.
+    """
     parser = argparse.ArgumentParser(
         description="Interactive plugin installer (for full plugins)"
     )
     parser.add_argument(
-        "source",
-        nargs="?",
-        default=None,
+        "source", nargs="?", default=None,
         help="owner/repo (GitHub) or local path to a repo root (default: current directory)",
     )
     parser.add_argument("--all", "-a", action="store_true", help="Select all plugins without prompting")
@@ -460,53 +746,20 @@ def main():
         print(red(f"  Error: plugin_installer.py not found at {INSTALLER_SCRIPT}"))
         sys.exit(1)
 
-    # ------------------------------------------------------------------
-    # Resolve source
-    # ------------------------------------------------------------------
-    temp_dir = None
-    plugins_root: Path
+    plugins_root, temp_dir = _resolve_source(args)
 
-    if args.source and _is_github_source(args.source):
-        owner_repo, subpath = _parse_github_source(args.source)
-        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
-        temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
-        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
-        # If a subpath was specified, descend into it; otherwise use repo root
-        plugins_root = repo_root / subpath if subpath else repo_root
-    elif args.source:
-        source_path = Path(args.source).resolve()
-        _print_banner(str(source_path))
-        plugins_root = source_path
-    else:
-        # Default: find this repo's root relative to cwd
-        cwd = Path.cwd()
-        candidate = cwd
-        for _ in range(4):
-            if (candidate / "plugins").is_dir() or (candidate / ".claude-plugin").is_dir():
-                break
-            candidate = candidate.parent
-        plugins_root = candidate
-        _print_banner(str(candidate))
-
-    # .claude/ auto-init for fresh projects
     project_root = Path.cwd()
     if not (project_root / ".claude").exists() and not args.dry_run:
         print()
         print(yellow("  No .claude/ directory found in this project."))
-        if args.yes:
-            answer = "yes"
-        else:
-            try:
-                answer = input(f"  Initialize .claude/ for IDE integration? [{green('Y')}/n] ").strip().lower()
-            except (EOFError, KeyboardInterrupt):
-                answer = ""
+        try:
+            answer = input(f"  Initialize .claude/ for IDE integration? [{green('Y')}/n] ").strip().lower() if not args.yes else "yes"
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
         if answer in ("", "y", "yes"):
             (project_root / ".claude").mkdir(exist_ok=True)
             print(f"  {green('✓')} Created .claude/ — Claude Code symlinks will be activated")
 
-    # ------------------------------------------------------------------
-    # Discover plugins
-    # ------------------------------------------------------------------
     print(f"  {dim('Discovering plugins...')}", end="", flush=True)
     all_plugins = _discover_plugins(plugins_root)
     print(f"\r  {green(str(len(all_plugins)))} plugins found" + " " * 20)
@@ -517,186 +770,23 @@ def main():
             shutil.rmtree(temp_dir, ignore_errors=True)
         sys.exit(1)
 
-    # ------------------------------------------------------------------
-    # Plugin selection
-    # ------------------------------------------------------------------
-    if args.plugins:
-        allowed = set(p.strip() for p in args.plugins.split(","))
-        selected_plugins = [p for p in all_plugins if p["name"] in allowed]
-        print(f"  {green('✓')} Installing {len(selected_plugins)} requested plugins")
-    elif args.all or args.yes:
-        selected_plugins = all_plugins
-        print(f"  {green('✓')} Installing all {len(selected_plugins)} plugins")
-    else:
-        selected_plugins = _multiselect(
-            "  Select plugins to install",
-            all_plugins
-        )
-
+    selected_plugins = _select_plugins(all_plugins, args)
     if not selected_plugins:
         print(yellow("  No plugins selected. Exiting."))
         if temp_dir:
             shutil.rmtree(temp_dir, ignore_errors=True)
         sys.exit(0)
 
-    # ------------------------------------------------------------------
-    # Summary
-    # ------------------------------------------------------------------
-    tag = " [DRY RUN]" if args.dry_run else ""
-    print()
-    print(bold(f"  Installation Plan{tag}"))
-    print(f"  {dim('─' * 48)}")
-    for p in selected_plugins:
-        ver = f"  {dim('v' + p['version'])}" if p["version"] else ""
-        desc = f"  {dim(p['description'][:50])}" if p["description"] else ""
-        print(f"   {green('•')} {cyan(p['name'])}{ver}{desc}")
-    print(f"  {dim('─' * 48)}")
-    print(f"  {green(str(len(selected_plugins)))} plugin(s) -> {dim('.agents/')} (skills + agents + commands + hooks)")
-    print()
+    _confirm_install(selected_plugins, args, temp_dir)
+    success_count, fail_count = _install_plugins(selected_plugins, args)
 
-    if not args.yes and not args.dry_run:
-        try:
-            answer = input(f"  Proceed? [{green('y')}/n] ").strip().lower()
-        except (EOFError, KeyboardInterrupt):
-            print(red("\n  Cancelled."))
-            if temp_dir:
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            sys.exit(0)
-        if answer and answer not in ("y", "yes"):
-            print(yellow("  Cancelled."))
-            if temp_dir:
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            sys.exit(0)
-
-    # ------------------------------------------------------------------
-    # Install
-    # ------------------------------------------------------------------
-    success_count = 0
-    fail_count = 0
-
-    for plugin in selected_plugins:
-        print(f"\n  {bold('->')} {cyan(plugin['name'])}")
-        
-        try:
-            validate_plugin(Path(plugin["path"]))
-        except AssertionError as ae:
-            print(f"    {red('✗')} Validation Failed: {ae}")
-            log_failure(tier=1, artifact=plugin["name"], error=str(ae))
-            fail_count += 1
-            continue
-
-        cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin["path"])]
-        if args.dry_run:
-            cmd.append("--dry-run")
-        if args.install_rules:
-            cmd.append("--install-rules")
-
-        result = subprocess.run(cmd, text=True)
-        if result.returncode == 0:
-            print(f"    {green('✓')} Done")
-            success_count += 1
-        else:
-            print(f"    {red('✗')} Failed (exit {result.returncode})")
-            fail_count += 1
-
-
-    # ------------------------------------------------------------------
-    # Record Subscription in plugin-sources.json
-    # ------------------------------------------------------------------
     if not args.dry_run and success_count:
-        sources_file = project_root / "plugin-sources.json"
-        try:
-            data = {"sources": []}
-            if sources_file.exists():
-                try:
-                    raw = json.loads(sources_file.read_text(encoding="utf-8"))
-                    # Migrate legacy schema (local/github/name keys → source key)
-                    migrated = []
-                    for s in raw.get("sources", []):
-                        src = s.get("source") or s.get("github") or s.get("local") or ""
-                        if src:
-                            migrated.append({"source": src, "plugins": s.get("plugins", [])})
-                    data = {"sources": migrated}
-                except ValueError:
-                    pass
+        _update_sources_registry(selected_plugins, args, plugins_root, project_root)
 
-            sources = data.setdefault("sources", [])
-
-            # Determine canonical source key
-            if args.source and _is_github_source(args.source):
-                # GitHub: normalize to owner/repo (strip subpaths)
-                source_key, _ = _parse_github_source(args.source)
-            elif args.source:
-                # Local: resolve to the nearest ancestor that looks like a repo/plugins root
-                resolved = Path(args.source).resolve()
-                # Walk up to find the plugins/ root or project root
-                candidate = resolved
-                while candidate != candidate.parent:
-                    if (candidate.parent / "plugin-sources.json").exists() or \
-                       (candidate.parent / ".claude-plugin").exists() or \
-                       candidate.name == "plugins":
-                        candidate = candidate.parent
-                        break
-                    candidate = candidate.parent
-                source_key = str(resolved)  # default: keep full resolved path
-                # If the resolved path is INSIDE a plugins/ folder, normalize to that folder
-                parts = resolved.parts
-                if "plugins" in parts:
-                    plugins_idx = len(parts) - 1 - parts[::-1].index("plugins")
-                    source_key = str(Path(*parts[:plugins_idx + 1]))
-            else:
-                source_key = str(plugins_root)
-
-            installed_names = [p["name"] for p in selected_plugins]
-
-            # Step 1: Remove these plugins from ALL other sources (move = one source of truth)
-            for s in sources:
-                if s.get("source") != source_key:
-                    curr = s.get("plugins", [])
-                    s["plugins"] = [p for p in curr if p not in installed_names]
-
-            # Clean up empty source entries
-            data["sources"] = [s for s in sources
-                               if isinstance(s.get("plugins"), list) and s["plugins"]]
-            sources = data["sources"]
-
-            # Step 2: Upsert into the matching source entry
-            existing = next((s for s in sources if s.get("source") == source_key), None)
-            if not existing:
-                existing = {"source": source_key, "plugins": []}
-                sources.append(existing)
-
-            curr_plugins = existing.get("plugins", [])
-            existing["plugins"] = sorted(list(set(curr_plugins + installed_names)))
-
-            sources_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-        except Exception as e:
-            print(f"  {yellow('Warning:')} Failed to update plugin-sources.json: {e}")
-
-    # ------------------------------------------------------------------
-    # Cleanup
-    # ------------------------------------------------------------------
     if temp_dir and temp_dir.exists():
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-    # ------------------------------------------------------------------
-    # Result
-    # ------------------------------------------------------------------
-    print()
-    print(f"  {dim('═' * 48)}")
-    status = "DRY RUN complete" if args.dry_run else "Installation complete"
-    print(f"  {bold(status)}")
-    print(f"  {green('✓ Success:')} {success_count}")
-    if fail_count:
-        print(f"  {red('✗ Failed: ')} {fail_count}")
-    print(f"  {dim('═' * 48)}")
-    print()
-
-    if not args.dry_run and success_count:
-        print(f"  {dim('Tip:')} Run {cyan('git add .agents/ .claude/')} to track installed plugins.")
-        print(f"  {dim('Tip:')} Restart your agent to pick up new commands and hooks.")
-        print()
-
+    _print_results(success_count, fail_count, args.dry_run)
     sys.exit(0 if fail_count == 0 else 1)
 
 

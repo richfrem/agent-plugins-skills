@@ -385,6 +385,7 @@ def format_checklist(files: list[dict], issues: list[str], warnings: list[str], 
 # ── Main ──────────────────────────────────────────────────────────────
 
 def main() -> None:
+    """Parse CLI arguments and generate plugin inventory report."""
     parser = argparse.ArgumentParser(
         description="Inventory plugin files with classification and compliance checks."
     )

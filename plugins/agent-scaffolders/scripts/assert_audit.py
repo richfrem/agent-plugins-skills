@@ -94,6 +94,7 @@ def assert_fixture(fixture: str, data: dict[str, Any]) -> bool:
     failed: list[str] = []
 
     def check_min(field: str, actual: list, minimum: int, note: str = "") -> None:
+        """Assert minimum length requirement for a field."""
         label = f"len({field}) >= {minimum}"
         if note:
             label += f"  [{note}]"
@@ -103,6 +104,7 @@ def assert_fixture(fixture: str, data: dict[str, Any]) -> bool:
             failed.append(f"FAIL  {label}  (got {len(actual)})")
 
     def check_max(field: str, actual: list, maximum: int) -> None:
+        """Assert maximum length requirement for a field."""
         label = f"len({field}) <= {maximum}"
         if len(actual) <= maximum:
             passed.append(f"PASS  {label}  (got {len(actual)})")

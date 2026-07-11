@@ -1,8 +1,38 @@
+"""
+update_ecosystem_index.py
+=====================================
+
+Purpose:
+    Scan the plugins directory and update README.md with current ecosystem counts.
+    Reflects the total number of plugins, skills, and agents in the ecosystem.
+
+Layer: Investigate / Maintain
+
+Usage Examples:
+    python update_ecosystem_index.py
+
+Input Files:
+    - plugins/ directory structure
+    - README.md
+
+Output:
+    - Updated README.md with ecosystem statistics
+    - Console summary of counts
+
+Key Functions:
+    - count_ecosystem(): Count plugins, skills, and agents.
+    - update_readme(): Update README.md with current counts.
+
+Key Input Dependencies:
+    - os, re, pathlib (standard library)
+"""
+
 import os
 import re
 from pathlib import Path
 
 def count_ecosystem():
+    """Count plugins, skills, and agents across the ecosystem directory."""
     plugins_dir = Path("plugins")
     ecosystem = {}
     
@@ -37,6 +67,7 @@ def count_ecosystem():
     return ecosystem
 
 def update_readme(ecosystem):
+    """Update README.md with current ecosystem counts from the provided ecosystem data."""
     readme_path = Path("README.md")
     if not readme_path.exists():
         return

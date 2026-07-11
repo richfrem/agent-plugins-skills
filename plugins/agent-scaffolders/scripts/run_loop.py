@@ -5,8 +5,16 @@ run_loop.py (CLI)
 
 Purpose:
     Runs the evaluation and improvement loop for skill descriptions iteratively.
-    Combines run_eval.py and improve_description.py in a single loop to track 
+    Combines run_eval.py and improve_description.py in a single loop to track
     scores and return the best found description candidate.
+
+Key Input Dependencies:
+    - eval_set.json (Required) - evaluation set with query and should_trigger fields
+    - SKILL.md (Inside skill path) - parsed for original description and content
+    - generate_report.py - for HTML report generation
+    - improve_description.py - for iterative description improvement
+    - run_eval.py - for evaluation engine
+    - utils.py - for skill MD parsing
 
 Layer: Investigate / Optimization / Execution
 
@@ -20,7 +28,7 @@ Supported Object Types:
 CLI Arguments:
     --eval-set: Path to eval set JSON file (Required)
     --skill-path: Path to skill directory (Required)
-    --description: Override starting description 
+    --description: Override starting description
     --num-workers: Number of parallel workers (default: 10)
     --timeout: Timeout per query in seconds (default: 30)
     --max-iterations: Max improvement iterations (default: 5)
@@ -33,10 +41,6 @@ CLI Arguments:
     --report: Generate HTML report path (default: auto)
     --results-dir: Save all outputs to a timestamped subdirectory
 
-Input Files:
-    - eval_set.json (Required)
-    - SKILL.md (Inside skill path)
-
 Output:
     - JSON results format via stdout.
     - Live HTML report page dashboards.
@@ -45,12 +49,6 @@ Output:
 Key Functions:
     - run_loop()
     - split_eval_set()
-
-Script Dependencies:
-    - generate_report
-    - improve_description
-    - run_eval
-    - utils
 
 Consumed by:
     trigger evaluation benchmarks, continuous-skill-optimizer.
@@ -123,6 +121,27 @@ def split_eval_set(eval_set: list[dict], holdout: float, seed: int = 42) -> tupl
     train_set = trigger[n_trigger_test:] + no_trigger[n_no_trigger_test:]
 
     return train_set, test_set
+
+
+def print_eval_stats(label: str, results: list[dict], elapsed: float) -> None:
+    """Print evaluation statistics including TP/TN/FP/FN and per-query results."""
+    pos = [r for r in results if r["should_trigger"]]
+    neg = [r for r in results if not r["should_trigger"]]
+    tp = sum(r["triggers"] for r in pos)
+    pos_runs = sum(r["runs"] for r in pos)
+    fn = pos_runs - tp
+    fp = sum(r["triggers"] for r in neg)
+    neg_runs = sum(r["runs"] for r in neg)
+    tn = neg_runs - fp
+    total = tp + tn + fp + fn
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 1.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 1.0
+    accuracy = (tp + tn) / total if total > 0 else 0.0
+    print(f"{label}: {tp+tn}/{total} correct, precision={precision:.0%} recall={recall:.0%} accuracy={accuracy:.0%} ({elapsed:.1f}s)", file=sys.stderr)
+    for r in results:
+        status = "PASS" if r["pass"] else "FAIL"
+        rate_str = f"{r['triggers']}/{r['runs']}"
+        print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: {r['query'][:60]}", file=sys.stderr)
 
 
 def run_loop(
@@ -293,25 +312,6 @@ def run_loop(
         iteration_timings.append(timing_entry)
 
         if verbose:
-            def print_eval_stats(label: str, results: list[dict], elapsed: float) -> None:
-                pos = [r for r in results if r["should_trigger"]]
-                neg = [r for r in results if not r["should_trigger"]]
-                tp = sum(r["triggers"] for r in pos)
-                pos_runs = sum(r["runs"] for r in pos)
-                fn = pos_runs - tp
-                fp = sum(r["triggers"] for r in neg)
-                neg_runs = sum(r["runs"] for r in neg)
-                tn = neg_runs - fp
-                total = tp + tn + fp + fn
-                precision = tp / (tp + fp) if (tp + fp) > 0 else 1.0
-                recall = tp / (tp + fn) if (tp + fn) > 0 else 1.0
-                accuracy = (tp + tn) / total if total > 0 else 0.0
-                print(f"{label}: {tp+tn}/{total} correct, precision={precision:.0%} recall={recall:.0%} accuracy={accuracy:.0%} ({elapsed:.1f}s)", file=sys.stderr)
-                for r in results:
-                    status = "PASS" if r["pass"] else "FAIL"
-                    rate_str = f"{r['triggers']}/{r['runs']}"
-                    print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: {r['query'][:60]}", file=sys.stderr)
-
             print_eval_stats("Train", train_results["results"], eval_elapsed)
             if test_summary:
                 print_eval_stats("Test ", test_results["results"], 0)
@@ -447,6 +447,7 @@ def run_loop(
 
 
 def main() -> None:
+    """Parse CLI arguments and run the eval + improvement loop with optional live reporting."""
     parser = argparse.ArgumentParser(description="Run eval + improve loop")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

@@ -4,8 +4,14 @@ migrate_to_apm.py (CLI)
 =====================================
 
 Purpose:
-    Analyzes an existing Claude plugin and implements an APM integration path 
+    Analyzes an existing Claude plugin and implements an APM integration path
     (Overlay, Hybrid, or Full).
+
+Key Input Dependencies:
+    - Existing Claude plugin directory structure (plugin.json, skills/, agents/, etc.)
+    - PyYAML for configuration file generation
+    - pathlib.Path for directory traversal
+    - shutil for directory operations
 
 Layer: Codify / Migration
 """
@@ -28,6 +34,7 @@ if sys.platform == "win32":
     except (AttributeError, Exception): pass
 
 def generate_governance_doc(mode: str, lane: str, package_name: str) -> str:
+    """Generate governance documentation based on migration mode (full, hybrid, overlay)."""
     if mode == "full":
         return (f"# Governance: {package_name}\nMode: {mode}\nLane: {lane}\n\n"
                 f"## Principle\nThis package has been converted to an APM-native layout. "
@@ -44,6 +51,7 @@ def generate_governance_doc(mode: str, lane: str, package_name: str) -> str:
                 f"manifest, lockfile, audit, and distribution metadata.\n")
 
 def generate_policy_doc(package_name: str) -> str:
+    """Generate APM enterprise policy template with allowed sources and review requirements."""
     return f"# APM Enterprise Policy: {package_name}\n# TEMPLATE ONLY: replace allowed_sources before enterprise use.\nallowed_sources: [\"internal-registry.company.com\"]\nreview_required:\n  primitive_types: [agent, hook, mcp]\n  risk_classification: medium\n"
 
 def dereference_content(path: Path) -> str:
@@ -61,14 +69,15 @@ def dereference_content(path: Path) -> str:
     with open(path, "r", encoding='utf-8') as f: return f.read()
 
 def migrate_to_apm(
-    source_path: str, 
-    output_path: str = None, 
+    source_path: str,
+    output_path: str = None,
     output_exact: str = None,
     mode: str = "overlay",
     governance: str = "experimental",
     dry_run: bool = False,
     output_name: str = None
 ) -> None:
+    """Migrate Claude plugin to APM format with specified mode (overlay/hybrid/full)."""
     source = Path(source_path).resolve()
     if not source.exists():
         print(f"❌ Error: Source path '{source}' does not exist."); sys.exit(1)
@@ -268,7 +277,8 @@ def migrate_to_apm(
 
     print(f"✅ Migration complete! Result at {dest_root}")
 
-def main():
+def main() -> None:
+    """Parse CLI arguments and migrate Claude plugin to APM format."""
     parser = argparse.ArgumentParser(description="Plugin to APM Migrator")
     parser.add_argument("--source-path", required=True, dest="source_path")
     parser.add_argument("--output", dest="output_path")

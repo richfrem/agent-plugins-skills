@@ -19,6 +19,13 @@ CLI Arguments:
     --dry-run: Simulate cleanup without deleting.
     --cleanup-only: Run cleanup analysis only, skip installation.
 
+Key Input Dependencies:
+    plugin-sources.json         — authoritative registry of all installed plugins and their sources
+    .agents/ownership/{name}.json — per-plugin artifact manifests used for precise cleanup
+    skills-lock.json            — checked during validation for skill registration
+    plugins/plugin-manager/scripts/plugin_installer.py — subprocess install engine
+    plugins/plugin-manager/scripts/plugin_add.py — subprocess sync engine per source
+
 Input Files:
     - plugin-sources.json (canonical install registry)
     - plugin_installer.py (subprocess installation engine)
@@ -246,6 +253,13 @@ def validate_agents_state(root: Path, registered_plugins: set) -> None:
 
 
 def main() -> None:
+    """CLI entry point: read registry, clean stale plugins, sync all sources, validate.
+
+    Reads plugin-sources.json to discover all registered plugin sources,
+    detects and cleans up stale local-path sources whose directories are gone,
+    calls plugin_add.py to reinstall each source (unless --cleanup-only),
+    then runs validate_agents_state to confirm .agents/ is consistent.
+    """
     parser = argparse.ArgumentParser(description="Sync all plugins from plugin-sources.json registry.")
     parser.add_argument("--dry-run", action="store_true", help="Simulate without modifying files.")
     parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup only, skip reinstall.")
