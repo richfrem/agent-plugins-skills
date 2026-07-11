@@ -3,6 +3,20 @@ description: Universal coding conventions for Python, TypeScript, and C#.
 globs: ["*.py", "*.ts", "*.js", "*.cs"]
 ---
 
+## 🎯 PURPOSE: Enable Agents to Understand Code at a Glance
+
+Every script must document **what it does, what it needs, and how to use it** in the first 20 lines.
+
+**Why:** In fresh agent sessions, agents cannot afford to spend 5-10 minutes reading implementations or running exploratory commands. By reading a 20-line header, agents must be able to:
+- Understand the script's purpose in 30 seconds
+- Know what files/APIs/dependencies it requires
+- See usage examples without trial-and-error
+- Identify key functions without code diving
+
+This transforms agent onboarding from minutes to seconds.
+
+---
+
 ## 📝 Coding Conventions (Summary)
 
 **Full standards → `.agents/skills/coding-conventions-agent/SKILL.md` (installed locally via `bridge_installer.py`)**
