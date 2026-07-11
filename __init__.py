@@ -1,8 +1,17 @@
-"""agent-plugins-skills — hermes plugin registration.
+"""
+Purpose:
+    Hermes plugin registration for agent-plugins-skills ecosystem.
+    Registers all plugin skill directories so they are discoverable
+    via 'agent-plugins-skills:<skill>' inside hermes sessions.
+    Hermes auto-prefixes the plugin name as the namespace.
 
-Registers all 10 plugin skill directories so they are discoverable
-via 'agent-plugins-skills:<skill>' inside hermes sessions.
-Hermes auto-prefixes the plugin name as the namespace.
+Key Input Dependencies:
+    - plugins/ directory with all 10 plugin subdirectories
+    - Each plugin with skills/ subdirectory structure
+    - Hermes plugin loader context (ctx) at registration time
+
+Key Functions:
+    - register(): Register all skills with hermes plugin loader
 """
 
 from __future__ import annotations
