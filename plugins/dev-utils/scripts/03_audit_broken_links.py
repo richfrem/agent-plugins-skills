@@ -7,6 +7,10 @@ Purpose:
     Auditor: Cross-references extracted links with the file inventory.
     This is Phase 3 of the Link Checker pipeline.
 
+Key Input Dependencies:
+    - file_inventory.json (from 01_build_file_inventory.py)
+    - link_references.json (from 02_extract_link_references.py)
+
 Usage:
     python03_audit_broken_links.py --root .
 
@@ -58,6 +62,7 @@ def audit_links(inventory: Dict[str, List[str]], raw_refs: Dict[str, List[Dict[s
     return broken_results
 
 def main() -> None:
+    """Cross-reference extracted links against the file inventory and write broken-link reports."""
     parser = argparse.ArgumentParser(description="Step 3: Audit extract references against filesystem.")
     parser.add_argument("--root", default=".", help="Root directory of the repo")
     args = parser.parse_args()
