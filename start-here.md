@@ -40,7 +40,29 @@ This eliminates the need for agents to:
 **Scope:** 454 files currently violating policy (442 remaining after fixes)
 
 **Current Session Status:** IN PROGRESS  
-**Branch:** `feat/updated-coding-conventions.md`
+**Branch:** `feat/updated-coding-conventions.md`  
+**GitHub:** https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md  
+**Strategy:** Fixes pushed to GitHub; PR and merge later when complete
+
+---
+
+## Push & PR Workflow
+
+**How we're working:**
+1. Fix scripts locally, commit to `feat/updated-coding-conventions.md`
+2. Push commits to GitHub regularly (visible in branch)
+3. When all scripts complete: Create PR to main
+4. Review and merge when ready
+
+**Current Status:**
+- Commits pushed: ✅ YES (visible on GitHub now)
+- PR created: ⏳ NOT YET (wait until all fixes complete)
+- Ready to merge: ⏳ NOT YET (after PR review)
+
+**Tracking Progress:**
+- Check GitHub branch for latest commits
+- View audit results in local `temp/workspace_conventions_report.md`
+- This start-here.md reflects current session state
 
 ---
 
@@ -104,12 +126,12 @@ Result: Agent understands exactly what to do in < 30 seconds, no experimentation
 
 ### Audit Results Timeline
 
-| Date | Violations | Fixes | Cumulative Fixed |
-|------|-----------|-------|------------------|
-| Session Start | 454 | - | - |
-| After Batch 1 | 444 | 10 | 10 |
-| After Batch 2 | 443 | 1 | 11 |
-| Current | 442 | 1 | 12 |
+| Session | Violations | Fixes | Cumulative Fixed | Status |
+|---------|-----------|-------|------------------|--------|
+| Start | 454 | - | - | Initial audit |
+| Session 1 | 442 | 12 | 12 | ✅ Complete |
+| Session 2 | 435 | 7 | 19 | ✅ Pushed to GitHub |
+| Current | TBD | In progress | 19+ | 🔄 Continuing |
 
 ### Files Fixed (12 total)
 
@@ -313,16 +335,41 @@ python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
 
 ---
 
+## Push Strategy
+
+**When to push:**
+- ✅ After completing 5-10 scripts (batch updates)
+- ✅ After completing an entire plugin (major milestone)
+- ✅ At end of each work session (keep progress visible)
+
+**Don't push:**
+- ❌ After every single script (too noisy)
+- ❌ With uncommitted work (commit first)
+- ❌ Before testing with auditor (verify fixes first)
+
+**How to push:**
+```bash
+git push origin feat/updated-coding-conventions.md
+```
+
+**After push:**
+- Verify on GitHub: https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md
+- Updates visible immediately
+- Ready for PR when all scripts complete
+
+---
+
 ## Session Cleanup Checklist
 
 Before ending a session:
 
-- [ ] Run auditor to get current violation count
+- [ ] Run auditor to get current violation count: `python3 plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py`
 - [ ] Commit all changes with descriptive message
+- [ ] Push to origin: `git push origin feat/updated-coding-conventions.md`
 - [ ] Update progress table in this file
 - [ ] Note which scripts are complete
 - [ ] Document any blockers or issues found
-- [ ] Record the branch state
+- [ ] Record the branch state and commit count
 
 ---
 
