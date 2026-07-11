@@ -155,6 +155,88 @@ def _clear_lines(n: int) -> None:
 # ---------------------------------------------------------------------------
 # Interactive multi-select (space = toggle, enter = confirm, / = search)
 # ---------------------------------------------------------------------------
+def _multiselect_filtered(items: list, search: str) -> list:
+    """Filter items by current search query (case-insensitive name/description match)."""
+    q = search.lower()
+    return [i for i in items if q in i["name"].lower() or q in i.get("description", "").lower()]
+
+
+def _multiselect_render(title: str, items: list, filtered: list, selected: set,
+                         cursor: int, search: str, first_render: bool = False) -> int:
+    """Render the TUI menu and return the number of printed lines."""
+    PAGE = 18                   # visible rows
+    lines = []
+    lines.append(bold(title))
+    lines.append(dim("  ↑↓ move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
+    if search:
+        lines.append(f"  {dim('Search:')} {cyan(search)}_")
+    else:
+        lines.append(dim("  Type / to search"))
+
+    visible = filtered[max(0, cursor - PAGE // 2): cursor + PAGE]
+    offset = max(0, cursor - PAGE // 2)
+
+    for idx, item in enumerate(visible):
+        is_cursor = (offset + idx) == cursor
+        is_selected = item["name"] in selected
+        check = green("[x]") if is_selected else dim("[ ]")
+        name  = cyan(item["name"]) if is_cursor else item["name"]
+        desc  = dim(item.get("description", "")[:55])
+        arrow = ">" if is_cursor else " "
+        lines.append(f"  {arrow} {check} {name}  {desc}")
+
+    count = len(selected)
+    total = len(filtered)
+    lines.append("")
+    lines.append(f"  {green(str(count))} of {total} selected")
+
+    if not first_render:
+        _clear_lines(len(lines))
+    print("\n".join(lines), flush=True)
+    return len(lines)
+
+
+def _multiselect_process_key(key: str, cursor: int, selected: set, search: str,
+                              items: list) -> tuple[int, set, str, bool]:
+    """Handle one keypress and return updated (cursor, selected, search, should_break).
+
+    Args:
+        key: Keypress token from _read_key().
+        cursor: Current cursor row index in the filtered list.
+        selected: Set of currently selected item names.
+        search: Current search query string.
+        items: Full unfiltered item list (used for filtering and 'a' toggle-all).
+
+    Returns:
+        Updated (cursor, selected, search, should_break).
+    """
+    f = _multiselect_filtered(items, search)
+    n = len(f)
+    if key == "UP":
+        cursor = max(0, cursor - 1)
+    elif key == "DOWN":
+        cursor = min(n - 1, cursor + 1)
+    elif key == " ":
+        if f and 0 <= cursor < n:
+            name = f[cursor]["name"]
+            selected.discard(name) if name in selected else selected.add(name)
+    elif key in ("\r", "\n", ""):
+        return cursor, selected, search, True
+    elif key in ("q", "Q", "\x03"):
+        print(red("\nCancelled."))
+        sys.exit(0)
+    elif key == "a":
+        selected = set() if len(selected) == len(items) else {i["name"] for i in items}
+    elif key == "/":
+        search, cursor = "", 0
+    elif key == "\x7f":
+        search, cursor = search[:-1], 0
+    elif key and len(key) == 1 and key.isprintable():
+        search += key
+        cursor = 0
+    return cursor, selected, search, False
+
+
 def _multiselect(title: str, items: list) -> list:
     """Interactive arrow-key multi-select TUI for choosing plugins.
 
@@ -174,95 +256,18 @@ def _multiselect(title: str, items: list) -> list:
     selected = set()
     cursor = 0
     search = ""
-    PAGE = 18                   # visible rows
 
-    def _filtered() -> list:
-        """Filter items by current search query (case-insensitive name/description match)."""
-        q = search.lower()
-        return [i for i in items if q in i["name"].lower() or q in i.get("description", "").lower()]
-
-    def _render(filtered: list, first_render: bool = False) -> int:
-        """Render the TUI menu and return the number of printed lines."""
-        lines = []
-        lines.append(bold(title))
-        lines.append(dim("  ↑↓ move  |  space select  |  / search  |  a all  |  enter confirm  |  q quit"))
-        if search:
-            lines.append(f"  {dim('Search:')} {cyan(search)}_")
-        else:
-            lines.append(dim("  Type / to search"))
-
-        visible = filtered[max(0, cursor - PAGE // 2): cursor + PAGE]
-        offset = max(0, cursor - PAGE // 2)
-
-        for idx, item in enumerate(visible):
-            real_idx = items.index(item)
-            is_cursor = (offset + idx) == cursor
-            is_selected = item["name"] in selected
-            check = green("[x]") if is_selected else dim("[ ]")
-            name  = cyan(item["name"]) if is_cursor else item["name"]
-            desc  = dim(item.get("description", "")[:55])
-            arrow = ">" if is_cursor else " "
-            lines.append(f"  {arrow} {check} {name}  {desc}")
-
-        count = len(selected)
-        total = len(filtered)
-        lines.append("")
-        lines.append(f"  {green(str(count))} of {total} selected")
-
-        if not first_render:
-            _clear_lines(len(lines))
-        print("\n".join(lines), flush=True)
-        return len(lines)
-
-    def _process_key(key: str, cursor: int, selected: set, search: str) -> tuple[int, set, str, bool]:
-        """Handle one keypress and return updated (cursor, selected, search, should_break).
-
-        Args:
-            key: Keypress token from _read_key().
-            cursor: Current cursor row index in the filtered list.
-            selected: Set of currently selected item names.
-            search: Current search query string.
-
-        Returns:
-            Updated (cursor, selected, search, should_break).
-        """
-        f = _filtered()
-        n = len(f)
-        if key == "UP":
-            cursor = max(0, cursor - 1)
-        elif key == "DOWN":
-            cursor = min(n - 1, cursor + 1)
-        elif key == " ":
-            if f and 0 <= cursor < n:
-                name = f[cursor]["name"]
-                selected.discard(name) if name in selected else selected.add(name)
-        elif key in ("\r", "\n", ""):
-            return cursor, selected, search, True
-        elif key in ("q", "Q", "\x03"):
-            print(red("\nCancelled."))
-            sys.exit(0)
-        elif key == "a":
-            selected = set() if len(selected) == len(items) else {i["name"] for i in items}
-        elif key == "/":
-            search, cursor = "", 0
-        elif key == "\x7f":
-            search, cursor = search[:-1], 0
-        elif key and len(key) == 1 and key.isprintable():
-            search += key
-            cursor = 0
-        return cursor, selected, search, False
-
-    filtered = _filtered()
-    _render(filtered, first_render=True)
+    filtered = _multiselect_filtered(items, search)
+    _multiselect_render(title, items, filtered, selected, cursor, search, first_render=True)
 
     while True:
         key = _read_key()
-        cursor, selected, search, done = _process_key(key, cursor, selected, search)
-        filtered = _filtered()
+        cursor, selected, search, done = _multiselect_process_key(key, cursor, selected, search, items)
+        filtered = _multiselect_filtered(items, search)
         cursor = min(cursor, len(filtered) - 1) if filtered else 0
         if done:
             break
-        _render(filtered)
+        _multiselect_render(title, items, filtered, selected, cursor, search)
 
     print()
     return [i for i in items if i["name"] in selected]
@@ -640,6 +645,38 @@ def _install_plugins(selected_plugins: list, args) -> tuple[int, int]:
     return success_count, fail_count
 
 
+def _read_and_migrate_sources(sources_file: Path) -> dict:
+    """Load plugin-sources.json, migrating legacy schema entries to the flat 'source' key."""
+    data: dict = {"sources": []}
+    if sources_file.exists():
+        try:
+            raw = json.loads(sources_file.read_text(encoding="utf-8"))
+            migrated = []
+            for s in raw.get("sources", []):
+                src = s.get("source") or s.get("github") or s.get("local") or ""
+                if src:
+                    migrated.append({"source": src, "plugins": s.get("plugins", [])})
+            data = {"sources": migrated}
+        except ValueError:
+            pass
+    return data
+
+
+def _determine_source_key(args, plugins_root: Path) -> str:
+    """Resolve the canonical source key (GitHub owner/repo or local path) for registry storage."""
+    if args.source and _is_github_source(args.source):
+        source_key, _ = _parse_github_source(args.source)
+        return source_key
+    if args.source:
+        resolved = Path(args.source).resolve()
+        parts = resolved.parts
+        if "plugins" in parts:
+            plugins_idx = len(parts) - 1 - parts[::-1].index("plugins")
+            return str(Path(*parts[:plugins_idx + 1]))
+        return str(resolved)
+    return str(plugins_root)
+
+
 def _update_sources_registry(selected_plugins: list, args, plugins_root: Path, project_root: Path) -> None:
     """Record installed plugin names in plugin-sources.json.
 
@@ -655,31 +692,9 @@ def _update_sources_registry(selected_plugins: list, args, plugins_root: Path, p
     """
     sources_file = project_root / "plugin-sources.json"
     try:
-        data: dict = {"sources": []}
-        if sources_file.exists():
-            try:
-                raw = json.loads(sources_file.read_text(encoding="utf-8"))
-                migrated = []
-                for s in raw.get("sources", []):
-                    src = s.get("source") or s.get("github") or s.get("local") or ""
-                    if src:
-                        migrated.append({"source": src, "plugins": s.get("plugins", [])})
-                data = {"sources": migrated}
-            except ValueError:
-                pass
+        data = _read_and_migrate_sources(sources_file)
         sources = data.setdefault("sources", [])
-        if args.source and _is_github_source(args.source):
-            source_key, _ = _parse_github_source(args.source)
-        elif args.source:
-            resolved = Path(args.source).resolve()
-            parts = resolved.parts
-            if "plugins" in parts:
-                plugins_idx = len(parts) - 1 - parts[::-1].index("plugins")
-                source_key = str(Path(*parts[:plugins_idx + 1]))
-            else:
-                source_key = str(resolved)
-        else:
-            source_key = str(plugins_root)
+        source_key = _determine_source_key(args, plugins_root)
         installed_names = [p["name"] for p in selected_plugins]
         for s in sources:
             if s.get("source") != source_key:
@@ -719,15 +734,28 @@ def _print_results(success_count: int, fail_count: int, dry_run: bool) -> None:
         print()
 
 
-def main() -> None:
-    """CLI entry point: resolve source, discover plugins, select, install, record.
+def _maybe_init_claude_dir(project_root: Path, args) -> None:
+    """Prompt to create .claude/ if missing, so Claude Code symlinks activate.
 
-    Parses CLI arguments, resolves the plugin source (local path or GitHub
-    shorthand with auto-clone), optionally initialises .claude/ for new
-    projects, presents an interactive TUI for plugin selection (or headless
-    --all / --plugins mode), runs plugin_installer.py for each chosen plugin,
-    updates plugin-sources.json, and prints a final summary.
+    Args:
+        project_root: Repository root to check/create .claude/ within.
+        args: Parsed argparse namespace (yes, dry_run).
     """
+    if (project_root / ".claude").exists() or args.dry_run:
+        return
+    print()
+    print(yellow("  No .claude/ directory found in this project."))
+    try:
+        answer = input(f"  Initialize .claude/ for IDE integration? [{green('Y')}/n] ").strip().lower() if not args.yes else "yes"
+    except (EOFError, KeyboardInterrupt):
+        answer = ""
+    if answer in ("", "y", "yes"):
+        (project_root / ".claude").mkdir(exist_ok=True)
+        print(f"  {green('✓')} Created .claude/ — Claude Code symlinks will be activated")
+
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for plugin_add.py."""
     parser = argparse.ArgumentParser(
         description="Interactive plugin installer (for full plugins)"
     )
@@ -740,7 +768,27 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Preview — no files written")
     parser.add_argument("--install-rules", action="store_true", help="Also install plugin rules into CLAUDE.md")
     parser.add_argument("--plugins", type=str, help="Comma-separated list of plugins to install (headless filtering)")
-    args = parser.parse_args()
+    return parser
+
+
+def _abort(message: str, temp_dir: Path | None, code: int) -> None:
+    """Print message, clean up temp_dir if present, and exit with code."""
+    print(message)
+    if temp_dir:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+    sys.exit(code)
+
+
+def main() -> None:
+    """CLI entry point: resolve source, discover plugins, select, install, record.
+
+    Parses CLI arguments, resolves the plugin source (local path or GitHub
+    shorthand with auto-clone), optionally initialises .claude/ for new
+    projects, presents an interactive TUI for plugin selection (or headless
+    --all / --plugins mode), runs plugin_installer.py for each chosen plugin,
+    updates plugin-sources.json, and prints a final summary.
+    """
+    args = _build_arg_parser().parse_args()
 
     if not INSTALLER_SCRIPT.exists():
         print(red(f"  Error: plugin_installer.py not found at {INSTALLER_SCRIPT}"))
@@ -749,33 +797,18 @@ def main() -> None:
     plugins_root, temp_dir = _resolve_source(args)
 
     project_root = Path.cwd()
-    if not (project_root / ".claude").exists() and not args.dry_run:
-        print()
-        print(yellow("  No .claude/ directory found in this project."))
-        try:
-            answer = input(f"  Initialize .claude/ for IDE integration? [{green('Y')}/n] ").strip().lower() if not args.yes else "yes"
-        except (EOFError, KeyboardInterrupt):
-            answer = ""
-        if answer in ("", "y", "yes"):
-            (project_root / ".claude").mkdir(exist_ok=True)
-            print(f"  {green('✓')} Created .claude/ — Claude Code symlinks will be activated")
+    _maybe_init_claude_dir(project_root, args)
 
     print(f"  {dim('Discovering plugins...')}", end="", flush=True)
     all_plugins = _discover_plugins(plugins_root)
     print(f"\r  {green(str(len(all_plugins)))} plugins found" + " " * 20)
 
     if not all_plugins:
-        print(red("  No plugins found. Is this a valid agent-plugins-skills repo?"))
-        if temp_dir:
-            shutil.rmtree(temp_dir, ignore_errors=True)
-        sys.exit(1)
+        _abort(red("  No plugins found. Is this a valid agent-plugins-skills repo?"), temp_dir, 1)
 
     selected_plugins = _select_plugins(all_plugins, args)
     if not selected_plugins:
-        print(yellow("  No plugins selected. Exiting."))
-        if temp_dir:
-            shutil.rmtree(temp_dir, ignore_errors=True)
-        sys.exit(0)
+        _abort(yellow("  No plugins selected. Exiting."), temp_dir, 0)
 
     _confirm_install(selected_plugins, args, temp_dir)
     success_count, fail_count = _install_plugins(selected_plugins, args)
