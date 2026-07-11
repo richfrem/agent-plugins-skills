@@ -24,6 +24,30 @@ import sys
 from pathlib import Path
 
 
+def _extract_session_name(content: str) -> str:
+    """Extract the session name from the dashboard's '**Session:**' line."""
+    for line in content.splitlines():
+        if line.startswith("**Session:**"):
+            return line.replace("**Session:**", "").strip()
+    return "unknown"
+
+
+def _emit_completion_event(kernel_script: Path, summary: str) -> None:
+    """Invoke kernel.py emit_event for a session-complete lifecycle event, if kernel.py exists."""
+    if not kernel_script.exists():
+        return
+    import subprocess
+    cmd = [
+        sys.executable, str(kernel_script), "emit_event",
+        "--agent", "exploration-plugin-hook",
+        "--type", "lifecycle",
+        "--action", "session-complete",
+        "--status", "success",
+        "--summary", summary,
+    ]
+    subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 def main() -> None:
     """Detect exploration session completion and emit session-complete event."""
     try:
@@ -43,27 +67,10 @@ def main() -> None:
         if marker_path.exists() and marker_path.read_text().strip() == dashboard_mtime:
             return
 
-        # Extract session name from dashboard for the summary
-        session_name = "unknown"
-        for line in content.splitlines():
-            if line.startswith("**Session:**"):
-                session_name = line.replace("**Session:**", "").strip()
-                break
-
+        session_name = _extract_session_name(content)
         summary = f"Exploration session complete: {session_name}"
         kernel_script = Path(project_dir) / "context" / "kernel.py"
-
-        if kernel_script.exists():
-            import subprocess
-            cmd = [
-                sys.executable, str(kernel_script), "emit_event",
-                "--agent", "exploration-plugin-hook",
-                "--type", "lifecycle",
-                "--action", "session-complete",
-                "--status", "success",
-                "--summary", summary,
-            ]
-            subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        _emit_completion_event(kernel_script, summary)
 
         # Write marker so we don't re-emit on next hook invocation
         marker_path.parent.mkdir(parents=True, exist_ok=True)

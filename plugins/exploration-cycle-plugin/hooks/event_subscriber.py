@@ -72,40 +72,22 @@ def load_processed(dedup_cutoff_ts: float) -> set:
 
 
 def save_processed(id_ts_map: dict) -> None:
+    """Write the processed-event ID -> timestamp map to the sidecar file."""
     PROCESSED_FILE.write_text(json.dumps(id_ts_map))
 
 
 def _parse_ts(ts_str: str) -> float:
+    """Parse an ISO-8601 timestamp string to a Unix epoch float, or 0.0 on failure."""
     try:
         return datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00")).timestamp()
     except Exception:
         return 0.0
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Exploration Cycle kernel event subscriber")
-    parser.add_argument("--action", required=True, help="Event action to match (e.g. suggest_intake)")
-    parser.add_argument("--since", type=int, default=300,
-                        help="Only consider events emitted within the last N seconds (recency filter, default: 300)")
-    parser.add_argument("--dedup-window", type=int, default=3600, dest="dedup_window",
-                        help="Remember processed event IDs for N seconds (dedup TTL, default: 3600)")
-    args = parser.parse_args()
-
-    if not EVENTS_FILE.exists():
-        sys.exit(1)
-
-    now = time.time()
-    cutoff = now - args.since              # recency: how old an event can be to be considered
-    dedup_cutoff = now - args.dedup_window # dedup TTL: how long to remember processed IDs
-    processed = load_processed(dedup_cutoff)
+def _scan_events(lines: list, action: str, cutoff: float, processed: set) -> tuple:
+    """Parse event.jsonl lines, returning (matched events, all recent id->timestamp map)."""
     matched = []
     all_id_ts: dict = {}
-
-    try:
-        lines = EVENTS_FILE.read_text(encoding="utf-8").splitlines()
-    except Exception as e:
-        print(f"[event_subscriber] Could not read events file: {e}", file=sys.stderr)
-        sys.exit(1)
 
     for line in lines:
         line = line.strip()
@@ -125,12 +107,41 @@ def main() -> None:
 
         if eid in processed:
             continue
-        if event.get("action") != args.action:
+        if event.get("action") != action:
             continue
         if ts < cutoff:
             continue
 
         matched.append((eid, event))
+
+    return matched, all_id_ts
+
+
+def main() -> None:
+    """Print unprocessed events.jsonl entries matching --action, then mark them processed."""
+    parser = argparse.ArgumentParser(description="Exploration Cycle kernel event subscriber")
+    parser.add_argument("--action", required=True, help="Event action to match (e.g. suggest_intake)")
+    parser.add_argument("--since", type=int, default=300,
+                        help="Only consider events emitted within the last N seconds (recency filter, default: 300)")
+    parser.add_argument("--dedup-window", type=int, default=3600, dest="dedup_window",
+                        help="Remember processed event IDs for N seconds (dedup TTL, default: 3600)")
+    args = parser.parse_args()
+
+    if not EVENTS_FILE.exists():
+        sys.exit(1)
+
+    now = time.time()
+    cutoff = now - args.since              # recency: how old an event can be to be considered
+    dedup_cutoff = now - args.dedup_window # dedup TTL: how long to remember processed IDs
+    processed = load_processed(dedup_cutoff)
+
+    try:
+        lines = EVENTS_FILE.read_text(encoding="utf-8").splitlines()
+    except Exception as e:
+        print(f"[event_subscriber] Could not read events file: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    matched, all_id_ts = _scan_events(lines, args.action, cutoff, processed)
 
     if not matched:
         sys.exit(1)

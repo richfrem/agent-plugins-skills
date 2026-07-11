@@ -216,6 +216,33 @@ def check_approval(conn: sqlite3.Connection, approval_id: str) -> tuple[bool, st
     return True, ""
 
 
+def _check_action_path_and_spec(row, action: str, target_path: str | None, spec_path: str | None) -> tuple[bool, str]:
+    """Check the approval row's approved_actions, allowed_paths, and spec_hash against the request.
+
+    Fails closed: spec_path set but file absent is rejected, same as a hash mismatch.
+    """
+    # Approved actions check
+    approved_actions = json.loads(row[0])
+    if action not in approved_actions:
+        return False, f"Action '{action}' not in approved_actions {approved_actions}"
+
+    # Allowed paths check
+    allowed_paths = json.loads(row[1])
+    if target_path and not any(fnmatch.fnmatch(target_path, p) for p in allowed_paths):
+        return False, f"Path '{target_path}' not in allowed_paths {allowed_paths}"
+
+    # Spec hash integrity check (fail closed when file is absent)
+    if spec_path:
+        spec_file = Path(spec_path)
+        if not spec_file.exists():
+            return False, f"Spec file not found: {spec_path}"
+        actual_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest()
+        if actual_hash != row[2]:
+            return False, f"Spec hash mismatch for {spec_path}"
+
+    return True, ""
+
+
 def check_dispatch_authorization(
     conn: sqlite3.Connection,
     approval_id: str,
@@ -239,24 +266,10 @@ def check_dispatch_authorization(
     if row is None:
         return False, f"Approval '{approval_id}' disappeared during authorization"
 
-    # 2. Approved actions check
-    approved_actions = json.loads(row[0])
-    if action not in approved_actions:
-        return False, f"Action '{action}' not in approved_actions {approved_actions}"
-
-    # 3. Allowed paths check
-    allowed_paths = json.loads(row[1])
-    if target_path and not any(fnmatch.fnmatch(target_path, p) for p in allowed_paths):
-        return False, f"Path '{target_path}' not in allowed_paths {allowed_paths}"
-
-    # 4. Spec hash integrity check (fail closed when file is absent)
-    if spec_path:
-        spec_file = Path(spec_path)
-        if not spec_file.exists():
-            return False, f"Spec file not found: {spec_path}"
-        actual_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest()
-        if actual_hash != row[2]:
-            return False, f"Spec hash mismatch for {spec_path}"
+    # 2-4. Approved actions, allowed paths, and spec hash checks
+    ok, reason = _check_action_path_and_spec(row, action, target_path, spec_path)
+    if not ok:
+        return False, reason
 
     # 5. HMAC envelope verification (timing-safe + in-process nonce dedup)
     if not verify_envelope(envelope, key, nonce_cache):
@@ -360,18 +373,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
-    """CLI entry point: authorize, load context, invoke CLI backend, write output.
+def _enforce_authorization_gate(args) -> None:
+    """Run the fail-closed authorization gate; exits the process if authorization fails.
 
-    Validates HMAC envelope and approval record before any dispatch. Reads
-    agent instructions (stripping YAML frontmatter), assembles required and
-    optional context files, builds the CLI command for the selected backend
-    (claude / gh-copilot / copilot), invokes it as a subprocess, validates
-    the output, and writes the artifact. Exits non-zero on any failure.
+    No dispatch proceeds without a valid approval record + verified HMAC envelope.
     """
-    args = build_parser().parse_args()
-
-    # Authorization gate — fail-closed. No dispatch without valid approval + HMAC.
     from state_engine import init_db
     from sandbox_runner import load_session_key
 
@@ -394,19 +400,29 @@ def main() -> None:
         print(f"Error: dispatch authorization failed: {reason}", file=sys.stderr)
         sys.exit(1)
 
-    # SEC-002: --output must match authorized --target-path (prevents path bypass)
-    if args.target_path:
-        output_resolved = Path(args.output).resolve()
-        target_resolved = Path(args.target_path).resolve()
-        if output_resolved != target_resolved:
-            print(
-                f"Error: --output path does not match authorized --target-path "
-                f"({args.output!r} != {args.target_path!r})",
-                file=sys.stderr,
-            )
-            sys.exit(1)
 
-    # 1. Read the agent instructions and strip YAML frontmatter.
+def _enforce_output_matches_target(args) -> None:
+    """SEC-002: --output must match authorized --target-path (prevents path bypass). Exits on mismatch."""
+    if not args.target_path:
+        return
+    output_resolved = Path(args.output).resolve()
+    target_resolved = Path(args.target_path).resolve()
+    if output_resolved != target_resolved:
+        print(
+            f"Error: --output path does not match authorized --target-path "
+            f"({args.output!r} != {args.target_path!r})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _load_prompt_context(args) -> tuple:
+    """Read agent instructions + context files; returns (agent_content, context_content).
+
+    Exits if frontmatter injection is detected in the agent file, or if zero
+    context was loaded (a zero-context dispatch always hallucinates).
+    """
+    # Read the agent instructions and strip YAML frontmatter.
     # Frontmatter (---\n...\n---) is metadata, not instructions. Passing it verbatim
     # to CLI tools that treat --- as an argument delimiter (e.g. claude) causes parse failures.
     agent_content = read_file(args.agent)
@@ -415,12 +431,12 @@ def main() -> None:
         sys.exit(1)
     agent_content = _strip_frontmatter(agent_content)
 
-    # 2. Read required context files (missing = fatal)
+    # Read required context files (missing = fatal)
     context_chunks = []
     for ctx_file in args.context:
         context_chunks.append(read_file(ctx_file))
 
-    # 3. Read optional context files (missing = skip)
+    # Read optional context files (missing = skip)
     for ctx_file in args.optional_context:
         content = read_optional_file(ctx_file)
         if content is not None:
@@ -432,14 +448,14 @@ def main() -> None:
         sys.exit(1)
 
     context_content = "\n\n---\n\n".join(context_chunks)
+    return agent_content, context_content
 
-    # 4. Build the full prompt payload
-    full_prompt = f"{agent_content}\n\n---\n\n{context_content}"
 
-    print(f"Dispatching via {args.cli} — agent: {os.path.basename(args.agent)}...")
-    print(f"Instruction: {args.instruction}")
+def _build_cli_command(args, full_prompt: str) -> list:
+    """Build the CLI subprocess command for the selected backend.
 
-    # 5. Build CLI command based on selected backend
+    Exits for Tier-3 dispatch on non-claude CLIs (SEC-004: no equivalent permission gate).
+    """
     # For claude and gh-copilot, combine everything into one prompt argument.
     # For copilot (GitHub Copilot standalone), use the -p <system> <user> two-arg format.
     combined_prompt = f"{full_prompt}\n\n---\n\nInstruction: {args.instruction}"
@@ -453,24 +469,33 @@ def main() -> None:
         else:
             print(f"Info: Tier {args.tier} dispatch — not applying --dangerously-skip-permissions. "
                   f"Ensure required tool permissions are granted interactively.", file=sys.stderr)
-    elif args.cli == "gh-copilot":
+        return cmd
+
+    if args.cli == "gh-copilot":
         # SEC-004: Tier 3 dispatch refused for non-claude CLIs — no equivalent permission control.
         if args.tier == "3":
             print("Error: Tier 3 dispatch refused for gh-copilot — "
                   "no equivalent permission gate. Use out-of-band human approval.", file=sys.stderr)
             sys.exit(1)
-        cmd = ["gh", "copilot", "suggest", "-t", "shell", combined_prompt]
-    else:  # copilot (GitHub Copilot standalone CLI)
-        # SEC-004: Tier 3 dispatch refused for non-claude CLIs.
-        if args.tier == "3":
-            print("Error: Tier 3 dispatch refused for copilot — "
-                  "no equivalent permission gate. Use out-of-band human approval.", file=sys.stderr)
-            sys.exit(1)
-        cmd = ["copilot", "-p", full_prompt, args.instruction]
-        if args.model:
-            cmd = ["copilot", "--model", args.model, "-p", full_prompt, args.instruction]
+        return ["gh", "copilot", "suggest", "-t", "shell", combined_prompt]
 
-    # 6. Invoke the CLI with a curated env — prevents credential leakage via prompt injection (SEC-006)
+    # copilot (GitHub Copilot standalone CLI)
+    # SEC-004: Tier 3 dispatch refused for non-claude CLIs.
+    if args.tier == "3":
+        print("Error: Tier 3 dispatch refused for copilot — "
+              "no equivalent permission gate. Use out-of-band human approval.", file=sys.stderr)
+        sys.exit(1)
+    cmd = ["copilot", "-p", full_prompt, args.instruction]
+    if args.model:
+        cmd = ["copilot", "--model", args.model, "-p", full_prompt, args.instruction]
+    return cmd
+
+
+def _invoke_and_write(cmd: list, args) -> None:
+    """Invoke the CLI backend with a curated env, validate output, and write the artifact.
+
+    Uses a curated env — prevents credential leakage via prompt injection (SEC-006).
+    """
     try:
         result = subprocess.run(
             cmd,
@@ -482,13 +507,13 @@ def main() -> None:
         )
         output_text = result.stdout
 
-        # 7. Validate output before writing (returns trimmed content or False)
+        # Validate output before writing (returns trimmed content or False)
         validated = validate_output(output_text, args.output)
         if not validated:
             sys.exit(1)
         assert isinstance(validated, str)
 
-        # 8. Write to output (use validated/trimmed content, not raw output_text)
+        # Write to output (use validated/trimmed content, not raw output_text)
         write_file(args.output, validated)
         print(f"Success: Wrote artifact to {args.output}")
 
@@ -498,6 +523,36 @@ def main() -> None:
     except subprocess.CalledProcessError as e:
         print(f"Error during {args.cli} invocation: {e.stderr}", file=sys.stderr)
         sys.exit(1)
+
+
+def main() -> None:
+    """CLI entry point: authorize, load context, invoke CLI backend, write output.
+
+    Validates HMAC envelope and approval record before any dispatch. Reads
+    agent instructions (stripping YAML frontmatter), assembles required and
+    optional context files, builds the CLI command for the selected backend
+    (claude / gh-copilot / copilot), invokes it as a subprocess, validates
+    the output, and writes the artifact. Exits non-zero on any failure.
+    """
+    args = build_parser().parse_args()
+
+    # Authorization gate — fail-closed. No dispatch without valid approval + HMAC.
+    _enforce_authorization_gate(args)
+
+    # SEC-002: --output must match authorized --target-path (prevents path bypass)
+    _enforce_output_matches_target(args)
+
+    agent_content, context_content = _load_prompt_context(args)
+
+    # Build the full prompt payload
+    full_prompt = f"{agent_content}\n\n---\n\n{context_content}"
+
+    print(f"Dispatching via {args.cli} — agent: {os.path.basename(args.agent)}...")
+    print(f"Instruction: {args.instruction}")
+
+    cmd = _build_cli_command(args, full_prompt)
+
+    _invoke_and_write(cmd, args)
 
 
 if __name__ == "__main__":

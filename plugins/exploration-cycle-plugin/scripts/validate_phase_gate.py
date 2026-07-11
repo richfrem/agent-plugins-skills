@@ -5,6 +5,12 @@ validate_phase_gate.py
 Purpose:
     Deterministic validator checking if phase-specific output files exist,
     align with the active session, and are free from stubs or placeholders.
+
+Key Input Dependencies:
+    - CLAUDE_PROJECT_DIR environment variable (project root)
+    - exploration/exploration-dashboard.md (session title/type)
+    - exploration/discovery-plans/, captures/, prototype/, handoffs/ artifacts
+      (phase-specific, checked per invocation)
 """
 import os
 import sys
@@ -25,6 +31,7 @@ word_regex = re.compile(r"\b(" + "|".join(WORD_PLACEHOLDERS) + r")\b", re.IGNORE
 phrase_regexes = [re.compile(p, re.IGNORECASE) for p in PHRASE_PLACEHOLDERS]
 
 def load_session_title(dashboard_path: Path) -> str:
+    """Extract the session title from the dashboard's 'Session:' line, or '' if unavailable."""
     if not dashboard_path.exists():
         return ""
     try:
@@ -40,6 +47,7 @@ def load_session_title(dashboard_path: Path) -> str:
     return ""
 
 def load_session_type(dashboard_path: Path) -> str:
+    """Extract the session type from the dashboard's 'Session Type:' line, or '' if unavailable."""
     if not dashboard_path.exists():
         return ""
     try:
@@ -55,6 +63,7 @@ def load_session_type(dashboard_path: Path) -> str:
     return ""
 
 def check_file_validity(path: Path) -> tuple[bool, str]:
+    """Check a file exists, meets the minimum size, and contains no unresolved placeholders."""
     if not path.exists():
         return False, f"File {path.name} is missing."
     if path.stat().st_size < MIN_FILE_SIZE_BYTES:
@@ -75,94 +84,113 @@ def check_file_validity(path: Path) -> tuple[bool, str]:
         
     return True, ""
 
+def _validate_phase_1(plans_dir: Path) -> tuple[bool, str]:
+    """Validate Phase 1: latest Discovery Plan exists, passes checks, has required headers."""
+    if not plans_dir.exists() or not list(plans_dir.glob("*.md")):
+        return False, "No Discovery Plan document found under exploration/discovery-plans/."
+
+    latest_plan = sorted(plans_dir.glob("*.md"))[-1]
+    ok, err = check_file_validity(latest_plan)
+    if not ok:
+        return False, err
+
+    content = latest_plan.read_text(encoding="utf-8")
+    required_headers = ["## Problem Statement", "## Success Criteria", "## Must-Have Requirements"]
+    missing = [h for h in required_headers if h not in content]
+    if missing:
+        return False, f"Discovery Plan is missing sections: {', '.join(missing)}"
+
+    return True, f"Phase 1 Validated: Plan {latest_plan.name} is compliant."
+
+
+def _validate_phase_2(captures_dir: Path) -> tuple[bool, str]:
+    """Validate Phase 2: a visual layout or document structure artifact exists and passes checks."""
+    blueprint = captures_dir / "layout-direction.md"
+    blueprint_alt = captures_dir / "document-structure.md"
+
+    if blueprint.exists():
+        ok, err = check_file_validity(blueprint)
+        if not ok:
+            return False, err
+    elif blueprint_alt.exists():
+        ok, err = check_file_validity(blueprint_alt)
+        if not ok:
+            return False, err
+    else:
+        return False, "No visual layout or document structure artifact found under exploration/captures/."
+
+    return True, "Phase 2 Validated: Visual layout direction is recorded."
+
+
+def _validate_phase_3(exploration_dir: Path, captures_dir: Path, dashboard_path: Path) -> tuple[bool, str]:
+    """Validate Phase 3: prototype README/notes exist and pass checks; index.html required for Greenfield."""
+    prototype_dir = exploration_dir / "prototype"
+    readme = prototype_dir / "README.md"
+    notes = captures_dir / "prototype-notes.md"
+
+    # Verify stubs/existences
+    ok, err = check_file_validity(readme)
+    if not ok:
+        return False, f"Prototype README error: {err}"
+    ok, err = check_file_validity(notes)
+    if not ok:
+        return False, f"Prototype observations error: {err}"
+
+    # Greenfield check for index.html
+    session_type = load_session_type(dashboard_path)
+    if "greenfield" in session_type.lower():
+        index_html = prototype_dir / "index.html"
+        ok, err = check_file_validity(index_html)
+        if not ok:
+            return False, f"Greenfield prototype index.html error: {err}"
+
+    return True, "Phase 3 Validated: Prototype artifacts exist and are semantically complete."
+
+
+def _validate_phase_4(handoffs_dir: Path, session_title: str) -> tuple[bool, str]:
+    """Validate Phase 4: handoff package exists, has a Risk Assessment, and matches the session title."""
+    handoff = handoffs_dir / "handoff-package.md"
+    ok, err = check_file_validity(handoff)
+    if not ok:
+        return False, err
+
+    content = handoff.read_text(encoding="utf-8")
+    if "## Risk Assessment" not in content or "**Tier:**" not in content:
+        return False, "Handoff package is missing the mandatory TierGate Risk Assessment."
+
+    # Verify session title alignment to prevent stale files (containment)
+    if session_title:
+        clean_title = session_title.replace("**", "").replace("*", "").strip().lower()
+        clean_content = content.lower()
+        if clean_title not in clean_content:
+            return False, f"Handoff package session mismatch. Expected text to contain: '{session_title}'."
+
+    return True, "Phase 4 Validated: Handoff package is complete and secure."
+
+
 def validate_phase(phase: int, project_dir: Path) -> tuple[bool, str]:
+    """Dispatch to the phase-specific validator (1-4) and return (success, message)."""
     exploration_dir = project_dir / "exploration"
     dashboard_path = exploration_dir / "exploration-dashboard.md"
     plans_dir = exploration_dir / "discovery-plans"
     captures_dir = exploration_dir / "captures"
     handoffs_dir = exploration_dir / "handoffs"
-    
+
     session_title = load_session_title(dashboard_path)
-    
+
     if phase == 1:
-        if not plans_dir.exists() or not list(plans_dir.glob("*.md")):
-            return False, "No Discovery Plan document found under exploration/discovery-plans/."
-        
-        latest_plan = sorted(plans_dir.glob("*.md"))[-1]
-        ok, err = check_file_validity(latest_plan)
-        if not ok:
-            return False, err
-            
-        content = latest_plan.read_text(encoding="utf-8")
-        required_headers = ["## Problem Statement", "## Success Criteria", "## Must-Have Requirements"]
-        missing = [h for h in required_headers if h not in content]
-        if missing:
-            return False, f"Discovery Plan is missing sections: {', '.join(missing)}"
-            
-        return True, f"Phase 1 Validated: Plan {latest_plan.name} is compliant."
-
-    elif phase == 2:
-        blueprint = captures_dir / "layout-direction.md"
-        blueprint_alt = captures_dir / "document-structure.md"
-        
-        if blueprint.exists():
-            ok, err = check_file_validity(blueprint)
-            if not ok:
-                return False, err
-        elif blueprint_alt.exists():
-            ok, err = check_file_validity(blueprint_alt)
-            if not ok:
-                return False, err
-        else:
-            return False, "No visual layout or document structure artifact found under exploration/captures/."
-            
-        return True, "Phase 2 Validated: Visual layout direction is recorded."
-
-    elif phase == 3:
-        prototype_dir = exploration_dir / "prototype"
-        readme = prototype_dir / "README.md"
-        notes = captures_dir / "prototype-notes.md"
-        
-        # Verify stubs/existences
-        ok, err = check_file_validity(readme)
-        if not ok:
-            return False, f"Prototype README error: {err}"
-        ok, err = check_file_validity(notes)
-        if not ok:
-            return False, f"Prototype observations error: {err}"
-            
-        # Greenfield check for index.html
-        session_type = load_session_type(dashboard_path)
-        if "greenfield" in session_type.lower():
-            index_html = prototype_dir / "index.html"
-            ok, err = check_file_validity(index_html)
-            if not ok:
-                return False, f"Greenfield prototype index.html error: {err}"
-            
-        return True, "Phase 3 Validated: Prototype artifacts exist and are semantically complete."
-
-    elif phase == 4:
-        handoff = handoffs_dir / "handoff-package.md"
-        ok, err = check_file_validity(handoff)
-        if not ok:
-            return False, err
-            
-        content = handoff.read_text(encoding="utf-8")
-        if "## Risk Assessment" not in content or "**Tier:**" not in content:
-            return False, "Handoff package is missing the mandatory TierGate Risk Assessment."
-            
-        # Verify session title alignment to prevent stale files (containment)
-        if session_title:
-            clean_title = session_title.replace("**", "").replace("*", "").strip().lower()
-            clean_content = content.lower()
-            if clean_title not in clean_content:
-                return False, f"Handoff package session mismatch. Expected text to contain: '{session_title}'."
-            
-        return True, "Phase 4 Validated: Handoff package is complete and secure."
+        return _validate_phase_1(plans_dir)
+    if phase == 2:
+        return _validate_phase_2(captures_dir)
+    if phase == 3:
+        return _validate_phase_3(exploration_dir, captures_dir, dashboard_path)
+    if phase == 4:
+        return _validate_phase_4(handoffs_dir, session_title)
 
     return False, f"Unknown phase: {phase}"
 
 def main() -> None:
+    """Parse CLI phase argument, validate the phase gate, and print SUCCESS/FAILURE."""
     if len(sys.argv) < 2:
         sys.stderr.write("Usage: python3 validate_phase_gate.py <phase_number>\n")
         sys.exit(2)

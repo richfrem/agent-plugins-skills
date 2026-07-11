@@ -8,6 +8,10 @@ and produces a structured Markdown story set in either:
 
 Designed for CLI dispatch pattern in the exploration cycle:
   cat session-brief.md brd-draft.md | pythonexecute.py --output user-stories-draft.md
+
+Key Input Dependencies:
+    - Exploration capture documents (session brief, BRD draft, prototype notes),
+      passed via --input file paths or piped through stdin
 """
 
 import argparse
@@ -134,6 +138,7 @@ FORMAT_TEMPLATES = {
 
 
 def load_input(paths: list[str]) -> str:
+    """Read and concatenate the given input files, separated by a markdown rule."""
     chunks = []
     for p in paths:
         path = Path(p)
@@ -144,7 +149,8 @@ def load_input(paths: list[str]) -> str:
     return "\n\n---\n\n".join(chunks)
 
 
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for user_story_capture_execute.py."""
     parser = argparse.ArgumentParser(
         description=(
             "User Story generator for the exploration cycle. "
@@ -172,8 +178,12 @@ def main() -> None:
         default="exploration/captures/user-stories-draft.md",
         help="Output Markdown file path (default: exploration/captures/user-stories-draft.md)",
     )
+    return parser
 
-    args = parser.parse_args()
+
+def main() -> None:
+    """Load exploration captures and write a scaffolded user-stories Markdown file."""
+    args = _build_arg_parser().parse_args()
 
     if args.input:
         content = load_input(args.input)

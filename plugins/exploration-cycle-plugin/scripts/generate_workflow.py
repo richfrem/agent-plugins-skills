@@ -155,7 +155,8 @@ The following input was used to generate this diagram:
 """
 
 
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for generate_workflow.py."""
     parser = argparse.ArgumentParser(
         description=(
             "Generate a Mermaid workflow diagram skeleton from exploration capture documents. "
@@ -188,8 +189,12 @@ def main() -> None:
         default="Core Business Process",
         help="Diagram title (default: 'Core Business Process')",
     )
+    return parser
 
-    args = parser.parse_args()
+
+def main() -> None:
+    """Load exploration captures and write a scaffolded Mermaid workflow diagram."""
+    args = _build_arg_parser().parse_args()
 
     # Load input from files or stdin
     if args.input:

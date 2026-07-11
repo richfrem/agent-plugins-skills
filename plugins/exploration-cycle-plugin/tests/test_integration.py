@@ -1,4 +1,14 @@
-# plugins/exploration-cycle-plugin/tests/test_integration.py
+"""
+Purpose:
+    Integration tests for the exploration-cycle-plugin control plane spanning
+    state_engine.py, sandbox_runner.py, and dispatch.py together: concurrent
+    task-completion races, sandbox environment leak prevention, and approval
+    expiry rejection.
+
+Key Input Dependencies:
+    - state_engine.py, sandbox_runner.py, dispatch.py modules (in ../scripts/)
+    - pytest tmp_path and monkeypatch fixtures
+"""
 import sys, uuid, time, threading
 from pathlib import Path
 import pytest
@@ -10,20 +20,19 @@ import sandbox_runner as SR
 
 @pytest.fixture
 def db_conn(tmp_path):
+    """Yield a fresh file-backed SQLite connection, closed on teardown."""
     conn = SE.init_db(str(tmp_path / "test.sqlite"))
     yield conn
     conn.close()
 
 
-def test_concurrent_task_completions(tmp_path):
-    """5 concurrent threads completing distinct tasks must all succeed within 30s."""
-    db_path = tmp_path / "concurrent.sqlite"
-    conn = SE.init_db(str(db_path))
-    SE.create_session(conn, "sess-c", "Concurrent Session")
+def _seed_leased_tasks(conn, count: int = 5) -> tuple:
+    """Insert `count` tasks directly as 'leased', bypassing MAX_PARALLEL_AGENTS.
 
-    task_ids = [str(uuid.uuid4()) for _ in range(5)]
-    # Insert tasks directly as 'leased' to bypass MAX_PARALLEL_AGENTS=2 limit.
-    # The test exercises concurrent commit_task_complete calls, not the lease gate.
+    Exercises concurrent commit_task_complete calls, not the lease gate itself.
+    Returns (task_ids, versions) for the caller to use in completion threads.
+    """
+    task_ids = [str(uuid.uuid4()) for _ in range(count)]
     for i, tid in enumerate(task_ids):
         conn.execute(
             "INSERT INTO tasks (id, session_id, phase_ordinal, phase_name, component_name, "
@@ -32,7 +41,7 @@ def test_concurrent_task_completions(tmp_path):
             (tid, i + 1, f"Phase {i + 1}", f"Comp {i}", f"subagent-{i}"),
         )
     conn.execute(
-        "UPDATE sessions SET parallel_agents_running = 5 WHERE id = 'sess-c'"
+        "UPDATE sessions SET parallel_agents_running = ? WHERE id = 'sess-c'", (count,)
     )
     conn.commit()
 
@@ -40,10 +49,21 @@ def test_concurrent_task_completions(tmp_path):
     for tid in task_ids:
         row = conn.execute("SELECT version FROM tasks WHERE id=?", (tid,)).fetchone()
         versions[tid] = row["version"]
+    return task_ids, versions
+
+
+def test_concurrent_task_completions(tmp_path):
+    """5 concurrent threads completing distinct tasks must all succeed within 30s."""
+    db_path = tmp_path / "concurrent.sqlite"
+    conn = SE.init_db(str(db_path))
+    SE.create_session(conn, "sess-c", "Concurrent Session")
+
+    task_ids, versions = _seed_leased_tasks(conn)
 
     results, errors = [], []
 
     def complete_task(tid, agent_id, version):
+        """Complete one task on its own thread-local DB connection, recording result or error."""
         try:
             thread_conn = SE.init_db(str(db_path))
             ok = SE.commit_task_complete(thread_conn, tid, agent_id, version, f"hash-{tid[:8]}")
@@ -86,6 +106,7 @@ def test_sandbox_env_vars_do_not_leak(monkeypatch):
 
 
 def test_expired_approval_is_rejected(db_conn):
+    """Verify check_approval rejects an approval whose expires_at is in the past."""
     import dispatch
     approval_id = str(uuid.uuid4())
     SE.create_session(db_conn, "sess", "Expiry Session")
