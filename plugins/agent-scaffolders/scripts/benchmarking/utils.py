@@ -1,4 +1,14 @@
-"""Shared utilities for skill-creator scripts.
+"""
+Purpose:
+    Shared utilities for skill-creator scripts. Provides SKILL.md parsing
+    functionality to extract name, description, and full content from SKILL.md
+    frontmatter and body.
+
+Key Input Dependencies:
+    - SKILL.md files (with frontmatter in YAML format)
+
+Key Functions:
+    - parse_skill_md(): Parse a SKILL.md file and extract metadata and content
 
 Credits: Inspired by and adapted from Anthropic's skill-creator.
 """

@@ -9,6 +9,12 @@ Purpose:
     writes the detected environment variables to CLAUDE_ENV_FILE for pickup by
     the agent session.
 
+Key Input Dependencies:
+    - CLAUDE_PROJECT_DIR environment variable (project directory path)
+    - CLAUDE_ENV_FILE environment variable (path to file for writing env vars)
+    - Project marker files (package.json, Cargo.toml, go.mod, pyproject.toml, setup.py, pom.xml, build.gradle, etc.)
+    - CI configuration files (.github/workflows, .gitlab-ci.yml, .circleci/config.yml)
+
 Layer: Retrieve
 
 Usage:

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-audit_marketplace_sources.py
-============================
+Purpose:
+    Validates that every plugin entry in .claude-plugin/marketplace.json points to a
+    directory that actually exists. Missing source paths cause silent install failures
+    in the Claude Code /plugin UI with no actionable error message.
 
-Validates that every plugin entry in .claude-plugin/marketplace.json points to a
-directory that actually exists. Missing source paths cause silent install failures
-in the Claude Code /plugin UI with no actionable error message.
+Key Input Dependencies:
+    - .claude-plugin/marketplace.json (plugin registry with source paths)
+    - Project root directory structure
+
+Key Functions:
+    - audit(): Validate marketplace.json source paths and return exit code
+    - main(): CLI entry point
 
 Usage:
     python audit_marketplace_sources.py [repo_root]
@@ -17,6 +23,7 @@ from pathlib import Path
 
 
 def audit(repo_root: Path) -> int:
+    """Validate all marketplace.json plugin entries have valid source paths; return exit code."""
     marketplace = repo_root / ".claude-plugin" / "marketplace.json"
     if not marketplace.exists():
         print(f"No marketplace.json found at {marketplace}")
@@ -57,6 +64,7 @@ def audit(repo_root: Path) -> int:
 
 
 def main() -> None:
+    """Parse CLI argument and audit marketplace.json source paths."""
     repo_root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
     if not repo_root.is_dir():
         print(f"ERROR: Not a directory: {repo_root}")
