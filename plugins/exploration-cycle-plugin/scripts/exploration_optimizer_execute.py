@@ -55,6 +55,8 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
+MAX_ARTIFACT_FAILURES = 3
+
 def run_eval(eval_script: Path, target: Path) -> float:
     """Runs the routing/structural evaluation script and returns the score."""
     try:
@@ -65,6 +67,38 @@ def run_eval(eval_script: Path, target: Path) -> float:
     except Exception as e:
         print(f"Error running eval: {e}", file=sys.stderr)
         return -1.0
+
+
+def _strip_frontmatter_to_temp(target_skill: Path) -> Path:
+    """Strip YAML frontmatter from a SKILL.md and write the body to a .stripped.md sibling.
+
+    Frontmatter (---\\n...\\n---) is metadata, not instructions — injecting it
+    verbatim confuses the model into treating descriptions as directives.
+    """
+    skill_content = Path(target_skill).read_text(encoding="utf-8")
+    stripped = re.sub(r'^---[\r\n]+.*?[\r\n]+---[\r\n]+', '', skill_content, count=1, flags=re.DOTALL)
+    stripped_path = Path(target_skill).with_suffix(".stripped.md")
+    stripped_path.write_text(stripped, encoding="utf-8")
+    return stripped_path
+
+
+def _count_gaps_and_score(check_gaps_script: Path, artifact_output: Path) -> float:
+    """Run check_gaps.py against artifact_output and convert the gap count to a 0-1 score."""
+    gap_cmd = [
+        sys.executable, str(check_gaps_script),
+        "--files", str(artifact_output),
+        "--threshold", "999",  # never halt; we just want the count
+    ]
+    gap_result = subprocess.run(gap_cmd, capture_output=True, text=True)
+
+    # Parse gap count from output: "Total: N '[NEEDS HUMAN INPUT]' marker(s)"
+    for line in gap_result.stdout.splitlines():
+        if line.startswith("Total:"):
+            gap_count = int(line.split()[1])
+            score = max(0.0, 1.0 - gap_count * 0.1)
+            print(f"Artifact eval: {gap_count} gap(s) → score {score:.2f}")
+            return score
+    return -1.0
 
 
 def run_artifact_eval(
@@ -91,13 +125,7 @@ def run_artifact_eval(
     Returns float score, or -1.0 on failure.
     """
     try:
-        # Strip YAML frontmatter from SKILL.md before using it as an agent prompt.
-        # Frontmatter (---\n...\n---) is metadata, not instructions — injecting it
-        # verbatim confuses the model into treating descriptions as directives.
-        skill_content = Path(target_skill).read_text(encoding="utf-8")
-        stripped = re.sub(r'^---[\r\n]+.*?[\r\n]+---[\r\n]+', '', skill_content, count=1, flags=re.DOTALL)
-        stripped_path = Path(target_skill).with_suffix(".stripped.md")
-        stripped_path.write_text(stripped, encoding="utf-8")
+        stripped_path = _strip_frontmatter_to_temp(target_skill)
 
         # Run dispatch against the canonical scenario
         cmd = [
@@ -115,25 +143,10 @@ def run_artifact_eval(
             print(f"Artifact eval dispatch failed: {result.stderr}", file=sys.stderr)
             return -1.0
 
-        # Count gaps in the output artifact
-        gap_cmd = [
-            sys.executable, str(check_gaps_script),
-            "--files", str(artifact_output),
-            "--threshold", "999",  # never halt; we just want the count
-        ]
-        gap_result = subprocess.run(gap_cmd, capture_output=True, text=True)
-
         # Clean up temp artifact regardless of score
+        score = _count_gaps_and_score(check_gaps_script, artifact_output)
         Path(artifact_output).unlink(missing_ok=True)
-
-        # Parse gap count from output: "Total: N '[NEEDS HUMAN INPUT]' marker(s)"
-        for line in gap_result.stdout.splitlines():
-            if line.startswith("Total:"):
-                gap_count = int(line.split()[1])
-                score = max(0.0, 1.0 - gap_count * 0.1)
-                print(f"Artifact eval: {gap_count} gap(s) → score {score:.2f}")
-                return score
-        return -1.0
+        return score
     except Exception as e:
         print(f"Error running artifact eval: {e}", file=sys.stderr)
         Path(artifact_output).unlink(missing_ok=True)
@@ -162,7 +175,8 @@ FILE CONTENT:
         print(f"Error proposing change: {e}", file=sys.stderr)
         return None
 
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for exploration_optimizer_execute.py."""
     parser = argparse.ArgumentParser(description="Exploration Optimizer Engine")
     parser.add_argument("--target", required=True, help="Path to the skill file to optimize")
     parser.add_argument("--eval-script", required=True, help="Path to eval_runner.py (routing/structural score)")
@@ -176,73 +190,158 @@ def main() -> None:
                         help="Path to a fixed canonical session brief for artifact eval runs.")
     parser.add_argument("--check-gaps-script", default=None,
                         help="Path to check_gaps.py for counting gap markers in artifact output.")
+    return parser
 
-    args = parser.parse_args()
-    target_path = Path(args.target)
-    eval_script = Path(args.eval_script)
-    ledger_path = Path(args.ledger)
 
-    dispatch_script = None
-    scenario_brief = None
-    check_gaps_script = None
-    artifact_output = None
-    artifact_eval_enabled = all([args.dispatch_script, args.scenario_brief, args.check_gaps_script])
-    if artifact_eval_enabled:
-        dispatch_script = Path(args.dispatch_script)
-        scenario_brief = Path(args.scenario_brief)
-        check_gaps_script = Path(args.check_gaps_script)
-        artifact_output = target_path.parent / "_eval_artifact_output.md"
+def _build_eval_config(args, target_path: Path) -> dict:
+    """Resolve artifact-eval paths from CLI args; returns a config dict for _combined_score."""
+    enabled = all([args.dispatch_script, args.scenario_brief, args.check_gaps_script])
+    if enabled:
         print("Artifact quality eval enabled (primary signal: gap count).")
-    else:
-        print("Artifact quality eval disabled — routing/structural score only. "
-              "Pass --dispatch-script, --scenario-brief, --check-gaps-script to enable.")
-    
-    # Ensure ledger directory exists
+        return {
+            "enabled": True,
+            "dispatch_script": Path(args.dispatch_script),
+            "scenario_brief": Path(args.scenario_brief),
+            "check_gaps_script": Path(args.check_gaps_script),
+            "artifact_output": target_path.parent / "_eval_artifact_output.md",
+        }
+    print("Artifact quality eval disabled — routing/structural score only. "
+          "Pass --dispatch-script, --scenario-brief, --check-gaps-script to enable.")
+    return {"enabled": False, "dispatch_script": None, "scenario_brief": None,
+            "check_gaps_script": None, "artifact_output": None}
+
+
+def _ensure_ledger(ledger_path: Path) -> None:
+    """Create the ledger directory/file with a TSV header if it doesn't already exist."""
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Check if ledger exists, if not, create header
     if not ledger_path.exists():
         with open(ledger_path, "w") as f:
             f.write("timestamp\tscore\tstatus\tchange\n")
 
+
+def _combined_score(skill_path: Path, eval_script: Path, eval_cfg: dict,
+                     artifact_fail_streak: list, backup_path) -> float:
+    """Blended score: 30% routing/structural, 70% artifact quality (if enabled).
+
+    On MAX_ARTIFACT_FAILURES consecutive artifact-eval failures, restores skill_path
+    from backup_path (if present) and aborts the whole optimization run.
+    """
+    routing = run_eval(eval_script, skill_path)
+    if routing < 0:
+        return -1.0
+    if not eval_cfg["enabled"]:
+        return routing
+    assert eval_cfg["dispatch_script"] is not None
+    assert eval_cfg["scenario_brief"] is not None
+    assert eval_cfg["check_gaps_script"] is not None
+    assert eval_cfg["artifact_output"] is not None
+    artifact = run_artifact_eval(
+        eval_cfg["dispatch_script"], skill_path, eval_cfg["scenario_brief"],
+        eval_cfg["check_gaps_script"], eval_cfg["artifact_output"]
+    )
+    if artifact < 0:
+        artifact_fail_streak[0] += 1
+        print(f"Warning: artifact eval failed ({artifact_fail_streak[0]}/{MAX_ARTIFACT_FAILURES}) "
+              "— falling back to routing score only this iteration.")
+        if artifact_fail_streak[0] >= MAX_ARTIFACT_FAILURES:
+            print(f"Fatal: artifact eval failed {MAX_ARTIFACT_FAILURES} consecutive times. "
+                  "Restoring from backup and aborting.", file=sys.stderr)
+            if backup_path.exists():
+                shutil.copy(backup_path, skill_path)
+                os.remove(backup_path)
+            sys.exit(1)
+        return routing
+    artifact_fail_streak[0] = 0  # reset on success
+    blended = (artifact * 0.7) + (routing * 0.3)
+    print(f"  Routing: {routing:.3f}  Artifact: {artifact:.3f}  Blended: {blended:.3f}")
+    return blended
+
+
+def _create_backup(target_path: Path) -> Path:
+    """Copy target_path to a .bak sibling, warning if an orphaned backup already exists."""
+    backup_path = target_path.with_suffix(target_path.suffix + ".bak")
+    if backup_path.exists():
+        print(f"Warning: orphaned backup found at {backup_path} — a previous run may have "
+              "exited uncleanly. Overwriting with fresh backup. If you want to restore from "
+              "the previous run, copy it manually before continuing.", file=sys.stderr)
+    shutil.copy(target_path, backup_path)
+    return backup_path
+
+
+def _decide_keep_or_discard(new_score: float, current_score: float, backup_path: Path, target_path: Path) -> str:
+    """Compare new_score to current_score; keep or restore-and-discard the change. Returns status."""
+    if new_score > current_score:
+        print("Improvement found! Keeping change.")
+        os.remove(backup_path)
+        return "keep"
+    print("Regressed or equal. Discarding change.")
+    shutil.copy(backup_path, target_path)
+    os.remove(backup_path)
+    return "discard"
+
+
+def _run_one_iteration(target_path: Path, args, eval_script: Path, eval_cfg: dict,
+                        artifact_fail_streak: list, current_score: float) -> tuple:
+    """Run one propose->apply->test->decide iteration.
+
+    Returns (new_score, status, timestamp). status is one of:
+    'skipped' (no proposal generated — caller must skip the ledger write),
+    'keep', 'discard', or 'error'.
+    """
+    backup_path = _create_backup(target_path)
+
+    # 2. Propose
+    proposal = propose_change(target_path, args.goal)
+    if not proposal:
+        print("Failed to generate proposal. Skipping.")
+        return current_score, "skipped", None
+
+    # 3. Apply — write to a temp file first, then atomically replace.
+    # This ensures target_path is never left in a partial state, even on SIGKILL.
+    tmp_path = target_path.with_suffix(target_path.suffix + ".tmp")
+    try:
+        with open(tmp_path, "w") as f:
+            f.write(proposal)
+        os.replace(tmp_path, target_path)  # atomic on POSIX
+
+        # 4. Test
+        new_score = _combined_score(target_path, eval_script, eval_cfg, artifact_fail_streak, backup_path)
+        print(f"New Score: {new_score:.4f}")
+
+        # 5. Decide
+        timestamp = datetime.now().isoformat()
+        status = _decide_keep_or_discard(new_score, current_score, backup_path, target_path)
+    except Exception as e:
+        # Restore from backup on any failure; continue to next iteration (don't abort all remaining)
+        print(f"Error during apply/eval: {e} — restoring from backup and continuing", file=sys.stderr)
+        if backup_path.exists():
+            shutil.copy(backup_path, target_path)
+            os.remove(backup_path)
+        if tmp_path.exists():
+            os.remove(tmp_path)
+        timestamp = datetime.now().isoformat()
+        status = "error"
+        new_score = -1.0
+
+    return new_score, status, timestamp
+
+
+def main() -> None:
+    """Coordinate the Propose -> Test -> Decide optimization loop for a target SKILL.md."""
+    args = _build_arg_parser().parse_args()
+    target_path = Path(args.target)
+    eval_script = Path(args.eval_script)
+    ledger_path = Path(args.ledger)
+
+    eval_cfg = _build_eval_config(args, target_path)
+    _ensure_ledger(ledger_path)
+
     print(f"Starting optimization loop for {target_path.name}...")
 
-    artifact_fail_streak = [0]  # mutable counter accessible inside closure
-    MAX_ARTIFACT_FAILURES = 3
-
-    def combined_score(skill_path: Path) -> float:
-        """Blended score: 30% routing/structural, 70% artifact quality (if enabled)."""
-        routing = run_eval(eval_script, skill_path)
-        if routing < 0:
-            return -1.0
-        if not artifact_eval_enabled:
-            return routing
-        assert dispatch_script is not None
-        assert scenario_brief is not None
-        assert check_gaps_script is not None
-        assert artifact_output is not None
-        artifact = run_artifact_eval(
-            dispatch_script, skill_path, scenario_brief, check_gaps_script, artifact_output
-        )
-        if artifact < 0:
-            artifact_fail_streak[0] += 1
-            print(f"Warning: artifact eval failed ({artifact_fail_streak[0]}/{MAX_ARTIFACT_FAILURES}) "
-                  "— falling back to routing score only this iteration.")
-            if artifact_fail_streak[0] >= MAX_ARTIFACT_FAILURES:
-                print(f"Fatal: artifact eval failed {MAX_ARTIFACT_FAILURES} consecutive times. "
-                      "Restoring from backup and aborting.", file=sys.stderr)
-                if backup_path.exists():
-                    shutil.copy(backup_path, target_path)
-                    os.remove(backup_path)
-                sys.exit(1)
-            return routing
-        artifact_fail_streak[0] = 0  # reset on success
-        blended = (artifact * 0.7) + (routing * 0.3)
-        print(f"  Routing: {routing:.3f}  Artifact: {artifact:.3f}  Blended: {blended:.3f}")
-        return blended
+    artifact_fail_streak = [0]  # mutable counter shared across _combined_score calls
 
     # 1. Baseline
-    current_score = combined_score(target_path)
+    current_score = _combined_score(target_path, eval_script, eval_cfg, artifact_fail_streak, None)
     print(f"Baseline Score: {current_score:.4f}")
 
     if current_score < 0:
@@ -251,57 +350,14 @@ def main() -> None:
 
     for i in range(args.iterations):
         print(f"\n--- Iteration {i+1} ---")
-        
-        # Backup the current version
-        backup_path = target_path.with_suffix(target_path.suffix + ".bak")
-        if backup_path.exists():
-            print(f"Warning: orphaned backup found at {backup_path} — a previous run may have "
-                  "exited uncleanly. Overwriting with fresh backup. If you want to restore from "
-                  "the previous run, copy it manually before continuing.", file=sys.stderr)
-        shutil.copy(target_path, backup_path)
-        
-        # 2. Propose
-        proposal = propose_change(target_path, args.goal)
-        if not proposal:
-            print("Failed to generate proposal. Skipping.")
+        new_score, status, timestamp = _run_one_iteration(
+            target_path, args, eval_script, eval_cfg, artifact_fail_streak, current_score
+        )
+        if status == "skipped":
             continue
-        
-        # 3. Apply — write to a temp file first, then atomically replace.
-        # This ensures target_path is never left in a partial state, even on SIGKILL.
-        tmp_path = target_path.with_suffix(target_path.suffix + ".tmp")
-        try:
-            with open(tmp_path, "w") as f:
-                f.write(proposal)
-            os.replace(tmp_path, target_path)  # atomic on POSIX
+        if status == "keep":
+            current_score = new_score
 
-            # 4. Test
-            new_score = combined_score(target_path)
-            print(f"New Score: {new_score:.4f}")
-
-            # 5. Decide
-            timestamp = datetime.now().isoformat()
-            if new_score > current_score:
-                print("Improvement found! Keeping change.")
-                current_score = new_score
-                status = "keep"
-                os.remove(backup_path)
-            else:
-                print("Regressed or equal. Discarding change.")
-                shutil.copy(backup_path, target_path)
-                os.remove(backup_path)
-                status = "discard"
-        except Exception as e:
-            # Restore from backup on any failure; continue to next iteration (don't abort all remaining)
-            print(f"Error during apply/eval: {e} — restoring from backup and continuing", file=sys.stderr)
-            if backup_path.exists():
-                shutil.copy(backup_path, target_path)
-                os.remove(backup_path)
-            if tmp_path.exists():
-                os.remove(tmp_path)
-            timestamp = datetime.now().isoformat()
-            status = "error"
-            new_score = -1.0
-            
         # 6. Ledger
         with open(ledger_path, "a") as f:
             f.write(f"{timestamp}\t{new_score}\t{status}\t{args.goal}\n")
