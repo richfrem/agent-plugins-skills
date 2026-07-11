@@ -25,6 +25,7 @@ from pathlib import Path
 
 
 def main() -> None:
+    """Detect exploration session completion and emit session-complete event."""
     try:
         project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
         dashboard_path = Path(project_dir) / "exploration" / "exploration-dashboard.md"

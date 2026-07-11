@@ -37,6 +37,7 @@ import argparse
 import sys
 
 def main() -> None:
+    """Build or refine exploratory prototypes to validate product direction."""
     parser = argparse.ArgumentParser(description="Builds or refines exploratory prototypes, especially working frontend or full-stack learning artifacts, to make ambiguous product direction concrete.")
     # Add your arguments here
     parser.add_argument("--example", help="Example argument")

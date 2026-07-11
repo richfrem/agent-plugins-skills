@@ -37,6 +37,7 @@ import argparse
 import sys
 
 def main() -> None:
+    """Orchestrate multi-agent exploration loop and manage session state."""
     parser = argparse.ArgumentParser(description="Coordinates the multi-agent exploration loop, manages state, routes work to specialized skills or agents, triggers narrowing reviews, and decides when to continue exploration, prepare handoff, or reopen discovery from engineering.")
     # Add your arguments here
     parser.add_argument("--example", help="Example argument")
