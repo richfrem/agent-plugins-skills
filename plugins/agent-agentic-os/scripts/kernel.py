@@ -67,10 +67,12 @@ PROTECTED_STATE_KEYS = frozenset({"execution_mode", "hook_sample_rate"})
 # ---------------------------------------------------------------------------
 
 def _now():
+    """Return the current UTC time as an ISO 8601 string with a 'Z' suffix."""
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _load(path, default):
+    """Read and JSON-parse path, returning default if it is missing or unreadable."""
     try:
         if Path(path).exists():
             with open(path, "r", encoding="utf-8") as f:
@@ -81,6 +83,7 @@ def _load(path, default):
 
 
 def _pid_alive(pid):
+    """Return True if a process with the given pid exists (or is unreadable due to permissions)."""
     try:
         os.kill(int(pid), 0)
         return True
@@ -187,6 +190,7 @@ def _spinlock(lock_path, timeout=30):
 
 
 def _validate_agent(name):
+    """Return True if name is listed in agents.json's permitted_agents, else print an error and return False."""
     r = _load(AGENTS_FILE, {})
     if name in r.get("permitted_agents", []):
         return True
@@ -199,6 +203,7 @@ def _validate_agent(name):
 # ---------------------------------------------------------------------------
 
 def acquire_lock(name, ttl=None):
+    """CLI command: acquire a named directory lock, clearing it first if stale. Exits 1 if busy."""
     lock = LOCKS_DIR / f"{name}.lock"
     os.makedirs(LOCKS_DIR, exist_ok=True)
     if lock.exists():
@@ -227,12 +232,14 @@ def acquire_lock(name, ttl=None):
 
 
 def release_lock(name):
+    """CLI command: release a named directory lock."""
     _clear(LOCKS_DIR / f"{name}.lock")
     print(f"[Kernel] Lock released: {name}")
 
 
 def emit_event(agent, type_, action, status=None, summary=None,
                to=None, correlation_id=None):
+    """CLI command: append a JSON event to events.jsonl under the write lock, rotating if oversized."""
     if not _validate_agent(agent):
         sys.exit(1)
     event = {"id": str(uuid.uuid4()), "time": _now(),
@@ -263,6 +270,7 @@ def emit_event(agent, type_, action, status=None, summary=None,
 
 
 def read_events(agent, since=None):
+    """CLI command: print new events.jsonl entries addressed to agent since its saved cursor, then advance it."""
     cursor = since if since is not None else _read_cursor(agent)
     events, lines = [], []
     if EVENTS_FILE.exists():
@@ -283,6 +291,7 @@ def read_events(agent, since=None):
 
 
 def _read_cursor(agent):
+    """Return agent's saved events.jsonl line-cursor, or 0 if none is saved."""
     path = AGENTS_DIR / f"{agent}.cursor"
     try:
         return int(path.read_text(encoding="utf-8").strip())
@@ -291,11 +300,13 @@ def _read_cursor(agent):
 
 
 def _write_cursor(agent, n):
+    """Save agent's events.jsonl line-cursor to context/agents/<agent>.cursor."""
     os.makedirs(AGENTS_DIR, exist_ok=True)
     (AGENTS_DIR / f"{agent}.cursor").write_text(str(n), encoding="utf-8")
 
 
 def state_update(key, value):
+    """CLI command: set os-state.json[key] = value (JSON-parsed if possible) under the state lock."""
     if key in PROTECTED_STATE_KEYS:
         print(f"[Kernel] Protected key: {key}", file=sys.stderr)
         sys.exit(1)
@@ -318,6 +329,7 @@ def state_update(key, value):
 
 
 def state_increment(key):
+    """CLI command: increment os-state.json[key] by 1 (default 0) under the state lock, print the new value."""
     if key in PROTECTED_STATE_KEYS:
         print(f"[Kernel] Protected key: {key}", file=sys.stderr)
         sys.exit(1)
@@ -362,6 +374,7 @@ def claim_task(task_id, partition, agent, ttl=300):
 # ---------------------------------------------------------------------------
 
 def main():
+    """CLI entrypoint: parse subcommand args and dispatch to the matching kernel command."""
     p = argparse.ArgumentParser(description="Agentic OS Kernel v3")
     s = p.add_subparsers(dest="cmd", required=True)
 
