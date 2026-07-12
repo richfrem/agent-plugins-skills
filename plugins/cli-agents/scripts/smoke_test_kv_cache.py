@@ -2,6 +2,14 @@
 """
 Smoke test: send two identical requests through the proxy, verify the second is faster.
 
+Purpose:
+    Live end-to-end check that the KV-cache proxy actually restores a saved
+    slot on a repeated prompt instead of re-prefilling from scratch.
+
+Key Input Dependencies:
+    - A running llama-server with --slot-save-path (see run_server.py)
+    - A running routing proxy with KV-cache logging enabled (see enable_global_routing.py)
+
 Usage:
     python3 smoke_test_kv_cache.py
 
@@ -50,6 +58,7 @@ REQUEST_BODY = {
 
 
 def _send(label: str) -> tuple[float, int, str]:
+    """POST the fixed smoke-test request to the proxy and return (elapsed_seconds, status, body)."""
     payload = json.dumps(REQUEST_BODY).encode("utf-8")
     req = urllib.request.Request(
         f"{PROXY_URL}/v1/chat/completions",
@@ -73,6 +82,7 @@ def _send(label: str) -> tuple[float, int, str]:
 
 
 def _tail_log(path: str, n: int = 100) -> list[str]:
+    """Return the last n lines of the log file at path, or an empty list if it can't be read."""
     try:
         with open(path, "r") as f:
             return [line.rstrip() for line in f.readlines()[-n:]]
@@ -81,6 +91,7 @@ def _tail_log(path: str, n: int = 100) -> list[str]:
 
 
 def _check(label: str, condition: bool, detail: str = "") -> bool:
+    """Print a PASS/FAIL line for one verdict check and return the condition unchanged."""
     mark = "PASS" if condition else "FAIL"
     msg = f"  {mark}  {label}"
     if detail:
@@ -89,28 +100,8 @@ def _check(label: str, condition: bool, detail: str = "") -> bool:
     return condition
 
 
-def main() -> int:
-    print(f"[smoke] Proxy : {PROXY_URL}")
-    print(f"[smoke] Log   : {PROXY_LOG}")
-    print()
-
-    log_before_first = len(_tail_log(PROXY_LOG, 500))
-
-    elapsed1, status1, body1 = _send("Request 1 — expect MISS + save")
-    print(f"  → status={status1}  elapsed={elapsed1:.2f}s")
-    if status1 != 200:
-        print(f"  body: {body1[:400]}")
-        print("\nRESULT: FAIL (request 1 did not return 200)")
-        return 1
-
-    elapsed2, status2, body2 = _send("Request 2 — expect HIT + restore")
-    print(f"  → status={status2}  elapsed={elapsed2:.2f}s")
-    if status2 != 200:
-        print(f"  body: {body2[:400]}")
-        print("\nRESULT: FAIL (request 2 did not return 200)")
-        return 1
-
-    # ── Log analysis ─────────────────────────────────────────────────────
+def _analyze_kv_log(log_before_first: int) -> tuple[bool, bool]:
+    """Print new KV-cache log lines since the run started; return (miss_found, hit_found)."""
     all_log = _tail_log(PROXY_LOG, 500)
     new_log = all_log[log_before_first:]
     kv_lines = [l for l in new_log if "[kv-cache]" in l]
@@ -122,8 +113,11 @@ def main() -> int:
 
     miss_found = any("MISS" in l for l in kv_lines)
     hit_found = any("HIT" in l for l in kv_lines)
+    return miss_found, hit_found
 
-    # ── Verdicts ─────────────────────────────────────────────────────────
+
+def _print_verdicts(status1: int, status2: int, elapsed1: float, elapsed2: float, miss_found: bool, hit_found: bool) -> bool:
+    """Print each PASS/FAIL check and the overall RESULT line; return True if all checks passed."""
     print()
     results = [
         _check("request 1 returned 200",  status1 == 200),
@@ -149,9 +143,38 @@ def main() -> int:
     print()
     if all(results):
         print("RESULT: PASS")
-        return 0
+        return True
 
     print("RESULT: FAIL")
+    return False
+
+
+def main() -> int:
+    """Run the two-request KV-cache smoke test against the proxy and print a PASS/FAIL verdict."""
+    print(f"[smoke] Proxy : {PROXY_URL}")
+    print(f"[smoke] Log   : {PROXY_LOG}")
+    print()
+
+    log_before_first = len(_tail_log(PROXY_LOG, 500))
+
+    elapsed1, status1, body1 = _send("Request 1 — expect MISS + save")
+    print(f"  → status={status1}  elapsed={elapsed1:.2f}s")
+    if status1 != 200:
+        print(f"  body: {body1[:400]}")
+        print("\nRESULT: FAIL (request 1 did not return 200)")
+        return 1
+
+    elapsed2, status2, body2 = _send("Request 2 — expect HIT + restore")
+    print(f"  → status={status2}  elapsed={elapsed2:.2f}s")
+    if status2 != 200:
+        print(f"  body: {body2[:400]}")
+        print("\nRESULT: FAIL (request 2 did not return 200)")
+        return 1
+
+    miss_found, hit_found = _analyze_kv_log(log_before_first)
+
+    if _print_verdicts(status1, status2, elapsed1, elapsed2, miss_found, hit_found):
+        return 0
     return 1
 
 
