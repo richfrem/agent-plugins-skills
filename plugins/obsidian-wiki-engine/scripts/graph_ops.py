@@ -81,6 +81,15 @@ def extract_wikilinks(text: str) -> List[str]:
     return results
 
 
+def _default_exclusions() -> List[str]:
+    """Return the default directory names to prune when walking the vault."""
+    return [
+        '.git', '.obsidian', '.worktrees', 'node_modules',
+        '.vector_data', '.venv', '__pycache__', 'ARCHIVE',
+        'archive-tests', 'dataset_package'
+    ]
+
+
 # ---------------------------------------------------------------------------
 # Graph Index (T037)
 # ---------------------------------------------------------------------------
@@ -95,6 +104,7 @@ class VaultGraph:
     """
 
     def __init__(self) -> None:
+        """Initialize an empty graph index."""
         self.forward_links: Dict[str, Set[str]] = defaultdict(set)
         self.back_links: Dict[str, Set[str]] = defaultdict(set)
         self.file_mtimes: Dict[str, float] = {}
@@ -113,15 +123,24 @@ class VaultGraph:
         self.all_notes.clear()
 
         if exclusions is None:
-            exclusions = [
-                '.git', '.obsidian', '.worktrees', 'node_modules',
-                '.vector_data', '.venv', '__pycache__', 'ARCHIVE',
-                'archive-tests', 'dataset_package'
-            ]
+            exclusions = _default_exclusions()
 
         start = time.time()
-        files_scanned = 0
+        files_scanned = self._index_vault_files(vault_root, exclusions)
+        self.build_time = time.time() - start
 
+        return {
+            "status": "built",
+            "vault_root": str(vault_root),
+            "files_scanned": files_scanned,
+            "unique_notes": len(self.all_notes),
+            "total_edges": sum(len(v) for v in self.forward_links.values()),
+            "build_time_seconds": round(self.build_time, 3)
+        }
+
+    def _index_vault_files(self, vault_root: Path, exclusions: List[str]) -> int:
+        """Walk vault_root, indexing wikilinks from each .md file. Returns the count of files scanned."""
+        files_scanned = 0
         for root, dirs, files in os.walk(vault_root):
             # Prune excluded directories
             dirs[:] = [d for d in dirs if d not in exclusions]
@@ -147,17 +166,7 @@ class VaultGraph:
                     files_scanned += 1
                 except (OSError, UnicodeDecodeError):
                     continue
-
-        self.build_time = time.time() - start
-
-        return {
-            "status": "built",
-            "vault_root": str(vault_root),
-            "files_scanned": files_scanned,
-            "unique_notes": len(self.all_notes),
-            "total_edges": sum(len(v) for v in self.forward_links.values()),
-            "build_time_seconds": round(self.build_time, 3)
-        }
+        return files_scanned
 
     def get_forward_links(self, note_name: str) -> List[str]:
         """Get all notes that this note links TO (outbound)."""
@@ -237,7 +246,8 @@ class VaultGraph:
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser with build/forward/backlinks/connections/orphans subcommands."""
     parser = argparse.ArgumentParser(description="Obsidian Graph Traversal")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
@@ -260,6 +270,28 @@ def main() -> None:
     orph_p = subparsers.add_parser('orphans', help='Find orphaned notes')
     orph_p.add_argument('--vault-root', required=True)
 
+    return parser
+
+
+def _dispatch_query_command(graph: "VaultGraph", args: argparse.Namespace) -> None:
+    """Print the JSON result for the forward/backlinks/connections/orphans commands."""
+    if args.command == 'forward':
+        links = graph.get_forward_links(args.note)
+        print(json.dumps({"note": args.note, "forward_links": links, "count": len(links)}, indent=2))
+    elif args.command == 'backlinks':
+        links = graph.get_backlinks(args.note)
+        print(json.dumps({"note": args.note, "backlinks": links, "count": len(links)}, indent=2))
+    elif args.command == 'connections':
+        result = graph.get_connections(args.note, args.depth)
+        print(json.dumps(result, indent=2))
+    elif args.command == 'orphans':
+        orphans = graph.find_orphans()
+        print(json.dumps({"orphans": orphans, "count": len(orphans)}, indent=2))
+
+
+def main() -> None:
+    """Parse CLI subcommand args and dispatch to build/forward/backlinks/connections/orphans."""
+    parser = _build_arg_parser()
     args = parser.parse_args()
     graph = VaultGraph()
 
@@ -274,21 +306,10 @@ def main() -> None:
     elif args.command in ('forward', 'backlinks', 'connections', 'orphans'):
         # Try to load cached index first
         if not graph.load_index(index_path):
-            result = graph.build(vault_root)
+            graph.build(vault_root)
             graph.save_index(index_path)
 
-        if args.command == 'forward':
-            links = graph.get_forward_links(args.note)
-            print(json.dumps({"note": args.note, "forward_links": links, "count": len(links)}, indent=2))
-        elif args.command == 'backlinks':
-            links = graph.get_backlinks(args.note)
-            print(json.dumps({"note": args.note, "backlinks": links, "count": len(links)}, indent=2))
-        elif args.command == 'connections':
-            result = graph.get_connections(args.note, args.depth)
-            print(json.dumps(result, indent=2))
-        elif args.command == 'orphans':
-            orphans = graph.find_orphans()
-            print(json.dumps({"orphans": orphans, "count": len(orphans)}, indent=2))
+        _dispatch_query_command(graph, args)
     else:
         parser.print_help()
 
