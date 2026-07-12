@@ -7,6 +7,12 @@ Purpose:
     Removes stale chunk entries for files that have been deleted or renamed
     on disk, keeping the ChromaDB vector store in sync with the filesystem.
 
+Key Input Dependencies:
+    - vector_profiles.json      — Defines database connection settings and collection names
+    - vector_config.py          — Configuration profile loader
+    - operations.py             — Wraps ChromaDB collection operations
+    - live filesystem           — Used to verify existence of indexed source files
+
 Layer: Curate / Retrieve
 
 Usage:

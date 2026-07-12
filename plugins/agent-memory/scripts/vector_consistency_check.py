@@ -8,6 +8,11 @@ Purpose:
     Detects semantic drift by verifying that atomic facts still resolve to their 
     original source documents within the Vector index.
 
+Key Input Dependencies:
+    - vector_config.py          — Loads vector config properties
+    - operations.py             — Wraps ChromaDB collections search client
+    - live filesystem           — Reads target markdown files and verifies index matches
+
 Layer: Retrieve / Curate
 
 Usage:

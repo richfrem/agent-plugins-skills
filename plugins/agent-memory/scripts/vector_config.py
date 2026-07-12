@@ -8,6 +8,11 @@ Purpose:
     Reads all operational parameters (batch size, model name, chunking) 
     exclusively from vector_profiles.json.
 
+Key Input Dependencies:
+    - vector_profiles.json      — Defines the profiles containing collections and port mappings
+    - manifest.json             — Profile-specific manifest detailing glob file matching targets
+    - live filesystem           — Target paths checked, profiles parsed, and directories walked
+
 Layer: Curate / Retrieve
 
 Usage:

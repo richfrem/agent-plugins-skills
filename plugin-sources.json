@@ -22,9 +22,6 @@
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
         "agent-agentic-os",
-        "agent-loops",
-        "agent-memory",
-        "agent-scaffolders",
         "cli-agents",
         "dependency-management",
         "exploration-cycle-plugin",
@@ -35,6 +32,9 @@
     {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
+        "agent-loops",
+        "agent-memory",
+        "agent-scaffolders",
         "dev-utils"
       ]
     }

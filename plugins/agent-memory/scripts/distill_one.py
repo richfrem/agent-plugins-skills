@@ -11,6 +11,13 @@ Purpose:
     Use this to verify the full pipeline works end-to-end before running the
     full swarm batch.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - cheapest_models.json      — Defines the cheapest active model configs per engine
+    - rlm_config.py             — RLMConfig state manager helper
+    - inject_summary.py         — Used to inject the generated summary into the cache
+    - Target source file        — Read from disk to construct the distillation payload
+
 Usage:
     # 1. Copilot (GPT-5 mini)
     python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/decision.md --engine copilot
@@ -39,6 +46,7 @@ from pathlib import Path
 
 # ─── PATH BOOTSTRAP ─────────────────────────────────────────────────────────
 def _find_project_root(start: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     for p in [start.resolve()] + list(start.resolve().parents):
         if (p / ".git").is_dir():
             return p
@@ -156,6 +164,7 @@ def build_llm_cmd(engine: str, model: str, prompt_payload: str) -> tuple[list[st
 
 
 def main() -> None:
+    """CLI entry point: resolve configs, call the LLM backend, and inject the result into the cache."""
     parser = argparse.ArgumentParser(
         description="Single-file RLM distillation smoke test"
     )

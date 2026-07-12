@@ -8,6 +8,13 @@ Purpose:
     Parses the project manifest and feeds documentation/code into the Vector backend
     using high-speed batching configured via vector_profiles.json.
 
+Key Input Dependencies:
+    - vector_profiles.json      — Customizes the vector store collection names and parameters
+    - vector_config.py          — Loads profile configurations
+    - operations.py             — Ingestion helper wrapping LangChain/ChromaDB indexing
+    - ingest_code_shim.py       — Converts programming source files into formatted markdown (optional)
+    - rlm_config.py / RLM cache — Pre-injects high-level file summaries for context enrichment (optional)
+
 Layer: Curate / Retrieve
 
 Usage:

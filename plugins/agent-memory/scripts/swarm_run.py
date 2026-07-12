@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""
+r"""
 swarm_run.py 2.0
 ================
 
@@ -7,6 +7,12 @@ Purpose:
     Generic parallel Claude CLI executor. Dispatches N workers over a set of
     input files, each worker running Claude with a prompt defined in a Job File,
     then optionally pipes the output through a post-command (e.g. cache injector).
+
+Key Input Dependencies:
+    - job file (.job.md)        — YAML configuration and Markdown system prompt
+    - manifest.json             — Optional context-bundler manifest for target file selection
+    - cheapest_models.json      — Customizes the model choice by resolving recommended names
+    - live filesystem           — Target directories crawled for files
 
 WHAT IS A JOB FILE?
     A Job File is a single Markdown file (.md) that bundles ALL configuration
@@ -191,6 +197,7 @@ def shell_quote(value: str) -> str:
     return "'" + value.replace("'", "'\\''") + "'"
 
 def get_relative_path(path: Path) -> str:
+    """Helper to convert absolute path to relative if it lies under current working directory."""
     root = Path.cwd().resolve()
     try:
         return str(path.resolve().relative_to(root))
@@ -203,6 +210,7 @@ class suppress_monolithic_md:
     to prevent the CLI from loading massive project context per worker call.
     Restores on exit, even after crash or Ctrl+C."""
     def __init__(self, engine: str) -> None:
+        """Initialize the context manager with the appropriate engine instruction filename."""
         self.filename = f"{engine.upper()}.md"
         if engine.lower() == "copilot":
             self.filename = ".github/copilot-instructions.md"
@@ -210,12 +218,14 @@ class suppress_monolithic_md:
         self.bak = Path.cwd() / f".{Path(self.filename).name}.swarm_bak"
 
     def __enter__(self) -> "suppress_monolithic_md":
+        """Move the instruction file out of the workspace to hide it."""
         if self.src.exists():
             self.src.rename(self.bak)
             logger.info(f"🔒 Temporarily hid {self.filename} (restored on exit)")
         return self
 
     def __exit__(self, *exc: object) -> bool:
+        """Restore the instruction file to its original location."""
         if self.bak.exists():
             self.bak.rename(self.src)
             logger.info(f"🔓 Restored {self.filename}")
@@ -231,6 +241,7 @@ def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
     root_dir = Path.cwd().resolve()
 
     def is_safe_path(p: str) -> bool:
+        """Verify that the target path lies inside the current project root."""
         try:
             resolved = Path(p).resolve()
             return root_dir in resolved.parents or resolved == root_dir
@@ -432,6 +443,7 @@ def execute_worker(
 # ─── MAIN ───────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    """CLI entry point: parses args, resolves targets, runs workers parallelly, and manages checkpoints."""
     parser = argparse.ArgumentParser(description="Professional Agent Swarm Runner")
     parser.add_argument("--job", type=Path, required=True, help="Job file (.md)")
     parser.add_argument("--resume", action="store_true", help="Resume from last checkpoint")

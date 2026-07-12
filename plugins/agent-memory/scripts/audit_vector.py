@@ -7,6 +7,12 @@ Purpose:
     Compares the Vector DB index against the live filesystem (based on profiles)
     and reports coverage gaps. Produces CSV and text reports of missing files.
 
+Key Input Dependencies:
+    - vector_profiles.json      — Defines the vector database configuration profiles
+    - vector_config.py          — Loads vector profiles and configurations
+    - operations.py             — Wraps ChromaDB collections query client
+    - live filesystem           — Manifest validation source paths
+
 Layer: Retrieve / Curate
 
 Usage:

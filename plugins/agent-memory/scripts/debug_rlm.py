@@ -8,6 +8,11 @@ Purpose:
     Verifies path resolution, manifest existence, file discovery counts,
     and model configuration without modifying any data.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - rlm_config.py             — RLMConfig state manager and file collection backend
+    - live filesystem           — Scanned to count matching files per profile
+
 Layer: Curate / Rlm
 
 Usage:
@@ -23,6 +28,7 @@ from pathlib import Path
 # PATHS
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
