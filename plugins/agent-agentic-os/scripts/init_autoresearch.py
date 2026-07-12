@@ -45,6 +45,9 @@ Workflow after scaffolding:
     2. Edit evals/evals.json       -- replace REPLACE placeholders with real inputs/outputs
     3. evaluate.py --baseline      -- establish baseline, write .lock.hashes
     4. Agent loop                  -- reads program.md, mutates target, runs evaluate.py
+
+Key Input Dependencies:
+    - skills/os-eval-runner/assets/templates/autoresearch/*.template
 """
 
 import argparse
@@ -79,10 +82,8 @@ def _render(template: str, vars: dict[str, str]) -> str:
     return result
 
 
-def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> None:
-    """Deploy all three autoresearch templates into the experiment directory."""
-    experiment_name = experiment_dir.name
-
+def _resolve_display_paths(experiment_dir: Path, plugin_root: Path) -> tuple[str, str]:
+    """Resolve experiment_dir and plugin_root to cwd-relative display strings, falling back to absolute."""
     try:
         experiment_path_display = str(experiment_dir.relative_to(Path.cwd()))
     except ValueError:
@@ -93,6 +94,20 @@ def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> N
     except ValueError:
         plugin_root_display = str(plugin_root)
 
+    return experiment_path_display, plugin_root_display
+
+
+def _write_or_skip(dest: Path, content: str, experiment_dir: Path, created: list, skipped: list) -> None:
+    """Write dest with content unless it already exists, tracking the result in created/skipped."""
+    if dest.exists():
+        skipped.append(str(dest.relative_to(experiment_dir)))
+    else:
+        dest.write_text(content, encoding="utf-8")
+        created.append(str(dest.relative_to(experiment_dir)))
+
+
+def _deploy_templates(experiment_dir: Path, template_vars: dict) -> tuple[list[str], list[str]]:
+    """Render and write program.md, copilot_proposer_prompt.md, evals.json, results.tsv; skip existing files."""
     references_dir = experiment_dir / "references"
     evals_dir = experiment_dir / "evals"
     program_md = references_dir / "program.md"
@@ -103,28 +118,20 @@ def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> N
     references_dir.mkdir(parents=True, exist_ok=True)
     evals_dir.mkdir(parents=True, exist_ok=True)
 
-    template_vars = {
-        "EXPERIMENT_NAME": experiment_name,
-        "EXPERIMENT_PATH": experiment_path_display,
-        "MUTATION_TARGET": mutation_target,
-        "PLUGIN_ROOT": plugin_root_display,
-    }
-
     created: list[str] = []
     skipped: list[str] = []
 
-    def _write_or_skip(dest: Path, content: str) -> None:
-        if dest.exists():
-            skipped.append(str(dest.relative_to(experiment_dir)))
-        else:
-            dest.write_text(content, encoding="utf-8")
-            created.append(str(dest.relative_to(experiment_dir)))
+    _write_or_skip(program_md, _render(_load_template("program.md.template"), template_vars), experiment_dir, created, skipped)
+    _write_or_skip(copilot_prompt_md, _render(_load_template("copilot_proposer_prompt.md.template"), template_vars), experiment_dir, created, skipped)
+    _write_or_skip(evals_json, _render(_load_template("evals.json.template"), template_vars), experiment_dir, created, skipped)
+    _write_or_skip(results_tsv, _load_template("results.tsv.template"), experiment_dir, created, skipped)  # no vars in header
 
-    _write_or_skip(program_md, _render(_load_template("program.md.template"), template_vars))
-    _write_or_skip(copilot_prompt_md, _render(_load_template("copilot_proposer_prompt.md.template"), template_vars))
-    _write_or_skip(evals_json, _render(_load_template("evals.json.template"), template_vars))
-    _write_or_skip(results_tsv, _load_template("results.tsv.template"))  # no vars in header
+    return created, skipped
 
+
+def _print_summary_and_next_steps(plugin_root: Path, created: list, skipped: list,
+                                   experiment_path_display: str, mutation_target: str) -> None:
+    """Print CREATED/EXISTS summary, then next-step instructions if anything was created."""
     for f in created:
         print(f"[init-autoresearch] CREATED:  {f}")
     for f in skipped:
@@ -148,7 +155,24 @@ def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> N
         print("[init-autoresearch] All files already exist. Nothing to do.")
 
 
+def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> None:
+    """Deploy all three autoresearch templates into the experiment directory."""
+    experiment_name = experiment_dir.name
+    experiment_path_display, plugin_root_display = _resolve_display_paths(experiment_dir, plugin_root)
+
+    template_vars = {
+        "EXPERIMENT_NAME": experiment_name,
+        "EXPERIMENT_PATH": experiment_path_display,
+        "MUTATION_TARGET": mutation_target,
+        "PLUGIN_ROOT": plugin_root_display,
+    }
+
+    created, skipped = _deploy_templates(experiment_dir, template_vars)
+    _print_summary_and_next_steps(plugin_root, created, skipped, experiment_path_display, mutation_target)
+
+
 def main() -> None:
+    """CLI entrypoint: parse args and scaffold the autoresearch loop into the experiment dir."""
     parser = argparse.ArgumentParser(
         description="Scaffold the Karpathy autoresearch loop for any mutation target."
     )
