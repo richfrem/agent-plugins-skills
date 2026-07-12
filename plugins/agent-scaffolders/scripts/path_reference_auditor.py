@@ -250,6 +250,50 @@ class PathReferenceAuditor:
         """Get all valid (existing) references."""
         return [r for r in self.inventory['references'] if r['status'] and r['status']['exists']]
 
+    def _print_summary(self) -> None:
+        """Print the audit summary report."""
+        total = len(self.inventory['references'])
+        valid = len(self.get_valid_references())
+        missing = len(self.get_missing_references())
+        symlinks = len(self.get_symlinks())
+        broken = len(self.get_broken_symlinks())
+
+        print(f"\n[REPORT] Audit Summary:")
+        print(f"  Files scanned: {self.inventory['metadata']['total_files_scanned']}")
+        print(f"  Total references: {total}")
+        print(f"  [OK] Valid: {valid}")
+        print(f"  [ERROR] Missing: {missing}")
+        print(f"  [LINK] Symlinks: {symlinks}")
+        print(f"  [LINK] Broken symlinks: {broken}")
+
+    def _print_missing(self) -> None:
+        """Print the missing-references report."""
+        items = self.get_missing_references()
+        print(f"\n[ERROR] Missing References ({len(items)}):")
+        for item in sorted(items, key=lambda x: x['source_file']):
+            print(f"  {item['source_file']}:{item['line']}")
+            print(f"      {item['reference']}")
+
+    def _print_broken_symlinks(self) -> None:
+        """Print the broken-symlinks report."""
+        items = self.get_broken_symlinks()
+        print(f"\n[LINK] Broken Symlinks ({len(items)}):")
+        for item in sorted(items, key=lambda x: x['source_file']):
+            print(f"  {item['source_file']}:{item['line']}")
+            print(f"      {item['reference']}")
+            print(f"     Target: {item['status']['target']}")
+
+    def _print_symlinks(self) -> None:
+        """Print the all-symlinks report."""
+        items = self.get_symlinks()
+        print(f"\n[LINK] All Symlinks ({len(items)}):")
+        for item in sorted(items, key=lambda x: x['source_file']):
+            status = item['status']
+            state = "[OK]" if status['target'] != 'BROKEN' else "[ERROR]"
+            print(f"  {state} {item['source_file']}:{item['line']}")
+            print(f"     Ref: {item['reference']}")
+            print(f"     Target: {status['target']}")
+
     def phase_report(self, report_type: str = 'summary') -> None:
         """
         Phase 3: REPORT
@@ -259,45 +303,13 @@ class PathReferenceAuditor:
             self.load_inventory()
 
         if report_type == 'summary':
-            total = len(self.inventory['references'])
-            valid = len(self.get_valid_references())
-            missing = len(self.get_missing_references())
-            symlinks = len(self.get_symlinks())
-            broken = len(self.get_broken_symlinks())
-
-            print(f"\n[REPORT] Audit Summary:")
-            print(f"  Files scanned: {self.inventory['metadata']['total_files_scanned']}")
-            print(f"  Total references: {total}")
-            print(f"  [OK] Valid: {valid}")
-            print(f"  [ERROR] Missing: {missing}")
-            print(f"  [LINK] Symlinks: {symlinks}")
-            print(f"  [LINK] Broken symlinks: {broken}")
-
+            self._print_summary()
         elif report_type == 'missing':
-            items = self.get_missing_references()
-            print(f"\n[ERROR] Missing References ({len(items)}):")
-            for item in sorted(items, key=lambda x: x['source_file']):
-                print(f"  {item['source_file']}:{item['line']}")
-                print(f"      {item['reference']}")
-
+            self._print_missing()
         elif report_type == 'broken_symlinks':
-            items = self.get_broken_symlinks()
-            print(f"\n[LINK] Broken Symlinks ({len(items)}):")
-            for item in sorted(items, key=lambda x: x['source_file']):
-                print(f"  {item['source_file']}:{item['line']}")
-                print(f"      {item['reference']}")
-                print(f"     Target: {item['status']['target']}")
-
+            self._print_broken_symlinks()
         elif report_type == 'symlinks':
-            items = self.get_symlinks()
-            print(f"\n[LINK] All Symlinks ({len(items)}):")
-            for item in sorted(items, key=lambda x: x['source_file']):
-                status = item['status']
-                state = "[OK]" if status['target'] != 'BROKEN' else "[ERROR]"
-                print(f"  {state} {item['source_file']}:{item['line']}")
-                print(f"     Ref: {item['reference']}")
-                print(f"     Target: {status['target']}")
-
+            self._print_symlinks()
         elif report_type == 'all':
             self.phase_report('summary')
             self.phase_report('missing')
