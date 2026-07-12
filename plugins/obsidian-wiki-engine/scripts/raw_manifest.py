@@ -34,6 +34,9 @@ Related:
     - distill_wiki.py (RLM distillation)
     - query_wiki.py   (progressive query)
     - audit.py        (health checks)
+
+Key Input Dependencies:
+    - .agent/learning/rlm_wiki_raw_sources_manifest.json (canonical manifest, or WIKI_SOURCES_PATH override)
 """
 import os
 import sys
@@ -147,6 +150,28 @@ def save_wiki_sources(data: Dict[str, Any], sources_path: Path) -> None:
     print(f"[SAVE] raw sources manifest written: {sources_path}")
 
 
+def _resolve_wiki_root(wiki_root: Optional[Path], data: Dict[str, Any]) -> Path:
+    """Resolve wiki_root: explicit arg > JSON value > project root fallback."""
+    if wiki_root:
+        return Path(wiki_root).resolve()
+    raw_wiki_root = data.get("wiki_root", "")
+    if raw_wiki_root:
+        p = Path(raw_wiki_root)
+        return p if p.is_absolute() else (PROJECT_ROOT / p).resolve()
+    return PROJECT_ROOT / "wiki-root"
+
+
+def _resolve_source_entry(sources: Dict[str, Any], source_name: str, sources_path: Path) -> Dict[str, Any]:
+    """Return the named source entry, or exit(1) with an error listing available sources."""
+    entry = sources.get(source_name)
+    if not entry:
+        available = list(sources.keys())
+        print(f"[ERROR] Wiki source '{source_name}' not found. Available: {available}")
+        print(f"        Sources file: {sources_path}")
+        sys.exit(1)
+    return entry
+
+
 # ─── WIKI SOURCE CONFIG ───────────────────────────────────────────────────────
 class WikiSourceConfig:
     """
@@ -191,24 +216,10 @@ class WikiSourceConfig:
 
         self.namespace = data.get("namespace", "")
         self.global_excludes: List[str] = data.get("global_excludes", [])
-
-        # Resolve wiki_root: arg > JSON value > project root fallback
-        raw_wiki_root = data.get("wiki_root", "")
-        if wiki_root:
-            self.wiki_root = Path(wiki_root).resolve()
-        elif raw_wiki_root:
-            p = Path(raw_wiki_root)
-            self.wiki_root = p if p.is_absolute() else (PROJECT_ROOT / p).resolve()
-        else:
-            self.wiki_root = PROJECT_ROOT / "wiki-root"
+        self.wiki_root = _resolve_wiki_root(wiki_root, data)
 
         sources = data.get("sources", {})
-        entry = sources.get(source_name)
-        if not entry:
-            available = list(sources.keys())
-            print(f"[ERROR] Wiki source '{source_name}' not found. Available: {available}")
-            print(f"        Sources file: {self.sources_path}")
-            sys.exit(1)
+        entry = _resolve_source_entry(sources, source_name, self.sources_path)
 
         self.label: str = entry.get("label", source_name)
         self.description: str = entry.get("description", "")
