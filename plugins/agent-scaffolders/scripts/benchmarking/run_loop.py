@@ -9,6 +9,14 @@ Purpose:
     tracking history and returning the best description found.
     Supports train/test split to prevent overfitting.
 
+Key Input Dependencies:
+    - cheapest_models.json       — Configuration detailing low-cost model selections
+    - eval_set.json              — Evaluation database of queries and trigger criteria
+    - generate_report.py         — HTML report template builder
+    - improve_description.py     — Core optimization logic handler
+    - run_eval.py                — Evaluation process executor
+    - argparse, json, random, sys— Standard library packages for CLI arguments, file loads, and splits
+
 Layer: Meta-Execution
 
 Usage Examples:
@@ -316,6 +324,7 @@ def run_loop(
 
         if verbose:
             def print_eval_stats(label: str, results: list[dict], elapsed: float) -> None:
+                """Print accuracy, precision, recall, and pass details for evaluated queries to stderr."""
                 pos = [r for r in results if r["should_trigger"]]
                 neg = [r for r in results if not r["should_trigger"]]
                 tp = sum(r["triggers"] for r in pos)
@@ -469,6 +478,7 @@ def run_loop(
 
 
 def main() -> None:
+    """CLI entry point: parses optimizer loop configuration and manages the end-to-end keep-discard evaluation process."""
     parser = argparse.ArgumentParser(description="Run eval + improve loop")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

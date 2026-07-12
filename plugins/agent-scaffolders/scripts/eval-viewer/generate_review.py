@@ -8,6 +8,11 @@ Purpose:
     Discovers run outputs, embeds all data into an HTML template, and serves via tiny HTTP server.
     Feedback auto-saves to feedback.json inside the workspace.
 
+Key Input Dependencies:
+    - feedback.json             — User input feedback and reviews database file
+    - viewer.html               — HTML template file for the review dashboard
+    - http.server, base64, mimetypes — Standard library packages for base64 encoding and web serving
+
 Layer: User Interface/Dashboard
 
 Usage Examples:
@@ -82,6 +87,7 @@ MIME_OVERRIDES = {
 
 
 def get_mime_type(path: Path) -> str:
+    """Guess and return the MIME type of a given file path, applying custom overrides if needed."""
     ext = path.suffix.lower()
     if ext in MIME_OVERRIDES:
         return MIME_OVERRIDES[ext]
@@ -98,6 +104,7 @@ def find_runs(workspace: Path) -> list[dict]:
 
 
 def _find_runs_recursive(root: Path, current: Path, runs: list[dict]) -> None:
+    """Recursively traverses directories to locate eval outputs and populate the runs catalog."""
     if not current.is_dir():
         return
 
@@ -354,6 +361,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
         *args,
         **kwargs,
     ) -> None:
+        """Initialize the HTTP request handler with workspace, feedback, and benchmark configurations."""
         self.workspace = workspace
         self.skill_name = skill_name
         self.feedback_path = feedback_path
@@ -362,6 +370,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
         super().__init__(*args, **kwargs)
 
     def do_GET(self) -> None:
+        """Handle GET requests: renders the index.html page or returns workspace feedback database."""
         if self.path == "/" or self.path == "/index.html":
             # Regenerate HTML on each request (re-scans workspace for new outputs)
             runs = find_runs(self.workspace)
@@ -391,6 +400,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self) -> None:
+        """Handle POST requests: appends reviews and saves them back to feedback.json."""
         if self.path == "/api/feedback":
             length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(length)
@@ -412,11 +422,13 @@ class ReviewHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def log_message(self, format: str, *args: object) -> None:
+        """Suppress stdout request logs from the HTTP server to keep the terminal output clean."""
         # Suppress request logging to keep terminal clean
         pass
 
 
 def main() -> None:
+    """CLI entry point: parses workspace options and starts the HTTP server dashboard."""
     parser = argparse.ArgumentParser(description="Generate and serve eval review")
     parser.add_argument("workspace", type=Path, help="Path to workspace directory")
     parser.add_argument("--port", "-p", type=int, default=3117, help="Server port (default: 3117)")

@@ -1,8 +1,14 @@
 """
 update_ranked_skills.py
+===========================================================================
 
-CLI utility to update or add entries in summary-ranked-skills.json.
-Used by the eval-autoresearch-fit skill after completing an assessment.
+Purpose:
+    CLI utility to update or add entries in summary-ranked-skills.json.
+    Used by the eval-autoresearch-fit skill after completing an assessment.
+
+Key Input Dependencies:
+    - summary-ranked-skills.json — Main database file containing skill scores and eval status
+    - argparse, json, random     — Standard library packages for CLI parsing and JSON handling
 
 Usage:
     # Update scores for an existing entry

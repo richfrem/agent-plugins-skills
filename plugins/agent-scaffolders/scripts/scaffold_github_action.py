@@ -11,6 +11,10 @@ Purpose:
     This is distinct from scaffold_agentic_workflow.py which creates AI-powered
     GitHub Agentic Workflows (Official format or Smart Failure pattern).
 
+Key Input Dependencies:
+    - None (Static configuration template builder)
+    - argparse, textwrap, pathlib (standard library)
+
 Layer: Codify
 
 Usage:

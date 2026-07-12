@@ -7,6 +7,10 @@ Purpose:
     Scaffolds a new APM-native package with standard directory structure, 
     manifest, and governance documentation.
 
+Key Input Dependencies:
+    - PyYAML                    — Used for serializing apm.yml package manifests
+    - re, argparse, pathlib     — Standard library packages for CLI parsing and path validation
+
 Layer: Codify / Scaffolding
 
 Usage Examples:
@@ -186,6 +190,7 @@ def create_apm_package(
     print(f"Recommended Next: /create-skill inside {name}")
 
 def main():
+    """CLI entry point: parses configuration arguments and triggers APM package scaffolding."""
     parser = argparse.ArgumentParser(description="APM Package Scaffolder")
     parser.add_argument("--name", required=True)
     parser.add_argument("--path", required=True)

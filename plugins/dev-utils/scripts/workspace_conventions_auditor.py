@@ -158,9 +158,13 @@ def is_pointer_file(path: Path) -> bool:
 
 
 # External comment: Scans files recursively in the workspace directory
-def run_audit() -> Dict[str, List[Dict[str, Any]]]:
+def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], int, int]:
     """Scans all eligible files in the workspace, ignoring excluded paths."""
     results = {"py": [], "ts": [], "tsx": [], "js": []}
+    scanned_plugins = set()
+    failed_plugins = set()
+    total_files_checked = 0
+    total_files_failed = 0
     
     for root, dirs, files in os.walk(WORKSPACE_ROOT):
         # Exclude directories
@@ -174,10 +178,19 @@ def run_audit() -> Dict[str, List[Dict[str, Any]]]:
                 if is_pointer_file(file_path):
                     continue
                     
+                total_files_checked += 1
                 ext_key = suffix[1:]
                 
                 is_symlink = file_path.is_symlink()
                 resolved = file_path.resolve()
+                
+                # Check if it belongs to a plugin
+                rel_path = file_path.relative_to(WORKSPACE_ROOT)
+                if len(rel_path.parts) > 1 and rel_path.parts[0] == "plugins":
+                    plugin_name = rel_path.parts[1]
+                    scanned_plugins.add(plugin_name)
+                else:
+                    plugin_name = None
                 
                 if suffix == ".py":
                     errors = scan_python_file(resolved)
@@ -185,7 +198,9 @@ def run_audit() -> Dict[str, List[Dict[str, Any]]]:
                     errors = scan_js_ts_file(resolved)
                 
                 if errors:
-                    rel_path = file_path.relative_to(WORKSPACE_ROOT)
+                    total_files_failed += 1
+                    if plugin_name:
+                        failed_plugins.add(plugin_name)
                     results[ext_key].append({
                         "file": str(rel_path),
                         "is_symlink": is_symlink,
@@ -193,11 +208,11 @@ def run_audit() -> Dict[str, List[Dict[str, Any]]]:
                         "errors": errors
                     })
                     
-    return results
+    return results, scanned_plugins, failed_plugins, total_files_checked, total_files_failed
 
 
 # External comment: Persists audit output to temporary markdown report
-def write_report(results: Dict[str, List[Dict[str, Any]]]) -> Path:
+def write_report(results: Dict[str, List[Dict[str, Any]]], scanned_plugins: set[str], failed_plugins: set[str]) -> Path:
     """Writes the structured conventions violations report to the temp folder."""
     report_path = WORKSPACE_ROOT / "temp/workspace_conventions_report.md"
     os.makedirs(report_path.parent, exist_ok=True)
@@ -207,7 +222,8 @@ def write_report(results: Dict[str, List[Dict[str, Any]]]) -> Path:
         f.write("This report lists all source files violating the standards defined in `coding-conventions.md`.\n\n")
         
         total_violations = sum(len(items) for items in results.values())
-        f.write(f"### Summary: Found {total_violations} files with compliance violations.\n\n")
+        passed_count = len(scanned_plugins) - len(failed_plugins)
+        f.write(f"### Summary: Found {total_violations} files with compliance violations across {len(scanned_plugins)} checked plugins ({passed_count} passed, {len(failed_plugins)} failed).\n\n")
         
         for ext, files in results.items():
             if not files:
@@ -225,6 +241,15 @@ def write_report(results: Dict[str, List[Dict[str, Any]]]) -> Path:
 
 if __name__ == "__main__":
     print("Scanning workspace files...")
-    audit_results = run_audit()
-    out_file = write_report(audit_results)
+    audit_results, scanned_p, failed_p, files_chk, files_fail = run_audit()
+    out_file = write_report(audit_results, scanned_p, failed_p)
+    passed_p_count = len(scanned_p) - len(failed_p)
+    print(f"Plugins checked: {len(scanned_p)}")
+    print(f"Plugins passed:  {passed_p_count}")
+    print(f"Plugins failed:  {len(failed_p)}")
+    if failed_p:
+        print(f"Failing plugins: {', '.join(sorted(failed_p))}")
+    print(f"Scripts checked: {files_chk}")
+    print(f"Scripts passed:  {files_chk - files_fail}")
+    print(f"Scripts failed:  {files_fail}")
     print(f"Audit completed. Report saved to: {out_file}")

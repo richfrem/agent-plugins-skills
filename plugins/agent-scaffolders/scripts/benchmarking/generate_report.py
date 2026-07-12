@@ -8,6 +8,10 @@ Purpose:
     Takes the JSON output from run_loop.py and generates a visual HTML report
     showing each description attempt with check/x for each test case.
 
+Key Input Dependencies:
+    - run_loop_output.json      — JSON execution history logs from the optimizer loop
+    - argparse, html, json, sys — Standard library packages for HTML generation and JSON parsing
+
 Layer: Meta-Execution
 
 Usage Examples:
@@ -260,6 +264,7 @@ def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") 
 
         # Compute aggregate correct/total runs across all retries
         def aggregate_runs(results: list[dict]) -> tuple[int, int]:
+            """Compute correct and total validation checks across run samples."""
             correct = 0
             total = 0
             for r in results:
@@ -277,6 +282,7 @@ def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") 
 
         # Determine score classes
         def score_class(correct: int, total: int) -> str:
+            """Map pass ratios to css styling highlights (good, ok, bad)."""
             if total > 0:
                 ratio = correct / total
                 if ratio >= 0.8:
@@ -337,6 +343,7 @@ def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") 
 
 
 def main() -> None:
+    """CLI entry point: parses optimizer loop JSON details and outputs dashboard HTML page."""
     parser = argparse.ArgumentParser(description="Generate HTML report from run_loop output")
     parser.add_argument("input", help="Path to JSON output from run_loop.py (or - for stdin)")
     parser.add_argument("-o", "--output", default=None, help="Output HTML file (default: stdout)")
