@@ -25,6 +25,10 @@ Related:
     - ingest.py       (produces ParsedRecord input)
     - raw_manifest.py (WikiSourceConfig for path resolution)
     - distill_wiki.py (populates rlm/ summaries used in node frontmatter)
+
+Key Input Dependencies:
+    - ParsedRecord JSON (via ingest.py inline, or --records file)
+    - {wiki_root}/rlm/ RLM summary layers (optional; falls back to pending placeholders)
 """
 import sys
 import json
@@ -125,6 +129,18 @@ def _find_related_concepts(
     return [s[1] for s in scored[:max_links] if s[0] > 0]
 
 
+def _load_node_fillers(concept: str, all_concepts: List[str], rlm_cache_dir: Path) -> Dict[str, str]:
+    """Resolve rlm_summary, bullets, and wikilinks text for a wiki node, with pending-state fallbacks."""
+    rlm_summary = _load_rlm_summary(rlm_cache_dir, concept) or "*Summary pending — run /wiki-distill*"
+    bullets_raw = _load_rlm_bullets(rlm_cache_dir, concept)
+    bullets = bullets_raw if bullets_raw else "- *(Bullets pending — run /wiki-distill)*"
+
+    related = _find_related_concepts(concept, all_concepts)
+    wikilinks = "\n".join(f"- [[{r}]]" for r in related) if related else "*(No related concepts found yet)*"
+
+    return {"rlm_summary": rlm_summary, "bullets": bullets, "wikilinks": wikilinks}
+
+
 def build_wiki_node(
     record: Dict[str, Any],
     wiki_root: Path,
@@ -152,19 +168,7 @@ def build_wiki_node(
     wiki_dir = wiki_root / "wiki"
     node_path = wiki_dir / f"{concept}.md"
 
-    rlm_summary = _load_rlm_summary(rlm_cache_dir, concept) or "*Summary pending — run /wiki-distill*"
-    bullets_raw = _load_rlm_bullets(rlm_cache_dir, concept)
-
-    if bullets_raw:
-        bullets = bullets_raw
-    else:
-        bullets = "- *(Bullets pending — run /wiki-distill)*"
-
-    related = _find_related_concepts(concept, all_concepts)
-    if related:
-        wikilinks = "\n".join(f"- [[{r}]]" for r in related)
-    else:
-        wikilinks = "*(No related concepts found yet)*"
+    fillers = _load_node_fillers(concept, all_concepts, rlm_cache_dir)
 
     node_content = template.format(
         concept_name=concept,
@@ -175,10 +179,10 @@ def build_wiki_node(
         generated_at=record["generated_at"],
         cluster_name=record["cluster"],
         content_hash=record["content_hash"],
-        rlm_summary=rlm_summary,
-        bullets=bullets,
+        rlm_summary=fillers["rlm_summary"],
+        bullets=fillers["bullets"],
         content_excerpt=record["content"],
-        wikilinks=wikilinks,
+        wikilinks=fillers["wikilinks"],
     )
 
     if not dry_run:
@@ -186,6 +190,53 @@ def build_wiki_node(
         node_path.write_text(node_content, encoding="utf-8")
 
     return node_path
+
+
+def _group_by_cluster(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Group records by their 'cluster' field."""
+    clusters: Dict[str, List[Dict[str, Any]]] = {}
+    for r in records:
+        clusters.setdefault(r["cluster"], []).append(r)
+    return clusters
+
+
+def _build_index_lines(records: List[Dict[str, Any]], clusters: Dict[str, List[Dict[str, Any]]], now: str) -> List[str]:
+    """Build the markdown lines for wiki/_index.md."""
+    lines = [
+        "---",
+        f"generated_at: {now}",
+        f"total_concepts: {len(records)}",
+        "---",
+        "",
+        "# LLM Wiki Index",
+        "",
+        f"*{len(records)} concepts indexed across {len(clusters)} clusters.*",
+        "",
+    ]
+    for cluster_name in sorted(clusters.keys()):
+        lines.append(f"## {cluster_name.replace('-', ' ').title()}")
+        for r in sorted(clusters[cluster_name], key=lambda x: x["concept"]):
+            lines.append(f"- [[{r['concept']}]] — {r['title']}")
+        lines.append("")
+    return lines
+
+
+def _build_toc_lines(clusters: Dict[str, List[Dict[str, Any]]], now: str) -> List[str]:
+    """Build the markdown lines for wiki/_toc.md."""
+    lines = [
+        "---",
+        f"generated_at: {now}",
+        "---",
+        "",
+        "# Table of Contents",
+        "",
+    ]
+    for cluster_name in sorted(clusters.keys()):
+        lines.append(f"### [[_{cluster_name}|{cluster_name.replace('-', ' ').title()}]]")
+        for r in sorted(clusters[cluster_name], key=lambda x: x["concept"]):
+            lines.append(f"  - [[{r['concept']}]]")
+        lines.append("")
+    return lines
 
 
 def build_index(
@@ -203,44 +254,10 @@ def build_index(
     """
     wiki_dir = wiki_root / "wiki"
     now = now_iso()
+    clusters = _group_by_cluster(records)
 
-    # Group by cluster
-    clusters: Dict[str, List[Dict[str, Any]]] = {}
-    for r in records:
-        clusters.setdefault(r["cluster"], []).append(r)
-
-    # _index.md
-    index_lines = [
-        "---",
-        f"generated_at: {now}",
-        f"total_concepts: {len(records)}",
-        "---",
-        "",
-        "# LLM Wiki Index",
-        "",
-        f"*{len(records)} concepts indexed across {len(clusters)} clusters.*",
-        "",
-    ]
-    for cluster_name in sorted(clusters.keys()):
-        index_lines.append(f"## {cluster_name.replace('-', ' ').title()}")
-        for r in sorted(clusters[cluster_name], key=lambda x: x["concept"]):
-            index_lines.append(f"- [[{r['concept']}]] — {r['title']}")
-        index_lines.append("")
-
-    # _toc.md
-    toc_lines = [
-        "---",
-        f"generated_at: {now}",
-        "---",
-        "",
-        "# Table of Contents",
-        "",
-    ]
-    for cluster_name in sorted(clusters.keys()):
-        toc_lines.append(f"### [[_{cluster_name}|{cluster_name.replace('-', ' ').title()}]]")
-        for r in sorted(clusters[cluster_name], key=lambda x: x["concept"]):
-            toc_lines.append(f"  - [[{r['concept']}]]")
-        toc_lines.append("")
+    index_lines = _build_index_lines(records, clusters, now)
+    toc_lines = _build_toc_lines(clusters, now)
 
     if not dry_run:
         wiki_dir.mkdir(parents=True, exist_ok=True)
@@ -294,8 +311,8 @@ def build_cluster_pages(
             print(f"[DRY RUN] Would write {cluster_path.name} ({len(cluster_records)} concepts)")
 
 
-def main() -> None:
-    """Parse CLI arguments and build all wiki nodes."""
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for wiki_builder.py."""
     parser = argparse.ArgumentParser(description="Build Karpathy-style wiki nodes from parsed records")
     parser.add_argument("--wiki-root", required=True, help="Path to the wiki root directory")
     parser.add_argument("--records", default=None, help="Path to records JSON from ingest.py (default: run ingest inline)")
@@ -306,51 +323,63 @@ def main() -> None:
         help="Override the RLM cache directory (default: {wiki-root}/rlm)",
     )
     parser.add_argument("--dry-run", action="store_true", help="Plan without writing any files")
-    args = parser.parse_args()
+    return parser
+
+
+def _run_ingest_pipeline(wiki_root: Path, source: Optional[str]) -> List[Dict[str, Any]]:
+    """Run ingest.py then concept_extractor.py inline, returning the (possibly merged) records list."""
+    ingest_script = SCRIPT_DIR / "ingest.py"
+    cmd = [sys.executable, str(ingest_script), "--wiki-root", str(wiki_root)]
+    if source:
+        cmd += ["--source", source]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"[ERROR] ingest.py failed:\n{result.stderr}")
+        sys.exit(1)
+    try:
+        raw_records: List[Dict[str, Any]] = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        print("[ERROR] Could not parse ingest.py output as JSON")
+        print(result.stdout[:500])
+        sys.exit(1)
+
+    # Run concept extraction + cross-source synthesis
+    extractor_script = SCRIPT_DIR / "concept_extractor.py"
+    if not extractor_script.exists():
+        return raw_records
+
+    ext_cmd = [sys.executable, str(extractor_script), "--json"]
+    ext_result = subprocess.run(
+        ext_cmd, input=json.dumps(raw_records), capture_output=True, text=True
+    )
+    if ext_result.returncode != 0:
+        return raw_records
+    try:
+        records = json.loads(ext_result.stdout)
+        merged = len(raw_records) - len(records)
+        if merged > 0:
+            print(f"[EXTRACT] Merged {merged} duplicate concepts across sources")
+        return records
+    except json.JSONDecodeError:
+        return raw_records
+
+
+def _load_or_generate_records(wiki_root: Path, args: argparse.Namespace) -> List[Dict[str, Any]]:
+    """Load records from --records JSON, or run the inline ingest.py + concept_extractor.py pipeline."""
+    if args.records:
+        return json.loads(Path(args.records).read_text(encoding="utf-8"))
+    return _run_ingest_pipeline(wiki_root, args.source)
+
+
+def main() -> None:
+    """Parse CLI arguments and build all wiki nodes."""
+    args = _build_arg_parser().parse_args()
 
     wiki_root = Path(args.wiki_root).resolve()
     rlm_cache_dir = _resolve_rlm_cache_dir(wiki_root, args.rlm_cache_dir)
     template = _load_template()
 
-    # Load or generate records
-    if args.records:
-        records: List[Dict[str, Any]] = json.loads(Path(args.records).read_text(encoding="utf-8"))
-    else:
-        # Run ingest.py inline then concept_extractor for cross-source synthesis
-        ingest_script = SCRIPT_DIR / "ingest.py"
-        cmd = [sys.executable, str(ingest_script), "--wiki-root", str(wiki_root)]
-        if args.source:
-            cmd += ["--source", args.source]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"[ERROR] ingest.py failed:\n{result.stderr}")
-            sys.exit(1)
-        try:
-            raw_records: List[Dict[str, Any]] = json.loads(result.stdout)
-        except json.JSONDecodeError:
-            print("[ERROR] Could not parse ingest.py output as JSON")
-            print(result.stdout[:500])
-            sys.exit(1)
-
-        # Run concept extraction + cross-source synthesis
-        extractor_script = SCRIPT_DIR / "concept_extractor.py"
-        if extractor_script.exists():
-            ext_cmd = [sys.executable, str(extractor_script), "--json"]
-            ext_result = subprocess.run(
-                ext_cmd, input=json.dumps(raw_records), capture_output=True, text=True
-            )
-            if ext_result.returncode == 0:
-                try:
-                    records = json.loads(ext_result.stdout)
-                    merged = len(raw_records) - len(records)
-                    if merged > 0:
-                        print(f"[EXTRACT] Merged {merged} duplicate concepts across sources")
-                except json.JSONDecodeError:
-                    records = raw_records
-            else:
-                records = raw_records
-        else:
-            records = raw_records
+    records = _load_or_generate_records(wiki_root, args)
 
     if not records:
         print("[OK] No new or changed records to build.")
