@@ -12,43 +12,20 @@ Layer: Investigate / Curate
 Usage:
     # Audit a single file
     python audit_scripts_conventions.py path/to/script.py
-    
+
     # Audit all files in a directory (recursively)
     python audit_scripts_conventions.py path/to/scripts_dir/
+
+Key Input Dependencies:
+    - Target Python file or directory path (sys.argv[1])
 """
 
 import os
 import sys
 from typing import List, Tuple
 
-def check_script(filepath: str) -> bool:
-    """
-    Checks header and type-hints on a single Python script.
-    
-    Args:
-        filepath: Absolute path to the script file.
-        
-    Returns:
-        True if compliant, False otherwise.
-    """
-    name = os.path.basename(filepath)
-    if not filepath.endswith(".py"):
-        # Shell scripts generally don't use strict python conventions
-        return True
-        
-    try:
-        with open(filepath, "r") as f:
-            lines = f.readlines()
-    except Exception as e:
-        print(f"[❌] {name} - Error reading: {e}")
-        return False
-        
-    if not lines:
-        return True # Empty file is theoretically compliant but trivial
-        
-    header_chunk = "".join(lines[:10])
-    has_header = '"""' in header_chunk or "Purpose:" in header_chunk or "purpose:" in header_chunk
-    
+def _check_type_hints(filepath: str) -> List[str]:
+    """Parse the file's AST and return a list of missing return/param type hints."""
     missing_hints = []
     import ast
     try:
@@ -62,17 +39,53 @@ def check_script(filepath: str) -> bool:
                 for arg in node.args.args:
                     if arg.arg not in ["self", "cls"] and arg.annotation is None:
                         missing_hints.append(f"param '{arg.arg}' on '{func_name}'")
-    except Exception as e:
+    except Exception:
         # File is empty or has syntax issues
         pass
+    return missing_hints
 
+
+def _print_check_result(filepath: str, has_header: bool, missing_hints: list) -> None:
+    """Print a pass/fail line for the file, with details on any failures."""
     status = "✅" if has_header and not missing_hints else "❌"
     if status == "❌":
-         print(f"[{status}] {filepath}")
-         if not has_header:
-              print(f"     -> Missing File Header")
-         if missing_hints:
-              print(f"     -> Missing Type Hints: " + ", ".join(missing_hints))
+        print(f"[{status}] {filepath}")
+        if not has_header:
+            print(f"     -> Missing File Header")
+        if missing_hints:
+            print(f"     -> Missing Type Hints: " + ", ".join(missing_hints))
+
+
+def check_script(filepath: str) -> bool:
+    """
+    Checks header and type-hints on a single Python script.
+
+    Args:
+        filepath: Absolute path to the script file.
+
+    Returns:
+        True if compliant, False otherwise.
+    """
+    name = os.path.basename(filepath)
+    if not filepath.endswith(".py"):
+        # Shell scripts generally don't use strict python conventions
+        return True
+
+    try:
+        with open(filepath, "r") as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"[❌] {name} - Error reading: {e}")
+        return False
+
+    if not lines:
+        return True # Empty file is theoretically compliant but trivial
+
+    header_chunk = "".join(lines[:10])
+    has_header = '"""' in header_chunk or "Purpose:" in header_chunk or "purpose:" in header_chunk
+
+    missing_hints = _check_type_hints(filepath)
+    _print_check_result(filepath, has_header, missing_hints)
     return has_header and not missing_hints
 
 if __name__ == "__main__":
