@@ -59,49 +59,11 @@ def _split_frontmatter(lines: list) -> tuple:
     return fm, body
 
 
-# Run all structural and content checks on the agent markdown file
-def validate(agent_file: str) -> bool:
-    """
-    Run all validation checks on the given agent markdown file.
-
-    Args:
-        agent_file: Filesystem path to the agent `.md` file.
-
-    Returns:
-        True if there are no errors (warnings are tolerated); False otherwise.
-    """
-    print(f"🔍 Validating agent file: {agent_file}")
-    print()
-
-    if not os.path.isfile(agent_file):
-        print(f"❌ File not found: {agent_file}")
-        return False
-    print("✅ File exists")
-
-    with open(agent_file, errors="replace") as fh:
-        lines = fh.readlines()
-
-    if not lines or lines[0].strip() != "---":
-        print("❌ File must start with YAML frontmatter (---)")
-        return False
-    print("✅ Starts with frontmatter")
-
-    if not any(ln.strip() == "---" for ln in lines[1:]):
-        print("❌ Frontmatter not closed (missing second ---)")
-        return False
-    print("✅ Frontmatter properly closed")
-
-    fm_lines, body_lines = _split_frontmatter(lines)
-    fm = "".join(fm_lines)
-    sp = "".join(body_lines)
-
+# Validate the 'name' frontmatter field
+def _check_name_field(fm: str) -> tuple:
+    """Validate the 'name' frontmatter field. Returns (errors, warnings)."""
     errors = 0
     warnings = 0
-
-    print()
-    print("Checking required fields...")
-
-    # name
     name_m = re.search(r"^name:\s*(.+)", fm, re.MULTILINE)
     if not name_m:
         print("❌ Missing required field: name")
@@ -121,8 +83,14 @@ def validate(agent_file: str) -> bool:
         if name in _GENERIC_NAMES:
             print(f"⚠️  name is too generic: {name}")
             warnings += 1
+    return errors, warnings
 
-    # description
+
+# Validate the 'description' frontmatter field
+def _check_description_field(fm: str) -> tuple:
+    """Validate the 'description' frontmatter field. Returns (errors, warnings)."""
+    errors = 0
+    warnings = 0
     desc_m = re.search(r"^description:\s*(.+)", fm, re.MULTILINE)
     if not desc_m:
         print("❌ Missing required field: description")
@@ -142,8 +110,14 @@ def validate(agent_file: str) -> bool:
         if not re.search(r"use this agent when", desc, re.IGNORECASE):
             print("⚠️  description should start with 'Use this agent when...'")
             warnings += 1
+    return errors, warnings
 
-    # model
+
+# Validate the 'model' frontmatter field
+def _check_model_field(fm: str) -> tuple:
+    """Validate the 'model' frontmatter field. Returns (errors, warnings)."""
+    errors = 0
+    warnings = 0
     model_m = re.search(r"^model:\s*(.+)", fm, re.MULTILINE)
     if not model_m:
         print("❌ Missing required field: model")
@@ -154,8 +128,14 @@ def validate(agent_file: str) -> bool:
         if model not in _VALID_MODELS:
             print(f"⚠️  Unknown model: {model} (valid: {', '.join(sorted(_VALID_MODELS))})")
             warnings += 1
+    return errors, warnings
 
-    # color
+
+# Validate the 'color' frontmatter field
+def _check_color_field(fm: str) -> tuple:
+    """Validate the 'color' frontmatter field. Returns (errors, warnings)."""
+    errors = 0
+    warnings = 0
     color_m = re.search(r"^color:\s*(.+)", fm, re.MULTILINE)
     if not color_m:
         print("❌ Missing required field: color")
@@ -166,17 +146,24 @@ def validate(agent_file: str) -> bool:
         if color not in _VALID_COLORS:
             print(f"⚠️  Unknown color: {color} (valid: {', '.join(sorted(_VALID_COLORS))})")
             warnings += 1
+    return errors, warnings
 
-    # tools (optional)
+
+# Print info about the optional 'tools' frontmatter field
+def _check_tools_field(fm: str) -> None:
+    """Print info about the optional 'tools' frontmatter field (no errors/warnings)."""
     tools_m = re.search(r"^tools:\s*(.+)", fm, re.MULTILINE)
     if tools_m:
         print(f"✅ tools: {tools_m.group(1).strip()}")
     else:
         print("💡 tools: not specified (agent has access to all tools)")
 
-    # system prompt
-    print()
-    print("Checking system prompt...")
+
+# Validate the system prompt body
+def _check_system_prompt(sp: str) -> tuple:
+    """Validate the system prompt body. Returns (errors, warnings)."""
+    errors = 0
+    warnings = 0
     sp_stripped = sp.strip()
     if not sp_stripped:
         print("❌ System prompt is empty")
@@ -196,6 +183,75 @@ def validate(agent_file: str) -> bool:
             print("💡 Consider adding clear responsibilities or process steps")
         if not re.search(r"output", sp, re.IGNORECASE):
             print("💡 Consider defining output format expectations")
+    return errors, warnings
+
+
+# Read the file and validate frontmatter delimiters, splitting into (fm, sp)
+def _read_and_prepare(agent_file: str) -> tuple | None:
+    """Read the file, validate frontmatter delimiters, split into (fm, sp). None on failure."""
+    if not os.path.isfile(agent_file):
+        print(f"❌ File not found: {agent_file}")
+        return None
+    print("✅ File exists")
+
+    with open(agent_file, errors="replace") as fh:
+        lines = fh.readlines()
+
+    if not lines or lines[0].strip() != "---":
+        print("❌ File must start with YAML frontmatter (---)")
+        return None
+    print("✅ Starts with frontmatter")
+
+    if not any(ln.strip() == "---" for ln in lines[1:]):
+        print("❌ Frontmatter not closed (missing second ---)")
+        return None
+    print("✅ Frontmatter properly closed")
+
+    fm_lines, body_lines = _split_frontmatter(lines)
+    fm = "".join(fm_lines)
+    sp = "".join(body_lines)
+    return fm, sp
+
+
+# Run all structural and content checks on the agent markdown file
+def validate(agent_file: str) -> bool:
+    """
+    Run all validation checks on the given agent markdown file.
+
+    Args:
+        agent_file: Filesystem path to the agent `.md` file.
+
+    Returns:
+        True if there are no errors (warnings are tolerated); False otherwise.
+    """
+    print(f"🔍 Validating agent file: {agent_file}")
+    print()
+
+    prepared = _read_and_prepare(agent_file)
+    if prepared is None:
+        return False
+    fm, sp = prepared
+
+    errors = 0
+    warnings = 0
+
+    print()
+    print("Checking required fields...")
+
+    e, w = _check_name_field(fm)
+    errors += e; warnings += w
+    e, w = _check_description_field(fm)
+    errors += e; warnings += w
+    e, w = _check_model_field(fm)
+    errors += e; warnings += w
+    e, w = _check_color_field(fm)
+    errors += e; warnings += w
+    _check_tools_field(fm)
+
+    print()
+    print("Checking system prompt...")
+    e, w = _check_system_prompt(sp)
+    errors += e; warnings += w
 
     print()
     print(_SEPARATOR)
