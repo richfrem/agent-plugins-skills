@@ -144,271 +144,365 @@ def print_eval_stats(label: str, results: list[dict], elapsed: float) -> None:
         print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: {r['query'][:60]}", file=sys.stderr)
 
 
-def run_loop(
-    eval_set: list[dict],
-    skill_path: Path,
-    description_override: str | None,
-    num_workers: int,
-    timeout: int,
-    max_iterations: int,
-    runs_per_query: int,
-    trigger_threshold: float,
-    holdout: float,
-    eval_model: str | None,
-    improve_model: str | None,
-    verbose: bool,
-    eval_engine: str = "claude",
-    improve_engine: str = "claude",
-    live_report_path: Path | None = None,
-    log_dir: Path | None = None,
-    results_tsv_path: Path | None = None,
-    timing_path: Path | None = None,
+def _run_eval_for_iteration(
+    train_set: list[dict], test_set: list[dict], name: str, current_description: str,
+    num_workers: int, timeout: int, project_root, runs_per_query: int, trigger_threshold: float,
+    eval_model: str | None, eval_engine: str,
 ) -> dict:
-    """Run the eval + improvement loop with explicit keep/discard governance."""
-    project_root = find_project_root()
-    name, original_description, content = parse_skill_md(skill_path)
-    current_description = description_override or original_description
+    """Evaluate train+test together in one batch, then split results back out by query."""
+    all_queries = train_set + test_set
+    t0 = time.time()
+    all_results = run_eval(
+        eval_set=all_queries,
+        skill_name=name,
+        description=current_description,
+        num_workers=num_workers,
+        timeout=timeout,
+        project_root=project_root,
+        runs_per_query=runs_per_query,
+        trigger_threshold=trigger_threshold,
+        model=eval_model,
+        engine=eval_engine,
+    )
+    eval_elapsed = time.time() - t0
 
-    # Split into train/test if holdout > 0
-    if holdout > 0:
-        train_set, test_set = split_eval_set(eval_set, holdout)
-        if verbose:
-            print(f"Split: {len(train_set)} train, {len(test_set)} test (holdout={holdout})", file=sys.stderr)
+    train_queries_set = {q["query"] for q in train_set}
+    train_result_list = [r for r in all_results["results"] if r["query"] in train_queries_set]
+    test_result_list = [r for r in all_results["results"] if r["query"] not in train_queries_set]
+
+    train_passed = sum(1 for r in train_result_list if r["pass"])
+    train_total = len(train_result_list)
+    train_summary = {"passed": train_passed, "failed": train_total - train_passed, "total": train_total}
+    train_results = {"results": train_result_list, "summary": train_summary}
+
+    if test_set:
+        test_passed = sum(1 for r in test_result_list if r["pass"])
+        test_total = len(test_result_list)
+        test_summary = {"passed": test_passed, "failed": test_total - test_passed, "total": test_total}
+        test_results = {"results": test_result_list, "summary": test_summary}
     else:
-        train_set = eval_set
-        test_set = []
+        test_results = None
+        test_summary = None
 
-    history = []
-    exit_reason = "unknown"
-    best_description_so_far = current_description
-    best_train_passed = -1
-    best_train_failed = 10**9
-    iteration_timings: list[dict] = []
-    loop_start = time.time()
+    return {
+        "eval_elapsed": eval_elapsed,
+        "train_results": train_results,
+        "train_summary": train_summary,
+        "test_results": test_results,
+        "test_summary": test_summary,
+    }
+
+
+def _decide_and_update_best(loop_state: dict, train_summary: dict, current_description: str) -> tuple:
+    """Decide keep/discard based on train score; updates loop_state's best-tracking fields in place."""
+    improved = (
+        train_summary["passed"] > loop_state["best_train_passed"]
+        or (
+            train_summary["passed"] == loop_state["best_train_passed"]
+            and train_summary["failed"] < loop_state["best_train_failed"]
+        )
+    )
+    decision = "keep" if improved else "discard"
+    notes = (
+        "new best on train set"
+        if improved
+        else "regression/no gain; keep last known good description"
+    )
+    if improved:
+        loop_state["best_train_passed"] = train_summary["passed"]
+        loop_state["best_train_failed"] = train_summary["failed"]
+        loop_state["best_description_so_far"] = current_description
+    return decision, notes
+
+
+def _record_iteration(
+    history: list, iteration: int, current_description: str, decision: str, notes: str,
+    train_summary: dict, train_results: dict, test_summary, test_results,
+    results_tsv_path, train_score: str, test_score: str,
+) -> None:
+    """Append this iteration's outcome to history and, if configured, results.tsv."""
+    history.append({
+        "iteration": iteration,
+        "description": current_description,
+        "decision": decision,
+        "notes": notes,
+        "train_passed": train_summary["passed"],
+        "train_failed": train_summary["failed"],
+        "train_total": train_summary["total"],
+        "train_results": train_results["results"],
+        "test_passed": test_summary["passed"] if test_summary else None,
+        "test_failed": test_summary["failed"] if test_summary else None,
+        "test_total": test_summary["total"] if test_summary else None,
+        "test_results": test_results["results"] if test_results else None,
+        # For backward compat with report generator
+        "passed": train_summary["passed"],
+        "failed": train_summary["failed"],
+        "total": train_summary["total"],
+        "results": train_results["results"],
+    })
 
     if results_tsv_path:
-        _ensure_results_tsv(results_tsv_path)
-
-    for iteration in range(1, max_iterations + 1):
-        if verbose:
-            print(f"\n{'='*60}", file=sys.stderr)
-            print(f"Iteration {iteration}/{max_iterations}", file=sys.stderr)
-            print(f"Description: {current_description}", file=sys.stderr)
-            print(f"{'='*60}", file=sys.stderr)
-
-        # Evaluate train + test together in one batch for parallelism
-        all_queries = train_set + test_set
-        t0 = time.time()
-        all_results = run_eval(
-            eval_set=all_queries,
-            skill_name=name,
+        _append_results_tsv(
+            results_tsv_path,
+            iteration=iteration,
+            train_score=train_score,
+            test_score=test_score,
+            decision=decision,
+            notes=notes,
             description=current_description,
-            num_workers=num_workers,
-            timeout=timeout,
-            project_root=project_root,
-            runs_per_query=runs_per_query,
-            trigger_threshold=trigger_threshold,
-            model=eval_model,
-            engine=eval_engine,
         )
-        eval_elapsed = time.time() - t0
 
-        # Split results back into train/test by matching queries
-        train_queries_set = {q["query"] for q in train_set}
-        train_result_list = [r for r in all_results["results"] if r["query"] in train_queries_set]
-        test_result_list = [r for r in all_results["results"] if r["query"] not in train_queries_set]
 
-        train_passed = sum(1 for r in train_result_list if r["pass"])
-        train_total = len(train_result_list)
-        train_summary = {"passed": train_passed, "failed": train_total - train_passed, "total": train_total}
-        train_results = {"results": train_result_list, "summary": train_summary}
+def _write_live_report(
+    live_report_path: Path, original_description: str, current_description: str,
+    history: list, holdout: float, train_set: list, test_set: list, name: str,
+) -> None:
+    """Write the in-progress (auto-refreshing) live HTML report."""
+    partial_output = {
+        "original_description": original_description,
+        "best_description": current_description,
+        "best_score": "in progress",
+        "iterations_run": len(history),
+        "holdout": holdout,
+        "train_size": len(train_set),
+        "test_size": len(test_set),
+        "history": history,
+    }
+    live_report_path.write_text(generate_html(partial_output, auto_refresh=True, skill_name=name))
 
-        if test_set:
-            test_passed = sum(1 for r in test_result_list if r["pass"])
-            test_total = len(test_result_list)
-            test_summary = {"passed": test_passed, "failed": test_total - test_passed, "total": test_total}
-            test_results = {"results": test_result_list, "summary": test_summary}
-        else:
-            test_results = None
-            test_summary = None
 
-        train_score = f"{train_summary['passed']}/{train_summary['total']}"
-        test_score = (
-            f"{test_summary['passed']}/{test_summary['total']}"
-            if test_summary
-            else "-"
+def _process_eval_results(iteration: int, loop_state: dict, cfg: dict, current_description: str, eval_bundle: dict) -> tuple:
+    """Score the eval outcome, record history/tsv/live-report, and build the timing entry.
+
+    Returns (train_score, test_score, timing_entry).
+    """
+    eval_elapsed = eval_bundle["eval_elapsed"]
+    train_results = eval_bundle["train_results"]
+    train_summary = eval_bundle["train_summary"]
+    test_results = eval_bundle["test_results"]
+    test_summary = eval_bundle["test_summary"]
+
+    train_score = f"{train_summary['passed']}/{train_summary['total']}"
+    test_score = f"{test_summary['passed']}/{test_summary['total']}" if test_summary else "-"
+
+    decision, notes = _decide_and_update_best(loop_state, train_summary, current_description)
+
+    _record_iteration(
+        loop_state["history"], iteration, current_description, decision, notes,
+        train_summary, train_results, test_summary, test_results,
+        cfg["results_tsv_path"], train_score, test_score,
+    )
+
+    if cfg["live_report_path"]:
+        _write_live_report(
+            cfg["live_report_path"], cfg["original_description"], current_description,
+            loop_state["history"], cfg["holdout"], cfg["train_set"], cfg["test_set"], cfg["name"],
         )
-        improved = (
-            train_summary["passed"] > best_train_passed
-            or (
-                train_summary["passed"] == best_train_passed
-                and train_summary["failed"] < best_train_failed
-            )
-        )
-        decision = "keep" if improved else "discard"
-        notes = (
-            "new best on train set"
-            if improved
-            else "regression/no gain; keep last known good description"
-        )
-        if improved:
-            best_train_passed = train_summary["passed"]
-            best_train_failed = train_summary["failed"]
-            best_description_so_far = current_description
 
-        history.append({
-            "iteration": iteration,
-            "description": current_description,
-            "decision": decision,
-            "notes": notes,
-            "train_passed": train_summary["passed"],
-            "train_failed": train_summary["failed"],
-            "train_total": train_summary["total"],
-            "train_results": train_results["results"],
-            "test_passed": test_summary["passed"] if test_summary else None,
-            "test_failed": test_summary["failed"] if test_summary else None,
-            "test_total": test_summary["total"] if test_summary else None,
-            "test_results": test_results["results"] if test_results else None,
-            # For backward compat with report generator
-            "passed": train_summary["passed"],
-            "failed": train_summary["failed"],
-            "total": train_summary["total"],
-            "results": train_results["results"],
-        })
+    timing_entry = {
+        "iteration": iteration,
+        "eval_seconds": round(eval_elapsed, 3),
+        "improve_seconds": 0.0,
+        "train_score": train_score,
+        "test_score": test_score,
+        "decision": decision,
+    }
+    loop_state["iteration_timings"].append(timing_entry)
 
-        if results_tsv_path:
-            _append_results_tsv(
-                results_tsv_path,
-                iteration=iteration,
-                train_score=train_score,
-                test_score=test_score,
-                decision=decision,
-                notes=notes,
-                description=current_description,
-            )
+    return train_score, test_score, timing_entry
 
-        # Write live report if path provided
-        if live_report_path:
-            partial_output = {
-                "original_description": original_description,
-                "best_description": current_description,
-                "best_score": "in progress",
-                "iterations_run": len(history),
-                "holdout": holdout,
-                "train_size": len(train_set),
-                "test_size": len(test_set),
-                "history": history,
-            }
-            live_report_path.write_text(generate_html(partial_output, auto_refresh=True, skill_name=name))
 
-        timing_entry = {
-            "iteration": iteration,
-            "eval_seconds": round(eval_elapsed, 3),
-            "improve_seconds": 0.0,
-            "train_score": train_score,
-            "test_score": test_score,
-            "decision": decision,
-        }
-        iteration_timings.append(timing_entry)
-
+def _check_exit_conditions(iteration: int, max_iterations: int, train_summary: dict, loop_state: dict, verbose: bool) -> bool:
+    """Check all-passed / max-iterations exit conditions, updating loop_state['exit_reason']."""
+    if train_summary["failed"] == 0:
+        loop_state["exit_reason"] = f"all_passed (iteration {iteration})"
         if verbose:
-            print_eval_stats("Train", train_results["results"], eval_elapsed)
-            if test_summary:
-                print_eval_stats("Test ", test_results["results"], 0)
+            print(f"\nAll train queries passed on iteration {iteration}!", file=sys.stderr)
+        return True
 
-        if train_summary["failed"] == 0:
-            exit_reason = f"all_passed (iteration {iteration})"
-            if verbose:
-                print(f"\nAll train queries passed on iteration {iteration}!", file=sys.stderr)
-            break
-
-        if iteration == max_iterations:
-            exit_reason = f"max_iterations ({max_iterations})"
-            if verbose:
-                print(f"\nMax iterations reached ({max_iterations}).", file=sys.stderr)
-            break
-
-        # Improve the description based on train results.
-        # Karpathy-style rule: single-hypothesis changes and explicit rollback on regression.
+    if iteration == max_iterations:
+        loop_state["exit_reason"] = f"max_iterations ({max_iterations})"
         if verbose:
-            print(f"\nImproving description...", file=sys.stderr)
+            print(f"\nMax iterations reached ({max_iterations}).", file=sys.stderr)
+        return True
 
-        t0 = time.time()
-        # Strip test scores from history so improvement model can't see them
-        blinded_history = [
-            {k: v for k, v in h.items() if not k.startswith("test_")}
-            for h in history
-        ]
-        try:
-            new_description = improve_description(
-                skill_name=name,
-                skill_content=content,
-                current_description=best_description_so_far,
-                eval_results=train_results,
-                history=blinded_history,
-                model=improve_model,
-                engine=improve_engine,
-                log_dir=log_dir,
-                iteration=iteration,
-            )
-        except Exception as e:
-            # Crash/timeout discipline: log failure and continue from last known good.
-            improve_elapsed = time.time() - t0
-            timing_entry["improve_seconds"] = round(improve_elapsed, 3)
-            timing_entry["decision"] = "crash"
-            history[-1]["decision"] = "crash"
-            history[-1]["notes"] = f"improvement backend failure: {e}"
-            if results_tsv_path:
-                _append_results_tsv(
-                    results_tsv_path,
-                    iteration=iteration,
-                    train_score=train_score,
-                    test_score=test_score,
-                    decision="crash",
-                    notes=f"improvement backend failure: {e}",
-                    description=best_description_so_far,
-                )
-            current_description = best_description_so_far
-            if verbose:
-                print(f"Improve step failed: {e}", file=sys.stderr)
-            continue
+    return False
 
+
+def _run_iteration_eval_and_score(iteration: int, max_iterations: int, loop_state: dict, cfg: dict) -> tuple:
+    """Run eval, score/record the outcome, and check exit conditions for one iteration.
+
+    Returns (should_break, train_results, train_score, test_score, timing_entry).
+    """
+    verbose = cfg["verbose"]
+    current_description = loop_state["current_description"]
+
+    if verbose:
+        print(f"\n{'='*60}", file=sys.stderr)
+        print(f"Iteration {iteration}/{max_iterations}", file=sys.stderr)
+        print(f"Description: {current_description}", file=sys.stderr)
+        print(f"{'='*60}", file=sys.stderr)
+
+    eval_bundle = _run_eval_for_iteration(
+        cfg["train_set"], cfg["test_set"], cfg["name"], current_description,
+        cfg["num_workers"], cfg["timeout"], cfg["project_root"], cfg["runs_per_query"],
+        cfg["trigger_threshold"], cfg["eval_model"], cfg["eval_engine"],
+    )
+    train_results = eval_bundle["train_results"]
+    train_summary = eval_bundle["train_summary"]
+
+    train_score, test_score, timing_entry = _process_eval_results(
+        iteration, loop_state, cfg, current_description, eval_bundle
+    )
+
+    if verbose:
+        print_eval_stats("Train", train_results["results"], eval_bundle["eval_elapsed"])
+        if eval_bundle["test_summary"]:
+            print_eval_stats("Test ", eval_bundle["test_results"]["results"], 0)
+
+    should_break = _check_exit_conditions(iteration, max_iterations, train_summary, loop_state, verbose)
+
+    return should_break, train_results, train_score, test_score, timing_entry
+
+
+def _handle_improve_crash(
+    e: Exception, iteration: int, train_score: str, test_score: str,
+    best_description_so_far: str, history: list, timing_entry: dict,
+    results_tsv_path, verbose: bool,
+) -> None:
+    """Log an improvement-backend crash: mark history/timing, append tsv row, print if verbose."""
+    timing_entry["decision"] = "crash"
+    history[-1]["decision"] = "crash"
+    history[-1]["notes"] = f"improvement backend failure: {e}"
+    if results_tsv_path:
+        _append_results_tsv(
+            results_tsv_path,
+            iteration=iteration,
+            train_score=train_score,
+            test_score=test_score,
+            decision="crash",
+            notes=f"improvement backend failure: {e}",
+            description=best_description_so_far,
+        )
+    if verbose:
+        print(f"Improve step failed: {e}", file=sys.stderr)
+
+
+def _attempt_improvement(
+    name: str, content: str, best_description_so_far: str, train_results: dict, history: list,
+    improve_model: str | None, improve_engine: str, log_dir, iteration: int,
+    train_score: str, test_score: str, results_tsv_path, timing_entry: dict, verbose: bool,
+) -> tuple:
+    """Call improve_description(), falling back to the last known good description on failure.
+
+    Karpathy-style rule: single-hypothesis changes and explicit rollback on regression.
+    Returns (new_description_or_None, improve_elapsed, crashed).
+    """
+    t0 = time.time()
+    # Strip test scores from history so improvement model can't see them
+    blinded_history = [
+        {k: v for k, v in h.items() if not k.startswith("test_")}
+        for h in history
+    ]
+    try:
+        new_description = improve_description(
+            skill_name=name,
+            skill_content=content,
+            current_description=best_description_so_far,
+            eval_results=train_results,
+            history=blinded_history,
+            model=improve_model,
+            engine=improve_engine,
+            log_dir=log_dir,
+            iteration=iteration,
+        )
+    except Exception as e:
+        # Crash/timeout discipline: log failure and continue from last known good.
         improve_elapsed = time.time() - t0
         timing_entry["improve_seconds"] = round(improve_elapsed, 3)
+        _handle_improve_crash(
+            e, iteration, train_score, test_score, best_description_so_far,
+            history, timing_entry, results_tsv_path, verbose,
+        )
+        return None, improve_elapsed, True
 
-        if timing_path:
-            _write_timing_json(
-                timing_path,
-                {
-                    "exit_reason": "in_progress",
-                    "iterations": iteration_timings,
-                    "total_duration_seconds": round(time.time() - loop_start, 3),
-                },
-            )
+    improve_elapsed = time.time() - t0
+    timing_entry["improve_seconds"] = round(improve_elapsed, 3)
+    return new_description, improve_elapsed, False
 
-        if verbose:
-            print(f"Proposed ({improve_elapsed:.1f}s): {new_description}", file=sys.stderr)
 
-        current_description = new_description
+def _run_iteration(iteration: int, max_iterations: int, loop_state: dict, cfg: dict) -> bool:
+    """Run one full loop iteration (eval+score, then improve). Returns True if the loop should stop."""
+    should_break, train_results, train_score, test_score, timing_entry = _run_iteration_eval_and_score(
+        iteration, max_iterations, loop_state, cfg
+    )
+    if should_break:
+        return True
+
+    verbose = cfg["verbose"]
+    if verbose:
+        print(f"\nImproving description...", file=sys.stderr)
+
+    new_description, improve_elapsed, crashed = _attempt_improvement(
+        cfg["name"], cfg["content"], loop_state["best_description_so_far"], train_results,
+        loop_state["history"], cfg["improve_model"], cfg["improve_engine"], cfg["log_dir"], iteration,
+        train_score, test_score, cfg["results_tsv_path"], timing_entry, verbose,
+    )
+
+    if crashed:
+        loop_state["current_description"] = loop_state["best_description_so_far"]
+        return False
+
+    if cfg["timing_path"]:
+        _write_timing_json(
+            cfg["timing_path"],
+            {
+                "exit_reason": "in_progress",
+                "iterations": loop_state["iteration_timings"],
+                "total_duration_seconds": round(time.time() - cfg["loop_start"], 3),
+            },
+        )
+
+    if verbose:
+        print(f"Proposed ({improve_elapsed:.1f}s): {new_description}", file=sys.stderr)
+
+    loop_state["current_description"] = new_description
+    return False
+
+
+def _backfill_iteration_timings(history: list) -> list:
+    """Reconstruct iteration_timings from history when the loop broke before recording any."""
+    return [
+        {
+            "iteration": h["iteration"],
+            "eval_seconds": 0.0,
+            "improve_seconds": 0.0,
+            "train_score": f"{h['train_passed']}/{h['train_total']}",
+            "test_score": (
+                f"{h['test_passed']}/{h['test_total']}"
+                if h.get("test_passed") is not None and h.get("test_total") is not None
+                else "-"
+            ),
+            "decision": h.get("decision", "keep"),
+        }
+        for h in history
+    ]
+
+
+def _finalize_loop_result(
+    loop_state: dict, train_set: list, test_set: list, holdout: float,
+    original_description: str, verbose: bool, timing_path, loop_start: float,
+) -> dict:
+    """Backfill timings if the loop broke before recording any, pick the best iteration by
+    test score (or train if no test set), and build the final result dict."""
+    history = loop_state["history"]
+    iteration_timings = loop_state["iteration_timings"]
+    exit_reason = loop_state["exit_reason"]
+    current_description = loop_state["current_description"]
 
     if not iteration_timings and history:
-        iteration_timings = [
-            {
-                "iteration": h["iteration"],
-                "eval_seconds": 0.0,
-                "improve_seconds": 0.0,
-                "train_score": f"{h['train_passed']}/{h['train_total']}",
-                "test_score": (
-                    f"{h['test_passed']}/{h['test_total']}"
-                    if h.get("test_passed") is not None and h.get("test_total") is not None
-                    else "-"
-                ),
-                "decision": h.get("decision", "keep"),
-            }
-            for h in history
-        ]
+        iteration_timings = _backfill_iteration_timings(history)
 
-    # Find the best iteration by TEST score (or train if no test set)
     if test_set:
         best = max(history, key=lambda h: h["test_passed"] or 0)
         best_score = f"{best['test_passed']}/{best['test_total']}"
@@ -446,8 +540,99 @@ def run_loop(
     }
 
 
-def main() -> None:
-    """Parse CLI arguments and run the eval + improvement loop with optional live reporting."""
+def _split_train_test(eval_set: list[dict], holdout: float, verbose: bool) -> tuple:
+    """Split into train/test if holdout > 0, else use the full eval set as train."""
+    if holdout > 0:
+        train_set, test_set = split_eval_set(eval_set, holdout)
+        if verbose:
+            print(f"Split: {len(train_set)} train, {len(test_set)} test (holdout={holdout})", file=sys.stderr)
+    else:
+        train_set = eval_set
+        test_set = []
+    return train_set, test_set
+
+
+def _init_loop_state(current_description: str) -> dict:
+    """Initialize the mutable per-iteration state tracked across the improvement loop."""
+    return {
+        "history": [],
+        "exit_reason": "unknown",
+        "best_description_so_far": current_description,
+        "best_train_passed": -1,
+        "best_train_failed": 10**9,
+        "iteration_timings": [],
+        "current_description": current_description,
+    }
+
+
+def _build_loop_cfg(
+    train_set: list, test_set: list, name: str, content: str, num_workers: int, timeout: int,
+    project_root, runs_per_query: int, trigger_threshold: float, eval_model: str | None,
+    eval_engine: str, improve_model: str | None, improve_engine: str, log_dir, results_tsv_path,
+    timing_path, live_report_path, original_description: str, holdout: float, verbose: bool, loop_start: float,
+) -> dict:
+    """Bundle the static per-run configuration into a single dict for iteration helpers."""
+    return {
+        "train_set": train_set, "test_set": test_set, "name": name, "content": content,
+        "num_workers": num_workers, "timeout": timeout, "project_root": project_root,
+        "runs_per_query": runs_per_query, "trigger_threshold": trigger_threshold,
+        "eval_model": eval_model, "eval_engine": eval_engine,
+        "improve_model": improve_model, "improve_engine": improve_engine,
+        "log_dir": log_dir, "results_tsv_path": results_tsv_path, "timing_path": timing_path,
+        "live_report_path": live_report_path, "original_description": original_description,
+        "holdout": holdout, "verbose": verbose, "loop_start": loop_start,
+    }
+
+
+def run_loop(
+    eval_set: list[dict],
+    skill_path: Path,
+    description_override: str | None,
+    num_workers: int,
+    timeout: int,
+    max_iterations: int,
+    runs_per_query: int,
+    trigger_threshold: float,
+    holdout: float,
+    eval_model: str | None,
+    improve_model: str | None,
+    verbose: bool,
+    eval_engine: str = "claude",
+    improve_engine: str = "claude",
+    live_report_path: Path | None = None,
+    log_dir: Path | None = None,
+    results_tsv_path: Path | None = None,
+    timing_path: Path | None = None,
+) -> dict:
+    """Run the eval + improvement loop with explicit keep/discard governance."""
+    project_root = find_project_root()
+    name, original_description, content = parse_skill_md(skill_path)
+    current_description = description_override or original_description
+    train_set, test_set = _split_train_test(eval_set, holdout, verbose)
+
+    loop_state = _init_loop_state(current_description)
+    loop_start = time.time()
+
+    if results_tsv_path:
+        _ensure_results_tsv(results_tsv_path)
+
+    cfg = _build_loop_cfg(
+        train_set, test_set, name, content, num_workers, timeout, project_root, runs_per_query,
+        trigger_threshold, eval_model, eval_engine, improve_model, improve_engine, log_dir,
+        results_tsv_path, timing_path, live_report_path, original_description, holdout, verbose, loop_start,
+    )
+
+    for iteration in range(1, max_iterations + 1):
+        if _run_iteration(iteration, max_iterations, loop_state, cfg):
+            break
+
+    return _finalize_loop_result(
+        loop_state, train_set, test_set, holdout, original_description, verbose, timing_path, loop_start
+    )
+
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for the eval + improve loop."""
     parser = argparse.ArgumentParser(description="Run eval + improve loop")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")
@@ -476,9 +661,12 @@ def main() -> None:
     parser.add_argument("--verbose", action="store_true", help="Print progress to stderr")
     parser.add_argument("--report", default="auto", help="Generate HTML report at this path (default: 'auto' for temp file, 'none' to disable)")
     parser.add_argument("--results-dir", default=None, help="Save all outputs (results.json, report.html, log.txt) to a timestamped subdirectory here")
-    args = parser.parse_args()
+    return parser
 
-    # Backward-compatible model routing
+
+def _resolve_model_routing(args) -> None:
+    """Backward-compatible model routing: fill eval/improve models from the legacy --model
+    flag, and pick a cheap fallback model for the copilot improve engine when unspecified."""
     if not args.eval_model:
         args.eval_model = args.model
     if not args.improve_model:
@@ -496,29 +684,24 @@ def main() -> None:
         args.improve_model = fallback
 
 
-    eval_set = json.loads(Path(args.eval_set).read_text())
-    skill_path = Path(args.skill_path)
+def _setup_live_report(args, skill_path: Path):
+    """Resolve the live report path (if enabled), write a starting placeholder, and open it."""
+    if args.report == "none":
+        return None
 
-    if not (skill_path / "SKILL.md").exists():
-        print(f"Error: No SKILL.md found at {skill_path}", file=sys.stderr)
-        sys.exit(1)
-
-    name, _, _ = parse_skill_md(skill_path)
-
-    # Set up live report path
-    if args.report != "none":
-        if args.report == "auto":
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
-            live_report_path = Path(tempfile.gettempdir()) / f"skill_description_report_{skill_path.name}_{timestamp}.html"
-        else:
-            live_report_path = Path(args.report)
-        # Open the report immediately so the user can watch
-        live_report_path.write_text("<html><body><h1>Starting optimization loop...</h1><meta http-equiv='refresh' content='5'></body></html>")
-        webbrowser.open(str(live_report_path))
+    if args.report == "auto":
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        live_report_path = Path(tempfile.gettempdir()) / f"skill_description_report_{skill_path.name}_{timestamp}.html"
     else:
-        live_report_path = None
+        live_report_path = Path(args.report)
+    # Open the report immediately so the user can watch
+    live_report_path.write_text("<html><body><h1>Starting optimization loop...</h1><meta http-equiv='refresh' content='5'></body></html>")
+    webbrowser.open(str(live_report_path))
+    return live_report_path
 
-    # Determine output directory (create before run_loop so logs can be written)
+
+def _setup_results_dir(args) -> tuple:
+    """Create the timestamped results directory (if requested) and derive log/tsv/timing paths."""
     if args.results_dir:
         timestamp = time.strftime("%Y-%m-%d_%H%M%S")
         results_dir = Path(args.results_dir) / timestamp
@@ -529,6 +712,45 @@ def main() -> None:
     log_dir = results_dir / "logs" if results_dir else None
     results_tsv_path = results_dir / "results.tsv" if results_dir else None
     timing_path = results_dir / "timing.json" if results_dir else None
+    return results_dir, log_dir, results_tsv_path, timing_path
+
+
+def _write_final_outputs(output: dict, results_dir, live_report_path, name: str) -> None:
+    """Write the JSON result to stdout/results_dir and the final (non-refreshing) HTML report."""
+    json_output = json.dumps(output, indent=2)
+    print(json_output)
+    if results_dir:
+        (results_dir / "results.json").write_text(json_output)
+
+    # Write final HTML report (without auto-refresh)
+    if live_report_path:
+        live_report_path.write_text(generate_html(output, auto_refresh=False, skill_name=name))
+        print(f"\nReport: {live_report_path}", file=sys.stderr)
+
+    if results_dir and live_report_path:
+        (results_dir / "report.html").write_text(generate_html(output, auto_refresh=False, skill_name=name))
+
+    if results_dir:
+        print(f"Results saved to: {results_dir}", file=sys.stderr)
+
+
+def main() -> None:
+    """Parse CLI arguments and run the eval + improvement loop with optional live reporting."""
+    parser = _build_arg_parser()
+    args = parser.parse_args()
+    _resolve_model_routing(args)
+
+    eval_set = json.loads(Path(args.eval_set).read_text())
+    skill_path = Path(args.skill_path)
+
+    if not (skill_path / "SKILL.md").exists():
+        print(f"Error: No SKILL.md found at {skill_path}", file=sys.stderr)
+        sys.exit(1)
+
+    name, _, _ = parse_skill_md(skill_path)
+
+    live_report_path = _setup_live_report(args, skill_path)
+    results_dir, log_dir, results_tsv_path, timing_path = _setup_results_dir(args)
 
     output = run_loop(
         eval_set=eval_set,
@@ -551,22 +773,7 @@ def main() -> None:
         timing_path=timing_path,
     )
 
-    # Save JSON output
-    json_output = json.dumps(output, indent=2)
-    print(json_output)
-    if results_dir:
-        (results_dir / "results.json").write_text(json_output)
-
-    # Write final HTML report (without auto-refresh)
-    if live_report_path:
-        live_report_path.write_text(generate_html(output, auto_refresh=False, skill_name=name))
-        print(f"\nReport: {live_report_path}", file=sys.stderr)
-
-    if results_dir and live_report_path:
-        (results_dir / "report.html").write_text(generate_html(output, auto_refresh=False, skill_name=name))
-
-    if results_dir:
-        print(f"Results saved to: {results_dir}", file=sys.stderr)
+    _write_final_outputs(output, results_dir, live_report_path, name)
 
 
 if __name__ == "__main__":
