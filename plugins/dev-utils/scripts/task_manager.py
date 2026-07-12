@@ -65,6 +65,7 @@ TASK_PATTERN = re.compile(r"^(\d{4})-(.*?)\.md$")
 
 
 def _find_project_root(start_path: Path) -> Path:
+    """Walk up from start_path to find the nearest ancestor containing a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -265,7 +266,8 @@ def cmd_board(tasks_dir: Path) -> None:
     print(f"{'='*60}\n")
 
 
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for task_manager.py, with one subparser per command."""
     parser = argparse.ArgumentParser(description="Lightweight Kanban Task Manager")
     parser.add_argument("--dir", default=None, help="Root tasks directory (default: tasks/)")
     subparsers = parser.add_subparsers(dest="command")
@@ -297,7 +299,12 @@ def main() -> None:
 
     # board
     subparsers.add_parser("board", help="Show kanban board")
+    return parser
 
+
+def main() -> None:
+    """Parse CLI arguments and dispatch to the requested kanban command."""
+    parser = _build_arg_parser()
     args = parser.parse_args()
 
     if not args.command:
