@@ -80,6 +80,28 @@ except ImportError as e:
     sys.exit(1)
 
 
+def _write_summary_markdown(md_file: Path, content_hash: str, summary: str) -> None:
+    """Format and write the RLM summary metadata block and markdown text to disk."""
+    entry = {
+        "hash": content_hash,
+        "summary": summary,
+        "summarized_at": datetime.now().isoformat()
+    }
+    
+    lines = ["---"]
+    for k, v in entry.items():
+        if k != "summary":
+            val = str(v).replace('"', "'")
+            lines.append(f'{k}: "{val}"')
+    lines.append("---")
+    lines.append("")
+    lines.append("# Summary")
+    lines.append(str(entry.get("summary", "")))
+    lines.append("")
+    
+    md_file.write_text("\n".join(lines), encoding="utf-8")
+
+
 def main() -> None:
     """CLI entry point: validates target file presence, locks the database index, and writes summary."""
     parser = argparse.ArgumentParser(description="RLM Agent Injection — Write summaries directly to cache")
@@ -113,24 +135,7 @@ def main() -> None:
             md_file = cache_dir / f"{norm_key}.md"
             md_file.parent.mkdir(parents=True, exist_ok=True)
             
-            entry = {
-                "hash": content_hash,
-                "summary": args.summary,
-                "summarized_at": datetime.now().isoformat()
-            }
-            
-            lines = ["---"]
-            for k, v in entry.items():
-                if k != "summary":
-                    val = str(v).replace('"', "'")
-                    lines.append(f'{k}: "{val}"')
-            lines.append("---")
-            lines.append("")
-            lines.append("# Summary")
-            lines.append(str(entry.get("summary", "")))
-            lines.append("")
-            
-            md_file.write_text("\n".join(lines), encoding="utf-8")
+            _write_summary_markdown(md_file, content_hash, args.summary)
         
         print(f"[OK] Successfully injected summary for {rel_path} into {cache_dir.name}")
 
