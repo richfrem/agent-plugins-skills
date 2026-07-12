@@ -647,7 +647,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "mine-plugins": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1072,28 +1072,28 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-17T04:45:11.409753Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "rlm-cleanup-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:48.646332Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "rlm-curator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:48.646332Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "rlm-distill-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:48.646332Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "rlm-distill-ollama": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1107,14 +1107,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:48.646332Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "rlm-search": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:48.646332Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "sanctuary-memory": {
       "source": "richfrem/Project_Sanctuary",
@@ -1438,42 +1438,42 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "vector-db-cleanup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "vector-db-ingest": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "vector-db-init": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "vector-db-launch": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "vector-db-search": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T14:27:47.187810Z",
-      "updatedAt": "2026-07-12T20:04:40.899855Z"
+      "updatedAt": "2026-07-12T20:21:12.849783Z"
     },
     "verification-before-completion": {
       "source": "https://github.com/obra/superpowers",

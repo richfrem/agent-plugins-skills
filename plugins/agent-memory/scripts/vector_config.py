@@ -125,6 +125,29 @@ class VectorConfig:
     Single Source of Truth for vector configuration.
     """
 
+    def _read_profiles_data(self, profiles_path: Path) -> dict:
+        """Reads and returns the profiles JSON dictionary, exiting on failure."""
+        if not profiles_path.exists():
+            print(f"[ERROR] Vector profiles not found at {profiles_path}")
+            sys.exit(1)
+        try:
+            with open(profiles_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[ERROR] Reading vector profiles: {e}")
+            sys.exit(1)
+
+    def _resolve_profile(self, data: dict, profile_name: Optional[str]) -> dict:
+        """Finds and returns the profile dictionary by name, exiting if not found."""
+        profiles = data.get("profiles", {})
+        target_profile = profile_name or data.get("default_profile")
+        if not target_profile or target_profile not in profiles:
+            available = list(profiles.keys()) if profiles else ["(none)"]
+            print(f"[ERROR] Profile '{target_profile}' not found. Available: {available}")
+            sys.exit(1)
+        self.profile_name = target_profile
+        return profiles[target_profile]
+
     def __init__(
         self, 
         profile_name: Optional[str] = None, 
@@ -138,32 +161,12 @@ class VectorConfig:
             project_root: Optional override for the project root.
         """
         self.project_root = Path(project_root) if project_root else PROJECT_ROOT
-        
         profiles_path = self.project_root / ".agent" / "learning" / "vector_profiles.json"
         
-        if not profiles_path.exists():
-            print(f"[ERROR] Vector profiles not found at {profiles_path}")
-            sys.exit(1)
-            
-        try:
-            with open(profiles_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception as e:
-            print(f"[ERROR] Reading vector profiles: {e}")
-            sys.exit(1)
-            
-        profiles = data.get("profiles", {})
-        target_profile = profile_name or data.get("default_profile")
-            
-        if not target_profile or target_profile not in profiles:
-            available = list(profiles.keys()) if profiles else ["(none)"]
-            print(f"[ERROR] Profile '{target_profile}' not found. Available: {available}")
-            sys.exit(1)
-            
-        profile = profiles[target_profile]
+        data = self._read_profiles_data(profiles_path)
+        profile = self._resolve_profile(data, profile_name)
         
         # Identity & Paths
-        self.profile_name = target_profile
         self.description = profile.get("description", "")
         self.child_collection = profile.get("child_collection", "vector_child_v1")
         self.parent_collection = profile.get("parent_collection", "vector_parent_v1")
@@ -171,7 +174,7 @@ class VectorConfig:
         # Manifest
         manifest_raw = profile.get("manifest")
         if not manifest_raw:
-            print(f"[ERROR] Profile '{target_profile}' missing 'manifest' path.")
+            print(f"[ERROR] Profile '{self.profile_name}' missing 'manifest' path.")
             sys.exit(1)
         self.manifest_path = self.project_root / manifest_raw
         
