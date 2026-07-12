@@ -47,6 +47,7 @@ from parser import ObsidianParser
 class TestObsidianParser(unittest.TestCase):
     
     def test_standard_wikilink(self) -> None:
+        """A plain [[Link]] extracts with no heading, block, or alias."""
         text = "Here is a [[Standard Link]] to a note."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -56,6 +57,7 @@ class TestObsidianParser(unittest.TestCase):
         self.assertIsNone(links[0]['alias'])
 
     def test_link_with_heading(self) -> None:
+        """A [[Note#Heading]] link extracts target and heading with no block."""
         text = "Check this [[Note#My Heading]] for details."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -64,6 +66,7 @@ class TestObsidianParser(unittest.TestCase):
         self.assertIsNone(links[0]['block'])
 
     def test_link_with_block(self) -> None:
+        """A [[Note#^block-id]] link extracts target and block with no heading."""
         text = "This is a block transclusion [[Note#^block-123]] reference."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -72,6 +75,7 @@ class TestObsidianParser(unittest.TestCase):
         self.assertIsNone(links[0]['heading'])
 
     def test_aliased_link(self) -> None:
+        """A [[Note|Alias]] link extracts both the target and the alias text."""
         text = "Read the [[Note Name|Display Text]] here."
         links = ObsidianParser.extract_links(text)
         self.assertEqual(len(links), 1)
@@ -79,6 +83,7 @@ class TestObsidianParser(unittest.TestCase):
         self.assertEqual(links[0]['alias'], "Display Text")
 
     def test_embed_transclusion(self) -> None:
+        """An embed ![[image.png]] is picked up by extract_embeds, not extract_links."""
         # Embeds should NOT be matched by extract_links, but should be by extract_embeds
         text = "Here is an image: ![[image.png]] and a normal [[Link]]."
         links = ObsidianParser.extract_links(text)
@@ -91,11 +96,13 @@ class TestObsidianParser(unittest.TestCase):
         self.assertEqual(embeds[0]['target'], "image.png")
 
     def test_callout_generation(self) -> None:
+        """create_callout formats a valid callout type with title and multi-line body."""
         result = ObsidianParser.create_callout('warning', 'Important Note', 'This is a warning.\nPlease read.')
         expected = "> [!warning] Important Note\n> This is a warning.\n> Please read.\n"
         self.assertEqual(result, expected)
         
     def test_invalid_callout_type_fallback(self) -> None:
+        """An unrecognized callout type falls back to 'note'."""
         result = ObsidianParser.create_callout('invalid_type', 'Title', 'Content')
         # Should fallback to a standard 'note'
         self.assertTrue(result.startswith("> [!note] Title"))
