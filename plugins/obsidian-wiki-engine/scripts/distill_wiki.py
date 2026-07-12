@@ -33,6 +33,10 @@ Related:
     - raw_manifest.py  (WikiSourceConfig + agent-memory.json)
     - wiki_builder.py  (consumes the rlm/ summaries it produces)
     - audit.py         (reports missing summaries)
+
+Key Input Dependencies:
+    - Wiki node files under {wiki_root}/wiki/*.md
+    - One of copilot/claude/gemini CLIs available on PATH
 """
 import sys
 import os
@@ -137,6 +141,17 @@ def build_prompt(layer: str, concept: str, content: str) -> str:
     return base + "Summarize this content."
 
 
+def _build_llm_cmd(engine: str, model: str, prompt: str) -> Optional[Tuple[List[str], str]]:
+    """Build the (subprocess command, stdin text) pair for the given engine, or None if unknown."""
+    if engine == "claude":
+        return (["claude", "--model", model, "-p", prompt, "--no-session-persistence"], "")
+    if engine == "gemini":
+        return (["gemini", "--model", model, "-p", prompt], "")
+    if engine == "copilot":
+        return (["copilot", "--model", model], prompt)
+    return None
+
+
 def call_llm(
     engine: str,
     model: str,
@@ -155,17 +170,10 @@ def call_llm(
     Returns:
         Stripped LLM response string, or None on error.
     """
-    if engine == "claude":
-        cmd = ["claude", "--model", model, "-p", prompt, "--no-session-persistence"]
-        stdin_text = ""
-    elif engine == "gemini":
-        cmd = ["gemini", "--model", model, "-p", prompt]
-        stdin_text = ""
-    elif engine == "copilot":
-        cmd = ["copilot", "--model", model]
-        stdin_text = prompt
-    else:
+    built = _build_llm_cmd(engine, model, prompt)
+    if built is None:
         return None
+    cmd, stdin_text = built
 
     try:
         proc = subprocess.run(

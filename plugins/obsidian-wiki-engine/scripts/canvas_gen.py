@@ -19,6 +19,9 @@ Related:
     - wiki_builder.py  (generates the wiki nodes this script reads)
     - raw_manifest.py  (wiki root resolution)
     - obsidian-canvas-architect skill (manual canvas editing)
+
+Key Input Dependencies:
+    - {wiki_root}/wiki/*.md nodes with a 'cluster:' frontmatter field
 """
 import sys
 import json
@@ -78,6 +81,54 @@ def _layout_circle(concepts: List[str], center_x: int = 0, center_y: int = 0) ->
     return positions
 
 
+def _build_title_node(cluster_name: str) -> Dict[str, Any]:
+    """Build the center title node for a cluster canvas."""
+    return {
+        "id": f"_title_{cluster_name}",
+        "type": "text",
+        "text": f"# {cluster_name.replace('-', ' ').title()}",
+        "x": -NODE_WIDTH // 2,
+        "y": -NODE_HEIGHT // 2,
+        "width": NODE_WIDTH,
+        "height": NODE_HEIGHT,
+        "color": "1",
+    }
+
+
+def _build_concept_node(node_id: str, concept: str, x: int, y: int, node_file: Path, wiki_root: Path) -> Dict[str, Any]:
+    """Build a canvas node for one concept: a file-reference node if the wiki file exists, else a text node."""
+    base = {"id": node_id, "x": x, "y": y, "width": NODE_WIDTH, "height": NODE_HEIGHT}
+    if node_file.exists():
+        return {**base, "type": "file", "file": str(node_file.relative_to(wiki_root)).replace("\\", "/")}
+    return {**base, "type": "text", "text": concept}
+
+
+def _build_concept_edges(
+    concept: str, node_id: str, node_file: Path, concept_set: Set[str], edge_set: Set[tuple]
+) -> List[Dict[str, Any]]:
+    """Extract wikilinks from node_file and build edge specs for links within concept_set, deduped via edge_set."""
+    edges: List[Dict[str, Any]] = []
+    if not node_file.exists():
+        return edges
+    try:
+        content = node_file.read_text(encoding="utf-8")
+    except Exception:
+        return edges
+    for link_target in _extract_wikilinks(content):
+        if link_target in concept_set and link_target != concept:
+            edge_key = tuple(sorted([concept, link_target]))
+            if edge_key not in edge_set:
+                edge_set.add(edge_key)
+                edges.append({
+                    "id": f"edge_{concept}_{link_target}",
+                    "fromNode": node_id,
+                    "fromSide": "right",
+                    "toNode": f"node_{link_target}",
+                    "toSide": "left",
+                })
+    return edges
+
+
 def build_cluster_canvas(
     cluster_name: str,
     concepts: List[str],
@@ -98,73 +149,22 @@ def build_cluster_canvas(
         JSON Canvas spec dict (JSON Canvas Spec 1.0).
     """
     positions = _layout_circle(concepts)
-    nodes: List[Dict[str, Any]] = []
+    nodes: List[Dict[str, Any]] = [_build_title_node(cluster_name)]
     edges: List[Dict[str, Any]] = []
     concept_set = set(concepts)
-
-    # Title node (center)
-    nodes.append({
-        "id": f"_title_{cluster_name}",
-        "type": "text",
-        "text": f"# {cluster_name.replace('-', ' ').title()}",
-        "x": -NODE_WIDTH // 2,
-        "y": -NODE_HEIGHT // 2,
-        "width": NODE_WIDTH,
-        "height": NODE_HEIGHT,
-        "color": "1",
-    })
-
     edge_set: Set[tuple] = set()
 
     for concept, (x, y) in positions.items():
         node_id = f"node_{concept}"
         node_file = wiki_root / "wiki" / f"{concept}.md"
-        # Use file reference node if the wiki node exists
-        if node_file.exists():
-            nodes.append({
-                "id": node_id,
-                "type": "file",
-                "file": str(node_file.relative_to(wiki_root)).replace("\\", "/"),
-                "x": x,
-                "y": y,
-                "width": NODE_WIDTH,
-                "height": NODE_HEIGHT,
-            })
-        else:
-            nodes.append({
-                "id": node_id,
-                "type": "text",
-                "text": concept,
-                "x": x,
-                "y": y,
-                "width": NODE_WIDTH,
-                "height": NODE_HEIGHT,
-            })
-
-        # Extract wikilinks and create edges
-        if node_file.exists():
-            try:
-                content = node_file.read_text(encoding="utf-8")
-                for link_target in _extract_wikilinks(content):
-                    if link_target in concept_set and link_target != concept:
-                        edge_key = tuple(sorted([concept, link_target]))
-                        if edge_key not in edge_set:
-                            edge_set.add(edge_key)
-                            edges.append({
-                                "id": f"edge_{concept}_{link_target}",
-                                "fromNode": node_id,
-                                "fromSide": "right",
-                                "toNode": f"node_{link_target}",
-                                "toSide": "left",
-                            })
-            except Exception:
-                pass
+        nodes.append(_build_concept_node(node_id, concept, x, y, node_file, wiki_root))
+        edges.extend(_build_concept_edges(concept, node_id, node_file, concept_set, edge_set))
 
     return {"nodes": nodes, "edges": edges}
 
 
-def main() -> None:
-    """Parse CLI arguments and generate canvas files for wiki clusters."""
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for canvas_gen.py."""
     parser = argparse.ArgumentParser(
         description="Generate Obsidian Canvas files from wiki concept clusters"
     )
@@ -172,17 +172,11 @@ def main() -> None:
     parser.add_argument("--cluster", default=None, help="Generate canvas for one cluster only")
     parser.add_argument("--output", default=None,
                         help="Output path for canvas file (default: {wiki-root}/wiki/_{cluster}.canvas)")
-    args = parser.parse_args()
+    return parser
 
-    wiki_root = Path(args.wiki_root).resolve()
-    wiki_dir = wiki_root / "wiki"
 
-    if not wiki_dir.exists():
-        print(f"[ERROR] Wiki directory not found: {wiki_dir}")
-        print("        Run /wiki-ingest first.")
-        sys.exit(1)
-
-    # Group concepts by cluster (from frontmatter)
+def _discover_clusters(wiki_dir: Path) -> Dict[str, List[str]]:
+    """Scan wiki node frontmatter and group concept slugs by cluster name."""
     clusters: Dict[str, List[str]] = {}
     cluster_pattern = re.compile(r"^cluster:\s*(.+)$", re.MULTILINE)
 
@@ -196,6 +190,22 @@ def main() -> None:
         match = cluster_pattern.search(content)
         cluster_name = match.group(1).strip() if match else "unclustered"
         clusters.setdefault(cluster_name, []).append(node_file.stem)
+    return clusters
+
+
+def main() -> None:
+    """Parse CLI arguments and generate canvas files for wiki clusters."""
+    args = _build_arg_parser().parse_args()
+
+    wiki_root = Path(args.wiki_root).resolve()
+    wiki_dir = wiki_root / "wiki"
+
+    if not wiki_dir.exists():
+        print(f"[ERROR] Wiki directory not found: {wiki_dir}")
+        print("        Run /wiki-ingest first.")
+        sys.exit(1)
+
+    clusters = _discover_clusters(wiki_dir)
 
     if not clusters:
         print("[WARN] No wiki nodes found. Run /wiki-ingest first.")

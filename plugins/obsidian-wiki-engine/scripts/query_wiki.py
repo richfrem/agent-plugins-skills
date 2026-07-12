@@ -33,6 +33,10 @@ Related:
     - distill_wiki.py   (populates the rlm/ summaries)
     - wiki_builder.py   (populates wiki/ nodes)
     - concept_extractor (infer_cluster_from_content for saved nodes)
+
+Key Input Dependencies:
+    - {wiki_root}/wiki/*.md nodes, {wiki_root}/rlm/ summaries, agent-memory.json
+    - Optional vector-db query.py for Phase 2 semantic search
 """
 import sys
 import json
@@ -84,6 +88,86 @@ def _find_vdb_query_script() -> Optional[Path]:
     return None
 
 
+def _run_vdb_query_subprocess(query_script: Path, term: str, vdb_profile: str, limit: int) -> List[str]:
+    """Run the vector-db query.py subprocess and extract 'Source:' file paths from its output."""
+    try:
+        result = subprocess.run(
+            [
+                sys.executable, str(query_script),
+                term,
+                "--profile", vdb_profile,
+                "--limit", str(limit),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=str(_PROJECT_ROOT),
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return []
+
+    if result.returncode != 0:
+        return []
+
+    source_paths: List[str] = []
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if line.startswith("Source:"):
+            src = line[len("Source:"):].strip()
+            if src:
+                source_paths.append(src)
+    return source_paths
+
+
+def _build_reverse_source_map(wiki_root: Path) -> Optional[Dict[str, str]]:
+    """Load agent-memory.json and build a source_file -> concept reverse map. None if unavailable."""
+    memory_path = wiki_root / "meta" / "agent-memory.json"
+    if not memory_path.exists():
+        return None
+
+    try:
+        memory: Dict[str, Any] = json.loads(memory_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+    reverse_map: Dict[str, str] = {}
+    for entry in memory.values():
+        concept = entry.get("concept", "")
+        src_file = entry.get("source_file", "")
+        if concept and src_file:
+            # Store normalized path fragments for fuzzy matching
+            reverse_map[src_file.replace("\\", "/")] = concept
+    return reverse_map
+
+
+def _map_source_paths_to_concepts(source_paths: List[str], reverse_map: Dict[str, str], existing_slugs: set) -> List[str]:
+    """Map vector-db source file paths back to concept slugs via reverse_map, falling back to slug derivation."""
+    found: List[str] = []
+    seen: set = set()
+
+    for src_path in source_paths:
+        # Normalize path for matching
+        normalized = src_path.replace("\\", "/")
+        # Try suffix match: look for memory entries whose source_file appears in the path
+        concept = None
+        for mem_file, mem_concept in reverse_map.items():
+            if mem_file in normalized or normalized.endswith(mem_file):
+                concept = mem_concept
+                break
+        # Also try direct slug derivation from filename as fallback
+        if not concept:
+            stem = Path(src_path).stem
+            candidate_slug = _slug(stem)
+            if candidate_slug in existing_slugs:
+                concept = candidate_slug
+
+        if concept and concept not in seen:
+            found.append(concept)
+            seen.add(concept)
+
+    return found
+
+
 def _vector_phase2_search(
     term: str,
     wiki_root: Path,
@@ -111,86 +195,54 @@ def _vector_phase2_search(
     if not query_script:
         return []
 
-    try:
-        result = subprocess.run(
-            [
-                sys.executable, str(query_script),
-                term,
-                "--profile", vdb_profile,
-                "--limit", str(limit),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            cwd=str(_PROJECT_ROOT),
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return []
-
-    if result.returncode != 0:
-        return []
-
-    # Extract source file paths from "Source: /abs/path/to/file.md" lines
-    source_paths: List[str] = []
-    for line in result.stdout.splitlines():
-        line = line.strip()
-        if line.startswith("Source:"):
-            src = line[len("Source:"):].strip()
-            if src:
-                source_paths.append(src)
-
+    source_paths = _run_vdb_query_subprocess(query_script, term, vdb_profile, limit)
     if not source_paths:
         return []
 
-    # Reverse-map file paths → concept slugs via agent-memory.json
-    memory_path = wiki_root / "meta" / "agent-memory.json"
-    if not memory_path.exists():
+    reverse_map = _build_reverse_source_map(wiki_root)
+    if reverse_map is None:
         return []
 
-    try:
-        memory: Dict[str, Any] = json.loads(memory_path.read_text(encoding="utf-8"))
-    except Exception:
-        return []
-
-    # Build reverse map: file_path_str → concept
-    reverse_map: Dict[str, str] = {}
-    for entry in memory.values():
-        concept = entry.get("concept", "")
-        src_file = entry.get("source_file", "")
-        if concept and src_file:
-            # Store normalized path fragments for fuzzy matching
-            reverse_map[src_file.replace("\\", "/")] = concept
-
-    found: List[str] = []
-    seen: set = set()
     wiki_dir = wiki_root / "wiki"
     existing_slugs = {f.stem for f in wiki_dir.glob("*.md") if not f.name.startswith("_")} \
         if wiki_dir.exists() else set()
 
-    for src_path in source_paths:
-        # Normalize path for matching
-        normalized = src_path.replace("\\", "/")
-        # Try suffix match: look for memory entries whose source_file appears in the path
-        concept = None
-        for mem_file, mem_concept in reverse_map.items():
-            if mem_file in normalized or normalized.endswith(mem_file):
-                concept = mem_concept
-                break
-        # Also try direct slug derivation from filename as fallback
-        if not concept:
-            stem = Path(src_path).stem
-            candidate_slug = _slug(stem)
-            if candidate_slug in existing_slugs:
-                concept = candidate_slug
-
-        if concept and concept not in seen:
-            found.append(concept)
-            seen.add(concept)
-
-    return found
+    return _map_source_paths_to_concepts(source_paths, reverse_map, existing_slugs)
 
 
 # ─── SAVE-AS (file results back into the wiki) ────────────────────────────────
+
+def _build_saved_node_lines(concept_slug: str, source_concept: str, level: str, content: str, term: str) -> List[str]:
+    """Build the markdown lines for a query-result-derived wiki node."""
+    lines = [
+        "---",
+        f'concept: "{concept_slug}"',
+        f'source_query: "{term}"',
+        f'derived_from: "{source_concept}"',
+        f'level: "{level}"',
+        f'generated_at: "{now_iso()}"',
+        f'query_derived: true',
+        "---",
+        "",
+        f"# {concept_slug.replace('-', ' ').title()}",
+        "",
+        f"> *Derived from query: `{term}`*",
+        "",
+        "## Content",
+        "",
+        content,
+        "",
+    ]
+
+    if source_concept and source_concept != concept_slug:
+        lines += [
+            "## See Also",
+            "",
+            f"- [[{source_concept}]] *(original source concept)*",
+            "",
+        ]
+    return lines
+
 
 def _save_query_result_as_node(
     wiki_root: Path,
@@ -222,33 +274,7 @@ def _save_query_result_as_node(
     level = result.get("level", "summary")
     content = result.get("content", "")
 
-    lines = [
-        "---",
-        f'concept: "{concept_slug}"',
-        f'source_query: "{term}"',
-        f'derived_from: "{source_concept}"',
-        f'level: "{level}"',
-        f'generated_at: "{now_iso()}"',
-        f'query_derived: true',
-        "---",
-        "",
-        f"# {concept_slug.replace('-', ' ').title()}",
-        "",
-        f"> *Derived from query: `{term}`*",
-        "",
-        "## Content",
-        "",
-        content,
-        "",
-    ]
-
-    if source_concept and source_concept != concept_slug:
-        lines += [
-            "## See Also",
-            "",
-            f"- [[{source_concept}]] *(original source concept)*",
-            "",
-        ]
+    lines = _build_saved_node_lines(concept_slug, source_concept, level, content, term)
 
     node_path.write_text("\n".join(lines), encoding="utf-8")
     return node_path
@@ -265,6 +291,42 @@ def list_concepts(wiki_root: Path) -> List[str]:
     if not wiki_dir.exists():
         return []
     return sorted(f.stem for f in wiki_dir.glob("*.md") if not f.name.startswith("_"))
+
+
+def _phase1_slug_match(slug: str, concepts: List[str]) -> Optional[str]:
+    """Phase 1: exact slug match, substring match, or shared-token match against known concepts."""
+    if slug in concepts:
+        return slug
+
+    for c in concepts:
+        if slug in c or c in slug:
+            return c
+
+    search_tokens = set(slug.split("-"))
+    best_match = None
+    best_score = 0
+    for c in concepts:
+        c_tokens = set(c.split("-"))
+        score = len(search_tokens & c_tokens)
+        if score > best_score:
+            best_score = score
+            best_match = c
+    return best_match if best_score > 0 else None
+
+
+def _phase3_fulltext_scan(wiki_dir: Path, term: str) -> Optional[str]:
+    """Phase 3: grep-style full-text scan of wiki node content for the search term."""
+    term_lower = term.lower()
+    for node_file in wiki_dir.glob("*.md"):
+        if node_file.name.startswith("_"):
+            continue
+        try:
+            content = node_file.read_text(encoding="utf-8").lower()
+        except Exception:
+            continue
+        if term_lower in content:
+            return node_file.stem
+    return None
 
 
 def find_concept(
@@ -298,27 +360,9 @@ def find_concept(
     slug = _slug(term)
     concepts = list_concepts(wiki_root)
 
-    # Phase 1a: Exact match
-    if slug in concepts:
-        return slug
-
-    # Phase 1b: Slug is a prefix/substring of a concept
-    for c in concepts:
-        if slug in c or c in slug:
-            return c
-
-    # Phase 1c: Shared token match
-    search_tokens = set(slug.split("-"))
-    best_match = None
-    best_score = 0
-    for c in concepts:
-        c_tokens = set(c.split("-"))
-        score = len(search_tokens & c_tokens)
-        if score > best_score:
-            best_score = score
-            best_match = c
-    if best_score > 0:
-        return best_match
+    match = _phase1_slug_match(slug, concepts)
+    if match:
+        return match
 
     # Phase 2: Vector DB semantic search
     vdb_candidates = _vector_phase2_search(term, wiki_root, vdb_profile)
@@ -327,19 +371,7 @@ def find_concept(
             return candidate
 
     # Phase 3: Full-text keyword scan of wiki node content
-    wiki_dir = wiki_root / "wiki"
-    term_lower = term.lower()
-    for node_file in wiki_dir.glob("*.md"):
-        if node_file.name.startswith("_"):
-            continue
-        try:
-            content = node_file.read_text(encoding="utf-8").lower()
-        except Exception:
-            continue
-        if term_lower in content:
-            return node_file.stem
-
-    return None
+    return _phase3_fulltext_scan(wiki_root / "wiki", term)
 
 
 def read_layer(
@@ -377,6 +409,71 @@ def read_layer(
     return text or None
 
 
+def _resolve_summary_content(wiki_root: Path, concept: str, cache_dir: Path, wiki_node: Path) -> Optional[str]:
+    """Resolve 'summary' level content: RLM summary, or first meaningful line of the wiki node."""
+    content = read_layer(wiki_root, concept, "summary", cache_dir)
+    if content:
+        return content
+    if wiki_node.exists():
+        lines = wiki_node.read_text(encoding="utf-8").splitlines()
+        for line in lines:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#") and not stripped.startswith("---") and not stripped.startswith(">"):
+                return stripped
+    return None
+
+
+def _resolve_bullets_content(wiki_root: Path, concept: str, cache_dir: Path) -> str:
+    """Resolve 'bullets' level content: RLM bullets, falling back to summary, then a pending placeholder."""
+    content = read_layer(wiki_root, concept, "bullets", cache_dir)
+    if content:
+        return content
+    summary = read_layer(wiki_root, concept, "summary", cache_dir)
+    return summary or "*(No bullets yet — run /wiki-distill)*"
+
+
+def _resolve_full_content(wiki_node: Path) -> str:
+    """Resolve 'full' level content: the complete wiki node file, or a not-found placeholder."""
+    if wiki_node.exists():
+        return wiki_node.read_text(encoding="utf-8")
+    return "*(Wiki node not found — run /wiki-ingest)*"
+
+
+def _resolve_raw_content(wiki_root: Path, concept: str) -> str:
+    """Resolve 'raw' level content: the original source file behind this concept, via agent-memory.json."""
+    from raw_manifest import load_agent_memory
+    memory = load_agent_memory(wiki_root)
+    found_key = None
+    for key, entry in memory.items():
+        if entry.get("concept") == concept:
+            found_key = key
+            break
+    if not found_key:
+        return "*(No source mapping found in agent-memory.json — run /wiki-ingest)*"
+
+    source_name, rel_path = found_key.split("/", 1)
+    try:
+        cfg = WikiSourceConfig(source_name, wiki_root=wiki_root)
+        raw_path = cfg.source_path / rel_path
+        if raw_path.exists():
+            return raw_path.read_text(encoding="utf-8")
+        return f"*(Source file not found: {raw_path})*"
+    except SystemExit:
+        return f"*(Source '{source_name}' no longer registered)*"
+
+
+def _list_available_levels(cache_dir: Path, concept: str, wiki_node: Path) -> List[str]:
+    """List which disclosure levels (summary/bullets/deep RLM layers, plus 'full') exist for a concept."""
+    available: List[str] = []
+    concept_rlm_dir = cache_dir / concept
+    for layer in ["summary", "bullets", "deep"]:
+        if (concept_rlm_dir / f"{layer}.md").exists():
+            available.append(layer)
+    if wiki_node.exists():
+        available.append("full")
+    return available
+
+
 def query_concept(
     wiki_root: Path,
     concept: str,
@@ -396,63 +493,18 @@ def query_concept(
         Dict with 'concept', 'level', 'content', and 'available_levels' keys.
     """
     cache_dir = rlm_cache_dir if rlm_cache_dir else (wiki_root / "rlm")
-
-    available: List[str] = []
-    concept_rlm_dir = cache_dir / concept
-    for layer in ["summary", "bullets", "deep"]:
-        if (concept_rlm_dir / f"{layer}.md").exists():
-            available.append(layer)
-
     wiki_node = wiki_root / "wiki" / f"{concept}.md"
-    if wiki_node.exists():
-        available.append("full")
+    available = _list_available_levels(cache_dir, concept, wiki_node)
 
     content: Optional[str] = None
-
     if level == "summary":
-        content = read_layer(wiki_root, concept, "summary", cache_dir)
-        if not content:
-            if wiki_node.exists():
-                lines = wiki_node.read_text(encoding="utf-8").splitlines()
-                for line in lines:
-                    stripped = line.strip()
-                    if stripped and not stripped.startswith("#") and not stripped.startswith("---") and not stripped.startswith(">"):
-                        content = stripped
-                        break
-
+        content = _resolve_summary_content(wiki_root, concept, cache_dir, wiki_node)
     elif level == "bullets":
-        content = read_layer(wiki_root, concept, "bullets", cache_dir)
-        if not content:
-            summary = read_layer(wiki_root, concept, "summary", cache_dir)
-            content = summary or "*(No bullets yet — run /wiki-distill)*"
-
+        content = _resolve_bullets_content(wiki_root, concept, cache_dir)
     elif level == "full":
-        if wiki_node.exists():
-            content = wiki_node.read_text(encoding="utf-8")
-        else:
-            content = "*(Wiki node not found — run /wiki-ingest)*"
-
+        content = _resolve_full_content(wiki_node)
     elif level == "raw":
-        from raw_manifest import load_agent_memory
-        memory = load_agent_memory(wiki_root)
-        found_key = None
-        for key, entry in memory.items():
-            if entry.get("concept") == concept:
-                found_key = key
-                break
-        if found_key:
-            source_name, rel_path = found_key.split("/", 1)
-            try:
-                cfg = WikiSourceConfig(source_name, wiki_root=wiki_root)
-                raw_path = cfg.source_path / rel_path
-                if raw_path.exists():
-                    content = raw_path.read_text(encoding="utf-8")
-                else:
-                    content = f"*(Source file not found: {raw_path})*"
-            except SystemExit:
-                content = f"*(Source '{source_name}' no longer registered)*"
-        else:
-            content = "*(No source mapping found in agent-memory.json — run /wiki-ingest)*"
+        content = _resolve_raw_content(wiki_root, concept)
 
     return {
         "concept": concept,
@@ -462,8 +514,8 @@ def query_concept(
     }
 
 
-def main() -> None:
-    """Parse CLI arguments and execute progressive-disclosure query."""
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for query_wiki.py."""
     parser = argparse.ArgumentParser(
         description="Progressive-disclosure query against the Obsidian LLM wiki"
     )
@@ -494,19 +546,53 @@ def main() -> None:
         default=None,
         help="Override RLM cache directory (default: {wiki-root}/rlm)",
     )
+    return parser
+
+
+def _print_concept_list(wiki_root: Path, output_json: bool) -> None:
+    """Print all indexed concepts, as JSON or a human-readable list."""
+    concepts = list_concepts(wiki_root)
+    if output_json:
+        print(json.dumps(concepts, indent=2))
+    else:
+        print(f"[WIKI] {len(concepts)} indexed concepts:\n")
+        for c in concepts:
+            print(f"  - {c}")
+
+
+def _print_query_result(concept: str, level: str, result: Dict[str, Any], output_json: bool) -> None:
+    """Print the query result, as JSON or a human-readable formatted block."""
+    if output_json:
+        print(json.dumps(result, indent=2))
+    else:
+        print(f"\n[WIKI] {concept}  (level: {level})")
+        print(f"       Available: {', '.join(result['available_levels'])}")
+        print("-" * 60)
+        print(result["content"])
+        print("-" * 60)
+
+
+def _handle_save_as(wiki_root: Path, save_as: str, result: Dict[str, Any], term: str, output_json: bool) -> None:
+    """Handle the --save-as flag: file the query result back into the wiki as a new node."""
+    save_slug = _slug(save_as)
+    node_path = _save_query_result_as_node(wiki_root, save_slug, result, term)
+    if not output_json:
+        print(f"\n[SAVE] Query result filed as wiki node: {node_path.name}")
+    else:
+        saved_info = {"saved_as": save_slug, "path": str(node_path)}
+        print(json.dumps(saved_info, indent=2))
+
+
+def main() -> None:
+    """Parse CLI arguments and execute progressive-disclosure query."""
+    parser = _build_arg_parser()
     args = parser.parse_args()
 
     wiki_root = Path(args.wiki_root).resolve()
     rlm_cache_dir = Path(args.rlm_cache_dir).resolve() if args.rlm_cache_dir else None
 
     if args.list:
-        concepts = list_concepts(wiki_root)
-        if args.output_json:
-            print(json.dumps(concepts, indent=2))
-        else:
-            print(f"[WIKI] {len(concepts)} indexed concepts:\n")
-            for c in concepts:
-                print(f"  - {c}")
+        _print_concept_list(wiki_root, args.output_json)
         return
 
     if not args.term:
@@ -524,25 +610,10 @@ def main() -> None:
         sys.exit(1)
 
     result = query_concept(wiki_root, concept, args.level, rlm_cache_dir)
+    _print_query_result(concept, args.level, result, args.output_json)
 
-    if args.output_json:
-        print(json.dumps(result, indent=2))
-    else:
-        print(f"\n[WIKI] {concept}  (level: {args.level})")
-        print(f"       Available: {', '.join(result['available_levels'])}")
-        print("-" * 60)
-        print(result["content"])
-        print("-" * 60)
-
-    # File result back into wiki if --save-as requested
     if args.save_as:
-        save_slug = _slug(args.save_as)
-        node_path = _save_query_result_as_node(wiki_root, save_slug, result, args.term)
-        if not args.output_json:
-            print(f"\n[SAVE] Query result filed as wiki node: {node_path.name}")
-        else:
-            saved_info = {"saved_as": save_slug, "path": str(node_path)}
-            print(json.dumps(saved_info, indent=2))
+        _handle_save_as(wiki_root, args.save_as, result, args.term, args.output_json)
 
 
 if __name__ == "__main__":

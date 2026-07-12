@@ -28,6 +28,9 @@ Usage:
 Related:
     - ingest.py       (produces ParsedRecord input)
     - wiki_builder.py (consumes merged output)
+
+Key Input Dependencies:
+    - ParsedRecord JSON from ingest.py, via stdin or --input file
 """
 import sys
 import json
@@ -117,6 +120,21 @@ def infer_cluster_from_content(source_label: str, concept: str, content: str) ->
     return source_label
 
 
+def _combine_record_contents(records_sorted: List[Dict[str, Any]]) -> str:
+    """Concatenate content from all sorted records with source attribution headers, truncated if too long."""
+    combined_parts = []
+    for r in records_sorted:
+        label = r.get("source_label", r.get("source_name", "unknown"))
+        src_file = r.get("source_file", "")
+        combined_parts.append(f"<!-- Source: {label}/{src_file} -->\n{r.get('content', '')}")
+
+    MAX_COMBINED = 5000
+    combined_content = "\n\n".join(combined_parts)
+    if len(combined_content) > MAX_COMBINED:
+        combined_content = combined_content[:MAX_COMBINED] + "\n\n*(combined content truncated)*"
+    return combined_content
+
+
 def _merge_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Merge multiple ParsedRecords for the same concept into one authoritative record.
@@ -143,16 +161,7 @@ def _merge_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     primary = records_sorted[0]
 
     # Combine content with source attribution headers
-    combined_parts = []
-    for r in records_sorted:
-        label = r.get("source_label", r.get("source_name", "unknown"))
-        src_file = r.get("source_file", "")
-        combined_parts.append(f"<!-- Source: {label}/{src_file} -->\n{r.get('content', '')}")
-
-    MAX_COMBINED = 5000
-    combined_content = "\n\n".join(combined_parts)
-    if len(combined_content) > MAX_COMBINED:
-        combined_content = combined_content[:MAX_COMBINED] + "\n\n*(combined content truncated)*"
+    combined_content = _combine_record_contents(records_sorted)
 
     # Re-infer cluster from combined content (more representative)
     cluster = infer_cluster_from_content(

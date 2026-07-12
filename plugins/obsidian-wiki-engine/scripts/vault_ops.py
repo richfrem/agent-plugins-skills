@@ -75,6 +75,7 @@ class AgentLock:
     """
 
     def __init__(self, vault_root: Path = VAULT_ROOT) -> None:
+        """Initialize the lock, targeting {vault_root}/.agent-lock."""
         self.lock_path = vault_root / ".agent-lock"
         self._acquired = False
 
@@ -105,11 +106,13 @@ class AgentLock:
             self._acquired = False
 
     def __enter__(self) -> "AgentLock":
+        """Acquire the lock on context-manager entry; raise if another agent already holds it."""
         if not self.acquire():
             raise RuntimeError("Failed to acquire agent lock. Another agent is writing.")
         return self
 
     def __exit__(self, exc_type: Optional[type], exc_val: Optional[BaseException], exc_tb: Optional[Any]) -> bool:
+        """Release the lock on context-manager exit. Never suppresses exceptions."""
         self.release()
         return False
 
@@ -304,7 +307,8 @@ def _now_iso() -> str:
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser with read/create/update/append subcommands."""
     parser = argparse.ArgumentParser(description="Obsidian Vault CRUD Operations")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
@@ -328,6 +332,23 @@ def main() -> None:
     append_p.add_argument('--file', required=True, help='Path to note')
     append_p.add_argument('--content', required=True, help='Content to append')
 
+    return parser
+
+
+def _parse_frontmatter_kv(pairs: Optional[list]) -> Optional[Dict[str, Any]]:
+    """Parse a list of 'key=value' strings into a frontmatter dict, or None if pairs is empty."""
+    if not pairs:
+        return None
+    fm: Dict[str, Any] = {}
+    for kv in pairs:
+        k, v = kv.split('=', 1)
+        fm[k] = v
+    return fm
+
+
+def main() -> None:
+    """Parse CLI subcommand args and dispatch to read/create/update/append note operations."""
+    parser = _build_arg_parser()
     args = parser.parse_args()
 
     if args.command == 'read':
@@ -335,12 +356,7 @@ def main() -> None:
         print(json.dumps(result, indent=2, default=str))
 
     elif args.command == 'create':
-        fm = None
-        if args.frontmatter:
-            fm = {}
-            for kv in args.frontmatter:
-                k, v = kv.split('=', 1)
-                fm[k] = v
+        fm = _parse_frontmatter_kv(args.frontmatter)
         content = args.content.replace('\\n', '\n')
         result = create_note(Path(args.file), content, fm)
         print(json.dumps(result, indent=2))

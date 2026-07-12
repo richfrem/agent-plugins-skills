@@ -143,6 +143,25 @@ def append_row(filepath: Path, row_data: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"APPEND_ERROR: {str(e)}", "file": str(filepath)}
 
 
+def _find_data_array_key(data: Dict[str, Any]) -> Optional[str]:
+    """Return the first present list-valued key among rows/data/entries/items, or None."""
+    for key in ['rows', 'data', 'entries', 'items']:
+        if key in data and isinstance(data[key], list):
+            return key
+    return None
+
+
+def _write_base_atomic(filepath: Path, data: Dict[str, Any]) -> None:
+    """Dump data as YAML and atomically replace filepath's contents."""
+    from io import StringIO
+    import os
+    stream = StringIO()
+    _yaml.dump(data, stream)
+    tmp_path = filepath.parent / f"{filepath.name}.agent-tmp"
+    tmp_path.write_text(stream.getvalue(), encoding='utf-8')
+    os.rename(str(tmp_path), str(filepath))
+
+
 def update_cell(filepath: Path, row_index: int, column: str, value: Any) -> Dict[str, Any]:
     """Update a specific cell in a .base file."""
     if not HAS_RUAMEL:
@@ -159,13 +178,7 @@ def update_cell(filepath: Path, row_index: int, column: str, value: Any) -> Dict
         if data is None:
             return {"error": "Empty or invalid .base file"}
 
-        # Find the data array
-        data_key = None
-        for key in ['rows', 'data', 'entries', 'items']:
-            if key in data and isinstance(data[key], list):
-                data_key = key
-                break
-
+        data_key = _find_data_array_key(data)
         if data_key is None:
             return {"error": "No data array found in .base file"}
 
@@ -179,15 +192,7 @@ def update_cell(filepath: Path, row_index: int, column: str, value: Any) -> Dict
         old_value = rows[row_index].get(column, "<not set>")
         rows[row_index][column] = value
 
-        # Write back atomically
-        stream = StringIO()
-        _yaml.dump(data, stream)
-        new_content = stream.getvalue()
-
-        tmp_path = filepath.parent / f"{filepath.name}.agent-tmp"
-        import os
-        tmp_path.write_text(new_content, encoding='utf-8')
-        os.rename(str(tmp_path), str(filepath))
+        _write_base_atomic(filepath, data)
 
         return {
             "status": "cell_updated",
@@ -203,6 +208,7 @@ def update_cell(filepath: Path, row_index: int, column: str, value: Any) -> Dict
 
 
 def main() -> None:
+    """Parse CLI subcommand args and dispatch to read_base/append_row/update_cell."""
     parser = argparse.ArgumentParser(description="Obsidian Bases Manager")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 

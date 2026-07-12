@@ -75,6 +75,47 @@ def count_markdown_files(vault_root: Path) -> int:
     return count
 
 
+def _write_app_json(app_json: Path, exclusions: List[str]) -> None:
+    """Merge exclusions into app.json's userIgnoreFilters and write it (preserving other keys)."""
+    app_config: Dict[str, Any] = {}
+    if app_json.exists():
+        try:
+            app_config = json.loads(app_json.read_text())
+        except json.JSONDecodeError:
+            pass
+
+    app_config["userIgnoreFilters"] = exclusions
+    app_json.write_text(json.dumps(app_config, indent=2) + "\n")
+
+
+def _ensure_gitignore_excludes_obsidian(vault_root: Path) -> Optional[str]:
+    """Append or create .gitignore's .obsidian/ exclusion. Returns 'updated', 'created', or None."""
+    gitignore = vault_root / ".gitignore"
+    if gitignore.exists():
+        content = gitignore.read_text()
+        if ".obsidian/" not in content:
+            with open(gitignore, 'a') as f:
+                f.write("\n# Obsidian local config (user-specific)\n.obsidian/\n")
+            return "updated"
+        return None
+    gitignore.write_text("# Obsidian local config (user-specific)\n.obsidian/\n")
+    return "created"
+
+
+def _finalize_init_result(result: Dict[str, Any], vault_root: Path, exclusions: List[str]) -> Dict[str, Any]:
+    """Populate the final 'initialized' status fields (status, exclusions_applied, next_steps, env_hint)."""
+    result["status"] = "initialized"
+    result["exclusions_applied"] = len(exclusions)
+    result["next_steps"] = [
+        "Open the Obsidian desktop app",
+        f"Click 'Open Folder as Vault' and select: {vault_root}",
+        "All non-excluded .md files will be indexed automatically"
+    ]
+    if not os.environ.get("VAULT_PATH"):
+        result["env_hint"] = f"Consider setting: export VAULT_PATH={vault_root}"
+    return result
+
+
 def init_vault(vault_root: Path, extra_exclusions: Optional[List[str]] = None, validate_only: bool = False) -> Dict[str, Any]:
     """Initialize an Obsidian Vault at the given root."""
     vault_root = vault_root.resolve()
@@ -115,47 +156,17 @@ def init_vault(vault_root: Path, extra_exclusions: Optional[List[str]] = None, v
 
     # Create .obsidian directory
     obsidian_dir.mkdir(exist_ok=True)
+    _write_app_json(app_json, exclusions)
 
-    # Write or update app.json
-    app_config = {}
-    if app_json.exists():
-        try:
-            app_config = json.loads(app_json.read_text())
-        except json.JSONDecodeError:
-            pass
+    gitignore_status = _ensure_gitignore_excludes_obsidian(vault_root)
+    if gitignore_status:
+        result[f"gitignore_{gitignore_status}"] = True
 
-    app_config["userIgnoreFilters"] = exclusions
-
-    app_json.write_text(json.dumps(app_config, indent=2) + "\n")
-
-    # Add .obsidian to .gitignore if not already there
-    gitignore = vault_root / ".gitignore"
-    if gitignore.exists():
-        content = gitignore.read_text()
-        if ".obsidian/" not in content:
-            with open(gitignore, 'a') as f:
-                f.write("\n# Obsidian local config (user-specific)\n.obsidian/\n")
-            result["gitignore_updated"] = True
-    else:
-        gitignore.write_text("# Obsidian local config (user-specific)\n.obsidian/\n")
-        result["gitignore_created"] = True
-
-    result["status"] = "initialized"
-    result["exclusions_applied"] = len(exclusions)
-    result["next_steps"] = [
-        "Open the Obsidian desktop app",
-        f"Click 'Open Folder as Vault' and select: {vault_root}",
-        "All non-excluded .md files will be indexed automatically"
-    ]
-
-    # Hint about VAULT_PATH
-    if not os.environ.get("VAULT_PATH"):
-        result["env_hint"] = f"Consider setting: export VAULT_PATH={vault_root}"
-
-    return result
+    return _finalize_init_result(result, vault_root, exclusions)
 
 
 def main() -> None:
+    """Parse CLI args, run init_vault, print the JSON result, and exit(1) on error."""
     parser = argparse.ArgumentParser(description="Initialize an Obsidian Vault")
     parser.add_argument('--vault-root', required=True, help='Root directory for the vault')
     parser.add_argument('--exclude', nargs='*', help='Additional exclusion patterns')
