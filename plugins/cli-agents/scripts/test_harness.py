@@ -2,8 +2,14 @@
 """
 test_harness.py
 ===============
-Provides manifest validation and a mock execution environment to simulate how
-skills run within the Microsoft Agent Framework (MAF).
+Purpose:
+    Provides manifest validation and a mock execution environment to simulate
+    how skills run within the Microsoft Agent Framework (MAF).
+
+Key Input Dependencies:
+    - .claude-plugin/plugin.json (plugin manifest, for --validate)
+    - SKILL.md (skill file with YAML frontmatter, for --skill simulation)
+    - Optional input context file (--input)
 """
 
 import os
@@ -14,6 +20,7 @@ import argparse
 from pathlib import Path
 
 def validate_maf_plugin(plugin_path: Path) -> bool:
+    """Validate a plugin's manifest for MAF compatibility (required keys, banned keys)."""
     print(f"[*] Validating MAF compatibility for: {plugin_path}")
     plugin_json_path = plugin_path / ".claude-plugin" / "plugin.json"
     
@@ -43,6 +50,7 @@ def validate_maf_plugin(plugin_path: Path) -> bool:
     return True
 
 def simulate_maf_run(skill_path: Path, input_file: Path, instruction: str):
+    """Parse a skill's SKILL.md frontmatter and simulate a MAF execution frame."""
     print(f"[*] Simulating MAF execution for skill: {skill_path.name}")
     skill_md = skill_path / "SKILL.md"
     if not skill_md.exists():
@@ -73,6 +81,7 @@ def simulate_maf_run(skill_path: Path, input_file: Path, instruction: str):
     print("[+] Simulated run completed successfully.")
 
 def main():
+    """Parse CLI arguments and run either plugin validation or a skill simulation."""
     parser = argparse.ArgumentParser(description="MAF Local Simulator & Validator")
     parser.add_argument("--validate", action="store_true", help="Validate plugin for MAF compatibility")
     parser.add_argument("--plugin", type=str, help="Path to plugin directory to validate")
