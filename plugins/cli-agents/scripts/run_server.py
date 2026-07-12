@@ -144,7 +144,8 @@ def stop_existing_server():
         pass
 
 
-def main():
+def _check_paths_or_exit() -> tuple:
+    """Locate the llama-server binary and model, printing setup instructions and exiting if missing."""
     binary, model = find_paths()
     if not binary or not model:
         print("ERROR: llama-server binary or Gemma 4 model not found.")
@@ -155,23 +156,12 @@ def main():
             print("  Run setup_and_build.sh to compile llama.cpp from source.")
         print("  Model must be at: local-llm-bench/llama.cpp/models/gemma-4-12b-UD-Q4_K_XL.gguf")
         sys.exit(1)
+    return binary, model
 
-    stop_existing_server()
 
-    # Slot save/restore: enables KV cache persistence to disk via REST API
-    # POST /slots/0/save and /slots/0/restore allow pre-baked system prompt states
-    # to survive server restarts — critical for direct-API delegation workflows.
-    home = os.path.expanduser("~")
-    slot_save_path = os.path.join(home, ".claude", "proxy", "kv_cache")
-    os.makedirs(slot_save_path, exist_ok=True)
-
-    threads = get_thread_count()
-    print(f"[llama-server] Starting Gemma 4 12B — binary: {binary}")
-    print(f"[llama-server] Model: {model}")
-    print(f"[llama-server] Threads: {threads} | Context: 32768 | GPU layers: 99")
-    print(f"[llama-server] Slot cache dir: {slot_save_path}")
-
-    cmd = [
+def _build_llama_cmd(binary: str, model: str, threads: int, slot_save_path: str) -> list:
+    """Assemble the llama-server command-line argument list."""
+    return [
         binary,
         "-m", model,
         "-c", "32768",
@@ -192,6 +182,9 @@ def main():
         "--chat-template-kwargs", '{"enable_thinking": false}',
     ]
 
+
+def _launch(binary: str, cmd: list) -> None:
+    """Execute llama-server: subprocess on Windows, execv (process replacement) elsewhere."""
     try:
         if _IS_WIN:
             # os.execv is unreliable on Windows — use subprocess instead
@@ -204,6 +197,29 @@ def main():
     except Exception as e:
         print(f"ERROR executing llama-server: {e}")
         sys.exit(1)
+
+
+def main():
+    """Locate llama-server and the model, stop any existing instance, then launch the server."""
+    binary, model = _check_paths_or_exit()
+
+    stop_existing_server()
+
+    # Slot save/restore: enables KV cache persistence to disk via REST API
+    # POST /slots/0/save and /slots/0/restore allow pre-baked system prompt states
+    # to survive server restarts — critical for direct-API delegation workflows.
+    home = os.path.expanduser("~")
+    slot_save_path = os.path.join(home, ".claude", "proxy", "kv_cache")
+    os.makedirs(slot_save_path, exist_ok=True)
+
+    threads = get_thread_count()
+    print(f"[llama-server] Starting Gemma 4 12B — binary: {binary}")
+    print(f"[llama-server] Model: {model}")
+    print(f"[llama-server] Threads: {threads} | Context: 32768 | GPU layers: 99")
+    print(f"[llama-server] Slot cache dir: {slot_save_path}")
+
+    cmd = _build_llama_cmd(binary, model, threads, slot_save_path)
+    _launch(binary, cmd)
 
 
 if __name__ == "__main__":

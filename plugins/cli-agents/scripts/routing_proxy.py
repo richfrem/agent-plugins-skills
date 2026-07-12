@@ -184,12 +184,26 @@ def _save_in_background(key: str, tokens: int = 0) -> None:
     if _kv_cache is None or key is None:
         return
     def _do_save():
+        """Save the slot to disk and log the outcome."""
         success = _kv_cache.save_slot(key, tokens=tokens)
         if success:
             print(f"[kv-cache] MISS {key[:8]}... saved")
         else:
             print(f"[kv-cache] MISS {key[:8]}... save FAILED")
     threading.Thread(target=_do_save, daemon=True).start()
+
+
+def _sanitize_anthropic_body(raw_body: bytes) -> bytes:
+    """Strip the unconditional 'thinking' field and a default temperature=1 from an Anthropic request body."""
+    try:
+        body = json.loads(raw_body.decode("utf-8"))
+        body.pop("thinking", None)  # Claude Code sends this unconditionally
+        # Pop temperature if it is default 1 to prevent template confusion
+        if body.get("temperature", 1.0) == 1.0:
+            body.pop("temperature", None)
+        return json.dumps(body).encode("utf-8")
+    except Exception:
+        return raw_body
 
 
 # Routes /v1/messages by model ID to Anthropic API or local llama-server
@@ -357,30 +371,12 @@ class RoutingProxy(BaseHTTPRequestHandler):
     # Local llama-server passthrough — WITH cache orchestration            #
     # ------------------------------------------------------------------ #
 
-    # Forward the Anthropic request to llama-server — stripping thinking parameters
-    def _route_to_local(self, raw_body: bytes) -> None:
-        """Relay the request to the local llama-server, with KV cache restore/save."""
-        # --- KV cache: extract key and attempt restore ---
-        cache_key, parsed_body = _extract_cache_key(raw_body)
-        kv_hit = _try_restore(cache_key)
+    def _relay_llama_response(self, req: "urllib.request.Request") -> bool:
+        """Send req to llama-server and relay the error/response back to the client.
 
-        try:
-            body = json.loads(raw_body.decode("utf-8"))
-            body.pop("thinking", None)  # Claude Code sends this unconditionally
-            # Pop temperature if it is default 1 to prevent template confusion
-            if body.get("temperature", 1.0) == 1.0:
-                body.pop("temperature", None)
-            sanitized_body = json.dumps(body).encode("utf-8")
-        except Exception:
-            sanitized_body = raw_body
-
-        req = urllib.request.Request(
-            LLAMA_SERVER_URL,
-            data=sanitized_body,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-
+        Returns True on success (caller should proceed to KV cache save), or
+        False if an error response was already sent to the client.
+        """
         try:
             response = urllib.request.urlopen(req)
         except urllib.error.HTTPError as e:
@@ -391,10 +387,10 @@ class RoutingProxy(BaseHTTPRequestHandler):
                     self.send_header(k, v)
             self.end_headers()
             self.wfile.write(error_body)
-            return
+            return False
         except OSError:
             self._send_local_offline_error()
-            return
+            return False
 
         self.send_response(response.status)
         for k, v in response.headers.items():
@@ -412,9 +408,25 @@ class RoutingProxy(BaseHTTPRequestHandler):
                 self.wfile.flush()
         except BrokenPipeError:
             pass
+        return True
+
+    # Forward the Anthropic request to llama-server — stripping thinking parameters
+    def _route_to_local(self, raw_body: bytes) -> None:
+        """Relay the request to the local llama-server, with KV cache restore/save."""
+        # --- KV cache: extract key and attempt restore ---
+        cache_key, parsed_body = _extract_cache_key(raw_body)
+        kv_hit = _try_restore(cache_key)
+
+        sanitized_body = _sanitize_anthropic_body(raw_body)
+        req = urllib.request.Request(
+            LLAMA_SERVER_URL,
+            data=sanitized_body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
 
         # --- KV cache: save on miss (background, non-blocking) ---
-        if not kv_hit and cache_key:
+        if self._relay_llama_response(req) and not kv_hit and cache_key:
             _save_in_background(cache_key, tokens=_estimate_tokens(parsed_body))
 
     def _route_to_local_openai(self, raw_body: bytes) -> None:
@@ -506,6 +518,7 @@ class RoutingProxy(BaseHTTPRequestHandler):
 
 # Probe llama-server health at proxy startup to surface online/offline status early
 def _check_llama_server() -> bool:
+    """Return True if llama-server responds to a /health probe within 2 seconds."""
     try:
         urllib.request.urlopen("http://localhost:8089/health", timeout=2)
         return True
@@ -520,11 +533,13 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 def _port_in_use(port: int) -> bool:
+    """Return True if a localhost socket is already listening on port."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) == 0
 
 
 def run_server(port: int = 4000) -> None:
+    """Initialize the KV cache orchestrator and start the routing proxy HTTP server."""
     # Initialize KV cache orchestrator (graceful degradation if unavailable)
     _init_kv_cache()
 
@@ -566,6 +581,7 @@ if __name__ == "__main__":
     if args.local_only:
         # Patch dispatch so every request goes to local regardless of model
         def _local_only_do_POST(self: RoutingProxy) -> None:
+            """Route every POST request to the local llama-server, ignoring the model field."""
             path_clean = self.path.split("?")[0]
             if path_clean not in ("/v1/messages", "/v1/chat/completions"):
                 self.send_error(404, f"Supported endpoints are /v1/messages and /v1/chat/completions. Got: {self.path}")

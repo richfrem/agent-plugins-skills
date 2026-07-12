@@ -53,6 +53,15 @@ Symlink targets (file-level, per plugin-architecture-policy):
     skills/gemini-cli-agent/scripts/run_agent.py  → ../../../scripts/run_agent.py
     skills/agy-cli-agent/scripts/run_agent.py     → ../../../scripts/run_agent.py
     skills/claude-cli-agent/scripts/run_agent.py  → ../../../scripts/run_agent.py
+
+Purpose:
+    See "Routes one bounded task..." above.
+
+Key Input Dependencies:
+    - Persona/input files (or /dev/null to skip)
+    - references/cheapest_models.json (optional, overrides default model per backend)
+    - CLI backend binary on PATH (copilot, gemini, claude, agy, codex) or a
+      local llama-server instance (--cli llama)
 """
 
 import argparse
@@ -67,6 +76,7 @@ import urllib.request
 
 # ── Defaults per CLI ──────────────────────────────────────────────────────────
 def _load_default_models() -> dict[str, str | None]:
+    """Return hardcoded default models, overridden by cheapest_models.json if present."""
     defaults = {
         "copilot": "gpt-5-mini",
         "gemini": "gemini-3-flash-preview",
@@ -124,6 +134,7 @@ def read_file_or_empty(path: str) -> str:
 # ── Prompt assembly ───────────────────────────────────────────────────────────
 
 def build_prompt(persona: str, source: str, instruction: str, isolated: bool) -> str:
+    """Assemble the full prompt from persona/source/instruction, with an optional isolation footer."""
     parts = []
     has_persona = bool(persona.strip())
     has_source = bool(source.strip())
@@ -229,16 +240,8 @@ def _call_llama_direct(
 
 # ── Main orchestrator ─────────────────────────────────────────────────────────
 
-def run_agent(
-    persona_file: str,
-    input_file: str,
-    output_file: str,
-    instruction: str,
-    cli: str = "copilot",
-    model: str | None = None,
-    isolated: bool = False,
-    max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
-) -> None:
+def _resolve_cli_and_model(cli: str, model: str | None) -> tuple:
+    """Validate/lowercase the cli name, resolve the default model, and inject Homebrew PATH on macOS."""
     cli = cli.lower()
     if cli not in _DEFAULT_MODELS:
         print(f"Error: unknown cli '{cli}'. Choose from: {', '.join(_DEFAULT_MODELS)}")
@@ -250,6 +253,66 @@ def run_agent(
     # Homebrew path injection for macOS
     if os.path.exists("/opt/homebrew/bin") and "/opt/homebrew/bin" not in os.environ.get("PATH", ""):
         os.environ["PATH"] = f"/opt/homebrew/bin:{os.environ['PATH']}"
+
+    return cli, model
+
+
+def _maybe_write_prompt_tmp(cli: str, prompt: str) -> str:
+    """Write prompt to a temp file for CLIs that need file/stdin reference; return '' otherwise."""
+    if cli not in ("copilot", "agy", "codex"):
+        return ""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tf:
+        tf.write(prompt)
+        return tf.name
+
+
+def _build_cli_cmd(cli: str, model: str, prompt: str, prompt_tmp: str, isolated: bool) -> list[str]:
+    """Dispatch to the correct command builder for the given backend."""
+    if cli == "copilot":
+        return _build_cmd_copilot(model, prompt_tmp, isolated)
+    if cli == "gemini":
+        return _build_cmd_gemini(model, prompt, isolated)
+    if cli == "agy":
+        return _build_cmd_agy(model, prompt_tmp, isolated)
+    if cli == "codex":
+        return _build_cmd_codex(model)
+    return _build_cmd_claude(model, prompt, isolated)  # claude
+
+
+def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str) -> None:
+    """Run the CLI command, streaming or piping stdin as appropriate for the backend."""
+    if cli in _STREAMING_CLIS:
+        with open(output_file, "w") as out_f:
+            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            for line in (proc.stdout or []):
+                sys.stdout.write(line)
+                sys.stdout.flush()
+                out_f.write(line)
+            proc.wait()
+        if proc.returncode != 0:
+            print(f"Error: {cli} exited with code {proc.returncode}")
+            sys.exit(proc.returncode)
+    elif cli == "codex":
+        # Codex reads prompt from stdin; prompt_tmp is piped as stdin
+        with open(output_file, "w") as out_f, open(prompt_tmp, "r") as stdin_f:
+            subprocess.run(cmd, stdin=stdin_f, stdout=out_f, stderr=subprocess.STDOUT, check=True)
+    else:
+        with open(output_file, "w") as out_f:
+            subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=out_f, stderr=subprocess.STDOUT, check=True)
+
+
+def run_agent(
+    persona_file: str,
+    input_file: str,
+    output_file: str,
+    instruction: str,
+    cli: str = "copilot",
+    model: str | None = None,
+    isolated: bool = False,
+    max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
+) -> None:
+    """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
+    cli, model = _resolve_cli_and_model(cli, model)
 
     persona = read_file_or_empty(resolve_path(persona_file))
     source = read_file_or_empty(resolve_path(input_file))
@@ -263,45 +326,12 @@ def run_agent(
         print(f"[run_agent] llama complete → {output_file}")
         return
 
-    # CLIs that need a temp file (prompt passed by file reference or stdin pipe)
-    uses_file = cli in ("copilot", "agy", "codex")
-
     prompt_tmp: str = ""
     try:
-        if uses_file:
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tf:
-                tf.write(prompt)
-                prompt_tmp = tf.name
+        prompt_tmp = _maybe_write_prompt_tmp(cli, prompt)
 
-        if cli == "copilot":
-            cmd: list[str] = _build_cmd_copilot(model, prompt_tmp, isolated)
-        elif cli == "gemini":
-            cmd = _build_cmd_gemini(model, prompt, isolated)
-        elif cli == "agy":
-            cmd = _build_cmd_agy(model, prompt_tmp, isolated)
-        elif cli == "codex":
-            cmd = _build_cmd_codex(model)
-        else:  # claude
-            cmd = _build_cmd_claude(model, prompt, isolated)
-
-        if cli in _STREAMING_CLIS:
-            with open(output_file, "w") as out_f:
-                proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-                for line in (proc.stdout or []):
-                    sys.stdout.write(line)
-                    sys.stdout.flush()
-                    out_f.write(line)
-                proc.wait()
-            if proc.returncode != 0:
-                print(f"Error: {cli} exited with code {proc.returncode}")
-                sys.exit(proc.returncode)
-        elif cli == "codex":
-            # Codex reads prompt from stdin; prompt_tmp is piped as stdin
-            with open(output_file, "w") as out_f, open(prompt_tmp, "r") as stdin_f:
-                subprocess.run(cmd, stdin=stdin_f, stdout=out_f, stderr=subprocess.STDOUT, check=True)
-        else:
-            with open(output_file, "w") as out_f:
-                subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=out_f, stderr=subprocess.STDOUT, check=True)
+        cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated)
+        _execute_cli_command(cmd, cli, output_file, prompt_tmp)
 
         print(f"[run_agent] {cli} complete → {output_file}")
 
