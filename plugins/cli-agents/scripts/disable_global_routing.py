@@ -52,6 +52,7 @@ PROXY_VALUE = "http://localhost:4000"
 
 
 def _disable_macos() -> None:
+    """Unload/remove the launchd proxy daemon and comment out ~/.zshrc proxy exports."""
     home = os.path.expanduser("~")
     plist_dir = os.path.join(home, "Library", "LaunchAgents")
 
@@ -101,6 +102,7 @@ def _disable_macos() -> None:
 
 
 def _disable_windows() -> None:
+    """Stop/remove the NSSM proxy service and remove proxy env vars from the User scope."""
     # Stop NSSM service if registered
     try:
         res = subprocess.run(["nssm", "status", "LlamaProxy"], capture_output=True, text=True)
@@ -134,6 +136,7 @@ def _disable_windows() -> None:
 
 
 def _disable_linux() -> None:
+    """Stop/disable the systemd user proxy service and comment out shell rc proxy exports."""
     home = os.path.expanduser("~")
 
     # Stop systemd user service if active
@@ -177,6 +180,7 @@ def _disable_linux() -> None:
 
 
 def main() -> None:
+    """Detect the current platform and run its proxy-teardown routine."""
     print("=== DISABLING GLOBAL ROUTING PROXY ===")
     if _IS_MAC:
         _disable_macos()

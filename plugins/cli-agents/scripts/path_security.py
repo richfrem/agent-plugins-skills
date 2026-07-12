@@ -1,3 +1,10 @@
+"""
+Purpose:
+    Fail-closed path boundary enforcement helper shared across cli-agents scripts.
+
+Key Input Dependencies:
+    - Target path to validate and a list of allowed root directories (caller-supplied)
+"""
 import os
 import sys
 from pathlib import Path
