@@ -8,6 +8,12 @@ Purpose:
     Allows an AI Agent (Claude, Gemini, Antigravity) to write a summary
     directly into the RLM cache, bypassing local Ollama and slow HTTP calls.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Used to look up RLM cache directory location
+    - rlm_config.py             — Loads configurations and computes content hashes
+    - live filesystem           — Target markdown file created under the cache path
+    - fcntl (POSIX-only)        — Standard locking package for platform file exclusion
+
 Layer: Curate / Rlm
 
 Usage:
@@ -31,6 +37,7 @@ from datetime import datetime
 if platform.system() == "Windows":
     @contextmanager
     def _file_lock(lock_path: Path):
+        """Cross-platform context manager for file locking (Windows no-op)."""
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         with open(lock_path, "w") as _lf:
             yield _lf
@@ -38,6 +45,7 @@ else:
     import fcntl
     @contextmanager
     def _file_lock(lock_path: Path):
+        """Cross-platform context manager for file locking (POSIX fcntl)."""
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         with open(lock_path, "w") as _lf:
             fcntl.flock(_lf, fcntl.LOCK_EX)
@@ -50,6 +58,7 @@ else:
 # PATHS
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -72,6 +81,7 @@ except ImportError as e:
 
 
 def main() -> None:
+    """CLI entry point: validates target file presence, locks the database index, and writes summary."""
     parser = argparse.ArgumentParser(description="RLM Agent Injection — Write summaries directly to cache")
     parser.add_argument("--profile", required=True, help="RLM profile name (from rlm_profiles.json)")
     parser.add_argument("--file", "-f", required=True, help="Single file to process (relative to project root)")

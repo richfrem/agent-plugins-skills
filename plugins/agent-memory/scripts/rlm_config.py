@@ -9,6 +9,11 @@ Purpose:
     RLM_PROFILES_PATH env var, defaulting to `.agent/learning/rlm_profiles.json`),
     making this module the Single Source of Truth for all RLM operations.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Configurations containing profile details, cache folders, and manifests
+    - manifest.json             — Profile-specific JSON file specifying included/excluded path rules
+    - live filesystem           — Target paths checked, profile files parsed, and cache directories queried
+
 Layer: Curate / Rlm
 
 Usage:
@@ -35,6 +40,7 @@ from typing import List, Dict, Optional
 # to be installed (e.g. plugins/ vs .agents/skills/)
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     # 1. Walk up to explicitly find the repository root (looking for .git)
     for parent in [current] + list(current.parents):

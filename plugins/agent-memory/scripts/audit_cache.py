@@ -7,6 +7,11 @@ Purpose:
     Compares the RLM semantic cache against the live filesystem (based on profiles)
     and reports coverage gaps. Produces CSV and text reports of missing files.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - rlm_config.py             — Loader for profiles and file collection utility
+    - live filesystem           — Scanned to verify existence of cached files
+
 Usage:
     python audit_cache.py --profile wiki --csv ./missing.csv --report ./audit.txt
 """
@@ -22,6 +27,7 @@ from datetime import datetime
 # PATHS
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -38,9 +44,11 @@ try:
     from rlm_config import RLMConfig, load_cache, collect_files
 except ImportError as e:
     print(f"[ERROR] Could not import local rlm_config from {SCRIPT_DIR}: {e}")
-    sys.exit(1)
+    sys.path.insert(0, str(SCRIPT_DIR))
+    from rlm_config import RLMConfig, load_cache, collect_files
 
 def run_audit(profile_name: str, csv_path: str = None, report_path: str = None, cache_override: str = None):
+    """Compare RLM cache store against source files listed in the profile manifest."""
     try:
         config = RLMConfig(profile_name=profile_name)
     except Exception as e:
@@ -123,6 +131,7 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None, 
         print(f"[OK] Missing files list saved to: {cp}")
 
 def main():
+    """Main CLI entry point for RLM Cache Audit tool."""
     parser = argparse.ArgumentParser(description="RLM Cache Audit - Compare manifest to markdown cache")
     parser.add_argument("--profile", required=True, help="Profile name from rlm_profiles.json")
     parser.add_argument("--csv", help="Path to export missing files CSV")

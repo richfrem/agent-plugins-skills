@@ -7,6 +7,11 @@ Purpose:
     Command-line interface for semantic search over the Vector DB index.
     Outputs results retrieved from the underlying Parent Store via the Child search match.
 
+Key Input Dependencies:
+    - vector_profiles.json      — Customizes the vector store database location and port
+    - vector_config.py          — Loads profile config settings
+    - operations.py             — Wraps ChromaDB collections search client
+
 Layer: Retrieve
 
 Usage:

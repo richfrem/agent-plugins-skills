@@ -7,6 +7,11 @@ Purpose:
     Specialized parser for converting code files (Oracle Forms XML, SQL, Python, JS, JSON)
     into searchable Markdown optimized for Vector DB ingestion.
 
+Key Input Dependencies:
+    - xml.etree.ElementTree     — Standard library module for parsing Oracle Forms XML
+    - ast                       — Standard library module for parsing Python syntax trees
+    - Target source files       — Read from disk to be parsed into Markdown formats
+
 Layer: Curate / Retrieve
 
 Usage:
@@ -137,6 +142,7 @@ def parse_json_to_markdown(file_path: Path) -> str:
         markdown_output = f"# JSON Data: {filename}\n\n"
         
         def summarize_obj(obj, indent=0):
+            """Recursively construct a schema summary string for nested JSON objects."""
             summary = ""
             spacing = "  " * indent
             if isinstance(obj, dict):

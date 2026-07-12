@@ -8,6 +8,12 @@ Purpose:
     Reads from a named profile in rlm_profiles.json and writes summaries
     to the corresponding cache JSON (crash-resilient, incremental).
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - rlm_config.py             — RLMConfig state manager and file collection helper
+    - Local Ollama Service      — Local daemon endpoint at http://localhost:11434 (or OLLAMA_HOST override)
+    - Live filesystem           — Scanned for file collection and hash calculation
+
 Layer: Curate / Rlm
 
 Usage:
@@ -38,6 +44,7 @@ from typing import Dict, List, Optional
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -259,6 +266,7 @@ def run_cleanup(config: RLMConfig) -> int:
 # PATHS
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():

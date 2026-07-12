@@ -384,8 +384,8 @@ def format_checklist(files: list[dict], issues: list[str], warnings: list[str], 
 
 # ── Main ──────────────────────────────────────────────────────────────
 
-def main() -> None:
-    """Parse CLI arguments and generate plugin inventory report."""
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for the inventory tool."""
     parser = argparse.ArgumentParser(
         description="Inventory plugin files with classification and compliance checks."
     )
@@ -405,7 +405,46 @@ def main() -> None:
         "--no-security", action="store_true",
         help="Disable deterministic security scans (enabled by default)"
     )
+    return parser
 
+
+def _run_recursive(path: str, fmt: str, run_security: bool) -> None:
+    """Inventory each subdirectory of path as a separate plugin and print results."""
+    subdirs = sorted([
+        d for d in os.listdir(path)
+        if os.path.isdir(os.path.join(path, d)) and not d.startswith(".")
+    ])
+
+    all_results = []
+    for subdir in subdirs:
+        subdir_path = os.path.join(path, subdir)
+        files, issues, security_findings = inventory_directory(subdir_path, run_security=run_security)
+        warnings = detect_missing_components(subdir_path, files)
+        all_results.append((subdir, files, issues, warnings, subdir_path, security_findings))
+
+    if fmt == "json":
+        combined = []
+        for name, files, issues, warnings, p, sf in all_results:
+            combined.append({
+                "name": name,
+                "path": p,
+                "total_files": len(files),
+                "issues": issues,
+                "warnings": warnings,
+                "security_flags": sf,
+                "files": files,
+            })
+        print(json.dumps(combined, indent=2))
+    else:
+        for name, files, issues, warnings, p, sf in all_results:
+            formatter = format_checklist if fmt == "checklist" else format_markdown
+            print(formatter(files, issues, warnings, p))
+            print("\n---\n")
+
+
+def main() -> None:
+    """Parse CLI arguments and generate plugin inventory report."""
+    parser = _build_arg_parser()
     args = parser.parse_args()
     args.security = not args.no_security
 
@@ -414,37 +453,7 @@ def main() -> None:
         sys.exit(1)
 
     if args.recursive:
-        # Inventory each subdirectory as a separate plugin
-        subdirs = sorted([
-            d for d in os.listdir(args.path)
-            if os.path.isdir(os.path.join(args.path, d)) and not d.startswith(".")
-        ])
-
-        all_results = []
-        for subdir in subdirs:
-            subdir_path = os.path.join(args.path, subdir)
-            files, issues, security_findings = inventory_directory(subdir_path, run_security=args.security)
-            warnings = detect_missing_components(subdir_path, files)
-            all_results.append((subdir, files, issues, warnings, subdir_path, security_findings))
-
-        if args.format == "json":
-            combined = []
-            for name, files, issues, warnings, p, sf in all_results:
-                combined.append({
-                    "name": name,
-                    "path": p,
-                    "total_files": len(files),
-                    "issues": issues,
-                    "warnings": warnings,
-                    "security_flags": sf,
-                    "files": files,
-                })
-            print(json.dumps(combined, indent=2))
-        else:
-            for name, files, issues, warnings, p, sf in all_results:
-                formatter = format_checklist if args.format == "checklist" else format_markdown
-                print(formatter(files, issues, warnings, p))
-                print("\n---\n")
+        _run_recursive(args.path, args.format, args.security)
     else:
         files, issues, security_findings = inventory_directory(args.path, run_security=args.security)
         warnings = detect_missing_components(args.path, files)

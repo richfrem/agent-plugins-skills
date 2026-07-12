@@ -7,6 +7,11 @@ Purpose:
     RLM Search: Instant keyword-based lookup against the semantic ledger.
     Searches entry paths and summary text to surface relevant cached records.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - rlm_config.py             — RLMConfig state manager and cache loader
+    - live filesystem           — Target paths checked for presence in RLM cache
+
 Layer: Search / Rlm
 
 Usage:
@@ -31,6 +36,7 @@ from typing import List, Dict, Any
 # rlm_config is symlinked into the same directory
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -127,6 +133,7 @@ def list_cache(config: RLMConfig) -> None:
 # CONFIG / PATHS
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():

@@ -7,6 +7,11 @@ Purpose:
     Core domain logic for Vector DB operations, including parent-child splitting,
     embedding generation, and multi-vector retrieval.
 
+Key Input Dependencies:
+    - chromadb / langchain_chroma — Connection library for Chroma client collections
+    - nomic-embed-text-v1.5      — HuggingFace embeddings model (configured in vector_profiles.json)
+    - local filesystem store     — Backing store for parent context document chunks
+
 Layer: Retrieve / Curate
 
 Usage:

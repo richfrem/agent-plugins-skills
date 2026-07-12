@@ -68,31 +68,17 @@ def dereference_content(path: Path) -> str:
     
     with open(path, "r", encoding='utf-8') as f: return f.read()
 
-def migrate_to_apm(
-    source_path: str,
-    output_path: str = None,
-    output_exact: str = None,
-    mode: str = "overlay",
-    governance: str = "experimental",
-    dry_run: bool = False,
-    output_name: str = None
-) -> None:
-    """Migrate Claude plugin to APM format with specified mode (overlay/hybrid/full)."""
-    source = Path(source_path).resolve()
-    if not source.exists():
-        print(f"❌ Error: Source path '{source}' does not exist."); sys.exit(1)
-
-    # Metadata discovery
+def _load_plugin_metadata(source: Path) -> tuple[Path, dict]:
+    """Load .claude-plugin/plugin.json metadata if present. Returns (manifest_path, plugin_data)."""
     manifest_path = source / ".claude-plugin" / "plugin.json"
     plugin_data = {}
     if manifest_path.exists():
         with open(manifest_path, "r", encoding='utf-8') as f: plugin_data = json.load(f)
-    
-    name = plugin_data.get("name", source.name)
-    version = plugin_data.get("version", "1.0.0")
-    description = plugin_data.get("description", f"Migrated APM {mode} for {name}")
-    author = plugin_data.get("author", {}).get("name", "Unknown") if isinstance(plugin_data.get("author"), dict) else plugin_data.get("author", "Unknown")
+    return manifest_path, plugin_data
 
+
+def _resolve_dest_root(source: Path, mode: str, output_path, output_exact, output_name, name: str, dry_run: bool) -> Path:
+    """Resolve the destination root directory for the migration, per mode."""
     if mode == "full":
         if output_exact:
             dest_root = Path(output_exact).resolve()
@@ -101,14 +87,18 @@ def migrate_to_apm(
             dest_root = Path(output_path).resolve() / target_name
         else:
             print("❌ Error: --output or --output-exact required for 'full' mode."); sys.exit(1)
-        
+
         if dest_root.exists() and not dry_run:
             print(f"❌ Error: Output path '{dest_root}' already exists. Aborting."); sys.exit(1)
     else:
         dest_root = source
+    return dest_root
 
+
+def _build_migration_plan(source: Path, mode: str) -> dict:
+    """Build the copy/convert plan and detect script-path warnings/prompt collisions."""
     plan = {"created": [], "copied": [], "converted": [], "warnings": [], "collisions": []}
-    
+
     # 1. Plan Phase
     if mode == "full":
         dest_prompts = set()
@@ -116,7 +106,7 @@ def migrate_to_apm(
             for p in (source / "prompts").glob("*.prompt.md"):
                 dest_prompts.add(p.name)
                 plan["copied"].append(f"prompts/{p.name}")
-        
+
         if (source / "commands").exists():
             for cmd in (source / "commands").glob("*.md"):
                 normalized = f"{cmd.stem}.prompt.md"
@@ -142,97 +132,111 @@ def migrate_to_apm(
                     if 'resources' in script_content and 'assets' not in script_content:
                         plan["warnings"].append(f"Script {script.relative_to(source)} contains 'resources' but no 'assets' fallback.")
 
-    # CRITICAL: Abort on collision (Priority 1)
-    if plan["collisions"]:
-        print(f"❌ Collisions detected in migration plan:")
-        for c in plan["collisions"]: print(f"  - {c}")
-        if not dry_run: sys.exit(1)
+    return plan
 
-    if dry_run:
-        print(f"\n--- DRY RUN: {mode.upper()} ---")
-        print(f"Source: {source}")
-        print(f"Dest:   {dest_root}")
-        print(f"Lane:   {governance}")
-        print(f"Metadata Source: {'.claude-plugin/plugin.json' if manifest_path.exists() else 'Folder name'}")
-        
-        if mode == "full":
-            print(f"Plan: {len(plan['copied'])} items to copy, {len(plan['converted'])} commands to convert.")
-            for c in plan["copied"]: print(f"  [COPY] {c}")
-            for c in plan["converted"]: print(f"  [CONV] {c}")
-        if plan["warnings"]:
-            print(f"Warnings: {len(plan['warnings'])}")
-            for w in plan["warnings"]: print(f"  [WARN] {w}")
-        return
 
-    # 2. Execution Logic
-    dest_root.mkdir(parents=True, exist_ok=True)
-    apm_dir = dest_root / ".apm"
-    
+def _print_dry_run(source: Path, dest_root: Path, mode: str, governance: str, manifest_path: Path, plan: dict) -> None:
+    """Print the dry-run preview of the migration plan."""
+    print(f"\n--- DRY RUN: {mode.upper()} ---")
+    print(f"Source: {source}")
+    print(f"Dest:   {dest_root}")
+    print(f"Lane:   {governance}")
+    print(f"Metadata Source: {'.claude-plugin/plugin.json' if manifest_path.exists() else 'Folder name'}")
+
     if mode == "full":
-        apm_dir.mkdir(exist_ok=True)
-        for folder in ["skills", "agents", "hooks", "instructions"]:
-            if (source / folder).exists():
-                shutil.copytree(source / folder, apm_dir / folder, dirs_exist_ok=True)
+        print(f"Plan: {len(plan['copied'])} items to copy, {len(plan['converted'])} commands to convert.")
+        for c in plan["copied"]: print(f"  [COPY] {c}")
+        for c in plan["converted"]: print(f"  [CONV] {c}")
+    if plan["warnings"]:
+        print(f"Warnings: {len(plan['warnings'])}")
+        for w in plan["warnings"]: print(f"  [WARN] {w}")
 
-        (apm_dir / "prompts").mkdir(exist_ok=True)
-        if (source / "prompts").exists():
-            for p in (source / "prompts").glob("*.prompt.md"): 
-                shutil.copy2(p, apm_dir / "prompts" / p.name)
-        
-        if (source / "commands").exists():
-            for cmd in (source / "commands").glob("*.md"):
-                dst_file = apm_dir / "prompts" / f"{cmd.stem}.prompt.md"
-                with open(cmd, "r", encoding='utf-8') as f: content = f.read()
-                with open(dst_file, "w", encoding='utf-8') as f:
-                    f.write(f"<!-- Migrated from plugin command: {cmd.name} -->\n" + content)
 
-        for mcp in [".mcp.json", "mcp-servers.json", "mcp.json"]:
-            if (source / mcp).exists():
-                (apm_dir / "mcp").mkdir(exist_ok=True)
-                shutil.copy2(source / mcp, apm_dir / "mcp" / mcp)
+def _copy_full_mode_primitives(source: Path, apm_dir: Path) -> None:
+    """Copy skills/agents/hooks/instructions, prompts, converted commands, and MCP configs into .apm/."""
+    apm_dir.mkdir(exist_ok=True)
+    for folder in ["skills", "agents", "hooks", "instructions"]:
+        if (source / folder).exists():
+            shutil.copytree(source / folder, apm_dir / folder, dirs_exist_ok=True)
 
-        # Dereference requirements files in full mode
-        for req_file in apm_dir.rglob("requirements.*"):
-            if req_file.is_file():
-                with open(req_file, "r", encoding='utf-8') as f:
-                    raw_content = f.read().strip()
-                
-                # If it's a relative pointer (../ or ./), resolve against SOURCE
-                if raw_content.count('\n') == 0 and (raw_content.startswith("../") or raw_content.startswith("./")):
-                    # Calculate where it would have pointed in the SOURCE tree
-                    rel_to_apm = req_file.relative_to(apm_dir)
-                    source_file_loc = source / rel_to_apm
-                    actual_ptr_target = (source_file_loc.parent / raw_content).resolve()
-                    
-                    if actual_ptr_target.exists() and actual_ptr_target.is_file():
-                        with open(actual_ptr_target, "r", encoding='utf-8') as f:
-                            final_content = f.read()
-                        with open(req_file, "w", encoding='utf-8') as f:
-                            f.write(final_content)
+    (apm_dir / "prompts").mkdir(exist_ok=True)
+    if (source / "prompts").exists():
+        for p in (source / "prompts").glob("*.prompt.md"):
+            shutil.copy2(p, apm_dir / "prompts" / p.name)
 
-        # README Banner
-        readme_path = source / "README.md"
-        if readme_path.exists():
-            with open(readme_path, "r", encoding='utf-8') as f: original_readme = f.read()
-            banner = ("> [!NOTE]\n"
-                     "> This package was converted from a Claude plugin into an APM-native package.\n"
-                     "> APM-managed source primitives now live under `.apm/`.\n"
-                     "> The original plugin README below is preserved for historical context.\n\n---\n\n")
-            with open(dest_root / "README.md", "w", encoding='utf-8') as f:
-                f.write(banner + original_readme)
-        else:
-            with open(dest_root / "README.md", "w", encoding='utf-8') as f:
-                f.write(f"# {name}\n\nMigrated from {source}\nMode: {mode}\nLane: {governance}\n")
-    
-    elif mode == "hybrid":
-        apm_dir.mkdir(parents=True, exist_ok=True)
-        (apm_dir / "prompts").mkdir(exist_ok=True)
-        (apm_dir / "instructions").mkdir(exist_ok=True)
-        with open(apm_dir / "README.md", "w", encoding='utf-8') as f:
-            f.write(f"# APM Governance Layer\nThis directory stores APM governance assets for the {name} hybrid package.\n")
-        plan["created"].append(".apm/")
+    if (source / "commands").exists():
+        for cmd in (source / "commands").glob("*.md"):
+            dst_file = apm_dir / "prompts" / f"{cmd.stem}.prompt.md"
+            with open(cmd, "r", encoding='utf-8') as f: content = f.read()
+            with open(dst_file, "w", encoding='utf-8') as f:
+                f.write(f"<!-- Migrated from plugin command: {cmd.name} -->\n" + content)
 
-    # 3. Final Assets
+    for mcp in [".mcp.json", "mcp-servers.json", "mcp.json"]:
+        if (source / mcp).exists():
+            (apm_dir / "mcp").mkdir(exist_ok=True)
+            shutil.copy2(source / mcp, apm_dir / "mcp" / mcp)
+
+
+def _dereference_requirements(source: Path, apm_dir: Path) -> None:
+    """Resolve relative-pointer requirements.* files under .apm/ against the SOURCE tree."""
+    for req_file in apm_dir.rglob("requirements.*"):
+        if req_file.is_file():
+            with open(req_file, "r", encoding='utf-8') as f:
+                raw_content = f.read().strip()
+
+            # If it's a relative pointer (../ or ./), resolve against SOURCE
+            if raw_content.count('\n') == 0 and (raw_content.startswith("../") or raw_content.startswith("./")):
+                # Calculate where it would have pointed in the SOURCE tree
+                rel_to_apm = req_file.relative_to(apm_dir)
+                source_file_loc = source / rel_to_apm
+                actual_ptr_target = (source_file_loc.parent / raw_content).resolve()
+
+                if actual_ptr_target.exists() and actual_ptr_target.is_file():
+                    with open(actual_ptr_target, "r", encoding='utf-8') as f:
+                        final_content = f.read()
+                    with open(req_file, "w", encoding='utf-8') as f:
+                        f.write(final_content)
+
+
+def _write_full_mode_readme(source: Path, dest_root: Path, name: str, mode: str, governance: str) -> None:
+    """Write the destination README, banner-prefixed with the original if one exists."""
+    readme_path = source / "README.md"
+    if readme_path.exists():
+        with open(readme_path, "r", encoding='utf-8') as f: original_readme = f.read()
+        banner = ("> [!NOTE]\n"
+                 "> This package was converted from a Claude plugin into an APM-native package.\n"
+                 "> APM-managed source primitives now live under `.apm/`.\n"
+                 "> The original plugin README below is preserved for historical context.\n\n---\n\n")
+        with open(dest_root / "README.md", "w", encoding='utf-8') as f:
+            f.write(banner + original_readme)
+    else:
+        with open(dest_root / "README.md", "w", encoding='utf-8') as f:
+            f.write(f"# {name}\n\nMigrated from {source}\nMode: {mode}\nLane: {governance}\n")
+
+
+def _execute_full_mode(source: Path, dest_root: Path, apm_dir: Path, name: str, mode: str, governance: str) -> None:
+    """Run the full-mode migration: copy primitives, dereference requirements, write README."""
+    _copy_full_mode_primitives(source, apm_dir)
+    _dereference_requirements(source, apm_dir)
+    _write_full_mode_readme(source, dest_root, name, mode, governance)
+
+
+def _execute_hybrid_mode(apm_dir: Path, name: str, plan: dict) -> None:
+    """Scaffold the .apm/ governance layer for hybrid-mode migration."""
+    apm_dir.mkdir(parents=True, exist_ok=True)
+    (apm_dir / "prompts").mkdir(exist_ok=True)
+    (apm_dir / "instructions").mkdir(exist_ok=True)
+    with open(apm_dir / "README.md", "w", encoding='utf-8') as f:
+        f.write(f"# APM Governance Layer\nThis directory stores APM governance assets for the {name} hybrid package.\n")
+    plan["created"].append(".apm/")
+
+
+def _write_final_assets(
+    source: Path, dest_root: Path, manifest_path: Path, name: str, version: str,
+    description: str, author: str, mode: str, governance: str, plan: dict,
+    output_exact, output_path, dry_run: bool
+) -> None:
+    """Write apm.yml manifest, docs/governance.md, optional policy, and migration-notes.md."""
     manifest = {
         "name": name, "version": version, "description": description, "author": author,
         "targets": ["copilot", "claude", "cursor"],
@@ -245,7 +249,7 @@ def migrate_to_apm(
         }
     }
     with open(dest_root / "apm.yml", "w", encoding='utf-8') as f: yaml.dump(manifest, f, sort_keys=False)
-    
+
     # Optional Snapshot
     if manifest_path.exists() and mode == "full":
         (dest_root / "docs" / "source-plugin").mkdir(parents=True, exist_ok=True)
@@ -254,7 +258,7 @@ def migrate_to_apm(
     docs_dir = dest_root / "docs"
     docs_dir.mkdir(exist_ok=True)
     with open(docs_dir / "governance.md", "w", encoding='utf-8') as f: f.write(generate_governance_doc(mode, governance, name))
-    
+
     policy_gen = False
     if governance == "enterprise":
         with open(dest_root / "apm-policy.yml", "w", encoding='utf-8') as f: f.write(generate_policy_doc(name))
@@ -274,6 +278,57 @@ def migrate_to_apm(
         f.write(f"## Collision Status\n{'No collisions detected' if not plan['collisions'] else 'Collisions resolved during planning'}\n\n")
         f.write(f"## Validation\nRun: python scripts/validate_apm_package.py --path {dest_root}\n")
         f.write(f"## Recommended Next Step\n/os-loop or manual primitive authoring in .apm/\n")
+
+
+def migrate_to_apm(
+    source_path: str,
+    output_path: str = None,
+    output_exact: str = None,
+    mode: str = "overlay",
+    governance: str = "experimental",
+    dry_run: bool = False,
+    output_name: str = None
+) -> None:
+    """Migrate Claude plugin to APM format with specified mode (overlay/hybrid/full)."""
+    source = Path(source_path).resolve()
+    if not source.exists():
+        print(f"❌ Error: Source path '{source}' does not exist."); sys.exit(1)
+
+    manifest_path, plugin_data = _load_plugin_metadata(source)
+
+    name = plugin_data.get("name", source.name)
+    version = plugin_data.get("version", "1.0.0")
+    description = plugin_data.get("description", f"Migrated APM {mode} for {name}")
+    author = plugin_data.get("author", {}).get("name", "Unknown") if isinstance(plugin_data.get("author"), dict) else plugin_data.get("author", "Unknown")
+
+    dest_root = _resolve_dest_root(source, mode, output_path, output_exact, output_name, name, dry_run)
+
+    plan = _build_migration_plan(source, mode)
+
+    # CRITICAL: Abort on collision (Priority 1)
+    if plan["collisions"]:
+        print(f"❌ Collisions detected in migration plan:")
+        for c in plan["collisions"]: print(f"  - {c}")
+        if not dry_run: sys.exit(1)
+
+    if dry_run:
+        _print_dry_run(source, dest_root, mode, governance, manifest_path, plan)
+        return
+
+    # 2. Execution Logic
+    dest_root.mkdir(parents=True, exist_ok=True)
+    apm_dir = dest_root / ".apm"
+
+    if mode == "full":
+        _execute_full_mode(source, dest_root, apm_dir, name, mode, governance)
+    elif mode == "hybrid":
+        _execute_hybrid_mode(apm_dir, name, plan)
+
+    # 3. Final Assets
+    _write_final_assets(
+        source, dest_root, manifest_path, name, version, description, author,
+        mode, governance, plan, output_exact, output_path, dry_run
+    )
 
     print(f"✅ Migration complete! Result at {dest_root}")
 

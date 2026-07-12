@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 """
-test_agent_memory_scripts.py — unit tests for agent-memory script model resolution
+test_agent_memory_scripts.py
+===========================================================================
 
-Tests cover:
-  swarm_run._load_cheapest_model  — per-engine JSON lookup with fallback
-  distill_one._load_engine_defaults — full defaults dict loaded from JSON
+Purpose:
+    Unit tests for agent-memory script model resolution.
+    Tests cover swarm_run._load_cheapest_model (per-engine JSON lookup with fallback)
+    and distill_one._load_engine_defaults (full defaults dict loaded from JSON).
+
+Key Input Dependencies:
+    - distill_one.py            — Tested model resolution and default loader script
+    - swarm_run.py              — Tested cheapest models selection helper script
+    - cheapest_models.json      — Configuration specifying recommended engine models
+
+Usage:
+    python3 -m unittest plugins/agent-memory/scripts/test_agent_memory_scripts.py
 """
 
 import json
@@ -27,19 +37,23 @@ from swarm_run import _load_cheapest_model
 
 
 class TestSwarmRunLoadCheapestModel(unittest.TestCase):
+    """Test suite for the swarm_run._load_cheapest_model function."""
 
     def _tmp_json(self, data: dict) -> Path:
+        """Helper to construct a temporary JSON file with the given dictionary contents."""
         f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
         json.dump(data, f)
         f.close()
         return Path(f.name)
 
     def test_returns_fallback_when_json_absent(self):
+        """Verify fallback is returned when reference JSON file does not exist."""
         absent = Path(tempfile.mkdtemp()) / "no_file.json"
         result = _load_cheapest_model("copilot", "gpt-5-mini", ref_path=absent)
         self.assertEqual(result, "gpt-5-mini")
 
     def test_loads_model_for_engine_from_json(self):
+        """Verify the correct model is resolved from the reference JSON configuration."""
         ref = self._tmp_json({"copilot": {"model": "gpt-5-nano"}})
         try:
             result = _load_cheapest_model("copilot", "gpt-5-mini", ref_path=ref)
@@ -48,6 +62,7 @@ class TestSwarmRunLoadCheapestModel(unittest.TestCase):
             ref.unlink()
 
     def test_returns_fallback_when_engine_missing_from_json(self):
+        """Verify fallback is used if the requested engine is missing in the JSON."""
         ref = self._tmp_json({"copilot": {"model": "gpt-5-mini"}})
         try:
             result = _load_cheapest_model("gemini", "gemini-fallback", ref_path=ref)
@@ -56,6 +71,7 @@ class TestSwarmRunLoadCheapestModel(unittest.TestCase):
             ref.unlink()
 
     def test_returns_fallback_on_malformed_json(self):
+        """Verify fallback is used when the reference JSON file is malformed."""
         f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
         f.write("{not valid")
         f.close()
@@ -67,6 +83,7 @@ class TestSwarmRunLoadCheapestModel(unittest.TestCase):
             ref.unlink()
 
     def test_returns_fallback_when_model_key_absent(self):
+        """Verify fallback is used if the engine dict exists but has no model key."""
         ref = self._tmp_json({"copilot": {"description": "no model key here"}})
         try:
             result = _load_cheapest_model("copilot", "gpt-5-mini", ref_path=ref)
@@ -81,14 +98,17 @@ from distill_one import _load_engine_defaults
 
 
 class TestDistillOneLoadEngineDefaults(unittest.TestCase):
+    """Test suite for the distill_one._load_engine_defaults function."""
 
     def _tmp_json(self, data: dict) -> Path:
+        """Helper to construct a temporary JSON file with the given dictionary contents."""
         f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
         json.dump(data, f)
         f.close()
         return Path(f.name)
 
     def test_returns_dict_with_all_engines_when_json_absent(self):
+        """Verify engine fallbacks are loaded when cheapest models JSON is absent."""
         absent = Path(tempfile.mkdtemp()) / "no_file.json"
         result = _load_engine_defaults(ref_path=absent)
         self.assertIn("copilot", result)
@@ -96,6 +116,7 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
         self.assertIn("claude", result)
 
     def test_overrides_engine_model_from_json(self):
+        """Verify specific engine model override is correctly loaded from configuration JSON."""
         ref = self._tmp_json({"engines": [{"cli": "copilot", "model": "gpt-5-nano"}]})
         try:
             result = _load_engine_defaults(ref_path=ref)
@@ -104,6 +125,7 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
             ref.unlink()
 
     def test_unmentioned_engines_keep_hardcoded_fallback(self):
+        """Verify unmentioned engines preserve their respective hardcoded fallback models."""
         ref = self._tmp_json({"engines": [{"cli": "copilot", "model": "gpt-5-nano"}]})
         try:
             result = _load_engine_defaults(ref_path=ref)
@@ -113,6 +135,7 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
             ref.unlink()
 
     def test_returns_hardcoded_fallbacks_on_malformed_json(self):
+        """Verify engine default fallbacks are loaded when reference JSON file is malformed."""
         f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
         f.write("{not valid")
         f.close()
@@ -147,18 +170,22 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
 # without needing --profile, --file, or a running CLI.
 
 class TestDistillOneMockFlag(unittest.TestCase):
+    """Test suite for validating the mock flag execution path in distill_one.py."""
 
     def _run_mock(self, extra_args: list) -> subprocess.CompletedProcess:
+        """Helper to invoke distill_one.py in mock mode as a subprocess with extra arguments."""
         return subprocess.run(
             [sys.executable, str(DISTILL_ONE), "--mock"] + extra_args,
             capture_output=True, text=True,
         )
 
     def test_mock_exits_zero(self):
+        """Verify mock execution exits with a code of 0."""
         result = self._run_mock(["--engine", "copilot"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
     def test_mock_output_is_valid_json(self):
+        """Verify stdout emitted under mock execution is well-formed JSON."""
         result = self._run_mock(["--engine", "copilot"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         try:
@@ -169,6 +196,7 @@ class TestDistillOneMockFlag(unittest.TestCase):
         self.assertIn("model", data)
 
     def test_mock_copilot_model_matches_cheapest_models_json(self):
+        """Verify the mock output model matches the cheapest model configured for Copilot."""
         ref = PLUGIN_REFS / "cheapest_models.json"
         if not ref.exists():
             self.skipTest("cheapest_models.json not present")
@@ -180,6 +208,7 @@ class TestDistillOneMockFlag(unittest.TestCase):
         self.assertEqual(data["model"], expected)
 
     def test_mock_claude_model_matches_cheapest_models_json(self):
+        """Verify the mock output model matches the cheapest model configured for Claude."""
         ref = PLUGIN_REFS / "cheapest_models.json"
         if not ref.exists():
             self.skipTest("cheapest_models.json not present")

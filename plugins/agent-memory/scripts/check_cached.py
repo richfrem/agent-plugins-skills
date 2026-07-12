@@ -10,6 +10,10 @@ Purpose:
     Exit code 0  = file IS cached  -> swarm worker should SKIP it.
     Exit code 1  = file NOT cached -> swarm worker should process it.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains the RLM configuration profiles
+    - live cache directory      — Verified for existence of cached markdown summaries
+
 Usage (invoked automatically by swarm_run.py via check_cmd):
     python ./plugins/agent-memory/scripts/check_cached.py <relative-file-path>
 

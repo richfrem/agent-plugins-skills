@@ -8,6 +8,10 @@ Purpose:
     interactively configures the user's vector_profiles.json with the 
     new architectural and performance parameters.
 
+Key Input Dependencies:
+    - requirements.txt          — Lockfile containing package dependencies for pip installation
+    - live filesystem           — Creates target configuration directories and scaffolds profile JSONs
+
 Layer: Codify / Retrieve
 
 Usage:

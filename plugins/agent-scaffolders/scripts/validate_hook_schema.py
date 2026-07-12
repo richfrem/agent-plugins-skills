@@ -12,6 +12,10 @@ Layer: Investigate
 
 Usage:
     pythonvalidate_hook_schema.py <path/to/hooks.json>
+
+Key Input Dependencies:
+    - hooks.json file path passed via CLI argument
+    - json, os, sys (standard library)
 """
 import sys
 import os
@@ -90,37 +94,16 @@ def _check_hook(event: str, i: int, j: int, hook: dict, errors: list, warnings: 
 # Entry point
 # ---------------------------------------------------------------------------
 
-# Entry point: validate hooks.json and report all issues
-def main() -> None:
+# Load, syntax-check, and unwrap the hooks.json event map
+def _load_and_validate_json(hooks_file: str) -> dict:
     """
-    Validate a hooks.json file and print a structured report.
+    Load hooks.json, checking syntax, literal-newline encoding, and root shape.
 
-    Raises:
-        SystemExit: Code 0 on pass (with or without warnings); code 1 on errors.
+    Exits directly for terminal conditions (invalid JSON, wrong root type, empty configs).
+
+    Returns:
+        The unwrapped event-name -> hook-entry-list dict for further validation.
     """
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <path/to/hooks.json>")
-        print()
-        print("Validates hook configuration file for:")
-        for item in (
-            "Valid JSON syntax",
-            "Required fields",
-            "Hook type validity",
-            "Matcher patterns",
-            "Timeout ranges",
-        ):
-            print(f"  - {item}")
-        sys.exit(1)
-
-    hooks_file = sys.argv[1]
-
-    if not os.path.isfile(hooks_file):
-        print(f"❌ Error: File not found: {hooks_file}")
-        sys.exit(1)
-
-    print(f"🔍 Validating hooks configuration: {hooks_file}")
-    print()
-
     # Check 1: Valid JSON
     print("Checking JSON syntax...")
     try:
@@ -156,7 +139,12 @@ def main() -> None:
         print("⚠️  Empty {} detected. Preferred form is {\"hooks\": {}}")
         sys.exit(0)
 
-    # Check 2: Root structure - event name validity
+    return data
+
+
+# Check 2: warn on any event names not recognised by the hook system
+def _check_root_structure(data: dict) -> None:
+    """Print a warning for each unrecognised event name at the root."""
     print()
     print("Checking root structure...")
     for event in data:
@@ -164,7 +152,10 @@ def main() -> None:
             print(f"⚠️  Unknown event type: {event}")
     print("✅ Root structure valid")
 
-    # Check 3: Validate individual hooks
+
+# Check 3: validate each event's hook-entry array and individual hooks
+def _validate_all_hooks(data: dict) -> tuple:
+    """Validate every hook entry and hook object. Returns (errors, warnings)."""
     print()
     print("Validating individual hooks...")
     errors: list = []
@@ -189,6 +180,12 @@ def main() -> None:
             for j, hook in enumerate(hooks):
                 _check_hook(event, i, j, hook, errors, warnings)
 
+    return errors, warnings
+
+
+# Print all collected issues plus the final pass/warn/fail summary
+def _print_final_report(errors: list, warnings: list) -> None:
+    """Print every error/warning message, then the summary line, and exit with the right code."""
     for msg in errors + warnings:
         print(msg)
 
@@ -203,6 +200,43 @@ def main() -> None:
         sys.exit(0)
     print(f"❌ Validation failed with {len(errors)} error(s) and {len(warnings)} warning(s)")
     sys.exit(1)
+
+
+# Entry point: validate hooks.json and report all issues
+def main() -> None:
+    """
+    Validate a hooks.json file and print a structured report.
+
+    Raises:
+        SystemExit: Code 0 on pass (with or without warnings); code 1 on errors.
+    """
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <path/to/hooks.json>")
+        print()
+        print("Validates hook configuration file for:")
+        for item in (
+            "Valid JSON syntax",
+            "Required fields",
+            "Hook type validity",
+            "Matcher patterns",
+            "Timeout ranges",
+        ):
+            print(f"  - {item}")
+        sys.exit(1)
+
+    hooks_file = sys.argv[1]
+
+    if not os.path.isfile(hooks_file):
+        print(f"❌ Error: File not found: {hooks_file}")
+        sys.exit(1)
+
+    print(f"🔍 Validating hooks configuration: {hooks_file}")
+    print()
+
+    data = _load_and_validate_json(hooks_file)
+    _check_root_structure(data)
+    errors, warnings = _validate_all_hooks(data)
+    _print_final_report(errors, warnings)
 
 
 if __name__ == "__main__":

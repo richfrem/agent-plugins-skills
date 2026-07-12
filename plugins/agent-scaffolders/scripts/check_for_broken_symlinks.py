@@ -11,6 +11,10 @@ Layer: Investigate / Codify
 
 Usage:
     pythoncheck_for_broken_symlinks.py
+
+Key Input Dependencies:
+    - plugins/ directory tree (files and symlinks)
+    - os, json (standard library)
 """
 
 import os
@@ -58,8 +62,53 @@ def build_inventory(plugins_dir: str) -> Tuple[List[Dict[str, Any]], List[Dict[s
             
     return inventory_list, symlinks_list
 
+def _index_physical_files(inventory_list: List[Dict[str, Any]]) -> Dict[str, List[str]]:
+    """Build a name -> [paths] index of all non-symlink, non-directory files."""
+    physical_files_by_name: Dict[str, List[str]] = {}
+    for item in inventory_list:
+        if not item["is_symlink"] and not os.path.isdir(os.path.join(PROJECT_ROOT, item["path"])):
+            name = item["name"]
+            if name not in physical_files_by_name:
+                physical_files_by_name[name] = []
+            physical_files_by_name[name].append(item["path"])
+    return physical_files_by_name
+
+def _resolve_broken_link(link: Dict[str, Any], physical_files_by_name: Dict[str, List[str]]) -> Tuple[str, str]:
+    """Attempt to find a correct-target candidate and repair command for one broken symlink."""
+    name = link["name"]
+    loc = link["path"]
+
+    candidates = physical_files_by_name.get(name, [])
+    mapped = "⚠️  Unknown target"
+    fix_cmd = ""
+
+    link_parts = loc.split("/")
+    if "skills" in link_parts and "references" in link_parts:
+         skill_name = link_parts[link_parts.index("skills") + 1]
+         for cand in candidates:
+             if f"skills/{skill_name}/{name}" in cand:
+                  mapped = f"`../{name}` (Skill Root)"
+                  fix_cmd = f"ln -f -s '../{name}' '{loc}'"
+                  break
+
+    if fix_cmd == "" and candidates:
+         plugin_name = link_parts[1]
+         for cand in candidates:
+             if cand.startswith(f"plugins/{plugin_name}/references/{name}"):
+                  mapped = f"`../../../references/{name}` (Plugin References)"
+                  fix_cmd = f"ln -f -s '../../../references/{name}' '{loc}'"
+                  break
+
+    if fix_cmd == "" and candidates:
+         for cand in candidates:
+             if "assets/" in cand:
+                  mapped = f"Found elsewhere: {cand}"
+                  break
+
+    return mapped, fix_cmd
+
 def perform_gap_analysis(
-    inventory_list: List[Dict[str, Any]], 
+    inventory_list: List[Dict[str, Any]],
     symlinks_list: List[Dict[str, Any]]
 ) -> Tuple[List[str], List[str]]:
     """
@@ -72,13 +121,7 @@ def perform_gap_analysis(
     Returns:
         A tuple containing (report_lines, fix_commands) lists.
     """
-    physical_files_by_name: Dict[str, List[str]] = {}
-    for item in inventory_list:
-        if not item["is_symlink"] and not os.path.isdir(os.path.join(PROJECT_ROOT, item["path"])):
-            name = item["name"]
-            if name not in physical_files_by_name:
-                physical_files_by_name[name] = []
-            physical_files_by_name[name].append(item["path"])
+    physical_files_by_name = _index_physical_files(inventory_list)
 
     report_lines = [
         "# Broken Symlinks Repair Report",
@@ -90,43 +133,17 @@ def perform_gap_analysis(
 
     for link in symlinks_list:
         if link.get("is_broken", False):
-            name = link["name"]
             loc = link["path"]
             target = link["target"]
-            
-            candidates = physical_files_by_name.get(name, [])
-            mapped = "⚠️  Unknown target"
-            fix_cmd = ""
 
-            link_parts = loc.split("/")
-            if "skills" in link_parts and "references" in link_parts:
-                 skill_name = link_parts[link_parts.index("skills") + 1]
-                 for cand in candidates:
-                     if f"skills/{skill_name}/{name}" in cand:
-                          mapped = f"`../{name}` (Skill Root)"
-                          fix_cmd = f"ln -f -s '../{name}' '{loc}'"
-                          break
-
-            if fix_cmd == "" and candidates:
-                 plugin_name = link_parts[1]
-                 for cand in candidates:
-                     if cand.startswith(f"plugins/{plugin_name}/references/{name}"):
-                          mapped = f"`../../../references/{name}` (Plugin References)"
-                          fix_cmd = f"ln -f -s '../../../references/{name}' '{loc}'"
-                          break
-
-            if fix_cmd == "" and candidates:
-                 for cand in candidates:
-                     if "assets/" in cand:
-                          mapped = f"Found elsewhere: {cand}"
-                          break
+            mapped, fix_cmd = _resolve_broken_link(link, physical_files_by_name)
 
             if fix_cmd != "":
                  report_lines.append(f"| `{loc}` | `{target}` | {mapped} | ✅ Fixable |")
                  fix_commands.append(f"ln -f -s '{mapped.split('`')[1]}' '{loc}'" if mapped.startswith("`") else fix_cmd)
             else:
                  report_lines.append(f"| `{loc}` | `{target}` | {mapped} | ⚠️  Manual Fix |")
-                 
+
     return report_lines, fix_commands
 
 def save_outputs(inventory_list: List[Dict[str, Any]], report_lines: List[str], fix_commands: List[str]) -> None:

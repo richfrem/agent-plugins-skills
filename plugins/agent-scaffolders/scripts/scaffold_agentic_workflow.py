@@ -33,6 +33,10 @@ Usage:
 Related:
     - create-agentic-workflow/SKILL.md
     - reference/github-agentic-workflows.md
+
+Key Input Dependencies:
+    - Source SKILL.md file(s) with YAML frontmatter (name, description)
+    - re, shutil, argparse, pathlib, textwrap (standard library)
 """
 
 import re
@@ -191,27 +195,9 @@ def build_trigger_block(triggers: list[str]) -> str:
     return "\n".join(lines)
 
 
-def generate_workflow_file(
-    name: str,
-    kill_switch: str,
-    triggers: list[str],
-    workflows_dir: Path,
-) -> Path:
-    """
-    Generates the .yml GitHub Actions runner file for CI/CD agent mode.
-
-    Args:
-        name: Agent name (kebab-case).
-        kill_switch: Exact phrase the agent must output to fail the build.
-        triggers: List of GitHub event triggers (e.g. ['pull_request', 'push']).
-        workflows_dir: Path to the .github/workflows/ directory.
-
-    Returns:
-        Path to the created .yml file.
-    """
-    trigger_block = build_trigger_block(triggers)
-
-    yaml_content = textwrap.dedent(f"""\
+def _render_workflow_setup(name: str, trigger_block: str) -> str:
+    """Render the workflow header plus checkout/install/run-agent steps."""
+    return textwrap.dedent(f"""\
     name: {name.replace('-', ' ').title()} Agent Workflow
 
     on:
@@ -250,6 +236,12 @@ def generate_workflow_file(
               # NOTE: Uses a scoped tool boundary for safety. For testing only, you may expand this.
               copilot --model claude-sonnet-4.6 --allow-tool read write shell --prompt "$PROMPT" < /dev/null
 
+    """)
+
+
+def _render_quality_gate_step(kill_switch: str) -> str:
+    """Render the Quality Gate (Smart Fail) workflow step."""
+    return textwrap.dedent(f"""\
           - name: Quality Gate (Smart Fail)
             if: always()
             run: |
@@ -261,9 +253,99 @@ def generate_workflow_file(
               fi
     """)
 
+
+def generate_workflow_file(
+    name: str,
+    kill_switch: str,
+    triggers: list[str],
+    workflows_dir: Path,
+) -> Path:
+    """
+    Generates the .yml GitHub Actions runner file for CI/CD agent mode.
+
+    Args:
+        name: Agent name (kebab-case).
+        kill_switch: Exact phrase the agent must output to fail the build.
+        triggers: List of GitHub event triggers (e.g. ['pull_request', 'push']).
+        workflows_dir: Path to the .github/workflows/ directory.
+
+    Returns:
+        Path to the created .yml file.
+    """
+    trigger_block = build_trigger_block(triggers)
+
+    yaml_content = _render_workflow_setup(name, trigger_block) + _render_quality_gate_step(kill_switch)
+
     yaml_file = workflows_dir / f"{name}-agent.yml"
     yaml_file.write_text(yaml_content, encoding="utf-8")
     return yaml_file
+
+
+def _load_skill_metadata(skill_file: Path, kill_switch: str) -> tuple | None:
+    """Read SKILL.md, parse frontmatter, and derive name/description/kill_switch.
+
+    Returns (body, name, description, kill_switch), or None if the file is missing.
+    """
+    if not skill_file.exists():
+        print(f"Error: Could not find {skill_file}")
+        return None
+
+    content = skill_file.read_text(encoding="utf-8")
+    fm, body = parse_frontmatter(content)
+
+    name = re.sub(r'[^a-zA-Z0-9-]', '', fm.get("name", skill_file.parent.name))
+    description = fm.get("description", f"Agentic workflow for {name}")
+
+    if not kill_switch:
+        kill_switch = f"CRITICAL FAILURE: {name.upper().replace('-', '_')}"
+
+    return body, name, description, kill_switch
+
+
+def _generate_mode_files(
+    mode: str, name: str, description: str, body: str, triggers: list[str], kill_switch: str,
+    agents_dir: Path, prompts_dir: Path, workflows_dir: Path,
+) -> tuple:
+    """Generate the shared .agent.md and mode-specific .prompt.md / .yml files.
+
+    Returns (generated_status_lines, agent_file_path).
+    """
+    # --- Shared .agent.md persona ---
+    agent_file = generate_agent_file(name, description, body, agents_dir)
+    generated = [f"  -> Persona:  {agent_file}"]
+
+    # --- IDE mode: .prompt.md ---
+    if mode in ("ide", "both"):
+        prompts_dir.mkdir(parents=True, exist_ok=True)
+        prompt_file = generate_prompt_file(name, prompts_dir)
+        generated.append(f"  -> Prompt:   {prompt_file}")
+
+    # --- CI/CD mode: .yml runner ---
+    if mode in ("cicd", "both"):
+        workflows_dir.mkdir(parents=True, exist_ok=True)
+        yaml_file = generate_workflow_file(name, kill_switch, triggers, workflows_dir)
+        generated.append(f"  -> Action:   {yaml_file}")
+        trigger_names = ["workflow_dispatch"] + triggers
+        generated.append(f"  -> Triggers: {', '.join(trigger_names)}")
+        generated.append(f"  -> Kill Switch: \"{kill_switch}\"")
+
+    return generated, agent_file
+
+
+def _print_generation_summary(mode: str, name: str, generated: list, agent_file: Path) -> None:
+    """Print the generated-files summary plus mode-specific usage notes."""
+    print(f"\nGenerated {mode.upper()} agent '{name}':")
+    for line in generated:
+        print(line)
+
+    if mode in ("cicd", "both"):
+        print("\n⚠️  Requirements:")
+        print("  - Add COPILOT_GITHUB_TOKEN to your repository secrets.")
+        print(f"  - Ensure the kill switch phrase appears verbatim in {agent_file.name}.")
+    if mode in ("ide", "both"):
+        print("\n💡 IDE Usage:")
+        print(f"  - Open GitHub Copilot Chat and select '{name}' from the agent dropdown.")
+        print(f"  - Or type '/{name}' as a slash command.")
 
 
 def generate_agentic_workflow(
@@ -292,50 +374,16 @@ def generate_agentic_workflow(
 
     agents_dir.mkdir(parents=True, exist_ok=True)
 
-    if not skill_file.exists():
-        print(f"Error: Could not find {skill_file}")
+    metadata = _load_skill_metadata(skill_file, kill_switch)
+    if metadata is None:
         return
+    body, name, description, kill_switch = metadata
 
-    content = skill_file.read_text(encoding="utf-8")
-    fm, body = parse_frontmatter(content)
+    generated, agent_file = _generate_mode_files(
+        mode, name, description, body, triggers, kill_switch, agents_dir, prompts_dir, workflows_dir,
+    )
 
-    name = re.sub(r'[^a-zA-Z0-9-]', '', fm.get("name", skill_file.parent.name))
-    description = fm.get("description", f"Agentic workflow for {name}")
-
-    if not kill_switch:
-        kill_switch = f"CRITICAL FAILURE: {name.upper().replace('-', '_')}"
-
-    # --- Shared .agent.md persona ---
-    agent_file = generate_agent_file(name, description, body, agents_dir)
-    generated = [f"  -> Persona:  {agent_file}"]
-
-    # --- IDE mode: .prompt.md ---
-    if mode in ("ide", "both"):
-        prompts_dir.mkdir(parents=True, exist_ok=True)
-        prompt_file = generate_prompt_file(name, prompts_dir)
-        generated.append(f"  -> Prompt:   {prompt_file}")
-
-    # --- CI/CD mode: .yml runner ---
-    if mode in ("cicd", "both"):
-        workflows_dir.mkdir(parents=True, exist_ok=True)
-        yaml_file = generate_workflow_file(name, kill_switch, triggers, workflows_dir)
-        generated.append(f"  -> Action:   {yaml_file}")
-        trigger_names = ["workflow_dispatch"] + triggers
-        generated.append(f"  -> Triggers: {', '.join(trigger_names)}")
-        generated.append(f"  -> Kill Switch: \"{kill_switch}\"")
-
-    print(f"\nGenerated {mode.upper()} agent '{name}':")
-    for line in generated:
-        print(line)
-
-    if mode in ("cicd", "both"):
-        print("\n⚠️  Requirements:")
-        print("  - Add COPILOT_GITHUB_TOKEN to your repository secrets.")
-        print(f"  - Ensure the kill switch phrase appears verbatim in {agent_file.name}.")
-    if mode in ("ide", "both"):
-        print("\n💡 IDE Usage:")
-        print(f"  - Open GitHub Copilot Chat and select '{name}' from the agent dropdown.")
-        print(f"  - Or type '/{name}' as a slash command.")
+    _print_generation_summary(mode, name, generated, agent_file)
 
 
 if __name__ == "__main__":

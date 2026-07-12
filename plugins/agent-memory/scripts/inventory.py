@@ -8,6 +8,11 @@ Purpose:
     report coverage gaps. Identifies files that are uncached (missing) and
     cache entries whose source files have been deleted (stale).
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - rlm_config.py             — RLMConfig state manager, cache loader, and file scanner
+    - live filesystem           — Target paths checked for presence in RLM cache
+
 Layer: Curate / Rlm
 
 Usage:
@@ -30,6 +35,7 @@ from typing import Set
 # Root is 4 levels up (scripts→rlm-factory→plugins→ROOT)
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():
@@ -141,6 +147,7 @@ def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bo
 # PATHS
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():

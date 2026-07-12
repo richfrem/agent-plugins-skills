@@ -7,6 +7,11 @@ Purpose:
     RLM Cleanup: Removes stale and orphan entries from the RLM semantic ledger.
     Supports dry-run mode by default; requires --apply to commit changes.
 
+Key Input Dependencies:
+    - rlm_profiles.json         — Cache directory and profile definitions
+    - rlm_config.py             — RLM cache loader/saver and configuration wrapper
+    - live filesystem           — Scanned to verify existence of cached files and locate project root
+
 Layer: Curate / Rlm
 
 Usage:
@@ -19,10 +24,10 @@ Usage:
     # Remove entries outside the manifest + failed distillations
     python ./scripts/cleanup_cache.py --profile tools --prune-orphans --prune-failed --apply
 
-Related:
-    - rlm_config.py (configuration & utilities)
-    - inventory.py (coverage audit)
-    - distiller.py (cache population)
+    Related:
+        - rlm_config.py (configuration & utilities)
+        - inventory.py (coverage audit)
+        - distiller.py (cache population)
 """
 import sys
 import argparse
@@ -35,6 +40,7 @@ from typing import Dict, Optional, Set
 # Root is 6 levels up (scripts→rlm-curator→skills→rlm-factory→plugins→ROOT)
 # ============================================================
 def _find_project_root(start_path: Path) -> Path:
+    """Find the project root by searching upwards for a .git directory."""
     current = start_path.resolve()
     for parent in [current] + list(current.parents):
         if (parent / ".git").is_dir():

@@ -158,15 +158,8 @@ If a critical failure or validation violation is detected, you MUST output the f
     return f"---\n{fm_yaml}\n---\n\n{comment_header}\n{body}\n\n{escalation_taxonomy.strip()}\n\n{kill_switch_section.strip()}\n"
 
 
-def runner_yml(
-    name: str,
-    kill_switch: str,
-    triggers: list,
-    model: str = None,
-) -> str:
-    """
-    Target C: CI/CD Smart Failure Agent Workflow Runner (.github/workflows/<name>-agent.yml).
-    """
+def _build_trigger_block(triggers: list) -> str:
+    """Build the YAML 'on:' trigger block lines from the requested trigger types."""
     trigger_lines = ["  workflow_dispatch:"]
     for t in triggers:
         if t == "push":
@@ -179,12 +172,12 @@ def runner_yml(
             trigger_lines.append("  issues:\n    types: [opened, labeled]")
         elif t == "release":
             trigger_lines.append("  release:\n    types: [published]")
-            
-    trigger_block = "\n".join(trigger_lines)
-    
-    # Plumb model option
-    model_opt = f" --model {model}" if model else ""
 
+    return "\n".join(trigger_lines)
+
+
+def _render_setup_steps(name: str, trigger_block: str, model_opt: str) -> str:
+    """Render the workflow header plus checkout/install/run-agent steps."""
     return f"""name: {name.replace('-', ' ').title()} Agent Workflow
 
 on:
@@ -223,7 +216,12 @@ jobs:
           # Execute Headless
           copilot{model_opt} --allow-tool read write shell --prompt "$PROMPT" < /dev/null
 
-      - name: Quality Gate (Smart Fail)
+"""
+
+
+def _render_quality_gate_step(kill_switch: str) -> str:
+    """Render the Quality Gate (Smart Fail) workflow step."""
+    return f"""      - name: Quality Gate (Smart Fail)
         if: always()
         run: |
           if [ ! -f report.md ]; then
@@ -237,3 +235,20 @@ jobs:
             echo "✅ Agent review passed."
           fi
 """
+
+
+def runner_yml(
+    name: str,
+    kill_switch: str,
+    triggers: list,
+    model: str = None,
+) -> str:
+    """
+    Target C: CI/CD Smart Failure Agent Workflow Runner (.github/workflows/<name>-agent.yml).
+    """
+    trigger_block = _build_trigger_block(triggers)
+
+    # Plumb model option
+    model_opt = f" --model {model}" if model else ""
+
+    return _render_setup_steps(name, trigger_block, model_opt) + _render_quality_gate_step(kill_switch)

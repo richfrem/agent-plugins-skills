@@ -168,6 +168,64 @@ def filter_references(references: list[dict], skill_filter: str) -> list[dict]:
 
     return filtered
 
+def _classify_references(filtered: list[dict], project_root: str) -> tuple[list[dict], int, int]:
+    """Classify references as inside-skill, whitelisted, or violating.
+
+    Returns (violations, inside_count, whitelisted_count).
+    """
+    violations = []
+    inside_count = 0
+    whitelisted_count = 0
+
+    for ref_item in filtered:
+        source_file = ref_item['source_file']
+        reference = ref_item['reference']
+        line = ref_item['line']
+
+        # Skip whitelisted example/documentation references
+        if is_whitelisted(reference):
+            whitelisted_count += 1
+            continue
+
+        is_inside, resolved, skill_root = is_reference_inside_skill(source_file, reference, project_root)
+
+        if is_inside is None:
+            continue  # Not a skill file
+        elif is_inside:
+            inside_count += 1
+        else:
+            violations.append({
+                'source_file': source_file,
+                'reference': reference,
+                'line': line,
+                'resolved': str(resolved) if resolved else None,
+                'skill_root': str(skill_root) if skill_root else None
+            })
+
+    return violations, inside_count, whitelisted_count
+
+
+def _print_report(filtered: list[dict], violations: list[dict], inside_count: int, whitelisted_count: int) -> None:
+    """Print violation details followed by summary counts."""
+    if violations:
+        print(f"[ERROR] VIOLATIONS FOUND: {len(violations)} references point OUTSIDE their skill\n")
+
+        for v in sorted(violations, key=lambda x: x['source_file']):
+            print(f"FILE: {v['source_file']}:{v['line']}")
+            print(f"  REF: {v['reference']}")
+            print(f"  SKILL ROOT: {v['skill_root']}")
+            print(f"  RESOLVES TO: {v['resolved']}")
+            print()
+    else:
+        print(f"[SYMBOL] No violations found!\n")
+
+    print(f"[SYMBOL] Summary:")
+    print(f"  Checked: {len(filtered)} references")
+    print(f"  Inside skill: {inside_count}")
+    print(f"  Whitelisted (examples/docs): {whitelisted_count}")
+    print(f"  Outside skill (violations): {len(violations)}")
+
+
 def main() -> int:
     """Parse CLI arguments and check skill boundaries for external references."""
     parser = argparse.ArgumentParser(description='Skill Boundary Checker')
@@ -199,53 +257,8 @@ def main() -> int:
     else:
         print()
 
-    violations = []
-    inside_count = 0
-    whitelisted_count = 0
-
-    for ref_item in filtered:
-        source_file = ref_item['source_file']
-        reference = ref_item['reference']
-        line = ref_item['line']
-
-        # Skip whitelisted example/documentation references
-        if is_whitelisted(reference):
-            whitelisted_count += 1
-            continue
-
-        is_inside, resolved, skill_root = is_reference_inside_skill(source_file, reference, args.project)
-
-        if is_inside is None:
-            continue  # Not a skill file
-        elif is_inside:
-            inside_count += 1
-        else:
-            violations.append({
-                'source_file': source_file,
-                'reference': reference,
-                'line': line,
-                'resolved': str(resolved) if resolved else None,
-                'skill_root': str(skill_root) if skill_root else None
-            })
-
-    # Report violations
-    if violations:
-        print(f"[ERROR] VIOLATIONS FOUND: {len(violations)} references point OUTSIDE their skill\n")
-
-        for v in sorted(violations, key=lambda x: x['source_file']):
-            print(f"FILE: {v['source_file']}:{v['line']}")
-            print(f"  REF: {v['reference']}")
-            print(f"  SKILL ROOT: {v['skill_root']}")
-            print(f"  RESOLVES TO: {v['resolved']}")
-            print()
-    else:
-        print(f"[SYMBOL] No violations found!\n")
-
-    print(f"[SYMBOL] Summary:")
-    print(f"  Checked: {len(filtered)} references")
-    print(f"  Inside skill: {inside_count}")
-    print(f"  Whitelisted (examples/docs): {whitelisted_count}")
-    print(f"  Outside skill (violations): {len(violations)}")
+    violations, inside_count, whitelisted_count = _classify_references(filtered, args.project)
+    _print_report(filtered, violations, inside_count, whitelisted_count)
 
     return 0 if not violations else 1
 
