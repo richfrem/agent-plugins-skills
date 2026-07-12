@@ -79,13 +79,8 @@ def load_json(path: str) -> dict[str, Any]:
         sys.exit(2)
 
 
-def assert_fixture(fixture: str, data: dict[str, Any]) -> bool:
-    """Run assertions for the given fixture. Returns True if all pass."""
-    rules = ASSERTIONS.get(fixture)
-    if rules is None:
-        print(f"ERROR: Unknown fixture '{fixture}'. Valid: {list(ASSERTIONS)}", file=sys.stderr)
-        sys.exit(2)
-
+def _run_checks(rules: dict[str, Any], data: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Evaluate a fixture's min/max rules against scanner data, return (passed, failed) lines."""
     security_flags = data.get("security_flags", [])
     issues = data.get("issues", [])
     warnings = data.get("warnings", [])
@@ -124,6 +119,18 @@ def assert_fixture(fixture: str, data: dict[str, Any]) -> bool:
         check_min("warnings", warnings, rules["warnings_min"])
     if "warnings_max" in rules:
         check_max("warnings", warnings, rules["warnings_max"])
+
+    return passed, failed
+
+
+def assert_fixture(fixture: str, data: dict[str, Any]) -> bool:
+    """Run assertions for the given fixture. Returns True if all pass."""
+    rules = ASSERTIONS.get(fixture)
+    if rules is None:
+        print(f"ERROR: Unknown fixture '{fixture}'. Valid: {list(ASSERTIONS)}", file=sys.stderr)
+        sys.exit(2)
+
+    passed, failed = _run_checks(rules, data)
 
     for line in passed:
         print(line)
