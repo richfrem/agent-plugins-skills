@@ -2,13 +2,19 @@
 """
 fix_all_skills_comprehensive.py — Run bulk_symlink_fixer on ALL skill subfolders.
 
-Scans:
-  - plugins/*/skills/*/scripts/
-  - plugins/*/skills/*/assets/
-  - plugins/*/skills/*/resources/
-  - plugins/*/skills/*/assets/resources/
+Purpose:
+    Scans:
+      - plugins/*/skills/*/scripts/
+      - plugins/*/skills/*/assets/
+      - plugins/*/skills/*/resources/
+      - plugins/*/skills/*/assets/resources/
 
-Collects statistics and reports.
+    Collects statistics and reports.
+
+Key Input Dependencies:
+    - Git repository (uses `git rev-parse --show-toplevel` to find repo root)
+    - plugins/dev-utils/scripts/bulk_symlink_fixer.py
+    - plugins/*/skills/*/ directories
 
 Usage:
   python fix_all_skills_comprehensive.py
@@ -69,7 +75,71 @@ def find_all_skill_folders(repo_root: Path) -> list[Path]:
     return folders
 
 
+def _run_bulk_fixer_on_folder(bulk_fixer: Path, folder: Path, repo_root: Path,
+                               index: int, total: int) -> tuple:
+    """Run bulk_symlink_fixer.py on one folder; print status and return (fixed_count, is_clean)."""
+    folder_rel = folder.relative_to(repo_root)
+    print(f"[{index}/{total}] {folder_rel}")
+
+    result = subprocess.run(
+        ["python", str(bulk_fixer), str(folder_rel)],
+        capture_output=True,
+        text=True,
+        cwd=repo_root,
+    )
+
+    # Parse the output for counts
+    output = result.stdout
+    fixed = 0
+
+    # Look for "Fixed: X" in summary
+    for line in output.split("\n"):
+        if line.startswith("Fixed:"):
+            try:
+                fixed = int(line.split(":")[1].strip())
+            except (ValueError, IndexError):
+                pass
+
+    # Check if any issues were found
+    if "Total issues: 0" in output:
+        print("      ✓ Clean")
+        return fixed, True
+    if fixed > 0 or result.returncode == 0:
+        if fixed > 0:
+            print(f"      ✓ Fixed {fixed}")
+            return fixed, False
+        print("      ✓ Clean")
+        return fixed, True
+    print(f"      ✗ Error: {result.stderr[:100]}")
+    return fixed, False
+
+
+def _print_summary(total_folders: int, folders_clean: int, total_fixed: int, folders_with_issues: list) -> None:
+    """Print the final summary of the comprehensive bulk-fix run."""
+    print()
+    print("=" * 80)
+    print("SUMMARY")
+    print("=" * 80)
+    print(f"Folders scanned: {total_folders}")
+    print(f"  • scripts/ folders: ~89")
+    print(f"  • assets/ folders: ~49")
+    print(f"  • resources/ folders: ~13")
+    print()
+    print(f"Folders clean: {folders_clean}")
+    print(f"Folders with fixes: {len(folders_with_issues)}")
+    print(f"Total symlinks fixed: {total_fixed}")
+    print()
+
+    if folders_with_issues:
+        print("Folders with symlinks fixed:")
+        for folder, count in sorted(folders_with_issues, key=lambda x: -x[1])[:20]:
+            print(f"  • {folder}: {count} symlinks")
+        if len(folders_with_issues) > 20:
+            print(f"  ... and {len(folders_with_issues) - 20} more")
+
+
 def main() -> int:
+    """Run bulk_symlink_fixer.py across every skill scripts/assets/resources folder and print a summary."""
     repo_root = find_repo_root()
     bulk_fixer = repo_root / "plugins" / "dev-utils" / "scripts" / "bulk_symlink_fixer.py"
 
@@ -90,63 +160,14 @@ def main() -> int:
     folders_clean = 0
 
     for i, folder in enumerate(folders, 1):
-        folder_rel = folder.relative_to(repo_root)
-        print(f"[{i}/{len(folders)}] {folder_rel}")
-
-        result = subprocess.run(
-            ["python", str(bulk_fixer), str(folder_rel)],
-            capture_output=True,
-            text=True,
-            cwd=repo_root,
-        )
-
-        # Parse the output for counts
-        output = result.stdout
-        fixed = 0
-
-        # Look for "Fixed: X" in summary
-        for line in output.split("\n"):
-            if line.startswith("Fixed:"):
-                try:
-                    fixed = int(line.split(":")[1].strip())
-                except (ValueError, IndexError):
-                    pass
-
-        # Check if any issues were found
-        if "Total issues: 0" in output:
-            print("      ✓ Clean")
+        fixed, is_clean = _run_bulk_fixer_on_folder(bulk_fixer, folder, repo_root, i, len(folders))
+        if is_clean:
             folders_clean += 1
-        elif fixed > 0 or result.returncode == 0:
-            if fixed > 0:
-                total_fixed += fixed
-                folders_with_issues.append((folder_rel, fixed))
-                print(f"      ✓ Fixed {fixed}")
-            else:
-                print("      ✓ Clean")
-                folders_clean += 1
-        else:
-            print(f"      ✗ Error: {result.stderr[:100]}")
+        elif fixed > 0:
+            total_fixed += fixed
+            folders_with_issues.append((folder.relative_to(repo_root), fixed))
 
-    print()
-    print("=" * 80)
-    print("SUMMARY")
-    print("=" * 80)
-    print(f"Folders scanned: {len(folders)}")
-    print(f"  • scripts/ folders: ~89")
-    print(f"  • assets/ folders: ~49")
-    print(f"  • resources/ folders: ~13")
-    print()
-    print(f"Folders clean: {folders_clean}")
-    print(f"Folders with fixes: {len(folders_with_issues)}")
-    print(f"Total symlinks fixed: {total_fixed}")
-    print()
-
-    if folders_with_issues:
-        print("Folders with symlinks fixed:")
-        for folder, count in sorted(folders_with_issues, key=lambda x: -x[1])[:20]:
-            print(f"  • {folder}: {count} symlinks")
-        if len(folders_with_issues) > 20:
-            print(f"  ... and {len(folders_with_issues) - 20} more")
+    _print_summary(len(folders), folders_clean, total_fixed, folders_with_issues)
 
     return 0
 
