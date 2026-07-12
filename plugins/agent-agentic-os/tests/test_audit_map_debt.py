@@ -1,3 +1,11 @@
+"""
+Purpose:
+    Unit tests for audit_map_debt.py: markdown entry parsing and
+    expired/repeat OPEN-entry evaluation logic.
+
+Key Input Dependencies:
+    - audit_map_debt.py (in ../scripts/, imported directly)
+"""
 import sys
 import tempfile
 from pathlib import Path
@@ -11,6 +19,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from audit_map_debt import parse_debt_entries, evaluate_debt
 
 def test_parse_debt_entries_with_valid_file():
+    """parse_debt_entries splits '---'-separated sections and maps '- Key: Value' lines into dicts."""
     content = """
 # Map Debt
 
@@ -58,6 +67,7 @@ def test_parse_debt_entries_with_valid_file():
         Path(temp_path).unlink()
 
 def test_evaluate_debt_passes_with_fresh_open_entries():
+    """An OPEN entry logged only 2 days before today produces no errors."""
     entries = [
         {
             "Logged": "2026-07-02",
@@ -71,6 +81,7 @@ def test_evaluate_debt_passes_with_fresh_open_entries():
     assert len(errors) == 0
 
 def test_evaluate_debt_fails_with_expired_open_entry():
+    """An OPEN entry logged more than 14 days before today produces an EXPIRED error."""
     entries = [
         {
             "Logged": "2026-06-15",
@@ -86,6 +97,7 @@ def test_evaluate_debt_fails_with_expired_open_entry():
     assert "file.py" in errors[0]
 
 def test_evaluate_debt_fails_with_repeat_open_entry():
+    """An OPEN entry with Repeat=YES produces a REPEAT error regardless of age."""
     entries = [
         {
             "Logged": "2026-07-03",
@@ -101,6 +113,7 @@ def test_evaluate_debt_fails_with_repeat_open_entry():
     assert "file.py" in errors[0]
 
 def test_evaluate_debt_passes_with_resolved_expired_or_repeat_entries():
+    """A RESOLVED entry produces no errors even if it is both expired and Repeat=YES."""
     entries = [
         {
             "Logged": "2026-06-15",
