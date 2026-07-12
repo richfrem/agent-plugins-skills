@@ -158,13 +158,15 @@ def is_pointer_file(path: Path) -> bool:
 
 
 # External comment: Scans files recursively in the workspace directory
-def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], int, int]:
+def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], int, int, set[str], set[str]]:
     """Scans all eligible files in the workspace, ignoring excluded paths."""
     results = {"py": [], "ts": [], "tsx": [], "js": []}
     scanned_plugins = set()
     failed_plugins = set()
     total_files_checked = 0
     total_files_failed = 0
+    unique_scanned_files = set()
+    unique_failed_files = set()
     
     for root, dirs, files in os.walk(WORKSPACE_ROOT):
         # Exclude directories
@@ -183,6 +185,7 @@ def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], in
                 
                 is_symlink = file_path.is_symlink()
                 resolved = file_path.resolve()
+                unique_scanned_files.add(str(resolved))
                 
                 # Check if it belongs to a plugin
                 rel_path = file_path.relative_to(WORKSPACE_ROOT)
@@ -199,6 +202,7 @@ def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], in
                 
                 if errors:
                     total_files_failed += 1
+                    unique_failed_files.add(str(resolved))
                     if plugin_name:
                         failed_plugins.add(plugin_name)
                     results[ext_key].append({
@@ -208,7 +212,7 @@ def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], in
                         "errors": errors
                     })
                     
-    return results, scanned_plugins, failed_plugins, total_files_checked, total_files_failed
+    return results, scanned_plugins, failed_plugins, total_files_checked, total_files_failed, unique_scanned_files, unique_failed_files
 
 
 # External comment: Persists audit output to temporary markdown report
@@ -241,7 +245,7 @@ def write_report(results: Dict[str, List[Dict[str, Any]]], scanned_plugins: set[
 
 if __name__ == "__main__":
     print("Scanning workspace files...")
-    audit_results, scanned_p, failed_p, files_chk, files_fail = run_audit()
+    audit_results, scanned_p, failed_p, files_chk, files_fail, unique_chk, unique_fail = run_audit()
     out_file = write_report(audit_results, scanned_p, failed_p)
     passed_p_count = len(scanned_p) - len(failed_p)
     print(f"Plugins checked: {len(scanned_p)}")
@@ -249,7 +253,10 @@ if __name__ == "__main__":
     print(f"Plugins failed:  {len(failed_p)}")
     if failed_p:
         print(f"Failing plugins: {', '.join(sorted(failed_p))}")
-    print(f"Scripts checked: {files_chk}")
-    print(f"Scripts passed:  {files_chk - files_fail}")
-    print(f"Scripts failed:  {files_fail}")
+    print(f"Unique canonical files checked: {len(unique_chk)}")
+    print(f"Unique canonical files passed:  {len(unique_chk) - len(unique_fail)}")
+    print(f"Unique canonical files failed:  {len(unique_fail)}")
+    print(f"Total script references checked: {files_chk}")
+    print(f"Total script references passed:  {files_chk - files_fail}")
+    print(f"Total script references failed:  {files_fail}")
     print(f"Audit completed. Report saved to: {out_file}")
