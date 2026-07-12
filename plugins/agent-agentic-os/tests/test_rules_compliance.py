@@ -1,3 +1,11 @@
+"""
+Purpose:
+    Unit tests verifying that .agent/rules/ contains only real files, never
+    symlinks, since active rule files must be hard copies per policy.
+
+Key Input Dependencies:
+    - .agent/rules/ directory in the repo root
+"""
 import os
 import unittest
 from pathlib import Path
