@@ -107,51 +107,57 @@ def audit_runtime_paths(target_dir: Path):
     return issues, count
 
 
+def _scan_file_for_path_refs(path: Path, global_patterns, file_specific_patterns, plugins_pattern, users_pattern):
+    """Scan a single file for non-whitelisted plugins/ or /Users/ path references."""
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except UnicodeDecodeError:
+        return []
+
+    file_issues = []
+    for i, line in enumerate(lines, 1):
+        if "plugins/" in line or "/Users/" in line:
+            if plugins_pattern.search(line) or users_pattern.search(line):
+                if not is_whitelisted(line, str(path), global_patterns, file_specific_patterns):
+                    file_issues.append({
+                        "line_num": i,
+                        "content": line.strip()[:200]  # Cap length for report readability
+                    })
+    return file_issues
+
+
 def audit_directory(target_dir: Path, global_patterns, file_specific_patterns):
     """Audit directory files for non-whitelisted path references."""
     issues = {}
     issue_count = 0
-    
+
     plugins_pattern = re.compile(r'plugins/[a-zA-Z0-9_-]+')
     users_pattern = re.compile(r'/Users/[a-zA-Z0-9_-]+')
     exts = {".md", ".py"}
-    
+
     for path in target_dir.rglob("*"):
         if not path.is_file() or path.suffix not in exts:
             continue
-            
+
         # Ignore known framework caches, user experiments, and metadata registries
         if any(ignore in path.parts for ignore in (
-            ".agents", ".agent", ".git", "__pycache__", "node_modules", 
-            ".claude", ".claude-plugin", ".windsurf", ".kittify", 
+            ".agents", ".agent", ".git", "__pycache__", "node_modules",
+            ".claude", ".claude-plugin", ".windsurf", ".kittify",
             "plugin-research", "temp", "ADRs", "agent-rules-to-add-when-needed"
         )):
             continue
-            
+
         if path.name in (
             "portability-audit-report.md", "tuning_metrics.md", "files_with_issues.txt",
-            "CLAUDE.md", "INSTALL.md", "README.md", "bootstrap.py", 
+            "CLAUDE.md", "INSTALL.md", "README.md", "bootstrap.py",
             "broken_symlinks_repair_report.md"
         ):
             continue
-            
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-        except UnicodeDecodeError:
-            continue
 
-        file_issues = []
-        for i, line in enumerate(lines, 1):
-            if "plugins/" in line or "/Users/" in line:
-                if plugins_pattern.search(line) or users_pattern.search(line):
-                    if not is_whitelisted(line, str(path), global_patterns, file_specific_patterns):
-                        file_issues.append({
-                            "line_num": i,
-                            "content": line.strip()[:200]  # Cap length for report readability
-                        })
-                        issue_count += 1
-                        
+        file_issues = _scan_file_for_path_refs(path, global_patterns, file_specific_patterns, plugins_pattern, users_pattern)
+        issue_count += len(file_issues)
+
         if file_issues:
             # Try to get relative path if possible
             try:
@@ -159,7 +165,7 @@ def audit_directory(target_dir: Path, global_patterns, file_specific_patterns):
             except ValueError:
                 display_path = str(path)
             issues[display_path] = file_issues
-            
+
     return issues, issue_count
 
 def write_report(issues, runtime_issues, report_path: Path):
