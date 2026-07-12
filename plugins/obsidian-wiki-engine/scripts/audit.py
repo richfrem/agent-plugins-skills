@@ -19,6 +19,9 @@ Related:
     - raw_manifest.py  (WikiSourceConfig, agent-memory.json)
     - distill_wiki.py  (fixes missing summaries)
     - ingest.py        (fixes stale nodes)
+
+Key Input Dependencies:
+    - {wiki_root}/wiki/*.md nodes, {wiki_root}/rlm/ summaries, agent-memory.json
 """
 import sys
 import json
@@ -186,48 +189,38 @@ def fix_stale_memory(wiki_root: Path, stale: List[Dict[str, str]]) -> None:
     save_agent_memory(memory, wiki_root)
 
 
-def main() -> None:
-    """Run the wiki audit and print a health report."""
-    parser = argparse.ArgumentParser(description="Audit the Obsidian LLM wiki for health issues")
-    parser.add_argument("--wiki-root", required=True, help="Path to the wiki root directory")
-    parser.add_argument("--fix-stale", action="store_true",
-                        help="Remove stale entries from agent-memory.json (triggers re-ingest on next run)")
-    parser.add_argument("--json", dest="output_json", action="store_true",
-                        help="Output audit results as JSON")
-    args = parser.parse_args()
+def _status(count: int, warn_level: int = 1) -> str:
+    """Return a '[WARN] ' or '[OK]   ' prefix based on whether count meets the warn threshold."""
+    return "[WARN] " if count >= warn_level else "[OK]   "
 
-    wiki_root = Path(args.wiki_root).resolve()
 
+def _build_audit_report(wiki_root: Path) -> Dict[str, Any]:
+    """Run all audit checks against wiki_root and assemble the report dict."""
     wiki_dir = wiki_root / "wiki"
     total_nodes = len([f for f in wiki_dir.glob("*.md") if not f.name.startswith("_")]) if wiki_dir.exists() else 0
 
-    missing_summaries = audit_missing_summaries(wiki_root)
-    stale_nodes = audit_stale_nodes(wiki_root)
-    orphan_nodes = audit_orphan_nodes(wiki_root)
-    broken_links = audit_broken_wikilinks(wiki_root)
-    missing_sources = audit_source_paths(wiki_root)
-
-    report = {
+    return {
         "wiki_root": str(wiki_root),
         "audited_at": now_iso(),
         "total_nodes": total_nodes,
-        "missing_summaries": missing_summaries,
-        "stale_nodes": stale_nodes,
-        "orphan_nodes": orphan_nodes,
-        "broken_wikilinks": broken_links,
-        "missing_sources": missing_sources,
+        "missing_summaries": audit_missing_summaries(wiki_root),
+        "stale_nodes": audit_stale_nodes(wiki_root),
+        "orphan_nodes": audit_orphan_nodes(wiki_root),
+        "broken_wikilinks": audit_broken_wikilinks(wiki_root),
+        "missing_sources": audit_source_paths(wiki_root),
     }
 
-    if args.output_json:
-        print(json.dumps(report, indent=2))
-        return
 
-    print(f"\n[AUDIT] Wiki Root: {wiki_root}")
-    print(f"[OK]    Total nodes       : {total_nodes}")
+def _print_audit_report(report: Dict[str, Any]) -> None:
+    """Print the human-readable audit report with WARN/OK status prefixes."""
+    missing_summaries = report["missing_summaries"]
+    stale_nodes = report["stale_nodes"]
+    orphan_nodes = report["orphan_nodes"]
+    broken_links = report["broken_wikilinks"]
+    missing_sources = report["missing_sources"]
 
-    def _status(count: int, warn_level: int = 1) -> str:
-        return "[WARN] " if count >= warn_level else "[OK]   "
-
+    print(f"\n[AUDIT] Wiki Root: {report['wiki_root']}")
+    print(f"[OK]    Total nodes       : {report['total_nodes']}")
     print(f"{_status(len(missing_summaries))}Missing RLM summaries : {len(missing_summaries)}"
           + ("  -> run /wiki-distill" if missing_summaries else ""))
     print(f"{_status(len(stale_nodes))}Stale nodes           : {len(stale_nodes)}"
@@ -239,12 +232,32 @@ def main() -> None:
     print(f"{_status(len(missing_sources))}Missing source paths  : {len(missing_sources)}"
           + ("  -> update wiki_sources.json" if missing_sources else ""))
 
-    if args.fix_stale and stale_nodes:
-        print(f"\n[FIX] Removing {len(stale_nodes)} stale entries from agent-memory.json...")
-        fix_stale_memory(wiki_root, stale_nodes)
+
+def main() -> None:
+    """Run the wiki audit and print a health report."""
+    parser = argparse.ArgumentParser(description="Audit the Obsidian LLM wiki for health issues")
+    parser.add_argument("--wiki-root", required=True, help="Path to the wiki root directory")
+    parser.add_argument("--fix-stale", action="store_true",
+                        help="Remove stale entries from agent-memory.json (triggers re-ingest on next run)")
+    parser.add_argument("--json", dest="output_json", action="store_true",
+                        help="Output audit results as JSON")
+    args = parser.parse_args()
+
+    wiki_root = Path(args.wiki_root).resolve()
+    report = _build_audit_report(wiki_root)
+
+    if args.output_json:
+        print(json.dumps(report, indent=2))
+        return
+
+    _print_audit_report(report)
+
+    if args.fix_stale and report["stale_nodes"]:
+        print(f"\n[FIX] Removing {len(report['stale_nodes'])} stale entries from agent-memory.json...")
+        fix_stale_memory(wiki_root, report["stale_nodes"])
         print("      Done. Run /wiki-ingest to re-process.")
 
-    critical = len(missing_sources) + len(orphan_nodes)
+    critical = len(report["missing_sources"]) + len(report["orphan_nodes"])
     sys.exit(1 if critical > 0 else 0)
 
 
