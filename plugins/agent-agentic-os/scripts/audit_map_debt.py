@@ -10,6 +10,9 @@ Purpose:
       - Has Repeat set to YES (REPEAT).
 
 Layer: Backend / py_services / DevOps
+
+Key Input Dependencies:
+    - .agent/map-debt.md
 """
 
 import sys
@@ -81,6 +84,7 @@ def evaluate_debt(entries: list[dict], today_str: str | None = None) -> list[str
     return errors
 
 def main():
+    """Parse CLI args, audit the map-debt file, and exit 1 on any expired/repeat entry."""
     import argparse
     parser = argparse.ArgumentParser(description="Audit map debt registry for aging/repeat friction")
     parser.add_argument("--file", type=str, default=str(DEFAULT_DEBT_FILE), help="Path to map-debt.md file")

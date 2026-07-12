@@ -140,14 +140,8 @@ def write_file(path: Path, content: str, dry_run: bool, force: bool = False) -> 
 # Build functions
 # ---------------------------------------------------------------------------
 
-def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
-    """Create the full Agentic OS directory tree in target."""
-    today = date.today().isoformat()
-    project_name = target.resolve().name
-
-    print(f"\n--- Project root: {target.resolve()} ---\n")
-
-    # Root files
+def _scaffold_root_files(target: Path, dry_run: bool, force: bool, project_name: str) -> None:
+    """Write CLAUDE.md, CLAUDE.local.md, START_HERE.md, and heartbeat.md into target."""
     write_file(target / "CLAUDE.md",
                load_template("CLAUDE_MD_PROJECT.md").format(project_name=project_name),
                dry_run, force)
@@ -155,13 +149,15 @@ def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
     write_file(target / "START_HERE.md", load_template("START_HERE_MD.md"), dry_run, force)
     write_file(target / "heartbeat.md", load_template("HEARTBEAT_MD.md"), dry_run, force)
 
-    # context/
+
+def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) -> None:
+    """Create the context/ directory tree and write its template files."""
     make_dir(target / "context", dry_run)
     make_dir(target / "context" / "memory", dry_run)
     make_dir(target / "context" / ".locks", dry_run)
     write_file(target / "context" / "soul.md", load_template("SOUL_MD.md"), dry_run, force)
     write_file(target / "context" / "user.md", load_template("USER_MD.md"), dry_run, force)
-    write_file(target / "context" / "status.md", 
+    write_file(target / "context" / "status.md",
                load_template("STATUS_MD.md").format(today=today), dry_run, force)
     write_file(target / "context" / "memory.md",
                load_template("MEMORY_MD.md").format(today=today), dry_run, force)
@@ -171,7 +167,9 @@ def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
                load_template("EVENTS_JSONL.jsonl").replace("{today}", today), dry_run, force)
     write_file(target / "context" / "kernel.py", copy_runtime_file("kernel.py"), dry_run, force)
 
-    # .claude/
+
+def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
+    """Create the .claude/ directory tree and write hooks.json."""
     make_dir(target / ".claude", dry_run)
     make_dir(target / ".claude" / "agents", dry_run)
     make_dir(target / ".claude" / "commands", dry_run)
@@ -179,10 +177,12 @@ def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
     write_file(target / ".claude" / "hooks" / "hooks.json",
                load_template("HOOKS_JSON.json"), dry_run, force)
 
-    # Validation and Permissions Step
+
+def _validate_and_finalize(target: Path, dry_run: bool) -> None:
+    """Check git repo presence, validate hooks.json syntax, and chmod the memory-update hook."""
     import subprocess
     try:
-        subprocess.run(["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"], 
+        subprocess.run(["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         announce("git repository detected (Safe Write Protocol rollback is supported)", dry_run)
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -203,6 +203,19 @@ def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
     if not dry_run and hook_script.exists():
         hook_script.chmod(0o755)
         announce(f"chmod 755 {hook_script.name}", dry_run)
+
+
+def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
+    """Create the full Agentic OS directory tree in target."""
+    today = date.today().isoformat()
+    project_name = target.resolve().name
+
+    print(f"\n--- Project root: {target.resolve()} ---\n")
+
+    _scaffold_root_files(target, dry_run, force, project_name)
+    _scaffold_context_dir(target, dry_run, force, today)
+    _scaffold_claude_dir(target, dry_run, force)
+    _validate_and_finalize(target, dry_run)
 
 
 def create_global_kernel(dry_run: bool, force: bool) -> None:
