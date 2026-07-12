@@ -1,13 +1,26 @@
+"""
+Purpose:
+    Adapter for the GitHub Copilot CLI backend, providing heartbeat checks and
+    command construction (including cross-platform --yolo/isolation handling)
+    for cli-agents dispatch.
+
+Key Input Dependencies:
+    - copilot CLI binary on PATH
+"""
 import sys
 import shutil
 import subprocess
 
 class CopilotAdapter:
+    """Adapter for invoking the GitHub Copilot CLI."""
+
     def __init__(self):
+        """Initialize with the adapter name and default model."""
         self.name = "copilot"
         self.default_model = "gpt-5-mini"
 
     def heartbeat(self) -> bool:
+        """Return True if the copilot CLI is installed and responds to a heartbeat prompt."""
         if not shutil.which("copilot"):
             return False
         try:
@@ -23,6 +36,7 @@ class CopilotAdapter:
             return False
 
     def build_command(self, prompt_path: str, model: str, isolated: bool) -> list[str]:
+        """Build the copilot CLI command list, handling --yolo and Windows/POSIX differences."""
         m = model or self.default_model
         cmd_args = []
         # SECURE BY DEFAULT: Only pass --yolo if isolated is False (elevated access approved)
