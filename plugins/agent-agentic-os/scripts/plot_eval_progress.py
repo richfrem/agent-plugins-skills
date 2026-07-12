@@ -30,6 +30,10 @@ Usage Examples:
 
     3. Headless background watcher (auto-saves PNG on every change):
        python plot_eval_progress.py --path ./evals/ --live --headless --out monitor.png
+
+Key Input Dependencies:
+    - results.tsv (produced by eval_runner.py)
+    - pandas, matplotlib
 """
 
 import argparse
@@ -151,6 +155,127 @@ def _annotate_nodes(ax: plt.Axes, df: pd.DataFrame, kept_idx: pd.Index, kept_sco
                     rotation=15, ha="left", va="top")
 
 
+def _plot_discard_crash_points(ax: plt.Axes, interesting_data: pd.DataFrame, metric_col: str) -> None:
+    """Scatter DISCARD (gray) and CRASH (red x) points onto the axes."""
+    disc = interesting_data[interesting_data["status"] == "DISCARD"]
+    if len(disc) > 0:
+        ax.scatter(disc.index, disc[metric_col], c="#cccccc", s=30, alpha=0.5, zorder=2, label="Discarded")
+
+    crash = interesting_data[interesting_data["status"] == "CRASH"]
+    if len(crash) > 0:
+        ax.scatter(crash.index, crash[metric_col], c="#e74c3c", s=40, marker="x", zorder=2, label="Crashed")
+
+
+def _plot_new_best_points(ax: plt.Axes, df: pd.DataFrame, segment_df: pd.DataFrame, metric_col: str, added_labels: set) -> None:
+    """Plot Strictly-Better (New Best) and Sub-optimal Keep points for one session segment."""
+    # Find points where score > previous max IN THIS SEGMENT
+    # For the very first point of a segment (the Baseline), we handle it separately
+    k_df = segment_df[segment_df["status"] == "KEEP"].copy()
+    if len(k_df) == 0:
+        return
+
+    # We want STRICTOR better (score > running_max_of_previous_steps)
+    is_best = []
+    # Baseline of this segment
+    local_best = segment_df.iloc[0][metric_col]
+
+    for score in k_df[metric_col]:
+        if score > local_best:
+            is_best.append(True)
+            local_best = score
+        else:
+            is_best.append(False)
+
+    k_df["is_best"] = is_best
+    new_best = k_df[k_df["is_best"]]
+    sub_optimal = k_df[~k_df["is_best"]]
+
+    if len(new_best) > 0:
+        lbl = "New Best" if "New Best" not in added_labels else None
+        ax.scatter(new_best.index, new_best[metric_col], c="#2ecc71", s=80,
+                   zorder=5, label=lbl, edgecolors="black", linewidths=0.8)
+        _annotate_nodes(ax, df, new_best.index, new_best[metric_col])
+        if lbl: added_labels.add(lbl)
+
+    if len(sub_optimal) > 0:
+        lbl = "Sub-optimal Keep" if "Sub-optimal Keep" not in added_labels else None
+        ax.scatter(sub_optimal.index, sub_optimal[metric_col], c="#f39c12", s=40,
+                   zorder=4, label=lbl, edgecolors="black", linewidths=0.5, alpha=0.6)
+        if lbl: added_labels.add(lbl)
+
+
+def _plot_keep_segment(ax: plt.Axes, df: pd.DataFrame, segment_df: pd.DataFrame, metric_col: str, added_labels: set) -> None:
+    """Plot the Running Best line, New Best / Sub-optimal Keep points, and Baseline diamond for one session segment."""
+    s_idx = segment_df.index
+    s_scores = segment_df[metric_col]
+    s_running_max = s_scores.cummax()
+
+    # 1. Plot Segmented Running Best line
+    label = "Running Best" if "Running Best" not in added_labels else None
+    ax.step(s_idx, s_running_max, where="post", color="#27ae60",
+            linewidth=2.5, alpha=0.8, zorder=3, label=label)
+    if label: added_labels.add(label)
+
+    # 2. Plot Strictly Better points (New Best)
+    _plot_new_best_points(ax, df, segment_df, metric_col, added_labels)
+
+    # 3. Plot Baseline Diamond for this segment
+    baseline_only = segment_df[segment_df["status"] == "BASELINE"]
+    if len(baseline_only) > 0:
+        lbl = "Baseline" if "Baseline" not in added_labels else None
+        ax.scatter(baseline_only.index, baseline_only[metric_col], c="#3498db", s=100,
+                   zorder=5, label=lbl, marker="D", edgecolors="black")
+        _annotate_nodes(ax, df, baseline_only.index, baseline_only[metric_col])
+        if lbl: added_labels.add(lbl)
+
+
+def _plot_keep_segments(ax: plt.Axes, df: pd.DataFrame, interesting_data: pd.DataFrame, metric_col: str) -> None:
+    """Segment KEEP/BASELINE rows by session restarts and plot each segment."""
+    # Segment the data by 'BASELINE' events to handle session restarts
+    effective_keeps = interesting_data[interesting_data["status"].isin(["KEEP", "BASELINE"])]
+    if len(effective_keeps) == 0:
+        return
+
+    baseline_indices = effective_keeps[effective_keeps["status"] == "BASELINE"].index.tolist()
+
+    # Track added labels to prevent legend duplication
+    added_labels = set()
+
+    # Process each session segment separately
+    for i, start_idx in enumerate(baseline_indices):
+        # Define segment boundaries
+        next_start = baseline_indices[i+1] if i+1 < len(baseline_indices) else effective_keeps.index[-1] + 1
+        segment_df = effective_keeps.loc[start_idx : next_start-1]
+
+        if len(segment_df) == 0: continue
+
+        _plot_keep_segment(ax, df, segment_df, metric_col, added_labels)
+
+
+def _style_and_finalize_axes(ax: plt.Axes, df: pd.DataFrame, metric_col: str, title: str) -> None:
+    """Apply axis labels, title, grid, legend, and layout padding to the chart."""
+    ax.set_xlabel("Iteration Step", fontsize=12, fontweight='bold')
+    ax.set_ylabel(f"Metric: {metric_col.upper()} (Higher is better)", fontsize=12, fontweight='bold')
+
+    chart_title = title if title else f"Agentic Eval Progress Loop: {len(df)} Iterations"
+    ax.set_title(chart_title, fontsize=15, pad=20)
+
+    ax.grid(True, linestyle="--", alpha=0.4)
+    # Ensure legend is clean and well-positioned
+    ax.legend(loc="upper left", fontsize=10, frameon=True, fancybox=True, framealpha=0.9)
+
+    # Ensure layout accounts for title padding
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+
+def _save_plot_if_requested(out_path: Path) -> None:
+    """Save the current matplotlib figure to out_path if provided, creating parent dirs."""
+    if out_path:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(out_path, dpi=150, bbox_inches="tight")
+        print(f"Success! Saved visualization to {out_path}")
+
+
 # Generate plot visualizing eval progress
 def plot_progress(df: pd.DataFrame, metric_col: str, out_path: Path = None, ax: plt.Axes = None, title: str = None) -> None:
     """
@@ -176,112 +301,81 @@ def plot_progress(df: pd.DataFrame, metric_col: str, out_path: Path = None, ax: 
     margin = 0.2 if baseline_score > 0 else 0.5
     interesting_data = df[df[metric_col] >= (baseline_score - margin)]
 
-    # Map status classes to visual points
-    disc = interesting_data[interesting_data["status"] == "DISCARD"]
-    if len(disc) > 0:
-        ax.scatter(disc.index, disc[metric_col], c="#cccccc", s=30, alpha=0.5, zorder=2, label="Discarded")
+    _plot_discard_crash_points(ax, interesting_data, metric_col)
+    _plot_keep_segments(ax, df, interesting_data, metric_col)
+    _style_and_finalize_axes(ax, df, metric_col, title)
+    _save_plot_if_requested(out_path)
 
-    crash = interesting_data[interesting_data["status"] == "CRASH"]
-    if len(crash) > 0:
-        ax.scatter(crash.index, crash[metric_col], c="#e74c3c", s=40, marker="x", zorder=2, label="Crashed")
 
-    # Map status classes to visual points
-    disc = interesting_data[interesting_data["status"] == "DISCARD"]
-    if len(disc) > 0:
-        ax.scatter(disc.index, disc[metric_col], c="#cccccc", s=30, alpha=0.5, zorder=2, label="Discarded")
+def _resolve_tsv_path(tsv_arg: str) -> Path:
+    """Resolve the --tsv/--path argument to a concrete results.tsv file path."""
+    input_path = Path(tsv_arg)
+    if input_path.is_dir():
+        return input_path / "results.tsv"
+    return input_path
 
-    crash = interesting_data[interesting_data["status"] == "CRASH"]
-    if len(crash) > 0:
-        ax.scatter(crash.index, crash[metric_col], c="#e74c3c", s=40, marker="x", zorder=2, label="Crashed")
 
-    # Segment the data by 'BASELINE' events to handle session restarts
-    effective_keeps = interesting_data[interesting_data["status"].isin(["KEEP", "BASELINE"])]
-    if len(effective_keeps) > 0:
-        baseline_indices = effective_keeps[effective_keeps["status"] == "BASELINE"].index.tolist()
-        
-        # Track added labels to prevent legend duplication
-        added_labels = set()
-        
-        # Process each session segment separately
-        for i, start_idx in enumerate(baseline_indices):
-            # Define segment boundaries
-            next_start = baseline_indices[i+1] if i+1 < len(baseline_indices) else effective_keeps.index[-1] + 1
-            segment_df = effective_keeps.loc[start_idx : next_start-1]
-            
-            if len(segment_df) == 0: continue
-            
-            s_idx = segment_df.index
-            s_scores = segment_df[metric_col]
-            s_running_max = s_scores.cummax()
-            
-            # 1. Plot Segmented Running Best line
-            label = "Running Best" if "Running Best" not in added_labels else None
-            ax.step(s_idx, s_running_max, where="post", color="#27ae60",
-                    linewidth=2.5, alpha=0.8, zorder=3, label=label)
-            if label: added_labels.add(label)
-            
-            # 2. Plot Strictly Better points (New Best)
-            # Find points where score > previous max IN THIS SEGMENT
-            # For the very first point of a segment (the Baseline), we handle it separately
-            k_df = segment_df[segment_df["status"] == "KEEP"].copy()
-            if len(k_df) > 0:
-                # We want STRICTOR better (score > running_max_of_previous_steps)
-                is_best = []
-                # Baseline of this segment
-                local_best = segment_df.iloc[0][metric_col]
-                
-                for score in k_df[metric_col]:
-                    if score > local_best:
-                        is_best.append(True)
-                        local_best = score
-                    else:
-                        is_best.append(False)
-                
-                k_df["is_best"] = is_best
-                new_best = k_df[k_df["is_best"]]
-                sub_optimal = k_df[~k_df["is_best"]]
-                
-                if len(new_best) > 0:
-                    lbl = "New Best" if "New Best" not in added_labels else None
-                    ax.scatter(new_best.index, new_best[metric_col], c="#2ecc71", s=80, 
-                               zorder=5, label=lbl, edgecolors="black", linewidths=0.8)
-                    _annotate_nodes(ax, df, new_best.index, new_best[metric_col])
-                    if lbl: added_labels.add(lbl)
-                
-                if len(sub_optimal) > 0:
-                    lbl = "Sub-optimal Keep" if "Sub-optimal Keep" not in added_labels else None
-                    ax.scatter(sub_optimal.index, sub_optimal[metric_col], c="#f39c12", s=40, 
-                               zorder=4, label=lbl, edgecolors="black", linewidths=0.5, alpha=0.6)
-                    if lbl: added_labels.add(lbl)
+def _friendly_name_from_path(tsv_path: Path) -> str:
+    """Derive a human-friendly label (Skill:/Plugin:/Path:) from the results.tsv location."""
+    parts = tsv_path.parts
+    if "skills" in parts:
+        idx = parts.index("skills")
+        if len(parts) > idx + 1:
+            return f"Skill: {parts[idx+1]}"
+    elif "plugins" in parts:
+        idx = parts.index("plugins")
+        if len(parts) > idx + 1:
+            return f"Plugin: {parts[idx+1]}"
+    # Fallback to parent directory name if not in standard skill/plugin structure
+    return f"Path: {tsv_path.parent.name}"
 
-            # 3. Plot Baseline Diamond for this segment
-            baseline_only = segment_df[segment_df["status"] == "BASELINE"]
-            if len(baseline_only) > 0:
-                lbl = "Baseline" if "Baseline" not in added_labels else None
-                ax.scatter(baseline_only.index, baseline_only[metric_col], c="#3498db", s=100, 
-                           zorder=5, label=lbl, marker="D", edgecolors="black")
-                _annotate_nodes(ax, df, baseline_only.index, baseline_only[metric_col])
-                if lbl: added_labels.add(lbl)
 
-    # Style grid
-    ax.set_xlabel("Iteration Step", fontsize=12, fontweight='bold')
-    ax.set_ylabel(f"Metric: {metric_col.upper()} (Higher is better)", fontsize=12, fontweight='bold')
-    
-    chart_title = title if title else f"Agentic Eval Progress Loop: {len(df)} Iterations"
-    ax.set_title(chart_title, fontsize=15, pad=20)
-    
-    ax.grid(True, linestyle="--", alpha=0.4)
-    # Ensure legend is clean and well-positioned
-    ax.legend(loc="upper left", fontsize=10, frameon=True, fancybox=True, framealpha=0.9)
-    
-    # Ensure layout accounts for title padding
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+def _run_live_mode(tsv_path: Path, metric_col: str, out_path: Path, friendly_name: str, interval: int, headless: bool) -> None:
+    """Run the live-refresh plotting loop until the window is closed or interrupted."""
+    print(f"Entering LIVE mode for {friendly_name} (refreshing every {interval}s)...")
+    if not headless:
+        plt.ion()
 
-    # Save artifact if path provided
-    if out_path:
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(out_path, dpi=150, bbox_inches="tight")
-        print(f"Success! Saved visualization to {out_path}")
+    fig, ax = plt.subplots(figsize=(16, 8))
+    if not headless:
+        try:
+            fig.canvas.manager.set_window_title(f"Eval Progress - {friendly_name}")
+        except Exception:
+            pass  # Some backends don't support this
+
+    try:
+        while True:
+            # Check for window closure to exit gracefully
+            if not headless and not plt.fignum_exists(fig.number):
+                print("Window closed by user. Exiting live mode.")
+                break
+
+            if tsv_path.exists():
+                try:
+                    df = load_and_validate_data(tsv_path, metric_col)
+                    # In live mode, we still want to save to out_path if requested
+                    # Pass friendly_name to plot_progress to avoid truncation issues
+                    full_title = f"{friendly_name}\nAgentic Eval Progress Loop: {len(df)} Iterations"
+                    plot_progress(df, metric_col, out_path=out_path, ax=ax, title=full_title)
+
+                    if not headless:
+                        fig.canvas.draw_idle()
+                        fig.canvas.flush_events()
+
+                except Exception as e:
+                    print(f"[{time.strftime('%H:%M:%S')}] Update failed: {e}")
+            else:
+                print(f"[{time.strftime('%H:%M:%S')}] Waiting for {tsv_path}...")
+
+            if not headless:
+                plt.pause(interval)
+            else:
+                time.sleep(interval)
+    except KeyboardInterrupt:
+        print("\nLive monitoring stopped.")
+        if not headless:
+            plt.ioff()
+            plt.show()
 
 
 # CLI entrypoint for plot_eval_progress
@@ -296,80 +390,16 @@ def main() -> None:
     parser.add_argument("--live", action="store_true", help="Enable live monitoring and auto-refresh.")
     parser.add_argument("--interval", type=int, default=5, help="Refresh interval in seconds for live mode.")
     parser.add_argument("--headless", action="store_true", help="Run without opening a GUI window (best for background/CI).")
-    
+
     args = parser.parse_args()
-    
-    # Path resolution
-    input_path = Path(args.tsv)
-    if input_path.is_dir():
-        tsv_path = input_path / "results.tsv"
-    else:
-        tsv_path = input_path
 
-    # Extract a friendly name for the title (e.g., from 'skills/convert-mermaid')
-    parts = tsv_path.parts
-    friendly_name = "Unknown Tool"
-    if "skills" in parts:
-        idx = parts.index("skills")
-        if len(parts) > idx + 1:
-            friendly_name = f"Skill: {parts[idx+1]}"
-    elif "plugins" in parts:
-        idx = parts.index("plugins")
-        if len(parts) > idx + 1:
-            friendly_name = f"Plugin: {parts[idx+1]}"
-    else:
-        # Fallback to parent directory name if not in standard skill/plugin structure
-        friendly_name = f"Path: {tsv_path.parent.name}"
-
+    tsv_path = _resolve_tsv_path(args.tsv)
+    friendly_name = _friendly_name_from_path(tsv_path)
     metric_col = args.metric.strip().lower()
     out_path = Path(args.out) if args.out else None
 
-    # Process
     if args.live:
-        print(f"Entering LIVE mode for {friendly_name} (refreshing every {args.interval}s)...")
-        if not args.headless:
-            plt.ion()
-        
-        fig, ax = plt.subplots(figsize=(16, 8))
-        if not args.headless:
-            try:
-                fig.canvas.manager.set_window_title(f"Eval Progress - {friendly_name}")
-            except Exception:
-                pass # Some backends don't support this
-        
-        try:
-            while True:
-                # Check for window closure to exit gracefully
-                if not args.headless and not plt.fignum_exists(fig.number):
-                    print("Window closed by user. Exiting live mode.")
-                    break
-
-                if tsv_path.exists():
-                    try:
-                        df = load_and_validate_data(tsv_path, metric_col)
-                        # In live mode, we still want to save to out_path if requested
-                        # Pass friendly_name to plot_progress to avoid truncation issues
-                        full_title = f"{friendly_name}\nAgentic Eval Progress Loop: {len(df)} Iterations"
-                        plot_progress(df, metric_col, out_path=out_path, ax=ax, title=full_title)
-                        
-                        if not args.headless:
-                            fig.canvas.draw_idle()
-                            fig.canvas.flush_events()
-                            
-                    except Exception as e:
-                        print(f"[{time.strftime('%H:%M:%S')}] Update failed: {e}")
-                else:
-                    print(f"[{time.strftime('%H:%M:%S')}] Waiting for {tsv_path}...")
-                
-                if not args.headless:
-                    plt.pause(args.interval)
-                else:
-                    time.sleep(args.interval)
-        except KeyboardInterrupt:
-            print("\nLive monitoring stopped.")
-            if not args.headless:
-                plt.ioff()
-                plt.show()
+        _run_live_mode(tsv_path, metric_col, out_path, friendly_name, args.interval, args.headless)
     else:
         df = load_and_validate_data(tsv_path, metric_col)
         full_title = f"{friendly_name}\nAgentic Eval Progress Loop: {len(df)} Iterations"
