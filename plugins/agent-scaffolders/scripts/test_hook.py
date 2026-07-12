@@ -130,13 +130,14 @@ def _build_cmd(hook_script: str) -> list:
 # Entry point
 # ---------------------------------------------------------------------------
 
-# Entry point: parse args, run the hook, and report results
-def main() -> None:
+# Parse CLI args, handle --create-sample, and validate the hook/input file paths
+def _parse_args_and_validate() -> argparse.Namespace:
     """
-    Run a hook script with a JSON test input file and report the outcome.
+    Parse CLI arguments, print a sample and exit if --create-sample was given,
+    and validate that hook_script and test_input exist.
 
     Raises:
-        SystemExit: Code 0 on hook pass (exit 0 or 2); code 1 on failure or bad args.
+        SystemExit: Code 1 on missing args or missing files.
     """
     parser = argparse.ArgumentParser(
         description="Test a Claude Code hook script with sample input",
@@ -159,17 +160,28 @@ def main() -> None:
         parser.print_help()
         sys.exit(1)
 
-    hook_script = opts.hook_script
-    test_input = opts.test_input
-
-    if not os.path.isfile(hook_script):
-        print(f"❌ Error: Hook script not found: {hook_script}")
+    if not os.path.isfile(opts.hook_script):
+        print(f"❌ Error: Hook script not found: {opts.hook_script}")
         sys.exit(1)
 
-    if not os.path.isfile(test_input):
-        print(f"❌ Error: Test input not found: {test_input}")
+    if not os.path.isfile(opts.test_input):
+        print(f"❌ Error: Test input not found: {opts.test_input}")
         sys.exit(1)
 
+    return opts
+
+
+# Load and validate the JSON test input file
+def _load_test_input(test_input: str) -> tuple:
+    """
+    Load the JSON test input file.
+
+    Returns:
+        Tuple of (input_data, input_text).
+
+    Raises:
+        SystemExit: Code 1 if the file is not valid JSON.
+    """
     try:
         with open(test_input) as fh:
             input_data = json.load(fh)
@@ -177,30 +189,22 @@ def main() -> None:
     except json.JSONDecodeError:
         print("❌ Error: Test input is not valid JSON")
         sys.exit(1)
+    return input_data, input_text
 
-    print(f"🧪 Testing hook: {hook_script}")
-    print(f"📥 Input: {test_input}")
-    print()
 
-    if opts.verbose:
-        print("Input JSON:")
-        print(json.dumps(input_data, indent=2))
-        print()
-
+# Build the subprocess environment for the hook run
+def _build_hook_env() -> dict:
+    """Build the subprocess environment, defaulting Claude Code hook env vars."""
     env = os.environ.copy()
     env.setdefault("CLAUDE_PROJECT_DIR", "/tmp/test-project")
     env.setdefault("CLAUDE_PLUGIN_ROOT", os.getcwd())
     env.setdefault("CLAUDE_ENV_FILE", f"/tmp/test-env-{os.getpid()}")
+    return env
 
-    if opts.verbose:
-        print("Environment:")
-        for key in ("CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "CLAUDE_ENV_FILE"):
-            print(f"  {key}={env[key]}")
-        print()
 
-    print(f"▶️  Running hook (timeout: {opts.timeout}s)...")
-    print()
-
+# Run the hook script via subprocess and capture exit code/output/duration
+def _run_hook(hook_script: str, input_text: str, env: dict, timeout: int) -> tuple:
+    """Run the hook script via subprocess. Returns (exit_code, output, duration)."""
     cmd = _build_cmd(hook_script)
     start = time.monotonic()
     try:
@@ -209,7 +213,7 @@ def main() -> None:
             input=input_text,
             capture_output=True,
             text=True,
-            timeout=opts.timeout,
+            timeout=timeout,
             env=env,
         )
         exit_code = result.returncode
@@ -218,7 +222,12 @@ def main() -> None:
         exit_code = 124
         output = ""
     duration = int(time.monotonic() - start)
+    return exit_code, output, duration
 
+
+# Print exit code, duration, status, and any (parsed) output
+def _print_results(exit_code: int, duration: int, output: str, timeout: int) -> None:
+    """Print the hook's exit code, duration, status line, and output (parsed if JSON)."""
     print(_SEPARATOR)
     print("Results:")
     print()
@@ -227,7 +236,7 @@ def main() -> None:
     print()
 
     status_map = {0: "✅ Hook approved/succeeded", 2: "🚫 Hook blocked/denied",
-                  124: f"⏱️  Hook timed out after {opts.timeout}s"}
+                  124: f"⏱️  Hook timed out after {timeout}s"}
     print(status_map.get(exit_code, f"⚠️  Hook returned unexpected exit code: {exit_code}"))
     print()
     print("Output:")
@@ -242,13 +251,56 @@ def main() -> None:
     else:
         print("(no output)")
 
-    env_file = env["CLAUDE_ENV_FILE"]
+
+# Print and remove the hook's env file if it was created
+def _cleanup_env_file(env_file: str) -> None:
+    """Print the hook's env file contents (if created) and remove it."""
     if os.path.isfile(env_file):
         print()
         print("Environment file created:")
         with open(env_file) as fh:
             print(fh.read())
         os.remove(env_file)
+
+
+# Entry point: parse args, run the hook, and report results
+def main() -> None:
+    """
+    Run a hook script with a JSON test input file and report the outcome.
+
+    Raises:
+        SystemExit: Code 0 on hook pass (exit 0 or 2); code 1 on failure or bad args.
+    """
+    opts = _parse_args_and_validate()
+    hook_script = opts.hook_script
+    test_input = opts.test_input
+
+    input_data, input_text = _load_test_input(test_input)
+
+    print(f"🧪 Testing hook: {hook_script}")
+    print(f"📥 Input: {test_input}")
+    print()
+
+    if opts.verbose:
+        print("Input JSON:")
+        print(json.dumps(input_data, indent=2))
+        print()
+
+    env = _build_hook_env()
+
+    if opts.verbose:
+        print("Environment:")
+        for key in ("CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_ROOT", "CLAUDE_ENV_FILE"):
+            print(f"  {key}={env[key]}")
+        print()
+
+    print(f"▶️  Running hook (timeout: {opts.timeout}s)...")
+    print()
+
+    exit_code, output, duration = _run_hook(hook_script, input_text, env, opts.timeout)
+
+    _print_results(exit_code, duration, output, opts.timeout)
+    _cleanup_env_file(env["CLAUDE_ENV_FILE"])
 
     print()
     print(_SEPARATOR)
