@@ -1,4 +1,12 @@
-# plugins/agent-agentic-os/tests/test_evaluate_security.py
+"""
+Purpose:
+    Security-focused unit tests for evaluate.py: SHA256 gate-script locking
+    during --baseline, and exclusive/no-follow trace file writes.
+
+Key Input Dependencies:
+    - evaluate.py (in ../scripts/, imported directly)
+    - pytest tmp_path and monkeypatch fixtures
+"""
 import sys, os, json
 from pathlib import Path
 import pytest
@@ -27,6 +35,7 @@ def test_trace_write_uses_o_excl(tmp_path, monkeypatch):
     original_open = os.open
 
     def tracked_open(path, flags, mode=0o777, **kwargs):
+        """Record the flags passed to os.open, then delegate to the real os.open."""
         opens_seen.append((path, flags))
         return original_open(path, flags, mode, **kwargs)
 
