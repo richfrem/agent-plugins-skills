@@ -21,7 +21,7 @@ Every script must comply with:
 **Auditor Tool:** `plugins/dev-utils/scripts/workspace_conventions_auditor.py` (AST-based Python auditor + regex JS/TS header checker)
 **Branch:** `feat/updated-coding-conventions.md`
 **GitHub:** https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md
-**Strategy:** Fix plugin-by-plugin, smallest-violation-count first. Commit + push after every file. PR + merge to main once all plugins reach 0 violations.
+**Strategy:** Fix plugin-by-plugin. Default order is smallest-violation-count first, but the user can override the order explicitly (see below). Commit + push after every file. PR + merge to main once all plugins reach 0 violations.
 
 **Current violation count: 207** (down from 454 at start).
 
@@ -35,13 +35,15 @@ Every script must comply with:
 - `obsidian-wiki-engine`
 - `agent-agentic-os`
 
-### Plugins remaining, smallest first
-| Plugin | Violations |
-|---|---|
-| `agent-memory` | 86 |
-| `agent-scaffolders` | 121 |
+### Plugins remaining — user-requested order (NOT smallest-first)
+| Order | Plugin | Violations |
+|---|---|---|
+| Next | `agent-scaffolders` | 121 |
+| Last | `agent-memory` | 86 |
 
-Re-run the auditor before trusting these numbers — they were last confirmed at commit `b99783f6`.
+User explicitly requested `agent-scaffolders` before `agent-memory`, overriding the default smallest-first rule. Follow this order until told otherwise.
+
+Re-run the auditor before trusting these numbers — they were last confirmed at commit `a52797a6`.
 
 ---
 
