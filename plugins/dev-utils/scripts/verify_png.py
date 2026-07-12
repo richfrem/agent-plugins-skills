@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 def verify_png(file_path: Path) -> Dict[str, Any]:
+    """Structurally verify a PNG file: existence, non-empty, and valid magic bytes."""
     if not file_path.exists():
         return {"status": "errors_found", "total_errors": 1, "error_summary": {"FileMissing": {"count": 1, "locations": ["File does not exist."]}}}
     
@@ -81,6 +82,7 @@ def verify_png(file_path: Path) -> Dict[str, Any]:
     return result
 
 def main() -> None:
+    """Parse CLI argument, verify the PNG file, and print the JSON result."""
     if len(sys.argv) < 2:
         print("Usage: python verify_png.py <png_file>")
         sys.exit(1)

@@ -81,7 +81,7 @@ def scan_python_file(file_path: Path) -> List[str]:
 def _audit_js_ts_header(file_path: Path, content: str) -> List[str]:
     """Helper to check block headers on JS/TS files."""
     errors = []
-    header_match = re.match(r"^\s*/\*\*([\s\S]*?)\*/", content)
+    header_match = re.match(r"^(?:#!.*\n)?\s*/\*\*([\s\S]*?)\*/", content)
     if not header_match:
         errors.append("Missing block comment header (/** ... */) at the top of the file.")
     else:

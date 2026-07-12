@@ -57,10 +57,12 @@ class LinkEntry:
     description: str = ""
 
     def src_path(self, root: Path) -> Path:
+        """Resolve self.src to an absolute path, relative to root if not already absolute."""
         p = Path(self.src)
         return p if p.is_absolute() else root / p
 
     def dst_path(self, root: Path) -> Path:
+        """Resolve self.dst to an absolute path, relative to root if not already absolute."""
         p = Path(self.dst)
         return p if p.is_absolute() else root / p
 
@@ -74,6 +76,7 @@ class Manifest:
 
     @classmethod
     def load(cls, path: Path) -> "Manifest":
+        """Load a Manifest from a JSON file, or return an empty Manifest if it doesn't exist."""
         if not path.exists():
             return cls()
         with open(path, encoding="utf-8") as f:
@@ -82,6 +85,7 @@ class Manifest:
         return cls(version=data.get("version", 1), links=links)
 
     def save(self, path: Path) -> None:
+        """Write this Manifest to path as JSON, creating parent directories if needed."""
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(
@@ -93,9 +97,11 @@ class Manifest:
     # --- helpers ------------------------------------------------------------
 
     def find(self, dst: str) -> LinkEntry | None:
+        """Return the LinkEntry with the given dst, or None if not present."""
         return next((e for e in self.links if e.dst == dst), None)
 
     def upsert(self, entry: LinkEntry) -> None:
+        """Insert entry, replacing any existing entry with the same dst."""
         for i, e in enumerate(self.links):
             if e.dst == entry.dst:
                 self.links[i] = entry
@@ -103,6 +109,7 @@ class Manifest:
         self.links.append(entry)
 
     def remove(self, dst: str) -> bool:
+        """Remove the entry with the given dst; return True if an entry was removed."""
         before = len(self.links)
         self.links = [e for e in self.links if e.dst != dst]
         return len(self.links) < before
@@ -313,9 +320,8 @@ def link_status(src: Path, dst: Path) -> str:
 # Commands
 # ---------------------------------------------------------------------------
 
-def cmd_diagnose(args: argparse.Namespace) -> None:
-    root = find_repo_root()
-
+def _print_environment_info(root: Path) -> None:
+    """Print OS, Python, repo root, and symlink-creation capability info."""
     print("=" * 60)
     print("  Symlink Environment Diagnosis")
     print("=" * 60)
@@ -331,6 +337,9 @@ def cmd_diagnose(args: argparse.Namespace) -> None:
     else:
         print(f"  Can create symlinks: yes")
 
+
+def _print_git_symlinks_config() -> None:
+    """Print git core.symlinks value for each scope, with a fix hint on Windows if not enabled."""
     print()
     print("  Git core.symlinks:")
     for scope in ("local", "global", "system"):
@@ -345,9 +354,9 @@ def cmd_diagnose(args: argparse.Namespace) -> None:
         print("     Fix: git config core.symlinks true")
         print("     Then: git rm --cached -r . && git reset --hard")
 
-    # Scan for text-file symlink stand-ins
-    print()
-    print("  Scanning repo for symlink stand-ins (text files containing a path)...")
+
+def _scan_symlink_standins(root: Path) -> list:
+    """Scan the repo for small text files that look like symlink stand-ins."""
     standins = []
     try:
         for path in root.rglob("*"):
@@ -363,6 +372,15 @@ def cmd_diagnose(args: argparse.Namespace) -> None:
                     pass
     except Exception:
         pass
+    return standins
+
+
+def _print_standin_scan(root: Path) -> None:
+    """Scan for and print any symlink stand-ins found in the repo."""
+    # Scan for text-file symlink stand-ins
+    print()
+    print("  Scanning repo for symlink stand-ins (text files containing a path)...")
+    standins = _scan_symlink_standins(root)
 
     if standins:
         print(f"  Found {len(standins)} possible stand-in(s):")
@@ -372,6 +390,9 @@ def cmd_diagnose(args: argparse.Namespace) -> None:
     else:
         print("  None found.")
 
+
+def _print_manifest_status(args: argparse.Namespace, root: Path) -> None:
+    """Print manifest existence/link-count status, or run a quiet audit if it exists."""
     print()
     manifest_path = root / MANIFEST_FILE
     if manifest_path.exists():
@@ -384,7 +405,17 @@ def cmd_diagnose(args: argparse.Namespace) -> None:
     print()
 
 
+def cmd_diagnose(args: argparse.Namespace) -> None:
+    """Print environment info, git symlink config, a stand-in scan, and manifest status."""
+    root = find_repo_root()
+    _print_environment_info(root)
+    _print_git_symlinks_config()
+    _print_standin_scan(root)
+    _print_manifest_status(args, root)
+
+
 def cmd_create(args: argparse.Namespace) -> None:
+    """Create a new symlink from --src to --dst and record it in the manifest."""
     root = find_repo_root()
     manifest_path = root / (args.manifest or MANIFEST_FILE)
     manifest = Manifest.load(manifest_path)
@@ -413,6 +444,7 @@ def cmd_create(args: argparse.Namespace) -> None:
 
 
 def cmd_restore(args: argparse.Namespace) -> None:
+    """Re-create every link recorded in the manifest, skipping any already correctly linked."""
     root = find_repo_root()
     manifest_path = root / (args.manifest or MANIFEST_FILE)
     manifest = Manifest.load(manifest_path)
@@ -454,6 +486,7 @@ def cmd_restore(args: argparse.Namespace) -> None:
 
 
 def cmd_audit(args: argparse.Namespace, quiet_header: bool = False) -> None:
+    """Check every link in the manifest against the filesystem and report broken ones."""
     root = find_repo_root()
     manifest_path = root / (args.manifest if hasattr(args, "manifest") and args.manifest else MANIFEST_FILE)
     manifest = Manifest.load(manifest_path)
@@ -485,6 +518,7 @@ def cmd_audit(args: argparse.Namespace, quiet_header: bool = False) -> None:
 
 
 def cmd_list(args: argparse.Namespace) -> None:
+    """Print the manifest as JSON."""
     root = find_repo_root()
     manifest_path = root / (args.manifest or MANIFEST_FILE)
     manifest = Manifest.load(manifest_path)
@@ -492,6 +526,7 @@ def cmd_list(args: argparse.Namespace) -> None:
 
 
 def cmd_remove(args: argparse.Namespace) -> None:
+    """Remove the symlink at --dst and delete its entry from the manifest."""
     root = find_repo_root()
     manifest_path = root / (args.manifest or MANIFEST_FILE)
     manifest = Manifest.load(manifest_path)
@@ -516,6 +551,7 @@ def cmd_remove(args: argparse.Namespace) -> None:
 # ---------------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for symlink_manager.py, with one subparser per command."""
     parser = argparse.ArgumentParser(
         description="Cross-platform symlink manager for Git repos",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -554,6 +590,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    """Parse CLI arguments and dispatch to the requested symlink command."""
     parser = build_parser()
     args = parser.parse_args()
 

@@ -7,6 +7,9 @@ Purpose:
     Mapper: Indexes the entire repository to create a file inventory for link fixing.
     This is Phase 1 of the Link Checker pipeline.
 
+Key Input Dependencies:
+    - Repository root directory to scan (--root)
+
 Usage:
     python01_build_file_inventory.py --root .
 
@@ -54,6 +57,7 @@ def generate_file_map(root_dir: str, extra_excludes: List[str] = None) -> Dict[s
     return file_map
 
 def main() -> None:
+    """Parse CLI arguments, scan the repository, and write the file inventory JSON."""
     parser = argparse.ArgumentParser(description="Step 1: Build repository file inventory.")
     parser.add_argument("--root", default=".", help="Root directory to scan (default: current)")
     parser.add_argument("--output", default="file_inventory.json", help="Output JSON file name")

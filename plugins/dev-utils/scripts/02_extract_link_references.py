@@ -7,6 +7,9 @@ Purpose:
     Extractor: Generic scanner that extracts all link/path references from files.
     This is Phase 2 of the Link Checker pipeline.
 
+Key Input Dependencies:
+    - Repository root directory to scan (--root)
+
 Usage:
     python02_extract_link_references.py --root .
 
@@ -68,6 +71,7 @@ def extract_links_from_file(file_path: str, root_dir: str) -> List[Dict[str, Any
     return results
 
 def main() -> None:
+    """Parse CLI arguments, scan target files, and write extracted link references JSON."""
     parser = argparse.ArgumentParser(description="Step 2: Extract all link references.")
     parser.add_argument("--root", default=".", help="Root directory to scan")
     parser.add_argument("--output", default="link_references.json", help="Output JSON file name")
