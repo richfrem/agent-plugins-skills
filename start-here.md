@@ -23,7 +23,7 @@ Every script must comply with:
 **GitHub:** https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md
 **Strategy:** Fix plugin-by-plugin, smallest-violation-count first. Commit + push after every file. PR + merge to main once all plugins reach 0 violations.
 
-**Current violation count: 246** (down from 454 at start).
+**Current violation count: 207** (down from 454 at start).
 
 ### Plugins completed (0 violations) ✅
 - `plugin-manager`
@@ -33,15 +33,15 @@ Every script must comply with:
 - `dev-utils`
 - `cli-agents`
 - `obsidian-wiki-engine`
+- `agent-agentic-os`
 
 ### Plugins remaining, smallest first
 | Plugin | Violations |
 |---|---|
-| `agent-agentic-os` | 39 |
 | `agent-memory` | 86 |
 | `agent-scaffolders` | 121 |
 
-Re-run the auditor before trusting these numbers — they were last confirmed at commit `d5cbff72`.
+Re-run the auditor before trusting these numbers — they were last confirmed at commit `b99783f6`.
 
 ---
 
@@ -175,4 +175,9 @@ Before ending a session:
 
 ## Last Updated
 
-**Status:** `obsidian-wiki-engine` completed at commit `d5cbff72`. 246 violations remaining across `agent-agentic-os` (39), `agent-memory` (86), `agent-scaffolders` (121). Next up: `agent-agentic-os`.
+**Status:** `agent-agentic-os` completed at commit `b99783f6` (all 19 files, 39 violations cleared — see below for two pre-existing bugs found and flagged along the way). 207 violations remaining across `agent-memory` (86) and `agent-scaffolders` (121). Next up: `agent-memory`.
+
+### Notes from the `agent-agentic-os` pass
+- `evaluate.py` and `eval_runner.py` are the locked autoresearch gate scripts (self-guarded by SHA256/git-status checks). User confirmed: refactor structure for conventions while leaving the actual security/scoring logic byte-for-byte untouched. Both were refactored and extensively behavior-verified (eval_runner.py alone: 31 synthetic scenarios + 4 CLI modes, all matching).
+- **Pre-existing bug found (not fixed, flagged):** `init_agentic_os.py`'s `load_template()`/`copy_runtime_file()` look for templates at `skills/os-init/templates/`, but the actual directory is `skills/os-init/assets/templates/`. Every `init_agentic_os.py` run currently fails on first template load. Out of scope for the conventions pass — needs a separate fix.
+- **Bug found and fixed (user-approved):** `plot_eval_progress.py`'s `plot_progress()` had a duplicated block computing/drawing DISCARD and CRASH scatter points twice in a row. Deduped as part of the refactor.
