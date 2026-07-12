@@ -5,6 +5,10 @@ validate_github_agent.py
 Purpose:
     Validates generated GitHub Agent configurations (.agent.md and gh-aw MD).
     Returns JSON findings and exits 0/1.
+
+Key Input Dependencies:
+    - PyYAML                    — Used for frontmatter metadata YAML parsing
+    - os, sys, re, argparse     — Standard library packages for CLI parsing and path management
 """
 
 import os
@@ -20,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 
 def parse_frontmatter(content: str) -> tuple[dict, str]:
+    """Parse YAML frontmatter blocks and body contents from raw markdown text."""
     fm = {}
     body = content
     match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
@@ -123,6 +128,7 @@ def validate_target_c(fm: dict, body: str, kill_switch: str = None, filepath_str
 
 
 def main() -> None:
+    """CLI entry point: parses target agent path and target type, and runs matching validation checks."""
     parser = argparse.ArgumentParser(description="Validate GitHub Agent configuration files.")
     parser.add_argument("--file", required=True, help="Path to the file to validate")
     parser.add_argument(

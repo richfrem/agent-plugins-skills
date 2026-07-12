@@ -8,6 +8,11 @@ Purpose:
     Tests whether a skill's description causes Claude to trigger (read the skill)
     for a set of queries. Outputs results as JSON.
 
+Key Input Dependencies:
+    - eval_set.json             — Dataset containing test queries and trigger expectations
+    - utils.py                  — Internal helper file defining parse_skill_md
+    - argparse, json, subprocess— Standard library packages for execution, serialization, and CLI parsing
+
 Layer: Meta-Execution
 
 Usage Examples:
@@ -312,6 +317,7 @@ def run_eval(
 
 
 def main() -> None:
+    """CLI entry point: parses evaluation set options, resolves the target skill description, and executes trigger analysis."""
     parser = argparse.ArgumentParser(description="Run trigger evaluation for a skill description")
     parser.add_argument("--eval-set", required=True, help="Path to eval set JSON file")
     parser.add_argument("--skill-path", required=True, help="Path to skill directory")

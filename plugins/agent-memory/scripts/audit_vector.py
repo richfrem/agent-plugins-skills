@@ -50,14 +50,71 @@ except ImportError as e:
     sys.exit(1)
 
 
+def _scan_vector_index(cortex: VectorDBOperations, config: VectorConfig, fs_files: list) -> tuple[int, list[str]]:
+    """Scan ChromaDB collection and return matching and missing files lists."""
+    try:
+        collection_obj = cortex.chroma_client.get_collection(name=config.child_collection)
+        all_data = collection_obj.get(include=['metadatas'])
+        indexed_sources: Set[str] = set()
+        if all_data and 'metadatas' in all_data:
+            for meta in all_data['metadatas']:
+                if meta and 'source' in meta:
+                    indexed_sources.add(meta['source'])
+    except Exception as e:
+        print(f"[ERROR] Failed to query ChromaDB: {e}")
+        return 0, []
+
+    missing: List[str] = []
+    found_count = 0
+    for rel_path in fs_files:
+        clean_path = str(rel_path).replace("\\", "/")
+        if clean_path in indexed_sources:
+            found_count += 1
+        else:
+            missing.append(clean_path)
+    return found_count, missing
+
+
+def _write_audit_reports(report_text: str, report_path: str, csv_path: str, missing: list[str]) -> None:
+    """Save text report summary and CSV list of missing vector database files."""
+    if report_path:
+        rp = Path(report_path).resolve()
+        rp.parent.mkdir(parents=True, exist_ok=True)
+        rp.write_text(report_text, encoding="utf-8")
+        print(f"[OK] Report saved to: {rp}")
+
+    if csv_path:
+        cp = Path(csv_path).resolve()
+        cp.parent.mkdir(parents=True, exist_ok=True)
+        with open(cp, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Missing File Path"])
+            for m in sorted(missing):
+                writer.writerow([m])
+        print(f"[OK] Missing files list saved to: {cp}")
+
+
+def _setup_vector_ops(config: VectorConfig) -> VectorDBOperations:
+    """Instantiate and configure VectorDBOperations client based on profile config."""
+    return VectorDBOperations(
+        str(PROJECT_ROOT),
+        child_collection=config.child_collection,
+        parent_collection=config.parent_collection,
+        chroma_host=config.chroma_host,
+        chroma_port=config.chroma_port,
+        chroma_data_path=config.chroma_data_path,
+        embedding_model=config.embedding_model,
+        parent_chunk_size=config.parent_chunk_size,
+        parent_chunk_overlap=config.parent_chunk_overlap,
+        child_chunk_size=config.child_chunk_size,
+        child_chunk_overlap=config.child_chunk_overlap,
+        device=config.device
+    )
+
+
 def run_audit(profile_name: str, csv_path: Optional[str] = None, report_path: Optional[str] = None) -> None:
     """
     Performs the actual comparison between manifest and vector store.
-
-    Args:
-        profile_name: The Vector profile to audit.
-        csv_path: Optional path to save CSV of missing files.
-        report_path: Optional path to save a detailed summary report.
     """
     try:
         config = VectorConfig(profile_name=profile_name, project_root=str(PROJECT_ROOT))
@@ -74,47 +131,11 @@ def run_audit(profile_name: str, csv_path: Optional[str] = None, report_path: Op
     print(f"   Searching for {total_expected} manifest files in Vector DB...")
 
     # 2. Check Vector DB status
-    cortex = VectorDBOperations(
-        str(PROJECT_ROOT),
-        child_collection=config.child_collection,
-        parent_collection=config.parent_collection,
-        chroma_host=config.chroma_host,
-        chroma_port=config.chroma_port,
-        chroma_data_path=config.chroma_data_path,
-        embedding_model=config.embedding_model,
-        parent_chunk_size=config.parent_chunk_size,
-        parent_chunk_overlap=config.parent_chunk_overlap,
-        child_chunk_size=config.child_chunk_size,
-        child_chunk_overlap=config.child_chunk_overlap,
-        device=config.device
-    )
-
-    # Get all sources currently in the child collection
-    try:
-        collection_obj = cortex.chroma_client.get_collection(name=config.child_collection)
-        all_data = collection_obj.get(include=['metadatas'])
-        indexed_sources: Set[str] = set()
-        if all_data and 'metadatas' in all_data:
-            for meta in all_data['metadatas']:
-                if meta and 'source' in meta:
-                    indexed_sources.add(meta['source'])
-    except Exception as e:
-        print(f"[ERROR] Failed to query ChromaDB: {e}")
-        return
-
-    missing: List[str] = []
-    found_count = 0
+    cortex = _setup_vector_ops(config)
+    found_count, missing = _scan_vector_index(cortex, config, fs_files)
     
-    for rel_path in fs_files:
-        clean_path = str(rel_path).replace("\\", "/")
-        if clean_path in indexed_sources:
-            found_count += 1
-        else:
-            missing.append(clean_path)
-
-    missing_count = len(missing)
     coverage_pct = (found_count / total_expected * 100) if total_expected > 0 else 0
-    gap_pct = (missing_count / total_expected * 100) if total_expected > 0 else 0
+    gap_pct = (len(missing) / total_expected * 100) if total_expected > 0 else 0
 
     # 3. Build Report String
     report_lines = [
@@ -126,7 +147,7 @@ def run_audit(profile_name: str, csv_path: Optional[str] = None, report_path: Op
         "",
         f"Total Files in Manifest:  {total_expected}",
         f"Indexed (in Vector DB):   {found_count}",
-        f"Not Indexed (Gap):        {missing_count}",
+        f"Not Indexed (Gap):        {len(missing)}",
         "",
         f"Coverage Indexed:         {coverage_pct:.2f}%",
         f"Coverage Gap:             {gap_pct:.2f}%",
@@ -134,23 +155,7 @@ def run_audit(profile_name: str, csv_path: Optional[str] = None, report_path: Op
     ]
     report_text = "\n".join(report_lines)
     print(f"\n{report_text}")
-
-    # 4. Save Outputs
-    if report_path:
-        rp = Path(report_path).resolve()
-        rp.parent.mkdir(parents=True, exist_ok=True)
-        rp.write_text(report_text, encoding="utf-8")
-        print(f"[OK] Report saved to: {rp}")
-
-    if csv_path:
-        cp = Path(csv_path).resolve()
-        cp.parent.mkdir(parents=True, exist_ok=True)
-        with open(cp, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Missing File Path"])
-            for m in sorted(missing):
-                writer.writerow([m])
-        print(f"[OK] Missing files list saved to: {cp}")
+    _write_audit_reports(report_text, report_path, csv_path, missing)
 
 
 def main() -> None:

@@ -35,6 +35,55 @@ def find_project_root() -> Path:
         current = current.parent
     return Path.cwd()
 
+def _parse_xml_triggers(root: Any) -> str:
+    """Extract forms triggers and return PL/SQL markdown triggers block."""
+    markdown_output = ""
+    triggers = root.findall(".//Trigger")
+    if triggers:
+        markdown_output += "## Triggers\n\n"
+        for trig in triggers:
+            name = trig.attrib.get('Name')
+            text = trig.find('TriggerText')
+            if name and text is not None and text.text:
+                markdown_output += f"### Trigger: `{name}`\n"
+                excerpt = text.text[:500] + "..." if len(text.text) > 500 else text.text
+                markdown_output += f"```plsql\n{excerpt}\n```\n\n"
+    return markdown_output
+
+
+def _parse_xml_program_units(root: Any) -> str:
+    """Extract program units and return PL/SQL signatures and code block."""
+    markdown_output = ""
+    prog_units = root.findall(".//ProgramUnit")
+    if prog_units:
+        markdown_output += "## Program Units (Functions/Procedures)\n\n"
+        for pu in prog_units:
+            name = pu.attrib.get('Name')
+            text = pu.find('ProgramUnitText')
+            if name and text is not None and text.text:
+                 markdown_output += f"### Unit: `{name}`\n"
+                 first_line = text.text.strip().split('\n')[0]
+                 markdown_output += f"**Signature:** `{first_line}`\n"
+                 markdown_output += f"```plsql\n{text.text}\n```\n\n"
+    return markdown_output
+
+
+def _parse_xml_blocks(root: Any) -> str:
+    """Extract block structures and return block items layout."""
+    markdown_output = ""
+    blocks = root.findall(".//Block")
+    if blocks:
+        markdown_output += "## Data Blocks\n\n"
+        for blk in blocks:
+            blk_name = blk.attrib.get('Name')
+            markdown_output += f"### Block: `{blk_name}`\n"
+            items = blk.findall(".//Item")
+            if items:
+                item_names = [i.attrib.get('Name') for i in items if i.attrib is not None and i.attrib.get('Name')]
+                markdown_output += f"**Items:** {', '.join(item_names)}\n\n"
+    return markdown_output
+
+
 def parse_xml_to_markdown(file_path: Path) -> str:
     """
     Parses Oracle Forms XML exports into structured Markdown.
@@ -68,42 +117,10 @@ def parse_xml_to_markdown(file_path: Path) -> str:
         module_name = root.attrib.get('Name', 'Unknown')
         markdown_output += f"## Module: `{module_name}`\n\n"
 
-        # 1. Triggers (Form Level)
-        triggers = root.findall(".//Trigger")
-        if triggers:
-            markdown_output += "## Triggers\n\n"
-            for trig in triggers:
-                name = trig.attrib.get('Name')
-                text = trig.find('TriggerText')
-                if name and text is not None and text.text:
-                    markdown_output += f"### Trigger: `{name}`\n"
-                    excerpt = text.text[:500] + "..." if len(text.text) > 500 else text.text
-                    markdown_output += f"```plsql\n{excerpt}\n```\n\n"
-
-        # 2. Program Units (PL/SQL)
-        prog_units = root.findall(".//ProgramUnit")
-        if prog_units:
-            markdown_output += "## Program Units (Functions/Procedures)\n\n"
-            for pu in prog_units:
-                name = pu.attrib.get('Name')
-                text = pu.find('ProgramUnitText')
-                if name and text is not None and text.text:
-                     markdown_output += f"### Unit: `{name}`\n"
-                     first_line = text.text.strip().split('\n')[0]
-                     markdown_output += f"**Signature:** `{first_line}`\n"
-                     markdown_output += f"```plsql\n{text.text}\n```\n\n"
-
-        # 3. Blocks and Items structure
-        blocks = root.findall(".//Block")
-        if blocks:
-            markdown_output += "## Data Blocks\n\n"
-            for blk in blocks:
-                blk_name = blk.attrib.get('Name')
-                markdown_output += f"### Block: `{blk_name}`\n"
-                items = blk.findall(".//Item")
-                if items:
-                    item_names = [i.attrib.get('Name') for i in items if i.attrib is not None and i.attrib.get('Name')]
-                    markdown_output += f"**Items:** {', '.join(item_names)}\n\n"
+        # Extract components via helper functions
+        markdown_output += _parse_xml_triggers(root)
+        markdown_output += _parse_xml_program_units(root)
+        markdown_output += _parse_xml_blocks(root)
 
         return markdown_output
     except Exception as e:

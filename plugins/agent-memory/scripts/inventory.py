@@ -61,100 +61,73 @@ except ImportError as e:
 # ----------------------------------------------------------
 # audit_inventory — coverage report for a single profile
 # ----------------------------------------------------------
-def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bool = False) -> None:
-    """
-    Compare the RLM cache against the live filesystem and print a coverage report.
-
-    Identifies:
-      - Files on disk that are not yet in the cache (missing).
-      - Cache entries whose source files no longer exist (stale).
-
-    Args:
-        config: Active RLMConfig defining the cache and manifest to audit.
-        show_full: If True, prints the complete list of missing/stale files without truncation.
-        export_tasks: If True, writes a Markdown checklist of missing files to disk.
-    """
-    print(f"[STATS] Auditing RLM Inventory [{config.profile_name.upper()}]...")
-    print(f"   Cache: {config.cache_path.name}")
-
-    # 1. Load existing cache
-    cache = load_cache(config.cache_path)
-    cached_paths: Set[str] = set(cache.keys())
-
-    # 2. Collect live files from manifest
-    fs_files = collect_files(config)
-    fs_paths: Set[str] = set()
-    for f in fs_files:
-        try:
-            # Normalize to forward slashes for cross-platform key consistency
-            fs_paths.add(str(f.relative_to(PROJECT_ROOT)).replace("\\", "/"))
-        except ValueError:
-            pass
-
-    # 3. Compute coverage deltas
-    missing_in_cache = fs_paths - cached_paths
-    stale_in_cache = cached_paths - fs_paths
-    overlap = fs_paths & cached_paths
-
-    # 4. Print report
-    print(f"\n[CHART] Statistics:")
-    print(f"   Files on Disk:    {len(fs_paths)}")
-    print(f"   Entries in Cache: {len(cached_paths)}")
-    pct = (len(overlap) / len(fs_paths) * 100) if fs_paths else 0
-    print(f"   Coverage:         {len(overlap)} / {len(fs_paths)} ({pct:.1f}%)")
-
+def _print_inventory_details(missing_in_cache: Set[str], stale_in_cache: Set[str], show_full: bool) -> None:
+    """Print lists of missing and stale files in cache with optional truncation."""
     if missing_in_cache:
         print(f"\n[ERROR] Missing from Cache ({len(missing_in_cache)}):")
         sorted_missing = sorted(missing_in_cache)
-        if show_full:
-            for p in sorted_missing:
-                print(f"   - {p}")
-        else:
-            for p in sorted_missing[:10]:
-                print(f"   - {p}")
-            if len(missing_in_cache) > 10:
-                print(f"   ... and {len(missing_in_cache) - 10} more (use --full to see all).")
-
-        # Export tasks if requested
-        if export_tasks:
-            task_file = PROJECT_ROOT / f"rlm_distill_tasks_{config.profile_name}.md"
-            with open(task_file, "w", encoding="utf-8") as f:
-                f.write(f"# RLM Distillation Tasks: {config.profile_name.upper()}\n\n")
-                f.write(f"Generated: {len(missing_in_cache)} missing files to distill into `{config.cache_path.name}`.\n\n")
-                for p in sorted_missing:
-                    # Provide an actionable command for the agent/user
-                    f.write(f"- [ ] `{p}`\n")
-                    f.write(f"  - Command: `python ./scripts/inject_summary.py --profile {config.profile_name} --file \"{p}\" --summary \"YOUR_SUMMARY_HERE\"`\n")
-            print(f"\n[NOTE] Exported task list to: {task_file.relative_to(PROJECT_ROOT)}")
+        for p in (sorted_missing if show_full else sorted_missing[:10]):
+            print(f"   - {p}")
+        if not show_full and len(missing_in_cache) > 10:
+            print(f"   ... and {len(missing_in_cache) - 10} more (use --full to see all).")
 
     if stale_in_cache:
         print(f"\n[WARN]  Stale in Cache ({len(stale_in_cache)}):")
         sorted_stale = sorted(stale_in_cache)
-        if show_full:
-            for p in sorted_stale:
-                print(f"   - {p}")
-        else:
-            for p in sorted_stale[:10]:
-                print(f"   - {p}")
-            if len(stale_in_cache) > 10:
-                print(f"   ... and {len(stale_in_cache) - 10} more (use --full to see all).")
+        for p in (sorted_stale if show_full else sorted_stale[:10]):
+            print(f"   - {p}")
+        if not show_full and len(stale_in_cache) > 10:
+            print(f"   ... and {len(stale_in_cache) - 10} more (use --full to see all).")
+
+
+def _export_distill_tasks(config: RLMConfig, missing_in_cache: Set[str]) -> None:
+    """Export missing cache files to a Markdown checklist tasks file."""
+    task_file = PROJECT_ROOT / f"rlm_distill_tasks_{config.profile_name}.md"
+    with open(task_file, "w", encoding="utf-8") as f:
+        f.write(f"# RLM Distillation Tasks: {config.profile_name.upper()}\n\n")
+        f.write(f"Generated: {len(missing_in_cache)} missing files to distill into `{config.cache_path.name}`.\n\n")
+        for p in sorted(missing_in_cache):
+            f.write(f"- [ ] `{p}`\n")
+            f.write(f"  - Command: `python ./scripts/inject_summary.py --profile {config.profile_name} --file \"{p}\" --summary \"YOUR_SUMMARY_HERE\"`\n")
+    print(f"\n[NOTE] Exported task list to: {task_file.relative_to(PROJECT_ROOT)}")
+
+
+def audit_inventory(config: RLMConfig, show_full: bool = False, export_tasks: bool = False) -> None:
+    """
+    Compare the RLM cache against the live filesystem and print a coverage report.
+    """
+    print(f"[STATS] Auditing RLM Inventory [{config.profile_name.upper()}]...")
+    print(f"   Cache: {config.cache_path.name}")
+
+    cache = load_cache(config.cache_path)
+    cached_paths: Set[str] = set(cache.keys())
+
+    fs_files = collect_files(config)
+    fs_paths: Set[str] = set()
+    for f in fs_files:
+        try:
+            fs_paths.add(str(f.relative_to(PROJECT_ROOT)).replace("\\", "/"))
+        except ValueError:
+            pass
+
+    missing_in_cache = fs_paths - cached_paths
+    stale_in_cache = cached_paths - fs_paths
+    overlap = fs_paths & cached_paths
+
+    print(f"\n[CHART] Statistics:\n   Files on Disk:    {len(fs_paths)}\n   Entries in Cache: {len(cached_paths)}")
+    pct = (len(overlap) / len(fs_paths) * 100) if fs_paths else 0
+    print(f"   Coverage:         {len(overlap)} / {len(fs_paths)} ({pct:.1f}%)")
+
+    _print_inventory_details(missing_in_cache, stale_in_cache, show_full)
+
+    if missing_in_cache and export_tasks:
+        _export_distill_tasks(config, missing_in_cache)
 
     if not missing_in_cache and not stale_in_cache:
         print("\n[OK] RLM Inventory is perfectly synchronized.")
 
 
-# ============================================================
-# PATHS
-# ============================================================
-def _find_project_root(start_path: Path) -> Path:
-    """Find the project root by searching upwards for a .git directory."""
-    current = start_path.resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return current.parents[3]
-
-PROJECT_ROOT = _find_project_root(Path(__file__))
+# Already resolved at module scope.
 
 # ============================================================
 # CLI ENTRY POINT

@@ -86,6 +86,33 @@ def debug(msg: str) -> None:
 # ----------------------------------------------------------
 # call_ollama — LLM summarization via local HTTP API
 # ----------------------------------------------------------
+def _clean_summary_output(summary: str) -> str:
+    """Clean common model summary preambles and markdown fences."""
+    summary = summary.strip()
+    if summary.startswith("Here is"):
+        summary = summary.split(":", 1)[-1].strip()
+    if summary.startswith("```"):
+        lines = summary.splitlines()
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        summary = "\n".join(lines).strip()
+    return summary
+
+
+def _prepare_prompt(content: str, file_path: str, prompt_template: str) -> str:
+    """Truncate content if needed, and substitute template placeholders to build the prompt."""
+    if len(content) > 12000:
+        content = content[:12000] + "\n...[TRUNCATED]..."
+    template_str = (
+        prompt_template
+        .replace("{file_path}", "${file_path}")
+        .replace("{content}", "${content}")
+    )
+    return Template(template_str).safe_substitute(file_path=file_path, content=content)
+
+
 def call_ollama(
     content: str,
     file_path: str,
@@ -94,30 +121,8 @@ def call_ollama(
 ) -> Optional[str]:
     """
     Submit a file's content to Ollama and return the generated summary.
-
-    Truncates content exceeding 12,000 characters to stay within context limits.
-    Cleans up common LLM output artifacts before returning.
-
-    Args:
-        content: Raw file text to summarize.
-        file_path: Relative path of the file (injected into the prompt).
-        prompt_template: Prompt string with `{file_path}` and `{content}` placeholders.
-        model_name: Ollama model identifier (e.g. `granite3.2:8b`).
-
-    Returns:
-        Cleaned summary string, or None if Ollama returned an error/timeout.
     """
-    # Truncate large files to avoid context overflow
-    if len(content) > 12000:
-        content = content[:12000] + "\n...[TRUNCATED]..."
-
-    # Convert gold-standard `{var}` placeholders to Template `$var` format
-    template_str = (
-        prompt_template
-        .replace("{file_path}", "${file_path}")
-        .replace("{content}", "${content}")
-    )
-    prompt = Template(template_str).safe_substitute(file_path=file_path, content=content)
+    prompt = _prepare_prompt(content, file_path, prompt_template)
 
     try:
         response = requests.post(
@@ -131,22 +136,10 @@ def call_ollama(
             timeout=300
         )
         if response.status_code == 200:
-            summary = response.json().get("response", "").strip()
-            # Strip common preamble artifacts
-            if summary.startswith("Here is"):
-                summary = summary.split(":", 1)[-1].strip()
-            # Strip markdown code fences if the model wrapped output
-            if summary.startswith("```"):
-                lines = summary.splitlines()
-                if lines[0].startswith("```"):
-                    lines = lines[1:]
-                if lines and lines[-1].startswith("```"):
-                    lines = lines[:-1]
-                summary = "\n".join(lines).strip()
-            return summary
-        else:
-            print(f"⚠️ Ollama error {response.status_code}: {response.text[:100]}")
-            return None
+            return _clean_summary_output(response.json().get("response", ""))
+        
+        print(f"⚠️ Ollama error {response.status_code}: {response.text[:100]}")
+        return None
     except requests.exceptions.ConnectionError:
         print(f"❌ Cannot connect to Ollama at {OLLAMA_URL}. Run: ollama serve")
         return None
@@ -158,6 +151,57 @@ def call_ollama(
 # ----------------------------------------------------------
 # distill — main incremental distillation loop
 # ----------------------------------------------------------
+def _distill_single_file(
+    file_path: Path,
+    i: int,
+    total: int,
+    cache: dict,
+    config: RLMConfig,
+    force: bool,
+    stats: dict
+) -> None:
+    """Read content, verify cache hit, call Ollama, and save distilled summary immediately."""
+    try:
+        rel_path = str(file_path.relative_to(PROJECT_ROOT))
+        content = file_path.read_text(encoding="utf-8", errors="ignore")
+
+        if not content.strip():
+            return
+
+        content_hash = compute_hash(content)
+
+        # Cache hit: skip unless forced
+        if not force and rel_path in cache and cache[rel_path].get("hash") == content_hash:
+            stats["hits"] += 1
+            if i == 1 or i % 20 == 0 or i == total:
+                print(f"   [{i}/{total}] {rel_path} [CACHE HIT]")
+            return
+
+        print(f"   [{i}/{total}] Distilling {rel_path}...")
+
+        summary = call_ollama(
+            content, rel_path, config.prompt_template, config.llm_model
+        )
+
+        if summary:
+            cache[rel_path] = {
+                "hash": content_hash,
+                "summary": summary,
+                "summarized_at": datetime.now().isoformat()
+            }
+            # Persist immediately for crash resilience
+            save_cache(cache, config.cache_path)
+            stats["processed"] += 1
+        else:
+            stats["errors"] += 1
+
+    except Exception as e:
+        stats["errors"] += 1
+        print(f"❌ Error processing {file_path}: {e}")
+        if DEBUG_MODE:
+            traceback.print_exc()
+
+
 def distill(
     config: RLMConfig,
     target_files: Optional[List[Path]] = None,
@@ -176,10 +220,9 @@ def distill(
         force: If True, ignores existing cache entries and re-distills everything.
     """
     print(f"RLM Distiller [{config.profile_name.upper()}] — {config.description}")
-    print(f"   Cache: {config.cache_path.name}")
-    print("=" * 50)
+    print(f"   Cache: {config.cache_path.name}\n" + "=" * 50)
 
-    cache: Dict = load_cache(config.cache_path)
+    cache = load_cache(config.cache_path)
     files = target_files if target_files is not None else collect_files(config)
     total = len(files)
     print(f"Processing {total} files...")
@@ -188,49 +231,10 @@ def distill(
     start_time = time.time()
 
     for i, file_path in enumerate(files, 1):
-        try:
-            rel_path = str(file_path.relative_to(PROJECT_ROOT))
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-
-            if not content.strip():
-                continue
-
-            content_hash = compute_hash(content)
-
-            # Cache hit: skip unless forced
-            if not force and rel_path in cache and cache[rel_path].get("hash") == content_hash:
-                stats["hits"] += 1
-                if i == 1 or i % 20 == 0 or i == total:
-                    print(f"   [{i}/{total}] {rel_path} [CACHE HIT]")
-                continue
-
-            print(f"   [{i}/{total}] Distilling {rel_path}...")
-
-            summary = call_ollama(
-                content, rel_path, config.prompt_template, config.llm_model
-            )
-
-            if summary:
-                cache[rel_path] = {
-                    "hash": content_hash,
-                    "summary": summary,
-                    "summarized_at": datetime.now().isoformat()
-                }
-                # Persist immediately for crash resilience
-                save_cache(cache, config.cache_path)
-                stats["processed"] += 1
-            else:
-                stats["errors"] += 1
-
-        except Exception as e:
-            stats["errors"] += 1
-            print(f"❌ Error processing {file_path}: {e}")
-            if DEBUG_MODE:
-                traceback.print_exc()
+        _distill_single_file(file_path, i, total, cache, config, force, stats)
 
     duration = time.time() - start_time
-    print("=" * 50)
-    print(f"✅ Distillation complete in {duration:.1f}s")
+    print("=" * 50 + f"\n✅ Distillation complete in {duration:.1f}s")
     print(f"   Processed: {stats['processed']} | Hits: {stats['hits']} | Errors: {stats['errors']}")
 
 
@@ -262,18 +266,7 @@ def run_cleanup(config: RLMConfig) -> int:
     return len(stale)
 
 
-# ============================================================
-# PATHS
-# ============================================================
-def _find_project_root(start_path: Path) -> Path:
-    """Find the project root by searching upwards for a .git directory."""
-    current = start_path.resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".git").is_dir():
-            return parent
-    return current.parents[3]
-
-PROJECT_ROOT = _find_project_root(Path(__file__))
+# Already resolved at module scope.
 
 # ============================================================
 # CLI ENTRY POINT

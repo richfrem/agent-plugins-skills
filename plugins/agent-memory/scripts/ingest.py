@@ -85,26 +85,106 @@ def ingest_batch(cortex: VectorDBOperations, docs: List[Document], current: int,
     return chunks
 
 
-def main() -> None:
-    """Main entry point for the ingestion CLI."""
+def _parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for document ingestion."""
     parser = argparse.ArgumentParser(description="Ingest documentation into Vector DB")
     parser.add_argument("--profile", type=str, help="Vector DB profile to use (e.g., wiki)")
     parser.add_argument("--full", action="store_true", help="Force full re-indexing (wipes database)")
     parser.add_argument("--since", type=int, help="Only ingest files modified in last N hours")
     parser.add_argument("--file", type=str, help="Ingest a specific file relative to root")
     parser.add_argument("--folder", type=str, help="Ingest a specific folder relative to root")
+    return parser.parse_args()
+
+
+def _resolve_targets(args: argparse.Namespace, manifest: Any, cortex: VectorDBOperations) -> List[str]:
+    """Determine the list of target file paths to process based on filters."""
+    if args.full:
+        print("[PURGE] Wipe and Re-index requested.")
+        cortex.purge()
+        return manifest.get_files()
+    if args.file:
+        return [args.file]
+    if args.folder:
+        return manifest.get_files_in_folder(args.folder)
+    if args.since:
+        cutoff = datetime.now() - timedelta(hours=args.since)
+        return manifest.get_files_modified_since(cutoff)
+    print("[SYNC] Smart Sync: Checking all files for changes...")
+    return manifest.get_files()
+
+
+def _process_single_file(rel_path: str, full_path: Path, has_rlm: bool, rlm_cache: dict) -> Document:
+    """Read a single file content, applying code shims and RLM metadata integration."""
+    if HAS_CODE_SHIM and full_path.suffix.lower() in ['.py', '.js', '.ts', '.tsx', '.xml', '.sql']:
+        content = code_shim.convert_code_file(full_path) or full_path.read_text(encoding='utf-8', errors='replace')
+    else:
+        content = full_path.read_text(encoding='utf-8', errors='replace')
     
-    args = parser.parse_args()
+    metadata = {
+        "source": rel_path.replace("\\", "/"),
+        "type": full_path.suffix.lstrip('.'),
+        "last_modified": os.path.getmtime(full_path),
+        "has_rlm_context": False
+    }
+    
+    if has_rlm:
+        rlm_entry = rlm_cache.get(rel_path.replace("\\", "/"))
+        if rlm_entry and "summary" in rlm_entry:
+            content = f"--- RLM SUPER-RAG CONTEXT ---\n{rlm_entry['summary']}\n---------------------------\n\n{content}"
+            metadata["has_rlm_context"] = True
+            
+    return Document(page_content=content, metadata=metadata)
+
+
+def _run_ingest_loop(
+    target_files: List[str],
+    args: argparse.Namespace,
+    cortex: VectorDBOperations,
+    vec_config: VectorConfig,
+    has_rlm: bool,
+    rlm_cache: dict
+) -> dict:
+    """Iterate through target files, check indexing status, build batches and ingest."""
+    stats = {"success": 0, "failed": 0, "skipped": 0, "chunks": 0}
+    docs_batch: List[Document] = []
+    
+    for i, rel_path in enumerate(target_files, 1):
+        if not args.full and cortex.is_indexed(rel_path):
+            stats["skipped"] += 1
+            continue
+
+        full_path = PROJECT_ROOT / rel_path
+        if not full_path.exists():
+            stats["skipped"] += 1
+            continue
+            
+        try:
+            doc = _process_single_file(rel_path, full_path, has_rlm, rlm_cache)
+            docs_batch.append(doc)
+            
+            if len(docs_batch) >= vec_config.batch_size or i == len(target_files):
+                stats["chunks"] += ingest_batch(cortex, docs_batch, i, len(target_files))
+                stats["success"] += len(docs_batch)
+                docs_batch = []
+        except Exception as e:
+            print(f"[ERROR] Ingesting {rel_path}: {e}")
+            stats["failed"] += 1
+    return stats
+
+
+def main() -> None:
+    """Main entry point for the ingestion CLI."""
+    args = _parse_args()
     import time
     start_time = time.perf_counter()
     print(f"\n[RUN] Starting Environment Setup at {datetime.now().strftime('%H:%M:%S')}")
 
-    # 1. Configuration Setup (Now dynamic from profile)
+    # 1. Configuration Setup
     vec_config = VectorConfig(profile_name=args.profile, project_root=str(PROJECT_ROOT))
     manifest = vec_config.load_manifest()
     rlm_cache, has_rlm = _load_rlm_cache(vec_config.profile_name)
 
-    # 2. Operations Setup with dynamic parameters
+    # 2. Operations Setup
     cortex = VectorDBOperations(
         str(PROJECT_ROOT),
         child_collection=vec_config.child_collection,
@@ -120,81 +200,16 @@ def main() -> None:
         device=vec_config.device
     )
     
-    if args.full:
-        print("[PURGE] Wipe and Re-index requested.")
-        cortex.purge()
-        target_files = manifest.get_files()
-    elif args.file:
-        target_files = [args.file]
-    elif args.folder:
-        target_files = manifest.get_files_in_folder(args.folder)
-    else:
-        if args.since:
-            cutoff = datetime.now() - timedelta(hours=args.since)
-            target_files = manifest.get_files_modified_since(cutoff)
-        else:
-            target_files = manifest.get_files()
-            print("[SYNC] Smart Sync: Checking all files for changes...")
-
-    if not target_files:
-        print("[OK] No files found to ingest.")
-        return
-
+    target_files = _resolve_targets(args, manifest, cortex)
     if not target_files:
         print("[OK] No files found to ingest.")
         return
 
     print(f"[RUN] Starting Batch Processing (Total Target: {len(target_files)}, Batch Size: {vec_config.batch_size})...")
-    
-    stats = {"success": 0, "failed": 0, "skipped": 0, "chunks": 0}
-    docs_batch: List[Document] = []
-    
-    for i, rel_path in enumerate(target_files, 1):
-        if not args.full and cortex.is_indexed(rel_path):
-            stats["skipped"] += 1
-            if i % 100 == 0:
-                print(f"   ... Progress: {i}/{len(target_files)} (Skipped: {stats['skipped']})")
-            continue
-
-        full_path = PROJECT_ROOT / rel_path
-        if not full_path.exists():
-            stats["skipped"] += 1
-            continue
-            
-        try:
-            if HAS_CODE_SHIM and full_path.suffix.lower() in ['.py', '.js', '.ts', '.tsx', '.xml', '.sql']:
-                content = code_shim.convert_code_file(full_path) or full_path.read_text(encoding='utf-8', errors='replace')
-            else:
-                content = full_path.read_text(encoding='utf-8', errors='replace')
-            
-            metadata = {
-                "source": rel_path.replace("\\", "/"),
-                "type": full_path.suffix.lstrip('.'),
-                "last_modified": os.path.getmtime(full_path),
-                "has_rlm_context": False
-            }
-            
-            if has_rlm:
-                rlm_entry = rlm_cache.get(rel_path.replace("\\", "/"))
-                if rlm_entry and "summary" in rlm_entry:
-                    content = f"--- RLM SUPER-RAG CONTEXT ---\n{rlm_entry['summary']}\n---------------------------\n\n{content}"
-                    metadata["has_rlm_context"] = True
-            
-            docs_batch.append(Document(page_content=content, metadata=metadata))
-            
-            # Batch size is now dynamic from vec_config.batch_size
-            if len(docs_batch) >= vec_config.batch_size or i == len(target_files):
-                stats["chunks"] += ingest_batch(cortex, docs_batch, i, len(target_files))
-                stats["success"] += len(docs_batch)
-                docs_batch = []
-                
-        except Exception as e:
-            print(f"[ERROR] Ingesting {rel_path}: {e}")
-            stats["failed"] += 1
+    stats = _run_ingest_loop(target_files, args, cortex, vec_config, has_rlm, rlm_cache)
 
     duration = time.perf_counter() - start_time
-    print(f"\n[DONE] Ingestion Finished at {datetime.now().strftime('%H:%M:%S')}")
-    print(f"[DONE] Total Duration: {duration:.2f} seconds")
+    print(f"\n[DONE] Ingestion Finished at {datetime.now().strftime('%H:%M:%S')}\n[DONE] Total Duration: {duration:.2f} seconds")
     print(f"[DONE] Success: {stats['success']}, Chunks: {stats['chunks']}")
 
 

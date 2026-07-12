@@ -1,5 +1,5 @@
 {
-    "description": "Project Sanctuary full knowledge base for Vector DB. Combines docs, protocols, ADRs, workflows, and plugins (source code).",
+    "description": "full knowledge base for Vector DB. Combines docs, protocols, ADRs, workflows, and plugins (source code).",
     "include": [
         ".agent/learning/",
         ".agent/learning/audit_prompts.md",

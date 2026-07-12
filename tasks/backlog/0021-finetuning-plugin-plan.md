@@ -8,8 +8,8 @@
 
 ## Context
 
-This plugin automates what is currently a fully manual fine-tuning pipeline documented in
-`Project_Sanctuary/forge/CUDA-ML-ENV-SETUP.md` and `forge/README.md`. The existing
+This plugin automates what is currently a manual fine-tuning pipeline documented in
+`agent-plugins-skills/forge/CUDA-ML-ENV-SETUP.md` and `forge/README.md`. The existing
 pipeline has 5 phases (~15 manual steps):
 
 - **Phase 0:** WSL2 system setup + llama.cpp build (one-time)
@@ -20,12 +20,12 @@ pipeline has 5 phases (~15 manual steps):
 
 **Key source scripts analyzed:**
 - `fine_tune.py` — uses `AutoModelForCausalLM`, `BitsAndBytesConfig`, `SFTTrainer`, YAML config from `forge/config/training_config.yaml`, checkpoint resume, 7-step pipeline
-- `forge_whole_genome_dataset.py` — relies on `mcp_servers.lib` (ContentProcessor, find_project_root); scans `ingest_manifest.json` then appends ADDITIONAL_DOCS; outputs `dataset_package/sanctuary_whole_genome_data.jsonl`; min 200 entries threshold
+- `forge_whole_genome_dataset.py` — relies on `mcp_servers.lib` (ContentProcessor, find_project_root); scans `ingest_manifest.json` then appends ADDITIONAL_DOCS; outputs `dataset_package/agent_whole_genome_data.jsonl`; min 200 entries threshold
 - `validate_dataset.py` — 3-step: JSONL syntax, schema (`instruction`/`output` required), duplicate check
 - `merge_adapter.py` — CPU-load base, PeftModel.from_pretrained, merge_and_unload, applies Qwen2→llama.cpp compatibility patches (strips `use_flash_attn`, `sliding_window`, etc.)
 - `convert_to_gguf.py` — locates `../llama.cpp/convert_hf_to_gguf.py` + `llama-quantize`, 3-step: f16→GGUF→quantize (Q4_K_M default)→verify with `gguf.GGUFReader`
 - `create_modelfile.py` — reads `gguf_config.yaml`, auto-picks newest GGUF, writes Ollama 0.12.9-compatible Modelfile with GUARDIAN-01 system prompt + dual-mode template, stops `<|im_end|>`, temperature 0.7, num_ctx 4096
-- `upload_to_huggingface.py` — delegates to `mcp_servers.lib.hf_utils.upload_to_hf_hub`, reads `.env` for `HUGGING_FACE_TOKEN`, repo default `richfrem/Sanctuary-Qwen2-7B-v1.0-GGUF-Final`
+- `upload_to_huggingface.py` — delegates to `mcp_servers.lib.hf_utils.upload_to_hf_hub`, reads `.env` for `HUGGING_FACE_TOKEN`, repo default `richfrem/Qwen2-7B-v1.0-GGUF-Final`
 
 **ML-Env-CUDA13 key facts:**
 - Foundation Layer: torch, tensorflow, nvidia-* managed by `setup_ml_env_wsl.sh` (not pip-tools)
@@ -33,7 +33,7 @@ pipeline has 5 phases (~15 manual steps):
 - Critical surgical strike sequence: purge nvidia packages → triton==3.1.0 → bitsandbytes==0.48.2 (CUDA 126) → xformers → fsspec≤2024.3.1
 - Known gotchas: `ncclDevCommDestroy` symbol mismatch fixed by purging `nvidia-*-cu12` first; `evaluation_strategy` renamed to `eval_strategy` in newer transformers; `keep_torch_compile` error fixed by upgrading accelerate
 - VENV at `~/ml_env` (Linux native FS, NOT `/mnt/c/` — major I/O performance difference)
-- llama.cpp must be sibling dir: `../llama.cpp/` relative to Project_Sanctuary
+- llama.cpp must be sibling dir: `../llama.cpp/` relative to agent-plugins-skills
 
 **Unsloth optimization target (task #151):**
 - Replace `AutoModelForCausalLM.from_pretrained` with `unsloth.FastLanguageModel.from_pretrained`

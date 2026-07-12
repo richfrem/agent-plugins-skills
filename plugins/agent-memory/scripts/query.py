@@ -41,6 +41,33 @@ from vector_config import VectorConfig
 from operations import VectorDBOperations
 
 
+def _display_results(results: List[Dict[str, Any]]) -> None:
+    """Print query results with scores, sources, chunk IDs, and text content."""
+    if not results:
+        print("[WARN] No matching context found.")
+        return
+        
+    for i, r in enumerate(results, 1):
+        score = r.get("score", 0.0)
+        source = r.get("source", "unknown")
+        parent_id = r.get("parent_id_matched", "none")
+        content = r.get("content", "")
+        
+        print(f"\n{'='*60}")
+        print(f"[RESULT {i}] (Score: {score:.4f})")
+        print(f"Source: {source}")
+        print(f"Chunk ID: {parent_id}")
+        if r.get("has_rlm_context"):
+            print(f"[RLM] Super-RAG Context Applied")
+        print(f"{'-'*60}")
+        
+        # Display an excerpt to prevent terminal flooding
+        if len(content) > 1000:
+            print(content[:1000] + "\n... [TRUNCATED] ...")
+        else:
+            print(content)
+
+
 def main() -> None:
     """Main entry point for the query CLI."""
     parser = argparse.ArgumentParser(description="Query the Vector DB")
@@ -71,30 +98,7 @@ def main() -> None:
     
     print(f"\n[QUERY] Searching Vector Index for: '{args.query}'\n")
     results = cortex.query(args.query, max_results=args.limit)
-    
-    if not results:
-        print("[WARN] No matching context found.")
-        return
-        
-    for i, r in enumerate(results, 1):
-        score = r.get("score", 0.0)
-        source = r.get("source", "unknown")
-        parent_id = r.get("parent_id_matched", "none")
-        content = r.get("content", "")
-        
-        print(f"\n{'='*60}")
-        print(f"[RESULT {i}] (Score: {score:.4f})")
-        print(f"Source: {source}")
-        print(f"Chunk ID: {parent_id}")
-        if r.get("has_rlm_context"):
-            print(f"[RLM] Super-RAG Context Applied")
-        print(f"{'-'*60}")
-        
-        # Display an excerpt to prevent terminal flooding
-        if len(content) > 1000:
-            print(content[:1000] + "\n... [TRUNCATED] ...")
-        else:
-            print(content)
+    _display_results(results)
 
 
 if __name__ == "__main__":

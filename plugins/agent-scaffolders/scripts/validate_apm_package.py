@@ -5,6 +5,10 @@ validate_apm_package.py (CLI)
 
 Purpose:
     Performs deterministic validation of an APM package.
+
+Key Input Dependencies:
+    - PyYAML                    — Used for parsing apm.yml package manifests and policy configurations
+    - argparse, json, re, sys   — Standard library packages for CLI parsing, reporting, and name matching
 """
 
 import argparse
@@ -23,6 +27,7 @@ if sys.platform == "win32":
     except (AttributeError, Exception): pass
 
 def validate_package(path: str, as_json: bool = False) -> bool:
+    """Deterministic validation of an APM package's directories, manifest, and governance policy."""
     root = Path(path).resolve()
     if not root.exists():
         if not as_json: print(f"❌ Error: Path '{root}' does not exist.")
@@ -108,6 +113,7 @@ def validate_package(path: str, as_json: bool = False) -> bool:
     return result["passed"]
 
 def main():
+    """CLI entry point: parses CLI arguments and runs the APM package validation."""
     parser = argparse.ArgumentParser(description="APM Package Validator")
     parser.add_argument("--path", required=True)
     parser.add_argument("--json", action="store_true")

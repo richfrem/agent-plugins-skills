@@ -105,6 +105,49 @@ class StabilizerReport:
     timestamp: datetime
 
 
+def _parse_lines_to_facts(
+    lines: List[str],
+    markdown_file: Path,
+    timestamp: datetime,
+    metadata: dict
+) -> List[FactAtom]:
+    """Parse lines of markdown text to extract FactAtom objects."""
+    fact_atoms: List[FactAtom] = []
+    fact_id_counter = 0
+    current_paragraph: List[str] = []
+    
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith(('#', '```')):
+            if current_paragraph:
+                text = ' '.join(current_paragraph).strip()
+                if len(text) > 20:
+                    fact_atoms.append(FactAtom(
+                        f"{markdown_file.stem}_{fact_id_counter}", text, str(markdown_file), timestamp, metadata=metadata
+                    ))
+                    fact_id_counter += 1
+                current_paragraph = []
+            continue
+        
+        if line.startswith(('-', '*', '+')):
+            list_content = re.sub(r'^[-*+]\s+', '', line)
+            if len(list_content) > 20:
+                fact_atoms.append(FactAtom(
+                    f"{markdown_file.stem}_{fact_id_counter}", list_content, str(markdown_file), timestamp, metadata=metadata
+                ))
+                fact_id_counter += 1
+        else:
+            current_paragraph.append(line)
+            
+    if current_paragraph:
+        text = ' '.join(current_paragraph).strip()
+        if len(text) > 20:
+            fact_atoms.append(FactAtom(
+                f"{markdown_file.stem}_{fact_id_counter}", text, str(markdown_file), timestamp, metadata=metadata
+            ))
+    return fact_atoms
+
+
 def extract_fact_atoms(markdown_file: Path) -> List[FactAtom]:
     """
     Parses a Markdown file and extracts atomic, monosemantic fact chunks.
@@ -131,37 +174,7 @@ def extract_fact_atoms(markdown_file: Path) -> List[FactAtom]:
                 pass
         
         timestamp = datetime.fromtimestamp(markdown_file.stat().st_mtime)
-        fact_atoms: List[FactAtom] = []
-        fact_id_counter = 0
-        
-        # Split into paragraphs/bullets
-        lines = content.split('\n')
-        current_paragraph: List[str] = []
-        
-        for line in lines:
-            line = line.strip()
-            if not line or line.startswith(('#', '```')):
-                if current_paragraph:
-                    text = ' '.join(current_paragraph).strip()
-                    if len(text) > 20:
-                        fact_atoms.append(FactAtom(
-                            f"{markdown_file.stem}_{fact_id_counter}", text, str(markdown_file), timestamp, metadata=metadata
-                        ))
-                        fact_id_counter += 1
-                    current_paragraph = []
-                continue
-            
-            if line.startswith(('-', '*', '+')):
-                list_content = re.sub(r'^[-*+]\s+', '', line)
-                if len(list_content) > 20:
-                    fact_atoms.append(FactAtom(
-                        f"{markdown_file.stem}_{fact_id_counter}", list_content, str(markdown_file), timestamp, metadata=metadata
-                    ))
-                    fact_id_counter += 1
-            else:
-                current_paragraph.append(line)
-        
-        return fact_atoms
+        return _parse_lines_to_facts(content.split('\n'), markdown_file, timestamp, metadata)
     except Exception as e:
         print(f"[WARN] Failed to parse facts from {markdown_file}: {e}")
         return []

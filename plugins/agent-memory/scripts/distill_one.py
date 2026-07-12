@@ -163,23 +163,63 @@ def build_llm_cmd(engine: str, model: str, prompt_payload: str) -> tuple[list[st
         sys.exit(1)
 
 
+def _parse_distill_args() -> argparse.Namespace:
+    """Setup and parse CLI arguments for single-file distillation."""
+    parser = argparse.ArgumentParser(description="Single-file RLM distillation smoke test")
+    parser.add_argument("--profile", required=False, default=None, help="RLM profile name (from rlm_profiles.json)")
+    parser.add_argument("--file", required=False, default=None, help="Path to the file to summarize (relative to project root)")
+    parser.add_argument("--engine", default="copilot", choices=["copilot", "gemini", "claude"], help="AI CLI engine to use (default: copilot)")
+    parser.add_argument("--model", default=None, help="Model override. Defaults to cheapest model per references/cheapest_models.json.")
+    parser.add_argument("--dry-run", action="store_true", help="Print the prompt payload but do not call the CLI or write cache.")
+    parser.add_argument("--mock", action="store_true", help="Resolve model from cheapest_models.json, print JSON, and exit without running the CLI.")
+    return parser.parse_args()
+
+
+def _call_cli_process(cmd_args: list[str], stdin_text: str, engine: str) -> str:
+    """Execute the CLI subprocess and return the stdout string."""
+    print(f"[START] Calling: {' '.join(shlex.quote(a) for a in cmd_args[:3])} ...")
+    try:
+        proc = subprocess.run(
+            cmd_args, input=stdin_text or None, capture_output=True,
+            text=True, timeout=120, shell=(sys.platform == "win32")
+        )
+    except FileNotFoundError:
+        print(f"[ERROR] CLI binary '{engine}' not found on PATH.")
+        sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print("[ERROR] CLI call timed out after 120s.")
+        sys.exit(1)
+
+    if proc.returncode != 0 or not proc.stdout.strip():
+        print(f"[ERROR] CLI returned exit code {proc.returncode}")
+        print(proc.stderr[:500] if proc.stderr else "(no stderr)")
+        sys.exit(1)
+    return proc.stdout.strip()
+
+
+def _inject_cache_summary(profile: str, rel_path: str, summary: str, cache_path: Path) -> None:
+    """Run inject_summary.py to commit the new summary block to the cache."""
+    inject_script = SCRIPT_DIR / "inject_summary.py"
+    inject_cmd = [
+        sys.executable, str(inject_script),
+        "--profile", profile,
+        "--file",    rel_path,
+        "--summary", summary,
+    ]
+    print(f"\n[SAVE] Injecting into cache...")
+    inject_proc = subprocess.run(inject_cmd, capture_output=True, text=True)
+    if inject_proc.returncode == 0:
+        print(inject_proc.stdout.strip())
+        print(f"\n[DONE] Done! Check: {cache_path}")
+    else:
+        print(f"[ERROR] inject_summary.py failed:")
+        print(inject_proc.stderr or inject_proc.stdout)
+        sys.exit(1)
+
+
 def main() -> None:
     """CLI entry point: resolve configs, call the LLM backend, and inject the result into the cache."""
-    parser = argparse.ArgumentParser(
-        description="Single-file RLM distillation smoke test"
-    )
-    parser.add_argument("--profile",  required=False, default=None, help="RLM profile name (from rlm_profiles.json)")
-    parser.add_argument("--file",     required=False, default=None, help="Path to the file to summarize (relative to project root)")
-    parser.add_argument("--engine",   default="copilot", choices=["copilot", "gemini", "claude"],
-                        help="AI CLI engine to use (default: copilot)")
-    parser.add_argument("--model",    default=None,
-                        help="Model override. Defaults to cheapest model per references/cheapest_models.json.")
-    parser.add_argument("--dry-run",  action="store_true",
-                        help="Print the prompt payload but do not call the CLI or write cache.")
-    parser.add_argument("--mock",     action="store_true",
-                        help="Resolve model from cheapest_models.json, print JSON, and exit without running the CLI.")
-    args = parser.parse_args()
-
+    args = _parse_distill_args()
     model = args.model or ENGINE_DEFAULTS.get(args.engine, "gpt-5-mini")
 
     if args.mock:
@@ -187,9 +227,9 @@ def main() -> None:
         sys.exit(0)
 
     if not args.profile or not args.file:
-        parser.error("--profile and --file are required unless --mock is used")
+        print("[ERROR] --profile and --file are required unless --mock is used")
+        sys.exit(1)
 
-    # ─── RESOLVE CONFIG ──────────────────────────────────────────────────────
     try:
         config = RLMConfig(profile_name=args.profile)
     except SystemExit:
@@ -203,81 +243,24 @@ def main() -> None:
     content = file_path.read_text(encoding="utf-8")
     rel_path = str(file_path.relative_to(PROJECT_ROOT))
 
-    # ─── LOAD PROMPT TEMPLATE ────────────────────────────────────────────────
-    prompt_template = config.prompt_template
-    if not prompt_template:
-        # Inline fallback
-        prompt_template = (
-            "Summarize the architectural purpose of this file in 2-3 concise sentences.\n"
-            "File: {file_path}\n\n{content}\n\n# Distilled Summary:"
-        )
-
+    prompt_template = config.prompt_template or (
+        "Summarize the architectural purpose of this file in 2-3 concise sentences.\n"
+        "File: {file_path}\n\n{content}\n\n# Distilled Summary:"
+    )
     prompt_payload = prompt_template.format(file_path=rel_path, content=content)
 
-    print(f"[SEARCH] Distilling: {rel_path}")
-    print(f"   Engine : {args.engine}")
-    print(f"   Model  : {model}")
-    print(f"   Profile: {args.profile}")
-    print(f"   Cache  : {config.cache_path}")
-    print("-" * 60)
+    print(f"[SEARCH] Distilling: {rel_path}\n   Engine : {args.engine}\n   Model  : {model}\n   Profile: {args.profile}")
+    print(f"   Cache  : {config.cache_path}\n" + "-" * 60)
 
     if args.dry_run:
-        print("[CONFIG]  DRY RUN — prompt payload preview (first 500 chars):")
-        print(prompt_payload[:500])
-        print("...")
+        print(f"[CONFIG]  DRY RUN — prompt payload preview:\n{prompt_payload[:500]}\n...")
         return
 
-    # ─── CALL CLI ────────────────────────────────────────────────────────────
     cmd_args, stdin_text = build_llm_cmd(args.engine, model, prompt_payload)
+    summary = _call_cli_process(cmd_args, stdin_text, args.engine)
 
-    print(f"[START] Calling: {' '.join(shlex.quote(a) for a in cmd_args[:3])} ...")
-    try:
-        proc = subprocess.run(
-            cmd_args,
-            input=stdin_text or None,
-            capture_output=True,
-            text=True,
-            timeout=120,
-            shell=(sys.platform == "win32"),
-        )
-    except FileNotFoundError:
-        print(f"[ERROR] CLI binary '{args.engine}' not found on PATH.")
-        print(f"   Make sure you have the {args.engine} CLI installed and authenticated.")
-        sys.exit(1)
-    except subprocess.TimeoutExpired:
-        print("[ERROR] CLI call timed out after 120s.")
-        sys.exit(1)
-
-    if proc.returncode != 0 or not proc.stdout.strip():
-        print(f"[ERROR] CLI returned exit code {proc.returncode}")
-        print(proc.stderr[:500] if proc.stderr else "(no stderr)")
-        sys.exit(1)
-
-    summary = proc.stdout.strip()
-
-    print(f"\n[OK] Summary received ({len(summary)} chars):")
-    print("-" * 60)
-    print(summary)
-    print("-" * 60)
-
-    # ─── INJECT INTO CACHE ───────────────────────────────────────────────────
-    inject_script = SCRIPT_DIR / "inject_summary.py"
-    inject_cmd = [
-        sys.executable, str(inject_script),
-        "--profile", args.profile,
-        "--file",    rel_path,
-        "--summary", summary,
-    ]
-
-    print(f"\n[SAVE] Injecting into cache...")
-    inject_proc = subprocess.run(inject_cmd, capture_output=True, text=True)
-    if inject_proc.returncode == 0:
-        print(inject_proc.stdout.strip())
-        print(f"\n[DONE] Done! Check: {config.cache_path}")
-    else:
-        print(f"[ERROR] inject_summary.py failed:")
-        print(inject_proc.stderr or inject_proc.stdout)
-        sys.exit(1)
+    print(f"\n[OK] Summary received ({len(summary)} chars):\n" + "-" * 60 + f"\n{summary}\n" + "-" * 60)
+    _inject_cache_summary(args.profile, rel_path, summary, config.cache_path)
 
 
 if __name__ == "__main__":

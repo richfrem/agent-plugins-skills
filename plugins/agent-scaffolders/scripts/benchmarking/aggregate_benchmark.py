@@ -9,6 +9,11 @@ Purpose:
     - run_summary with mean, stddev, min, max for each metric
     - delta between with_skill and without_skill configurations
 
+Key Input Dependencies:
+    - grading.json              — Evaluation outputs containing expectation results and status
+    - timing.json               — Runtime timing statistics and token measurements per evaluation
+    - argparse, json, math, sys — Standard library packages for statistical aggregation and CLI parsing
+
 Layer: Meta-Execution
 
 Usage Examples:
@@ -350,6 +355,7 @@ def generate_markdown(benchmark: dict) -> str:
 
 
 def main() -> None:
+    """CLI entry point: parses benchmark folder arguments, loads logs, and saves aggregated reports."""
     parser = argparse.ArgumentParser(
         description="Aggregate benchmark run results into summary statistics"
     )
