@@ -2,6 +2,14 @@
 """
 KV Cache Orchestrator for llama-server slot save/restore.
 
+Purpose:
+    Manages KV-cache slot save/restore against a local llama-server instance,
+    with disk-persistent metadata, hit-frequency decay, and budget-based eviction.
+
+Key Input Dependencies:
+    - Local llama-server instance (--llama-base-url, default http://localhost:8089)
+    - cache_dir on disk for .bin slot files and .json metadata sidecars
+
 Architectural pattern adapted from antirez/ds4 ds4_kvstore.c:
   - SHA-256 keyed disk-persistent cache (ds4 uses SHA-1)
   - Hit-frequency exponential decay with 6-hour half-life
@@ -56,6 +64,7 @@ class KVCacheOrchestrator:
         quant_config: Optional[dict] = None,
         max_tokens_per_entry: Optional[int] = None,
     ) -> None:
+        """Initialize the orchestrator with cache directory, server URL, budget, and quant config."""
         self.cache_dir = cache_dir
         self.llama_base_url = llama_base_url.rstrip("/")
         self.budget_bytes = budget_bytes
@@ -92,9 +101,11 @@ class KVCacheOrchestrator:
     # ------------------------------------------------------------------ #
 
     def _bin_path(self, key: str) -> str:
+        """Return the .bin slot-state file path for the given cache key."""
         return os.path.join(self.cache_dir, f"{key}.bin")
 
     def _meta_path(self, key: str) -> str:
+        """Return the .json metadata sidecar file path for the given cache key."""
         return os.path.join(self.cache_dir, f"{key}.json")
 
     # ------------------------------------------------------------------ #
@@ -182,6 +193,7 @@ class KVCacheOrchestrator:
     # ------------------------------------------------------------------ #
 
     def _record_hit(self, key: str) -> None:
+        """Increment the hit counter and update last_used timestamp for a cache entry."""
         meta_path = self._meta_path(key)
         with self._lock:
             meta = self._read_meta(key) or {}
@@ -191,6 +203,7 @@ class KVCacheOrchestrator:
                 json.dump(meta, f)
 
     def _write_meta(self, key: str, reason: str, tokens: int = 0) -> None:
+        """Write a fresh metadata sidecar for a saved cache entry, preserving hit/creation history."""
         meta_path = self._meta_path(key)
         bin_path = self._bin_path(key)
         now = int(time.time())
@@ -216,6 +229,7 @@ class KVCacheOrchestrator:
                 json.dump(meta, f)
 
     def _read_meta(self, key: str) -> Optional[dict]:
+        """Read and parse the metadata sidecar for a cache key, or None if missing/invalid."""
         meta_path = self._meta_path(key)
         try:
             with open(meta_path, "r") as f:
