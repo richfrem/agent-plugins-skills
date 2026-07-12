@@ -80,6 +80,48 @@ def fix_plugin_json(path: Path) -> list[str]:
     return fixes
 
 
+def _normalize_hooks_structure(data, filename: str) -> tuple[dict, bool, list[str]]:
+    """Normalize a parsed hooks.json body into the {"hooks": {...}} wrapper shape.
+
+    Returns (data, modified, fix_messages).
+    """
+    fixes = []
+    modified = False
+
+    # Fix 2: array [] -> { "hooks": {} }
+    if isinstance(data, list):
+        data = {"hooks": {}}
+        fixes.append(f"{filename}: fixed array [] -> {{\"hooks\": {{}}}}")
+        modified = True
+
+    elif isinstance(data, dict):
+        # Fix 3: empty {} -> { "hooks": {} }
+        if len(data) == 0:
+            data = {"hooks": {}}
+            fixes.append(f'{filename}: fixed empty {{}} -> {{"hooks": {{}}}}')
+            modified = True
+
+        # Fix 4: old flat format { "EventName": [...] } missing "hooks" wrapper
+        elif "hooks" not in data:
+            has_event_keys = any(k in VALID_EVENTS for k in data)
+            if has_event_keys:
+                data = {"hooks": data}
+                fixes.append(
+                    f"{filename}: wrapped flat event map in {{\"hooks\": {{...}}}}"
+                )
+                modified = True
+            else:
+                # Unrecognised root keys that are also not event names -- flag it
+                unknown = [k for k in data if k not in VALID_EVENTS]
+                if unknown:
+                    fixes.append(
+                        f"WARNING {filename}: unrecognised root keys {unknown} "
+                        "-- expected \"hooks\" wrapper or event name keys"
+                    )
+
+    return data, modified, fixes
+
+
 def fix_hooks_json(path: Path) -> list[str]:
     """Fix malformed hooks.json structures (literal newlines, array format, missing wrapper)."""
     fixes = []
@@ -101,38 +143,8 @@ def fix_hooks_json(path: Path) -> list[str]:
             path.write_text(raw, encoding="utf-8")
         return fixes + [f"ERROR: {path.name} still invalid JSON after newline fix: {e}"]
 
-    modified = False
-
-    # Fix 2: array [] -> { "hooks": {} }
-    if isinstance(data, list):
-        data = {"hooks": {}}
-        fixes.append(f"{path.name}: fixed array [] -> {{\"hooks\": {{}}}}")
-        modified = True
-
-    elif isinstance(data, dict):
-        # Fix 3: empty {} -> { "hooks": {} }
-        if len(data) == 0:
-            data = {"hooks": {}}
-            fixes.append(f'{path.name}: fixed empty {{}} -> {{"hooks": {{}}}}')
-            modified = True
-
-        # Fix 4: old flat format { "EventName": [...] } missing "hooks" wrapper
-        elif "hooks" not in data:
-            has_event_keys = any(k in VALID_EVENTS for k in data)
-            if has_event_keys:
-                data = {"hooks": data}
-                fixes.append(
-                    f"{path.name}: wrapped flat event map in {{\"hooks\": {{...}}}}"
-                )
-                modified = True
-            else:
-                # Unrecognised root keys that are also not event names -- flag it
-                unknown = [k for k in data if k not in VALID_EVENTS]
-                if unknown:
-                    fixes.append(
-                        f"WARNING {path.name}: unrecognised root keys {unknown} "
-                        "-- expected \"hooks\" wrapper or event name keys"
-                    )
+    data, modified, structure_fixes = _normalize_hooks_structure(data, path.name)
+    fixes.extend(structure_fixes)
 
     if modified or (fixes and "literal" in fixes[-1]):
         path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
