@@ -1,17 +1,19 @@
 ---
-description: PROJECT CODING POLICY - Universal conventions for Python, TypeScript, and C#.
+description: Universal coding conventions for Python, TypeScript, and C#.
 globs: ["*.py", "*.ts", "*.js", "*.cs"]
-enforcement: Mandatory - All code must comply. Audited by workspace_conventions_auditor.py
 ---
 
-## ⚖️ AUTHORITY & SCOPE
+## 🎯 PURPOSE: Enable Agents to Understand Code at a Glance
 
-**This is PROJECT POLICY** - Not a style guide. Binding on all development.
+Every script must document **what it does, what it needs, and how to use it** in the first 20 lines.
 
-- **Applies to:** All Python, TypeScript, JavaScript, and C# in repository
-- **No exemptions:** Every script, every function, every file
-- **Auditor:** `workspace_conventions_auditor.py` enforces across entire codebase
-- **Current Status:** 442/454 files in violation (in progress remediation)
+**Why:** In fresh agent sessions, agents cannot afford to spend 5-10 minutes reading implementations or running exploratory commands. By reading a 20-line header, agents must be able to:
+- Understand the script's purpose in 30 seconds
+- Know what files/APIs/dependencies it requires
+- See usage examples without trial-and-error
+- Identify key functions without code diving
+
+This transforms agent onboarding from minutes to seconds.
 
 ---
 
@@ -36,4 +38,3 @@ To audit workspace source code compliance against these rules, run the developer
 python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
 ```
 This utility outputs a detailed audit breakdown under `temp/workspace_conventions_report.md`.
-

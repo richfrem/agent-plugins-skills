@@ -45,16 +45,19 @@ See [`architecture.md`](./architecture.md) for the full repo architecture overvi
 
 ## Pre-Push Audit & Verification Rule (always active)
 
-> **Before pushing any changes to GitHub or concluding updates to plugins or skills**, you MUST run standard compliance and structural audits on all affected plugins, and resolve any flagged errors or symlink issues.
+> **Before pushing any changes to GitHub or concluding updates to plugins or skills**, you MUST run standard compliance, coding conventions, and structural audits on all affected plugins, and resolve any flagged errors or symlink issues.
 
 ```bash
-# 1. Run compliance audit on your modified plugin:
+# 1. Run workspace coding conventions audit:
+python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+
+# 2. Run compliance audit on your modified plugin:
 python plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
 
-# 2. Run structural audit to verify symlink and resource compliance:
+# 3. Run structural audit to verify symlink and resource compliance:
 python plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
 
-# 3. Run cross-platform symlink check:
+# 4. Run cross-platform symlink check:
 python .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
 ```
 
