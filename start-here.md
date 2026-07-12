@@ -5,436 +5,174 @@
 **Ensure ALL code in the repository aligns with established coding conventions and policies.**
 
 Every script must comply with:
-- **coding-conventions.md** - Documentation standards
-- **self-evolution-policy.md** - Code quality standards  
+- **coding-conventions.md** - Documentation standards (module/function docstrings, headers)
+- **self-evolution-policy.md** - Code quality standards
 - **plugin-architecture-policy.md** - Architecture rules
 - **test-driven-development.md** - Testing standards
 
-**Secondary Benefit:** When all code aligns with policy, fresh agent sessions can understand what scripts do without running them or reading full implementations.
-
-When an agent joins a new session, it needs to quickly understand:
-- What does this script do?
-- What files/data does it need?
-- What does it output?
-- What are the key functions?
-
-By ensuring **every script has a complete module docstring** (Purpose + Key Input Dependencies + Key Functions), agents can read the top 20 lines of any script and immediately know:
-1. **Purpose:** What problem it solves
-2. **Key Input Dependencies:** What files/APIs/data it needs
-3. **Key Functions:** What capabilities are available
-4. **Usage Examples:** How to invoke it
-
-This eliminates the need for agents to:
-- Run `help()` or introspect the script
-- Read through 100+ lines of implementation
-- Execute the script to discover what it does
-- Spend time context-gathering before taking action
+**Secondary Benefit:** When all code aligns with policy, fresh agent sessions can understand what scripts do without running them or reading full implementations — every script's top 20 lines answer "what does this do, what does it need, what does it output, what are its key functions."
 
 ---
 
 ## Overview
 
-**Audit Type:** Codebase-wide compliance with established coding policies  
-**Policy Authority:** `.agent/rules/` directory (coding-conventions.md, self-evolution-policy.md, etc.)  
-**Auditor Tool:** `workspace_conventions_auditor.py` scans all Python/JS/TS/C# files  
-**Scope:** 454 files currently violating policy (442 remaining after fixes)
+**Audit Type:** Codebase-wide compliance with established coding policies
+**Policy Authority:** `.agent/rules/coding-conventions.md`
+**Auditor Tool:** `plugins/dev-utils/scripts/workspace_conventions_auditor.py` (AST-based Python auditor + regex JS/TS header checker)
+**Branch:** `feat/updated-coding-conventions.md`
+**GitHub:** https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md
+**Strategy:** Fix plugin-by-plugin, smallest-violation-count first. Commit + push after every file. PR + merge to main once all plugins reach 0 violations.
 
-**Current Session Status:** IN PROGRESS  
-**Branch:** `feat/updated-coding-conventions.md`  
-**GitHub:** https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md  
-**Strategy:** Fixes pushed to GitHub; PR and merge later when complete
+**Current violation count: 246** (down from 454 at start).
 
----
+### Plugins completed (0 violations) ✅
+- `plugin-manager`
+- root (`bootstrap.py`, `__init__.py`)
+- `agent-loops`
+- `exploration-cycle-plugin`
+- `dev-utils`
+- `cli-agents`
+- `obsidian-wiki-engine`
 
-## Push & PR Workflow
+### Plugins remaining, smallest first
+| Plugin | Violations |
+|---|---|
+| `agent-agentic-os` | 39 |
+| `agent-memory` | 86 |
+| `agent-scaffolders` | 121 |
 
-**How we're working:**
-1. Fix scripts locally, commit to `feat/updated-coding-conventions.md`
-2. Push commits to GitHub regularly (visible in branch)
-3. When all scripts complete: Create PR to main
-4. Review and merge when ready
-
-**Current Status:**
-- Commits pushed: ✅ YES (visible on GitHub now)
-- PR created: ⏳ NOT YET (wait until all fixes complete)
-- Ready to merge: ⏳ NOT YET (after PR review)
-
-**Tracking Progress:**
-- Check GitHub branch for latest commits
-- View audit results in local `temp/workspace_conventions_report.md`
-- This start-here.md reflects current session state
+Re-run the auditor before trusting these numbers — they were last confirmed at commit `d5cbff72`.
 
 ---
 
-## What We're Doing
+## What Counts as a Violation
 
-We audit the entire codebase against `.agent/rules/coding-conventions.md` using the **workspace_conventions_auditor.py** tool.
+The auditor flags, per file:
+1. **Missing module docstring** — must have `Purpose:` + (`Key Input Dependencies:` or `Input Files:`) sections at minimum.
+2. **Missing function docstring** — every function/method needs a one-line summary.
+3. **Function exceeds 50 lines** — needs refactoring (extract helper functions), not just documentation.
 
-**The auditor checks for compliance with:**
-1. **Module docstrings** - Every file must have Purpose + Key Input Dependencies + Key Functions
-2. **Function docstrings** - Every function must have a one-line summary
-3. **File headers** - Required format with proper sections
-4. **Function length** - Flags functions exceeding 50 lines (requires refactoring decision)
-5. **Naming conventions** - snake_case (Python), camelCase (JS/TS), PascalCase (C#)
-
-**This Session: Phase 1 - Documentation Compliance**
-
-We systematically fix files by adding:
-- **Module docstrings** with:
-  - `Purpose:` - What the script does
-  - `Key Input Dependencies:` - What data/files/APIs it needs
-  - `Key Functions:` - List of main capabilities
-  - `Usage Examples:` - How to invoke
-- **Function docstrings** - One-line descriptions
-
-**Important Constraint:** We ONLY add documentation/docstrings to achieve policy alignment. We do NOT refactor code, fix functions exceeding 50 lines, or make code changes (unless explicitly requested for policy compliance).
+Symlinked copies of a canonical file (e.g. under `plugins/<plugin>/skills/<skill>/scripts/`) show up as separate report entries but are fixed automatically once the canonical source file is fixed — **never edit a symlink target directly, always edit the canonical file** in `plugins/<plugin>/scripts/`.
 
 ---
 
-## Why This Matters: The Fresh Agent Scenario
+## Two Kinds of Fixes — Both Are Now In Scope
 
-### Without Documentation ❌
-```
-Agent joins new session → Needs to run: plugins/agent-scaffolders/scripts/audit.py
-Problem: Agent doesn't know what it does, what it needs, or what output to expect
-Solution: Agent wastes time reading 100+ lines of code or running --help
-```
+Earlier sessions treated this as docs-only work. **That constraint has been lifted.** Fixing the 50-line function-length violations is now expected, with a stricter verification bar than doc-only changes:
 
-### With Documentation ✅
-```
-Agent joins new session → Sees at top of audit.py:
+### A. Docs-only (docstrings/headers) — low risk
+- Add missing module docstring sections and/or function docstrings.
+- Zero logic changes.
+- Verify with: `py_compile` + re-run auditor to confirm the violation cleared.
 
-Purpose:
-    Audit plugins against the Agent Skills Open Standard to ensure 
-    architectural and resource compliance.
+### B. Refactor (functions >50 lines) — requires behavioral verification
+- Extract nested logic into module-level (or class-level, for methods) helper functions.
+- Preserve behavior byte-for-byte — same inputs must produce the same outputs, same side effects, same error paths.
+- **Never weaken or delete the 50-line rule itself** — it stays policy; track any deferred refactor as backlog, don't argue the rule away.
+- Verification bar for every refactor, **in this order, before committing**:
+  1. `python3 -m py_compile <file>` — syntax check.
+  2. Re-run the auditor — confirm the specific violation is gone: `python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py > /dev/null 2>&1 && grep -A 8 "### 📄 '<file>'" temp/workspace_conventions_report.md` (no output = clean).
+  3. **Real behavioral test** — in priority order:
+     - If a pytest suite already covers the file, run it (`python3 -m pytest <test_file> -v`) and confirm pass counts match pre-refactor.
+     - Otherwise, write a live smoke test in an isolated `/tmp` sandbox: fake CLI binaries via `PATH` injection, a scratch directory standing in for the real vault/wiki-root/vault-path, fake subprocess targets — exercise both the success path AND at least one error path, and diff the output against what the pre-refactor code would have produced.
+     - For files that touch **real system state** (installers, daemons, global config, `~/.claude/...`), do NOT run them live against the real system. Test only the pure/isolated helper functions directly, or use a fully sandboxed fake `$HOME`/`$TMPDIR`. See the "Critical Incident" note below for why.
+  4. Only after all three pass: `git add <file> && git commit -m "..." && git push origin feat/updated-coding-conventions.md`.
 
-Key Input Dependencies:
-    - ./plugin.json
-    - ././SKILL.md files
-
-Usage Examples:
-    python audit.py --path <plugin-directory>
-
-Result: Agent understands exactly what to do in < 30 seconds, no experimentation needed
-```
-
-**This speeds up agent productivity by 10-100x** - agents can immediately decide whether a script is relevant, what dependencies to prepare, and how to invoke it.
+**Commit message convention:** one commit per file, message states what was extracted and exactly what was verified (test suite pass counts, or the specific sandbox scenario exercised). Trailer: `Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>` (or whichever model did the work).
 
 ---
 
-## Progress Tracking
+## ⚠️ Critical Incident — Read Before Touching System-Level Scripts
 
-### Audit Results Timeline
+During the `cli-agents` plugin pass, a "quick background test" of `enable_global_routing.py` was run without full sandboxing. It ran far enough before being killed to: sync a real script into `~/.claude/proxy/`, rewrite the real macOS launchd plist, and spawn a duplicate long-running process alongside the user's pre-existing instance. It was resolved safely (confirmed no data loss, killed only the duplicate, restored to pre-incident state) but it was avoidable.
 
-| Session | Violations | Fixes | Cumulative Fixed | Status |
-|---------|-----------|-------|------------------|--------|
-| Start | 454 | - | - | Initial audit |
-| Session 1 | 442 | 12 | 12 | ✅ Complete |
-| Session 2 | 435 | 7 | 19 | ✅ Pushed to GitHub |
-| Session 3 | 405 | 30 | 49 | ✅ Pushed to GitHub |
-| Session 4 | 385 | 20 | 69 | ✅ Pushed to GitHub |
-
-### Files Fixed (69 total)
-
-✅ **Agent-Scaffolders Scripts (14+ fixed):**
-1. audit.py - Added function docstring
-2. cleanup_stacked_references.py - Added main() docstring
-3. scaffold_azure_agent.py - Added main() docstring
-4. validate_local_links.py - Added main() docstring
-5. auto_fix_local_links.py - Added 3 function docstrings (resolve_project_root, replacer, main)
-6. audit_plugin_l5_execute.py - Added main() docstring
-7. inventory_plugin.py - Added main() docstring
-8. check_skill_lengths.py - Added module docstring + 2 function docstrings
-9. fix_descriptions.py - Added module docstring + 2 function docstrings
-10. update_ecosystem_index.py - Added module docstring + 2 function docstrings
-11. execute.py - Updated module docstring + added _get_default_improve_model() docstring
-12. audit_plugin_structure.py - Added _scan_dir() and main() docstrings
-13. path_reference_auditor.py - Added __init__() and main() docstrings
-14. test_execute.py - Added module docstring + 4 function docstrings
-15. load_context.py - Added Key Input Dependencies section
-16. benchmarking/utils.py - Added Purpose + Key Input Dependencies
-17. audit_marketplace_sources.py - Added module docstring + 2 function docstrings
-18. benchmarking/test_run_loop.py - Added module docstring + 4 function docstrings
-19. test_scaffold_github_agent.py - Added module docstring + 17 function docstrings
-
-✅ **Obsidian-Wiki-Engine Scripts (2+ fixed):**
-1. ingest.py - Added Key Input Dependencies section
-2. obsidian-parser/parser.py - Added main() docstring
-
-✅ **Exploration-Cycle-Plugin Scripts (5+ fixed):**
-1. hooks/session_end.py - Added main() docstring
-2. exploration_orchestrator_execute.py - Added main() docstring
-3. exploration_handoff_execute.py - Added main() docstring
-4. prototype_builder_execute.py - Added main() docstring
-5. exploration_session_brief_execute.py - Added main() docstring
-
-✅ **Plugin-Manager Scripts (1 fixed):**
-- plugin_add.py - Fixed syntax error (ill""" → """)
-
-✅ **Dev-Utils Scripts (5+ more fixed):**
-1. adr_manager.py - Added main() docstring
-2. next_number.py - Added main() docstring
-3. hf_init.py - Added main() docstring
-4. hf_download.py - Added module docstring with Key Input Dependencies
-5. hf_upload.py - Added module docstring with Key Input Dependencies
-6. convert.py - Moved docstring to proper location + added Key Input Dependencies
-7. manifest_manager.py - Added update_file() docstring
-
-✅ **Agent-Agentic-OS Scripts (2 more fixed):**
-1. check_todos.py - Added check_todos() docstring
-2. generate_eval_instructions.py - Added Key Input Dependencies section
-
-### Violations Remaining (385 files)
-
-**By Category:**
-- Missing module docstrings: ~80 files
-- Missing function docstrings: ~200+ functions  
-- Functions exceeding 50 lines (requires refactoring): ~150+ functions
-- Other violations: ~50 files
-
-**By Plugin:**
-- agent-scaffolders: ~30 scripts remaining
-- agent-agentic-os: ~20 scripts remaining
-- obsidian-wiki-engine: ~30+ scripts remaining
-- bootstrap.py, __init__.py: Need module headers
-- Test files: Multiple violations
-- Others: spread across remaining plugins
+**Rule going forward:** any script that can install daemons/services, edit shell profiles (`~/.zshrc`, `~/.bashrc`), write to real user config directories, or spawn long-running background processes must be tested **only** via its pure/isolated helper functions called directly in-process, or against a fully faked `$HOME` pointed at a `/tmp` sandbox. Never run the real `main()`/entry point of such a script live, even backgrounded, even "just to check."
 
 ---
 
-## How to Use This Guide
+## Standard Workflow For a Fresh Session
 
-### Starting a New Session
-
-1. **Read this file** to understand the context
-2. **Check the current audit status:**
+1. **Read this file in full.**
+2. Re-run the auditor to get current ground truth (numbers above may be stale):
    ```bash
-   python3 plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py
-   head -10 temp/workspace_conventions_report.md  # See summary
+   python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py > /tmp/audit.log 2>&1
+   grep -c "^### 📄" temp/workspace_conventions_report.md
+   grep "^### 📄" temp/workspace_conventions_report.md | sed -E "s|^### 📄 'plugins/([^/]+)/.*|\1|" | sort | uniq -c | sort -rn
    ```
-
-3. **Pick a script to fix** from the violations list
-4. **Follow the fix pattern** (see below)
-5. **Commit and update progress** in this file
-
-### Fix Pattern for Each Script
-
-```bash
-# 1. Read the script
-read <path-to-script>
-
-# 2. Identify what's missing (from audit report):
-grep -A 5 "<script-name>" temp/workspace_conventions_report.md
-
-# 3. Add docstrings:
-# - Module docstring with Purpose: and Key Input Dependencies:
-# - Function docstrings (one-line summaries)
-
-# 4. Re-audit to verify it passes:
-python3 plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py 2>&1 | grep "<script-name>"
-# Should return: (no output = pass!)
-
-# 5. Commit:
-git add <script-file>
-git commit -m "docs: add missing docstrings to <script-name>"
-```
+3. Confirm branch state:
+   ```bash
+   git status
+   git log --oneline -5
+   git log origin/feat/updated-coding-conventions.md --oneline -1   # confirm pushed
+   ```
+4. Pick the **smallest-violation-count plugin remaining** (see table above, or the fresh auditor output — trust the fresh run over this file).
+5. Within that plugin, list its canonical (non-symlink) files with violations, smallest fix first:
+   ```bash
+   grep -A 10 "^### 📄 'plugins/<plugin-name>" temp/workspace_conventions_report.md | grep -v Symlink
+   ```
+6. Fix one file at a time using the "Two Kinds of Fixes" rules above. Commit + push after each file — do not batch multiple files into one commit.
+7. When the whole plugin reaches 0 violations, re-run the auditor plugin-wide to confirm, then move to the next-smallest plugin.
+8. If you find a pre-existing bug unrelated to the current fix's scope (dead code, wrong variable use, hardcoded path that should be `sys.executable`, etc.) — **do not silently fix it**. Flag it in the commit message or ask the user via `AskUserQuestion` whether to fix it now or leave it for later.
+9. Update the "Plugins completed" / "Plugins remaining" tables in this file before ending the session.
 
 ---
 
 ## Applicable Skills & Rules
 
-### Core Skills for This Task
-
 **Primary Skill:**
-- `dev-utils:coding-conventions-agent` - Enforces documentation standards
-  - Location: `plugins/dev-utils/skills/coding-conventions-agent/SKILL.md`
-  - Auditor Script: `plugins/dev-utils/scripts/workspace_conventions_auditor.py`
+- `dev-utils:coding-conventions-agent` — `plugins/dev-utils/skills/coding-conventions-agent/SKILL.md`
+- Auditor: `plugins/dev-utils/scripts/workspace_conventions_auditor.py`
 
-### Applicable Rules
-
-**Coding Conventions Rules:**
-- `.agent/rules/coding-conventions.md` - Master documentation standards
-  - Module docstring format: Purpose + Key Input Dependencies
-  - Function docstring format: One-line summaries
-  - File header templates for Python, JS/TS, C#
-  - Naming conventions, type hints, refactoring thresholds
-
-**Related Rules:**
-- `.agent/rules/self-evolution-policy.md` - Guides autonomous fixes
-- `.agent/rules/plugin-architecture-policy.md` - Plugin structure
-- `.agent/rules/test-driven-development.md` - Testing standards
-
-### Reference Files
-
-- `plugins/dev-utils/skills/coding-conventions-agent/SKILL.md` - Full standards definition
-- `plugins/dev-utils/rules/coding-conventions.md` - Summary of standards
-
----
-
-## Scripts in Play
-
-### Primary Auditor Script
-**Path:** `plugins/dev-utils/scripts/workspace_conventions_auditor.py`
-
-**What it does:**
-- Scans all .py, .ts, .tsx, .js files in workspace
-- Checks for missing docstrings, headers, function length violations
-- Generates report to `temp/workspace_conventions_report.md`
-
-**Usage:**
-```bash
-python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
-```
-
-**Output:** Detailed report in `temp/workspace_conventions_report.md`
-
-### Scripts Needing Fixes
-
-**High Priority (agent-scaffolders, most violations):**
-- aggregate_benchmark.py - 4 functions exceed 50 lines
-- generate_review.py - 3 functions exceed 50 lines
-- run_loop.py - 2 functions exceed 50 lines (299/120 lines)
-- scaffold_github_agent.py - main() exceeds 50 lines (231 lines)
-- validate_agent.py - validate() exceeds 50 lines (147 lines)
-- generate_report.py - generate_html() exceeds 50 lines (285 lines)
-
-**Medium Priority:**
-- test files (16+ missing docstrings)
-- obsidian-wiki-engine scripts
-- bootstrap.py (9+ missing docstrings)
-
-**Low Priority:**
-- Individual __init__.py files
-- Reference script files
-
----
-
-## Known Issues
-
-### SyntaxWarning: Invalid Escape Sequence
-
-**Status:** Unresolved  
-**Location:** workspace_conventions_auditor.py line 70  
-**Severity:** Low (doesn't prevent auditor from working)  
-**Attempted Fix:** Changed backticks to repr() in output (line 217-218)  
-**Result:** Warning persists (likely false positive from Python parser)  
-**Action:** Can be investigated in future session if needed
-
----
-
-## Best Practices for This Work
-
-### DO ✅
-- Add one-line docstrings to all functions
-- Include module docstrings with Purpose: and Key Input Dependencies:
-- Use the auditor script to verify fixes
-- Commit after fixing 5-10 files
-- Update this progress file after each session
-
-### DON'T ❌
-- Refactor code or change function implementations
-- Fix functions exceeding 50 lines (unless refactoring is requested)
-- Add error handling or validation beyond documentation
-- Create new abstractions or helper functions
-- Delete code (no cleanup unless asked)
-
----
-
-## Next Steps
-
-### Immediate (This Session or Next)
-
-1. **Continue with agent-scaffolders scripts** (30+ remaining)
-   - Focus on scripts with only docstring violations first
-   - Skip length-related violations for now
-
-2. **Then move to agent-agentic-os** (~20 scripts)
-
-3. **Then obsidian-wiki-engine** (~30+ scripts)
-
-### Medium Term
-
-- Fix test files (test_scaffold_github_agent.py, test_execute.py, etc.)
-- Add missing module docstrings to bootstrap.py, __init__.py files
-- Address dev-utils and other plugins
-
-### Long Term
-
-- Consider batch refactoring for functions exceeding 50 lines
-- Update CLAUDE.md with lessons learned
-- Document any new patterns discovered
-
----
-
-## Push Strategy
-
-**When to push:**
-- ✅ After completing 5-10 scripts (batch updates)
-- ✅ After completing an entire plugin (major milestone)
-- ✅ At end of each work session (keep progress visible)
-
-**Don't push:**
-- ❌ After every single script (too noisy)
-- ❌ With uncommitted work (commit first)
-- ❌ Before testing with auditor (verify fixes first)
-
-**How to push:**
-```bash
-git push origin feat/updated-coding-conventions.md
-```
-
-**After push:**
-- Verify on GitHub: https://github.com/richfrem/agent-plugins-skills/tree/feat/updated-coding-conventions.md
-- Updates visible immediately
-- Ready for PR when all scripts complete
-
----
-
-## Session Cleanup Checklist
-
-Before ending a session:
-
-- [ ] Run auditor to get current violation count: `python3 plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py`
-- [ ] Commit all changes with descriptive message
-- [ ] Push to origin: `git push origin feat/updated-coding-conventions.md`
-- [ ] Update progress table in this file
-- [ ] Note which scripts are complete
-- [ ] Document any blockers or issues found
-- [ ] Record the branch state and commit count
+**Governing rule files:**
+- `.agent/rules/coding-conventions.md` — module/function docstring format, 50-line function limit, naming conventions
+- `.agent/rules/self-evolution-policy.md` — failure tiers, deletion prohibition (never delete without explicit permission)
+- `.agent/rules/plugin-architecture-policy.md` — plugin structure, hub-and-spoke scripts
+- `.agent/rules/test-driven-development.md` — testing standards
+- `.agent/rules/symlink-cross-platform.md` — if a fix touches a shared/symlinked script, use `symlink_manager.py`, never raw `ln -s`
 
 ---
 
 ## Useful Commands
 
 ```bash
-# Run the auditor
+# Full re-audit
 python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
 
-# Check a specific script's violations
-grep -A 10 "scripts/audit.py" temp/workspace_conventions_report.md
+# Violation count by plugin
+grep "^### 📄" temp/workspace_conventions_report.md | sed -E "s|^### 📄 'plugins/([^/]+)/.*|\1|" | sort | uniq -c | sort -rn
 
-# See all violations in agent-scaffolders
-grep "plugins/agent-scaffolders/scripts/" temp/workspace_conventions_report.md | head -30
+# Violations for one file
+grep -A 8 "### 📄 'plugins/<plugin>/scripts/<file>.py'" temp/workspace_conventions_report.md
 
-# Commit documentation fixes
-git add plugins/
-git commit -m "docs: add missing docstrings to <scripts>"
+# Canonical (non-symlink) files with violations in one plugin
+grep -A 10 "^### 📄 'plugins/<plugin>" temp/workspace_conventions_report.md | grep -v Symlink
 
-# Check current audit status
-head -6 temp/workspace_conventions_report.md
+# Compile-check after an edit
+python3 -m py_compile <path-to-file>
+
+# Confirm a specific file is now clean
+python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py > /dev/null 2>&1 && \
+  grep -A 8 "### 📄 '<path-to-file>'" temp/workspace_conventions_report.md || echo "NO VIOLATIONS"
+
+# Commit + push pattern (one file per commit)
+git add <file>
+git commit -m "refactor: break up <function>() (<N> lines) in <file> ..."
+git push origin feat/updated-coding-conventions.md
 ```
 
 ---
 
-## Contact & Questions
+## Session Cleanup Checklist
 
-If starting a new session:
-1. Read this entire file
-2. Run the auditor to see current state
-3. Check the git log to see recent commits
-4. Pick 5-10 scripts from the remaining list
-5. Follow the "Fix Pattern for Each Script" section
-6. Update this file with new progress
+Before ending a session:
+- [ ] Re-run the auditor, confirm the new total violation count
+- [ ] Confirm `git log origin/feat/updated-coding-conventions.md --oneline -1` matches local `HEAD` (everything pushed, nothing local-only)
+- [ ] Update the "Plugins completed" / "Plugins remaining" tables in this file with current numbers
+- [ ] Note which plugin/file to resume with next
+- [ ] Flag (don't fix) any pre-existing bugs discovered outside the current fix's scope
 
-**Last Updated:** Current Session  
-**Status:** ONGOING - 442/454 files remaining (12 fixed)
+---
+
+## Last Updated
+
+**Status:** `obsidian-wiki-engine` completed at commit `d5cbff72`. 246 violations remaining across `agent-agentic-os` (39), `agent-memory` (86), `agent-scaffolders` (121). Next up: `agent-agentic-os`.
