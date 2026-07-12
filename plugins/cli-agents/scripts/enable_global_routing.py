@@ -56,6 +56,7 @@ PROXY_MODEL_VALUE = "gemma-4-12b"
 
 
 def _find_proxy_source() -> str:
+    """Locate routing_proxy.py in one of the standard candidate locations, or exit."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     candidates = [
         os.path.join(script_dir, "routing_proxy.py"),                          # same scripts/ dir (installed)
@@ -70,18 +71,15 @@ def _find_proxy_source() -> str:
 
 
 def _sync_proxy(proxy_dir: str, proxy_script: str, src: str) -> None:
+    """Copy routing_proxy.py to the canonical proxy directory, creating dirs as needed."""
     os.makedirs(proxy_dir, exist_ok=True)
     os.makedirs(os.path.join(proxy_dir, "logs"), exist_ok=True)
     shutil.copy2(src, proxy_script)
     print(f"✓ Synced routing_proxy.py → {proxy_script}")
 
 
-def _enable_macos(proxy_script: str, python_path: str, log_dir: str) -> None:
-    home = os.path.expanduser("~")
-    plist_dir = os.path.join(home, "Library", "LaunchAgents")
-    os.makedirs(plist_dir, exist_ok=True)
-    plist_path = os.path.join(plist_dir, f"{PLIST_LABEL}.plist")
-
+def _write_macos_plist(plist_path: str, python_path: str, proxy_script: str, log_dir: str) -> None:
+    """Write the launchd plist XML file for the proxy daemon."""
     plist_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -114,6 +112,9 @@ def _enable_macos(proxy_script: str, python_path: str, log_dir: str) -> None:
         f.write(plist_content)
     print(f"✓ Created launchd plist at {plist_path}")
 
+
+def _load_macos_daemon(plist_path: str) -> None:
+    """Unload any existing daemon instance, then load the plist to (re)start it."""
     try:
         res = subprocess.run(["launchctl", "list"], capture_output=True, text=True)
         if PLIST_LABEL in res.stdout:
@@ -127,29 +128,44 @@ def _enable_macos(proxy_script: str, python_path: str, log_dir: str) -> None:
     except Exception as e:
         print(f"WARNING: launchctl load failed: {e}")
 
-    # Uncomment or append exports in ~/.zshrc
+
+def _update_macos_zshrc(home: str) -> None:
+    """Add or uncomment the proxy environment exports in ~/.zshrc."""
     zshrc = os.path.join(home, ".zshrc")
-    if os.path.isfile(zshrc):
-        with open(zshrc, "r") as f:
-            content = f.read()
-        if re.search(r'#\s*export ANTHROPIC_BASE_URL=http://localhost:4000', content):
-            content = re.sub(r'#\s*export ANTHROPIC_BASE_URL=http://localhost:4000',
-                             f'export {PROXY_ENV_VAR}={PROXY_VALUE}', content)
-        elif f'export {PROXY_ENV_VAR}' not in content:
-            content += f'\nexport {PROXY_ENV_VAR}={PROXY_VALUE}\n'
+    if not os.path.isfile(zshrc):
+        return
+    with open(zshrc, "r") as f:
+        content = f.read()
+    if re.search(r'#\s*export ANTHROPIC_BASE_URL=http://localhost:4000', content):
+        content = re.sub(r'#\s*export ANTHROPIC_BASE_URL=http://localhost:4000',
+                         f'export {PROXY_ENV_VAR}={PROXY_VALUE}', content)
+    elif f'export {PROXY_ENV_VAR}' not in content:
+        content += f'\nexport {PROXY_ENV_VAR}={PROXY_VALUE}\n'
 
-        if re.search(r'#\s*export ANTHROPIC_CUSTOM_MODEL_OPTION=gemma-4-12b', content):
-            content = re.sub(r'#\s*export ANTHROPIC_CUSTOM_MODEL_OPTION=gemma-4-12b',
-                             f'export {PROXY_MODEL_VAR}={PROXY_MODEL_VALUE}', content)
-        elif f'export {PROXY_MODEL_VAR}' not in content:
-            content = content.replace(
-                f'export {PROXY_ENV_VAR}={PROXY_VALUE}',
-                f'export {PROXY_ENV_VAR}={PROXY_VALUE}\nexport {PROXY_MODEL_VAR}={PROXY_MODEL_VALUE}'
-            )
+    if re.search(r'#\s*export ANTHROPIC_CUSTOM_MODEL_OPTION=gemma-4-12b', content):
+        content = re.sub(r'#\s*export ANTHROPIC_CUSTOM_MODEL_OPTION=gemma-4-12b',
+                         f'export {PROXY_MODEL_VAR}={PROXY_MODEL_VALUE}', content)
+    elif f'export {PROXY_MODEL_VAR}' not in content:
+        content = content.replace(
+            f'export {PROXY_ENV_VAR}={PROXY_VALUE}',
+            f'export {PROXY_ENV_VAR}={PROXY_VALUE}\nexport {PROXY_MODEL_VAR}={PROXY_MODEL_VALUE}'
+        )
 
-        with open(zshrc, "w") as f:
-            f.write(content)
-        print("✓ Added/uncommented proxy exports in ~/.zshrc")
+    with open(zshrc, "w") as f:
+        f.write(content)
+    print("✓ Added/uncommented proxy exports in ~/.zshrc")
+
+
+def _enable_macos(proxy_script: str, python_path: str, log_dir: str) -> None:
+    """Install and load the launchd daemon, and update ~/.zshrc with proxy exports."""
+    home = os.path.expanduser("~")
+    plist_dir = os.path.join(home, "Library", "LaunchAgents")
+    os.makedirs(plist_dir, exist_ok=True)
+    plist_path = os.path.join(plist_dir, f"{PLIST_LABEL}.plist")
+
+    _write_macos_plist(plist_path, python_path, proxy_script, log_dir)
+    _load_macos_daemon(plist_path)
+    _update_macos_zshrc(home)
 
     print("\n=== ACTION REQUIRED ===")
     print("To apply routing in this terminal:")
@@ -157,6 +173,7 @@ def _enable_macos(proxy_script: str, python_path: str, log_dir: str) -> None:
 
 
 def _enable_windows(proxy_script: str, python_path: str, log_dir: str) -> None:
+    """Install/start the NSSM proxy service and set proxy env vars in the User scope."""
     try:
         nssm = shutil.which("nssm")
         if not nssm:
@@ -199,12 +216,8 @@ def _enable_windows(proxy_script: str, python_path: str, log_dir: str) -> None:
     print(f'  $env:{PROXY_MODEL_VAR} = "{PROXY_MODEL_VALUE}"')
 
 
-def _enable_linux(proxy_script: str, python_path: str, log_dir: str) -> None:
-    home = os.path.expanduser("~")
-    systemd_dir = os.path.join(home, ".config", "systemd", "user")
-    os.makedirs(systemd_dir, exist_ok=True)
-
-    service_path = os.path.join(systemd_dir, "llm-proxy.service")
+def _write_linux_service(service_path: str, python_path: str, proxy_script: str, log_dir: str) -> None:
+    """Write the systemd user service unit file for the proxy daemon."""
     service_content = f"""[Unit]
 Description=Local LLM routing proxy (port 4000)
 After=network.target
@@ -222,6 +235,9 @@ WantedBy=default.target
         f.write(service_content)
     print(f"✓ Created systemd user service at {service_path}")
 
+
+def _load_linux_daemon() -> None:
+    """Reload systemd, enable, and start the llm-proxy user service."""
     try:
         subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
         subprocess.run(["systemctl", "--user", "enable", "llm-proxy"], check=False)
@@ -230,6 +246,9 @@ WantedBy=default.target
     except Exception as e:
         print(f"WARNING: systemd setup failed: {e}")
 
+
+def _update_linux_rc_files(home: str) -> None:
+    """Add proxy environment exports to ~/.bashrc and ~/.zshrc if not already present."""
     for rc_file in (os.path.join(home, ".bashrc"), os.path.join(home, ".zshrc")):
         if not os.path.isfile(rc_file):
             continue
@@ -247,6 +266,18 @@ WantedBy=default.target
                 f.write(content)
             print(f"✓ Added proxy exports to {rc_file}")
 
+
+def _enable_linux(proxy_script: str, python_path: str, log_dir: str) -> None:
+    """Install/enable the systemd user proxy service and update shell rc files."""
+    home = os.path.expanduser("~")
+    systemd_dir = os.path.join(home, ".config", "systemd", "user")
+    os.makedirs(systemd_dir, exist_ok=True)
+
+    service_path = os.path.join(systemd_dir, "llm-proxy.service")
+    _write_linux_service(service_path, python_path, proxy_script, log_dir)
+    _load_linux_daemon()
+    _update_linux_rc_files(home)
+
     print("\n=== ACTION REQUIRED ===")
     print("To apply routing in this terminal:")
     print(f"  export {PROXY_ENV_VAR}={PROXY_VALUE}")
@@ -254,6 +285,7 @@ WantedBy=default.target
 
 
 def main() -> None:
+    """Sync routing_proxy.py and install/start the platform-specific daemon and env vars."""
     print("=== ENABLING GLOBAL ROUTING PROXY ===")
 
     src_proxy = _find_proxy_source()
