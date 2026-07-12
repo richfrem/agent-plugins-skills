@@ -168,6 +168,26 @@ def create_canvas(filepath: Path) -> Dict[str, Any]:
     return {"status": "created", "file": str(filepath)}
 
 
+def _apply_node_type_fields(node: Dict[str, Any], node_type: str, kwargs: Dict[str, Any]) -> None:
+    """Populate node's type-specific field (text/file/url/label) from kwargs, in place."""
+    if node_type == "text":
+        node["text"] = kwargs.get("text", "")
+    elif node_type == "file":
+        node["file"] = kwargs.get("file_path", "")
+    elif node_type == "link":
+        node["url"] = kwargs.get("url", "")
+    elif node_type == "group":
+        node["label"] = kwargs.get("label", "")
+
+
+def _write_canvas_atomic(filepath: Path, data: Dict[str, Any]) -> None:
+    """Dump data as JSON and atomically replace filepath's contents."""
+    new_content = json.dumps(data, indent=2)
+    tmp_path = filepath.parent / f"{filepath.name}.agent-tmp"
+    tmp_path.write_text(new_content, encoding='utf-8')
+    os.rename(str(tmp_path), str(filepath))
+
+
 def add_node(filepath: Path, node_type: str, x: int = 0, y: int = 0,
              width: int = 250, height: int = 60, **kwargs) -> Dict[str, Any]:
     """Add a node to an existing canvas."""
@@ -186,16 +206,7 @@ def add_node(filepath: Path, node_type: str, x: int = 0, y: int = 0,
             "width": width,
             "height": height,
         }
-
-        # Add type-specific fields
-        if node_type == "text":
-            node["text"] = kwargs.get("text", "")
-        elif node_type == "file":
-            node["file"] = kwargs.get("file_path", "")
-        elif node_type == "link":
-            node["url"] = kwargs.get("url", "")
-        elif node_type == "group":
-            node["label"] = kwargs.get("label", "")
+        _apply_node_type_fields(node, node_type, kwargs)
 
         # Optional color
         if "color" in kwargs:
@@ -210,11 +221,7 @@ def add_node(filepath: Path, node_type: str, x: int = 0, y: int = 0,
             data["nodes"] = []
         data["nodes"].append(node)
 
-        # Atomic write
-        new_content = json.dumps(data, indent=2)
-        tmp_path = filepath.parent / f"{filepath.name}.agent-tmp"
-        tmp_path.write_text(new_content, encoding='utf-8')
-        os.rename(str(tmp_path), str(filepath))
+        _write_canvas_atomic(filepath, data)
 
         return {"status": "node_added", "node_id": node["id"], "file": str(filepath)}
 
@@ -274,6 +281,7 @@ def add_edge(filepath: Path, from_node: str, to_node: str,
 # CLI Entry Point
 # ---------------------------------------------------------------------------
 def main() -> None:
+    """Parse CLI subcommand args and dispatch to read/create/add-node/add-edge operations."""
     parser = argparse.ArgumentParser(description="Obsidian Canvas Architect")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
