@@ -28,6 +28,10 @@ Related:
     - audit.py         (structural coverage checks)
     - distill_wiki.py  (shares LLM engine detection + call_llm)
     - wiki_builder.py  (generates the wiki nodes being linted)
+
+Key Input Dependencies:
+    - {wiki_root}/wiki/_index.md and concept pages
+    - One of copilot/claude/gemini CLIs available on PATH
 """
 import sys
 import json
@@ -85,6 +89,29 @@ def _sample_concept_pages(wiki_root: Path, n: int) -> List[Tuple[str, str]]:
     return result
 
 
+_LINT_REPORT_INSTRUCTIONS = (
+    "\n\n---\n\n"
+    "Based on the wiki content above, produce a structured health report with these sections:\n\n"
+    "## 1. Inconsistencies\n"
+    "List any factual contradictions or conflicting claims found between articles.\n"
+    "Format: `- [concept-a] vs [concept-b]: <describe the inconsistency>`\n\n"
+    "## 2. Missing Concepts\n"
+    "List concepts that are implied by existing articles but not yet written.\n"
+    "Format: `- <concept-name>: implied by [[existing-concept]]`\n\n"
+    "## 3. Stale or Weak Articles\n"
+    "List articles that appear vague, outdated, or need richer content.\n"
+    "Format: `- [[concept]]: <brief reason>`\n\n"
+    "## 4. Connection Candidates\n"
+    "Suggest wikilink connections that don't exist but should.\n"
+    "Format: `- [[concept-a]] ↔ [[concept-b]]: <rationale>`\n\n"
+    "## 5. New Article Suggestions\n"
+    "Suggest 5-10 new article titles the wiki should have based on the topics covered.\n"
+    "Format: `- <proposed-title>: <one-sentence description>`\n\n"
+    "Be specific and reference actual article names from the index. "
+    "If the sample is small, note that your analysis is limited to the provided sample.\n"
+)
+
+
 def build_lint_prompt(
     index_content: str,
     concept_samples: List[Tuple[str, str]],
@@ -120,27 +147,7 @@ def build_lint_prompt(
     if len(combined) > MAX_PROMPT_CHARS:
         combined = combined[:MAX_PROMPT_CHARS] + "\n\n*(content truncated for brevity)*"
 
-    return combined + (
-        "\n\n---\n\n"
-        "Based on the wiki content above, produce a structured health report with these sections:\n\n"
-        "## 1. Inconsistencies\n"
-        "List any factual contradictions or conflicting claims found between articles.\n"
-        "Format: `- [concept-a] vs [concept-b]: <describe the inconsistency>`\n\n"
-        "## 2. Missing Concepts\n"
-        "List concepts that are implied by existing articles but not yet written.\n"
-        "Format: `- <concept-name>: implied by [[existing-concept]]`\n\n"
-        "## 3. Stale or Weak Articles\n"
-        "List articles that appear vague, outdated, or need richer content.\n"
-        "Format: `- [[concept]]: <brief reason>`\n\n"
-        "## 4. Connection Candidates\n"
-        "Suggest wikilink connections that don't exist but should.\n"
-        "Format: `- [[concept-a]] ↔ [[concept-b]]: <rationale>`\n\n"
-        "## 5. New Article Suggestions\n"
-        "Suggest 5-10 new article titles the wiki should have based on the topics covered.\n"
-        "Format: `- <proposed-title>: <one-sentence description>`\n\n"
-        "Be specific and reference actual article names from the index. "
-        "If the sample is small, note that your analysis is limited to the provided sample.\n"
-    )
+    return combined + _LINT_REPORT_INSTRUCTIONS
 
 
 def write_lint_report(wiki_root: Path, report_content: str, engine: str, model: str) -> Path:
@@ -179,8 +186,8 @@ def write_lint_report(wiki_root: Path, report_content: str, engine: str, model: 
     return report_path
 
 
-def main() -> None:
-    """Parse CLI arguments and run the wiki semantic health check."""
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for lint_wiki.py."""
     parser = argparse.ArgumentParser(
         description="Semantic health check for the Obsidian LLM wiki"
     )
@@ -208,11 +215,12 @@ def main() -> None:
         action="store_true",
         help="Output report path as JSON on completion",
     )
-    args = parser.parse_args()
+    return parser
 
-    wiki_root = Path(args.wiki_root).resolve()
+
+def _validate_wiki_dir_or_exit(wiki_root: Path) -> int:
+    """Ensure the wiki directory exists and has nodes, exiting(1) otherwise. Returns total_nodes."""
     wiki_dir = wiki_root / "wiki"
-
     if not wiki_dir.exists():
         print("[ERROR] Wiki directory not found. Run /wiki-ingest first.")
         sys.exit(1)
@@ -221,6 +229,15 @@ def main() -> None:
     if total_nodes == 0:
         print("[ERROR] No wiki nodes found. Run /wiki-ingest first.")
         sys.exit(1)
+    return total_nodes
+
+
+def main() -> None:
+    """Parse CLI arguments and run the wiki semantic health check."""
+    args = _build_arg_parser().parse_args()
+
+    wiki_root = Path(args.wiki_root).resolve()
+    total_nodes = _validate_wiki_dir_or_exit(wiki_root)
 
     engine, model = detect_engine(args.engine)
 
