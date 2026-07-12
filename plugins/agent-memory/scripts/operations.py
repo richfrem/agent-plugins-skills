@@ -59,6 +59,43 @@ class VectorDBOperations:
     Manages the lifecycle of the Vector Database and its multi-vector storage.
     """
 
+    def _init_splitters_and_models(
+        self,
+        embedding_model: str,
+        device: str,
+        child_chunk_size: int,
+        child_chunk_overlap: int,
+        parent_chunk_size: int,
+        parent_chunk_overlap: int
+    ) -> None:
+        """Initialize the embedding models and chunk splitters for document processing."""
+        self.embedding_model = HuggingFaceEmbeddings(
+            model_name=embedding_model,
+            model_kwargs={'device': device, 'trust_remote_code': True},
+            encode_kwargs={'normalize_embeddings': True}
+        )
+        
+        # Splitters for Parent-Child architecture
+        self.child_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=child_chunk_size, 
+            chunk_overlap=child_chunk_overlap, 
+            separators=["\n\n", "\n", " ", ""]
+        )
+        self.parent_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=parent_chunk_size, 
+            chunk_overlap=parent_chunk_overlap, 
+            separators=["\n\n", "\n", " ", ""]
+        )
+
+    def _init_stores(self) -> None:
+        """Initialize child vector store wrapper and parent store wrapper."""
+        self.vectorstore = Chroma(
+            client=self.chroma_client,
+            collection_name=self.child_collection_name,
+            embedding_function=self.embedding_model
+        )
+        self.store = self._init_parent_store()
+
     def __init__(
         self,
         project_root: str,
@@ -99,31 +136,11 @@ class VectorDBOperations:
         self.parent_collection_name = parent_collection
         
         self.chroma_client = self._init_chroma_client()
-        self.embedding_model = HuggingFaceEmbeddings(
-            model_name=embedding_model,
-            model_kwargs={'device': device, 'trust_remote_code': True},
-            encode_kwargs={'normalize_embeddings': True}
+        self._init_splitters_and_models(
+            embedding_model, device, child_chunk_size, child_chunk_overlap,
+            parent_chunk_size, parent_chunk_overlap
         )
-        
-        # Splitters for Parent-Child architecture
-        self.child_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=child_chunk_size, 
-            chunk_overlap=child_chunk_overlap, 
-            separators=["\n\n", "\n", " ", ""]
-        )
-        self.parent_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=parent_chunk_size, 
-            chunk_overlap=parent_chunk_overlap, 
-            separators=["\n\n", "\n", " ", ""]
-        )
-
-        self.vectorstore = Chroma(
-            client=self.chroma_client,
-            collection_name=self.child_collection_name,
-            embedding_function=self.embedding_model
-        )
-
-        self.store = self._init_parent_store()
+        self._init_stores()
 
     def _init_chroma_client(self) -> Any:
         """Initializes either an HTTP or Persistent Chroma client based on config."""

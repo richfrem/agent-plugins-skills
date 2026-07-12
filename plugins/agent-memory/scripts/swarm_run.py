@@ -233,11 +233,45 @@ class suppress_monolithic_md:
 
 # ─── FILE DISCOVERY ─────────────────────────────────────────────────────────
 
+def _resolve_bundle(args: argparse.Namespace, config: dict, is_safe_path: Any) -> list[str]:
+    """Helper to parse files from bundle path config/arg."""
+    bundle_path = args.bundle or config.get("bundle")
+    if not bundle_path:
+        return []
+    bundle_path = Path(bundle_path)
+    if not bundle_path.exists():
+        return []
+    text = bundle_path.read_text()
+    try:
+        data = json.loads(text)
+    except Exception:
+        data = yaml.safe_load(text)
+    if isinstance(data, dict):
+        data = data.get("files", [])
+    paths = []
+    for item in data:
+        p = item.get("path") if isinstance(item, dict) else item
+        if p and is_safe_path(str(p)):
+            paths.append(str(p))
+    return paths
+
+
+def _resolve_checklist(args: argparse.Namespace, config: dict, is_safe_path: Any) -> list[str]:
+    """Helper to parse files from a task checklist file."""
+    task_path = args.files_from or config.get("files_from")
+    if not task_path:
+        return []
+    task_path = Path(task_path)
+    if not task_path.exists():
+        return []
+    matches = [m.group(1) for m in re.finditer(r"- \[ \] `(.+)`", task_path.read_text())]
+    return [m for m in matches if is_safe_path(m)]
+
+
 def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
     """Find files from CLI args or Job config."""
     exts = config.get("ext", [".md"])
     exts = set(e if e.startswith(".") else f".{e}" for e in exts)
-
     root_dir = Path.cwd().resolve()
 
     def is_safe_path(p: str) -> bool:
@@ -245,40 +279,20 @@ def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
         try:
             resolved = Path(p).resolve()
             return root_dir in resolved.parents or resolved == root_dir
-        except:
+        except Exception:
             return False
 
-    # 1. Explicit Files
     if args.files:
         return [f for f in args.files if is_safe_path(f)]
     
-    # 2. Bundle Manifest (JSON/YAML)
-    bundle_path = args.bundle or config.get("bundle")
-    if bundle_path:
-        bundle_path = Path(bundle_path)
-        if bundle_path.exists():
-            text = bundle_path.read_text()
-            try:
-                data = json.loads(text)
-            except:
-                data = yaml.safe_load(text)
-            
-            if isinstance(data, dict): data = data.get("files", [])
-            paths = []
-            for item in data:
-                p = item.get("path") if isinstance(item, dict) else item
-                if p and is_safe_path(str(p)): paths.append(str(p))
-            return paths
+    bundle_files = _resolve_bundle(args, config, is_safe_path)
+    if bundle_files:
+        return bundle_files
 
-    # 3. Task Checklist
-    task_path = args.files_from or config.get("files_from")
-    if task_path:
-        task_path = Path(task_path)
-        if task_path.exists():
-            matches = [m.group(1) for m in re.finditer(r"- \[ \] `(.+)`", task_path.read_text())]
-            return [m for m in matches if is_safe_path(m)]
+    checklist_files = _resolve_checklist(args, config, is_safe_path)
+    if checklist_files:
+        return checklist_files
 
-    # 4. Directory Crawl
     dir_path = args.dir or config.get("dir")
     if dir_path:
         dir_path = Path(dir_path)
@@ -293,130 +307,38 @@ def resolve_files(args: argparse.Namespace, config: dict) -> list[str]:
 
 # ─── WORKER ENGINE ───────────────────────────────────────────────────────────
 
-def execute_worker(
-    file_path: str,
-    prompt: str,
-    model: str,
-    engine: str,
-    job_config: dict,
-    user_vars: dict,
-    env_vars: dict,
-    dry_run: bool
-) -> dict:
-    """Processes a single file. Handles retry, skip, and post-cmd."""
-    start_time = time.time()
-    result = {
-        "file": file_path,
-        "success": False,
-        "output": None,
-        "error": None,
-        "skipped": False,
-        "retries": 0
-    }
-
-    if dry_run:
-        logger.info(f"  [DRY] {file_path}")
-        result["success"] = True
-        return result
-
-    # 1. Skip Check
+def _should_skip_file(file_path: str, job_config: dict, user_vars: dict, env_vars: dict) -> bool:
+    """Run skip verification command to determine if file is already processed."""
     check_cmd_tmpl = job_config.get("check_cmd")
     if check_cmd_tmpl:
         check_cmd_tmpl_args = shlex.split(check_cmd_tmpl)
         check_cmd_args = [arg.format_map({"file": file_path, **user_vars}) for arg in check_cmd_tmpl_args]
-        if subprocess.run(check_cmd_args, capture_output=True, env=env_vars).returncode == 0:
-            logger.info(f"  ⏩ {file_path} (already cached)")
-            result["success"] = True
-            result["skipped"] = True
-            return result
+        return subprocess.run(check_cmd_args, capture_output=True, env=env_vars).returncode == 0
+    return False
 
-    # 2. Read content
-    try:
-        content = Path(file_path).read_text(encoding="utf-8")
-    except Exception as e:
-        result["error"] = f"Read error: {e}"
-        return result
 
-    # 3. LLM Call with Retry
-    max_retries = job_config.get("max_retries", 3)
-    backoff = 2
-    
-    for attempt in range(max_retries + 1):
-        result["retries"] = attempt
-        # Engine-specific CLI arguments
-        cmd_args = [engine.lower()]
-        
-        # Resolve model — consult cheapest_models.json rather than hardcoding
-        effective_model = model
-        if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = _load_cheapest_model("gemini", "gemini-3-pro-preview")
-        elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
-            effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
+def _build_llm_cmd_and_payload(file_path: str, content: str, prompt: str, model: str, engine: str) -> tuple[list[str], str]:
+    """Return command line arguments and stdin payload for the chosen LLM engine."""
+    cmd_args = [engine.lower()]
+    effective_model = model
+    if engine.lower() == "gemini" and (not model or model == "haiku" or model.startswith("claude")):
+        effective_model = _load_cheapest_model("gemini", "gemini-3-pro-preview")
+    elif engine.lower() == "copilot" and (not model or model == "haiku" or model.startswith("claude")):
+        effective_model = _load_cheapest_model("copilot", "gpt-5-mini")
 
-        payload = content
-        if engine.lower() == "claude":
-            cmd_args.extend([
-                "--model", effective_model,
-                "-p", prompt,
-                "--no-session-persistence"
-            ])
-        elif engine.lower() == "gemini":
-            cmd_args.extend([
-                "--model", effective_model,
-                "-p", prompt
-            ])
-        elif engine == "copilot":
-            cmd_args = [
-                "copilot", "--model", effective_model
-            ]
-            # Copilot CLI ignores stdin if -p is present. We must prepend the prompt.
-            payload = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
+    payload = content
+    if engine.lower() == "claude":
+        cmd_args.extend(["--model", effective_model, "-p", prompt, "--no-session-persistence"])
+    elif engine.lower() == "gemini":
+        cmd_args.extend(["--model", effective_model, "-p", prompt])
+    elif engine.lower() == "copilot":
+        cmd_args = ["copilot", "--model", effective_model]
+        payload = f"Instruction: {prompt}\n\nTarget File Content:\n{content}"
+    return cmd_args, payload
 
-        cmd_str = " ".join([shell_quote(p) for p in cmd_args])
-        try:
-            proc = subprocess.run(
-                cmd_args, 
-                input=payload,
-                capture_output=True, 
-                text=True, 
-                timeout=job_config.get("timeout", 60),
-                env=env_vars
-            )
-            combined_out = (proc.stderr + "\n" + proc.stdout).strip()
-        except subprocess.TimeoutExpired:
-            proc = subprocess.CompletedProcess(args=cmd_args, returncode=1, stdout="", stderr="TimeoutExpired")
-            combined_out = "TimeoutExpired"
-        except Exception as e:
-            proc = subprocess.CompletedProcess(args=cmd_args, returncode=1, stdout="", stderr=str(e))
-            combined_out = str(e)
-        
-        if proc.returncode == 0 and proc.stdout.strip():
-            # SUCCESS
-            result["output"] = proc.stdout.strip()
-            result["success"] = True
-            break
-        
-        # ERROR HANDLING
-        if "hit your limit" in combined_out.lower() or "rate limit" in combined_out.lower():
-            if attempt < max_retries:
-                wait = (backoff ** attempt) + random.uniform(0, 1)
-                logger.warning(f"  ⌛ {file_path}: Rate limit. Backing off {wait:.1f}s...")
-                time.sleep(wait)
-                continue
-            else:
-                result["error"] = "RATE_LIMIT_EXCEEDED"
-                break
-        
-        result["error"] = combined_out.strip()[:200]
-        if attempt < max_retries:
-            time.sleep(1)
-            continue
-        break
 
-    if not result["success"]:
-        return result
-
-    # 4. Post-Command
+def _run_post_command(file_path: str, result: dict, job_config: dict, user_vars: dict, env_vars: dict) -> None:
+    """Run post processing shell command if defined in job configuration."""
     post_cmd_tmpl = job_config.get("post_cmd")
     if post_cmd_tmpl and not result["skipped"]:
         subs = {
@@ -432,18 +354,105 @@ def execute_worker(
         if pr.returncode != 0:
             result["success"] = False
             result["error"] = (pr.stderr or pr.stdout or "post-cmd failed").strip()[:300]
-    
+
+
+def _try_llm_execution(
+    file_path: str,
+    content: str,
+    prompt: str,
+    model: str,
+    engine: str,
+    job_config: dict,
+    env_vars: dict,
+    result: dict
+) -> None:
+    """Try to invoke the LLM command, retrying with exponential backoff on rate limits."""
+    max_retries = job_config.get("max_retries", 3)
+    backoff = 2
+    for attempt in range(max_retries + 1):
+        result["retries"] = attempt
+        cmd_args, payload = _build_llm_cmd_and_payload(file_path, content, prompt, model, engine)
+        try:
+            proc = subprocess.run(
+                cmd_args, input=payload, capture_output=True, text=True,
+                timeout=job_config.get("timeout", 60), env=env_vars
+            )
+            combined_out = (proc.stderr + "\n" + proc.stdout).strip()
+        except subprocess.TimeoutExpired:
+            proc = subprocess.CompletedProcess(args=cmd_args, returncode=1, stdout="", stderr="TimeoutExpired")
+            combined_out = "TimeoutExpired"
+        except Exception as e:
+            proc = subprocess.CompletedProcess(args=cmd_args, returncode=1, stdout="", stderr=str(e))
+            combined_out = str(e)
+        
+        if proc.returncode == 0 and proc.stdout.strip():
+            result["output"] = proc.stdout.strip()
+            result["success"] = True
+            break
+        
+        if "hit your limit" in combined_out.lower() or "rate limit" in combined_out.lower():
+            if attempt < max_retries:
+                wait = (backoff ** attempt) + random.uniform(0, 1)
+                logger.warning(f"  ⌛ {file_path}: Rate limit. Backing off {wait:.1f}s...")
+                time.sleep(wait)
+                continue
+            result["error"] = "RATE_LIMIT_EXCEEDED"
+            break
+        
+        result["error"] = combined_out.strip()[:200]
+        if attempt < max_retries:
+            time.sleep(1)
+            continue
+        break
+
+
+def execute_worker(
+    file_path: str,
+    prompt: str,
+    model: str,
+    engine: str,
+    job_config: dict,
+    user_vars: dict,
+    env_vars: dict,
+    dry_run: bool
+) -> dict:
+    """Processes a single file. Handles retry, skip, and post-cmd."""
+    result = {
+        "file": file_path, "success": False, "output": None,
+        "error": None, "skipped": False, "retries": 0
+    }
+    if dry_run:
+        logger.info(f"  [DRY] {file_path}")
+        result["success"] = True
+        return result
+
+    if _should_skip_file(file_path, job_config, user_vars, env_vars):
+        logger.info(f"  ⏩ {file_path} (already cached)")
+        result["success"] = True
+        result["skipped"] = True
+        return result
+
+    try:
+        content = Path(file_path).read_text(encoding="utf-8")
+    except Exception as e:
+        result["error"] = f"Read error: {e}"
+        return result
+
+    _try_llm_execution(file_path, content, prompt, model, engine, job_config, env_vars, result)
+    if not result["success"]:
+        return result
+
+    _run_post_command(file_path, result, job_config, user_vars, env_vars)
     if result["success"]:
         logger.info(f"  [OK] {file_path}")
     else:
         logger.error(f"  [ERROR] {file_path}: {result['error']}")
-
     return result
 
 # ─── MAIN ───────────────────────────────────────────────────────────────────
 
-def main() -> None:
-    """CLI entry point: parses args, resolves targets, runs workers parallelly, and manages checkpoints."""
+def _parse_swarm_args() -> argparse.Namespace:
+    """Setup and parse CLI arguments for the Swarm Runner."""
     parser = argparse.ArgumentParser(description="Professional Agent Swarm Runner")
     parser.add_argument("--job", type=Path, required=True, help="Job file (.md)")
     parser.add_argument("--resume", action="store_true", help="Resume from last checkpoint")
@@ -456,9 +465,11 @@ def main() -> None:
     parser.add_argument("--model", type=str)
     parser.add_argument("--engine", type=str, default="claude", choices=["claude", "gemini", "copilot"], help="The CLI engine to run workers through")
     parser.add_argument("--var", action="append", default=[])
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    # Load Job
+
+def _parse_job_and_state(args: argparse.Namespace) -> tuple[dict, str, Path, dict]:
+    """Parse the job file structure and load the previous execution state if resuming."""
     full_text = args.job.read_text()
     if not full_text.startswith("---"): 
         print("[ERROR] Invalid job file (no YAML frontmatter)")
@@ -468,12 +479,56 @@ def main() -> None:
     job_config = yaml.safe_load(parts[1]) or {}
     prompt = parts[2].strip()
 
-    # Checkpoint logic
     checkpoint_path = Path(f".swarm_state_{args.job.stem}.json")
     state = {"completed": [], "failed": {}}
     if args.resume and checkpoint_path.exists():
         state = json.loads(checkpoint_path.read_text())
         logger.info(f"🔄 Resuming from checkpoint: {len(state['completed'])} items done.")
+    return job_config, prompt, checkpoint_path, state
+
+
+def _run_parallel_executor(
+    pending: list,
+    prompt: str,
+    model: str,
+    engine: str,
+    job_config: dict,
+    user_vars: dict,
+    dry_run: bool,
+    workers: int,
+    state: dict,
+    checkpoint_path: Path
+) -> list:
+    """Submit worker jobs to concurrent thread pool executor and record outputs."""
+    results = []
+    try:
+        with suppress_monolithic_md(engine):
+            with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(execute_worker, f, prompt, model, engine, job_config, user_vars, os.environ.copy(), dry_run): f 
+                    for f in pending
+                }
+                for future in concurrent.futures.as_completed(futures):
+                    res = future.result()
+                    results.append(res)
+                    if res["success"]:
+                        state["completed"].append(res["file"])
+                    else:
+                        state["failed"][res["file"]] = res["error"]
+                    
+                    if len(results) % 5 == 0:
+                        checkpoint_path.write_text(json.dumps(state, indent=2))
+    except KeyboardInterrupt:
+        logger.warning("\n[WARN] Interrupted. Saving state...")
+    finally:
+        checkpoint_path.write_text(json.dumps(state, indent=2))
+    return results
+
+
+def main() -> None:
+    """CLI entry point: parses args, resolves targets, runs workers parallelly, and manages checkpoints."""
+    args = _parse_swarm_args()
+    job_config, prompt, checkpoint_path, state = _parse_job_and_state(args)
 
     # Overrides
     workers = args.workers or job_config.get("workers", 5)
@@ -495,38 +550,19 @@ def main() -> None:
     logger.info(f"   Engine: {args.engine} | Model: {model} | Workers: {workers} | Dry-run: {args.dry_run}")
     print("-" * 70)
 
-    results = []
-    try:
-      with suppress_monolithic_md(args.engine):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {
-                pool.submit(execute_worker, f, prompt, model, args.engine, job_config, user_vars, os.environ.copy(), args.dry_run): f 
-                for f in pending
-            }
-            for future in concurrent.futures.as_completed(futures):
-                res = future.result()
-                results.append(res)
-                if res["success"]:
-                    state["completed"].append(res["file"])
-                else:
-                    state["failed"][res["file"]] = res["error"]
-                
-                # Checkpoint every 5 files
-                if len(results) % 5 == 0:
-                    checkpoint_path.write_text(json.dumps(state, indent=2))
-    except KeyboardInterrupt:
-        logger.warning("\n[WARN] Interrupted. Saving state...")
-    finally:
-        checkpoint_path.write_text(json.dumps(state, indent=2))
-        
-        # Summary
-        success_count = sum(1 for r in results if r["success"])
-        fail_count = sum(1 for r in results if not r["success"])
-        logger.info("-" * 70)
-        logger.info(f"🏁 DONE. Success: {success_count} | Failed: {fail_count}")
+    results = _run_parallel_executor(
+        pending, prompt, model, args.engine, job_config, user_vars,
+        args.dry_run, workers, state, checkpoint_path
+    )
+    
+    success_count = sum(1 for r in results if r["success"])
+    fail_count = sum(1 for r in results if not r["success"])
+    logger.info("-" * 70)
+    logger.info(f"🏁 DONE. Success: {success_count} | Failed: {fail_count}")
         
     if fail_count > 0:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

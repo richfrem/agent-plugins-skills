@@ -157,6 +157,51 @@ def is_pointer_file(path: Path) -> bool:
         return False
 
 
+def _audit_file(
+    file_path: Path,
+    results: Dict[str, List[Dict[str, Any]]],
+    scanned_plugins: set[str],
+    failed_plugins: set[str],
+    unique_scanned_files: set[str],
+    unique_failed_files: set[str]
+) -> tuple[int, int]:
+    """Audit a single file for compliance conventions, updating statistics collections."""
+    if is_pointer_file(file_path):
+        return 0, 0
+
+    suffix = file_path.suffix.lower()
+    ext_key = suffix[1:]
+    is_symlink = file_path.is_symlink()
+    resolved = file_path.resolve()
+    unique_scanned_files.add(str(resolved))
+
+    # Check if it belongs to a plugin
+    rel_path = file_path.relative_to(WORKSPACE_ROOT)
+    if len(rel_path.parts) > 1 and rel_path.parts[0] == "plugins":
+        plugin_name = rel_path.parts[1]
+        scanned_plugins.add(plugin_name)
+    else:
+        plugin_name = None
+
+    if suffix == ".py":
+        errors = scan_python_file(resolved)
+    else:
+        errors = scan_js_ts_file(resolved)
+
+    if errors:
+        unique_failed_files.add(str(resolved))
+        if plugin_name:
+            failed_plugins.add(plugin_name)
+        results[ext_key].append({
+            "file": str(rel_path),
+            "is_symlink": is_symlink,
+            "canonical": str(resolved.relative_to(WORKSPACE_ROOT)) if is_symlink else None,
+            "errors": errors
+        })
+        return 1, 1
+    return 1, 0
+
+
 # External comment: Scans files recursively in the workspace directory
 def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], int, int, set[str], set[str]]:
     """Scans all eligible files in the workspace, ignoring excluded paths."""
@@ -177,40 +222,12 @@ def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], in
             suffix = file_path.suffix.lower()
             
             if suffix in SUPPORTED_EXTENSIONS:
-                if is_pointer_file(file_path):
-                    continue
-                    
-                total_files_checked += 1
-                ext_key = suffix[1:]
-                
-                is_symlink = file_path.is_symlink()
-                resolved = file_path.resolve()
-                unique_scanned_files.add(str(resolved))
-                
-                # Check if it belongs to a plugin
-                rel_path = file_path.relative_to(WORKSPACE_ROOT)
-                if len(rel_path.parts) > 1 and rel_path.parts[0] == "plugins":
-                    plugin_name = rel_path.parts[1]
-                    scanned_plugins.add(plugin_name)
-                else:
-                    plugin_name = None
-                
-                if suffix == ".py":
-                    errors = scan_python_file(resolved)
-                else:
-                    errors = scan_js_ts_file(resolved)
-                
-                if errors:
-                    total_files_failed += 1
-                    unique_failed_files.add(str(resolved))
-                    if plugin_name:
-                        failed_plugins.add(plugin_name)
-                    results[ext_key].append({
-                        "file": str(rel_path),
-                        "is_symlink": is_symlink,
-                        "canonical": str(resolved.relative_to(WORKSPACE_ROOT)) if is_symlink else None,
-                        "errors": errors
-                    })
+                checked, failed = _audit_file(
+                    file_path, results, scanned_plugins, failed_plugins,
+                    unique_scanned_files, unique_failed_files
+                )
+                total_files_checked += checked
+                total_files_failed += failed
                     
     return results, scanned_plugins, failed_plugins, total_files_checked, total_files_failed, unique_scanned_files, unique_failed_files
 

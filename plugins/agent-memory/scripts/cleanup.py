@@ -48,17 +48,50 @@ except ImportError as e:
     sys.exit(1)
 
 
+def _scan_collection_metadatas(collection: Any) -> Dict[str, List[str]]:
+    """Index IDs to their source file names by scanning collection metadatas."""
+    all_data = collection.get(include=["metadatas"])
+    id_to_source: Dict[str, List[str]] = {}
+    metadatas = all_data.get('metadatas') or []
+    ids = all_data.get('ids', [])
+    for i, meta in enumerate(metadatas):
+        source = meta.get('source', '')
+        if source and i < len(ids):
+            doc_id = ids[i]
+            if source not in id_to_source:
+                id_to_source[source] = []
+            id_to_source[source].append(doc_id)
+    return id_to_source
+
+
+def _log_dry_run(id_to_source: dict, cortex: VectorDBOperations) -> None:
+    """Print preview logs of entries that would be removed."""
+    stale_count = 0
+    stale_chunks = 0
+    for rel_path, chunk_ids in id_to_source.items():
+        full_path = cortex.project_root / rel_path
+        if not full_path.exists():
+            print(f"   [WOULD REMOVE] {rel_path} ({len(chunk_ids)} chunks)")
+            stale_count += 1
+            stale_chunks += len(chunk_ids)
+    print(f"\n   [DRY RUN] {stale_chunks} chunks would be removed. Re-run with --apply to delete.")
+
+
+def _detect_stale_entries(id_to_source: dict, project_root: Path) -> tuple[list[str], int]:
+    """Scan id_to_source and return list of stale IDs and the count of missing files."""
+    stale_ids = []
+    stale_count = 0
+    for rel_path, chunk_ids in id_to_source.items():
+        full_path = project_root / rel_path
+        if not full_path.exists():
+            stale_ids.extend(chunk_ids)
+            stale_count += 1
+    return stale_ids, stale_count
+
+
 def run_cleanup(cortex: VectorDBOperations, dry_run: bool = True) -> int:
     """
     Scans the database and removes entries for files no longer on disk.
-
-    Args:
-        cortex: Initialized VectorDBOperations instance.
-        dry_run: When True (default), only reports stale entries without deleting.
-                 Pass False (via --apply) to perform actual deletion.
-
-    Returns:
-        Number of chunks removed (or that would be removed in dry-run mode).
     """
     mode = "[DRY RUN]" if dry_run else "[CLEANUP]"
     print(f"{mode} Scanning for stale database entries...")
@@ -70,32 +103,12 @@ def run_cleanup(cortex: VectorDBOperations, dry_run: bool = True) -> int:
         print(f"[WARN] Collection not found: {e}")
         return 0
     
-    total_chunks = collection.count()
-    if total_chunks == 0:
+    if collection.count() == 0:
         print("   Collection is empty. Nothing to clean.")
         return 0
     
-    all_data = collection.get(include=["metadatas"])
-    id_to_source: Dict[str, List[str]] = {}
-    
-    metadatas = all_data.get('metadatas') or []
-    ids = all_data.get('ids', [])
-    
-    for i, meta in enumerate(metadatas):
-        source = meta.get('source', '')
-        if source and i < len(ids):
-            doc_id = ids[i]
-            if source not in id_to_source:
-                id_to_source[source] = []
-            id_to_source[source].append(doc_id)
-    
-    stale_ids: List[str] = []
-    stale_count = 0
-    for rel_path, chunk_ids in id_to_source.items():
-        full_path = cortex.project_root / rel_path
-        if not full_path.exists():
-            stale_ids.extend(chunk_ids)
-            stale_count += 1
+    id_to_source = _scan_collection_metadatas(collection)
+    stale_ids, stale_count = _detect_stale_entries(id_to_source, cortex.project_root)
     
     if not stale_ids:
         print("   [OK] No stale entries found.")
@@ -104,18 +117,13 @@ def run_cleanup(cortex: VectorDBOperations, dry_run: bool = True) -> int:
     print(f"   Found {stale_count} missing files ({len(stale_ids)} chunks)")
 
     if dry_run:
-        for rel_path in id_to_source:
-            full_path = cortex.project_root / rel_path
-            if not full_path.exists():
-                print(f"   [WOULD REMOVE] {rel_path} ({len(id_to_source[rel_path])} chunks)")
-        print(f"\n   [DRY RUN] {len(stale_ids)} chunks would be removed. Re-run with --apply to delete.")
+        _log_dry_run(id_to_source, cortex)
         return len(stale_ids)
 
-    # Batch delete (only reached when --apply is passed)
+    # Batch delete
     batch_size = 5000
     for i in range(0, len(stale_ids), batch_size):
-        batch = stale_ids[i:i + batch_size]
-        collection.delete(ids=batch)
+        collection.delete(ids=stale_ids[i:i + batch_size])
 
     print(f"   [DONE] Removed {len(stale_ids)} stale chunks.")
     return len(stale_ids)

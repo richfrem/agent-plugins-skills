@@ -63,42 +63,16 @@ except ImportError as e:
 # ----------------------------------------------------------
 # run_cleanup — entry-by-entry sweep of the cache
 # ----------------------------------------------------------
-def run_cleanup(
+def _scan_cache_entries(
+    cache: dict,
     config: RLMConfig,
-    apply: bool,
     prune_orphans: bool,
     prune_failed: bool,
     verbose: bool
-) -> int:
-    """
-    Scan the cache for stale, orphan, and failed entries, then optionally remove them.
-
-    Three removal criteria (controlled by flags):
-    1. **Stale**: Source file no longer exists on disk (always checked).
-    2. **Failed**: Summary is the sentinel string `[DISTILLATION FAILED]`.
-    3. **Orphan**: File exists but is not covered by the profile's manifest.
-
-    Args:
-        config: Active RLMConfig defining the cache and manifest.
-        apply: If True, write the pruned cache to disk. If False, dry-run only.
-        prune_orphans: Include orphan entries (not in manifest) in removals.
-        prune_failed: Include entries with failed distillations in removals.
-        verbose: Print per-entry status during the scan.
-
-    Returns:
-        Number of entries removed (or that would be removed in dry-run mode).
-    """
-    print(f"[CLEAN] Checking cache [{config.profile_name.upper()}]: {config.cache_path.name}")
-
-    if not config.cache_path.exists() and not config.cache_path.with_suffix('').exists():
-        print("   Cache not found. Nothing to clean.")
-        return 0
-
-    cache: Dict = load_cache(config.cache_path)
-    print(f"   Entries in cache: {len(cache)}")
-
+) -> list[str]:
+    """Scan cache dictionary and collect keys matching pruning criteria."""
     entries_to_remove = []
-    authorized_files: Optional[Set[str]] = None
+    authorized_files = None
 
     for rel_path, entry in list(cache.items()):
         full_path = PROJECT_ROOT / rel_path
@@ -110,14 +84,14 @@ def run_cleanup(
                 print(f"   [FAILED]  {rel_path}")
             continue
 
-        # 2. Stale check — source file missing from disk
+        # 2. Stale check
         if not full_path.exists():
             entries_to_remove.append(rel_path)
             if verbose:
                 print(f"   [MISSING] {rel_path}")
             continue
 
-        # 3. Orphan check — file exists but is not in manifest
+        # 3. Orphan check
         if prune_orphans:
             if authorized_files is None:
                 print("   Building authorized file list from manifest...")
@@ -132,7 +106,29 @@ def run_cleanup(
 
         if verbose:
             print(f"   [OK]      {rel_path}")
+    return entries_to_remove
 
+
+def run_cleanup(
+    config: RLMConfig,
+    apply: bool,
+    prune_orphans: bool,
+    prune_failed: bool,
+    verbose: bool
+) -> int:
+    """
+    Scan the cache for stale, orphan, and failed entries, then optionally remove them.
+    """
+    print(f"[CLEAN] Checking cache [{config.profile_name.upper()}]: {config.cache_path.name}")
+
+    if not config.cache_path.exists() and not config.cache_path.with_suffix('').exists():
+        print("   Cache not found. Nothing to clean.")
+        return 0
+
+    cache = load_cache(config.cache_path)
+    print(f"   Entries in cache: {len(cache)}")
+
+    entries_to_remove = _scan_cache_entries(cache, config, prune_orphans, prune_failed, verbose)
     count = len(entries_to_remove)
     print(f"   Entries to remove: {count}")
 

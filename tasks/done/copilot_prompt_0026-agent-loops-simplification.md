@@ -257,18 +257,18 @@ Also remove any reference to `context-bundler` as a dependency if present.
 
 ---
 
-### WS-2D: Fix orchestrator sanctuary commands
+### WS-2D: Fix orchestrator legacy commands
 
 File: `plugins/agent-loops/skills/orchestrator/SKILL.md`
 
 Read the file. Find the "Chained Command Handoff" block (around lines 177-178). It currently
 instructs the user to run specific slash commands:
-- `/sanctuary-seal`
-- `/sanctuary-persist`
+- `/agent-seal`
+- `/agent-persist`
 
 These are OS-environment-specific commands not available in any generic project.
 
-**Replace the entire sanctuary command block** with:
+**Replace the entire legacy command block** with:
 ```markdown
 **Session Closure**
 
@@ -385,8 +385,8 @@ ls plugins/agent-loops/ | grep personas
 ls plugins/agent-loops/assets/templates/
 # Expected: learning_audit_template.md and sources_template.md do NOT appear
 
-# 3. No sanctuary commands in active skill files
-grep -r "sanctuary-seal\|sanctuary-persist" plugins/agent-loops/skills/ 2>/dev/null
+# 3. No legacy commands in active skill files
+grep -r "agent-seal\|agent-persist" plugins/agent-loops/skills/ 2>/dev/null
 # Expected: no output
 
 # 4. No OS-level infrastructure in skill files (Phase 2 check)

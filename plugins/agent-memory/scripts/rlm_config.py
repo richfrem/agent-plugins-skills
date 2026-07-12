@@ -89,6 +89,28 @@ class RLMConfig:
         prompt_template: Loaded prompt text for the LLM.
     """
 
+    def _resolve_paths(self, profile: dict) -> None:
+        """Resolve manifest and cache paths from the profile configuration."""
+        manifest_rel = profile.get("manifest")
+        cache_rel = profile.get("cache")
+
+        if not manifest_rel or not cache_rel:
+            print(f"[ERROR] Profile '{self.profile_name}' is missing 'manifest' or 'cache' path.")
+            sys.exit(1)
+
+        self.manifest_path = (self.root / manifest_rel).resolve()
+        self.cache_path = (self.root / cache_rel).resolve()
+
+    def _init_prompt_settings(self, profile: dict) -> None:
+        """Initialize parser types and resolve LLM prompts."""
+        self.parser_type = profile.get("parser", "directory_glob")
+        prompt_path_rel = profile.get(
+            "prompt_path",
+            "../assets/resources/prompts/rlm/rlm_summarize_general.md"
+        )
+        self.prompt_full_path = (self.root / prompt_path_rel).resolve()
+        self.prompt_template = self._load_prompt()
+
     def __init__(
         self,
         profile_name: str,
@@ -121,24 +143,10 @@ class RLMConfig:
         self.llm_model = profile.get("llm_model", "granite3.2:8b")
 
         # Resolve all paths relative to project root
-        manifest_rel = profile.get("manifest")
-        cache_rel = profile.get("cache")
-
-        if not manifest_rel or not cache_rel:
-            print(f"[ERROR] Profile '{profile_name}' is missing 'manifest' or 'cache' path.")
-            sys.exit(1)
-
-        self.manifest_path = (self.root / manifest_rel).resolve()
-        self.cache_path = (self.root / cache_rel).resolve()
+        self._resolve_paths(profile)
 
         # Parser type and prompt configuration
-        self.parser_type = profile.get("parser", "directory_glob")
-        prompt_path_rel = profile.get(
-            "prompt_path",
-            "../assets/resources/prompts/rlm/rlm_summarize_general.md"
-        )
-        self.prompt_full_path = (self.root / prompt_path_rel).resolve()
-        self.prompt_template = self._load_prompt()
+        self._init_prompt_settings(profile)
 
         # File collection patterns (populated from manifest)
         self.include_patterns: List[str] = []

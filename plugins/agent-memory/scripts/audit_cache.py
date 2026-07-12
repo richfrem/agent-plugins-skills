@@ -47,73 +47,33 @@ except ImportError as e:
     sys.path.insert(0, str(SCRIPT_DIR))
     from rlm_config import RLMConfig, load_cache, collect_files
 
-def run_audit(profile_name: str, csv_path: str = None, report_path: str = None, cache_override: str = None):
-    """Compare RLM cache store against source files listed in the profile manifest."""
-    try:
-        config = RLMConfig(profile_name=profile_name)
-    except Exception as e:
-        print(f"[ERROR] Failed to load profile '{profile_name}': {e}")
-        return
-
-    # Use override or default from config
-    cache_dir = Path(cache_override) if cache_override else config.cache_path.with_suffix('')
-    
-    print(f"[AUDIT] Starting RLM Cache Audit for profile: {profile_name}")
-    print(f"   Manifest: {config.manifest_path}")
-    print(f"   Cache Dir: {cache_dir}")
-
-    # 1. Collect all expected files from the manifest
+def _scan_manifest_and_cache(config: RLMConfig, cache_dir: Path) -> tuple[int, list[str], int]:
+    """Compare live filesystem lists with existing cache files."""
     fs_files = collect_files(config)
     fs_paths = []
     for f in fs_files:
         try:
-            # Keys are relative to project root with forward slashes
             rel = str(f.relative_to(PROJECT_ROOT)).replace("\\", "/")
             fs_paths.append(rel)
         except ValueError:
             continue
 
     total_expected = len(fs_paths)
-    
-    # 2. Check cache status
     missing = []
     found_count = 0
     
     for rel_path in fs_paths:
-        # Check for matching .md file in cache dir
-        # If the input file is already .md, we just check its path
-        # If it's something else (e.g. .js), we check for the .md summary
         clean_path = rel_path[:-3] if rel_path.endswith(".md") else rel_path
         target_md = cache_dir / f"{clean_path}.md"
-        
         if target_md.exists():
             found_count += 1
         else:
             missing.append(rel_path)
+    return total_expected, missing, found_count
 
-    missing_count = len(missing)
-    coverage_pct = (found_count / total_expected * 100) if total_expected > 0 else 0
-    gap_pct = (missing_count / total_expected * 100) if total_expected > 0 else 0
 
-    # 3. Build Report String
-    report_lines = [
-        "--- RLM WIKI CACHE INVENTORY AUDIT ---",
-        f"Generated: {datetime.now().isoformat()}",
-        f"Profile:   {profile_name}",
-        f"Root:      {PROJECT_ROOT}",
-        "",
-        f"Total Files in Manifest:  {total_expected}",
-        f"Indexed (in cache):       {found_count}",
-        f"Not Indexed (Gap):        {missing_count}",
-        "",
-        f"Coverage Indexed:         {coverage_pct:.2f}%",
-        f"Coverage Gap:             {gap_pct:.2f}%",
-        "--------------------------------------"
-    ]
-    report_text = "\n".join(report_lines)
-    print(f"\n{report_text}")
-
-    # 4. Save Outputs
+def _write_audit_outputs(report_text: str, report_path: str, csv_path: str, missing: list[str]) -> None:
+    """Save text report and CSV missing files list to disk."""
     if report_path:
         rp = Path(report_path)
         rp.parent.mkdir(parents=True, exist_ok=True)
@@ -129,6 +89,41 @@ def run_audit(profile_name: str, csv_path: str = None, report_path: str = None, 
             for m in sorted(missing):
                 writer.writerow([m])
         print(f"[OK] Missing files list saved to: {cp}")
+
+
+def run_audit(profile_name: str, csv_path: str = None, report_path: str = None, cache_override: str = None):
+    """Compare RLM cache store against source files listed in the profile manifest."""
+    try:
+        config = RLMConfig(profile_name=profile_name)
+    except Exception as e:
+        print(f"[ERROR] Failed to load profile '{profile_name}': {e}")
+        return
+
+    cache_dir = Path(cache_override) if cache_override else config.cache_path.with_suffix('')
+    
+    print(f"[AUDIT] Starting RLM Cache Audit for profile: {profile_name}\n   Manifest: {config.manifest_path}\n   Cache Dir: {cache_dir}")
+
+    total_expected, missing, found_count = _scan_manifest_and_cache(config, cache_dir)
+    coverage_pct = (found_count / total_expected * 100) if total_expected > 0 else 0
+    gap_pct = (len(missing) / total_expected * 100) if total_expected > 0 else 0
+
+    report_lines = [
+        "--- RLM WIKI CACHE INVENTORY AUDIT ---",
+        f"Generated: {datetime.now().isoformat()}",
+        f"Profile:   {profile_name}",
+        f"Root:      {PROJECT_ROOT}",
+        "",
+        f"Total Files in Manifest:  {total_expected}",
+        f"Indexed (in cache):       {found_count}",
+        f"Not Indexed (Gap):        {len(missing)}",
+        "",
+        f"Coverage Indexed:         {coverage_pct:.2f}%",
+        f"Coverage Gap:             {gap_pct:.2f}%",
+        "--------------------------------------"
+    ]
+    report_text = "\n".join(report_lines)
+    print(f"\n{report_text}")
+    _write_audit_outputs(report_text, report_path, csv_path, missing)
 
 def main():
     """Main CLI entry point for RLM Cache Audit tool."""

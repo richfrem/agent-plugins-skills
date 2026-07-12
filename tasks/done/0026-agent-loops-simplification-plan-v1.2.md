@@ -66,7 +66,7 @@ As established in the `agent-agentic-os` simplification plan, the two plugins du
    * **The Fix:** Strip `triple-loop-learning` down to pure execution mechanics (Outer Loop spawns planners, Mid Loop partitions work, Inner Loop executes packets). Remove all references to evals, metrics, and memory persistence. Scrub `eval_runner.py` from dependencies.
 2. **`learning-loop` and `dual-loop` Leakage:** Both are heavily contaminated with OS-specific infrastructure. `learning-loop/SKILL.md` explicitly mandates running `python "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post_run_metrics.py"`, defines "L3 promotion via session-memory-manager", and mandates saving to `context/memory/retrospectives/`. `dual-loop/SKILL.md` mentions `context/kernel.py emit_event`.
    * **The Fix:** Scrub both skills of all `context/`, `session-memory-manager`, and `kernel.py` references. Output should go to the terminal or a generic local file. Memory promotion is left to the calling system.
-3. **`orchestrator` Slash-Command Contamination:** The orchestrator explicitly instructs the user to run `/sanctuary-seal` and `/sanctuary-persist`. These are highly opinionated slash commands native only to a specific OS environment.
+3. **`orchestrator` Slash-Command Contamination:** The orchestrator explicitly instructs the user to run `/agent-seal` and `/agent-persist`. These are highly opinionated slash commands native only to a specific OS environment.
    * **The Fix:** Rewrite the Orchestrator's handoff protocol to output: *"Execution complete. Please run your environment's standard closure/persistence commands."*
 
 ---
@@ -79,7 +79,7 @@ The true value of this plugin lies in its Python execution scripts, which are ro
 |-----------|------|---------|
 | `swarm_run.py` | The parallel execution engine | **KEEP (High Value)**. Token-efficient batching, rate-limit backoff, and checkpoint resume logic are production-grade. |
 | `agent_orchestrator.py` | The dual-loop/sequential engine | **KEEP**. Provides reliable packet generation and verification steps without fragile LLM terminal parsing. |
-| `closure_guard.py` | Safety hook | **KEEP AS-IS**. It checks for `closure_done: true` flag and contains zero references to sanctuary/seal. It is already generic. |
+| `closure_guard.py` | Safety hook | **KEEP AS-IS**. It checks for `closure_done: true` flag and contains zero references to agent/seal. It is already generic. |
 
 ---
 
@@ -125,7 +125,7 @@ To prevent future scope creep, enforce these system boundaries:
 6. In `learning-loop/SKILL.md`: Fix two broken cross-references (`triple-loop` -> `triple-loop-learning` and `../triple-loop/SKILL.md` -> `../triple-loop-learning/SKILL.md`).
 7. In `learning-loop/SKILL.md` and `dual-loop/SKILL.md`: remove all references to `session-memory-manager`, `kernel.py`, and `post_run_metrics.py`. Replace Phases V-VIII in learning-loop with the framework-agnostic close protocol found in `references/phases.md`.
 8. In `triple-loop-learning/SKILL.md`: Remove OS terminology (L3 memory, Keep/Discard gates). Scrub `eval_runner.py` from dependencies with a note that the eval gate belongs to the calling system.
-9. In `orchestrator/SKILL.md`: remove specific slash commands (`/sanctuary-seal`, `/sanctuary-persist`). Replace with generic handoff: "Please trigger your environment's standard session closure sequence."
+9. In `orchestrator/SKILL.md`: remove specific slash commands (`/agent-seal`, `/agent-persist`). Replace with generic handoff: "Please trigger your environment's standard session closure sequence."
 10. Rewrite `references/cli-agent-executor.md` to remove the persona tables and hardcoded persona file paths.
 11. Keep `closure_guard.py` as-is (it is already generic).
 
