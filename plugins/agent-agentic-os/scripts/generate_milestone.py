@@ -26,6 +26,10 @@ Exit codes:
     0  Milestone written (or --force used)
     0  No milestone needed yet (iteration count not a multiple of --every, no --force)
     2  Error (bad path, missing results.tsv, etc.)
+
+Key Input Dependencies:
+    - <experiment-dir>/evals/results.tsv
+    - <experiment-dir>/evals/traces/*.json
 """
 
 import argparse
@@ -37,6 +41,7 @@ from pathlib import Path
 
 
 def _load_tsv(results_tsv: Path) -> list[dict]:
+    """Load results.tsv rows as dicts, or [] if the file does not exist."""
     if not results_tsv.exists():
         return []
     rows = []
@@ -123,6 +128,97 @@ def _recurring_false_positives(traces: list[dict], recent_n: int = 5) -> list[st
     return [f"  - \"{inp}\" (seen in {count}/{recent_n} recent traces)" for inp, count in recurring]
 
 
+def _compute_score_trajectory(rows: list[dict], iter_rows: list[dict], baseline_rows: list[dict]) -> dict:
+    """Compute baseline/current/best scores, net delta, and acceptance rate for the milestone header."""
+    keep_rows = [r for r in iter_rows if r.get("status") == "KEEP"]
+    discard_rows = [r for r in iter_rows if r.get("status") == "DISCARD"]
+
+    baseline_score = float(baseline_rows[-1]["score"]) if baseline_rows else 0.0
+    current_score = float(rows[-1]["score"]) if rows else 0.0
+    net_delta = current_score - baseline_score
+    acceptance_rate = len(keep_rows) / len(iter_rows) if iter_rows else 0.0
+
+    best_row = max(iter_rows, key=lambda r: float(r["score"])) if iter_rows else None
+    best_score = float(best_row["score"]) if best_row else baseline_score
+    best_desc = best_row.get("description", "baseline") if best_row else "baseline"
+
+    return {
+        "keep_rows": keep_rows,
+        "discard_rows": discard_rows,
+        "baseline_score": baseline_score,
+        "current_score": current_score,
+        "net_delta": net_delta,
+        "acceptance_rate": acceptance_rate,
+        "best_score": best_score,
+        "best_desc": best_desc,
+    }
+
+
+def _analyze_dominant_problem(traces: list[dict]) -> tuple[str, str]:
+    """Determine whether precision or recall is the dominant routing problem, with a recommendation."""
+    fp_rate, fn_rate, *_ = _current_fp_fn(traces)
+
+    if fp_rate is not None and fn_rate is not None:
+        if fp_rate > fn_rate:
+            dominant = f"PRECISION (fp_rate={fp_rate:.2f}, fn_rate={fn_rate:.2f})"
+            recommendation = "Remove broad keywords or add adversarial <example> blocks. Do NOT add more keywords."
+        elif fn_rate > fp_rate:
+            dominant = f"RECALL (fp_rate={fp_rate:.2f}, fn_rate={fn_rate:.2f})"
+            recommendation = "Add specific trigger phrases. Check 4-char word floor (no 'fix', 'run', 'doc')."
+        elif fp_rate == 0.0 and fn_rate == 0.0:
+            dominant = "NONE — routing is clean"
+            recommendation = "Focus on heuristic structural improvements (examples, body length, references)."
+        else:
+            dominant = f"BOTH precision and recall (fp_rate={fp_rate:.2f}, fn_rate={fn_rate:.2f})"
+            recommendation = "Add specific trigger phrases AND adversarial <example> blocks."
+    else:
+        dominant = "unknown (no trace data)"
+        recommendation = "Run an iteration to generate trace data first."
+
+    return dominant, recommendation
+
+
+def _build_milestone_lines(experiment_dir: Path, milestone_num: int, every: int, traj: dict,
+                            iter_rows: list[dict], traces: list[dict],
+                            dominant: str, recommendation: str) -> list[str]:
+    """Assemble the milestone markdown lines from computed trajectory and problem analysis."""
+    lines = [
+        f"# Milestone Summary: Iterations 1–{milestone_num}\n",
+        f"\nGenerated: {datetime.now(timezone.utc).isoformat()}\n",
+        f"Experiment: `{experiment_dir}`\n",
+        "\n---\n",
+        "\n## Score Trajectory\n",
+        f"- Baseline:        {traj['baseline_score']:.4f}\n",
+        f"- Best achieved:   {traj['best_score']:.4f}  (\"{traj['best_desc']}\")\n",
+        f"- Current:         {traj['current_score']:.4f}\n",
+        f"- Net delta:       {traj['net_delta']:+.4f}\n",
+        "\n## KEEP/DISCARD Breakdown\n",
+        f"- {len(traj['keep_rows'])} KEEP, {len(traj['discard_rows'])} DISCARD  ({traj['acceptance_rate']:.0%} acceptance rate)\n",
+    ]
+
+    best_lines = _best_keeps(iter_rows, top_n=3)
+    if best_lines:
+        lines.append("\n## What Worked (top KEEPs by score delta)\n")
+        lines.extend(line + "\n" for line in best_lines)
+
+    worst_lines = _worst_discards(iter_rows, top_n=3)
+    if worst_lines:
+        lines.append("\n## What Did Not Work (worst DISCARDs — do not retry these)\n")
+        lines.extend(line + "\n" for line in worst_lines)
+
+    recurring_fp = _recurring_false_positives(traces)
+    if recurring_fp:
+        lines.append("\n## Recurring False-Positive Inputs (from last 5 traces)\n")
+        lines.extend(line + "\n" for line in recurring_fp)
+
+    lines.append("\n## Dominant Problem\n")
+    lines.append(f"- {dominant}\n")
+    lines.append(f"\n## Recommended Focus for Next {every} Iterations\n")
+    lines.append(f"- {recommendation}\n")
+
+    return lines
+
+
 def generate_milestone(experiment_dir: Path, every: int = 25, force: bool = False) -> bool:
     """
     Generate a milestone summary if the iteration count is a multiple of `every` (or force=True).
@@ -151,71 +247,13 @@ def generate_milestone(experiment_dir: Path, every: int = 25, force: bool = Fals
 
     traces = _load_traces(traces_dir)
     baseline_rows = [r for r in rows if r.get("status") == "BASELINE"]
-    keep_rows = [r for r in iter_rows if r.get("status") == "KEEP"]
-    discard_rows = [r for r in iter_rows if r.get("status") == "DISCARD"]
-
-    baseline_score = float(baseline_rows[-1]["score"]) if baseline_rows else 0.0
-    current_score = float(rows[-1]["score"]) if rows else 0.0
-    net_delta = current_score - baseline_score
-    acceptance_rate = len(keep_rows) / iteration_count if iteration_count else 0.0
-
-    best_row = max(iter_rows, key=lambda r: float(r["score"])) if iter_rows else None
-    best_score = float(best_row["score"]) if best_row else baseline_score
-    best_desc = best_row.get("description", "baseline") if best_row else "baseline"
-
-    fp_rate, fn_rate, *_ = _current_fp_fn(traces)
-
-    if fp_rate is not None and fn_rate is not None:
-        if fp_rate > fn_rate:
-            dominant = f"PRECISION (fp_rate={fp_rate:.2f}, fn_rate={fn_rate:.2f})"
-            recommendation = "Remove broad keywords or add adversarial <example> blocks. Do NOT add more keywords."
-        elif fn_rate > fp_rate:
-            dominant = f"RECALL (fp_rate={fp_rate:.2f}, fn_rate={fn_rate:.2f})"
-            recommendation = "Add specific trigger phrases. Check 4-char word floor (no 'fix', 'run', 'doc')."
-        elif fp_rate == 0.0 and fn_rate == 0.0:
-            dominant = "NONE — routing is clean"
-            recommendation = "Focus on heuristic structural improvements (examples, body length, references)."
-        else:
-            dominant = f"BOTH precision and recall (fp_rate={fp_rate:.2f}, fn_rate={fn_rate:.2f})"
-            recommendation = "Add specific trigger phrases AND adversarial <example> blocks."
-    else:
-        dominant = "unknown (no trace data)"
-        recommendation = "Run an iteration to generate trace data first."
+    traj = _compute_score_trajectory(rows, iter_rows, baseline_rows)
+    dominant, recommendation = _analyze_dominant_problem(traces)
 
     milestone_num = iteration_count
-    lines = [
-        f"# Milestone Summary: Iterations 1–{milestone_num}\n",
-        f"\nGenerated: {datetime.now(timezone.utc).isoformat()}\n",
-        f"Experiment: `{experiment_dir}`\n",
-        "\n---\n",
-        "\n## Score Trajectory\n",
-        f"- Baseline:        {baseline_score:.4f}\n",
-        f"- Best achieved:   {best_score:.4f}  (\"{best_desc}\")\n",
-        f"- Current:         {current_score:.4f}\n",
-        f"- Net delta:       {net_delta:+.4f}\n",
-        "\n## KEEP/DISCARD Breakdown\n",
-        f"- {len(keep_rows)} KEEP, {len(discard_rows)} DISCARD  ({acceptance_rate:.0%} acceptance rate)\n",
-    ]
-
-    best_lines = _best_keeps(iter_rows, top_n=3)
-    if best_lines:
-        lines.append("\n## What Worked (top KEEPs by score delta)\n")
-        lines.extend(line + "\n" for line in best_lines)
-
-    worst_lines = _worst_discards(iter_rows, top_n=3)
-    if worst_lines:
-        lines.append("\n## What Did Not Work (worst DISCARDs — do not retry these)\n")
-        lines.extend(line + "\n" for line in worst_lines)
-
-    recurring_fp = _recurring_false_positives(traces)
-    if recurring_fp:
-        lines.append("\n## Recurring False-Positive Inputs (from last 5 traces)\n")
-        lines.extend(line + "\n" for line in recurring_fp)
-
-    lines.append("\n## Dominant Problem\n")
-    lines.append(f"- {dominant}\n")
-    lines.append(f"\n## Recommended Focus for Next {every} Iterations\n")
-    lines.append(f"- {recommendation}\n")
+    lines = _build_milestone_lines(
+        experiment_dir, milestone_num, every, traj, iter_rows, traces, dominant, recommendation
+    )
 
     milestone_filename = f"milestone_{milestone_num:03d}.md"
     traces_dir.mkdir(parents=True, exist_ok=True)
@@ -226,6 +264,7 @@ def generate_milestone(experiment_dir: Path, every: int = 25, force: bool = Fals
 
 
 def main() -> None:
+    """CLI entrypoint: parse args and generate a milestone summary for the experiment dir."""
     parser = argparse.ArgumentParser(
         description="Write milestone summary files for long autoresearch runs"
     )

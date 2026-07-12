@@ -31,6 +31,10 @@ Karpathy mapping:
 KEEP condition: score >= baseline_score AND f1 >= baseline_f1
     Dual guard prevents keyword-stuffing exploit (padding triggers raises
     recall but drops precision, so F1 falls even as accuracy rises).
+
+Key Input Dependencies:
+    - eval_runner.py (invoked as a subprocess)
+    - <target-skill>/evals/results.tsv, evals.json
 """
 
 import argparse
@@ -286,6 +290,32 @@ def write_row(results_tsv: Path, commit: str, score: float, baseline: float,
         })
 
 
+def _count_trace_iteration(results_tsv: Path) -> int:
+    """Count KEEP/DISCARD rows in results.tsv to compute the current iteration number."""
+    iteration = 0
+    try:
+        with open(results_tsv, newline="") as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            iteration = sum(1 for r in reader if r.get("status") in ("KEEP", "DISCARD"))
+    except Exception:
+        pass
+    return iteration
+
+
+def _capture_mutation_diff(skill_root: Path) -> str:
+    """Capture the current git diff for skill_root, capped at 4KB, before any revert."""
+    mutation_diff = ""
+    try:
+        diff_result = subprocess.run(
+            ["git", "diff", "HEAD", "--", "."],
+            capture_output=True, text=True, cwd=skill_root,
+        )
+        mutation_diff = diff_result.stdout[:4000]  # cap at 4KB
+    except Exception:
+        pass
+    return mutation_diff
+
+
 def write_trace(results_tsv: Path, skill_root: Path, score: float, baseline_score: float,
                 status: str, desc: str, metrics: dict) -> None:
     """Write a per-iteration diagnostic trace JSON to evals/traces/.
@@ -305,24 +335,10 @@ def write_trace(results_tsv: Path, skill_root: Path, score: float, baseline_scor
     traces_dir.mkdir(exist_ok=True)
 
     # Iteration number = data rows in results.tsv (excluding header and BASELINE rows)
-    iteration = 0
-    try:
-        with open(results_tsv, newline="") as f:
-            reader = csv.DictReader(f, delimiter="\t")
-            iteration = sum(1 for r in reader if r.get("status") in ("KEEP", "DISCARD"))
-    except Exception:
-        pass
+    iteration = _count_trace_iteration(results_tsv)
 
     # Capture mutation diff (before revert)
-    mutation_diff = ""
-    try:
-        diff_result = subprocess.run(
-            ["git", "diff", "HEAD", "--", "."],
-            capture_output=True, text=True, cwd=skill_root,
-        )
-        mutation_diff = diff_result.stdout[:4000]  # cap at 4KB
-    except Exception:
-        pass
+    mutation_diff = _capture_mutation_diff(skill_root)
 
     trace = {
         "iteration": iteration,
@@ -344,7 +360,8 @@ def write_trace(results_tsv: Path, skill_root: Path, score: float, baseline_scor
         print(f"WARNING: could not write trace file: {e}", file=sys.stderr)
 
 
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser for evaluate.py."""
     parser = argparse.ArgumentParser(description="Locked autoresearch loop gate")
     parser.add_argument(
         "--skill", "--target", dest="skill", required=True,
@@ -359,9 +376,12 @@ def main() -> None:
              "Options: quality_score, f1, precision, recall, heuristic. "
              "KEEP requires primary >= baseline; guard metric (if any) must not regress."
     )
-    args = parser.parse_args()
+    return parser
 
-    target = Path(args.skill).resolve()
+
+def _resolve_skill_root(skill_arg: str) -> Path:
+    """Resolve --skill/--target to the skill folder, accepting a file path within it too."""
+    target = Path(skill_arg).resolve()
 
     # Accept skill folder path OR a file path within the skill (backward compat)
     if target.is_dir():
@@ -373,58 +393,99 @@ def main() -> None:
         print(f"ERROR: Skill folder not found at {skill_root}", file=sys.stderr)
         sys.exit(2)
 
-    results_tsv = skill_root / "evals" / "results.tsv"
-    evals_json = skill_root / "evals" / "evals.json"
+    return skill_root
 
-    locked_files_to_hash = LOCKED_FILES + [evals_json]
 
+def _run_locked_checks(skill_root: Path, evals_json: Path, results_tsv: Path,
+                        locked_files_to_hash: list, is_baseline: bool) -> None:
+    """Run the git-status and SHA256 tamper checks against the locked gate scripts."""
     check_locked_files(skill_root, evals_json, results_tsv)
-    if not args.baseline:
+    if not is_baseline:
         check_sha256_hashes(results_tsv, locked_files_to_hash)
     else:
         # During baseline: still verify gate scripts; allow evals.json to change
         check_sha256_hashes(results_tsv, LOCKED_FILES)
 
-    commit = get_commit(skill_root)
-    data = run_eval_runner(skill_root)
 
-    score = float(data["quality_score"])
-    accuracy = float(data.get("accuracy", 0.0))
-    heuristic = float(data.get("heuristic", 0.0))
-    f1 = float(data.get("f1", 0.0))
-    precision = float(data.get("precision", 0.0))
-    recall = float(data.get("recall", 0.0))
-
-    # Map every metric name to its current value for generic KEEP logic
-    metric_values = {
-        "quality_score": score,
-        "f1": f1,
-        "precision": precision,
-        "recall": recall,
-        "heuristic": heuristic,
+def _extract_metric_values(data: dict) -> dict:
+    """Extract and float-cast all metric fields from eval_runner.py's JSON output."""
+    return {
+        "quality_score": float(data["quality_score"]),
+        "accuracy": float(data.get("accuracy", 0.0)),
+        "heuristic": float(data.get("heuristic", 0.0)),
+        "f1": float(data.get("f1", 0.0)),
+        "precision": float(data.get("precision", 0.0)),
+        "recall": float(data.get("recall", 0.0)),
     }
 
-    baseline_score, baseline_f1 = load_baseline(results_tsv)
+
+def _decide_status(primary_metric: str, is_baseline_run: bool, metrics: dict,
+                    baseline_score: float, baseline_f1: float) -> tuple:
+    """Decide KEEP/DISCARD/BASELINE status for the primary metric vs its guard metric.
+
+    Returns (status, primary_value, primary_baseline).
+    """
     # For non-default metrics the baseline row still stores quality_score in the score column.
     # We use the same column as anchor for the primary metric when it IS quality_score, and
     # fall back to the stored f1 as a second axis for any metric that doesn't have its own
     # baseline column yet. This keeps backward compatibility — existing results.tsv files work.
-    primary_key, guard_key = METRIC_OPTIONS[args.primary_metric]
-    primary_value = metric_values[primary_key]
+    primary_key, guard_key = METRIC_OPTIONS[primary_metric]
+    primary_value = metrics[primary_key]
     primary_baseline = baseline_score  # always stored in the score column
 
-    if args.baseline or baseline_score == 0.0:
-        status = "BASELINE"
-    else:
-        primary_ok = round(primary_value, 4) >= round(primary_baseline, 4)
-        guard_ok = True
-        if guard_key:
-            guard_value = metric_values[guard_key]
-            guard_baseline = baseline_f1 if guard_key == "f1" else 0.0
-            guard_ok = round(guard_value, 4) >= round(guard_baseline, 4)
-        status = "KEEP" if (primary_ok and guard_ok) else "DISCARD"
+    if is_baseline_run or baseline_score == 0.0:
+        return "BASELINE", primary_value, primary_baseline
 
-    write_row(results_tsv, commit, primary_value, primary_baseline, accuracy, heuristic, f1, status, args.desc)
+    primary_ok = round(primary_value, 4) >= round(primary_baseline, 4)
+    guard_ok = True
+    if guard_key:
+        guard_value = metrics[guard_key]
+        guard_baseline = baseline_f1 if guard_key == "f1" else 0.0
+        guard_ok = round(guard_value, 4) >= round(guard_baseline, 4)
+    status = "KEEP" if (primary_ok and guard_ok) else "DISCARD"
+    return status, primary_value, primary_baseline
+
+
+def _revert_discarded_skill(skill_root: Path) -> None:
+    """Revert all tracked files in skill_root to HEAD after a DISCARD verdict, then exit 1."""
+    # Revert the entire skill folder — the mutation target may be any file within it
+    # (SKILL.md, a script, a reference doc). Reverting '.' from skill_root restores
+    # all tracked files in the folder and subdirectories to HEAD.
+    revert = subprocess.run(
+        ["git", "checkout", "--", "."],
+        capture_output=True, text=True, cwd=skill_root,
+    )
+    if revert.returncode == 0:
+        print(f"-> reverted: {skill_root.name}/")
+    else:
+        print(f"WARNING: git checkout failed: {revert.stderr.strip()}", file=sys.stderr)
+    sys.exit(1)
+
+
+def main() -> None:
+    """CLI entrypoint: run locked-file checks, score the mutation via eval_runner.py, and KEEP/DISCARD."""
+    parser = _build_arg_parser()
+    args = parser.parse_args()
+
+    skill_root = _resolve_skill_root(args.skill)
+
+    results_tsv = skill_root / "evals" / "results.tsv"
+    evals_json = skill_root / "evals" / "evals.json"
+    locked_files_to_hash = LOCKED_FILES + [evals_json]
+
+    _run_locked_checks(skill_root, evals_json, results_tsv, locked_files_to_hash, args.baseline)
+
+    commit = get_commit(skill_root)
+    data = run_eval_runner(skill_root)
+    metrics = _extract_metric_values(data)
+
+    baseline_score, baseline_f1 = load_baseline(results_tsv)
+    status, primary_value, primary_baseline = _decide_status(
+        args.primary_metric, args.baseline, metrics, baseline_score, baseline_f1
+    )
+
+    write_row(results_tsv, commit, primary_value, primary_baseline,
+              metrics["accuracy"], metrics["heuristic"], metrics["f1"], status, args.desc)
     write_trace(results_tsv, skill_root, primary_value, primary_baseline, status, args.desc, data)
 
     if status == "BASELINE":
@@ -432,22 +493,11 @@ def main() -> None:
         # detect committed modifications (not just dirty-working-tree changes).
         save_lock_hashes(results_tsv, locked_files_to_hash)
 
-    print(f"metric={args.primary_metric}  score={primary_value:.4f}  baseline={primary_baseline:.4f}  f1={f1:.4f}  STATUS: {status}")
+    print(f"metric={args.primary_metric}  score={primary_value:.4f}  baseline={primary_baseline:.4f}  f1={metrics['f1']:.4f}  STATUS: {status}")
     print(f"commit={commit}  skill={skill_root.name}  desc={args.desc!r}")
 
     if status == "DISCARD":
-        # Revert the entire skill folder — the mutation target may be any file within it
-        # (SKILL.md, a script, a reference doc). Reverting '.' from skill_root restores
-        # all tracked files in the folder and subdirectories to HEAD.
-        revert = subprocess.run(
-            ["git", "checkout", "--", "."],
-            capture_output=True, text=True, cwd=skill_root,
-        )
-        if revert.returncode == 0:
-            print(f"-> reverted: {skill_root.name}/")
-        else:
-            print(f"WARNING: git checkout failed: {revert.stderr.strip()}", file=sys.stderr)
-        sys.exit(1)
+        _revert_discarded_skill(skill_root)
 
 
 if __name__ == "__main__":

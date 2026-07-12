@@ -1,8 +1,9 @@
 """
 loop_progress_report.generate_report
 -------------------------------------
-Reads per-skill results.tsv files (same format as autoresearch) and the improvement ledger
-to produce progress charts and a text summary.
+Purpose:
+    Reads per-skill results.tsv files (same format as autoresearch) and the improvement ledger
+    to produce progress charts and a text summary.
 
 Per-skill TSV format (tab-separated):
     cycle_id  score  status  change_summary
@@ -103,6 +104,7 @@ def load_results_tsv(path: Path, skill_name: str) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def _parse_md_table(section_text: str) -> pd.DataFrame:
+    """Parse a markdown pipe-table into a DataFrame, skipping the '---' separator row."""
     lines = [l.strip() for l in section_text.strip().splitlines() if l.strip()]
     header: list[str] | None = None
     rows: list[list[str]] = []
@@ -123,6 +125,7 @@ def _parse_md_table(section_text: str) -> pd.DataFrame:
 
 
 def load_north_star(ledger_path: Path) -> pd.DataFrame:
+    """Extract and parse the '## North Star Metric' table from the improvement ledger."""
     if not ledger_path.exists():
         return pd.DataFrame()
     text = ledger_path.read_text()
@@ -148,6 +151,76 @@ def load_north_star(ledger_path: Path) -> pd.DataFrame:
 # Plotting — autoresearch style
 # ---------------------------------------------------------------------------
 
+def _scatter_discard_and_baseline(ax: Any, disc: pd.DataFrame, base: pd.DataFrame) -> None:
+    """Scatter DISCARD (faint grey) and BASELINE (hollow) points onto the axes."""
+    # Discarded — faint grey dots
+    if not disc.empty:
+        ax.scatter(disc.index.tolist(), disc["score"].tolist(),
+                   c=DISCARD_COLOR, s=12, alpha=0.5, zorder=2, label="Discarded")
+
+    # Baseline — hollow dot
+    if not base.empty:
+        ax.scatter(base.index.tolist(), base["score"].tolist(),
+                   c="white", s=40, zorder=3, edgecolors="#888888",
+                   linewidths=1, label="Baseline")
+
+
+def _scatter_kept_with_running_best(ax: Any, kept: pd.DataFrame) -> None:
+    """Scatter KEEP points (green), draw the running-best step line, and annotate each with its change summary."""
+    if kept.empty:
+        return
+
+    # Kept — green dots
+    ax.scatter(kept.index.tolist(), kept["score"].tolist(),
+               c=KEEP_COLOR, s=55, zorder=4,
+               edgecolors="black", linewidths=0.5, label="Kept")
+
+    # Running best step line
+    scores = kept["score"].tolist()
+    running_best = [max(scores[: i + 1]) for i in range(len(scores))]
+    ax.step(kept.index.tolist(), running_best, where="post",
+            color=LINE_COLOR, linewidth=2.0, alpha=0.75, zorder=3,
+            label="Running best")
+
+    # Annotate each kept point with what changed
+    for idx, row in kept.iterrows():
+        desc = str(row.get("change_summary", "")).strip()
+        if len(desc) > 50:
+            desc = desc[:47] + "..."
+        if desc:
+            ax.annotate(
+                desc, (idx, row["score"]),
+                textcoords="offset points",
+                xytext=(6, 6), fontsize=7.5,
+                color="#1a7a3a", alpha=0.9,
+                rotation=28, ha="left", va="bottom",
+            )
+
+
+def _style_skill_chart(ax: Any, title: str, n_total: int, n_keep: int, n_disc: int) -> None:
+    """Apply title, axis labels, legend, and grid to a skill progress chart."""
+    keep_rate = f"{n_keep / (n_keep + n_disc):.0%}" if (n_keep + n_disc) > 0 else "n/a"
+
+    ax.set_title(f"{title}   ({n_total} cycles  |  {n_keep} kept  |  keep rate {keep_rate})",
+                 fontsize=10)
+    ax.set_xlabel("Cycle #", fontsize=9)
+    ax.set_ylabel("Eval Score (higher = better)", fontsize=9)
+    ax.legend(loc="lower right", fontsize=8)
+    ax.grid(True, alpha=0.2)
+
+
+def _annotate_first_score_baseline(ax: Any, df: pd.DataFrame) -> None:
+    """Draw a dashed baseline line and annotation at the chart's first available score."""
+    if not df.empty and "score" in df.columns:
+        first_score = df["score"].dropna().iloc[0] if not df["score"].dropna().empty else None
+        if first_score is not None:
+            ax.axhline(first_score, color="#aaaaaa", linestyle="--",
+                       linewidth=0.8, alpha=0.6)
+            ax.annotate(f"baseline {first_score:.4f}", (0, first_score),
+                        textcoords="offset points", xytext=(4, 3),
+                        fontsize=7, color="#999999")
+
+
 def plot_skill(ax: Any, df: pd.DataFrame, title: str) -> None:
     """Single skill progress chart — mirrors autoresearch analysis.ipynb."""
     if df.empty or "score" not in df.columns:
@@ -163,68 +236,14 @@ def plot_skill(ax: Any, df: pd.DataFrame, title: str) -> None:
     disc    = df[df["status"] == "DISCARD"]
     base    = df[df["status"] == "BASELINE"]
 
-    # Discarded — faint grey dots
-    if not disc.empty:
-        ax.scatter(disc.index.tolist(), disc["score"].tolist(),
-                   c=DISCARD_COLOR, s=12, alpha=0.5, zorder=2, label="Discarded")
-
-    # Baseline — hollow dot
-    if not base.empty:
-        ax.scatter(base.index.tolist(), base["score"].tolist(),
-                   c="white", s=40, zorder=3, edgecolors="#888888",
-                   linewidths=1, label="Baseline")
-
-    # Kept — green dots
-    if not kept.empty:
-        ax.scatter(kept.index.tolist(), kept["score"].tolist(),
-                   c=KEEP_COLOR, s=55, zorder=4,
-                   edgecolors="black", linewidths=0.5, label="Kept")
-
-        # Running best step line
-        scores = kept["score"].tolist()
-        running_best = [max(scores[: i + 1]) for i in range(len(scores))]
-        ax.step(kept.index.tolist(), running_best, where="post",
-                color=LINE_COLOR, linewidth=2.0, alpha=0.75, zorder=3,
-                label="Running best")
-
-        # Annotate each kept point with what changed
-        for idx, row in kept.iterrows():
-            desc = str(row.get("change_summary", "")).strip()
-            if len(desc) > 50:
-                desc = desc[:47] + "..."
-            if desc:
-                ax.annotate(
-                    desc, (idx, row["score"]),
-                    textcoords="offset points",
-                    xytext=(6, 6), fontsize=7.5,
-                    color="#1a7a3a", alpha=0.9,
-                    rotation=28, ha="left", va="bottom",
-                )
-
-    n_total = len(df)
-    n_keep  = len(kept)
-    n_disc  = len(disc)
-    keep_rate = f"{n_keep / (n_keep + n_disc):.0%}" if (n_keep + n_disc) > 0 else "n/a"
-
-    ax.set_title(f"{title}   ({n_total} cycles  |  {n_keep} kept  |  keep rate {keep_rate})",
-                 fontsize=10)
-    ax.set_xlabel("Cycle #", fontsize=9)
-    ax.set_ylabel("Eval Score (higher = better)", fontsize=9)
-    ax.legend(loc="lower right", fontsize=8)
-    ax.grid(True, alpha=0.2)
-
-    # Annotate baseline on y-axis if we have a first score
-    if not df.empty and "score" in df.columns:
-        first_score = df["score"].dropna().iloc[0] if not df["score"].dropna().empty else None
-        if first_score is not None:
-            ax.axhline(first_score, color="#aaaaaa", linestyle="--",
-                       linewidth=0.8, alpha=0.6)
-            ax.annotate(f"baseline {first_score:.4f}", (0, first_score),
-                        textcoords="offset points", xytext=(4, 3),
-                        fontsize=7, color="#999999")
+    _scatter_discard_and_baseline(ax, disc, base)
+    _scatter_kept_with_running_best(ax, kept)
+    _style_skill_chart(ax, title, len(df), len(kept), len(disc))
+    _annotate_first_score_baseline(ax, df)
 
 
 def plot_north_star(ax: Any, ns_df: pd.DataFrame) -> None:
+    """Plot the autonomous-completion-rate trend line across sessions from the ledger."""
     if ns_df.empty or "rate_num" not in ns_df.columns:
         ax.text(0.5, 0.5, "No session data yet",
                 ha="center", va="center", transform=ax.transAxes,
@@ -254,6 +273,7 @@ def plot_north_star(ax: Any, ns_df: pd.DataFrame) -> None:
 
 
 def plot_friction(ax: Any, ns_df: pd.DataFrame) -> None:
+    """Plot total friction events per session as a bar chart from the ledger."""
     if ns_df.empty or "friction_events_total" not in ns_df.columns:
         ax.text(0.5, 0.5, "No friction data yet",
                 ha="center", va="center", transform=ax.transAxes,
@@ -280,61 +300,82 @@ def plot_friction(ax: Any, ns_df: pd.DataFrame) -> None:
 # Summary text (like autoresearch summary cells)
 # ---------------------------------------------------------------------------
 
-def generate_summary(skill_frames: dict[str, pd.DataFrame],
-                     ns_df: pd.DataFrame, date_str: str) -> str:
-    lines = [f"# Loop Progress Report — {date_str}", ""]
-
-    # North star
+def _north_star_summary_lines(ns_df: pd.DataFrame) -> list[str]:
+    """Return the North Star summary line(s), or [] if no rate data is available."""
     if not ns_df.empty and "rate_num" in ns_df.columns:
         latest = ns_df.iloc[-1]
         rate = latest.get("rate_num", "?")
         trend = latest.get("trend", "")
-        lines += [f"## North Star: {rate}%  (trend: {trend})", ""]
+        return [f"## North Star: {rate}%  (trend: {trend})", ""]
+    return []
 
+
+def _overall_summary_lines(skill_frames: dict[str, pd.DataFrame]) -> list[str]:
+    """Return the overall cycles/kept-improvements summary line."""
     total_cycles = sum(len(df) for df in skill_frames.values())
     total_kept   = sum(len(df[df["status"] == "KEEP"]) for df in skill_frames.values()
                        if "status" in df.columns)
-    lines += [
+    return [
         f"## Overall: {total_cycles} cycles across {len(skill_frames)} skills, "
         f"{total_kept} kept improvements", ""
     ]
 
+
+def _top_improvements_lines(kept: pd.DataFrame, baseline: float) -> list[str]:
+    """Return the 'Top improvements by delta' block for a skill's KEEP rows."""
+    lines = ["", "**Top improvements by delta:**"]
+    if len(kept) > 1:
+        kept_sorted = kept.copy()
+        prev_scores: list[float] = [baseline] + kept_sorted["score"].tolist()[:-1]
+        kept_sorted["prev"] = prev_scores
+        kept_sorted["delta"] = kept_sorted["score"] - kept_sorted["prev"]
+        top = kept_sorted.sort_values(by="delta", ascending=False).head(5)  # type: ignore[call-overload]
+    else:
+        top = kept.copy()
+        top["delta"] = kept["score"] - baseline
+
+    for _, row in top.iterrows():
+        d = float(row.get("delta") or 0)
+        s = str(row.get("change_summary") or "")
+        lines.append(f"  {d:+.4f}  {s}")
+    return lines
+
+
+def _skill_summary_section(skill: str, df: pd.DataFrame) -> list[str]:
+    """Return the cycles/baseline/best/top-improvements section for one skill, or [] if no score data."""
+    if df.empty or "score" not in df.columns:
+        return []
+    kept = df[df["status"] == "KEEP"]
+    disc = df[df["status"] == "DISCARD"]
+    scores = df["score"].dropna()
+    if scores.empty:
+        return []
+
+    baseline = scores.iloc[0]
+    best     = kept["score"].max() if not kept.empty else baseline
+    delta    = best - baseline
+
+    lines = [
+        f"### {skill}",
+        f"- Cycles: {len(df)} total  |  {len(kept)} KEEP  |  {len(disc)} DISCARD",
+        f"- Baseline: {baseline:.4f}  ->  Best: {best:.4f}  (total improvement: {delta:+.4f})",
+    ]
+
+    if not kept.empty:
+        lines.extend(_top_improvements_lines(kept, baseline))
+    lines.append("")
+
+    return lines
+
+
+def generate_summary(skill_frames: dict[str, pd.DataFrame],
+                     ns_df: pd.DataFrame, date_str: str) -> str:
+    """Build the markdown progress summary: north star, overall totals, and per-skill sections."""
+    lines = [f"# Loop Progress Report — {date_str}", ""]
+    lines += _north_star_summary_lines(ns_df)
+    lines += _overall_summary_lines(skill_frames)
     for skill, df in skill_frames.items():
-        if df.empty or "score" not in df.columns:
-            continue
-        kept = df[df["status"] == "KEEP"]
-        disc = df[df["status"] == "DISCARD"]
-        scores = df["score"].dropna()
-        if scores.empty:
-            continue
-
-        baseline = scores.iloc[0]
-        best     = kept["score"].max() if not kept.empty else baseline
-        delta    = best - baseline
-
-        lines.append(f"### {skill}")
-        lines.append(f"- Cycles: {len(df)} total  |  {len(kept)} KEEP  |  {len(disc)} DISCARD")
-        lines.append(f"- Baseline: {baseline:.4f}  ->  Best: {best:.4f}  (total improvement: {delta:+.4f})")
-
-        if not kept.empty:
-            lines.append("")
-            lines.append("**Top improvements by delta:**")
-            if len(kept) > 1:
-                kept_sorted = kept.copy()
-                prev_scores: list[float] = [baseline] + kept_sorted["score"].tolist()[:-1]
-                kept_sorted["prev"] = prev_scores
-                kept_sorted["delta"] = kept_sorted["score"] - kept_sorted["prev"]
-                top = kept_sorted.sort_values(by="delta", ascending=False).head(5)  # type: ignore[call-overload]
-            else:
-                top = kept.copy()
-                top["delta"] = kept["score"] - baseline
-
-            for _, row in top.iterrows():
-                d = float(row.get("delta") or 0)
-                s = str(row.get("change_summary") or "")
-                lines.append(f"  {d:+.4f}  {s}")
-        lines.append("")
-
+        lines += _skill_summary_section(skill, df)
     return "\n".join(lines)
 
 
@@ -342,36 +383,11 @@ def generate_summary(skill_frames: dict[str, pd.DataFrame],
 # Main
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Agentic OS loop progress report")
-    parser.add_argument("--plugin-dir", required=True,
-                        help="Path to agent-agentic-os plugin root (contains skills/)")
-    parser.add_argument("--project-dir", default=None,
-                        help="Path to project root (for improvement-ledger.md)")
-    parser.add_argument("--skill", default=None,
-                        help="Filter to a single skill name")
-    parser.add_argument("--output-dir", default=None,
-                        help="Override output directory (default: project-dir/context/memory/reports)")
-    args = parser.parse_args()
-
-    plugin_dir  = Path(args.plugin_dir)
-    project_dir = Path(args.project_dir) if args.project_dir else plugin_dir.parent
-    ledger_path = project_dir / "context" / "memory" / "improvement-ledger.md"
-
-    ts_str   = datetime.now().strftime("%Y%m%d_%H%M")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-
-    out_dir = Path(args.output_dir) if args.output_dir else (
-        project_dir / "context" / "memory" / "reports"
-    )
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    # ------------------------------------------------------------------
-    # Load per-skill data from results.tsv files (primary source)
-    # ------------------------------------------------------------------
+def _load_skill_frames(plugin_dir: Path, skill_filter: "str | None") -> dict[str, pd.DataFrame]:
+    """Load and filter per-skill results.tsv DataFrames, printing progress/placeholder messages."""
     tsvs = find_results_tsvs(plugin_dir)
-    if args.skill:
-        tsvs = {k: v for k, v in tsvs.items() if k.lower() == args.skill.lower()}
+    if skill_filter:
+        tsvs = {k: v for k, v in tsvs.items() if k.lower() == skill_filter.lower()}
 
     skill_frames: dict[str, pd.DataFrame] = {}
     for skill_name, path in tsvs.items():
@@ -386,16 +402,11 @@ def main() -> None:
         print(f"  Looked in: {plugin_dir}/skills/*/evals/results.tsv")
         print("  Generating placeholder chart...")
 
-    # ------------------------------------------------------------------
-    # Load north star from improvement ledger (secondary source)
-    # ------------------------------------------------------------------
-    ns_df = load_north_star(ledger_path)
-    if not ns_df.empty:
-        print(f"[os-improvement-report] Loaded {len(ns_df)} session rows from ledger")
+    return skill_frames
 
-    # ------------------------------------------------------------------
-    # Figure layout — one subplot per skill + north star row
-    # ------------------------------------------------------------------
+
+def _build_progress_figure(skill_frames: dict[str, pd.DataFrame], ns_df: pd.DataFrame, date_str: str):
+    """Build the full progress figure: one subplot per skill, plus north-star and friction rows."""
     n_skills  = max(1, len(skill_frames))
     n_rows    = n_skills + 1
     fig       = plt.figure(figsize=(16, 5 * n_rows))
@@ -424,15 +435,48 @@ def main() -> None:
         f"{total_cycles} cycles  |  {total_kept} kept improvements  |  {date_str}",
         fontsize=14, y=1.01,
     )
+    return fig
+
+
+def main() -> None:
+    """CLI entrypoint: load per-skill results + ledger north-star data, then write chart + summary."""
+    parser = argparse.ArgumentParser(description="Agentic OS loop progress report")
+    parser.add_argument("--plugin-dir", required=True,
+                        help="Path to agent-agentic-os plugin root (contains skills/)")
+    parser.add_argument("--project-dir", default=None,
+                        help="Path to project root (for improvement-ledger.md)")
+    parser.add_argument("--skill", default=None,
+                        help="Filter to a single skill name")
+    parser.add_argument("--output-dir", default=None,
+                        help="Override output directory (default: project-dir/context/memory/reports)")
+    args = parser.parse_args()
+
+    plugin_dir  = Path(args.plugin_dir)
+    project_dir = Path(args.project_dir) if args.project_dir else plugin_dir.parent
+    ledger_path = project_dir / "context" / "memory" / "improvement-ledger.md"
+
+    ts_str   = datetime.now().strftime("%Y%m%d_%H%M")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    out_dir = Path(args.output_dir) if args.output_dir else (
+        project_dir / "context" / "memory" / "reports"
+    )
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Load per-skill data (primary) and north star from the ledger (secondary)
+    skill_frames = _load_skill_frames(plugin_dir, args.skill)
+
+    ns_df = load_north_star(ledger_path)
+    if not ns_df.empty:
+        print(f"[os-improvement-report] Loaded {len(ns_df)} session rows from ledger")
+
+    fig = _build_progress_figure(skill_frames, ns_df, date_str)
 
     chart_path = out_dir / f"progress_{ts_str}.png"
     plt.savefig(chart_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"[os-improvement-report] Chart saved: {chart_path}")
 
-    # ------------------------------------------------------------------
-    # Text summary
-    # ------------------------------------------------------------------
     summary = generate_summary(skill_frames, ns_df, date_str)
     summary_path = out_dir / f"summary_{ts_str}.md"
     summary_path.write_text(summary)

@@ -1,4 +1,13 @@
-# plugins/agent-agentic-os/tests/test_kernel_security.py
+"""
+Purpose:
+    Security-focused unit tests for kernel.py: lock double-read concurrency
+    detection (_safe_clear_stale) and event-log rotation ordering relative
+    to the write lock.
+
+Key Input Dependencies:
+    - kernel.py (in ../scripts/, imported directly)
+    - pytest tmp_path and monkeypatch fixtures
+"""
 import sys, os, json, time
 from pathlib import Path
 import pytest
@@ -9,6 +18,7 @@ import kernel as K
 
 @pytest.fixture
 def tmp_kernel(tmp_path, monkeypatch):
+    """Redirect kernel.py's module-level path constants into an isolated tmp_path sandbox."""
     monkeypatch.setattr(K, "KERNEL_DIR", tmp_path)
     monkeypatch.setattr(K, "EVENTS_FILE", tmp_path / "events.jsonl")
     monkeypatch.setattr(K, "LOCKS_DIR", tmp_path / ".locks")
@@ -37,6 +47,7 @@ def test_safe_clear_stale_rejects_concurrent_acquisition(tmp_kernel, monkeypatch
     original_sleep = time.sleep
 
     def sleep_and_inject(seconds):
+        """Rewrite the lock's meta.json to simulate a concurrent acquisition, then sleep normally."""
         # Simulate concurrent acquisition during the pause between double-reads
         new_meta = {
             "pid": os.getpid(),
@@ -61,12 +72,14 @@ def test_rotation_happens_inside_write_lock(tmp_kernel, monkeypatch):
     original_spinlock = K._spinlock
 
     def tracked_spinlock(lock_path, timeout=30):
+        """Record each spinlock acquisition attempt, then delegate to the real _spinlock."""
         rotation_order.append(("spinlock", str(lock_path)))
         return original_spinlock(lock_path, timeout)
 
     original_rename = os.rename
 
     def tracked_rename(src, dst):
+        """Record each rename call, then delegate to the real os.rename."""
         rotation_order.append(("rename", str(src)))
         return original_rename(src, dst)
 

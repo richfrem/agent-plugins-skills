@@ -110,6 +110,43 @@ def count_hook_errors(project_root: Path) -> int:
 
 
 
+def _parse_event_line(line: str) -> "dict | None":
+    """Strip and JSON-parse a single events.jsonl line, or None if blank/invalid."""
+    line = line.strip()
+    if not line:
+        return None
+    try:
+        return json.loads(line)
+    except json.JSONDecodeError:
+        return None
+
+
+def _update_counts_for_event(event: dict, correlation_id: "str | None", counts: dict) -> None:
+    """Update the running counts dict in place for a single parsed event."""
+    # Scope to cycle when correlation_id provided
+    if correlation_id and event.get("correlation_id") != correlation_id:
+        return
+
+    # Count status=error events (CLI errors from any agent)
+    if event.get("status") == "error":
+        counts["cli_errors"] += 1
+
+    evt_type = event.get("type", "")
+    evt_action = event.get("action", "")
+
+    if evt_type == "friction":
+        counts["friction_events_total"] += 1
+        action_lower = evt_action.lower()
+        if "human_rescue" in action_lower or "rescue" in action_lower:
+            counts["human_interventions"] += 1
+        elif "uncertainty" in action_lower or "unknown" in action_lower:
+            counts["workflow_uncertainty"] += 1
+        elif "missed_step" in action_lower or "skipped" in action_lower:
+            counts["missed_steps"] += 1
+        elif "wrong_cli" in action_lower or "cli_error" in action_lower:
+            counts["cli_errors"] += 1
+
+
 def _count_events(events_log: Path, correlation_id: "str | None" = None) -> dict:
     """
     Count metrics from events.jsonl.
@@ -137,43 +174,76 @@ def _count_events(events_log: Path, correlation_id: "str | None" = None) -> dict
     try:
         with open(events_log, "r", encoding="utf-8") as f:
             for line in f:
-                line = line.strip()
-                if not line:
+                event = _parse_event_line(line)
+                if event is None:
                     continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-
-                # Scope to cycle when correlation_id provided
-                if correlation_id and event.get("correlation_id") != correlation_id:
-                    continue
-
-                # Count status=error events (CLI errors from any agent)
-                if event.get("status") == "error":
-                    counts["cli_errors"] += 1
-
-                evt_type = event.get("type", "")
-                evt_action = event.get("action", "")
-
-                if evt_type == "friction":
-                    counts["friction_events_total"] += 1
-                    action_lower = evt_action.lower()
-                    if "human_rescue" in action_lower or "rescue" in action_lower:
-                        counts["human_interventions"] += 1
-                    elif "uncertainty" in action_lower or "unknown" in action_lower:
-                        counts["workflow_uncertainty"] += 1
-                    elif "missed_step" in action_lower or "skipped" in action_lower:
-                        counts["missed_steps"] += 1
-                    elif "wrong_cli" in action_lower or "cli_error" in action_lower:
-                        counts["cli_errors"] += 1
+                _update_counts_for_event(event, correlation_id, counts)
     except Exception:
         pass  # Never crash the hook - return what we have
 
     return counts
 
 
+def _emit_north_star_pending(project_root: Path) -> None:
+    """Emit a pending north-star-check event for ORCHESTRATOR to consume during Triple-Loop completion.
+
+    NOTE: North star regression check (_check_north_star_regression) is intentionally NOT
+    called here. The Stop hook fires before ORCHESTRATOR writes Section 3 of the ledger,
+    so checking here would always read the prior session's data (fires one session late).
+    """
+    kernel_path = project_root / "context" / "kernel.py"
+    if kernel_path.exists():
+        try:
+            subprocess.run([
+                "python3", str(kernel_path), "emit_event",
+                "--agent", "post_run_hook",
+                "--type", "metric",
+                "--action", "north_star_check_pending",
+                "--status", "success",
+                "--summary", "ORCHESTRATOR must run _check_north_star_regression during Triple-Loop completion checks"
+            ], capture_output=True)
+        except Exception:
+            pass
+
+
+def _build_metrics_payload(counts: dict, hook_errors: int, correlation_id: "str | None") -> dict:
+    """Build the session_summary metric event dict from counted friction/error data."""
+    return {
+        "time": datetime.now(tz=timezone.utc).isoformat(),
+        "agent": "post_run_hook",
+        "type": "metric",
+        "action": "session_summary",
+        "status": "success",
+        "results": {
+            "human_interventions": counts["human_interventions"],
+            "workflow_uncertainty": counts["workflow_uncertainty"],
+            "missed_steps": counts["missed_steps"],
+            "cli_errors": counts["cli_errors"],
+            "friction_events_total": counts["friction_events_total"],
+            "hook_errors": hook_errors,
+            "correlation_id": correlation_id or "session",
+            "session_id": os.environ.get("CLAUDE_SESSION_ID", "unknown")
+        }
+    }
+
+
+def _print_summary(counts: dict, hook_errors: int, correlation_id: "str | None") -> None:
+    """Print the human-readable session metrics summary line."""
+    scope = f"cycle:{correlation_id}" if correlation_id else "full session"
+    summary = (
+        f"--- AGENTIC OS: SESSION METRICS CAPTURED ({scope}) "
+        f"human_interventions:{counts['human_interventions']} "
+        f"friction:{counts['friction_events_total']} "
+        f"cli_errors:{counts['cli_errors']}"
+    )
+    if hook_errors > 0:
+        summary += f" HOOK_FAILURES:{hook_errors} (check context/memory/hook-errors.log)"
+    summary += " ---"
+    print(summary)
+
+
 def main() -> None:
+    """CLI entrypoint: count events.jsonl friction/errors and emit a session_summary metric."""
     parser = argparse.ArgumentParser(
         description="Agentic OS: Post-Run Metric Collection"
     )
@@ -195,55 +265,12 @@ def main() -> None:
     counts = _count_events(events_log, correlation_id=args.correlation_id)
     hook_errors = count_hook_errors(project_root)
 
-    # NOTE: North star regression check (_check_north_star_regression) is intentionally NOT
-    # called here. The Stop hook fires before ORCHESTRATOR writes Section 3 of the ledger,
-    # so checking here would always read the prior session's data (fires one session late).
-    # Instead, emit a pending event that ORCHESTRATOR reads during Triple-Loop completion.
-    kernel_path = project_root / "context" / "kernel.py"
-    if kernel_path.exists():
-        try:
-            subprocess.run([
-                "python3", str(kernel_path), "emit_event",
-                "--agent", "post_run_hook",
-                "--type", "metric",
-                "--action", "north_star_check_pending",
-                "--status", "success",
-                "--summary", "ORCHESTRATOR must run _check_north_star_regression during Triple-Loop completion checks"
-            ], capture_output=True)
-        except Exception:
-            pass
+    _emit_north_star_pending(project_root)
 
-    metrics = {
-        "time": datetime.now(tz=timezone.utc).isoformat(),
-        "agent": "post_run_hook",
-        "type": "metric",
-        "action": "session_summary",
-        "status": "success",
-        "results": {
-            "human_interventions": counts["human_interventions"],
-            "workflow_uncertainty": counts["workflow_uncertainty"],
-            "missed_steps": counts["missed_steps"],
-            "cli_errors": counts["cli_errors"],
-            "friction_events_total": counts["friction_events_total"],
-            "hook_errors": hook_errors,
-            "correlation_id": args.correlation_id or "session",
-            "session_id": os.environ.get("CLAUDE_SESSION_ID", "unknown")
-        }
-    }
-
+    metrics = _build_metrics_payload(counts, hook_errors, args.correlation_id)
     emit_event(project_root, metrics)
 
-    scope = f"cycle:{args.correlation_id}" if args.correlation_id else "full session"
-    summary = (
-        f"--- AGENTIC OS: SESSION METRICS CAPTURED ({scope}) "
-        f"human_interventions:{counts['human_interventions']} "
-        f"friction:{counts['friction_events_total']} "
-        f"cli_errors:{counts['cli_errors']}"
-    )
-    if hook_errors > 0:
-        summary += f" HOOK_FAILURES:{hook_errors} (check context/memory/hook-errors.log)"
-    summary += " ---"
-    print(summary)
+    _print_summary(counts, hook_errors, args.correlation_id)
 
 
 if __name__ == "__main__":

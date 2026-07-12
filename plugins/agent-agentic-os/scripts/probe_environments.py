@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """Non-interactive probe script for commonly used AI CLIs.
 Safe: uses --version or a benign sub-command where available.
+
+Purpose:
+    Check which AI CLI tools (Agy, Copilot, Cursor) are installed and
+    responsive, then write a summary report to environment_probe_report.txt.
+
+Key Input Dependencies:
+    - PATH (via shutil.which) for each CLI binary in PROBES
 """
 
 import subprocess
@@ -18,6 +25,7 @@ PROBES = [
 
 
 def check_cmd(name: str, cmd: list[str]) -> None:
+    """Probe a single CLI: check it's on PATH, then run cmd and return a summary line."""
     binary = cmd[0]
     print(f"Checking {name}...")
     if not shutil.which(binary):
@@ -41,6 +49,7 @@ def check_cmd(name: str, cmd: list[str]) -> None:
 
 
 def main() -> None:
+    """Probe every CLI in PROBES and write the results to REPORT_FILE."""
     timestamp = datetime.datetime.now().isoformat()
     lines = [f"Probing AI CLIs at {timestamp}"]
     print(lines[0])

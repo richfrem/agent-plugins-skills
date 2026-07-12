@@ -1,4 +1,13 @@
-# plugins/agent-agentic-os/tests/test_update_memory_security.py
+"""
+Purpose:
+    Security-focused unit tests for update_memory.py: it must never write
+    os-state.json directly, and must fail closed (no events.jsonl fallback
+    write) when kernel.py is absent.
+
+Key Input Dependencies:
+    - update_memory.py (in ../hooks/, invoked as a subprocess)
+    - pytest tmp_path fixture
+"""
 import sys, json, subprocess
 from pathlib import Path
 import pytest
@@ -7,6 +16,7 @@ HOOK = Path(__file__).parent.parent / "hooks" / "update_memory.py"
 
 
 def _make_env(tmp_path):
+    """Create a minimal context/os-state.json sandbox and return the hook's env dict."""
     ctx = tmp_path / "context"
     ctx.mkdir()
     (ctx / "os-state.json").write_text(json.dumps({"active_agent": "test"}))
@@ -14,6 +24,7 @@ def _make_env(tmp_path):
 
 
 def _payload(event="SessionStart"):
+    """Build a minimal JSON hook payload for the given event type."""
     return json.dumps({"event": event})
 
 
