@@ -161,7 +161,66 @@ def filter_references(references: list[dict], plugin_filter: str) -> list[dict]:
 
     return filtered
 
+def _classify_references(filtered: list[dict], project_root: str) -> tuple[list[dict], int, int]:
+    """Classify references as inside-plugin, skipped (whitelisted/skill-level), or violating.
+
+    Returns (violations, inside_count, skipped_count).
+    """
+    violations = []
+    inside_count = 0
+    skipped_count = 0
+
+    for ref_item in filtered:
+        source_file = ref_item['source_file']
+        reference = ref_item['reference']
+        line = ref_item['line']
+
+        if is_whitelisted(reference):
+            skipped_count += 1
+            continue
+
+        is_inside, resolved, plugin_root = is_reference_inside_plugin(source_file, reference, project_root)
+
+        if is_inside is None:
+            skipped_count += 1
+            continue  # Not a plugin root level file (probably a skill file)
+        elif is_inside:
+            inside_count += 1
+        else:
+            violations.append({
+                'source_file': source_file,
+                'reference': reference,
+                'line': line,
+                'resolved': str(resolved) if resolved else None,
+                'plugin_root': str(plugin_root) if plugin_root else None
+            })
+
+    return violations, inside_count, skipped_count
+
+
+def _print_report(violations: list[dict], inside_count: int, skipped_count: int) -> None:
+    """Print violation details followed by summary counts."""
+    if violations:
+        print(f"[ERROR] VIOLATIONS FOUND: {len(violations)} references point OUTSIDE their plugin\n")
+
+        for v in sorted(violations, key=lambda x: x['source_file']):
+            print(f"FILE: {v['source_file']}:{v['line']}")
+            print(f"  REF: {v['reference']}")
+            print(f"  PLUGIN ROOT: {v['plugin_root']}")
+            print(f"  RESOLVES TO: {v['resolved']}")
+            print()
+    else:
+        print(f"[SYMBOL] No violations found!\n")
+
+    print(f"[SYMBOL] Summary:")
+    print(f"  Plugin-level refs checked: {inside_count + len(violations)}")
+    print(f"  Inside plugin: {inside_count}")
+    print(f"  Outside plugin (violations): {len(violations)}")
+    print(f"  Skill-level refs (skipped): {skipped_count}")
+
+
 def main() -> int:
+    """Parse CLI arguments and check plugin boundaries for external references."""
     parser = argparse.ArgumentParser(description='Plugin Boundary Checker')
     parser.add_argument('inventory', help='Path to inventory.json')
     parser.add_argument('--project', default='.', help='Project root directory')
@@ -191,53 +250,8 @@ def main() -> int:
     else:
         print()
 
-    violations = []
-    inside_count = 0
-    skipped_count = 0
-
-    for ref_item in filtered:
-        source_file = ref_item['source_file']
-        reference = ref_item['reference']
-        line = ref_item['line']
-
-        if is_whitelisted(reference):
-            skipped_count += 1
-            continue
-
-        is_inside, resolved, plugin_root = is_reference_inside_plugin(source_file, reference, args.project)
-
-        if is_inside is None:
-            skipped_count += 1
-            continue  # Not a plugin root level file (probably a skill file)
-        elif is_inside:
-            inside_count += 1
-        else:
-            violations.append({
-                'source_file': source_file,
-                'reference': reference,
-                'line': line,
-                'resolved': str(resolved) if resolved else None,
-                'plugin_root': str(plugin_root) if plugin_root else None
-            })
-
-    # Report violations
-    if violations:
-        print(f"[ERROR] VIOLATIONS FOUND: {len(violations)} references point OUTSIDE their plugin\n")
-
-        for v in sorted(violations, key=lambda x: x['source_file']):
-            print(f"FILE: {v['source_file']}:{v['line']}")
-            print(f"  REF: {v['reference']}")
-            print(f"  PLUGIN ROOT: {v['plugin_root']}")
-            print(f"  RESOLVES TO: {v['resolved']}")
-            print()
-    else:
-        print(f"[SYMBOL] No violations found!\n")
-
-    print(f"[SYMBOL] Summary:")
-    print(f"  Plugin-level refs checked: {inside_count + len(violations)}")
-    print(f"  Inside plugin: {inside_count}")
-    print(f"  Outside plugin (violations): {len(violations)}")
-    print(f"  Skill-level refs (skipped): {skipped_count}")
+    violations, inside_count, skipped_count = _classify_references(filtered, args.project)
+    _print_report(violations, inside_count, skipped_count)
 
     return 0 if not violations else 1
 
