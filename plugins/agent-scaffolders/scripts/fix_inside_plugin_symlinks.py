@@ -165,29 +165,11 @@ class InsidePluginSymlinkFixer:
             'symlink_target_abs': resolved_path,
         }
 
-    def apply_fixes(self) -> int:
-        """Apply all fixes"""
-        # Group by source file to update references
-        by_source = defaultdict(list)
-
-        for violation in self.violations:
-            fix = self.propose_fix(violation)
-            if not fix:
-                self.skipped.append(violation)
-                continue
-
-            by_source[fix['source_file']].append(fix)
-            self.fixes.append(fix)
-
-        if not self.fixes:
-            print("[OK] No fixes to apply")
-            return 0
-
+    def _create_symlinks(self, fixes: list) -> set:
+        """Create on-disk symlinks for each proposed fix, deduped by target path."""
         created_symlinks = set()
-        updated_files = set()
 
-        # Create symlinks
-        for fix in self.fixes:
+        for fix in fixes:
             symlink_path = fix['symlink_path']
             symlink_target = fix['symlink_target']
 
@@ -215,7 +197,12 @@ class InsidePluginSymlinkFixer:
                 except Exception as e:
                     print(f"[ERROR] Failed to create symlink {symlink_path}: {e}")
 
-        # Update references in source files
+        return created_symlinks
+
+    def _update_source_references(self, by_source: dict) -> set:
+        """Rewrite old references to their new symlink-relative form in each source file."""
+        updated_files = set()
+
         for source_file, fixes in by_source.items():
             if source_file not in updated_files:
                 source_full = fixes[0]['source_full']
@@ -241,6 +228,29 @@ class InsidePluginSymlinkFixer:
 
                 except Exception as e:
                     print(f"[ERROR] Failed to update {source_file}: {e}")
+
+        return updated_files
+
+    def apply_fixes(self) -> int:
+        """Apply all fixes"""
+        # Group by source file to update references
+        by_source = defaultdict(list)
+
+        for violation in self.violations:
+            fix = self.propose_fix(violation)
+            if not fix:
+                self.skipped.append(violation)
+                continue
+
+            by_source[fix['source_file']].append(fix)
+            self.fixes.append(fix)
+
+        if not self.fixes:
+            print("[OK] No fixes to apply")
+            return 0
+
+        created_symlinks = self._create_symlinks(self.fixes)
+        updated_files = self._update_source_references(by_source)
 
         print(f"\n[SUMMARY]")
         print(f"  Symlinks created: {len(created_symlinks)}")
