@@ -2,9 +2,14 @@
 """
 experiment_log.py — Evolution Experiment Log Manager
 
-Persistent, folder-based log of all agentic-os experiment runs.
-Each run writes one dated file to context/experiment-log/.
-An index.md tracks all runs for fast querying.
+Purpose:
+    Persistent, folder-based log of all agentic-os experiment runs.
+    Each run writes one dated file to context/experiment-log/.
+    An index.md tracks all runs for fast querying.
+
+Key Input Dependencies:
+    - context/experiment-log/ (log entries + index.md)
+    - Report files produced by verifier/tester/orchestrator/planner/survey (see DEFAULT_REPORTS)
 
 Usage:
     python3 experiment_log.py append --source-type verifier [--report PATH] [--session-id ID] [--target NAME] [--tags TAG1,TAG2]
@@ -75,22 +80,26 @@ INDEX_HEADER = (
 # ---------------------------------------------------------------------------
 
 def _ensure_log_dir():
+    """Create context/experiment-log/ and its index.md header if they don't already exist."""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     if not INDEX_FILE.exists():
         INDEX_FILE.write_text(INDEX_HEADER)
 
 
 def _slugify(s: str) -> str:
+    """Lowercase s, replace non-alphanumeric runs with '-', and truncate to 40 chars."""
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40]
 
 
 def _dated_filename(source_type: str, session_id: str) -> Path:
+    """Build the log entry filename: <today>-<source_type>-<slugified session_id>.md."""
     date = datetime.now().strftime("%Y-%m-%d")
     slug = _slugify(session_id)
     return LOG_DIR / f"{date}-{source_type}-{slug}.md"
 
 
 def _read_report(path: Path) -> str:
+    """Read and return the report file's text, or exit 1 if it does not exist."""
     if not path.exists():
         print(f"ERROR: Report not found at {path}", file=sys.stderr)
         sys.exit(1)
@@ -122,6 +131,7 @@ def _session_already_logged(session_id: str) -> bool:
 
 def _append_index_row(date: str, session_id: str, source: str, target: str,
                        result_type: str, verdict: str, filename: Path):
+    """Append one row describing this run to index.md."""
     row = (f"| {date} | {session_id} | {source} | {target} "
            f"| {result_type} | {verdict} | [{filename.name}]({filename.name}) |\n")
     with INDEX_FILE.open("a") as f:
@@ -147,6 +157,7 @@ def _extract_section(text: str, start_heading: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _parse_verifier(text: str) -> dict:
+    """Count PASS/PARTIAL/FAIL VERDICT: tokens in an os-evolution-verifier report."""
     verdicts = {"PASS": 0, "PARTIAL": 0, "FAIL": 0}
     for m in re.findall(r"VERDICT:\s*(PASS|PARTIAL|FAIL)", text):
         verdicts[m] += 1
@@ -156,6 +167,7 @@ def _parse_verifier(text: str) -> dict:
 
 
 def _parse_tester(text: str) -> dict:
+    """Count PASS/FAIL acceptance-criteria rows within an os-architect-tester report's Results section."""
     # Restrict PASS/FAIL scan to the Results table section only
     section = _extract_section(text, "## Results")
     if not section:
@@ -201,6 +213,7 @@ def _parse_orchestrator(text: str) -> dict:
 
 
 def _parse_planner(text: str) -> dict:
+    """Count workstream rows and gap-analysis bullets in an os-evolution-planner report."""
     workstreams = len(re.findall(r"(?m)^\| WS-[A-Z]", text))
     # Restrict gap count to the Gaps Identified section only
     gaps_section = _extract_section(text, "## Gaps Identified")
@@ -210,6 +223,7 @@ def _parse_planner(text: str) -> dict:
 
 
 def _parse_survey(text: str) -> dict:
+    """Count friction-related bullets and extract the north-star percentage from a post_run_survey report."""
     friction = len(re.findall(r"(?m)^[-*]\s+.+friction", text, re.I))
     north_star_match = re.search(r"[Nn]orth.star[:\s]+([0-9.]+)%?", text)
     north_star = north_star_match.group(1) if north_star_match else "?"
@@ -233,6 +247,7 @@ PARSERS = {
 def _build_entry(source_type: str, session_id: str, target: str,
                   triggered_by: str, report_text: str, metrics: dict,
                   result_type: str, tags: str = "") -> str:
+    """Render the full markdown log entry (frontmatter + summary table + raw report + Actions Taken)."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     tags_line = f"tags: {tags}\n" if tags else ""
     return (
@@ -267,6 +282,7 @@ def _build_entry(source_type: str, session_id: str, target: str,
 # ---------------------------------------------------------------------------
 
 def cmd_append(args):
+    """CLI command: validate + parse a report, then append a log entry and index row."""
     source_type = args.source_type
     if source_type not in PARSERS:
         print(f"ERROR: unknown source-type '{source_type}'. "
@@ -315,6 +331,7 @@ def cmd_append(args):
 
 
 def cmd_query(args):
+    """CLI command: print each log entry whose text contains args.term, with header and Actions Taken."""
     _ensure_log_dir()
     term = args.term.lower()
     matches = []
@@ -345,6 +362,7 @@ def cmd_query(args):
 
 
 def cmd_summary(args: argparse.Namespace) -> None:
+    """CLI command: print run counts and verdicts grouped by source type."""
     del args
     _ensure_log_dir()
 
@@ -383,20 +401,10 @@ def cmd_summary(args: argparse.Namespace) -> None:
     print(f"  Files: {len(files)}")
 
 
-def cmd_synthesize(args: argparse.Namespace) -> None:
-    """Query last N entries and produce a structured synthesis block."""
-    _ensure_log_dir()
-    last_n = getattr(args, "last", 5) or 5
-
-    files = [f for f in sorted(LOG_DIR.glob("*.md")) if f.name != "index.md"]
-    if not files:
-        print(f"No experiment runs found in {LOG_DIR}/")
-        return
-
-    recent = files[-last_n:]
-
+def _collect_synthesis_targets(files: list) -> dict:
+    """Group recent log entries by target, classifying each as keeps or discards by KEEP/DISCARD count."""
     by_target: dict[str, dict] = {}
-    for f in recent:
+    for f in files:
         text = f.read_text()
         header_match = re.search(r"^---\n(.*?)\n---", text, re.DOTALL)
         if not header_match:
@@ -418,48 +426,40 @@ def cmd_synthesize(args: argparse.Namespace) -> None:
             entry["keeps"].append((session_id, verdict, tags))
         elif discards > 0:
             entry["discards"].append((session_id, verdict, tags))
+    return by_target
 
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    lines = [f"## SYNTHESIZED LEARNINGS — {date_str}", ""]
 
-    lines.append("### Patterns that consistently improve performance")
-    any_keep = False
+def _pattern_section_lines(by_target: dict, key: str, heading: str, empty_msg: str) -> list[str]:
+    """Build one '### Patterns...' synthesis section (keeps or discards) from by_target."""
+    lines = [heading]
+    any_entry = False
     for target, data in sorted(by_target.items()):
-        for session_id, verdict, tags in data["keeps"]:
+        for session_id, verdict, tags in data[key]:
             # Extract positive delta from verdict_str if present
             delta_match = re.search(r"delta=([+\-][0-9.]+)", verdict)
             delta_str = f"avg delta {delta_match.group(1)}" if delta_match else "see verdict"
             tag_str = f" [{tags}]" if tags else ""
             lines.append(f"- {target} → seen in {session_id}, {delta_str}{tag_str}")
-            any_keep = True
-    if not any_keep:
-        lines.append("- (no KEEP patterns in last N entries)")
+            any_entry = True
+    if not any_entry:
+        lines.append(empty_msg)
+    return lines
 
-    lines.append("")
-    lines.append("### Patterns that cause regressions")
-    any_discard = False
-    for target, data in sorted(by_target.items()):
-        for session_id, verdict, tags in data["discards"]:
-            delta_match = re.search(r"delta=([+\-][0-9.]+)", verdict)
-            delta_str = f"avg delta {delta_match.group(1)}" if delta_match else "see verdict"
-            tag_str = f" [{tags}]" if tags else ""
-            lines.append(f"- {target} → seen in {session_id}, {delta_str}{tag_str}")
-            any_discard = True
-    if not any_discard:
-        lines.append("- (no DISCARD patterns in last N entries)")
 
-    lines.append("")
-    lines.append("### Recommended updates to core skills")
+def _recommended_updates_lines(by_target: dict) -> list[str]:
+    """Build the '### Recommended updates to core skills' synthesis section from by_target."""
+    lines = ["### Recommended updates to core skills"]
     for target in sorted(by_target.keys()):
         data = by_target[target]
         if data["discards"]:
             lines.append(f"- {target} → review recent DISCARD patterns; consider prompt revision")
         elif data["keeps"]:
             lines.append(f"- {target} → stable; no immediate action required")
+    return lines
 
-    synthesis_text = "\n".join(lines) + "\n"
 
-    output_path_arg = getattr(args, "output", None)
+def _write_synthesis_output(synthesis_text: str, output_path_arg, date_str: str) -> Path:
+    """Write synthesis_text to output_path_arg or the default dated path, returning the path used."""
     if output_path_arg:
         output_path = Path(output_path_arg)
     else:
@@ -467,11 +467,43 @@ def cmd_synthesize(args: argparse.Namespace) -> None:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(synthesis_text)
+    return output_path
+
+
+def cmd_synthesize(args: argparse.Namespace) -> None:
+    """Query last N entries and produce a structured synthesis block."""
+    _ensure_log_dir()
+    last_n = getattr(args, "last", 5) or 5
+
+    files = [f for f in sorted(LOG_DIR.glob("*.md")) if f.name != "index.md"]
+    if not files:
+        print(f"No experiment runs found in {LOG_DIR}/")
+        return
+
+    recent = files[-last_n:]
+    by_target = _collect_synthesis_targets(recent)
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    lines = [f"## SYNTHESIZED LEARNINGS — {date_str}", ""]
+    lines += _pattern_section_lines(by_target, "keeps",
+                                     "### Patterns that consistently improve performance",
+                                     "- (no KEEP patterns in last N entries)")
+    lines.append("")
+    lines += _pattern_section_lines(by_target, "discards",
+                                     "### Patterns that cause regressions",
+                                     "- (no DISCARD patterns in last N entries)")
+    lines.append("")
+    lines += _recommended_updates_lines(by_target)
+
+    synthesis_text = "\n".join(lines) + "\n"
+    output_path = _write_synthesis_output(synthesis_text, getattr(args, "output", None), date_str)
+
     print(f"Synthesis written to {output_path}")
     print(synthesis_text)
 
 
 def main():
+    """CLI entrypoint: parse subcommand args and dispatch to the matching cmd_* function."""
     parser = argparse.ArgumentParser(description="Evolution experiment log manager")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
