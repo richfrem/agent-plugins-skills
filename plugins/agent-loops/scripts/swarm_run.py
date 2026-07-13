@@ -18,7 +18,7 @@ Key Input Dependencies:
 Key Functions:
     - get_relative_path(): Convert absolute path to relative
     - resolve_files(): Discover input files from various sources
-    - run_worker(): Execute Claude with prompt and handle output
+    - execute_worker(): Execute the LLM engine with a prompt and handle output
 
 WHAT IS A JOB FILE?
     A Job File is a single Markdown file (.md) that bundles ALL configuration

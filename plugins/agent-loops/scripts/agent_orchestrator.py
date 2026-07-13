@@ -15,9 +15,10 @@ Key Input Dependencies:
   - Optional: context bundle JSON
 
 Key Functions:
-  - generate_packet(): Create strategy packet from parameters
-  - verify_worktree(): Check git diff against criteria
-  - correct_packet(): Generate correction/delta packet
+  - cmd_packet(): Create strategy packet from parameters
+  - cmd_verify(): Check git diff against criteria
+  - cmd_correct(): Generate correction/delta packet
+  - cmd_retro(): Generate retrospective template
 
 Commands:
   packet    -> Generate strategy packet from inputs

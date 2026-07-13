@@ -16,7 +16,7 @@ Key Functions:
     - _build_dataset_readme(): Generate dataset README.md from config
     - upload_file(): Upload single file to HuggingFace
     - upload_folder(): Upload entire folder/dataset to HuggingFace
-    - append_jsonl(): Append rows to HuggingFace dataset via JSONL
+    - append_to_jsonl(): Append rows to HuggingFace dataset via JSONL
 """
 import os
 import sys
