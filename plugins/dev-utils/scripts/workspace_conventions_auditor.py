@@ -27,8 +27,18 @@ WORKSPACE_ROOT = Path(os.getcwd())
 
 # Directories to exclude from the scan
 EXCLUDE_DIRS = {
-    "node_modules", "dist", "build", ".git", ".next", "venv", 
+    "node_modules", "dist", "build", ".git", ".next", "venv",
     "__pycache__", "out", "coverage", ".agents", "temp", "apm_modules"
+}
+
+# File-level exclusions: known-intentional test fixtures that must stay
+# out of conventions compliance to serve their own regression tests.
+EXCLUDE_FILES = {
+    # Deliberately broken security-scanner fixture — see
+    # plugins/agent-scaffolders/tests/flawed-plugin/README.md. Must keep
+    # its violations (missing docstrings, hardcoded creds, network calls)
+    # so inventory_plugin.py's scanner can be verified to detect them.
+    "plugins/agent-scaffolders/tests/flawed-plugin/scripts/bad_script.py",
 }
 
 # File extensions to scan
@@ -220,8 +230,10 @@ def run_audit() -> tuple[Dict[str, List[Dict[str, Any]]], set[str], set[str], in
         for file in files:
             file_path = Path(root) / file
             suffix = file_path.suffix.lower()
-            
+
             if suffix in SUPPORTED_EXTENSIONS:
+                if file_path.relative_to(WORKSPACE_ROOT).as_posix() in EXCLUDE_FILES:
+                    continue
                 checked, failed = _audit_file(
                     file_path, results, scanned_plugins, failed_plugins,
                     unique_scanned_files, unique_failed_files

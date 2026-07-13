@@ -118,193 +118,180 @@ PLATFORM_SETUP: dict[str, str] = {
 
 # --- Category-specific job steps ---
 
+def _test_steps(platform: str) -> str:
+    """Return test job steps for the given platform."""
+    if platform == "python":
+        return textwrap.dedent("""\
+          - name: Run tests
+            run: pytest --tb=short -q""")
+    if platform == "nodejs":
+        return textwrap.dedent("""\
+          - name: Run tests
+            run: npm test""")
+    if platform == "go":
+        return textwrap.dedent("""\
+          - name: Run tests
+            run: go test ./... -v""")
+    if platform == "dotnet":
+        return textwrap.dedent("""\
+          - name: Run tests
+            run: dotnet test --no-restore --verbosity normal""")
+    return textwrap.dedent("""\
+          - name: Run tests
+            run: echo "Add your test command here" """)
+
+
+def _lint_steps(platform: str) -> str:
+    """Return lint job steps for the given platform."""
+    if platform == "python":
+        return textwrap.dedent("""\
+          - name: Install linters
+            run: pip install ruff mypy
+
+          - name: Ruff lint
+            run: ruff check .
+
+          - name: Ruff format check
+            run: ruff format --check .""")
+    if platform == "nodejs":
+        return textwrap.dedent("""\
+          - name: Run ESLint
+            run: npm run lint
+
+          - name: Check formatting (Prettier)
+            run: npx prettier --check .""")
+    return textwrap.dedent("""\
+          - name: Lint Markdown
+            uses: DavidAnson/markdownlint-cli2-action@v16
+            with:
+              globs: "**/*.md" """)
+
+
+def _build_steps(platform: str) -> str:
+    """Return build job steps for the given platform."""
+    if platform == "docker":
+        return textwrap.dedent("""\
+          - name: Build Docker image
+            uses: docker/build-push-action@v5
+            with:
+              context: .
+              push: false
+              tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+              cache-from: type=gha
+              cache-to: type=gha,mode=max""")
+    if platform == "nodejs":
+        return textwrap.dedent("""\
+          - name: Build
+            run: npm run build
+
+          - name: Upload build artifact
+            uses: actions/upload-artifact@v4
+            with:
+              name: dist
+              path: dist/""")
+    if platform == "python":
+        return textwrap.dedent("""\
+          - name: Build package
+            run: python -m build
+
+          - name: Upload dist
+            uses: actions/upload-artifact@v4
+            with:
+              name: dist
+              path: dist/""")
+    return textwrap.dedent("""\
+          - name: Build
+            run: echo "Add your build command here" """)
+
+
+def _release_steps(platform: str) -> str:
+    """Return release job steps for the given platform."""
+    if platform == "python":
+        return textwrap.dedent("""\
+          - name: Build release packages
+            run: python -m build
+
+          - name: Publish to PyPI
+            uses: pypa/gh-action-pypi-publish@release/v1
+            with:
+              password: ${{ secrets.PYPI_TOKEN }}""")
+    if platform == "nodejs":
+        return textwrap.dedent("""\
+          - name: Publish to npm
+            run: npm publish
+            env:
+              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}""")
+    return textwrap.dedent("""\
+          - name: Create GitHub Release
+            uses: softprops/action-gh-release@v2
+            with:
+              generate_release_notes: true
+              files: dist/*""")
+
+
 def category_steps(category: str, platform: str, branch: str) -> str:
     """Return the core job steps for the given category + platform."""
-
     if category == "test":
-        if platform == "python":
-            return textwrap.dedent("""\
-              - name: Run tests
-                run: pytest --tb=short -q""")
-        if platform == "nodejs":
-            return textwrap.dedent("""\
-              - name: Run tests
-                run: npm test""")
-        if platform == "go":
-            return textwrap.dedent("""\
-              - name: Run tests
-                run: go test ./... -v""")
-        if platform == "dotnet":
-            return textwrap.dedent("""\
-              - name: Run tests
-                run: dotnet test --no-restore --verbosity normal""")
-        return textwrap.dedent("""\
-              - name: Run tests
-                run: echo "Add your test command here" """)
-
+        return _test_steps(platform)
     if category == "lint":
-        if platform == "python":
-            return textwrap.dedent("""\
-              - name: Install linters
-                run: pip install ruff mypy
-
-              - name: Ruff lint
-                run: ruff check .
-
-              - name: Ruff format check
-                run: ruff format --check .""")
-        if platform == "nodejs":
-            return textwrap.dedent("""\
-              - name: Run ESLint
-                run: npm run lint
-
-              - name: Check formatting (Prettier)
-                run: npx prettier --check .""")
-        return textwrap.dedent("""\
-              - name: Lint Markdown
-                uses: DavidAnson/markdownlint-cli2-action@v16
-                with:
-                  globs: "**/*.md" """)
-
+        return _lint_steps(platform)
     if category == "build":
-        if platform == "docker":
-            return textwrap.dedent("""\
-              - name: Build Docker image
-                uses: docker/build-push-action@v5
-                with:
-                  context: .
-                  push: false
-                  tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-                  cache-from: type=gha
-                  cache-to: type=gha,mode=max""")
-        if platform == "nodejs":
-            return textwrap.dedent("""\
-              - name: Build
-                run: npm run build
-
-              - name: Upload build artifact
-                uses: actions/upload-artifact@v4
-                with:
-                  name: dist
-                  path: dist/""")
-        if platform == "python":
-            return textwrap.dedent("""\
-              - name: Build package
-                run: python -m build
-
-              - name: Upload dist
-                uses: actions/upload-artifact@v4
-                with:
-                  name: dist
-                  path: dist/""")
-        return textwrap.dedent("""\
-              - name: Build
-                run: echo "Add your build command here" """)
-
+        return _build_steps(platform)
     if category == "deploy":
         return textwrap.dedent("""\
-              - name: Deploy to GitHub Pages
-                uses: JamesIves/github-pages-deploy-action@v4
-                with:
-                  folder: dist
-                  branch: gh-pages""")
-
+          - name: Deploy to GitHub Pages
+            uses: JamesIves/github-pages-deploy-action@v4
+            with:
+              folder: dist
+              branch: gh-pages""")
     if category == "release":
-        if platform == "python":
-            return textwrap.dedent("""\
-              - name: Build release packages
-                run: python -m build
-
-              - name: Publish to PyPI
-                uses: pypa/gh-action-pypi-publish@release/v1
-                with:
-                  password: ${{ secrets.PYPI_TOKEN }}""")
-        if platform == "nodejs":
-            return textwrap.dedent("""\
-              - name: Publish to npm
-                run: npm publish
-                env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}""")
-        return textwrap.dedent("""\
-              - name: Create GitHub Release
-                uses: softprops/action-gh-release@v2
-                with:
-                  generate_release_notes: true
-                  files: dist/*""")
-
+        return _release_steps(platform)
     if category == "security":
         return textwrap.dedent("""\
-              - name: Initialize CodeQL
-                uses: github/codeql-action/init@v3
-                with:
-                  languages: python  # Adjust to your language
+          - name: Initialize CodeQL
+            uses: github/codeql-action/init@v3
+            with:
+              languages: python  # Adjust to your language
 
-              - name: Autobuild
-                uses: github/codeql-action/autobuild@v3
+          - name: Autobuild
+            uses: github/codeql-action/autobuild@v3
 
-              - name: Perform CodeQL Analysis
-                uses: github/codeql-action/analyze@v3
+          - name: Perform CodeQL Analysis
+            uses: github/codeql-action/analyze@v3
 
-              - name: Run Trivy vulnerability scanner
-                uses: aquasecurity/trivy-action@master
-                with:
-                  scan-type: "fs"
-                  severity: "CRITICAL,HIGH" """)
-
+          - name: Run Trivy vulnerability scanner
+            uses: aquasecurity/trivy-action@master
+            with:
+              scan-type: "fs"
+              severity: "CRITICAL,HIGH" """)
     if category == "maintenance":
         return textwrap.dedent("""\
-              - name: Close stale issues and pull requests
-                uses: actions/stale@v9
-                with:
-                  stale-issue-message: "This issue has been automatically marked as stale."
-                  stale-pr-message: "This PR has been automatically marked as stale."
-                  days-before-stale: 60
-                  days-before-close: 14""")
-
-    # custom / fallback
+          - name: Close stale issues and pull requests
+            uses: actions/stale@v9
+            with:
+              stale-issue-message: "This issue has been automatically marked as stale."
+              stale-pr-message: "This PR has been automatically marked as stale."
+              days-before-stale: 60
+              days-before-close: 14""")
     return textwrap.dedent("""\
-              - name: Custom Step
-                run: |
-                  echo "Add your custom steps here" """)
+          - name: Custom Step
+            run: |
+              echo "Add your custom steps here" """)
 
 
-def generate_github_action(
-    category: str,
-    platform: str,
-    triggers: list[str],
-    name: str,
-    branch: str,
-    workflows_dir: Path,
-) -> Path:
-    """
-    Generates a traditional GitHub Actions YAML workflow file.
-
-    Args:
-        category: Workflow type (test, build, lint, deploy, release, etc.).
-        platform: Target tech stack (python, nodejs, go, docker, etc.).
-        triggers: List of GitHub event trigger keys.
-        name: Human-readable workflow name.
-        branch: Branch name for push triggers.
-        workflows_dir: Target .github/workflows/ directory.
-
-    Returns:
-        Path to the created .yml file.
-    """
-    on_block = build_on_block(triggers, branch)
-    setup = PLATFORM_SETUP.get(platform, "")
-    steps_body = category_steps(category, platform, branch)
-
-    # Permissions
-    permissions_block = "  contents: read"
+def _build_permissions(category: str) -> str:
+    """Return the YAML permissions block for the given category."""
     if category in ("release", "deploy"):
-        permissions_block = "  contents: write\n  packages: write"
-    elif category in ("security",):
-        permissions_block = "  contents: read\n  security-events: write"
+        return "  contents: write\n  packages: write"
+    if category == "security":
+        return "  contents: read\n  security-events: write"
+    return "  contents: read"
 
-    # Combine setup + steps (skip blank setup)
-    all_steps = (setup + "\n\n" + steps_body).strip() if setup else steps_body
 
-    yaml_content = textwrap.dedent(f"""\
+def _assemble_yaml(name: str, category: str, on_block: str,
+                   permissions_block: str, all_steps: str) -> str:
+    """Assemble the complete workflow YAML string."""
+    return textwrap.dedent(f"""\
     name: {name}
 
     on:
@@ -324,7 +311,22 @@ def generate_github_action(
     {textwrap.indent(all_steps, '      ')}
     """)
 
-    # Filename from category + platform
+
+def generate_github_action(
+    category: str,
+    platform: str,
+    triggers: list[str],
+    name: str,
+    branch: str,
+    workflows_dir: Path,
+) -> Path:
+    """Generates a traditional GitHub Actions YAML workflow file."""
+    on_block = build_on_block(triggers, branch)
+    setup = PLATFORM_SETUP.get(platform, "")
+    steps_body = category_steps(category, platform, branch)
+    permissions_block = _build_permissions(category)
+    all_steps = (setup + "\n\n" + steps_body).strip() if setup else steps_body
+    yaml_content = _assemble_yaml(name, category, on_block, permissions_block, all_steps)
     slug = f"{category}-{platform}".replace("-generic", "")
     output_file = workflows_dir / f"{slug}.yml"
     output_file.write_text(yaml_content, encoding="utf-8")

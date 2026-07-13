@@ -241,17 +241,16 @@ def _render_workflow_setup(name: str, trigger_block: str) -> str:
 
 def _render_quality_gate_step(kill_switch: str) -> str:
     """Render the Quality Gate (Smart Fail) workflow step."""
-    return textwrap.dedent(f"""\
-          - name: Quality Gate (Smart Fail)
-            if: always()
-            run: |
-              if grep -q -F -- "{kill_switch}" report.md; then
-                echo "❌ QUALITY GATE FAILED: {kill_switch}"
-                exit 1
-              else
-                echo "✅ Agent review passed."
-              fi
-    """)
+    return f"""      - name: Quality Gate (Smart Fail)
+        if: always()
+        run: |
+          if grep -q -F -- "{kill_switch}" report.md; then
+            echo "❌ QUALITY GATE FAILED: {kill_switch}"
+            exit 1
+          else
+            echo "✅ Agent review passed."
+          fi
+"""
 
 
 def generate_workflow_file(

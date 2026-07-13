@@ -908,13 +908,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-agentic-workflow/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-agentic-workflow/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -956,13 +956,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-azure-agent/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-azure-agent/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1034,13 +1034,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-docker-skill/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-docker-skill/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1082,13 +1082,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-github-action/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-github-action/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1136,13 +1136,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1184,13 +1184,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-plugin/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-plugin/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1232,13 +1232,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-skill/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-skill/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1280,13 +1280,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-stateful-skill/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-stateful-skill/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
@@ -1328,13 +1328,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/aggregate_benchmark.py",
+      "src": "plugins/agent-scaffolders/scripts/aggregate_benchmark.py",
       "dst": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/aggregate_benchmark.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/scripts/benchmarking/generate_report.py",
+      "src": "plugins/agent-scaffolders/scripts/generate_report.py",
       "dst": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""

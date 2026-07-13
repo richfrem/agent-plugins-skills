@@ -95,99 +95,91 @@ review_required:
   risk_classification: medium
 """
 
-def create_apm_package(
-    name: str, 
-    path: str, 
-    description: str = "",
-    version: str = "1.0.0",
-    author: str = "Generated via Agent Scaffolder",
-    governance: str = "experimental",
-    targets: str = "copilot,claude,cursor",
-    allow_hybrid: bool = False,
-    dry_run: bool = False
-) -> None:
-    """
-    Scaffolds a new APM package structure.
-    """
+def _validate_preconditions(name: str, package_root: Path, allow_hybrid: bool, dry_run: bool) -> None:
+    """Validate name format and directory preconditions before scaffolding."""
     if not is_valid_name(name):
         print(f"❌ Error: Package name '{name}' must be kebab-case.")
         sys.exit(1)
-
-    package_root = Path(path) / name
-    
-    # Check for existing plugin (Hybrid check)
     is_existing_plugin = (package_root / ".claude-plugin" / "plugin.json").exists()
     if is_existing_plugin and not allow_hybrid:
         print(f"❌ Error: Target '{package_root}' appears to be an existing plugin.")
         print("Use '/convert-plugin-to-apm' overlay mode or pass --allow-hybrid explicitly.")
         sys.exit(1)
-
     if not dry_run and package_root.exists() and not allow_hybrid:
         print(f"⚠️  Warning: Target directory '{package_root}' already exists. Refusing to overwrite.")
         sys.exit(1)
 
-    print(f"🏗️  Planning scaffolding for APM package '{name}'...")
-    
-    # Define structure
+
+def _build_package_structure(name: str, package_root: Path, description: str, version: str,
+                              author: str, governance: str, targets: str) -> dict:
+    """Build the directory and file structure dict for the APM package."""
     apm_dir = package_root / ".apm"
-    structure = {
-        "dirs": [
-            apm_dir / "skills",
-            apm_dir / "agents",
-            apm_dir / "instructions",
-            apm_dir / "prompts",
-            apm_dir / "hooks",
-            apm_dir / "mcp",
-            apm_dir / "scripts",
-            apm_dir / "tests",
-            package_root / "docs",
-            package_root / "scripts",
-            package_root / "tests"
-        ],
-        "files": {
-            package_root / "apm.yml": {
-                "name": name,
-                "version": version,
-                "description": description or f"APM package for {name}",
-                "author": author,
-                "targets": [t.strip() for t in targets.split(',')],
-                "dependencies": {"apm": [], "mcp": []},
-                "includes": "auto",
-                "metadata": {
-                    "governance_lane": governance,
-                    "generated_at": datetime.now().isoformat()
-                }
-            },
-            package_root / ".gitignore": "apm_modules/\n.agents/\n.github/\n.claude/\n.cursor/\n.gemini/\n.codex/\n.windsurf/\n.opencode/\n# Commit apm.lock.yaml for reproducibility\n",
-            package_root / "README.md": f"# {name}\n\n{description or f'APM package for {name}'}\n\n## APM Structure\nThis is an APM-native package. Primitives (skills, agents, prompts) are authored in the `.apm/` directory.\n",
-            package_root / "docs" / "governance.md": generate_governance_doc(governance, name),
-            package_root / "docs" / "attribution.md": f"# Attribution\n\nAuthor: {author}\nCreated: {datetime.now().strftime('%Y-%m-%d')}\n",
-            package_root / "docs" / "package-lifecycle.md": "# Package Lifecycle\n\n1. Scaffold or convert package.\n2. Author primitives in `.apm/` or preserve plugin-native primitives in overlay mode.\n3. Validate package using `validate_apm_package.py`.\n4. Install package into runtime target directories using `apm install`.\n5. Compile top-level context files only when needed by the target harness (Gemini/Codex).\n6. Pack for distribution if needed.\n7. Publish/share.\n"
-        }
+    files = {
+        package_root / "apm.yml": {
+            "name": name, "version": version,
+            "description": description or f"APM package for {name}",
+            "author": author,
+            "targets": [t.strip() for t in targets.split(',')],
+            "dependencies": {"apm": [], "mcp": []},
+            "includes": "auto",
+            "metadata": {"governance_lane": governance, "generated_at": datetime.now().isoformat()}
+        },
+        package_root / ".gitignore": "apm_modules/\n.agents/\n.github/\n.claude/\n.cursor/\n.gemini/\n.codex/\n.windsurf/\n.opencode/\n# Commit apm.lock.yaml for reproducibility\n",
+        package_root / "README.md": f"# {name}\n\n{description or f'APM package for {name}'}\n\n## APM Structure\nThis is an APM-native package. Primitives (skills, agents, prompts) are authored in the `.apm/` directory.\n",
+        package_root / "docs" / "governance.md": generate_governance_doc(governance, name),
+        package_root / "docs" / "attribution.md": f"# Attribution\n\nAuthor: {author}\nCreated: {datetime.now().strftime('%Y-%m-%d')}\n",
+        package_root / "docs" / "package-lifecycle.md": "# Package Lifecycle\n\n1. Scaffold or convert package.\n2. Author primitives in `.apm/` or preserve plugin-native primitives in overlay mode.\n3. Validate package using `validate_apm_package.py`.\n4. Install package into runtime target directories using `apm install`.\n5. Compile top-level context files only when needed by the target harness (Gemini/Codex).\n6. Pack for distribution if needed.\n7. Publish/share.\n",
     }
-
     if governance == "enterprise":
-        structure["files"][package_root / "apm-policy.yml"] = generate_policy_doc(name)
+        files[package_root / "apm-policy.yml"] = generate_policy_doc(name)
+    dirs = [apm_dir / d for d in ("skills", "agents", "instructions", "prompts", "hooks", "mcp", "scripts", "tests")]
+    dirs += [package_root / d for d in ("docs", "scripts", "tests")]
+    return {"dirs": dirs, "files": files}
 
+
+def _execute_scaffold(structure: dict, name: str, package_root: Path, governance: str,
+                      allow_hybrid: bool, dry_run: bool) -> None:
+    """Write directories and files from the structure dict, or print dry-run preview."""
     if dry_run:
         print("\n--- DRY RUN ---")
-        for d in structure["dirs"]: print(f"[DIR]  {d}")
-        for f in structure["files"]: print(f"[FILE] {f}")
+        for d in structure["dirs"]:
+            print(f"[DIR]  {d}")
+        for f in structure["files"]:
+            print(f"[FILE] {f}")
         return
-
-    # Execution
-    for d in structure["dirs"]: d.mkdir(parents=True, exist_ok=True)
+    for d in structure["dirs"]:
+        d.mkdir(parents=True, exist_ok=True)
     for f_path, content in structure["files"].items():
-        with open(f_path, "w", encoding='utf-8') as f:
-            if isinstance(content, dict): yaml.dump(content, f, sort_keys=False)
-            else: f.write(content)
-                
+        with open(f_path, "w", encoding="utf-8") as f:
+            if isinstance(content, dict):
+                yaml.dump(content, f, sort_keys=False)
+            else:
+                f.write(content)
     print(f"\n# APM Scaffold Report")
     print(f"Mode: {'Hybrid' if allow_hybrid else 'New-Package'}")
     print(f"Governance Lane: {governance}")
     print(f"Files Created: {len(structure['files'])}")
     print(f"Validation Command: python scripts/validate_apm_package.py --path {package_root}")
     print(f"Recommended Next: /create-skill inside {name}")
+
+
+def create_apm_package(
+    name: str,
+    path: str,
+    description: str = "",
+    version: str = "1.0.0",
+    author: str = "Generated via Agent Scaffolder",
+    governance: str = "experimental",
+    targets: str = "copilot,claude,cursor",
+    allow_hybrid: bool = False,
+    dry_run: bool = False,
+) -> None:
+    """Scaffolds a new APM package structure."""
+    package_root = Path(path) / name
+    _validate_preconditions(name, package_root, allow_hybrid, dry_run)
+    print(f"🏗️  Planning scaffolding for APM package '{name}'...")
+    structure = _build_package_structure(name, package_root, description, version, author, governance, targets)
+    _execute_scaffold(structure, name, package_root, governance, allow_hybrid, dry_run)
 
 def main():
     """CLI entry point: parses configuration arguments and triggers APM package scaffolding."""

@@ -1,1 +1,1 @@
-../../../scripts/benchmarking/aggregate_benchmark.py
+../../../scripts/aggregate_benchmark.py
