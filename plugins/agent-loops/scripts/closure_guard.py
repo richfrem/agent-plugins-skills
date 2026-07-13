@@ -16,7 +16,7 @@ Key Input Dependencies:
 
 Key Functions:
     - parse_frontmatter(): Extract YAML frontmatter from markdown file
-    - check_closure_done(): Check if loop is ready for session exit
+    - _handle_closure_done(): Check if loop is ready for session exit
 
 Layer: Investigate
 

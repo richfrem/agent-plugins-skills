@@ -45,6 +45,61 @@ EXCLUDE_FILES = {
 SUPPORTED_EXTENSIONS = {".py", ".ts", ".tsx", ".js"}
 
 
+# Extract the 'Key Functions:' block from a module docstring, if present
+def _extract_key_functions_section(docstring: str) -> str:
+    """Return the text of the docstring block whose first line mentions 'Key Functions'."""
+    blocks = re.split(r"\n\s*\n", docstring)
+    for block in blocks:
+        stripped = block.strip()
+        if stripped and "key functions" in stripped.splitlines()[0].lower():
+            return block
+    return ""
+
+
+# Collect every function/method name and class name actually defined in the parsed file
+def _collect_defined_names(tree: ast.AST) -> tuple:
+    """Return (defined_names, defined_classes).
+
+    defined_names includes plain function names and 'ClassName.method_name' pairs.
+    defined_classes is the set of locally-defined class names, used to distinguish
+    genuine local method references from external module calls (e.g. os.walk()).
+    """
+    defined = set()
+    classes = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            defined.add(node.name)
+        elif isinstance(node, ast.ClassDef):
+            classes.add(node.name)
+            for item in node.body:
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    defined.add(f"{node.name}.{item.name}")
+    return defined, classes
+
+
+# Flag 'Key Functions' entries that reference a function no longer in the file
+def _check_key_functions_freshness(docstring: str, tree: ast.AST) -> List[str]:
+    """Detect stale 'Key Functions' references (renamed/removed functions).
+
+    Dotted references (e.g. 'os.walk()') are only checked when the prefix is a
+    locally-defined class — otherwise they're treated as external module calls
+    mentioned in prose, not a promise about this file's own function set.
+    """
+    section = _extract_key_functions_section(docstring)
+    if not section:
+        return []
+    defined_names, defined_classes = _collect_defined_names(tree)
+    errors = []
+    for name in re.findall(r"([A-Za-z_][A-Za-z0-9_.]*)\(\)", section):
+        if "." in name:
+            prefix = name.rpartition(".")[0]
+            if prefix not in defined_classes:
+                continue
+        if name not in defined_names:
+            errors.append(f"Header 'Key Functions' references '{name}()', which no longer exists in this file.")
+    return errors
+
+
 # External comment: Audit a Python file for standard formatting structure
 def scan_python_file(file_path: Path) -> List[str]:
     """Audits a Python file for standards using AST parsing."""
@@ -67,6 +122,7 @@ def scan_python_file(file_path: Path) -> List[str]:
             errors.append("Header is missing 'Purpose:' section.")
         if "key input dependencies:" not in doc_lower and "dependencies:" not in doc_lower:
             errors.append("Header is missing 'Key Input Dependencies:' section.")
+        errors.extend(_check_key_functions_freshness(docstring, tree))
 
     # 2. Function checks
     for node in ast.walk(tree):

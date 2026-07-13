@@ -21,8 +21,9 @@ Key Input Dependencies:
     - Test input JSON file (Claude Code hook event payload)
 
 Key Functions:
-    - create_sample(): Generate sample hook payloads for testing
-    - test_hook(): Execute hook script and parse results
+    - _create_sample(): Generate sample hook payloads for testing
+    - _run_hook(): Execute hook script and capture its output
+    - main(): CLI entry point — validate args, run the hook, report results
 """
 import sys
 import os
