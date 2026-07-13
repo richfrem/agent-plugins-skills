@@ -19,23 +19,18 @@
       ]
     },
     {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
-      "plugins": [
-        "agent-agentic-os",
-        "cli-agents",
-        "dependency-management",
-        "exploration-cycle-plugin",
-        "obsidian-wiki-engine",
-        "plugin-manager"
-      ]
-    },
-    {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
+        "agent-agentic-os",
         "agent-loops",
         "agent-memory",
         "agent-scaffolders",
-        "dev-utils"
+        "cli-agents",
+        "dependency-management",
+        "dev-utils",
+        "exploration-cycle-plugin",
+        "obsidian-wiki-engine",
+        "plugin-manager"
       ]
     }
   ]
