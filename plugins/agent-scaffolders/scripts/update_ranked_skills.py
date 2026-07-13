@@ -197,26 +197,24 @@ def print_batch(batch: list, label: str) -> None:
     print()
 
 
-def morning_report(skills: list) -> None:
-    """Print the full morning handoff: ranked table + debrief stats + top recommendation."""
-    evaluated = [s for s in skills if s.get("status") == "EVALUATED"]
-    pending   = [s for s in skills if s.get("status") == "PENDING"]
-    skipped   = [s for s in skills if s.get("status") == "SKIPPED"]
-
-    evaluated.sort(key=lambda x: x.get("refined_total") or x.get("total_autoresearch_viability", 0), reverse=True)
-
+def _tally_report_stats(evaluated: list) -> tuple[dict, dict, int]:
+    """Return verdict_counts, loop_counts, and total eval passes."""
     verdict_counts = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "NOT_VIABLE": 0}
     loop_counts    = {"DETERMINISTIC": 0, "LLM_IN_LOOP": 0, "HYBRID": 0}
     total_evals    = sum(s.get("eval_count", 1) for s in evaluated)
-
     for s in evaluated:
         v = s.get("eval_verdict", "")
         if v in verdict_counts:
             verdict_counts[v] += 1
-        l = s.get("loop_type", "")
-        if l in loop_counts:
-            loop_counts[l] += 1
+        lp = s.get("loop_type", "")
+        if lp in loop_counts:
+            loop_counts[lp] += 1
+    return verdict_counts, loop_counts, total_evals
 
+
+def _print_report_header(skills: list, evaluated: list, pending: list, skipped: list,
+                         verdict_counts: dict, loop_counts: dict, total_evals: int) -> None:
+    """Print summary header block for the morning report."""
     print("\n" + "=" * 70)
     print("  ECOSYSTEM FITNESS SWEEP v1 — MORNING REPORT")
     print("=" * 70)
@@ -225,8 +223,14 @@ def morning_report(skills: list) -> None:
     print(f"  Skipped:      {len(skipped):>4}")
     print(f"  Total skills: {len(skills):>4}")
     print()
-    print(f"  Verdicts  →  HIGH: {verdict_counts['HIGH']}  MEDIUM: {verdict_counts['MEDIUM']}  LOW: {verdict_counts['LOW']}  NOT_VIABLE: {verdict_counts['NOT_VIABLE']}")
-    print(f"  Loop types →  DETERMINISTIC: {loop_counts['DETERMINISTIC']}  LLM_IN_LOOP: {loop_counts['LLM_IN_LOOP']}  HYBRID: {loop_counts['HYBRID']}")
+    print(f"  Verdicts  →  HIGH: {verdict_counts['HIGH']}  MEDIUM: {verdict_counts['MEDIUM']}  "
+          f"LOW: {verdict_counts['LOW']}  NOT_VIABLE: {verdict_counts['NOT_VIABLE']}")
+    print(f"  Loop types →  DETERMINISTIC: {loop_counts['DETERMINISTIC']}  "
+          f"LLM_IN_LOOP: {loop_counts['LLM_IN_LOOP']}  HYBRID: {loop_counts['HYBRID']}")
+
+
+def _print_report_table(evaluated: list) -> None:
+    """Print the ranked skill table rows."""
     print()
     print(f"  {'#':>3}  {'PLUGIN':<30} {'SKILL':<35} {'SCORE':>5}  {'VERDICT':<12} {'LOOP':<15} {'EVALS'}")
     print("  " + "-" * 105)
@@ -238,128 +242,104 @@ def morning_report(skills: list) -> None:
         marker  = " ★" if verdict == "HIGH" else "  "
         print(f"  {i:>3}{marker} {s['plugin']:<30} {s['skill']:<35} {score:>5}  {verdict:<12} {loop:<15} {count}x")
 
+
+def _print_recommendation(top: list) -> None:
+    """Print the top recommendation block."""
+    if not top:
+        return
+    rec = top[0]
+    score = rec.get("refined_total") or rec.get("total_autoresearch_viability", 0)
+    print("=" * 70)
+    print("  ★ RECOMMENDATION: NEXT AUTORESEARCH LOOP TO BUILD")
+    print("=" * 70)
+    print(f"  Skill:     {rec['plugin']}/{rec['skill']}")
+    print(f"  Score:     {score}/40  |  Verdict: {rec.get('eval_verdict')}  |  Loop: {rec.get('loop_type','?')}")
+    if rec.get("evaluator_command"):
+        print(f"  Evaluator: {rec['evaluator_command']}")
+    if rec.get("mutation_target"):
+        print(f"  Mutates:   {rec['mutation_target']}")
+    if rec.get("eval_notes"):
+        print(f"  Why:       {rec['eval_notes']}")
+    if len(top) > 1:
+        print()
+        print("  Also consider:")
+        for s in top[1:4]:
+            sc = s.get("refined_total") or s.get("total_autoresearch_viability", 0)
+            print(f"    - {s['plugin']}/{s['skill']} ({sc}/40, {s.get('loop_type','?')})")
+
+
+def morning_report(skills: list) -> None:
+    """Print the full morning handoff: ranked table + debrief stats + top recommendation."""
+    evaluated = sorted(
+        [s for s in skills if s.get("status") == "EVALUATED"],
+        key=lambda x: x.get("refined_total") or x.get("total_autoresearch_viability", 0),
+        reverse=True,
+    )
+    pending = [s for s in skills if s.get("status") == "PENDING"]
+    skipped = [s for s in skills if s.get("status") == "SKIPPED"]
+    verdict_counts, loop_counts, total_evals = _tally_report_stats(evaluated)
+    _print_report_header(skills, evaluated, pending, skipped, verdict_counts, loop_counts, total_evals)
+    _print_report_table(evaluated)
     print()
     top = [s for s in evaluated if s.get("eval_verdict") == "HIGH"]
     if not top:
         top = [s for s in evaluated if s.get("eval_verdict") == "MEDIUM"]
-
-    if top:
-        rec = top[0]
-        score = rec.get("refined_total") or rec.get("total_autoresearch_viability", 0)
-        print("=" * 70)
-        print("  ★ RECOMMENDATION: NEXT AUTORESEARCH LOOP TO BUILD")
-        print("=" * 70)
-        print(f"  Skill:     {rec['plugin']}/{rec['skill']}")
-        print(f"  Score:     {score}/40  |  Verdict: {rec.get('eval_verdict')}  |  Loop: {rec.get('loop_type','?')}")
-        if rec.get("evaluator_command"):
-            print(f"  Evaluator: {rec['evaluator_command']}")
-        if rec.get("mutation_target"):
-            print(f"  Mutates:   {rec['mutation_target']}")
-        if rec.get("eval_notes"):
-            print(f"  Why:       {rec['eval_notes']}")
-        if len(top) > 1:
-            print()
-            print("  Also consider:")
-            for s in top[1:4]:
-                sc = s.get("refined_total") or s.get("total_autoresearch_viability", 0)
-                print(f"    - {s['plugin']}/{s['skill']} ({sc}/40, {s.get('loop_type','?')})")
+    _print_recommendation(top)
     print("=" * 70 + "\n")
 
 
-def main() -> None:
-    """Main entry point for the CLI."""
+def _build_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser."""
     parser = argparse.ArgumentParser(
         description="Update or inspect entries in summary-ranked-skills.json",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--json-path", default=str(DEFAULT_JSON_PATH),
-                        help="Path to summary-ranked-skills.json")
-    parser.add_argument("--plugin", help="Plugin name")
-    parser.add_argument("--skill", help="Skill name")
-
-    # Score fields
-    parser.add_argument("--objectivity", type=int, help="Objectivity score (1-10)")
-    parser.add_argument("--speed", type=int, help="Execution speed score (1-10)")
-    parser.add_argument("--frequency", type=int, help="Frequency of use score (1-10)")
-    parser.add_argument("--utility", type=int, help="Potential utility score (1-10)")
-
-    # Eval fields
-    parser.add_argument("--verdict", choices=["HIGH", "MEDIUM", "LOW", "NOT_VIABLE"],
-                        help="Autoresearch viability verdict")
-    parser.add_argument("--loop-type",
-                        choices=["DETERMINISTIC", "LLM_IN_LOOP", "HYBRID"],
-                        help="Type of evaluation loop")
-    parser.add_argument("--evaluator-command", help="The immutable shell command for scoring")
-    parser.add_argument("--mutation-target", help="Which file the agent modifies per loop")
-    parser.add_argument("--barriers", nargs="+", help="List of key barriers (space-separated strings)")
-    parser.add_argument("--eval-notes", help="Free-text notes from the evaluation")
-    parser.add_argument("--proposed-benchmark", help="Proposed benchmark metric description")
-    parser.add_argument("--justification", help="Justification text")
+    parser.add_argument("--json-path", default=str(DEFAULT_JSON_PATH))
+    parser.add_argument("--plugin")
+    parser.add_argument("--skill")
+    parser.add_argument("--objectivity", type=int)
+    parser.add_argument("--speed", type=int)
+    parser.add_argument("--frequency", type=int)
+    parser.add_argument("--utility", type=int)
+    parser.add_argument("--verdict", choices=["HIGH", "MEDIUM", "LOW", "NOT_VIABLE"])
+    parser.add_argument("--loop-type", choices=["DETERMINISTIC", "LLM_IN_LOOP", "HYBRID"])
+    parser.add_argument("--evaluator-command")
+    parser.add_argument("--mutation-target")
+    parser.add_argument("--barriers", nargs="+")
+    parser.add_argument("--eval-notes")
+    parser.add_argument("--proposed-benchmark")
+    parser.add_argument("--justification")
     parser.add_argument("--status",
-                        choices=["PENDING", "EVALUATED", "IN_PROGRESS", "IMPLEMENTED", "SKIPPED"],
-                        help="Current status of this skill's autoresearch work")
-    parser.add_argument("--refined-total", type=int,
-                        help="Override total score after deeper evaluation")
+                        choices=["PENDING", "EVALUATED", "IN_PROGRESS", "IMPLEMENTED", "SKIPPED"])
+    parser.add_argument("--refined-total", type=int)
+    parser.add_argument("--show", action="store_true")
+    parser.add_argument("--list", action="store_true")
+    parser.add_argument("--filter-status")
+    parser.add_argument("--next-batch", type=int, metavar="N")
+    parser.add_argument("--random", type=int, metavar="N", dest="random_n")
+    parser.add_argument("--morning-report", action="store_true")
+    return parser
 
-    # Display commands
-    parser.add_argument("--show", action="store_true", help="Show current entry and exit")
-    parser.add_argument("--list", action="store_true", help="List all entries and exit")
-    parser.add_argument("--filter-status", help="Filter --list output by status")
-    parser.add_argument("--next-batch", type=int, metavar="N",
-                        help="Show the top-N PENDING entries by score (structured batch order)")
-    parser.add_argument("--random", type=int, metavar="N", dest="random_n",
-                        help="Show N randomly sampled PENDING entries (for ad-hoc testing)")
-    parser.add_argument("--morning-report", action="store_true",
-                        help="Print full ranked summary sorted by score — the morning handoff table")
 
-    args = parser.parse_args()
-    json_path = Path(args.json_path)
-    data = load_json(json_path)
-    skills = data.get("skills", [])
-
-    # Morning report mode
+def _handle_display_modes(args: argparse.Namespace, skills: list) -> bool:
+    """Handle read-only display modes. Returns True if a mode was handled."""
     if args.morning_report:
         morning_report(skills)
-        return
-
-    # List mode
+        return True
     if args.list:
         list_all(skills, args.filter_status)
-        return
-
-    # Batch discovery modes (no plugin/skill required)
+        return True
     if args.next_batch is not None:
-        batch = next_batch(skills, args.next_batch)
-        print_batch(batch, f"Next {args.next_batch} by score (PENDING)")
-        return
-
+        print_batch(next_batch(skills, args.next_batch), f"Next {args.next_batch} by score (PENDING)")
+        return True
     if args.random_n is not None:
-        batch = random_batch(skills, args.random_n)
-        print_batch(batch, f"{args.random_n} random PENDING entries")
-        return
+        print_batch(random_batch(skills, args.random_n), f"{args.random_n} random PENDING entries")
+        return True
+    return False
 
-    # Require plugin + skill for all other operations
-    if not args.plugin or not args.skill:
-        parser.error("--plugin and --skill are required (unless using --list, --next-batch, or --random)")
 
-    idx, entry = find_entry(skills, args.plugin, args.skill)
-
-    # Show mode
-    if args.show:
-        if entry is None:
-            print(f"No entry found for {args.plugin}/{args.skill}")
-        else:
-            show_entry(entry)
-        return
-
-    # Create entry if it doesn't exist
-    if entry is None:
-        print(f"Creating new entry: {args.plugin}/{args.skill}")
-        entry = {"plugin": args.plugin, "skill": args.skill}
-        skills.append(entry)
-        idx = len(skills) - 1
-
-    # Apply score fields
+def _apply_score_fields(entry: dict, args: argparse.Namespace) -> None:
+    """Apply score fields to entry and recompute total if needed."""
     if args.objectivity is not None:
         entry["objectivity_score"] = args.objectivity
     if args.speed is not None:
@@ -368,16 +348,15 @@ def main() -> None:
         entry["frequency_of_use_score"] = args.frequency
     if args.utility is not None:
         entry["potential_utility_score"] = args.utility
-
-    # Recompute total if any score changed
     if any(x is not None for x in [args.objectivity, args.speed, args.frequency, args.utility]):
         new_total = compute_total(entry)
         entry["total_autoresearch_viability"] = new_total
         if args.refined_total is None and args.verdict is None:
-            # Auto-derive verdict from total if not explicitly set
             entry["eval_verdict"] = verdict_from_total(new_total)
 
-    # Apply eval fields
+
+def _apply_eval_fields(entry: dict, args: argparse.Namespace) -> None:
+    """Apply eval metadata fields to entry and stamp eval date."""
     if args.refined_total is not None:
         entry["refined_total"] = args.refined_total
         if args.verdict is None:
@@ -400,15 +379,44 @@ def main() -> None:
         entry["justification"] = args.justification
     if args.status is not None:
         entry["status"] = args.status
-
-    # Stamp eval date and increment eval_count whenever eval fields are written
     eval_fields = [args.verdict, args.loop_type, args.evaluator_command,
                    args.mutation_target, args.eval_notes, args.status]
     if any(f is not None for f in eval_fields):
         entry["eval_date"] = str(date.today())
         entry["eval_count"] = entry.get("eval_count", 0) + 1
 
-    # Write back
+
+def main() -> None:
+    """Main entry point for the CLI."""
+    parser = _build_parser()
+    args = parser.parse_args()
+    json_path = Path(args.json_path)
+    data = load_json(json_path)
+    skills = data.get("skills", [])
+
+    if _handle_display_modes(args, skills):
+        return
+
+    if not args.plugin or not args.skill:
+        parser.error("--plugin and --skill are required (unless using --list, --next-batch, or --random)")
+
+    idx, entry = find_entry(skills, args.plugin, args.skill)
+
+    if args.show:
+        if entry is None:
+            print(f"No entry found for {args.plugin}/{args.skill}")
+        else:
+            show_entry(entry)
+        return
+
+    if entry is None:
+        print(f"Creating new entry: {args.plugin}/{args.skill}")
+        entry = {"plugin": args.plugin, "skill": args.skill}
+        skills.append(entry)
+        idx = len(skills) - 1
+
+    _apply_score_fields(entry, args)
+    _apply_eval_fields(entry, args)
     data["skills"][idx] = entry
     save_json(data, json_path)
     print(f"Updated: {args.plugin}/{args.skill}")

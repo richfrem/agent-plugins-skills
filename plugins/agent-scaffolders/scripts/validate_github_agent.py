@@ -127,6 +127,38 @@ def validate_target_c(fm: dict, body: str, kill_switch: str = None, filepath_str
     return errors
 
 
+def _read_file_safe(args: argparse.Namespace) -> tuple[str | None, dict | None]:
+    """Read the target file; return (content, None) or (None, error_result)."""
+    filepath = Path(args.file)
+    if not filepath.exists():
+        return None, {
+            "status": "error",
+            "file": args.file,
+            "errors": [f"File not found: {args.file}"],
+        }
+    try:
+        return filepath.read_text(encoding="utf-8"), None
+    except Exception as e:
+        return None, {
+            "status": "error",
+            "file": args.file,
+            "errors": [f"Failed to read file: {e}"],
+        }
+
+
+def _build_result(args: argparse.Namespace, errors: list, fm: dict, body: str) -> dict:
+    """Build the structured JSON result dict."""
+    return {
+        "status": "fail" if errors else "pass",
+        "file": args.file,
+        "errors": errors,
+        "findings": {
+            "frontmatter_keys": list(fm.keys()),
+            "body_length": len(body),
+        },
+    }
+
+
 def main() -> None:
     """CLI entry point: parses target agent path and target type, and runs matching validation checks."""
     parser = argparse.ArgumentParser(description="Validate GitHub Agent configuration files.")
@@ -140,30 +172,14 @@ def main() -> None:
     parser.add_argument("--kill-switch", help="Expected kill switch phrase for Target C")
     args = parser.parse_args()
 
-    filepath = Path(args.file)
-    if not filepath.exists():
-        result = {
-            "status": "error",
-            "file": args.file,
-            "errors": [f"File not found: {args.file}"]
-        }
-        print(json.dumps(result, indent=2))
-        sys.exit(1)
-
-    try:
-        content = filepath.read_text(encoding="utf-8")
-    except Exception as e:
-        result = {
-            "status": "error",
-            "file": args.file,
-            "errors": [f"Failed to read file: {e}"]
-        }
-        print(json.dumps(result, indent=2))
+    content, error_result = _read_file_safe(args)
+    if error_result:
+        print(json.dumps(error_result, indent=2))
         sys.exit(1)
 
     fm, body = parse_frontmatter(content)
-    filepath_str = filepath.resolve().as_posix()
-    
+    filepath_str = Path(args.file).resolve().as_posix()
+
     if args.target == "A":
         errors = validate_target_a(fm, body, filepath_str)
     elif args.target == "B":
@@ -173,16 +189,7 @@ def main() -> None:
     else:
         errors = ["Unknown target type"]
 
-    result = {
-        "status": "fail" if errors else "pass",
-        "file": args.file,
-        "errors": errors,
-        "findings": {
-            "frontmatter_keys": list(fm.keys()),
-            "body_length": len(body),
-        }
-    }
-    
+    result = _build_result(args, errors, fm, body)
     print(json.dumps(result, indent=2))
     sys.exit(1 if errors else 0)
 

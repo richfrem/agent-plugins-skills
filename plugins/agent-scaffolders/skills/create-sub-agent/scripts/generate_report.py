@@ -1,1 +1,1 @@
-../../../scripts/benchmarking/generate_report.py
+../../../scripts/generate_report.py
