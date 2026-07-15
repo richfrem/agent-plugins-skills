@@ -1,7 +1,7 @@
 {
     "name": "cli-agents",
-    "version": "2.0.0",
-    "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to six backends: Claude CLI, GitHub Copilot, Gemini CLI, Antigravity (Agy), Codex/OpenAI-compatible, and direct local Gemma 4 12B via llama-server (~2s, no proxy). 11 expert agent personas covering adversarial patterns (red-team, debate synthesis, output validation, self-critique), code review (security audit, architecture, compliance, PR review, refactoring, test writing), and performance analysis. Includes API compatibility proxy and KV cache orchestrator.",
+    "version": "2.1.0",
+    "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to six backends: Claude CLI, GitHub Copilot, Gemini CLI, Antigravity (Agy), Codex/OpenAI-compatible, and direct local Gemma 4 12B via llama-server (~2s, no proxy). 11 expert agent personas covering adversarial patterns (red-team, debate synthesis, output validation, self-critique), code review (security audit, architecture, compliance, PR review, refactoring, test writing), and performance analysis. Includes model catalog manager (update-cli-models), API compatibility proxy and KV cache orchestrator.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -37,7 +37,11 @@
         "proxy",
         "openai-completions",
         "anthropic-messages",
-        "local-llm-setup"
+        "local-llm-setup",
+        "model-catalog",
+        "update-cli-models",
+        "model-pricing",
+        "cheapest-model"
     ],
     "capabilities": [
         "multi-llm-task-routing",
@@ -52,6 +56,7 @@
         "kv-cache-orchestrator",
         "adversarial-agent-patterns",
         "persona-agents",
-        "local-llm-setup"
+        "local-llm-setup",
+        "model-catalog-management"
     ]
 }

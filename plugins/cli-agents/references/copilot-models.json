@@ -6,9 +6,11 @@
     "pricing_unit": "per 1 million tokens",
     "credits_formula": "credits_per_1m = ($ per 1M tokens) * 100",
     "cli_version": "1.0.66-1",
-    "updated": "2026-06-28",
-    "default_model": "claude-sonnet-4.6",
+    "updated": "2026-07-15",
+    "default_model": "claude-sonnet-5",
     "notes": [
+      "THIS FILE IS COPILOT-SPECIFIC. The direct claude CLI (Anthropic API) supports more Claude models than Copilot does. See claude-models.json for the full direct-API catalog.",
+      "Copilot Claude model IDs use DOT notation (claude-sonnet-4.6). Direct Anthropic API uses DASH notation (claude-sonnet-4-6). Do not mix them.",
       "Code completions and Next Edit Suggestions are NOT billed in AI credits — unlimited for paid plans.",
       "Copilot code review consumes AI credits AND GitHub Actions minutes (model not disclosed).",
       "'Auto' mode lets Copilot pick the model — cost varies and is not predictable.",
@@ -520,25 +522,193 @@
       "recommendation": "unavailable",
       "notes": "CURRENTLY UNAVAILABLE — Anthropic announcement June 2026. Most expensive model in catalog when available. Cache write cost alone can exceed other models' full cost.",
       "available": false
+    },
+    {
+      "display_name": "GPT-5.6 Luna",
+      "cli_id": "gpt-5.6-luna",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": 200,
+      "pricing_usd_per_1m": {
+        "input": 1.00,
+        "cached_input": 0.10,
+        "cache_write": null,
+        "output": 6.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 2.00,
+        "cached_input": 0.20,
+        "cache_write": null,
+        "output": 9.00
+      },
+      "credits_per_1m": {
+        "input": 100,
+        "cached_input": 10,
+        "cache_write": null,
+        "output": 600
+      },
+      "long_context_credits_per_1m": {
+        "input": 200,
+        "cached_input": 20,
+        "cache_write": null,
+        "output": 900
+      },
+      "recommendation": "moderate",
+      "notes": "GPT-5.6 lightweight variant. Long context tier kicks in >200K tokens. Default tier cheaper than Terra/Sol."
+    },
+    {
+      "display_name": "GPT-5.6 Sol",
+      "cli_id": "gpt-5.6-sol",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": 272,
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": null,
+        "output": 30.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 10.00,
+        "cached_input": 1.00,
+        "cache_write": null,
+        "output": 45.00
+      },
+      "credits_per_1m": {
+        "input": 500,
+        "cached_input": 50,
+        "cache_write": null,
+        "output": 3000
+      },
+      "long_context_credits_per_1m": {
+        "input": 1000,
+        "cached_input": 100,
+        "cache_write": null,
+        "output": 4500
+      },
+      "recommendation": "avoid-unless-justified",
+      "notes": "GPT-5.6 powerful variant. Very high output cost ($30/1M default). Only for tasks requiring top-tier OpenAI reasoning."
+    },
+    {
+      "display_name": "GPT-5.6 Terra",
+      "cli_id": "gpt-5.6-terra",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": 272,
+      "pricing_usd_per_1m": {
+        "input": 2.50,
+        "cached_input": 0.25,
+        "cache_write": null,
+        "output": 15.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": null,
+        "output": 22.50
+      },
+      "credits_per_1m": {
+        "input": 250,
+        "cached_input": 25,
+        "cache_write": null,
+        "output": 1500
+      },
+      "long_context_credits_per_1m": {
+        "input": 500,
+        "cached_input": 50,
+        "cache_write": null,
+        "output": 2250
+      },
+      "recommendation": "high",
+      "notes": "GPT-5.6 versatile mid-tier. Same context threshold as Sol (272K) but cheaper. Long context tier doubles input cost."
+    },
+    {
+      "display_name": "Claude Sonnet 5",
+      "cli_id": "claude-sonnet-5",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 2.00,
+        "cached_input": 0.20,
+        "cache_write": 2.50,
+        "output": 10.00
+      },
+      "credits_per_1m": {
+        "input": 200,
+        "cached_input": 20,
+        "cache_write": 250,
+        "output": 1000
+      },
+      "recommendation": "complex_reasoning",
+      "notes": "Promotional pricing through August 31 2026 ($2/1M input, $10/1M output). Likely to increase after. Latest Sonnet generation — prefer over 4.x for new work."
+    },
+    {
+      "display_name": "Claude Opus 4.8 (fast mode)",
+      "cli_id": "claude-opus-4.8-fast",
+      "provider": "Anthropic",
+      "status": "preview",
+      "category": "Powerful",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 10.00,
+        "cached_input": 1.00,
+        "cache_write": 12.50,
+        "output": 50.00
+      },
+      "credits_per_1m": {
+        "input": 1000,
+        "cached_input": 100,
+        "cache_write": 1250,
+        "output": 5000
+      },
+      "recommendation": "avoid-unless-justified",
+      "notes": "Preview. Double the price of standard Opus 4.8 ($10/1M input vs $5/1M). Use only when speed of Opus-tier reasoning is specifically required."
+    },
+    {
+      "display_name": "Kimi K2.7 Code",
+      "cli_id": "kimi-k2.7-code",
+      "provider": "Moonshot AI",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 0.95,
+        "cached_input": 0.19,
+        "cache_write": null,
+        "output": 4.00
+      },
+      "credits_per_1m": {
+        "input": 95,
+        "cached_input": 19,
+        "cache_write": null,
+        "output": 400
+      },
+      "recommendation": "moderate",
+      "notes": "Moonshot AI code-focused model. Good price/quality ratio for code tasks — cheaper than Claude Haiku at input, pricier at output."
     }
   ],
   "cost_tiers": {
     "cheapest": ["gpt-5.4-nano", "gpt-5-mini", "raptor-mini"],
-    "low": ["mai-code-1-flash", "gpt-5.4-mini", "gemini-3-flash"],
-    "moderate": ["claude-haiku-4.5", "gemini-2.5-pro", "gpt-5.3-codex", "gemini-3.5-flash"],
-    "high": ["claude-sonnet-4.6", "claude-sonnet-4.5", "claude-sonnet-4", "gpt-5.4", "gemini-3.1-pro"],
-    "very_high": ["claude-opus-4.8", "claude-opus-4.7", "claude-opus-4.6", "claude-opus-4.5", "gpt-5.5"],
-    "extreme": ["claude-fable-5"]
+    "low": ["mai-code-1-flash", "gpt-5.4-mini", "gemini-3-flash", "kimi-k2.7-code"],
+    "moderate": ["claude-haiku-4.5", "gemini-2.5-pro", "gpt-5.3-codex", "gemini-3.5-flash", "gpt-5.6-luna"],
+    "high": ["claude-sonnet-4.6", "claude-sonnet-4.5", "claude-sonnet-5", "gpt-5.4", "gemini-3.1-pro", "gpt-5.6-terra"],
+    "very_high": ["claude-opus-4.8", "claude-opus-4.7", "claude-opus-4.6", "claude-opus-4.5", "gpt-5.5", "gpt-5.6-sol"],
+    "extreme": ["claude-opus-4.8-fast", "claude-fable-5"]
   },
   "strategy": {
-    "heartbeat": "gpt-5-mini",
-    "bounded_tasks": "gpt-5-mini or gpt-5.4-nano",
-    "code_analysis": "mai-code-1-flash or gpt-5.3-codex",
-    "complex_reasoning": "claude-sonnet-4.6",
-    "multi_file_generation": "claude-sonnet-4.6",
+    "heartbeat": "gpt-5.4-nano",
+    "bounded_tasks": "gpt-5.4-nano or gpt-5-mini",
+    "code_analysis": "mai-code-1-flash or gpt-5.3-codex or kimi-k2.7-code",
+    "complex_reasoning": "claude-sonnet-5",
+    "multi_file_generation": "claude-sonnet-5",
     "long_context": "gemini-3.1-pro (up to 200K cheap) or gpt-5.4 (up to 272K cheap)",
     "critical_only": "claude-opus-4.8",
-    "avoid": ["gpt-5.5 (long context)", "claude-fable-5", "claude-opus-* (unless sonnet fails)"]
+    "avoid": ["gpt-5.5 (long context)", "gpt-5.6-sol (long context)", "claude-opus-4.8-fast", "claude-fable-5", "claude-opus-* (unless sonnet fails)"]
   },
   "billing_model_change": {
     "effective": "2026-06-01",

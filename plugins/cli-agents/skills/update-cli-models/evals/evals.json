@@ -1,0 +1,38 @@
+[
+  {
+    "id": "eval-1-positive-update-all",
+    "type": "positive",
+    "prompt": "update cli models — copilot just added new models and the prices changed",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-2-positive-stale",
+    "type": "positive",
+    "prompt": "model costs are stale, refresh the model catalog",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-3-positive-specific",
+    "type": "positive",
+    "prompt": "update agy models json with the latest gemini pricing",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-4-positive-sync",
+    "type": "positive",
+    "prompt": "sync model catalog and propagate cheapest models to all copies",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-5-negative-unrelated",
+    "type": "negative",
+    "prompt": "run a copilot agent to refactor this file",
+    "should_trigger": false
+  },
+  {
+    "id": "eval-6-negative-cheapest-only",
+    "type": "negative",
+    "prompt": "what is the cheapest copilot model right now",
+    "should_trigger": false
+  }
+]

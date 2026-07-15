@@ -55,11 +55,11 @@
     },
     {
       "name": "cli-agents",
-      "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to 6 backends (Claude, Copilot, Gemini, Agy, Codex, local Gemma 4 12B — ~2s). 11 expert agent personas: security auditor, red-team reviewer, architect review, compliance, PR reviewer, test writer, debate synthesizer, output validator, self-critic, performance analyst, refactor expert. Includes KV cache orchestrator and API compatibility proxy.",
+      "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to 6 backends (Claude, Copilot, Gemini, Agy, Codex, local Gemma 4 12B — ~2s). 11 expert agent personas: security auditor, red-team reviewer, architect review, compliance, PR reviewer, test writer, debate synthesizer, output validator, self-critic, performance analyst, refactor expert. Includes model catalog manager (update-cli-models), KV cache orchestrator and API compatibility proxy. v2.1.0.",
       "source": "./plugins/cli-agents",
       "strict": true,
       "category": "cli-agents",
-      "tags": ["task-router", "run-agent", "claude", "copilot", "gemini", "antigravity", "agy", "codex", "local-llm", "llama-server", "gemma", "cli", "sub-agent", "persona", "red-team", "adversarial", "security-audit", "code-review", "kv-cache", "proxy", "local-llm-setup"]
+      "tags": ["task-router", "run-agent", "claude", "copilot", "gemini", "antigravity", "agy", "codex", "local-llm", "llama-server", "gemma", "cli", "sub-agent", "persona", "red-team", "adversarial", "security-audit", "code-review", "kv-cache", "proxy", "local-llm-setup", "model-catalog", "model-pricing", "update-cli-models"]
     },
     {
       "name": "dev-utils",

@@ -1,0 +1,1 @@
+../../../scripts/sync_cheapest_models.py

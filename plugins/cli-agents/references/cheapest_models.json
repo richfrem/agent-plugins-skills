@@ -20,7 +20,7 @@
     "description": "Cheapest Anthropic model ($1/$5 per MTok input/output)"
   },
   "codex": {
-    "model": "gpt-5-mini",
+    "model": "gpt-5.4-nano",
     "cost": "Paid (Per-token)",
     "description": "OpenAI-compatible endpoints"
   }

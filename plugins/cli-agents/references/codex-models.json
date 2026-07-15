@@ -1,0 +1,205 @@
+{
+  "_meta": {
+    "source": "https://openai.com/api/pricing/ + web search July 2026 (OpenAI API blocks direct fetch — verify periodically)",
+    "billing_model": "Per-token (direct OpenAI API via codex CLI)",
+    "updated": "2026-07-15",
+    "notes": [
+      "codex CLI routes to OpenAI-compatible endpoints.",
+      "GPT-5 and GPT-5-mini are no longer actively listed in OpenAI primary catalog as of July 2026 — superseded by GPT-5.6 family.",
+      "GPT-5.3-Codex is the dedicated code-focused model, tuned for agentic coding and long code sessions.",
+      "GPT-5.4 family (nano/mini/full) remains available and is the cost-efficient mid tier.",
+      "GPT-5.6 family (Luna/Terra/Sol) is the current flagship, released July 2026.",
+      "Batch API offers ~50% discount on standard rates — not reflected here (standard rates only).",
+      "Model IDs match the --model flag passed to the codex CLI binary."
+    ]
+  },
+  "models": [
+    {
+      "display_name": "GPT-5.4 nano",
+      "cli_id": "gpt-5.4-nano",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 0.20,
+        "cached_input": 0.02,
+        "cache_write": null,
+        "output": 1.25
+      },
+      "recommendation": "cheapest",
+      "notes": "Cheapest OpenAI model available. Use for heartbeats, health checks, high-frequency bounded tasks."
+    },
+    {
+      "display_name": "GPT-5 mini",
+      "cli_id": "gpt-5-mini",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 0.25,
+        "cached_input": 0.025,
+        "cache_write": null,
+        "output": 2.00
+      },
+      "recommendation": "cheapest",
+      "notes": "Slightly pricier than gpt-5.4-nano but better quality. Good default for routine codex tasks."
+    },
+    {
+      "display_name": "GPT-5.4 mini",
+      "cli_id": "gpt-5.4-mini",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 0.75,
+        "cached_input": 0.075,
+        "cache_write": null,
+        "output": 4.50
+      },
+      "recommendation": "moderate",
+      "notes": "Mid-tier lightweight. Higher quality than gpt-5-mini at 3x the input cost."
+    },
+    {
+      "display_name": "GPT-5.3 Codex",
+      "cli_id": "gpt-5.3-codex",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 1.75,
+        "cached_input": 0.175,
+        "cache_write": null,
+        "output": 14.00
+      },
+      "recommendation": "code_analysis",
+      "notes": "Dedicated code model. Tuned for agentic coding and long code sessions. Best OpenAI option for complex code transformation."
+    },
+    {
+      "display_name": "GPT-5.4",
+      "cli_id": "gpt-5.4",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": 272,
+      "pricing_usd_per_1m": {
+        "input": 2.50,
+        "cached_input": 0.25,
+        "cache_write": null,
+        "output": 15.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": null,
+        "output": 22.50,
+        "threshold_note": "Long context tier kicks in >272K input tokens"
+      },
+      "recommendation": "high",
+      "notes": "Versatile mid-high tier. Long context tier doubles input cost above 272K tokens."
+    },
+    {
+      "display_name": "GPT-5.5",
+      "cli_id": "gpt-5.5",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": null,
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": null,
+        "output": 30.00
+      },
+      "recommendation": "avoid-unless-justified",
+      "notes": "Very high output cost ($30/1M). Only justified when gpt-5.4 reasoning is insufficient."
+    },
+    {
+      "display_name": "GPT-5.6 Luna",
+      "cli_id": "gpt-5.6-luna",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": 200,
+      "pricing_usd_per_1m": {
+        "input": 1.00,
+        "cached_input": 0.10,
+        "cache_write": null,
+        "output": 6.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 2.00,
+        "cached_input": 0.20,
+        "cache_write": null,
+        "output": 9.00,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "recommendation": "moderate",
+      "notes": "GPT-5.6 lightweight flagship (July 2026). Cheaper than Terra/Sol. Good mid-tier option."
+    },
+    {
+      "display_name": "GPT-5.6 Terra",
+      "cli_id": "gpt-5.6-terra",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": 272,
+      "pricing_usd_per_1m": {
+        "input": 2.50,
+        "cached_input": 0.25,
+        "cache_write": null,
+        "output": 15.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": null,
+        "output": 22.50,
+        "threshold_note": "Long context tier kicks in >272K input tokens"
+      },
+      "recommendation": "high",
+      "notes": "GPT-5.6 versatile tier. Same pricing as gpt-5.4 but newer generation."
+    },
+    {
+      "display_name": "GPT-5.6 Sol",
+      "cli_id": "gpt-5.6-sol",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": 272,
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": null,
+        "output": 30.00
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 10.00,
+        "cached_input": 1.00,
+        "cache_write": null,
+        "output": 45.00,
+        "threshold_note": "Long context tier kicks in >272K input tokens"
+      },
+      "recommendation": "avoid-unless-justified",
+      "notes": "GPT-5.6 powerful flagship. Very high output cost ($30/1M). Long context extremely expensive."
+    }
+  ],
+  "cost_tiers": {
+    "cheapest": ["gpt-5.4-nano", "gpt-5-mini"],
+    "low": ["gpt-5.4-mini"],
+    "moderate": ["gpt-5.3-codex", "gpt-5.6-luna"],
+    "high": ["gpt-5.4", "gpt-5.6-terra"],
+    "very_high": ["gpt-5.5", "gpt-5.6-sol"]
+  },
+  "strategy": {
+    "heartbeat": "gpt-5.4-nano",
+    "default": "gpt-5-mini",
+    "code_analysis": "gpt-5.3-codex",
+    "complex_reasoning": "gpt-5.4",
+    "long_context": "gpt-5.4 (up to 272K cheap) or gpt-5.6-luna (up to 200K cheap)",
+    "avoid": ["gpt-5.5", "gpt-5.6-sol (long context)"]
+  }
+}

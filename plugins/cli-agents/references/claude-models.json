@@ -1,0 +1,287 @@
+{
+  "_meta": {
+    "source": "https://platform.claude.com/docs/en/about-claude/models/overview",
+    "billing_model": "Per-token (direct Anthropic API via claude CLI)",
+    "updated": "2026-07-15",
+    "notes": [
+      "Claude API model IDs use DASHES not dots: claude-opus-4-8, not claude-opus-4.8.",
+      "Copilot CLI uses dot notation (claude-sonnet-4.6) — that is a different routing layer.",
+      "claude-fable-5 IS generally available on the direct Claude API as of June 9 2026.",
+      "claude-fable-5 is marked unavailable on Copilot specifically — not on direct API.",
+      "claude-mythos-5 is invitation-only via Project Glasswing — not self-serve.",
+      "claude-sonnet-5 introductory pricing ($2/$10) applies through August 31 2026.",
+      "claude-opus-4-1 is deprecated and will be retired August 5 2026.",
+      "Context windows: Haiku 4.5 = 200K tokens. All others = 1M tokens.",
+      "Max output: Haiku 4.5 = 64K. Opus/Sonnet = 128K (300K via Batch API beta header).",
+      "Effort parameter defaults to 'high' on Opus 4.8 and Sonnet 5 in Claude API and Claude Code."
+    ]
+  },
+  "models": [
+    {
+      "display_name": "Claude Haiku 4.5",
+      "cli_id": "claude-haiku-4-5",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": 200,
+      "max_output_k": 64,
+      "knowledge_cutoff": "Feb 2025",
+      "pricing_usd_per_1m": {
+        "input": 1.00,
+        "cached_input": 0.10,
+        "cache_write": 1.25,
+        "output": 5.00
+      },
+      "features": {
+        "extended_thinking": true,
+        "adaptive_thinking": false
+      },
+      "recommendation": "cheapest",
+      "notes": "Cheapest current Claude model. Fastest latency. Extended thinking available. 200K context window (smaller than other models)."
+    },
+    {
+      "display_name": "Claude Sonnet 5",
+      "cli_id": "claude-sonnet-5",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "Jan 2026",
+      "pricing_usd_per_1m": {
+        "input": 3.00,
+        "cached_input": 0.30,
+        "cache_write": 3.75,
+        "output": 15.00
+      },
+      "promotional_pricing_usd_per_1m": {
+        "input": 2.00,
+        "cached_input": 0.20,
+        "cache_write": 2.50,
+        "output": 10.00,
+        "expires": "2026-08-31"
+      },
+      "features": {
+        "extended_thinking": false,
+        "adaptive_thinking": true
+      },
+      "recommendation": "complex_reasoning",
+      "notes": "Best speed/intelligence combination. At promo pricing ($2/$10 until Aug 31 2026) cheaper than Sonnet 4.6. Adaptive thinking always available. 1M context window."
+    },
+    {
+      "display_name": "Claude Opus 4.8",
+      "cli_id": "claude-opus-4-8",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "Jan 2026",
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": 6.25,
+        "output": 25.00
+      },
+      "features": {
+        "extended_thinking": false,
+        "adaptive_thinking": true
+      },
+      "recommendation": "critical_only",
+      "notes": "For complex agentic coding and enterprise work. Adaptive thinking defaults to 'high' effort. Recommended by Anthropic as default for complex tasks. 1M context window, 128K output."
+    },
+    {
+      "display_name": "Claude Fable 5",
+      "cli_id": "claude-fable-5",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "Jan 2026",
+      "pricing_usd_per_1m": {
+        "input": 10.00,
+        "cached_input": 1.00,
+        "cache_write": 12.50,
+        "output": 50.00
+      },
+      "features": {
+        "extended_thinking": false,
+        "adaptive_thinking": true
+      },
+      "recommendation": "avoid-unless-justified",
+      "notes": "Most capable widely released Claude model. GA on direct API since June 9 2026. NOTE: currently unavailable on Copilot CLI specifically. For highest capability workloads only. Uses new tokenizer — same text produces ~30% more tokens vs pre-4.7 models.",
+      "copilot_available": false
+    },
+    {
+      "display_name": "Claude Mythos 5",
+      "cli_id": "claude-mythos-5",
+      "provider": "Anthropic",
+      "status": "invitation-only",
+      "available": false,
+      "category": "Powerful",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "Jan 2026",
+      "pricing_usd_per_1m": {
+        "input": 10.00,
+        "cached_input": 1.00,
+        "cache_write": 12.50,
+        "output": 50.00
+      },
+      "features": {
+        "extended_thinking": false,
+        "adaptive_thinking": true
+      },
+      "recommendation": "unavailable",
+      "notes": "Shares Fable 5 specs and pricing. Invitation-only via Project Glasswing for defensive cybersecurity workflows. No self-serve access."
+    },
+    {
+      "display_name": "Claude Opus 4.7",
+      "cli_id": "claude-opus-4-7",
+      "provider": "Anthropic",
+      "status": "legacy",
+      "category": "Powerful",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "Jan 2026",
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": 6.25,
+        "output": 25.00
+      },
+      "features": {
+        "extended_thinking": false,
+        "adaptive_thinking": true
+      },
+      "recommendation": "migrate-to-opus-4-8",
+      "notes": "Legacy. Same price as Opus 4.8. Uses new tokenizer (~30% more tokens vs pre-4.7). Migrate to claude-opus-4-8."
+    },
+    {
+      "display_name": "Claude Opus 4.6",
+      "cli_id": "claude-opus-4-6",
+      "provider": "Anthropic",
+      "status": "legacy",
+      "category": "Powerful",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "May 2025",
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": 6.25,
+        "output": 25.00
+      },
+      "features": {
+        "extended_thinking": true,
+        "adaptive_thinking": true
+      },
+      "recommendation": "migrate-to-opus-4-8",
+      "notes": "Legacy. Extended thinking available. Migrate to claude-opus-4-8."
+    },
+    {
+      "display_name": "Claude Sonnet 4.6",
+      "cli_id": "claude-sonnet-4-6",
+      "provider": "Anthropic",
+      "status": "legacy",
+      "category": "Versatile",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "knowledge_cutoff": "Aug 2025",
+      "pricing_usd_per_1m": {
+        "input": 3.00,
+        "cached_input": 0.30,
+        "cache_write": 3.75,
+        "output": 15.00
+      },
+      "features": {
+        "extended_thinking": true,
+        "adaptive_thinking": true
+      },
+      "recommendation": "migrate-to-sonnet-5",
+      "notes": "Legacy. Extended and adaptive thinking available. Migrate to claude-sonnet-5 (cheaper at promo pricing)."
+    },
+    {
+      "display_name": "Claude Sonnet 4.5",
+      "cli_id": "claude-sonnet-4-5",
+      "provider": "Anthropic",
+      "status": "legacy",
+      "category": "Versatile",
+      "context_window_k": 200,
+      "max_output_k": 64,
+      "knowledge_cutoff": "Jan 2025",
+      "pricing_usd_per_1m": {
+        "input": 3.00,
+        "cached_input": 0.30,
+        "cache_write": 3.75,
+        "output": 15.00
+      },
+      "features": {
+        "extended_thinking": true,
+        "adaptive_thinking": false
+      },
+      "recommendation": "migrate-to-sonnet-5",
+      "notes": "Legacy. 200K context window only. Migrate to claude-sonnet-5."
+    },
+    {
+      "display_name": "Claude Opus 4.5",
+      "cli_id": "claude-opus-4-5",
+      "provider": "Anthropic",
+      "status": "legacy",
+      "category": "Powerful",
+      "context_window_k": 200,
+      "max_output_k": 64,
+      "knowledge_cutoff": "May 2025",
+      "pricing_usd_per_1m": {
+        "input": 5.00,
+        "cached_input": 0.50,
+        "cache_write": 6.25,
+        "output": 25.00
+      },
+      "features": {
+        "extended_thinking": true,
+        "adaptive_thinking": false
+      },
+      "recommendation": "migrate-to-opus-4-8",
+      "notes": "Legacy. 200K context, 64K output. Migrate to claude-opus-4-8."
+    },
+    {
+      "display_name": "Claude Opus 4.1",
+      "cli_id": "claude-opus-4-1",
+      "provider": "Anthropic",
+      "status": "deprecated",
+      "category": "Powerful",
+      "context_window_k": 200,
+      "max_output_k": 32,
+      "knowledge_cutoff": "Jan 2025",
+      "pricing_usd_per_1m": {
+        "input": 15.00,
+        "cached_input": 1.50,
+        "cache_write": 18.75,
+        "output": 75.00
+      },
+      "features": {
+        "extended_thinking": true,
+        "adaptive_thinking": false
+      },
+      "recommendation": "unavailable",
+      "notes": "DEPRECATED. Retires August 5 2026. Very expensive ($15/$75). Migrate immediately to claude-opus-4-8."
+    }
+  ],
+  "cost_tiers": {
+    "cheapest": ["claude-haiku-4-5"],
+    "high": ["claude-sonnet-5", "claude-sonnet-4-6", "claude-sonnet-4-5"],
+    "very_high": ["claude-opus-4-8", "claude-opus-4-7", "claude-opus-4-6", "claude-opus-4-5"],
+    "extreme": ["claude-fable-5"],
+    "do_not_use": ["claude-opus-4-1", "claude-mythos-5"]
+  },
+  "strategy": {
+    "heartbeat": "claude-haiku-4-5",
+    "default": "claude-sonnet-5",
+    "complex_reasoning": "claude-sonnet-5",
+    "agentic_coding": "claude-opus-4-8",
+    "highest_capability": "claude-fable-5",
+    "avoid": ["claude-opus-4-1 (deprecated Aug 5 2026)", "claude-mythos-5 (invitation-only)"]
+  }
+}

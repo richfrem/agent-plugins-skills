@@ -2546,6 +2546,66 @@
       "description": ""
     },
     {
+      "src": "plugins/cli-agents/references/cheapest_models.json",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": "Master cheapest model reference for update-cli-models skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/cheapest_models.md",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": "Master cheapest model reference (markdown) for update-cli-models skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/copilot-models.json",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/copilot-models.json",
+      "strategy": "symlink",
+      "description": "Copilot model catalog for update-cli-models skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/agy-models.json",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/agy-models.json",
+      "strategy": "symlink",
+      "description": "Agy/Gemini model catalog for update-cli-models skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/claude-models.json",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/claude-models.json",
+      "strategy": "symlink",
+      "description": "Claude direct-API model catalog for update-cli-models skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/codex-models.json",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/codex-models.json",
+      "strategy": "symlink",
+      "description": "OpenAI/Codex model catalog for update-cli-models skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/copilot-models.json",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/copilot-models.json",
+      "strategy": "symlink",
+      "description": "Copilot model catalog for copilot-cli-agent skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/agy-models.json",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/agy-models.json",
+      "strategy": "symlink",
+      "description": "Agy/Gemini model catalog for agy-cli-agent skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/claude-models.json",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/claude-models.json",
+      "strategy": "symlink",
+      "description": "Claude direct-API model catalog for claude-cli-agent skill"
+    },
+    {
+      "src": "plugins/cli-agents/references/codex-models.json",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/codex-models.json",
+      "strategy": "symlink",
+      "description": "OpenAI/Codex model catalog for codex-cli-agent skill"
+    },
+    {
       "src": "plugins/agent-loops/references/cheapest_models.md",
       "dst": "plugins/agent-loops/skills/agent-swarm/references/cheapest_models.md",
       "strategy": "symlink",

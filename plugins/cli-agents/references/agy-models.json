@@ -1,15 +1,17 @@
 {
   "_meta": {
-    "source": "agy models (Antigravity CLI)",
+    "source": "https://ai.google.dev/pricing (Google AI API pricing — agy routes to same models)",
     "billing_model": "Google AI subscription / per-token via Antigravity",
-    "updated": "2026-06-28",
+    "updated": "2026-07-15",
     "notes": [
       "agy is the sole Gemini CLI since the standalone gemini binary retired June 18 2026.",
       "Thinking level (Low/Medium/High) is part of the model identity in agy — see display_name.",
       "Flash is designed for speed, coding, tool use, and agentic workflows. Pro is for deep reasoning.",
       "Flash is ~4x faster (tokens/sec) and cheaper per token than Pro.",
       "Flash with high thinking levels can inflate tokens via Thought Preservation — use Low for CLI dispatch.",
-      "Gemini 3.1 Flash-Lite not available in agy as of 2026-06-28."
+      "Gemini 3.1 Flash-Lite not available in agy as of 2026-06-28.",
+      "Gemini 3.1 Pro real Google API model ID: gemini-3.1-pro-preview. agy CLI uses display name 'Gemini 3.1 Pro (Low/High)'.",
+      "Gemini 3.1 Pro has a long context tier: >200K tokens input triggers higher pricing ($4.00 vs $2.00/1M)."
     ]
   },
   "models": [
@@ -46,22 +48,26 @@
     {
       "display_name": "Gemini 3.1 Pro (Low)",
       "cli_id": "gemini-3.1-pro",
+      "google_api_id": "gemini-3.1-pro-preview",
       "thinking_level": "low",
       "status": "available",
       "pricing_usd_per_1m": { "input": 2.00, "output": 12.00 },
+      "long_context_pricing_usd_per_1m": { "input": 4.00, "output": 18.00, "threshold_note": "Long context tier kicks in >200K input tokens" },
       "speed_relative": "1x (baseline)",
       "recommendation": "Deep reasoning, architecture decisions, expert-level analysis",
-      "notes": "Heavier flagship model. Superior at abstract reasoning, ARC-AGI, long-context comprehension. Slower and more expensive per token than Flash."
+      "notes": "Heavier flagship model. Superior at abstract reasoning, ARC-AGI, long-context comprehension. Slower and more expensive per token than Flash. Watch for long context tier if prompts exceed 200K tokens."
     },
     {
       "display_name": "Gemini 3.1 Pro (High)",
       "cli_id": "gemini-3.1-pro-high",
+      "google_api_id": "gemini-3.1-pro-preview",
       "thinking_level": "high",
       "status": "available",
       "pricing_usd_per_1m": { "input": 2.00, "output": 12.00 },
+      "long_context_pricing_usd_per_1m": { "input": 4.00, "output": 18.00, "threshold_note": "Long context tier kicks in >200K input tokens" },
       "speed_relative": "1x (baseline)",
       "recommendation": "Most demanding reasoning tasks only",
-      "notes": "Maximum reasoning depth. High cost. Use for critical architecture reviews or complex novel problems."
+      "notes": "Maximum reasoning depth. High cost. Use for critical architecture reviews or complex novel problems. Long context prompts (>200K) cost $4/1M input, $18/1M output."
     },
     {
       "display_name": "Claude Sonnet 4.6 (Thinking)",
