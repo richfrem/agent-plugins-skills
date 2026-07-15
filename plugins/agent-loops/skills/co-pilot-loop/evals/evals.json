@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "id": "co-pilot-loop-positive-1",
+      "type": "positive",
+      "prompt": "delegate this feature implementation to gemini as qa",
+      "should_trigger": true
+    },
+    {
+      "id": "co-pilot-loop-positive-2",
+      "type": "positive",
+      "prompt": "/co-pilot-loop coordinate gemini sub-agent on writing a testing script",
+      "should_trigger": true
+    },
+    {
+      "id": "co-pilot-loop-negative-1",
+      "type": "negative",
+      "prompt": "explain how the cache system works",
+      "should_trigger": false
+    },
+    {
+      "id": "co-pilot-loop-negative-2",
+      "type": "negative",
+      "prompt": "audit my portfolio weights",
+      "should_trigger": false
+    }
+  ]
+}
