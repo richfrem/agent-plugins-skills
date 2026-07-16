@@ -7,61 +7,105 @@ allowed-tools: Bash, Read, Write
 
 # Cooperative Co-Pilot Loop (Supervisor Protocol)
 
-The **Co-Pilot Loop** splits software engineering tasks between a **Supervisor (Claude / Outer Loop)** and an **Executor (Gemini 3.5 Flash / Inner Loop)**. The Supervisor acts as the product manager and QA, while the Executor performs the coding in an isolated environment.
+The **Co-Pilot Loop** splits software engineering tasks between a **Supervisor (Outer Loop — you)** and an **Executor (Inner Loop — a lightweight companion sub-agent)**. The Supervisor acts as the product manager and QA director, while the Executor performs spec writing, planning, and coding inside an isolated worktree.
+
+You do not know which CLI or chat interface the user is using — and that's fine. The skill is model-agnostic. It reads the cheapest model for the active CLI at runtime.
 
 ---
 
 ## 1. Setup & Orientation
 
-### Bootstrapping the Sub-Agent
-Before spawning, prompt the user for execution details (or use default configuration):
-*   **CLI Backend**: `agy` (or `copilot`, `claude`)
-*   **LLM Model**: `gemini-3.5-flash`
+### Step 1A — Determine the active CLI backend
+Ask the user once (or detect from context):
+> "Which CLI backend is available for the sub-agent? (`agy`, `claude`, `copilot`, `codex`, `llama`)"
+
+### Step 1B — Look up the cheapest model for that backend
+Read `plugins/agent-loops/references/cheapest_models.json` (relative to the repo root where this skill is installed). Select the `model` field for the detected CLI:
+
+| CLI | Cheapest Model | Notes |
+|:----|:--------------|:------|
+| `agy` | `gemini-3.5-flash` | Use `--model "Gemini 3.5 Flash (Low)"` — lower thinking level keeps token costs down |
+| `claude` | `claude-haiku-4.5` | $1/$5 per MTok input/output |
+| `copilot` | `gpt-5.4-nano` | 20 cr/1M input, 125 cr/1M output |
+| `codex` | `gpt-5.4-nano` | OpenAI-compatible endpoints |
+| `llama` | `gemma-4-12b` | Free, self-hosted at port 8089 |
+
+> **Source of truth**: `plugins/agent-loops/references/cheapest_models.json`. Always read this file — do not hardcode model names. The table above is a snapshot only.
+
+### Step 1C — Spawn the sub-agent
+Use `run_agent.py` with the resolved CLI and model:
+```bash
+# For agy (recommended — cheapest Gemini)
+python ./scripts/run_agent.py <PERSONA_FILE> <PACKET_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
+  --cli agy --model "Gemini 3.5 Flash (Low)" < /dev/null
+
+# For claude CLI
+python ./scripts/run_agent.py <PERSONA_FILE> <PACKET_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
+  --cli claude --model claude-haiku-4.5 < /dev/null
+
+# For copilot CLI
+python ./scripts/run_agent.py <PERSONA_FILE> <PACKET_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
+  --cli copilot --model gpt-5.4-nano < /dev/null
+```
+
+> **CRITICAL**: Always append `< /dev/null` to prevent `SIGTTIN` process suspension in background execution.
 
 ---
 
 ## 2. Strategy Packet & Handoff
 
-Create a Git worktree or target branch to isolate the work. Generate the `Strategy Packet` containing:
-1.  **Objective**: What feature/bug is being implemented.
-2.  **Constraints**: Strict compliance with TDD rules (`test-driven-development.md`), symlinking policies, and coding conventions.
-3.  **No Git Rule**: The Executor is strictly forbidden from running Git commands or editing version history.
+Create an isolated Git worktree or branch for the Executor. Generate a `Strategy Packet` (via `scripts/agent_orchestrator.py packet`) containing:
 
-Hand the Strategy Packet to the Executor (Gemini 3.5 Flash) and start the parallel session.
+1. **Objective** — what feature/bug is being implemented.
+2. **Constraints** — TDD rules, symlink policy, coding conventions, no deletions.
+3. **No-Git Rule** — the Executor is strictly **forbidden** from running any `git` commands.
+4. **Spec output path** — e.g. `docs/superpowers/specs/YYYY-MM-DD-<feature>-spec.md`.
+5. **Plan output path** — e.g. `implementation_plan.md`.
+
+Hand the Strategy Packet to the Executor and start the parallel session.
 
 ---
 
 ## 3. Supervision & Review Gates
 
-You (Claude) must monitor the sub-agent's progress and enforce the following approvals:
+You (the Supervisor) enforce the following sequential gates. **No gate may be skipped.**
 
-### Gate 1: Design Spec Review
-When Gemini generates a design spec (e.g. `docs/superpowers/specs/Y-M-D-spec.md`), audit it:
-*   Ensure there are no vague placeholders ("TODO", "TBD").
-*   Verify the architectural decisions align with the codebase's existing patterns.
-*   *Action*: Approve to proceed, or reject with specific design feedback.
+### Gate 1 — Design Spec Review
+When the Executor generates a design spec, audit it:
+- No vague placeholders (`TODO`, `TBD`, `REPLACE`).
+- Architectural decisions align with existing ADRs and codebase patterns.
+- *Action*: Approve → proceed to Gate 2. Reject → pass specific written feedback back to Executor.
 
-### Gate 2: Implementation Plan Review
-Review Gemini's `implementation_plan.md` or `task.md`:
-*   Ensure files are grouped logically by dependencies.
-*   Ensure a clear verification test plan is included.
-*   *Action*: Approve, or request updates.
+### Gate 2 — Implementation Plan Review
+Review the Executor's `implementation_plan.md` / `task.md`:
+- Files grouped logically by dependency layer.
+- A clear automated verification plan is included.
+- *Action*: Approve → proceed to Gate 3. Reject → return with specific revision notes.
 
-### Gate 3: QA & Verification
-Once Gemini signals completion, execute the verification suite:
-*   Run tests: `python3 run_tests.py` or `npm run test`.
-*   Inspect file deltas (`git diff`).
-*   Classify issues into severity tiers:
-    *   🔴 **CRITICAL**: Fails compiling or tests. (Action: Reject, pass error logs back to Gemini).
-    *   🟡 **MODERATE**: Code works but violates conventions/ADRs. (Action: Flag for revision).
-    *   🟢 **MINOR**: Stylistic naming updates. (Action: Fix directly and proceed).
+### Gate 3 — QA & Verification
+Once Executor signals completion, run the verification suite:
+```bash
+python3 run_tests.py    # or npm run test / npm run build
+git diff                # inspect all changed files
+```
+
+Classify issues using the severity schema:
+- 🔴 **CRITICAL** — fails compile or tests. Return error logs to Executor immediately.
+- 🟡 **MODERATE** — works but violates conventions or ADRs. Return with the specific ADR reference.
+- 🟢 **MINOR** — stylistic only. Fix directly yourself; do not return to Executor.
+
+Generate correction packets via:
+```bash
+python ./scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN.md --feedback "Specific failure reason"
+```
 
 ---
 
 ## 4. Retrospective & Closure
 
 Once all verification tests pass:
-1.  Merge the worktree or checkout branch back to `main`.
-2.  Update the language model (RLM) summaries in the cache profiles.
-3.  Commit and push the changes to Git.
-4.  Write a session retrospective capturing any optimizations to the prompt templates or skill instructions.
+1. Merge the worktree / branch back to `main` (only from the main repo root, never from inside the worktree).
+2. Update RLM summaries and context files.
+3. `git commit` the changes.
+4. Write a session retrospective via `python ./scripts/agent_orchestrator.py retro`.
+5. Capture any prompt template improvements to prevent repeat failures.
