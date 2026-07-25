@@ -1,7 +1,5 @@
 # GEMINI.md
 
-> **June 18, 2026 — Gemini CLI consumer sunset:** Free, Pro, and Ultra users lose access to the `gemini` binary on this date. Enterprise Gemini Code Assist licenses are unaffected. Use the **Antigravity (`agy`) CLI** for frontier models going forward — see `cli-agents/skills/agy-cli-agent`.
-
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
@@ -165,6 +163,38 @@ skill, or sub-agent in this repo. Three key capabilities:
 
 ---
 
+## Idea Intake Entry Points
+
+Three front doors exist for a new idea, problem, or need. They are **not 1:1** — pick by how
+well the problem is already understood, not by idea "type":
+
+| Starting point | Entry point | Output |
+|---|---|---|
+| Already know exactly what's broken/needed | `github-issue-agent` — file the issue directly | GitHub Issue |
+| Know WHAT to build, need to design the HOW (single subsystem, one session) | `superpowers:brainstorming` | `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` |
+| Don't know the shape yet — unknowns, multiple stakeholders, need a prototype first | `exploration-cycle-plugin`'s `intake-agent` (multi-session discovery) | `exploration/handoffs/handoff-package.md` |
+
+**Confirmed bridge, not a guess:** `handoff-preparer-agent.md` explicitly offers a "Superpowers"
+destination and writes to the *same* `docs/superpowers/specs/` path/format `brainstorming`
+produces directly. Exploration-cycle is a heavier front-end for fuzzy problems — it funnels into
+the same `writing-plans` → `docs/superpowers/plans/` pipeline once the problem is shaped, not a
+competing path. (The "Spec-Kitty" destination also offered there is unused in this repo — see the
+spec-kitty note above.)
+
+**When to create/link the GitHub issue:** at the commit-to-build moment (after `writing-plans`
+produces a plan doc), not at idea time — early design thinking can dead-end, and tracking
+abandoned explorations is noise. If an issue already exists and the fix turns out to need real
+design work, drop into brainstorming from there and link the resulting spec back onto the *same*
+issue (`gh_issue_comment.py`) rather than opening a duplicate — see
+`github-issue-logging-policy.md` §3, Root-Cause Consolidation.
+
+---
+
+**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` is legacy/deprecated
+(superseded by the native Spec Kitty CLI, per README.md) and was never part of the tracked local plugin
+set in `plugin-sources.json`. Do not suggest routing work to spec-kitty or `spk-*` skills unless the user
+explicitly reinstalls it themselves.
+
 ## Plugin State — Current Versions (10 plugins · 128 skills)
 
 ### agent-agentic-os (v1.7.0)
@@ -224,7 +254,7 @@ vector-db-cleanup, vector-db-audit, memory-management
 
 ### dev-utils (v1.4.0) — consolidated from 9 standalone plugins
 
-**Skills (16):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
+**Skills (17):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
 github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, hf-init, hf-upload,
 hf-download, humanize, issue-pr-lifecycle-agent, issue-worktree-agent, link-checker-agent,
 optimize-context, symlink-manager, task-agent
@@ -259,20 +289,47 @@ wc -l temp/copilot_output_<task>.md  # expect 100+ lines for multi-file output
 
 ## Behavior & Judgment (Karpathy Principles)
 
-Apply before writing any code or content.
+These govern HOW to think, not just what to do. Apply before writing any code or content.
 
 ### 1. Think Before Acting
-Don't assume. Surface tradeoffs before starting. If uncertain, ask — don't run with a guess.
-Before adding a new skill or plugin, ask: does this belong in an existing plugin? Is there a scaffold skill to use?
+
+Don't assume. Don't hide confusion. Surface tradeoffs before starting.
+
+- State assumptions explicitly. If uncertain, ask — don't run with a guess.
+- If multiple interpretations exist, name them. Pick only after confirming.
+- Before adding a new skill or plugin, ask: does this belong in an existing plugin? Is there a scaffold skill to use (`create-skill`, `create-plugin`)?
+- If something is unclear, stop. Name what's confusing. Ask.
 
 ### 2. Simplicity First
-Minimum change that solves the problem. SKILL.md under ~500 lines. No abstractions for single-use code. No features beyond what was asked.
+
+Minimum change that solves the problem. Nothing speculative.
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- SKILL.md under ~500 lines — push extra detail to `references/` files.
+- No error handling for impossible scenarios.
+- If 200 lines could be 50, rewrite it. If a skill could be a pointer file, make it one.
+
+Ask: *Would a senior engineer say this is overcomplicated? If yes, simplify.*
 
 ### 3. Surgical Changes
-Touch only what you must. Don't improve adjacent sections you weren't asked to change. Every changed line traces directly to what was asked.
+
+Touch only what you must. Clean up only your own mess.
+
+- Don't "improve" adjacent SKILL.md sections, comments, or evals you weren't asked to change.
+- Don't refactor things that aren't broken.
+- Match existing style in the plugin you're editing, even if you'd do it differently.
+- If you notice unrelated dead code or stale skill content, mention it — don't silently fix it.
+- Every changed line should trace directly to what was asked.
 
 ### 4. Goal-Driven Execution
-Define success criteria first. For evals: write `evals.json` routing criteria before writing SKILL.md content. Verify outputs before claiming complete.
+
+Define success criteria first. Loop until verified.
+
+- For evals: write `evals.json` routing criteria *before* writing SKILL.md content. The evals are the spec.
+- For scripts: state what the script will output and verify it before claiming complete.
+- For multi-step tasks, state a brief plan with a verification step for each stage.
+- Use the `verification-before-completion` skill on non-trivial tasks — it enforces shell verification before claiming done.
 
 ---
 
@@ -317,6 +374,30 @@ python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
 Fix any BROKEN entries before committing. A broken symlink in `plugins/` will silently fail at install time.
 Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add it to `symlinks.json` then run `restore`.
 
+### skills-lock.json is machine-generated — never hand-edit, never manually merge conflicts in it
+`skills-lock.json` records per-skill `installedAt`/`updatedAt` timestamps written by `plugin_add.py`/
+`sync_with_inventory.py`. Two branches that each ran a reinstall independently will diverge on nearly
+every entry — this is pure timestamp noise, not a real conflict. On a merge/rebase conflict in this file:
+take either side to clear the markers (`git checkout --ours skills-lock.json` is fine), then regenerate it
+fresh with `python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y` and re-stage. Do not attempt
+to manually reconcile `<<<<<<<`/`=======`/`>>>>>>>` blocks in this file line by line.
+Note: the reinstall/sync scripts add and update entries but do not prune ones for skills that were
+deleted — if you remove a skill, manually delete its `skills-lock.json` entry too.
+
+### Run both plugin audits after any skill/plugin create or update
+`audit.py` (compliance) and `audit_plugin_structure.py` (structural) check different things — passing
+one does not mean the other passes. A new script or asset file written directly inside a skill directory
+instead of the plugin root (ADR-002/003 hub-and-spoke) is invisible to `audit.py` and only caught by
+`audit_plugin_structure.py`. Run both before considering any new or edited skill/plugin complete:
+
+```bash
+python3 plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
+python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+```
+
+Fix any structural errors via `symlink_manager.py` (move the real file to the plugin root, add a
+`symlinks.json` entry, `restore`) — never `mv`/`ln -s` by hand. See `self-evolution-policy.md` Rule 12.
+
 ### Scaffolding New Plugins/Skills
 Use these skills rather than hand-rolling structure:
 - `create-plugin` — full plugin scaffold with discovery interview
@@ -326,18 +407,39 @@ Use these skills rather than hand-rolling structure:
 Then run `plugin_add.py` to deploy.
 
 ### Active Rule Files
-Full rule definitions live in `.agent/rules/` — these are the authoritative source, GEMINI.md carries only the key non-negotiables:
+Full rule definitions live in `.agent/rules/` — these are the authoritative source, CLAUDE.md carries only the key non-negotiables.
+
+**Some rule files exist as multiple logical copies — check before editing more than one.** A few are real
+symlinks (e.g. `plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md` →
+`plugins/agent-agentic-os/rules/self-evolution-policy.md`; edit the real target once, both update). Others
+are genuinely independent duplicate files with no symlink relationship (e.g. `.agent/rules/self-evolution-policy.md`
+is a separate copy from the plugin's own copy — each needs its own edit). Run `ls -la` / `readlink` on every
+known copy before editing to avoid either double-editing a symlink target or missing an independent duplicate.
 - `coding-conventions.md` — dual-layer docs, file headers, type hints, naming, `tool_inventory.json` registration
 - `dependency-management.md` — pip-compile workflow, no manual pip install, tiered hierarchy
 - `plugin-architecture-policy.md` — decoupling, hub-and-spoke, relative paths, self-contained skills
 - `self-evolution-policy.md` — failure tiers, 3-attempt max, deletion prohibition, autonomy gates
 - `symlink-cross-platform.md` — `symlink_manager.py` protocol, symlinks.json manifest
 - `test-driven-development.md` — TDD iron law, test tier locations, anti-patterns
+- `github-issue-logging-policy.md` — friction-tier → GitHub Issue decision matrix; **mandatory dedup search
+  (`gh_issue_search.py`) before filing any new issue** — consolidate into an existing root-cause issue via
+  comment rather than opening a duplicate; 5 required body sections (Summary/Observed/Expected/Evidence/Impact)
+
+### GitHub Issue Lifecycle Skills (dev-utils)
+Local task scratchpad (`task-agent`) is ephemeral and gitignored — durable backlog lives as GitHub Issues:
+```
+github-issue-agent          ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
+github-issue-backlog-agent  ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
+github-issue-prioritizer    ← rank issues, sync GitHub Projects v2
+issue-worktree-agent        ← isolated git worktree per issue
+issue-pr-lifecycle-agent    ← full issue → worktree → PR → close orchestration
+```
+`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit sub-agent.
+`gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
+on first live use — the repo doesn't pre-register them.
 
 ### Scratch Output
 Write temporary files and analysis output to `temp/` — never to the project root directly.
-
----
 
 ## Gemini CLI Tool Mapping
 

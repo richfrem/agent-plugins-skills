@@ -10506,6 +10506,102 @@
       "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/adversarial-security-auditor.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/adversarial-security-auditor.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/agent-task-delegator.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/agent-task-delegator.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/compliance-standards-reviewer.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/compliance-standards-reviewer.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/docs-synthesis-specialist.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/docs-synthesis-specialist.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/plan-critique-reviewer.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/plan-critique-reviewer.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/refactoring-quality-specialist.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/refactoring-quality-specialist.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/structural-architecture-reviewer.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/structural-architecture-reviewer.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/body_validator.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/body_validator.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/friction_cluster_agent.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/friction_cluster_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_close.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_close.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_comment.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_comment.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_create.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_create.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_search.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_search.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_taxonomy_validate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_taxonomy_validate.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/redaction_gate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/redaction_gate.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/task_to_issue_bridge.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/task_to_issue_bridge.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
