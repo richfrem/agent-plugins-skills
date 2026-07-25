@@ -1,1 +1,0 @@
-../../../scripts/path_resolver.py

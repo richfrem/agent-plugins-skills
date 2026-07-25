@@ -57,7 +57,7 @@ print(f'Scenario: {d[\"id\"]} — {d[\"name\"]}')
 
 If no scenarios found and no file given, report:
 > "No test scenarios found. Create scenario JSON files in `temp/os-evolution-verifier/scenarios/`
-> or run the red-team-bundler to generate them from `os-architect-agent.md`."
+> or run context-bundler (red-team mode) to generate them from `os-architect-agent.md`."
 
 ---
 

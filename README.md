@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 12 Plugins · 133 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 133 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 > **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026) · v1.6 — Coding-conventions compliance & header-freshness auditor (July 2026)
@@ -286,11 +286,11 @@ Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw mark
 
 ### Group 7: Infrastructure & Utilities
 
-#### dev-utils — Developer Utilities Suite (v1.1.0)
+#### dev-utils — Developer Utilities Suite (v1.4.0)
 
 Nine standalone plugins consolidated into one. All tools are stateless and self-contained.
 
-**Skills (14):** [`adr-management`](plugins/dev-utils/skills/adr-management/SKILL.md) · [`coding-conventions-agent`](plugins/dev-utils/skills/coding-conventions-agent/SKILL.md) · [`context-bundler`](plugins/dev-utils/skills/context-bundler/SKILL.md) · [`bundle-context-full`](plugins/dev-utils/skills/bundle-context-full/SKILL.md) · [`convert-mermaid`](plugins/dev-utils/skills/convert-mermaid/SKILL.md) · [`hf-download`](plugins/dev-utils/skills/hf-download/SKILL.md) · [`hf-init`](plugins/dev-utils/skills/hf-init/SKILL.md) · [`hf-upload`](plugins/dev-utils/skills/hf-upload/SKILL.md) · [`humanize`](plugins/dev-utils/skills/humanize/SKILL.md) · [`link-checker-agent`](plugins/dev-utils/skills/link-checker-agent/SKILL.md) · [`optimize-context`](plugins/dev-utils/skills/optimize-context/SKILL.md) · [`red-team-bundler`](plugins/dev-utils/skills/red-team-bundler/SKILL.md) · [`symlink-manager`](plugins/dev-utils/skills/symlink-manager/SKILL.md) · [`task-agent`](plugins/dev-utils/skills/task-agent/SKILL.md)
+**Skills (17):** [`adr-management`](plugins/dev-utils/skills/adr-management/SKILL.md) · [`coding-conventions-agent`](plugins/dev-utils/skills/coding-conventions-agent/SKILL.md) · [`context-bundler`](plugins/dev-utils/skills/context-bundler/SKILL.md) · [`convert-mermaid`](plugins/dev-utils/skills/convert-mermaid/SKILL.md) · [`github-issue-agent`](plugins/dev-utils/skills/github-issue-agent/SKILL.md) · [`github-issue-backlog-agent`](plugins/dev-utils/skills/github-issue-backlog-agent/SKILL.md) · [`github-issue-prioritizer`](plugins/dev-utils/skills/github-issue-prioritizer/SKILL.md) · [`hf-download`](plugins/dev-utils/skills/hf-download/SKILL.md) · [`hf-init`](plugins/dev-utils/skills/hf-init/SKILL.md) · [`hf-upload`](plugins/dev-utils/skills/hf-upload/SKILL.md) · [`humanize`](plugins/dev-utils/skills/humanize/SKILL.md) · [`issue-pr-lifecycle-agent`](plugins/dev-utils/skills/issue-pr-lifecycle-agent/SKILL.md) · [`issue-worktree-agent`](plugins/dev-utils/skills/issue-worktree-agent/SKILL.md) · [`link-checker-agent`](plugins/dev-utils/skills/link-checker-agent/SKILL.md) · [`optimize-context`](plugins/dev-utils/skills/optimize-context/SKILL.md) · [`symlink-manager`](plugins/dev-utils/skills/symlink-manager/SKILL.md) · [`task-agent`](plugins/dev-utils/skills/task-agent/SKILL.md)
 
 **Agents (2):** `coding-conventions-agent` · `link-checker-agent`
 

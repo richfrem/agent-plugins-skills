@@ -5,7 +5,7 @@ argument-hint: "[threat-model or target-feature]"
 allowed-tools: Bash, Read, Write
 ---
 
-Follow the `red-team-bundler` skill workflow to prepare a security and architecture review package.
+Follow the `context-bundler` skill workflow (red-team mode, `adversarial-security-auditor.md` persona template) to prepare a security and architecture review package.
 
 ## Inputs
 

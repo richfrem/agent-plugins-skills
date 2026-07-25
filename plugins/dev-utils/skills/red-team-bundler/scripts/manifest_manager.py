@@ -1,1 +1,0 @@
-../../../scripts/manifest_manager.py
