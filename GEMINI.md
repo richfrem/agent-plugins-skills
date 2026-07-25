@@ -103,11 +103,14 @@ pip-compile ./requirements.in && pip install -r ./requirements.txt
 
 ### Plugin Reinstall Rule (always active)
 
-> **After modifying any skill, script, reference, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes.
+> **After modifying any skill, script, reference, sub-agent, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes and gets replicated/updated.
 > The skills in `.agents/skills/` are what agents actually run — edits to `plugins/` are inactive until synced.
 
 ```bash
-# Reinstall all plugins (recommended after multi-plugin edits)
+# Reinstall all plugins from local source (recommended after multi-plugin edits / testing)
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y
+
+# Alternatively, sync all tracked plugins
 python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 
 # Reinstall a single plugin only

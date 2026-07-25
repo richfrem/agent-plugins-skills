@@ -1,6 +1,6 @@
 name: dev-utils
-version: 1.2.0
-description: "Unified Developer Utilities Suite — 13 skills consolidated from 9 standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, HuggingFace download/upload/init, text humanization, link validation, symlink management, task tracking, context hygiene (optimize-context), and red-team context bundling."
+version: 1.3.0
+description: "Unified Developer Utilities Suite — 14 skills consolidated from standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, GitHub issue logging & friction management, HuggingFace download/upload/init, text humanization, link validation, symlink management, task tracking, context hygiene (optimize-context), and red-team context bundling."
 author: Richard Fremmerlid
 kind: backend
 platforms:
@@ -12,11 +12,13 @@ provides_tools:
   - adr
   - kanban
   - link_checker
+  - github_issue
 skills:
   - adr-management
   - coding-conventions-agent
   - context-bundler
   - convert-mermaid
+  - github-issue-agent
   - hf-init
   - hf-upload
   - hf-download
