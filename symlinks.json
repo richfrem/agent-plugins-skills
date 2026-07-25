@@ -2222,42 +2222,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/scripts/bundle.py",
-      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/bundle.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/manifest_manager.py",
-      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/manifest_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/path_resolver.py",
-      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/path_resolver.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/bundle_zip.py",
-      "dst": "plugins/dev-utils/skills/red-team-bundler/scripts/bundle_zip.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/resources/file-manifest-schema.json",
-      "dst": "plugins/dev-utils/skills/red-team-bundler/assets/resources/file-manifest-schema.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/resources/file-manifest.json",
-      "dst": "plugins/dev-utils/skills/red-team-bundler/assets/resources/file-manifest.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/dev-utils/references/acceptance-criteria.md",
       "dst": "plugins/dev-utils/skills/adr-management/references/acceptance-criteria.md",
       "strategy": "symlink",

@@ -1,1 +1,0 @@
-../../../scripts/bundle_zip.py
