@@ -2588,30 +2588,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/skills/adr-management/SKILL.md",
-      "dst": "plugins/dev-utils/commands/adr-management.md",
-      "strategy": "symlink",
-      "description": "Command alias \u2192 adr-management skill"
-    },
-    {
-      "src": "plugins/dev-utils/skills/convert-mermaid/SKILL.md",
-      "dst": "plugins/dev-utils/commands/convert-mermaid.md",
-      "strategy": "symlink",
-      "description": "Command alias \u2192 convert-mermaid skill"
-    },
-    {
-      "src": "plugins/dev-utils/skills/hf-init/SKILL.md",
-      "dst": "plugins/dev-utils/commands/hf-init.md",
-      "strategy": "symlink",
-      "description": "Command alias \u2192 hf-init skill"
-    },
-    {
-      "src": "plugins/dev-utils/skills/hf-upload/SKILL.md",
-      "dst": "plugins/dev-utils/commands/hf-upload.md",
-      "strategy": "symlink",
-      "description": "Command alias \u2192 hf-upload skill"
-    },
-    {
       "src": "plugins/dev-utils/skills/coding-conventions-agent/SKILL.md",
       "dst": "plugins/dev-utils/agents/coding-conventions-agent.md",
       "strategy": "symlink",

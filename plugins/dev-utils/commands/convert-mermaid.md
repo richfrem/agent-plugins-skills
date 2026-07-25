@@ -1,1 +1,0 @@
-../skills/convert-mermaid/SKILL.md
