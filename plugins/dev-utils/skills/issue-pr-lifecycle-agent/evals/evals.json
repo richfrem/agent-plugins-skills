@@ -1,0 +1,18 @@
+[
+  {
+    "query": "orchestrate end to end flow from issue to pr creation and closing issue 42",
+    "should_trigger": true
+  },
+  {
+    "query": "run the pr lifecycle for issue 105",
+    "should_trigger": true
+  },
+  {
+    "query": "create a worktree for issue 42",
+    "should_trigger": false
+  },
+  {
+    "query": "log a bug report to github issue backlog",
+    "should_trigger": false
+  }
+]

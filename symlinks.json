@@ -10560,6 +10560,12 @@
       "dst": "plugins/dev-utils/skills/issue-worktree-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/issue_pr_orchestrate.py",
+      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
