@@ -1,0 +1,64 @@
+{
+  "dimensions": {
+    "type": [
+      "type:bug",
+      "type:friction",
+      "type:map-debt",
+      "type:enhancement",
+      "type:documentation",
+      "type:security",
+      "type:architecture",
+      "type:test-gap"
+    ],
+    "tier": [
+      "tier:0-quickfix",
+      "tier:1-friction",
+      "tier:2-structural",
+      "tier:3-architecture"
+    ],
+    "area": [
+      "area:dev-utils",
+      "area:agentic-os",
+      "area:skills",
+      "area:rules",
+      "area:subagents",
+      "area:scripts",
+      "area:tests",
+      "area:docs",
+      "area:ci",
+      "area:github",
+      "area:task-agent"
+    ],
+    "source": [
+      "source:agent",
+      "source:human",
+      "source:script",
+      "source:test",
+      "source:review",
+      "source:migration"
+    ],
+    "status_fallback": [
+      "status:needs-triage",
+      "status:needs-spec",
+      "status:ready",
+      "status:blocked",
+      "status:accepted-debt",
+      "status:duplicate"
+    ],
+    "risk": [
+      "risk:low",
+      "risk:medium",
+      "risk:high",
+      "risk:security-sensitive",
+      "risk:destructive-operation"
+    ],
+    "resolution": [
+      "resolution:fixed",
+      "resolution:superseded",
+      "resolution:wont-fix",
+      "resolution:obsolete"
+    ]
+  },
+  "plugin_prefix": "plugin:",
+  "required_dimensions": ["type", "tier", "source", "risk"]
+}

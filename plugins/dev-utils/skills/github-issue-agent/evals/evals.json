@@ -1,0 +1,24 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a GitHub issue for agent execution friction when a script tool fails.",
+      "should_trigger": true
+    },
+    {
+      "id": 2,
+      "prompt": "Search existing GitHub issues to check if this root cause was already reported.",
+      "should_trigger": true
+    },
+    {
+      "id": 3,
+      "prompt": "Comment on existing GitHub issue #42 to attach stack trace evidence.",
+      "should_trigger": true
+    },
+    {
+      "id": 4,
+      "prompt": "Write a python script to parse CSV files.",
+      "should_trigger": false
+    }
+  ]
+}
