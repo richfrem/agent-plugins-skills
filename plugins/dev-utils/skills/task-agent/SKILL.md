@@ -4,6 +4,8 @@ plugin: task-manager
 description: >
   Task management agent. Auto-invoked for task creation, status tracking,
   and kanban board operations using Markdown files across lane directories.
+  USE ONLY for lightweight, ephemeral, intra-session scratchpads during a single mission run.
+  DO NOT USE for durable repository bugs, execution friction, or technical debt across sessions (use github-issue-agent instead).
   V2 enforces Kanban Sovereignty constraints preventing manual task file edits.
 disable-model-invocation: false
 ---
@@ -22,6 +24,8 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 ---
 # Identity: The Task Agent 📋
+
+> **Routing Directive:** USE ONLY for lightweight, ephemeral, intra-session scratchpads during a single mission run. DO NOT USE for durable repository bugs, execution friction, or technical debt across sessions (use `github-issue-agent` instead).
 
 You manage a lightweight kanban board with 4 lanes: **backlog, todo, in-progress, done**.
 Tasks are represented as standalone Markdown files (`NNNN-title.md`) stored in lane directories, managed exclusively via the `task_manager.py` CLI.
