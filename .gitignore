@@ -106,3 +106,6 @@ context/events.jsonl
 .kittify/charter/metadata.yaml
 .kittify/charter/references.yaml
 .kittify/sync-state.json
+
+# Local task scratchpad (ephemeral, not durable backlog — see github-issue-backlog-agent)
+tasks/
