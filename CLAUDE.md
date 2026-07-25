@@ -363,6 +363,22 @@ Full rule definitions live in `.agent/rules/` — these are the authoritative so
 - `self-evolution-policy.md` — failure tiers, 3-attempt max, deletion prohibition, autonomy gates
 - `symlink-cross-platform.md` — `symlink_manager.py` protocol, symlinks.json manifest
 - `test-driven-development.md` — TDD iron law, test tier locations, anti-patterns
+- `github-issue-logging-policy.md` — friction-tier → GitHub Issue decision matrix; **mandatory dedup search
+  (`gh_issue_search.py`) before filing any new issue** — consolidate into an existing root-cause issue via
+  comment rather than opening a duplicate; 5 required body sections (Summary/Observed/Expected/Evidence/Impact)
+
+### GitHub Issue Lifecycle Skills (dev-utils)
+Local task scratchpad (`task-agent`) is ephemeral and gitignored — durable backlog lives as GitHub Issues:
+```
+github-issue-agent          ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
+github-issue-backlog-agent  ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
+github-issue-prioritizer    ← rank issues, sync GitHub Projects v2
+issue-worktree-agent        ← isolated git worktree per issue
+issue-pr-lifecycle-agent    ← full issue → worktree → PR → close orchestration
+```
+`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit sub-agent.
+`gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
+on first live use — the repo doesn't pre-register them.
 
 ### Scratch Output
 Write temporary files and analysis output to `temp/` — never to the project root directly.

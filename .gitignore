@@ -55,22 +55,12 @@ plugins/**/temp/
 .github/*
 !.github/workflows/
 !.github/agents/
-.kittify/.dashboard
-.kittify/missions/__pycache__/
+.kittify/
 
 .knowledge_vector_data/
 claude-skills-temp/
-.kittify/constitution/context-state.json
-.kittify/constitution/directives.yaml
-.kittify/constitution/governance.yaml
-.kittify/constitution/metadata.yaml
-.kittify/constitution/references.yaml
-.kittify/dossiers/
-.kittify/events/
-.kittify/merge-state.json
-.kittify/runtime/
-.kittify/workspaces/
 node_modules/
+.antigravitycli/
 
 
 # Agent environment transient directories
@@ -100,12 +90,7 @@ context/events.jsonl
 .letta/
 .kiro/
 .github/copilot/
-.kittify/charter/context-state.json
-.kittify/charter/directives.yaml
-.kittify/charter/governance.yaml
-.kittify/charter/metadata.yaml
-.kittify/charter/references.yaml
-.kittify/sync-state.json
+.pytest_cache/
 
 # Local task scratchpad (ephemeral, not durable backlog — see github-issue-backlog-agent)
 tasks/

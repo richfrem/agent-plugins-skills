@@ -48,16 +48,24 @@ def calculate_priority(
 
 
 def extract_friction_tier(labels: List[Any]) -> int:
-    """Extracts friction tier number from labels list."""
+    """Extracts friction tier number from labels list.
+
+    Accepts both bare (`tier:3`) and this repo's taxonomy-suffixed form
+    (`tier:3-architecture`, per issue-taxonomy.json) by reading only the
+    leading digit run after the colon.
+    """
     tier = 0
     for label in labels:
         name = label.get("name", "") if isinstance(label, dict) else str(label)
         if name.startswith("tier:"):
-            try:
-                tier_val = int(name.split(":")[1])
-                tier = max(tier, tier_val)
-            except ValueError:
-                pass
+            digits = ""
+            for ch in name.split(":", 1)[1]:
+                if ch.isdigit():
+                    digits += ch
+                else:
+                    break
+            if digits:
+                tier = max(tier, int(digits))
     return tier
 
 

@@ -32,6 +32,44 @@ from body_validator import validate_issue_body
 from gh_issue_taxonomy_validate import validate_taxonomy
 from redaction_gate import scan_for_secrets
 
+# Default label colors by taxonomy dimension prefix — used only to auto-create
+# missing labels before live issue creation, since `gh issue create` fails hard
+# if a requested label doesn't exist in the repo yet.
+_DIMENSION_COLORS = {
+    "type": "d73a4a",
+    "tier": "fbca04",
+    "area": "5319e7",
+    "source": "c5def5",
+    "status": "bfd4f2",
+    "risk": "e99695",
+    "resolution": "0e8a16",
+    "plugin": "1d76db",
+}
+
+
+def _ensure_labels_exist(labels: List[str]) -> None:
+    """Create any repo labels from `labels` that don't already exist.
+
+    `gh issue create --label X` fails hard if X isn't a registered repo label.
+    Taxonomy labels (type:*, tier:*, etc.) are project convention, not GitHub
+    defaults, so they must be provisioned before first use.
+    """
+    existing = subprocess.run(
+        ["gh", "label", "list", "--limit", "300", "--json", "name"],
+        capture_output=True, text=True, check=True,
+    )
+    existing_names = {item["name"] for item in json.loads(existing.stdout)}
+    for label in labels:
+        if label in existing_names:
+            continue
+        prefix = label.split(":", 1)[0] if ":" in label else ""
+        color = _DIMENSION_COLORS.get(prefix, "ededed")
+        subprocess.run(
+            ["gh", "label", "create", label, "--color", color,
+             "--description", f"Taxonomy label ({prefix})", "--force"],
+            capture_output=True, text=True, check=True,
+        )
+
 
 def create_issue(
     title: str,
@@ -81,6 +119,8 @@ def create_issue(
 
     if not execute:
         return payload
+
+    _ensure_labels_exist(labels)
 
     cmd = ["gh", "issue", "create", "--title", title, "--body", body]
     for label in labels:

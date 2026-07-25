@@ -54,16 +54,44 @@ def test_create_issue_live_mode_calls_gh():
     )
 
     with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout="https://github.com/owner/repo/issues/101\n",
-            stderr="",
-        )
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout='[{"name": "type:friction"}, {"name": "tier:1-friction"}, '
+                                            '{"name": "area:scripts"}, {"name": "source:agent"}, '
+                                            '{"name": "risk:low"}]', stderr=""),
+            MagicMock(returncode=0, stdout="https://github.com/owner/repo/issues/101\n", stderr=""),
+        ]
         res = create_issue(title="Test Issue", body=body, labels=labels, execute=True)
-        assert mock_run.call_count == 1
+        assert mock_run.call_count == 2
         assert res["would_execute"] is True
         assert res["action"] == "create_issue"
         assert res["output"] == "https://github.com/owner/repo/issues/101"
+
+
+def test_create_issue_live_mode_auto_creates_missing_labels():
+    """Verify that execute=True creates any repo labels not already present before filing the issue."""
+    labels = ["type:friction", "tier:1-friction", "area:scripts", "source:agent", "risk:low"]
+    body = (
+        "## Summary\nTest issue summary.\n"
+        "## Observed Behavior\nError occurred.\n"
+        "## Expected Behavior\nShould succeed.\n"
+        "## Evidence\nLog output attached.\n"
+        "## Impact\nLow impact."
+    )
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="[]", stderr=""),  # no labels exist yet
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: type:friction
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: tier:1-friction
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: area:scripts
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: source:agent
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: risk:low
+            MagicMock(returncode=0, stdout="https://github.com/owner/repo/issues/102\n", stderr=""),
+        ]
+        res = create_issue(title="Test Issue", body=body, labels=labels, execute=True)
+        assert mock_run.call_count == 7
+        assert mock_run.call_args_list[1].args[0][:3] == ["gh", "label", "create"]
+        assert res["output"] == "https://github.com/owner/repo/issues/102"
 
 
 def test_create_issue_fails_on_secret():
