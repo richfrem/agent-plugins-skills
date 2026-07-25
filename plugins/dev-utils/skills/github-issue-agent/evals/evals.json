@@ -17,6 +17,16 @@
     },
     {
       "id": 4,
+      "prompt": "Log a durable repository bug for a failing authentication endpoint across sessions.",
+      "should_trigger": true
+    },
+    {
+      "id": 5,
+      "prompt": "Create a temporary intra-session scratch task on the local kanban board for step 1 of my mission.",
+      "should_trigger": false
+    },
+    {
+      "id": 6,
       "prompt": "Write a python script to parse CSV files.",
       "should_trigger": false
     }

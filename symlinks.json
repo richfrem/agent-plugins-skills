@@ -10548,6 +10548,24 @@
       "dst": "plugins/plugin-manager/skills/plugin-syncer/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_prioritize.py",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/scripts/gh_issue_prioritize.py",
+      "strategy": "symlink",
+      "description": "Share gh_issue_prioritize script to github-issue-prioritizer skill"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/issue-worktree-agent/scripts/issue_worktree_manage.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/issue_pr_orchestrate.py",
+      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

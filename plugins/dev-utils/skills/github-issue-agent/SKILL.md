@@ -1,7 +1,10 @@
 ---
 name: github-issue-agent
 plugin: dev-utils
-description: Agent skill for safe, dry-run-first, deduplicated, root-cause-consolidated, evidence-validated, and secret-redacted logging of repository execution friction into GitHub Issues.
+description: >
+  Agent skill for safe, dry-run-first, deduplicated, root-cause-consolidated, evidence-validated, and secret-redacted logging of repository execution friction into GitHub Issues.
+  USE ONLY for durable repository bugs, execution friction (T1-T3), map debt, and architectural improvements.
+  DO NOT USE for temporary intra-session checklists (use task-agent instead).
 allowed_tools:
   - run_command
   - view_file
@@ -13,6 +16,8 @@ allowed_tools:
 ---
 
 # GitHub Issue Agent (`github-issue-agent`)
+
+> **Routing Directive:** USE ONLY for durable repository bugs, execution friction (T1-T3), map debt, and architectural improvements. DO NOT USE for temporary intra-session checklists (use `task-agent` instead).
 
 The `github-issue-agent` skill provides a safe, standardized interface for querying, searching, creating, commenting on, and validating GitHub Issues stemming from agent execution friction, map debt, bugs, and system improvements.
 

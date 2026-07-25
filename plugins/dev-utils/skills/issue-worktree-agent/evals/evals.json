@@ -1,0 +1,30 @@
+[
+  {
+    "query": "Create an isolated git worktree for issue 42",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up a worktree under .worktrees/issue-105 to fix a bug",
+    "should_trigger": true
+  },
+  {
+    "query": "Remove the worktree for issue 42",
+    "should_trigger": true
+  },
+  {
+    "query": "List active git worktrees for issues",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a local task scratchpad item",
+    "should_trigger": false
+  },
+  {
+    "query": "Promote local task scratchpad to a GitHub issue",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a pull request for issue 42",
+    "should_trigger": false
+  }
+]

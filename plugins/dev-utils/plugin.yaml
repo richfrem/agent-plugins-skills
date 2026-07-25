@@ -1,6 +1,6 @@
 name: dev-utils
-version: 1.3.0
-description: "Unified Developer Utilities Suite — 14 skills consolidated from standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, GitHub issue logging & friction management, HuggingFace download/upload/init, text humanization, link validation, symlink management, task tracking, context hygiene (optimize-context), and red-team context bundling."
+version: 1.4.0
+description: "Unified Developer Utilities Suite — 16 skills consolidated from standalone plugins. Covers ADR management, coding conventions, context bundling (with Red Team persona templates & monorepo modes), Mermaid diagram rendering, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, issue worktree manager, issue PR lifecycle orchestrator, HuggingFace download/upload/init, text humanization, link validation, symlink management, task tracking, context hygiene (optimize-context)."
 author: Richard Fremmerlid
 kind: backend
 platforms:
@@ -19,12 +19,15 @@ skills:
   - context-bundler
   - convert-mermaid
   - github-issue-agent
+  - github-issue-backlog-agent
+  - github-issue-prioritizer
   - hf-init
   - hf-upload
   - hf-download
   - humanize
+  - issue-pr-lifecycle-agent
+  - issue-worktree-agent
   - link-checker-agent
-  - red-team-bundler
   - optimize-context
   - symlink-manager
   - task-agent

@@ -1,8 +1,9 @@
 [
-  {"prompt": "Create a new task to fix the authentication bug and put it in the backlog.", "should_trigger": true},
-  {"prompt": "Move task 3 to in-progress on the kanban board.", "should_trigger": true},
-  {"prompt": "Show me all tasks in the todo lane.", "should_trigger": true},
+  {"prompt": "Create a temporary intra-session scratch task for tracking step 2 of my current mission run.", "should_trigger": true},
+  {"prompt": "Move task 3 to in-progress on the local kanban board.", "should_trigger": true},
+  {"prompt": "Show me all local scratch tasks in the todo lane.", "should_trigger": true},
+  {"prompt": "Log a durable repository bug and execution friction incident into GitHub Issues.", "should_trigger": false},
+  {"prompt": "Track long-term technical debt and map debt across sessions in GitHub Issues.", "should_trigger": false},
   {"prompt": "Audit my plugins for structural compliance against the open standards.", "should_trigger": false},
-  {"prompt": "Speed read my document at 300 WPM using RSVP.", "should_trigger": false},
   {"prompt": "Convert my memo.md to a Microsoft Word document.", "should_trigger": false}
 ]

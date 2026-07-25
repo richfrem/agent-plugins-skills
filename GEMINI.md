@@ -222,11 +222,12 @@ vector-db-cleanup, vector-db-audit, memory-management
 
 ---
 
-### dev-utils (v1.1.0) — consolidated from 9 standalone plugins
+### dev-utils (v1.4.0) — consolidated from 9 standalone plugins
 
-**Skills (12):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
-hf-init, hf-upload, humanize, link-checker-agent, optimize-context, red-team-bundler,
-symlink-manager, task-agent
+**Skills (16):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
+github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, hf-init, hf-upload,
+hf-download, humanize, issue-pr-lifecycle-agent, issue-worktree-agent, link-checker-agent,
+optimize-context, symlink-manager, task-agent
 
 **Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,
 `plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,
