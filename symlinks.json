@@ -10554,6 +10554,12 @@
       "dst": "plugins/dev-utils/skills/github-issue-prioritizer/scripts/gh_issue_prioritize.py",
       "strategy": "symlink",
       "description": "Share gh_issue_prioritize script to github-issue-prioritizer skill"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/issue-worktree-agent/scripts/issue_worktree_manage.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
