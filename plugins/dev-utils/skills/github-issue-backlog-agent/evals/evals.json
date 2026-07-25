@@ -1,0 +1,26 @@
+[
+  {
+    "query": "Promote local scratch task 0042 to a GitHub issue",
+    "should_trigger": true
+  },
+  {
+    "query": "Bridge tasks/backlog/0012-migration.md into durable issue backlog",
+    "should_trigger": true
+  },
+  {
+    "query": "Convert this task scratchpad item into a tracked GitHub Issue",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a local scratch task for adding unit tests",
+    "should_trigger": false
+  },
+  {
+    "query": "Move task 5 to done in kanban board",
+    "should_trigger": false
+  },
+  {
+    "query": "Log execution friction directly to GitHub issues",
+    "should_trigger": false
+  }
+]
