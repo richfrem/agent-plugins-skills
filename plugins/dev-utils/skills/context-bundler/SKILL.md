@@ -3,8 +3,8 @@ name: context-bundler
 plugin: dev-utils
 description: >
   Interactively creates targeted code, design, and documentation bundles for external review (Markdown or ZIP).
-  Supports Red Team review personas (Adversarial Security, Structural Architecture, Compliance Standards),
-  full monorepo segmentation, and custom file manifest packaging.
+  Includes a comprehensive library of review & delegation persona templates (Adversarial Security, Plan Critique,
+  Refactoring Quality, Sub-Agent Task Handoff, Documentation Synthesis, Architecture, Compliance).
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 
@@ -21,18 +21,27 @@ This skill centralizes workflows for compiling codebase files, documentation, an
 
 `context-bundler` supports **3 Execution Modes**:
 1. **Standard Bundle Mode**: Custom interactive selection of files/directories for general review or context sharing.
-2. **Red Team Review Mode**: Injects specialized review persona prompts (Adversarial Security, Structural Architecture, Compliance Standards) as `prompt.md` ahead of codebase files.
+2. **Persona-Driven Review / Handoff Mode**: Injects specialized review or delegation persona prompts (`prompt.md`) ahead of codebase files.
 3. **Monorepo Segmented Mode**: Full monorepo context packaging partitioned by domain (`/skills`, `/agents`, `/scripts`, `/docs`).
 
 ---
 
-## 🎭 Persona Templates (Red Team & Specialized Review Modes)
+## 🎭 Persona Template Library (`assets/templates/`)
 
-When running in **Red Team Review Mode**, select or recommend a review persona template from `assets/templates/`:
+When bundling context for external models, sub-agents, or human reviews, select or recommend a template from `assets/templates/`:
 
-- **`adversarial-security-auditor.md`**: Focuses on OWASP Top 10, auth bypasses, injection vectors, and severity scoring (Critical/High/Medium/Low).
-- **`structural-architecture-reviewer.md`**: Focuses on C4 models, SOLID principles, coupling, modularity, and refactoring blueprints.
-- **`compliance-standards-reviewer.md`**: Focuses on project conventions, 20-line purpose headers, ADR compliance, and type annotation audits.
+### 1. Security & Quality Review Personas
+- **`adversarial-security-auditor.md`**: OWASP Top 10, auth bypasses, injection vectors, exploit scenarios, CVSS risk ratings.
+- **`refactoring-quality-specialist.md`**: DRY violations, code smells, cyclomatic complexity reduction, before/after code diffs.
+- **`compliance-standards-reviewer.md`**: Project conventions, 20-line purpose headers, ADR compliance, type annotations.
+
+### 2. Architecture & Design Planning Personas
+- **`structural-architecture-reviewer.md`**: C4 model, SOLID principles, coupling, interface abstraction leaks, component boundaries.
+- **`plan-critique-reviewer.md`**: Stress-tests implementation plans, unstated dependencies, execution friction, rollback mechanisms.
+
+### 3. Agent Task Handoff & Documentation Personas
+- **`agent-task-delegator.md`**: Builds turnkey task prompts for sub-agents (Copilot CLI, Claude Code, Gemini CLI) with explicit tool gates & test criteria.
+- **`docs-synthesis-specialist.md`**: Generates ADRs, C4 Mermaid diagrams, README guides, and API specs from raw codebase context.
 
 ---
 
@@ -40,7 +49,7 @@ When running in **Red Team Review Mode**, select or recommend a review persona t
 
 ### Phase 1: Mode & Target Discovery
 Evaluate the request and negotiate mode and format:
-1. **Mode**: Standard Bundle, Red Team Review (select persona template), or Monorepo Segmented.
+1. **Mode**: Standard Bundle, Persona-Driven Review/Handoff (select persona template), or Monorepo Segmented.
 2. **Format**: Single Markdown payload (`.md`) or Portable ZIP archive (`.zip`).
 3. **Targets**: Directories or file paths to package.
 
@@ -49,7 +58,7 @@ Present execution plan to user before running scripts:
 
 ```text
 Context Bundle Plan:
-- Mode: [Standard / Red Team (Persona) / Monorepo Segmented]
+- Mode: [Standard / Persona Review (Selected Persona) / Monorepo Segmented]
 - Format: [.md or .zip]
 - Persona Prompt: assets/templates/[selected-persona].md
 - Included Paths:
@@ -62,17 +71,17 @@ Proceed? (yes / adjust)
 
 ### Phase 3: Manifest Construction
 Generate `file-manifest.json` in temporary directory (`temp/context-bundle-[name]/`).
-For Red Team mode, `prompt.md` (containing the persona prompt) MUST be listed as the first file entry in `files`.
+For Persona-Driven mode, `prompt.md` (containing the selected persona prompt) MUST be listed as the first file entry in `files`.
 
 ```json
 {
-  "title": "Red Team Review: Auth Subsystem",
-  "description": "Adversarial security review bundle.",
+  "title": "Sub-Agent Handoff Bundle",
+  "description": "Task delegation bundle for Copilot CLI.",
   "excludes": ["**/*.png", "**/node_modules/**"],
   "files": [
     {
-      "path": "temp/context-bundle-auth/prompt.md",
-      "note": "Primary Persona Instructions"
+      "path": "temp/context-bundle-task/prompt.md",
+      "note": "Primary Persona & Handoff Instructions"
     },
     {
       "path": "plugins/dev-utils/skills/github-issue-agent/",
