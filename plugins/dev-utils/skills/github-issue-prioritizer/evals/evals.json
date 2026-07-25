@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Rank open GitHub issues by priority tier and sync with Projects v2 fields",
+    "should_trigger": true
+  },
+  {
+    "query": "Calculate P0 P1 P2 P3 priority score for friction issues based on blockage and frequency",
+    "should_trigger": true
+  },
+  {
+    "query": "Update GitHub Projects v2 custom priority single select field via GraphQL",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a quick TODO item to my local scratchpad tasks list",
+    "should_trigger": false
+  },
+  {
+    "query": "Log a friction event issue on GitHub",
+    "should_trigger": false
+  }
+]
