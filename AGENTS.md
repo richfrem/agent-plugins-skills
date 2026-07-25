@@ -374,6 +374,16 @@ python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
 Fix any BROKEN entries before committing. A broken symlink in `plugins/` will silently fail at install time.
 Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add it to `symlinks.json` then run `restore`.
 
+### skills-lock.json is machine-generated — never hand-edit, never manually merge conflicts in it
+`skills-lock.json` records per-skill `installedAt`/`updatedAt` timestamps written by `plugin_add.py`/
+`sync_with_inventory.py`. Two branches that each ran a reinstall independently will diverge on nearly
+every entry — this is pure timestamp noise, not a real conflict. On a merge/rebase conflict in this file:
+take either side to clear the markers (`git checkout --ours skills-lock.json` is fine), then regenerate it
+fresh with `python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y` and re-stage. Do not attempt
+to manually reconcile `<<<<<<<`/`=======`/`>>>>>>>` blocks in this file line by line.
+Note: the reinstall/sync scripts add and update entries but do not prune ones for skills that were
+deleted — if you remove a skill, manually delete its `skills-lock.json` entry too.
+
 ### Run both plugin audits after any skill/plugin create or update
 `audit.py` (compliance) and `audit_plugin_structure.py` (structural) check different things — passing
 one does not mean the other passes. A new script or asset file written directly inside a skill directory
