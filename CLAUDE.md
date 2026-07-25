@@ -163,6 +163,11 @@ skill, or sub-agent in this repo. Three key capabilities:
 
 ---
 
+**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` is legacy/deprecated
+(superseded by the native Spec Kitty CLI, per README.md) and was never part of the tracked local plugin
+set in `plugin-sources.json`. Do not suggest routing work to spec-kitty or `spk-*` skills unless the user
+explicitly reinstalls it themselves.
+
 ## Plugin State — Current Versions (10 plugins · 128 skills)
 
 ### agent-agentic-os (v1.7.0)
