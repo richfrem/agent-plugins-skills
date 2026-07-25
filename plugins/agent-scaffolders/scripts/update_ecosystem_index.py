@@ -37,7 +37,7 @@ def count_ecosystem():
     ecosystem = {}
     
     for plugin_path in plugins_dir.iterdir():
-        if plugin_path.is_dir():
+        if plugin_path.is_dir() and (plugin_path / "plugin.yaml").exists():
             plugin_name = plugin_path.name
             skills_dir = plugin_path / "skills"
             agents_dir = plugin_path / "agents"

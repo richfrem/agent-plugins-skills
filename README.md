@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 11 Plugins · 133 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 133 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 > **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026) · v1.6 — Coding-conventions compliance & header-freshness auditor (July 2026)
@@ -149,7 +149,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (11 plugins · 128 skills)
+## Plugin Ecosystem (10 plugins · 133 skills)
 
 ### Group 1: The Improvement OS
 

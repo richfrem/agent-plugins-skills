@@ -79,7 +79,7 @@ If the user reveals at any point (Phase 1 trigger, Phase 2 Domain, Nature, or Pr
 ### Desired output
 > What do you need to come out of this exploration?
 - Just want to think it through and understand it better
-- Need a formal spec (→ Spec-Kitty engineering cycle)
+- Need a formal spec (→ Superpowers design doc, `docs/superpowers/specs/`)
 - Need a planning document or roadmap update
 - Need a prototype or proof of concept to resolve a specific unknown
 - Something else

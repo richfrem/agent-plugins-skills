@@ -1,6 +1,6 @@
 # Repository Installation — Central Authority
 
-This document defines the single, authoritative suite of installation methods for all **120 skills** and **29 plugins** in the Universal Agent Plugins & Skills repository.
+This document defines the single, authoritative suite of installation methods for all **128 skills** and **10 plugins** in the Universal Agent Plugins & Skills repository.
 
 ---
 
@@ -130,10 +130,10 @@ git clone https://github.com/richfrem/agent-plugins-skills.git
 cd agent-plugins-skills
 
 # Install a specific plugin from local source
-python plugins/plugin-manager/scripts/plugin_add.py --plugin <plugin-name>
+python plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
 
 # Install all plugins from local source
-python plugins/plugin-manager/scripts/plugin_add.py --all
+python plugins/plugin-manager/scripts/plugin_add.py plugins/ --all -y
 
 # Alternatively, you can use uvx to run the installer natively against your local files
 uvx --from . plugin-add plugins/
