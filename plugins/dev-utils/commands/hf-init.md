@@ -1,1 +1,0 @@
-../skills/hf-init/SKILL.md
