@@ -1,5 +1,5 @@
 name: cli-agents
-version: 2.1.0
+version: 2.2.0
 description: "Multi-LLM Task Router Suite — run_agent.py dispatches bounded tasks to 6 backends (Claude, Copilot, Gemini, Agy, Codex, local Gemma 4 12B). 11 expert agent personas (security auditor, red-team reviewer, architect, compliance, PR reviewer, test writer, debate synthesizer, output validator, self-critic, performance analyst, refactor expert). Includes API compatibility proxy and KV cache orchestrator."
 author: Richard Fremmerlid
 kind: backend
@@ -10,6 +10,7 @@ platforms:
 provides_tools:
   - run_agent
 skills:
+  - agent-file-synchronization
   - agy-cli-agent
   - agt-security
   - antigravity-project-setup

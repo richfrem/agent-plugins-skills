@@ -1,0 +1,38 @@
+[
+  {
+    "id": "eval-1-positive-sync-request",
+    "type": "positive",
+    "prompt": "sync CLAUDE.md to the other agent instruction files",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-2-positive-propagate",
+    "type": "positive",
+    "prompt": "I just updated CLAUDE.md, propagate the changes to GEMINI.md and copilot-instructions.md",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-3-positive-mirror",
+    "type": "positive",
+    "prompt": "replicate CLAUDE.md to agents.md, gemini.md, and copilot-instructions.md",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-4-negative-content-audit",
+    "type": "negative",
+    "prompt": "audit my CLAUDE.md against Karpathy's principles and rewrite the whole thing",
+    "should_trigger": false
+  },
+  {
+    "id": "eval-5-negative-new-project-scaffold",
+    "type": "negative",
+    "prompt": "scaffold agent config for a brand new project, both Claude Code and Gemini CLI",
+    "should_trigger": false
+  },
+  {
+    "id": "eval-6-negative-unrelated",
+    "type": "negative",
+    "prompt": "explain what the coding-conventions-agent skill does",
+    "should_trigger": false
+  }
+]

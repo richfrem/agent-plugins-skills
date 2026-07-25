@@ -10,7 +10,7 @@ allowed-tools: Bash, Read, Write
 ---
 
 > [!WARNING]
-> **Gemini CLI consumer access ends June 18, 2026.** Free, Pro, and Ultra users lose access on that date. Only enterprise Gemini Code Assist Standard/Enterprise licenses retain the `gemini` binary. The replacement for consumer users is the **Antigravity (`agy`) CLI** — use `agy-cli-agent` instead.
+> **Gemini CLI consumer access ended June 18, 2026.** Free, Pro, and Ultra users no longer have access. Only enterprise Gemini Code Assist Standard/Enterprise licenses retain the `gemini` binary. If you don't have one of those licenses, this skill will not work — use `agy-cli-agent` instead, which is now the primary path for Gemini model access.
 
 ## Identity: The Gemini Sub-Agent Dispatcher (Standard: gemini-3-flash-preview)
 

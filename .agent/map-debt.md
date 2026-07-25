@@ -45,4 +45,11 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
   **Evidence:** `audit_plugin_structure.py plugins/dev-utils` — 16 errors → 0 errors post-fix.
   **Severity:** M | **Repeat:** YES (structural pattern, not a one-off — will recur for any skill scaffolded without running the structural audit) | **Status:** RESOLVED
 
+- **Artifact:** `plugins/cli-agents/skills/update-cli-models/` (pre-existing, not introduced this session)
+  **Friction:** Missing `references/acceptance-criteria.md` — flagged by `audit.py` during the compliance pass run after scaffolding `agent-file-synchronization`.
+  **Why not fixed now:** Requires understanding the skill's actual test criteria to author meaningfully — out of scope for a session that was auditing a sibling skill, not this one. Writing placeholder content would be worse than the current honest gap.
+  **Recommended fix:** Someone familiar with `update-cli-models`'s actual behavior should write `references/acceptance-criteria.md` for it.
+  **Evidence:** `audit.py --path plugins/cli-agents` — "Skill 'update-cli-models' is missing `./acceptance-criteria.md`."
+  **Severity:** S | **Repeat:** NO | **Status:** OPEN
+
 ---

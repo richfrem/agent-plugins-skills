@@ -2426,6 +2426,18 @@
       "description": ""
     },
     {
+      "src": "plugins/cli-agents/scripts/sync_instruction_files.py",
+      "dst": "plugins/cli-agents/skills/agent-file-synchronization/scripts/sync_instruction_files.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/agent-file-synchronization-acceptance-criteria.md",
+      "dst": "plugins/cli-agents/skills/agent-file-synchronization/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
       "src": "plugins/cli-agents/references/cheapest_models.md",
       "dst": "plugins/cli-agents/skills/agy-cli-agent/references/cheapest_models.md",
       "strategy": "symlink",
