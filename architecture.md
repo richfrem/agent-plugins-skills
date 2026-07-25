@@ -29,7 +29,7 @@ Current scale (read from `plugins/` — verify with `find plugins/*/skills -mind
 │   ├── agent-scaffolders/          # Plugin/skill/agent scaffolding tools (30 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (12 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
-│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, misc dev tools (14 skills)
+│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)

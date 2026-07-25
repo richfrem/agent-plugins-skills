@@ -1,8 +1,0 @@
-[
-  {"prompt": "Prepare a red team review package for the authentication module focusing on OWASP Top 10 vulnerabilities.", "should_trigger": true},
-  {"prompt": "Create a security audit bundle with a red team prompt and relevant source files for an external LLM reviewer.", "should_trigger": true},
-  {"prompt": "Generate a red team bundle for the payments service — include an auditor prompt and bundle as a zip for a human reviewer.", "should_trigger": true},
-  {"prompt": "Bundle the src/ folder into a single markdown file for AI context sharing.", "should_trigger": false},
-  {"prompt": "Review this code for coding conventions compliance.", "should_trigger": false},
-  {"prompt": "Audit this plugin for ecosystem standards violations.", "should_trigger": false}
-]

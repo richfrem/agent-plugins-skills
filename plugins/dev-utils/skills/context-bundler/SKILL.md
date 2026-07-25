@@ -1,98 +1,97 @@
 ---
 name: context-bundler
-plugin: context-bundler
-description: Interactively creates technical bundles of code, design, and documentation for external review or context sharing. It conducts a brief discovery phase to confirm the targets and format, presents a plan, and then packages multiple project files into a single Markdown file or a portable `.zip` archive.
-allowed-tools: Bash, Read, Write
+plugin: dev-utils
+description: >
+  Interactively creates targeted code, design, and documentation bundles for external review (Markdown or ZIP).
+  Supports Red Team review personas (Adversarial Security, Structural Architecture, Compliance Standards),
+  full monorepo segmentation, and custom file manifest packaging.
+allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 
 ## Dependencies
 
 This skill requires **Python 3.8+** and standard library only. No external packages needed.
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
-
 ---
+
 # Context Bundler Skill 📦
 
 ## Overview
-This skill centralizes the knowledge and workflows for creating "Context Bundles." These bundles compile large amounts of code and design context into either a single, portable Markdown file for sharing with other AI agents, or a compressed `.zip` file for native format sharing and human review.
+This skill centralizes workflows for compiling codebase files, documentation, and instructions into portable payloads (`.md` for AI chat UIs or `.zip` for offline/agent handoffs).
 
-Because context limits are strict and re-bundling is inefficient, this is a **Level 2.0 Interactive Skill**. You must follow the phased workflow below to confirm the target files and output format before generating the payload.
+`context-bundler` supports **3 Execution Modes**:
+1. **Standard Bundle Mode**: Custom interactive selection of files/directories for general review or context sharing.
+2. **Red Team Review Mode**: Injects specialized review persona prompts (Adversarial Security, Structural Architecture, Compliance Standards) as `prompt.md` ahead of codebase files.
+3. **Monorepo Segmented Mode**: Full monorepo context packaging partitioned by domain (`/skills`, `/agents`, `/scripts`, `/docs`).
 
-## 🎯 Primary Directive
-**Discover, Confirm, and Package.** You do not just "list files" or immediately run the bundling scripts. You ensure the bundle is targeted, complete, and annotated, getting user sign-off before execution.
+---
+
+## 🎭 Persona Templates (Red Team & Specialized Review Modes)
+
+When running in **Red Team Review Mode**, select or recommend a review persona template from `assets/templates/`:
+
+- **`adversarial-security-auditor.md`**: Focuses on OWASP Top 10, auth bypasses, injection vectors, and severity scoring (Critical/High/Medium/Low).
+- **`structural-architecture-reviewer.md`**: Focuses on C4 models, SOLID principles, coupling, modularity, and refactoring blueprints.
+- **`compliance-standards-reviewer.md`**: Focuses on project conventions, 20-line purpose headers, ADR compliance, and type annotation audits.
 
 ---
 
 ## Core Workflow
 
-When asked to bundle files, you MUST follow these phases in order. **Do not skip to execution.**
+### Phase 1: Mode & Target Discovery
+Evaluate the request and negotiate mode and format:
+1. **Mode**: Standard Bundle, Red Team Review (select persona template), or Monorepo Segmented.
+2. **Format**: Single Markdown payload (`.md`) or Portable ZIP archive (`.zip`).
+3. **Targets**: Directories or file paths to package.
 
-### Phase 1: Discovery Interview (Targeted Diagnostics)
-Evaluate the user's initial request. If it is vague (e.g., "Bundle the auth logic" or "Bundle these files"), ask targeted questions to shape the payload:
-1. **Target Confirmation:** What specific directories or files should be included? (Perform a quick `ls` or codebase search to suggest 3-5 high-value files if they don't know).
-2. **Format Negotiation:** Do you need this as a single Markdown file (`.md`) to paste into an LLM, or a portable Archive (`.zip`)?
-
-*Wait for the user's response before proceeding.*
-
-### Phase 2: Recap & Confirm (Pre-Execution Gate)
-Draft the JSON manifest schema conceptually, but **DO NOT execute the Python scripts or write to disk yet.** Present the proposed plan to the user for approval:
+### Phase 2: Recap & Pre-Execution Confirmation
+Present execution plan to user before running scripts:
 
 ```text
 Context Bundle Plan:
-- Title: [Proposed Title]
+- Mode: [Standard / Red Team (Persona) / Monorepo Segmented]
 - Format: [.md or .zip]
-- Proposed Files/Directories:
-  1. src/main.py (Core logic)
-  2. docs/architecture.md (Design reference)
-- Exclusions: (e.g., exclude .png, node_modules, or large JSON artifacts)
-  
-Does this look right? (yes / adjust / exclude certain extensions)
+- Persona Prompt: assets/templates/[selected-persona].md
+- Included Paths:
+  1. plugins/dev-utils/
+  2. docs/architecture.md
+- Output Target: temp/context-bundle-[name]/payload.[md|zip]
+
+Proceed? (yes / adjust)
 ```
 
-*Wait for the user to confirm.*
-
-### Phase 3: Build the Manifest
-Once confirmed, formulate the actual `file-manifest.json` on disk.
-**IMPORTANT:** Use directory paths (ending in `/`) to recursively include entire folders rather than listing 50 files individually. 
+### Phase 3: Manifest Construction
+Generate `file-manifest.json` in temporary directory (`temp/context-bundle-[name]/`).
+For Red Team mode, `prompt.md` (containing the persona prompt) MUST be listed as the first file entry in `files`.
 
 ```json
 {
-  "title": "Bundle Title",
-  "description": "Short explanation of the bundle's goal.",
-  "excludes": [
-    "**/large_artifact.json",
-    "**/*.png"
-  ],
+  "title": "Red Team Review: Auth Subsystem",
+  "description": "Adversarial security review bundle.",
+  "excludes": ["**/*.png", "**/node_modules/**"],
   "files": [
     {
-      "path": "docs/architecture.md",
-      "note": "Primary design document."
+      "path": "temp/context-bundle-auth/prompt.md",
+      "note": "Primary Persona Instructions"
     },
     {
-      "path": "src/module/",
-      "note": "Implementation logic (recursive)"
+      "path": "plugins/dev-utils/skills/github-issue-agent/",
+      "note": "Target codebase"
     }
   ]
 }
 ```
 
-### Phase 4: Execute & Handoff
-Invoke the appropriate script based on the format negotiated in Phase 1. 
-*(Adjust the script path below depending on if you are running this from the plugin root or via an npx installed `.agents/` path).*
+### Phase 4: Bundler Script Execution
 
-- **For Markdown (.md):**
+- **Markdown (.md)**:
   ```bash
-  python ./scripts/bundle.py --manifest path/to/file-manifest.json --bundle path/to/output.md
+  python3 ./scripts/bundle.py --manifest temp/context-bundle-[name]/file-manifest.json --bundle temp/context-bundle-[name]/payload.md
   ```
 
-- **For ZIP Archive (.zip):**
+- **ZIP Archive (.zip)**:
   ```bash
-  python ./scripts/bundle_zip.py --manifest path/to/file-manifest.json --bundle path/to/output.zip
+  python3 ./scripts/bundle_zip.py --manifest temp/context-bundle-[name]/file-manifest.json --bundle temp/context-bundle-[name]/payload.zip
   ```
 
-Inform the user the payload is ready.
+Inform user when payload is ready for handoff or clipboard copying.

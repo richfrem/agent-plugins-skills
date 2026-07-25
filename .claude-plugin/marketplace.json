@@ -63,11 +63,11 @@
     },
     {
       "name": "dev-utils",
-      "description": "Unified Developer Utilities Suite — 12 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, HuggingFace integration, text humanization, link validation, task tracking, symlink management, and agent context hygiene.",
+      "description": "Unified Developer Utilities Suite — 18 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, issue worktree manager, issue PR lifecycle orchestrator, HuggingFace integration, text humanization, link validation, task tracking, symlink management, and agent context hygiene.",
       "source": "./plugins/dev-utils",
       "strict": true,
       "category": "workflow",
-      "tags": ["adr", "bundler", "mermaid", "tasks", "huggingface", "links", "conventions", "writing", "optimize-context"]
+      "tags": ["adr", "bundler", "mermaid", "tasks", "github-issues", "worktree", "pr-lifecycle", "huggingface", "links", "conventions", "writing", "optimize-context"]
     },
     {
       "name": "plugin-manager",
