@@ -229,12 +229,13 @@ Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-lo
 
 ---
 
-### cli-agents (v1.1.0) — consolidated from claude-cli, copilot-cli, gemini-cli
+### cli-agents (v2.2.0) — consolidated from claude-cli, copilot-cli, gemini-cli
 
-**Skills (6):** agy-cli-agent, claude-cli-agent, copilot-cli-agent, gemini-cli-agent,
-claude-project-setup, antigravity-project-setup
+**Skills (14):** agent-file-synchronization, agt-security, agy-cli-agent, antigravity-project-setup,
+claude-cli-agent, claude-project-setup, codex-cli-agent, copilot-cli-agent, gemini-cli-agent,
+local-llm-bridge, local-llm-setup, maf-adapter, project-setup, update-cli-models
 
-**Note:** `gemini-cli-agent` — Gemini CLI consumer access ends June 18, 2026. Use `agy-cli-agent` for frontier models going forward.
+**Note:** `gemini-cli-agent` — Gemini CLI consumer access ended June 18, 2026 (that date has now passed). Only enterprise Gemini Code Assist licenses retain the `gemini` binary. Use `agy-cli-agent` — it is now the primary path for Gemini model access, not just frontier models.
 
 **Scripts:** Each skill has its own `scripts/run_agent.py` for its respective CLI tool.
 
@@ -405,6 +406,23 @@ Use these skills rather than hand-rolling structure:
 - `audit-plugin` — validate structure after scaffolding
 
 Then run `plugin_add.py` to deploy.
+
+### Instruction File Mirrors — CLAUDE.md, GEMINI.md, copilot-instructions.md, AGENTS.md
+When the user asks to replicate CLAUDE.md into the other instruction files, the default workflow is a
+**full copy with only the top `# ` line renamed** — but each target file has platform-specific content
+that a blind copy will silently destroy. Check for and re-append these before considering the sync done:
+
+| File | Platform-specific addition to preserve | Corresponding `cli-agents` skill |
+|---|---|---|
+| `GEMINI.md` | `## Gemini CLI Tool Mapping` table at the end of the file (Claude Code tool name → Gemini CLI equivalent) | `gemini-cli-agent` (deprecated, see note above), `agy-cli-agent` |
+| `.github/copilot-instructions.md` | Header must be `# Copilot Instructions for <repo-name>` + an "Authoritative... Mirrors CLAUDE.md" blockquote, not a generic title | `copilot-cli-agent` |
+| `AGENTS.md` | Cross-tool convention (Codex and other OpenAI-compatible agents read this file) — currently no required platform-specific section beyond shared content, but verify before assuming that's still true | `codex-cli-agent` |
+| `CLAUDE.md` | Source of truth — no platform section of its own | `claude-cli-agent`, `claude-project-setup` |
+
+The full canonical rules for what belongs in each file live in `optimize-agent-instructions`
+(`plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md`) — consult it, don't just
+diff against memory of what was there before. This was missed once already this session: a full-copy
+sync silently dropped GEMINI.md's tool-mapping table until caught in a later manual review.
 
 ### Active Rule Files
 Full rule definitions live in `.agent/rules/` — these are the authoritative source, CLAUDE.md carries only the key non-negotiables.

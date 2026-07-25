@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 133 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 134 Skills · 50 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 > **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026) · v1.6 — Coding-conventions compliance & header-freshness auditor (July 2026)
@@ -149,7 +149,7 @@ All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference th
 
 ---
 
-## Plugin Ecosystem (10 plugins · 133 skills)
+## Plugin Ecosystem (10 plugins · 134 skills)
 
 ### Group 1: The Improvement OS
 
@@ -207,18 +207,20 @@ Interactive creators for exact file hierarchies + structured audit framework for
 
 ### Group 5: CLI Sub-Agents
 
-#### cli-agents — Multi-LLM Task Router (v2.0.0) — June 2026 Major Update
+#### cli-agents — Multi-LLM Task Router (v2.2.0)
 
 `run_agent.py` dispatches bounded tasks to 6 backends. **Measured: ~2s wall clock** for `--cli llama` (direct HTTP to llama-server, no proxy, no 29K system prompt overhead).
 
-**Skills (12):**
+**Skills (14):**
 - [`local-llm-bridge`](plugins/cli-agents/skills/local-llm-bridge/SKILL.md) — `--cli llama`: direct Gemma 4 12B, **~2s**, no proxy
 - [`local-llm-setup`](plugins/cli-agents/skills/local-llm-setup/SKILL.md) — cross-platform setup wizard; scripts/ symlinks for Day 1 bootstrap + Mode B config
 - [`codex-cli-agent`](plugins/cli-agents/skills/codex-cli-agent/SKILL.md) — `--cli codex`: Codex/OpenAI-compatible, prompt piped via stdin
-- [`agy-cli-agent`](plugins/cli-agents/skills/agy-cli-agent/SKILL.md) — `--cli agy`: Antigravity CLI, frontier Gemini models
+- [`agy-cli-agent`](plugins/cli-agents/skills/agy-cli-agent/SKILL.md) — `--cli agy`: Antigravity CLI, primary path for Gemini models (Gemini CLI consumer access ended June 18, 2026)
 - [`claude-cli-agent`](plugins/cli-agents/skills/claude-cli-agent/SKILL.md) — `--cli claude`: Claude CLI, Haiku 4.5 default
 - [`copilot-cli-agent`](plugins/cli-agents/skills/copilot-cli-agent/SKILL.md) — `--cli copilot`: GitHub Copilot CLI, gpt-5-mini ⚠️ AI Credits June 2026
-- [`gemini-cli-agent`](plugins/cli-agents/skills/gemini-cli-agent/SKILL.md) — `--cli gemini`: Gemini CLI, gemini-3-flash-preview
+- [`gemini-cli-agent`](plugins/cli-agents/skills/gemini-cli-agent/SKILL.md) — `--cli gemini`: Gemini CLI, DEPRECATED for consumer use (enterprise-only since June 18, 2026)
+- [`agent-file-synchronization`](plugins/cli-agents/skills/agent-file-synchronization/SKILL.md) — replicates CLAUDE.md into GEMINI.md/copilot-instructions.md/AGENTS.md, preserving each target's platform-specific section
+- [`update-cli-models`](plugins/cli-agents/skills/update-cli-models/SKILL.md) — model catalog/pricing sync
 - [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) · [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) · [`project-setup`](plugins/cli-agents/skills/project-setup/SKILL.md) · [`maf-adapter`](plugins/cli-agents/skills/maf-adapter/SKILL.md) · [`agt-security`](plugins/cli-agents/skills/agt-security/SKILL.md)
 
 **11 Expert Agent Personas** (flat `agents/` directory, shared across all backends):

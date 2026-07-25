@@ -65,8 +65,8 @@ cli-agents/
 └── skills/
     ├── claude-cli-agent/         # cli=claude backend — Claude CLI task delegation
     ├── copilot-cli-agent/        # cli=copilot backend — Copilot CLI task delegation
-    ├── gemini-cli-agent/         # cli=gemini backend — Gemini CLI task delegation
-    ├── agy-cli-agent/            # cli=agy backend — Antigravity CLI task delegation
+    ├── gemini-cli-agent/         # cli=gemini backend — DEPRECATED: consumer access ended June 18, 2026 (enterprise-only now)
+    ├── agy-cli-agent/            # cli=agy backend — Antigravity CLI task delegation — primary path for Gemini models now
     ├── codex-cli-agent/          # cli=codex backend — Codex/OpenAI-compatible task delegation
     ├── local-llm-bridge/         # cli=llama backend — direct Gemma 4 12B, no proxy, ~2s
     ├── local-llm-setup/          # Cross-platform setup wizard — llama-server + Mode B config
