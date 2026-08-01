@@ -1,1 +1,0 @@
-../../../../agent-scaffolders/references/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md
