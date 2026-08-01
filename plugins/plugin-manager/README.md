@@ -146,10 +146,12 @@ The installer intelligently deploys plugin components to the correct directories
 
 | Component | `.agents/` (canonical) | Claude Code `.claude/` |
 |-----------|------------------------|------------------------|
-| `skills/*/` | `skills/<name>/` | `skills/<name>/` (symlinked) |
+| `skills/*/` | `skills/<name>/` (pruned & cleanly replaced on reinstall) | Reads directly from `.agents/skills/` |
 | `agents/*.md` | `agents/<plugin>-<name>.md` | `agents/<plugin>-<name>.md` (symlinked) |
 | `commands/*.md` | `workflows/<plugin>_<cmd>.md` | `commands/<plugin>_<cmd>.md` (symlinked) |
 | `hooks/hooks.json` | `hooks/<plugin>-hooks.json` | `hooks/<plugin>-hooks.json` (symlinked) |
+
+> **Clean Replacement Guarantee:** Whenever a plugin is re-installed, target skill directories in `.agents/skills/` are wiped prior to copying. This ensures non-additive changes (file deletions, script renames, removed symlinks) are cleanly pruned without leaving stale artifacts behind.
 
 > **Note on Commands:** Nested command folders (`commands/ops/restart.md`) are flattened to snake_case (`plugin_ops_restart.md`) for IDE compatibility.
 

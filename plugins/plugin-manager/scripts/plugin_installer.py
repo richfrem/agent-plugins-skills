@@ -661,6 +661,14 @@ def _provision_skills(plugin_path: Path, plugin_name: str, agents_root: Path,
             continue
         dest = central_skills / item.name
         if not dry_run:
+            if dest.exists() or dest.is_symlink():
+                try:
+                    if dest.is_dir() and not dest.is_symlink():
+                        shutil.rmtree(dest)
+                    else:
+                        dest.unlink()
+                except Exception as e:
+                    print(f"    ! Warning: could not clean existing target {dest.name}: {e}")
             _copy_resolving_pointers(item, dest)
             _inject_plugin_field(dest / "SKILL.md", plugin_name)
             print(f"  ✓ Universal central copy: {dest.relative_to(root)}")

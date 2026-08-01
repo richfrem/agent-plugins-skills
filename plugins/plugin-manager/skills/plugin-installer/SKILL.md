@@ -88,12 +88,14 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 
 | Component | `.agents/` (canonical) | `.claude/` (Claude Code) |
 |-----------|------------------------|--------------------------|
-| `skills/` | `.agents/skills/<n>/` full copy | `.claude/skills/<n>` → symlink |
+| `skills/` | `.agents/skills/<n>/` full copy (pruned & cleanly replaced on reinstall) | Reads directly from `.agents/skills/` |
 | `commands/*.md` | `.agents/workflows/<plugin>_<cmd>.md` | `.claude/commands/<plugin>_<cmd>.md` → symlink |
 | `rules/` | `.agents/rules/<plugin>_<rule>.md` | Appended → `CLAUDE.md` |
 | `hooks/hooks.json` | `.agents/hooks/<plugin>-hooks.json` | `.claude/hooks/<plugin>-hooks.json` → symlink |
 | `agents/*.md` | `.agents/agents/<plugin>-<agent>.md` | `.claude/agents/<plugin>-<agent>.md` → symlink |
 | `.mcp.json` | Merged → `./.mcp.json` | Merged → `./.mcp.json` |
+
+> **Clean Replacement Guarantee:** Re-installing any plugin completely wipes the destination target directory `.agents/skills/<skill-name>` prior to copying. This ensures non-additive changes (file deletions, script renames, removed symlinks) are cleanly pruned without leaving stale artifacts behind.
 
 > **Antigravity, Gemini, and GitHub Copilot** all natively read from `.agents/`
 > — no separate symlinks needed. The canonical `.agents/` copy is sufficient.
