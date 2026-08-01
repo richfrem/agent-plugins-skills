@@ -24,3 +24,4 @@
 | 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
 | 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
 | 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
+| 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
