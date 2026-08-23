@@ -1,5 +1,5 @@
 ---
-description: Rules for safe git operations — what requires explicit approval, what is forbidden without it.
+description: Rules for safe git operations — what requires explicit approval, what is forbidden, and how to handle push & lockfile conflicts.
 globs: ["**/*"]
 ---
 
@@ -7,29 +7,47 @@ globs: ["**/*"]
 
 ## Hard Rules (never violate)
 
-### No git stash without explicit instruction
+### 1. No git stash without explicit instruction
 Never run `git stash`, `git stash pop`, or `git stash apply` unless the user explicitly says to.
-**Reason:** A stash pop in a prior session applied content from an old unrelated stash onto the
-current branch, introducing silent regressions. The risk is not worth it — there is always a
-safer path.
+**Reason:** Stashing risks applying stale edits onto new branches and causing silent regressions.
 
-### When a push is rejected
+### 2. Lockfile Conflict Protocol (`skills-lock.json`)
+`skills-lock.json` contains machine-generated timestamps. When a branch or PR has conflicts in `skills-lock.json`:
+- **NEVER** edit conflict markers by hand (`<<<<<<<`, `=======`, `>>>>>>>`).
+- **NEVER** leave a PR in conflict state after pushing.
+- **ALWAYS** resolve immediately via:
+  ```bash
+  git checkout --ours skills-lock.json
+  python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y
+  git add skills-lock.json
+  ```
+
+### 3. Pre-Push Freshness Verification
+Before pushing a feature branch for PR merge:
+1. Verify the branch is up to date with `origin/main`:
+   ```bash
+   git fetch origin main
+   git merge origin/main
+   ```
+2. If `skills-lock.json` conflicts, apply Rule 2 immediately before pushing.
+3. Verify working directory is clean (`git status`) and push with `-u origin <branch>`.
+
+### 4. When a push is rejected
 If `git push` is rejected because the remote is ahead:
-1. Run `git pull --rebase` only (no stash).
-2. If there are unstaged changes that block the rebase, **stop and tell the user** — do not stash.
-3. Push after the rebase completes cleanly.
-Never reach for stash as a shortcut around a rejected push.
+1. Run `git fetch origin` and `git merge origin/<branch>` or `git pull --rebase` (no stash).
+2. If conflicts occur in `skills-lock.json`, resolve via Rule 2.
+3. Push once clean. Never force-push around a rejected push.
 
-### No force push to main/master
+### 5. No force push to main/master
 Never `git push --force` to main or master under any circumstances.
 
-### No --no-verify
+### 6. No --no-verify
 Never skip hooks with `--no-verify` unless the user explicitly requests it.
 
-### Commit only what is asked
-Do not commit files the user did not ask to commit. Auto-modified runtime files
-(`plugin-sources.json`, `skills-lock.json`, `context/events.jsonl`) are noise — never commit them
-unless explicitly asked.
+### 7. Commit only what is asked & required
+- Commit only files within the task scope.
+- Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
+- When `skills-lock.json` or `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit them together with the changes.
 
 ## Approval Required
 
@@ -38,12 +56,12 @@ unless explicitly asked.
 - Any branch deletion (`git branch -d` / `-D`)
 - Any `git push --force-with-lease` or force variant
 - Any `git clean`
-- Committing files outside the scope of the current task
 
 ## Safe Without Asking
 
 - `git status`, `git diff`, `git log` — read-only, always safe
 - `git add <specific files>` + `git commit` when the user asked to commit
 - `git push` (non-force) when the user asked to push
-- `git pull --rebase` when a push is rejected (no stash)
+- Fetching and merging `origin/main` into the current working feature branch to keep PRs conflict-free
 - `git checkout -b <branch>` when the user asks for a new branch
+
