@@ -10362,7 +10362,12 @@
       "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/task_to_issue_bridge.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/acceptance-criteria.md",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared acceptance criteria for update-cli-models"
     }
-  ],
-  "symlinks": []
+  ]
 }
