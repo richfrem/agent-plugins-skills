@@ -55,15 +55,19 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-ANCHOR_LINE = (
-    "Behavioral guidelines to reduce common LLM coding mistakes. "
-    "Merge with project-specific instructions as needed."
-)
+ANCHOR_LINES: List[str] = [
+    (
+        "Behavioral guidelines to reduce common LLM coding mistakes. "
+        "Merge with project-specific instructions as needed."
+    ),
+    "## Overview",
+]
 
-# Per-target: (relative path, title line, tail marker to preserve or None)
-TARGETS: List[Tuple[str, str, Optional[str]]] = [
+# Per-target template: (relative path, title_formatter, tail marker to preserve or None)
+# title_formatter takes project_name: str and returns the title string.
+TARGET_TEMPLATES: List[Tuple[str, str, Optional[str]]] = [
     ("GEMINI.md", "# GEMINI.md", "## Gemini CLI Tool Mapping"),
-    (".github/copilot-instructions.md", "# Copilot Instructions for agent-plugins-skills", None),
+    (".github/copilot-instructions.md", "# Copilot Instructions for {project_name}", None),
     ("AGENTS.md", "# AGENTS.md", None),
 ]
 
@@ -76,10 +80,11 @@ def read_lines(path: Path) -> List[str]:
 
 
 def extract_anchor_index(lines: List[str]) -> Optional[int]:
-    """Return the index of the shared body's first line (ANCHOR_LINE), or None if absent."""
-    for i, line in enumerate(lines):
-        if line.strip() == ANCHOR_LINE:
-            return i
+    """Return the index of the shared body's first line from ANCHOR_LINES, or None if absent."""
+    for anchor in ANCHOR_LINES:
+        for i, line in enumerate(lines):
+            if line.strip() == anchor:
+                return i
     return None
 
 
@@ -132,7 +137,7 @@ def sync_target(
     source_anchor = extract_anchor_index(source_lines)
     if source_anchor is None:
         raise ValueError(
-            f"CLAUDE.md is missing the expected anchor line: {ANCHOR_LINE!r}. "
+            f"CLAUDE.md is missing any expected anchor line from: {ANCHOR_LINES!r}. "
             "Refusing to sync — the body-boundary detection would be unreliable."
         )
     body = source_lines[1:]  # drop CLAUDE.md's own title line
@@ -174,9 +179,16 @@ def main() -> None:
         sys.exit(1)
 
     source_lines = read_lines(claude_md)
+    # Detect project name from first line if "# <name>" or fallback to directory name
+    project_name = root.name
+    if source_lines and source_lines[0].startswith("# "):
+        first_title = source_lines[0][2:].strip()
+        if first_title and not first_title.endswith(".md"):
+            project_name = first_title
 
-    for rel_path, title, tail_marker in TARGETS:
+    for rel_path, title_tmpl, tail_marker in TARGET_TEMPLATES:
         target_path = root / rel_path
+        title = title_tmpl.format(project_name=project_name)
         content, summary = sync_target(source_lines, target_path, title, tail_marker)
         print(
             f"{summary['target']}: {summary['old_line_count']} -> {summary['new_line_count']} lines "
