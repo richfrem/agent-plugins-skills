@@ -1,7 +1,13 @@
 {
   "sources": [
     {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "obra/superpowers",
+      "plugins": [
+        "superpowers"
+      ]
+    },
+    {
+      "source": "richfrem/agent-plugins-skills",
       "plugins": [
         "agent-agentic-os",
         "agent-loops",
@@ -13,12 +19,6 @@
         "exploration-cycle-plugin",
         "obsidian-wiki-engine",
         "plugin-manager"
-      ]
-    },
-    {
-      "source": "obra/superpowers",
-      "plugins": [
-        "superpowers"
       ]
     }
   ]
