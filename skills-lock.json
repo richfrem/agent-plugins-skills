@@ -1032,21 +1032,21 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-03-23T19:00:46.686677Z",
-      "updatedAt": "2026-08-23T21:20:41.444013Z"
+      "updatedAt": "2026-08-23T21:23:33.023321Z"
     },
     "plugin-remover": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-21T14:53:48.497968Z",
-      "updatedAt": "2026-08-23T21:20:41.444013Z"
+      "updatedAt": "2026-08-23T21:23:33.023321Z"
     },
     "plugin-syncer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-21T15:51:44.964142Z",
-      "updatedAt": "2026-08-23T21:20:41.444013Z"
+      "updatedAt": "2026-08-23T21:23:33.023321Z"
     },
     "podcast-summarizer": {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",

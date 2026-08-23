@@ -165,9 +165,14 @@ def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> No
     """Re-installs all plugins for a given source by calling plugin_add.py."""
     if not plugins:
         return
-    plugin_add = root / "plugins" / "plugin-manager" / "scripts" / "plugin_add.py"
-    if not plugin_add.exists():
-        print(f"  [ERROR] plugin_add.py not found at {plugin_add}")
+    candidate_paths = [
+        root / "plugins" / "plugin-manager" / "scripts" / "plugin_add.py",
+        root / ".agents" / "skills" / "plugin-installer" / "scripts" / "plugin_add.py",
+        SCRIPT_DIR / "plugin_add.py",
+    ]
+    plugin_add = next((p for p in candidate_paths if p.exists()), None)
+    if not plugin_add:
+        print(f"  [ERROR] plugin_add.py not found at any candidate location: {[str(p) for p in candidate_paths]}")
         return
 
     plugins_arg = ",".join(plugins)
