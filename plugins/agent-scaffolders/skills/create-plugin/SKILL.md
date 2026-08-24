@@ -20,8 +20,8 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
    plan component table (skills / commands / agents / hooks / MCP), ask clarifying
    questions per component, scaffold directory structure and `plugin.json` (ensuring `"author"` is an object with `"name"` and `"email"`), implement
    each component using the appropriate sub-skill, validate, test, and document
-3. **plugin.json Template & Binding Check (MANDATORY — do not skip):**
-   - Ensure `.claude-plugin/plugin.json` contains a valid `"author"` object (Claude Code marketplace rejects author as a string):
+3. **plugin.json Template & Minimal Metadata Standard (MANDATORY — do not skip):**
+   - Ensure `.claude-plugin/plugin.json` uses the clean, minimal metadata format:
      ```json
      {
        "name": "<plugin-name>",
@@ -30,18 +30,18 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
        "author": {
          "name": "richfrem",
          "email": "connect.richfrem@gmail.com"
-       }
+       },
+       "repository": "https://github.com/richfrem/agent-plugins-skills",
+       "license": "MIT",
+       "keywords": [
+         "<keyword>"
+       ]
      }
      ```
-   - Ensure `plugin.json` has no duplicate top-level keys.
-   - After every skill, agent, command, and hook is scaffolded:
-     - Read `.claude-plugin/plugin.json`.
-     - Verify each generated skill directory appears in the `skills` list.
-     - Verify each agent file appears in the `agents` list.
-     - Verify each command file appears in the `commands` list.
-     - Verify each hook appears in the `hooks` list.
-     - Add any missing entries immediately — do NOT wait for the user to ask.
-     - Report: *"All components are registered in `plugin.json`. ✅"* or list additions made.
+   - **Strict Rules**:
+     - `.claude-plugin/plugin.json` must **NEVER** contain `skills`, `agents`, `hooks`, or `commands` arrays (these are auto-discovered by Claude Code).
+     - `"author"` must **ALWAYS** be an object with `"name"` (and optionally `"email"`), never a plain string.
+     - No duplicate top-level keys.
 4. **plugin.yaml (Hermes compatibility — always generate):** After `plugin.json` is finalized, scaffold a `plugin.yaml` at the plugin root for hermes-agent compatibility. Format:
    ```yaml
    name: <plugin-name>

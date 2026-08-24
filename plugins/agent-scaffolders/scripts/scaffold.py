@@ -85,7 +85,12 @@ def _create_plugin_configs(full_path: str, name: str) -> None:
         "author": {
             "name": "richfrem",
             "email": "connect.richfrem@gmail.com"
-        }
+        },
+        "repository": "https://github.com/richfrem/agent-plugins-skills",
+        "license": "MIT",
+        "keywords": [
+            name
+        ]
     }
     with open(os.path.join(full_path, ".claude-plugin", "plugin.json"), "w") as f:
         json.dump(manifest, f, indent=4)
