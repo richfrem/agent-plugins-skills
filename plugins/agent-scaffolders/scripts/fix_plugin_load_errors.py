@@ -60,7 +60,7 @@ def fix_literal_newlines(content: str) -> tuple[str, bool]:
 
 
 def fix_plugin_json(path: Path) -> list[str]:
-    """Remove banned fields from plugin.json that Claude Code validator rejects."""
+    """Remove banned fields from plugin.json and ensure author is an object."""
     fixes = []
     try:
         text = path.read_text(encoding="utf-8")
@@ -68,15 +68,26 @@ def fix_plugin_json(path: Path) -> list[str]:
     except (json.JSONDecodeError, OSError) as e:
         return [f"ERROR reading {path}: {e}"]
 
+    changed = False
+
     removed = []
     for field in sorted(BANNED_PLUGIN_JSON_FIELDS):
         if field in data:
             del data[field]
             removed.append(field)
+            changed = True
 
     if removed:
-        path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
         fixes.append(f"plugin.json: removed banned field(s): {', '.join(removed)}")
+
+    if "author" in data and isinstance(data["author"], str):
+        old_author = data["author"]
+        data["author"] = {"name": old_author}
+        changed = True
+        fixes.append(f"plugin.json: converted author string '{old_author}' to object {{\"name\": \"{old_author}\"}}")
+
+    if changed:
+        path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
     return fixes
 
 

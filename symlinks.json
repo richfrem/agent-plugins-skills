@@ -10368,6 +10368,12 @@
       "dst": "plugins/cli-agents/skills/update-cli-models/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "Shared acceptance criteria for update-cli-models"
+    },
+    {
+      "src": "plugins/agent-loops/references/acceptance-criteria.md",
+      "dst": "plugins/agent-loops/skills/co-pilot-loop/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

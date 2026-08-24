@@ -90,6 +90,17 @@ The `.git` suffix is optional — Azure DevOps and AWS CodeCommit URLs without i
 
 5.  Optional: pin a version. **Warning**: do not set `version` in both the marketplace entry and the plugin's `plugin.json` — `plugin.json` wins silently and the marketplace version is ignored. For relative-path plugins, set version in the marketplace entry. For all other sources, set it in `plugin.json`.
 
+6.  **Plugin Manifest Schema Requirements (MANDATORY)**:
+    - Every plugin's `.claude-plugin/plugin.json` **MUST** declare `"author"` as an object:
+      ```json
+      "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+      }
+      ```
+      Setting `"author": "string"` causes Claude Code to fail with `author: Invalid input: expected object, received string` during `/plugin install`.
+    - No duplicate top-level keys in `plugin.json` or `marketplace.json`.
+
 > **Plugin Author Note**: In hooks or server configs, use `${CLAUDE_PLUGIN_ROOT}` (read-only install path) and `${CLAUDE_PLUGIN_DATA}` (persistent state directory) instead of absolute host paths.
 
 ---

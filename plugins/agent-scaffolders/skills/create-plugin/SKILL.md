@@ -18,16 +18,30 @@ Follow the `create-plugin` skill workflow to scaffold a new Claude Code plugin.
 1. If `$ARGUMENTS` provides a plugin name, use it to seed Phase 1
 2. Follow the create-plugin phased workflow: discover purpose and plugin type,
    plan component table (skills / commands / agents / hooks / MCP), ask clarifying
-   questions per component, scaffold directory structure and `plugin.json`, implement
+   questions per component, scaffold directory structure and `plugin.json` (ensuring `"author"` is an object with `"name"` and `"email"`), implement
    each component using the appropriate sub-skill, validate, test, and document
-3. **plugin.json Binding Check (MANDATORY — do not skip):** After every skill, agent, command, and hook is scaffolded:
-   - Read `.claude-plugin/plugin.json`.
-   - Verify each generated skill directory appears in the `skills` list.
-   - Verify each agent file appears in the `agents` list.
-   - Verify each command file appears in the `commands` list.
-   - Verify each hook appears in the `hooks` list.
-   - Add any missing entries immediately — do NOT wait for the user to ask.
-   - Report: *"All components are registered in `plugin.json`. ✅"* or list additions made.
+3. **plugin.json Template & Binding Check (MANDATORY — do not skip):**
+   - Ensure `.claude-plugin/plugin.json` contains a valid `"author"` object (Claude Code marketplace rejects author as a string):
+     ```json
+     {
+       "name": "<plugin-name>",
+       "version": "0.1.0",
+       "description": "<description>",
+       "author": {
+         "name": "richfrem",
+         "email": "connect.richfrem@gmail.com"
+       }
+     }
+     ```
+   - Ensure `plugin.json` has no duplicate top-level keys.
+   - After every skill, agent, command, and hook is scaffolded:
+     - Read `.claude-plugin/plugin.json`.
+     - Verify each generated skill directory appears in the `skills` list.
+     - Verify each agent file appears in the `agents` list.
+     - Verify each command file appears in the `commands` list.
+     - Verify each hook appears in the `hooks` list.
+     - Add any missing entries immediately — do NOT wait for the user to ask.
+     - Report: *"All components are registered in `plugin.json`. ✅"* or list additions made.
 4. **plugin.yaml (Hermes compatibility — always generate):** After `plugin.json` is finalized, scaffold a `plugin.yaml` at the plugin root for hermes-agent compatibility. Format:
    ```yaml
    name: <plugin-name>

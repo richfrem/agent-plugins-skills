@@ -385,20 +385,44 @@ def log_failure(tier: int, artifact: str, error: str) -> None:
 def validate_plugin(plugin_path: Path) -> None:
     """Assert that a plugin directory meets minimum structural requirements.
 
-    Checks for a plugin.json manifest, a skills/ directory, and a SKILL.md
-    inside each skill subfolder. Missing evals.json produces a warning rather
-    than a hard failure, to accommodate third-party plugins.
+    Checks for a plugin.json manifest (validating author object schema and no duplicate
+    keys), a skills/ directory, and a SKILL.md inside each skill subfolder. Missing
+    evals.json produces a warning rather than a hard failure, to accommodate third-party plugins.
 
     Args:
         plugin_path: Path to the plugin directory to validate.
 
     Raises:
-        AssertionError: If the manifest or skills/ directory is missing, or
-            any skill subfolder lacks a SKILL.md file.
+        AssertionError: If the manifest or skills/ directory is missing, author format is invalid,
+            duplicate manifest keys exist, or any skill subfolder lacks a SKILL.md file.
     """
-    manifest_exists = (plugin_path / ".claude-plugin" / "plugin.json").exists() or (plugin_path / "plugin.json").exists()
-    assert manifest_exists, f"Missing manifest (.claude-plugin/plugin.json or plugin.json) in {plugin_path.name}"
-    
+    manifest_path = None
+    if (plugin_path / ".claude-plugin" / "plugin.json").exists():
+        manifest_path = plugin_path / ".claude-plugin" / "plugin.json"
+    elif (plugin_path / "plugin.json").exists():
+        manifest_path = plugin_path / "plugin.json"
+
+    assert manifest_path is not None, f"Missing manifest (.claude-plugin/plugin.json or plugin.json) in {plugin_path.name}"
+
+    try:
+        raw_text = manifest_path.read_text(encoding="utf-8")
+
+        def _check_dup_pairs(pairs):
+            d = {}
+            for k, v in pairs:
+                if k in d:
+                    raise AssertionError(f"Duplicate top-level key '{k}' in {manifest_path.name} of {plugin_path.name}")
+                d[k] = v
+            return d
+
+        data = json.loads(raw_text, object_pairs_hook=_check_dup_pairs)
+        if "author" in data:
+            author = data["author"]
+            assert isinstance(author, dict), f"`author` in {plugin_path.name}/{manifest_path.name} must be an object ({{\"name\": \"...\", \"email\": \"...\"}}), not {type(author).__name__}"
+            assert author.get("name") and isinstance(author.get("name"), str), f"`author` object in {plugin_path.name}/{manifest_path.name} must contain a non-empty string for `name`"
+    except json.JSONDecodeError as je:
+        raise AssertionError(f"Invalid JSON in {manifest_path.name} of {plugin_path.name}: {je}")
+
     # 2. Enforce skills dir
     skills_dir = plugin_path / "skills"
     assert skills_dir.is_dir(), f"Missing skills/ directory in {plugin_path.name}"

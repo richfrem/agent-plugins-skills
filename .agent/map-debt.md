@@ -47,9 +47,26 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 
 - **Artifact:** `plugins/cli-agents/skills/update-cli-models/` (pre-existing, not introduced this session)
   **Friction:** Missing `references/acceptance-criteria.md` — flagged by `audit.py` during the compliance pass run after scaffolding `agent-file-synchronization`.
-  **Why not fixed now:** Requires understanding the skill's actual test criteria to author meaningfully — out of scope for a session that was auditing a sibling skill, not this one. Writing placeholder content would be worse than the current honest gap.
-  **Recommended fix:** Someone familiar with `update-cli-models`'s actual behavior should write `references/acceptance-criteria.md` for it.
-  **Evidence:** `audit.py --path plugins/cli-agents` — "Skill 'update-cli-models' is missing `./acceptance-criteria.md`."
-  **Severity:** S | **Repeat:** NO | **Status:** OPEN
+  **Why not fixed now:** Resolved via symlink to `plugins/cli-agents/references/acceptance-criteria.md`.
+  **Evidence:** `audit.py --path plugins/cli-agents` — passes clean.
+  **Severity:** S | **Repeat:** NO | **Status:** RESOLVED
+
+---
+
+## 2026-08-24 — Marketplace Manifest Schema & Scaffolding/Auditing Hardening
+
+- **Artifact:** `plugins/agent-scaffolders/skills/create-plugin/SKILL.md`, `scaffold.py`, `manage-marketplace/SKILL.md`, `audit.py`, `audit-plugin/SKILL.md`, `audit-plugin-l5/SKILL.md`, `l5-red-team-auditor/SKILL.md`, `plugins/plugin-manager/scripts/plugin_add.py`
+  **Friction:** Claude Code `/plugin install` strictly requires `"author"` to be an object (`{"name": "...", "email": "..."}`) and fails on string author or duplicate manifest keys. Scaffolding templates and validators allowed string authors or lacked duplicate key checking.
+  **Why not deferred:** In-bounds, high-impact fixes preventing production plugin installation failures across all consuming repositories.
+  **Fix:** Updated `scaffold.py`, `create-plugin`, `manage-marketplace`, `audit.py`, `audit-plugin`, `audit-plugin-l5`, and `plugin_add.py` to enforce the author object schema and reject duplicate keys in `plugin.json`.
+  **Evidence:** `audit.py` across all plugins, structural audits, and `plugin_add.py` validation passes.
+  **Severity:** M | **Repeat:** NO | **Status:** RESOLVED
+
+- **Artifact:** `plugins/agent-loops/skills/co-pilot-loop/references/acceptance-criteria.md`
+  **Friction:** `audit_plugin_structure.py` detected a real file inside `skills/co-pilot-loop/references/` instead of a symlink to plugin root.
+  **Why not deferred:** In-bounds structural rule compliance (ADR-002/ADR-003).
+  **Fix:** Relocated canonical file to `plugins/agent-loops/references/acceptance-criteria.md` and created symlink via `symlink_manager.py`.
+  **Evidence:** `audit_plugin_structure.py plugins/agent-loops` passes with 0 errors.
+  **Severity:** S | **Repeat:** NO | **Status:** RESOLVED
 
 ---
