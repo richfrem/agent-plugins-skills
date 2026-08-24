@@ -39,7 +39,7 @@ claude -p l5-red-team-auditor "Please deeply assess the plugin located at: plugi
 
 ## Output
 The sub-agent is instructed to output a structured markdown artifact titled `[Plugin_Name]_Red_Team_Audit.md` containing:
-1. L5 Maturity gaps.
+1. L5 Maturity gaps (including `author` dictionary schema compliance and zero duplicate manifest keys).
 2. Bypass vectors and injection paths.
 3. Determinism failures.
 4. Priority Remediation Checklists.

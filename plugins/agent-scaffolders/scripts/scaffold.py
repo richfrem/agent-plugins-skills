@@ -82,7 +82,10 @@ def _create_plugin_configs(full_path: str, name: str) -> None:
         "name": name,
         "version": "0.1.0",
         "description": f"The {name} plugin.",
-        "author": {"name": "Generated via Agent Scaffolder"}
+        "author": {
+            "name": "richfrem",
+            "email": "connect.richfrem@gmail.com"
+        }
     }
     with open(os.path.join(full_path, ".claude-plugin", "plugin.json"), "w") as f:
         json.dump(manifest, f, indent=4)

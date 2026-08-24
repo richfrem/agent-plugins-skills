@@ -45,6 +45,8 @@ Before analyzing the target plugin, you MUST read these foundational rubrics:
 If any of the following conditions are met, **STOP immediately** and flag before proceeding:
 - `shell=True` detected in any script → **CRITICAL: Command Injection Vector**
 - Hardcoded credentials or tokens detected → **CRITICAL: Credential Exposure**
+- `author` in `plugin.json` is a string or invalid object → **CRITICAL: Marketplace Schema Rejection**
+- Duplicate top-level keys in `plugin.json` → **CRITICAL: Manifest Parsing Collision**
 - SKILL.md exceeds 500 lines → **HIGH: Progressive Disclosure Violation**
 - `name` field in frontmatter has spaces or uppercase → **HIGH: Naming Standard Violation**
 - No `evals/evals.json` present → **MEDIUM: Missing Benchmarking Loop**

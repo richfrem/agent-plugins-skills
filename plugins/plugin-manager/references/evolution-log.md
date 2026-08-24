@@ -25,3 +25,13 @@
 | 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
 | 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
 | 2026-07-25 | Tier 1 | Failure: Skill directory 'red-team-bundler' in plugin 'dev-utils' is missing SKILL.md | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of agent-agentic-os | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of agent-loops | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of agent-memory | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of agent-scaffolders | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of cli-agents | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of dependency-management | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of dev-utils | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of exploration-cycle-plugin | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of obsidian-wiki-engine | None | None | FAILED |
+| 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of plugin-manager | None | None | FAILED |

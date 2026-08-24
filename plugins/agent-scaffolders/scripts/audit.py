@@ -63,14 +63,50 @@ def _is_deprecated_stub(plugin_path: str) -> bool:
 
 
 def _check_root_structure(plugin_path: str, errors: list, warnings: list) -> None:
-    """Check .claude-plugin/plugin.json presence, legacy file placement, and root README."""
+    """Check .claude-plugin/plugin.json presence, schema compliance, legacy file placement, and root README."""
     claude_plugin_dir = os.path.join(plugin_path, ".claude-plugin")
-    if not os.path.isdir(claude_plugin_dir):
-        errors.append("Missing `.claude-plugin/` directory.")
-    else:
-        manifest_path = os.path.join(claude_plugin_dir, "plugin.json")
-        if not os.path.isfile(manifest_path):
+    manifest_path = None
+    if os.path.isdir(claude_plugin_dir):
+        candidate = os.path.join(claude_plugin_dir, "plugin.json")
+        if os.path.isfile(candidate):
+            manifest_path = candidate
+        else:
             errors.append("Missing `plugin.json` inside `.claude-plugin/`.")
+    elif os.path.isfile(os.path.join(plugin_path, "plugin.json")):
+        manifest_path = os.path.join(plugin_path, "plugin.json")
+    else:
+        errors.append("Missing `.claude-plugin/` directory and `plugin.json`.")
+
+    if manifest_path:
+        # Check for duplicate keys and valid JSON
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+
+            def _dict_raise_on_duplicates(ordered_pairs):
+                d = {}
+                for k, v in ordered_pairs:
+                    if k in d:
+                        errors.append(f"Duplicate top-level key '{k}' in `{os.path.relpath(manifest_path, plugin_path)}`.")
+                    d[k] = v
+                return d
+
+            data = json.loads(raw_text, object_pairs_hook=_dict_raise_on_duplicates)
+
+            # Check author format: must be an object with a "name" key
+            if "author" in data:
+                author = data["author"]
+                if not isinstance(author, dict):
+                    errors.append(f"`author` in `{os.path.relpath(manifest_path, plugin_path)}` must be an object (`{{\"name\": \"...\", \"email\": \"...\"}}`), not {type(author).__name__}.")
+                elif not author.get("name") or not isinstance(author.get("name"), str):
+                    errors.append(f"`author` object in `{os.path.relpath(manifest_path, plugin_path)}` must contain a non-empty string for `name`.")
+            else:
+                warnings.append(f"Missing `author` object in `{os.path.relpath(manifest_path, plugin_path)}` (recommended: {{\"name\": \"...\", \"email\": \"...\"}}).")
+
+        except json.JSONDecodeError as e:
+            errors.append(f"Invalid JSON in `{os.path.relpath(manifest_path, plugin_path)}`: {e}")
+        except Exception as e:
+            errors.append(f"Error reading `{os.path.relpath(manifest_path, plugin_path)}`: {e}")
 
     if os.path.isfile(os.path.join(plugin_path, "mcp.json")):
         errors.append("Found `mcp.json` at root. The officially supported standard is `.mcp.json`.")

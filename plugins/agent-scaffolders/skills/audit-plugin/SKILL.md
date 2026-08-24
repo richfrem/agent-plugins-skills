@@ -272,9 +272,13 @@ ls .claude-plugin/plugin.json
 # Components must be at root (not in .claude-plugin/)
 ls commands/ agents/ skills/ hooks/
 
-# Validate JSON
+# Validate JSON & author format (author MUST be an object with name/email, not a string)
 jq . .claude-plugin/plugin.json
 ```
+
+**Manifest lint rules:**
+- `author` MUST be an object: `{"name": "...", "email": "..."}`. A string value causes `Invalid input: expected object, received string` during `/plugin install`.
+- No duplicate top-level keys in `plugin.json` (e.g. duplicate `agents` or `commands`).
 
 **Security scan:**
 ```bash
@@ -330,7 +334,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py .
 ## Step 5: Report and Remediate
 
 **Severity levels:**
-- **Critical** -- plugin won't work or is insecure. Fix immediately. (e.g., invalid JSON, hardcoded credentials, missing required fields)
+- **Critical** -- plugin won't work or is insecure. Fix immediately. (e.g., invalid JSON, string author instead of object, duplicate keys, hardcoded credentials, missing required fields)
 - **Warning** -- degrades quality or usability. Fix before distribution. (e.g., missing README, vague skill descriptions, no `<example>` blocks in agents)
 - **Minor** -- best practice improvement. Fix when convenient.
 
@@ -354,7 +358,10 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py .
 
 **.claude-plugin/plugin.json minimal valid:**
 ```json
-{ "name": "plugin-name" }
+{
+  "name": "plugin-name",
+  "author": { "name": "Author Name", "email": "email@example.com" }
+}
 ```
 
 **.claude-plugin/plugin.json recommended:**
@@ -363,7 +370,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py .
   "name": "plugin-name",
   "version": "0.1.0",
   "description": "What the plugin does",
-  "author": { "name": "Author Name", "email": "email" }
+  "author": { "name": "Author Name", "email": "email@example.com" }
 }
 ```
 
