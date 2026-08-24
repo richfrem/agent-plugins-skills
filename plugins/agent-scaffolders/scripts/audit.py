@@ -83,7 +83,7 @@ def _check_root_structure(plugin_path: str, errors: list, warnings: list) -> Non
             with open(manifest_path, "r", encoding="utf-8") as f:
                 raw_text = f.read()
 
-            def _dict_raise_on_duplicates(ordered_pairs):
+            def strict_duplicate_check(ordered_pairs):
                 d = {}
                 for k, v in ordered_pairs:
                     if k in d:
@@ -91,7 +91,13 @@ def _check_root_structure(plugin_path: str, errors: list, warnings: list) -> Non
                     d[k] = v
                 return d
 
-            data = json.loads(raw_text, object_pairs_hook=_dict_raise_on_duplicates)
+            data = json.loads(raw_text, object_pairs_hook=strict_duplicate_check)
+
+            # Strict Claude Code Schema: Banned fields (must be auto-discovered by Claude Code)
+            banned_fields = ["skills", "agents", "hooks", "commands"]
+            for field in banned_fields:
+                if field in data:
+                    errors.append(f"`.claude-plugin/plugin.json` must NOT contain `{field}` array or property; Claude Code auto-discovers {field}.")
 
             # Check author format: must be an object with a "name" key
             if "author" in data:
@@ -101,7 +107,7 @@ def _check_root_structure(plugin_path: str, errors: list, warnings: list) -> Non
                 elif not author.get("name") or not isinstance(author.get("name"), str):
                     errors.append(f"`author` object in `{os.path.relpath(manifest_path, plugin_path)}` must contain a non-empty string for `name`.")
             else:
-                warnings.append(f"Missing `author` object in `{os.path.relpath(manifest_path, plugin_path)}` (recommended: {{\"name\": \"...\", \"email\": \"...\"}}).")
+                errors.append(f"Missing required `author` object in `{os.path.relpath(manifest_path, plugin_path)}` (must be `{{\"name\": \"...\", \"email\": \"...\"}}`).")
 
         except json.JSONDecodeError as e:
             errors.append(f"Invalid JSON in `{os.path.relpath(manifest_path, plugin_path)}`: {e}")
