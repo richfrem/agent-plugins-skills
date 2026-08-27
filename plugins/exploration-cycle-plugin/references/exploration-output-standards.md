@@ -19,9 +19,8 @@ Exploration sessions produce:
 These outputs are designed to be consumed by any spec-driven or plan-driven
 engineering workflow. Examples from `github.com/richfrem/agent-plugins-skills`:
 
-- **superpowers** — write-plan / execute-plan workflow
+- **superpowers** (obra/superpowers) — write-plan / execute-plan workflow; TDD, debugging, verification disciplines
 - **spec-kitty** — specify → plan → tasks → implement lifecycle
-- **superpowers** (obra/superpowers) — TDD, debugging, verification disciplines
 
 The handoff package format is deliberately generic — a structured markdown
 document with sections for requirements, decisions, open questions, and

@@ -187,7 +187,7 @@ Autonomous discovery loop: idea framing → business requirements → user stori
 
 5 execution primitives used as the substrate for the Improvement OS and standalone agent workflows.
 
-**Skills (6):** [`orchestrator`](plugins/agent-loops/skills/orchestrator/SKILL.md) · [`learning-loop`](plugins/agent-loops/skills/learning-loop/SKILL.md) · [`dual-loop`](plugins/agent-loops/skills/dual-loop/SKILL.md) · [`agent-swarm`](plugins/agent-loops/skills/agent-swarm/SKILL.md) · [`red-team-review`](plugins/agent-loops/skills/red-team-review/SKILL.md) · [`triple-loop-learning`](plugins/agent-loops/skills/triple-loop-learning/SKILL.md)
+**Skills (7):** [`orchestrator`](plugins/agent-loops/skills/orchestrator/SKILL.md) · [`learning-loop`](plugins/agent-loops/skills/learning-loop/SKILL.md) · [`dual-loop`](plugins/agent-loops/skills/dual-loop/SKILL.md) · [`agent-swarm`](plugins/agent-loops/skills/agent-swarm/SKILL.md) · [`red-team-review`](plugins/agent-loops/skills/red-team-review/SKILL.md) · [`triple-loop-learning`](plugins/agent-loops/skills/triple-loop-learning/SKILL.md) · [`co-pilot-loop`](plugins/agent-loops/skills/co-pilot-loop/SKILL.md)
 
 **Agents:** [`orchestrator`](plugins/agent-loops/agents/orchestrator.md)
 
@@ -223,7 +223,7 @@ Interactive creators for exact file hierarchies + structured audit framework for
 - [`update-cli-models`](plugins/cli-agents/skills/update-cli-models/SKILL.md) — model catalog/pricing sync
 - [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) · [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) · [`project-setup`](plugins/cli-agents/skills/project-setup/SKILL.md) · [`maf-adapter`](plugins/cli-agents/skills/maf-adapter/SKILL.md) · [`agt-security`](plugins/cli-agents/skills/agt-security/SKILL.md)
 
-**11 Expert Agent Personas** (flat `agents/` directory, shared across all backends):
+**12 Expert Agent Personas** (flat `agents/` directory, shared across all backends):
 
 | Persona | Role | Pattern Family |
 |---------|------|---------------|
@@ -233,11 +233,14 @@ Interactive creators for exact file hierarchies + structured audit framework for
 | `compliance-reviewer` | Coding standards drift detection | Code Review |
 | `pr-reviewer` | Diff review — ship/hold decision | Code Review |
 | `test-writer` | Unit test generation — all path types | Code Review |
+| `tdd-contract-reviewer` | Test fixture/assertion validity review (not generation) | Code Review |
 | `performance-analyst` | Bottleneck analysis — Big-O, I/O amplification | Code Review |
 | `red-team-reviewer` | Adversarial exploit analysis, attack surface | Adversarial |
 | `debate-synthesizer` | Dialectical synthesis, conflict resolution | Adversarial |
 | `output-validator` | Output guardrail — hallucination/schema/policy | Adversarial |
 | `self-critic` | Reflection loop — task-fit, completeness check | Adversarial |
+
+**Graph Planning Phase 1 Fan-Out Trio** (per `graph-planning-superpowers-policy.md` §2.3): `architect-review` (Architecture Skeptic), `security-auditor` (Security / Edge-Case Auditor), `tdd-contract-reviewer` (TDD Contract Reviewer) — dispatched together via `context-bundler`'s Multi-Persona Fan-Out Mode, orchestrated by `red-team-review`.
 
 **KV Cache Orchestrator:** `kv_cache_orchestrator.py` — SHA-256 keyed slot save/restore, 4 GiB budget, 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4).
 
@@ -341,7 +344,7 @@ python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (11 plugins, 128 skills)
+plugins/                    ← upstream source (10 plugins, 134 skills)
   <plugin>/
     plugin.yaml             ← plugin manifest
     .claude-plugin/plugin.json
@@ -369,4 +372,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*128 skills · 11 plugins · Improvement OS (os-architect) · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*134 skills · 10 plugins · Improvement OS (os-architect) · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*

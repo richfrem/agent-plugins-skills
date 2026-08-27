@@ -136,7 +136,10 @@ questions, defeating the optimization.
 - [Constraint 2]
 
 ## Execution Expectations
-[Any stated preference for task tracking, cheaper-model delegation, superpowers-assisted planning, etc.]
+[Any stated preference for task tracking, cheaper-model delegation, and which superpowers
+disciplines should gate the build phase — isolated workspace (`using-git-worktrees`),
+TDD (`test-driven-development`), two-stage review (`requesting-code-review`), branch
+finishing (`finishing-a-development-branch`). Default: all four, per `phase3-execution-discipline.md`.]
 
 ## Current System Behavior
 (Brownfield only — describe what the existing system does; mark gaps with [NEEDS HUMAN INPUT])
@@ -166,7 +169,8 @@ Key mapping from intake to schema:
 - **Desired Output**: from Phase 2 "Desired output" answer
 - **Known Constraints**: from Phase 2 "Prior context" + "Urgency / scope"
 - **Execution Expectations**: any stated preference for detailed planning, task tracking, cheaper-model
-  delegation, or superpowers-assisted implementation planning
+  delegation, or which superpowers disciplines (worktree isolation, TDD, code review, branch finishing)
+  should govern the build phase — see `phase3-execution-discipline.md` for the default set
 - **Current System Behavior**: brownfield only — from Phase 2 "Prior context"
 - **Engineering Blocking Question**: re-entry spike only — from Phase 1 trigger verbatim
 

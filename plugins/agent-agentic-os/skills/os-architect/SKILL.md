@@ -33,6 +33,13 @@ No arguments needed. Start with a plain-language description of what you want to
 - **Phase 2 — Ecosystem Audit**: verifies what capabilities exist vs what's missing
 - **Phase 3 — Proposal + Dispatch**: proposes Path A/B/C and dispatches via the user's CLI tools
 
+**Native Plan Mode required for Phases 1-2**: per `graph-planning-superpowers-policy.md` §2.1,
+enter host-native Plan Mode (Claude Code `/plan`, or the host's equivalent) before Phase 1 begins.
+Phases 1-2 are audit-only — Read/Grep/Bash(read-only) commands to classify intent and inspect
+existing capabilities. Do NOT write, edit, or scaffold any file before the Path (A/B/C) is
+proposed in Phase 3 and the user confirms it. `Write` is only exercised once a path is confirmed,
+Plan Mode is exited, and control passes to `os-evolution-planner` or `create-sub-agent`.
+
 ## Dispatch Paths
 
 | Path | When | Mechanism |

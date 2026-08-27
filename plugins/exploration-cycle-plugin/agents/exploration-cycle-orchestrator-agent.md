@@ -163,14 +163,14 @@ The requirements-doc-agent runs as a cheap Copilot CLI sub-agent. Call it once p
 
 # Pass 1: Problem framing (simple → cheap model)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, and goals." \
   --output exploration/captures/problem-framing.md
 
 # Pass 2: Business requirements (simple → cheap model)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/captures/problem-framing.md \
   --instruction "Mode: business-requirements. Extract functional requirements, business rules, constraints." \
   --output exploration/captures/brd-draft.md
@@ -185,21 +185,21 @@ python scripts/generate_workflow.py \
 
 # Pass 3: User stories (simple → cheap model)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Mode: user-stories. Generate an initial user story set." \
   --output exploration/captures/user-stories-draft.md
 
 # Pass 4: Issues and opportunities (simple → cheap model)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Mode: issues-and-opportunities. Extract issue themes, challenges, and opportunities." \
   --output exploration/captures/issues-opportunities.md
 
 # Prototype observations (simple → cheap model)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-prototype-companion-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-prototype-companion-agent.md \
   --context exploration/captures/walkthrough-notes.md \
   --optional-context exploration/captures/brd-draft.md \
   --instruction "Capture implied requirements, assumptions, and edge cases from the walkthrough transcript." \
@@ -207,7 +207,7 @@ python scripts/dispatch.py \
 
 # Business Rule Audit — simple → cheap model
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-business-rule-audit-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-business-rule-audit-agent.md \
   --context exploration/captures/brd-draft.md \
   --optional-context exploration/captures/prototype-notes.md \
   --instruction "Audit the prototype behavior against the business rules. Detect logic drift." \
@@ -215,7 +215,7 @@ python scripts/dispatch.py \
 
 # Synthesis for handoff — COMPLEX: batch all captures, 1 premium request
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-handoff-preparer-agent.md \
   --context exploration/captures/*.md \
   --instruction "Synthesize all captures into a handoff package." \
   --output exploration/handoffs/handoff-package.md \
@@ -224,7 +224,7 @@ python scripts/dispatch.py \
 # --- OPTIONAL: only if engineering harness plugin is present ---------------------
 # Phase 5a: pre-draft spec.md — COMPLEX: batch spec+plan+tasks into ONE premium request
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-planning-doc-agent.md \
   --context exploration/handoffs/handoff-package.md \
   --instruction "Mode: spec-draft. Pre-draft spec.md from this handoff. Mark gaps with [NEEDS HUMAN INPUT]." \
   --output exploration/planning-drafts/spec-draft.md \
@@ -232,7 +232,7 @@ python scripts/dispatch.py \
 
 # Phase 5b: pre-draft plan.md
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-planning-doc-agent.md \
   --context exploration/handoffs/handoff-package.md \
   --instruction "Mode: plan-draft. Pre-draft plan.md with phases and WP hints. Mark gaps." \
   --output exploration/planning-drafts/plan-draft.md \
@@ -240,14 +240,14 @@ python scripts/dispatch.py \
 
 # Phase 5c: WP tasks outline (simple → cheap model)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-planning-doc-agent.md \
   --context exploration/planning-drafts/spec-draft.md exploration/planning-drafts/plan-draft.md \
   --instruction "Mode: tasks-outline. Generate WP outline. Stubs only." \
   --output exploration/planning-drafts/tasks-outline.md
 
 # --- OPTIONAL: re-entry from an engineering cycle ---------------
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-planning-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-planning-doc-agent.md \
   --context "" \
   --instruction "CONTEXT: [describe ambiguity]. Mode: re-entry-scope. Identify the exploration gap. Draft a session brief for a new cycle." \
   --output exploration/session-brief-reentry-$(date +%Y%m%d).md

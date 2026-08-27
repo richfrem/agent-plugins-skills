@@ -5,12 +5,15 @@ description: >
   Replicates CLAUDE.md into GEMINI.md, .github/copilot-instructions.md, and AGENTS.md
   as full-copy mirrors while auto-detecting and preserving each target's platform-specific
   section (GEMINI.md's Gemini CLI Tool Mapping table, copilot-instructions.md's authoritative
-  header) instead of destroying it on overwrite. Use when the user asks to sync, replicate,
-  propagate, or mirror CLAUDE.md into the other agent instruction files. Different from
+  header) instead of destroying it on overwrite. Also reports drift between .agent/rules/*.md
+  and its matching plugins/*/rules/*.md source (--check-rules, report-only). Use when the user
+  asks to sync, replicate, propagate, or mirror CLAUDE.md into the other agent instruction files,
+  or to check whether .agent/rules/ has drifted from plugin rule sources. Different from
   optimize-agent-instructions (deep Karpathy-principle content audit, doesn't cover AGENTS.md)
   and project-setup (initial onboarding scaffold for a new project, not an existing CLAUDE.md).
   Trigger with "sync CLAUDE.md to GEMINI.md", "replicate CLAUDE.md to agent files", "propagate
-  CLAUDE.md changes", "update agent instruction files", "mirror CLAUDE.md".
+  CLAUDE.md changes", "update agent instruction files", "mirror CLAUDE.md", "check rule drift",
+  "sync .agent/rules with plugin rules".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -77,6 +80,21 @@ after a known tail marker (currently only GEMINI.md's table) is treated as a pre
 4. **Reinstall + audit** per this repo's standing rules — sync only touches root-level docs,
    not `plugins/` source, so no plugin reinstall is needed for *this* step. But if the CLAUDE.md
    edit that triggered the sync also touched a skill/script, reinstall that plugin separately.
+
+## Checking `.agent/rules/` drift against plugin rule sources
+
+`.agent/rules/*.md` and `plugins/<plugin>/rules/*.md` are a **separate pairing** from the
+CLAUDE.md-family mirrors above — same filename, but drift direction isn't reliably one-way
+(either side can be the one that's stale), so this mode never writes:
+
+```bash
+python3 ./scripts/sync_instruction_files.py --check-rules
+```
+
+Reports per rule file: `IDENTICAL`, `DIFFERS` (with a unified diff), or
+`NO PLUGIN COUNTERPART FOUND` (a `.agent/rules/`-only file with no matching plugin source —
+not necessarily a problem, just worth knowing). On `DIFFERS`, read both files and manually
+apply the fix on whichever side is actually behind — do not assume the plugin copy always wins.
 
 ## Common Failures
 

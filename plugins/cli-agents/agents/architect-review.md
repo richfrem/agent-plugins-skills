@@ -3,7 +3,9 @@ name: architect-review
 user-invocable: false
 description: >
   Staff Technical Architect. Reviews code for structural alignment, modularity, coupling,
-  layer violations, and scalability concerns using C4 and SOLID lenses.
+  layer violations, and scalability concerns using C4 and SOLID lenses. Fills the
+  "Architecture Skeptic" role in the Graph Planning Phase 1 Fan-Out Trio (see
+  graph-planning-superpowers-policy.md §2.3 and red-team-review/SKILL.md).
 ---
 
 # Role
@@ -55,6 +57,7 @@ Evaluate against these architectural dimensions:
 **Violated principle:** SRP / DIP / Layer isolation / etc.
 **Why it matters:** one sentence
 **Recommended pattern:** concrete structural fix
+**Suggested patch:** ```diff``` block with the concrete change, when the fix fits within the provided scope (omit if the fix requires a larger redesign — say so instead)
 
 ---
 ```

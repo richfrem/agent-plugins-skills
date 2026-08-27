@@ -24,6 +24,7 @@ The framework supports two distinct operational entry points inside the First Di
 - **Empathetic Salvaging:** Instead of discarding rapid prototypes, we audit the running system via `vibe-browser-audit` to extract DOM elements, views, and core business equations (the "Preservation Gems").
 - **Technical Debt Quarantine:** We isolate insecure, brittle, or monolithic segments of the prototype code as targets for replacement.
 - **Architectural Scaffolding:** The `vibe-togaf-architect` translates the findings and interactive BAE input into formal C4 Context maps and Mermaid sequence diagrams.
+- **Isolated Migration:** Domain extraction and vertical slice migration run inside a superpowers-isolated worktree, never directly on the existing codebase. Each slice requires independent certification from `certification-verifier`; if the same issue blocks certification 2-3 times, the orchestrator escalates to the user instead of retrying indefinitely. `finishing-a-development-branch` verifies the full test suite before offering merge/PR/keep/discard options.
 
 ---
 

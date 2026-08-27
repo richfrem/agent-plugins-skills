@@ -63,6 +63,9 @@ The assistant creates formal architectural blueprints under `/specs` (including 
 **Phase 4 — Specification Packaging**
 The assistant packages the final blueprints into a formal specification kit and sets up a clean, production-ready target isolated workspace (removing the risky, brittle parts while cleanly housing your preserved gems).
 
+**Phase 5 — Isolated Migration & Safety Verification**
+All rewrite work happens in an isolated workspace, not on your main branch. Each migrated piece goes through an independent quality check before it's accepted; if the same issue comes up 2-3 times, the assistant stops and brings it to you for a decision instead of retrying indefinitely. When migration is done, the assistant verifies the full safety-net test suite passes, then walks you through merging, opening a PR, keeping the branch as-is, or discarding it.
+
 ---
 
 The five session types

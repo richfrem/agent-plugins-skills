@@ -216,3 +216,5 @@ For coordinator scripts, workflow engines, master orchestrators, agent prompts, 
 - `<project_root>/.agent/rules/coding-conventions.md` (or local style guides) — coding conventions and documentation standards
 - `<project_root>/docs/architecture/` (or project design docs) — system architecture details and design specifications
 - `superpowers:test-driven-development` skill (if available) — invoke BEFORE writing any implementation
+- `graph-planning-superpowers-policy.md` §3.2 (Phase 2: Strict Red-Green-Refactor Enforcement) — this Iron Law
+  is the concrete implementation of that phase; the two are the same requirement, not competing rules

@@ -446,6 +446,12 @@ known copy before editing to avoid either double-editing a symlink target or mis
 - `github-issue-logging-policy.md` — friction-tier → GitHub Issue decision matrix; **mandatory dedup search
   (`gh_issue_search.py`) before filing any new issue** — consolidate into an existing root-cause issue via
   comment rather than opening a duplicate; 5 required body sections (Summary/Observed/Expected/Evidence/Impact)
+- `graph-planning-superpowers-policy.md` — the plan/review/execution lifecycle for significant work: enter
+  native Plan Mode (`/plan`) before drafting a plan (Phase 1), fan-out the plan draft to the Architecture
+  Skeptic / Security-Edge-Case Auditor / TDD Contract Reviewer trio via `context-bundler`'s Multi-Persona
+  Fan-Out Mode with a 2-3 round convergence cap, then execute in an isolated worktree with Superpowers TDD
+  (Phase 2), then multi-stage verify — deterministic tests, worktree merge, out-of-band bundle review
+  (Phase 3). Applies whenever `spec-driven-development-policy.md` used to apply — that file no longer exists.
 
 ### GitHub Issue Lifecycle Skills (dev-utils)
 Local task scratchpad (`task-agent`) is ephemeral and gitignored — durable backlog lives as GitHub Issues:

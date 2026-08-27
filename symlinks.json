@@ -2426,8 +2426,8 @@
       "description": "Plugin reference \u2192 Skill reference"
     },
     {
-      "src": "plugins/dev-utils/rules/spec-driven-development-policy.md",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/spec-driven-development-policy.md",
+      "src": "plugins/dev-utils/rules/graph-planning-superpowers-policy.md",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/graph-planning-superpowers-policy.md",
       "strategy": "symlink",
       "description": "Plugin reference \u2192 Skill reference"
     },
@@ -10270,6 +10270,12 @@
     {
       "src": "plugins/dev-utils/assets/templates/adversarial-security-auditor.md",
       "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/adversarial-security-auditor.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/assets/templates/tdd-contract-reviewer.md",
+      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/tdd-contract-reviewer.md",
       "strategy": "symlink",
       "description": ""
     },

@@ -14,24 +14,36 @@ Purpose:
     script detects and re-preserves those sections across the sync instead
     of requiring a human to manually re-append them after every copy.
 
+    A second, independent mode (--check-rules) reports content drift between
+    `.agent/rules/<name>.md` and its matching `plugins/<plugin>/rules/<name>.md`
+    source. Unlike the CLAUDE.md mirrors, drift direction here isn't reliably
+    one-way (either side can be the one that's stale), so this mode is
+    report-only — it never writes. A human applies the fix on whichever side
+    is actually behind.
+
 Layer: Investigate / Maintain
 
 Usage Examples:
     python sync_instruction_files.py --dry-run
     python sync_instruction_files.py --execute
+    python sync_instruction_files.py --check-rules
 
 CLI Arguments:
     --dry-run: Print a diff summary per target file without writing (default).
     --execute: Write the synced content to each target file.
     --project-root: Override the project root (default: cwd).
+    --check-rules: Report drift between .agent/rules/*.md and matching
+        plugins/*/rules/*.md files. Report-only; ignores --execute.
 
 Key Input Dependencies:
     - CLAUDE.md (source of truth, must exist at project root)
     - GEMINI.md, .github/copilot-instructions.md, AGENTS.md (targets, created if missing)
+    - .agent/rules/*.md and plugins/*/rules/*.md (--check-rules mode only)
 
 Output:
     - Updated GEMINI.md, .github/copilot-instructions.md, AGENTS.md (--execute only)
     - Console diff summary (line counts, detected preserved sections)
+    - --check-rules: console report of IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART per rule file
 
 Key Functions:
     extract_anchor_index(): Finds the shared body's first line in a file.
@@ -40,9 +52,12 @@ Key Functions:
         Mapping") to end of file, if present.
     sync_target(): Builds the new target content from CLAUDE.md's body plus the
         target's preserved header/tail.
+    find_rule_pairs(): Matches each .agent/rules/*.md to its plugins/*/rules/*.md
+        counterpart by filename.
+    check_rule_drift(): Diffs each matched pair and reports status.
 
 Script Dependencies:
-    os, sys, argparse, pathlib (standard library only)
+    os, sys, argparse, pathlib, difflib (standard library only)
 
 Consumed by:
     - plugins/cli-agents/skills/agent-file-synchronization/scripts/sync_instruction_files.py (symlink)
@@ -51,6 +66,7 @@ Related:
 """
 
 import argparse
+import difflib
 import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -164,15 +180,62 @@ def sync_target(
     return new_content, summary
 
 
+def find_rule_pairs(root: Path) -> List[Tuple[str, Path, Optional[Path]]]:
+    """Match each .agent/rules/*.md to its plugins/*/rules/*.md counterpart by filename.
+
+    Returns a list of (name, agent_rules_path, plugin_rules_path_or_None).
+    None means no plugin-side rules/ source was found for that filename.
+    """
+    agent_rules_dir = root / ".agent" / "rules"
+    pairs: List[Tuple[str, Path, Optional[Path]]] = []
+    if not agent_rules_dir.is_dir():
+        return pairs
+    for agent_path in sorted(agent_rules_dir.glob("*.md")):
+        matches = sorted(root.glob(f"plugins/*/rules/{agent_path.name}"))
+        pairs.append((agent_path.name, agent_path, matches[0] if matches else None))
+    return pairs
+
+
+def check_rule_drift(pairs: List[Tuple[str, Path, Optional[Path]]]) -> None:
+    """Print an IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART report for each rule pair."""
+    for name, agent_path, plugin_path in pairs:
+        if plugin_path is None:
+            print(f"{name}: NO PLUGIN COUNTERPART FOUND under plugins/*/rules/")
+            continue
+        agent_text = agent_path.read_text(encoding="utf-8")
+        plugin_text = plugin_path.read_text(encoding="utf-8")
+        if agent_text == plugin_text:
+            print(f"{name}: IDENTICAL")
+            continue
+        print(f"{name}: DIFFERS ({agent_path} vs {plugin_path})")
+        diff = difflib.unified_diff(
+            plugin_text.splitlines(keepends=True),
+            agent_text.splitlines(keepends=True),
+            fromfile=str(plugin_path),
+            tofile=str(agent_path),
+        )
+        sys.stdout.writelines(diff)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Sync CLAUDE.md into GEMINI.md, copilot-instructions.md, AGENTS.md."
     )
     parser.add_argument("--execute", action="store_true", help="Write changes (default: dry-run)")
     parser.add_argument("--project-root", default=".", help="Project root (default: cwd)")
+    parser.add_argument(
+        "--check-rules",
+        action="store_true",
+        help="Report drift between .agent/rules/*.md and plugins/*/rules/*.md (report-only, ignores --execute)",
+    )
     args = parser.parse_args()
 
     root = Path(args.project_root).resolve()
+
+    if args.check_rules:
+        check_rule_drift(find_rule_pairs(root))
+        return
+
     claude_md = root / "CLAUDE.md"
     if not claude_md.exists():
         print(f"ERROR: {claude_md} not found.", file=sys.stderr)
