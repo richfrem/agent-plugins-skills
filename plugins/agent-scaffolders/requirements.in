@@ -7,3 +7,8 @@
 azure-ai-projects
 azure-identity
 pyyaml
+
+# Security Overrides
+# cryptography (transitive via azure-identity): CVE-2026-69247 — PKCS#7 EnvelopedData
+# decryption exposes a Bleichenbacher oracle via distinguishable errors/timing. Fixed in 50.0.0.
+cryptography>=50.0.0
