@@ -1,9 +1,18 @@
 ---
-description: A subagent's pwd/git-branch confirmation does not guarantee its Edit/Write calls stay inside the assigned worktree — a mandatory post-task check does.
+description: A subagent's pwd/git-branch confirmation does not guarantee its Edit/Write calls stay inside the assigned worktree — a mandatory post-task check does. Companion to worktree-lifecycle-management.md, which covers the full worktree lifecycle (create/commit/push/merge/cleanup) this file does not.
 globs: ["**/*"]
 ---
 
-# Worktree/Subagent Isolation
+# Worktree/Subagent Isolation (Leak Detection)
+
+**Scope note (renamed 2026-08-18):** this file covers exactly one failure mode — a
+dispatched subagent writing outside its assigned worktree. For the broader lifecycle
+(creating a worktree, reporting its state honestly, pushing, verifying an actual merge,
+updating local `main`, and cleaning up afterward), see
+`.agent/rules/worktree-lifecycle-management.md`, added the same day after a session
+repeatedly conflated "pushed" with "merged" and "local branch ref updated" with "visible
+on disk". Both rules apply simultaneously whenever a `subagent-driven-development` session
+runs inside a worktree.
 
 ## The Problem This Rule Solves
 
@@ -82,7 +91,3 @@ landed in the main checkout anyway.
 - Applies to every task in a plan, not just the first or last — the leak in the C2
   incident happened during a mid-plan fix round (Task 7's second fix dispatch), not at
   the boundaries.
-- Applies directly to `graph-planning-superpowers-policy.md` §3.1 (Phase 2: Worktree State
-  Isolation) — any implementer dispatched into a Phase 2 worktree is subject to this rule's
-  mandatory second check (main-checkout `git status --short` after every task), not just the
-  subagent's own `pwd`/`git branch --show-current` confirmation.
