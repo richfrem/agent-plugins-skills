@@ -121,6 +121,22 @@ Synthesize discoveries and Q&A into a formal specification kit governed by the *
    > *"I have compiled the complete TOGAF-style architecture specifications and canonical contract in the `/specs` directory. Please review them and provide your approval before we proceed to Phase 5 (Domain Extraction & Migration)."*
 5. Do not proceed to Phase 5 until the user responds with explicit sign-off/approval.
 
+### Superpowers Availability Check (before Phase 5)
+
+Phases 5-7 make autonomous, potentially destructive rewrites to the user's existing codebase —
+the same risk profile as Path 1's build phase, which gates on superpowers isolation. Before
+Phase 5 begins, silently check whether `superpowers:using-git-worktrees` and
+`superpowers:finishing-a-development-branch` are resolvable in the current host environment
+(install location varies — do not assume one fixed path).
+
+- **If available**: invoke `using-git-worktrees` now — create an isolated branch/worktree for
+  all Phase 5-7 work. Do not migrate slices directly on the main branch.
+- **If not available**: halt and announce: *"Domain extraction and slice migration make
+  destructive changes to your existing codebase. Please install the superpowers plugin first
+  so this work happens in an isolated workspace."* This is stricter than Path 1's greenfield
+  fallback — Path 2 always operates on an existing, working prototype, so there is no
+  no-worktree fallback mode here.
+
 ### PHASE 5: Pure Domain Core Extraction (`vibe-domain-extractor`)
 Isolate high-value business logic from side effects.
 1. Delegate to the `vibe-domain-extractor` skill to extract pure entities, value objects, and deterministic business rules from the rapid prototype.
@@ -143,4 +159,5 @@ Replace legacy code safely, step-by-step.
 4. Move logic to Application Use-cases, implement Infrastructure adapters, execute the safety net characterization test suites, and deprecate old code.
 5. Dispatch the `semantic-drift-auditor` sub-agent to guarantee that migrated terminology, parameters, and workflows have not drifted from `specs/REQS.md` using synonym and case near-miss validators.
 6. Dispatch the `certification-verifier` sub-agent as the independent **Two-Stage QA Review Guard**. You are strictly forbidden from self-certifying. The slice is certified only when `certification-verifier` outputs `slice-certified: true` in the run manifest.
-7. Perform final verification to ensure all characterization tests pass 100% against the clean codebase.
+   - **Convergence limit**: if `certification-verifier` rejects the same slice 2-3 times for the same unresolved issue, stop re-attempting autonomously. Escalate the specific disagreement to the user for a tie-breaking decision rather than continuing to loop.
+7. Perform final verification to ensure all characterization tests pass 100% against the clean codebase, then invoke `superpowers:finishing-a-development-branch` (if available — see the Phase 5 availability check) to verify the test suite, and present merge / PR / keep / discard options before closing out the worktree.

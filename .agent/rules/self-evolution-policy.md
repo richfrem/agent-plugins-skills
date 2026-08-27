@@ -4,11 +4,6 @@ description: Universal rules for agent self-healing, selector repair, and error 
 globs: ["**/*"]
 ---
 
----
-description: Universal rules for agent self-healing, selector repair, and error recovery policies.
-globs: ["**/*"]
----
-
 ## 🌀 Self-Evolution & Self-Healing Policy
 
 **Full context and execution protocol (Phases 0–7) → `<project_root>/.agent/skills/self-evolution/SKILL.md` (if available)**  
@@ -27,6 +22,7 @@ This policy governs how agents must respond when a tool call, subprocess, web au
    - **Auto-approved**: Adding new functions/exports, fallback routines/selectors, and appending diffs for modified functions.
    - **Explicit Confirmation Gated**: Renaming or moving files.
    - **Hard Gated — always requires explicit human permission**: Deletions of any file, function, skill, rules, manifest, eval, or reference. See `skill-deletion-guard.md` if available.
+   - These gates compose with, not substitute for, `graph-planning-superpowers-policy.md`'s "SUPREME LAW: HUMAN GATE" — that policy governs state-changing execution generally (code writes, commits, external commands); this section governs the specific autonomy tiers for *self-repair* actions within that broader gate.
 5. **The Absorption Fallacy — always wrong**: Concluding that a skill, rule, file, or directory is "redundant", "absorbed", "consolidated", or "superseded" and deleting it autonomously. Overlap is never evidence that deletion is safe. Flag it; never act on it.
 6. **One Logical Fix at a Time**: Apply one clean fix per execution pass. Never bundle multiple independent repairs or refactoring changes together.
 7. **Fix Forward, Never Skip**: When a tool, script, sub-agent, or automation step fails or hits friction, fix it at the source immediately and update the relevant playbook or rules. Do NOT work around failures, add retries without understanding the root cause, or leave the fix for later. Every session must end with the same capabilities working as reliably as they started. The goal is smooth, issue-free runs in every future session — compound the fixes, not the workarounds.

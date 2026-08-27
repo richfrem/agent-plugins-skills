@@ -10,7 +10,7 @@ The SME chooses a strategy during Block 0 of `exploration-workflow`. Choices:
 
 | Strategy | When | Cheapest model | Premium model | Cost model |
 |---|---|---|---|---|
-| `copilot-cli` | User has GitHub Copilot Pro | `gpt-5-mini` (paid, AI Credits) | `claude-sonnet-4.6` or `claude-opus-4.6` | **Per request** — batch everything into 1 dense call |
+| `copilot-cli` | User has GitHub Copilot Pro | cheapest per `references/cheapest_models.md` (paid, AI Credits) | `claude-sonnet-4.6` or `claude-opus-4.6` | **Per request** — batch everything into 1 dense call |
 | `agy-cli` | User has Agy CLI (Antigravity) | `gemini-3.5-flash` (paid, per-token) | `gemini-pro` | Per token — standard |
 | `claude-subagents` | Claude Code only, no external CLI | `haiku-4.5` (paid, cheapest) | `sonnet` / `claude-sonnet-4.6` | Per token — standard |
 | `direct` | No sub-agent tooling / all in-session | This session's model | This session's model | This session's cost model |
@@ -130,16 +130,16 @@ Agent({
 ### Copilot CLI — `copilot-cli` strategy
 
 ```bash
-# Simple capture task — gpt-5-mini (low cost, AI Credits)
+# Simple capture task — cheapest model per cheapest_models.md (low cost, AI Credits)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals." \
   --output exploration/captures/problem-framing.md
 
-# Q&A clarification pass — gpt-5-mini (low cost, AI Credits)
+# Q&A clarification pass — cheapest model per cheapest_models.md (low cost, AI Credits)
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Ask 3 targeted questions to clarify the gaps marked [NEEDS HUMAN INPUT].
                  Write structured answers to clarifications-brd.md." \
@@ -148,7 +148,7 @@ python scripts/dispatch.py \
 # Complex synthesis — claude-sonnet (1 premium request, batch dense for value)
 # Pack all captures into one invocation — Copilot charges per request, not per token
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-handoff-preparer-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-handoff-preparer-agent.md \
   --context exploration/captures/problem-framing.md \
              exploration/captures/brd-draft.md \
              exploration/captures/user-stories-draft.md \

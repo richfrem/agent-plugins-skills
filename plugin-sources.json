@@ -7,7 +7,7 @@
       ]
     },
     {
-      "source": "richfrem/agent-plugins-skills",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
         "agent-agentic-os",
         "agent-loops",

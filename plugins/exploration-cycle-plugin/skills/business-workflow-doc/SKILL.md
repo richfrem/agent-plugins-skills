@@ -33,7 +33,7 @@ python ./scripts/generate_workflow.py \
 
 ```bash
 python scripts/dispatch.py \
-  --agent .agents/skills/exploration-cycle-plugin-requirements-doc-agent/SKILL.md \
+  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/session-brief.md exploration/captures/brd-draft.md \
   --instruction "Mode: workflow-map. Generate a Mermaid flowchart diagram of the core business process described in this context. Use a flowchart TD layout. Label each step clearly. Include decision nodes for branches and validation gates." \
   --output exploration/captures/workflow-map.md

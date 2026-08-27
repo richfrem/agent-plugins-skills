@@ -1,4 +1,5 @@
 ---
+trigger: always_on
 description: Universal coding conventions for Python, TypeScript, and C#.
 globs: ["*.py", "*.ts", "*.js", "*.cs"]
 ---

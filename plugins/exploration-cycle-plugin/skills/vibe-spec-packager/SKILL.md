@@ -41,10 +41,12 @@ Create the implementation discipline layer under `/superpowers/` so execution se
 
 1.  **`superpowers/session-brief.md`:** Design a high-clarity introductory brief instructing fresh developer sessions exactly how to boot, execute tasks, write tests first, and verify outputs.
 2.  **`superpowers/execution-protocol.md`:** Codify the sub-agent dispatch protocol, detailing simple vs complex model task-routing.
-3.  **`superpowers/worktree-strategy.md`:** Provide explicit git worktree commands to isolate WP development branches.
-4.  **`superpowers/tdd-policy.md`:** Define strict red-green-refactor instructions, forcing unit test assertion before writing logic.
-5.  **`superpowers/review-checklist.md`:** Checklist for intermediate verification checkpoints.
-6.  **`superpowers/merge-policy.md`:** Guidance for final merge and verification checks.
+3.  **`superpowers/discipline-map.md`:** Do NOT hand-author isolation/TDD/review/merge policy prose — that reinvents what superpowers already owns and drifts out of sync with it over time. Instead, map each Work Package to the real superpowers skill that governs it, by name and invocation point:
+    - **Isolation** — `superpowers:using-git-worktrees`, invoked before any WP's implementation begins
+    - **TDD** — `superpowers:test-driven-development`, the Iron Law (no code before a failing test) governing every WP's implementation
+    - **Review** — `superpowers:requesting-code-review`, invoked at each WP's completion (plan-alignment + quality stages)
+    - **Finishing** — `superpowers:finishing-a-development-branch`, invoked once all WPs are complete, before merge/PR/keep/discard
+    Note explicitly: these are the same skill names used in `phase3-execution-discipline.md` and `vibe-orchestrator-agent.md` — do not invent alternate policy documents for concepts superpowers already governs.
 
 ---
 

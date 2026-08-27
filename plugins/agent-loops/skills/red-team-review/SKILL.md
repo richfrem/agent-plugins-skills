@@ -21,18 +21,19 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 2. **Review Packet Generation** — Prepare the context for the reviewer:
    - **Create Prompt**: Write or update a `red-team-prompt.md` explaining exactly what is being reviewed and what the reviewer should focus on.
    - **Define Manifest**: Update a `manifest.json` or equivalent list dictating which source files and research artifacts to include.
-   - **Bundle Context**: Execute the `context-bundler` plugin, feeding it the manifest and prompt, to compile a single cohesive review packet.
+   - **Bundle Context**: Execute the `context-bundler` skill (dev-utils) in **Multi-Persona Fan-Out Mode**, feeding it the manifest and prompt, to compile one review packet per persona in the Graph Planning Phase 1 Fan-Out Trio: **Architecture Skeptic**, **Security / Edge-Case Auditor**, **TDD Contract Reviewer** — per `graph-planning-superpowers-policy.md` §2.2-2.3. Use a narrower single-persona bundle only when the review scope is genuinely single-dimensional (e.g. a pure security patch).
    - **Iteration Directory Isolation**: Bundle the context and save the output to explicitly isolated directories (e.g., `.history/review-iteration-1/`) so that when the Red Team forces a rewrite, the baseline artifact is never destructively overwritten.
 2.5. **Interactively Determine CLI and Model (ask once during bootstrap)**: Before dispatching context bundles to CLI agents:
    - Interactively ask the user: *"Which LLM CLI backend should be used for the adversarial review?"* (Options: `agy`, `claude`, `copilot`, `codex`, `llama`).
    - Ask: *"Which specific model should be used?"* (Present defaults, e.g., `Claude Opus 4.6 (Thinking)` for high reasoning or `Gemini 3.5 Flash (Low)` for fast scans).
    - Ensure you append `< /dev/null` to the run command to prevent `SIGTTIN` hangs in headless execution engines.
-3. **Dispatch to Reviewers** — Send the bundle using the selected CLI and model to:
+3. **Dispatch to Reviewers** — Send each persona's bundle (in parallel, one dispatch per persona) using the selected CLI and model to:
    - Human reviewers (paste-to-chat or browser)
-   - CLI agents with adversarial personas (security auditor, devil's advocate)
+   - CLI agents with matching personas: `architect-review` (Architecture Skeptic), `security-auditor` (Security / Edge-Case Auditor), `tdd-contract-reviewer` (TDD Contract Reviewer) — all in `cli-agents`
    - Browser-based agents for interactive review
 4. **Receive Feedback** — Capture the red team's verdict:
    - **"More Research Needed"** → Loop back to step 1 with targeted questions
+   - **Convergence Limit**: Track the total round count across the whole loop (not per-issue). If 2-3 rounds pass without an "Approved" verdict, stop looping — escalate the outstanding disagreement to the Orchestrator/User for a tie-breaking decision rather than continuing to iterate. This is distinct from the same-issue deadlock-breaker in `references/fallback-tree.md` — either condition ends the loop.
    - **Asynchronous Benchmark Metric Capture**: Explicitly log the `total_tokens` and `duration_ms` used by the adversarial agent during this specific iteration into an `evals/timing.json` file to calculate the true cost of approval.
 4.5. **Trust But Verify & TDD (Verification Gate)**: Do not blindly trust the reviewer's approval or feedback:
    - **TDD Enforcement**: Prioritize running unit and integration tests to ensure no regressions were introduced by any accepted recommendations.
@@ -45,9 +46,10 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 
 ## Dependencies
 
-- **`context-bundler`** — Required for creating review packets
-- **Adversarial personas**: user-supplied system prompt, or from an installed CLI agent plugin
-  (e.g., agent-personas). The `personas/` directory is no longer bundled with agent-loops.
+- **`context-bundler`** (dev-utils) — Required for creating review packets, including Multi-Persona Fan-Out Mode
+- **Adversarial personas**: default set is `architect-review`, `security-auditor`, `tdd-contract-reviewer`
+  from the `cli-agents` plugin (`plugins/cli-agents/agents/`). A user-supplied system prompt may replace
+  any of the three. The `personas/` directory is no longer bundled with agent-loops.
 
 ## Diagram
 

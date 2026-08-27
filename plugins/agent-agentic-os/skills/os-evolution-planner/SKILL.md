@@ -48,6 +48,12 @@ Before doing anything else, check `context/memory/environment.md`:
 
 **Do this before gap detection and before writing any plan.**
 
+**Native Plan Mode required for Phases 0-1**: per `graph-planning-superpowers-policy.md` §2.1,
+enter host-native Plan Mode (Claude Code `/plan`, or the host's equivalent) before Phase 0 begins.
+Phases 0-1 are read/analysis-only — checking the environment profile and generating approach
+sketches. Do NOT write the task plan, delegation prompt, or any target file until the user has
+selected an option (A/B/C/modify) below and Plan Mode is exited.
+
 Using the cheapest available model, generate 2-3 distinct approaches to the evolution goal.
 Each approach sketch is ~3-5 sentences: what it does, what it doesn't do, estimated effort,
 key tradeoff.
