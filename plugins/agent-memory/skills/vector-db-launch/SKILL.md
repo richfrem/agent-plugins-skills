@@ -37,6 +37,15 @@ curl -sf http://127.0.0.1:8110/api/v1/heartbeat > /dev/null && echo "✅ ChromaD
 
 If it prints "✅ ChromaDB running", you're done. If not, proceed.
 
+## Security: Localhost-Only Binding (Hard Rule)
+
+ChromaDB has multiple unpatched, unfixed CVEs as of 2026-08-27 (CVE-2026-45829: pre-auth code
+injection, CVSS 10.0; CVE-2026-45830/45831: authorization provider doesn't scope tenant/database/
+collection permissions) — see `plugins/agent-memory/requirements.in` for full detail. **Never bind
+the server to `0.0.0.0` or any publicly routable interface** — `--host` MUST always be `127.0.0.1`.
+This is the only available mitigation until upstream ships a fix; do not weaken it for convenience
+(e.g. to reach the server from another machine on the network).
+
 ## Launching the Server (Native Python)
 
 The ChromaDB server runs as a background Python process. 

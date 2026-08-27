@@ -1,3 +1,9 @@
 pandas
 matplotlib
 numpy
+
+# Security Overrides
+# pillow (transitive via matplotlib): multiple CVEs fixed across 12.2.0-12.3.0, incl.
+# CVE-2026-59205 (ImageCmsTransform heap corruption) and CVE-2026-55379 (BdfFontFile
+# decompression-bomb-check bypass), both fixed in 12.3.0.
+pillow>=12.3.0
