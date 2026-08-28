@@ -13,10 +13,21 @@ a bridge installer (`bootstrap.py` / `plugin_add.py`). It is not an application 
 backend — it is a **plugin ecosystem + installer**, consumed by Claude Code, GitHub Copilot, Gemini
 CLI, Antigravity, and other compliant agent frameworks.
 
-Current scale (read from `plugins/` — verify with `find plugins/*/skills -mindepth 1 -maxdepth 1 -type d | wc -l` before quoting a number elsewhere):
-- **11 plugins**
-- **128 skills** (SKILL.md definitions)
-- **46 agent definitions** (`agents/*.md` across plugins)
+**This repo's working directory contains no application/domain data.** Plugins like `portfolio-advisor`,
+`tradingview`, `stock-valuation`, and `etf-analysis` that appear in a Claude Code session's slash-command
+or agent list are installed **globally** via the Claude Code marketplace (`~/.claude/plugins/cache/`) —
+they belong to *other* projects (e.g. an investment-toolkit repo) and expect to run from *that* project's
+working directory, not this one. Invoking one of those commands while `cwd` is `agent-plugins-skills`
+will fail to find its expected files (e.g. `investment_screener/backend/data/portfolio.json`) — that's
+expected, not a bug in this repo. If a session shows an unfamiliar domain-specific command, check `pwd`
+before assuming this repo owns it.
+
+Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md | wc -l` and
+`find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere; excludes
+the deprecated `spec-kitty-plugin` pointer):
+- **10 plugins**
+- **139 skills** (SKILL.md definitions)
+- **51 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
@@ -24,12 +35,12 @@ Current scale (read from `plugins/` — verify with `find plugins/*/skills -mind
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
 │   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (19 skills)
-│   ├── agent-loops/                # OS-decoupled execution primitives (6 skills)
+│   ├── agent-loops/                # OS-decoupled execution primitives (7 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent scaffolding tools (30 skills)
-│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (12 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent scaffolding tools (35 skills)
+│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (14 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
-│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
+│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)
@@ -92,7 +103,7 @@ os-eval-backport → os-experiment-log`. Also owns memory management (`os-memory
 planning (`os-evolution-planner`/`os-evolution-verifier`), and setup (`os-init`,
 `agentic-os-setup` agent).
 
-### 4.3. Plugin: agent-loops (v2.1.0)
+### 4.3. Plugin: agent-loops (v2.2.0)
 Six OS-decoupled execution primitives (orchestrator, learning-loop, dual-loop, agent-swarm,
 red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory;
 `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
@@ -103,17 +114,18 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (30 skills)
+### 4.5. Plugin: agent-scaffolders (v2.1.0, 35 skills)
 Tooling for creating and validating new ecosystem components: `create-plugin`, `create-skill`,
 `create-sub-agent`, `audit-plugin`, plus APM package conversion, marketplace management, and
 ecosystem-index maintenance.
 
-### 4.6. Plugin: cli-agents (v1.1.0)
+### 4.6. Plugin: cli-agents (v2.1.0)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
-6 backends, `--isolated` security contract, 11 expert-persona sub-agents (architect-review,
-security-auditor, red-team-reviewer, etc.). Model selection driven by
-`references/copilot-models.json` cost tiers. Gemini CLI consumer access ends June 18, 2026 —
-`agy-cli-agent` is the forward path for frontier models.
+6 backends, `--isolated` security contract, 12 expert-persona sub-agents (architect-review,
+security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
+"Graph Planning Phase 1 Fan-Out Trio" per `graph-planning-superpowers-policy.md`. Model selection
+driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,
+2026 — `agy-cli-agent` is the forward path for frontier models.
 
 ### 4.7. Plugin: exploration-cycle-plugin (20 skills) — security-sensitive
 Business discovery workflow (Path 1: pre-build discovery; Path 2: vibe-coded-prototype
@@ -127,9 +139,10 @@ first — no casual convenience bypasses to the authorization gate or path enfor
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
-### 4.9. Plugin: dev-utils (v1.1.0, 14 skills)
+### 4.9. Plugin: dev-utils (v1.4.0, 17 skills)
 Consolidated from 9 former standalone plugins: ADR management, coding-conventions enforcement,
-context bundling, mermaid conversion, HuggingFace init/upload, humanize, link-checking, context
+context bundling (now includes a Multi-Persona Fan-Out mode for parallel adversarial plan
+review), mermaid conversion, HuggingFace init/upload, humanize, link-checking, context
 optimization, `symlink-manager` (the only sanctioned way to create symlinks in this repo),
 task-agent.
 
@@ -159,10 +172,20 @@ natively-managed upstream `Priivacy-ai/spec-kitty` package (installed separately
 | 007 | MAF (Microsoft Agent Framework) is an optional certified runtime adapter, never the primary orchestration kernel — `.md` manifests remain the portable source of truth across Claude Code / Copilot CLI / Gemini CLI / MAF |
 
 Full rule text (rationale, examples, enforcement detail) lives in `.agent/rules/` — CLAUDE.md only
-carries the summary. Key files: `coding-conventions.md`, `dependency-management.md`,
-`plugin-architecture-policy.md`, `self-evolution-policy.md`, `symlink-cross-platform.md`,
-`test-driven-development.md`, `destructive-action-guard.md`, `git-operations.md`,
-`skill-deletion-guard.md`.
+carries the summary. Full current set: `graph-planning-superpowers-policy.md` (the plan/review/
+execution lifecycle — native Plan Mode sandboxing, context-bundler adversarial fan-out capped at
+2-3 rounds, worktree-isolated Superpowers TDD, multi-stage verification), `coding-conventions.md`,
+`dependency-management.md`, `plugin-architecture-policy.md`, `self-evolution-policy.md`,
+`symlink-cross-platform.md`, `test-driven-development.md`, `destructive-action-guard.md`,
+`git-operations.md`, `skill-deletion-guard.md`, `github-issue-logging-policy.md`,
+`pre-push-audit.md`, `worktree-subagent-leak-detection.md` (a dispatched subagent's writes
+leaking outside its assigned worktree — renamed 2026-08-18, formerly `worktree-subagent-isolation.md`),
+`worktree-lifecycle-management.md` (the full worktree lifecycle — state vocabulary for
+written/committed/pushed/merged/ref-updated/checked-out-on-disk, added the same day as a
+companion to the leak-detection rule, not a replacement for it),
+`adversarial-reasoning-before-agreement-rule.md`.
+Every file in `.agent/rules/` has a matching master under some `plugins/*/rules/` — verify with
+`python3 plugins/cli-agents/scripts/sync_instruction_files.py --check-rules`.
 
 ## 6. Skill & Plugin Authoring Standards
 
@@ -218,6 +241,10 @@ setuptools artifact (from `pip install -e .` / packaging), not an application bu
 - **v1.4** — MAF synthesis: hybrid architecture, MAF adopted as certified optional adapter (ADR-007),
   not a kernel replacement.
 - **v1.5** — cli-agents promoted to a full multi-LLM task router with adversarial agent personas.
+- **v1.6** — Graph Planning + Superpowers execution discipline (`graph-planning-superpowers-policy.md`,
+  replacing the retired `spec-driven-development-policy.md`): native Plan Mode sandboxing wired into
+  `os-architect`/`os-evolution-planner`, `context-bundler`'s Multi-Persona Fan-Out Mode, the
+  `tdd-contract-reviewer` persona, and `red-team-review`'s 2-3 round convergence cap.
 
 ## 12. Glossary
 
