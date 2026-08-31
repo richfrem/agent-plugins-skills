@@ -202,7 +202,7 @@ issue (`gh_issue_comment.py`) rather than opening a duplicate — see
 set in `plugin-sources.json`. Do not suggest routing work to spec-kitty or `spk-*` skills unless the user
 explicitly reinstalls it themselves.
 
-## Plugin State — Current Versions (10 plugins · 141 skills)
+## Plugin State — Current Versions (10 plugins · 137 skills)
 
 ### agent-agentic-os (v1.7.0)
 
