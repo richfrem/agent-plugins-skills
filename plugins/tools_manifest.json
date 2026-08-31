@@ -76,20 +76,20 @@
     },
     {
       "name": "swarm_run",
-      "plugin": "agent-loops",
-      "path": "plugins/agent-loops/scripts/swarm_run.py",
+      "plugin": "agent-orchestration",
+      "path": "plugins/agent-orchestration/scripts/swarm_run.py",
       "type": "script"
     },
     {
       "name": "agent_orchestrator",
-      "plugin": "agent-loops",
-      "path": "plugins/agent-loops/scripts/agent_orchestrator.py",
+      "plugin": "agent-orchestration",
+      "path": "plugins/agent-orchestration/scripts/agent_orchestrator.py",
       "type": "script"
     },
     {
       "name": "closure_guard",
-      "plugin": "agent-loops",
-      "path": "plugins/agent-loops/scripts/closure_guard.py",
+      "plugin": "agent-orchestration",
+      "path": "plugins/agent-orchestration/scripts/closure_guard.py",
       "type": "script"
     },
     {
@@ -270,6 +270,12 @@
       "name": "audit",
       "plugin": "agent-scaffolders",
       "path": "plugins/agent-scaffolders/scripts/audit.py",
+      "type": "script"
+    },
+    {
+      "name": "audit_skill",
+      "plugin": "agent-scaffolders",
+      "path": "plugins/agent-scaffolders/scripts/audit_skill.py",
       "type": "script"
     },
     {

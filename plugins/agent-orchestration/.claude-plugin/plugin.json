@@ -1,0 +1,29 @@
+{
+  "name": "agent-orchestration",
+  "version": "2.3.0",
+  "description": "Composable agent loop and graph architectures for learning loops, deterministic state machines, agent orchestration (0-to-N inner agents), parallel swarms, and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
+  "author": {
+    "name": "Richard Fremmerlid"
+  },
+  "repository": "https://github.com/richfrem/agent-plugins-skills",
+  "license": "MIT",
+  "keywords": [
+    "agent-orchestration/",
+    "orchestrator",
+    "graph-execution",
+    "select-loop-strategy",
+    "state-machine",
+    "learning-loop",
+    "dual-loop",
+    "agent-swarm",
+    "red-team-review",
+    "multi-agent"
+  ],
+  "capabilities": [
+    "orchestration",
+    "graph-execution",
+    "state-machine",
+    "multi-agent",
+    "red-team-review"
+  ]
+}

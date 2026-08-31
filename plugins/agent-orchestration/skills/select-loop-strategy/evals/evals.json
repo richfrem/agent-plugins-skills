@@ -1,0 +1,8 @@
+[
+  {"prompt": "Which looping or orchestration pattern should I use for a high-risk refactoring that needs human gates and automatic rollback?", "should_trigger": true},
+  {"prompt": "Help me decide whether to use a dual-loop, a swarm, or a graph for this task.", "should_trigger": true},
+  {"prompt": "What is the best agent execution strategy for running 50 independent doc conversions in parallel?", "should_trigger": true},
+  {"prompt": "Run a batch job across 50 files simultaneously with swarm_run.py.", "should_trigger": false},
+  {"prompt": "Delegate this task to the inner loop agent right now.", "should_trigger": false},
+  {"prompt": "Audit this security design with adversarial red-teaming.", "should_trigger": false}
+]

@@ -376,6 +376,10 @@ def _build_arg_parser() -> argparse.ArgumentParser:
              "Options: quality_score, f1, precision, recall, heuristic. "
              "KEEP requires primary >= baseline; guard metric (if any) must not regress."
     )
+    parser.add_argument(
+        "--decision-only", action="store_true",
+        help="Calculate metrics and exit with status code (0 for KEEP/BASELINE, 1 for DISCARD) without reverting files or running git checkout."
+    )
     return parser
 
 
@@ -497,6 +501,8 @@ def main() -> None:
     print(f"commit={commit}  skill={skill_root.name}  desc={args.desc!r}")
 
     if status == "DISCARD":
+        if args.decision_only:
+            sys.exit(1)
         _revert_discarded_skill(skill_root)
 
 

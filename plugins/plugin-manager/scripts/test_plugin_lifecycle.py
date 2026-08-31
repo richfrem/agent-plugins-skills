@@ -134,7 +134,7 @@ def _run_local_phases(python_exec: str, add_script: str, remove_script: str, syn
 
 
 def main() -> None:
-    """Run the 7-phase plugin lifecycle test using agent-loops as the test subject.
+    """Run the 7-phase plugin lifecycle test using agent-orchestration/ as the test subject.
 
     Phases: GitHub install -> idempotency -> sync -> remove -> local install
     -> local sync -> local remove. Asserts plugin-sources.json state and
@@ -150,8 +150,8 @@ def main() -> None:
     sync_script = "plugins/plugin-manager/scripts/sync_with_inventory.py"
 
     github_source = "richfrem/agent-plugins-skills"
-    local_source = "plugins/agent-loops"
-    plugin_name = "agent-loops"
+    local_source = "plugins/agent-orchestration"
+    plugin_name = "agent-orchestration/"
 
     _run_github_phases(python_exec, add_script, remove_script, sync_script, github_source, plugin_name)
     _run_local_phases(python_exec, add_script, remove_script, sync_script, local_source, plugin_name)

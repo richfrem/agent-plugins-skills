@@ -107,8 +107,8 @@ Surveys compared — if both agents report same confusion point, Triple-Loop Ret
 
 ## References
 
-- This skill delegates to [agent-loops Pattern 5 (triple-loop-learning)](../../agent-loops/skills/triple-loop-learning/SKILL.md)
-  for the inner loop execution pattern. agent-loops is the execution substrate;
+- This skill delegates to [agent-orchestration Pattern 5 (triple-loop-learning)](../../agent-orchestration/skills/triple-loop-learning/SKILL.md)
+  for the inner loop execution pattern. agent-orchestration/ is the execution substrate;
   os-improvement-loop adds the eval gate, experiment log, and lab isolation on top.
 - [os-eval-runner SKILL](../os-eval-runner/SKILL.md) - eval_runner.py, KEEP/DISCARD, results.tsv
 - [os-memory-manager SKILL](../os-memory-manager/SKILL.md) - session log template, L2/L3 promotion

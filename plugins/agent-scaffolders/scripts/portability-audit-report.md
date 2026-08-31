@@ -54,13 +54,13 @@
 ### [ ] plugins/agent-agentic-os/skills/os-improvement-loop/scripts/evaluate.py
 - Line `47`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
 
-### [ ] plugins/agent-loops/scripts/swarm_run.py
+### [ ] plugins/agent-orchestration/scripts/swarm_run.py
 - Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
-### [ ] plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py
+### [ ] plugins/agent-orchestration/skills/agent-swarm/scripts/swarm_run.py
 - Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
-### [ ] plugins/agent-loops/skills/orchestrator/scripts/swarm_run.py
+### [ ] plugins/agent-orchestration/skills/orchestrator/scripts/swarm_run.py
 - Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-memory/assets/references/research/summary.md
@@ -426,7 +426,7 @@
 ### [ ] tasks/done/copilot_prompt_0025-agentic-os-simplification.md
 - Line `23`: ``/Users/richardfremmerlid/Projects/agent-plugins-skills``
 
-### [ ] tasks/done/copilot_prompt_0026-agent-loops-simplification.md
+### [ ] tasks/done/copilot_prompt_0026-agent-orchestration/stration/-simplification.md
 - Line `36`: ``/Users/richardfremmerlid/Projects/agent-plugins-skills``
 
 ### [ ] tasks/done/copilot_prompt_0027-stale-refs-and-diagrams-cleanup.md

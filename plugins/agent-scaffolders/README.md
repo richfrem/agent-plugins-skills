@@ -1,7 +1,7 @@
 # Agent Scaffolders: Spec + Factory
 
 The interactive creation and compliance engine for the agent ecosystem. 
-If `agent-loops` handles *execution*, and `agent-agentic-os` handles *improvement*, `agent-scaffolders` is the **Factory** that actually builds the components.
+If `agent-orchestration` handles *execution*, and `agent-agentic-os` handles *improvement*, `agent-scaffolders` is the **Factory** that actually builds the components.
 
 It provides a suite of generative and auditing tools to scaffold fully compliant Claude Code plugins, skills, hooks, sub-agents, commands, and MCP integrations from scratch using best-practice architectural patterns.
 
@@ -19,7 +19,7 @@ It provides a suite of generative and auditing tools to scaffold fully compliant
 
 **Not a fit:**
 - You are an end-user just trying to run a task (use the installed plugins directly).
-- You want to execute a swarm or loop (use `agent-loops`).
+- You want to execute a swarm or loop (use `agent-orchestration`).
 
 ---
 
@@ -96,7 +96,7 @@ The benchmarking stack (located in `scripts/benchmarking/`) supports the `agent-
 | `run_loop.py` | Closed-loop iterative optimization with persistent ledger output. |
 | `aggregate_benchmark.py`| Statistical analysis (mean, stddev) across optimization runs. |
 
-*Note: The actual looping mechanics are driven by `agent-agentic-os` and `agent-loops`. This plugin simply provides the scoring binaries.*
+*Note: The actual looping mechanics are driven by `agent-agentic-os` and `agent-orchestration`. This plugin simply provides the scoring binaries.*
 
 ---
 
@@ -117,4 +117,4 @@ This plugin strictly adheres to the ecosystem ADRs (Architecture Decision Record
 |--------|------|
 | **`agent-scaffolders`** | **Spec + Factory — what ecosystem artifacts are and how to create them** |
 | `agent-agentic-os` | Operations — eval-gated improvement loop, experiment log, memory |
-| `agent-loops` | Execution patterns — the loop substrate used by the ecosystem |
+| `agent-orchestration` | Execution patterns — the loop substrate used by the ecosystem |

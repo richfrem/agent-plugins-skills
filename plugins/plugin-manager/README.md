@@ -127,7 +127,7 @@ The plugin manager uses `plugin-sources.json` at your project root as the author
     },
     {
       "source": "/path/to/local/plugins",
-      "plugins": ["agent-loops", "task-manager"]
+      "plugins": ["agent-orchestration/", "task-manager"]
     }
   ]
 }

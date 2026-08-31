@@ -45,7 +45,7 @@ def test_validate_taxonomy_valid_labels_with_area():
     assert len(errors) == 0
 
 def test_validate_taxonomy_valid_labels_with_plugin():
-    labels = ["type:friction", "tier:1-friction", "plugin:agent-loops", "source:agent", "risk:low"]
+    labels = ["type:friction", "tier:1-friction", "plugin:agent-orchestration/", "source:agent", "risk:low"]
     is_valid, errors = validate_taxonomy(labels)
     assert is_valid is True
     assert len(errors) == 0

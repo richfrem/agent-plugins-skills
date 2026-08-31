@@ -85,8 +85,8 @@ don't exist here. Check `pwd` before assuming this repo owns an unfamiliar comma
 # Install plugins into any project (recommended)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
-# Install a specific plugin non-interactively (e.g., agent-loops)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-loops -y
+# Install a specific plugin non-interactively (e.g., agent-orchestration/)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-orchestration -y
 
 # Interactive local install
 python plugins/plugin-manager/scripts/plugin_add.py
@@ -202,7 +202,7 @@ issue (`gh_issue_comment.py`) rather than opening a duplicate — see
 set in `plugin-sources.json`. Do not suggest routing work to spec-kitty or `spk-*` skills unless the user
 explicitly reinstalls it themselves.
 
-## Plugin State — Current Versions (10 plugins · 139 skills)
+## Plugin State — Current Versions (10 plugins · 141 skills)
 
 ### agent-agentic-os (v1.7.0)
 
@@ -225,14 +225,14 @@ agentic-os-setup, os-health-check
 
 ---
 
-### agent-loops (v2.2.0) — OS-decoupled
+### agent-orchestration (v2.3.0) — OS-decoupled
 
-**7 execution primitives:** orchestrator, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning
+**9 execution primitives:** orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution
 
-**Plugin boundary:** agent-loops provides execution patterns only — no eval gate, no memory.
+**Plugin boundary:** agent-orchestration/ provides execution patterns only — no eval gate, no memory.
 os-improvement-loop delegates its inner loop to `triple-loop-learning` as the execution substrate.
 
-Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-loops skills.
+Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-orchestration/ skills.
 
 ---
 

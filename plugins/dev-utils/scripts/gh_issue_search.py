@@ -31,7 +31,7 @@ def consolidate_and_search_dedup(
 
     Args:
         title: Title/summary of the issue candidate.
-        area_label: Mandatory area or plugin label filter (e.g., 'area:scripts' or 'plugin:agent-loops').
+        area_label: Mandatory area or plugin label filter (e.g., 'area:scripts' or 'plugin:agent-orchestration/stration/').
         file_paths: Optional list of affected file paths.
 
     Returns:

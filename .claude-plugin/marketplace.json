@@ -22,20 +22,20 @@
       "tags": ["agentic-os", "agent-harness", "claude-md", "context-management", "memory-management", "eval-runner"]
     },
     {
-      "name": "agent-loops",
-      "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic.",
-      "source": "./plugins/agent-loops",
+      "name": "agent-orchestration",
+      "description": "Composable agent loop and graph architectures — learning loops, deterministic state machines (DAG), agent orchestration (0-to-N inner agents), parallel swarms, and red team coordination. Framework-agnostic. v2.3.0.",
+      "source": "./plugins/agent-orchestration",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["orchestrator", "learning-loop", "dual-loop", "agent-swarm", "red-team", "multi-agent"]
+      "tags": ["orchestrator", "graph-execution", "select-loop-strategy", "state-machine", "learning-loop", "dual-loop", "agent-swarm", "red-team", "multi-agent"]
     },
     {
       "name": "agent-scaffolders",
-      "description": "Meta-plugin containing ecosystem generation primitives. Scaffolding for agent skills, plugins, CLI sub-agents, custom GitHub Copilot agents, GitHub Agentic Workflows (gh-aw), CI/CD Smart Failure agents, and Azure Foundry agents.",
+      "description": "Meta-plugin containing ecosystem generation and evolution auditing primitives. Scaffolding for agent skills, plugins, CLI sub-agents, custom GitHub Copilot agents, and individual skill/agent evolution alignment auditing (audit-skill).",
       "source": "./plugins/agent-scaffolders",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["scaffolder", "plugin-generator", "skill-generator", "agent-tooling", "github-agents", "gh-aw"]
+      "tags": ["scaffolder", "plugin-generator", "skill-generator", "audit-skill", "skill-auditor", "agent-tooling", "evolution-alignment", "github-agents", "gh-aw"]
     },
     {
       "name": "agent-memory",

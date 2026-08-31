@@ -1,6 +1,6 @@
 [
   {
-    "prompt": "Run an adversarial audit on the agent-loops plugin triggers.",
+    "prompt": "Run an adversarial audit on the agent-orchestration/ plugin triggers.",
     "should_trigger": true
   },
   {

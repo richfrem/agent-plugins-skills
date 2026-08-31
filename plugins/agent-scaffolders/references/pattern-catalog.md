@@ -96,7 +96,7 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **Lifecycle**: `canonical`
 - **Confidence**: High
 - **Frequency**: 29 plugins (ecosystem-wide mandate per ADR-005)
-- **First Seen In**: `agent-agentic-os`, `agent-loops`, `spec-kitty-plugin`
+- **First Seen In**: `agent-agentic-os`, `agent-orchestration/stration/`, `spec-kitty-plugin`
 - **Last Validated**: 2026-04-04
 - **Description**: The ecosystem enforces three strictly independent layers. **Reasoning** (SKILL.md — what to do) must be framework-agnostic. **Policy** (hooks, sentinels, eval gates — how it is governed) is pluggable and replaceable. **Execution** (Python scripts — how it runs) is invoked only via relative paths with no framework coupling. Functional utility skills must operate correctly when orchestration frameworks (agent-agentic-os, spec-kitty) are absent.
 - **When to Use**: Every plugin. Framework references in functional skills must be marked `⚠️ OPTIONAL — Only relevant when <framework> is installed.` Mandatory references are violations.
@@ -107,7 +107,7 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **Lifecycle**: `validated`
 - **Confidence**: High
 - **Frequency**: 5+ plugins
-- **First Seen In**: `agent-loops`, `exploration-cycle-plugin`
+- **First Seen In**: `agent-orchestration/stration/`, `exploration-cycle-plugin`
 - **Last Validated**: 2026-04-04
 - **Description**: Sub-system plugins operate in total isolation. If a framework plugin (e.g., `agent-agentic-os`) is uninstalled or replaced by a native model provider feature, surrounding functional skills continue to operate via standard API surfaces without modification. Achieved by: (1) delegating cross-plugin capability via agent natural language, not direct code calls; (2) marking all framework integrations as OPTIONAL with graceful degradation paths; (3) never sharing mutable state with a framework's internals unless mediated by that framework's documented interface.
 - **When to Use**: Any plugin that may optionally benefit from an orchestration framework. Design the baseline path first, then layer in the framework enhancement.

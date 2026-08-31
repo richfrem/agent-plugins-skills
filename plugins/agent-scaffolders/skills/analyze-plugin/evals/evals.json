@@ -1,8 +1,26 @@
 [
-  {"prompt": "Analyze this plugin and extract its design patterns and architectural decisions.", "should_trigger": true},
-  {"prompt": "Mine patterns from the agent-loops plugin — what reusable techniques does it use?", "should_trigger": true},
-  {"prompt": "Review the plugin structure and tell me what patterns this plugin uses.", "should_trigger": true},
-  {"prompt": "Audit my plugin for structural compliance — validate plugin.json and skill frontmatter.", "should_trigger": false},
-  {"prompt": "Run an L5 red team audit on this plugin against the 39-point pattern matrix.", "should_trigger": false},
-  {"prompt": "Audit path references in this plugin and find any broken file references.", "should_trigger": false}
+  {
+    "prompt": "Analyze this plugin and extract its design patterns and architectural decisions.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Mine patterns from the agent-orchestration/ plugin — what reusable techniques does it use?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Review the plugin structure and tell me what patterns this plugin uses.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit my plugin for structural compliance — validate plugin.json and skill frontmatter.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run an L5 red team audit on this plugin against the 39-point pattern matrix.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit path references in this plugin and find any broken file references.",
+    "should_trigger": false
+  }
 ]
