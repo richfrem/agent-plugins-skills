@@ -959,3 +959,147 @@ def test_layer2_commits_to_knowledge_branch_not_main(test_git_repo):
     assert "Status: OPEN, Repeat: YES" in show2.stdout
 
 
+
+
+def test_verify_reads_worktree_mutation_not_main_checkout(test_git_repo):
+    """
+    Regression test for the live-cycle finding (map-debt.md, 2026-08-31): `verify` must execute
+    the declared verifier against the actual worktree where EXECUTE applied the mutation, not
+    against the main checkout. state["worktree_path"] is currently never written anywhere in
+    evolution_state.py (initialized to None at init, read once at verify, set nowhere in between),
+    so verify silently grades the unmodified main-checkout file. This test proves the mutation is
+    invisible to verify today and must fail (red) until cmd_verify resolves the real worktree path.
+    """
+    state_script = SCRIPTS_DIR / "evolution_state.py"
+    cycle_id = "test-verify-worktree-mismatch"
+
+    # A "verifier" that fails unless it can see the mutation (a marker file written only in the
+    # worktree). If verify runs against the main checkout, the marker will be absent and this
+    # will exit 1 -- exposing the mismatch instead of masking it.
+    verifier_script = test_git_repo / "check_marker.py"
+    verifier_script.write_text(
+        "import sys\nfrom pathlib import Path\n"
+        "sys.exit(0 if Path('MUTATION_MARKER.txt').exists() else 1)\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "."], cwd=test_git_repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "add marker-checking verifier"], cwd=test_git_repo, check=True, capture_output=True)
+
+    subprocess.run(
+        [sys.executable, str(state_script), "init", "--cycle-id", cycle_id, "--tier", "Tier 2", "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+
+    manifest_file = test_git_repo / "manifest.json"
+    manifest_file.write_text(json.dumps({
+        "cycle_id": cycle_id,
+        "verifier_files": [],
+        "verifier_argv": [sys.executable, str(verifier_script)],
+        "mutation_targets": ["MUTATION_MARKER.txt"],
+        "authorized_operations": ["create_worktree", "mutate", "verify", "write_layer2", "commit"],
+    }), encoding="utf-8")
+
+    subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(manifest_file), "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "authorize", "--cycle-id", cycle_id, "--operations",
+         "create_worktree,mutate,verify,write_layer2,commit", "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+    wt_dir = test_git_repo.parent / f"worktree-{cycle_id}"
+    subprocess.run(["git", "worktree", "add", "-b", f"evolution/{cycle_id}", str(wt_dir), "HEAD"], cwd=test_git_repo, check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_dir), "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # The mutation: write the marker file ONLY inside the worktree, exactly as a real EXECUTE step would.
+    (wt_dir / "MUTATION_MARKER.txt").write_text("mutation applied\n", encoding="utf-8")
+    assert not (test_git_repo / "MUTATION_MARKER.txt").exists(), "sanity: marker must not exist in main checkout"
+
+    verify_res = subprocess.run(
+        [sys.executable, str(state_script), "verify", "--repo-dir", str(test_git_repo)],
+        capture_output=True, text=True,
+    )
+
+    subprocess.run(["git", "worktree", "remove", "--force", str(wt_dir)], cwd=test_git_repo, capture_output=True)
+
+    assert verify_res.returncode == 0, (
+        "verify must execute the verifier against the worktree that EXECUTE mutated, not the main "
+        f"checkout. Controller output:\n{verify_res.stdout}\n{verify_res.stderr}"
+    )
+
+
+def test_commit_receipt_recomputes_against_worktree_not_main(test_git_repo):
+    """
+    Regression test for the second live-cycle finding (map-debt.md, 2026-08-31): the COMMIT
+    transition guard recomputes the pre-commit receipt via compute_receipt(repo_root, cycle_id)
+    with no tree_sha, which fell back to `git write-tree` against the main checkout -- so a
+    correctly-generated pre-commit token (bound to the worktree's staged tree) always mismatched
+    and COMMIT was permanently unreachable for any cycle that actually mutates inside a worktree.
+    This proves a token generated against the worktree's tree now recomputes and matches.
+    """
+    state_script = SCRIPTS_DIR / "evolution_state.py"
+    verify_script = SCRIPTS_DIR / "verify_evolution_receipt.py"
+    record_script = SCRIPTS_DIR / "record_trace.py"
+    cycle_id = "test-commit-receipt-worktree"
+
+    subprocess.run([sys.executable, str(state_script), "init", "--cycle-id", cycle_id, "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", cycle_id, "--node", "TRIAGE", "--event-type", "cycle.initialized", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "PLAN", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "authorize", "--cycle-id", cycle_id, "--operations",
+         "create_worktree,mutate,verify,write_layer2,commit", "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+
+    wt_dir = test_git_repo.parent / f"worktree-{cycle_id}"
+    subprocess.run(["git", "worktree", "add", "-b", f"evolution/{cycle_id}", str(wt_dir), "HEAD"], cwd=test_git_repo, check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_dir), "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # Real mutation, worktree only.
+    (wt_dir / "fixed.txt").write_text("mutation applied in worktree\n", encoding="utf-8")
+
+    # Stamp controller verification provenance directly (isolating this test from the verifier itself).
+    state_file = test_git_repo / ".agent" / "learning" / "evolution_state.json"
+    state = json.loads(state_file.read_text(encoding="utf-8"))
+    state["verification_provenance"] = {
+        "source": "controller", "attempt": state.get("attempt_count", 0),
+        "exit_code": 0, "verifier_argv_sha256": "abc", "at": "2026-08-31T00:00:00Z",
+    }
+    state["last_verification_exit_code"] = 0
+    state_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "PRE_COMMIT_RECEIPT", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # Generate the pre-commit token bound to the WORKTREE's staged tree, exactly as SKILL.md Stage 3 does.
+    subprocess.run(["git", "add", "-A"], cwd=wt_dir, check=True, capture_output=True)
+    tree_sha = subprocess.run(["git", "write-tree"], cwd=wt_dir, capture_output=True, text=True, check=True).stdout.strip()
+    receipt_res = subprocess.run(
+        [sys.executable, str(verify_script), "--stage", "pre-commit", "--cycle-id", cycle_id,
+         "--tree-sha", tree_sha, "--repo-dir", str(test_git_repo)],
+        capture_output=True, text=True, check=True,
+    )
+    token = json.loads(receipt_res.stdout.strip())["receipt_token"]
+    subprocess.run([sys.executable, str(state_script), "set-receipt", "--stage", "pre-commit", "--token", token, "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # The gate must recompute against the SAME worktree tree and accept the token.
+    res = subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "COMMIT", "--repo-dir", str(test_git_repo)],
+        capture_output=True, text=True,
+    )
+    subprocess.run(["git", "worktree", "remove", "--force", str(wt_dir)], cwd=test_git_repo, capture_output=True)
+
+    assert res.returncode == 0, (
+        f"COMMIT must succeed when the pre-commit token was generated against the worktree's own "
+        f"tree. stdout:\n{res.stdout}\nstderr:\n{res.stderr}"
+    )

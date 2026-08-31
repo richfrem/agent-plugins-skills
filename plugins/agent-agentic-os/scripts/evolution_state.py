@@ -373,6 +373,13 @@ def cmd_transition(args):
             print(f"Authorization required: Cannot transition to CREATE_WORKTREE without explicit user authorization (status={state.get('authorization', {}).get('status')}).", file=sys.stderr)
             sys.exit(1)
         _check_verifier_sovereignty(repo_root, state)
+        # Persist where the caller's `git worktree add` actually put the sandbox, so `verify`
+        # (and any future commit step) execute against the mutated copy, not the main checkout.
+        # Existence is not required here -- the caller may create the worktree immediately after
+        # this transition returns.
+        worktree_path = getattr(args, "worktree_path", None)
+        if worktree_path is not None:
+            state["worktree_path"] = str(Path(worktree_path).resolve())
 
     # Verifier Sovereignty Guard on EXECUTE
     if target_node == "EXECUTE":
@@ -405,13 +412,22 @@ def cmd_transition(args):
             print("Integrity gate violation: pre_commit_receipt_token is required before transition to COMMIT.", file=sys.stderr)
             sys.exit(1)
 
-        # Cryptographic re-verification against git write-tree and event chain
+        # Cryptographic re-verification against git write-tree and event chain.
+        # Must recompute the staged tree in the same directory the pre-commit token was
+        # generated against (the worktree, when one is recorded) -- otherwise this always
+        # mismatches for any cycle that mutates inside an isolated worktree.
         script_dir = Path(__file__).resolve().parent
         if str(script_dir) not in sys.path:
             sys.path.insert(0, str(script_dir))
         try:
             import verify_evolution_receipt
-            actual = verify_evolution_receipt.compute_receipt(repo_root, state["cycle_id"])
+            tree_exec_dir = repo_root
+            if state.get("worktree_path") and Path(state["worktree_path"]).exists():
+                tree_exec_dir = Path(state["worktree_path"])
+            recompute_tree_sha = subprocess.run(
+                ["git", "write-tree"], cwd=tree_exec_dir, capture_output=True, text=True
+            ).stdout.strip()
+            actual = verify_evolution_receipt.compute_receipt(repo_root, state["cycle_id"], tree_sha=recompute_tree_sha)
             if token != actual.get("receipt_token"):
                 print(f"Integrity gate violation: pre_commit_receipt_token mismatch! Stored: {token}, Recomputed: {actual.get('receipt_token')}", file=sys.stderr)
                 sys.exit(1)
@@ -449,8 +465,10 @@ def cmd_verify(args):
     exec_dir = repo_root
     if state.get("worktree_path"):
         wt = Path(state["worktree_path"])
-        if wt.exists():
-            exec_dir = wt
+        if not wt.exists():
+            print(f"Verify error: worktree_path {wt} does not exist", file=sys.stderr)
+            sys.exit(1)
+        exec_dir = wt
 
     print(f"Controller executing verifier: {verifier_argv} in {exec_dir}")
     res = subprocess.run(verifier_argv, cwd=exec_dir, capture_output=True, text=True)
@@ -665,6 +683,7 @@ def main():
     p_trans = subparsers.add_parser("transition")
     p_trans.add_argument("--to", required=True)
     p_trans.add_argument("--repo-dir", type=Path, default=None)
+    p_trans.add_argument("--worktree-path", type=Path, default=None)
 
     # verify
     p_ver = subparsers.add_parser("verify")

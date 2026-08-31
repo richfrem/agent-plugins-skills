@@ -46,8 +46,8 @@ Before initiating an evolution cycle, verify:
 1. **Authorize & Create Worktree Sandbox:**
    ```bash
    python3 scripts/evolution_state.py authorize --cycle-id "<cid>" --operations create_worktree,mutate,verify,write_layer2,commit
-   python3 scripts/evolution_state.py transition --to CREATE_WORKTREE
    git worktree add -b evolution/<cid> ../worktree-evolution-<cid> HEAD
+   python3 scripts/evolution_state.py transition --to CREATE_WORKTREE --worktree-path ../worktree-evolution-<cid>
    python3 scripts/evolution_state.py transition --to EXECUTE
    ```
 2. **Apply Surgical Mutation & Verify:**
@@ -64,14 +64,19 @@ Before initiating an evolution cycle, verify:
 ### Stage 3: Asymmetric Persistence Gate
 - **If Pass (`exit 0`):**
   1. Persist Layer 2 knowledge: tag playbooks in `wiki/` as `CONFIRMED`; log `Status: RESOLVED` in `references/map-debt.md`.
-  2. Generate staged tree receipt and commit:
+  2. Stage and commit inside the worktree (design intent: the fix and the tree the receipt binds
+     must be the same tree -- `git write-tree`/`git commit` must run against the worktree's own
+     index, not the main checkout's), then land it on the calling branch:
      ```bash
      python3 scripts/evolution_state.py transition --to PRE_COMMIT_RECEIPT
-     TREE_SHA=$(git write-tree)
+     git -C ../worktree-evolution-<cid> add -A
+     TREE_SHA=$(git -C ../worktree-evolution-<cid> write-tree)
      python3 scripts/verify_evolution_receipt.py --stage pre-commit --cycle-id "<cid>" --tree-sha "$TREE_SHA"
      python3 scripts/evolution_state.py transition --to COMMIT
-     git commit -m "feat(evolution): verified repair for <cid>"
+     git -C ../worktree-evolution-<cid> commit -m "feat(evolution): verified repair for <cid>"
      python3 scripts/evolution_state.py transition --to FINAL_RECEIPT
+     git merge --no-ff evolution/<cid> -m "merge(evolution): land verified repair for <cid>"
+     git worktree remove --force ../worktree-evolution-<cid> && git branch -D evolution/<cid>
      ```
 - **If Fail on 3rd Attempt (R1 Invariant):**
   1. Save failure insights and negative constraints in `wiki/` (`REJECTED`) and `references/map-debt.md` (`OPEN, Repeat: YES`).

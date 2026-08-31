@@ -3,70 +3,54 @@
 <!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 138 Skills · 51 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
-> **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026) · v1.6 — Coding-conventions compliance & header-freshness auditor (July 2026)
-
----
-
-## Architecture Evolution
-
-### v1.3 — Hardened Control Plane (May 2026)
-
-Replaced fragile markdown-based state with a transactional SQLite control plane (`state_engine.py`), added strong process sandboxing (`sandbox_runner.py`), HMAC-signed envelopes, approval gating, and WAL concurrency safety. Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. This made the custom Python kernel production-grade and laid the foundation for the v1.4 hybrid strategy.
-
-### v1.4 — MAF Synthesis & Hybrid Strategy (May 31, 2026)
-
-After extensive MAF research and 12 hands-on C# experiments (including full loading of real `exploration-cycle-plugin` manifests), we pivoted from "do not adopt MAF" to a **hybrid architecture**:
-
-> **Manifest-first. Multiple certified runtime adapters second.**
-
-**Key outcomes:**
-- Kept the hardened Python control plane as the authoritative kernel
-- Adopted AGT (Agent Governance Toolkit) for deterministic policy enforcement
-- Ported 4 high-value patterns from MAF: alias resolution, standardized handoff envelopes, per-agent skill scoping, per-phase premium call budgets
-- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](ADRs/007_maf_adapter_runtime_decision.md))
-- All `.md` agent manifests and `SKILL.md` files remain fully portable
-
-This hybrid approach gives us the best of both worlds: battle-tested custom safety primitives + selective leverage of Microsoft's well-engineered patterns.
-
-**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
-
-### v1.5 — CLI Agents Major Update (June 2026)
-
-`cli-agents` plugin promoted from a basic CLI dispatcher to a full multi-LLM task routing suite with adversarial agent pattern support.
-
-**Key outcomes:**
-- `run_agent.py` task router: 6 backends, argparse v2, `--isolated` security contract, codex stdin pattern. **76 TDD tests across 3 files.**
-- **~2s wall clock** for `--cli llama` direct HTTP to llama-server (measured: 1.977s). 20–30x faster than Mode A proxy path.
-- **11 expert agent personas** with structured analytical frameworks: OWASP, C4, SOLID, Big-O, TOGAF-level depth. Adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic.
-- `local-llm-setup` skill with scripts/ symlinks: Day 1 bootstrap for macOS Metal / Windows CUDA/Vulkan / Linux CUDA/ROCm.
-- KV Cache Orchestrator (P0 collision fix): `_extract_cache_key()` returns `None` for system-prompt-free requests. 8 new proxy tests.
-- Plugin manifests (`plugin.yaml`, `plugin.json`, `marketplace.json`) fully corrected and aligned.
-
----
-
-## Platforms
-
-A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
-
-*All plugins deploy to the single `.agents/` folder standard — no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc.*
-
----
-
-## Installation
+A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations. All plugins deploy to a single `.agents/` folder standard — no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc.
 
 > [!IMPORTANT]
-> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default.
->
-> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Marketplace / Extension CLI**) are now consolidated in a single authoritative guide:
->
-> ### 👉 [Go to INSTALL.md](./INSTALL.md)
+> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. See [INSTALL.md](./INSTALL.md) for the full guide. Quick install (all plugins):
+> ```bash
+> uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+> ```
 
-**Quick install (all plugins):**
-```bash
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+---
+
+## The Three Pillars
+
+### 1. Self-Evolution — `agent-agentic-os`
+
+A deterministic graph state machine drives every skill/plugin improvement cycle:
+
+```
+TRIAGE → PLAN → AWAITING_APPROVAL (human gate) → AUTHORIZED → CREATE_WORKTREE → EXECUTE
+       → VERIFY_GATE → PRE_COMMIT_RECEIPT → COMMIT / ROLLBACK → FINAL_RECEIPT
 ```
 
-> **v1.4 note:** If upgrading from v1.3, run `uv sync` (or `pip install -r requirements.txt`) after pulling latest — the per-phase budget enforcement and AGT governance patterns add new dependencies to `exploration-cycle-plugin`.
+Proposal Mode (`TRIAGE`/`PLAN`) is strictly read-only until a human explicitly approves — no worktrees, no mutations. The controller (`evolution_state.py`) runs the declared verifier itself via subprocess, so results can never be self-reported; verifier files are SHA256-locked at init and any mutation aborts the cycle. A cryptographic Evolution Integrity Receipt binds the staged git tree, ordered audit-event digest, and verifier exit code before a commit is allowed. On a 3rd-attempt failure, code rolls back but the knowledge gained (wiki insights, negative constraints, map-debt) is durably preserved to a dedicated branch — never lost, never merged to main without review.
+
+Every invariant above is machine-enforced, not just asserted: a negative-capability test suite drives forged exit codes, undeclared verifier mutation, a forced 4th-attempt loop, and forged/stale receipt tokens at the controller and confirms each is blocked, backed by an end-to-end smoke test that runs a full PASS cycle and a ROLLBACK cycle end to end.
+
+**Entry point:** `/os-architect` — describe what you want in plain language. The agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools.
+
+### 2. Execution Primitives — `agent-orchestration`
+
+Composable loop and graph-execution primitives used as the substrate by the Improvement OS and standalone by any agent workflow:
+
+`orchestrator` · `select-loop-strategy` · `learning-loop` · `dual-loop` · `co-pilot-loop` · `agent-swarm` · `red-team-review` · `triple-loop-learning` · `graph-execution`
+
+`graph-execution` is the deterministic DAG engine underneath Pillar 1's self-evolution state machine — state lives in files, not in prompt memory, with explicit transition rules and rollback semantics.
+
+### 3. Memory — `agent-memory`
+
+**Default is a zero-dependency, filesystem-native 3-Layer Engine** ([`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md)) — no vector database, no daemon, no external packages:
+
+- **Layer 1 — Runtime Context:** lean, on-demand `SKILL.md` files (≤100 lines); raw traces and wiki dossiers are barred from active-task context to prevent bloat.
+- **Layer 2 — Compounding Wiki:** permanent `wiki/`/`references/` playbooks tagged with a confidence taxonomy (`OBSERVED` → `CONFIRMED`/`REJECTED`, with 30-day decay); survives rollback even when code doesn't.
+- **Layer 3 — Safe Audit:** append-only, hash-chained `cycle_manifests.jsonl` — structured event metadata only, zero raw terminal output.
+
+Retrieval is native (`rg` / direct file reads), targeting <50ms with no background processes. `memory-management` has no dependency on and makes no reference to RLM, vector search, or Obsidian — those remain separate, unrelated skills in `agent-memory` for projects that specifically want keyword/semantic/graph retrieval on top (see Group 6 below).
+
+### Hub-and-Spoke ADR
+
+All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference them via file-level symlinks (`skills/<skill>/scripts/script.py → ../../../scripts/script.py`). Directory-level symlinks are forbidden — `npx` drops them on install.
 
 ---
 
@@ -74,9 +58,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 
 This repository is built on a pragmatic acceptance of the current AI engineering landscape: **the ecosystem changes weekly, and workflows that were revolutionary six months ago are obsolete today.**
 
-Frameworks like `agent-agentic-os` and `spec-kitty` are treated as **Transitional Architectures** — bridges between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
-
-The MAF research (May 2026) reinforced this view: instead of choosing between a custom kernel and a framework, we now deliberately pursue a **hybrid model**:
+`agent-agentic-os` is treated as a **Transitional Architecture** — a bridge between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
 
 - Portable `.md` manifests and `SKILL.md` files remain the source of truth across all runtimes
 - Multiple runtime adapters (Claude Code, Copilot CLI, Gemini CLI, **MAF**) are supported side-by-side
@@ -87,27 +69,7 @@ The MAF research (May 2026) reinforced this view: instead of choosing between a 
 
 ---
 
-## Architecture
-
-### Pillar 1: The Improvement OS (`agent-agentic-os`)
-
-The OS implements an eval-gated improvement pipeline for autonomous skill evolution:
-
-```
-os-architect           ← intent classifier + ecosystem router
-    ↓
-os-improvement-loop    ← learning engine: orchestrates multi-iteration improvement
-    ↓
-os-eval-runner         ← inner gate: KEEP/DISCARD per iteration (evaluate.py)
-    ↓
-os-eval-backport       ← human gate: review before lab winner → production
-    ↓
-os-experiment-log      ← scientific backbone: longitudinal tracking + synthesis
-```
-
-**Entry point:** `/os-architect` — describe what you want in plain language. The agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools. `os-evolution-planner` writes the task plan + delegation prompt. `os-architect-tester` validates after any changes.
-
-### Karpathy Autoresearch Loop
+## Karpathy Autoresearch Loop
 
 Skills that score HIGH on the autoresearch viability rubric (objectivity + speed + frequency + utility) can run fully autonomous self-improvement loops:
 
@@ -129,27 +91,9 @@ Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.
 - **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
 - **INNER flywheel** (`os-eval-runner`): evaluate.py KEEP/DISCARD gate per iteration within a session
 
-### Pillar 2: Execution Patterns (`agent-orchestration`)
-
-5 composable primitives used as the execution substrate by the Improvement OS and standalone by any agent workflow:
-
-`learning-loop` · `dual-loop` · `agent-swarm` · `red-team-review` · `triple-loop-learning`
-
-### Pillar 3: Super-RAG 3-Tier Retrieval
-
-O(1) RLM keyword → O(log N) vector semantic → wiki concept nodes.
-
-**Super-RAG stack:** `rlm-factory` (O(1) keyword) + `vector-db` (O(log N) semantic) + `obsidian-wiki-engine` (full concept nodes)
-
-Each plugin works **standalone** (Mode A) or combined for full Super-RAG power. Init agents detect what is installed in `.agents/skills/` and configure only the available layers.
-
-### Hub-and-Spoke ADR
-
-All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference them via file-level symlinks (`skills/<skill>/scripts/script.py → ../../../scripts/script.py`). Directory-level symlinks are forbidden — `npx` drops them on install.
-
 ---
 
-## Plugin Ecosystem (10 plugins · 134 skills)
+## Plugin Ecosystem (10 plugins · 138 skills)
 
 ### Group 1: The Improvement OS
 
@@ -165,11 +109,7 @@ The flagship operational framework. Eval-gated improvement loops, memory managem
 
 ### Group 2: Engineering Workflows
 
-#### spec-kitty-plugin — Spec-Driven Development (DEPRECATED)
-
-> ⚠️ **Deprecated**: Integrated natively. Spec Kitty v3.2.2+ manages all agent workspaces (including Google Antigravity) natively via the CLI.
-> Run `spec-kitty init . --ai antigravity` to set up rules and all 50+ dynamic `spk-*` skills natively.
-> See the [spec-kitty-plugin README](plugins/spec-kitty-plugin/README.md) for the migration guide.
+> **spec-kitty-plugin** is a legacy/deprecated pointer, not part of this repo's tracked 10-plugin set — Spec Kitty v3.2.2+ now manages agent workspaces natively via its own CLI (`spec-kitty init . --ai antigravity`). See [plugins/spec-kitty-plugin/README.md](plugins/spec-kitty-plugin/README.md) for the migration guide.
 
 #### exploration-cycle-plugin — Discovery & Requirements
 
@@ -201,7 +141,7 @@ Interactive creators for exact file hierarchies + structured audit framework for
 
 **Scaffolding skills:** [`create-plugin`](plugins/agent-scaffolders/skills/create-plugin/SKILL.md) · [`create-skill`](plugins/agent-scaffolders/skills/create-skill/SKILL.md) · [`create-sub-agent`](plugins/agent-scaffolders/skills/create-sub-agent/SKILL.md) · [`create-command`](plugins/agent-scaffolders/skills/create-command/SKILL.md) · [`create-hook`](plugins/agent-scaffolders/skills/create-hook/SKILL.md) · [`create-github-action`](plugins/agent-scaffolders/skills/create-github-action/SKILL.md) · [`create-agentic-workflow`](plugins/agent-scaffolders/skills/create-agentic-workflow/SKILL.md) · [`create-azure-agent`](plugins/agent-scaffolders/skills/create-azure-agent/SKILL.md) · [`create-docker-skill`](plugins/agent-scaffolders/skills/create-docker-skill/SKILL.md) · [`create-mcp-integration`](plugins/agent-scaffolders/skills/create-mcp-integration/SKILL.md) · [`create-stateful-skill`](plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md) · [`create-apm-package`](plugins/agent-scaffolders/skills/create-apm-package/SKILL.md) · [`convert-plugin-to-apm`](plugins/agent-scaffolders/skills/convert-plugin-to-apm/SKILL.md) · [`compile-apm-package`](plugins/agent-scaffolders/skills/compile-apm-package/SKILL.md) · [`install-apm-package`](plugins/agent-scaffolders/skills/install-apm-package/SKILL.md)
 
-**Audit & analysis skills:** [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md) · [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) · [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) · [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md) · [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md) · [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md) · [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md) · [`update-ecosystem-index`](plugins/agent-scaffolders/skills/update-ecosystem-index/SKILL.md)
+**Audit & analysis skills:** [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md) · [`audit-skill`](plugins/agent-scaffolders/skills/audit-skill/SKILL.md) · [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) · [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) · [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md) · [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md) · [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md) · [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md) · [`update-ecosystem-index`](plugins/agent-scaffolders/skills/update-ecosystem-index/SKILL.md)
 
 ---
 
@@ -245,7 +185,7 @@ Interactive creators for exact file hierarchies + structured audit framework for
 **KV Cache Orchestrator:** `kv_cache_orchestrator.py` — SHA-256 keyed slot save/restore, 4 GiB budget, 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4).
 
 **What changed in v2.0.0 (June 2026):**
-- 12 duplicate agent files (3 personas × 4 backends) → 11 deep flat personas with OWASP/C4/SOLID analytical frameworks
+- 12 duplicate agent files (3 personas × 4 backends) → 12 deep flat personas with OWASP/C4/SOLID analytical frameworks
 - Added adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic
 - `run_agent.py` argparse v2: `--cli`, `--model`, `--max-tokens`, `--isolated` + legacy positional compat
 - Security contract: `--isolated` suppresses `--yolo`/`--dangerously-skip-permissions` per backend
@@ -265,21 +205,21 @@ Skills available via superpowers: `verification-before-completion` · `test-driv
 
 ### Group 6: Knowledge & Memory
 
-#### agent-memory — Unified Cognitive Memory Suite (v1.0.0)
+#### agent-memory (v1.0.0)
 
-Three standalone plugins consolidated: `rlm-factory` (O(1) keyword search) + `vector-db` (semantic search) + `memory-management` (session tiering). Works standalone per layer or combined as a full Super-RAG stack.
+**Default:** [`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md) — the zero-dependency, filesystem-native 3-Layer Engine described in Pillar 3 above (runtime context, compounding wiki, hash-chained audit log). No vector database, no daemon, no dependency on any other skill in this plugin.
 
-**RLM skills (6):** [`rlm-init`](plugins/agent-memory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/agent-memory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/agent-memory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/agent-memory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/agent-memory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/agent-memory/skills/rlm-audit/SKILL.md)
+This plugin also carries two unrelated, separately-installable retrieval tools for projects that specifically want them — they are not wired into `memory-management` and are not needed for it:
 
-**Vector DB skills (6):** [`vector-db-init`](plugins/agent-memory/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/agent-memory/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/agent-memory/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/agent-memory/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/agent-memory/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/agent-memory/skills/vector-db-audit/SKILL.md)
+**RLM skills (6):** [`rlm-init`](plugins/agent-memory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/agent-memory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/agent-memory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/agent-memory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/agent-memory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/agent-memory/skills/rlm-audit/SKILL.md) — O(1) keyword search over dense file summaries
 
-**Session memory (1):** [`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md) — multi-tiered cognition and context caching
+**Vector DB skills (6):** [`vector-db-init`](plugins/agent-memory/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/agent-memory/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/agent-memory/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/agent-memory/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/agent-memory/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/agent-memory/skills/vector-db-audit/SKILL.md) — ChromaDB semantic search
 
 **Agents (9):** `rlm-cleanup-agent` · `rlm-curator` · `rlm-distill-agent` · `rlm-factory-init-agent` · `rlm-init` · `rlm-search` · `vector-db-cleanup` · `vector-db-ingest` · `vector-db-init-agent`
 
-#### obsidian-wiki-engine — Karpathy LLM Wiki + Super-RAG (v3.1.0)
+#### obsidian-wiki-engine — Karpathy LLM Wiki (v3.1.0)
 
-Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal. Pairs with `agent-memory` as Phase 3 of the Super-RAG stack.
+Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal. Can optionally combine with `agent-memory`'s RLM/vector-db skills for projects building a multi-layer retrieval stack, but has no dependency on them.
 
 **Wiki skills:** [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) · [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) · [`obsidian-query-agent`](plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md) · [`obsidian-wiki-linter`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md)
 
@@ -311,6 +251,43 @@ Cross-platform pip-compile with strict `.in` → `.txt` lockfile discipline.
 
 ---
 
+## Version History
+
+> v1.7 — Lean 3-Layer Memory & Self-Evolution Architecture (Aug 2026): graph state machine controller, cryptographic evolution receipts, `agent-orchestration` (renamed from `agent-loops`, +`graph-execution`/`select-loop-strategy`), zero-dependency `memory-management` as the new default.
+
+### v1.3 — Hardened Control Plane (May 2026)
+
+Replaced fragile markdown-based state with a transactional SQLite control plane (`state_engine.py`), added strong process sandboxing (`sandbox_runner.py`), HMAC-signed envelopes, approval gating, and WAL concurrency safety. Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. This made the custom Python kernel production-grade and laid the foundation for the v1.4 hybrid strategy.
+
+### v1.4 — MAF Synthesis & Hybrid Strategy (May 31, 2026)
+
+After extensive MAF research and 12 hands-on C# experiments (including full loading of real `exploration-cycle-plugin` manifests), we pivoted from "do not adopt MAF" to a **hybrid architecture**:
+
+> **Manifest-first. Multiple certified runtime adapters second.**
+
+**Key outcomes:**
+- Kept the hardened Python control plane as the authoritative kernel
+- Adopted AGT (Agent Governance Toolkit) for deterministic policy enforcement
+- Ported 4 high-value patterns from MAF: alias resolution, standardized handoff envelopes, per-agent skill scoping, per-phase premium call budgets
+- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](ADRs/007_maf_adapter_runtime_decision.md))
+- All `.md` agent manifests and `SKILL.md` files remain fully portable
+
+**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
+
+### v1.5 — CLI Agents Major Update (June 2026)
+
+`cli-agents` plugin promoted from a basic CLI dispatcher to a full multi-LLM task routing suite with adversarial agent pattern support.
+
+**Key outcomes:**
+- `run_agent.py` task router: 6 backends, argparse v2, `--isolated` security contract, codex stdin pattern. **76 TDD tests across 3 files.**
+- **~2s wall clock** for `--cli llama` direct HTTP to llama-server (measured: 1.977s). 20-30x faster than Mode A proxy path.
+- **11 expert agent personas** with structured analytical frameworks: OWASP, C4, SOLID, Big-O, TOGAF-level depth. Adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic.
+- `local-llm-setup` skill with scripts/ symlinks: Day 1 bootstrap for macOS Metal / Windows CUDA/Vulkan / Linux CUDA/ROCm.
+- KV Cache Orchestrator (P0 collision fix): `_extract_cache_key()` returns `None` for system-prompt-free requests. 8 new proxy tests.
+- Plugin manifests (`plugin.yaml`, `plugin.json`, `marketplace.json`) fully corrected and aligned.
+
+---
+
 ## Completed Experiments
 
 ### Ecosystem Fitness Sweep v1 — COMPLETE (`temp/ecosystem-fitness-sweep-v1/`)
@@ -326,8 +303,10 @@ Each skill scored on: objectivity (can a shell command measure it?), execution s
 | 2 | superpowers/test-driven-development | 35/40 | LLM_IN_LOOP |
 | 3 | coding-conventions/coding-conventions-agent | 34/40 | HYBRID |
 | 4 | superpowers/using-git-worktrees | 33/40 | DETERMINISTIC |
-| 5 | spec-kitty-plugin/spec-kitty-status | 33/40 | DETERMINISTIC |
+| 5 | spec-kitty-plugin/spec-kitty-status¹ | 33/40 | DETERMINISTIC |
 | 6 | agent-agentic-os/os-eval-runner | 32/40 | DETERMINISTIC |
+
+¹ Historical result from when spec-kitty-plugin was still tracked; the plugin is now a deprecated pointer, not part of the current 10-plugin set (see Group 2 above).
 
 Full ranked results: [`summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
 Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-report.md`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/autoresearch-opportunities-report.md)
@@ -344,7 +323,7 @@ python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (10 plugins, 134 skills)
+plugins/                    ← upstream source (10 plugins, 138 skills)
   <plugin>/
     plugin.yaml             ← plugin manifest
     .claude-plugin/plugin.json
@@ -372,4 +351,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*134 skills · 10 plugins · Improvement OS (os-architect) · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*138 skills · 10 plugins · Improvement OS (os-architect) · deterministic self-evolution graph · zero-dependency 3-layer memory · Karpathy autoresearch loops*

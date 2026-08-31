@@ -122,9 +122,13 @@ def run_smoke_test():
     check("Assertion 3 (Explicit Authorization Granted)", st_auth["authorization"]["status"] == "GRANTED", f"status={st_auth['authorization']['status']}")
 
     # Assertion 4: Worktree State Isolation
-    subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(repo)], check=True, capture_output=True)
     wt_dir = repo.parent / f"worktree-{pass_cid}"
     subprocess.run(["git", "worktree", "add", "-b", f"evolution/{pass_cid}", str(wt_dir), "HEAD"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_dir), "--repo-dir", str(repo)],
+        check=True, capture_output=True,
+    )
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(repo)], check=True, capture_output=True)
     check("Assertion 4 (Worktree Isolation Active)", wt_dir.exists() and wt_dir != repo, f"path={wt_dir.name}")
 
@@ -165,7 +169,11 @@ Use this skill when the user asks to convert a temperature between Celsius, Fahr
     # Controller executes verifier
     res_verify = subprocess.run([sys.executable, str(state_script), "verify", "--repo-dir", str(repo)], capture_output=True, text=True)
     subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", pass_cid, "--node", "VERIFY_GATE", "--event-type", "verification.completed", "--exit-code", "0", "--repo-dir", str(repo)], check=True, capture_output=True)
-    check("Assertion 5 (Verifier Executed by Controller)", res_verify.returncode == 0, f"exit={res_verify.returncode}")
+    # Not just exit 0 -- assert the controller actually ran the verifier IN the worktree it created,
+    # not the main checkout (the exact defect map-debt.md documents as resolved 2026-08-31: exit 0
+    # alone previously passed even when verify silently graded the unmodified main-checkout file).
+    verified_in_worktree = str(wt_dir) in res_verify.stdout
+    check("Assertion 5 (Verifier Executed by Controller, in the worktree)", res_verify.returncode == 0 and verified_in_worktree, f"exit={res_verify.returncode} ran_in_worktree={verified_in_worktree}")
 
     # Assertion 6: Provenance Verification Guard (Record-verification cannot spoof gate)
     st_prov = json.loads((repo / ".agent" / "learning" / "evolution_state.json").read_text(encoding="utf-8"))
@@ -178,23 +186,34 @@ Use this skill when the user asks to convert a temperature between Celsius, Fahr
     check("Assertion 6 (Controller Provenance Gated)", has_prov and res_trans_rcpt.returncode == 0, "provenance validated")
 
     # Assertion 7: Cryptographic Receipt Integrity
-    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
-    tree_sha = subprocess.run(["git", "write-tree"], cwd=repo, capture_output=True, text=True, check=True).stdout.strip()
+    # Stage/write-tree/commit inside the worktree (design intent, self-evolution/SKILL.md Stage 3):
+    # the receipt must bind the tree that actually contains the fix, not the main checkout's
+    # (unrelated) tree.
+    subprocess.run(["git", "add", "-A"], cwd=wt_dir, check=True, capture_output=True)
+    tree_sha = subprocess.run(["git", "write-tree"], cwd=wt_dir, capture_output=True, text=True, check=True).stdout.strip()
     res_rcpt = subprocess.run([sys.executable, str(verify_script), "--stage", "pre-commit", "--cycle-id", pass_cid, "--tree-sha", tree_sha, "--repo-dir", str(repo)], capture_output=True, text=True)
     receipt_data = json.loads(res_rcpt.stdout.strip())
     token_valid = "EVO-INTEGRITY-" in receipt_data.get("receipt_token", "")
-    
+    subprocess.run([sys.executable, str(state_script), "set-receipt", "--stage", "pre-commit", "--token", receipt_data["receipt_token"], "--repo-dir", str(repo)], check=True, capture_output=True)
+
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "COMMIT", "--repo-dir", str(repo)], check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", f"feat(evolution): completed cycle {pass_cid}"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", f"feat(evolution): completed cycle {pass_cid}"], cwd=wt_dir, check=True, capture_output=True)
     subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", pass_cid, "--node", "COMMIT", "--event-type", "commit.completed", "--exit-code", "0", "--repo-dir", str(repo)], check=True, capture_output=True)
 
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "FINAL_RECEIPT", "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(verify_script), "--stage", "final", "--cycle-id", pass_cid, "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "COMPLETED", "--repo-dir", str(repo)], check=True, capture_output=True)
-    
-    # Teardown pass worktree
+
+    # Land the fix: merge the worktree's branch into main, then teardown.
+    subprocess.run(["git", "merge", "--no-ff", f"evolution/{pass_cid}", "-m", f"merge(evolution): land verified repair for {pass_cid}"], cwd=repo, check=True, capture_output=True)
     subprocess.run(["git", "worktree", "remove", "--force", str(wt_dir)], cwd=repo, capture_output=True)
+    subprocess.run(["git", "branch", "-D", f"evolution/{pass_cid}"], cwd=repo, capture_output=True)
     check("Assertion 7 (Cryptographic Receipt Verified & Committed)", token_valid, f"token={receipt_data['receipt_token'][:25]}...")
+
+    # Assertion 7b: the fix genuinely landed on main after merge -- not just a valid receipt, but
+    # the actual mutated content is present in the checkout the smoke test's own repo now has.
+    merged_skill_md = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    check("Assertion 7b (Verified Fix Content Landed on Branch)", "Kelvin" in merged_skill_md, "SKILL.md on main now contains the Kelvin broadening")
 
     # -------------------------------------------------------------------------
     # PART 2: E2E-ROLLBACK & Asymmetric Persistence Lifecycle
@@ -228,8 +247,12 @@ Use this skill when the user asks to convert a temperature between Celsius, Fahr
 
     # Simulate 3 failed attempts
     wt_fail = repo.parent / f"worktree-{rollback_cid}"
-    subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run(["git", "worktree", "add", "-b", f"evolution/{rollback_cid}", str(wt_fail), "HEAD"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_fail), "--repo-dir", str(repo)],
+        check=True, capture_output=True,
+    )
 
     # Attempt 1
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(repo)], check=True, capture_output=True)
@@ -239,7 +262,11 @@ Use this skill when the user asks to convert a temperature between Celsius, Fahr
     subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(m_fail_path), "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(state_script), "authorize", "--cycle-id", rollback_cid, "--repo-dir", str(repo)], check=True, capture_output=True)
-    subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(repo)], check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_fail), "--repo-dir", str(repo)],
+        check=True, capture_output=True,
+    )
 
     # Attempt 2
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(repo)], check=True, capture_output=True)
@@ -249,7 +276,11 @@ Use this skill when the user asks to convert a temperature between Celsius, Fahr
     subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(m_fail_path), "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(state_script), "authorize", "--cycle-id", rollback_cid, "--repo-dir", str(repo)], check=True, capture_output=True)
-    subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(repo)], check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_fail), "--repo-dir", str(repo)],
+        check=True, capture_output=True,
+    )
 
     # Attempt 3
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(repo)], check=True, capture_output=True)
