@@ -1,0 +1,43 @@
+{
+  "cycle_id": "smoke-REPLACE_WITH_TIMESTAMP",
+  "tier": "Tier 3",
+  "note": "Transaction manifest for the evo-smoketest end-to-end run. cycle_id must be set uniquely per run (e.g. smoke-pass-<epoch> or smoke-rollback-<epoch>). verifier_argv is executed by the controller via `evolution_state.py verify` — never self-reported. Paths are repo-relative from the repository root.",
+
+  "mutation_targets": [
+    "plugins/agent-agentic-os/skills/evo-smoketest/SKILL.md"
+  ],
+
+  "verifier_files": [
+    "plugins/agent-agentic-os/scripts/evaluate.py",
+    "plugins/agent-agentic-os/scripts/eval_runner.py"
+  ],
+
+  "verifier_argv": [
+    "python3",
+    "plugins/agent-agentic-os/scripts/evaluate.py",
+    "--skill",
+    "plugins/agent-agentic-os/skills/evo-smoketest",
+    "--decision-only"
+  ],
+
+  "layer2_targets": [
+    "plugins/agent-agentic-os/skills/evo-smoketest/wiki/",
+    "plugins/agent-agentic-os/references/map-debt.md",
+    "plugins/agent-agentic-os/references/evolution-log.md"
+  ],
+
+  "forbidden_paths": [
+    "plugins/agent-agentic-os/scripts/evaluate.py",
+    "plugins/agent-agentic-os/scripts/eval_runner.py",
+    ".agent/rules/self-evolution-policy.md",
+    ".agent/rules/graph-planning-superpowers-policy.md"
+  ],
+
+  "authorized_operations": [
+    "create_worktree",
+    "mutate",
+    "verify",
+    "write_layer2",
+    "commit"
+  ]
+}

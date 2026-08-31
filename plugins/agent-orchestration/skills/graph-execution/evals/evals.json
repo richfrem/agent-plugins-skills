@@ -1,0 +1,8 @@
+[
+  {"prompt": "Execute this self-evolution task using a deterministic state machine with isolated worktree and rollback.", "should_trigger": true},
+  {"prompt": "Run an autonomous repair cycle that gates code commit behind an objective verification receipt.", "should_trigger": true},
+  {"prompt": "We need a state graph with formal TRIAGE, PLAN, and VERIFY nodes to safely apply this patch.", "should_trigger": true},
+  {"prompt": "Run a simple exploratory research search across our documentation.", "should_trigger": false},
+  {"prompt": "Batch process 100 images in parallel with an agent swarm.", "should_trigger": false},
+  {"prompt": "Delegate a single bugfix to an inner loop executor.", "should_trigger": false}
+]

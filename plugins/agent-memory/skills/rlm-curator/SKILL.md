@@ -70,7 +70,7 @@ python ./scripts/query_cache.py --profile tools --list
 #### Option B: Zero-Cost Swarm (Preferred for bulk > 10 files)
 Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free).
 
-Delegate to the `agent-loops:agent-swarm` skill, providing:
+Delegate to the `agent-orchestration/:agent-swarm` skill, providing:
 - Engine: `copilot` (free default) or `gemini` (higher throughput)
 - Job: provide a job file describing the summarization task
 - Files: gap list from `inventory.py --missing`

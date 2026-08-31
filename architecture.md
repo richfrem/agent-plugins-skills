@@ -26,7 +26,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere; excludes
 the deprecated `spec-kitty-plugin` pointer):
 - **10 plugins**
-- **139 skills** (SKILL.md definitions)
+- **137 skills** (SKILL.md definitions)
 - **51 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
@@ -35,9 +35,9 @@ the deprecated `spec-kitty-plugin` pointer):
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
 │   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (19 skills)
-│   ├── agent-loops/                # OS-decoupled execution primitives (7 skills)
+│   ├── agent-orchestration/        # OS-decoupled execution primitives (9 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent scaffolding tools (35 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent scaffolding & evolution auditing (31 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (14 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
 │   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
@@ -103,10 +103,8 @@ os-eval-backport → os-experiment-log`. Also owns memory management (`os-memory
 planning (`os-evolution-planner`/`os-evolution-verifier`), and setup (`os-init`,
 `agentic-os-setup` agent).
 
-### 4.3. Plugin: agent-loops (v2.2.0)
-Six OS-decoupled execution primitives (orchestrator, learning-loop, dual-loop, agent-swarm,
-red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory;
-`os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
+### 4.3. Plugin: agent-orchestration/ (v2.3.0)
+Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
 
 ### 4.4. Plugin: agent-memory (v1.0.0)
 Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management
@@ -114,10 +112,10 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (v2.1.0, 35 skills)
-Tooling for creating and validating new ecosystem components: `create-plugin`, `create-skill`,
-`create-sub-agent`, `audit-plugin`, plus APM package conversion, marketplace management, and
-ecosystem-index maintenance.
+### 4.5. Plugin: agent-scaffolders (v2.1.0, 31 skills)
+Tooling for creating, validating, and auditing ecosystem components: `create-plugin`, `create-skill`,
+`create-sub-agent`, `audit-plugin`, `audit-skill` (evolution alignment), plus APM package conversion,
+marketplace management, and ecosystem-index maintenance.
 
 ### 4.6. Plugin: cli-agents (v2.1.0)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
@@ -245,6 +243,7 @@ setuptools artifact (from `pip install -e .` / packaging), not an application bu
   replacing the retired `spec-driven-development-policy.md`): native Plan Mode sandboxing wired into
   `os-architect`/`os-evolution-planner`, `context-bundler`'s Multi-Persona Fan-Out Mode, the
   `tdd-contract-reviewer` persona, and `red-team-review`'s 2-3 round convergence cap.
+- **v1.7** — Lean 3-Layer Memory & Self-Evolution Architecture: Hardened 6-node state machine controller (`evolution_state.py`), safe audit manifest logging (`record_trace.py`), cryptographic receipts (`verify_evolution_receipt.py`), `agent-orchestration` v2.3.0 (decoupled execution primitives including `graph-execution` and `select-loop-strategy`), Layer 1 procedural dispatchers at <= 100 lines, and `audit-skill` for evolution alignment.
 
 ## 12. Glossary
 

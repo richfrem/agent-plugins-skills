@@ -560,32 +560,32 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/assets/diagrams/agent_swarm.mmd",
-      "dst": "plugins/agent-loops/skills/agent-swarm/assets/resources/agent_swarm.mmd",
+      "src": "plugins/agent-orchestration/assets/diagrams/agent_swarm.mmd",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/assets/resources/agent_swarm.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/scripts/swarm_run.py",
-      "dst": "plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py",
+      "src": "plugins/agent-orchestration/scripts/swarm_run.py",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/scripts/swarm_run.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/scripts/agent_orchestrator.py",
-      "dst": "plugins/agent-loops/skills/orchestrator/scripts/agent_orchestrator.py",
+      "src": "plugins/agent-orchestration/scripts/agent_orchestrator.py",
+      "dst": "plugins/agent-orchestration/skills/orchestrator/scripts/agent_orchestrator.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/scripts/swarm_run.py",
-      "dst": "plugins/agent-loops/skills/orchestrator/scripts/swarm_run.py",
+      "src": "plugins/agent-orchestration/scripts/swarm_run.py",
+      "dst": "plugins/agent-orchestration/skills/orchestrator/scripts/swarm_run.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/assets/diagrams/red_team_review_loop.mmd",
-      "dst": "plugins/agent-loops/skills/red-team-review/assets/resources/red_team_review_loop.mmd",
+      "src": "plugins/agent-orchestration/assets/diagrams/red_team_review_loop.mmd",
+      "dst": "plugins/agent-orchestration/skills/red-team-review/assets/resources/red_team_review_loop.mmd",
       "strategy": "symlink",
       "description": ""
     },
@@ -2330,14 +2330,14 @@
       "description": "OpenAI/Codex model catalog for codex-cli-agent skill"
     },
     {
-      "src": "plugins/agent-loops/references/cheapest_models.md",
-      "dst": "plugins/agent-loops/skills/agent-swarm/references/cheapest_models.md",
+      "src": "plugins/agent-orchestration/references/cheapest_models.md",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/cheapest_models.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/cheapest_models.json",
-      "dst": "plugins/agent-loops/skills/agent-swarm/references/cheapest_models.json",
+      "src": "plugins/agent-orchestration/references/cheapest_models.json",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/cheapest_models.json",
       "strategy": "symlink",
       "description": ""
     },
@@ -3044,92 +3044,92 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/acceptance-criteria.md",
-      "dst": "plugins/agent-loops/skills/agent-swarm/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/fallback-tree.md",
-      "dst": "plugins/agent-loops/skills/agent-swarm/references/fallback-tree.md",
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/acceptance-criteria.md",
-      "dst": "plugins/agent-loops/skills/dual-loop/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/dual-loop/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/diagrams/dual_loop_architecture.mmd",
-      "dst": "plugins/agent-loops/skills/dual-loop/references/diagrams/dual_loop_architecture.mmd",
+      "src": "plugins/agent-orchestration/references/diagrams/dual_loop_architecture.mmd",
+      "dst": "plugins/agent-orchestration/skills/dual-loop/references/diagrams/dual_loop_architecture.mmd",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/fallback-tree.md",
-      "dst": "plugins/agent-loops/skills/dual-loop/references/fallback-tree.md",
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/dual-loop/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/acceptance-criteria.md",
-      "dst": "plugins/agent-loops/skills/learning-loop/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/learning-loop/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/fallback-tree.md",
-      "dst": "plugins/agent-loops/skills/learning-loop/references/fallback-tree.md",
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/learning-loop/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/phases.md",
-      "dst": "plugins/agent-loops/skills/learning-loop/references/phases.md",
+      "src": "plugins/agent-orchestration/references/phases.md",
+      "dst": "plugins/agent-orchestration/skills/learning-loop/references/phases.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/self-correction.md",
-      "dst": "plugins/agent-loops/skills/learning-loop/references/self-correction.md",
+      "src": "plugins/agent-orchestration/references/self-correction.md",
+      "dst": "plugins/agent-orchestration/skills/learning-loop/references/self-correction.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/acceptance-criteria.md",
-      "dst": "plugins/agent-loops/skills/orchestrator/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/orchestrator/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/agent_orchestrator.py",
-      "dst": "plugins/agent-loops/skills/orchestrator/references/agent_orchestrator.py",
+      "src": "plugins/agent-orchestration/references/agent_orchestrator.py",
+      "dst": "plugins/agent-orchestration/skills/orchestrator/references/agent_orchestrator.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/cli-agent-executor.md",
-      "dst": "plugins/agent-loops/skills/orchestrator/references/cli-agent-executor.md",
+      "src": "plugins/agent-orchestration/references/cli-agent-executor.md",
+      "dst": "plugins/agent-orchestration/skills/orchestrator/references/cli-agent-executor.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/fallback-tree.md",
-      "dst": "plugins/agent-loops/skills/orchestrator/references/fallback-tree.md",
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/orchestrator/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/acceptance-criteria.md",
-      "dst": "plugins/agent-loops/skills/red-team-review/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/red-team-review/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-loops/references/fallback-tree.md",
-      "dst": "plugins/agent-loops/skills/red-team-review/references/fallback-tree.md",
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/red-team-review/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -10376,8 +10376,98 @@
       "description": "Shared acceptance criteria for update-cli-models"
     },
     {
-      "src": "plugins/agent-loops/references/acceptance-criteria.md",
-      "dst": "plugins/agent-loops/skills/co-pilot-loop/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/evolution_state.py",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/evolution_state.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/record_trace.py",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/record_trace.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/verify_evolution_receipt.py",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/verify_evolution_receipt.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/export_upstream_pr.py",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/export_upstream_pr.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evolution-graph-nodes.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/evolution-graph-nodes.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/triple-loop-learning/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/triple-loop-learning/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/scripts/audit_skill.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     }

@@ -1,6 +1,6 @@
 # Universal Agent Plugins & Skills Ecosystem
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 134 Skills · 51 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 138 Skills · 51 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
 > **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026) · v1.6 — Coding-conventions compliance & header-freshness auditor (July 2026)
@@ -129,7 +129,7 @@ Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.
 - **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
 - **INNER flywheel** (`os-eval-runner`): evaluate.py KEEP/DISCARD gate per iteration within a session
 
-### Pillar 2: Execution Patterns (`agent-loops`)
+### Pillar 2: Execution Patterns (`agent-orchestration`)
 
 5 composable primitives used as the execution substrate by the Improvement OS and standalone by any agent workflow:
 
@@ -183,19 +183,19 @@ Autonomous discovery loop: idea framing → business requirements → user stori
 
 ### Group 3: Execution Patterns
 
-#### agent-loops — Composable Loop Primitives
+#### agent-orchestration — Composable Loop & Graph Primitives
 
-5 execution primitives used as the substrate for the Improvement OS and standalone agent workflows.
+Execution primitives for loops and deterministic state graphs, serving as the substrate for the Improvement OS and standalone agent workflows.
 
-**Skills (7):** [`orchestrator`](plugins/agent-loops/skills/orchestrator/SKILL.md) · [`learning-loop`](plugins/agent-loops/skills/learning-loop/SKILL.md) · [`dual-loop`](plugins/agent-loops/skills/dual-loop/SKILL.md) · [`agent-swarm`](plugins/agent-loops/skills/agent-swarm/SKILL.md) · [`red-team-review`](plugins/agent-loops/skills/red-team-review/SKILL.md) · [`triple-loop-learning`](plugins/agent-loops/skills/triple-loop-learning/SKILL.md) · [`co-pilot-loop`](plugins/agent-loops/skills/co-pilot-loop/SKILL.md)
+**Skills (9):** [`orchestrator`](plugins/agent-orchestration/skills/orchestrator/SKILL.md) · [`select-loop-strategy`](plugins/agent-orchestration/skills/select-loop-strategy/SKILL.md) · [`learning-loop`](plugins/agent-orchestration/skills/learning-loop/SKILL.md) · [`dual-loop`](plugins/agent-orchestration/skills/dual-loop/SKILL.md) · [`co-pilot-loop`](plugins/agent-orchestration/skills/co-pilot-loop/SKILL.md) · [`agent-swarm`](plugins/agent-orchestration/skills/agent-swarm/SKILL.md) · [`red-team-review`](plugins/agent-orchestration/skills/red-team-review/SKILL.md) · [`triple-loop-learning`](plugins/agent-orchestration/skills/triple-loop-learning/SKILL.md) · [`graph-execution`](plugins/agent-orchestration/skills/graph-execution/SKILL.md)
 
-**Agents:** [`orchestrator`](plugins/agent-loops/agents/orchestrator.md)
+**Agents:** [`orchestrator`](plugins/agent-orchestration/agents/orchestrator.md)
 
 ---
 
 ### Group 4: Code Quality & Safety
 
-#### agent-scaffolders — Boilerplate & Audit (30 skills)
+#### agent-scaffolders — Boilerplate & Audit (31 skills)
 
 Interactive creators for exact file hierarchies + structured audit framework for plugin architectural maturity.
 

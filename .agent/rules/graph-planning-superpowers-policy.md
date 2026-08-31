@@ -18,6 +18,8 @@ globs: ["**/*"]
 
 All significant work MUST follow the three-phase lifecycle below. This replaces the linear
 Specify/Plan/Tasks waterfall previously used here.
+Before committing to an execution topology, consult [`agent-orchestration:select-loop-strategy`](../plugins/agent-orchestration/skills/select-loop-strategy/SKILL.md)
+to determine whether the task requires solo research, pair execution, an adversarial critique loop, or a deterministic state graph.
 
 ---
 
@@ -33,7 +35,7 @@ Specify/Plan/Tasks waterfall previously used here.
 - Use `context-bundler` to package discrete codebase slices, interface contracts, and targeted role prompts for specialized adversarial reviewers.
 
 ### 2.3. Multi-Perspective Fan-Out & Convergence Cap
-- Dispatch plan drafts to parallel reviewer personas:
+- Dispatch plan drafts to parallel reviewer personas coordinated via [`agent-orchestration:red-team-review`](../plugins/agent-orchestration/skills/red-team-review/SKILL.md):
   - **Architecture Skeptic:** Interfaces, dependency cycles, missing contracts.
   - **Security / Edge-Case Auditor:** Injection, auth, failure paths, race conditions.
   - **TDD Contract Reviewer:** Deterministic test fixtures and assertion validity.
@@ -43,9 +45,11 @@ Specify/Plan/Tasks waterfall previously used here.
 
 ## 3. Phase 2: Worktree Isolation & Superpowers TDD
 
-### 3.1. Worktree State Isolation
+### 3.1. Worktree State Isolation & Graph Execution
 - Execute implementation subagents strictly within dedicated `git worktree` branches (`../worktree-<feature-name>`).
 - Subagents must not execute in shared or dirty working trees.
+- High-assurance, multi-step tasks must execute as a deterministic Directed Acyclic Graph (DAG) state machine via [`agent-orchestration:graph-execution`](../plugins/agent-orchestration/skills/graph-execution/SKILL.md), enforcing Proposal Mode, Verifier Sovereignty, and Asymmetric Persistence.
+- Delegation between director and worker agents follows the [`agent-orchestration:dual-loop`](../plugins/agent-orchestration/skills/dual-loop/SKILL.md) pattern (or [`agent-orchestration:co-pilot-loop`](../plugins/agent-orchestration/skills/co-pilot-loop/SKILL.md) for fast-tier models).
 
 ### 3.2. Strict Red-Green-Refactor Enforcement
 - Invoke `superpowers/test-driven-development` protocols:
@@ -85,7 +89,7 @@ Verification is defense-in-depth and cannot rely solely on self-reported agent s
 ## 7. Context Management
 
 - **Build context, then maintain it.** Do not redundantly re-read unchanged artifacts in a single session.
-- **Never** use `grep`, `find`, or `ls -R` blindly for tool discovery; use specialized search tools (like RLM/Vector DB queries) or structured directories.
+- **Never** use blind full-repo sweeps (`grep`, `find`, or `ls -R`); use targeted native `rg` / exact scoped file matches or structured directories. Zero background daemons required.
 
 ---
 **Renamed**: 2026-08-27 (from `spec-driven-development-policy.md` — dropped "Spec-Kit" branding; this repo does not use the spec-kitty tool)

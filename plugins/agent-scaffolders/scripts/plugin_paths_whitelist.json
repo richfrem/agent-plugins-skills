@@ -1,6 +1,6 @@
 [
   "plugins/agent-agentic-os",
-  "plugins/agent-loops",
+  "plugins/agent-orchestration",
   "plugins/agent-memory",
   "plugins/agent-scaffolders",
   "plugins/cli-agents",

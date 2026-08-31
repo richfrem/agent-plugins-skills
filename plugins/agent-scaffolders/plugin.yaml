@@ -19,6 +19,7 @@ skills:
   - analyze-plugin
   - audit-plugin
   - audit-plugin-l5
+  - audit-skill
   - create-agentic-workflow
   - create-azure-agent
   - create-command

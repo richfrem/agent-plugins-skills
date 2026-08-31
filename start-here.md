@@ -28,7 +28,7 @@ Every script must comply with:
 ### Plugins completed (0 violations) ✅
 - `plugin-manager`
 - root (`bootstrap.py`, `__init__.py`)
-- `agent-loops`
+- `agent-orchestration/`
 - `exploration-cycle-plugin`
 - `dev-utils`
 - `cli-agents`

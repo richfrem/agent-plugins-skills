@@ -4,7 +4,7 @@ description: >-
   a GitHub source or local plugins folder. Tracks installation in plugin-sources.json.
 args:
   source:
-    description: "GitHub slug (e.g. richfrem/agent-plugins-skills) or local path (e.g. plugins/agent-loops). Leave blank for interactive TUI."
+    description: "GitHub slug (e.g. richfrem/agent-plugins-skills) or local path (e.g. plugins/agent-orchestration). Leave blank for interactive TUI."
     type: string
     required: false
   plugin_name:

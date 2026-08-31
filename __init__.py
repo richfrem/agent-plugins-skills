@@ -43,13 +43,13 @@ _SKILL_DIRS = [
     ("agent-agentic-os",         "self-evolution"),
     ("agent-agentic-os",         "todo-check"),
 
-    # agent-loops (6 skills)
-    ("agent-loops",              "agent-swarm"),
-    ("agent-loops",              "dual-loop"),
-    ("agent-loops",              "learning-loop"),
-    ("agent-loops",              "orchestrator"),
-    ("agent-loops",              "red-team-review"),
-    ("agent-loops",              "triple-loop-learning"),
+    # agent-orchestration/ (6 skills)
+    ("agent-orchestration/",              "agent-swarm"),
+    ("agent-orchestration/",              "dual-loop"),
+    ("agent-orchestration/",              "learning-loop"),
+    ("agent-orchestration/",              "orchestrator"),
+    ("agent-orchestration/",              "red-team-review"),
+    ("agent-orchestration/",              "triple-loop-learning"),
 
     # agent-memory (13 skills)
     ("agent-memory",             "memory-management"),

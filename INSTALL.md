@@ -19,8 +19,8 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 # Install everything non-interactively (no prompts)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
 
-# Install a specific plugin directly (e.g., agent-loops)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-loops -y
+# Install a specific plugin directly (e.g., agent-orchestration/)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-orchestration -y
 
 # Preview what will be installed without writing any files
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run

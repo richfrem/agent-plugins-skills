@@ -62,11 +62,11 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
   **Evidence:** `audit.py` across all plugins, structural audits, and `plugin_add.py` validation passes.
   **Severity:** M | **Repeat:** NO | **Status:** RESOLVED
 
-- **Artifact:** `plugins/agent-loops/skills/co-pilot-loop/references/acceptance-criteria.md`
+- **Artifact:** `plugins/agent-orchestration/skills/co-pilot-loop/references/acceptance-criteria.md`
   **Friction:** `audit_plugin_structure.py` detected a real file inside `skills/co-pilot-loop/references/` instead of a symlink to plugin root.
   **Why not deferred:** In-bounds structural rule compliance (ADR-002/ADR-003).
-  **Fix:** Relocated canonical file to `plugins/agent-loops/references/acceptance-criteria.md` and created symlink via `symlink_manager.py`.
-  **Evidence:** `audit_plugin_structure.py plugins/agent-loops` passes with 0 errors.
+  **Fix:** Relocated canonical file to `plugins/agent-orchestration/references/acceptance-criteria.md` and created symlink via `symlink_manager.py`.
+  **Evidence:** `audit_plugin_structure.py plugins/agent-orchestration` passes with 0 errors.
   **Severity:** S | **Repeat:** NO | **Status:** RESOLVED
 
 ---

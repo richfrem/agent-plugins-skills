@@ -31,7 +31,7 @@ def test_validate_taxonomy_valid_labels_with_area() -> None:
 
 def test_validate_taxonomy_valid_labels_with_plugin() -> None:
     """Test taxonomy validation passes when valid labels include plugin:*."""
-    labels = ["type:friction", "tier:1-friction", "plugin:agent-loops", "source:agent", "risk:low"]
+    labels = ["type:friction", "tier:1-friction", "plugin:agent-orchestration/", "source:agent", "risk:low"]
     is_valid, errors = validate_taxonomy(labels)
     assert is_valid is True
     assert len(errors) == 0

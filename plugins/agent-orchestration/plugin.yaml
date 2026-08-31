@@ -1,0 +1,24 @@
+name: agent-orchestration
+version: 2.3.0
+description: "Composable agent loop and graph architectures — learning loops, deterministic state machines, 0-to-N inner agent orchestration, parallel swarms, and red team coordination. Framework-agnostic."
+author: Richard Fremmerlid
+kind: standalone
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - agent_orchestrator
+  - swarm_run
+skills:
+  - agent-swarm
+  - co-pilot-loop
+  - dual-loop
+  - graph-execution
+  - learning-loop
+  - orchestrator
+  - red-team-review
+  - select-loop-strategy
+  - triple-loop-learning
+agents:
+  - orchestrator

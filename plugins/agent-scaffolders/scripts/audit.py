@@ -134,6 +134,16 @@ def _check_skills(plugin_path: str, errors: list, warnings: list) -> None:
     skills_dir = os.path.join(plugin_path, "skills")
     if not os.path.isdir(skills_dir):
         return
+
+    try:
+        from audit_skill import audit_skill
+    except ImportError:
+        sys.path.insert(0, os.path.dirname(__file__))
+        try:
+            from audit_skill import audit_skill
+        except ImportError:
+            audit_skill = None
+
     for skill_name in os.listdir(skills_dir):
         skill_path = os.path.join(skills_dir, skill_name)
         if not os.path.isdir(skill_path):
@@ -143,6 +153,13 @@ def _check_skills(plugin_path: str, errors: list, warnings: list) -> None:
 
         if not os.path.isfile(skill_md):
             errors.append(f"Skill '{skill_name}' is missing `././SKILL.md`.")
+        elif audit_skill:
+            skill_res = audit_skill(skill_path, plugin_root=plugin_path)
+            for err in skill_res.errors:
+                if "missing required SKILL.md" not in err.lower():
+                    errors.append(f"Skill '{skill_name}': {err}")
+            for warn in skill_res.warnings:
+                warnings.append(f"Skill '{skill_name}': {warn}")
         else:
             with open(skill_md, "r", encoding="utf-8") as f:
                 lines = f.readlines()

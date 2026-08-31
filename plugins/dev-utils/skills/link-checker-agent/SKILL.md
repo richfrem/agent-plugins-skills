@@ -1,6 +1,6 @@
 ---
 name: link-checker-agent
-plugin: link-checker
+plugin: dev-utils
 description: >
   Specialized Quality Assurance Operator for documentation link integrity and scans.
   Automatically handles automated link validation, auditing, fixing, and repairing broken documentation
@@ -81,14 +81,14 @@ Review: Open `unfixable_links_report.md` to see items requiring manual intervent
 ## ⚠️ Critical Rules
 1. **Pipeline Order**: Do NOT skip steps. Steps 1 and 2 must complete before Step 3, and Step 3 must complete before Step 4.
 2. **Step 4 uses both files**: `broken_links.json` determines *which files* to process; `file_inventory.json` is the basename lookup table. If `broken_links.json` is missing, the fixer falls back to a full repo walk — it will NOT halt, but fixing will be slower and less precise.
-3. **Fixer scope**: Step 4 only fixes markdown links `[label](path)` and image links `![alt](path)`. Code path references in `.py`/`.js` files (e.g. `'./config.json'`) are audited by Step 3 but intentionally NOT modified by Step 4. Manually fix these or accept them in the report.
+3. **Fixer scope**: Step 4 only fixes standard markdown links and image links in markdown files. Code path references in `.py`/`.js` files (e.g. `'./config.json'`) are audited by Step 3 but intentionally NOT modified by Step 4. Manually fix these or accept them in the report.
 4. **CWD matters**: Run from the root of the repository you wish to scan.
 5. **No Silent Failures**: If a link is Ambiguous (multiple files with the same name), the tool will NOT fix it. You must check the Step 5 report and resolve it manually.
 6. **Verify git state before fixing**: Run `git status` to confirm a clean working tree before running Step 4. This ensures `git restore .` is a reliable rollback option.
 
 ## 📖 Progressive Disclosure
-For detailed standards on what constitutes a "broken link" and common pathing pitfalls, see:
-[Link Checking Standards](references/link-checker-standards.md)
+For detailed acceptance criteria and validation rules, see:
+[Acceptance Criteria](../references/acceptance-criteria.md)
 
 <example>
 Context: User wants to audit all links in the current documentation.

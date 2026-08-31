@@ -7,7 +7,7 @@
     },
     "plugin_ignores": {
         "adr-manager": {},
-        "agent-loops": {
+        "agent-orchestration/": {
             "bundle.py": "Conceptual name in orchestrator DOES NOT list - now replaced with skill reference.",
             "check_cache.py": "Example placeholder in agent-swarm YAML job template.",
             "inject_summary.py": "Example placeholder in agent-swarm YAML job template.",

@@ -78,6 +78,7 @@ ANCHOR_LINES: List[str] = [
     ),
     "## Overview",
 ]
+ANCHOR_LINE: str = ANCHOR_LINES[0]
 
 # Per-target template: (relative path, title_formatter, tail marker to preserve or None)
 # title_formatter takes project_name: str and returns the title string.

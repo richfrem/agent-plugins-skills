@@ -29,7 +29,7 @@ Every issue logged in this repository **MUST** contain:
 - `area:dev-utils`, `area:agentic-os`, `area:skills`, `area:rules`, `area:subagents`, `area:scripts`, `area:tests`, `area:docs`, `area:ci`, `area:github`, `area:task-agent`
 
 ### Plugin (`plugin:*`)
-- Prefixed with `plugin:`, e.g., `plugin:agent-loops`, `plugin:dev-utils`.
+- Prefixed with `plugin:`, e.g., `plugin:agent-orchestration/`, `plugin:dev-utils`.
 
 ### Source (`source:*`)
 - `source:agent`, `source:human`, `source:script`, `source:test`, `source:review`, `source:migration`
