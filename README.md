@@ -3,70 +3,54 @@
 <!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 138 Skills · 51 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
 capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
 
-> **Recent milestones:** v1.3 — Hardened SQLite control plane (May 2026) · v1.4 — MAF synthesis & hybrid runtime strategy (May 31, 2026) · v1.5 — CLI Agents major update (June 2026) · v1.6 — Coding-conventions compliance & header-freshness auditor (July 2026)
-
----
-
-## Architecture Evolution
-
-### v1.3 — Hardened Control Plane (May 2026)
-
-Replaced fragile markdown-based state with a transactional SQLite control plane (`state_engine.py`), added strong process sandboxing (`sandbox_runner.py`), HMAC-signed envelopes, approval gating, and WAL concurrency safety. Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. This made the custom Python kernel production-grade and laid the foundation for the v1.4 hybrid strategy.
-
-### v1.4 — MAF Synthesis & Hybrid Strategy (May 31, 2026)
-
-After extensive MAF research and 12 hands-on C# experiments (including full loading of real `exploration-cycle-plugin` manifests), we pivoted from "do not adopt MAF" to a **hybrid architecture**:
-
-> **Manifest-first. Multiple certified runtime adapters second.**
-
-**Key outcomes:**
-- Kept the hardened Python control plane as the authoritative kernel
-- Adopted AGT (Agent Governance Toolkit) for deterministic policy enforcement
-- Ported 4 high-value patterns from MAF: alias resolution, standardized handoff envelopes, per-agent skill scoping, per-phase premium call budgets
-- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](ADRs/007_maf_adapter_runtime_decision.md))
-- All `.md` agent manifests and `SKILL.md` files remain fully portable
-
-This hybrid approach gives us the best of both worlds: battle-tested custom safety primitives + selective leverage of Microsoft's well-engineered patterns.
-
-**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
-
-### v1.5 — CLI Agents Major Update (June 2026)
-
-`cli-agents` plugin promoted from a basic CLI dispatcher to a full multi-LLM task routing suite with adversarial agent pattern support.
-
-**Key outcomes:**
-- `run_agent.py` task router: 6 backends, argparse v2, `--isolated` security contract, codex stdin pattern. **76 TDD tests across 3 files.**
-- **~2s wall clock** for `--cli llama` direct HTTP to llama-server (measured: 1.977s). 20–30x faster than Mode A proxy path.
-- **11 expert agent personas** with structured analytical frameworks: OWASP, C4, SOLID, Big-O, TOGAF-level depth. Adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic.
-- `local-llm-setup` skill with scripts/ symlinks: Day 1 bootstrap for macOS Metal / Windows CUDA/Vulkan / Linux CUDA/ROCm.
-- KV Cache Orchestrator (P0 collision fix): `_extract_cache_key()` returns `None` for system-prompt-free requests. 8 new proxy tests.
-- Plugin manifests (`plugin.yaml`, `plugin.json`, `marketplace.json`) fully corrected and aligned.
-
----
-
-## Platforms
-
-A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations.
-
-*All plugins deploy to the single `.agents/` folder standard — no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc.*
-
----
-
-## Installation
+A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations. All plugins deploy to a single `.agents/` folder standard — no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc.
 
 > [!IMPORTANT]
-> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default.
->
-> All installation methods (**uvx**, **bootstrap.py**, **npx skills**, and **Marketplace / Extension CLI**) are now consolidated in a single authoritative guide:
->
-> ### 👉 [Go to INSTALL.md](./INSTALL.md)
+> **Start here — fresh clone or first-time setup.** The single `.agents/` environment directory is **not committed** to your repo. See [INSTALL.md](./INSTALL.md) for the full guide. Quick install (all plugins):
+> ```bash
+> uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+> ```
 
-**Quick install (all plugins):**
-```bash
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+---
+
+## The Three Pillars
+
+### 1. Self-Evolution — `agent-agentic-os`
+
+A deterministic graph state machine drives every skill/plugin improvement cycle:
+
+```
+TRIAGE → PLAN → AWAITING_APPROVAL (human gate) → AUTHORIZED → CREATE_WORKTREE → EXECUTE
+       → VERIFY_GATE → PRE_COMMIT_RECEIPT → COMMIT / ROLLBACK → FINAL_RECEIPT
 ```
 
-> **v1.4 note:** If upgrading from v1.3, run `uv sync` (or `pip install -r requirements.txt`) after pulling latest — the per-phase budget enforcement and AGT governance patterns add new dependencies to `exploration-cycle-plugin`.
+Proposal Mode (`TRIAGE`/`PLAN`) is strictly read-only until a human explicitly approves — no worktrees, no mutations. The controller (`evolution_state.py`) runs the declared verifier itself via subprocess, so results can never be self-reported; verifier files are SHA256-locked at init and any mutation aborts the cycle. A cryptographic Evolution Integrity Receipt binds the staged git tree, ordered audit-event digest, and verifier exit code before a commit is allowed. On a 3rd-attempt failure, code rolls back but the knowledge gained (wiki insights, negative constraints, map-debt) is durably preserved to a dedicated branch — never lost, never merged to main without review.
+
+**Entry point:** `/os-architect` — describe what you want in plain language. The agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools.
+
+### 2. Execution Primitives — `agent-orchestration`
+
+Composable loop and graph-execution primitives used as the substrate by the Improvement OS and standalone by any agent workflow:
+
+`orchestrator` · `select-loop-strategy` · `learning-loop` · `dual-loop` · `co-pilot-loop` · `agent-swarm` · `red-team-review` · `triple-loop-learning` · `graph-execution`
+
+`graph-execution` is the deterministic DAG engine underneath Pillar 1's self-evolution state machine — state lives in files, not in prompt memory, with explicit transition rules and rollback semantics.
+
+### 3. Memory — `agent-memory`
+
+**Default is a zero-dependency, filesystem-native 3-Layer Engine** ([`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md)) — no vector database, no daemon, no external packages:
+
+- **Layer 1 — Runtime Context:** lean, on-demand `SKILL.md` files (≤100 lines); raw traces and wiki dossiers are barred from active-task context to prevent bloat.
+- **Layer 2 — Compounding Wiki:** permanent `wiki/`/`references/` playbooks tagged with a confidence taxonomy (`OBSERVED` → `CONFIRMED`/`REJECTED`, with 30-day decay); survives rollback even when code doesn't.
+- **Layer 3 — Safe Audit:** append-only, hash-chained `cycle_manifests.jsonl` — structured event metadata only, zero raw terminal output.
+
+Retrieval is native (`rg` / direct file reads), targeting <50ms with no background processes.
+
+**Heavier retrieval stays available, opt-in:** RLM keyword cache and ChromaDB vector search (still in `agent-memory`) plus `obsidian-wiki-engine`'s concept graph form an optional **Super-RAG stack** for projects that specifically need O(1)/O(log N)/graph-node retrieval layered together. This is no longer the default memory path — `memory-management` is.
+
+### Hub-and-Spoke ADR
+
+All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference them via file-level symlinks (`skills/<skill>/scripts/script.py → ../../../scripts/script.py`). Directory-level symlinks are forbidden — `npx` drops them on install.
 
 ---
 
@@ -74,9 +58,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 
 This repository is built on a pragmatic acceptance of the current AI engineering landscape: **the ecosystem changes weekly, and workflows that were revolutionary six months ago are obsolete today.**
 
-Frameworks like `agent-agentic-os` and `spec-kitty` are treated as **Transitional Architectures** — bridges between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
-
-The MAF research (May 2026) reinforced this view: instead of choosing between a custom kernel and a framework, we now deliberately pursue a **hybrid model**:
+`agent-agentic-os` is treated as a **Transitional Architecture** — a bridge between what agents need to do today and what native SDKs will eventually handle. When Anthropic, Google, and GitHub harden native memory persistence, execution safety, and multi-agent orchestration, large swaths of this tooling will be happily discarded.
 
 - Portable `.md` manifests and `SKILL.md` files remain the source of truth across all runtimes
 - Multiple runtime adapters (Claude Code, Copilot CLI, Gemini CLI, **MAF**) are supported side-by-side
@@ -87,27 +69,7 @@ The MAF research (May 2026) reinforced this view: instead of choosing between a 
 
 ---
 
-## Architecture
-
-### Pillar 1: The Improvement OS (`agent-agentic-os`)
-
-The OS implements an eval-gated improvement pipeline for autonomous skill evolution:
-
-```
-os-architect           ← intent classifier + ecosystem router
-    ↓
-os-improvement-loop    ← learning engine: orchestrates multi-iteration improvement
-    ↓
-os-eval-runner         ← inner gate: KEEP/DISCARD per iteration (evaluate.py)
-    ↓
-os-eval-backport       ← human gate: review before lab winner → production
-    ↓
-os-experiment-log      ← scientific backbone: longitudinal tracking + synthesis
-```
-
-**Entry point:** `/os-architect` — describe what you want in plain language. The agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools. `os-evolution-planner` writes the task plan + delegation prompt. `os-architect-tester` validates after any changes.
-
-### Karpathy Autoresearch Loop
+## Karpathy Autoresearch Loop
 
 Skills that score HIGH on the autoresearch viability rubric (objectivity + speed + frequency + utility) can run fully autonomous self-improvement loops:
 
@@ -129,27 +91,9 @@ Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.
 - **OUTER flywheel** (`os-improvement-loop`): improves OS-level protocols and session ledgers between sessions
 - **INNER flywheel** (`os-eval-runner`): evaluate.py KEEP/DISCARD gate per iteration within a session
 
-### Pillar 2: Execution Patterns (`agent-orchestration`)
-
-5 composable primitives used as the execution substrate by the Improvement OS and standalone by any agent workflow:
-
-`learning-loop` · `dual-loop` · `agent-swarm` · `red-team-review` · `triple-loop-learning`
-
-### Pillar 3: Super-RAG 3-Tier Retrieval
-
-O(1) RLM keyword → O(log N) vector semantic → wiki concept nodes.
-
-**Super-RAG stack:** `rlm-factory` (O(1) keyword) + `vector-db` (O(log N) semantic) + `obsidian-wiki-engine` (full concept nodes)
-
-Each plugin works **standalone** (Mode A) or combined for full Super-RAG power. Init agents detect what is installed in `.agents/skills/` and configure only the available layers.
-
-### Hub-and-Spoke ADR
-
-All shared scripts live once at `plugins/<plugin>/scripts/`. Skills reference them via file-level symlinks (`skills/<skill>/scripts/script.py → ../../../scripts/script.py`). Directory-level symlinks are forbidden — `npx` drops them on install.
-
 ---
 
-## Plugin Ecosystem (10 plugins · 134 skills)
+## Plugin Ecosystem (10 plugins · 137 skills)
 
 ### Group 1: The Improvement OS
 
@@ -165,11 +109,7 @@ The flagship operational framework. Eval-gated improvement loops, memory managem
 
 ### Group 2: Engineering Workflows
 
-#### spec-kitty-plugin — Spec-Driven Development (DEPRECATED)
-
-> ⚠️ **Deprecated**: Integrated natively. Spec Kitty v3.2.2+ manages all agent workspaces (including Google Antigravity) natively via the CLI.
-> Run `spec-kitty init . --ai antigravity` to set up rules and all 50+ dynamic `spk-*` skills natively.
-> See the [spec-kitty-plugin README](plugins/spec-kitty-plugin/README.md) for the migration guide.
+> **spec-kitty-plugin** is a legacy/deprecated pointer, not part of this repo's tracked 10-plugin set — Spec Kitty v3.2.2+ now manages agent workspaces natively via its own CLI (`spec-kitty init . --ai antigravity`). See [plugins/spec-kitty-plugin/README.md](plugins/spec-kitty-plugin/README.md) for the migration guide.
 
 #### exploration-cycle-plugin — Discovery & Requirements
 
@@ -311,6 +251,43 @@ Cross-platform pip-compile with strict `.in` → `.txt` lockfile discipline.
 
 ---
 
+## Version History
+
+> v1.7 — Lean 3-Layer Memory & Self-Evolution Architecture (Aug 2026): graph state machine controller, cryptographic evolution receipts, `agent-orchestration` (renamed from `agent-loops`, +`graph-execution`/`select-loop-strategy`), zero-dependency `memory-management` as the new default.
+
+### v1.3 — Hardened Control Plane (May 2026)
+
+Replaced fragile markdown-based state with a transactional SQLite control plane (`state_engine.py`), added strong process sandboxing (`sandbox_runner.py`), HMAC-signed envelopes, approval gating, and WAL concurrency safety. Implementation is stdlib-only (`sqlite3`, `hmac`, `hashlib`, `subprocess`, `os`, `secrets`) — no framework dependencies. This made the custom Python kernel production-grade and laid the foundation for the v1.4 hybrid strategy.
+
+### v1.4 — MAF Synthesis & Hybrid Strategy (May 31, 2026)
+
+After extensive MAF research and 12 hands-on C# experiments (including full loading of real `exploration-cycle-plugin` manifests), we pivoted from "do not adopt MAF" to a **hybrid architecture**:
+
+> **Manifest-first. Multiple certified runtime adapters second.**
+
+**Key outcomes:**
+- Kept the hardened Python control plane as the authoritative kernel
+- Adopted AGT (Agent Governance Toolkit) for deterministic policy enforcement
+- Ported 4 high-value patterns from MAF: alias resolution, standardized handoff envelopes, per-agent skill scoping, per-phase premium call budgets
+- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](ADRs/007_maf_adapter_runtime_decision.md))
+- All `.md` agent manifests and `SKILL.md` files remain fully portable
+
+**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
+
+### v1.5 — CLI Agents Major Update (June 2026)
+
+`cli-agents` plugin promoted from a basic CLI dispatcher to a full multi-LLM task routing suite with adversarial agent pattern support.
+
+**Key outcomes:**
+- `run_agent.py` task router: 6 backends, argparse v2, `--isolated` security contract, codex stdin pattern. **76 TDD tests across 3 files.**
+- **~2s wall clock** for `--cli llama` direct HTTP to llama-server (measured: 1.977s). 20-30x faster than Mode A proxy path.
+- **11 expert agent personas** with structured analytical frameworks: OWASP, C4, SOLID, Big-O, TOGAF-level depth. Adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic.
+- `local-llm-setup` skill with scripts/ symlinks: Day 1 bootstrap for macOS Metal / Windows CUDA/Vulkan / Linux CUDA/ROCm.
+- KV Cache Orchestrator (P0 collision fix): `_extract_cache_key()` returns `None` for system-prompt-free requests. 8 new proxy tests.
+- Plugin manifests (`plugin.yaml`, `plugin.json`, `marketplace.json`) fully corrected and aligned.
+
+---
+
 ## Completed Experiments
 
 ### Ecosystem Fitness Sweep v1 — COMPLETE (`temp/ecosystem-fitness-sweep-v1/`)
@@ -344,7 +321,7 @@ python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (10 plugins, 134 skills)
+plugins/                    ← upstream source (10 plugins, 137 skills)
   <plugin>/
     plugin.yaml             ← plugin manifest
     .claude-plugin/plugin.json
@@ -372,4 +349,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*134 skills · 10 plugins · Improvement OS (os-architect) · Karpathy autoresearch loops · Super-RAG 3-tier retrieval*
+*137 skills · 10 plugins · Improvement OS (os-architect) · deterministic self-evolution graph · zero-dependency 3-layer memory · Karpathy autoresearch loops*
