@@ -30,6 +30,21 @@ def test_git_repo(tmp_path):
     return repo_dir
 
 
+def _write_toggle_verifier(repo_dir: Path) -> tuple[Path, Path]:
+    """A verifier that exits 0 iff a marker file exists. Lets tests flip pass/fail."""
+    verifier = repo_dir / "toggle_verifier.py"
+    marker = repo_dir / ".verifier_pass_marker"
+    verifier.write_text(
+        "import sys, pathlib\n"
+        f"sys.exit(0 if pathlib.Path(r'{marker}').exists() else 1)\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "."], cwd=repo_dir, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "add toggle verifier"], cwd=repo_dir,
+                   check=True, capture_output=True)
+    return verifier, marker
+
+
 def test_scenario_a_happy_path(test_git_repo):
     """Scenario A: Full happy path resulting in COMPLETED status, receipt, and RESOLVED debt."""
     state_script = SCRIPTS_DIR / "evolution_state.py"
@@ -37,13 +52,19 @@ def test_scenario_a_happy_path(test_git_repo):
     verify_script = SCRIPTS_DIR / "verify_evolution_receipt.py"
     cycle_id = "cycle-scenario-a"
 
+    verifier, marker = _write_toggle_verifier(test_git_repo)
+
     # 1. TRIAGE
     subprocess.run([sys.executable, str(state_script), "init", "--cycle-id", cycle_id, "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", cycle_id, "--node", "TRIAGE", "--event-type", "cycle.initialized", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "PLAN", "--repo-dir", str(test_git_repo)], check=True)
 
     # 2. PLAN -> AWAITING_APPROVAL
-    manifest = {"verifier_files": [], "target_files": ["plugins/code.py"]}
+    manifest = {
+        "verifier_files": [],
+        "verifier_argv": [sys.executable, str(verifier)],
+        "target_files": ["plugins/code.py"]
+    }
     m_path = test_git_repo / "manifest.json"
     m_path.write_text(json.dumps(manifest), encoding="utf-8")
     subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(m_path), "--repo-dir", str(test_git_repo)], check=True)
@@ -60,8 +81,9 @@ def test_scenario_a_happy_path(test_git_repo):
     code_file.write_text("def repaired(): return True\n", encoding="utf-8")
     subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", cycle_id, "--node", "EXECUTE", "--event-type", "mutation.completed", "--paths-affected", "plugins/code.py", "--repo-dir", str(test_git_repo)], check=True)
 
-    # 5. VERIFY_GATE (Pass)
-    subprocess.run([sys.executable, str(state_script), "record-verification", "--exit-code", "0", "--repo-dir", str(test_git_repo)], check=True)
+    # 5. VERIFY_GATE (Pass via controller verify)
+    marker.touch()
+    subprocess.run([sys.executable, str(state_script), "verify", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", cycle_id, "--node", "VERIFY_GATE", "--event-type", "verification.completed", "--exit-code", "0", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)], check=True)
 
@@ -105,27 +127,43 @@ def test_scenario_b_retry_loop(test_git_repo):
     verify_script = SCRIPTS_DIR / "verify_evolution_receipt.py"
     cycle_id = "cycle-scenario-b"
 
+    verifier, marker = _write_toggle_verifier(test_git_repo)
+
     # Setup through EXECUTE
     subprocess.run([sys.executable, str(state_script), "init", "--cycle-id", cycle_id, "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "PLAN", "--repo-dir", str(test_git_repo)], check=True)
+
+    manifest = {
+        "verifier_files": [],
+        "verifier_argv": [sys.executable, str(verifier)],
+        "target_files": ["plugins/code.py"]
+    }
+    m_path = test_git_repo / "manifest.json"
+    m_path.write_text(json.dumps(manifest), encoding="utf-8")
+    subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(m_path), "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "authorize", "--cycle-id", cycle_id, "--operations", "create_worktree,mutate,verify,write_layer2,commit", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(test_git_repo)], check=True)
     
     # Attempt 1: EXECUTE
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True)
-    subprocess.run([sys.executable, str(state_script), "record-verification", "--exit-code", "1", "--repo-dir", str(test_git_repo)], check=True)
+    if marker.exists():
+        marker.unlink()
+    res_fail = subprocess.run([sys.executable, str(state_script), "verify", "--repo-dir", str(test_git_repo)], capture_output=True, text=True)
+    assert res_fail.returncode != 0
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)], check=True)
 
     # Verification fails on attempt 1: Loop back to PLAN
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "PLAN", "--repo-dir", str(test_git_repo)], check=True)
+    subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(m_path), "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "authorize", "--cycle-id", cycle_id, "--operations", "create_worktree,mutate,verify,write_layer2,commit", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(test_git_repo)], check=True)
 
     # Attempt 2: EXECUTE
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True)
-    subprocess.run([sys.executable, str(state_script), "record-verification", "--exit-code", "0", "--repo-dir", str(test_git_repo)], check=True)
+    marker.touch()  # make verifier pass on attempt 2
+    subprocess.run([sys.executable, str(state_script), "verify", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
     subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", cycle_id, "--node", "VERIFY_GATE", "--event-type", "verification.completed", "--exit-code", "0", "--repo-dir", str(test_git_repo)], check=True)
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)], check=True)
 
@@ -145,12 +183,18 @@ def test_scenario_c_third_attempt_rollback_asymmetric_persistence(test_git_repo,
     record_script = SCRIPTS_DIR / "record_trace.py"
     cycle_id = "cycle-scenario-c"
 
+    verifier, marker = _write_toggle_verifier(test_git_repo)
+
     subprocess.run([sys.executable, str(state_script), "init", "--cycle-id", cycle_id, "--repo-dir", str(test_git_repo)], check=True)
     
     # Set attempt_count to 2 directly in state to simulate entering 3rd attempt
     state_file = test_git_repo / ".agent" / "learning" / "evolution_state.json"
     state = json.loads(state_file.read_text(encoding="utf-8"))
     state["attempt_count"] = 2
+    state["transaction_manifest"] = {
+        "verifier_files": [],
+        "verifier_argv": [sys.executable, str(verifier)]
+    }
     state["authorization"] = {
         "status": "GRANTED",
         "cycle_id": cycle_id,
@@ -166,8 +210,11 @@ def test_scenario_c_third_attempt_rollback_asymmetric_persistence(test_git_repo,
     # Enter 3rd attempt EXECUTE
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True)
     
-    # Record failed verification on 3rd attempt
-    subprocess.run([sys.executable, str(state_script), "record-verification", "--exit-code", "1", "--repo-dir", str(test_git_repo)], check=True)
+    # Run verifier on 3rd attempt (marker not touched -> fails)
+    if marker.exists():
+        marker.unlink()
+    res_fail = subprocess.run([sys.executable, str(state_script), "verify", "--repo-dir", str(test_git_repo)], capture_output=True, text=True)
+    assert res_fail.returncode != 0
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)], check=True)
 
     # Transition to ROLLBACK

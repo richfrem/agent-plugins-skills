@@ -1,0 +1,37 @@
+{
+  "skill": "_evo-smoketest",
+  "description": "Routing evals for the evolution end-to-end smoke fixture. Uses the should_trigger schema (the legacy expected_behavior schema silently yields 0% routing accuracy). One case (kelvin_conversion) is a deliberate baseline gap: it should_trigger=true but the current SKILL.md description omits Kelvin, so the router misses it until the evolution cycle broadens the description.",
+  "cases": [
+    {
+      "id": "celsius_to_fahrenheit",
+      "query": "Convert 100 degrees Celsius to Fahrenheit.",
+      "should_trigger": true
+    },
+    {
+      "id": "fahrenheit_to_celsius",
+      "query": "What is 32 F in Celsius?",
+      "should_trigger": true
+    },
+    {
+      "id": "celsius_shorthand",
+      "query": "20C to F please",
+      "should_trigger": true
+    },
+    {
+      "id": "kelvin_conversion",
+      "query": "Convert 300 Kelvin to Celsius.",
+      "should_trigger": true,
+      "notes": "DELIBERATE BASELINE GAP: description omits Kelvin, so the router misses this at baseline. E2E-PASS fix broadens the description to include Kelvin, flipping this case to green."
+    },
+    {
+      "id": "unrelated_currency",
+      "query": "Convert 100 US dollars to euros.",
+      "should_trigger": false
+    },
+    {
+      "id": "unrelated_distance",
+      "query": "How many kilometers are in 5 miles?",
+      "should_trigger": false
+    }
+  ]
+}

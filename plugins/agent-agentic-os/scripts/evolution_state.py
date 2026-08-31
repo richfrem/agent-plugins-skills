@@ -275,6 +275,7 @@ def cmd_init(args):
         "wiki_files": [],
         "event_ids": [],
         "last_verification_exit_code": None,
+        "verification_provenance": None,
         "pre_commit_receipt_token": None,
         "final_receipt_token": None
     }
@@ -378,12 +379,19 @@ def cmd_transition(args):
         _check_verifier_sovereignty(repo_root, state)
         state["attempt_count"] = state.get("attempt_count", 0) + 1
 
-    # Transition to PRE_COMMIT_RECEIPT: Must have executed verifier with exit code 0
+    # Transition to PRE_COMMIT_RECEIPT: Must have executed verifier with exit code 0 and controller provenance
     if target_node == "PRE_COMMIT_RECEIPT":
         _check_verifier_sovereignty(repo_root, state)
-        last_exit = state.get("last_verification_exit_code")
-        if last_exit is None or last_exit != 0:
-            print(f"Verification gate violation: last verification exit code is {last_exit} (expected 0). Cannot proceed to PRE_COMMIT_RECEIPT.", file=sys.stderr)
+        prov = state.get("verification_provenance")
+        if (not isinstance(prov, dict)
+                or prov.get("source") != "controller"
+                or prov.get("attempt") != state.get("attempt_count")
+                or prov.get("exit_code") != 0):
+            print(
+                "Verification gate violation: no controller-executed PASS for the current attempt. "
+                "Self-reported exit codes cannot drive PRE_COMMIT_RECEIPT.",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
     # Pre-Commit Receipt Guard: Cannot transition to COMMIT without token and commit permission
@@ -449,6 +457,17 @@ def cmd_verify(args):
     exit_code = res.returncode
     state["last_verification_exit_code"] = exit_code
 
+    # V1: stamp controller-owned provenance. Only `verify` may write this block.
+    state["verification_provenance"] = {
+        "source": "controller",
+        "attempt": state.get("attempt_count", 0),
+        "exit_code": exit_code,
+        "verifier_argv_sha256": hashlib.sha256(
+            json.dumps(verifier_argv, sort_keys=True).encode("utf-8")
+        ).hexdigest(),
+        "at": _now(),
+    }
+
     # Check sovereignty after execution
     _check_verifier_sovereignty(repo_root, state)
 
@@ -463,13 +482,15 @@ def cmd_verify(args):
 
 
 def cmd_record_verification(args):
-    repo_root = _get_repo_root(args.repo_dir)
-    state = _load_state(repo_root)
-    _check_verifier_sovereignty(repo_root, state)
-
-    state["last_verification_exit_code"] = args.exit_code
-    _atomic_write_json(_state_file_path(repo_root), state)
-    print(f"Recorded verification exit code: {args.exit_code}")
+    # V1: NON-AUTHORITATIVE. Retained only so old call sites do not hard-crash.
+    # It MUST NOT write last_verification_exit_code or verification_provenance.
+    # Only `verify` (controller-executed) can drive VERIFY_GATE -> PRE_COMMIT_RECEIPT.
+    print(
+        "Warning: 'record-verification' is non-authoritative and cannot drive the gate. "
+        "Use 'verify' so the controller executes the declared verifier itself.",
+        file=sys.stderr,
+    )
+    sys.exit(0)
 
 
 def cmd_set_receipt(args):
@@ -483,52 +504,81 @@ def cmd_set_receipt(args):
     print(f"Receipt token set for stage '{args.stage}': {args.token}")
 
 
+def _copy_layer2(from_wt: Path, dest: Path):
+    # wiki/
+    wt_wiki = from_wt / "wiki"
+    if wt_wiki.exists():
+        dest_wiki = dest / "wiki"
+        dest_wiki.mkdir(parents=True, exist_ok=True)
+        for root, _, files in os.walk(wt_wiki):
+            rel_root = Path(root).relative_to(wt_wiki)
+            target_dir = dest_wiki / rel_root
+            target_dir.mkdir(parents=True, exist_ok=True)
+            for f in files:
+                shutil.copy2(Path(root) / f, target_dir / f)
+    # map-debt.md and evolution-log.md, wherever they live in the worktree
+    for ref_name in ["map-debt.md", "evolution-log.md"]:
+        for cand in from_wt.glob(f"**/{ref_name}"):
+            rel_path = cand.relative_to(from_wt)
+            target_file = dest / rel_path
+            target_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(cand, target_file)
+
+
 def cmd_export_layer2(args):
     from_wt = Path(args.from_worktree).resolve()
     to_main = Path(args.to_main).resolve()
-
     if not from_wt.exists():
         print(f"Error: Worktree path {from_wt} does not exist", file=sys.stderr)
         sys.exit(1)
 
-    # 1. Export wiki/
-    wt_wiki = from_wt / "wiki"
-    if wt_wiki.exists():
-        main_wiki = to_main / "wiki"
-        main_wiki.mkdir(parents=True, exist_ok=True)
-        for root, _, files in os.walk(wt_wiki):
-            rel_root = Path(root).relative_to(wt_wiki)
-            target_dir = main_wiki / rel_root
-            target_dir.mkdir(parents=True, exist_ok=True)
-            for f in files:
-                shutil.copy2(Path(root) / f, target_dir / f)
+    if not getattr(args, "commit_knowledge", False):
+        # Legacy preview / non-git use: working-tree copy only, no commit.
+        _copy_layer2(from_wt, to_main)
+        print("Layer 2 artifacts copied to main checkout (working-tree only, no commit).")
+        return
 
-    # 2. Export map-debt.md and evolution-log.md
-    for ref_name in ["map-debt.md", "evolution-log.md"]:
-        for cand in from_wt.glob(f"**/{ref_name}"):
-            rel_path = cand.relative_to(from_wt)
-            target_file = to_main / rel_path
-            target_file.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(cand, target_file)
+    # V2: durable persistence WITHOUT committing to main.
+    cycle_id = args.cycle_id
+    if not cycle_id:
+        state_file = _state_file_path(to_main)
+        if state_file.exists():
+            try:
+                cycle_id = json.loads(state_file.read_text(encoding="utf-8")).get("cycle_id")
+            except Exception:
+                cycle_id = None
+    if not cycle_id:
+        print("Error: --cycle-id required for --commit-knowledge", file=sys.stderr)
+        sys.exit(1)
 
-    # 3. If commit_knowledge, commit knowledge artifacts in to_main to protect against git checkout -- .
-    if getattr(args, "commit_knowledge", False):
-        try:
-            if (to_main / "wiki").exists():
-                subprocess.run(["git", "add", "wiki/"], cwd=to_main, capture_output=True)
-            for ref_name in ["map-debt.md", "evolution-log.md"]:
-                for cand in to_main.glob(f"**/{ref_name}"):
-                    subprocess.run(["git", "add", str(cand.relative_to(to_main))], cwd=to_main, capture_output=True)
-            st = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=to_main, capture_output=True, text=True)
-            if st.stdout.strip():
-                subprocess.run(
-                    ["git", "commit", "-m", "chore(knowledge): persist Layer 2 evolution insights [skip ci]"],
-                    cwd=to_main, capture_output=True, check=True
-                )
-        except Exception as e:
-            print(f"Warning: Could not commit Layer 2 knowledge: {e}", file=sys.stderr)
+    branch = f"knowledge/{cycle_id}"
+    kt = to_main.parent / f"knowledge-wt-{cycle_id}"
 
-    print("Layer 2 artifacts safely exported from worktree to main checkout.")
+    # Create a dedicated branch + isolated worktree at current HEAD.
+    res = subprocess.run(
+        ["git", "worktree", "add", "-b", branch, str(kt), "HEAD"],
+        cwd=to_main, capture_output=True, text=True,
+    )
+    if res.returncode != 0:
+        print(f"Error: could not create knowledge worktree/branch: {res.stderr}", file=sys.stderr)
+        sys.exit(1)
+    try:
+        _copy_layer2(from_wt, kt)
+        subprocess.run(["git", "add", "-A"], cwd=kt, check=True, capture_output=True)
+        st = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=kt,
+                            capture_output=True, text=True)
+        if not st.stdout.strip():
+            print("Warning: no Layer 2 artifacts to commit.", file=sys.stderr)
+        else:
+            subprocess.run(
+                ["git", "commit", "-m",
+                 f"knowledge({cycle_id}): persist Layer 2 evolution insights [skip ci]"],
+                cwd=kt, check=True, capture_output=True,
+            )
+    finally:
+        subprocess.run(["git", "worktree", "remove", "--force", str(kt)],
+                       cwd=to_main, capture_output=True)
+    print(f"Layer 2 committed to branch '{branch}'. Main working tree and HEAD untouched.")
 
 
 def cmd_recover(args):
@@ -635,6 +685,7 @@ def main():
     p_exp = subparsers.add_parser("export-layer2")
     p_exp.add_argument("--from-worktree", required=True)
     p_exp.add_argument("--to-main", required=True)
+    p_exp.add_argument("--cycle-id", default=None)
     p_exp.add_argument("--commit-knowledge", action="store_true", default=False)
 
     # recover

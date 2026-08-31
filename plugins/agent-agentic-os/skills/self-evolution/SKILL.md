@@ -51,10 +51,13 @@ Before initiating an evolution cycle, verify:
    python3 scripts/evolution_state.py transition --to EXECUTE
    ```
 2. **Apply Surgical Mutation & Verify:**
-   - Apply edits inside worktree. Then run verifier in non-mutating `--decision-only` mode:
+   - Apply edits inside worktree. Then execute verifier via controller:
    ```bash
-   python3 scripts/evaluate.py --skill <skill-path> --decision-only
-   python3 scripts/evolution_state.py record-verification --exit-code <code>
+   # Controller executes the declared verifier itself (from transaction_manifest.verifier_argv).
+   # Exits non-zero if the verifier fails; provenance is stamped only on success.
+   python3 scripts/evolution_state.py verify
+   python3 scripts/record_trace.py append --cycle-id "<cid>" --node VERIFY_GATE \
+     --event-type verification.completed --exit-code $?
    python3 scripts/evolution_state.py transition --to VERIFY_GATE
    ```
 
@@ -72,9 +75,10 @@ Before initiating an evolution cycle, verify:
      ```
 - **If Fail on 3rd Attempt (R1 Invariant):**
   1. Save failure insights and negative constraints in `wiki/` (`REJECTED`) and `references/map-debt.md` (`OPEN, Repeat: YES`).
-  2. Export Layer 2 knowledge from worktree into main repository checkout before worktree teardown:
+  2. Export Layer 2 knowledge from worktree into dedicated knowledge branch before worktree teardown:
      ```bash
-     python3 scripts/evolution_state.py export-layer2 --from-worktree ../worktree-evolution-<cid> --to-main <main-repo-path>
+     python3 scripts/evolution_state.py export-layer2 --cycle-id "<cid>" --commit-knowledge \
+       --from-worktree ../worktree-evolution-<cid> --to-main <main-repo-path>
      git worktree remove --force ../worktree-evolution-<cid> && git branch -D evolution/<cid>
      python3 scripts/evolution_state.py transition --to ROLLBACK
      python3 scripts/evolution_state.py transition --to FINAL_RECEIPT

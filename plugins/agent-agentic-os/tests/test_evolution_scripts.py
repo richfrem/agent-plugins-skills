@@ -213,10 +213,17 @@ def test_evolution_state_blocks_commit_without_pre_commit_receipt(test_git_repo)
         [sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)],
         check=True, capture_output=True
     )
-    subprocess.run(
-        [sys.executable, str(state_script), "record-verification", "--exit-code", "0", "--repo-dir", str(test_git_repo)],
-        check=True, capture_output=True
-    )
+    # Stamp controller verification provenance
+    state_file = test_git_repo / ".agent" / "learning" / "evolution_state.json"
+    state = json.loads(state_file.read_text(encoding="utf-8"))
+    state["verification_provenance"] = {
+        "source": "controller",
+        "attempt": 1,
+        "exit_code": 0,
+        "verifier_argv_sha256": "abc",
+        "at": "2026-08-30T00:00:00Z"
+    }
+    state_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
     subprocess.run(
         [sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)],
         check=True, capture_output=True
@@ -266,10 +273,17 @@ def test_evolution_state_blocks_commit_without_commit_in_authorization(test_git_
         [sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)],
         check=True, capture_output=True
     )
-    subprocess.run(
-        [sys.executable, str(state_script), "record-verification", "--exit-code", "0", "--repo-dir", str(test_git_repo)],
-        check=True, capture_output=True
-    )
+    # Stamp controller verification provenance
+    state_file = test_git_repo / ".agent" / "learning" / "evolution_state.json"
+    state = json.loads(state_file.read_text(encoding="utf-8"))
+    state["verification_provenance"] = {
+        "source": "controller",
+        "attempt": 1,
+        "exit_code": 0,
+        "verifier_argv_sha256": "abc",
+        "at": "2026-08-30T00:00:00Z"
+    }
+    state_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
     subprocess.run(
         [sys.executable, str(state_script), "transition", "--to", "VERIFY_GATE", "--repo-dir", str(test_git_repo)],
         check=True, capture_output=True
@@ -821,6 +835,7 @@ def test_layer2_survives_a_following_git_checkout_on_rollback(test_git_repo):
     # Export Layer 2 with commit-knowledge
     subprocess.run([
         sys.executable, str(state_script), "export-layer2",
+        "--cycle-id", cycle_id,
         "--from-worktree", str(worktree_dir),
         "--to-main", str(test_git_repo),
         "--commit-knowledge"
@@ -830,10 +845,9 @@ def test_layer2_survives_a_following_git_checkout_on_rollback(test_git_repo):
     subprocess.run(["git", "checkout", "--", "."], cwd=test_git_repo, check=True)
     subprocess.run(["git", "clean", "-fd"], cwd=test_git_repo, check=True)
     
-    # The exported wiki and map-debt files must STILL survive!
-    # If they were committed or placed in dedicated knowledge branch, they are preserved.
-    wiki_file = test_git_repo / "wiki" / "hardened_learnings.md"
-    assert wiki_file.exists(), "Layer 2 knowledge must survive git checkout and git clean"
+    # The exported wiki and map-debt files must survive on knowledge/<cycle_id> branch
+    show = subprocess.run(["git", "show", f"knowledge/{cycle_id}:wiki/hardened_learnings.md"], cwd=test_git_repo, capture_output=True, text=True)
+    assert "Critical insight." in show.stdout, "Layer 2 knowledge must survive git checkout and git clean on knowledge branch"
 
 
 def test_replan_invalidates_authorization(test_git_repo):
@@ -857,4 +871,91 @@ def test_replan_invalidates_authorization(test_git_repo):
     state_file = test_git_repo / ".agent" / "learning" / "evolution_state.json"
     state = json.loads(state_file.read_text(encoding="utf-8"))
     assert state["authorization"]["status"] == "INVALIDATED", f"Expected INVALIDATED on re-plan, got {state['authorization']['status']}"
+
+
+def test_selfreport_cannot_drive_pre_commit_receipt(test_git_repo):
+    """V1: record-verification (self-report) must NOT satisfy the PRE_COMMIT_RECEIPT gate."""
+    state_script = SCRIPTS_DIR / "evolution_state.py"
+    cycle_id = "test-v1-selfreport"
+
+    subprocess.run([sys.executable, str(state_script), "init", "--cycle-id", cycle_id,
+                    "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    manifest_file = test_git_repo / "manifest.json"
+    manifest_file.write_text(json.dumps({"verifier_files": []}), encoding="utf-8")
+    subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(manifest_file),
+                    "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "authorize", "--cycle-id", cycle_id,
+                    "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # Drive to VERIFY_GATE via legal transitions.
+    state_file = test_git_repo / ".agent" / "learning" / "evolution_state.json"
+    for node in ["CREATE_WORKTREE", "EXECUTE", "VERIFY_GATE"]:
+        subprocess.run([sys.executable, str(state_script), "transition", "--to", node,
+                        "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # Attacker path: self-report a passing exit code.
+    subprocess.run([sys.executable, str(state_script), "record-verification",
+                    "--exit-code", "0", "--repo-dir", str(test_git_repo)],
+                   capture_output=True, text=True)
+
+    # Gate MUST reject: no controller-executed provenance exists for this attempt.
+    res = subprocess.run([sys.executable, str(state_script), "transition",
+                          "--to", "PRE_COMMIT_RECEIPT", "--repo-dir", str(test_git_repo)],
+                         capture_output=True, text=True)
+    assert res.returncode != 0, "Self-reported exit code must NOT drive PRE_COMMIT_RECEIPT"
+    assert "provenance" in res.stderr.lower() or "self-report" in res.stderr.lower() \
+        or "controller-executed" in res.stderr.lower()
+
+    # And confirm the field was never written authoritatively.
+    state = json.loads(state_file.read_text(encoding="utf-8"))
+    assert state.get("verification_provenance") in (None, {}), \
+        "record-verification must not write verification_provenance"
+
+
+def test_layer2_commits_to_knowledge_branch_not_main(test_git_repo):
+    """V2: --commit-knowledge commits to knowledge/<cid>; main HEAD and working tree untouched."""
+    state_script = SCRIPTS_DIR / "evolution_state.py"
+    cycle_id = "test-v2-knowledge"
+
+    subprocess.run([sys.executable, str(state_script), "init", "--cycle-id", cycle_id,
+                    "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    main_head_before = subprocess.run(["git", "rev-parse", "HEAD"], cwd=test_git_repo,
+                                      capture_output=True, text=True).stdout.strip()
+
+    worktree_dir = test_git_repo.parent / "wt-v2"
+    (worktree_dir / "wiki").mkdir(parents=True, exist_ok=True)
+    (worktree_dir / "wiki" / "hardened_learnings.md").write_text(
+        "# Hardened Learnings\nStatus: REJECTED\nCritical insight.\n", encoding="utf-8")
+    (worktree_dir / "map-debt.md").write_text(
+        "# Map Debt\nStatus: OPEN, Repeat: YES\n", encoding="utf-8")
+
+    subprocess.run([sys.executable, str(state_script), "export-layer2",
+                    "--cycle-id", cycle_id, "--commit-knowledge",
+                    "--from-worktree", str(worktree_dir),
+                    "--to-main", str(test_git_repo)], check=True, capture_output=True)
+
+    # 1. knowledge/<cid> branch exists and carries the content.
+    br = subprocess.run(["git", "branch", "--list", f"knowledge/{cycle_id}"],
+                        cwd=test_git_repo, capture_output=True, text=True)
+    assert f"knowledge/{cycle_id}" in br.stdout
+    show = subprocess.run(["git", "show", f"knowledge/{cycle_id}:wiki/hardened_learnings.md"],
+                          cwd=test_git_repo, capture_output=True, text=True)
+    assert "Status: REJECTED" in show.stdout
+
+    # 2. main HEAD unchanged (nothing committed to main).
+    main_head_after = subprocess.run(["git", "rev-parse", "HEAD"], cwd=test_git_repo,
+                                     capture_output=True, text=True).stdout.strip()
+    assert main_head_after == main_head_before, "export-layer2 must NOT commit to main"
+
+    # 3. main working tree does not carry the exported wiki file.
+    assert not (test_git_repo / "wiki" / "hardened_learnings.md").exists()
+
+    # 4. Durability: destructive ops on main cannot erase branch content.
+    subprocess.run(["git", "checkout", "--", "."], cwd=test_git_repo, capture_output=True)
+    subprocess.run(["git", "clean", "-fd"], cwd=test_git_repo, capture_output=True)
+    show2 = subprocess.run(["git", "show", f"knowledge/{cycle_id}:map-debt.md"],
+                           cwd=test_git_repo, capture_output=True, text=True)
+    assert "Status: OPEN, Repeat: YES" in show2.stdout
+
 
