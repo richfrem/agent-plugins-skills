@@ -26,6 +26,8 @@ TRIAGE → PLAN → AWAITING_APPROVAL (human gate) → AUTHORIZED → CREATE_WOR
 
 Proposal Mode (`TRIAGE`/`PLAN`) is strictly read-only until a human explicitly approves — no worktrees, no mutations. The controller (`evolution_state.py`) runs the declared verifier itself via subprocess, so results can never be self-reported; verifier files are SHA256-locked at init and any mutation aborts the cycle. A cryptographic Evolution Integrity Receipt binds the staged git tree, ordered audit-event digest, and verifier exit code before a commit is allowed. On a 3rd-attempt failure, code rolls back but the knowledge gained (wiki insights, negative constraints, map-debt) is durably preserved to a dedicated branch — never lost, never merged to main without review.
 
+Every invariant above is machine-enforced, not just asserted: a negative-capability test suite drives forged exit codes, undeclared verifier mutation, a forced 4th-attempt loop, and forged/stale receipt tokens at the controller and confirms each is blocked, backed by an end-to-end smoke test that runs a full PASS cycle and a ROLLBACK cycle end to end.
+
 **Entry point:** `/os-architect` — describe what you want in plain language. The agent classifies intent, audits the ecosystem, proposes Path A/B/C, and dispatches via your available CLI tools.
 
 ### 2. Execution Primitives — `agent-orchestration`
@@ -141,7 +143,7 @@ Interactive creators for exact file hierarchies + structured audit framework for
 
 **Scaffolding skills:** [`create-plugin`](plugins/agent-scaffolders/skills/create-plugin/SKILL.md) · [`create-skill`](plugins/agent-scaffolders/skills/create-skill/SKILL.md) · [`create-sub-agent`](plugins/agent-scaffolders/skills/create-sub-agent/SKILL.md) · [`create-command`](plugins/agent-scaffolders/skills/create-command/SKILL.md) · [`create-hook`](plugins/agent-scaffolders/skills/create-hook/SKILL.md) · [`create-github-action`](plugins/agent-scaffolders/skills/create-github-action/SKILL.md) · [`create-agentic-workflow`](plugins/agent-scaffolders/skills/create-agentic-workflow/SKILL.md) · [`create-azure-agent`](plugins/agent-scaffolders/skills/create-azure-agent/SKILL.md) · [`create-docker-skill`](plugins/agent-scaffolders/skills/create-docker-skill/SKILL.md) · [`create-mcp-integration`](plugins/agent-scaffolders/skills/create-mcp-integration/SKILL.md) · [`create-stateful-skill`](plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md) · [`create-apm-package`](plugins/agent-scaffolders/skills/create-apm-package/SKILL.md) · [`convert-plugin-to-apm`](plugins/agent-scaffolders/skills/convert-plugin-to-apm/SKILL.md) · [`compile-apm-package`](plugins/agent-scaffolders/skills/compile-apm-package/SKILL.md) · [`install-apm-package`](plugins/agent-scaffolders/skills/install-apm-package/SKILL.md)
 
-**Audit & analysis skills:** [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md) · [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) · [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) · [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md) · [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md) · [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md) · [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md) · [`update-ecosystem-index`](plugins/agent-scaffolders/skills/update-ecosystem-index/SKILL.md)
+**Audit & analysis skills:** [`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md) · [`audit-plugin-l5`](plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md) · [`audit-skill`](plugins/agent-scaffolders/skills/audit-skill/SKILL.md) · [`l5-red-team-auditor`](plugins/agent-scaffolders/skills/l5-red-team-auditor/SKILL.md) · [`analyze-plugin`](plugins/agent-scaffolders/skills/analyze-plugin/SKILL.md) · [`self-audit`](plugins/agent-scaffolders/skills/self-audit/SKILL.md) · [`mine-skill`](plugins/agent-scaffolders/skills/mine-skill/SKILL.md) · [`mine-plugins`](plugins/agent-scaffolders/skills/mine-plugins/SKILL.md) · [`path-reference-auditor`](plugins/agent-scaffolders/skills/path-reference-auditor/SKILL.md) · [`fix-plugin-paths`](plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md) · [`synthesize-learnings`](plugins/agent-scaffolders/skills/synthesize-learnings/SKILL.md) · [`eval-autoresearch-fit`](plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md) · [`manage-marketplace`](plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md) · [`ecosystem-standards`](plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md) · [`ecosystem-authoritative-sources`](plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md) · [`update-ecosystem-index`](plugins/agent-scaffolders/skills/update-ecosystem-index/SKILL.md)
 
 ---
 
@@ -185,7 +187,7 @@ Interactive creators for exact file hierarchies + structured audit framework for
 **KV Cache Orchestrator:** `kv_cache_orchestrator.py` — SHA-256 keyed slot save/restore, 4 GiB budget, 31 TDD tests. Proxy integration wired. Eviction scoring inspired by [antirez/ds4](https://github.com/antirez/ds4).
 
 **What changed in v2.0.0 (June 2026):**
-- 12 duplicate agent files (3 personas × 4 backends) → 11 deep flat personas with OWASP/C4/SOLID analytical frameworks
+- 12 duplicate agent files (3 personas × 4 backends) → 12 deep flat personas with OWASP/C4/SOLID analytical frameworks
 - Added adversarial pattern family: red-team-reviewer, debate-synthesizer, output-validator, self-critic
 - `run_agent.py` argparse v2: `--cli`, `--model`, `--max-tokens`, `--isolated` + legacy positional compat
 - Security contract: `--isolated` suppresses `--yolo`/`--dangerously-skip-permissions` per backend
@@ -205,21 +207,21 @@ Skills available via superpowers: `verification-before-completion` · `test-driv
 
 ### Group 6: Knowledge & Memory
 
-#### agent-memory — Unified Cognitive Memory Suite (v1.0.0)
+#### agent-memory — 3-Layer Memory Engine + Optional Super-RAG (v1.0.0)
 
-Three standalone plugins consolidated: `rlm-factory` (O(1) keyword search) + `vector-db` (semantic search) + `memory-management` (session tiering). Works standalone per layer or combined as a full Super-RAG stack.
+**Default:** [`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md) — the zero-dependency, filesystem-native 3-Layer Engine described in Pillar 3 above (runtime context, compounding wiki, hash-chained audit log). No vector database, no daemon.
 
-**RLM skills (6):** [`rlm-init`](plugins/agent-memory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/agent-memory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/agent-memory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/agent-memory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/agent-memory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/agent-memory/skills/rlm-audit/SKILL.md)
+**Optional, heavier layers** — kept in this plugin but no longer the default path — for projects that specifically need O(1) keyword or O(log N) semantic retrieval on top of the filesystem layers:
 
-**Vector DB skills (6):** [`vector-db-init`](plugins/agent-memory/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/agent-memory/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/agent-memory/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/agent-memory/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/agent-memory/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/agent-memory/skills/vector-db-audit/SKILL.md)
+**RLM skills (6, optional):** [`rlm-init`](plugins/agent-memory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/agent-memory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/agent-memory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/agent-memory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/agent-memory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/agent-memory/skills/rlm-audit/SKILL.md)
 
-**Session memory (1):** [`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md) — multi-tiered cognition and context caching
+**Vector DB skills (6, optional):** [`vector-db-init`](plugins/agent-memory/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/agent-memory/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/agent-memory/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/agent-memory/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/agent-memory/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/agent-memory/skills/vector-db-audit/SKILL.md)
 
 **Agents (9):** `rlm-cleanup-agent` · `rlm-curator` · `rlm-distill-agent` · `rlm-factory-init-agent` · `rlm-init` · `rlm-search` · `vector-db-cleanup` · `vector-db-ingest` · `vector-db-init-agent`
 
-#### obsidian-wiki-engine — Karpathy LLM Wiki + Super-RAG (v3.1.0)
+#### obsidian-wiki-engine — Karpathy LLM Wiki + Optional Super-RAG (v3.1.0)
 
-Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal. Pairs with `agent-memory` as Phase 3 of the Super-RAG stack.
+Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal. Optionally pairs with `agent-memory`'s RLM/vector-db layers as the concept-node tier of the opt-in Super-RAG stack.
 
 **Wiki skills:** [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) · [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) · [`obsidian-query-agent`](plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md) · [`obsidian-wiki-linter`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md)
 
@@ -303,8 +305,10 @@ Each skill scored on: objectivity (can a shell command measure it?), execution s
 | 2 | superpowers/test-driven-development | 35/40 | LLM_IN_LOOP |
 | 3 | coding-conventions/coding-conventions-agent | 34/40 | HYBRID |
 | 4 | superpowers/using-git-worktrees | 33/40 | DETERMINISTIC |
-| 5 | spec-kitty-plugin/spec-kitty-status | 33/40 | DETERMINISTIC |
+| 5 | spec-kitty-plugin/spec-kitty-status¹ | 33/40 | DETERMINISTIC |
 | 6 | agent-agentic-os/os-eval-runner | 32/40 | DETERMINISTIC |
+
+¹ Historical result from when spec-kitty-plugin was still tracked; the plugin is now a deprecated pointer, not part of the current 10-plugin set (see Group 2 above).
 
 Full ranked results: [`summary-ranked-skills.json`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/summary-ranked-skills.json)
 Top 20 opportunities with metrics + blockers: [`autoresearch-opportunities-report.md`](plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/eval-autoresearch-fit/assets/resources/autoresearch-opportunities-report.md)
