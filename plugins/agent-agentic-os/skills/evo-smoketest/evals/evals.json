@@ -1,6 +1,6 @@
 {
   "skill": "evo-smoketest",
-  "description": "Routing evals for the evolution end-to-end smoke fixture. Uses the should_trigger schema (the legacy expected_behavior schema silently yields 0% routing accuracy). One case (kelvin_conversion) is a deliberate baseline gap: it should_trigger=true but the current SKILL.md description omits Kelvin, so the router misses it until the evolution cycle broadens the description.",
+  "description": "Routing evals for the evolution end-to-end smoke fixture. Uses the should_trigger schema (the legacy expected_behavior schema silently yields 0% routing accuracy). One case (kelvin_conversion) is a deliberate baseline gap: its query shares zero 4+ char keywords with the baseline description (celsius/fahrenheit/converts/temperatures/...), so it genuinely fails to route until the evolution cycle broadens the description to include a Kelvin-related word. Do not rephrase kelvin_conversion's query to reuse an existing baseline keyword (e.g. 'celsius') -- that silently defeats the gap by making it pass for the wrong reason, which is exactly the bug this fixture is meant to catch.",
   "evaluations": [
     {
       "id": "celsius_to_fahrenheit",
@@ -14,14 +14,15 @@
     },
     {
       "id": "celsius_shorthand",
-      "query": "20C to F please",
-      "should_trigger": true
+      "query": "Convert 20 Celsius to Fahrenheit please",
+      "should_trigger": true,
+      "notes": "Previously '20C to F please' -- the 4+ char keyword matcher can never resolve 2-char unit shorthand like '20C'/'F', so that query failed permanently regardless of description content, unrelated to and polluting the deliberate Kelvin gap below. Rephrased to a normal true positive."
     },
     {
       "id": "kelvin_conversion",
-      "query": "Convert 300 Kelvin to Celsius.",
+      "query": "How warm is 300 Kelvin?",
       "should_trigger": true,
-      "notes": "DELIBERATE BASELINE GAP: description omits Kelvin, so the router misses this at baseline. E2E-PASS fix broadens the description to include Kelvin, flipping this case to green."
+      "notes": "DELIBERATE BASELINE GAP: shares no keyword with the baseline description (previously used 'Convert 300 Kelvin to Celsius.', which already contains 'Celsius' -- a baseline keyword -- so it passed at baseline for the wrong reason and never actually exercised the gap). E2E-PASS fix broadens the description to include 'Kelvin', flipping this case to green for the right reason."
     },
     {
       "id": "unrelated_currency",
