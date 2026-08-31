@@ -46,9 +46,14 @@ Authoritative reference guide for deterministic state transitions governed by `s
   ```bash
   python3 scripts/evolution_state.py authorize --cycle-id "<cid>" --operations create_worktree,mutate,verify,write_layer2,commit
   python3 scripts/record_trace.py append --cycle-id "<cid>" --node AUTHORIZED --event-type authorization.granted --exit-code 0
-  python3 scripts/evolution_state.py transition --to CREATE_WORKTREE
+  git worktree add -b evolution/<cid> ../worktree-evolution-<cid> <initial_git_head>
+  python3 scripts/evolution_state.py transition --to CREATE_WORKTREE --worktree-path ../worktree-evolution-<cid>
   python3 scripts/record_trace.py append --cycle-id "<cid>" --node CREATE_WORKTREE --event-type worktree.created --exit-code 0
   python3 scripts/evolution_state.py transition --to EXECUTE
+  ```
+  Note: `--worktree-path` is what `verify` (and the PASS-path commit) uses to find the sandbox
+  containing the actual mutation instead of silently reading the unmodified main checkout
+  (see map-debt.md, resolved 2026-08-31).
   ```
 
 ---

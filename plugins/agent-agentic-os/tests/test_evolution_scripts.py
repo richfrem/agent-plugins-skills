@@ -1006,10 +1006,13 @@ def test_verify_reads_worktree_mutation_not_main_checkout(test_git_repo):
          "create_worktree,mutate,verify,write_layer2,commit", "--repo-dir", str(test_git_repo)],
         check=True, capture_output=True,
     )
-    subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
-
     wt_dir = test_git_repo.parent / f"worktree-{cycle_id}"
     subprocess.run(["git", "worktree", "add", "-b", f"evolution/{cycle_id}", str(wt_dir), "HEAD"], cwd=test_git_repo, check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE",
+         "--worktree-path", str(wt_dir), "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
     subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
 
     # The mutation: write the marker file ONLY inside the worktree, exactly as a real EXECUTE step would.
