@@ -192,6 +192,37 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Rule Synchronizer (.agent/rules)
+# ---------------------------------------------------------------------------
+
+def sync_rules(target: Path, dry_run: bool) -> None:
+    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules."""
+    plugin_root = _get_plugin_root()
+    repo_root = plugin_root.parent.parent
+    origin_rules = repo_root / ".agent" / "rules"
+    if not origin_rules.exists() or not origin_rules.is_dir():
+        alt_root = plugin_root.resolve()
+        while alt_root.parent != alt_root and not (alt_root / ".agent" / "rules").exists():
+            alt_root = alt_root.parent
+        origin_rules = alt_root / ".agent" / "rules"
+        if not origin_rules.exists():
+            return
+
+    target_rules = target / ".agent" / "rules"
+    make_dir(target_rules, dry_run)
+
+    rule_files = list(origin_rules.glob("*.md"))
+    if not rule_files:
+        return
+
+    announce(f"Synchronizing {len(rule_files)} core ecosystem rules into {target_rules}...", dry_run)
+    for rule_file in rule_files:
+        target_file = target_rules / rule_file.name
+        content = rule_file.read_text(encoding="utf-8")
+        write_file(target_file, content, dry_run, force=True)
+
+
+# ---------------------------------------------------------------------------
 # Skill Auditor & Retrofit Migration Helper
 # ---------------------------------------------------------------------------
 
@@ -345,6 +376,11 @@ def main() -> None:
         help="Mirror CLAUDE.md to GEMINI.md, .github/copilot-instructions.md, and AGENTS.md"
     )
     parser.add_argument(
+        "--sync-rules",
+        action="store_true",
+        help="Sync core ecosystem rules from origin .agent/rules to target .agent/rules"
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Preview what would be created without writing anything"
@@ -369,11 +405,14 @@ def main() -> None:
         print(f"\n--- Retrofitting Existing Repository: {target.resolve()} ---\n")
         _scaffold_3layer_memory(target, args.dry_run, args.force)
         sync_instructions(target, args.dry_run)
+        sync_rules(target, args.dry_run)
         retrofit_existing_skills(target, args.dry_run, fix=True)
     else:
         create_project_structure(target, args.dry_run, args.force)
         if args.sync_instructions:
             sync_instructions(target, args.dry_run)
+        if args.sync_rules:
+            sync_rules(target, args.dry_run)
 
     if args.global_kernel:
         create_global_kernel(args.dry_run, args.force)

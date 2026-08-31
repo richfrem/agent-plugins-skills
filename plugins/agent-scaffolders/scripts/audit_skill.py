@@ -143,8 +143,13 @@ def audit_skill(
             res.passed = False
             res.errors.append("Frontmatter missing required 'name' field")
         elif name_val != skill_name:
-            res.passed = False
-            res.errors.append(f"Frontmatter name '{name_val}' does not match directory name '{skill_name}'")
+            if fix:
+                content = re.sub(r"^name:\s*.*", f"name: {skill_name}", content, count=1, flags=re.MULTILINE)
+                skill_md.write_text(content, encoding="utf-8")
+                res.fixes_applied.append(f"Auto-aligned frontmatter name from '{name_val}' to '{skill_name}'")
+            else:
+                res.passed = False
+                res.errors.append(f"Frontmatter name '{name_val}' does not match directory name '{skill_name}'")
 
         desc_val = fm.get("description", "")
         res.metrics["description_len"] = len(desc_val)
@@ -214,7 +219,7 @@ def audit_skill(
                         res.errors.append(f"evals.json entry #{idx} is not an object")
                         continue
                     if "should_trigger" not in entry:
-                        if fix and "expected_behavior" in entry:
+                        if fix:
                             entry["should_trigger"] = (entry.get("type") != "negative")
                             res.fixes_applied.append(f"Auto-inferred 'should_trigger: {entry['should_trigger']}' for eval #{idx}")
                         else:
@@ -266,12 +271,56 @@ def audit_skill(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit and align an agent skill against evolution standards.")
-    parser.add_argument("skill_path", help="Path to skill directory to audit")
+    parser.add_argument("skill_path", nargs="?", default=None, help="Path to skill directory to audit")
+    parser.add_argument("--all", action="store_true", help="Audit all skills in the repository or target path")
     parser.add_argument("--plugin-root", default=None, help="Optional plugin root directory")
     parser.add_argument("--fix", action="store_true", help="Auto-repair fixable schema issues")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
 
     args = parser.parse_args()
+
+    if args.all or (args.skill_path and Path(args.skill_path).is_dir() and not (Path(args.skill_path) / "SKILL.md").exists()):
+        base_dir = Path(args.skill_path) if args.skill_path else Path.cwd()
+        skill_mds = sorted(list(base_dir.glob("plugins/**/skills/*/SKILL.md")) + list(base_dir.glob("skills/*/SKILL.md")) + list(base_dir.glob(".agents/skills/*/SKILL.md")))
+        seen = set()
+        skills = []
+        for smd in skill_mds:
+            s_dir = smd.parent.resolve()
+            if s_dir not in seen:
+                seen.add(s_dir)
+                skills.append(smd.parent)
+
+        if not skills:
+            print("No skills found to audit.")
+            return 0
+
+        total_errors = 0
+        results = []
+        for s in skills:
+            r = audit_skill(s, plugin_root=args.plugin_root, fix=args.fix)
+            results.append(r.to_dict())
+            if not r.passed:
+                total_errors += 1
+            if not args.json:
+                status_symbol = "✅ PASS" if r.passed else "❌ FAIL"
+                print(f"[{status_symbol}] {r.skill_name} ({s})")
+                if r.fixes_applied:
+                    for f in r.fixes_applied:
+                        print(f"  ✓ {f}")
+                if r.errors:
+                    for e in r.errors:
+                        print(f"  ✖ {e}")
+
+        if args.json:
+            print(json.dumps(results, indent=2))
+        else:
+            print(f"\nAudited {len(skills)} skills. {total_errors} failed.")
+
+        return 0 if total_errors == 0 else 1
+
+    if not args.skill_path:
+        parser.error("skill_path or --all is required")
+
     result = audit_skill(args.skill_path, plugin_root=args.plugin_root, fix=args.fix)
 
     if args.json:
