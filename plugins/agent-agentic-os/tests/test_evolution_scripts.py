@@ -959,3 +959,71 @@ def test_layer2_commits_to_knowledge_branch_not_main(test_git_repo):
     assert "Status: OPEN, Repeat: YES" in show2.stdout
 
 
+
+
+def test_verify_reads_worktree_mutation_not_main_checkout(test_git_repo):
+    """
+    Regression test for the live-cycle finding (map-debt.md, 2026-08-31): `verify` must execute
+    the declared verifier against the actual worktree where EXECUTE applied the mutation, not
+    against the main checkout. state["worktree_path"] is currently never written anywhere in
+    evolution_state.py (initialized to None at init, read once at verify, set nowhere in between),
+    so verify silently grades the unmodified main-checkout file. This test proves the mutation is
+    invisible to verify today and must fail (red) until cmd_verify resolves the real worktree path.
+    """
+    state_script = SCRIPTS_DIR / "evolution_state.py"
+    cycle_id = "test-verify-worktree-mismatch"
+
+    # A "verifier" that fails unless it can see the mutation (a marker file written only in the
+    # worktree). If verify runs against the main checkout, the marker will be absent and this
+    # will exit 1 -- exposing the mismatch instead of masking it.
+    verifier_script = test_git_repo / "check_marker.py"
+    verifier_script.write_text(
+        "import sys\nfrom pathlib import Path\n"
+        "sys.exit(0 if Path('MUTATION_MARKER.txt').exists() else 1)\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "."], cwd=test_git_repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "add marker-checking verifier"], cwd=test_git_repo, check=True, capture_output=True)
+
+    subprocess.run(
+        [sys.executable, str(state_script), "init", "--cycle-id", cycle_id, "--tier", "Tier 2", "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+
+    manifest_file = test_git_repo / "manifest.json"
+    manifest_file.write_text(json.dumps({
+        "cycle_id": cycle_id,
+        "verifier_files": [],
+        "verifier_argv": [sys.executable, str(verifier_script)],
+        "mutation_targets": ["MUTATION_MARKER.txt"],
+        "authorized_operations": ["create_worktree", "mutate", "verify", "write_layer2", "commit"],
+    }), encoding="utf-8")
+
+    subprocess.run([sys.executable, str(state_script), "plan", "--manifest", str(manifest_file), "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "AWAITING_APPROVAL", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+    subprocess.run(
+        [sys.executable, str(state_script), "authorize", "--cycle-id", cycle_id, "--operations",
+         "create_worktree,mutate,verify,write_layer2,commit", "--repo-dir", str(test_git_repo)],
+        check=True, capture_output=True,
+    )
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "CREATE_WORKTREE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    wt_dir = test_git_repo.parent / f"worktree-{cycle_id}"
+    subprocess.run(["git", "worktree", "add", "-b", f"evolution/{cycle_id}", str(wt_dir), "HEAD"], cwd=test_git_repo, check=True, capture_output=True)
+    subprocess.run([sys.executable, str(state_script), "transition", "--to", "EXECUTE", "--repo-dir", str(test_git_repo)], check=True, capture_output=True)
+
+    # The mutation: write the marker file ONLY inside the worktree, exactly as a real EXECUTE step would.
+    (wt_dir / "MUTATION_MARKER.txt").write_text("mutation applied\n", encoding="utf-8")
+    assert not (test_git_repo / "MUTATION_MARKER.txt").exists(), "sanity: marker must not exist in main checkout"
+
+    verify_res = subprocess.run(
+        [sys.executable, str(state_script), "verify", "--repo-dir", str(test_git_repo)],
+        capture_output=True, text=True,
+    )
+
+    subprocess.run(["git", "worktree", "remove", "--force", str(wt_dir)], cwd=test_git_repo, capture_output=True)
+
+    assert verify_res.returncode == 0, (
+        "verify must execute the verifier against the worktree that EXECUTE mutated, not the main "
+        f"checkout. Controller output:\n{verify_res.stdout}\n{verify_res.stderr}"
+    )
