@@ -46,9 +46,7 @@ Composable loop and graph-execution primitives used as the substrate by the Impr
 - **Layer 2 — Compounding Wiki:** permanent `wiki/`/`references/` playbooks tagged with a confidence taxonomy (`OBSERVED` → `CONFIRMED`/`REJECTED`, with 30-day decay); survives rollback even when code doesn't.
 - **Layer 3 — Safe Audit:** append-only, hash-chained `cycle_manifests.jsonl` — structured event metadata only, zero raw terminal output.
 
-Retrieval is native (`rg` / direct file reads), targeting <50ms with no background processes.
-
-**Heavier retrieval stays available, opt-in:** RLM keyword cache and ChromaDB vector search (still in `agent-memory`) plus `obsidian-wiki-engine`'s concept graph form an optional **Super-RAG stack** for projects that specifically need O(1)/O(log N)/graph-node retrieval layered together. This is no longer the default memory path — `memory-management` is.
+Retrieval is native (`rg` / direct file reads), targeting <50ms with no background processes. `memory-management` has no dependency on and makes no reference to RLM, vector search, or Obsidian — those remain separate, unrelated skills in `agent-memory` for projects that specifically want keyword/semantic/graph retrieval on top (see Group 6 below).
 
 ### Hub-and-Spoke ADR
 
@@ -207,21 +205,21 @@ Skills available via superpowers: `verification-before-completion` · `test-driv
 
 ### Group 6: Knowledge & Memory
 
-#### agent-memory — 3-Layer Memory Engine + Optional Super-RAG (v1.0.0)
+#### agent-memory (v1.0.0)
 
-**Default:** [`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md) — the zero-dependency, filesystem-native 3-Layer Engine described in Pillar 3 above (runtime context, compounding wiki, hash-chained audit log). No vector database, no daemon.
+**Default:** [`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md) — the zero-dependency, filesystem-native 3-Layer Engine described in Pillar 3 above (runtime context, compounding wiki, hash-chained audit log). No vector database, no daemon, no dependency on any other skill in this plugin.
 
-**Optional, heavier layers** — kept in this plugin but no longer the default path — for projects that specifically need O(1) keyword or O(log N) semantic retrieval on top of the filesystem layers:
+This plugin also carries two unrelated, separately-installable retrieval tools for projects that specifically want them — they are not wired into `memory-management` and are not needed for it:
 
-**RLM skills (6, optional):** [`rlm-init`](plugins/agent-memory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/agent-memory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/agent-memory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/agent-memory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/agent-memory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/agent-memory/skills/rlm-audit/SKILL.md)
+**RLM skills (6):** [`rlm-init`](plugins/agent-memory/skills/rlm-init/SKILL.md) · [`rlm-curator`](plugins/agent-memory/skills/rlm-curator/SKILL.md) · [`rlm-search`](plugins/agent-memory/skills/rlm-search/SKILL.md) · [`rlm-distill-agent`](plugins/agent-memory/skills/rlm-distill-agent/SKILL.md) · [`rlm-cleanup-agent`](plugins/agent-memory/skills/rlm-cleanup-agent/SKILL.md) · [`rlm-audit`](plugins/agent-memory/skills/rlm-audit/SKILL.md) — O(1) keyword search over dense file summaries
 
-**Vector DB skills (6, optional):** [`vector-db-init`](plugins/agent-memory/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/agent-memory/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/agent-memory/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/agent-memory/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/agent-memory/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/agent-memory/skills/vector-db-audit/SKILL.md)
+**Vector DB skills (6):** [`vector-db-init`](plugins/agent-memory/skills/vector-db-init/SKILL.md) · [`vector-db-launch`](plugins/agent-memory/skills/vector-db-launch/SKILL.md) · [`vector-db-ingest`](plugins/agent-memory/skills/vector-db-ingest/SKILL.md) · [`vector-db-search`](plugins/agent-memory/skills/vector-db-search/SKILL.md) · [`vector-db-cleanup`](plugins/agent-memory/skills/vector-db-cleanup/SKILL.md) · [`vector-db-audit`](plugins/agent-memory/skills/vector-db-audit/SKILL.md) — ChromaDB semantic search
 
 **Agents (9):** `rlm-cleanup-agent` · `rlm-curator` · `rlm-distill-agent` · `rlm-factory-init-agent` · `rlm-init` · `rlm-search` · `vector-db-cleanup` · `vector-db-ingest` · `vector-db-init-agent`
 
-#### obsidian-wiki-engine — Karpathy LLM Wiki + Optional Super-RAG (v3.1.0)
+#### obsidian-wiki-engine — Karpathy LLM Wiki (v3.1.0)
 
-Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal. Optionally pairs with `agent-memory`'s RLM/vector-db layers as the concept-node tier of the opt-in Super-RAG stack.
+Karpathy-style LLM wiki with cross-source concept synthesis. Transforms raw markdown into structured, queryable concept nodes. Full Obsidian vault CRUD, canvas, and graph traversal. Can optionally combine with `agent-memory`'s RLM/vector-db skills for projects building a multi-layer retrieval stack, but has no dependency on them.
 
 **Wiki skills:** [`obsidian-wiki-builder`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md) · [`obsidian-rlm-distiller`](plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md) · [`obsidian-query-agent`](plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md) · [`obsidian-wiki-linter`](plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md)
 
