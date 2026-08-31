@@ -1,10 +1,10 @@
 ---
-name: _evo-smoketest
+name: evo-smoketest
 description: Converts temperatures between Celsius and Fahrenheit for the evolution end-to-end smoke test harness.
 version: 0.1.0
 ---
 
-# _evo-smoketest
+# evo-smoketest
 
 A disposable fixture skill used only by the evolution end-to-end acceptance suite. It exists to give
 a real self-evolution cycle a controlled, reproducible routing gap to triage, fix (E2E-PASS), or fail

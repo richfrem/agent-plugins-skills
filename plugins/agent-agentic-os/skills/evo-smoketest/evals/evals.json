@@ -1,7 +1,7 @@
 {
-  "skill": "_evo-smoketest",
+  "skill": "evo-smoketest",
   "description": "Routing evals for the evolution end-to-end smoke fixture. Uses the should_trigger schema (the legacy expected_behavior schema silently yields 0% routing accuracy). One case (kelvin_conversion) is a deliberate baseline gap: it should_trigger=true but the current SKILL.md description omits Kelvin, so the router misses it until the evolution cycle broadens the description.",
-  "cases": [
+  "evaluations": [
     {
       "id": "celsius_to_fahrenheit",
       "query": "Convert 100 degrees Celsius to Fahrenheit.",
