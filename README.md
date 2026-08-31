@@ -93,7 +93,7 @@ Monitor a live run: `python plugins/agent-agentic-os/scripts/plot_eval_progress.
 
 ---
 
-## Plugin Ecosystem (10 plugins · 137 skills)
+## Plugin Ecosystem (10 plugins · 138 skills)
 
 ### Group 1: The Improvement OS
 
@@ -321,7 +321,7 @@ python plugin-research/experiments/analyze-candidates-for-auto-reseaarch/skills/
 ## Repository Structure
 
 ```
-plugins/                    ← upstream source (10 plugins, 137 skills)
+plugins/                    ← upstream source (10 plugins, 138 skills)
   <plugin>/
     plugin.yaml             ← plugin manifest
     .claude-plugin/plugin.json
@@ -349,4 +349,4 @@ temp/                       ← local scratch (gitignored except scripts)
 
 ---
 
-*137 skills · 10 plugins · Improvement OS (os-architect) · deterministic self-evolution graph · zero-dependency 3-layer memory · Karpathy autoresearch loops*
+*138 skills · 10 plugins · Improvement OS (os-architect) · deterministic self-evolution graph · zero-dependency 3-layer memory · Karpathy autoresearch loops*
