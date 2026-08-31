@@ -1,0 +1,85 @@
+{
+  "iteration": 1,
+  "verdict": "KEEP",
+  "score": 0.7933,
+  "baseline_score": 0.7933,
+  "delta": 0.0,
+  "desc": "iteration",
+  "mutation_diff": "diff --git a/plugins/agent-agentic-os/skills/evo-smoketest/SKILL.md b/plugins/agent-agentic-os/skills/evo-smoketest/SKILL.md\nindex f8c57be9..628f0c5e 100644\n--- a/plugins/agent-agentic-os/skills/evo-smoketest/SKILL.md\n+++ b/plugins/agent-agentic-os/skills/evo-smoketest/SKILL.md\n@@ -1,14 +1,12 @@\n ---\n name: evo-smoketest\n-description: Converts temperatures between Celsius and Fahrenheit for the evolution end-to-end smoke test harness.\n-version: 0.1.0\n+description: Converts temperatures between Celsius, Fahrenheit, and Kelvin (K = C + 273.15) for the evolution end-to-end smoke test harness.\n+version: 0.2.0\n ---\n \n # evo-smoketest\n \n-A disposable fixture skill used only by the evolution end-to-end acceptance suite. It exists to give\n-a real self-evolution cycle a controlled, reproducible routing gap to triage, fix (E2E-PASS), or fail\n-three times (E2E-ROLLBACK). Do not deploy or depend on this skill in production.\n+A disposable fixture skill used only by the evolution end-to-end acceptance suite.\n \n ## Purpose\n \n@@ -17,19 +15,7 @@ against `evals/evals.json`.\n \n ## When to use\n \n-Use this skill when the user asks to convert a temperature between Celsius and Fahrenheit.\n-\n-## Deliberate baseline gap (do not remove without updating evals)\n-\n-The description above intentionally names only Celsius and Fahrenheit. `evals/evals.json` contains one\n-`should_trigger: true` case about a Kelvin conversion. Because the description omits Kelvin, the\n-routing evaluator will MISS that case at baseline, producing a measurable sub-100% score.\n-\n-- E2E-PASS: the evolution cycle closes the gap by broadening the `description` and `When to use`\n-  section to include Kelvin (K = C + 273.15), which flips the failing eval case to green\n-  (`evaluate.py --decision-only` exit 0).\n-- E2E-ROLLBACK: an intentionally wrong \"fix\" that does NOT add Kelvin fails the verifier three\n-  times, forcing the controller into ROLLBACK.\n+Use this skill when the user asks to convert a temperature between Celsius, Fahrenheit, or Kelvin.\n \n ## Procedure\n \n@@ -37,4 +23,5 @@ routing evaluator will MISS that case at baseline, producing a measurable sub-10\n 2. Apply the conversion:\n    - Celsius to Fahrenheit: `F = C * 9/5 + 32`\n    - Fahrenheit to Celsius: `C = (F - 32) * 5/9`\n+   - Kelvin to Celsius: `C = K - 273.15`\n 3. Return the converted value rounded to one decimal place.\n",
+  "routing_detail": [
+    {
+      "input": "convert 100 degrees celsius to fahrenheit.",
+      "should_trigger": true,
+      "matched_keywords": [
+        "celsius",
+        "fahrenheit"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "what is 32 f in celsius?",
+      "should_trigger": true,
+      "matched_keywords": [
+        "celsius"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "20c to f please",
+      "should_trigger": true,
+      "matched_keywords": [],
+      "triggered": false,
+      "correct": false,
+      "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+    },
+    {
+      "input": "convert 300 kelvin to celsius.",
+      "should_trigger": true,
+      "matched_keywords": [
+        "celsius",
+        "kelvin"
+      ],
+      "triggered": true,
+      "correct": true
+    },
+    {
+      "input": "convert 100 us dollars to euros.",
+      "should_trigger": false,
+      "matched_keywords": [],
+      "triggered": false,
+      "correct": true
+    },
+    {
+      "input": "how many kilometers are in 5 miles?",
+      "should_trigger": false,
+      "matched_keywords": [],
+      "triggered": false,
+      "correct": true
+    }
+  ],
+  "heuristic_detail": [
+    {
+      "check": "folder_name_matches",
+      "penalty": 0.0,
+      "passed": true
+    },
+    {
+      "check": "description_length",
+      "penalty": 0.0,
+      "passed": true
+    },
+    {
+      "check": "example_blocks",
+      "penalty": -0.3,
+      "passed": false
+    },
+    {
+      "check": "body_length",
+      "penalty": 0.0,
+      "passed": true
+    }
+  ],
+  "timestamp": "2026-08-30T22:39:21.782492"
+}
