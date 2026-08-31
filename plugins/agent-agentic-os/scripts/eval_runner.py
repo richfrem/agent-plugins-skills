@@ -118,8 +118,8 @@ def _check_name_field(frontmatter_text: str) -> Tuple[Optional[str], Optional[Di
         return None, {"score": 0.0, "feedback": [
             f"HARD FAIL: 'name' must be 1-64 characters (got {len(name)}): {name!r}"
         ], "heuristic_detail": [{"check": "name_length", "penalty": -1.0, "passed": False}]}
-    # Only lowercase letters and hyphens; must start and end with a letter
-    if not re.fullmatch(r'[a-z]([a-z-]*[a-z])?', name):
+    # Only lowercase letters and hyphens; must start and end with a letter (optional leading _ for test fixtures)
+    if not re.fullmatch(r'_?[a-z]([a-z-]*[a-z])?', name):
         return None, {"score": 0.0, "feedback": [
             f"HARD FAIL: 'name' must only contain [a-z-] and start/end with a letter: {name!r}"
         ], "heuristic_detail": [{"check": "name_format", "penalty": -1.0, "passed": False}]}
@@ -610,7 +610,7 @@ def _load_eval_data(skill_dir: Path) -> List[Dict[str, Any]]:
     with open(evals_path, "r") as f:
         raw = json.load(f)
     if isinstance(raw, dict):
-        return raw.get("evaluations") or raw.get("scenarios") or []
+        return raw.get("evaluations") or raw.get("scenarios") or raw.get("cases") or []
     return raw
 
 
