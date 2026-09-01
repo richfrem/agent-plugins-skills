@@ -9,7 +9,7 @@ globs: ["**/*"]
 **Full context and execution protocol -> `<project_root>/.agent/skills/self-evolution/SKILL.md` (if available)**  
 **Skill/directory deletion rules -> `<project_root>/.agent/rules/skill-deletion-guard.md` (if available)**
 
-This policy governs how agents must respond when a tool call, subprocess, web automation step, selector query, script, workflow, or sub-agent execution encounters failure or friction. Rather than just retrying or patching silently, the agent must treat failures and workarounds as evolution events governed by deterministic graph state machines (orchestrated via [`agent-orchestration:graph-execution`](../plugins/agent-orchestration/skills/graph-execution/SKILL.md) and classified via [`agent-orchestration:select-loop-strategy`](../plugins/agent-orchestration/skills/select-loop-strategy/SKILL.md)) and a zero-dependency 3-Layer Filesystem Memory.
+This policy governs how agents must respond when a tool call, subprocess, web automation step, selector query, script, workflow, or sub-agent execution encounters failure or friction. Rather than just retrying or patching silently, the agent must treat failures and workarounds as evolution events governed by deterministic graph state machines (orchestrated via [`agent-orchestration:graph-execution`](../../agent-orchestration/skills/graph-execution/SKILL.md) and classified via [`agent-orchestration:select-loop-strategy`](../../agent-orchestration/skills/select-loop-strategy/SKILL.md)) and a zero-dependency 3-Layer Filesystem Memory.
 
 ---
 
@@ -74,6 +74,7 @@ The controller enforces that an immutable base protection set (`evaluate.py`, `e
 12. **New Skill Files Must Land in the Hub, Not the Spoke - Mandatory**: When creating a new script, template, or asset file for a skill, write it to the plugin root first (`plugins/<plugin>/scripts/`, `plugins/<plugin>/assets/`) and symlink it into `skills/<skill>/...` via `symlink_manager.py` (ADR-002/ADR-003). Run `audit_plugin_structure.py <plugin>` before considering complete.
 13. **Asymmetric Persistence via Worktree Transfer**: During worktree-isolated repairs, if verification fails on the 3rd attempt, code branches are rolled back and temporary worktrees deleted, but Layer 2 failure insights, negative constraints, and debt records MUST be exported to the main repository checkout before worktree teardown.
 14. **Evolution Integrity Receipts**: All code commits resulting from autonomous self-evolution require a programmatic pre-commit receipt (`EVO-INTEGRITY-<cycle_id>-<hash>`) binding the staged git tree, verifier exit code, and trace manifest.
+15. **Single Source of Truth Verification First — Mandatory**: Before making any assertional recommendation, analytical classification, or lifecycle status assignment on an entity (such as portfolio holding vs. watchlist, active position vs. unheld), the agent MUST verify live state against the canonical domain database/ledger first. Guessing state, assuming defaults without verification, or fabricating entity status is a strict protocol violation.
 
 ---
 

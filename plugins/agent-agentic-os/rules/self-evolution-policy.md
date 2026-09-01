@@ -74,6 +74,7 @@ The controller enforces that an immutable base protection set (`evaluate.py`, `e
 12. **New Skill Files Must Land in the Hub, Not the Spoke - Mandatory**: When creating a new script, template, or asset file for a skill, write it to the plugin root first (`plugins/<plugin>/scripts/`, `plugins/<plugin>/assets/`) and symlink it into `skills/<skill>/...` via `symlink_manager.py` (ADR-002/ADR-003). Run `audit_plugin_structure.py <plugin>` before considering complete.
 13. **Asymmetric Persistence via Worktree Transfer**: During worktree-isolated repairs, if verification fails on the 3rd attempt, code branches are rolled back and temporary worktrees deleted, but Layer 2 failure insights, negative constraints, and debt records MUST be exported to the main repository checkout before worktree teardown.
 14. **Evolution Integrity Receipts**: All code commits resulting from autonomous self-evolution require a programmatic pre-commit receipt (`EVO-INTEGRITY-<cycle_id>-<hash>`) binding the staged git tree, verifier exit code, and trace manifest.
+15. **Single Source of Truth Verification First — Mandatory**: Before making any assertional recommendation, analytical classification, or lifecycle status assignment on an entity (such as portfolio holding vs. watchlist, active position vs. unheld), the agent MUST verify live state against the canonical domain database/ledger first. Guessing state, assuming defaults without verification, or fabricating entity status is a strict protocol violation.
 
 ---
 
