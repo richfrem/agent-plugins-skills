@@ -36,3 +36,15 @@ merge commit `15cd7592`) and a full real ROLLBACK cycle (`live-rollback-17881549
 **Residual gap #1, RESOLVED same day (commit `50b8d758`):** `smoke_test.py` originally still passed 12/12 without ever passing `--worktree-path` or asserting on verified content, so it remained structurally blind to this entire class of defect. Hardened: `CREATE_WORKTREE` transitions (PASS + all 3 ROLLBACK attempts) now pass `--worktree-path`; Assertion 5 requires the controller's own stdout to name the worktree path; PASS-path commit sequence now stages/writes-tree/commits inside the worktree then merges, matching the real design; new Assertion 7b confirms the mutated content actually landed on main after merge. Verified the hardening is real (not decorative) by swapping in the pre-fix (`36500d2f`) and mid-fix (`17813783`) versions of `evolution_state.py` via `git show` and confirming the smoke test now hard-crashes against both, at the exact call each defect broke. 13/13 smoke test assertions green against the final fixed code.
 
 **Residual gap #2, RESOLVED same day (commit `2fec57e2`):** `evo-smoketest`'s own documentation claimed the `kelvin_conversion` eval case was "the deliberate baseline gap that PASS closes" — but per-case `eval_runner.py --json` output showed that case already scored `correct: true` at baseline, because the query text ("Convert 300 Kelvin to Celsius") already contained the substring "celsius", which the keyword-matcher latches onto regardless of whether "Kelvin" appears in the skill description. The actually-failing case both before and after was the unrelated `celsius_shorthand` ("20c to f please"), which the 4+ char keyword matcher can never resolve regardless of description content. Fixed: `kelvin_conversion`'s query changed to "How warm is 300 Kelvin?" (zero keyword overlap with baseline description — verified f1 0.857 → 1.0, a genuine broken→fixed transition, not a coincidental pass); `celsius_shorthand` rephrased to a normal full-word true positive so it no longer pollutes the fixture with an unrelated permanent failure. `evo-smoketest/SKILL.md` and `evals.json` both updated with corrected narrative.
+
+---
+
+## Tier 0 (Friction): Missing domain query CLI primitives leading to ad-hoc inline SQL
+
+**Status: RESOLVED**
+**Discovered:** 2026-08-31, valuation triage in downstream investment toolkit.
+**Resolved:** 2026-08-31.
+- Updated `self-evolution-policy.md` across plugin source and downstream repositories with **Hard Gate 15: Single Source of Truth Verification First**.
+- Mandated that analysis skills (`update-stock-analysis`) query canonical CLI utilities (`portfolio_io.py --ticker {TICKER}`) before assigning lifecycle status or actions, strictly forbidding inline Python/SQL.
+- Added `--ticker`, `--pillars`, and `--json` CLI primitives to `portfolio_io.py` to eliminate inline query workarounds.
+
