@@ -181,3 +181,99 @@ def test_sync_rules_preserves_downstream_custom_sections(tmp_path):
         assert "Do not delete this custom rule added by downstream repo." in result_content
     finally:
         init_agentic_os._get_plugin_root = orig_fn
+
+def test_sync_rules_preserves_intra_section_edits_h3(tmp_path):
+    """
+    CRITICAL TEST 2 (Literal DEBT-20260902-01 reproduction):
+    Target .agent/rules/self-evolution-policy.md contains an edit WITHIN a shared H3 heading
+    (### Pre-Completion Self-Evolution Gate) where a blockquote [!IMPORTANT] was inserted
+    before existing paragraph text.
+    sync_rules must preserve this intra-section addition, NOT clobber it.
+    """
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    import init_agentic_os
+
+    # Mock origin repo with base H3 section
+    origin_repo = tmp_path / "mock_origin_h3"
+    origin_rules = origin_repo / ".agent" / "rules"
+    origin_rules.mkdir(parents=True)
+    origin_text = (
+        "# Self-Evolution Policy\n\n"
+        "### Pre-Completion Self-Evolution Gate\n\n"
+        "Before claiming ANY task or iterative turn is complete, output this block verbatim:\n"
+        "```\nPRE-COMPLETION GATE:\n```\n"
+    )
+    (origin_rules / "self-evolution-policy.md").write_text(origin_text, encoding="utf-8")
+
+    # Mock target repo with downstream intra-section addition ([!IMPORTANT] blockquote)
+    target_repo = tmp_path / "mock_target_h3"
+    target_rules = target_repo / ".agent" / "rules"
+    target_rules.mkdir(parents=True)
+    custom_target_text = (
+        "# Self-Evolution Policy\n\n"
+        "### Pre-Completion Self-Evolution Gate\n\n"
+        "> [!IMPORTANT]\n"
+        "> **Turn-by-Turn Mandatory Protocol**: The PRE-COMPLETION GATE is NOT an optional end-of-session ceremony.\n\n"
+        "Before claiming ANY task or iterative turn is complete, output this block verbatim:\n"
+        "```\nPRE-COMPLETION GATE:\n```\n"
+    )
+    (target_rules / "self-evolution-policy.md").write_text(custom_target_text, encoding="utf-8")
+
+    orig_fn = init_agentic_os._get_plugin_root
+    init_agentic_os._get_plugin_root = lambda: origin_repo / "plugins" / "agent-agentic-os"
+
+    try:
+        init_agentic_os.sync_rules(target_repo, dry_run=False)
+        result_content = (target_rules / "self-evolution-policy.md").read_text(encoding="utf-8")
+        
+        # Intra-section addition MUST survive
+        assert "> [!IMPORTANT]" in result_content, "Intra-section blockquote was clobbered by sync_rules!"
+        assert "**Turn-by-Turn Mandatory Protocol**" in result_content
+    finally:
+        init_agentic_os._get_plugin_root = orig_fn
+
+def test_sync_rules_does_not_duplicate_modified_schema_lines(tmp_path):
+    """
+    Ensures that when both upstream and downstream modify the same logical line
+    (e.g., Map Debt schema description line), upstream takes precedence and
+    does NOT produce duplicate contradictory lines.
+    """
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    import init_agentic_os
+
+    origin_repo = tmp_path / "mock_origin_replace"
+    origin_rules = origin_repo / ".agent" / "rules"
+    origin_rules.mkdir(parents=True)
+    origin_text = (
+        "### Map Debt Management\n\n"
+        "- Lives in `references/map-debt.md` (columns: `ID`, `Title`, `Status`, `Severity`, `Repeat`, `First Seen`, `Description`, `Resolution Commit`).\n"
+    )
+    (origin_rules / "self-evolution-policy.md").write_text(origin_text, encoding="utf-8")
+
+    target_repo = tmp_path / "mock_target_replace"
+    target_rules = target_repo / ".agent" / "rules"
+    target_rules.mkdir(parents=True)
+    stale_target_text = (
+        "### Map Debt Management\n\n"
+        "- Lives in `references/map-debt.md` (columns: Logged, Cycle ID, Artifact, Friction, Why not fixed, Recommended fix, Evidence, Severity, Repeat, Status).\n"
+    )
+    (target_rules / "self-evolution-policy.md").write_text(stale_target_text, encoding="utf-8")
+
+    orig_fn = init_agentic_os._get_plugin_root
+    init_agentic_os._get_plugin_root = lambda: origin_repo / "plugins" / "agent-agentic-os"
+
+    try:
+        init_agentic_os.sync_rules(target_repo, dry_run=False)
+        result = (target_rules / "self-evolution-policy.md").read_text(encoding="utf-8")
+        
+        # Upstream canonical 8-col must win; stale 10-col must NOT be duplicated
+        assert "columns: `ID`, `Title`" in result
+        assert "Logged, Cycle ID" not in result
+        # Must only have one "- Lives in" bullet
+        assert result.count("- Lives in") == 1
+    finally:
+        init_agentic_os._get_plugin_root = orig_fn

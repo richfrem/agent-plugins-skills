@@ -20,6 +20,7 @@ Usage Examples:
 """
 
 import argparse
+import difflib
 import json
 import os
 import re
@@ -247,45 +248,42 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
 # Rule Synchronizer (.agent/rules)
 # ---------------------------------------------------------------------------
 
-def _parse_markdown_sections(md_text: str) -> Dict[str, str]:
-    """Parse Markdown text into a mapping of {section_heading: section_body} keyed by H2 (## )."""
-    sections: Dict[str, str] = {}
-    current_sec = "__header__"
-    lines: List[str] = []
-    for line in md_text.splitlines(keepends=True):
-        if line.startswith("## "):
-            if lines:
-                sections[current_sec] = "".join(lines)
-            current_sec = line.strip()
-            lines = [line]
-        else:
-            lines.append(line)
-    if lines:
-        sections[current_sec] = "".join(lines)
-    return sections
-
-
-def _merge_rule_content_preserving_downstream(origin_content: str, existing_content: str) -> str:
-    """Merge upstream rule content into target while preserving any downstream custom sections."""
+def _merge_rule_content_preserving_downstream(origin_content: str, existing_content: str) -> Tuple[str, bool]:
+    """
+    Merge upstream rule content into target while preserving any downstream custom additions
+    (both whole sections and intra-section blockquotes/paragraphs like DEBT-20260902-01).
+    Returns (merged_text, had_custom_additions).
+    """
     if not existing_content.strip():
-        return origin_content
+        return origin_content, False
+    if origin_content.strip() == existing_content.strip():
+        return origin_content, False
 
-    origin_secs = _parse_markdown_sections(origin_content)
-    existing_secs = _parse_markdown_sections(existing_content)
+    orig_lines = origin_content.splitlines(keepends=True)
+    existing_lines = existing_content.splitlines(keepends=True)
 
-    # Start with fresh upstream content as baseline
-    merged_text = origin_content.rstrip()
+    matcher = difflib.SequenceMatcher(None, orig_lines, existing_lines)
+    merged_lines: List[str] = []
+    has_custom = False
 
-    # Identify any custom sections present in target but absent from origin
-    custom_sections = []
-    for heading, sec_text in existing_secs.items():
-        if heading != "__header__" and heading not in origin_secs:
-            custom_sections.append(sec_text.strip())
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            merged_lines.extend(orig_lines[i1:i2])
+        elif tag == "insert":
+            # Content added downstream in target that doesn't exist in origin
+            inserted = existing_lines[j1:j2]
+            merged_lines.extend(inserted)
+            has_custom = True
+        elif tag == "delete":
+            # Upstream has content absent downstream: adopt upstream changes
+            merged_lines.extend(orig_lines[i1:i2])
+        elif tag == "replace":
+            # Both upstream and downstream modified the same logical line/block:
+            # Upstream evolution takes precedence for modified lines to prevent duplicating
+            # contradictory schema definitions or conflicting rules.
+            merged_lines.extend(orig_lines[i1:i2])
 
-    if custom_sections:
-        merged_text += "\n\n" + "\n\n".join(custom_sections) + "\n"
-
-    return merged_text
+    return "".join(merged_lines), has_custom
 
 
 def sync_rules(target: Path, dry_run: bool) -> None:
@@ -314,12 +312,16 @@ def sync_rules(target: Path, dry_run: bool) -> None:
         origin_content = rule_file.read_text(encoding="utf-8")
         
         final_content = origin_content
+        had_custom = False
         if target_file.exists():
             existing_content = target_file.read_text(encoding="utf-8")
             if existing_content.strip() == origin_content.strip():
                 continue
-            final_content = _merge_rule_content_preserving_downstream(origin_content, existing_content)
-            announce(f"Reconciled rule {rule_file.name} (preserved custom downstream sections)", dry_run)
+            final_content, had_custom = _merge_rule_content_preserving_downstream(origin_content, existing_content)
+            if had_custom:
+                announce(f"Reconciled rule {rule_file.name} (preserved custom downstream sections)", dry_run)
+            else:
+                announce(f"Updated rule {rule_file.name} (upstream sync)", dry_run)
         
         write_file(target_file, final_content, dry_run, force=True)
 
