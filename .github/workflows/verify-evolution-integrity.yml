@@ -1,0 +1,53 @@
+name: Evolution Integrity & Compliance Gate
+
+on:
+  pull_request:
+    paths:
+      - 'plugins/**'
+      - 'py_services/**'
+      - 'src/**'
+
+jobs:
+  verify-evolution:
+    name: Verify Evolution & Map Debt Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Map Debt & Evolution Compliance
+        run: |
+          # Check if PR touches core logic
+          CHANGED_SRC=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(plugins/|py_services/|src/)' || true)
+          
+          if [ -n "$CHANGED_SRC" ]; then
+            echo "Checking Evolution & Map Debt compliance for modified code..."
+            
+            # Check for escape valve in commit messages
+            if git log origin/${{ github.base_ref }}...HEAD --grep='Evolution-Check:[[:space:]]*none' -n 1 | grep -q 'Evolution-Check'; then
+              echo "✓ Escape valve found: Evolution-Check: none trailer verified."
+              exit 0
+            fi
+            
+            # Check for map-debt, wiki, or evolution-log changes
+            DOC_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(references/map-debt.md|wiki/|plugins/.*/references/evolution-log.md)' || true)
+            
+            if [ -z "$DOC_CHANGED" ]; then
+              echo "❌ CI FAILURE: PR modifies core logic but contains no staged Map Debt or Evolution Log updates!"
+              echo "Modified logic files:"
+              echo "$CHANGED_SRC"
+              echo ""
+              echo "Please record the evolution/friction in references/map-debt.md or include 'Evolution-Check: none' in your commit message."
+              exit 1
+            fi
+            echo "✓ Evolution & Map Debt documentation verified in PR diff."
+          else
+            echo "✓ No core logic files changed in this PR."
+          fi

@@ -301,6 +301,28 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
         subprocess.run(["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         announce("git repository detected (Safe Write Protocol rollback is supported)", dry_run)
+        
+        # Install pre-commit evolution guard
+        git_hooks_dir = target / ".git" / "hooks"
+        if git_hooks_dir.exists() and git_hooks_dir.is_dir():
+            plugin_root = _get_plugin_root()
+            guard_source = plugin_root / "scripts" / "pre-commit-evolution-guard"
+            if guard_source.exists():
+                guard_target = git_hooks_dir / "pre-commit-evolution-guard"
+                guard_content = guard_source.read_text(encoding="utf-8")
+                write_file(guard_target, guard_content, dry_run, force=True)
+                if not dry_run:
+                    guard_target.chmod(0o755)
+                
+                # Check main pre-commit orchestrator
+                pre_commit = git_hooks_dir / "pre-commit"
+                if pre_commit.exists():
+                    pc_content = pre_commit.read_text(encoding="utf-8")
+                    if "pre-commit-evolution-guard" not in pc_content:
+                        guard_block = "\n# Run evolution guard if it exists\nif [ -x \"$HOOKS_DIR/pre-commit-evolution-guard\" ]; then\n    \"$HOOKS_DIR/pre-commit-evolution-guard\" || exit 1\nfi\n"
+                        pc_content = pc_content.replace("exit 0", guard_block + "\nexit 0")
+                        write_file(pre_commit, pc_content, dry_run, force=True)
+                announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
     except (subprocess.CalledProcessError, FileNotFoundError):
         announce("⚠️  Warning: target is not inside a git repository or git is not installed.", dry_run)
 
