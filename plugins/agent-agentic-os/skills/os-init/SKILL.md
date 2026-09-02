@@ -58,6 +58,7 @@ Propose a component table before execution:
 | `AGENTS.md` | Create | Auto-Mirror | Cross-platform agent instructions |
 | `wiki/` | Create | Create Index | Layer 2 Confirmed Knowledge Base |
 | `references/map-debt.md` | Create | Create Ledger | Tier 3 Map Debt Tracking |
+| `.git/hooks/pre-commit-evolution-guard` | Install | Install / Enable | Deterministic pre-commit evolution & map-debt gate |
 | `.agent/learning/traces/` | Create | Create Ledger | Layer 3 Evolution Trace Manifests |
 | `audit-skill --fix` | N/A | Run on custom skills | Auto-upgrades legacy skills to boolean evals schema |
 ```
@@ -77,6 +78,8 @@ python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path
 ```bash
 python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --retrofit
 ```
+
+*Note: In both modes, `init_agentic_os.py` automatically installs `.git/hooks/pre-commit-evolution-guard` and configures the `Stop` turn hook.*
 
 ---
 
@@ -107,10 +110,11 @@ python3 plugins/plugin-manager/scripts/plugin_add.py --all -y
 
 ## Phase 5: Verification Checklist
 
-1. **Verify 3-Layer Memory**:
+1. **Verify 3-Layer Memory & Evolution Gates**:
    - Layer 1: `context/` in-prompt templates.
    - Layer 2: `wiki/index.md` and `references/map-debt.md`.
    - Layer 3: `.agent/learning/traces/cycle_manifests.jsonl`.
+   - Pre-Commit Guard: `.git/hooks/pre-commit-evolution-guard` is executable (`chmod +x`).
 2. **Verify Multi-Tool Instruction Mirrors**:
    - `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `AGENTS.md` are aligned.
 3. **Verify Skills Compliance**:
