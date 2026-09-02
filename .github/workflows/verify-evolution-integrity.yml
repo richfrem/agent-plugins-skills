@@ -24,7 +24,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Check Map Debt & Evolution Compliance
+      - name: Install Pytest & Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run Evolution Guard Unit Tests
+        run: |
+          pytest plugins/agent-agentic-os/tests/test_evolution_guards.py -v
+
+      - name: Check Map Debt & Evolution Compliance in PR Diff
         run: |
           # Check if PR touches core logic
           CHANGED_SRC=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(plugins/|investment_screener/backend/py_services/|py_services/|src/|investment_screener/backend/src/)' || true)
