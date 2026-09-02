@@ -52,16 +52,32 @@ Propose a component table before execution:
 ```markdown
 | Component | Fresh Init | Retrofit Mode | Purpose |
 |---|---|---|---|
-| `CLAUDE.md` | Create | Preserve / Mirror | Authoritative project kernel |
-| `GEMINI.md` | Create | Auto-Mirror | Gemini CLI mirror with tool mappings |
-| `.github/copilot-instructions.md` | Create | Auto-Mirror | Copilot CLI instructions header |
-| `AGENTS.md` | Create | Auto-Mirror | Cross-platform agent instructions |
+| `CLAUDE.md` | Intelligent Seed | Context Blend & Reconcile | Authoritative project kernel |
+| `GEMINI.md` | Create Mirror | Context Blend & Tool Mapping | Gemini CLI mirror with tool mappings |
+| `.github/copilot-instructions.md` | Create Mirror | Context Blend & Header | Copilot CLI instructions header |
+| `AGENTS.md` | Create Mirror | Context Blend | Cross-platform agent instructions |
 | `wiki/` | Create | Create Index | Layer 2 Confirmed Knowledge Base |
 | `references/map-debt.md` | Create | Create Ledger | Tier 3 Map Debt Tracking |
 | `.git/hooks/pre-commit-evolution-guard` | Install | Install / Enable | Deterministic pre-commit evolution & map-debt gate |
 | `.agent/learning/traces/` | Create | Create Ledger | Layer 3 Evolution Trace Manifests |
 | `audit-skill --fix` | N/A | Run on custom skills | Auto-upgrades legacy skills to boolean evals schema |
 ```
+
+---
+
+## Phase 2.5 — Mandatory Intelligent Instruction Blending Protocol
+
+> [!IMPORTANT]
+> **No Blind Overwrites**: The AI Agent MUST NEVER blindly replace or overwrite existing agent instruction files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`). Instead, the agent acts as an **intelligent context synthesizer**, blending template best practices with existing project domain rules:
+
+1. **Inspect Existing Instruction Files**:
+   - Read existing `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.github/copilot-instructions.md`.
+   - Identify project-specific sections (e.g. custom architecture diagrams, startup commands, ports, canonical scripts, and non-negotiable business rules).
+2. **Blend with Agentic OS Standards**:
+   - Merge the universal evolution infrastructure (3-Layer Memory, Map Debt Ledger, Pre-Commit Evolution Guard, and Turn-by-Turn Pre-Completion Gate) into the existing instructions.
+   - Retain 100% of project-specific domain rules, terminology, and tool configurations.
+3. **Present Proposed Markdown Diff**:
+   - Present the synthesized diff to the user for confirmation before writing, or apply using `replace_file_content` surgically.
 
 ---
 
