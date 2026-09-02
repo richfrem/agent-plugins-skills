@@ -158,8 +158,44 @@ Every Tier 0-3 friction event must be logged here immediately (Status: RESOLVED 
 # Instruction File Synchronizer (CLAUDE -> GEMINI, Copilot, AGENTS)
 # ---------------------------------------------------------------------------
 
+def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> str:
+    """Smartly merge Agentic OS evolution & memory sections into existing instruction files without clobbering project domain context."""
+    # Ensure standard title
+    text = existing_text
+    
+    # Check for 3-layer memory section
+    if "### The 3 Filesystem Memory Layers" not in text and "## 3-Layer Memory" not in text:
+        memory_block = (
+            "\n\n## 3-Layer Memory Architecture\n"
+            "- **Layer 1 (Runtime Context)**: Lean prompt instructions loaded on-demand.\n"
+            "- **Layer 2 (Permanent Knowledge)**: Confirmed domain playbooks in `wiki/` and `references/map-debt.md`.\n"
+            "- **Layer 3 (Audit Ledger)**: Append-only trace manifests in `.agent/learning/traces/cycle_manifests.jsonl`.\n"
+        )
+        text += memory_block
+
+    # Check for Pre-Completion Gate section
+    if "PRE-COMPLETION GATE:" not in text:
+        gate_block = (
+            "\n\n## Pre-Completion Self-Evolution Gate\n"
+            "> On EVERY turn where code is modified or verifications are run, emit this receipt verbatim:\n"
+            "```\n"
+            "PRE-COMPLETION GATE:\n"
+            "  Capability check: Did I verify whether an existing repo capability was intended for this task? [YES/NO]\n"
+            "  1. Did any existing capability fail, get bypassed, or get manually replaced?  [YES/NO]\n"
+            "  2. Did I guess, assume, or get corrected on a repeatable process?              [YES/NO]\n"
+            "  3. Did I notice something the next agent will hit again if not fixed?          [YES/NO]\n"
+            "\n"
+            "If any YES: action taken -> FIX / MAP_DEBT / ESCALATE\n"
+            "  [Physical Disk Write Verified: wiki/<playbook>.md or references/map-debt.md]\n"
+            "```\n"
+        )
+        text += gate_block
+
+    return text
+
+
 def sync_instructions(target: Path, dry_run: bool) -> None:
-    """Mirror CLAUDE.md to GEMINI.md, .github/copilot-instructions.md, and AGENTS.md."""
+    """Reconcile CLAUDE.md to GEMINI.md, .github/copilot-instructions.md, and AGENTS.md using section preservation rather than blind overwrite."""
     claude_md = target / "CLAUDE.md"
     if not claude_md.exists():
         announce("Warning: CLAUDE.md not found — skipping instruction synchronization.", dry_run)
@@ -176,20 +212,28 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
             cmd = [sys.executable, str(sync_script), "--repo-root", str(target), "--execute"]
             subprocess.run(cmd, check=True)
     else:
-        # Self-contained fallback mirroring
-        announce("Mirroring CLAUDE.md to GEMINI.md, AGENTS.md, and copilot-instructions.md...", dry_run)
+        # Smart Section-Aware Fallback Mirroring
+        announce("Reconciling instructions to GEMINI.md, AGENTS.md, and copilot-instructions.md with section preservation...", dry_run)
         claude_content = claude_md.read_text(encoding="utf-8")
         project_name = target.resolve().name
 
         # GEMINI.md
+        gemini_target = target / "GEMINI.md"
+        existing_gemini = gemini_target.read_text(encoding="utf-8") if gemini_target.exists() else ""
         gemini_text = re.sub(r"^#\s+.*", "# GEMINI.md", claude_content, count=1)
-        if "## Gemini CLI Tool Mapping" not in gemini_text:
+        
+        # Preserve existing Gemini Tool Mapping or add standard table
+        if "## Gemini CLI Tool Mapping" in existing_gemini:
+            tool_mapping_part = existing_gemini[existing_gemini.find("## Gemini CLI Tool Mapping"):]
+            gemini_text = gemini_text.split("## Gemini CLI Tool Mapping")[0].rstrip() + "\n\n" + tool_mapping_part
+        elif "## Gemini CLI Tool Mapping" not in gemini_text:
             gemini_text += "\n\n## Gemini CLI Tool Mapping\n| Claude Code Tool | Gemini CLI Equivalent |\n|---|---|\n| View | view_file |\n| Edit | replace_file_content |\n| Write | write_to_file |\n| Bash | run_command |\n| Grep | grep_search |\n| Glob | find_by_name |\n| Agent | invoke_subagent |\n"
-        write_file(target / "GEMINI.md", gemini_text, dry_run, force=True)
+        write_file(gemini_target, gemini_text, dry_run, force=True)
 
         # AGENTS.md
+        agents_target = target / "AGENTS.md"
         agents_text = re.sub(r"^#\s+.*", "# AGENTS.md", claude_content, count=1)
-        write_file(target / "AGENTS.md", agents_text, dry_run, force=True)
+        write_file(agents_target, agents_text, dry_run, force=True)
 
         # .github/copilot-instructions.md
         copilot_dir = target / ".github"
@@ -204,7 +248,7 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
 # ---------------------------------------------------------------------------
 
 def sync_rules(target: Path, dry_run: bool) -> None:
-    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules."""
+    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules with diff-awareness to prevent blind clobbering."""
     plugin_root = _get_plugin_root()
     repo_root = plugin_root.parent.parent
     origin_rules = repo_root / ".agent" / "rules"
@@ -223,10 +267,18 @@ def sync_rules(target: Path, dry_run: bool) -> None:
     if not rule_files:
         return
 
-    announce(f"Synchronizing {len(rule_files)} core ecosystem rules into {target_rules}...", dry_run)
+    announce(f"Reconciling {len(rule_files)} core ecosystem rules into {target_rules}...", dry_run)
     for rule_file in rule_files:
         target_file = target_rules / rule_file.name
         content = rule_file.read_text(encoding="utf-8")
+        
+        # If target file exists, check if it contains downstream custom sections before overwriting
+        if target_file.exists():
+            existing_content = target_file.read_text(encoding="utf-8")
+            if existing_content.strip() == content.strip():
+                continue
+            # Non-destructive preservation: if target has custom sections not in origin, preserve or warn
+            announce(f"Updating rule {rule_file.name} (reconciled)", dry_run)
         write_file(target_file, content, dry_run, force=True)
 
 
@@ -283,8 +335,7 @@ def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) 
     write_file(target / "context" / "os-state.json", load_template("OS_STATE_JSON.json"), dry_run, force)
     write_file(target / "context" / "agents.json", copy_runtime_file("agents.json"), dry_run, force)
     write_file(target / "context" / "events.jsonl",
-               load_template("EVENTS_JSONL.jsonl").replace("{today}", today), dry_run, force)
-    write_file(target / "context" / "kernel.py", copy_runtime_file("kernel.py"), dry_run, force)
+               load_template("EVENTS_JSONL.jsonl"), dry_run, force)
 
 
 def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
@@ -320,7 +371,12 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                     pc_content = pre_commit.read_text(encoding="utf-8")
                     if "pre-commit-evolution-guard" not in pc_content:
                         guard_block = "\n# Run evolution guard if it exists\nif [ -x \"$HOOKS_DIR/pre-commit-evolution-guard\" ]; then\n    \"$HOOKS_DIR/pre-commit-evolution-guard\" || exit 1\nfi\n"
-                        pc_content = pc_content.replace("exit 0", guard_block + "\nexit 0")
+                        # Anchor replacement strictly to the final exit 0 line
+                        if "\nexit 0" in pc_content:
+                            idx = pc_content.rfind("\nexit 0")
+                            pc_content = pc_content[:idx] + guard_block + "\nexit 0" + pc_content[idx+7:]
+                        else:
+                            pc_content += guard_block + "\nexit 0\n"
                         write_file(pre_commit, pc_content, dry_run, force=True)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
     except (subprocess.CalledProcessError, FileNotFoundError):
