@@ -37,7 +37,7 @@ Supported Object Types:
 CLI Arguments:
     --plugin: Path to plugin directory (Required)
     --dry-run: Preview actions without writing files
-    --install-rules: Also install rules (disabled by default)
+    --no-install-rules: Skip installing plugin rules/ into .agent/rules/ (installed by default)
 
 Input Files:
     - .claude-plugin/plugin.json (Manifest reader)
@@ -79,11 +79,14 @@ if hasattr(sys.stderr, "reconfigure"):
 # Agent environments that require their own directory layout alongside .agents/.
 #
 # Antigravity, Gemini CLI, and GitHub Copilot have all adopted the standard
-# .agents/ install path — they read skills, workflows, and rules directly from
-# there. No per-agent symlinks are needed for those platforms anymore; the
-# canonical .agents/ copy is sufficient. As agents converge on .agents/ as the
-# standard, this list shrinks. Only environments that still require a separate
-# directory tree (Claude Code, Azure) remain here.
+# .agents/ install path — they read skills, workflows, and agents directly
+# from there. Rules are the one exception: they land in .agent/rules/
+# (singular "agent"), the shared Gemini CLI / os-init workspace-rules
+# convention — see deploy_rules(). No per-agent symlinks are needed for
+# skills/workflows/agents on those platforms anymore; the canonical .agents/
+# copy is sufficient. As agents converge on .agents/ as the standard, this
+# list shrinks. Only environments that still require a separate directory
+# tree (Claude Code, Azure) remain here.
 DETECTABLE_AGENTS = {
     ".claude": {
         "name": "claude",
@@ -477,7 +480,14 @@ def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
 
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                  root: Path, dry_run: bool = False) -> list[Path]:
-    """Deploy rule files into .agents/rules/ and target agent environments.
+    """Deploy rule files into .agent/rules/ and target agent environments.
+
+    .agent/rules/ (singular "agent") is the workspace-rules convention shared
+    by Gemini CLI and os-init's sync_rules() — see
+    ecosystem-authoritative-sources/references/workflows.md. It is distinct
+    from .agents/ (plural), the canonical multi-IDE skills/agents/workflows
+    store. Writing rules anywhere else means os-init --sync-rules and native
+    Gemini workspace rules never see them.
 
     Args:
         plugin_path: Path to the plugin directory.
@@ -494,7 +504,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
     if not rules_dir.exists():
         return deployed
 
-    central_rules = root / ".agents" / "rules"
+    central_rules = root / ".agent" / "rules"
     if not dry_run:
         central_rules.mkdir(parents=True, exist_ok=True)
 
@@ -736,7 +746,7 @@ def _provision_hooks(plugin_path: Path, plugin_name: str, agents_root: Path,
 
 
 def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list,
-                                  dry_run: bool = False, install_rules: bool = False) -> list:
+                                  dry_run: bool = False, install_rules: bool = True) -> list:
     """Orchestrate full plugin installation into .agents/ and linked IDE directories.
 
     Copies skills, hooks, commands, agents, rules, and MCP config from the
@@ -750,7 +760,9 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
         metadata: Parsed plugin.json metadata dict (must contain 'name').
         targets: List of detected IDE folder names (e.g. ['.claude']).
         dry_run: If True, print planned actions without writing any files.
-        install_rules: If True, also deploy plugin rules into .agents/rules/.
+        install_rules: If True (default), also deploy plugin rules into
+            .agent/rules/ — the same workspace-rules directory os-init's
+            sync_rules() reconciles from. Pass False to skip.
 
     Returns:
         List of installed skill slug names.
@@ -848,7 +860,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Plugin Bridge Installer (.agents symlinking)")
     parser.add_argument("--plugin", required=True, help="Path to plugin directory")
     parser.add_argument("--dry-run", action="store_true", help="Preview all actions without writing any files or symlinks")
-    parser.add_argument("--install-rules", action="store_true", help="Also install rules (disabled by default)")
+    parser.add_argument("--no-install-rules", dest="install_rules", action="store_false",
+                        help="Skip installing plugin rules/ into .agent/rules/ (installed by default)")
+    parser.set_defaults(install_rules=True)
     args = parser.parse_args()
 
     plugin_path = Path(args.plugin).resolve()
