@@ -268,7 +268,7 @@ Do not create skills reactively. Modify first; create only when modification fai
   + explicit list of gaps identified in audit. Do not describe dispatch steps yourself —
   `os-evolution-planner` writes the task plan and delegation prompt.
 - `os-evolution-planner` writes `tasks/todo/<slug>-plan.md` and `tasks/todo/copilot_prompt_<slug>.md`.
-- Review the plan with the user, then dispatch via `run_agent.py`.
+- Review the plan with the user, then dispatch via `run_agent.py`. Verify that code modifications update `references/map-debt.md` to satisfy the Evolution Integrity Gate before committing.
 - Optionally run `os-improvement-loop` after update to validate.
 
 **Path C — Create (gap confirmed)**:
