@@ -247,8 +247,49 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
 # Rule Synchronizer (.agent/rules)
 # ---------------------------------------------------------------------------
 
+def _parse_markdown_sections(md_text: str) -> Dict[str, str]:
+    """Parse Markdown text into a mapping of {section_heading: section_body} keyed by H2 (## )."""
+    sections: Dict[str, str] = {}
+    current_sec = "__header__"
+    lines: List[str] = []
+    for line in md_text.splitlines(keepends=True):
+        if line.startswith("## "):
+            if lines:
+                sections[current_sec] = "".join(lines)
+            current_sec = line.strip()
+            lines = [line]
+        else:
+            lines.append(line)
+    if lines:
+        sections[current_sec] = "".join(lines)
+    return sections
+
+
+def _merge_rule_content_preserving_downstream(origin_content: str, existing_content: str) -> str:
+    """Merge upstream rule content into target while preserving any downstream custom sections."""
+    if not existing_content.strip():
+        return origin_content
+
+    origin_secs = _parse_markdown_sections(origin_content)
+    existing_secs = _parse_markdown_sections(existing_content)
+
+    # Start with fresh upstream content as baseline
+    merged_text = origin_content.rstrip()
+
+    # Identify any custom sections present in target but absent from origin
+    custom_sections = []
+    for heading, sec_text in existing_secs.items():
+        if heading != "__header__" and heading not in origin_secs:
+            custom_sections.append(sec_text.strip())
+
+    if custom_sections:
+        merged_text += "\n\n" + "\n\n".join(custom_sections) + "\n"
+
+    return merged_text
+
+
 def sync_rules(target: Path, dry_run: bool) -> None:
-    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules with diff-awareness to prevent blind clobbering."""
+    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules, preserving custom downstream sections."""
     plugin_root = _get_plugin_root()
     repo_root = plugin_root.parent.parent
     origin_rules = repo_root / ".agent" / "rules"
@@ -270,16 +311,17 @@ def sync_rules(target: Path, dry_run: bool) -> None:
     announce(f"Reconciling {len(rule_files)} core ecosystem rules into {target_rules}...", dry_run)
     for rule_file in rule_files:
         target_file = target_rules / rule_file.name
-        content = rule_file.read_text(encoding="utf-8")
+        origin_content = rule_file.read_text(encoding="utf-8")
         
-        # If target file exists, check if it contains downstream custom sections before overwriting
+        final_content = origin_content
         if target_file.exists():
             existing_content = target_file.read_text(encoding="utf-8")
-            if existing_content.strip() == content.strip():
+            if existing_content.strip() == origin_content.strip():
                 continue
-            # Non-destructive preservation: if target has custom sections not in origin, preserve or warn
-            announce(f"Updating rule {rule_file.name} (reconciled)", dry_run)
-        write_file(target_file, content, dry_run, force=True)
+            final_content = _merge_rule_content_preserving_downstream(origin_content, existing_content)
+            announce(f"Reconciled rule {rule_file.name} (preserved custom downstream sections)", dry_run)
+        
+        write_file(target_file, final_content, dry_run, force=True)
 
 
 # ---------------------------------------------------------------------------

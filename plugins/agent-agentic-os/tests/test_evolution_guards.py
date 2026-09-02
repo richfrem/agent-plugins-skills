@@ -133,3 +133,51 @@ def test_pre_commit_guard_passes_non_logic_files(temp_git_repo):
     
     res = subprocess.run([str(guard_script)], cwd=temp_git_repo, capture_output=True, text=True)
     assert res.returncode == 0
+
+def test_sync_rules_preserves_downstream_custom_sections(tmp_path):
+    """
+    CRITICAL TEST: Ensures sync_rules() does NOT blindly overwrite downstream custom additions.
+    If target .agent/rules/foo.md contains custom sections not in origin, those sections MUST survive the sync.
+    """
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    import init_agentic_os
+
+    # Setup mock origin repo with a rule
+    origin_repo = tmp_path / "mock_origin"
+    origin_rules = origin_repo / ".agent" / "rules"
+    origin_rules.mkdir(parents=True)
+    (origin_rules / "sample-policy.md").write_text(
+        "# Sample Policy\n\n## Base Rules\nStandard upstream rule text.\n",
+        encoding="utf-8"
+    )
+
+    # Setup mock target repo with custom downstream section added
+    target_repo = tmp_path / "mock_target"
+    target_rules = target_repo / ".agent" / "rules"
+    target_rules.mkdir(parents=True)
+    custom_target_content = (
+        "# Sample Policy\n\n"
+        "## Base Rules\nStandard upstream rule text.\n\n"
+        "## Downstream Custom Additions\n"
+        "Do not delete this custom rule added by downstream repo.\n"
+    )
+    (target_rules / "sample-policy.md").write_text(custom_target_content, encoding="utf-8")
+
+    # Temporarily monkeypatch _get_plugin_root to point to mock_origin
+    class MockPluginRoot:
+        parent = origin_repo
+    
+    orig_fn = init_agentic_os._get_plugin_root
+    init_agentic_os._get_plugin_root = lambda: origin_repo / "plugins" / "agent-agentic-os"
+
+    try:
+        init_agentic_os.sync_rules(target_repo, dry_run=False)
+        result_content = (target_rules / "sample-policy.md").read_text(encoding="utf-8")
+        
+        # Assertion: Downstream additions must survive
+        assert "## Downstream Custom Additions" in result_content, "Custom downstream section was clobbered by sync_rules!"
+        assert "Do not delete this custom rule added by downstream repo." in result_content
+    finally:
+        init_agentic_os._get_plugin_root = orig_fn
