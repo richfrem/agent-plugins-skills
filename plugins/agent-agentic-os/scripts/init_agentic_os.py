@@ -123,10 +123,17 @@ def _scaffold_3layer_memory(target: Path, dry_run: bool, force: bool) -> None:
 This directory stores confirmed architectural insights, domain heuristics, and failure analysis patterns that survive across sessions and agent cycles.
 
 ## Confirmed Playbooks
-- *(Populated by verified evolution cycles)*
+- *(Add links to confirmed domain playbooks created during in-situ evolution cycles e.g. `playbook-<topic>.md`)*
 
 ## Rejected Patterns / Negative Constraints
-- *(Populated on cycle rollbacks to prevent repeating past failures)*
+- *(Document proven failure modes and anti-patterns to prevent repeating past mistakes)*
+
+## Playbook Structure Standard
+Every playbook in this directory must include:
+1. **Status**: `CONFIRMED`, `OBSERVED`, or `HYPOTHESIS`
+2. **Discovered Date**: `YYYY-MM-DD`
+3. **Hard Invariants**: Non-negotiable code/architecture rules discovered through friction.
+4. **Canonical Execution Flow**: Step-by-step CLI commands and scripts.
 """, dry_run, force)
 
     # Layer 2 Map Debt
@@ -135,6 +142,7 @@ This directory stores confirmed architectural insights, domain heuristics, and f
         write_file(map_debt, """# Map Debt Ledger
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
+Every Tier 0-3 friction event must be logged here immediately (Status: RESOLVED or Status: OPEN).
 
 | ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |
 |---|---|---|---|---|---|---|---|
