@@ -38,6 +38,7 @@ CLI Arguments:
     --plugin: Path to plugin directory (Required)
     --dry-run: Preview actions without writing files
     --no-install-rules: Skip installing plugin rules/ into .agent/rules/ (installed by default)
+    --no-append-rules-to-ide-files: Skip injecting rules into 'append' mode IDE files (e.g. CLAUDE.md)
 
 Input Files:
     - .claude-plugin/plugin.json (Manifest reader)
@@ -435,14 +436,26 @@ def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
 
 
 def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
-                            target_dir_name: str, root: Path, dry_run: bool) -> Path | None:
-    """Helper to deploy a rule file to a specific target IDE directory."""
+                            target_dir_name: str, root: Path, dry_run: bool,
+                            append_to_ide_files: bool = True) -> Path | None:
+    """Helper to deploy a rule file to a specific target IDE directory.
+
+    append_to_ide_files gates only "append" mode targets (e.g. .claude's
+    CLAUDE.md) — repos that keep AGENTS.md/.agent/rules/ as their sole source
+    of truth and don't want rule content injected into CLAUDE.md can disable
+    it via --no-append-rules-to-ide-files. "files" mode targets (dedicated
+    per-file rule copies, e.g. .azure) are unaffected since they don't mutate
+    a shared instructions file.
+    """
     config = DETECTABLE_AGENTS.get(target_dir_name)
     if not config:
         return None
 
     ide_dir = root / target_dir_name
     if not ide_dir.exists():
+        return None
+
+    if config.get("rules_mode") == "append" and not append_to_ide_files:
         return None
 
     if config.get("rules_mode") == "files" and config.get("rules"):
@@ -479,7 +492,7 @@ def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
 
 
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
-                 root: Path, dry_run: bool = False) -> list[Path]:
+                 root: Path, dry_run: bool = False, append_to_ide_files: bool = True) -> list[Path]:
     """Deploy rule files into .agent/rules/ and target agent environments.
 
     .agent/rules/ (singular "agent") is the workspace-rules convention shared
@@ -495,6 +508,8 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         targets: List of active IDE targets (e.g. ['.claude']).
         root: Current repository root path context.
         dry_run: If True, do not perform file writes.
+        append_to_ide_files: If False, skip "append" mode targets (e.g.
+            CLAUDE.md) — the central .agent/rules/ copy is still written.
 
     Returns:
         List of Path objects for all successfully deployed rules.
@@ -516,7 +531,8 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         deployed.append(central_dest)
 
         for target_dir_name in targets:
-            dest = _deploy_rule_to_target(rule_file, dest_name, plugin_name, target_dir_name, root, dry_run)
+            dest = _deploy_rule_to_target(rule_file, dest_name, plugin_name, target_dir_name,
+                                          root, dry_run, append_to_ide_files)
             if dest:
                 deployed.append(dest)
                 
@@ -746,7 +762,8 @@ def _provision_hooks(plugin_path: Path, plugin_name: str, agents_root: Path,
 
 
 def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list,
-                                  dry_run: bool = False, install_rules: bool = True) -> list:
+                                  dry_run: bool = False, install_rules: bool = True,
+                                  append_rules_to_ide_files: bool = True) -> list:
     """Orchestrate full plugin installation into .agents/ and linked IDE directories.
 
     Copies skills, hooks, commands, agents, rules, and MCP config from the
@@ -763,6 +780,11 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
         install_rules: If True (default), also deploy plugin rules into
             .agent/rules/ — the same workspace-rules directory os-init's
             sync_rules() reconciles from. Pass False to skip.
+        append_rules_to_ide_files: If False, skip "append" mode IDE targets
+            (e.g. injecting rule content into CLAUDE.md) while still writing
+            the central .agent/rules/ copy. For repos that treat AGENTS.md /
+            .agent/rules/ as sole source of truth and don't want CLAUDE.md
+            auto-populated.
 
     Returns:
         List of installed skill slug names.
@@ -781,7 +803,8 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
     ))
     deployed_paths.extend(deploy_commands(plugin_path, plugin_name, targets, root, dry_run))
     if install_rules:
-        deployed_paths.extend(deploy_rules(plugin_path, plugin_name, targets, root, dry_run))
+        deployed_paths.extend(deploy_rules(plugin_path, plugin_name, targets, root, dry_run,
+                                           append_rules_to_ide_files))
     deployed_paths.extend(deploy_agents(plugin_path, plugin_name, targets, root, dry_run))
     merge_mcp_config(plugin_path, root, dry_run)
     write_ownership_manifest(plugin_name, root, deployed_paths, dry_run)
@@ -862,7 +885,11 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Preview all actions without writing any files or symlinks")
     parser.add_argument("--no-install-rules", dest="install_rules", action="store_false",
                         help="Skip installing plugin rules/ into .agent/rules/ (installed by default)")
-    parser.set_defaults(install_rules=True)
+    parser.add_argument("--no-append-rules-to-ide-files", dest="append_rules_to_ide_files",
+                        action="store_false",
+                        help="Skip injecting rule content into 'append' mode IDE files "
+                             "(e.g. CLAUDE.md); .agent/rules/ is still written (on by default)")
+    parser.set_defaults(install_rules=True, append_rules_to_ide_files=True)
     args = parser.parse_args()
 
     plugin_path = Path(args.plugin).resolve()
@@ -880,7 +907,8 @@ def main() -> None:
         print(">>> DRY RUN MODE <<<")
 
     try:
-        installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run, args.install_rules)
+        installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run,
+                                                          args.install_rules, args.append_rules_to_ide_files)
         write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
     except Exception as e:
         import traceback
