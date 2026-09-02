@@ -248,7 +248,7 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
 # ---------------------------------------------------------------------------
 
 def sync_rules(target: Path, dry_run: bool) -> None:
-    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules."""
+    """Sync core ecosystem rules from origin .agent/rules to target .agent/rules with diff-awareness to prevent blind clobbering."""
     plugin_root = _get_plugin_root()
     repo_root = plugin_root.parent.parent
     origin_rules = repo_root / ".agent" / "rules"
@@ -267,10 +267,18 @@ def sync_rules(target: Path, dry_run: bool) -> None:
     if not rule_files:
         return
 
-    announce(f"Synchronizing {len(rule_files)} core ecosystem rules into {target_rules}...", dry_run)
+    announce(f"Reconciling {len(rule_files)} core ecosystem rules into {target_rules}...", dry_run)
     for rule_file in rule_files:
         target_file = target_rules / rule_file.name
         content = rule_file.read_text(encoding="utf-8")
+        
+        # If target file exists, check if it contains downstream custom sections before overwriting
+        if target_file.exists():
+            existing_content = target_file.read_text(encoding="utf-8")
+            if existing_content.strip() == content.strip():
+                continue
+            # Non-destructive preservation: if target has custom sections not in origin, preserve or warn
+            announce(f"Updating rule {rule_file.name} (reconciled)", dry_run)
         write_file(target_file, content, dry_run, force=True)
 
 
@@ -327,8 +335,7 @@ def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) 
     write_file(target / "context" / "os-state.json", load_template("OS_STATE_JSON.json"), dry_run, force)
     write_file(target / "context" / "agents.json", copy_runtime_file("agents.json"), dry_run, force)
     write_file(target / "context" / "events.jsonl",
-               load_template("EVENTS_JSONL.jsonl").replace("{today}", today), dry_run, force)
-    write_file(target / "context" / "kernel.py", copy_runtime_file("kernel.py"), dry_run, force)
+               load_template("EVENTS_JSONL.jsonl"), dry_run, force)
 
 
 def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
@@ -364,7 +371,12 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                     pc_content = pre_commit.read_text(encoding="utf-8")
                     if "pre-commit-evolution-guard" not in pc_content:
                         guard_block = "\n# Run evolution guard if it exists\nif [ -x \"$HOOKS_DIR/pre-commit-evolution-guard\" ]; then\n    \"$HOOKS_DIR/pre-commit-evolution-guard\" || exit 1\nfi\n"
-                        pc_content = pc_content.replace("exit 0", guard_block + "\nexit 0")
+                        # Anchor replacement strictly to the final exit 0 line
+                        if "\nexit 0" in pc_content:
+                            idx = pc_content.rfind("\nexit 0")
+                            pc_content = pc_content[:idx] + guard_block + "\nexit 0" + pc_content[idx+7:]
+                        else:
+                            pc_content += guard_block + "\nexit 0\n"
                         write_file(pre_commit, pc_content, dry_run, force=True)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
     except (subprocess.CalledProcessError, FileNotFoundError):

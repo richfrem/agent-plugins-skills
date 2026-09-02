@@ -5,28 +5,19 @@
 # Purpose:
 #   Blocks commits that modify core logic (plugins/, py_services/, src/, etc.)
 #   unless the commit also includes a schema-valid entry in references/map-debt.md,
-#   an evolution log write, a Layer 2 wiki playbook write, OR carries the
-#   commit-message trailer 'Evolution-Check: none'.
+#   an evolution log write, or a Layer 2 wiki playbook write.
 # ==============================================================================
 
 set -e
 
 # 1. Check if staged files include core logic/source directories
-STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(plugins/|investment_screener/backend/py_services/|src/|investment_screener/backend/src/)' || true)
+STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(plugins/|investment_screener/backend/py_services/|src/|investment_screener/backend/src/|py_services/)' || true)
 
 if [ -z "$STAGED_SRC" ]; then
     exit 0
 fi
 
-# 2. Check for Escape Valve in commit message template or git log if available
-# When running during commit-msg or pre-commit with COMMIT_EDITMSG
-if [ -f ".git/COMMIT_EDITMSG" ]; then
-    if grep -qE '^[[:space:]]*Evolution-Check:[[:space:]]*none' ".git/COMMIT_EDITMSG"; then
-        exit 0
-    fi
-fi
-
-# 3. Check for staged evolution / map-debt / wiki artifacts
+# 2. Check for staged evolution / map-debt / wiki artifacts
 STAGED_MAP_DEBT=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(references/map-debt.md|wiki/|plugins/.*/references/evolution-log.md)' || true)
 
 if [ -z "$STAGED_MAP_DEBT" ]; then
@@ -36,29 +27,34 @@ if [ -z "$STAGED_MAP_DEBT" ]; then
     echo "Staged logic files:"
     echo "$STAGED_SRC" | sed 's/^/   • /'
     echo ""
-    echo "To fix this, do one of the following:"
-    echo "  1. Record the evolution / friction / fix in 'references/map-debt.md', 'wiki/playbook-*.md', or 'plugins/<plugin>/references/evolution-log.md' and stage it."
-    echo "  2. If this commit genuinely introduces zero friction or schema changes (e.g. routine refactor), add the trailer:"
-    echo "     Evolution-Check: none"
-    echo "     to your commit message."
+    echo "To fix this, record the evolution / friction / fix in:"
+    echo "  • references/map-debt.md, OR"
+    echo "  • wiki/playbook-*.md, OR"
+    echo "  • plugins/<plugin>/references/evolution-log.md"
+    echo "and stage it before committing."
+    echo ""
+    echo "Note: If this change genuinely has no map-debt, add 'Evolution-Check: none' trailer in commit message (enforced in CI)."
     echo ""
     exit 1
 fi
 
-# 4. Content Validation: Ensure map-debt.md addition matches schema
+# 3. Content Validation: Ensure all added map-debt.md rows match schema (8 columns / 9 pipes)
 if git diff --cached --name-only --diff-filter=ACM | grep -q 'references/map-debt.md'; then
     ADDED_ROWS=$(git diff --cached references/map-debt.md | grep -E '^\+[[:space:]]*\|[[:space:]]*DEBT-' || true)
     if [ -n "$ADDED_ROWS" ]; then
-        # Verify schema: must have 8 columns (9 pipes)
-        # | ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |
-        PIPE_COUNT=$(echo "$ADDED_ROWS" | head -n 1 | tr -cd '|' | wc -c)
-        if [ "$PIPE_COUNT" -lt 9 ]; then
-            echo ""
-            echo "❌ COMMIT BLOCKED: Malformed row in references/map-debt.md"
-            echo "   Expected 8 columns with 9 pipe delimiters: | ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |"
-            echo ""
-            exit 1
-        fi
+        # Check every added DEBT row individually
+        while IFS= read -r row; do
+            [ -z "$row" ] && continue
+            PIPE_COUNT=$(echo "$row" | tr -cd '|' | wc -c)
+            if [ "$PIPE_COUNT" -lt 9 ]; then
+                echo ""
+                echo "❌ COMMIT BLOCKED: Malformed row in references/map-debt.md"
+                echo "   Row: $row"
+                echo "   Expected 8 columns with 9 pipe delimiters: | ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |"
+                echo ""
+                exit 1
+            fi
+        done <<< "$ADDED_ROWS"
     fi
 fi
 

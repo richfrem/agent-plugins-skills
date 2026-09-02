@@ -5,7 +5,9 @@ on:
     paths:
       - 'plugins/**'
       - 'py_services/**'
+      - 'investment_screener/backend/py_services/**'
       - 'src/**'
+      - 'investment_screener/backend/src/**'
 
 jobs:
   verify-evolution:
@@ -25,7 +27,7 @@ jobs:
       - name: Check Map Debt & Evolution Compliance
         run: |
           # Check if PR touches core logic
-          CHANGED_SRC=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(plugins/|py_services/|src/)' || true)
+          CHANGED_SRC=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(plugins/|investment_screener/backend/py_services/|py_services/|src/|investment_screener/backend/src/)' || true)
           
           if [ -n "$CHANGED_SRC" ]; then
             echo "Checking Evolution & Map Debt compliance for modified code..."

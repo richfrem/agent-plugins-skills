@@ -83,5 +83,5 @@ The turn is not complete until every YES is backed by a verified physical disk w
 
 ### Map Debt Management
 
-- Lives in `references/map-debt.md` (columns: Logged, Cycle ID, Artifact, Friction, Why not fixed, Recommended fix, Evidence, Severity, Repeat, Status).
+- Lives in `references/map-debt.md` (columns: `ID`, `Title`, `Status`, `Severity`, `Repeat`, `First Seen`, `Description`, `Resolution Commit`).
 - **Aging**: Auto-escalate `OPEN` entries older than 3 cycles or 14 days. If `Repeat = YES`, escalate immediately on next encounter.

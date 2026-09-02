@@ -1,7 +1,7 @@
 # Universal Agent Plugins & Skills Ecosystem
 
 <!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 138 Skills · 51 Sub-Agents<!-- ECOSYSTEM_STATS_END --> — a self-improving, cross-platform library of reusable AI agent
-capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework.
+capabilities for Claude Code, GitHub Copilot, Gemini CLI, and any compliant agent framework..
 
 A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstream source for reusable AI agent plugins and skills across multiple IDEs and agent frameworks: **Claude Code**, **GitHub Copilot**, **Gemini CLI**, **Antigravity**, **Roo Code**, **Windsurf**, **Cursor**, and other compliant integrations. All plugins deploy to a single `.agents/` folder standard — no duplicate copies needed for `.github`, `.gemini`, `.agent`, etc.
 
