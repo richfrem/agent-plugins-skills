@@ -115,7 +115,10 @@ If an existing repo capability is intended for the task, the agent must use it. 
 
 ### Pre-Completion Self-Evolution Gate
 
-Before claiming a task is complete, output this block verbatim:
+> [!IMPORTANT]
+> **Turn-by-Turn Mandatory Protocol**: The PRE-COMPLETION GATE is NOT an optional end-of-session ceremony. On EVERY turn where the agent performs code modifications, test execution, or hands completed work/review findings back to the user, the agent MUST proactively output the verbatim PRE-COMPLETION GATE receipt before yielding control. Omitting this block or waiting for the user to ask is a protocol violation.
+
+Before claiming ANY task or iterative turn is complete, output this block verbatim:
 
 ```
 PRE-COMPLETION GATE:
@@ -128,7 +131,7 @@ If any YES: action taken -> FIX / MAP_DEBT / ESCALATE
   [Physical Disk Write Verified: wiki/<playbook>.md (if resolved) or references/map-debt.md]
 ```
 
-The block must be emitted as literal text, not silent introspection. **The task is not complete until every YES is backed by a verified physical disk write**:
+The block must be emitted as literal text, not silent introspection. **The turn is not complete until every YES is backed by a verified physical disk write**:
 - If fixed/resolved: An active playbook in `wiki/` (or updated rules/docs) AND a `Status: RESOLVED` row in `references/map-debt.md`.
 - If deferred: A `Status: OPEN` row in `references/map-debt.md`.
 

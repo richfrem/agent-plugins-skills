@@ -65,6 +65,7 @@ Verification is defense-in-depth and cannot rely solely on self-reported agent s
 1. **Deterministic Local Pass:** 100% green pass on test runners, static linters, and type checkers (`evaluate.py` / `npm test` / `cargo test`).
 2. **Structural Workspace Verification:** Clean git worktree merge and branch teardown via host tools.
 3. **Out-of-Band Context Alignment:** Use `context-bundler` to bundle modified files and git diffs for external alignment verification (e.g. Gemini UI inspection) prior to production deployment.
+4. **Autonomous Receipt Emission:** The agent must proactively emit the verbatim `PRE-COMPLETION GATE` receipt and log resolved/open map debt to disk at the conclusion of every verification cycle without waiting for user prompts.
 
 ---
 
