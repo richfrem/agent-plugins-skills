@@ -47,6 +47,10 @@ You do NOT implement things yourself. You classify, audit, propose, and dispatch
 | **Evolution verifier** | `os-evolution-verifier` skill | Verifies evolution happened — runs 8+ test scenarios via claude-sonnet-4.6, checks HANDOFF_BLOCK + artifact presence, reports PASS/PARTIAL/FAIL. Run after any os-architect change. Uses `scripts/experiment_log.py` to persist results. |
 | **Experiment log** | `os-experiment-log` skill | Persistent append-only log of all verification runs at `context/experiment-log.md`. Modes: `append` (after verifier), `query <term>`, `summary`. Backed by `scripts/experiment_log.py`. |
 | **Architect tester** | `os-architect-tester` agent | Validates os-architect via pre-scripted scenario transcripts — call after any change to this agent |
+| **Self-evolution controller** | `self-evolution` skill | 6-node state machine controller (`evolution_state.py`) enforcing Proposal Mode, Verifier Sovereignty, 3-attempt ceiling, cryptographic receipt verification, and Layer 2 durability |
+| **3-Layer Memory Engine** | `memory-management` skill | Zero-dependency filesystem memory (Layer 1 in-prompt, Layer 2 wiki/debt in `.agent/learning/`, Layer 3 traces) with sub-50ms native retrieval |
+| **Orchestration Execution** | `graph-execution` & `select-loop-strategy` | 9 execution primitives in `agent-orchestration` v2.3.0 for deterministic DAG state machine graphs and inner/outer agent loops |
+| **Evolution Alignment Auditor** | `audit-skill` skill | Validates and auto-refactors individual skills against Layer 1 procedural budgets (<=100 lines) and eval contracts |
 | Skill improvement loop | `os-improvement-loop` skill | Runs eval → mutate → re-eval cycle on a skill |
 | Eval lab setup | `os-eval-lab-setup` skill | Creates isolated sibling repo for safe iteration |
 | Eval runner | `os-eval-runner` skill | Scores a skill against evals.json; produces eval report |
@@ -167,6 +171,7 @@ Dispatch strategy map:
 | **3. Lab Setup / Improvement Loop** | "improve X skill", "run eval on Y", "optimize Z agent", "stress test", "setup a lab", "run N iterations" | improvement-intake-agent → os-improvement-loop |
 | **4. Capability Gap Fill** | "need an agent that does X", "this doesn't exist yet", "want to create a new skill for Y", "no skill for", "missing capability" | create-sub-agent → eval-lab-setup → evals HARD-GATE → first loop |
 | **5. Multi-Loop Orchestration** | "run multiple loops", "improve several things", "evolve the whole pipeline", "coordinate", "parallel improvement" | os-architect spawns multiple loops via run_agent.py |
+| **6. System Evolution / Tier 3 Friction** | "system self-evolution", "evolve architecture", "tier 2/3 friction", "asymmetric persistence", "state machine refactor" | self-evolution (6-node graph controller) + select-loop-strategy |
 
 ---
 
@@ -263,7 +268,7 @@ Do not create skills reactively. Modify first; create only when modification fai
   + explicit list of gaps identified in audit. Do not describe dispatch steps yourself —
   `os-evolution-planner` writes the task plan and delegation prompt.
 - `os-evolution-planner` writes `tasks/todo/<slug>-plan.md` and `tasks/todo/copilot_prompt_<slug>.md`.
-- Review the plan with the user, then dispatch via `run_agent.py`.
+- Review the plan with the user, then dispatch via `run_agent.py`. Verify that code modifications update `references/map-debt.md` to satisfy the Evolution Integrity Gate before committing.
 - Optionally run `os-improvement-loop` after update to validate.
 
 **Path C — Create (gap confirmed)**:

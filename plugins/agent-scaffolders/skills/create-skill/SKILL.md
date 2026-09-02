@@ -77,34 +77,46 @@ plugins/<plugin>/skills/<skill-name>/
 
 Create the confirmed directory structure. Standards enforced by `acceptance-criteria.md`:
 
-- **Python only** — helper scripts go in `scripts/*.py`. Never generate `.sh` bash scripts.
-- **Symlink, don't copy** — if the skill needs a Python helper that lives at the plugin root's
-  `scripts/` directory, create a **file-level symlink** in `skills/<skill>/scripts/` pointing to
-  `../../../scripts/<canonical_name>.py`. Never duplicate the file. The symlink filename may differ
-  from the target (e.g. `execute.py` → `exploration_optimizer_execute.py`). Create with:
+- **Python only** — helper scripts go in plugin root `scripts/*.py`. Never generate `.sh` bash scripts.
+- **Symlink, don't copy (ADR-002/003)** — if the skill needs a Python helper that lives at the plugin root's
+  `scripts/` directory, create a **file-level symlink** using `symlink_manager.py`:
   ```bash
-  ln -s ../../../scripts/<canonical_name>.py skills/<skill>/scripts/<name>.py
+  python3 .agents/skills/symlink-manager/scripts/symlink_manager.py create \
+    --src plugins/<plugin>/scripts/<canonical_name>.py \
+    --dst plugins/<plugin>/skills/<skill>/scripts/<name>.py
   ```
-  Verify the symlink resolved: `python -c "import os; print(os.path.exists('skills/<skill>/scripts/<name>.py'))"`
-  must print `True`. On Windows/`core.symlinks=false` machines, git will check these out as
-  plain-text "stand-in" files — run `bulk_symlink_fixer.py` to restore them after checkout.
-- **Starter SKILL.md** — frontmatter with `name`, `description` (use the purpose from Phase 1; **MUST NOT exceed 1024 characters**),
-  `allowed-tools`. Body: stub sections for Identity, Steps, and Common Failures.
-- **Starter evals.json** — at least 2 placeholder eval cases using the `should_trigger` schema:
+  Never use raw `ln -s` directly.
+- **Starter SKILL.md (Layer 1 Core)** — target **<= 100 lines**. Frontmatter with `name` (matches directory),
+  `description` (third-person active verb, **MUST NOT exceed 1024 characters**), `allowed-tools`.
+  Keep the body focused strictly on procedural steps; offload operational background, schemas, and tables to `references/<topic>.md` (Progressive Disclosure).
+- **Starter evals.json** — root JSON array of at least 2 placeholder eval cases using the `should_trigger` schema:
   ```json
-  { "id": "eval-1-positive", "type": "positive", "prompt": "REPLACE", "should_trigger": true }
-  { "id": "eval-2-negative", "type": "negative", "prompt": "REPLACE", "should_trigger": false }
+  [
+    { "id": "eval-1-positive", "type": "positive", "prompt": "REPLACE", "should_trigger": true },
+    { "id": "eval-2-negative", "type": "negative", "prompt": "REPLACE", "should_trigger": false }
+  ]
   ```
-  > ⚠️ **Schema requirement**: Always use `should_trigger: true/false`. The legacy
-  > `expected_behavior` string field is ignored by the eval scorer and will produce 0% accuracy.
-- **acceptance-criteria.md** — write to `references/acceptance-criteria.md` with the
-  acceptance criteria captured in Phase 1.
+  > ⚠️ **Schema requirement**: Always use root JSON array with `should_trigger: true/false`. The legacy
+  > `expected_behavior` string field and dictionary wrappers are deprecated.
+- **acceptance-criteria.md & fallback-tree.md** — wire standard contract symlinks from plugin `references/` via `symlink_manager.py`.
 
 ---
 
-## Phase 4: Quality Gate Handoff
+## Phase 4: Quality Gate & Alignment Verification
+
+Run `audit_skill.py` to verify the scaffolded skill satisfies all 6 evolution invariants:
+
+```bash
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/<plugin>/skills/<skill-name>
+```
+
+Ensure the output displays `[✅ PASS]` with 0 errors before proceeding to `os-improvement-loop` for routing calibration.
+
+---
 
 ## Dependencies
+- **symlink-manager** (dev-utils plugin)
+- **audit-skill** (agent-scaffolders plugin)
 - **os-improvement-loop** (agent-agentic-os plugin)
 
 > [!TIP]

@@ -32,6 +32,7 @@ by checking that expected files exist or expected content appears in output.
 | Category 3 (Lab Setup) | `improvement/run-config.json` written AND HANDOFF_BLOCK emitted |
 | HANDOFF_BLOCK integrity | All 7 fields present: INTENT, TARGET, PATH, DISPATCH, STATUS, OUTPUTS, NEXT_ACTION |
 | Confidence model | Low confidence prompt → clarifying question appears before Phase 2 audit |
+| Evolution Integrity Gate | When logic in `plugins/` changes, `references/map-debt.md` or `evolution-log.md` is updated, or `Evolution-Check: none` is present |
 
 ---
 
@@ -229,6 +230,7 @@ A run PASSES only if ALL of the following are true:
 - STATUS is not `crashed`
 - EVOLUTION_VERIFICATION VERDICT is PASS
   (PARTIAL counts as FAIL for gating — logged but does not unblock pipeline)
+- Evolution Integrity Gate is satisfied (if code/logic under `plugins/` was modified, `references/map-debt.md` or `references/evolution-log.md` is updated, or `Evolution-Check: none` is present)
 
 A run FAILS if any condition above is not met, OR if VERDICT is PARTIAL.
 PARTIAL means outputs are incomplete — this is a FAIL for any gating decision,

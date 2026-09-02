@@ -381,7 +381,7 @@ APM recognizes three layouts — pick the one that matches what you are shipping
 ### APM Manifest (apm.yml) Schema
 
 ```yaml
-name: agent-loops
+name: agent-orchestration/
 version: 2.1.0
 description: Core execution primitives for agent loops.
 author: DeepMind Advanced Agentic Coding

@@ -9,7 +9,7 @@ platforms:
   - windows
 skills_dirs:
   - plugins/agent-agentic-os/skills
-  - plugins/agent-loops/skills
+  - plugins/agent-orchestration/skills
   - plugins/agent-memory/skills
   - plugins/agent-scaffolders/skills
   - plugins/cli-agents/skills

@@ -74,13 +74,19 @@ Upstream source monorepo for a cross-platform library of reusable AI agent plugi
 Plugins are authored here and deployed into target projects via the bridge installer.
 Individual skills must be **fully self-contained** — no runtime cross-plugin dependencies.
 
+**This working directory has no application/domain data.** If a session shows a domain-specific
+slash command or agent (e.g. `portfolio-advisor`, `tradingview`, `stock-valuation`) that isn't one
+of the plugins listed below, it's installed globally via the Claude Code marketplace and belongs
+to a *different* project — it expects files (e.g. `investment_screener/backend/data/...`) that
+don't exist here. Check `pwd` before assuming this repo owns an unfamiliar command.
+
 ### Key Commands
 ```bash
 # Install plugins into any project (recommended)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
-# Install a specific plugin non-interactively (e.g., agent-loops)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-loops -y
+# Install a specific plugin non-interactively (e.g., agent-orchestration/)
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-orchestration -y
 
 # Interactive local install
 python plugins/plugin-manager/scripts/plugin_add.py
@@ -196,7 +202,7 @@ issue (`gh_issue_comment.py`) rather than opening a duplicate — see
 set in `plugin-sources.json`. Do not suggest routing work to spec-kitty or `spk-*` skills unless the user
 explicitly reinstalls it themselves.
 
-## Plugin State — Current Versions (10 plugins · 128 skills)
+## Plugin State — Current Versions (10 plugins · 137 skills)
 
 ### agent-agentic-os (v1.7.0)
 
@@ -205,10 +211,10 @@ Core improvement loop:
 os-architect → os-improvement-loop → os-eval-runner → os-eval-backport → os-experiment-log
 ```
 
-**Active skills (17):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
+**Active skills (18):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
 os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions, self-evolution
+os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, gpt55-critical-auditor
 
 **Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
 
@@ -219,18 +225,18 @@ agentic-os-setup, os-health-check
 
 ---
 
-### agent-loops (v2.1.0) — OS-decoupled
+### agent-orchestration (v2.3.0) — OS-decoupled
 
-**6 execution primitives:** orchestrator, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning
+**9 execution primitives:** orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution
 
-**Plugin boundary:** agent-loops provides execution patterns only — no eval gate, no memory.
+**Plugin boundary:** agent-orchestration/ provides execution patterns only — no eval gate, no memory.
 os-improvement-loop delegates its inner loop to `triple-loop-learning` as the execution substrate.
 
-Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-loops skills.
+Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-orchestration/ skills.
 
 ---
 
-### cli-agents (v2.2.0) — consolidated from claude-cli, copilot-cli, gemini-cli
+### cli-agents (v2.1.0) — consolidated from claude-cli, copilot-cli, gemini-cli
 
 **Skills (14):** agent-file-synchronization, agt-security, agy-cli-agent, antigravity-project-setup,
 claude-cli-agent, claude-project-setup, codex-cli-agent, copilot-cli-agent, gemini-cli-agent,
@@ -340,6 +346,7 @@ Define success criteria first. Loop until verified.
 - **Source of truth**: `plugins/` is authoritative. `.agents/`, the marketplace, and the Claude Code plugin system are installed copies — never use them to derive counts, versions, or skill lists.
 - **TDW (TDD & TDO)**: No code development or orchestration execution without a failing test or success contract first. Full rule: `.agent/rules/test-driven-development.md`
 - **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Full rule: `.agent/rules/self-evolution-policy.md`
+- **Evolution Integrity Gate**: PRs modifying core logic (`plugins/`, `src/`, `py_services/`) must stage an update to `references/map-debt.md` or `references/evolution-log.md`, or include `Evolution-Check: none` in the commit message.
 - **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
 - **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/skill-deletion-guard.md`. If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
 - **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime

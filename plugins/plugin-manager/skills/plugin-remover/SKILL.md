@@ -29,7 +29,7 @@ Whenever the user asks to "remove a plugin", "uninstall a skill", or "delete a p
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove
 
 # Headless: remove a specific plugin without prompting
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --plugins agent-loops --yes
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --plugins agent-orchestration/ --yes
 
 # Headless: remove all tracked plugins
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --all --yes
@@ -42,11 +42,11 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --
 uvx --from . plugin-remove
 
 # Headless: remove a specific plugin
-uvx --from . plugin-remove --plugins agent-loops --yes
+uvx --from . plugin-remove --plugins agent-orchestration/ --yes
 
 # Or run the underlying Python script directly:
 python plugins/plugin-manager/scripts/plugin_remove.py
-python plugins/plugin-manager/scripts/plugin_remove.py --plugins agent-loops --yes
+python plugins/plugin-manager/scripts/plugin_remove.py --plugins agent-orchestration/ --yes
 python plugins/plugin-manager/scripts/plugin_remove.py --dry-run
 ```
 

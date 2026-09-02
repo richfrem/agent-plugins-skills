@@ -187,8 +187,8 @@ runs against a locked eval set. **os-eval-runner** scores each mutation (KEEP/DI
 **os-eval-lab-setup** isolates each run in a sibling repo. **os-eval-backport** provides
 the human review gate before any winning change reaches production.
 
-Execution pattern delegates to [agent-loops Pattern 5](../agent-loops/skills/triple-loop-learning/)
-for inner loop mechanics. agent-loops provides the loop substrate; this plugin adds the
+Execution pattern delegates to [agent-orchestration Pattern 5](../agent-orchestration/skills/triple-loop-learning/)
+for inner loop mechanics. agent-orchestration/ provides the loop substrate; this plugin adds the
 eval gate, experiment log, and lab isolation.
 
 → Full detail: [references/operations/triple-loop.md](./references/operations/triple-loop.md)
@@ -246,5 +246,5 @@ gated by objective evaluation — outperforms hand-designed harnesses across ben
 |--------|------|
 | `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
 | **`agent-agentic-os`** | **Operations — eval-gated improvement loop, experiment log, memory** |
-| `agent-loops` | Execution patterns — loop substrate used by os-improvement-loop |
+| `agent-orchestration` | Execution patterns — loop substrate used by os-improvement-loop |
 ```

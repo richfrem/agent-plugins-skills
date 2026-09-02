@@ -50,7 +50,7 @@ PLUGIN_TARGETS = {
     "spec-kitty-plugin": ["agents", "references", "rules", "templates"],
     "coding-conventions": ["rules", "templates"],
     "tool-inventory": ["resources", "workflows"],
-    "agent-loops": ["resources", "personas", "hooks"],
+    "agent-orchestration/": ["resources", "personas", "hooks"],
     "obsidian-integration": ["obsidian-parser", "resources"],
     "agent-scaffolders": ["L4-pattern-definitions"],
     "rlm-factory": ["references", "resources"]

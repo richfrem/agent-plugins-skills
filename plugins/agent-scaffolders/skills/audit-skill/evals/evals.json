@@ -1,0 +1,38 @@
+[
+  {
+    "id": "audit-skill-pos-1",
+    "type": "positive",
+    "prompt": "Audit the select-loop-strategy skill to see if it meets our 100 line budget and standards.",
+    "should_trigger": true
+  },
+  {
+    "id": "audit-skill-pos-2",
+    "type": "positive",
+    "prompt": "Check if this skill aligns with our evolution standards and fix its evals schema.",
+    "should_trigger": true
+  },
+  {
+    "id": "audit-skill-pos-3",
+    "type": "positive",
+    "prompt": "Refactor my new skill so it follows ADR-002 hub and spoke and has a clean Layer 1 procedural core.",
+    "should_trigger": true
+  },
+  {
+    "id": "audit-skill-neg-1",
+    "type": "negative",
+    "prompt": "Audit the entire agent-orchestration plugin directory for marketplace compliance.",
+    "should_trigger": false
+  },
+  {
+    "id": "audit-skill-neg-2",
+    "type": "negative",
+    "prompt": "Create a new stateless skill called data-formatter.",
+    "should_trigger": false
+  },
+  {
+    "id": "audit-skill-neg-3",
+    "type": "negative",
+    "prompt": "Search the web for python asyncio best practices.",
+    "should_trigger": false
+  }
+]

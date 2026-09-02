@@ -6,10 +6,10 @@
     "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os"
   },
   {
-    "name": "agent-loops",
+    "name": "agent-orchestration",
     "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
     "version": "2.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-loops"
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-orchestration"
   },
   {
     "name": "agent-memory",
@@ -21,7 +21,10 @@
     "name": "agent-scaffolders",
     "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
     "version": "2.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders"
+    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders",
+    "skills": [
+      "audit-skill"
+    ]
   },
   {
     "name": "cli-agents",
@@ -47,7 +50,6 @@
     "version": "0.1.0",
     "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin"
   },
-
   {
     "name": "obsidian-wiki-engine",
     "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph: vault operations, cross-source concept synthesis, wiki node generation, RLM distillation, semantic health linting, graph traversal, canvas, bases, and progressive-disclosure query with vector DB Phase 2.",
@@ -62,7 +64,7 @@
   },
   {
     "name": "spec-kitty",
-    "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine — the flagship workflow plugin for AI-assisted feature development",
+    "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
     "version": "2.0.0",
     "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin"
   }

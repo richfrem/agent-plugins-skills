@@ -3,17 +3,12 @@ name: agent-file-synchronization
 plugin: cli-agents
 description: >
   Replicates CLAUDE.md into GEMINI.md, .github/copilot-instructions.md, and AGENTS.md
-  as full-copy mirrors while auto-detecting and preserving each target's platform-specific
-  section (GEMINI.md's Gemini CLI Tool Mapping table, copilot-instructions.md's authoritative
-  header) instead of destroying it on overwrite. Also reports drift between .agent/rules/*.md
-  and its matching plugins/*/rules/*.md source (--check-rules, report-only). Use when the user
-  asks to sync, replicate, propagate, or mirror CLAUDE.md into the other agent instruction files,
-  or to check whether .agent/rules/ has drifted from plugin rule sources. Different from
-  optimize-agent-instructions (deep Karpathy-principle content audit, doesn't cover AGENTS.md)
-  and project-setup (initial onboarding scaffold for a new project, not an existing CLAUDE.md).
-  Trigger with "sync CLAUDE.md to GEMINI.md", "replicate CLAUDE.md to agent files", "propagate
-  CLAUDE.md changes", "update agent instruction files", "mirror CLAUDE.md", "check rule drift",
-  "sync .agent/rules with plugin rules".
+  as full-copy mirrors while preserving platform-specific sections (GEMINI.md tool mapping,
+  copilot authoritative header). Also reports drift between .agent/rules/ and matching
+  plugins/*/rules/ sources. Use when syncing, replicating, or mirroring CLAUDE.md into agent
+  files, or checking rule drift. Different from optimize-agent-instructions (content audit) and
+  project-setup (initial scaffold). Triggers: "sync CLAUDE.md to GEMINI.md", "replicate CLAUDE.md
+  to agent files", "propagate CLAUDE.md changes", "mirror CLAUDE.md", "check rule drift".
 allowed-tools: Bash, Read, Write
 ---
 
