@@ -9,7 +9,6 @@
     {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
-        "agent-agentic-os",
         "agent-memory",
         "agent-orchestration",
         "agent-scaffolders",
@@ -19,6 +18,12 @@
         "exploration-cycle-plugin",
         "obsidian-wiki-engine",
         "plugin-manager"
+      ]
+    },
+    {
+      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
+      "plugins": [
+        "agent-agentic-os"
       ]
     }
   ]
