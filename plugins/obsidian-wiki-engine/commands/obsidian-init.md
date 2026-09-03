@@ -1,1 +1,0 @@
-../skills/obsidian-init/SKILL.md
