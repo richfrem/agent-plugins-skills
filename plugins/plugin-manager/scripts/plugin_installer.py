@@ -361,37 +361,12 @@ def _deploy_command_to_targets(central_dest: Path, dest_name: str, targets: list
 
 def deploy_commands(plugin_path: Path, plugin_name: str, targets: list,
                     root: Path, dry_run: bool = False) -> list[Path]:
-    """Deploy command markdown files to active agent platform directories.
+    """Deprecated: Modern agent platforms discover skills directly from .agents/skills/<name>/SKILL.md.
 
-    Args:
-        plugin_path: Path to the plugin directory.
-        plugin_name: Unique name of the plugin.
-        targets: List of active IDE targets (e.g. ['.claude']).
-        root: Current repository root path context.
-        dry_run: If True, do not perform file writes.
-
-    Returns:
-        List of Path objects for all successfully deployed commands.
+    This function no longer copies legacy command wrappers into .agents/workflows/,
+    eliminating redundant workflow generation. Returns empty list.
     """
-    deployed: list[Path] = []
-    commands_dir = plugin_path / "commands"
-    if not commands_dir.exists():
-        return deployed
-    central_workflows = root / ".agents" / "workflows"
-    if not dry_run:
-        central_workflows.mkdir(parents=True, exist_ok=True)
-    for cmd_file in sorted(commands_dir.rglob("*.md")):
-        content = cmd_file.read_text(encoding="utf-8").strip()
-        if content.startswith("../") and "\n" not in content:
-            continue  # skip pointer files
-        rel = cmd_file.relative_to(commands_dir)
-        dest_name = f"{plugin_name}_{'_'.join(rel.with_suffix('').parts)}"
-        central_dest = central_workflows / f"{dest_name}.md"
-        if not dry_run:
-            shutil.copy2(cmd_file, central_dest)
-        deployed.append(central_dest)
-        deployed.extend(_deploy_command_to_targets(central_dest, dest_name, targets, root, dry_run))
-    return deployed
+    return []
 
 
 def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
