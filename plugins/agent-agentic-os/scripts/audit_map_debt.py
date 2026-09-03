@@ -4,7 +4,10 @@ audit_map_debt.py (Python Service)
 =====================================
 
 Purpose:
-    Parses and audits .agent/map-debt.md for compliance.
+    Parses and audits map-debt.md for compliance.
+    Supports both:
+      1. Standard Markdown Table format (| ID | Title | Status | ... |)
+      2. Legacy '---'-separated key-value block format (- Key: Value)
     Exits with code 1 if any OPEN entry:
       - Is older than 14 days (EXPIRED).
       - Has Repeat set to YES (REPEAT).
@@ -12,24 +15,67 @@ Purpose:
 Layer: Backend / py_services / DevOps
 
 Key Input Dependencies:
-    - .agent/map-debt.md
+    - references/map-debt.md or .agent/map-debt.md
 """
 
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
 
-DEFAULT_DEBT_FILE = Path(__file__).resolve().parents[3] / ".agent" / "map-debt.md"
+DEFAULT_DEBT_FILE = Path(__file__).resolve().parents[3] / "references" / "map-debt.md"
+if not DEFAULT_DEBT_FILE.exists():
+    ALT_FILE = Path(__file__).resolve().parents[3] / ".agent" / "map-debt.md"
+    if ALT_FILE.exists():
+        DEFAULT_DEBT_FILE = ALT_FILE
+
+
+def parse_table_entries(content: str) -> list[dict]:
+    """Parses standard markdown table format with header row."""
+    lines = [l.strip() for l in content.splitlines() if l.strip().startswith("|")]
+    if len(lines) < 2:
+        return []
+
+    # Find header row
+    header_line = lines[0]
+    headers = [h.strip() for h in header_line.split("|")[1:-1]]
+
+    entries = []
+    for line in lines[1:]:
+        # Skip separator row like |---|---|
+        if re.match(r"^\|(\s*:?-+:?\s*\|)+$", line):
+            continue
+        cols = [c.strip() for c in line.split("|")[1:-1]]
+        if len(cols) == len(headers):
+            entry = dict(zip(headers, cols))
+            # Standardize keys for evaluator
+            normalized = {
+                "ID": entry.get("ID", ""),
+                "Artifact": entry.get("Title", entry.get("Artifact", "")),
+                "Status": entry.get("Status", ""),
+                "Severity": entry.get("Severity", ""),
+                "Repeat": entry.get("Repeat", "NO"),
+                "Logged": entry.get("First Seen", entry.get("Logged", "")),
+                "Description": entry.get("Description", ""),
+                "Resolution Commit": entry.get("Resolution Commit", "")
+            }
+            entries.append(normalized)
+    return entries
+
 
 def parse_debt_entries(file_path: Path) -> list[dict]:
-    """Parses .agent/map-debt.md markdown entries separated by '---'."""
+    """Parses map-debt.md using either markdown table or '---'-separated format."""
     if not file_path.exists():
         return []
 
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Split sections by markdown horizontal rules
+    # If it's a markdown table
+    if re.search(r"\|\s*ID\s*\|\s*Title\s*\|", content, re.IGNORECASE) or re.search(r"\|\s*ID\s*\|\s*Artifact\s*\|", content, re.IGNORECASE):
+        return parse_table_entries(content)
+
+    # Legacy: split sections by markdown horizontal rules
     sections = [s.strip() for s in content.split("---") if s.strip()]
     
     entries = []
@@ -47,6 +93,7 @@ def parse_debt_entries(file_path: Path) -> list[dict]:
             entries.append(entry)
             
     return entries
+
 
 def evaluate_debt(entries: list[dict], today_str: str | None = None) -> list[str]:
     """Checks entries against expiry and repeat constraints. Returns list of errors."""
@@ -83,6 +130,7 @@ def evaluate_debt(entries: list[dict], today_str: str | None = None) -> list[str
 
     return errors
 
+
 def main():
     """Parse CLI args, audit the map-debt file, and exit 1 on any expired/repeat entry."""
     import argparse
@@ -110,6 +158,7 @@ def main():
     else:
         print(f"✓ Map debt audit passed. Checked {len(entries)} entries successfully.")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

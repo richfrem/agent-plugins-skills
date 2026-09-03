@@ -43,10 +43,10 @@ Composable loop and graph-execution primitives used as the substrate by the Impr
 **Default is a zero-dependency, filesystem-native 3-Layer Engine** ([`memory-management`](plugins/agent-memory/skills/memory-management/SKILL.md)) — no vector database, no daemon, no external packages:
 
 - **Layer 1 — Runtime Context:** lean, on-demand `SKILL.md` files (≤100 lines); raw traces and wiki dossiers are barred from active-task context to prevent bloat.
-- **Layer 2 — Compounding Wiki:** permanent `wiki/`/`references/` playbooks tagged with a confidence taxonomy (`OBSERVED` → `CONFIRMED`/`REJECTED`, with 30-day decay); survives rollback even when code doesn't.
+- **Layer 2 — Compounding Wiki:** permanent `wiki/`/`references/` playbooks tagged with a confidence taxonomy (`OBSERVED` → `CONFIRMED`/`REJECTED`, with 30-day decay); survives rollback even when code doesn't. Synthesized and indexed automatically via `distill_playbook.py` and audited via `audit_map_debt.py`.
 - **Layer 3 — Safe Audit:** append-only, hash-chained `cycle_manifests.jsonl` — structured event metadata only, zero raw terminal output.
 
-Retrieval is native (`rg` / direct file reads), targeting <50ms with no background processes. `memory-management` has no dependency on and makes no reference to RLM, vector search, or Obsidian — those remain separate, unrelated skills in `agent-memory` for projects that specifically want keyword/semantic/graph retrieval on top (see Group 6 below).
+Retrieval is native (`rg` / direct file reads), targeting <50ms with no background processes. Layer 2 playbook indexing and map debt aging are enforced by `pre-commit-evolution-guard` and `turn_evolution_guard.py`. `memory-management` has no dependency on and makes no reference to RLM, vector search, or Obsidian — those remain separate, unrelated skills in `agent-memory` for projects that specifically want keyword/semantic/graph retrieval on top (see Group 6 below).
 
 ### Hub-and-Spoke ADR
 

@@ -34,7 +34,7 @@ When any tool, script, workflow, or sub-agent fails or hits friction, agents mus
 
 1. **Verify Boundaries First**: Escalate immediately if repairs require modifying files outside permitted boundaries.
 2. **Three-Attempt Maximum**: Max 3 attempts per failure. If 3rd fails, stop and present formal Escalation Template.
-3. **Update The Map, Not Just the Diary**: Every fix must update domain playbooks/rules (`wiki/` or `references/`). Log a `Status: RESOLVED` entry in `map-debt.md` for every Tier 0-3 friction event even when patched immediately. Dual-log to `references/evolution-log.md`.
+3. **Update The Map, Not Just the Diary**: Every fix must update domain playbooks and rules (`wiki/` or `references/`). Log a `Status: RESOLVED` entry in `map-debt.md` for every Tier 0-3 friction event even when patched immediately. When a fix establishes a new invariant, verification contract, or repeatable architectural constraint, synthesize a confirmed Layer 2 playbook (`wiki/playbook-*.md`) and synchronize `wiki/index.md` via `distill_playbook.py`. Dual-log to `references/evolution-log.md`.
 4. **Autonomy Gates**: Auto-approve: new functions/selectors. Gated: file renames/moves. **Hard Gated (Human Permission Required)**: deletions of any file, function, rule, or skill.
 5. **Absorption Fallacy**: Never delete a file/skill assuming it is 'redundant' or 'consolidated'.
 6. **One Fix at a Time**: Apply one clean logical fix per execution pass.

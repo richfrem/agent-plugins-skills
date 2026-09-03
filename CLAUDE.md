@@ -203,7 +203,7 @@ explicitly reinstalls it themselves.
 
 ## Plugin State — Current Versions (10 plugins · 137 skills)
 
-### agent-agentic-os (v1.7.0)
+### agent-agentic-os (v1.8.0)
 
 Core improvement loop:
 ```

@@ -125,3 +125,31 @@ def test_evaluate_debt_passes_with_resolved_expired_or_repeat_entries():
     ]
     errors = evaluate_debt(entries, today_str="2026-07-04")
     assert len(errors) == 0
+
+
+def test_parse_debt_entries_with_markdown_table():
+    """parse_debt_entries parses standard 8-column markdown tables seamlessly."""
+    table_content = """# Map Debt Ledger
+
+| ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |
+|---|---|---|---|---|---|---|---|
+| DEBT-20260831-01 | Inline Python fallback | RESOLVED | Tier 0 | NO | 2026-08-31 | Description here | commit123 |
+| DEBT-20260901-01 | Stale debt | OPEN | Tier 1 | YES | 2026-06-01 | Another issue | |
+"""
+    with tempfile.NamedTemporaryFile("w", delete=False) as f:
+        f.write(table_content)
+        temp_path = f.name
+
+    try:
+        entries = parse_debt_entries(Path(temp_path))
+        assert len(entries) == 2
+        assert entries[0]["ID"] == "DEBT-20260831-01"
+        assert entries[0]["Status"] == "RESOLVED"
+        assert entries[1]["Repeat"] == "YES"
+        assert entries[1]["Status"] == "OPEN"
+
+        errors = evaluate_debt(entries, today_str="2026-07-01")
+        assert len(errors) == 2  # expired and repeat
+    finally:
+        Path(temp_path).unlink(missing_ok=True)
+

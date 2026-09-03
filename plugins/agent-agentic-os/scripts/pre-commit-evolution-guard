@@ -58,4 +58,27 @@ if git diff --cached --name-only --diff-filter=ACM | grep -q 'references/map-deb
     fi
 fi
 
+# 4. Content Validation: Ensure staged wiki playbooks are registered in wiki/index.md
+STAGED_PLAYBOOKS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^wiki/playbook-.*\.md$' || true)
+if [ -n "$STAGED_PLAYBOOKS" ]; then
+    if ! git diff --cached --name-only --diff-filter=ACM | grep -q '^wiki/index\.md$'; then
+        if [ -f "wiki/index.md" ]; then
+            # Verify every staged playbook is referenced in existing wiki/index.md
+            while IFS= read -r pb_path; do
+                [ -z "$pb_path" ] && continue
+                pb_file=$(basename "$pb_path")
+                if ! grep -q "$pb_file" wiki/index.md; then
+                    echo ""
+                    echo "❌ COMMIT BLOCKED: Unindexed Layer 2 Wiki Playbook!"
+                    echo "   Playbook '$pb_file' is staged, but missing from wiki/index.md."
+                    echo "   Run: python3 plugins/agent-agentic-os/scripts/distill_playbook.py --sync-index"
+                    echo "   and stage wiki/index.md before committing."
+                    echo ""
+                    exit 1
+                fi
+            done <<< "$STAGED_PLAYBOOKS"
+        fi
+    fi
+fi
+
 exit 0
