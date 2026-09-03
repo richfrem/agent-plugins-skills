@@ -97,11 +97,12 @@ unmodified, into any number of target projects.
 - `plugins/plugin-manager/scripts/plugin_add.py` / `plugin_installer.py` / `plugin_remove.py` / `sync_with_inventory.py` — interactive and scripted install/remove/sync of individual or bulk plugins into a target project's `.agents/` folder.
 - `pyproject.toml` exposes these as console scripts: `plugin-add`, `plugin-remove`, `plugin-sync`.
 
-### 4.2. Plugin: agent-agentic-os (v1.7.0)
+### 4.2. Plugin: agent-agentic-os (v1.8.0)
 The self-improvement kernel. Core loop: `os-architect → os-improvement-loop → os-eval-runner →
-os-eval-backport → os-experiment-log`. Also owns memory management (`os-memory-manager`), evolution
-planning (`os-evolution-planner`/`os-evolution-verifier`), and setup (`os-init`,
-`agentic-os-setup` agent).
+os-eval-backport → os-experiment-log`. Owns memory management (`os-memory-manager`), evolution
+planning (`os-evolution-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
+and Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`,
+and `turn_evolution_guard`).
 
 ### 4.3. Plugin: agent-orchestration/ (v2.3.0)
 Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.

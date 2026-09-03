@@ -277,3 +277,50 @@ def test_sync_rules_does_not_duplicate_modified_schema_lines(tmp_path):
         assert result.count("- Lives in") == 1
     finally:
         init_agentic_os._get_plugin_root = orig_fn
+
+
+def test_pre_commit_guard_blocks_unindexed_playbook(temp_git_repo):
+    guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
+    
+    # Logic file
+    plugin_file = temp_git_repo / "plugins" / "my_plugin" / "service.py"
+    plugin_file.parent.mkdir(parents=True)
+    plugin_file.write_text("print('hello')", encoding="utf-8")
+    
+    # Unindexed playbook
+    pb_file = temp_git_repo / "wiki" / "playbook-sample-invariant.md"
+    pb_file.parent.mkdir(parents=True)
+    pb_file.write_text("# Playbook: Sample Invariant\n", encoding="utf-8")
+
+    # wiki/index.md exists but does NOT list the playbook
+    index_file = temp_git_repo / "wiki" / "index.md"
+    index_file.write_text("# Wiki Index\n- [Other](playbook-other.md)\n", encoding="utf-8")
+    
+    subprocess.run(["git", "add", "plugins/", "wiki/playbook-sample-invariant.md"], cwd=temp_git_repo, check=True)
+    
+    res = subprocess.run([str(guard_script)], cwd=temp_git_repo, capture_output=True, text=True)
+    assert res.returncode != 0
+    assert "COMMIT BLOCKED: Unindexed Layer 2 Wiki Playbook!" in res.stdout
+
+
+def test_pre_commit_guard_passes_indexed_playbook(temp_git_repo):
+    guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
+    
+    # Logic file
+    plugin_file = temp_git_repo / "plugins" / "my_plugin" / "service.py"
+    plugin_file.parent.mkdir(parents=True)
+    plugin_file.write_text("print('hello')", encoding="utf-8")
+    
+    # Staged playbook and indexed in wiki/index.md
+    pb_file = temp_git_repo / "wiki" / "playbook-sample-invariant.md"
+    pb_file.parent.mkdir(parents=True)
+    pb_file.write_text("# Playbook: Sample Invariant\n", encoding="utf-8")
+
+    index_file = temp_git_repo / "wiki" / "index.md"
+    index_file.write_text("# Wiki Index\n- [Sample](playbook-sample-invariant.md)\n", encoding="utf-8")
+    
+    subprocess.run(["git", "add", "."], cwd=temp_git_repo, check=True)
+    
+    res = subprocess.run([str(guard_script)], cwd=temp_git_repo, capture_output=True, text=True)
+    assert res.returncode == 0
+

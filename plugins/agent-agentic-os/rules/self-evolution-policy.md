@@ -49,7 +49,7 @@ Before triggering an autonomous self-evolution cycle, all 4 criteria must be sat
 
 1. **Verify Edit Boundaries First**: Check permitted edit boundaries before making autonomous repairs. Escalate immediately if repairs require edits outside allowed boundaries.
 2. **Three-Attempt Maximum**: Max 3 repair attempts. If the 3rd fails, hard stop and present Escalation Template with evidence bundle.
-3. **Update The Map, Not Just the Diary**: Every fix must update domain playbooks, rules, or references. Log `Status: RESOLVED` in `map-debt.md` for every Tier 0-3 friction event even when patched immediately. Dual-log to `references/evolution-log.md` and `cycle_manifests.jsonl`.
+3. **Update The Map, Not Just the Diary**: Every fix must update domain playbooks, rules, or references. Log `Status: RESOLVED` in `map-debt.md` for every Tier 0-3 friction event even when patched immediately. When a fix establishes a new invariant, verification contract, or repeatable architectural constraint, synthesize a confirmed Layer 2 playbook (`wiki/playbook-*.md`) and synchronize `wiki/index.md` via `distill_playbook.py`. Dual-log to `references/evolution-log.md` and `cycle_manifests.jsonl`.
 4. **Autonomy & Permission Gates**:
    - **Auto-approved**: New functions/exports, fallback routines/selectors, appending diffs for modified functions.
    - **Confirmation Gated**: Renaming or moving files.

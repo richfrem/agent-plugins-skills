@@ -1,5 +1,5 @@
 name: agent-agentic-os
-version: 1.7.0
+version: 1.8.0
 description: "Opinionated learning layer above Claude Code — structured memory hierarchy, continuous improvement loop, multi-agent event bus coordination, and eval-gated skill improvement."
 author: Richard Fremmerlid
 kind: standalone
@@ -11,6 +11,8 @@ provides_tools:
   - eval_runner
   - experiment_log
   - init_agentic_os
+  - distill_playbook
+  - audit_map_debt
 skills:
   - gpt55-critical-auditor
   - optimize-agent-instructions

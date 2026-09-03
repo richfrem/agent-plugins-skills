@@ -59,8 +59,9 @@ def main():
             warning_banner += f"   • {f}\n"
         warning_banner += (
             "\nMANDATORY ACTION BEFORE YIELDING TURN:\n"
-            + "   1. Update 'references/map-debt.md' or 'wiki/playbook-*.md' with friction/fixes, OR\n"
-            + "   2. Proactively emit the PRE-COMPLETION GATE receipt with Evolution-Check: none.\n"
+            + "   1. Log friction/bugfix in 'references/map-debt.md', AND/OR\n"
+            + "   2. Distill architectural invariants into 'wiki/playbook-*.md' & sync 'wiki/index.md', OR\n"
+            + "   3. Proactively emit the PRE-COMPLETION GATE receipt with Evolution-Check: none.\n"
             + ("!" * 72) + "\n"
         )
         print(warning_banner, file=sys.stderr)
