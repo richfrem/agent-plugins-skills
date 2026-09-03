@@ -43,7 +43,8 @@ CLI Arguments:
     --all           Select all discovered plugins without prompting
     -y / --yes      Skip confirmation prompts
     --dry-run       Preview actions without writing files
-    --install-rules Also install rules into CLAUDE.md
+    --no-install-rules  Skip installing plugin rules into .agent/rules/ (installed by default)
+    --no-append-rules-to-ide-files  Skip injecting rules into IDE files like CLAUDE.md (installed by default)
 
 Script Dependencies:
     os, sys, argparse, subprocess, shutil, tempfile, json, pathlib
@@ -657,8 +658,10 @@ def _install_plugins(selected_plugins: list, args) -> tuple[int, int]:
         cmd = [sys.executable, str(INSTALLER_SCRIPT), "--plugin", str(plugin["path"])]
         if args.dry_run:
             cmd.append("--dry-run")
-        if args.install_rules:
-            cmd.append("--install-rules")
+        if not args.install_rules:
+            cmd.append("--no-install-rules")
+        if not args.append_rules_to_ide_files:
+            cmd.append("--no-append-rules-to-ide-files")
         result = subprocess.run(cmd, text=True)
         if result.returncode == 0:
             print(f"    {green('✓')} Done")
@@ -790,7 +793,13 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--all", "-a", action="store_true", help="Select all plugins without prompting")
     parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts")
     parser.add_argument("--dry-run", action="store_true", help="Preview — no files written")
-    parser.add_argument("--install-rules", action="store_true", help="Also install plugin rules into CLAUDE.md")
+    parser.add_argument("--no-install-rules", dest="install_rules", action="store_false",
+                        help="Skip installing plugin rules into .agent/rules/ (installed by default)")
+    parser.add_argument("--no-append-rules-to-ide-files", dest="append_rules_to_ide_files",
+                        action="store_false",
+                        help="Skip injecting rule content into 'append' mode IDE files "
+                             "(e.g. CLAUDE.md); .agent/rules/ is still written (on by default)")
+    parser.set_defaults(install_rules=True, append_rules_to_ide_files=True)
     parser.add_argument("--plugins", type=str, help="Comma-separated list of plugins to install (headless filtering)")
     return parser
 

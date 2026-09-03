@@ -152,7 +152,7 @@ patterns, smoke tests) comes after. The delegated agent executes workstreams in 
 1. Delegation prompt at tasks/todo/copilot_prompt_<slug>.md
 2. Dispatch via run_agent.py with claude-sonnet-4.6
 3. Review output (diff, symlink audit)
-4. Commit and PR
+4. Commit and PR: If modifying code/logic in `plugins/`, `src/`, or `py_services/`, ensure `references/map-debt.md` or `references/evolution-log.md` is updated and staged in the commit, or include `Evolution-Check: none` in the commit message to satisfy the pre-commit and CI evolution integrity gate.
 
 ## Status
 - [ ] WS-A ...
@@ -161,7 +161,7 @@ patterns, smoke tests) comes after. The delegated agent executes workstreams in 
 **Delegation prompt** written to `tasks/todo/copilot_prompt_<slug>.md`:
 - One section per workstream with exact file paths and content specifications — listed in order: structural fixes first, then additive content
 - Global instruction: "Use the Write tool to write files directly — do not output delimiters"
-- Completion checklist section at the end with COMPLETION_REPORT format
+- Completion checklist section at the end with COMPLETION_REPORT format (including Map Debt / Evolution Log verification)
 
 ---
 
