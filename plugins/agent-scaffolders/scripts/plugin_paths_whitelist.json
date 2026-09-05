@@ -8,6 +8,5 @@
   "plugins/dev-utils",
   "plugins/exploration-cycle-plugin",
   "plugins/obsidian-wiki-engine",
-  "plugins/plugin-manager",
-  "plugins/spec-kitty-plugin"
+  "plugins/plugin-manager"
 ]

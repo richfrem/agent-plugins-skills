@@ -63,15 +63,6 @@
             "file.py": "Docstring usage example in distiller.py header comment."
         },
         "rsvp-speed-reader": {},
-        "spec-kitty-plugin": {
-            "auth.py": "Dummy script reference in examples.",
-            "file.py": "Dummy script reference in examples.",
-            "new_script.py": "Dummy script reference in examples.",
-            "script.py": "Dummy script reference in examples.",
-            "test_auth.py": "Dummy script reference in examples.",
-            "test_new_script.py": "Dummy script reference in examples.",
-            "tasks_cli.py": "spec-kitty sli command"
-        },
         "task-manager": {},
         "vector-db": {}
     }

@@ -1,5 +1,14 @@
 # Portability Audit Report
 
+## 🔴 CRITICAL — Python Runtime Path Constructions
+
+> These lines hardcode `plugins/<name>` inside Python `Path()` variable assignments.
+> They **cannot be whitelisted** — they must be fixed by replacing the hardcoded path
+> with a relative `scripts/` reference or a `.agents/skills/` installed path.
+
+### [ ] plugins/agent-agentic-os/tests/test_audit_map_debt.py
+- Line `15` [CRITICAL]: `SCRIPT_DIR = REPO_ROOT / "plugins/agent-agentic-os/scripts"`
+
 ## ⚠️ Standard — Hardcoded Path References
 
 > The following files contain hardcoded `plugins/` references or absolute machine paths.
@@ -7,18 +16,39 @@
 > by either neutralizing the path or updating `plugin_paths_whitelist.json`.
 
 ### [ ] .github/copilot-instructions.md
-- Line `189`: `**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.`
-- Line `199`: `**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.`
-- Line `209`: `**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,`
-- Line `210`: ``plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,`
-- Line `211`: ``plugins/task-manager`, `plugins/voice-writer` — all deleted.`
+- Line `202`: `**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` was removed on`
+- Line `252`: `**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.`
+- Line `262`: `**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.`
+- Line `273`: `**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,`
+- Line `274`: ``plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,`
+- Line `275`: ``plugins/task-manager`, `plugins/voice-writer` — all deleted.`
+- Line `1709`: ``plugins/portfolio-advisor/scripts/daily_brief.py`, despite reporting a passing`
+
+### [ ] .venv/lib/python3.14/site-packages/__editable___agent_plugins_0_1_0_finder.py
+- Line `9`: `MAPPING: dict[str, str] = {'bootstrap': '/Users/richardfremmerlid/Projects/agent-plugins-skills/bootstrap'}`
+
+### [ ] AGENTS.md
+- Line `199`: `**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` was removed on`
+- Line `249`: `**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.`
+- Line `259`: `**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.`
+- Line `270`: `**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,`
+- Line `271`: ``plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,`
+- Line `272`: ``plugins/task-manager`, `plugins/voice-writer` — all deleted.`
+- Line `1706`: ``plugins/portfolio-advisor/scripts/daily_brief.py`, despite reporting a passing`
 
 ### [ ] GEMINI.md
-- Line `188`: `**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.`
-- Line `198`: `**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.`
-- Line `208`: `**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,`
-- Line `209`: ``plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,`
-- Line `210`: ``plugins/task-manager`, `plugins/voice-writer` — all deleted.`
+- Line `199`: `**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` was removed on`
+- Line `249`: `**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.`
+- Line `259`: `**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.`
+- Line `270`: `**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,`
+- Line `271`: ``plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,`
+- Line `272`: ``plugins/task-manager`, `plugins/voice-writer` — all deleted.`
+- Line `1706`: ``plugins/portfolio-advisor/scripts/daily_brief.py`, despite reporting a passing`
+
+### [ ] architecture.md
+- Line `18`: `or agent list are installed **globally** via the Claude Code marketplace (`~/.claude/plugins/cache/`) —`
+- Line `27`: ``plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):`
+- Line `187`: `- New plugins/skills should be scaffolded via `create-plugin` / `create-skill`, then validated with`
 
 ### [ ] context/experiment-log/2026-04-25-verifier-2026-04-25-round1.md
 - Line `74`: `│ cat > /Users/richardfremmerlid/Projects/agent-plugins-skills/temp/os-evolu`
@@ -35,73 +65,89 @@
 ### [ ] docs/superpowers/plans/2026-05-30-hardened-control-plane.md
 - Line `98`: `cd /Users/richardfremmerlid/Projects/agent-plugins-skills`
 
+### [ ] handoffs/task_packet_lean_memory_evolution.md
+- Line `4`: `**Target Monorepo:** `/Users/richardfremmerlid/Projects/agent-plugins-skills``
+- Line `7`: `**Ratified Plan:** [`temp/plans/lean-3-layer-memory-evolution-plan.md`](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/temp/plans/lean-3-layer-memory-evolution-plan.md)`
+- Line `8`: `**Execution Prompt:** [`temp/plans/gemini-agy-implementation-prompt.md`](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/temp/plans/gemini-agy-implementation-prompt.md)`
+
+### [ ] plugins/agent-agentic-os/references/map-debt.md
+- Line `21`: `- Live repro: created worktree `../worktree-live-pass-1788153987` via `git worktree add -b evolution/<cid> ... HEAD`, applied a real Kelvin-broadening fix to `evo-smoketest/SKILL.md` inside that workt`
+
 ### [ ] plugins/agent-agentic-os/references/meta/anthropic-official-docs.md
 - Line `43`: `Source: [GitHub: claude-plugins-official/plugins/skill-creator](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator)`
 - Line `62`: `Source: [GitHub: claude-plugins-official/plugins/plugin-dev](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)`
 
 ### [ ] plugins/agent-agentic-os/scripts/evaluate.py
-- Line `47`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
+- Line `51`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
 
 ### [ ] plugins/agent-agentic-os/scripts/init_autoresearch.py
 - Line `32`: `[--plugin-root .agents/plugins/autoresearch-improvement]`
 
 ### [ ] plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py
-- Line `47`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
+- Line `51`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
 
 ### [ ] plugins/agent-agentic-os/skills/os-eval-runner/scripts/init_autoresearch.py
 - Line `32`: `[--plugin-root .agents/plugins/autoresearch-improvement]`
 
 ### [ ] plugins/agent-agentic-os/skills/os-improvement-loop/scripts/evaluate.py
-- Line `47`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
+- Line `51`: `# evaluate.py lives at plugins/autoresearch-improvement/scripts/evaluate.py`
 
-### [ ] plugins/agent-orchestration/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+### [ ] plugins/agent-agentic-os/skills/self-evolution/references/map-debt.md
+- Line `21`: `- Live repro: created worktree `../worktree-live-pass-1788153987` via `git worktree add -b evolution/<cid> ... HEAD`, applied a real Kelvin-broadening fix to `evo-smoketest/SKILL.md` inside that workt`
 
-### [ ] plugins/agent-orchestration/skills/agent-swarm/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+### [ ] plugins/agent-agentic-os/tests/test_evolution_scripts.py
+- Line `434`: `"--exit-code", "0", "--paths-affected", "plugins/test.py", "--repo-dir", str(test_git_repo)],`
+- Line `443`: `"--exit-code", "0", "--paths-affected", "plugins/test.py", "--repo-dir", str(test_git_repo)],`
 
-### [ ] plugins/agent-orchestration/skills/orchestrator/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+### [ ] plugins/agent-agentic-os/tests/test_graph_state_machine.py
+- Line `66`: `"target_files": ["plugins/code.py"]`
+- Line `82`: `subprocess.run([sys.executable, str(record_script), "append", "--cycle-id", cycle_id, "--node", "EXECUTE", "--event-type", "mutation.completed", "--paths-affected", "plugins/code.py", "--repo-dir", st`
+- Line `139`: `"target_files": ["plugins/code.py"]`
 
 ### [ ] plugins/agent-memory/assets/references/research/summary.md
 - Line `59`: `*   **Discovery CLI:** Scripts within self-contained plugins/skills architecture (Recursive Scanner)`
 
 ### [ ] plugins/agent-memory/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+- Line `40`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-memory/skills/rlm-cleanup-agent/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+- Line `40`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-memory/skills/rlm-curator/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+- Line `40`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-memory/skills/rlm-distill-agent/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+- Line `40`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-memory/skills/rlm-init/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+- Line `40`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-memory/skills/rlm-search/SKILL.md
 - Line `69`: `# Example: Search plugins/scripts cache`
 
 ### [ ] plugins/agent-memory/skills/rlm-search/scripts/swarm_run.py
-- Line `34`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
+- Line `40`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
-### [ ] plugins/agent-scaffolders/commands/convert-plugin-to-apm.md
-- Line `20`: `/convert-plugin-to-apm ./plugins/my-plugin --mode overlay --governance enterprise`
+### [ ] plugins/agent-orchestration/scripts/swarm_run.py
+- Line `46`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
-### [ ] plugins/agent-scaffolders/commands/mine-plugins.md
-- Line `28`: `/mine-plugins claude-knowledgework-plugins/sales`
-- Line `34`: `/mine-plugins plugins/legacy\ system`
+### [ ] plugins/agent-orchestration/skills/agent-swarm/scripts/swarm_run.py
+- Line `46`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
-### [ ] plugins/agent-scaffolders/commands/mine-skill.md
-- Line `27`: `/mine-skill claude-knowledgework-plugins/sales/skills/call-prep`
+### [ ] plugins/agent-orchestration/skills/orchestrator/scripts/swarm_run.py
+- Line `46`: `Example Job File (plugins/my-plugin/resources/jobs/my_job.job.md):`
 
 ### [ ] plugins/agent-scaffolders/references/examples/plugin-commands.md
 - Line `548`: `@/home/user/.claude/plugins/my-plugin/config.json`
 
 ### [ ] plugins/agent-scaffolders/references/examples/plugin-features-reference.md
 - Line `106`: `Read template: @/path/to/plugins/plugin-name/templates/report.md`
+
+### [ ] plugins/agent-scaffolders/references/fix-plugin-paths.prompt.md
+- Line `4`: `If a file inside `plugins/A/` references `plugins/A/scripts/foo.py`, replace with `./scripts/foo.py`.`
+- Line `30`: `**BEFORE:** `e.g. "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/link-checker"``
+- Line `31`: `**AFTER:**  `e.g. "<USER_HOME>/Projects/agent-plugins-skills/plugins/link-checker"``
+- Line `69`: `- **Generic placeholder examples**: `plugins/my-plugin`, `plugins/<plugin-name>`, `plugins/link-checker`.`
 
 ### [ ] plugins/agent-scaffolders/references/marketplace-architecture.md
 - Line `17`: `A marketplace entry with `"source": "./plugins/my-plugin"` resolves the path relative to the marketplace repository root. This only works when the marketplace was added via a Git clone or local filesy`
@@ -139,68 +185,75 @@
 
 ### [ ] plugins/agent-scaffolders/scripts/check_plugin_boundaries.py
 - Line `14`: `pythonheck_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager`
-- Line `56`: `plugins/adr-manager/commands/adr-management.md  plugins/adr-manager/`
-- Line `57`: `plugins/plugin-installer/hooks/hooks.json  plugins/plugin-installer/`
-- Line `58`: `plugins/adr-manager/.claude-plugin/plugin.json  plugins/adr-manager/`
-- Line `61`: `plugins/adr-manager/skills/adr-management/SKILL.md  None (skip)`
-- Line `76`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/`
+- Line `52`: `r"re:.*Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)`
+- Line `91`: `plugins/adr-manager/commands/adr-management.md  plugins/adr-manager/`
+- Line `92`: `plugins/plugin-installer/hooks/hooks.json  plugins/plugin-installer/`
+- Line `93`: `plugins/adr-manager/.claude-plugin/plugin.json  plugins/adr-manager/`
+- Line `96`: `plugins/adr-manager/skills/adr-management/SKILL.md  None (skip)`
+- Line `111`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/`
 
 ### [ ] plugins/agent-scaffolders/scripts/check_skill_boundaries.py
 - Line `14`: `pythonheck_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management`
 - Line `62`: `r"re:/Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)`
-- Line `97`: `plugins/adr-manager/skills/adr-management/SKILL.md`
-- Line `98`: `plugins/adr-manager/skills/adr-management/`
-- Line `110`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/skills/adr-management`
+- Line `98`: `plugins/adr-manager/skills/adr-management/SKILL.md`
+- Line `99`: `plugins/adr-manager/skills/adr-management/`
+- Line `111`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/skills/adr-management`
 
 ### [ ] plugins/agent-scaffolders/scripts/fix_descriptions.py
-- Line `14`: `"plugins/excel-to-csv/skills/excel-to-csv/SKILL.md"`
-- Line `90`: `root_dir = '/Users/richardfremmerlid/Projects/agent-plugins-skills'`
+- Line `43`: `"plugins/excel-to-csv/skills/excel-to-csv/SKILL.md"`
 
 ### [ ] plugins/agent-scaffolders/scripts/fix_inside_plugin_symlinks.py
-- Line `74`: `"""Extract plugin root from path like plugins/adr-manager/skills/adr-management/file.md"""`
+- Line `75`: `"""Extract plugin root from path like plugins/adr-manager/skills/adr-management/file.md"""`
 
 ### [ ] plugins/agent-scaffolders/scripts/fix_plugin_load_errors.py
 - Line `25`: `NOTE: Claude Code scans ALL cached plugin versions under ~/.claude/plugins/cache/,`
 
 ### [ ] plugins/agent-scaffolders/scripts/path_reference_auditor.py
-- Line `110`: `Walk all plugins/skills directories and find every ./reference.`
+- Line `111`: `Walk all plugins/skills directories and find every ./reference.`
 
 ### [ ] plugins/agent-scaffolders/scripts/scaffold_agentic_workflow.py
-- Line `365`: `Example: --plugin-dir plugins/my-plugin --mode ide`
+- Line `412`: `Example: --plugin-dir plugins/my-plugin --mode ide`
 
 ### [ ] plugins/agent-scaffolders/scripts/validate_local_links.py
 - Line `60`: `# Matches explicit strings like "plugins/my-plugin" or "plugins/rlm-factory/scripts"`
 
-### [ ] plugins/agent-scaffolders/skills/analyze-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
+### [ ] plugins/agent-scaffolders/skills/analyze-plugin/references/security-checks.md
+- Line `34`: `| Undeclared dependencies | Plugin relies on other plugins/MCP servers not documented | Warning |`
 
 ### [ ] plugins/agent-scaffolders/skills/audit-plugin-l5/SKILL.md
 - Line `27`: `Before executing this skill, ensure you know the exact path or name of the plugin you wish to audit (e.g., `plugins/oracle-legacy-system-analysis/xml-to-markdown`).`
 
-### [ ] plugins/agent-scaffolders/skills/audit-plugin-l5/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
-
 ### [ ] plugins/agent-scaffolders/skills/audit-plugin/SKILL.md
-- Line `125`: ``~/.claude/plugins/cache/`, not just the active `installPath`. Fixing source files`
-
-### [ ] plugins/agent-scaffolders/skills/audit-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
+- Line `119`: ``~/.claude/plugins/cache/`, not just the active `installPath`. Fixing source files`
 
 ### [ ] plugins/agent-scaffolders/skills/create-agentic-workflow/scripts/scaffold_agentic_workflow.py
-- Line `365`: `Example: --plugin-dir plugins/my-plugin --mode ide`
+- Line `412`: `Example: --plugin-dir plugins/my-plugin --mode ide`
+
+### [ ] plugins/agent-scaffolders/skills/create-command/references/examples/plugin-commands.md
+- Line `548`: `@/home/user/.claude/plugins/my-plugin/config.json`
+
+### [ ] plugins/agent-scaffolders/skills/create-command/references/examples/plugin-features-reference.md
+- Line `106`: `Read template: @/path/to/plugins/plugin-name/templates/report.md`
+
+### [ ] plugins/agent-scaffolders/skills/create-command/references/plugin-features-reference.md
+- Line `106`: `Read template: @/path/to/plugins/plugin-name/templates/report.md`
 
 ### [ ] plugins/agent-scaffolders/skills/create-github-action/scripts/scaffold_agentic_workflow.py
-- Line `365`: `Example: --plugin-dir plugins/my-plugin --mode ide`
-
-### [ ] plugins/agent-scaffolders/skills/create-plugin/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
-
-### [ ] plugins/agent-scaffolders/skills/create-skill/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
+- Line `412`: `Example: --plugin-dir plugins/my-plugin --mode ide`
 
 ### [ ] plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md
 - Line `25`: `- **Foundational Specification**: `https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev``
 - Line `70`: `- Relative path (same-repo monorepo): `"source": "./plugins/my-plugin"` — resolved from repo root`
+
+### [ ] plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/marketplace.md
+- Line `23`: `- `metadata.pluginRoot`: Base directory prepended to relative plugin source paths. Setting `"./plugins"` lets entries use `"source": "formatter"` instead of `"source": "./plugins/formatter"`.`
+- Line `29`: `- Relative Path: `"./plugins/my-plugin"` — must start with `./`. Only works when marketplace added via Git clone, not direct URL.`
+- Line `32`: `- Git subdirectory (sparse clone): `{"source": "git-subdir", "url": "https://github.com/owner/repo", "path": "plugins/my-plugin", "ref": "main"}`. Field is `path` not `subdir`.`
+- Line `130`: `- **Submit to official marketplace**: Claude.ai: `claude.ai/settings/plugins/submit` · Console: `platform.claude.com/plugins/submit`.`
+
+### [ ] plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/plugins.md
+- Line `25`: `- **Plugin Cache:** Installed marketplace plugins are copied to a cache (`~/.claude/plugins/cache`).`
+- Line `26`: `- **`plugins`:** Always use this environment variable inside `hooks.json`, `.mcp.json`, and scripts to reference the absolute path of your plugin (e.g. `"plugins/scripts/execute.py"`).`
 
 ### [ ] plugins/agent-scaffolders/skills/fix-plugin-paths/SKILL.md
 - Line `39`: ``PROJECT_ROOT / "plugins/other-plugin/..."` at runtime. Cross-plugin script references`
@@ -211,9 +264,6 @@
 - Line `31`: `**AFTER:**  `e.g. "<USER_HOME>/Projects/agent-plugins-skills/plugins/link-checker"``
 - Line `69`: `- **Generic placeholder examples**: `plugins/my-plugin`, `plugins/<plugin-name>`, `plugins/link-checker`.`
 
-### [ ] plugins/agent-scaffolders/skills/l5-red-team-auditor/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
-
 ### [ ] plugins/agent-scaffolders/skills/manage-marketplace/SKILL.md
 - Line `46`: `{ "source": "./plugins/my-plugin-folder" }`
 - Line `60`: `{ "source": { "source": "git-subdir", "url": "https://github.com/owner/repo", "path": "plugins/my-plugin" } }`
@@ -221,6 +271,9 @@
 
 ### [ ] plugins/agent-scaffolders/skills/manage-marketplace/acceptance-criteria.md
 - Line `21`: `| **Hardcoded paths in hooks** | Plugin author guidance uses absolute host paths (e.g., `/home/user/.claude/plugins/my-plugin/run.sh`) instead of `${CLAUDE_PLUGIN_ROOT}`. |`
+
+### [ ] plugins/agent-scaffolders/skills/manage-marketplace/references/marketplace-schema.md
+- Line `29`: `| Relative Path | String | `"./plugins/my-plugin"` |`
 
 ### [ ] plugins/agent-scaffolders/skills/mine-plugins/SKILL.md
 - Line `51`: `/mine-plugins claude-knowledgework-plugins/sales`
@@ -239,33 +292,39 @@
 - Line `232`: `- `../other-plugin/file.md` → `plugins/other-plugin/file.md` (sibling plugin) ❌`
 - Line `237`: `cd plugins/X`
 
+### [ ] plugins/agent-scaffolders/skills/path-reference-auditor/references/usage-guide.md
+- Line `89`: `python ./check_skill_boundaries.py inventory.json --skill plugins/adr-manager/skills/adr-management`
+- Line `97`: `RESOLVES TO: plugins/adr-manager/templates/adr-template.md  ❌ OUTSIDE!`
+- Line `102`: `cd plugins/adr-manager/skills/adr-management`
+- Line `119`: `python ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-installer`
+- Line `124`: `FILE: plugins/adr-manager/commands/adr-management.md:8`
+- Line `126`: `PLUGIN ROOT: plugins/adr-manager/`
+- Line `132`: `cd plugins/adr-manager`
+
 ### [ ] plugins/agent-scaffolders/skills/path-reference-auditor/scripts/check_plugin_boundaries.py
 - Line `14`: `pythonheck_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager`
-- Line `56`: `plugins/adr-manager/commands/adr-management.md  plugins/adr-manager/`
-- Line `57`: `plugins/plugin-installer/hooks/hooks.json  plugins/plugin-installer/`
-- Line `58`: `plugins/adr-manager/.claude-plugin/plugin.json  plugins/adr-manager/`
-- Line `61`: `plugins/adr-manager/skills/adr-management/SKILL.md  None (skip)`
-- Line `76`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/`
+- Line `52`: `r"re:.*Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)`
+- Line `91`: `plugins/adr-manager/commands/adr-management.md  plugins/adr-manager/`
+- Line `92`: `plugins/plugin-installer/hooks/hooks.json  plugins/plugin-installer/`
+- Line `93`: `plugins/adr-manager/.claude-plugin/plugin.json  plugins/adr-manager/`
+- Line `96`: `plugins/adr-manager/skills/adr-management/SKILL.md  None (skip)`
+- Line `111`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/`
 
 ### [ ] plugins/agent-scaffolders/skills/path-reference-auditor/scripts/check_skill_boundaries.py
 - Line `14`: `pythonheck_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management`
 - Line `62`: `r"re:/Users/.*",           # macOS absolute paths (e.g. /Users/robert/...)`
-- Line `97`: `plugins/adr-manager/skills/adr-management/SKILL.md`
-- Line `98`: `plugins/adr-manager/skills/adr-management/`
-- Line `110`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/skills/adr-management`
+- Line `98`: `plugins/adr-manager/skills/adr-management/SKILL.md`
+- Line `99`: `plugins/adr-manager/skills/adr-management/`
+- Line `111`: `return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/skills/adr-management`
 
 ### [ ] plugins/agent-scaffolders/skills/path-reference-auditor/scripts/fix_inside_plugin_symlinks.py
-- Line `74`: `"""Extract plugin root from path like plugins/adr-manager/skills/adr-management/file.md"""`
+- Line `75`: `"""Extract plugin root from path like plugins/adr-manager/skills/adr-management/file.md"""`
 
 ### [ ] plugins/agent-scaffolders/skills/path-reference-auditor/scripts/path_reference_auditor.py
-- Line `110`: `Walk all plugins/skills directories and find every ./reference.`
+- Line `111`: `Walk all plugins/skills directories and find every ./reference.`
 
 ### [ ] plugins/cli-agents/references/routing_latency_findings.md
 - Line `164`: `FROM /Users/richardfremmerlid/Projects/local-llm-bench/llama.cpp/models/gemma-4-12b-UD-Q4_K_XL.gguf`
-
-### [ ] plugins/dev-utils/commands/create-sym-link.md
-- Line `18`: `1. **Source path** — relative to repo root (e.g., `plugins/my-plugin/scripts/script.py`)`
-- Line `19`: `2. **Destination path** — relative to repo root (e.g., `plugins/my-plugin/skills/my-skill/scripts/script.py`)`
 
 ### [ ] plugins/dev-utils/references/assistant_preferences.md
 - Line `3`: `- Default project root for this user's task operations: /Users/richardfremmerlid/Projects/hermes-agent/tasks`
@@ -278,17 +337,14 @@
 - Line `9`: `- CLI: python3 ./scripts/task_manager.py create "Title" --lane backlog --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks`
 - Line `10`: `- Env var convenience: export HERMES_TASKS_ROOT=/Users/richardfremmerlid/Projects/hermes-agent/tasks`
 
-### [ ] plugins/dev-utils/skills/symlink-manager/references/003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md
-- Line `117`: `- Real file at plugin root (e.g. `plugins/adr-manager/scripts/adr_manager.py`)`
-
 ### [ ] plugins/dev-utils/skills/task-agent/SKILL.md
-- Line `47`: `- Default Hermes Agent project root: For this user, prefer creating and managing tasks under the Hermes Agent project's tasks directory: /Users/richardfremmerlid/Projects/hermes-agent/tasks. The task_`
-- Line `53`: `python3 ./scripts/task_manager.py create "Short Title" --lane backlog --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks`
-- Line `56`: `export HERMES_TASKS_ROOT=/Users/richardfremmerlid/Projects/hermes-agent/tasks`
-- Line `103`: `If a user preference exists for which repository should host kanban tasks, prefer honoring that explicit per-user preference. On this host the user prefers the Hermes Agent project root as the canonic`
-- Line `107`: `- Honor explicit `--dir` overrides. If a caller provides `--dir`, always use it. Example: `python3 ./scripts/task_manager.py --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks create "Title" -`
-- Line `151`: `- Default project root override for this user's environment: /Users/richardfremmerlid/Projects/hermes-agent/tasks`
-- Line `155`: `python3 ./scripts/task_manager.py --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks create "Short Title" --lane backlog --objective "..." --acceptance "..."`
+- Line `51`: `- Default Hermes Agent project root: For this user, prefer creating and managing tasks under the Hermes Agent project's tasks directory: /Users/richardfremmerlid/Projects/hermes-agent/tasks. The task_`
+- Line `57`: `python3 ./scripts/task_manager.py create "Short Title" --lane backlog --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks`
+- Line `60`: `export HERMES_TASKS_ROOT=/Users/richardfremmerlid/Projects/hermes-agent/tasks`
+- Line `107`: `If a user preference exists for which repository should host kanban tasks, prefer honoring that explicit per-user preference. On this host the user prefers the Hermes Agent project root as the canonic`
+- Line `111`: `- Honor explicit `--dir` overrides. If a caller provides `--dir`, always use it. Example: `python3 ./scripts/task_manager.py --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks create "Title" -`
+- Line `155`: `- Default project root override for this user's environment: /Users/richardfremmerlid/Projects/hermes-agent/tasks`
+- Line `159`: `python3 ./scripts/task_manager.py --dir /Users/richardfremmerlid/Projects/hermes-agent/tasks create "Short Title" --lane backlog --objective "..." --acceptance "..."`
 
 ### [ ] plugins/dev-utils/skills/task-agent/references/assistant_preferences.md
 - Line `3`: `- Default project root for this user's task operations: /Users/richardfremmerlid/Projects/hermes-agent/tasks`
@@ -316,6 +372,11 @@
 - Line `43`: `python /Users/richardfremmerlid/Projects/AI-Research/.agents/skills/copilot-cli-agent/scripts/run_agent.py \`
 - Line `420`: `cd /Users/richardfremmerlid/Projects/agent-plugins-skills`
 
+### [ ] plugins/exploration-cycle-plugin/tests/test_technical_diagnostic_engine.py
+- Line `25`: `target_paths=["plugins/foo/bar.py", "plugins/foo/scripts/baz.py"],`
+- Line `28`: `cross_plugin_symlinks=["plugins/foo/skills/bar/scripts/baz.py"],`
+- Line `52`: `assert "`plugins/foo/bar.py`" in brief`
+
 ### [ ] plugins/obsidian-wiki-engine/scripts/obsidian-parser/tests/test_parser.py
 - Line `11`: `python -m unittest plugins/obsidian-integration/scripts/obsidian-parser/tests/test_parser.py`
 
@@ -329,116 +390,30 @@
 - Line `95`: `We publish a tiny stub package to NPM (`@agent-plugins/cli`) whose ONLY job is to execute a `fetch()` call, download the Python `plugin_add.py` script to a temp folder, and spawn `python temp_script.p`
 - Line `98`: `npx @agent-plugins/cli add richfrem/agent-plugins-skills`
 
+### [ ] plugins/plugin-manager/references/locating_skills.md
+- Line `49`: `/Users/me/projects/agent-plugins-skills — proceed? (Y/n)".`
+
 ### [ ] plugins/plugin-manager/scripts/plugin_add.py
-- Line `251`: `anthropics/knowledge-work-plugins/engineering       → ("anthropics/knowledge-work-plugins", "engineering")`
+- Line `298`: `anthropics/knowledge-work-plugins/engineering       → ("anthropics/knowledge-work-plugins", "engineering")`
+
+### [ ] plugins/plugin-manager/scripts/plugin_remove.py
+- Line `463`: `interactive TUI (or uses --plugins/--all for headless mode), calls`
 
 ### [ ] plugins/plugin-manager/skills/plugin-installer/SKILL.md
-- Line `137`: `"skillPath": "plugins/my-plugin/skills/my-skill",`
-- Line `189`: `| `anthropics/knowledge-work-plugins/engineering` | Clone repo, drill into `engineering/` as a single plugin |`
-- Line `209`: `python ./scripts/plugin_add.py anthropics/knowledge-work-plugins/engineering`
-- Line `239`: `--plugin plugins/my-plugin`
-- Line `245`: `--plugin plugins/my-plugin --dry-run`
-- Line `259`: `- When the user requests a search or install, confirm the filesystem scope before running any discovery. Present the chosen path in plain text and ask for explicit approval (e.g. "Search only /Users/m`
-- Line `276`: `- **Plugin**: plugins/my-plugin (v1.2.0)`
+- Line `141`: `"skillPath": "plugins/my-plugin/skills/my-skill",`
+- Line `193`: `| `anthropics/knowledge-work-plugins/engineering` | Clone repo, drill into `engineering/` as a single plugin |`
+- Line `213`: `python ./scripts/plugin_add.py anthropics/knowledge-work-plugins/engineering`
+- Line `243`: `--plugin plugins/my-plugin`
+- Line `249`: `--plugin plugins/my-plugin --dry-run`
+- Line `263`: `- When the user requests a search or install, confirm the filesystem scope before running any discovery. Present the chosen path in plain text and ask for explicit approval (e.g. "Search only /Users/m`
+- Line `280`: `- **Plugin**: plugins/my-plugin (v1.2.0)`
 
 ### [ ] plugins/plugin-manager/skills/plugin-installer/references/locating_skills.md
 - Line `49`: `/Users/me/projects/agent-plugins-skills — proceed? (Y/n)".`
 
 ### [ ] plugins/plugin-manager/skills/plugin-installer/scripts/plugin_add.py
-- Line `251`: `anthropics/knowledge-work-plugins/engineering       → ("anthropics/knowledge-work-plugins", "engineering")`
+- Line `298`: `anthropics/knowledge-work-plugins/engineering       → ("anthropics/knowledge-work-plugins", "engineering")`
 
-### [ ] plugins/spec-kitty-plugin/assets/templates/tasks.md
-- Line `43`: `**CRITICAL**: The command returns JSON with `feature_dir` as an ABSOLUTE path (e.g., `/Users/robert/Code/project/kitty-specs/015-research-topic`).`
-
-### [ ] plugins/spec-kitty-plugin/references/LLM_UNPACKAGING_INSTRUCTIONS.md
-- Line `24`: `Access `bridge/plugins/tool_inventory.json` (included in this bundle) to see the list of tools available for registration in your agent's configuration.`
-
-### [ ] plugins/spec-kitty-plugin/rules/AGENTS.md
-- Line `15`: `- `/Users/robert/Code/myproject/kitty-specs/001-feature/spec.md``
-
-### [ ] tasks/backlog/0010-bl-007-bridge-plugin-not-copying-assets-directory-during-plugin-install.md
-- Line `4`: `plugins/task-manager/assets/templates/task-template.md exists in source but is missing from .agent/skills/task-agent/ after plugin-installer install. plugin-installer SKILL.md maps skills/ commands/ r`
-
-### [ ] tasks/backlog/0011-bl-008-task-agent-skill-md-unclear-on-which-script-path-to-use-agents-use-wrong-path.md
-- Line `4`: `task-agent SKILL.md does not clearly specify whether to call scripts from plugins/task-manager/skills/task-agent/scripts/ or .agent/skills/task-agent/scripts/. This session used the .agent/ installed `
-
-### [ ] tasks/backlog/0015-standardize-all-plugin-templates-to-jinja-format.md
-- Line `15`: `- **Reference pattern:** `plugins/agent-plugin-analyzer/assets/templates/README.md.jinja` is the target convention.`
-
-### [ ] tasks/backlog/0021-finetuning-plugin-plan.md
-- Line `65`: `| WS-A | Scaffold plugin shell | `plugins/agent-finetuning/README.md`, `CHANGELOG.md`, `.claude-plugin/plugin.json`, `evals/evals.json` |`
-- Line `66`: `| WS-B | `setup-cuda-env` skill | `plugins/agent-finetuning/skills/setup-cuda-env/SKILL.md`, `evals.json` |`
-- Line `67`: `| WS-C | `forge-dataset` skill | `plugins/agent-finetuning/skills/forge-dataset/SKILL.md`, `evals.json` |`
-- Line `68`: `| WS-D | `run-finetuning` skill | `plugins/agent-finetuning/skills/run-finetuning/SKILL.md`, `evals.json` |`
-- Line `69`: `| WS-E | `merge-and-export` skill | `plugins/agent-finetuning/skills/merge-and-export/SKILL.md`, `evals.json` |`
-- Line `70`: `| WS-F | `finetuning-orchestrator` sub-agent | `plugins/agent-finetuning/agents/finetuning-orchestrator.md` |`
-- Line `71`: `| WS-G | `hooks/session_end.py` | `plugins/agent-finetuning/hooks/session_end.py` |`
-
-### [ ] tasks/backlog/2026-04-26-ecosystem-validation-plan.md
-- Line `582`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-- Line `588`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-
-### [ ] tasks/backlog/copilot_prompt_0021-finetuning-plugin.md
-- Line `8`: `3. **Paths**: Scaffold the plugin in `plugins/agent-finetuning/`. Update `huggingface-utils` in `plugins/huggingface-utils/`.`
-- Line `15`: `Create `plugins/agent-finetuning/.claude-plugin/plugin.json`:`
-- Line `33`: `Create `plugins/agent-finetuning/README.md` summarizing the generic fine-tuning pipeline (Setup -> Dataset -> Train -> Export).`
-- Line `38`: `Path: `plugins/agent-finetuning/skills/setup-cuda-env/SKILL.md``
-- Line `39`: `Path: `plugins/agent-finetuning/skills/setup-cuda-env/evals.json``
-- Line `53`: `Path: `plugins/agent-finetuning/skills/forge-dataset/SKILL.md``
-- Line `54`: `Path: `plugins/agent-finetuning/skills/forge-dataset/evals.json``
-- Line `66`: `Path: `plugins/agent-finetuning/skills/run-finetuning/SKILL.md``
-- Line `67`: `Path: `plugins/agent-finetuning/skills/run-finetuning/evals.json``
-- Line `78`: `Path: `plugins/agent-finetuning/skills/merge-and-export/SKILL.md``
-- Line `79`: `Path: `plugins/agent-finetuning/skills/merge-and-export/evals.json``
-- Line `92`: `Path: `plugins/agent-finetuning/agents/finetuning-orchestrator.md``
-- Line `107`: `1. **Review/Update `hf-init`**: Ensure `plugins/huggingface-utils/skills/hf-init/SKILL.md` is generic enough to initialize repo paths for model uploads, not just datasets.`
-- Line `109`: `- Path: `plugins/huggingface-utils/skills/hf-model-upload/SKILL.md``
-- Line `110`: `- Path: `plugins/huggingface-utils/skills/hf-model-upload/evals.json``
-
-### [ ] tasks/backlog/copilot_prompt_0027_rsvp_speed_reader_lab.md
-- Line `7`: `Run the `os-eval-lab-setup` skill to create a sibling evaluation repository for `plugins/rsvp-speed-reader`.`
-
-### [ ] tasks/backlog/obsidian-rlm-llm-wiki/plan.md
-- Line `14`: `| Migration strategy | Rename + retrofit `plugins/obsidian-integration` in place | Preserve all 6 existing skills, add 3 new ones |`
-- Line `52`: `"wiki_root": "/Users/me/vaults/my-vault/wiki-root",`
-- Line `54`: `{ "path": "/Users/me/vaults/my-vault/notes", "label": "daily-notes" },`
-- Line `55`: `{ "path": "/Users/me/docs/architecture", "label": "arch-docs" },`
-- Line `56`: `{ "path": "/Users/me/research", "label": "research" }`
-
-### [ ] tasks/done/0020-os-architect-round2-fixes.md
-- Line `22`: `Correct source path confirmed working: `plugins/copilot-cli/scripts/run_agent.py`.`
-
-### [ ] tasks/done/copilot_prompt_0017.md
-- Line `147`: `FIND_RESULT="plugins/mermaid-to-png/skills/convert-mermaid"  # substitute actual`
-
-### [ ] tasks/done/copilot_prompt_0019b.md
-- Line `161`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-- Line `349`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-- Line `355`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-- Line `454`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-- Line `458`: `python3 plugins/copilot-cli/scripts/run_agent.py \`
-
-### [ ] tasks/done/copilot_prompt_0020.md
-- Line `59`: `path is `plugins/copilot-cli/scripts/run_agent.py`.`
-- Line `67`: `python3 plugins/copilot-cli/scripts/run_agent.py`
-- Line `221`: `WS-B: python3 plugins/copilot-cli/scripts/run_agent.py appears in architect agent (grep confirm) — [ ]`
-
-### [ ] tasks/done/copilot_prompt_0025-agentic-os-simplification.md
-- Line `23`: ``/Users/richardfremmerlid/Projects/agent-plugins-skills``
-
-### [ ] tasks/done/copilot_prompt_0026-agent-orchestration/stration/-simplification.md
-- Line `36`: ``/Users/richardfremmerlid/Projects/agent-plugins-skills``
-
-### [ ] tasks/done/copilot_prompt_0027-stale-refs-and-diagrams-cleanup.md
-- Line `30`: ``/Users/richardfremmerlid/Projects/agent-plugins-skills``
-
-### [ ] tasks/done/copilot_prompt_readme-update.md
-- Line `27`: ``/Users/richardfremmerlid/Projects/agent-plugins-skills``
-
-### [ ] tasks/done/obsidian-rlm-llm-wiki/plan.md
-- Line `14`: `| Migration strategy | Rename + retrofit `plugins/obsidian-integration` in place | Preserve all 6 existing skills, add 3 new ones |`
-- Line `52`: `"wiki_root": "/Users/me/vaults/my-vault/wiki-root",`
-- Line `54`: `{ "path": "/Users/me/vaults/my-vault/notes", "label": "daily-notes" },`
-- Line `55`: `{ "path": "/Users/me/docs/architecture", "label": "arch-docs" },`
-- Line `56`: `{ "path": "/Users/me/research", "label": "research" }`
+### [ ] plugins/plugin-manager/skills/plugin-remover/scripts/plugin_remove.py
+- Line `463`: `interactive TUI (or uses --plugins/--all for headless mode), calls`
 
