@@ -566,7 +566,7 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                 if not dry_run:
                     guard_target.chmod(0o755)
                 
-                # Check main pre-commit orchestrator
+                # Wire the guard into the pre-commit hook
                 pre_commit = git_hooks_dir / "pre-commit"
                 if pre_commit.exists():
                     pc_content = pre_commit.read_text(encoding="utf-8")
@@ -579,7 +579,25 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                         else:
                             pc_content += guard_block + "\nexit 0\n"
                         write_file(pre_commit, pc_content, dry_run, force=True)
+                else:
+                    # No pre-commit hook exists — create a minimal one that runs the guard
+                    minimal_hook = (
+                        "#!/usr/bin/env bash\n"
+                        "# pre-commit hook — installed by init_agentic_os.py\n"
+                        "HOOKS_DIR=\"$(dirname \"$0\")\"\n"
+                        "\n"
+                        "# Run evolution guard\n"
+                        "if [ -x \"$HOOKS_DIR/pre-commit-evolution-guard\" ]; then\n"
+                        "    \"$HOOKS_DIR/pre-commit-evolution-guard\" || exit 1\n"
+                        "fi\n"
+                        "\n"
+                        "exit 0\n"
+                    )
+                    write_file(pre_commit, minimal_hook, dry_run, force=False)
+                    if not dry_run:
+                        pre_commit.chmod(0o755)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
+
     except (subprocess.CalledProcessError, FileNotFoundError):
         announce("⚠️  Warning: target is not inside a git repository or git is not installed.", dry_run)
 
