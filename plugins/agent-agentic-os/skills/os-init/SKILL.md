@@ -104,6 +104,8 @@ Provide the installation command tailored to the user's environment:
    test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING control_plane.db"
    test -f .claude/hooks/hooks.json && echo "OK hooks.json (Stop turn hook)" || echo "MISSING hooks.json"
    test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-evolution-guard" || echo "MISSING pre-commit-evolution-guard"
+   test -f .github/workflows/verify-evolution-integrity.yml && echo "OK verify-evolution-integrity.yml" || echo "MISSING verify-evolution-integrity.yml"
    ```
    If any report `MISSING`, re-run with `--retrofit`.
+
 

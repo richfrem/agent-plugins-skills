@@ -75,3 +75,17 @@ def test_next_steps_directs_to_os_health_check(target_repo):
     )
     assert res.returncode == 0
     assert "os-health-check" in res.stdout, "Completion output must direct user/agent to run os-health-check"
+
+
+def test_scaffolds_github_ci_evolution_workflow(target_repo):
+    """Both fresh setup and retrofit must scaffold .github/workflows/verify-evolution-integrity.yml."""
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    ci_workflow = target_repo / ".github" / "workflows" / "verify-evolution-integrity.yml"
+    assert ci_workflow.exists(), "CI workflow verify-evolution-integrity.yml must be scaffolded"
+    assert "Verify Evolution & Map Debt Compliance" in ci_workflow.read_text(encoding="utf-8")
+
