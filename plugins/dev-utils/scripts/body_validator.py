@@ -1,6 +1,14 @@
 """
 Issue body section quality validator module for GitHub issues.
 
+Purpose:
+    Validates that a drafted GitHub issue body contains all 5 required
+    markdown sections (Summary, Observed Behavior, Expected Behavior,
+    Evidence, Impact) per github-issue-logging-policy.md before submission.
+
+Key Input Dependencies:
+    - Issue body text passed in by the caller (github-issue-agent scripts)
+
 Copyright (c) 2026. All rights reserved.
 """
 

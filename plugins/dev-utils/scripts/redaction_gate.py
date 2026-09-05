@@ -1,6 +1,14 @@
 """
 Secret redaction scanner module for GitHub issues.
 
+Purpose:
+    Scans GitHub issue payload text for common secret patterns (tokens, keys,
+    private key blocks) before an issue body is submitted, to prevent
+    accidental credential leakage into a public issue tracker.
+
+Key Input Dependencies:
+    - Issue body / comment text passed in by the caller (github-issue-agent scripts)
+
 Copyright (c) 2026. All rights reserved.
 """
 

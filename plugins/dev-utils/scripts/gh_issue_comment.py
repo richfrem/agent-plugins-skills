@@ -61,6 +61,7 @@ def comment_issue(issue_number: int, body: str, execute: bool = False) -> Dict[s
 
 
 def main() -> None:
+    """CLI entry point: parse args and post (or dry-run) a comment on the given issue."""
     parser = argparse.ArgumentParser(description="Comment on a GitHub Issue with dry-run default.")
     parser.add_argument("--issue", type=int, required=True, help="GitHub issue number")
     parser.add_argument("--body", required=True, help="Comment body markdown")

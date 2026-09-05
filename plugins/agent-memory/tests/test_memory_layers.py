@@ -1,6 +1,14 @@
 """
 Tests for 3-Layer Filesystem Memory
 Verifying line budgets, absence of external daemons, and low-latency native retrieval.
+
+Purpose:
+    Verifies the 3-layer memory architecture (runtime context, wiki, audit
+    traces) stays within its line/size budgets and retrieves natively
+    (filesystem only, no external daemon or network dependency).
+
+Key Input Dependencies:
+    - context/memory.md and wiki/ under the repo root
 """
 
 import time

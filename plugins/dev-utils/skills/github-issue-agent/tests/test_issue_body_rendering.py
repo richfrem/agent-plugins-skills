@@ -1,6 +1,13 @@
 """
 Unit tests for issue body quality validation in github-issue-agent.
 
+Purpose:
+    Verifies body_validator.py correctly detects presence/absence of the 5
+    required markdown sections in a drafted GitHub issue body.
+
+Key Input Dependencies:
+    - ../scripts/body_validator.py (module under test)
+
 Copyright (c) 2026. All rights reserved.
 """
 

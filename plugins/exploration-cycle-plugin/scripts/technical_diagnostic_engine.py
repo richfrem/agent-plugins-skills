@@ -8,6 +8,10 @@ Purpose:
     hidden assumptions, and candidate architectural forks, compiling a standardized
     DIAGNOSTIC_BRIEF.md contract and synchronizing session state with context/control_plane.db.
 
+Key Input Dependencies:
+    - context/control_plane.db (SQLite task state)
+    - Target repository source tree (read-only scan)
+
 Standards:
     - Strictly read-only: Cannot write, stage, or mutate repository files outside temporary diagnostic caches.
     - Zero cross-plugin imports (ADR-001/004): Interacts with control_plane.db via standard sqlite3.
@@ -169,6 +173,7 @@ def sync_to_control_plane(
 
 
 def main() -> None:
+    """CLI entry point: parse args, render the diagnostic brief, sync state to control_plane.db."""
     parser = argparse.ArgumentParser(description="Generate diagnostic brief and handoff to interview-spec.")
     parser.add_argument("--task-id", required=True, help="Unique task identifier")
     parser.add_argument("--title", required=True, help="Task title")

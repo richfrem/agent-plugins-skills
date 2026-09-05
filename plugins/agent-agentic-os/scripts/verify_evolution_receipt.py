@@ -9,6 +9,9 @@ Purpose:
     verifier exit code, and initial git head:
         cycle_hash = SHA256(canonical_manifest + ordered_events_digest + verifier_exit_code + initial_head + tree_sha)
         Receipt Display = "EVO-INTEGRITY-" + cycle_id[-8:] + "-" + cycle_hash[:12]
+
+Key Input Dependencies:
+    - Staged git tree, .agent/learning/traces/cycle_manifests.jsonl
 """
 
 import argparse
@@ -20,6 +23,7 @@ from pathlib import Path
 
 
 def _get_repo_root(repo_dir: Path = None) -> Path:
+    """Resolve the repo root, defaulting to the git toplevel of the cwd."""
     if repo_dir:
         return repo_dir.resolve()
     try:
@@ -30,6 +34,7 @@ def _get_repo_root(repo_dir: Path = None) -> Path:
 
 
 def _compute_ordered_events_digest(manifest_file: Path, cycle_id: str) -> tuple[str, list]:
+    """Return a digest of the cycle's ordered trace events for receipt binding."""
     if not manifest_file.exists():
         return "", []
 
@@ -65,6 +70,7 @@ def _compute_ordered_events_digest(manifest_file: Path, cycle_id: str) -> tuple[
 
 
 def _get_staged_tree_sha(repo_root: Path) -> str:
+    """Return the SHA of the currently staged git tree."""
     try:
         res = subprocess.run(["git", "write-tree"], cwd=repo_root, capture_output=True, text=True, check=True)
         return res.stdout.strip()
@@ -73,6 +79,7 @@ def _get_staged_tree_sha(repo_root: Path) -> str:
 
 
 def compute_receipt(repo_root: Path, cycle_id: str, tree_sha: str = None) -> dict:
+    """Compute the EVO-INTEGRITY receipt hash binding tree, trace, and verifier exit code."""
     state_file = repo_root / ".agent" / "learning" / "evolution_state.json"
     manifest_file = repo_root / ".agent" / "learning" / "traces" / "cycle_manifests.jsonl"
 
@@ -135,6 +142,7 @@ def check_asymmetric_persistence(repo_root: Path):
 
 
 def main():
+    """CLI entry point: compute or verify an evolution integrity receipt."""
     parser = argparse.ArgumentParser(description="Evolution Integrity Receipt Generator & Verifier")
     parser.add_argument("--stage", choices=["pre-commit", "final"], default="pre-commit")
     parser.add_argument("--cycle-id", default=None)

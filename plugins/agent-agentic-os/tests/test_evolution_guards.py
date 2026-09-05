@@ -1,6 +1,11 @@
 """
 test_evolution_guards.py — Automated Unit & Integration Tests for Evolution Guards
 =================================================================================
+
+Purpose:
+    Verifies the pre-commit evolution guard and the Stop-hook turn evolution
+    guard correctly block/pass commits per the Evolution Integrity Gate rules.
+
 Tests:
 1. pre-commit-evolution-guard (Git Hook)
    - Blocks commit when logic files changed without map-debt/wiki
@@ -12,6 +17,9 @@ Tests:
    - Runs cleanly without syntax error
    - Emits warning to stderr when logic modified without map-debt/wiki
    - Quiet when no logic files modified
+
+Key Input Dependencies:
+    - ../scripts/pre-commit-evolution-guard, ../hooks/scripts/turn_evolution_guard.py
 """
 
 import os
@@ -24,6 +32,7 @@ import pytest
 
 @pytest.fixture
 def temp_git_repo(tmp_path):
+    """Create and return a freshly git-init'd throwaway repo for guard tests."""
     repo = tmp_path / "test_repo"
     repo.mkdir()
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
@@ -33,6 +42,7 @@ def temp_git_repo(tmp_path):
 
 
 def test_turn_evolution_guard_ast_valid():
+    """turn_evolution_guard.py must parse as valid Python (no syntax errors)."""
     guard_script = Path(__file__).parent.parent / "hooks" / "scripts" / "turn_evolution_guard.py"
     assert guard_script.exists()
     import ast
@@ -40,6 +50,7 @@ def test_turn_evolution_guard_ast_valid():
 
 
 def test_pre_commit_guard_blocks_logic_without_docs(temp_git_repo):
+    """Commit must be blocked when plugins/ logic changed with no map-debt/wiki staged."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Create logic file in plugins/
@@ -55,6 +66,7 @@ def test_pre_commit_guard_blocks_logic_without_docs(temp_git_repo):
 
 
 def test_pre_commit_guard_passes_with_valid_map_debt(temp_git_repo):
+    """Commit must pass when a schema-valid map-debt.md row is staged alongside logic."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Logic file
@@ -79,6 +91,7 @@ def test_pre_commit_guard_passes_with_valid_map_debt(temp_git_repo):
 
 
 def test_pre_commit_guard_blocks_malformed_map_debt_row(temp_git_repo):
+    """Commit must be blocked when a staged map-debt.md row has fewer than 9 pipes."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Logic file
@@ -104,6 +117,7 @@ def test_pre_commit_guard_blocks_malformed_map_debt_row(temp_git_repo):
 
 
 def test_pre_commit_guard_passes_with_wiki_playbook(temp_git_repo):
+    """Commit must pass when a wiki/ playbook is staged instead of a map-debt.md row."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Logic file
@@ -123,6 +137,7 @@ def test_pre_commit_guard_passes_with_wiki_playbook(temp_git_repo):
 
 
 def test_pre_commit_guard_passes_non_logic_files(temp_git_repo):
+    """Commit must pass untouched when no plugins/src/py_services files are staged."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Readme only
@@ -280,6 +295,7 @@ def test_sync_rules_does_not_duplicate_modified_schema_lines(tmp_path):
 
 
 def test_pre_commit_guard_blocks_unindexed_playbook(temp_git_repo):
+    """Commit must be blocked when a staged wiki playbook is missing from wiki/index.md."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Logic file
@@ -304,6 +320,7 @@ def test_pre_commit_guard_blocks_unindexed_playbook(temp_git_repo):
 
 
 def test_pre_commit_guard_passes_indexed_playbook(temp_git_repo):
+    """Commit must pass when the staged wiki playbook is already referenced in wiki/index.md."""
     guard_script = Path(__file__).parent.parent / "scripts" / "pre-commit-evolution-guard"
     
     # Logic file

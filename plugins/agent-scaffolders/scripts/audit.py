@@ -84,6 +84,7 @@ def _check_root_structure(plugin_path: str, errors: list, warnings: list) -> Non
                 raw_text = f.read()
 
             def strict_duplicate_check(ordered_pairs):
+                """Raise on any duplicate JSON key instead of silently keeping the last one."""
                 d = {}
                 for k, v in ordered_pairs:
                     if k in d:

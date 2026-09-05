@@ -213,6 +213,7 @@ def promote_task_to_issue(
 
 
 def main() -> None:
+    """CLI entry point: parse a task file, build the issue payload, and promote it (or dry-run)."""
     parser = argparse.ArgumentParser(description="Promote local task file into GitHub Issue.")
     parser.add_argument("--task-path", required=True, help="Path to local task file")
     parser.add_argument("--labels", default="", help="Comma-separated extra labels")

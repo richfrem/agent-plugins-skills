@@ -14,6 +14,10 @@ Layer: OS Kernel / Evolution Controller
 CLI Subcommands:
     init, plan, authorize, transition, record-verification, set-receipt,
     export-layer2, recover, status
+
+Key Input Dependencies:
+    - context/.evolution/<cycle-id>/state.json (per-cycle state file)
+    - context/.locks/ (advisory spinlock directory)
 """
 
 import argparse
@@ -72,10 +76,12 @@ VALID_DAG = {
 
 
 def _now():
+    """Return the current UTC time as an ISO-8601 string."""
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _get_repo_root(repo_dir: Path = None) -> Path:
+    """Resolve the repo root, defaulting to the git toplevel of the cwd."""
     if repo_dir:
         return repo_dir.resolve()
     try:
@@ -86,6 +92,7 @@ def _get_repo_root(repo_dir: Path = None) -> Path:
 
 
 def _get_git_head(repo_root: Path) -> str:
+    """Return the current git HEAD commit SHA for repo_root."""
     try:
         res = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True, text=True, check=True)
         return res.stdout.strip()
@@ -94,14 +101,17 @@ def _get_git_head(repo_root: Path) -> str:
 
 
 def _state_file_path(repo_root: Path) -> Path:
+    """Return the path to the per-cycle evolution state JSON file."""
     return repo_root / ".agent" / "learning" / "evolution_state.json"
 
 
 def _lock_dir_path(repo_root: Path) -> Path:
+    """Return the path to the advisory lock directory for this repo."""
     return repo_root / ".agent" / "learning" / "evolution.lock"
 
 
 def _pid_alive(pid: int) -> bool:
+    """Return True if a process with the given pid is currently running."""
     try:
         os.kill(int(pid), 0)
         return True
@@ -112,6 +122,7 @@ def _pid_alive(pid: int) -> bool:
 
 
 def _acquire_lock(repo_root: Path, timeout: int = 2, ttl: int = 1800) -> bool:
+    """Acquire the advisory evolution spinlock, waiting up to timeout seconds."""
     lock_dir = _lock_dir_path(repo_root)
     lock_dir.parent.mkdir(parents=True, exist_ok=True)
     deadline = time.time() + timeout
@@ -154,6 +165,7 @@ def _acquire_lock(repo_root: Path, timeout: int = 2, ttl: int = 1800) -> bool:
 
 
 def _release_lock(repo_root: Path):
+    """Release the advisory evolution spinlock for this repo."""
     lock_dir = _lock_dir_path(repo_root)
     if lock_dir.exists():
         try:
@@ -165,6 +177,7 @@ def _release_lock(repo_root: Path):
 
 
 def _atomic_write_json(file_path: Path, data: dict):
+    """Write data as JSON to file_path atomically (write-then-rename)."""
     file_path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(dir=file_path.parent, delete=False, mode="w", encoding="utf-8") as tf:
         json.dump(data, tf, indent=2)
@@ -175,6 +188,7 @@ def _atomic_write_json(file_path: Path, data: dict):
 
 
 def _load_state(repo_root: Path) -> dict:
+    """Load and return the current cycle's state dict from disk."""
     p = _state_file_path(repo_root)
     if not p.exists():
         print(f"Error: Evolution state file not found at {p}", file=sys.stderr)
@@ -184,6 +198,7 @@ def _load_state(repo_root: Path) -> dict:
 
 
 def _file_hash(p: Path) -> str:
+    """Return the SHA-256 hex digest of the file at path p."""
     if not p.exists():
         return ""
     h = hashlib.sha256()
@@ -194,6 +209,7 @@ def _file_hash(p: Path) -> str:
 
 
 def _check_verifier_sovereignty(repo_root: Path, state: dict):
+    """Verify no locked verifier file was modified since the cycle began."""
     # 1. Check default baseline hashes
     default_baseline = state.get("default_baseline_hashes", {})
     for p_str, expected_hash in default_baseline.items():
@@ -221,6 +237,7 @@ def _check_verifier_sovereignty(repo_root: Path, state: dict):
 # ============================================================================
 
 def cmd_init(args):
+    """CLI: initialize a new evolution cycle and write its state file."""
     repo_root = _get_repo_root(args.repo_dir)
 
     # Check if a cycle is already active in evolution_state.json
@@ -284,6 +301,7 @@ def cmd_init(args):
 
 
 def cmd_plan(args):
+    """CLI: record the read-only proposal plan for the current cycle."""
     repo_root = _get_repo_root(args.repo_dir)
     state = _load_state(repo_root)
     
@@ -323,6 +341,7 @@ def cmd_plan(args):
 
 
 def cmd_authorize(args):
+    """CLI: transition the cycle from AWAITING_APPROVAL to AUTHORIZED."""
     repo_root = _get_repo_root(args.repo_dir)
     state = _load_state(repo_root)
     
@@ -346,6 +365,7 @@ def cmd_authorize(args):
 
 
 def cmd_transition(args):
+    """CLI: advance the cycle's state machine node, enforcing valid transitions."""
     repo_root = _get_repo_root(args.repo_dir)
     state = _load_state(repo_root)
     target_node = args.to
@@ -452,6 +472,7 @@ def cmd_transition(args):
 
 
 def cmd_verify(args):
+    """CLI: record the verifier's exit code and outcome for the current cycle."""
     repo_root = _get_repo_root(args.repo_dir)
     state = _load_state(repo_root)
     _check_verifier_sovereignty(repo_root, state)
@@ -500,6 +521,7 @@ def cmd_verify(args):
 
 
 def cmd_record_verification(args):
+    """CLI: append a verification result entry to the cycle's audit trail."""
     # V1: NON-AUTHORITATIVE. Retained only so old call sites do not hard-crash.
     # It MUST NOT write last_verification_exit_code or verification_provenance.
     # Only `verify` (controller-executed) can drive VERIFY_GATE -> PRE_COMMIT_RECEIPT.
@@ -512,6 +534,7 @@ def cmd_record_verification(args):
 
 
 def cmd_set_receipt(args):
+    """CLI: attach a pre-commit or final receipt hash to the cycle state."""
     repo_root = _get_repo_root(args.repo_dir)
     state = _load_state(repo_root)
     if args.stage == "pre-commit":
@@ -523,6 +546,7 @@ def cmd_set_receipt(args):
 
 
 def _copy_layer2(from_wt: Path, dest: Path):
+    """Copy Layer 2 wiki/debt artifacts from the worktree to the main checkout."""
     # wiki/
     wt_wiki = from_wt / "wiki"
     if wt_wiki.exists():
@@ -544,6 +568,7 @@ def _copy_layer2(from_wt: Path, dest: Path):
 
 
 def cmd_export_layer2(args):
+    """CLI: export Layer 2 durable learnings from the worktree before teardown."""
     from_wt = Path(args.from_worktree).resolve()
     to_main = Path(args.to_main).resolve()
     if not from_wt.exists():
@@ -600,6 +625,7 @@ def cmd_export_layer2(args):
 
 
 def cmd_recover(args):
+    """CLI: attempt to recover a cycle stuck in an inconsistent state."""
     repo_root = _get_repo_root(args.repo_dir)
     state_file = _state_file_path(repo_root)
     if not state_file.exists():
@@ -652,12 +678,14 @@ def cmd_recover(args):
 
 
 def cmd_status(args):
+    """CLI: print the current cycle's state and node for inspection."""
     repo_root = _get_repo_root(args.repo_dir)
     state = _load_state(repo_root)
     print(json.dumps(state, indent=2))
 
 
 def main():
+    """CLI entry point: parse args and dispatch to the matching cmd_* handler."""
     parser = argparse.ArgumentParser(description="Evolution State Controller")
     subparsers = parser.add_subparsers(dest="command", required=True)
 

@@ -1,6 +1,13 @@
 """
 Unit tests for secret redaction scanner in github-issue-agent.
 
+Purpose:
+    Verifies redaction_gate.py correctly detects and flags common secret
+    patterns (tokens, keys, private key blocks) in issue text.
+
+Key Input Dependencies:
+    - ../scripts/redaction_gate.py (module under test)
+
 Copyright (c) 2026. All rights reserved.
 """
 

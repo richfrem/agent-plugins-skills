@@ -8,6 +8,9 @@ Purpose:
     without writing to map-debt.md, evolution-log.md, wiki/, or emitting
     an Evolution-Check: none trailer, it outputs a prominent warning and
     nudge to prevent unrecorded map debt before the turn concludes.
+
+Key Input Dependencies:
+    - CLAUDE_PROJECT_DIR env var (or cwd), git status of the current session
 """
 
 import os
@@ -17,6 +20,7 @@ from pathlib import Path
 
 
 def main():
+    """Check the session's git status for unrecorded logic changes and warn if found."""
     target_dir = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     project_root = Path(target_dir).resolve()
 

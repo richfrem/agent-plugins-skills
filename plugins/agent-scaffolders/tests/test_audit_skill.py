@@ -8,6 +8,12 @@ Tests alignment checks:
 4. Hub-and-spoke compliance (ADR-002/003 - scripts must be symlinks)
 5. Missing references (acceptance-criteria.md, fallback-tree.md)
 6. Fix mode (--fix) auto-repair capability
+
+Purpose:
+    Validates audit_skill.py's checks above against synthetic sample skills.
+
+Key Input Dependencies:
+    - ../scripts/audit_skill.py (module under test)
 """
 
 import json
@@ -34,6 +40,7 @@ except ImportError:
 class TestAuditSkill(unittest.TestCase):
 
     def setUp(self):
+        """Create a synthetic sample-plugin skill tree with valid references."""
         self.temp_dir = tempfile.mkdtemp()
         self.plugin_root = Path(self.temp_dir) / "plugins" / "sample-plugin"
         self.skills_dir = self.plugin_root / "skills"
@@ -48,6 +55,7 @@ class TestAuditSkill(unittest.TestCase):
         (self.plugin_refs_dir / "fallback-tree.md").write_text("# Fallback\n", encoding="utf-8")
 
     def tearDown(self):
+        """Remove the temporary sample-plugin tree."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_import_exists(self):

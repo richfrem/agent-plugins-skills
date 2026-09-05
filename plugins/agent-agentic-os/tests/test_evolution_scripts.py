@@ -5,6 +5,14 @@ Unit tests for evolution scripts:
 - verify_evolution_receipt.py
 - export_upstream_pr.py
 - evaluate.py (--decision-only)
+
+Purpose:
+    Verifies the self-evolution scripts' state transitions, trace recording,
+    receipt verification, and upstream PR export logic.
+
+Key Input Dependencies:
+    - ../scripts/evolution_state.py, ../scripts/record_trace.py,
+      ../scripts/verify_evolution_receipt.py, ../scripts/export_upstream_pr.py
 """
 
 import json

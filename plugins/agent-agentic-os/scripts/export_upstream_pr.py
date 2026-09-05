@@ -7,6 +7,9 @@ Purpose:
     Safely exports evolved plugins to upstream repositories.
     Defaults strictly to --dry-run, enforcing an allowlist of plugin files,
     sanitizing diffs, and requiring explicit human sign-off before any remote push.
+
+Key Input Dependencies:
+    - Local git repo working tree (diff/changed-files source)
 """
 
 import argparse
@@ -16,6 +19,7 @@ from pathlib import Path
 
 
 def _get_repo_root(repo_dir: Path = None) -> Path:
+    """Resolve the repo root, defaulting to the git toplevel of the cwd."""
     if repo_dir:
         return repo_dir.resolve()
     try:
@@ -26,6 +30,7 @@ def _get_repo_root(repo_dir: Path = None) -> Path:
 
 
 def get_changed_files(repo_root: Path) -> list[str]:
+    """Return the list of files changed in the current branch vs. its base."""
     res = subprocess.run(["git", "status", "--porcelain"], cwd=repo_root, capture_output=True, text=True)
     files = []
     for line in res.stdout.splitlines():
@@ -40,6 +45,7 @@ def get_changed_files(repo_root: Path) -> list[str]:
 
 
 def sanitize_and_filter_files(files: list[str], target_plugin: str = None) -> list[str]:
+    """Filter changed files to the export allowlist and scrub disallowed paths."""
     allowed = []
     for f in files:
         # Must be within plugins/
@@ -56,6 +62,7 @@ def sanitize_and_filter_files(files: list[str], target_plugin: str = None) -> li
 
 
 def main():
+    """CLI entry point: parse args, sanitize the diff, and export only after human sign-off."""
     parser = argparse.ArgumentParser(description="Export Evolved Plugin to Upstream PR")
     parser.add_argument("--dry-run", action="store_true", default=True, help="Default mode: simulate PR export")
     parser.add_argument("--execute", action="store_true", help="Execute git push and gh pr create (requires human confirmation)")
