@@ -63,6 +63,19 @@ Run `init_agentic_os.py` based on mode:
 
 *Note: In both modes, `init_agentic_os.py` automatically initializes `context/control_plane.db` with WAL mode, installs `.git/hooks/pre-commit-evolution-guard`, and configures the `Stop` turn hook.*
 
+> [!IMPORTANT]
+> **Retrofit mode must call `_init_control_plane_db()` explicitly.** Only the fresh-setup path
+> (`create_project_structure()` → `_scaffold_context_dir()`) calls `_init_control_plane_db()`
+> implicitly. The `--retrofit` branch in `_execute_action()` scaffolds 3-Layer Memory and syncs
+> instructions/rules/skills, but never touches `context/`, so a retrofit run silently skipped
+> `control_plane.db` creation while still claiming (in this doc and in its own completion banner)
+> that both modes initialize it. Fixed by calling `_init_control_plane_db(target, args.dry_run)`
+> directly inside the `if args.retrofit:` branch — it's idempotent (skips if the DB already
+> exists), so it's safe to call unconditionally on every retrofit run. When modifying
+> `_execute_action()` again, verify both branches still reach every substrate listed in this
+> Phase 3 note — retrofit is not a subset of fresh-setup and does not get scaffolding steps for
+> free.
+
 ---
 
 ## Phase 4: Plugin Installation & Deployment
