@@ -203,22 +203,23 @@ explicitly reinstalls it themselves.
 
 ## Plugin State — Current Versions (10 plugins · 137 skills)
 
-### agent-agentic-os (v1.8.0)
+### agent-agentic-os (v1.9.0)
 
 Core improvement loop:
 ```
 os-architect → os-improvement-loop → os-eval-runner → os-eval-backport → os-experiment-log
 ```
 
-**Active skills (19):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
+**Active skills (22):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
 os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec
+os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec,
+os-health-check, issue-resolution-reviewer, repository-improvement
 
 **Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
 
-**Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
-agentic-os-setup, os-health-check
+**Agents (4):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
+agentic-os-setup
 
 **Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`
 
@@ -464,7 +465,7 @@ github-issue-prioritizer    ← rank issues, sync GitHub Projects v2
 issue-worktree-agent        ← isolated git worktree per issue
 issue-pr-lifecycle-agent    ← full issue → worktree → PR → close orchestration
 ```
-`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit sub-agent.
+`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit skill.
 `gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
 on first live use — the repo doesn't pre-register them.
 
@@ -1148,14 +1149,14 @@ Every friction event or failure detected during agent execution must be evaluate
 | **Tier 0 (Quickfix)** | Small friction, fixable inline within allowed edit boundaries in < 5 mins. | Patch inline, update rules/docs ("The Map"). | **Optional**. Log issue only if pattern recurs across sessions. | `type:friction`, `tier:0-quickfix`, `source:agent`, `risk:low` |
 | **Tier 1 (Friction / Gap)** | Workaround used, capability missing or awkward, but non-blocking. | Patch inline OR record Map Debt in `map-debt.md`. | **Fix inline or log issue**. If deferred as Map Debt, log issue payload. | `type:friction`, `tier:1-friction`, `source:agent`, `risk:low` |
 | **Tier 2 (Failure / Structural)** | Script/tool broken, execution error, or recurring friction. | Collect stack trace & empirical logs. Patch code or log debt. | **Mandatory Issue Logging** (or comment on existing root-cause issue). | `type:bug` or `type:friction`, `tier:2-structural`, `source:agent` |
-| **Tier 3 (Regression / Architecture)** | External change, breaking API/selector change, core design flaw. | Collect full evidence bundle & present formal Escalation Template. Synthesized by `repository-improvement-agent`. | **Mandatory Issue Logging + Architecture Review**. | `type:architecture` or `type:bug`, `tier:3-architecture` |
+| **Tier 3 (Regression / Architecture)** | External change, breaking API/selector change, core design flaw. | Collect full evidence bundle & present formal Escalation Template. Synthesized by `repository-improvement`. | **Mandatory Issue Logging + Architecture Review**. | `type:architecture` or `type:bug`, `tier:3-architecture` |
 
 ---
 
-## 2.1 Hotspot Synthesis Engine (`repository-improvement-agent`)
+## 2.1 Hotspot Synthesis Engine (`repository-improvement`)
 
 For Tier 3 architecture friction and recurring friction clusters identified by `friction_cluster_agent`:
-- The **`repository-improvement-agent`** consumes cluster hotspot reports to auto-propose and synthesize systemic refactoring PRs.
+- The **`repository-improvement`** skill consumes cluster hotspot reports and synthesizes proposals for human review. It never creates branches, commits, or PRs itself — see the skill's Human Gate section.
 - High-density hotspots are consolidated into architectural refactoring initiatives rather than fragmented single-line patches.
 
 ---

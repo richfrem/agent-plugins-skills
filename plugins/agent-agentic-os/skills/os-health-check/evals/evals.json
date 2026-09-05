@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "run a health check on the OS",
+    "should_trigger": true
+  },
+  {
+    "prompt": "check os metrics",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run a system monitor check on the OS",
+    "should_trigger": true
+  },
+  {
+    "prompt": "is the event bus healthy? any stuck agents?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "clear stale locks from context/.locks",
+    "should_trigger": false
+  },
+  {
+    "prompt": "summarize what the agentic OS ecosystem does",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "audit the issues we closed last week for resolution quality",
+    "should_trigger": true
+  },
+  {
+    "prompt": "was this issue actually fixed or did it just get relabeled",
+    "should_trigger": true
+  },
+  {
+    "prompt": "review issue resolution quality for the resolution:fixed label",
+    "should_trigger": true
+  },
+  {
+    "prompt": "close this issue",
+    "should_trigger": false
+  },
+  {
+    "prompt": "file a new github issue for this bug",
+    "should_trigger": false
+  },
+  {
+    "prompt": "prioritize the open issue backlog",
+    "should_trigger": false
+  }
+]

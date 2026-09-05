@@ -31,3 +31,14 @@ python ./scripts/sync_with_inventory.py
 
 > **Cleanup Only**: If the user only wants to clean orphans without reinstalling, use:
 > `python ./scripts/sync_with_inventory.py --cleanup-only`
+
+## Rules Merge Safety
+
+`sync_with_inventory.py` reinstalls every registered plugin via `plugin_installer.py`,
+including each plugin's `rules/` into `.agent/rules/`. This is a **merge, not an
+overwrite**: `deploy_rules()` diff-merges the plugin's `rules/<name>.md` into any
+existing `.agent/rules/<name>.md`, preserving newer/downstream content the plugin
+source doesn't yet have. If a full sync doesn't seem to have updated a rule you
+expected to change, check whether `.agent/rules/` already had newer content than
+`plugins/<plugin>/rules/<name>.md` — the plugin source itself needs updating, since
+sync will keep preserving the newer downstream version on every future run.

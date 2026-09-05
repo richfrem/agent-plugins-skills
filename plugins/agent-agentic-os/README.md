@@ -72,7 +72,7 @@ brainstorming and the right model for each job. A discipline layer, not a replac
 | Search experiment history (what was tested, what changed) | `python3 scripts/experiment_log.py query <term>` |
 | See a summary of all experiment results | `python3 scripts/experiment_log.py summary` |
 | Promote session learnings to long-term memory | `/os-memory` |
-| Check system health (event log, locks, memory) | `os-health-check` agent |
+| Check system health (event log, locks, memory) | `os-health-check` skill |
 | Fix a deadlocked agent (stale lock files) | `os-clean-locks` skill |
 | Verify os-architect still works after a change | `os-architect-tester` agent |
 | Get a full explanation of how the OS works | `os-guide` skill |
@@ -100,7 +100,6 @@ Start here for all evolution and improvement work. Everything else is called by 
 | Agent | Purpose |
 |-------|---------|
 | `agentic-os-setup` | Conversational setup guide — scaffolds memory, hooks, and CLAUDE.md hierarchy for a new project |
-| `os-health-check` | System diagnostics — inspects event log, memory state, lock status |
 
 **Internal (called by os-architect — do not invoke directly):**
 
@@ -151,6 +150,7 @@ Start here for all evolution and improvement work. Everything else is called by 
 |-------|---------|
 | `optimize-agent-instructions` | Audits and rewrites AI agent instruction files |
 | `os-clean-locks` | Removes stale lock files to resolve deadlocked agents |
+| `os-health-check` | System diagnostics — inspects event log, memory state, lock status (migrated from agent, 2026-09-05) |
 | `todo-check` | Audits files for TODO comments |
 | `os-guide` | Full OS reference — layers, interactions, patterns |
 

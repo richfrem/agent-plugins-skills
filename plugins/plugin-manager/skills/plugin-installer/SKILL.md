@@ -97,6 +97,8 @@ each agent's own directory back into `.agents/`. This mirrors exactly how
 
 > **Clean Replacement Guarantee:** Re-installing any plugin completely wipes the destination target directory `.agents/skills/<skill-name>` prior to copying. This ensures non-additive changes (file deletions, script renames, removed symlinks) are cleanly pruned without leaving stale artifacts behind.
 
+> **Rules Deploy Safely, Not Cleanly:** Unlike `skills/`, `.agent/rules/` is **never** blind-overwritten. `deploy_rules()` reads the existing `.agent/rules/<rule>.md` first and diff-merges the plugin's `rules/` source into it, preserving any downstream content the plugin source lacks (e.g. a same-day rule update not yet backported to `plugins/<plugin>/rules/`). On a genuine same-line conflict, the side with more content wins rather than the plugin source unconditionally winning. This closes a 2026-09-05 incident where a stale `plugins/dev-utils/rules/git-operations.md` silently clobbered a newer `.agent/rules/git-operations.md` during a routine sync. **Implication:** if a rule looks unchanged after a sync you expected to update it, check whether `.agent/rules/` already had newer content than the plugin source — update the plugin source (`plugins/<plugin>/rules/<rule>.md`) directly, don't fight the merge.
+
 > **Antigravity, Gemini, and GitHub Copilot** all natively read from `.agents/`
 > — no separate symlinks needed. The canonical `.agents/` copy is sufficient.
 

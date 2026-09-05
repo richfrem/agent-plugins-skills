@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "synthesize a refactoring proposal from the friction hotspots",
+    "should_trigger": true
+  },
+  {
+    "prompt": "what's the systemic fix for this recurring friction cluster",
+    "should_trigger": true
+  },
+  {
+    "prompt": "we keep hitting the same bug pattern, propose a real fix not a patch",
+    "should_trigger": true
+  },
+  {
+    "prompt": "open a PR for this fix",
+    "should_trigger": false
+  },
+  {
+    "prompt": "just patch this one line",
+    "should_trigger": false
+  },
+  {
+    "prompt": "prioritize the github issue backlog",
+    "should_trigger": false
+  }
+]

@@ -10518,6 +10518,36 @@
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/scripts/technical_diagnostic_engine.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/kernel.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/kernel.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: kernel.py CLI (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/memory/post_run_survey.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/memory/post_run_survey.md",
+      "strategy": "symlink",
+      "description": "os-health-check skill: post-run survey template"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-health-check/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-health-check skill acceptance criteria"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/issue-resolution-reviewer/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/issue-resolution-reviewer/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "issue-resolution-reviewer skill acceptance criteria"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/repository-improvement/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/repository-improvement/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "repository-improvement skill acceptance criteria"
     }
   ]
 }
