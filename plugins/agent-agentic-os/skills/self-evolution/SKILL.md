@@ -20,12 +20,33 @@ Before initiating an evolution cycle, verify:
 ## State Machine Execution Flow
 
 ```
+[PRIOR ART & DEBT SCAN] (Mandatory Phase 0)
+       |
+       ▼
 [TRIAGE] -> [PLAN] -> [AWAITING_APPROVAL] ===(Human Gate)===> [AUTHORIZED]
    -> [CREATE_WORKTREE] -> [EXECUTE] -> [VERIFY_GATE]
-         |-- Pass --------------------> [PRE_COMMIT_RECEIPT] -> [COMMIT] -> [FINAL_RECEIPT] -> [COMPLETED]
-         |-- Fail (attempts < 3) -----> [PLAN] (Loop)
-         \-- Fail (attempts == 3) ----> [ROLLBACK] -> [FINAL_RECEIPT] -> [ESCALATED]
+         |-- Pass ---------------------> [PRE_COMMIT_RECEIPT] -> [COMMIT] -> [FINAL_RECEIPT] -> [COMPLETED]
+         |-- Fail (attempts < 3) ------> [PLAN] (Loop)
+         \-- Fail (attempts == 3) -----> [ROLLBACK] -> [FINAL_RECEIPT] -> [ESCALATED]
 ```
+
+### Phase 0: Prior Art & Debt Scan (Mandatory — EVOLUTION tasks only)
+
+Before drafting any hypothesis or entering TRIAGE, the agent **must** read existing knowledge:
+
+1. **Read `references/map-debt.md`**: Identify all entries with `Repeat: YES`. These are hard blockers — a repeated failure must be escalated, not re-attempted blindly.
+2. **Read `wiki/decisions/`**: Check for any established architectural decisions or negative constraints that would rule out candidate hypotheses before they are written.
+3. **Read `wiki/playbook-*.md`** (if any exist for the domain): Check for confirmed patterns or previously rejected approaches.
+4. **Log the scan result** into the control plane before advancing:
+   ```bash
+   python3 scripts/agent_control.py log-prior-art \
+     --task-id "<cid>" \
+     --summary "Reviewed map-debt.md and wiki/decisions/. Repeat:YES entries: <list or none>." \
+     --repeat-yes-entries "<csv of repeat entries, or empty>"
+   ```
+5. **If `Repeat: YES` entries exist that match the current friction** — escalate immediately. Do not re-enter the same hypothesis loop.
+
+> This step is enforced by `agent_control.py`: EVOLUTION tasks cannot advance from `INTAKE` to `INTERVIEW` without a `prior_art_scan` entry in `asymmetric_persistence_log`.
 
 ### Stage 1: Proposal Mode (Read-Only Planning)
 1. **Initialize Cycle & Acquire Lock:**

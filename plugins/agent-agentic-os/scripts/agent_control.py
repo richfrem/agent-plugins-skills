@@ -31,13 +31,14 @@ Key Functions:
     - main() — CLI dispatcher entry point
 
 Usage Examples:
-    python3 agent_control.py init --task-id <id> --title <title> --runtime <tool>
+    python3 agent_control.py init --task-id <id> --title <title> --runtime <tool> [--task-type EVOLUTION]
     python3 agent_control.py transition --task-id <id> --to <state> --reason <text>
     python3 agent_control.py lock-verifiers --task-id <id> --paths <file1,file2>
     python3 agent_control.py verify-sovereignty --task-id <id>
     python3 agent_control.py record-receipt --task-id <id> --gate <g> --cmd "<c>" --exit-code <ec>
     python3 agent_control.py update-worktree --task-id <id> --path <p> --branch <b> --state <s>
     python3 agent_control.py status --task-id <id>
+    python3 agent_control.py log-prior-art --task-id <id> --summary <text> [--repeat-yes-entries <csv>]
 """
 
 import argparse
@@ -100,6 +101,7 @@ CREATE TABLE IF NOT EXISTS tasks (
             'ROLLED_BACK', 'ESCALATED'
         )
     ),
+    task_type TEXT NOT NULL DEFAULT 'GENERAL' CHECK (task_type IN ('GENERAL', 'EVOLUTION')),
     runtime_tool TEXT NOT NULL,
     worktree_path TEXT,
     worktree_branch TEXT,
@@ -167,6 +169,11 @@ CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 """
 
+SCHEMA_MIGRATIONS = [
+    # Migration: add task_type column if not present (for existing DBs)
+    "ALTER TABLE tasks ADD COLUMN task_type TEXT NOT NULL DEFAULT 'GENERAL' CHECK (task_type IN ('GENERAL', 'EVOLUTION'));",
+]
+
 
 class InvalidStateTransition(Exception):
     """Raised when an invalid state transition is attempted."""
@@ -219,7 +226,13 @@ class ControlPlane:
         try:
             conn.execute("PRAGMA journal_mode = WAL;")
             conn.executescript(SCHEMA_SQL)
-            conn.commit()
+            # Apply idempotent migrations for existing databases
+            for migration in SCHEMA_MIGRATIONS:
+                try:
+                    conn.execute(migration)
+                    conn.commit()
+                except Exception:
+                    pass  # Column already exists — ignore
         finally:
             conn.close()
 
@@ -283,10 +296,13 @@ class ControlPlane:
         runtime_tool: str,
         spec_path: Optional[str] = None,
         model_tier: Optional[str] = None,
-        model_id: Optional[str] = None
+        model_id: Optional[str] = None,
+        task_type: str = "GENERAL"
     ):
         """Creates a new task in INTAKE state and records creation transition."""
         self.init_db()
+        if task_type not in ("GENERAL", "EVOLUTION"):
+            raise ValueError(f"Invalid task_type '{task_type}'. Must be 'GENERAL' or 'EVOLUTION'.")
         if model_tier and not model_id:
             rec = self.resolve_recommended_model(runtime_tool=runtime_tool, tier=model_tier)
             model_id = rec["model_id"]
@@ -296,10 +312,10 @@ class ControlPlane:
             with conn:
                 conn.execute(
                     """
-                    INSERT INTO tasks (task_id, title, state, runtime_tool, spec_path, model_tier, model_id)
-                    VALUES (?, ?, 'INTAKE', ?, ?, ?, ?)
+                    INSERT INTO tasks (task_id, title, state, task_type, runtime_tool, spec_path, model_tier, model_id)
+                    VALUES (?, ?, 'INTAKE', ?, ?, ?, ?, ?)
                     """,
-                    (task_id, title, runtime_tool, spec_path, model_tier, model_id)
+                    (task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
                 )
                 conn.execute(
                     """
@@ -339,6 +355,25 @@ class ControlPlane:
 
         conn = self._get_connection()
         try:
+            # --- Invariant Guard: INTAKE -> INTERVIEW for EVOLUTION tasks ---
+            if to_state == "INTERVIEW" and current_state == "INTAKE":
+                task_type = task.get("task_type", "GENERAL")
+                if task_type == "EVOLUTION":
+                    prior_art_count = conn.execute(
+                        """
+                        SELECT COUNT(*) FROM asymmetric_persistence_log
+                        WHERE task_id = ? AND details LIKE '%prior_art_scan%'
+                        """,
+                        (task_id,)
+                    ).fetchone()[0]
+                    if prior_art_count == 0:
+                        raise PersistenceInvariantViolation(
+                            f"Cannot advance EVOLUTION task '{task_id}' past INTAKE: "
+                            "Prior art scan required. Read references/map-debt.md (check Repeat: YES entries) "
+                            "and wiki/decisions/ before drafting hypotheses. "
+                            "Log result via log_asymmetric_persistence() with details containing 'prior_art_scan'."
+                        )
+
             # --- Invariant Guard: VERIFY_EXIT -> DONE ---
             if to_state == "DONE":
                 # 1. Deterministic Verification Receipt Exists (exit_code == 0)
@@ -538,6 +573,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_init.add_argument("--spec-path", default=None)
     p_init.add_argument("--model-tier", choices=["low", "medium", "high"], default=None)
     p_init.add_argument("--model-id", default=None)
+    p_init.add_argument("--task-type", choices=["GENERAL", "EVOLUTION"], default="GENERAL")
 
     p_rec = sub.add_parser("recommend-model")
     p_rec.add_argument("--runtime", required=True)
@@ -570,14 +606,19 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)
+
+    p_lap = sub.add_parser("log-prior-art")
+    p_lap.add_argument("--task-id", required=True)
+    p_lap.add_argument("--summary", required=True, help="Summary of prior art scan findings")
+    p_lap.add_argument("--repeat-yes-entries", default="", help="Comma-separated Repeat:YES map-debt entries found")
     return parser
 
 
 def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
     """Executes the dispatched CLI command."""
     if args.subcommand == "init":
-        cp.create_task(args.task_id, args.title, args.runtime, args.spec_path, args.model_tier, args.model_id)
-        print(f"Task {args.task_id} initialized in INTAKE.")
+        cp.create_task(args.task_id, args.title, args.runtime, args.spec_path, args.model_tier, args.model_id, args.task_type)
+        print(f"Task {args.task_id} initialized in INTAKE (type={args.task_type}).")
     elif args.subcommand == "recommend-model":
         print(json.dumps(cp.resolve_recommended_model(args.runtime, args.tier), indent=2))
     elif args.subcommand == "transition":
@@ -598,6 +639,16 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Task {args.task_id} worktree state set to {args.state}.")
     elif args.subcommand == "status":
         print(json.dumps(cp.get_task(args.task_id), indent=2, default=str))
+    elif args.subcommand == "log-prior-art":
+        repeat_entries = args.repeat_yes_entries or "none"
+        details = f"prior_art_scan: summary={args.summary}; repeat_yes_entries={repeat_entries}"
+        cp.log_asymmetric_persistence(
+            task_id=args.task_id,
+            destination="references/map-debt.md",
+            status="OBSERVED",
+            details=details
+        )
+        print(f"Prior art scan logged for task {args.task_id}.")
 
 
 def main():

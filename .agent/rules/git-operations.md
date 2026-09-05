@@ -23,7 +23,7 @@ Never run `git stash`, `git stash pop`, or `git stash apply` unless the user exp
   ```
 
 ### 3. Pre-Push Freshness & Quality Gate
-Before pushing any changes to GitHub or concluding updates to plugins or skills:
+Before **explicitly pushing** changes to GitHub (i.e., only when the user has issued a direct push command):
 1. **Upstream Freshness Check**: Verify the branch is up to date with `origin/main`:
    ```bash
    git fetch origin main
@@ -65,6 +65,15 @@ Never `git push --force` to main or master under any circumstances.
 ### 6. No --no-verify
 Never skip hooks with `--no-verify` unless the user explicitly requests it.
 
+### 7. No autonomous PR or remote operations
+- **Never run `gh pr create`**, `gh pr merge`, or any GitHub CLI command that creates or merges a pull request without an explicit, isolated user directive (e.g., "open a PR", "create a pull request now").
+- Discussing, reviewing, or mentioning a PR in conversation does NOT constitute permission to open one.
+- Applies equally to `hub`, `gh`, and any git alias that results in a remote-side PR or branch creation.
+
+### 8. No branch switching during active unreviewed work
+- Do not `git checkout`, `git switch`, or `git checkout -b` away from a feature branch that contains local commits not yet approved by the user.
+- If a new branch is needed while work-in-progress commits exist on the current branch, stop and confirm with the user what to do with those commits before switching.
+
 ### 7. Commit only what is asked & required
 - Commit only files within the task scope.
 - Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
@@ -82,7 +91,7 @@ Never skip hooks with `--no-verify` unless the user explicitly requests it.
 
 - `git status`, `git diff`, `git log` — read-only, always safe
 - `git add <specific files>` + `git commit` when the user asked to commit
-- `git push` (non-force) when the user asked to push
-- Fetching and merging `origin/main` into the current working feature branch to keep PRs conflict-free
-- `git checkout -b <branch>` when the user asks for a new branch
+- `git push` (non-force) **only** when the user issued an explicit, isolated push directive (e.g., "push this branch", "push now") — conversational mentions of PRs or branches do NOT qualify
+- Fetching and merging `origin/main` into the current working feature branch to keep it current — **but only while on that feature branch, and only if no local unreviewed commits would be lost or detached**
+- `git checkout -b <branch>` when the user asks for a new branch **and no unreviewed local commits are present on the current branch**
 

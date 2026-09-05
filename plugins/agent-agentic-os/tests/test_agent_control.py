@@ -21,6 +21,8 @@ Key Functions:
     - test_verification_receipt_generation() — Validates receipt generation
     - test_session_aware_native_detection() — Validates session-aware environment detection
     - test_cost_tier_resolution_and_task_columns() — Validates cost tier columns and resolution
+    - test_evolution_task_blocked_without_prior_art_scan() — Validates EVOLUTION prior art gate
+    - test_evolution_task_passes_with_prior_art_scan() — Validates EVOLUTION prior art gate success path
 """
 
 import os
@@ -350,3 +352,43 @@ def test_transition_to_rolled_back_requires_asymmetric_persistence(control_plane
     control_plane.transition(task_id=task_id, to_state="ROLLED_BACK", actor="controller", reason="Verified rollback")
     assert control_plane.get_task(task_id)["state"] == "ROLLED_BACK"
 
+
+def test_evolution_task_blocked_without_prior_art_scan(control_plane):
+    """Test that EVOLUTION tasks cannot advance from INTAKE to INTERVIEW without a prior art scan."""
+    task_id = "task-evo-gate-001"
+    control_plane.create_task(task_id=task_id, title="Evolution Task", runtime_tool="antigravity", task_type="EVOLUTION")
+
+    # Attempt to move to INTERVIEW without logging prior art scan
+    with pytest.raises(PersistenceInvariantViolation, match="Prior art scan required"):
+        control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Starting interview")
+
+    # Confirm task remains in INTAKE
+    assert control_plane.get_task(task_id)["state"] == "INTAKE"
+
+
+def test_evolution_task_passes_with_prior_art_scan(control_plane):
+    """Test that EVOLUTION tasks advance from INTAKE to INTERVIEW once prior art scan is logged."""
+    task_id = "task-evo-gate-002"
+    control_plane.create_task(task_id=task_id, title="Evolution Task Passing", runtime_tool="antigravity", task_type="EVOLUTION")
+
+    # Log the prior art scan
+    control_plane.log_asymmetric_persistence(
+        task_id=task_id,
+        destination="references/map-debt.md",
+        status="OBSERVED",
+        details="prior_art_scan: summary=Reviewed map-debt and wiki/decisions — no Repeat:YES blockers; repeat_yes_entries=none"
+    )
+
+    # Transition to INTERVIEW succeeds
+    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Prior art scanned")
+    assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
+
+
+def test_general_task_advances_without_prior_art_scan(control_plane):
+    """Test that GENERAL tasks can advance from INTAKE to INTERVIEW without a prior art scan."""
+    task_id = "task-general-gate-001"
+    control_plane.create_task(task_id=task_id, title="General Task", runtime_tool="antigravity", task_type="GENERAL")
+
+    # GENERAL tasks do not require prior art scan
+    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Starting interview")
+    assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
