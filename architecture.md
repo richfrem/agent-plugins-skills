@@ -26,7 +26,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere; excludes
 the deprecated `spec-kitty-plugin` pointer):
 - **10 plugins**
-- **137 skills** (SKILL.md definitions)
+- **140 skills** (active SKILL.md definitions across plugins)
 - **51 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
@@ -34,10 +34,10 @@ the deprecated `spec-kitty-plugin` pointer):
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (19 skills)
+│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (20 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (9 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent scaffolding & evolution auditing (31 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & evolution auditing (32 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (14 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
 │   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
@@ -113,10 +113,10 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (v2.1.0, 31 skills)
+### 4.5. Plugin: agent-scaffolders (v2.1.0, 32 skills)
 Tooling for creating, validating, and auditing ecosystem components: `create-plugin`, `create-skill`,
-`create-sub-agent`, `audit-plugin`, `audit-skill` (evolution alignment), plus APM package conversion,
-marketplace management, and ecosystem-index maintenance.
+`create-rule` (invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, `audit-skill`
+(evolution alignment), plus APM package conversion, marketplace management, and ecosystem-index maintenance.
 
 ### 4.6. Plugin: cli-agents (v2.1.0)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
@@ -171,18 +171,14 @@ natively-managed upstream `Priivacy-ai/spec-kitty` package (installed separately
 | 007 | MAF (Microsoft Agent Framework) is an optional certified runtime adapter, never the primary orchestration kernel — `.md` manifests remain the portable source of truth across Claude Code / Copilot CLI / Gemini CLI / MAF |
 
 Full rule text (rationale, examples, enforcement detail) lives in `.agent/rules/` — CLAUDE.md only
-carries the summary. Full current set: `graph-planning-superpowers-policy.md` (the plan/review/
-execution lifecycle — native Plan Mode sandboxing, context-bundler adversarial fan-out capped at
-2-3 rounds, worktree-isolated Superpowers TDD, multi-stage verification), `coding-conventions.md`,
-`dependency-management.md`, `plugin-architecture-policy.md`, `self-evolution-policy.md`,
-`symlink-cross-platform.md`, `test-driven-development.md`, `destructive-action-guard.md`,
-`git-operations.md`, `skill-deletion-guard.md`, `github-issue-logging-policy.md`,
-`pre-push-audit.md`, `worktree-subagent-leak-detection.md` (a dispatched subagent's writes
-leaking outside its assigned worktree — renamed 2026-08-18, formerly `worktree-subagent-isolation.md`),
-`worktree-lifecycle-management.md` (the full worktree lifecycle — state vocabulary for
-written/committed/pushed/merged/ref-updated/checked-out-on-disk, added the same day as a
-companion to the leak-detection rule, not a replacement for it),
-`adversarial-reasoning-before-agreement-rule.md`.
+carries the summary. Full current set (12 consolidated rules): `graph-planning-superpowers-policy.md`
+(the plan/review/execution lifecycle — native Plan Mode sandboxing, context-bundler adversarial fan-out
+capped at 2-3 rounds, worktree-isolated Superpowers TDD, multi-stage verification), `coding-conventions.md`,
+`dependency-management.md`, `plugin-architecture-policy.md` (includes Section 5 symlink cross-platform
+discipline), `self-evolution-policy.md`, `test-driven-development.md`, `destructive-action-guard.md`
+(includes skill & asset deletion guards), `git-operations.md` (includes pre-push audit gates),
+`github-issue-logging-policy.md`, `worktree-subagent-leak-detection.md`, `worktree-lifecycle-management.md`,
+and `adversarial-reasoning-before-agreement-rule.md`.
 Every file in `.agent/rules/` has a matching master under some `plugins/*/rules/` — verify with
 `python3 plugins/cli-agents/scripts/sync_instruction_files.py --check-rules`.
 

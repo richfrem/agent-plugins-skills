@@ -2,19 +2,19 @@
 name: optimize-agent-instructions
 plugin: agent-agentic-os
 description: >
-  Audits and rewrites AI agent instruction files (CLAUDE.md, GEMINI.md,
+  Audits and rewrites AI agent instruction files (AGENTS.md, CLAUDE.md, GEMINI.md,
   .github/copilot-instructions.md) in any repo. Strips stale or foreign content,
   applies Karpathy's four behavioral principles, ensures platform-specific sections,
   and makes each file authoritative rather than a copy of another.
   Trigger when the user says "optimize my CLAUDE.md", "audit agent instructions",
-  "improve my CLAUDE.md", "apply Karpathy principles to my agent files", "clean up
+  "improve my AGENTS.md", "apply Karpathy principles to my agent files", "clean up
   my copilot instructions", "review my GEMINI.md", or "update my AI instruction files".
 allowed-tools: Read, Write, Bash
 ---
 
 <example>
 <commentary>User wants their agent instruction files to follow best practices.</commentary>
-user: "Optimize my CLAUDE.md with Karpathy principles"
+user: "Optimize my AGENTS.md with Karpathy principles"
 assistant: [triggers optimize-agent-instructions, reads files, audits against checklist, rewrites]
 </example>
 
@@ -44,11 +44,11 @@ Run these checks silently before asking anything:
 
 **1. Which instruction files exist?**
 ```bash
-ls CLAUDE.md GEMINI.md .github/copilot-instructions.md 2>/dev/null
+ls AGENTS.md CLAUDE.md GEMINI.md .github/copilot-instructions.md 2>/dev/null
 ```
 
 **2. Ask the user:**
-- What platform(s) they use (Claude Code, Copilot, Gemini CLI) — determines which files to touch
+- What platform(s) they use (AGENTS.md open standard / Cursor / Codex / Antigravity, Claude Code, Copilot, Gemini CLI) — determines which files to touch
 - Any project-specific rules to preserve (coding standards, ADRs, naming conventions)
 
 If instruction files are missing for active platforms, offer to create them.

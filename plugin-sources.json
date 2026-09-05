@@ -11,19 +11,19 @@
       "plugins": [
         "agent-memory",
         "agent-orchestration",
-        "agent-scaffolders",
-        "cli-agents",
         "dependency-management",
-        "dev-utils",
-        "exploration-cycle-plugin",
-        "obsidian-wiki-engine",
-        "plugin-manager"
+        "obsidian-wiki-engine"
       ]
     },
     {
-      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
-        "agent-agentic-os"
+        "agent-agentic-os",
+        "agent-scaffolders",
+        "cli-agents",
+        "dev-utils",
+        "exploration-cycle-plugin",
+        "plugin-manager"
       ]
     }
   ]

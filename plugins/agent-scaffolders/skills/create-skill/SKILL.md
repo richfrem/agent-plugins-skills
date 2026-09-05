@@ -2,15 +2,24 @@
 name: create-skill
 plugin: agent-scaffolders
 description: >
-  Creates a new stateless skill in an existing plugin. Use this for procedural skills with no persistent state. NOT for sub-agents (use `create-sub-agent`) and NOT for skills that need stateful counters or session memory (use `create-stateful-skill`).
+  Creates a new skill in an existing plugin. Skills are the universal capability primitive
+  across all modern AI platforms (automatically callable as slash commands, agent skills, and prompt tools).
+  Use this as the primary default for procedural capabilities. NOT for isolated multi-turn wizards or
+  adversarial swarm agents (use `create-sub-agent`), and NOT for stateful counters (use `create-stateful-skill`).
 argument-hint: "[skill-name or use-case description]"
 allowed-tools: Bash, Read, Write
 ---
 
 <example>
-<commentary>User wants to create a brand-new skill from scratch.</commentary>
+<commentary>User wants to create a new reusable skill or slash command capability.</commentary>
 user: "Create a new skill called link-validator"
 assistant: [triggers create-skill, runs discovery interview, scaffolds directory structure with SKILL.md, evals/evals.json, references/acceptance-criteria.md]
+</example>
+
+<example>
+<commentary>User wants to create a slash command — redirect to create-skill because skills ARE slash commands.</commentary>
+user: "Create a slash command /test-runner"
+assistant: [triggers create-skill — explains that skills are automatically registered as slash commands across modern tools, scaffolds skills/test-runner/]
 </example>
 
 <example>
@@ -20,6 +29,15 @@ assistant: [triggers os-improvement-loop, not create-skill]
 </example>
 
 # create-skill: Skill Scaffolding Executor
+
+> [!IMPORTANT]
+> **Universal Capability Primitive (2026+)**
+> In modern agent platforms (Claude Code, Antigravity, Cursor, Codex, Gemini CLI, MAF):
+> 1. **Skills ARE Slash Commands & Tools**: Any skill scaffolded into `skills/<skill-name>/SKILL.md` is automatically callable as `/skill-name`, `@skill-name`, or invoked autonomously via its description and `evals.json`.
+> 2. **Default to Skills**: Always prefer `create-skill` over flat command files or wrapper agents.
+> 3. **When NOT to use a Skill**:
+>    - If the capability requires a multi-turn guided setup wizard with forked context (`context: fork`) or an adversarial persona: use `create-sub-agent`.
+>    - If the skill requires persistent counters or cross-session state: use `create-stateful-skill`.
 
 Scaffolds a complete, standards-compliant agent skill directory. Handles filesystem
 operations, template rendering, name validation, and discovery — then hands off to

@@ -22,8 +22,9 @@ _HERE = Path(__file__).resolve().parent
 _PLUGINS_DIR = _HERE / "plugins"
 
 _SKILL_DIRS = [
-    # agent-agentic-os (19 skills)
-    ("agent-agentic-os",         "gpt55-critical-auditor"),
+    # agent-agentic-os (20 skills)
+    ("agent-agentic-os",         "critical-auditor"),
+    ("agent-agentic-os",         "interview-spec"),
     ("agent-agentic-os",         "optimize-agent-instructions"),
     ("agent-agentic-os",         "os-architect"),
     ("agent-agentic-os",         "os-clean-locks"),

@@ -21,6 +21,8 @@ This skill requires **Python 3.8+** and standard library only. No external packa
 ## Overview
 This skill centralizes workflows for compiling codebase files, documentation, and instructions into portable payloads (`.md` for AI chat UIs or `.zip` for offline/agent handoffs).
 
+> **Storage & Git Discipline:** All bundle manifests, markdown payloads, and archives MUST be generated inside a gitignored `temp/` subfolder (e.g., `temp/bundles/` or `temp/context-bundle-[name]/`). Never write bundle outputs to project root or non-ignored directories, which would pollute `git status` with massive generated review packages.
+
 `context-bundler` supports **4 Execution Modes**:
 1. **Standard Bundle Mode**: Custom interactive selection of files/directories for general review or context sharing.
 2. **Persona-Driven Review / Handoff Mode**: Injects specialized review or delegation persona prompts (`prompt.md`) ahead of codebase files.

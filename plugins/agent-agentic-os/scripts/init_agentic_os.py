@@ -12,6 +12,37 @@ Purpose:
 Layer:
     CLI / Initialization & Retrofitting
 
+Key Input Dependencies:
+    - Template directory: assets/templates/ or skills/os-init/assets/templates/
+    - Agent control plane schema: context/control_plane.db (auto-initialized)
+    - Instruction files: CLAUDE.md (source of truth for mirroring)
+    - Ecosystem rules: .agent/rules/ (synced across workspaces)
+
+Key Functions:
+    - _get_plugin_root() — Resolves plugin root path
+    - load_template() — Loads markdown/json template from assets
+    - copy_runtime_file() — Loads canonical script/json runtime file
+    - announce() — Prints status message with dry-run indicator
+    - make_dir() — Creates directory safely
+    - write_file() — Writes file with backup and dry-run support
+    - _init_control_plane_db() — Bootstraps SQLite control plane DB with WAL mode
+    - _scaffold_3layer_memory() — Creates 3-layer memory directory structure
+    - _merge_instructions_with_judgment() — Merges OS sections into instruction files
+    - sync_instructions() — Reconciles CLAUDE.md to GEMINI, Copilot, AGENTS
+    - _merge_rule_content_preserving_downstream() — Diff-merges upstream rules preserving local edits
+    - sync_rules() — Synchronizes ecosystem rules into .agent/rules/
+    - retrofit_existing_skills() — Audits and auto-upgrades custom skills
+    - _scaffold_root_files() — Scaffolds root instruction files
+    - _scaffold_context_dir() — Scaffolds context/ runtime state and SQLite DB
+    - _scaffold_claude_dir() — Scaffolds .claude/ directory and hooks
+    - _validate_and_finalize() — Validates git repository and installs hooks
+    - create_project_structure() — Orchestrates project directory scaffolding
+    - create_global_kernel() — Scaffolds user-level ~/.claude/CLAUDE.md kernel
+    - print_next_steps() — Displays completion guidance and next steps
+    - _parse_args() — Parses CLI arguments
+    - _execute_action() — Dispatches retrofit or standard project scaffolding
+    - main() — CLI dispatcher entry point
+
 Usage Examples:
     python3 init_agentic_os.py --target /my/project
     python3 init_agentic_os.py --target /my/project --retrofit
@@ -25,6 +56,7 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import subprocess
 import sys
 from datetime import date
@@ -36,14 +68,18 @@ from typing import Dict, List, Optional, Tuple
 # Template & Runtime File Loaders
 # ---------------------------------------------------------------------------
 
+# External comment: Resolve plugin root directory
 def _get_plugin_root() -> Path:
+    """Resolves and returns the canonical plugin root path."""
     env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
     if env_root:
         return Path(env_root).resolve()
     return Path(__file__).resolve().parent.parent
 
 
+# External comment: Load a template file from plugin assets
 def load_template(filename: str) -> str:
+    """Loads markdown or JSON template string from asset search paths."""
     plugin_root = _get_plugin_root()
     search_paths = [
         plugin_root / "assets" / "templates" / filename,
@@ -58,7 +94,9 @@ def load_template(filename: str) -> str:
     sys.exit(1)
 
 
+# External comment: Load a canonical runtime file
 def copy_runtime_file(filename: str) -> str:
+    """Loads content of a canonical script or JSON configuration file."""
     plugin_root = _get_plugin_root()
     canonical_path = plugin_root / "scripts" / filename
     if canonical_path.exists():
@@ -76,12 +114,16 @@ def copy_runtime_file(filename: str) -> str:
 # Core Helpers
 # ---------------------------------------------------------------------------
 
+# External comment: Print an announcement message with dry-run support
 def announce(msg: str, dry_run: bool) -> None:
+    """Prints status message with optional dry-run indicator prefix."""
     prefix = "[DRY RUN] " if dry_run else ""
     print(f"  {prefix}{msg}")
 
 
+# External comment: Create directory safely
 def make_dir(path: Path, dry_run: bool) -> None:
+    """Creates a directory if it does not already exist."""
     if not path.exists():
         announce(f"mkdir  {path}", dry_run)
         if not dry_run:
@@ -90,7 +132,9 @@ def make_dir(path: Path, dry_run: bool) -> None:
         announce(f"exists {path} (skipped)", dry_run)
 
 
+# External comment: Write content to file with backup handling
 def write_file(path: Path, content: str, dry_run: bool, force: bool = False) -> None:
+    """Writes content to file with optional backup creation if existing."""
     if path.exists():
         if not force:
             announce(f"exists {path} (skipped - use --force to overwrite)", dry_run)
@@ -353,20 +397,128 @@ def retrofit_existing_skills(target: Path, dry_run: bool, fix: bool = True) -> N
             subprocess.run(cmd, check=False)
 
 
+CONTROL_PLANE_SCHEMA_SQL = """PRAGMA foreign_keys = ON;
+PRAGMA journal_mode = WAL;
+PRAGMA busy_timeout = 5000;
+
+CREATE TABLE IF NOT EXISTS tasks (
+    task_id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (
+        state IN (
+            'INTAKE', 'INTERVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
+            'APPROVED', 'IN_WORKTREE', 'VERIFY_EXIT', 'DONE',
+            'ROLLED_BACK', 'ESCALATED'
+        )
+    ),
+    runtime_tool TEXT NOT NULL,
+    worktree_path TEXT,
+    worktree_branch TEXT,
+    worktree_state TEXT CHECK (
+        worktree_state IS NULL OR worktree_state IN (
+            'written_in_worktree', 'committed_in_worktree', 'pushed_to_origin',
+            'merged_into_origin_main', 'local_branch_ref_updated', 'checked_out_on_disk'
+        )
+    ),
+    spec_path TEXT,
+    model_tier TEXT CHECK (model_tier IS NULL OR model_tier IN ('low', 'medium', 'high')),
+    model_id TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS task_transitions (
+    transition_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    from_state TEXT NOT NULL,
+    to_state TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    reason TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS locked_verifier_baselines (
+    baseline_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    expected_sha256 TEXT NOT NULL,
+    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS critic_reviews (
+    review_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    iteration INTEGER NOT NULL CHECK(iteration BETWEEN 1 AND 3),
+    model_used TEXT NOT NULL,
+    verdict TEXT NOT NULL CHECK (verdict IN ('PASS', 'REVISE', 'REJECT')),
+    critique_findings TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS verification_receipts (
+    receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    gate_name TEXT NOT NULL,
+    command_executed TEXT NOT NULL,
+    exit_code INTEGER NOT NULL,
+    receipt_token TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    destination TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('OBSERVED', 'HYPOTHESIS', 'CONFIRMED', 'RESOLVED')),
+    details TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
+CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
+"""
+
+
+# External comment: Initialize SQLite control plane database
+def _init_control_plane_db(target: Path, dry_run: bool) -> None:
+    """Initializes SQLite control plane database with WAL mode and schema."""
+    db_path = target / "context" / "control_plane.db"
+    if db_path.exists():
+        announce(f"exists {db_path} (skipped)", dry_run)
+        return
+
+    announce(f"init   {db_path}", dry_run)
+    if not dry_run:
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(str(db_path), timeout=10.0)
+        try:
+            conn.executescript(CONTROL_PLANE_SCHEMA_SQL)
+            conn.commit()
+        finally:
+            conn.close()
+
+
 # ---------------------------------------------------------------------------
 # Standard Scaffolding
 # ---------------------------------------------------------------------------
 
+# External comment: Scaffold repository root instruction files
 def _scaffold_root_files(target: Path, dry_run: bool, force: bool, project_name: str) -> None:
+    """Scaffolds top-level kernel instructions, architecture, and project status files."""
     write_file(target / "CLAUDE.md",
                load_template("CLAUDE_MD_PROJECT.md").format(project_name=project_name),
                dry_run, force)
     write_file(target / "CLAUDE.local.md", load_template("CLAUDE_LOCAL_MD.md"), dry_run, force)
     write_file(target / "START_HERE.md", load_template("START_HERE_MD.md"), dry_run, force)
     write_file(target / "heartbeat.md", load_template("HEARTBEAT_MD.md"), dry_run, force)
+    write_file(target / "architecture.md",
+               load_template("ARCHITECTURE_MD.md").format(project_name=project_name),
+               dry_run, force)
 
 
+# External comment: Scaffold context directory, runtime state, and control plane DB
 def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) -> None:
+    """Scaffolds context directory, locks, runtime manifests, and control_plane.db."""
     make_dir(target / "context", dry_run)
     make_dir(target / "context" / "memory", dry_run)
     make_dir(target / "context" / ".locks", dry_run)
@@ -380,9 +532,12 @@ def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) 
     write_file(target / "context" / "agents.json", copy_runtime_file("agents.json"), dry_run, force)
     write_file(target / "context" / "events.jsonl",
                load_template("EVENTS_JSONL.jsonl"), dry_run, force)
+    _init_control_plane_db(target, dry_run)
 
 
+# External comment: Scaffold Claude Code configuration directory
 def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
+    """Scaffolds .claude configuration directory, commands, and hooks."""
     make_dir(target / ".claude", dry_run)
     make_dir(target / ".claude" / "agents", dry_run)
     make_dir(target / ".claude" / "commands", dry_run)
@@ -391,7 +546,9 @@ def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
                load_template("HOOKS_JSON.json"), dry_run, force)
 
 
+# External comment: Validate git repo and install pre-commit evolution guard
 def _validate_and_finalize(target: Path, dry_run: bool) -> None:
+    """Validates git repository context and installs pre-commit evolution guard."""
     try:
         subprocess.run(["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -427,7 +584,9 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
         announce("⚠️  Warning: target is not inside a git repository or git is not installed.", dry_run)
 
 
+# External comment: Orchestrate end-to-end project directory scaffolding
 def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
+    """Orchestrates creation of full Agentic OS project directory structure."""
     today = date.today().isoformat()
     project_name = target.resolve().name
 
@@ -440,7 +599,9 @@ def create_project_structure(target: Path, dry_run: bool, force: bool) -> None:
     _validate_and_finalize(target, dry_run)
 
 
+# External comment: Scaffold global ~/.claude/CLAUDE.md kernel
 def create_global_kernel(dry_run: bool, force: bool) -> None:
+    """Creates ~/.claude/CLAUDE.md global agentic kernel if requested."""
     global_claude = Path.home() / ".claude"
     global_md = global_claude / "CLAUDE.md"
 
@@ -449,7 +610,9 @@ def create_global_kernel(dry_run: bool, force: bool) -> None:
     write_file(global_md, load_template("CLAUDE_MD_GLOBAL.md"), dry_run, force)
 
 
+# External comment: Print initialization completion summary and next steps
 def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None:
+    """Displays user guidance, next steps, and plugin installation commands."""
     print("\n" + "=" * 60)
     print("Agentic OS Initialization / Retrofit Complete!")
     print("=" * 60)
@@ -479,7 +642,9 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
 # CLI Entry Point
 # ---------------------------------------------------------------------------
 
-def main() -> None:
+# External comment: Parse command line arguments
+def _parse_args() -> argparse.Namespace:
+    """Parses and validates command line arguments."""
     parser = argparse.ArgumentParser(
         description="Initialize or retrofit the Agentic OS and 3-Layer Memory substrate in a project."
     )
@@ -520,17 +685,12 @@ def main() -> None:
         action="store_true",
         help="Overwrite existing files with .bak backups"
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
-    target = Path(args.target).expanduser().resolve()
 
-    if not target.exists():
-        print(f"Error: target directory does not exist: {target}", file=sys.stderr)
-        sys.exit(1)
-
-    if args.dry_run:
-        print("\n[DRY RUN] Previewing changes - nothing will be written.\n")
-
+# External comment: Execute scaffold or retrofit action workflow
+def _execute_action(target: Path, args: argparse.Namespace) -> None:
+    """Executes either retrofit migration or fresh project scaffolding."""
     if args.retrofit:
         print(f"\n--- Retrofitting Existing Repository: {target.resolve()} ---\n")
         _scaffold_3layer_memory(target, args.dry_run, args.force)
@@ -543,6 +703,22 @@ def main() -> None:
             sync_instructions(target, args.dry_run)
         if args.sync_rules:
             sync_rules(target, args.dry_run)
+
+
+# External comment: CLI entry point
+def main() -> None:
+    """Entry point for os-init / init_agentic_os CLI engine."""
+    args = _parse_args()
+    target = Path(args.target).expanduser().resolve()
+
+    if not target.exists():
+        print(f"Error: target directory does not exist: {target}", file=sys.stderr)
+        sys.exit(1)
+
+    if args.dry_run:
+        print("\n[DRY RUN] Previewing changes - nothing will be written.\n")
+
+    _execute_action(target, args)
 
     if args.global_kernel:
         create_global_kernel(args.dry_run, args.force)

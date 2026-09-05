@@ -5,8 +5,6 @@ globs: ["plugins/**/SKILL.md", "plugins/**/scripts/**/*.py", "plugins/**/*.md"]
 
 # Plugin Architecture & Coupling Policy
 
-**Full ADR context → `ADRs/001_` through `007_`**
-
 ## 1. Hub-and-Spoke Resource Model & Installer Dereferencing
 
 1. **Authoring Model vs. Runtime Model**:
@@ -71,24 +69,46 @@ Resource placement is determined strictly by **purpose**, not file extension:
 
 ---
 
-## 5. Mandatory Symlink Workflow
+## 5. Mandatory Symlink Workflow & Cross-Platform Protocol
+
+**NEVER create symlinks with `ln -s` directly.**  
+**NEVER create real file copies where a symlink should exist.**
+
+All symlink creation, repair, and auditing must go through `.agents/skills/symlink-manager/scripts/symlink_manager.py` and be recorded in `symlinks.json`.
 
 1. **File-Level Symlinks ONLY**:
    All shared resources within or across plugins must use **file-level symlinks ONLY**. Directory-level symlinks are strictly forbidden because installation bridges drop them or fail on cross-platform checkouts.
 2. **Zero Manual `ln -s`**:
-   Never invoke `ln -s` directly. All symlink creation, updates, and maintenance must go through `symlink_manager.py` and be recorded in `symlinks.json`.
-3. **Mandatory Symlink Validation Sequence**:
-   After creating or editing any shared script or resource:
-   ```bash
-   # 1. Diagnose first
-   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-
-   # 2. Restore all from manifest
-   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
-
-   # 3. Verify zero broken symlinks or real-file imposters
-   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-   ```
+   Never invoke `ln -s` directly in the shell. Direct calls bypass the manifest, causing links to fail or disappear on fresh checkouts.
+3. **Canonical Source Locations**:
+   | Resource Type | Canonical Master Copy | Installed / Spoke Location |
+   |---|---|---|
+   | Python scripts | `plugins/<plugin-name>/scripts/` | `plugins/<plugin-name>/skills/<skill>/scripts/` |
+   | References / docs | `plugins/<plugin-name>/references/` | `plugins/<plugin-name>/skills/<skill>/references/` |
+   | Assets / templates | `plugins/<plugin-name>/assets/` | `plugins/<plugin-name>/skills/<skill>/assets/` |
+4. **Required 5-Step Symlink Workflow**:
+   - **Step 1: Diagnose first**
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     ```
+     Identify every `? regular file (not a link)` and `✗ broken symlink` before touching anything.
+   - **Step 2: Remove real-file imposters**
+     If a file that should be a symlink is a regular file copy, delete the imposter first:
+     ```bash
+     rm -f path/to/real-file-that-should-be-symlink
+     ```
+   - **Step 3: Register link in manifest (`symlinks.json`)**
+     Record the canonical source and skill target via `symlink_manager.py` or formatted entry:
+     `{ "src": "canonical/source.py", "dst": "skill/scripts/source.py", "strategy": "symlink", "description": "..." }`
+   - **Step 4: Restore all from manifest**
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
+     ```
+   - **Step 5: Verify clean status**
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     ```
+     Ensure zero `? regular file` or `✗ broken symlink` entries remain before committing.
 
 ---
 

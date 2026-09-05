@@ -28,6 +28,7 @@ skills:
   - create-hook
   - create-mcp-integration
   - create-plugin
+  - create-rule
   - create-skill
   - create-stateful-skill
   - create-sub-agent

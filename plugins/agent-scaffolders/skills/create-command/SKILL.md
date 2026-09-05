@@ -2,7 +2,10 @@
 name: create-command
 plugin: agent-scaffolders
 description: >
-  Scaffolds a new slash command in an existing plugin. NOT for creating event-driven hooks (use `create-hook`) and NOT for standard skills (use `create-skill`).
+  Guidance on slash commands vs. skills. Explains modern best practices where skills
+  (skills/<name>/SKILL.md) supersede legacy commands/workflows (commands/<name>.md),
+  and guides users to use create-skill instead for portable, evaluated, multi-agent workflows.
+  Retains reference for creating personal flat prompt shortcuts if explicitly requested.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -20,12 +23,26 @@ See `../../requirements.txt` for the dependency lockfile (currently empty — st
 
 ---
 
-# Slash Command Designer
+# Slash Commands & Modern Skill Architecture
 
-Slash commands are reusable Markdown prompts that Claude executes when invoked with
-`/command-name`. They provide consistency, efficiency, and shareability for common
-workflows. Commands can be simple prompts or powerful multi-step workflows using dynamic
-arguments, file references, bash execution, and integration with agents and skills.
+> [!IMPORTANT]
+> **Modern Agent Guidance (2026+): Skills Supersede Commands & Workflows**
+> In modern agent platforms (Claude Code, Antigravity, Cursor, Codex, Gemini CLI, MAF):
+> 1. **Skills ARE Slash Commands**: Any skill placed in `skills/<skill-name>/SKILL.md` is automatically invokable via `/skill-name` (or `@skill-name`).
+> 2. **Skills are Superior**: Skills support accompanying scripts, evaluation suites (`evals/evals.json`), references, and multi-file context. Flat command files (`commands/*.md`) do not.
+> 3. **Avoid Duplication**: Never create identical copies in `commands/` and `skills/`.
+> 
+> **Recommendation:**
+> - If building plugin capabilities or multi-step agent workflows: **USE `create-skill` INSTEAD**.
+> - Only use flat slash commands (`.claude/commands/<name>.md` or `~/.claude/commands/<name>.md`) for personal, lightweight, single-file prompt templates that require no scripts or evaluations.
+
+---
+
+## Slash Command Designer (Legacy & Personal Shortcuts)
+
+Slash commands are Markdown prompt templates executed when invoked with `/command-name`.
+In early Claude Code setups, they lived in `.claude/commands/<name>.md`. Today, authoring as a
+Skill (`skills/<name>/SKILL.md`) is standard across all agent tooling.
 
 > Reference files for deep dives:
 > - `references/frontmatter-reference.md` -- full list of all frontmatter fields
@@ -39,59 +56,50 @@ arguments, file references, bash execution, and integration with agents and skil
 
 ## The Most Important Rule
 
-**Commands are instructions FOR Claude, not messages TO the user.**
+**Commands are instructions FOR the AI agent, not messages TO the user.**
 
-When `/command-name` is invoked, the command body becomes Claude's instructions. Write
-what Claude should DO, not what the user will see.
+When `/command-name` is invoked, the command body becomes instructions. Write
+what the AI agent should DO, not what the user will see.
 
 ```markdown
-# CORRECT -- tells Claude what to do:
+# CORRECT -- tells agent what to do:
 Review this code for security vulnerabilities:
 - SQL injection
 - XSS attacks
 - Authentication bypass
 Provide specific line numbers and severity ratings.
 
-# WRONG -- addresses the user, not Claude:
+# WRONG -- addresses the user, not agent:
 This command will review your code for security issues.
 You will receive a report with vulnerability details.
 ```
 
 ---
 
-## Step 1: Understand the Use Case
+## Step 1: Decision Matrix — Skill vs. Command
 
-Extract from context first. Ask only what is unclear.
+Before writing a flat command file, evaluate:
 
-**Core questions:**
+| Requirement | Recommended Path | Reason |
+|:---|:---|:---|
+| Plugin feature, reusable agent capability | **`create-skill`** | First-class across all agents, has `evals.json`, scripts, references |
+| Multi-step workflow with helper scripts | **`create-skill`** | Commands cannot cleanly bundle dedicated scripts |
+| Cross-tool portability (Claude, Codex, Gemini, MAF) | **`create-skill`** | `commands/` is Claude-only legacy; `skills/` is universal |
+| Personal quick prompt shortcut (no scripts, single user) | Flat command (`~/.claude/commands/`) | Simple, zero overhead for personal ad-hoc use |
 
-1. **What workflow should this automate?** One command, one purpose.
-
-2. **Which command type fits?**
-   - **Simple**: Static prompt, no arguments, no bash -- just a great reusable instruction
-   - **Dynamic**: Uses `$ARGUMENTS`, `$1`/`$2` positional args, or file references (`@$1`)
-   - **Bash-powered**: Inline `!`` `` ` `` bash commands to gather dynamic context before Claude runs
-   - **Multi-component**: Coordinates skills, agents, and scripts in a workflow
-
-3. **Where should it live?**
-   - `.claude/skills/<name>/SKILL.md` -- **recommended** for new work (supports supporting files,
-     cross-agent portability, inline hooks). The directory name becomes the slash command.
-   - `.claude/commands/<name>.md` -- flat file, still works, simpler but no supporting files.
-     **Note**: confirmed macOS discovery bug (GitHub #13906) with `.claude/commands/` in
-     some Claude Code versions. Prefer `skills/` or a local plugin for reliability.
-   - `~/.claude/skills/<name>/SKILL.md` -- personal commands available in all projects
-   - `plugin-name/skills/<name>/SKILL.md` -- distributed with plugin, namespaced as
-     `/plugin-name:<name>` -- **always use the full namespaced form in agent files**
-
-4. **Does it need arguments?** Use `$ARGUMENTS` (all as one string) or `$1`, `$2` (positional).
-
-5. **Does it need to read files?** Use `@file-path` or `@$1` for dynamic file args.
-
-6. **Tool restrictions needed?** Set `allowed-tools` to restrict scope (e.g. `Bash(git:*)` not `Bash(*)`).
+If the user wants a reusable capability, **redirect to `create-skill`**:
+```bash
+# Scaffold as a standard portable skill instead
+/create-skill <name>
+```
 
 ---
 
-## Step 2: Choose the Right Pattern
+## Step 2: Where Should It Live? (If Flat Command is Explicitly Chosen)
+
+1. **Personal ad-hoc shortcuts**: `~/.claude/commands/<name>.md`
+2. **Project-local prompt shortcut**: `.claude/commands/<name>.md`
+3. **Plugin capability**: Put in `plugins/<plugin>/skills/<name>/SKILL.md` (**NOT** `commands/`). Modern plugin installers discover `skills/` directly as slash commands.
 
 ### Pattern A: Simple static command
 ```markdown

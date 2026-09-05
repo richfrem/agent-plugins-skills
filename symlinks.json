@@ -2378,12 +2378,6 @@
       "description": "Plugin reference \u2192 Skill reference"
     },
     {
-      "src": "plugins/dev-utils/rules/symlink-cross-platform.md",
-      "dst": "plugins/dev-utils/skills/symlink-manager/references/symlink-cross-platform.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
       "src": "plugins/dev-utils/rules/coding-conventions.md",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
       "strategy": "symlink",
@@ -2404,12 +2398,6 @@
     {
       "src": "plugins/agent-scaffolders/rules/plugin-architecture-policy.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/agent-scaffolders/rules/skill-deletion-guard.md",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/skill-deletion-guard.md",
       "strategy": "symlink",
       "description": "Plugin reference \u2192 Skill reference"
     },
@@ -10468,6 +10456,66 @@
     {
       "src": "plugins/agent-orchestration/references/fallback-tree.md",
       "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/agent_control.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/agent_control.py",
+      "strategy": "symlink",
+      "description": "Control plane engine"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/interview_spec_engine.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/interview_spec_engine.py",
+      "strategy": "symlink",
+      "description": "Interview spec intake engine"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/interview-spec/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Acceptance criteria reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/interview-spec/fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Fallback tree reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-init/retrofit-planning.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/retrofit-planning.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-init/instruction-blending.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/instruction-blending.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/destructive-action-guard.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
+      "dst": "plugins/agent-scaffolders/skills/create-rule/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
+      "dst": "plugins/agent-scaffolders/skills/create-rule/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/scripts/technical_diagnostic_engine.py",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/scripts/technical_diagnostic_engine.py",
       "strategy": "symlink",
       "description": ""
     }

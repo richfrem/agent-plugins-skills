@@ -240,8 +240,9 @@ The primary consumer is the security team, not an engineering team.
 This package goes to a development team. It must be complete enough for them to scope and begin a formal engineering project without needing to re-interview the SME.
 
 Ask the user if they use a specific engineering harness:
-1. **Spec-Kitty / Superpowers** → format for the AI engineering harness (spec.md, plan.md structure)
-2. **External / traditional dev team** → use the SDLC package format below
+1. **Interview-Spec / Control Plane** → produce `exploration/DIAGNOSTIC_BRIEF.md` and transition task to `INTERVIEW` in `context/control_plane.db`
+2. **Spec-Kitty / Superpowers** → format for the AI engineering harness (spec.md, plan.md structure)
+3. **External / traditional dev team** → use the SDLC package format below
 
 **Tier 3 — SDLC package (for an external or traditional dev team):**
 

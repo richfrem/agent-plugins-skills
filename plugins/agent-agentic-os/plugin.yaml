@@ -14,7 +14,8 @@ provides_tools:
   - distill_playbook
   - audit_map_debt
 skills:
-  - gpt55-critical-auditor
+  - critical-auditor
+  - interview-spec
   - optimize-agent-instructions
   - os-architect
   - os-clean-locks

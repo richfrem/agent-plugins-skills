@@ -3,45 +3,51 @@ sync_instruction_files.py
 ==========================
 
 Purpose:
-    Replicates CLAUDE.md into GEMINI.md, .github/copilot-instructions.md, and
-    AGENTS.md as full-copy mirrors (shared body identical, only the title line
-    and each target's platform-specific header/tail differ). CLAUDE.md is the
-    single source of truth; the other three are never hand-edited directly.
+    Replicates root instruction files across AI agent platform formats:
+    - CLAUDE.md (Claude Code)
+    - GEMINI.md (Gemini CLI / Antigravity)
+    - .github/copilot-instructions.md (GitHub Copilot CLI & IDE)
+    - AGENTS.md (OpenAI Codex, Aider, & Cross-Platform Open Standard)
 
-    Blindly overwriting a target with CLAUDE.md's raw content destroys any
-    platform-specific section it carries (e.g. GEMINI.md's Gemini CLI Tool
-    Mapping table, copilot-instructions.md's authoritative header). This
-    script detects and re-preserves those sections across the sync instead
-    of requiring a human to manually re-append them after every copy.
+    While AGENTS.md is increasingly adopted as an open industry standard, native
+    runtimes (Claude Code, Copilot, Gemini CLI) still look for their dedicated
+    files or require specific platform sections (e.g. GEMINI.md's Gemini CLI Tool
+    Mapping table, copilot-instructions.md's authoritative header).
+
+    This script supports CLAUDE.md or AGENTS.md as the source of truth, performs
+    context-aware section preservation, and allows selective syncing (--targets)
+    so repos only generate and maintain the instruction files for tools they actually use.
 
     A second, independent mode (--check-rules) reports content drift between
     `.agent/rules/<name>.md` and its matching `plugins/<plugin>/rules/<name>.md`
-    source. Unlike the CLAUDE.md mirrors, drift direction here isn't reliably
-    one-way (either side can be the one that's stale), so this mode is
-    report-only — it never writes. A human applies the fix on whichever side
-    is actually behind.
+    source.
 
 Layer: Investigate / Maintain
 
 Usage Examples:
     python sync_instruction_files.py --dry-run
     python sync_instruction_files.py --execute
+    python sync_instruction_files.py --source AGENTS.md --execute
+    python sync_instruction_files.py --targets AGENTS.md,GEMINI.md --execute
     python sync_instruction_files.py --check-rules
 
 CLI Arguments:
     --dry-run: Print a diff summary per target file without writing (default).
     --execute: Write the synced content to each target file.
     --project-root: Override the project root (default: cwd).
+    --source: Specify source instruction file ('CLAUDE.md' or 'AGENTS.md', default auto-detect).
+    --targets: Comma-separated list of target files to sync (e.g. 'GEMINI.md,AGENTS.md').
+               Defaults to all supported targets.
     --check-rules: Report drift between .agent/rules/*.md and matching
         plugins/*/rules/*.md files. Report-only; ignores --execute.
 
 Key Input Dependencies:
-    - CLAUDE.md (source of truth, must exist at project root)
-    - GEMINI.md, .github/copilot-instructions.md, AGENTS.md (targets, created if missing)
+    - Source instruction file: CLAUDE.md or AGENTS.md at project root
+    - Target instruction files (created or updated preserving headers/tails)
     - .agent/rules/*.md and plugins/*/rules/*.md (--check-rules mode only)
 
 Output:
-    - Updated GEMINI.md, .github/copilot-instructions.md, AGENTS.md (--execute only)
+    - Updated GEMINI.md, .github/copilot-instructions.md, AGENTS.md, CLAUDE.md
     - Console diff summary (line counts, detected preserved sections)
     - --check-rules: console report of IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART per rule file
 
@@ -50,7 +56,7 @@ Key Functions:
     extract_preserved_header(): Lines between a target's own title and the anchor.
     extract_preserved_tail(): Lines from a named marker (e.g. "## Gemini CLI Tool
         Mapping") to end of file, if present.
-    sync_target(): Builds the new target content from CLAUDE.md's body plus the
+    sync_target(): Builds the new target content from source body plus the
         target's preserved header/tail.
     find_rule_pairs(): Matches each .agent/rules/*.md to its plugins/*/rules/*.md
         counterpart by filename.
@@ -81,8 +87,8 @@ ANCHOR_LINES: List[str] = [
 ANCHOR_LINE: str = ANCHOR_LINES[0]
 
 # Per-target template: (relative path, title_formatter, tail marker to preserve or None)
-# title_formatter takes project_name: str and returns the title string.
 TARGET_TEMPLATES: List[Tuple[str, str, Optional[str]]] = [
+    ("CLAUDE.md", "# {project_name}", None),
     ("GEMINI.md", "# GEMINI.md", "## Gemini CLI Tool Mapping"),
     (".github/copilot-instructions.md", "# Copilot Instructions for {project_name}", None),
     ("AGENTS.md", "# AGENTS.md", None),
@@ -116,10 +122,7 @@ def extract_preserved_header(target_lines: List[str]) -> List[str]:
     anchor = extract_anchor_index(target_lines)
     if anchor is None:
         return []
-    # target_lines[0] is the title; target_lines[1] is normally a blank line.
-    # Anything beyond that blank line, up to the anchor, is platform-specific.
     header = target_lines[1:anchor]
-    # Trim a single leading/trailing blank line — those are structural, not content.
     while header and header[0] == "":
         header = header[1:]
     while header and header[-1] == "":
@@ -143,7 +146,7 @@ def sync_target(
     title: str,
     tail_marker: Optional[str],
 ) -> Tuple[str, dict]:
-    """Build the new content for one target file from CLAUDE.md's body plus its preserved sections.
+    """Build the new content for one target file from source body plus its preserved sections.
 
     Returns (new_content_text, summary_dict) where summary_dict reports what was preserved.
     """
@@ -154,10 +157,10 @@ def sync_target(
     source_anchor = extract_anchor_index(source_lines)
     if source_anchor is None:
         raise ValueError(
-            f"CLAUDE.md is missing any expected anchor line from: {ANCHOR_LINES!r}. "
+            f"Source instruction file is missing any expected anchor line from: {ANCHOR_LINES!r}. "
             "Refusing to sync — the body-boundary detection would be unreliable."
         )
-    body = source_lines[1:]  # drop CLAUDE.md's own title line
+    body = source_lines[source_anchor:]
 
     parts: List[str] = [title, ""]
     if preserved_header:
@@ -218,12 +221,41 @@ def check_rule_drift(pairs: List[Tuple[str, Path, Optional[Path]]]) -> None:
         sys.stdout.writelines(diff)
 
 
+def _resolve_source_file(root: Path, requested_source: Optional[str]) -> Path:
+    """Resolves authoritative source file (defaulting to CLAUDE.md then AGENTS.md)."""
+    if requested_source:
+        src = root / requested_source
+        if not src.exists():
+            print(f"ERROR: Specified source {src} not found.", file=sys.stderr)
+            sys.exit(1)
+        return src
+
+    if (root / "CLAUDE.md").exists():
+        return root / "CLAUDE.md"
+    if (root / "AGENTS.md").exists():
+        return root / "AGENTS.md"
+
+    print(f"ERROR: Neither CLAUDE.md nor AGENTS.md found in {root}.", file=sys.stderr)
+    sys.exit(1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Sync CLAUDE.md into GEMINI.md, copilot-instructions.md, AGENTS.md."
+        description="Sync instruction files across CLAUDE.md, GEMINI.md, copilot-instructions.md, AGENTS.md."
     )
     parser.add_argument("--execute", action="store_true", help="Write changes (default: dry-run)")
+    parser.add_argument("--dry-run", action="store_true", help="Preview changes without writing (default behavior)")
     parser.add_argument("--project-root", default=".", help="Project root (default: cwd)")
+    parser.add_argument(
+        "--source",
+        default=None,
+        help="Source instruction file to replicate from (default: CLAUDE.md if present, else AGENTS.md)",
+    )
+    parser.add_argument(
+        "--targets",
+        default=None,
+        help="Comma-separated target relative filenames to sync (e.g. 'GEMINI.md,AGENTS.md'). Defaults to all.",
+    )
     parser.add_argument(
         "--check-rules",
         action="store_true",
@@ -237,20 +269,23 @@ def main() -> None:
         check_rule_drift(find_rule_pairs(root))
         return
 
-    claude_md = root / "CLAUDE.md"
-    if not claude_md.exists():
-        print(f"ERROR: {claude_md} not found.", file=sys.stderr)
-        sys.exit(1)
+    source_path = _resolve_source_file(root, args.source)
+    source_lines = read_lines(source_path)
 
-    source_lines = read_lines(claude_md)
-    # Detect project name from first line if "# <name>" or fallback to directory name
     project_name = root.name
     if source_lines and source_lines[0].startswith("# "):
         first_title = source_lines[0][2:].strip()
         if first_title and not first_title.endswith(".md"):
             project_name = first_title
 
+    selected_targets = [t.strip() for t in args.targets.split(",")] if args.targets else None
+
     for rel_path, title_tmpl, tail_marker in TARGET_TEMPLATES:
+        if (root / rel_path).resolve() == source_path.resolve():
+            continue
+        if selected_targets and rel_path not in selected_targets:
+            continue
+
         target_path = root / rel_path
         title = title_tmpl.format(project_name=project_name)
         content, summary = sync_target(source_lines, target_path, title, tail_marker)

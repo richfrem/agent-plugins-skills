@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "Create a new agent rule for enforcing strict PR title formats.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add a rule to prevent writing secrets or API tokens to git commits.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold an agent constraint rule that blocks direct pushes to main.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a multi-step interactive skill that interviews the user about database schemas.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new plugin directory with skills and agents.",
+    "should_trigger": false
+  }
+]
