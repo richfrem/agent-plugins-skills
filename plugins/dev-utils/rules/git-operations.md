@@ -22,15 +22,36 @@ Never run `git stash`, `git stash pop`, or `git stash apply` unless the user exp
   git add skills-lock.json
   ```
 
-### 3. Pre-Push Freshness Verification
-Before pushing a feature branch for PR merge:
-1. Verify the branch is up to date with `origin/main`:
+### 3. Pre-Push Freshness & Quality Gate
+Before pushing any changes to GitHub or concluding updates to plugins or skills:
+1. **Upstream Freshness Check**: Verify the branch is up to date with `origin/main`:
    ```bash
    git fetch origin main
    git merge origin/main
    ```
-2. If `skills-lock.json` conflicts, apply Rule 2 immediately before pushing.
-3. Verify working directory is clean (`git status`) and push with `-u origin <branch>`.
+   If `skills-lock.json` conflicts occur, apply Rule 2 immediately.
+
+2. **Pre-Push Quality Audits (Mandatory)**:
+   Run standard compliance, coding conventions, and structural audits on all modified plugins and skills from the repository root:
+   - **Workspace Coding Conventions Audit**:
+     ```bash
+     python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+     ```
+   - **Compliance Audit**:
+     ```bash
+     python3 plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
+     ```
+   - **Structural Audit**:
+     ```bash
+     python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+     ```
+   - **Cross-Platform Symlink Check**:
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     ```
+   *Resolution Action:* If errors, missing references, or broken symlinks are reported, resolve them before committing or pushing. Never push with broken symlinks or failing convention audits.
+
+3. **Verify Clean Working Tree**: Verify working directory is clean (`git status`) and push with `-u origin <branch>`.
 
 ### 4. When a push is rejected
 If `git push` is rejected because the remote is ahead:

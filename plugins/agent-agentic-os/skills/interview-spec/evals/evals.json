@@ -1,0 +1,22 @@
+[
+  {
+    "input": "I have an idea for a new plugin subsystem, let's start the intake and spec interview.",
+    "should_trigger": true
+  },
+  {
+    "input": "Compile a 4-pillar specification contract for the new control plane feature.",
+    "should_trigger": true
+  },
+  {
+    "input": "Can we run a Socratic developer interview to clarify requirements before writing code?",
+    "should_trigger": true
+  },
+  {
+    "input": "Run pytest on the test suite to verify tests pass.",
+    "should_trigger": false
+  },
+  {
+    "input": "Fix this git merge conflict in skills-lock.json.",
+    "should_trigger": false
+  }
+]

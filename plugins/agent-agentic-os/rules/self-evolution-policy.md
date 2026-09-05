@@ -6,10 +6,10 @@ globs: ["**/*"]
 
 ## Self-Evolution & Self-Healing Policy
 
-**Full context and execution protocol -> `<project_root>/.agent/skills/self-evolution/SKILL.md` (if available)**  
-**Skill/directory deletion rules -> `<project_root>/.agent/rules/skill-deletion-guard.md` (if available)**
+**Full context and execution protocol -> `.agent/skills/self-evolution/SKILL.md` (if available)**  
+**Skill/directory deletion rules -> `.agent/rules/destructive-action-guard.md` (Part 1)**
 
-Governs responses when any tool call, subprocess, automation step, selector query, script, workflow, or sub-agent encounters failure or friction. Agents must treat failures as evolution events governed by graph state machines (via [`agent-orchestration:graph-execution`](../plugins/agent-orchestration/skills/graph-execution/SKILL.md) and [`agent-orchestration:select-loop-strategy`](../plugins/agent-orchestration/skills/select-loop-strategy/SKILL.md)) and 3-Layer Filesystem Memory.
+Governs responses when any tool call, subprocess, automation step, selector query, script, workflow, or sub-agent encounters failure or friction. Agents must treat failures as evolution events governed by graph state machines (via `agent-orchestration:graph-execution` and `agent-orchestration:select-loop-strategy`) and 3-Layer Filesystem Memory.
 
 ---
 
@@ -62,7 +62,7 @@ Before triggering an autonomous self-evolution cycle, all 4 criteria must be sat
 9. **Refine Prompt Templates on Ingesting Outputs**: Evaluate external model outputs and update prompt templates to guard against observed gaps.
 10. **Synchronize Manifests & Reinstall Cleanly on Deletion**: Remove deleted assets from `symlinks.json` and reinstall via `plugin_add.py <plugin-path> -y`.
 11. **Pre-Deletion Git History Check**: Run `git log --follow -- <file>` before proposing any file deletion.
-12. **Hub First, Spoke Second**: New skill assets must land in plugin root (`plugins/<plugin>/scripts/`, etc.) and symlink into skill folders via `symlink_manager.py` (ADR-002/003). Run `audit_plugin_structure.py`.
+12. **Hub First, Spoke Second**: New skill assets must land in plugin root (`plugins/<plugin>/scripts/`, etc.) and symlink into skill folders via `symlink_manager.py`. Run `audit_plugin_structure.py`.
 13. **Asymmetric Persistence via Worktree Transfer**: On 3rd attempt failure in isolated worktree, roll back code, but export Layer 2 insights, negative constraints, and debt records to main checkout before worktree teardown.
 14. **Evolution Integrity Receipts**: Autonomous evolution commits require a programmatic pre-commit receipt (`EVO-INTEGRITY-<cycle_id>-<hash>`) binding staged tree, verifier exit code, and trace manifest.
 

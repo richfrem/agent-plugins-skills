@@ -2,42 +2,45 @@
 name: agent-file-synchronization
 plugin: cli-agents
 description: >
-  Replicates CLAUDE.md into GEMINI.md, .github/copilot-instructions.md, and AGENTS.md
-  as full-copy mirrors while preserving platform-specific sections (GEMINI.md tool mapping,
-  copilot authoritative header). Also reports drift between .agent/rules/ and matching
-  plugins/*/rules/ sources. Use when syncing, replicating, or mirroring CLAUDE.md into agent
-  files, or checking rule drift. Different from optimize-agent-instructions (content audit) and
-  project-setup (initial scaffold). Triggers: "sync CLAUDE.md to GEMINI.md", "replicate CLAUDE.md
-  to agent files", "propagate CLAUDE.md changes", "mirror CLAUDE.md", "check rule drift".
+  Synchronizes project instruction files across AGENTS.md, CLAUDE.md, GEMINI.md, and
+  .github/copilot-instructions.md while preserving platform-specific sections (GEMINI.md tool
+  mapping, copilot authoritative header). Supports AGENTS.md or CLAUDE.md as primary source,
+  and selective target syncing. Also reports drift between .agent/rules/ and matching
+  plugins/*/rules/ sources. Triggers: "sync instructions", "sync CLAUDE.md to GEMINI.md",
+  "sync AGENTS.md", "replicate instruction files", "mirror CLAUDE.md", "check rule drift".
 allowed-tools: Bash, Read, Write
 ---
 
 <example>
-<commentary>User has just edited CLAUDE.md and wants the other instruction files kept in sync.</commentary>
-user: "sync CLAUDE.md to the other agent files"
-assistant: [triggers agent-file-synchronization, runs sync_instruction_files.py (dry-run by default), reports the diff summary, then --execute after confirmation]
+<commentary>User has edited instructions and wants specific agent files kept in sync.</commentary>
+user: "sync instructions across my agent files"
+assistant: [triggers agent-file-synchronization, runs sync_instruction_files.py --dry-run by default, reports the diff summary, then runs with --execute after user confirmation]
+</example>
+
+<example>
+<commentary>User only uses AGENTS.md and GEMINI.md and wants selective target sync.</commentary>
+user: "sync AGENTS.md to GEMINI.md"
+assistant: [triggers agent-file-synchronization, runs sync_instruction_files.py --source AGENTS.md --targets GEMINI.md --dry-run]
 </example>
 
 <example>
 <commentary>Negative — user wants a stylistic quality audit, not a mechanical sync.</commentary>
-user: "audit my CLAUDE.md against Karpathy's principles and rewrite it"
+user: "audit my AGENTS.md against Karpathy's principles and rewrite it"
 assistant: [triggers optimize-agent-instructions, not agent-file-synchronization — that skill owns content quality, this one owns mechanical replication]
-</example>
-
-<example>
-<commentary>Negative — user is setting up a brand-new project's agent config, not replicating an existing CLAUDE.md.</commentary>
-user: "scaffold Claude and Gemini config for this new repo"
-assistant: [triggers project-setup, not agent-file-synchronization — no CLAUDE.md exists yet to sync from]
 </example>
 
 # agent-file-synchronization
 
 ## Identity
 
-You keep GEMINI.md, `.github/copilot-instructions.md`, and AGENTS.md as accurate mirrors of
-CLAUDE.md — the single source of truth for this repo's agent instructions. A blind full-copy
-destroys each target's platform-specific section; this skill detects and re-preserves those
-sections automatically instead of requiring a human to notice and re-append them by hand.
+You synchronize project instruction files across modern AI tooling environments.
+Today, **AGENTS.md** is an open cross-tool standard (Codex, Cursor, Antigravity, and portable agents),
+while **CLAUDE.md** is used by Claude Code, **GEMINI.md** is used by Gemini CLI, and
+**.github/copilot-instructions.md** is used by GitHub Copilot.
+
+A blind full-copy destroys platform-specific sections; this skill detects and re-preserves those
+sections automatically instead of requiring a human to re-append them by hand. It also respects
+repos that only want a subset of target files (via `--targets`) rather than forcing all 4 formats.
 
 **Scope**: This skill owns *mechanical replication*. It does not own *content quality*
 (`optimize-agent-instructions`) or *initial project scaffolding* (`project-setup`).
@@ -48,29 +51,30 @@ sections automatically instead of requiring a human to notice and re-append them
 |---|---|---|
 | `GEMINI.md` | `## Gemini CLI Tool Mapping` table, appended at end of file | Tail marker match |
 | `.github/copilot-instructions.md` | `# Copilot Instructions for <repo>` header + authoritative blockquote | Header lines before the shared body's first line |
-| `AGENTS.md` | None currently required — verified fresh each run, not assumed | Header lines before the shared body's first line (empty if none) |
+| `AGENTS.md` | Open cross-tool standard (preserves custom header lines before anchor if any) | Header lines before anchor |
+| `CLAUDE.md` | Anthropic Claude Code standard | Header lines before anchor |
 
-The shared body boundary is CLAUDE.md's fixed opening line: *"Behavioral guidelines to reduce
-common LLM coding mistakes. Merge with project-specific instructions as needed."* Everything in
-a target file between its own title and that line is treated as a preserved header. Everything
-after a known tail marker (currently only GEMINI.md's table) is treated as a preserved tail.
+The shared body boundary is the fixed anchor line: *"Behavioral guidelines to reduce
+common LLM coding mistakes. Merge with project-specific instructions as needed."* (or standard `# Project Name` / `# Purpose` anchors).
 
 ## Steps
 
 1. **Dry-run first, always**:
    ```bash
-   python3 ./scripts/sync_instruction_files.py (no flags, dry-run is the default)
+   python3 ./scripts/sync_instruction_files.py --dry-run
    ```
-   Reports per-target line-count deltas and how many header/tail lines were detected and
-   will be preserved. Review this before writing anything.
+   Or with selective source and targets:
+   ```bash
+   python3 ./scripts/sync_instruction_files.py --source AGENTS.md --targets GEMINI.md,CLAUDE.md --dry-run
+   ```
+   Reports per-target line-count deltas and preserved sections.
 
 2. **If the dry-run summary looks right, execute**:
    ```bash
    python3 ./scripts/sync_instruction_files.py --execute
    ```
 
-3. **Verify** — read at least one target file's tail (`tail -20 GEMINI.md`) to confirm the
-   preserved section actually landed, don't just trust the script's own summary line.
+3. **Verify** — inspect target files (e.g. `tail -20 GEMINI.md`) to confirm preserved sections.
 
 4. **Reinstall + audit** per this repo's standing rules — sync only touches root-level docs,
    not `plugins/` source, so no plugin reinstall is needed for *this* step. But if the CLAUDE.md

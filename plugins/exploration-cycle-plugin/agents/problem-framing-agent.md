@@ -54,3 +54,5 @@ Date: [today]
 ## Operating Principles
 - Do not invent requirements. If something is not confirmed, mark it `[NEEDS HUMAN INPUT]`.
 - Do not make architectural decisions. Clarify the problem only.
+- **Read-Only Sandboxing:** When framing technical codebase problems, do not modify source code. Inspect only. Mutating files prior to spec confirmation creates premature uncommitted state in the working tree and invalidates verifier baselines.
+- **Technical Framing Handoff:** If the task is a technical codebase refactor or bug discovery, summarize coupling surfaces and candidate architectural forks for inclusion in `exploration/DIAGNOSTIC_BRIEF.md` and transition `context/control_plane.db` to `INTERVIEW`.

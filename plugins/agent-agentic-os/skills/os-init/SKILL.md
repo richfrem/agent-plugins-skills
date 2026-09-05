@@ -29,55 +29,28 @@ Supports fresh setup as well as retrofitting established projects to comply with
 
 ## Phase 1: Discovery & Tooling Interview
 
-Ask targeted questions based on context:
-
-1. **Project Status**: Is this a brand-new project, or an existing repository with code/skills to retrofit?
-2. **Active AI Tooling & LLM Clients**: Which tools are used in this workspace?
-   - Claude Code CLI / VS Code extension
-   - GitHub Copilot CLI / Chat
-   - Gemini / Antigravity CLI (`agy`)
-   - Codex / OpenAI-compatible CLI
-   - Microsoft Agent Framework (MAF)
-3. **Plugin Installation Preference**:
-   - **`uvx` (Universal / Recommended)**: Instant setup without manual clone.
-   - **Claude Code Marketplace**: `claude plugin add richfrem/agent-plugins-skills`.
-   - **Local Monorepo / Worktree**: Local sync via `plugin_add.py`.
+Identify project status (fresh setup vs. retrofit), active AI tools (Claude Code, Copilot CLI, Gemini/Antigravity, Codex, MAF), and installation preference (`uvx`, Claude marketplace, local).
 
 ---
 
-## Phase 2: Component Planning
+## Phase 2: Component & Retrofit Planning
 
-Propose a component table before execution:
-
-```markdown
-| Component | Fresh Init | Retrofit Mode | Purpose |
-|---|---|---|---|
-| `CLAUDE.md` | Intelligent Seed | Context Blend & Reconcile | Authoritative project kernel |
-| `GEMINI.md` | Create Mirror | Context Blend & Tool Mapping | Gemini CLI mirror with tool mappings |
-| `.github/copilot-instructions.md` | Create Mirror | Context Blend & Header | Copilot CLI instructions header |
-| `AGENTS.md` | Create Mirror | Context Blend | Cross-platform agent instructions |
-| `wiki/` | Create | Create Index | Layer 2 Confirmed Knowledge Base |
-| `references/map-debt.md` | Create | Create Ledger | Tier 3 Map Debt Tracking |
-| `.git/hooks/pre-commit-evolution-guard` | Install | Install / Enable | Deterministic pre-commit evolution & map-debt gate |
-| `.agent/learning/traces/` | Create | Create Ledger | Layer 3 Evolution Trace Manifests |
-| `audit-skill --fix` | N/A | Run on custom skills | Auto-upgrades legacy skills to boolean evals schema |
-```
+Propose a component plan before execution:
+- Consult [retrofit-planning.md](references/retrofit-planning.md) for the component initialization and retrofit matrix.
+- Verify `context/control_plane.db` SQLite initialization, Layer 2 `wiki/` playbooks, `references/map-debt.md`, and Git pre-commit evolution guards.
 
 ---
 
-## Phase 2.5 — Mandatory Intelligent Instruction Blending Protocol
+## Phase 2.5 — Mandatory Intelligent Architecture & Rule Synthesis Protocol
 
 > [!IMPORTANT]
-> **No Blind Overwrites**: The AI Agent MUST NEVER blindly replace or overwrite existing agent instruction files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`). Instead, the agent acts as an **intelligent context synthesizer**, blending template best practices with existing project domain rules:
+> **No Blind Overwrites**: The AI Agent MUST NEVER blindly replace existing architecture files (`architecture.md`), rules (`.agent/rules/*.md`), or instruction files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`). This cannot be a pure rigid deterministic script — act as an **intelligent context synthesizer**, balancing Agentic OS principles with target project domain realities.
 
-1. **Inspect Existing Instruction Files**:
-   - Read existing `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.github/copilot-instructions.md`.
-   - Identify project-specific sections (e.g. custom architecture diagrams, startup commands, ports, canonical scripts, and non-negotiable business rules).
-2. **Blend with Agentic OS Standards**:
-   - Merge the universal evolution infrastructure (3-Layer Memory, Map Debt Ledger, Pre-Commit Evolution Guard, and Turn-by-Turn Pre-Completion Gate) into the existing instructions.
-   - Retain 100% of project-specific domain rules, terminology, and tool configurations.
-3. **Present Proposed Markdown Diff**:
-   - Present the synthesized diff to the user for confirmation before writing, or apply using `replace_file_content` surgically.
+Follow the protocol in [instruction-blending.md](references/instruction-blending.md):
+1. **Inspect Target Context**: Read existing `architecture.md`, `.agent/rules/`, and instruction files to discover project tech stack, constraints, and domain conventions.
+2. **Synthesize Architecture**: If `architecture.md` exists, review and integrate Agentic OS substrates without disturbing system design; if absent, seed a tailored architecture blueprint.
+3. **Blend Instructions & Rules**: Retain 100% of domain logic, reconcile rules non-destructively, and inject 3-Layer Memory, Map Debt Ledger, and Pre-Completion Gate.
+4. **Present Diff**: Present proposed architectural and rule changes for confirmation before writing.
 
 ---
 
@@ -85,53 +58,24 @@ Propose a component table before execution:
 
 Run `init_agentic_os.py` based on mode:
 
-### Mode A: Fresh Project Setup
-```bash
-python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --sync-instructions
-```
+- **Mode A (Fresh Setup)**: `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --sync-instructions`
+- **Mode B (Retrofit Existing)**: `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --retrofit`
 
-### Mode B: Retrofit Existing Repository
-```bash
-python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --retrofit
-```
-
-*Note: In both modes, `init_agentic_os.py` automatically installs `.git/hooks/pre-commit-evolution-guard` and configures the `Stop` turn hook.*
+*Note: In both modes, `init_agentic_os.py` automatically initializes `context/control_plane.db` with WAL mode, installs `.git/hooks/pre-commit-evolution-guard`, and configures the `Stop` turn hook.*
 
 ---
 
 ## Phase 4: Plugin Installation & Deployment
 
-Provide the exact installation command tailored to the user's environment:
-
-### Option 1: Universal `uvx` (Recommended for any project)
-```bash
-# Add all plugins
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-
-# Or install specific plugin
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-agentic-os -y
-```
-
-### Option 2: Claude Code Marketplace
-```bash
-claude plugin add richfrem/agent-plugins-skills
-```
-
-### Option 3: Local Monorepo Sync
-```bash
-python3 plugins/plugin-manager/scripts/plugin_add.py --all -y
-```
+Provide the installation command tailored to the user's environment:
+- **Universal `uvx` (Recommended)**: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills`
+- **Claude Code Marketplace**: `claude plugin add richfrem/agent-plugins-skills`
+- **Local Source Reinstall**: `python3 plugins/plugin-manager/scripts/plugin_add.py --all -y`
 
 ---
 
 ## Phase 5: Verification Checklist
 
-1. **Verify 3-Layer Memory & Evolution Gates**:
-   - Layer 1: `context/` in-prompt templates.
-   - Layer 2: `wiki/index.md` and `references/map-debt.md`.
-   - Layer 3: `.agent/learning/traces/cycle_manifests.jsonl`.
-   - Pre-Commit Guard: `.git/hooks/pre-commit-evolution-guard` is executable (`chmod +x`).
-2. **Verify Multi-Tool Instruction Mirrors**:
-   - `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `AGENTS.md` are aligned.
-3. **Verify Skills Compliance**:
-   - Run `python3 .agents/skills/audit-skill/scripts/audit_skill.py <path-to-skill>` on any newly authored or migrated skills.
+1. **Verify 3-Layer Memory & Control Plane**: Check `context/control_plane.db`, Layer 2 `wiki/index.md`, and `references/map-debt.md`.
+2. **Verify Multi-Tool Instruction Mirrors**: Ensure `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, and `AGENTS.md` are aligned.
+3. **Verify Skills Compliance**: Run `audit_skill.py` on any newly authored or migrated skills.

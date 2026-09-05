@@ -10,7 +10,7 @@ globs: ["**/*"]
 
 This policy governs when and how friction events, execution workarounds, tool failures, and map debt identified during agent runs are logged into GitHub Issues.
 
-It directly extends [`self-evolution-policy.md`](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os/rules/self-evolution-policy.md) by defining the decision boundary between in-session fixes, local Map Debt entries (`map-debt.md`), and formal GitHub Issue creation.
+It directly extends `self-evolution-policy.md` by defining the decision boundary between in-session fixes, local Map Debt entries (`map-debt.md`), and formal GitHub Issue creation.
 
 ---
 

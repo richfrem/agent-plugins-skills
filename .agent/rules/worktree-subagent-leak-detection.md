@@ -5,36 +5,11 @@ globs: ["**/*"]
 
 # Worktree/Subagent Isolation (Leak Detection)
 
-**Scope note (renamed 2026-08-18):** this file covers exactly one failure mode — a
-dispatched subagent writing outside its assigned worktree. For the broader lifecycle
-(creating a worktree, reporting its state honestly, pushing, verifying an actual merge,
-updating local `main`, and cleaning up afterward), see
-`.agent/rules/worktree-lifecycle-management.md`, added the same day after a session
-repeatedly conflated "pushed" with "merged" and "local branch ref updated" with "visible
-on disk". Both rules apply simultaneously whenever a `subagent-driven-development` session
-runs inside a worktree.
+**Scope:** This rule covers subagents writing outside their assigned worktree. For the broader lifecycle (creating, verifying, pushing, merging, and cleaning up worktrees), see `worktree-lifecycle-management.md`. Both rules apply simultaneously when subagents execute inside a worktree.
 
 ## The Problem This Rule Solves
 
-Dispatching an implementer or fix subagent into a `superpowers:subagent-driven-development`
-worktree, with an explicit instruction to `cd` into the worktree path and confirm via
-`pwd` / `git branch --show-current` before making any change, is the project's standard
-isolation pattern. It has still failed **twice**:
-
-1. **Phase 2b, Task 3** — an implementer committed a change onto the user's active
-   main-checkout branch instead of its assigned worktree (documented informally in
-   `start_here.md` at the time; caught by independently verifying `git log`/`readlink`
-   after the subagent's report, not by the subagent noticing its own mistake).
-2. **Phase 3 C2, Task 7 fix rounds (2026-07-09)** — a fix subagent left a stray,
-   uncommitted, *incomplete* copy of its changes in the main checkout's
-   `plugins/portfolio-advisor/scripts/daily_brief.py`, despite reporting a passing
-   `pwd`/`git branch --show-current` confirmation at task start. Not caught until the
-   final pre-merge `git status` check on the main checkout — logged as
-   `.agent/map-debt.md`'s "subagent-driven-development implementer wrote to main
-   checkout instead of worktree (2nd occurrence)" entry.
-
-Both times the subagent's own confirmation step passed. Both times a stray write still
-landed in the main checkout anyway.
+A subagent's `cd` and `pwd` confirmation at task start only changes its shell state—file editing tools (Edit/Write) resolve absolute file paths independently and can mistakenly write to the main checkout. Treat task-start confirmation as a preliminary check, not a guarantee.
 
 ## The Law
 

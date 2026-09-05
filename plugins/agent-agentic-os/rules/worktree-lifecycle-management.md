@@ -7,31 +7,7 @@ globs: ["**/*"]
 
 ## The Problem This Rule Solves
 
-**2026-08-18 incident:** a session created two worktrees to execute SharePoint plugin
-work, and repeatedly reported progress as "done"/"merged"/"pushed" without distinguishing
-which of five genuinely different states a change was actually in. This caused the user to
-ask "where are the CRUD scripts" and "is the worktree gone" many times over, each time
-receiving an answer that was locally true but did not match what the user could actually
-see on their own disk. Concretely:
-
-1. A subagent-driven-development round finished, the branch was pushed, and the session
-   reported "final review complete" without stating that nothing was merged yet.
-2. A second worktree's work (file moves + new scripts) sat fully uncommitted for many
-   turns while the session narrated architecture debates instead of stating the plain
-   fact: "nothing is saved anywhere except the worktree's working directory."
-3. After the user merged a PR on GitHub, the session ran `git fetch origin main:main`
-   (updating the **local branch ref**) and reported the plugin as present -- without
-   checking that the user's actual working directory was checked out on a **different
-   branch**, so the files were invisible on disk. The user had to ask "i don't see it are
-   you sure?" before this was caught.
-4. Within one of the worktrees, symlinks were created with raw `ln -s` and a hand-edited
-   `symlinks.json` instead of this repo's mandated `.agents/skills/symlink-manager/
-   scripts/symlink_manager.py` (per `.agent/rules/symlink-cross-platform.md`), discovered
-   only when the user separately flagged it.
-
-None of these were lies -- each statement was true in isolation. The failure was treating
-"local worktree state", "committed", "pushed to origin", "merged on GitHub", "local branch
-ref updated", and "checked out on disk" as one undifferentiated bucket called "done".
+Worktree-related changes frequently suffer from ambiguity when multiple git states (uncommitted local work, committed on a branch, pushed to remote, merged to main, local ref updated, and checked out on disk) are collapsed into the vague word "done". This leads to confusion about where files actually reside and whether PRs or branches are safely integrated.
 
 ## The Law
 
@@ -77,9 +53,8 @@ ref updated", and "checked out on disk" as one undifferentiated bucket called "d
    Updating a local branch ref is not the same as changing the working directory. If the
    current checkout is on a different branch than the one just updated, say so before the
    user has to ask why they can't see anything.
-4. **State exact absolute paths for every file/plugin/worktree you reference.** "It's in
-   the new plugin" is not an answer; `C:\...\plugins\sharepoint-provisioning-execution\
-   scripts\spo-update-list.ps1` is.
+4. **State exact full paths for every file/plugin/worktree you reference.** "It's in
+   the new plugin" is not an answer; state the exact path (e.g. `/full/path/to/plugins/<plugin>/scripts/script.py`).
 5. **Before deleting any worktree, verify state 4 (merged into origin/main) first**, via
    `git fetch` + `git log origin/main`, not by assuming a prior push means the PR was
    merged. Only after that verification, delete via the native worktree-removal tool (or
@@ -87,7 +62,7 @@ ref updated", and "checked out on disk" as one undifferentiated bucket called "d
    session), and confirm via `git worktree list` that it's gone.
 6. **All symlink creation/removal inside a worktree goes through
    `.agents/skills/symlink-manager/scripts/symlink_manager.py`**, per
-   `.agent/rules/symlink-cross-platform.md` -- this applies inside worktrees exactly as
+   `.agent/rules/plugin-architecture-policy.md` Section 5 -- this applies inside worktrees exactly as
    much as the main checkout. If the tool isn't present in the worktree, restore it from
    the marketplace-cached copy or the sibling monorepo before touching any symlink, never
    fall back to raw `ln -s`.
@@ -97,12 +72,6 @@ ref updated", and "checked out on disk" as one undifferentiated bucket called "d
 
 ## Where This Applies
 
-- Every `superpowers:using-git-worktrees` / `EnterWorktree` session in this repo.
-- Every report to the user about progress on worktree-based work, from creation through
-  final deletion.
-- Applies in addition to, not instead of,
-  `.agent/rules/worktree-subagent-leak-detection.md` (renamed 2026-08-18, formerly
-  `worktree-subagent-isolation.md`) — that file covers a narrower, different failure mode
-  (a dispatched subagent's writes leaking into the wrong checkout); this file covers the
-  full lifecycle around the worktree itself. Both apply simultaneously in any
-  subagent-driven-development session run inside a worktree.
+- Every worktree session in the repository.
+- Every report to the user about progress on worktree-based work, from creation through final deletion.
+- Applies in addition to, not instead of, `worktree-subagent-leak-detection.md` (which covers subagents writing outside assigned worktrees). Both apply simultaneously in any subagent session run inside a worktree.

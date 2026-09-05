@@ -1,6 +1,6 @@
 ---
-name: gpt55-critical-auditor
-description: Conducts a full-system adversarial audit of agent plugins, skills, and orchestration against enforced runtime contracts using deep reasoning (GPT5.5-equivalent thinking).
+name: critical-auditor
+description: Conducts a full-system adversarial audit of agent plugins, skills, specifications, and orchestration against enforced runtime contracts using deep reasoning.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

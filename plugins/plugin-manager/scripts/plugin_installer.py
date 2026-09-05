@@ -499,7 +499,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         central_rules.mkdir(parents=True, exist_ok=True)
 
     for rule_file in sorted(rules_dir.glob("*.md")):
-        dest_name = f"{plugin_name}_{rule_file.stem}.md"
+        dest_name = rule_file.name
         central_dest = central_rules / dest_name
         if not dry_run:
             shutil.copy2(rule_file, central_dest)

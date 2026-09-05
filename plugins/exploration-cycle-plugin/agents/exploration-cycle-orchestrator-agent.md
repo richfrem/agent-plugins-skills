@@ -93,6 +93,9 @@ Does the session have a captured BRD and a generated prototype?
 Is the exploration narrowed enough for a downstream spec or planning update?
   └─ YES -> Dispatch handoff-preparer-agent via CLI
 
+Is this exploration focused on technical codebase discovery, architecture boundaries, or coupling surfaces?
+  └─ YES -> Run technical_diagnostic_engine.py in read-only mode -> emit DIAGNOSTIC_BRIEF.md -> sync context/control_plane.db (INTAKE -> INTERVIEW) -> hand off to interview-spec. Stop.
+
 [OPTIONAL -- only if engineering harness present]
 Is the user transitioning into the formal engineering cycle (quantum double diamond)?
   └─ YES -> Dispatch planning-doc-agent via CLI (3 draft modes in sequence)
@@ -101,6 +104,19 @@ Is the user transitioning into the formal engineering cycle (quantum double diam
 Is this invocation triggered from within the formal engineering cycle (unresolved ambiguity)?
   └─ YES -> Dispatch planning-doc-agent in re-entry-scope mode -> new session brief -> restart Phase 0
 ```
+
+### Technical Codebase Discovery Protocol (Phase 0 Feeder)
+When dispatched for technical exploration or code refactoring:
+1. **Enforce Read-Only Sandboxing:** All commands executed by sub-agents must be non-destructive (`git status`, `git diff`, `rg`, `sqlite3`, static inspection). No source files outside `exploration/` or staging may be modified.
+   - **Operational Reason:** Technical discovery maps the problem space. Mutating code prior to contract formulation corrupts integrity checks, violates verifier baseline calculation, and circumvents the Human Gate.
+2. **Execute Technical Diagnostic Engine:**
+   ```bash
+   python3 plugins/exploration-cycle-plugin/scripts/technical_diagnostic_engine.py \
+     --output exploration/DIAGNOSTIC_BRIEF.md \
+     --sync-db context/control_plane.db \
+     --task-id "<task_id>"
+   ```
+3. **Control Plane Transition:** Verify the task state in `context/control_plane.db` transitions to `INTERVIEW` before handing off to `interview-spec`.
 
 **Routing decision tree** (machine-readable digraph):
 
