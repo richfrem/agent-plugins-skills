@@ -397,6 +397,43 @@ def retrofit_existing_skills(target: Path, dry_run: bool, fix: bool = True) -> N
             subprocess.run(cmd, check=False)
 
 
+# External comment: Scaffold plugin-level evolution substrates for local plugins
+def _scaffold_plugin_evolution_substrates(target: Path, dry_run: bool, force: bool) -> None:
+    """Scaffolds references/evolution-log.md in each local plugin under target/plugins/ if missing."""
+    plugins_dir = target / "plugins"
+    if not plugins_dir.exists() or not plugins_dir.is_dir():
+        return
+
+    # Find directories under plugins/ that have skills, agents, or plugin manifests
+    plugin_dirs = [
+        d for d in plugins_dir.iterdir()
+        if d.is_dir() and not d.name.startswith(".") and (
+            (d / "skills").exists() or (d / "agents").exists() or
+            (d / "plugin.json").exists() or (d / "plugin.yaml").exists()
+        )
+    ]
+    if not plugin_dirs:
+        return
+
+    announce(f"Inspecting {len(plugin_dirs)} local plugin(s) for evolution substrates...", dry_run)
+    for p in sorted(plugin_dirs):
+        refs_dir = p / "references"
+        make_dir(refs_dir, dry_run)
+        evo_log = refs_dir / "evolution-log.md"
+        if not evo_log.exists():
+            content = (
+                f"# Evolution Log — {p.name}\n\n"
+                "Append-only record of every self-evolution event. Written by the `self-evolution` skill.\n"
+                "Do not edit manually except to correct a factual error.\n\n"
+                "| Date | Tier | Friction / Failure | Patch | Edit Type | Outcome |\n"
+                "|------|------|-------------------|-------|-----------|---------|\n"
+            )
+            write_file(evo_log, content, dry_run, force)
+        else:
+            announce(f"exists {evo_log} (skipped)", dry_run)
+
+
+
 CONTROL_PLANE_SCHEMA_SQL = """PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 PRAGMA busy_timeout = 5000;
@@ -653,6 +690,11 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("     python3 plugins/plugin-manager/scripts/plugin_add.py --all -y")
     print("\n4. Add to .gitignore:")
     print("   CLAUDE.local.md, context/memory/, context/status.md, context/os-state.json, context/events.jsonl, context/.locks/, .claude/")
+    print("\n5. Recommended Verification Check:")
+    print("   Immediately run the health check skill/engine to verify substrate liveness:")
+    print("   • Slash command / Skill: /os-health-check")
+    print("   • Deterministic substrate check:")
+    print("     test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard && echo 'OK: All OS substrates active'")
     print()
 
 
@@ -676,7 +718,7 @@ def _parse_args() -> argparse.Namespace:
         "--global",
         dest="global_kernel",
         action="store_true",
-        help="Also scaffold ~/.claude/CLAUDE.md as global kernel"
+        help="Also write ~/.claude/CLAUDE.md global agentic kernel"
     )
     parser.add_argument(
         "--retrofit",
@@ -718,8 +760,10 @@ def _execute_action(target: Path, args: argparse.Namespace) -> None:
         sync_instructions(target, args.dry_run)
         sync_rules(target, args.dry_run)
         retrofit_existing_skills(target, args.dry_run, fix=True)
+        _scaffold_plugin_evolution_substrates(target, args.dry_run, args.force)
     else:
         create_project_structure(target, args.dry_run, args.force)
+        _scaffold_plugin_evolution_substrates(target, args.dry_run, args.force)
         if args.sync_instructions:
             sync_instructions(target, args.dry_run)
         if args.sync_rules:

@@ -61,9 +61,9 @@ If the lock acquisition fails, abort — the kernel handles stale lock cleanup a
 
 ### Phase 3.5: os-init Substrate Completeness Check
 
-Verify the three scaffolding artifacts `os-init --retrofit` is responsible for creating. This
-check exists because of DEBT-20260905-12/-13 (see `references/map-debt.md`): the retrofit code
-path historically diverged from the fresh-setup path and silently skipped these substrates —
+Verify the scaffolding artifacts `os-init --retrofit` is responsible for creating. This
+check exists because of DEBT-20260905-12/-13/-14 (see `references/map-debt.md`): the retrofit code
+path historically diverged from the fresh-setup path and silently skipped substrates —
 run this check on every health check, not just once after install, since a stale/pre-fix
 `init_agentic_os.py` copy can reintroduce the gap.
 
@@ -71,19 +71,28 @@ run this check on every health check, not just once after install, since a stale
 test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING control_plane.db"
 test -f .claude/hooks/hooks.json && echo "OK hooks.json (Stop turn hook)" || echo "MISSING hooks.json"
 test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-evolution-guard" || echo "MISSING pre-commit-evolution-guard"
+
+# If local plugins exist, verify each has references/evolution-log.md
+if [ -d "plugins" ]; then
+    for p in plugins/*/; do
+        [ -d "$p" ] || continue
+        test -f "${p}references/evolution-log.md" && echo "OK ${p}references/evolution-log.md" || echo "MISSING ${p}references/evolution-log.md"
+    done
+fi
 ```
 
-**If any of the three report MISSING**: this is a Tier 1 finding, not merely informational.
+**If any report MISSING**: this is a Tier 1 finding, not merely informational.
 Recommend re-running the retrofit immediately in the health check summary:
 
 ```bash
 python3 .agents/skills/os-init/scripts/init_agentic_os.py --target . --retrofit
 ```
 
-All three are idempotent to create (skip-if-exists), so re-running retrofit is always safe even
+All substrates are idempotent to create (skip-if-exists), so re-running retrofit is always safe even
 when only one substrate is missing — do not hand-create the individual file as a workaround, as
-that bypasses schema/WAL-mode setup for `control_plane.db` and the guard-wiring logic for the
-git hook.
+that bypasses schema/WAL-mode setup for `control_plane.db`, the guard-wiring logic for the
+git hook, and the standard evolution header templates.
+
 
 ### Phase 4: Summarize & Lock Release
 

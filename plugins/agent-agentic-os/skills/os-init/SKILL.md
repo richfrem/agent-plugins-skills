@@ -94,8 +94,16 @@ Provide the installation command tailored to the user's environment:
 
 ---
 
-## Phase 5: Verification Checklist
+## Phase 5: Verification Checklist & System Health Check
 
 1. **Verify 3-Layer Memory & Control Plane**: Check `context/control_plane.db`, Layer 2 `wiki/index.md`, and `references/map-debt.md`.
 2. **Verify Multi-Tool Instruction Mirrors**: Ensure `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, and `AGENTS.md` are aligned.
-3. **Verify Skills Compliance**: Run `audit_skill.py` on any newly authored or migrated skills.
+3. **Verify Skills & Plugin Compliance**: Run `audit_skill.py` on any newly authored or migrated skills. Verify all local plugins under `plugins/` have initialized `references/evolution-log.md` stubs.
+4. **Mandatory Post-Init Health Check**: Immediately trigger the `os-health-check` skill (or run Phase 3.5 substrate check) to deterministically verify all substrates are active and operational:
+   ```bash
+   test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING control_plane.db"
+   test -f .claude/hooks/hooks.json && echo "OK hooks.json (Stop turn hook)" || echo "MISSING hooks.json"
+   test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-evolution-guard" || echo "MISSING pre-commit-evolution-guard"
+   ```
+   If any report `MISSING`, re-run with `--retrofit`.
+

@@ -1,0 +1,77 @@
+"""
+test_init_agentic_os_scaffolding.py — Contract & Unit Tests for os-init Scaffolding Parity
+========================================================================================
+
+Purpose:
+    Verifies that init_agentic_os.py (both fresh setup and --retrofit) correctly:
+    1. Scaffolds repository-level substrates (control_plane.db, hooks.json, evolution guard, 3-layer memory)
+    2. Identifies and scaffolds missing plugin-level evolution substrates (references/evolution-log.md)
+       when local plugins exist under plugins/
+    3. Directs the user/agent to run os-health-check in print_next_steps()
+
+Key Input Dependencies:
+    - plugins/agent-agentic-os/scripts/init_agentic_os.py
+"""
+
+import subprocess
+import sys
+from pathlib import Path
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+INIT_SCRIPT = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "init_agentic_os.py"
+
+
+@pytest.fixture
+def target_repo(tmp_path):
+    """Creates a throwaway repository directory for testing os-init."""
+    repo = tmp_path / "test_project"
+    repo.mkdir()
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+    # create dummy README to allow commit
+    (repo / "README.md").write_text("# Test Project\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=repo, check=True)
+    return repo
+
+
+def test_retrofit_scaffolds_plugin_evolution_logs_when_plugins_exist(target_repo):
+    """When plugins/ exists, --retrofit must ensure each plugin has references/evolution-log.md."""
+    # Create two sample plugins
+    p1 = target_repo / "plugins" / "sample-plugin-a"
+    (p1 / "skills" / "skill-a").mkdir(parents=True)
+    (p1 / "skills" / "skill-a" / "SKILL.md").write_text("---\nname: skill-a\n---\n", encoding="utf-8")
+
+    p2 = target_repo / "plugins" / "sample-plugin-b"
+    (p2 / "references").mkdir(parents=True)
+    existing_log = p2 / "references" / "evolution-log.md"
+    existing_log.write_text("# Existing Log\n", encoding="utf-8")
+
+    # Run init_agentic_os.py --target <target_repo> --retrofit
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0, f"Retrofit failed with stdout:\n{res.stdout}\nstderr:\n{res.stderr}"
+
+    # Verify plugin A received references/evolution-log.md
+    p1_log = p1 / "references" / "evolution-log.md"
+    assert p1_log.exists(), "sample-plugin-a should have references/evolution-log.md scaffolded"
+    assert "sample-plugin-a" in p1_log.read_text(encoding="utf-8")
+
+    # Verify plugin B's existing log was preserved (not clobbered)
+    assert existing_log.read_text(encoding="utf-8") == "# Existing Log\n"
+
+
+def test_next_steps_directs_to_os_health_check(target_repo):
+    """Completion output of init_agentic_os.py must direct agent to run os-health-check."""
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    assert "os-health-check" in res.stdout, "Completion output must direct user/agent to run os-health-check"
