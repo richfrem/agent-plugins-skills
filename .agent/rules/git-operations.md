@@ -74,10 +74,26 @@ Never skip hooks with `--no-verify` unless the user explicitly requests it.
 - Do not `git checkout`, `git switch`, or `git checkout -b` away from a feature branch that contains local commits not yet approved by the user.
 - If a new branch is needed while work-in-progress commits exist on the current branch, stop and confirm with the user what to do with those commits before switching.
 
-### 7. Commit only what is asked & required
+### 9. Commit only what is asked & required
 - Commit only files within the task scope.
 - Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
 - When `skills-lock.json` or `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit them together with the changes.
+
+### 10. Evolution Integrity Gate — update map-debt BEFORE committing core logic
+Any commit that touches files under `plugins/`, `src/`, or `py_services/` **must** do one of the following before `git commit`:
+- Stage an update to `references/map-debt.md` recording the debt entry (RESOLVED or OPEN) for the change, **OR**
+- Stage an update to `references/evolution-log.md` if one exists, **OR**
+- Include `Evolution-Check: none` in the commit message body with a one-line justification.
+
+**Failure mode this prevents:** committing core logic changes and only discovering the missing map-debt entry when CI fails on the PR — forcing a follow-up commit and a broken CI run.
+
+**Correct sequence:**
+1. Make code changes
+2. Update `references/map-debt.md` (add or resolve the relevant DEBT entry)
+3. `git add <code files> references/map-debt.md`
+4. `git commit`
+
+The CI gate (`Verify Evolution & Map Debt Compliance`) enforces this post-hoc. The rule enforces it pre-emptively. Both must be respected.
 
 ## Approval Required
 
