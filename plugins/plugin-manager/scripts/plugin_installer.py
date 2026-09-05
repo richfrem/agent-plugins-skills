@@ -527,6 +527,30 @@ def _write_rule_merge_preserving_downstream(rule_file: Path, central_dest: Path)
     central_dest.write_text(merged_content, encoding="utf-8")
 
 
+def _migrate_legacy_prefixed_rule(
+    central_rules: Path, plugin_name: str, rule_file: Path, central_dest: Path, dry_run: bool
+) -> None:
+    """Detect and migrate a rule's legacy `<plugin>_<rule>.md` filename into the
+    current bare `<rule>.md` one (see DEBT-20260905-11 — the naming scheme changed
+    in #502 from prefixed to bare, and deploy_rules() never cleaned up the old
+    prefixed copy, leaving both present with divergent content). Any unique
+    content in the legacy file is merge-preserved into central_dest before the
+    legacy file is removed — never a blind delete."""
+    legacy_path = central_rules / f"{plugin_name}_{rule_file.stem}.md"
+    if legacy_path == central_dest or not legacy_path.exists():
+        return
+    if not dry_run:
+        # central_dest already holds the freshly-merged, authoritative content —
+        # it must win on any genuine conflict. Only legacy_path's unique
+        # insertions get preserved, never the reverse.
+        current_content = central_dest.read_text(encoding="utf-8") if central_dest.exists() else ""
+        legacy_content = legacy_path.read_text(encoding="utf-8")
+        merged_content, _ = _merge_rule_content_preserving_downstream(current_content, legacy_content)
+        central_dest.write_text(merged_content, encoding="utf-8")
+        legacy_path.unlink()
+    print(f"  Migrated legacy rule filename: {legacy_path.name} -> {central_dest.name}")
+
+
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                  root: Path, dry_run: bool = False, append_to_ide_files: bool = True) -> list[Path]:
     """Deploy rule files into .agent/rules/ and target agent environments.
@@ -564,6 +588,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         central_dest = central_rules / dest_name
         if not dry_run:
             _write_rule_merge_preserving_downstream(rule_file, central_dest)
+            _migrate_legacy_prefixed_rule(central_rules, plugin_name, rule_file, central_dest, dry_run)
         deployed.append(central_dest)
 
         for target_dir_name in targets:
