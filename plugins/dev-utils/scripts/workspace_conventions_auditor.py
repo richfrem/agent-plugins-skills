@@ -6,6 +6,12 @@ workspace_conventions_auditor.py — Workspace conventions compliance auditor.
 Purpose:
     Audits the workspace (excluding build and temp paths) for compliance with
     coding-conventions.md standards (file headers, docstrings, function lengths).
+    Function-length checks use the two-tier length + McCabe complexity model
+    from coding-conventions.md SS5 (revised 2026-09-05, DEBT-20260905-08):
+    50/100-line soft/hard length ceilings, McCabe 10/15 soft/hard complexity
+    ceilings, and structural exemptions (argparse blocks, dict/mapping
+    literals, match/case, string-template construction) from the length
+    ceiling only — never from the complexity ceiling.
 
 Layer:
     Plugins / Dev-Utils / Scripts
@@ -100,6 +106,105 @@ def _check_key_functions_freshness(docstring: str, tree: ast.AST) -> List[str]:
     return errors
 
 
+# Length thresholds (physical lines, node.end_lineno - node.lineno)
+LENGTH_SOFT = 50
+LENGTH_HARD = 100
+
+# McCabe complexity thresholds (1 + branch count)
+MCCABE_SOFT = 10
+MCCABE_HARD = 15
+
+# Minimum count/ratio of declarative statements for a length-ceiling exemption
+_ARGPARSE_CALL_MIN = 3
+_TEMPLATE_STMT_RATIO_MIN = 0.3
+
+
+def _compute_cyclomatic_complexity(node: ast.AST) -> int:
+    """Return an approximate McCabe complexity: 1 + count of branch/loop/except/boolop nodes."""
+    complexity = 1
+    match_type = getattr(ast, "Match", None)
+    for n in ast.walk(node):
+        if isinstance(n, (ast.If, ast.For, ast.While, ast.ExceptHandler)):
+            complexity += 1
+        elif isinstance(n, ast.BoolOp):
+            complexity += max(len(n.values) - 1, 0)
+        elif match_type is not None and isinstance(n, match_type):
+            complexity += max(len(getattr(n, "cases", [])) - 1, 0)
+    return complexity
+
+
+def _is_structurally_exempt(node: ast.FunctionDef) -> bool:
+    """Return True if the function's length is dominated by a declarative pattern
+    (match/case dispatch, argparse definitions, dict/mapping literals, or
+    string-template construction) rather than branching logic. Per
+    coding-conventions.md SS5, this exempts the function from the LENGTH ceiling
+    only — the McCabe complexity ceiling still applies regardless.
+    """
+    match_type = getattr(ast, "Match", None)
+    if match_type is not None and any(isinstance(n, match_type) for n in ast.walk(node)):
+        return True
+
+    body_stmts = node.body
+    if not body_stmts:
+        return False
+
+    argparse_calls = sum(
+        1 for sub in ast.walk(node)
+        if isinstance(sub, ast.Call) and isinstance(sub.func, ast.Attribute)
+        and sub.func.attr in ("add_argument", "add_parser")
+    )
+    if argparse_calls >= _ARGPARSE_CALL_MIN:
+        return True
+
+    declarative_stmts = 0
+    for stmt in body_stmts:
+        value = None
+        if isinstance(stmt, ast.Return) and stmt.value is not None:
+            value = stmt.value
+        elif isinstance(stmt, ast.Assign):
+            value = stmt.value
+        if value is None:
+            continue
+        if isinstance(value, (ast.Dict, ast.JoinedStr)):
+            declarative_stmts += 1
+        elif isinstance(value, ast.Call) and isinstance(value.func, ast.Attribute) and value.func.attr == "format":
+            declarative_stmts += 1
+
+    return (declarative_stmts / len(body_stmts)) >= _TEMPLATE_STMT_RATIO_MIN
+
+
+def _check_function_length_and_complexity(node: ast.FunctionDef) -> List[str]:
+    """Apply the two-tier length + McCabe complexity model from coding-conventions.md SS5."""
+    findings: List[str] = []
+    if node.end_lineno is None or node.lineno is None:
+        return findings
+
+    length = node.end_lineno - node.lineno
+    mccabe = _compute_cyclomatic_complexity(node)
+    exempt = _is_structurally_exempt(node)
+
+    if not exempt:
+        if length > LENGTH_HARD:
+            findings.append(
+                f"[ERROR] Function '{node.name}' exceeds the {LENGTH_HARD}-line hard ceiling ({length} lines). Needs refactoring."
+            )
+        elif length > LENGTH_SOFT and mccabe < MCCABE_HARD:
+            findings.append(
+                f"[WARNING] Function '{node.name}' exceeds the {LENGTH_SOFT}-line soft threshold ({length} lines, McCabe {mccabe})."
+            )
+
+    if mccabe >= MCCABE_HARD:
+        findings.append(
+            f"[ERROR] Function '{node.name}' has McCabe complexity {mccabe} (hard ceiling {MCCABE_HARD}). Needs refactoring."
+        )
+    elif mccabe >= MCCABE_SOFT:
+        findings.append(
+            f"[WARNING] Function '{node.name}' has McCabe complexity {mccabe} (soft threshold {MCCABE_SOFT})."
+        )
+
+    return findings
+
+
 # External comment: Audit a Python file for standard formatting structure
 def scan_python_file(file_path: Path) -> List[str]:
     """Audits a Python file for standards using AST parsing."""
@@ -133,12 +238,9 @@ def scan_python_file(file_path: Path) -> List[str]:
             func_doc = ast.get_docstring(node)
             if not func_doc:
                 errors.append(f"Function '{func_name}' is missing a docstring.")
-            
-            # Check function length
-            if hasattr(node, "end_lineno") and hasattr(node, "lineno"):
-                length = node.end_lineno - node.lineno
-                if length > 50:
-                    errors.append(f"Function '{func_name}' exceeds 50 lines ({length} lines). Needs refactoring.")
+
+            # Check function length + McCabe complexity (two-tier model, SS5)
+            errors.extend(_check_function_length_and_complexity(node))
 
     return errors
 
@@ -255,16 +357,23 @@ def _audit_file(
         errors = scan_js_ts_file(resolved)
 
     if errors:
-        unique_failed_files.add(str(resolved))
-        if plugin_name:
-            failed_plugins.add(plugin_name)
+        # [WARNING]-tier findings are visible in the report but non-blocking —
+        # only findings without that prefix (docstring/header checks, syntax
+        # errors, [ERROR]-tier length/complexity findings) count toward
+        # pass/fail. See coding-conventions.md SS5 (two-tier model).
+        hard_errors = [e for e in errors if not e.startswith("[WARNING]")]
         results[ext_key].append({
             "file": str(rel_path),
             "is_symlink": is_symlink,
             "canonical": str(resolved.relative_to(WORKSPACE_ROOT)) if is_symlink else None,
             "errors": errors
         })
-        return 1, 1
+        if hard_errors:
+            unique_failed_files.add(str(resolved))
+            if plugin_name:
+                failed_plugins.add(plugin_name)
+            return 1, 1
+        return 1, 0
     return 1, 0
 
 

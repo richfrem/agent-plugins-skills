@@ -30,7 +30,11 @@ This transforms agent onboarding from minutes to seconds.
    - **Purpose**: This enables clean, token-efficient discovery in new agent sessions. Incoming agents can scan the top of a file to instantly map its capabilities and required state files without reading the full implementation.
 3. **Type hints** — all Python function signatures use type annotations.
 4. **Naming** — `snake_case` (Python), `camelCase` (JS/TS), `PascalCase` (C# public).
-5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers.
+5. **Refactor threshold** — split a function when it exceeds **both** a length and a complexity signal, not either alone (revised 2026-09-05, see `references/map-debt.md` DEBT-20260905-08):
+   - **Length**: soft warning at 50 lines, hard ceiling at 100 lines (physical line count), regardless of complexity — an overly long function is a readability problem even when flat.
+   - **Complexity**: soft warning at McCabe 10, hard ceiling at McCabe 15 (count of `if`/`for`/`while`/`except`/`and`/`or`/`match`-`case` branches + 1).
+   - **Structural exemptions from the length ceiling only** (the complexity ceiling still applies): declarative dict/mapping literals, `match`/`case` dispatch blocks, `argparse` `add_argument`/`add_parser` sequences, and large string-template construction (f-strings/`.format()` building multi-section output) — these inflate line count without adding branching logic.
+   - **No exemption by subject matter** — a function touching SQLite, state transitions, or any other "transactional" logic is exempt only if its actual branch count clears the complexity ceiling, same as anything else.
 6. **Manifest schema** — use simple `{title, description, files}` JSON/YAML format.
 
 ### 🔍 Automated Compliance Checks
