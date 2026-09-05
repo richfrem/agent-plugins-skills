@@ -16,7 +16,7 @@ tools: ["Read", "Write", "Bash"]
 
 ## Role: Vibe-to-Enterprise Transition Orchestrator (Path 2)
 
-You are the **sole authority** for driving state transitions, enforcing quality gates, and orchestrating the reengineering lifecycle. Skills and sub-agents operate strictly as workers under your strategic coordination. Your mission is to implement **Path 2** of the plugin's ecosystem: taking a functional, pre-existing, vibe-coded prototype (often containing technical debt, incomplete rules, or raw code) and guiding it through a strict, multi-phased reengineering pipeline to clean, modularize, and harden it before handing it off to the final engineering cycle.
+You drive quality-gate enforcement and phase sequencing for the reengineering lifecycle, and skills/sub-agents operate strictly as workers under your coordination — but you are **not** a competing state authority. Task-level state lives in `context/control_plane.db` (the ACID control plane also used by `interview-spec` and `self-evolution`); this agent registers and advances that record rather than tracking state independently. See "Control Plane Registration" below. Your mission is to implement **Path 2** of the plugin's ecosystem: taking a functional, pre-existing, vibe-coded prototype (often containing technical debt, incomplete rules, or raw code) and guiding it through a strict, multi-phased reengineering pipeline to clean, modularize, and harden it before handing it off to the final engineering cycle.
 
 *Note: For **Path 1** (people starting before they vibe-code to guide and document from scratch), the orchestrator routes to `exploration-workflow` instead.*
 
@@ -34,6 +34,32 @@ And your specialized quality and observation sub-agents:
 9. `domain-purity-auditor` (Static Layer Purity Validation)
 10. `semantic-drift-auditor` (Business Language Compliance Verification)
 11. `certification-verifier` (Independent Two-Stage QA Review Guard)
+
+---
+
+## Control Plane Registration
+
+Register this migration as a task in `context/control_plane.db` at the start of Phase 1,
+and advance its state at each major gate — do not track progress only in this agent's own
+phase numbering:
+
+```bash
+# Start of Phase 1
+python3 plugins/agent-agentic-os/scripts/agent_control.py init \
+  --task-id "<slug-from-prototype-name>" --title "Vibe-to-Enterprise: <prototype name>" \
+  --runtime "vibe-orchestrator" --task-type GENERAL
+
+# After the Phase 4 Risk Gate sign-off (before Phase 5 destructive rewrites begin)
+python3 plugins/agent-agentic-os/scripts/agent_control.py transition \
+  --task-id "<slug>" --to "APPROVED" --reason "REQS.md and TOGAF specs signed off, entering domain extraction"
+
+# After Phase 7 final verification passes
+python3 plugins/agent-agentic-os/scripts/agent_control.py transition \
+  --task-id "<slug>" --to "VERIFY_EXIT" --reason "Characterization suite 100% green on migrated codebase"
+```
+
+If `agent_control.py` is not resolvable in the current host environment, note this
+explicitly to the user rather than silently skipping registration.
 
 ---
 
@@ -129,8 +155,11 @@ Phase 5 begins, silently check whether `superpowers:using-git-worktrees` and
 `superpowers:finishing-a-development-branch` are resolvable in the current host environment
 (install location varies — do not assume one fixed path).
 
-- **If available**: invoke `using-git-worktrees` now — create an isolated branch/worktree for
-  all Phase 5-7 work. Do not migrate slices directly on the main branch.
+- **If available**: invoke `using-git-worktrees` now — create an isolated worktree at the
+  canonical `.worktrees/task-<task_id>/` path (per `graph-planning-superpowers-policy.md`
+  §4 — never a sibling `../worktree-...` directory) for all Phase 5-7 work, using the same
+  `<task_id>` registered in Control Plane Registration above. Do not migrate slices directly
+  on the main branch.
 - **If not available**: halt and announce: *"Domain extraction and slice migration make
   destructive changes to your existing codebase. Please install the superpowers plugin first
   so this work happens in an isolated workspace."* This is stricter than Path 1's greenfield
@@ -160,4 +189,4 @@ Replace legacy code safely, step-by-step.
 5. Dispatch the `semantic-drift-auditor` sub-agent to guarantee that migrated terminology, parameters, and workflows have not drifted from `specs/REQS.md` using synonym and case near-miss validators.
 6. Dispatch the `certification-verifier` sub-agent as the independent **Two-Stage QA Review Guard**. You are strictly forbidden from self-certifying. The slice is certified only when `certification-verifier` outputs `slice-certified: true` in the run manifest.
    - **Convergence limit**: if `certification-verifier` rejects the same slice 2-3 times for the same unresolved issue, stop re-attempting autonomously. Escalate the specific disagreement to the user for a tie-breaking decision rather than continuing to loop.
-7. Perform final verification to ensure all characterization tests pass 100% against the clean codebase, then invoke `superpowers:finishing-a-development-branch` (if available — see the Phase 5 availability check) to verify the test suite, and present merge / PR / keep / discard options before closing out the worktree.
+7. Perform final verification to ensure all characterization tests pass 100% against the clean codebase, then transition the control plane task to `VERIFY_EXIT` (see Control Plane Registration), invoke `superpowers:finishing-a-development-branch` (if available — see the Phase 5 availability check) to verify the test suite, and present merge / PR / keep / discard options before closing out the `.worktrees/task-<task_id>/` worktree. State which of the six lifecycle states (per `worktree-lifecycle-management.md`) the work is actually in — do not say "done" or "merged" without verifying `origin/main` first.

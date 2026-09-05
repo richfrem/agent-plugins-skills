@@ -49,7 +49,9 @@ Key Input Dependencies:
 Output:
     - Updated GEMINI.md, .github/copilot-instructions.md, AGENTS.md, CLAUDE.md
     - Console diff summary (line counts, detected preserved sections)
-    - --check-rules: console report of IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART per rule file
+    - --check-rules: console report of IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART per rule
+      file. Exits 1 if any DIFFERS or NO PLUGIN COUNTERPART is found (gate-able in CI/
+      pre-commit), exits 0 only if every pair is IDENTICAL.
 
 Key Functions:
     extract_anchor_index(): Finds the shared body's first line in a file.
@@ -200,11 +202,17 @@ def find_rule_pairs(root: Path) -> List[Tuple[str, Path, Optional[Path]]]:
     return pairs
 
 
-def check_rule_drift(pairs: List[Tuple[str, Path, Optional[Path]]]) -> None:
-    """Print an IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART report for each rule pair."""
+def check_rule_drift(pairs: List[Tuple[str, Path, Optional[Path]]]) -> bool:
+    """Print an IDENTICAL / DIFFERS / NO PLUGIN COUNTERPART report for each rule pair.
+
+    Returns True if drift was found (any DIFFERS or missing plugin counterpart),
+    False if every pair is IDENTICAL. Callers use this to gate CI/pre-commit.
+    """
+    drift_found = False
     for name, agent_path, plugin_path in pairs:
         if plugin_path is None:
             print(f"{name}: NO PLUGIN COUNTERPART FOUND under plugins/*/rules/")
+            drift_found = True
             continue
         agent_text = agent_path.read_text(encoding="utf-8")
         plugin_text = plugin_path.read_text(encoding="utf-8")
@@ -219,6 +227,8 @@ def check_rule_drift(pairs: List[Tuple[str, Path, Optional[Path]]]) -> None:
             tofile=str(agent_path),
         )
         sys.stdout.writelines(diff)
+        drift_found = True
+    return drift_found
 
 
 def _resolve_source_file(root: Path, requested_source: Optional[str]) -> Path:
@@ -266,7 +276,12 @@ def main() -> None:
     root = Path(args.project_root).resolve()
 
     if args.check_rules:
-        check_rule_drift(find_rule_pairs(root))
+        drift_found = check_rule_drift(find_rule_pairs(root))
+        if drift_found:
+            print("\nFAIL: rule drift detected between .agent/rules/ and plugins/*/rules/ — "
+                  "backport the newer content to the plugin source before it gets clobbered "
+                  "by the next plugin sync.", file=sys.stderr)
+            sys.exit(1)
         return
 
     source_path = _resolve_source_file(root, args.source)

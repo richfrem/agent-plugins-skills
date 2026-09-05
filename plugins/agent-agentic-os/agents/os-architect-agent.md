@@ -221,6 +221,32 @@ For ambiguous cases (does X skill actually exist?), read the actual file at
 `plugins/agent-agentic-os/skills/` or `plugins/exploration-cycle-plugin/skills/` before
 claiming a match or gap. Never hallucinate capability existence.
 
+**Control Plane Registration (required before Path B/C dispatch)**: os-architect is the
+front door for `task_type=EVOLUTION` work — the same category `self-evolution`'s Phase 0
+prior-art gate governs. If the audit is heading toward Path B (Update) or Path C (Create),
+register the task now, before proposing the path:
+
+```bash
+python3 plugins/agent-agentic-os/scripts/agent_control.py init \
+  --task-id "<slug-from-target>" --title "<target description>" \
+  --runtime "os-architect" --task-type EVOLUTION
+```
+
+Then run the mandatory prior-art scan (mirrors `self-evolution` Phase 0 — see that skill's
+SKILL.md for the full protocol): read `references/map-debt.md` for `Repeat: YES` entries and
+`wiki/decisions/` / `wiki/playbook-*.md` for prior rejected approaches relevant to the target,
+then log the result:
+
+```bash
+python3 plugins/agent-agentic-os/scripts/agent_control.py log-prior-art \
+  --task-id "<slug-from-target>" \
+  --summary "Reviewed map-debt.md and wiki/decisions/. Repeat:YES entries: <list or none>." \
+  --repeat-yes-entries "<csv of repeat entries, or empty>"
+```
+
+If a `Repeat: YES` entry matches the current target — escalate to the user immediately.
+Do not propose Path B/C over a hypothesis that has already failed repeatedly.
+
 Produce this audit block:
 ```
 Capability needed:    [description]
@@ -264,6 +290,11 @@ Do not create skills reactively. Modify first; create only when modification fai
 - Capability exists but is outdated, has gaps, or is missing self-healing patterns.
 - Identify which specific sections need updating and what to add.
 - Check if self-healing patterns are present (Gotchas, HANDOFF_BLOCK) — note gaps.
+- **Transition task to INTERVIEW** (registered + prior-art scan already logged in Phase 2):
+  ```bash
+  python3 plugins/agent-agentic-os/scripts/agent_control.py transition \
+    --task-id "<slug-from-target>" --to "INTERVIEW" --reason "Path B update scoped, dispatching os-evolution-planner"
+  ```
 - **REQUIRED Step: Invoke `os-evolution-planner` skill.** Pass: target skill/agent name
   + explicit list of gaps identified in audit. Do not describe dispatch steps yourself —
   `os-evolution-planner` writes the task plan and delegation prompt.
@@ -273,6 +304,11 @@ Do not create skills reactively. Modify first; create only when modification fai
 
 **Path C — Create (gap confirmed)**:
 - Capability does not exist. Must be created before any improvement loop can run.
+- **Transition task to INTERVIEW** (registered + prior-art scan already logged in Phase 2):
+  ```bash
+  python3 plugins/agent-agentic-os/scripts/agent_control.py transition \
+    --task-id "<slug-from-target>" --to "INTERVIEW" --reason "Path C creation scoped, dispatching create-sub-agent"
+  ```
 - Step 1: Invoke `create-sub-agent` skill to scaffold the new agent with full YAML frontmatter.
 - Step 2: **Invoke `os-evolution-planner`** to write the task plan + delegation prompt for
   the full creation workstream. Pass: new agent/skill name + creation goal.
@@ -340,6 +376,7 @@ This section is required and makes routing decisions reviewable.
 - **Path C evals written but not reviewed before loop**: The HARD-GATE before the first improvement loop is mandatory. Freshly written evals have high false-positive and false-negative rates. One round of human review before the loop dramatically improves signal quality.
 - **Delegation prompt not written to temp/**: Delegation prompts go in `temp/copilot_prompt_<task>.md` per CLAUDE.md. Never write them to the project root or to `tasks/`.
 - **Heartbeat skipped before premium dispatch**: Always run the free-model heartbeat before calling `run_agent.py` with `claude-sonnet-4.6`. A silent auth failure on a premium call produces empty output with no error and wastes the request.
+- **Control plane bypass (fixed 2026-09-05)**: Path B/C dispatch used to skip `context/control_plane.db` registration entirely, meaning `task_type=EVOLUTION` work routed through os-architect never hit the mandatory prior-art scan gate that `self-evolution` enforces directly. Always register and transition through Phase 2 before dispatching `os-evolution-planner` — do not skip straight to dispatch because the audit "looks" like Path A.
 
 ---
 

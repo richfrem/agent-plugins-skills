@@ -203,22 +203,23 @@ explicitly reinstalls it themselves.
 
 ## Plugin State — Current Versions (10 plugins · 137 skills)
 
-### agent-agentic-os (v1.8.0)
+### agent-agentic-os (v1.9.0)
 
 Core improvement loop:
 ```
 os-architect → os-improvement-loop → os-eval-runner → os-eval-backport → os-experiment-log
 ```
 
-**Active skills (19):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
+**Active skills (22):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
 os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec
+os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec,
+os-health-check, issue-resolution-reviewer, repository-improvement
 
 **Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
 
-**Agents (5):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
-agentic-os-setup, os-health-check
+**Agents (4):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
+agentic-os-setup
 
 **Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`
 
@@ -464,7 +465,7 @@ github-issue-prioritizer    ← rank issues, sync GitHub Projects v2
 issue-worktree-agent        ← isolated git worktree per issue
 issue-pr-lifecycle-agent    ← full issue → worktree → PR → close orchestration
 ```
-`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit sub-agent.
+`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit skill.
 `gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
 on first live use — the repo doesn't pre-register them.
 
@@ -1148,14 +1149,14 @@ Every friction event or failure detected during agent execution must be evaluate
 | **Tier 0 (Quickfix)** | Small friction, fixable inline within allowed edit boundaries in < 5 mins. | Patch inline, update rules/docs ("The Map"). | **Optional**. Log issue only if pattern recurs across sessions. | `type:friction`, `tier:0-quickfix`, `source:agent`, `risk:low` |
 | **Tier 1 (Friction / Gap)** | Workaround used, capability missing or awkward, but non-blocking. | Patch inline OR record Map Debt in `map-debt.md`. | **Fix inline or log issue**. If deferred as Map Debt, log issue payload. | `type:friction`, `tier:1-friction`, `source:agent`, `risk:low` |
 | **Tier 2 (Failure / Structural)** | Script/tool broken, execution error, or recurring friction. | Collect stack trace & empirical logs. Patch code or log debt. | **Mandatory Issue Logging** (or comment on existing root-cause issue). | `type:bug` or `type:friction`, `tier:2-structural`, `source:agent` |
-| **Tier 3 (Regression / Architecture)** | External change, breaking API/selector change, core design flaw. | Collect full evidence bundle & present formal Escalation Template. Synthesized by `repository-improvement-agent`. | **Mandatory Issue Logging + Architecture Review**. | `type:architecture` or `type:bug`, `tier:3-architecture` |
+| **Tier 3 (Regression / Architecture)** | External change, breaking API/selector change, core design flaw. | Collect full evidence bundle & present formal Escalation Template. Synthesized by `repository-improvement`. | **Mandatory Issue Logging + Architecture Review**. | `type:architecture` or `type:bug`, `tier:3-architecture` |
 
 ---
 
-## 2.1 Hotspot Synthesis Engine (`repository-improvement-agent`)
+## 2.1 Hotspot Synthesis Engine (`repository-improvement`)
 
 For Tier 3 architecture friction and recurring friction clusters identified by `friction_cluster_agent`:
-- The **`repository-improvement-agent`** consumes cluster hotspot reports to auto-propose and synthesize systemic refactoring PRs.
+- The **`repository-improvement`** skill consumes cluster hotspot reports and synthesizes proposals for human review. It never creates branches, commits, or PRs itself — see the skill's Human Gate section.
 - High-density hotspots are consolidated into architectural refactoring initiatives rather than fragmented single-line patches.
 
 ---
@@ -1872,6 +1873,266 @@ Resource placement is determined strictly by **purpose**, not file extension:
    Relative paths inside commands resolve from the skill root at the installed location. Verify paths against the installed structure, not the source tree.
 
 
+
+
+<!-- plugin: dev-utils / coding-conventions -->
+---
+trigger: always_on
+description: Universal coding conventions for Python, TypeScript, and C#.
+globs: ["*.py", "*.ts", "*.js", "*.cs"]
+---
+
+## 🎯 PURPOSE: Enable Agents to Understand Code at a Glance
+
+Every script must document **what it does, what it needs, and how to use it** in the first 20 lines.
+
+**Why:** In fresh agent sessions, agents cannot afford to spend 5-10 minutes reading implementations or running exploratory commands. By reading a 20-line header, agents must be able to:
+- Understand the script's purpose in 30 seconds
+- Know what files/APIs/dependencies it requires
+- See usage examples without trial-and-error
+- Identify key functions without code diving
+
+This transforms agent onboarding from minutes to seconds.
+
+---
+
+## 📝 Coding Conventions (Summary)
+
+**Full standards → `.agents/skills/coding-conventions-agent/SKILL.md`**
+
+### Non-Negotiables
+1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class.
+2. **File headers** — every source file starts with a purpose header (Python, TS/JS, C#).
+   - **Crucial**: The header must explicitly list **Key Input Dependencies** (e.g. required configuration files, environment variables, or databases like `config.json` or `schema.sql`).
+   - **Index & Preservation Directive**: File headers must contain a complete index list of all functions, methods, and procedures present in the file. Never remove or reduce existing utility documentation (like usage examples, DOM structures, or technical flags lists) during updates—always preserve and enrich.
+   - **Purpose**: This enables clean, token-efficient discovery in new agent sessions. Incoming agents can scan the top of a file to instantly map its capabilities and required state files without reading the full implementation.
+3. **Type hints** — all Python function signatures use type annotations.
+4. **Naming** — `snake_case` (Python), `camelCase` (JS/TS), `PascalCase` (C# public).
+5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers.
+6. **Manifest schema** — use simple `{title, description, files}` JSON/YAML format.
+
+### 🔍 Automated Compliance Checks
+To audit workspace source code compliance against these rules, run the developer conventions auditor script:
+```bash
+python3 .agents/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py
+```
+This utility outputs a detailed audit breakdown under `temp/workspace_conventions_report.md`.
+
+<!-- plugin: dev-utils / git-operations -->
+---
+description: Rules for safe git operations — what requires explicit approval, what is forbidden, and how to handle push & lockfile conflicts.
+globs: ["**/*"]
+---
+
+# Git Operations Policy
+
+## Hard Rules (never violate)
+
+### 1. No git stash without explicit instruction
+Never run `git stash`, `git stash pop`, or `git stash apply` unless the user explicitly says to.
+**Reason:** Stashing risks applying stale edits onto new branches and causing silent regressions.
+
+### 2. Lockfile Conflict Protocol (`skills-lock.json`)
+`skills-lock.json` contains machine-generated timestamps. When a branch or PR has conflicts in `skills-lock.json`:
+- **NEVER** edit conflict markers by hand (`<<<<<<<`, `=======`, `>>>>>>>`).
+- **NEVER** leave a PR in conflict state after pushing.
+- **ALWAYS** resolve immediately via:
+  ```bash
+  git checkout --ours skills-lock.json
+  python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y
+  git add skills-lock.json
+  ```
+
+### 3. Pre-Push Freshness & Quality Gate
+Before pushing any changes to GitHub or concluding updates to plugins or skills:
+1. **Upstream Freshness Check**: Verify the branch is up to date with `origin/main`:
+   ```bash
+   git fetch origin main
+   git merge origin/main
+   ```
+   If `skills-lock.json` conflicts occur, apply Rule 2 immediately.
+
+2. **Pre-Push Quality Audits (Mandatory)**:
+   Run standard compliance, coding conventions, and structural audits on all modified plugins and skills from the repository root:
+   - **Workspace Coding Conventions Audit**:
+     ```bash
+     python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+     ```
+   - **Compliance Audit**:
+     ```bash
+     python3 plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
+     ```
+   - **Structural Audit**:
+     ```bash
+     python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+     ```
+   - **Cross-Platform Symlink Check**:
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     ```
+   *Resolution Action:* If errors, missing references, or broken symlinks are reported, resolve them before committing or pushing. Never push with broken symlinks or failing convention audits.
+
+3. **Verify Clean Working Tree**: Verify working directory is clean (`git status`) and push with `-u origin <branch>`.
+
+### 4. When a push is rejected
+If `git push` is rejected because the remote is ahead:
+1. Run `git fetch origin` and `git merge origin/<branch>` or `git pull --rebase` (no stash).
+2. If conflicts occur in `skills-lock.json`, resolve via Rule 2.
+3. Push once clean. Never force-push around a rejected push.
+
+### 5. No force push to main/master
+Never `git push --force` to main or master under any circumstances.
+
+### 6. No --no-verify
+Never skip hooks with `--no-verify` unless the user explicitly requests it.
+
+### 7. Commit only what is asked & required
+- Commit only files within the task scope.
+- Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
+- When `skills-lock.json` or `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit them together with the changes.
+
+## Approval Required
+
+- Any `git reset` (hard or soft)
+- Any `git rebase -i`
+- Any branch deletion (`git branch -d` / `-D`)
+- Any `git push --force-with-lease` or force variant
+- Any `git clean`
+
+## Safe Without Asking
+
+- `git status`, `git diff`, `git log` — read-only, always safe
+- `git add <specific files>` + `git commit` when the user asked to commit
+- `git push` (non-force) when the user asked to push
+- Fetching and merging `origin/main` into the current working feature branch to keep PRs conflict-free
+- `git checkout -b <branch>` when the user asks for a new branch
+
+
+
+<!-- plugin: dev-utils / graph-planning-superpowers-policy -->
+---
+trigger: always_on
+description: Universal Execution Policy — Pre-Planning Intake Bookend, Native Plan Sandboxing, Worktree Isolation (.worktrees/task-<id>), Superpowers TDD, and Deterministic Exit Gates.
+globs: ["**/*"]
+---
+
+# Graph Planning, Superpowers, and Execution Discipline Policy
+
+> **THE SUPREME LAW: HUMAN GATE**
+> You MUST NOT execute ANY state-changing operation (code writes, commits, external commands) without EXPLICIT user approval.
+> "Sounds good" or "Looks right" is NOT approval.
+> Only **"Proceed"**, **"Go"**, or **"Execute"** constitutes authorization.
+> Explicit approval transitions task state to `APPROVED` in `context/control_plane.db`.
+> **VIOLATION = SYSTEM FAILURE**
+
+---
+
+## 1. Overview & 4-Phase Lifecycle
+
+All non-trivial engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
+
+```
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+   │
+Phase 1: Native Plan Mode & Adversarial Review (critical-auditor + Human Gate)
+   │
+Phase 2: Worktree Isolation & Superpowers TDD (.worktrees/task-<id> + Red-Green-Refactor)
+   │
+Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary + Wiki)
+```
+
+---
+
+## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
+
+Before Plan Mode can ever be entered, the task must be bounded:
+
+1. **Read-Only Exploration Cycle:**
+   - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
+   - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
+   - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
+2. **Interview Gate (`interview-spec`):**
+   - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
+   - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
+   - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):
+     - **1. The Job:** System objective and target subsystem paths.
+     - **2. The Why:** Architectural rationale and user/system impact.
+     - **3. Semantic Guardrails & Operational Reasons:** Non-negotiables paired with operational justifications.
+     - **4. Definition of Done (DoD):** Programmatic verification commands.
+   - Atomically records task and transitions state in `context/control_plane.db` (`INTAKE` -> `INTERVIEW`).
+
+---
+
+## 3. Phase 1: Native Plan Mode & Adversarial Review
+
+1. **Native Plan Sandboxing:**
+   - Enforce host-native Plan Mode (Claude `/plan`, Copilot `@plan`, Antigravity plan mode) where available. Defer to Superpowers graph planning *only* when native host planning is absent or when executing complex multi-agent DAGs.
+   - While in Plan Mode, filesystem mutations outside plan artifacts are strictly prohibited.
+2. **Pre-Execution Critic Review:**
+   - Run clean-context adversarial review via `critical-auditor` (max 2–3 rounds) probing failure domains and cross-plugin boundaries before human presentation.
+3. **The Supreme Law Human Gate:**
+   - Present plan and require explicit user approval ("Proceed", "Go", "Execute").
+   - On approval, transition task to `APPROVED` in `context/control_plane.db`.
+
+---
+
+## 4. Phase 2: Worktree Isolation & Superpowers TDD
+
+1. **Standard Worktree Topology:**
+   - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
+   - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
+2. **Superpowers TDD Deferral Rule:**
+   - Invoke Superpowers execution loops only where native execution lacks automated TDD or DAG management.
+   - Enforce strict Red-Green-Refactor:
+     - **Red:** Author concrete unit/integration tests matching the contract. Verify they FAIL.
+     - **Green:** Implement minimum functional code to make tests pass.
+     - **Refactor:** Clean up while maintaining 100% green test status.
+3. **Mandatory Post-Task Leak Detection:**
+   - Immediately after any subagent reports back, the controller MUST run `git status --short` in the main checkout (not the worktree) before packaging reviews. Discard stray uncommitted diffs matching superseded work.
+
+---
+
+## 5. Phase 3: Deterministic Exit Gates & Asymmetric Persistence
+
+1. **Deterministic Local Exit:**
+   - 100% green pass (`exit 0`) on tests (`pytest`), linters, and structural audits (`audit_plugin_structure.py`).
+2. **Clean-Context Holistic Diff Review:**
+   - Perform full-diff review to verify zero unintended mutations.
+3. **Exact 6-State Worktree Status Vocabulary:**
+   - Status reports must use the exact vocabulary from `worktree-lifecycle-management.md`:
+     `written_in_worktree` | `committed_in_worktree` | `pushed_to_origin` | `merged_into_origin_main` | `local_branch_ref_updated` | `checked_out_on_disk`.
+4. **Asymmetric Knowledge Persistence:**
+   - Code mutations roll back on failure, but architectural insights, negative constraints, and discovered edge cases are permanently preserved in `wiki/decisions/` and `references/map-debt.md`.
+
+---
+
+## 6. Git & Environment Invariants
+
+- **NEVER** commit directly to `main`. Always use isolated branches.
+- **NEVER** run `git push` without explicit approval.
+- **NEVER** commit transient agent directories (`.agents/`, `.claude/`, `.gemini/`, `.codex/`).
+- UTF-8 encoding only. No smart quotes or non-ASCII characters in manifests and rules.
+
+
+<!-- plugin: dependency-management / dependency-management -->
+---
+description: Universal dependency management rules for Python and agent services.
+globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
+---
+
+## 🐍 Python Dependency Rules (Summary)
+
+**Full workflow details → `.agents/skills/dependency-management/SKILL.md`**
+
+### Non-Negotiables
+1. **No manual `pip install`** — all changes go through `.in` → `pip-compile` → `.txt`.
+2. **Commit `.in` + `.txt` together** — the `.in` is intent, the `.txt` is the lockfile.
+3. **Service sovereignty** — every agent service owns its own `requirements.txt`.
+4. **Tiered hierarchy** — Core (`requirements-core.in`) → Service-specific → Dev-only.
+5. **Declarative Dockerfiles** — only `COPY requirements.txt` + `RUN pip install -r`. No ad-hoc installs.
+6. **Hub-and-Spoke DRY** — canonical scripts at plugin/project root; file-level symlinks in `skills/` subfolders (no duplicate files).
+7. **Symlink Resolution** — installers resolve symlinks to physical copies in `.agents/`; installed skills must be fully self-contained.
+8. **Agent Orchestration** — cross-plugin coordination uses skill delegation via the prompt loop, not direct script execution.
 
 ## Gemini CLI Tool Mapping
 

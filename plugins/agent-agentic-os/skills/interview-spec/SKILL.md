@@ -34,6 +34,14 @@ Every compiled specification must satisfy:
 python3 scripts/interview_spec_engine.py
 ```
 
+Route on the returned mode — do not proceed to Socratic questions if a native mode is returned:
+
+| Returned Mode | Required Next Action |
+|---|---|
+| `DEFER_CLAUDE_NATIVE` | Invoke `EnterPlanMode` (native Claude Code Plan Mode). Do not run Socratic Defaulting. |
+| `DEFER_ANTIGRAVITY` | Invoke Antigravity's native planning mode. Do not run Socratic Defaulting. |
+| `EXECUTE_SOCRATIC_FALLBACK` | Proceed to Socratic Defaulting (1-3 questions at a time, structured options with an explicit recommended default) and compile `TASK_SPEC.md` directly. |
+
 ### 2. Register Task in SQLite Control Plane
 ```bash
 python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/<task-id>-spec.md"

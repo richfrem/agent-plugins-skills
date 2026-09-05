@@ -3,7 +3,7 @@
 <!-- Scheduled tasks for /loop. Start with: /loop "Read heartbeat.md and execute the items listed under Every Hour" --interval 1h -->
 
 ## Every Hour
-- Run the `os-health-check` agent to verify event bus and lock integrity
+- Run the `os-health-check` skill to verify event bus and lock integrity
 <!-- e.g. Scan open PRs, check build status, write status.md -->
 
 ## Every 24 Hours

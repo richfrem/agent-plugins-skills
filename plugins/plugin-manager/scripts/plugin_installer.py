@@ -69,7 +69,9 @@ import shutil
 import json
 import argparse
 import datetime
+import difflib
 from pathlib import Path
+from typing import Tuple, List
 
 # Force UTF-8 output on Windows to avoid UnicodeEncodeError with emoji in print()
 if hasattr(sys.stdout, "reconfigure"):
@@ -466,6 +468,49 @@ def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
     return None
 
 
+def _merge_rule_content_preserving_downstream(origin_content: str, existing_content: str) -> Tuple[str, bool]:
+    """
+    Merge plugin-source rule content into .agent/rules/ while preserving any
+    downstream content the origin lacks (both whole sections and intra-section
+    additions). Mirrors agent-agentic-os's init_agentic_os.py sync_rules()
+    pattern — ported here (not imported) per ADR-001, no cross-plugin imports.
+    Returns (merged_text, had_downstream_additions).
+    """
+    if not existing_content.strip():
+        return origin_content, False
+    if origin_content.strip() == existing_content.strip():
+        return origin_content, False
+
+    orig_lines = origin_content.splitlines(keepends=True)
+    existing_lines = existing_content.splitlines(keepends=True)
+
+    matcher = difflib.SequenceMatcher(None, orig_lines, existing_lines)
+    merged_lines: List[str] = []
+    has_downstream = False
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            merged_lines.extend(orig_lines[i1:i2])
+        elif tag == "insert":
+            # Content present downstream (.agent/rules/) but absent from plugin source
+            merged_lines.extend(existing_lines[j1:j2])
+            has_downstream = True
+        elif tag == "delete":
+            # Plugin source has content absent downstream: adopt it
+            merged_lines.extend(orig_lines[i1:i2])
+        elif tag == "replace":
+            # Both sides modified the same block — the newer/richer side (more
+            # lines) wins, since plugin sources can lag a same-day .agent/rules/
+            # update (see 2026-09-05 git-operations.md clobber incident).
+            if (j2 - j1) > (i2 - i1):
+                merged_lines.extend(existing_lines[j1:j2])
+                has_downstream = True
+            else:
+                merged_lines.extend(orig_lines[i1:i2])
+
+    return "".join(merged_lines), has_downstream
+
+
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                  root: Path, dry_run: bool = False, append_to_ide_files: bool = True) -> list[Path]:
     """Deploy rule files into .agent/rules/ and target agent environments.
@@ -502,7 +547,17 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         dest_name = rule_file.name
         central_dest = central_rules / dest_name
         if not dry_run:
-            shutil.copy2(rule_file, central_dest)
+            origin_content = rule_file.read_text(encoding="utf-8")
+            if central_dest.exists():
+                existing_content = central_dest.read_text(encoding="utf-8")
+                merged_content, had_downstream = _merge_rule_content_preserving_downstream(
+                    origin_content, existing_content
+                )
+                if had_downstream:
+                    print(f"  Reconciled rule {dest_name} (preserved newer/downstream .agent/rules/ content)")
+                central_dest.write_text(merged_content, encoding="utf-8")
+            else:
+                shutil.copy2(rule_file, central_dest)
         deployed.append(central_dest)
 
         for target_dir_name in targets:

@@ -60,8 +60,9 @@ full operating system metaphor.
 | **Reporting** | `os-improvement-report` | Progress charts from results.tsv + improvement ledger |
 | **Bootstrap** | `os-init` | Deploys kernel.py, agents.json, Triple-Loop files to new project |
 | **Utility** | `os-clean-locks` | Clears stale `.locks/` directories after agent crash |
+| **Diagnostic** | `os-health-check` | Scans event bus, lock state, and memory liveness (migrated from agent, 2026-09-05) |
 
-Agents (not skills): `Triple-Loop Retrospective` (trigger/diagnostic), `os-health-check` (liveness), `agentic-os-setup` (bootstrap interview)
+Agents (not skills): `Triple-Loop Retrospective` (trigger/diagnostic), `agentic-os-setup` (bootstrap interview)
 
 ## Execution Flow
 

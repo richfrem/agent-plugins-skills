@@ -2,6 +2,20 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.9.0 — 2026-09-05
+
+### Added
+- `skills/os-health-check/` — migrated from `agents/os-health-check.md`; deterministic event-bus/lock/memory diagnostic, no interview or adversarial judgment needed
+- `skills/issue-resolution-reviewer/` — migrated from `agents/issue-resolution-reviewer.agent.md`; tightened to make the human gate explicit before any issue reopen/label mutation
+- `skills/repository-improvement/` — migrated from `agents/repository-improvement-agent.agent.md` (renamed, dropping `-agent`); tightened to "synthesize proposals for human review," explicit no-autonomous-branch/commit/PR language
+
+### Removed
+- `agents/os-health-check.md`, `agents/issue-resolution-reviewer.agent.md`, `agents/repository-improvement-agent.agent.md` — retired in favor of the skills above (agent-vs-skill archetype audit, `DEBT-20260905-07`)
+
+### Changed
+- `.claude-plugin/plugin.json`: synced version to 1.9.0
+- `github-issue-logging-policy.md` (and its `.agent/rules/` mirror): renamed `repository-improvement-agent` references to `repository-improvement`
+
 ## v1.7.0 — 2026-06-28
 
 ### Added
