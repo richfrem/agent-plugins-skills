@@ -551,6 +551,36 @@ def _migrate_legacy_prefixed_rule(
     print(f"  Migrated legacy rule filename: {legacy_path.name} -> {central_dest.name}")
 
 
+def _cleanup_orphaned_legacy_rules(central_rules: Path, plugin_name: str, rules_dir: Path) -> None:
+    """Clean up legacy `<plugin>_<rule>.md` orphans for rules that no longer exist
+    in the plugin's current rules/ directory at all (fully removed, not renamed —
+    see DEBT-20260905-11 follow-up). _migrate_legacy_prefixed_rule() only runs for
+    rule files still present in rules_dir.glob(), so a rule that was dropped
+    entirely is never visited by the main loop and its legacy orphan is never
+    cleaned up without this second pass.
+
+    If a bare-name file for the same rule already exists, the orphan's unique
+    content is merge-preserved into it before removal. If no bare-name file
+    exists (the rule was dropped with no successor), the orphan is simply removed
+    — there is nothing to preserve it into."""
+    if not central_rules.is_dir():
+        return
+    current_stems = {f.stem for f in rules_dir.glob("*.md")} if rules_dir.exists() else set()
+    prefix = f"{plugin_name}_"
+    for legacy_path in sorted(central_rules.glob(f"{prefix}*.md")):
+        rule_stem = legacy_path.stem[len(prefix):]
+        if rule_stem in current_stems:
+            continue  # handled by the main per-rule loop instead
+        bare_dest = central_rules / f"{rule_stem}.md"
+        if bare_dest.exists():
+            current_content = bare_dest.read_text(encoding="utf-8")
+            legacy_content = legacy_path.read_text(encoding="utf-8")
+            merged_content, _ = _merge_rule_content_preserving_downstream(current_content, legacy_content)
+            bare_dest.write_text(merged_content, encoding="utf-8")
+        legacy_path.unlink()
+        print(f"  Cleaned up orphaned legacy rule (removed from plugin): {legacy_path.name}")
+
+
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                  root: Path, dry_run: bool = False, append_to_ide_files: bool = True) -> list[Path]:
     """Deploy rule files into .agent/rules/ and target agent environments.
@@ -596,7 +626,10 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                                           root, dry_run, append_to_ide_files)
             if dest:
                 deployed.append(dest)
-                
+
+    if not dry_run:
+        _cleanup_orphaned_legacy_rules(central_rules, plugin_name, rules_dir)
+
     return deployed
 
 
