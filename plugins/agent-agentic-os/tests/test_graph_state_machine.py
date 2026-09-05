@@ -1,6 +1,13 @@
 """
 Integration tests for Orchestration Graph State Machine
 Testing Scenarios A, B, C, D, E per §9.2 of the ratified plan.
+
+Purpose:
+    Verifies the evolution graph state machine's happy path, retry loop, and
+    third-attempt rollback/asymmetric-persistence behavior end-to-end.
+
+Key Input Dependencies:
+    - ../scripts/evolution_state.py (module under test)
 """
 
 import json
@@ -16,6 +23,7 @@ SCRIPTS_DIR = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts"
 
 @pytest.fixture
 def test_git_repo(tmp_path):
+    """Create and return a freshly git-init'd throwaway repo for state machine tests."""
     repo_dir = tmp_path / "repo"
     repo_dir.mkdir()
     subprocess.run(["git", "init", "-b", "main"], cwd=repo_dir, check=True, capture_output=True)

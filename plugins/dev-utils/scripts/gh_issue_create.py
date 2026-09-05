@@ -132,6 +132,7 @@ def create_issue(
 
 
 def main() -> None:
+    """CLI entry point: parse args and create (or dry-run) the GitHub issue."""
     parser = argparse.ArgumentParser(description="Create a GitHub Issue with dry-run default.")
     parser.add_argument("--title", required=True, help="Issue title")
     parser.add_argument("--body", required=True, help="Issue body markdown")

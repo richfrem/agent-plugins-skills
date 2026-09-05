@@ -250,6 +250,7 @@ def _resolve_source_file(root: Path, requested_source: Optional[str]) -> Path:
 
 
 def main() -> None:
+    """CLI entry point: sync instruction files, or run --check-rules and exit accordingly."""
     parser = argparse.ArgumentParser(
         description="Sync instruction files across CLAUDE.md, GEMINI.md, copilot-instructions.md, AGENTS.md."
     )

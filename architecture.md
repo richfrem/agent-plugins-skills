@@ -23,8 +23,8 @@ expected, not a bug in this repo. If a session shows an unfamiliar domain-specif
 before assuming this repo owns it.
 
 Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md | wc -l` and
-`find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere; excludes
-the deprecated `spec-kitty-plugin` pointer):
+`find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
+`plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
 - **10 plugins**
 - **140 skills** (active SKILL.md definitions across plugins)
 - **51 agent definitions** (`agents/*.md` across plugins)
@@ -44,8 +44,7 @@ the deprecated `spec-kitty-plugin` pointer):
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)
-│   └── spec-kitty-plugin/          # DEPRECATED pointer — see plugins/spec-kitty-plugin/README.md
-│       <plugin>/
+│   └── <plugin>/
 │       ├── skills/<skill>/SKILL.md # Skill definition (evals.json lives alongside)
 │       ├── agents/                 # Sub-agent definitions
 │       ├── commands/               # Slash commands
@@ -152,11 +151,6 @@ install`.
 ### 4.11. Plugin: plugin-manager (3 skills)
 Wraps the install/remove/sync scripts above as invokable skills (`plugin-installer`,
 `plugin-remover`, `plugin-syncer`).
-
-### 4.12. Plugin: spec-kitty-plugin — DEPRECATED
-Contains only a `README.md` pointer. As of Spec Kitty v3.2.2+, functionality moved to the
-natively-managed upstream `Priivacy-ai/spec-kitty` package (installed separately, not sourced from
-`plugins/` here). Do not add skills under this directory.
 
 ## 5. Architectural Rules (ADRs) — binding, not advisory
 

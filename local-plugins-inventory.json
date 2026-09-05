@@ -61,11 +61,5 @@
     "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync (install + cleanup orphans), cross-repo plugin replication, and Universal Bridge Installation to adapt standard plugins to 30+ target environments (GitHub Copilot, Gemini, Cursor, Roo, etc).",
     "version": "2.0.0",
     "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager"
-  },
-  {
-    "name": "spec-kitty",
-    "description": "Spec-Driven Development lifecycle + Universal Bridge sync engine \u2014 the flagship workflow plugin for AI-assisted feature development",
-    "version": "2.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/spec-kitty-plugin"
   }
 ]

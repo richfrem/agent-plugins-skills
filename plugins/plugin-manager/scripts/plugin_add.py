@@ -409,6 +409,7 @@ def validate_plugin(plugin_path: Path) -> None:
         raw_text = manifest_path.read_text(encoding="utf-8")
 
         def _check_dup_pairs(pairs):
+            """Raise on any duplicate JSON key instead of silently keeping the last one."""
             d = {}
             for k, v in pairs:
                 if k in d:

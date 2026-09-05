@@ -109,7 +109,7 @@ The flagship operational framework. Eval-gated improvement loops, memory managem
 
 ### Group 2: Engineering Workflows
 
-> **spec-kitty-plugin** is a legacy/deprecated pointer, not part of this repo's tracked 10-plugin set — Spec Kitty v3.2.2+ now manages agent workspaces natively via its own CLI (`spec-kitty init . --ai antigravity`). See [plugins/spec-kitty-plugin/README.md](plugins/spec-kitty-plugin/README.md) for the migration guide.
+> **spec-kitty-plugin** was removed from this repo (2026-09-05) — it was a legacy/deprecated pointer, never part of the tracked 10-plugin set. Spec Kitty v3.2.2+ manages agent workspaces natively via its own CLI (`spec-kitty init . --ai antigravity`).
 
 #### exploration-cycle-plugin — Discovery & Requirements
 

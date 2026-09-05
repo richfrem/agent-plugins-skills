@@ -196,10 +196,10 @@ issue (`gh_issue_comment.py`) rather than opening a duplicate — see
 
 ---
 
-**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` is legacy/deprecated
-(superseded by the native Spec Kitty CLI, per README.md) and was never part of the tracked local plugin
-set in `plugin-sources.json`. Do not suggest routing work to spec-kitty or `spk-*` skills unless the user
-explicitly reinstalls it themselves.
+**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` was removed on
+2026-09-05 (legacy/deprecated pointer, superseded by the native Spec Kitty CLI, never part of the
+tracked local plugin set in `plugin-sources.json`). Do not suggest routing work to spec-kitty or
+`spk-*` skills unless the user explicitly reinstalls it themselves.
 
 ## Plugin State — Current Versions (10 plugins · 137 skills)
 

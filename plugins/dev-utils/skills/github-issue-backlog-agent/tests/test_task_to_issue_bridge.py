@@ -24,6 +24,7 @@ from task_to_issue_bridge import (
 
 @pytest.fixture
 def sample_task_file(tmp_path: Path) -> Path:
+    """Write and return a synthetic task markdown file for parsing tests."""
     task_content = """---
 id: 42
 title: Fix database migration deadlock on startup
@@ -47,6 +48,7 @@ Seen 3 times in production staging.
 
 
 def test_parse_task_file(sample_task_file: Path) -> None:
+    """parse_task_file() must correctly extract fields from a sample task file."""
     task_data = parse_task_file(sample_task_file)
     assert str(task_data["id"]) == "42"
     assert task_data["title"] == "Fix database migration deadlock on startup"
@@ -57,6 +59,7 @@ def test_parse_task_file(sample_task_file: Path) -> None:
 
 
 def test_build_issue_payload(sample_task_file: Path) -> None:
+    """build_issue_payload() must produce a well-formed GitHub issue payload."""
     task_data = parse_task_file(sample_task_file)
     payload = build_issue_payload(task_data, extra_labels=["area:dev-utils", "tier:2-structural"])
 
@@ -75,6 +78,7 @@ def test_build_issue_payload(sample_task_file: Path) -> None:
 
 
 def test_promote_task_to_issue_dry_run(sample_task_file: Path) -> None:
+    """Dry-run promotion must report the intended issue without creating it."""
     result = promote_task_to_issue(
         task_path=sample_task_file,
         extra_labels=["area:dev-utils", "tier:1-friction"],

@@ -10,6 +10,13 @@ Audits and aligns an individual agent skill against ecosystem evolution standard
 5. Contract references (acceptance-criteria.md, fallback-tree.md)
 6. Spoke hygiene (no raw logs, wiki notes, or session state in skills)
 
+Purpose:
+    Audits a single skill directory against the 6 checks above and reports
+    pass/fail per check, with optional --fix auto-repair.
+
+Key Input Dependencies:
+    - Target skill directory (SKILL.md, evals/evals.json, references/)
+
 Usage:
   python3 audit_skill.py <path/to/skill> [--fix] [--json]
 """
@@ -35,6 +42,7 @@ class SkillAuditResult:
     metrics: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize this result to a plain dict for --json output."""
         return {
             "skill_name": self.skill_name,
             "skill_dir": str(self.skill_dir),
@@ -98,6 +106,7 @@ def audit_skill(
     plugin_root: Optional[Path | str] = None,
     fix: bool = False
 ) -> SkillAuditResult:
+    """Run all 6 audit checks against skill_path and return the aggregated result."""
     skill_dir = Path(skill_path).resolve()
     skill_name = skill_dir.name
     res = SkillAuditResult(skill_name=skill_name, skill_dir=skill_dir)
@@ -270,6 +279,7 @@ def audit_skill(
 
 
 def main() -> int:
+    """CLI entry point: parse args, run audit_skill() (single skill or --all), print/exit."""
     parser = argparse.ArgumentParser(description="Audit and align an agent skill against evolution standards.")
     parser.add_argument("skill_path", nargs="?", default=None, help="Path to skill directory to audit")
     parser.add_argument("--all", action="store_true", help="Audit all skills in the repository or target path")

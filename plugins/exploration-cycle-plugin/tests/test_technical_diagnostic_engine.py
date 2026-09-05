@@ -2,6 +2,13 @@
 test_technical_diagnostic_engine.py
 Unit and integration tests for technical diagnostic brief generation,
 read-only sandbox compliance, and control_plane.db task state advancement.
+
+Purpose:
+    Verifies technical_diagnostic_engine.py stays read-only, renders a valid
+    DIAGNOSTIC_BRIEF.md, and correctly advances control_plane.db task state.
+
+Key Input Dependencies:
+    - ../scripts/technical_diagnostic_engine.py (module under test)
 """
 
 import sqlite3

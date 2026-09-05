@@ -8,6 +8,9 @@ Purpose:
     `.agent/learning/traces/cycle_manifests.jsonl` with previous-hash chaining.
     Maintains raw stdout/stderr in gitignored `.agent/learning/traces/raw/<cycle_id>/`
     with defense-in-depth secret scrubbing.
+
+Key Input Dependencies:
+    - .agent/learning/traces/cycle_manifests.jsonl (append-only trace log)
 """
 
 import argparse
@@ -41,10 +44,12 @@ CANONICAL_NODES = [
 
 
 def _now():
+    """Return the current UTC time as an ISO-8601 string."""
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _get_repo_root(repo_dir: Path = None) -> Path:
+    """Resolve the repo root, defaulting to the git toplevel of the cwd."""
     if repo_dir:
         return repo_dir.resolve()
     try:
@@ -55,6 +60,7 @@ def _get_repo_root(repo_dir: Path = None) -> Path:
 
 
 def scrub_secrets(text: str) -> str:
+    """Redact common secret patterns (tokens, keys) from raw stdout/stderr before persisting."""
     if not text:
         return ""
     # API keys
@@ -70,6 +76,7 @@ def scrub_secrets(text: str) -> str:
 
 
 def _sha256_text(text: str) -> str:
+    """Return the SHA-256 hex digest of the given text."""
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -84,6 +91,7 @@ def append_event(
     stdout_text: str = "",
     stderr_text: str = ""
 ) -> dict:
+    """Append one hash-chained trace event to cycle_manifests.jsonl."""
     traces_dir = repo_root / ".agent" / "learning" / "traces"
     manifest_file = traces_dir / "cycle_manifests.jsonl"
     raw_dir = traces_dir / "raw" / cycle_id
@@ -149,6 +157,7 @@ def append_event(
 
 
 def main():
+    """CLI entry point: parse args and append the described trace event."""
     parser = argparse.ArgumentParser(description="Record Evolution Trace Event")
     subparsers = parser.add_subparsers(dest="command", required=True)
 

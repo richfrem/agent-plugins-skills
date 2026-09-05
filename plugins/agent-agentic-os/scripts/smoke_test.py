@@ -68,6 +68,7 @@ def setup_sandbox() -> Path:
 
 
 def run_smoke_test():
+    """Run the full end-to-end evolution smoke test sequence and report pass/fail."""
     print("================================================================================")
     print("  Self-Evolution End-to-End Smoke Test: 11 Hardened Contract Assertions")
     print("================================================================================")

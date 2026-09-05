@@ -21,6 +21,9 @@ Usage Examples:
 
     # Check wiki health (orphaned playbooks, unindexed playbooks, confidence decay > 30 days):
     python3 distill_playbook.py --audit
+
+Key Input Dependencies:
+    - wiki/index.md, wiki/playbook-*.md
 """
 
 import argparse
@@ -32,6 +35,7 @@ from typing import List, Dict, Tuple
 
 
 def get_repo_root(start_dir: Path | None = None) -> Path:
+    """Resolve the repo root, defaulting to the git toplevel of the cwd."""
     current = start_dir.resolve() if start_dir else Path.cwd().resolve()
     while current.parent != current:
         if (current / ".git").exists() or (current / "plugins").exists() or (current / "wiki").exists():
@@ -49,6 +53,7 @@ def create_playbook(
     summary: str = "",
     invariants: List[str] | None = None
 ) -> Path:
+    """Scaffold a new wiki/playbook-<slug>.md file with the given title and status."""
     wiki_dir.mkdir(parents=True, exist_ok=True)
     clean_slug = re.sub(r"[^a-zA-Z0-9_\-]+", "-", slug).strip("-").lower()
     if not clean_slug.startswith("playbook-"):
@@ -98,6 +103,7 @@ def create_playbook(
 
 
 def audit_wiki(wiki_dir: Path) -> Tuple[List[str], List[Dict]]:
+    """Report orphaned/unindexed playbooks and confidence-decay candidates."""
     if not wiki_dir.exists():
         return [f"Wiki directory does not exist: {wiki_dir}"], []
 
@@ -148,6 +154,7 @@ def audit_wiki(wiki_dir: Path) -> Tuple[List[str], List[Dict]]:
 
 
 def sync_index(wiki_dir: Path) -> Path:
+    """Rewrite wiki/index.md to match the current set of on-disk playbooks."""
     wiki_dir.mkdir(parents=True, exist_ok=True)
     index_file = wiki_dir / "index.md"
     playbook_files = sorted(list(wiki_dir.glob("playbook-*.md")))
@@ -206,6 +213,7 @@ This directory stores confirmed architectural insights, domain heuristics, and f
 
 
 def main():
+    """CLI entry point: dispatch to create/sync-index/audit based on the given flags."""
     parser = argparse.ArgumentParser(description="Distill and manage Layer 2 wiki playbooks")
     parser.add_argument("--wiki-dir", type=str, help="Path to wiki directory (defaults to <repo_root>/wiki)")
     parser.add_argument("--slug", type=str, help="Playbook filename slug (e.g. 'order-execution-flow')")

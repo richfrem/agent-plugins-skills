@@ -1,6 +1,13 @@
 """
 Unit tests for gh_issue_create and gh_issue_comment CLI scripts.
 
+Purpose:
+    Verifies gh_issue_create.py and gh_issue_comment.py build correct `gh`
+    CLI invocations without making real network calls (mocked subprocess).
+
+Key Input Dependencies:
+    - ../scripts/gh_issue_create.py, ../scripts/gh_issue_comment.py (modules under test)
+
 Copyright (c) 2026. All rights reserved.
 """
 

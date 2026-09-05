@@ -4,6 +4,13 @@
 Treats plugins/cli-agents/references/cheapest_models.{json,md} as the master
 copies and propagates them to every other copy found in the repo.
 
+Purpose:
+    Keeps every duplicate copy of cheapest_models.json/md in sync with the
+    canonical master, so cheapest-model routing tables never silently drift.
+
+Key Input Dependencies:
+    - plugins/cli-agents/references/cheapest_models.json, cheapest_models.md (masters)
+
 Usage:
     python3 plugins/cli-agents/scripts/sync_cheapest_models.py [--dry-run]
 """
@@ -30,6 +37,7 @@ def find_copies(filename: str, master: Path) -> list[Path]:
 
 
 def sync(dry_run: bool = False) -> None:
+    """Copy the master cheapest_models.{json,md} over every other copy found in the repo."""
     total_updated = 0
     for filename, master in MASTERS.items():
         if not master.exists():
@@ -52,6 +60,7 @@ def sync(dry_run: bool = False) -> None:
 
 
 def main() -> None:
+    """CLI entry point: parse --dry-run and run sync()."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="Show what would change without writing")
     args = parser.parse_args()

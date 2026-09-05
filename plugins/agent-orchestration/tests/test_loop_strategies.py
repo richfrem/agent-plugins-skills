@@ -6,6 +6,12 @@ Validates:
 - Skill metadata standards (kebab-case, third-person description, line budgets)
 - evals.json schema compliance (should_trigger boolean)
 - Elimination of dead CLI subcommand references in orchestrator
+
+Purpose:
+    Validates the checks listed above across all agent-orchestration skills.
+
+Key Input Dependencies:
+    - ../skills/*/SKILL.md, ../skills/*/evals/evals.json
 """
 
 import json
@@ -22,6 +28,7 @@ PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 class TestLoopStrategiesDecisionTree(unittest.TestCase):
 
     def setUp(self):
+        """Point at the real agent-orchestration skills/ directory to audit."""
         self.skills_dir = PLUGIN_ROOT / "skills"
 
     def test_all_expected_skills_exist(self):
