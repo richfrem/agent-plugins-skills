@@ -41,6 +41,7 @@ from agent_control import (
     WORKTREE_STATES,
     VerifierSovereigntyViolation,
     InvalidStateTransition,
+    PersistenceInvariantViolation,
 )
 from interview_spec_engine import (
     detect_intake_mode,
@@ -253,3 +254,99 @@ def test_diagnostic_brief_auto_locate(tmp_path):
     assert result["has_coupling_surface"] is True
     assert result["has_hidden_assumptions"] is True
     assert result["has_architectural_forks"] is True
+
+
+def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
+    """Test that transitioning to DONE is blocked when verification receipts or persistence logs are missing."""
+    task_id = "task-done-guard-001"
+    control_plane.create_task(task_id=task_id, title="Done Guard Task", runtime_tool="antigravity")
+    
+    # Progress through valid steps to VERIFY_EXIT
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
+    control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
+    control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-done-001", worktree_branch="b1", worktree_state="written_in_worktree")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
+    control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
+    
+    # Attempt transition to DONE with no receipts or persistence log
+    with pytest.raises(PersistenceInvariantViolation, match="No passing verification receipt"):
+        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+
+    # Add general test receipt (exit_code=0)
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+
+    # Still blocked: missing asymmetric persistence log
+    with pytest.raises(PersistenceInvariantViolation, match="Asymmetric persistence required"):
+        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+
+    # Add asymmetric persistence log
+    control_plane.log_asymmetric_persistence(
+        task_id=task_id,
+        destination="wiki/decisions/2026-09-05-decision.md",
+        status="CONFIRMED",
+        details="Documented architectural patterns"
+    )
+
+    # Still blocked: missing leak check receipt
+    with pytest.raises(PersistenceInvariantViolation, match="Missing clean leak check receipt"):
+        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+
+
+def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_plane):
+    """Test that transition to DONE succeeds when deterministic receipts, persistence log, and leak check exist."""
+    task_id = "task-done-success-001"
+    control_plane.create_task(task_id=task_id, title="Successful Done Task", runtime_tool="antigravity")
+    
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
+    control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
+    control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-done-success", worktree_branch="b2", worktree_state="written_in_worktree")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
+    control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
+    
+    # Add requirements
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    control_plane.log_asymmetric_persistence(
+        task_id=task_id,
+        destination="references/map-debt.md",
+        status="RESOLVED",
+        details="Resolved debt item"
+    )
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
+
+    # Transition to DONE succeeds
+    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="All exit gates passed")
+    assert control_plane.get_task(task_id)["state"] == "DONE"
+
+
+def test_transition_to_rolled_back_requires_asymmetric_persistence(control_plane):
+    """Test that transitioning to ROLLED_BACK requires documenting failure mode in asymmetric persistence log."""
+    task_id = "task-rollback-guard-001"
+    control_plane.create_task(task_id=task_id, title="Rollback Task", runtime_tool="antigravity")
+    
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
+    control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
+    control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-rb", worktree_branch="b3", worktree_state="written_in_worktree")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
+
+    # Attempt rollback without asymmetric persistence log
+    with pytest.raises(PersistenceInvariantViolation, match="Asymmetric persistence required"):
+        control_plane.transition(task_id=task_id, to_state="ROLLED_BACK", actor="controller", reason="Attempt rollback")
+
+    # Document failure in asymmetric persistence log
+    control_plane.log_asymmetric_persistence(
+        task_id=task_id,
+        destination="wiki/decisions/failure-analysis.md",
+        status="OBSERVED",
+        details="Recorded failure mode learning"
+    )
+
+    # Rollback succeeds
+    control_plane.transition(task_id=task_id, to_state="ROLLED_BACK", actor="controller", reason="Verified rollback")
+    assert control_plane.get_task(task_id)["state"] == "ROLLED_BACK"
+

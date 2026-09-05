@@ -39,6 +39,12 @@ venv.bak/
 # Project specific
 temp/
 plugins/**/temp/
+context/*.db
+context/*.db-wal
+context/*.db-shm
+context/*.jsonl
+context/os-state.json
+context/bundles/
 
 # Added by Spec Kitty CLI (auto-managed)
 .claude/

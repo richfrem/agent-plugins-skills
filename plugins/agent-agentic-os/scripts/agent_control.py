@@ -178,6 +178,11 @@ class VerifierSovereigntyViolation(Exception):
     pass
 
 
+class PersistenceInvariantViolation(Exception):
+    """Raised when evolution integrity or asymmetric persistence invariants are violated."""
+    pass
+
+
 # External comment: Compute the SHA256 hex digest of a local file
 def _sha256_file(filepath: Path) -> str:
     """Computes SHA256 hex digest of a given file path."""
@@ -334,6 +339,55 @@ class ControlPlane:
 
         conn = self._get_connection()
         try:
+            # --- Invariant Guard: VERIFY_EXIT -> DONE ---
+            if to_state == "DONE":
+                # 1. Deterministic Verification Receipt Exists (exit_code == 0)
+                rec = conn.execute(
+                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND exit_code = 0",
+                    (task_id,)
+                ).fetchone()[0]
+                if rec == 0:
+                    raise PersistenceInvariantViolation(
+                        f"Cannot complete task '{task_id}': No passing verification receipt (exit_code == 0) found."
+                    )
+
+                # 2. Asymmetric Persistence Logged (decision / debt sync)
+                persist_count = conn.execute(
+                    """
+                    SELECT COUNT(*) FROM asymmetric_persistence_log 
+                    WHERE task_id = ? 
+                      AND (destination LIKE '%wiki/decisions/%' OR destination LIKE '%references/map-debt.md%' OR destination LIKE '%map-debt%')
+                    """,
+                    (task_id,)
+                ).fetchone()[0]
+                if persist_count == 0:
+                    raise PersistenceInvariantViolation(
+                        f"Cannot complete task '{task_id}': Asymmetric persistence required before DONE. "
+                        "Log an entry to wiki/decisions/ or references/map-debt.md."
+                    )
+
+                # 3. Clean Leak Check
+                leak_rec = conn.execute(
+                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'leak_check' AND exit_code = 0",
+                    (task_id,)
+                ).fetchone()[0]
+                if leak_rec == 0:
+                    raise PersistenceInvariantViolation(
+                        f"Cannot complete task '{task_id}': Missing clean leak check receipt (gate_name='leak_check', exit_code=0)."
+                    )
+
+            # --- Invariant Guard: Failure -> ROLLED_BACK ---
+            if to_state == "ROLLED_BACK":
+                failure_persist = conn.execute(
+                    "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ?",
+                    (task_id,)
+                ).fetchone()[0]
+                if failure_persist == 0:
+                    raise PersistenceInvariantViolation(
+                        f"Cannot roll back task '{task_id}': Asymmetric persistence required. "
+                        "Document failure mode/learning in asymmetric_persistence_log before rolling back code."
+                    )
+
             with conn:
                 conn.execute(
                     "UPDATE tasks SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ?",
@@ -345,6 +399,7 @@ class ControlPlane:
                 )
         finally:
             conn.close()
+
 
     def lock_verifiers(self, task_id: str, file_paths: List[Path]):
         """Calculates and locks baseline SHA256 hashes of verifier files."""
@@ -556,7 +611,7 @@ def main():
     cp = ControlPlane()
     try:
         _dispatch_command(cp, args)
-    except (InvalidStateTransition, VerifierSovereigntyViolation) as e:
+    except (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation) as e:
         print(f"CONTROL PLANE ERROR: {e}", file=sys.stderr)
         sys.exit(2)
     except Exception as e:
