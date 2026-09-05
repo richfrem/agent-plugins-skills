@@ -71,6 +71,7 @@ run this check on every health check, not just once after install, since a stale
 test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING control_plane.db"
 test -f .claude/hooks/hooks.json && echo "OK hooks.json (Stop turn hook)" || echo "MISSING hooks.json"
 test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-evolution-guard" || echo "MISSING pre-commit-evolution-guard"
+test -f .github/workflows/verify-evolution-integrity.yml && echo "OK verify-evolution-integrity.yml (CI Gate)" || echo "MISSING verify-evolution-integrity.yml"
 
 # If local plugins exist, verify each has references/evolution-log.md
 if [ -d "plugins" ]; then
@@ -80,6 +81,7 @@ if [ -d "plugins" ]; then
     done
 fi
 ```
+
 
 **If any report MISSING**: this is a Tier 1 finding, not merely informational.
 Recommend re-running the retrofit immediately in the health check summary:

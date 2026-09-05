@@ -635,8 +635,72 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                         pre_commit.chmod(0o755)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
 
+        # Install GitHub Actions evolution integrity workflow
+        github_workflows_dir = target / ".github" / "workflows"
+        make_dir(github_workflows_dir, dry_run)
+        ci_workflow_target = github_workflows_dir / "verify-evolution-integrity.yml"
+        if not ci_workflow_target.exists():
+            workflow_content = (
+                "name: Evolution Integrity & Compliance Gate\n\n"
+                "on:\n"
+                "  pull_request:\n"
+                "    paths:\n"
+                "      - 'plugins/**'\n"
+                "      - 'py_services/**'\n"
+                "      - 'investment_screener/backend/py_services/**'\n"
+                "      - 'src/**'\n"
+                "      - 'investment_screener/backend/src/**'\n\n"
+                "jobs:\n"
+                "  verify-evolution:\n"
+                "    name: Verify Evolution & Map Debt Compliance\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - name: Checkout Repository\n"
+                "        uses: actions/checkout@v4\n"
+                "        with:\n"
+                "          fetch-depth: 0\n\n"
+                "      - name: Set up Python\n"
+                "        uses: actions/setup-python@v5\n"
+                "        with:\n"
+                "          python-version: '3.11'\n\n"
+                "      - name: Check Map Debt & Evolution Compliance in PR Diff\n"
+                "        run: |\n"
+                "          # Check if PR touches core logic\n"
+                "          CHANGED_SRC=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(plugins/|investment_screener/backend/py_services/|py_services/|src/|investment_screener/backend/src/)' || true)\n"
+                "          \n"
+                "          if [ -n \"$CHANGED_SRC\" ]; then\n"
+                "            echo \"Checking Evolution & Map Debt compliance for modified code...\"\n"
+                "            \n"
+                "            # Check for escape valve in commit messages\n"
+                "            if git log origin/${{ github.base_ref }}...HEAD --grep='Evolution-Check:[[:space:]]*none' -n 1 | grep -q 'Evolution-Check'; then\n"
+                "              echo \"✓ Escape valve found: Evolution-Check: none trailer verified.\"\n"
+                "              exit 0\n"
+                "            fi\n"
+                "            \n"
+                "            # Check for map-debt, wiki, or evolution-log changes\n"
+                "            DOC_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(references/map-debt.md|wiki/|plugins/.*/references/evolution-log.md)' || true)\n"
+                "            \n"
+                "            if [ -z \"$DOC_CHANGED\" ]; then\n"
+                "              echo \"❌ CI FAILURE: PR modifies core logic but contains no staged Map Debt or Evolution Log updates!\"\n"
+                "              echo \"Modified logic files:\"\n"
+                "              echo \"$CHANGED_SRC\"\n"
+                "              echo \"\"\n"
+                "              echo \"Please record the evolution/friction in references/map-debt.md or include 'Evolution-Check: none' in your commit message.\"\n"
+                "              exit 1\n"
+                "            fi\n"
+                "            echo \"✓ Evolution & Map Debt documentation verified in PR diff.\"\n"
+                "          else\n"
+                "            echo \"✓ No core logic files changed in this PR.\"\n"
+                "          fi\n"
+            )
+            write_file(ci_workflow_target, workflow_content, dry_run, force=False)
+            announce("Installed verify-evolution-integrity.yml into .github/workflows/", dry_run)
+        else:
+            announce(f"exists {ci_workflow_target} (skipped)", dry_run)
+
     except (subprocess.CalledProcessError, FileNotFoundError):
         announce("⚠️  Warning: target is not inside a git repository or git is not installed.", dry_run)
+
 
 
 # External comment: Orchestrate end-to-end project directory scaffolding
@@ -694,8 +758,9 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("   Immediately run the health check skill/engine to verify substrate liveness:")
     print("   • Slash command / Skill: /os-health-check")
     print("   • Deterministic substrate check:")
-    print("     test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard && echo 'OK: All OS substrates active'")
+    print("     test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard && test -f .github/workflows/verify-evolution-integrity.yml && echo 'OK: All OS substrates active'")
     print()
+
 
 
 # ---------------------------------------------------------------------------
