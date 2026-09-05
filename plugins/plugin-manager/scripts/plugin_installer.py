@@ -511,6 +511,22 @@ def _merge_rule_content_preserving_downstream(origin_content: str, existing_cont
     return "".join(merged_lines), has_downstream
 
 
+def _write_rule_merge_preserving_downstream(rule_file: Path, central_dest: Path) -> None:
+    """Write rule_file's content into central_dest, merge-preserving any newer content
+    central_dest already has (never a blind overwrite — see DEBT-20260905-06)."""
+    origin_content = rule_file.read_text(encoding="utf-8")
+    if not central_dest.exists():
+        shutil.copy2(rule_file, central_dest)
+        return
+    existing_content = central_dest.read_text(encoding="utf-8")
+    merged_content, had_downstream = _merge_rule_content_preserving_downstream(
+        origin_content, existing_content
+    )
+    if had_downstream:
+        print(f"  Reconciled rule {central_dest.name} (preserved newer/downstream .agent/rules/ content)")
+    central_dest.write_text(merged_content, encoding="utf-8")
+
+
 def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
                  root: Path, dry_run: bool = False, append_to_ide_files: bool = True) -> list[Path]:
     """Deploy rule files into .agent/rules/ and target agent environments.
@@ -547,17 +563,7 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
         dest_name = rule_file.name
         central_dest = central_rules / dest_name
         if not dry_run:
-            origin_content = rule_file.read_text(encoding="utf-8")
-            if central_dest.exists():
-                existing_content = central_dest.read_text(encoding="utf-8")
-                merged_content, had_downstream = _merge_rule_content_preserving_downstream(
-                    origin_content, existing_content
-                )
-                if had_downstream:
-                    print(f"  Reconciled rule {dest_name} (preserved newer/downstream .agent/rules/ content)")
-                central_dest.write_text(merged_content, encoding="utf-8")
-            else:
-                shutil.copy2(rule_file, central_dest)
+            _write_rule_merge_preserving_downstream(rule_file, central_dest)
         deployed.append(central_dest)
 
         for target_dir_name in targets:

@@ -30,6 +30,7 @@ from plugin_installer import deploy_rules  # noqa: E402
 
 
 def run() -> None:
+    """Reproduce the deploy_rules() clobber and assert the merge-preserving fix holds."""
     tmp = Path(tempfile.mkdtemp(prefix="deploy_rules_test_"))
     try:
         plugin_path = tmp / "plugins" / "dev-utils"
