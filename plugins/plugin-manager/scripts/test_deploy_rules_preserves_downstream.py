@@ -110,6 +110,57 @@ def run_legacy_prefix_migration() -> None:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def run_orphan_cleanup_for_removed_rule() -> None:
+    """Reproduce the InvestmentToolkit follow-up report: when a rule is fully removed
+    from a plugin (not renamed — genuinely deleted), its legacy prefixed orphan is
+    never visited by the rules_dir.glob() loop and never cleaned up. deploy_rules()
+    must still detect and migrate/remove it via a second, plugin-wide orphan pass."""
+    tmp = Path(tempfile.mkdtemp(prefix="deploy_rules_orphan_test_"))
+    try:
+        plugin_path = tmp / "plugins" / "agent-scaffolders"
+        rules_dir = plugin_path / "rules"
+        rules_dir.mkdir(parents=True)
+        # Plugin still ships one rule (unrelated to the removed one)
+        (rules_dir / "plugin-architecture-policy.md").write_text(
+            "# Plugin Architecture Policy\n\nContent.\n", encoding="utf-8"
+        )
+
+        central_rules = tmp / ".agent" / "rules"
+        central_rules.mkdir(parents=True)
+
+        # Case A: rule fully removed, but a bare-name file exists with unique content
+        legacy_a = central_rules / "agent-scaffolders_skill-deletion-guard.md"
+        legacy_a.write_text(
+            "# Skill Deletion Guard\n\nOrigin content.\n\n### Team Note\nDo not skip.\n",
+            encoding="utf-8",
+        )
+        bare_a = central_rules / "skill-deletion-guard.md"
+        bare_a.write_text("# Skill Deletion Guard\n\nOrigin content.\n", encoding="utf-8")
+
+        # Case B: rule fully removed, no bare-name file exists at all
+        legacy_b = central_rules / "agent-scaffolders_pre-push-audit.md"
+        legacy_b.write_text("# Pre-Push Audit\n\nStale, fully dropped.\n", encoding="utf-8")
+
+        deploy_rules(plugin_path, "agent-scaffolders", targets=[], root=tmp, dry_run=False)
+
+        if legacy_a.exists():
+            print("FAIL: Case A legacy orphan (with existing bare-name twin) was not removed")
+            sys.exit(1)
+        merged_a = bare_a.read_text(encoding="utf-8")
+        if "Team Note" not in merged_a:
+            print("FAIL: Case A legacy orphan's unique content was not migrated into the bare-name file")
+            sys.exit(1)
+
+        if legacy_b.exists():
+            print("FAIL: Case B legacy orphan (no bare-name twin, rule fully dropped) was not removed")
+            sys.exit(1)
+
+        print("PASS: deploy_rules() cleaned up orphans for rules removed entirely from the plugin")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 if __name__ == "__main__":
     run()
     run_legacy_prefix_migration()
+    run_orphan_cleanup_for_removed_rule()
