@@ -64,17 +64,24 @@ Run `init_agentic_os.py` based on mode:
 *Note: In both modes, `init_agentic_os.py` automatically initializes `context/control_plane.db` with WAL mode, installs `.git/hooks/pre-commit-evolution-guard`, and configures the `Stop` turn hook.*
 
 > [!IMPORTANT]
-> **Retrofit mode must call `_init_control_plane_db()` explicitly.** Only the fresh-setup path
-> (`create_project_structure()` → `_scaffold_context_dir()`) calls `_init_control_plane_db()`
-> implicitly. The `--retrofit` branch in `_execute_action()` scaffolds 3-Layer Memory and syncs
-> instructions/rules/skills, but never touches `context/`, so a retrofit run silently skipped
-> `control_plane.db` creation while still claiming (in this doc and in its own completion banner)
-> that both modes initialize it. Fixed by calling `_init_control_plane_db(target, args.dry_run)`
-> directly inside the `if args.retrofit:` branch — it's idempotent (skips if the DB already
-> exists), so it's safe to call unconditionally on every retrofit run. When modifying
-> `_execute_action()` again, verify both branches still reach every substrate listed in this
-> Phase 3 note — retrofit is not a subset of fresh-setup and does not get scaffolding steps for
-> free.
+> **Retrofit mode must call every scaffolding substrate explicitly — it does not inherit them
+> from fresh setup.** `create_project_structure()` (the non-`--retrofit` path) calls
+> `_scaffold_root_files()`, `_scaffold_context_dir()` (→ `_init_control_plane_db()`),
+> `_scaffold_claude_dir()` (→ `.claude/hooks/hooks.json`, the Stop turn hook config), and
+> `_validate_and_finalize()` (→ `.git/hooks/pre-commit-evolution-guard`) as one sequence. The
+> `--retrofit` branch in `_execute_action()` is a **separate, independently-maintained list** —
+> historically it only called `_scaffold_3layer_memory()` + instructions/rules/skills sync, so
+> retrofit runs silently skipped `control_plane.db`, `.claude/hooks/hooks.json`, and the git
+> pre-commit hook, all three, while this doc and the script's own completion banner claimed both
+> modes initialize them. Fixed in two passes: `_init_control_plane_db()` first (found via a
+> downstream consumer repo where `context/control_plane.db` was missing post-retrofit), then
+> `_scaffold_claude_dir()` + `_validate_and_finalize()` (found immediately after, by auditing the
+> rest of `create_project_structure()`'s call list against what `--retrofit` actually reaches).
+> All three are idempotent (skip-if-exists / merge-not-clobber), so calling them unconditionally
+> on every retrofit run is safe. **When modifying `_execute_action()` again, diff its two
+> branches' call lists against each other explicitly** — do not assume retrofit is a subset of
+> fresh-setup; every fresh-setup scaffolding call needs a deliberate yes/no decision for whether
+> retrofit should also make it, not silent omission.
 
 ---
 

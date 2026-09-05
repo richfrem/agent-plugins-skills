@@ -713,6 +713,8 @@ def _execute_action(target: Path, args: argparse.Namespace) -> None:
         print(f"\n--- Retrofitting Existing Repository: {target.resolve()} ---\n")
         _scaffold_3layer_memory(target, args.dry_run, args.force)
         _init_control_plane_db(target, args.dry_run)
+        _scaffold_claude_dir(target, args.dry_run, args.force)
+        _validate_and_finalize(target, args.dry_run)
         sync_instructions(target, args.dry_run)
         sync_rules(target, args.dry_run)
         retrofit_existing_skills(target, args.dry_run, fix=True)
