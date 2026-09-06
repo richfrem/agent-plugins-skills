@@ -2138,6 +2138,15 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 7. **Symlink Resolution** — installers resolve symlinks to physical copies in `.agents/`; installed skills must be fully self-contained.
 8. **Agent Orchestration** — cross-plugin coordination uses skill delegation via the prompt loop, not direct script execution.
 
+
+
+## Plugin & Skill Maintenance Policy
+- Check `context/plugin-config.json` for this repository's configured contribution mode:
+  1. `fork-and-pr`: Test fix locally, commit to feature branch in cloned upstream repo, and submit PR to `richfrem/agent-plugins-skills`.
+  2. `local-patch-and-issue`: Apply immediate fix directly in `.agents/skills/` and log an issue in `richfrem/agent-plugins-skills` with reproduction details.
+  3. `domain-override`: Keep upstream shared skills unmodified; put project customizations in `.agent/rules/local-*` or local `plugins/`.
+- Never make silent undocumented edits to shared skills without either opening an upstream PR or logging an issue.
+
 ## Gemini CLI Tool Mapping
 
 | Claude Code | Gemini CLI equivalent |

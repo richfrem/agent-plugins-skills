@@ -44,6 +44,7 @@ context/*.db-wal
 context/*.db-shm
 context/*.jsonl
 context/os-state.json
+context/plugin-config.json
 context/bundles/
 
 # Added by Spec Kitty CLI (auto-managed)
