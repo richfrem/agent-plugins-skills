@@ -13,12 +13,11 @@ Purpose:
     round 1): one policy path, two rule kinds it can evaluate — not two independent engines.
 
     This module does not itself talk to SQLite, subprocess, hashlib, or the filesystem — every
-    rule receives a `ctx` dict supplying whatever data/callables it needs (a live connection,
-    counts, or a bound verify-sovereignty callback), so this file has zero infrastructure
-    imports (dependency-direction invariant, DoD item 5). Full removal of `ctx["conn"]`'s
-    reliance on a raw connection object happens when persistence is extracted (Step 5) —
-    at this step, the connection is still sqlite3.Connection under the hood, but this module
-    itself never imports sqlite3 to obtain or type it beyond a generic `Any`.
+    rule receives a `ctx` dict of plain data/callables (counts, a bound verify-sovereignty
+    callback), so this file has zero infrastructure imports (dependency-direction invariant,
+    DoD item 5). Since the persistence extraction revision, `ctx`'s callables are backed by
+    control_plane.adapters.SqlitePersistenceAdapter (via ControlPlane) rather than a raw
+    connection — this module never sees or imports sqlite3 either way.
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Policy (domain layer)
@@ -27,7 +26,10 @@ Key Input Dependencies:
     None directly — all data arrives via the `ctx` dict passed to `evaluate()`.
 
 Key Functions:
-    - PolicyViolation — exception raised when a rule's check fails
+    - PolicyViolation — exception raised when a rule's check fails (caller-facing validation
+      failure, e.g. missing receipt)
+    - PolicyConfigurationError — exception raised when a rule itself is malformed (an unknown
+      `check` type) — a bug in the policy registry, never silently treated as a pass
     - TRANSITION_RULES — declarative registry keyed by (from_state, to_state)
     - OPERATION_RULES — declarative registry keyed by operation name
     - evaluate_transition() — evaluates all rules registered for a given transition edge
@@ -41,6 +43,18 @@ class PolicyViolation(Exception):
     """Raised when a policy rule's check fails. agent_control.py's ControlPlane catches this
     and re-raises as PersistenceInvariantViolation to preserve the existing CLI exit-code
     contract (DoD item 6 of docs/plans/issue-524-spec.md) — external behavior is unchanged."""
+    pass
+
+
+class PolicyConfigurationError(Exception):
+    """Raised when a rule declares an unrecognized `check` type — a bug in the policy registry
+    itself, not a normal validation failure. Deliberately NOT a subclass of PolicyViolation:
+    ControlPlane's `except PolicyViolation` clauses must not silently convert this into a
+    PersistenceInvariantViolation (which would look like an ordinary, retryable gate failure)
+    — it should propagate as an unhandled error (CLI exit code 1, a genuine crash), since it
+    means a rule was misconfigured, not that a real precondition was unmet. Added after
+    external post-implementation review flagged the prior `else: satisfied = True` fallback
+    as an unsafe fail-open default for the single authoritative policy engine."""
     pass
 
 
@@ -243,7 +257,10 @@ OPERATION_RULES: Dict[str, List[Dict[str, Any]]] = {
 
 def _run_rule(ctx: Dict[str, Any], rule: Dict[str, Any]) -> None:
     """Evaluates a single rule against ctx; raises PolicyViolation with the rule's configured
-    error message (or the predicate's returned message) if the rule fails."""
+    error message (or the predicate's returned message) if the rule fails. An unrecognized
+    `check` type fails CLOSED — raises PolicyConfigurationError — rather than silently passing;
+    this is the single authoritative policy engine, so a misconfigured/misspelled rule type
+    must never be mistaken for "no rule to enforce"."""
     check = rule["check"]
     if check == "receipt":
         satisfied = _gate_receipt_exists(ctx, rule["gate_name"])
@@ -257,7 +274,7 @@ def _run_rule(ctx: Dict[str, Any], rule: Dict[str, Any]) -> None:
             raise PolicyViolation(error)
         return
     else:
-        satisfied = True
+        raise PolicyConfigurationError(f"Unknown policy check type: {check!r} in rule {rule!r}")
     if not satisfied:
         raise PolicyViolation(rule["error"])
 

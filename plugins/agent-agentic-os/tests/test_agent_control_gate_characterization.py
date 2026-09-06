@@ -25,7 +25,7 @@ Key Functions:
     - test_push_barrier_permits_verify_exit()
     - test_push_barrier_blocks_in_worktree()
     - test_prior_art_guard_not_applicable_to_general_task()
-    - test_prior_art_guard_not_applicable_to_non_intake_interview_edge()
+    - test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied()
     - test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact()
 """
 
@@ -136,11 +136,14 @@ def test_prior_art_guard_not_applicable_to_general_task(control_plane):
     assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
 
 
-def test_prior_art_guard_not_applicable_to_non_intake_interview_edge(control_plane):
-    """Characterizes: the prior-art guard only fires on the (INTAKE, INTERVIEW) edge — an
-    EVOLUTION task with no prior-art scan logged can still transition INTERVIEW->DRAFT_PLAN
-    (a different edge) without tripping the guard, since _check_prior_art_guard's own
-    early-return checks `to_state != "INTERVIEW" or current_state != "INTAKE"`."""
+def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(control_plane):
+    """Characterizes: the prior-art guard only fires on the (INTAKE, INTERVIEW) edge. This test
+    proves the guard does NOT re-run on a later edge (INTERVIEW->DRAFT_PLAN) once the INTAKE
+    gate was already satisfied — it does NOT prove the task has no prior-art log at all (prior
+    art IS logged here, before entering INTERVIEW, to legitimately clear that first gate).
+    Renamed/reworded after external review correctly flagged the original name/docstring
+    ("no prior-art scan logged") as inaccurate — the scan is logged, just not re-logged for the
+    second transition, which is the actual behavior being characterized."""
     task_id = "char-priorart-nonedge-001"
     control_plane.create_task(task_id=task_id, title="Evolution no-scan mid-pipeline", runtime_tool="claude", task_type="EVOLUTION")
     control_plane.log_asymmetric_persistence(
@@ -150,7 +153,7 @@ def test_prior_art_guard_not_applicable_to_non_intake_interview_edge(control_pla
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Prior art scanned")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
 
-    # No further prior-art logging done here — guard must not re-fire on this edge.
+    # No further prior-art logging done here — guard must not re-fire on this later edge.
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="controller", reason="Compiled spec")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 

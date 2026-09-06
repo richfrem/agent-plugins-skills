@@ -18,11 +18,14 @@ Key Input Dependencies:
     None — pure interface definitions, no I/O.
 
 Key Functions:
-    - ClockPort — current_time() -> float
+    - ClockPort — current_time() -> float, strftime(fmt) -> str
     - FilesystemPort — append_text(), read_text(), exists()
     - CryptoPort — sha256_file(), sha256_hex()
     - ModelCatalogPort — load_catalog(), load_cheapest()
-    - PersistencePort — task/transition/receipt/review/log/baseline CRUD, all keyed by task_id
+    - PersistencePort — task/transition/receipt/review/log/baseline CRUD, all keyed by task_id.
+      Fully implemented by control_plane.adapters.SqlitePersistenceAdapter (issue-524 Step 5
+      revision) — every method here has a concrete SQLite-backed implementation; ControlPlane
+      composes this port rather than issuing SQL itself.
 """
 
 from abc import ABC, abstractmethod
@@ -36,6 +39,12 @@ class ClockPort(ABC):
     @abstractmethod
     def current_time(self) -> float:
         """Returns the current time as a float (seconds since epoch, or equivalent)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def strftime(self, fmt: str) -> str:
+        """Returns the current time formatted per `fmt` (strftime-style), for human-readable
+        timestamps in generated text (e.g. map-debt entries)."""
         raise NotImplementedError
 
 
@@ -114,8 +123,12 @@ class PersistencePort(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def count_asymmetric_persistence(self, task_id: str, like_pattern: Optional[str] = None) -> int:
-        """Counts asymmetric_persistence_log rows for task_id, optionally filtered by a LIKE pattern on details/destination."""
+    def count_asymmetric_persistence(self, task_id: str, details_like: Optional[str] = None,
+                                      destination_like_any: Optional[List[str]] = None) -> int:
+        """Counts asymmetric_persistence_log rows for task_id. `details_like` filters on the
+        `details` column (single LIKE pattern); `destination_like_any` filters on the
+        `destination` column (OR'd across multiple LIKE patterns). At most one of the two
+        should be given; neither given returns the unfiltered count for task_id."""
         raise NotImplementedError
 
     @abstractmethod

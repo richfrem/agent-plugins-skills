@@ -198,3 +198,18 @@ def test_evaluate_transition_noop_for_unregistered_edge():
 
     ctx = _base_ctx()
     policy.evaluate_transition(ctx, "ESCALATED", "INTAKE")  # no rules registered; must not raise
+
+
+def test_unknown_check_type_fails_closed_not_open():
+    """An unrecognized `check` value must raise PolicyConfigurationError, never silently pass
+    (fixed after external review flagged the prior fail-open `else: satisfied = True` default
+    as unsafe for the single authoritative policy engine). PolicyConfigurationError is
+    deliberately NOT a subclass of PolicyViolation — it must not be caught and converted into
+    a PersistenceInvariantViolation by ControlPlane's `except PolicyViolation` clauses."""
+    from control_plane import policy
+
+    ctx = _base_ctx()
+    with pytest.raises(policy.PolicyConfigurationError, match="Unknown policy check type"):
+        policy._run_rule(ctx, {"check": "totally_not_a_real_check_type"})
+
+    assert not issubclass(policy.PolicyConfigurationError, policy.PolicyViolation)

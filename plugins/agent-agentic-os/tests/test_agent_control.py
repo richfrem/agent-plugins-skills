@@ -793,7 +793,10 @@ def test_transition_race_condition_guarded_by_state_predicate(control_plane, tem
     conn.commit()
     conn.close()
 
-    monkeypatch.setattr(ControlPlane, "_read_current_state_for_update", lambda self, conn, tid: "INTAKE")
+    # issue-524 Step 5 (persistence extraction, revised after external review): this method's
+    # signature dropped its `conn` parameter — ControlPlane no longer owns raw connections,
+    # it delegates to self._persistence.read_current_state(task_id).
+    monkeypatch.setattr(ControlPlane, "_read_current_state_for_update", lambda self, tid: "INTAKE")
 
     with pytest.raises(ConcurrentModificationError):
         control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Stale write attempt")

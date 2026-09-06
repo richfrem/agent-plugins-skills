@@ -6,12 +6,15 @@ Purpose:
     Concrete adapters implementing the port interfaces declared in control_plane/ports.py
     against real infrastructure. Populated incrementally as agent_control.py's ControlPlane
     responsibilities are extracted (docs/plans/issue-524-spec.md, Section 5). Step 3 added
-    FilesystemAdapter. Step 5 added SqlitePersistenceAdapter, scoped to connection management
-    and schema migration (task/transition/receipt queries remain in ControlPlane). Step 6 added
-    CryptoAdapter, scoped to exactly the SHA256/receipt-token logic. Step 7 adds
-    ModelCatalogAdapter, scoped to exactly the JSON-file-loading logic the plan specifies —
-    resolve_recommended_model()'s tier-selection/strategy logic (_pick_tier_model,
-    _resolve_tool_catalog) stays in ControlPlane as orchestration; only the file reads move.
+    FilesystemAdapter. Step 6 added CryptoAdapter. Step 7 added ModelCatalogAdapter. Step 5 was
+    revised after external post-implementation review (round 2) found the original
+    SqlitePersistenceAdapter only covered connection management and schema migration, leaving
+    all task/transition/receipt CRUD SQL still directly embedded in ControlPlane — contradicting
+    the plan's stated goal of a real persistence boundary. SqlitePersistenceAdapter now fully
+    implements PersistencePort: every CRUD operation ControlPlane needs has a concrete method
+    here, and ControlPlane composes this port instead of ever calling sqlite3 itself. This
+    revision also adds ClockAdapter (ClockPort was declared in Step 2 but never wired to
+    anything — flagged by the same review as dead architecture).
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Adapters (hexagonal boundary)
@@ -19,15 +22,18 @@ Layer:
 Key Input Dependencies:
     - Local filesystem (FilesystemAdapter, CryptoAdapter.sha256_file, ModelCatalogAdapter)
     - SQLite database file (SqlitePersistenceAdapter)
+    - Wall clock (ClockAdapter)
 
 Key Functions:
     - FilesystemAdapter.append_text() — appends text to a file, no-op if the file doesn't exist
     - FilesystemAdapter.read_text() — reads a file's full text content
     - FilesystemAdapter.exists() — checks file existence
-    - SqlitePersistenceAdapter.get_connection() — returns a configured sqlite3 connection
-    - SqlitePersistenceAdapter.ensure_schema() — self-healing schema init/migration, verbatim
-      behavior extracted from agent_control.py's former init_db()/_schema_needs_rebuild()/
-      _rebuild_schema_transactional()/_copy_common_columns()/_merge_orphaned_tasks_old()
+    - ClockAdapter.current_time() / strftime() — real wall-clock time, real strftime formatting
+    - SqlitePersistenceAdapter — full PersistencePort implementation: connection management,
+      schema migration (self-healing, verbatim from the original init_db()/_schema_needs_rebuild()/
+      _rebuild_schema_transactional()/_copy_common_columns()/_merge_orphaned_tasks_old()), plus
+      every task/transition/receipt/review/verifier/log/worktree CRUD operation formerly issued
+      directly by ControlPlane
     - CryptoAdapter.sha256_file() — SHA256 hex digest of a file, verbatim from the former
       module-level _sha256_file()
     - CryptoAdapter.sha256_hex() — SHA256 hex digest of a string (receipt token generation)
@@ -43,7 +49,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort
+from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort, PersistencePort, ClockPort
 
 
 class FilesystemAdapter(FilesystemPort):
@@ -67,6 +73,18 @@ class FilesystemAdapter(FilesystemPort):
     def exists(self, path: Path) -> bool:
         """Returns whether a file exists at `path`."""
         return path.exists()
+
+
+class ClockAdapter(ClockPort):
+    """Real wall-clock implementation of ClockPort, backed by the stdlib `time` module."""
+
+    def current_time(self) -> float:
+        """Returns the current time as a float (seconds since epoch)."""
+        return time.time()
+
+    def strftime(self, fmt: str) -> str:
+        """Returns the current local time formatted per `fmt`."""
+        return time.strftime(fmt)
 
 
 SCHEMA_SQL = """
@@ -173,19 +191,19 @@ SCHEMA_MIGRATIONS = [
 ]
 
 
-class SqlitePersistenceAdapter:
-    """SQLite-backed connection management and schema migration, extracted from
-    ControlPlane (issue-524 Step 5). Verbatim behavior — every method here is a direct
-    move of what was previously a ControlPlane private method, with `self.db_path`/
-    `self._fs` becoming this adapter's own attributes. Task/transition/receipt CRUD
-    queries remain in ControlPlane for now (out of this step's scope per
-    docs/plans/issue-524-spec.md Section 5 Step 5); this adapter owns connection
-    lifecycle and schema self-healing only."""
+class SqlitePersistenceAdapter(PersistencePort):
+    """SQLite-backed implementation of PersistencePort — connection management, schema
+    migration, and every task/transition/receipt/review/verifier/log/worktree CRUD
+    operation ControlPlane needs. Revised after external post-implementation review found
+    the original version only covered connection/migration, leaving CRUD SQL embedded in
+    ControlPlane — this version closes that gap: ControlPlane never calls sqlite3 directly."""
 
-    def __init__(self, db_path: Optional[Path], fs_adapter: FilesystemPort):
+    def __init__(self, db_path: Optional[Path], fs_adapter: FilesystemPort,
+                 clock_adapter: Optional[ClockPort] = None):
         self.db_path = db_path if db_path is not None else self._discover_shared_db_path()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._fs = fs_adapter
+        self._clock = clock_adapter if clock_adapter is not None else ClockAdapter()
 
     def _discover_shared_db_path(self) -> Path:
         """Resolves context/control_plane.db anchored at the repo root shared across
@@ -319,9 +337,9 @@ class SqlitePersistenceAdapter:
         if not self._fs.exists(map_debt_path):
             return
         entry = (
-            f"\n| DEBT-{time.strftime('%Y%m%d')}-AUTO | Orphaned _tasks_old merge conflict "
+            f"\n| DEBT-{self._clock.strftime('%Y%m%d')}-AUTO | Orphaned _tasks_old merge conflict "
             f"discarded rows for task_ids: {', '.join(conflicting_task_ids)} | OPEN | Tier 1 | 1 | "
-            f"{time.strftime('%Y-%m-%d')} | Self-heal migration in init_db() found these task_ids "
+            f"{self._clock.strftime('%Y-%m-%d')} | Self-heal migration in init_db() found these task_ids "
             f"in both the fresh tasks table and a dangling _tasks_old, with differing data. "
             f"The tasks table's version was kept; _tasks_old's version was discarded. | "
             f"Review discarded data manually if needed; _tasks_old is already dropped. |\n"
@@ -372,6 +390,246 @@ class SqlitePersistenceAdapter:
             raise
         finally:
             conn.execute("PRAGMA foreign_keys = ON;")
+
+    # --- PersistencePort CRUD implementation (moved verbatim from ControlPlane) ---
+
+    def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieves a task dictionary by task_id."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            row = conn.execute("SELECT * FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+            return dict(row) if row else None
+        finally:
+            conn.close()
+
+    def insert_task(self, task_id: str, title: str, task_type: str, runtime_tool: str,
+                     spec_path: Optional[str], model_tier: Optional[str], model_id: Optional[str]) -> None:
+        """Inserts a new task row in INTAKE state and its creation transition, atomically."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks (task_id, title, state, task_type, runtime_tool, spec_path, model_tier, model_id)
+                    VALUES (?, ?, 'INTAKE', ?, ?, ?, ?, ?)
+                    """,
+                    (task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
+                )
+                conn.execute(
+                    """
+                    INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason)
+                    VALUES (?, 'NONE', 'INTAKE', 'system', 'Task created')
+                    """,
+                    (task_id,)
+                )
+        finally:
+            conn.close()
+
+    def read_current_state(self, task_id: str) -> Optional[str]:
+        """Reads a task's current state value directly, for use immediately before a guarded write."""
+        conn = self.get_connection()
+        try:
+            row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+            return row[0] if row else None
+        finally:
+            conn.close()
+
+    def apply_transition(self, task_id: str, from_state: str, to_state: str, actor: str, reason: str) -> bool:
+        """Atomically updates task state (guarded by expected from_state) and records the
+        transition row. Returns False if the guard predicate did not match (concurrent write) —
+        the caller (ControlPlane.transition()) raises ConcurrentModificationError in that case."""
+        conn = self.get_connection()
+        try:
+            with conn:
+                cursor = conn.execute(
+                    "UPDATE tasks SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ? AND state = ?",
+                    (to_state, task_id, from_state)
+                )
+                if cursor.rowcount == 0:
+                    return False
+                conn.execute(
+                    "INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason) VALUES (?, ?, ?, ?, ?)",
+                    (task_id, from_state, to_state, actor, reason)
+                )
+                return True
+        finally:
+            conn.close()
+
+    def count_asymmetric_persistence(self, task_id: str, details_like: Optional[str] = None,
+                                      destination_like_any: Optional[List[str]] = None) -> int:
+        """Counts asymmetric_persistence_log rows for task_id, filtered per details_like
+        (single LIKE pattern on `details`) or destination_like_any (OR'd LIKE patterns on
+        `destination`) — at most one filter kind is expected per call."""
+        conn = self.get_connection()
+        try:
+            if details_like is not None:
+                return conn.execute(
+                    "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ? AND details LIKE ?",
+                    (task_id, details_like)
+                ).fetchone()[0]
+            if destination_like_any is not None:
+                clause = " OR ".join(["destination LIKE ?"] * len(destination_like_any))
+                return conn.execute(
+                    f"SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ? AND ({clause})",
+                    (task_id, *destination_like_any)
+                ).fetchone()[0]
+            return conn.execute(
+                "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ?", (task_id,)
+            ).fetchone()[0]
+        finally:
+            conn.close()
+
+    def count_receipts(self, task_id: str, gate_name: str, exit_code: Optional[int] = None) -> int:
+        """Counts verification_receipts rows for task_id matching gate_name (and exit_code if given)."""
+        conn = self.get_connection()
+        try:
+            if exit_code is None:
+                return conn.execute(
+                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+                    (task_id, gate_name)
+                ).fetchone()[0]
+            return conn.execute(
+                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ? AND exit_code = ?",
+                (task_id, gate_name, exit_code)
+            ).fetchone()[0]
+        finally:
+            conn.close()
+
+    def count_locked_verifiers(self, task_id: str) -> int:
+        """Counts locked_verifier_baselines rows for task_id."""
+        conn = self.get_connection()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) FROM locked_verifier_baselines WHERE task_id = ?", (task_id,)
+            ).fetchone()[0]
+        finally:
+            conn.close()
+
+    def get_locked_verifiers(self, task_id: str) -> List[Dict[str, Any]]:
+        """Returns locked_verifier_baselines rows (file_path, expected_sha256) for task_id."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT file_path, expected_sha256 FROM locked_verifier_baselines WHERE task_id = ?",
+                (task_id,)
+            ).fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            conn.close()
+
+    def has_passing_critic_review(self, task_id: str) -> bool:
+        """Returns whether any critic_reviews row for task_id has verdict='PASS'."""
+        conn = self.get_connection()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) FROM critic_reviews WHERE task_id = ? AND verdict = 'PASS'",
+                (task_id,)
+            ).fetchone()[0] > 0
+        finally:
+            conn.close()
+
+    def has_receipt(self, task_id: str, gate_name: str) -> bool:
+        """Returns whether any verification_receipts row exists for task_id with the given gate_name."""
+        conn = self.get_connection()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+                (task_id, gate_name)
+            ).fetchone()[0] > 0
+        finally:
+            conn.close()
+
+    def insert_verification_receipt(self, task_id: str, gate_name: str, command_executed: str,
+                                     exit_code: int, receipt_token: str) -> None:
+        """Inserts a verification_receipts row."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    """
+                    INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (task_id, gate_name, command_executed, exit_code, receipt_token)
+                )
+        finally:
+            conn.close()
+
+    def insert_critic_review(self, task_id: str, iteration: int, model: str, verdict: str, findings: str) -> None:
+        """Inserts a critic_reviews row."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    """
+                    INSERT INTO critic_reviews (task_id, iteration, model_used, verdict, critique_findings)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (task_id, iteration, model, verdict, findings)
+                )
+        finally:
+            conn.close()
+
+    def insert_locked_verifier(self, task_id: str, file_path: str, expected_sha256: str) -> None:
+        """Inserts a locked_verifier_baselines row."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    "INSERT INTO locked_verifier_baselines (task_id, file_path, expected_sha256) VALUES (?, ?, ?)",
+                    (task_id, file_path, expected_sha256)
+                )
+        finally:
+            conn.close()
+
+    def insert_asymmetric_persistence(self, task_id: str, destination: str, status: str, details: str) -> None:
+        """Inserts an asymmetric_persistence_log row."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    """
+                    INSERT INTO asymmetric_persistence_log (task_id, destination, status, details)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (task_id, destination, status, details)
+                )
+        finally:
+            conn.close()
+
+    def get_verification_receipts(self, task_id: str) -> List[Dict[str, Any]]:
+        """Returns all verification_receipts rows for task_id."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            rows = conn.execute("SELECT * FROM verification_receipts WHERE task_id = ?", (task_id,)).fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            conn.close()
+
+    def update_worktree_fields(self, task_id: str, worktree_path: str, worktree_branch: str, worktree_state: str) -> None:
+        """Updates a task's worktree_path/worktree_branch/worktree_state columns."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    """
+                    UPDATE tasks
+                    SET worktree_path = ?, worktree_branch = ?, worktree_state = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE task_id = ?
+                    """,
+                    (worktree_path, worktree_branch, worktree_state, task_id)
+                )
+        finally:
+            conn.close()
 
 
 class CryptoAdapter(CryptoPort):

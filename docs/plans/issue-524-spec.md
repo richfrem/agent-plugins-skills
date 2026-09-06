@@ -77,7 +77,7 @@ All of the following must pass with `exit 0` before this task can leave `WORKTRE
    python3 plugins/agent-scaffolders/scripts/audit.py --path plugins/agent-agentic-os
    python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/agent-agentic-os
    ```
-9. **Symlink diagnostics clean:** `python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose` — zero broken/imposter entries (relevant only if new shared scripts are added under the plugin's hub `scripts/` tree).
+9. **Symlink diagnostics: zero *new* broken/imposter entries introduced by this task.** `python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose` — verify no symlink this task added or touched is broken (relevant only if new shared scripts are added under the plugin's hub `scripts/` tree). Note: the repo may show pre-existing broken links unrelated to this task (e.g. `ADRs/*.md` symlinks in `agent-scaffolders` skills) — those are separate, already-tracked debt, not part of this DoD item. Do not claim "symlink diagnostics clean" as an unqualified repo-wide statement; state the precise exception explicitly (external review round 2 correctly required this distinction after an earlier evolution-log entry conflated the two).
 10. **Map-debt / wiki update:** an entry recorded per `self-evolution-policy.md` Rule 3, documenting the new gate-policy invariant and the deferred #529 finding (Section 6).
 11. **Plugin reinstalled:** `python3 plugins/plugin-manager/scripts/plugin_add.py plugins/agent-agentic-os -y` run after implementation, before PR, so `.agents/` reflects the change.
 
