@@ -41,6 +41,7 @@ Related:
 """
 import os
 import re
+import subprocess
 import sys
 import argparse
 from pathlib import Path
@@ -185,6 +186,28 @@ def show_all(project_root: Path) -> None:
         print(f"  {config['name']:30} : {next_id} (existing max: {existing})")
 
 
+def _discover_project_root() -> Path:
+    """Resolves the repo root via `git rev-parse --show-toplevel` — unlike a manual walk-up
+    checking `(p / ".git").is_dir()`, this correctly resolves inside a git worktree too
+    (a worktree's `.git` is a file, not a directory, so `.is_dir()` was always False there,
+    silently skipping past the worktree to an unrelated ancestor or a wrong fallback)."""
+    script_path = Path(__file__).resolve()
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(script_path.parent), capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0:
+            return Path(result.stdout.strip()).resolve()
+    except (subprocess.SubprocessError, OSError):
+        pass
+
+    for p in [script_path] + list(script_path.parents):
+        if (p / ".git").exists():
+            return p
+    return script_path.parents[2]
+
+
 def main() -> None:
     """Parse CLI arguments and find next available number for artifact types or directories."""
     parser = argparse.ArgumentParser(
@@ -203,13 +226,8 @@ def main() -> None:
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     
     args = parser.parse_args()
-    
-    # Find project root via .git sentinel walk-up (task_manager.py pattern)
-    script_path = Path(__file__).resolve()
-    project_root = next(
-        (p for p in [script_path] + list(script_path.parents) if (p / ".git").is_dir()),
-        script_path.parents[2]
-    )
+
+    project_root = _discover_project_root()
 
     if args.type == 'all':
         show_all(project_root)

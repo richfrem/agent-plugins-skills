@@ -45,6 +45,7 @@ from agent_control import (
     InvalidStateTransition,
     PersistenceInvariantViolation,
     ConcurrentModificationError,
+    CURRENT_SCHEMA_VERSION,
 )
 from interview_spec_engine import (
     detect_intake_mode,
@@ -277,10 +278,15 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
     
-    # Note: record_human_approval() above already wrote an exit_code=0 verification receipt
-    # (required for the APPROVED->IN_WORKTREE gate), so the DONE guard's generic "any passing
-    # receipt exists" check is already satisfied at this point — asymmetric persistence is now
-    # the first guard this test actually exercises.
+    # Attempt transition to DONE with no receipts or persistence log. The DONE guard requires
+    # a receipt specifically for gate_name='test_suite' — the human_approval receipt recorded
+    # above (needed for the APPROVED->IN_WORKTREE gate) does NOT satisfy this, closing the gap
+    # where any unrelated exit_code=0 receipt used to count.
+    with pytest.raises(PersistenceInvariantViolation, match="No passing test_suite verification receipt"):
+        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+
+    # Add general test receipt (exit_code=0)
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
 
     # Still blocked: missing asymmetric persistence log
     with pytest.raises(PersistenceInvariantViolation, match="Asymmetric persistence required"):
@@ -326,6 +332,42 @@ def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_pl
 
     # Transition to DONE succeeds
     control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="All exit gates passed")
+    assert control_plane.get_task(task_id)["state"] == "DONE"
+
+
+def test_transition_to_done_blocked_when_locked_verifier_mutated(control_plane, tmp_path):
+    """Test that DONE is blocked if a locked verifier file was mutated, even when every
+    other DONE prerequisite (receipts, persistence log) is satisfied."""
+    task_id = "task-sovereignty-001"
+    control_plane.create_task(task_id=task_id, title="Sovereignty Task", runtime_tool="antigravity")
+
+    verifier_file = tmp_path / "evaluate.py"
+    verifier_file.write_text("def evaluate(): return True\n", encoding="utf-8")
+    control_plane.lock_verifiers(task_id=task_id, file_paths=[verifier_file])
+
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="system")
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
+    control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
+    control_plane.record_human_approval(task_id=task_id, approver="human")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
+    control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    control_plane.log_asymmetric_persistence(
+        task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved"
+    )
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
+
+    # Mutate the locked verifier after all receipts were stamped
+    verifier_file.write_text("def evaluate(): return False  # tampered\n", encoding="utf-8")
+
+    with pytest.raises(VerifierSovereigntyViolation, match="mutated"):
+        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+
+    # Restore the verifier and confirm DONE now succeeds
+    verifier_file.write_text("def evaluate(): return True\n", encoding="utf-8")
+    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Verifier restored")
     assert control_plane.get_task(task_id)["state"] == "DONE"
 
 
@@ -655,7 +697,7 @@ def test_schema_version_table_present_and_seeded(control_plane, temp_db_path):
     """Test that schema_version table exists with the current version seeded."""
     conn = sqlite3.connect(str(temp_db_path))
     version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
-    assert version == 2
+    assert version == CURRENT_SCHEMA_VERSION
     conn.close()
 
 
@@ -759,3 +801,80 @@ def test_transition_race_condition_guarded_by_state_predicate(control_plane, tem
     # Real state (ESCALATED) was preserved, not clobbered
     monkeypatch.undo()
     assert control_plane.get_task(task_id)["state"] == "ESCALATED"
+
+
+def test_schema_rebuild_triggered_by_stale_version_even_with_current_ddl(control_plane, temp_db_path):
+    """Test that a stale schema_version.version triggers rebuild even when the tasks DDL
+    already looks current (i.e. schema_version actually drives migration, not just DDL-sniffing)."""
+    conn = sqlite3.connect(str(temp_db_path))
+    conn.execute("UPDATE schema_version SET version = 1")
+    conn.execute(
+        "INSERT INTO tasks (task_id, title, state, task_type, runtime_tool) VALUES (?, ?, 'INTAKE', 'GENERAL', ?)",
+        ("version-check-task", "Version Check", "claude")
+    )
+    conn.commit()
+    conn.close()
+
+    control_plane.init_db()
+
+    conn = sqlite3.connect(str(temp_db_path))
+    version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
+    assert version == CURRENT_SCHEMA_VERSION
+    # Data survived the version-triggered rebuild
+    row = conn.execute("SELECT title FROM tasks WHERE task_id = ?", ("version-check-task",)).fetchone()
+    assert row == ("Version Check",)
+    conn.close()
+
+
+def test_concurrent_modification_error_gets_distinct_exit_code():
+    """Test that ConcurrentModificationError maps to its own exit code (3), distinguishable
+    from a generic crash (1) or a control-plane invariant violation (2) — the one error
+    that's explicitly retryable must not be indistinguishable from the others."""
+    from agent_control import _map_exception_to_exit_code
+    assert _map_exception_to_exit_code(ConcurrentModificationError("stale write")) == 3
+    assert _map_exception_to_exit_code(InvalidStateTransition("bad edge")) == 2
+    assert _map_exception_to_exit_code(PersistenceInvariantViolation("missing receipt")) == 2
+    assert _map_exception_to_exit_code(RuntimeError("unrelated crash")) == 1
+
+
+def test_migration_swallows_only_duplicate_column_not_other_errors(control_plane, temp_db_path, monkeypatch):
+    """Test that SCHEMA_MIGRATIONS only silently ignores 'duplicate column' errors (the
+    expected already-migrated case) — any other sqlite3.OperationalError (disk full,
+    locked DB, corruption) must propagate instead of being silently swallowed."""
+    import sqlite3 as sqlite3_module
+
+    real_connect = sqlite3_module.connect
+
+    class _FailingConn:
+        def __init__(self, real_conn):
+            self._real = real_conn
+
+        def __getattr__(self, name):
+            return getattr(self._real, name)
+
+        def execute(self, sql, *args, **kwargs):
+            if sql.strip().upper().startswith("ALTER TABLE"):
+                raise sqlite3_module.OperationalError("disk I/O error")
+            return self._real.execute(sql, *args, **kwargs)
+
+    def _fake_connect(*args, **kwargs):
+        return _FailingConn(real_connect(*args, **kwargs))
+
+    monkeypatch.setattr(sqlite3_module, "connect", _fake_connect)
+
+    with pytest.raises(sqlite3_module.OperationalError, match="disk I/O error"):
+        ControlPlane(db_path=temp_db_path).init_db()
+
+
+def test_critic_review_iteration_not_capped_at_three(control_plane):
+    """Test that critic_reviews.iteration allows a 4th+ round — the schema's CHECK(1-3)
+    contradicted the documented '1 or N review rounds' design (MULTI_AGENT_REVIEW/
+    MULTI_AGENT_CODE_REVIEW support unbounded rounds, not a hardcoded max of 3)."""
+    task_id = "task-iteration-cap-001"
+    control_plane.create_task(task_id=task_id, title="Iteration Cap Task", runtime_tool="claude")
+    for i in range(1, 6):
+        control_plane.record_critic_review(
+            task_id=task_id, iteration=i, model="gpt-5-mini", verdict="REVISE", findings=f"Round {i}"
+        )
+    # No exception raised for iteration=4 or 5 — the old CHECK(iteration BETWEEN 1 AND 3)
+    # would have raised sqlite3.IntegrityError on the 4th insert.

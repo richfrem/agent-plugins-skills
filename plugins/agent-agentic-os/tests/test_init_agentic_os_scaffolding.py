@@ -164,3 +164,40 @@ def test_scaffolded_control_plane_db_matches_agent_control_schema(target_repo):
     assert version_row[0] == 1, "schema_version table must exist (same self-healing schema as agent_control.py)"
     conn.close()
 
+
+def test_scaffolded_ci_workflow_has_no_hardcoded_consumer_path(target_repo):
+    """The generic scaffolder must not leak a specific consumer's folder names
+    (investment_screener/) into what it deploys into every repo."""
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+
+    workflow_path = target_repo / ".github" / "workflows" / "verify-evolution-integrity.yml"
+    assert workflow_path.exists()
+    content = workflow_path.read_text(encoding="utf-8")
+    assert "investment_screener" not in content
+
+
+def test_scaffolded_ci_workflow_does_not_interpolate_base_ref_into_shell(target_repo):
+    """github.base_ref must be assigned via env:, not interpolated directly into a run:
+    shell block — the latter is the standard GitHub Actions script-injection anti-pattern."""
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+
+    workflow_path = target_repo / ".github" / "workflows" / "verify-evolution-integrity.yml"
+    content = workflow_path.read_text(encoding="utf-8")
+    # ${{ github.base_ref }} legitimately appears once, in the env: block (the safe pattern) —
+    # the anti-pattern is using it directly inside the run: shell block instead of $BASE_REF.
+    run_block = content.split("run: |", 1)[1]
+    assert "${{" not in run_block, "No GitHub Actions expression may be interpolated directly into the run: shell block"
+    assert "env:" in content
+    assert "BASE_REF: ${{ github.base_ref }}" in content
+    assert '"$BASE_REF"' in run_block
+

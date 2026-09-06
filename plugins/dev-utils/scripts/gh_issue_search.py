@@ -21,6 +21,8 @@ import subprocess
 import sys
 from typing import Any, Dict, List, Optional
 
+DEDUP_SCORE_THRESHOLD = 0.6
+
 
 def consolidate_and_search_dedup(
     title: str,
@@ -94,6 +96,14 @@ def consolidate_and_search_dedup(
 
     # Sort candidates by match score descending
     candidates.sort(key=lambda c: c["score"], reverse=True)
+
+    if candidates and candidates[0]["score"] >= DEDUP_SCORE_THRESHOLD:
+        return {
+            "has_existing_root_cause": True,
+            "target_issue_number": candidates[0]["number"],
+            "candidates": candidates,
+            "recommendation": "comment_and_append_evidence"
+        }
 
     return {
         "has_existing_root_cause": False,

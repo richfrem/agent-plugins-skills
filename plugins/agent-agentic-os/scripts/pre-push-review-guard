@@ -29,6 +29,15 @@ if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ] || [ -z "$
     exit 0
 fi
 
+# Reject branch names outside a strict allowlist before using them in a SQL query — git
+# permits characters (quotes, etc.) that would otherwise allow SQL injection via the
+# branch name into the query below. Fail closed (ungated warning) rather than query with
+# an unsanitized value.
+if ! echo "$CURRENT_BRANCH" | grep -qE '^[A-Za-z0-9._/-]+$'; then
+    echo "⚠️  WARNING: pre-push-review-guard found a branch name with disallowed characters ('$CURRENT_BRANCH') — push is ungated (cannot safely query the control plane)." >&2
+    exit 0
+fi
+
 # Query SQLite control plane for task on this branch
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
