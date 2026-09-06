@@ -48,13 +48,16 @@ Usage Examples:
     python3 agent_control.py record-human-approval --task-id <id> --approver <a>
     python3 agent_control.py record-review-skip --task-id <id> --phase <p> --actor <a> --reason <text>
 
-GATE_REQUIREMENTS (per-edge verification, enforced by transition()):
-    Some transitions require a recorded receipt or passing critic review before they're
-    accepted — e.g. INTERVIEW->DRAFT_PLAN needs proof Plan Mode/Socratic intake ran,
-    APPROVED->IN_WORKTREE needs a human_approval receipt (never skippable). Discretionary
-    review phases (multi_agent_review, multi_agent_code_review) accept an explicit recorded
-    skip (record_review_skip) as an alternative to a real critic review — skips are never
-    silent. See the GATE_REQUIREMENTS dict for the full per-edge registry.
+Gate Policy (unified, issue-524 Step 4):
+    All gate/policy enforcement — per-edge transition requirements (formerly GATE_REQUIREMENTS),
+    the prior-art/done/rolled-back guards (formerly 3 hardcoded _check_*_guard methods), and the
+    worktree-push operation guard (formerly update_worktree()'s own independent barrier) — now
+    resolves through ONE declarative policy-evaluation mechanism in control_plane/policy.py.
+    See that module's TRANSITION_RULES/TO_STATE_RULES (lifecycle transitions) and
+    OPERATION_RULES (controlled operations like the worktree push) for the full registry.
+    Discretionary review phases (multi_agent_review, multi_agent_code_review) still accept an
+    explicit recorded skip (record_review_skip) as an alternative to a real critic review —
+    skips are never silent.
 """
 
 import argparse
@@ -70,6 +73,7 @@ from typing import Dict, List, Optional, Any
 
 from control_plane.ports import FilesystemPort
 from control_plane.adapters import FilesystemAdapter
+from control_plane import policy as _policy
 
 CANONICAL_STATES = [
     "INTAKE",
@@ -239,73 +243,10 @@ class ConcurrentModificationError(Exception):
     pass
 
 
-# Per-edge verification requirements for transition(). A skippable gate accepts an
-# explicit recorded skip receipt (record_review_skip) as an alternative to a real critic
-# review — the user retains discretion to skip, but the skip itself is never silent.
-GATE_REQUIREMENTS = {
-    ("INTERVIEW", "DRAFT_PLAN"): {
-        "check": "any_of",
-        "options": [
-            {"type": "receipt", "gate_name": "plan_mode_entry"},
-            {"type": "receipt", "gate_name": "socratic_intake_complete"},
-        ],
-        "error": "Cannot enter DRAFT_PLAN: no proof Plan Mode was entered or Socratic intake "
-                 "completed. Call record_plan_mode_entry() or record_socratic_intake_complete() first.",
-    },
-    ("INTERVIEW", "PLAN_REVIEW"): {
-        "check": "any_of",
-        "options": [
-            {"type": "receipt", "gate_name": "plan_mode_entry"},
-            {"type": "receipt", "gate_name": "socratic_intake_complete"},
-        ],
-        "error": "Cannot enter PLAN_REVIEW: no proof Plan Mode was entered or Socratic intake "
-                 "completed. Call record_plan_mode_entry() or record_socratic_intake_complete() first.",
-    },
-    ("DRAFT_PLAN", "AWAITING_APPROVAL"): {
-        "check": "any_of",
-        "options": [
-            {"type": "critic_review_pass"},
-            {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
-        ],
-        "error": "Cannot enter AWAITING_APPROVAL: no passing critic review or explicit recorded "
-                 "skip found. Call record_critic_review(verdict='PASS') or record_review_skip().",
-    },
-    ("PLAN_REVIEW", "AWAITING_APPROVAL"): {
-        "check": "any_of",
-        "options": [
-            {"type": "critic_review_pass"},
-            {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
-        ],
-        "error": "Cannot enter AWAITING_APPROVAL: no passing critic review or explicit recorded "
-                 "skip found. Call record_critic_review(verdict='PASS') or record_review_skip().",
-    },
-    ("MULTI_AGENT_REVIEW", "AWAITING_APPROVAL"): {
-        "check": "critic_review_pass",
-        "error": "Cannot enter AWAITING_APPROVAL: no passing critic review found after "
-                 "MULTI_AGENT_REVIEW. Call record_critic_review(verdict='PASS').",
-    },
-    ("APPROVED", "IN_WORKTREE"): {
-        "check": "receipt",
-        "gate_name": "human_approval",
-        "error": "Cannot enter IN_WORKTREE: no recorded human_approval receipt found. "
-                 "Call record_human_approval() — this gate can never be skipped.",
-    },
-    ("IN_WORKTREE", "WORKTREE_REVIEW"): {
-        "check": "receipt",
-        "gate_name": "test_suite",
-        "error": "Cannot enter WORKTREE_REVIEW: no recorded test_suite verification receipt found. "
-                 "Call record_verification_receipt(gate_name='test_suite', ...).",
-    },
-    ("WORKTREE_REVIEW", "VERIFY_EXIT"): {
-        "check": "any_of",
-        "options": [
-            {"type": "critic_review_pass"},
-            {"type": "receipt", "gate_name": "multi_agent_code_review_skipped"},
-        ],
-        "error": "Cannot enter VERIFY_EXIT: no passing critic review or explicit recorded skip "
-                 "found. Call record_critic_review(verdict='PASS') or record_review_skip().",
-    },
-}
+# Gate/policy enforcement (per-edge transition requirements, prior-art/done/rolled-back
+# guards, and the worktree-push operation guard) is unified in control_plane/policy.py's
+# TRANSITION_RULES / TO_STATE_RULES / OPERATION_RULES (issue-524 Step 4). This module no
+# longer declares its own gate registry.
 
 
 # External comment: Compute the SHA256 hex digest of a local file
@@ -621,85 +562,67 @@ class ControlPlane:
         finally:
             conn.close()
 
-    def _check_prior_art_guard(self, conn: sqlite3.Connection, task_id: str, task: Dict[str, Any], current_state: str, to_state: str):
-        """Blocks EVOLUTION tasks from leaving INTAKE without a logged prior-art scan."""
-        if to_state != "INTERVIEW" or current_state != "INTAKE":
-            return
-        if task.get("task_type", "GENERAL") != "EVOLUTION":
-            return
-        prior_art_count = conn.execute(
-            """
-            SELECT COUNT(*) FROM asymmetric_persistence_log
-            WHERE task_id = ? AND details LIKE '%prior_art_scan%'
-            """,
-            (task_id,)
-        ).fetchone()[0]
-        if prior_art_count == 0:
-            raise PersistenceInvariantViolation(
-                f"Cannot advance EVOLUTION task '{task_id}' past INTAKE: "
-                "Prior art scan required. Read references/map-debt.md (check Repeat: YES entries) "
-                "and wiki/decisions/ before drafting hypotheses. "
-                "Log result via log_asymmetric_persistence() with details containing 'prior_art_scan'."
-            )
+    def _build_transition_policy_ctx(self, conn: sqlite3.Connection, task_id: str, task: Dict[str, Any]) -> Dict[str, Any]:
+        """Builds the ctx dict consumed by control_plane.policy's transition/to-state rules.
+        Every SQL query here is behavior-identical to what the pre-Step-4 hardcoded guards
+        and GATE_REQUIREMENTS registry issued directly — this method is the sole remaining
+        place that translates policy needs into SQL, until persistence is extracted (Step 5)."""
 
-    def _check_done_guard(self, conn: sqlite3.Connection, task_id: str, to_state: str):
-        """Blocks transition to DONE without a passing test_suite receipt, asymmetric
-        persistence log, clean leak check, and (if any verifiers were locked) intact
-        verifier sovereignty."""
-        if to_state != "DONE":
-            return
-        rec = conn.execute(
-            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'test_suite' AND exit_code = 0",
-            (task_id,)
-        ).fetchone()[0]
-        if rec == 0:
-            raise PersistenceInvariantViolation(
-                f"Cannot complete task '{task_id}': No passing test_suite verification receipt "
-                "(gate_name='test_suite', exit_code == 0) found."
-            )
+        def has_receipt(gate_name: str) -> bool:
+            return conn.execute(
+                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+                (task_id, gate_name)
+            ).fetchone()[0] > 0
 
-        locked_count = conn.execute(
-            "SELECT COUNT(*) FROM locked_verifier_baselines WHERE task_id = ?", (task_id,)
-        ).fetchone()[0]
-        if locked_count > 0:
-            self.verify_sovereignty(task_id)
+        def has_passing_critic_review() -> bool:
+            return conn.execute(
+                "SELECT COUNT(*) FROM critic_reviews WHERE task_id = ? AND verdict = 'PASS'",
+                (task_id,)
+            ).fetchone()[0] > 0
 
-        persist_count = conn.execute(
-            """
-            SELECT COUNT(*) FROM asymmetric_persistence_log
-            WHERE task_id = ?
-              AND (destination LIKE '%wiki/decisions/%' OR destination LIKE '%references/map-debt.md%' OR destination LIKE '%map-debt%')
-            """,
-            (task_id,)
-        ).fetchone()[0]
-        if persist_count == 0:
-            raise PersistenceInvariantViolation(
-                f"Cannot complete task '{task_id}': Asymmetric persistence required before DONE. "
-                "Log an entry to wiki/decisions/ or references/map-debt.md."
-            )
+        def count_receipts(gate_name: str, exit_code: Optional[int] = None) -> int:
+            if exit_code is None:
+                return conn.execute(
+                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+                    (task_id, gate_name)
+                ).fetchone()[0]
+            return conn.execute(
+                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ? AND exit_code = ?",
+                (task_id, gate_name, exit_code)
+            ).fetchone()[0]
 
-        leak_rec = conn.execute(
-            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'leak_check' AND exit_code = 0",
-            (task_id,)
-        ).fetchone()[0]
-        if leak_rec == 0:
-            raise PersistenceInvariantViolation(
-                f"Cannot complete task '{task_id}': Missing clean leak check receipt (gate_name='leak_check', exit_code=0)."
-            )
+        def count_locked_verifiers() -> int:
+            return conn.execute(
+                "SELECT COUNT(*) FROM locked_verifier_baselines WHERE task_id = ?", (task_id,)
+            ).fetchone()[0]
 
-    def _check_rolled_back_guard(self, conn: sqlite3.Connection, task_id: str, to_state: str):
-        """Blocks transition to ROLLED_BACK without a logged asymmetric persistence entry."""
-        if to_state != "ROLLED_BACK":
-            return
-        failure_persist = conn.execute(
-            "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ?",
-            (task_id,)
-        ).fetchone()[0]
-        if failure_persist == 0:
-            raise PersistenceInvariantViolation(
-                f"Cannot roll back task '{task_id}': Asymmetric persistence required. "
-                "Document failure mode/learning in asymmetric_persistence_log before rolling back code."
-            )
+        def count_asymmetric_persistence(details_like: Optional[str] = None,
+                                          destination_like_any: Optional[List[str]] = None) -> int:
+            if details_like is not None:
+                return conn.execute(
+                    "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ? AND details LIKE ?",
+                    (task_id, details_like)
+                ).fetchone()[0]
+            if destination_like_any is not None:
+                clause = " OR ".join(["destination LIKE ?"] * len(destination_like_any))
+                return conn.execute(
+                    f"SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ? AND ({clause})",
+                    (task_id, *destination_like_any)
+                ).fetchone()[0]
+            return conn.execute(
+                "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ?", (task_id,)
+            ).fetchone()[0]
+
+        return {
+            "task_id": task_id,
+            "task": task,
+            "has_receipt": has_receipt,
+            "has_passing_critic_review": has_passing_critic_review,
+            "count_receipts": count_receipts,
+            "count_locked_verifiers": count_locked_verifiers,
+            "count_asymmetric_persistence": count_asymmetric_persistence,
+            "verify_sovereignty": lambda: self.verify_sovereignty(task_id),
+        }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):
         """Validates and applies a state transition according to the canonical DAG."""
@@ -726,12 +649,12 @@ class ControlPlane:
                     f"Cannot transition task '{task_id}' from '{current_state}' to '{to_state}'. Allowed: {allowed}"
                 )
 
-            self._check_prior_art_guard(conn, task_id, task, current_state, to_state)
-            self._check_done_guard(conn, task_id, to_state)
-            self._check_rolled_back_guard(conn, task_id, to_state)
-
-            # --- Gate-Requirement Registry: per-edge verification check ---
-            self._check_gate_requirement(conn, task_id, current_state, to_state)
+            # --- Unified gate policy: lifecycle transition rules + to-state-wide guards ---
+            ctx = self._build_transition_policy_ctx(conn, task_id, task)
+            try:
+                _policy.evaluate_transition(ctx, current_state, to_state)
+            except _policy.PolicyViolation as e:
+                raise PersistenceInvariantViolation(str(e)) from e
 
             with conn:
                 cursor = conn.execute(
@@ -854,48 +777,6 @@ class ControlPlane:
             task_id, gate_name=f"{phase}_skipped", command_executed=f"user-skip:{actor}:{reason}", exit_code=0
         )
 
-    def _gate_receipt_exists(self, conn: sqlite3.Connection, task_id: str, gate_name: str) -> bool:
-        """Checks whether a verification receipt with the given gate_name exists for the task."""
-        count = conn.execute(
-            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
-            (task_id, gate_name)
-        ).fetchone()[0]
-        return count > 0
-
-    def _gate_critic_review_pass_exists(self, conn: sqlite3.Connection, task_id: str) -> bool:
-        """Checks whether a passing critic review exists for the task."""
-        count = conn.execute(
-            "SELECT COUNT(*) FROM critic_reviews WHERE task_id = ? AND verdict = 'PASS'",
-            (task_id,)
-        ).fetchone()[0]
-        return count > 0
-
-    def _gate_any_of(self, conn: sqlite3.Connection, task_id: str, options: List[Dict[str, str]]) -> bool:
-        """Checks whether any one of the given gate options is satisfied."""
-        for opt in options:
-            if opt["type"] == "receipt" and self._gate_receipt_exists(conn, task_id, opt["gate_name"]):
-                return True
-            if opt["type"] == "critic_review_pass" and self._gate_critic_review_pass_exists(conn, task_id):
-                return True
-        return False
-
-    def _check_gate_requirement(self, conn: sqlite3.Connection, task_id: str, current_state: str, to_state: str):
-        """Enforces GATE_REQUIREMENTS for the given transition edge, if one is registered."""
-        spec = GATE_REQUIREMENTS.get((current_state, to_state))
-        if spec is None:
-            return
-        check = spec["check"]
-        if check == "receipt":
-            satisfied = self._gate_receipt_exists(conn, task_id, spec["gate_name"])
-        elif check == "critic_review_pass":
-            satisfied = self._gate_critic_review_pass_exists(conn, task_id)
-        elif check == "any_of":
-            satisfied = self._gate_any_of(conn, task_id, spec["options"])
-        else:
-            satisfied = True
-        if not satisfied:
-            raise PersistenceInvariantViolation(spec["error"])
-
     def _read_current_state_for_update(self, conn: sqlite3.Connection, task_id: str) -> Optional[str]:
         """Reads the task's current state within the active connection, immediately before
         the guarded write — the value used as the WHERE predicate closing the race window."""
@@ -919,18 +800,18 @@ class ControlPlane:
         self.init_db()
         conn = self._get_connection()
         try:
-            # Enforce review gate before allowing worktree_state='pushed_to_origin'
+            # Unified gate policy: worktree_push is a controlled operation, not a lifecycle
+            # transition — evaluated via the same policy engine as transition() (issue-524 Step 4).
             if worktree_state == "pushed_to_origin":
                 row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
                 if not row:
                     raise ValueError(f"Task not found: {task_id}")
                 task_state = row[0]
-                valid_states_for_push = ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")
-                if task_state not in valid_states_for_push:
-                    raise PersistenceInvariantViolation(
-                        f"Cannot mark worktree '{worktree_state}' for task '{task_id}': Task state is '{task_state}'. "
-                        f"Post-implementation review stage gate required. Task must be in {valid_states_for_push} before pushing to origin."
-                    )
+                op_ctx = {"task_id": task_id, "task_state": task_state}
+                try:
+                    _policy.evaluate_operation(op_ctx, "worktree_push")
+                except _policy.PolicyViolation as e:
+                    raise PersistenceInvariantViolation(str(e)) from e
 
             with conn:
                 conn.execute(
