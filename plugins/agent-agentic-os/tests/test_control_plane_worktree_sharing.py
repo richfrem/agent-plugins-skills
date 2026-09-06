@@ -12,6 +12,8 @@ Purpose:
 
 Key Input Dependencies:
     - plugins/agent-agentic-os/scripts/agent_control.py (copied into a throwaway repo)
+    - plugins/agent-agentic-os/scripts/control_plane/ (copied alongside — agent_control.py
+      depends on it since issue-524's hexagonal decomposition, ports.py/adapters.py)
     - git CLI (init, worktree add)
 """
 
@@ -23,6 +25,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 AGENT_CONTROL_SRC = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "agent_control.py"
+CONTROL_PLANE_PKG_SRC = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "control_plane"
 
 
 @pytest.fixture
@@ -38,6 +41,7 @@ def repo_with_worktree(tmp_path):
     scripts_dir = main_repo / "plugins" / "agent-agentic-os" / "scripts"
     scripts_dir.mkdir(parents=True)
     shutil.copy(AGENT_CONTROL_SRC, scripts_dir / "agent_control.py")
+    shutil.copytree(CONTROL_PLANE_PKG_SRC, scripts_dir / "control_plane")
 
     subprocess.run(["git", "add", "."], cwd=main_repo, check=True, capture_output=True)
     subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=main_repo, check=True, capture_output=True)

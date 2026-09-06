@@ -68,6 +68,9 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
+from control_plane.ports import FilesystemPort
+from control_plane.adapters import FilesystemAdapter
+
 CANONICAL_STATES = [
     "INTAKE",
     "INTERVIEW",
@@ -318,13 +321,18 @@ def _sha256_file(filepath: Path) -> str:
 class ControlPlane:
     """Controller and state machine manager for task lifecycles."""
 
-    def __init__(self, db_path: Optional[Path] = None):
-        """Initializes the ControlPlane instance with database path."""
+    def __init__(self, db_path: Optional[Path] = None, fs_adapter: Optional["FilesystemPort"] = None):
+        """Initializes the ControlPlane instance with database path. `fs_adapter` defaults to
+        a real-filesystem FilesystemAdapter — the optional parameter exists so tests/callers
+        can substitute a different FilesystemPort implementation without touching disk; public
+        callers relying on the default constructor signature are unaffected (backward-compatible
+        facade, per docs/plans/issue-524-spec.md Section 3)."""
         if db_path is None:
             self.db_path = self._discover_shared_db_path()
         else:
             self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._fs = fs_adapter if fs_adapter is not None else FilesystemAdapter()
 
     def _discover_shared_db_path(self) -> Path:
         """Resolves context/control_plane.db anchored at the repo root shared across
@@ -455,7 +463,7 @@ class ControlPlane:
         (present in both the fresh `tasks` table and a dangling `_tasks_old`)."""
         repo_root = Path(__file__).resolve().parent.parent.parent.parent
         map_debt_path = repo_root / "references" / "map-debt.md"
-        if not map_debt_path.exists():
+        if not self._fs.exists(map_debt_path):
             return
         entry = (
             f"\n| DEBT-{time.strftime('%Y%m%d')}-AUTO | Orphaned _tasks_old merge conflict "
@@ -465,8 +473,7 @@ class ControlPlane:
             f"The tasks table's version was kept; _tasks_old's version was discarded. | "
             f"Review discarded data manually if needed; _tasks_old is already dropped. |\n"
         )
-        with open(map_debt_path, "a", encoding="utf-8") as f:
-            f.write(entry)
+        self._fs.append_text(map_debt_path, entry)
 
     def _rebuild_schema_transactional(self, conn: sqlite3.Connection):
         """Rebuilds tasks + all child tables together in one explicit transaction, so a
