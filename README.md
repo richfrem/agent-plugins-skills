@@ -138,7 +138,7 @@ stateDiagram-v2
     DRAFT_PLAN --> MULTI_AGENT_REVIEW : you say yes to AI plan review
     DRAFT_PLAN --> AWAITING_APPROVAL : you say no — skip straight ahead
     MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
-    AWAITING_APPROVAL --> APPROVED : you say "Proceed" / "Go"<br>(mandatory gate)
+    AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br>(mandatory gate)
     APPROVED --> IN_WORKTREE
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes to AI code review
@@ -184,10 +184,10 @@ stateDiagram-v2
     DRAFT_PLAN --> INTERVIEW : needs more questions
     PLAN_REVIEW --> INTERVIEW : needs more questions
 
-    DRAFT_PLAN --> MULTI_AGENT_REVIEW : "Want a second AI opinion<br>on this plan first?" — yes
-    PLAN_REVIEW --> MULTI_AGENT_REVIEW : "Want a second AI opinion<br>on this plan first?" — yes
-    DRAFT_PLAN --> AWAITING_APPROVAL : "...or proceed straight<br>to your approval?" — yes<br>(skip recorded, never silent)
-    PLAN_REVIEW --> AWAITING_APPROVAL : "...or proceed straight<br>to your approval?" — yes<br>(skip recorded, never silent)
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : Want a second AI opinion<br>on this plan first? — yes
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : Want a second AI opinion<br>on this plan first? — yes
+    DRAFT_PLAN --> AWAITING_APPROVAL : ...or proceed straight<br>to your approval? — yes<br>(skip recorded, never silent)
+    PLAN_REVIEW --> AWAITING_APPROVAL : ...or proceed straight<br>to your approval? — yes<br>(skip recorded, never silent)
     DRAFT_PLAN --> ESCALATED
     PLAN_REVIEW --> ESCALATED
 
@@ -196,7 +196,7 @@ stateDiagram-v2
     MULTI_AGENT_REVIEW --> PLAN_REVIEW : reviewer requested changes
     MULTI_AGENT_REVIEW --> ESCALATED
 
-    AWAITING_APPROVAL --> APPROVED : you say "Proceed" / "Go"<br>(this step can never be skipped)
+    AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br>(this step can never be skipped)
     AWAITING_APPROVAL --> DRAFT_PLAN : needs more work
     AWAITING_APPROVAL --> PLAN_REVIEW : needs more work
     AWAITING_APPROVAL --> MULTI_AGENT_REVIEW : needs more work
@@ -210,8 +210,8 @@ stateDiagram-v2
     IN_WORKTREE --> ROLLED_BACK
     IN_WORKTREE --> ESCALATED
 
-    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : "Want a second AI review<br>of this code?" — yes
-    WORKTREE_REVIEW --> VERIFY_EXIT : "...or proceed straight<br>to verification?" — yes<br>(skip recorded, never silent)
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : Want a second AI review<br>of this code? — yes
+    WORKTREE_REVIEW --> VERIFY_EXIT : ...or proceed straight<br>to verification? — yes<br>(skip recorded, never silent)
     WORKTREE_REVIEW --> IN_WORKTREE : more changes needed
     WORKTREE_REVIEW --> ROLLED_BACK
     WORKTREE_REVIEW --> ESCALATED
