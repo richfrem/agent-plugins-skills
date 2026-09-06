@@ -62,7 +62,8 @@ case "$TASK_STATE" in
         echo "   To clear this gate:"
         echo "   1. Transition task to WORKTREE_REVIEW:"
         echo "      python3 plugins/agent-agentic-os/scripts/agent_control.py transition --task-id $TASK_ID --to WORKTREE_REVIEW --reason \"Implementation complete; awaiting review\""
-        echo "   2. Present diff to user and ask whether to run multi-agent adversarial code review or proceed directly."
+        echo "   2. Present the diff (Step 8) and ask: \"Do you want a second AI review of this"
+        echo "      code (Step 8a), or proceed straight to verification (Step 9)?\""
         echo ""
         exit 1
         ;;

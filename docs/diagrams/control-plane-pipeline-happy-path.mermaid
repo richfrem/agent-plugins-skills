@@ -1,0 +1,27 @@
+stateDiagram-v2
+    state "Step 1: Intake — task registered" as INTAKE
+    state "Step 2: Interview — understanding what you want" as INTERVIEW
+    state "Step 3: Draft plan written" as DRAFT_PLAN
+    state "Step 4a: Multi-agent review of the plan — 1 or N rounds (your choice)" as MULTI_AGENT_REVIEW
+    state "Step 5: Awaiting your approval" as AWAITING_APPROVAL
+    state "Step 6: Approved — you said go" as APPROVED
+    state "Step 7: Implementation (isolated worktree)" as IN_WORKTREE
+    state "Step 8: Here's what changed — please review" as WORKTREE_REVIEW
+    state "Step 8a: Multi-agent review of the code — 1 or N rounds (your choice)" as MULTI_AGENT_CODE_REVIEW
+    state "Step 9: Verifying (tests, checks)" as VERIFY_EXIT
+    state "Step 10: Done" as DONE
+
+    [*] --> INTAKE
+    INTAKE --> INTERVIEW
+    INTERVIEW --> DRAFT_PLAN
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : "Want a second AI opinion<br>on this plan first?" — yes
+    DRAFT_PLAN --> AWAITING_APPROVAL : "...or proceed straight<br>to your approval?" — yes<br>(skip recorded, never silent)
+    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL
+    AWAITING_APPROVAL --> APPROVED : you say "Proceed" / "Go"<br>(this step can never be skipped)
+    APPROVED --> IN_WORKTREE
+    IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : "Want a second AI review<br>of this code?" — yes
+    WORKTREE_REVIEW --> VERIFY_EXIT : "...or proceed straight<br>to verification?" — yes<br>(skip recorded, never silent)
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
+    VERIFY_EXIT --> DONE : all checks passed
+    DONE --> [*]
