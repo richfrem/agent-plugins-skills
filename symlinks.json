@@ -10554,6 +10554,30 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/references/multi-round-external-review-protocol.md",
       "strategy": "symlink",
       "description": "Multi-round external review protocol, shared by interview-spec"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/__init__.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/ports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/adapters.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/policy.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/policy.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
