@@ -89,3 +89,21 @@ def test_scaffolds_github_ci_evolution_workflow(target_repo):
     assert ci_workflow.exists(), "CI workflow verify-evolution-integrity.yml must be scaffolded"
     assert "Verify Evolution & Map Debt Compliance" in ci_workflow.read_text(encoding="utf-8")
 
+
+
+def test_retrofit_enriches_claude_md_with_phase0_and_control_plane(target_repo):
+    """--retrofit must enrich CLAUDE.md with Phase 0 intake rule and control plane instructions."""
+    # Seed a basic CLAUDE.md
+    claude_md = target_repo / "CLAUDE.md"
+    claude_md.write_text("# Project Instructions\n\n## Overview\nSome custom domain context.\n", encoding="utf-8")
+
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    content = claude_md.read_text(encoding="utf-8")
+    assert "Phase 0 Intake & Socratic Gate" in content, "CLAUDE.md must be enriched with Phase 0 Intake Gate"
+    assert "interview-spec" in content, "CLAUDE.md must reference interview-spec"
+    assert "Some custom domain context." in content, "Original project context must be preserved"

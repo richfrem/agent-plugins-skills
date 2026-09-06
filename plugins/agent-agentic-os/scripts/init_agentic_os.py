@@ -208,6 +208,19 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
     # Ensure standard title
     text = existing_text
     
+    # Check for Phase 0 Intake & Socratic Gate
+    if "Phase 0 Intake & Socratic Gate" not in text and "interview-spec" not in text:
+        intake_block = (
+            "\n\n## Phase 0 Intake & Socratic Gate (Mandatory)\n"
+            "> Every non-trivial engineering task, feature request, or architectural refactor MUST trigger `interview-spec` first.\n"
+            "- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.\n"
+            "- Enforce host-native Plan Mode (strictly read-only discovery).\n"
+            "- Present 1–3 Socratic questions with explicit `[Recommended]` defaults to align on scope.\n"
+            "- Compile the immutable 4-Pillar Specification (`TASK_SPEC.md`).\n"
+            "- Obtain explicit human authorization (\"Proceed\", \"Go\", or \"Execute\") before creating a worktree or modifying code.\n"
+        )
+        text += intake_block
+    
     # Check for 3-layer memory section
     if "### The 3 Filesystem Memory Layers" not in text and "## 3-Layer Memory" not in text:
         memory_block = (
@@ -246,6 +259,14 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
         announce("Warning: CLAUDE.md not found — skipping instruction synchronization.", dry_run)
         return
 
+    # Enrich CLAUDE.md with Phase 0 intake, 3-layer memory, and pre-completion gate if missing
+    project_name = target.resolve().name
+    claude_content = claude_md.read_text(encoding="utf-8")
+    enriched_claude = _merge_instructions_with_judgment(claude_content, project_name)
+    if enriched_claude != claude_content:
+        write_file(claude_md, enriched_claude, dry_run, force=True)
+        announce("Enriched CLAUDE.md with core control-plane intake and memory gates", dry_run)
+
     plugin_root = _get_plugin_root()
     sync_script = plugin_root.parent / "cli-agents" / "scripts" / "sync_instruction_files.py"
     if not sync_script.exists():
@@ -254,7 +275,7 @@ def sync_instructions(target: Path, dry_run: bool) -> None:
     if sync_script.exists():
         announce("Synchronizing instruction files via sync_instruction_files.py...", dry_run)
         if not dry_run:
-            cmd = [sys.executable, str(sync_script), "--repo-root", str(target), "--execute"]
+            cmd = [sys.executable, str(sync_script), "--project-root", str(target), "--execute"]
             subprocess.run(cmd, check=True)
     else:
         # Smart Section-Aware Fallback Mirroring

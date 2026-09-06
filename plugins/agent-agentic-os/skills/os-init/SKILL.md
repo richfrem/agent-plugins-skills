@@ -108,4 +108,29 @@ Provide the installation command tailored to the user's environment:
    ```
    If any report `MISSING`, re-run with `--retrofit`.
 
+## Consumer Guidance & Upstream Contribution Protocol
+
+When consuming plugins and skills from `agent-plugins-skills` (e.g. via `plugin-add` or direct clone):
+
+1. **Maintainer vs. Consumer Separation**:
+   - Consumers should **not** treat installed `.agents/skills/` or `plugins/` as unmaintainable black boxes.
+   - If a bug, syntax error, or missing capability is detected in an installed skill or script, you have three primary workflows:
+
+2. **Workflow A: Local Fix with Upstream Contribution (Recommended)**:
+   - Identify the gap in the installed skill/script.
+   - Test and verify the fix locally in your target repository.
+   - Clone or checkout a feature branch in `richfrem/agent-plugins-skills`.
+   - Port the fix, run `pytest plugins/agent-agentic-os/tests/`, and submit a Pull Request upstream.
+   - Once merged, consuming projects can pull clean updates via `plugin-add -y` or `init_agentic_os.py --retrofit`.
+
+3. **Workflow B: Project-Specific Overrides (Domain Divergence)**:
+   - If your project requires rules or behavior specific to your domain (e.g., custom brokerage rules, private API endpoints), do **not** edit shared OS skills directly.
+   - Place project-specific customizations in `.agent/rules/local-*` or define project-owned plugins under `plugins/<your-plugin>/`.
+   - Shared OS rules in `CLAUDE.md`/`GEMINI.md` layer the fundamental control plane first; local rules layer on top without contradiction.
+
+4. **Workflow C: Issue Reporting for Upstream Gaps**:
+   - If unable to submit a PR directly, capture the exact reproduction trace, failure mode, and OS substrate versions, and log an issue in `https://github.com/richfrem/agent-plugins-skills/issues`.
+   - Maintain the temporary local patch in `.agents/skills/` until the upstream fix is released and retrofitted.
+
+
 

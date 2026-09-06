@@ -73,6 +73,9 @@ test -f .claude/hooks/hooks.json && echo "OK hooks.json (Stop turn hook)" || ech
 test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-evolution-guard" || echo "MISSING pre-commit-evolution-guard"
 test -f .github/workflows/verify-evolution-integrity.yml && echo "OK verify-evolution-integrity.yml (CI Gate)" || echo "MISSING verify-evolution-integrity.yml"
 
+# Verify instruction files contain Phase 0 intake rule
+grep -q "interview-spec" CLAUDE.md && echo "OK CLAUDE.md (interview-spec rule)" || echo "MISSING CLAUDE.md interview-spec rule"
+
 # If local plugins exist, verify each has references/evolution-log.md
 if [ -d "plugins" ]; then
     for p in plugins/*/; do
@@ -106,6 +109,12 @@ python3 scripts/kernel.py release_lock monitor
 Present the metrics to the user. Recommend `os-clean-locks` or `os-memory-manager` if health
 metrics indicate deadlock or bloated state, and recommend re-running `os-init --retrofit`
 (command above) if Phase 3.5 found any missing substrate.
+
+### Consumer Guidance on Plugin Drift & Gaps
+If Phase 3.5 or runtime audits detect modified or drifted local skills/scripts:
+1. **Upstream Defect/Gap**: If the local modification fixes an engine, harness, or shared skill bug, follow the **Upstream Contribution Protocol**: test the change, port it to a branch in `richfrem/agent-plugins-skills`, submit a PR, or log an issue with reproduction details.
+2. **Local Domain Customization**: If the change is specific to the consuming project, ensure it is housed in `.agent/rules/local-*` or a project-specific plugin under `plugins/<local-name>/` rather than directly diverging shared upstream skills. This ensures `os-init --retrofit` can safely update core substrates without clobbering project-specific logic.
+
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)
 

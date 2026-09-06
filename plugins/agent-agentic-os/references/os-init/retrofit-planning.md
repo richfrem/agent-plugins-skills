@@ -4,6 +4,7 @@ Reference for component initialization and retrofit behaviors during `os-init` e
 
 | Component | Fresh Init | Retrofit Mode | Purpose |
 |---|---|---|---|
+| `CLAUDE.md` / `GEMINI.md` | Context Blend | Inject Phase 0 & Mirror | Enforce interview-spec Socratic Intake Gate & Control Plane |
 | `architecture.md` | Create Initial Layout | Context Review & Enrich | High-level system architecture & agentic layout |
 | `CLAUDE.md` | Intelligent Seed | Context Blend & Reconcile | Authoritative project kernel |
 | `GEMINI.md` | Create Mirror | Context Blend & Tool Mapping | Gemini CLI mirror with tool mappings |

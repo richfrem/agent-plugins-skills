@@ -1,8 +1,13 @@
 ---
 name: interview-spec
 plugin: agent-agentic-os
-version: 1.0.0
-description: "Universal developer intake and 4-Pillar Spec compiler. Detects and defers to native host interview/plan capabilities (Claude Code, Antigravity) when present, and provides Socratic Defaulting fallback for Copilot CLI, Gemini, or headless loops."
+version: 1.1.0
+description: >
+  CRITICAL INTAKE GATEWAY: Use at the very start of ANY non-trivial engineering task,
+  feature request, architectural refactor, or multi-file bugfix before entering plan mode
+  or modifying code. Enforces read-only discovery, Socratic Defaulting (1-3 structured
+  questions with recommended defaults), control plane registration in control_plane.db,
+  and compilation of the immutable 4-Pillar TASK_SPEC.md.
 allowed-tools: Bash, Read, Write
 ---
 
