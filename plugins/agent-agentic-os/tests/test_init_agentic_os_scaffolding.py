@@ -140,3 +140,27 @@ def test_notifies_consuming_agent_of_backup_files(target_repo):
     assert "Consuming Agent Directive for Backup Cleanup" in res.stdout
     assert "DO NOT blindly delete these .bak files" in res.stdout
 
+
+def test_scaffolded_control_plane_db_matches_agent_control_schema(target_repo):
+    """os-init's control_plane.db must match agent_control.py's canonical schema exactly
+    (task_type column, schema_version table) — not a hand-copied, drifted duplicate that
+    reproduces the FK-corruption bug on the consumer repo's first agent_control.py run."""
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+
+    import sqlite3
+    db_path = target_repo / "context" / "control_plane.db"
+    assert db_path.exists()
+    conn = sqlite3.connect(str(db_path))
+    tasks_sql = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()[0]
+    assert "task_type" in tasks_sql
+    assert "WORKTREE_REVIEW" in tasks_sql
+
+    version_row = conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='schema_version'").fetchone()
+    assert version_row[0] == 1, "schema_version table must exist (same self-healing schema as agent_control.py)"
+    conn.close()
+

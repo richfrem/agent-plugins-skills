@@ -1,0 +1,27 @@
+stateDiagram-v2
+    state "Step 1: Intake — task registered" as INTAKE
+    state "Step 2: Interview — understanding what you want" as INTERVIEW
+    state "Step 3: Draft plan written" as DRAFT_PLAN
+    state "Step 4: Multi-agent plan review — 1 or N rounds" as MULTI_AGENT_REVIEW
+    state "Step 5: Awaiting your approval" as AWAITING_APPROVAL
+    state "Step 6: Approved — you said go" as APPROVED
+    state "Step 7: Implementation (isolated worktree)" as IN_WORKTREE
+    state "Step 8: Here's what changed — initial review" as WORKTREE_REVIEW
+    state "Step 9: Multi-agent code review — 1 or N rounds" as MULTI_AGENT_CODE_REVIEW
+    state "Step 10: Verifying (tests, checks)" as VERIFY_EXIT
+    state "Step 11: Done" as DONE
+
+    [*] --> INTAKE
+    INTAKE --> INTERVIEW
+    INTERVIEW --> DRAFT_PLAN
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : you say yes to AI plan review
+    DRAFT_PLAN --> AWAITING_APPROVAL : you say no — skip straight ahead
+    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
+    AWAITING_APPROVAL --> APPROVED : you say "Proceed" / "Go"<br>(mandatory gate)
+    APPROVED --> IN_WORKTREE
+    IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes to AI code review
+    WORKTREE_REVIEW --> VERIFY_EXIT : you say no — skip straight ahead
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed
+    VERIFY_EXIT --> DONE : all checks passed
+    DONE --> [*]

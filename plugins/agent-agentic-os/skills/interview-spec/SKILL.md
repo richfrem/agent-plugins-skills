@@ -60,8 +60,11 @@ Once the 1-question-at-a-time interview concludes, compile the draft spec and pl
 python3 scripts/agent_control.py transition --task-id "<task-id>" --to "DRAFT_PLAN" --reason "Draft spec and plan compiled from interview"
 ```
 
-Next, present the **User Stage Gate**:
-> *"Would you like to run the Multi-Agent Review Phase (generate an external review bundle for browser models), or skip review and proceed directly to implementation approval?"*
+Next, present the **User Stage Gate** in plain language, referencing the step numbers from
+`docs/diagrams/control-plane-pipeline.mermaid`:
+> *"Step 3 (draft plan) is done. Do you want to trigger a multi-agent review of this plan
+> (Step 4a — an external AI reviews it before you decide), or proceed straight to Step 5
+> (asking for your approval)?"*
 
 #### Path A: User Chooses Multi-Agent Review
 Transition to `MULTI_AGENT_REVIEW`:

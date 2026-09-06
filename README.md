@@ -115,30 +115,128 @@ to `git push`/`gh pr create` without stopping for human review — the pipeline 
 closes that gap, with a `pre-push-review-guard` git hook enforcing the review states before any
 push is allowed.
 
+**The happy path** (everything goes smoothly — no revisions, no rollbacks):
+
 ```mermaid
 stateDiagram-v2
+    state "Step 1: Intake — task registered" as INTAKE
+    state "Step 2: Interview — understanding what you want" as INTERVIEW
+    state "Step 3: Draft plan written" as DRAFT_PLAN
+    state "Step 4: Multi-agent plan review — 1 or N rounds" as MULTI_AGENT_REVIEW
+    state "Step 5: Awaiting your approval" as AWAITING_APPROVAL
+    state "Step 6: Approved — you said go" as APPROVED
+    state "Step 7: Implementation (isolated worktree)" as IN_WORKTREE
+    state "Step 8: Here's what changed — initial review" as WORKTREE_REVIEW
+    state "Step 9: Multi-agent code review — 1 or N rounds" as MULTI_AGENT_CODE_REVIEW
+    state "Step 10: Verifying (tests, checks)" as VERIFY_EXIT
+    state "Step 11: Done" as DONE
+
     [*] --> INTAKE
     INTAKE --> INTERVIEW
-    INTERVIEW --> DRAFT_PLAN : Socratic/PlanMode complete\n(or explicit skip, recorded)
-    DRAFT_PLAN --> MULTI_AGENT_REVIEW : user opts in
-    DRAFT_PLAN --> AWAITING_APPROVAL : user opts out\n(explicit recorded skip)
-    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL
-    AWAITING_APPROVAL --> APPROVED : human "Proceed/Go/Execute"\n(never skippable)
+    INTERVIEW --> DRAFT_PLAN
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : you say yes to AI plan review
+    DRAFT_PLAN --> AWAITING_APPROVAL : you say no — skip straight ahead
+    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
+    AWAITING_APPROVAL --> APPROVED : you say "Proceed" / "Go"<br>(mandatory gate)
     APPROVED --> IN_WORKTREE
-    IN_WORKTREE --> WORKTREE_REVIEW : TDD implementation + tests
-    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : user opts in
-    WORKTREE_REVIEW --> VERIFY_EXIT : user opts out\n(explicit recorded skip)
-    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
-    VERIFY_EXIT --> DONE : verification receipt recorded
+    IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes to AI code review
+    WORKTREE_REVIEW --> VERIFY_EXIT : you say no — skip straight ahead
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed
+    VERIFY_EXIT --> DONE : all checks passed
+    DONE --> [*]```
+
+Source: [`docs/diagrams/control-plane-pipeline-happy-path.mermaid`](docs/diagrams/control-plane-pipeline-happy-path.mermaid).
+
+**The complete state machine** (every real transition `agent_control.py` allows, including
+revisions, rollbacks, and escalation — verified edge-for-edge against `ALLOWED_TRANSITIONS`):
+
+```mermaid
+stateDiagram-v2
+    state "Step 1: Intake — task registered" as INTAKE
+    state "Step 2: Interview — understanding what you want" as INTERVIEW
+    state "Step 3: Draft plan written" as DRAFT_PLAN
+    state "Step 3: Draft plan written (legacy path)" as PLAN_REVIEW
+    state "Step 4a: Multi-agent review of the plan — 1 or N rounds (your choice)" as MULTI_AGENT_REVIEW
+    state "Step 5: Awaiting your approval" as AWAITING_APPROVAL
+    state "Step 6: Approved — you said go" as APPROVED
+    state "Step 7: Implementation (isolated worktree)" as IN_WORKTREE
+    state "Step 8: Here's what changed — please review" as WORKTREE_REVIEW
+    state "Step 8a: Multi-agent review of the code — 1 or N rounds (your choice)" as MULTI_AGENT_CODE_REVIEW
+    state "Step 9: Verifying (tests, checks)" as VERIFY_EXIT
+    state "Step 10: Done" as DONE
+    state "Rolled back — problem found, documented" as ROLLED_BACK
+    state "Escalated to you for a decision" as ESCALATED
+
+    [*] --> INTAKE
+    INTAKE --> INTERVIEW
+    INTAKE --> DRAFT_PLAN : skip straight to planning
+    INTAKE --> PLAN_REVIEW : skip straight to planning
+    INTAKE --> ESCALATED
+
+    INTERVIEW --> DRAFT_PLAN : plan/questions complete<br>(or explicit skip, recorded)
+    INTERVIEW --> PLAN_REVIEW : plan/questions complete<br>(or explicit skip, recorded)
+    INTERVIEW --> ESCALATED
+
+    DRAFT_PLAN --> PLAN_REVIEW : same step, either path
+    PLAN_REVIEW --> DRAFT_PLAN : same step, either path
+    DRAFT_PLAN --> INTERVIEW : needs more questions
+    PLAN_REVIEW --> INTERVIEW : needs more questions
+
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : "Want a second AI opinion<br>on this plan first?" — yes
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : "Want a second AI opinion<br>on this plan first?" — yes
+    DRAFT_PLAN --> AWAITING_APPROVAL : "...or proceed straight<br>to your approval?" — yes<br>(skip recorded, never silent)
+    PLAN_REVIEW --> AWAITING_APPROVAL : "...or proceed straight<br>to your approval?" — yes<br>(skip recorded, never silent)
+    DRAFT_PLAN --> ESCALATED
+    PLAN_REVIEW --> ESCALATED
+
+    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL
+    MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes
+    MULTI_AGENT_REVIEW --> PLAN_REVIEW : reviewer requested changes
+    MULTI_AGENT_REVIEW --> ESCALATED
+
+    AWAITING_APPROVAL --> APPROVED : you say "Proceed" / "Go"<br>(this step can never be skipped)
+    AWAITING_APPROVAL --> DRAFT_PLAN : needs more work
+    AWAITING_APPROVAL --> PLAN_REVIEW : needs more work
+    AWAITING_APPROVAL --> MULTI_AGENT_REVIEW : needs more work
+    AWAITING_APPROVAL --> ESCALATED
+
+    APPROVED --> IN_WORKTREE
+    APPROVED --> ESCALATED
+
+    IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
+    IN_WORKTREE --> VERIFY_EXIT
     IN_WORKTREE --> ROLLED_BACK
+    IN_WORKTREE --> ESCALATED
+
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : "Want a second AI review<br>of this code?" — yes
+    WORKTREE_REVIEW --> VERIFY_EXIT : "...or proceed straight<br>to verification?" — yes<br>(skip recorded, never silent)
+    WORKTREE_REVIEW --> IN_WORKTREE : more changes needed
     WORKTREE_REVIEW --> ROLLED_BACK
+    WORKTREE_REVIEW --> ESCALATED
+
+    MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
+    MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : reviewer requested changes
+    MULTI_AGENT_CODE_REVIEW --> ROLLED_BACK
+    MULTI_AGENT_CODE_REVIEW --> ESCALATED
+
+    VERIFY_EXIT --> DONE : all checks passed
+    VERIFY_EXIT --> IN_WORKTREE : verification failed
+    VERIFY_EXIT --> WORKTREE_REVIEW : verification failed
     VERIFY_EXIT --> ROLLED_BACK
+    VERIFY_EXIT --> ESCALATED
+
     ROLLED_BACK --> ESCALATED
-    ROLLED_BACK --> PLAN_REVIEW
+    ROLLED_BACK --> PLAN_REVIEW : restart planning
+
+    ESCALATED --> INTAKE : start over
+    ESCALATED --> PLAN_REVIEW : restart planning
+
     DONE --> [*]
 ```
 
-Source diagram: [`docs/diagrams/control-plane-pipeline.mermaid`](docs/diagrams/control-plane-pipeline.mermaid).
+Source: [`docs/diagrams/control-plane-pipeline.mermaid`](docs/diagrams/control-plane-pipeline.mermaid).
 
 ---
 
