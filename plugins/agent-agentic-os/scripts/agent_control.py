@@ -61,7 +61,6 @@ Gate Policy (unified, issue-524 Step 4):
 """
 
 import argparse
-import hashlib
 import json
 import os
 import sqlite3
@@ -70,8 +69,8 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-from control_plane.ports import FilesystemPort
-from control_plane.adapters import FilesystemAdapter, SqlitePersistenceAdapter, CURRENT_SCHEMA_VERSION
+from control_plane.ports import FilesystemPort, CryptoPort
+from control_plane.adapters import FilesystemAdapter, SqlitePersistenceAdapter, CryptoAdapter, CURRENT_SCHEMA_VERSION
 from control_plane import policy as _policy
 
 CANONICAL_STATES = [
@@ -150,29 +149,22 @@ class ConcurrentModificationError(Exception):
 # longer declares its own gate registry.
 
 
-# External comment: Compute the SHA256 hex digest of a local file
-def _sha256_file(filepath: Path) -> str:
-    """Computes SHA256 hex digest of a given file path."""
-    h = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        while chunk := f.read(65536):
-            h.update(chunk)
-    return h.hexdigest()
-
-
 class ControlPlane:
     """Controller and state machine manager for task lifecycles."""
 
-    def __init__(self, db_path: Optional[Path] = None, fs_adapter: Optional["FilesystemPort"] = None):
+    def __init__(self, db_path: Optional[Path] = None, fs_adapter: Optional["FilesystemPort"] = None,
+                 crypto_adapter: Optional["CryptoPort"] = None):
         """Initializes the ControlPlane instance. Connection management and schema migration
-        are delegated to a SqlitePersistenceAdapter (issue-524 Step 5) — `self.db_path` is kept
-        as a convenience property mirroring the adapter's resolved path, for any code that
-        introspects it directly. `fs_adapter` defaults to a real-filesystem FilesystemAdapter;
-        both parameters are optional so tests/callers can substitute different Port
-        implementations without touching disk — public callers relying on the default
-        constructor signature are unaffected (backward-compatible facade, per
+        are delegated to a SqlitePersistenceAdapter (issue-524 Step 5); SHA256/receipt-token
+        hashing is delegated to a CryptoAdapter (issue-524 Step 6). `self.db_path` is kept as a
+        convenience property mirroring the persistence adapter's resolved path, for any code
+        that introspects it directly. All three optional parameters default to real
+        infrastructure adapters; tests/callers can substitute different Port implementations
+        without touching disk/hashing — public callers relying on the default constructor
+        signature are unaffected (backward-compatible facade, per
         docs/plans/issue-524-spec.md Section 3)."""
         self._fs = fs_adapter if fs_adapter is not None else FilesystemAdapter()
+        self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
         self._persistence = SqlitePersistenceAdapter(
             db_path if db_path is None else Path(db_path), self._fs
         )
@@ -409,7 +401,7 @@ class ControlPlane:
                     p = Path(fp).resolve()
                     if not p.exists():
                         raise FileNotFoundError(f"Verifier file to lock does not exist: {p}")
-                    file_sha = _sha256_file(p)
+                    file_sha = self._crypto.sha256_file(p)
                     conn.execute(
                         "INSERT INTO locked_verifier_baselines (task_id, file_path, expected_sha256) VALUES (?, ?, ?)",
                         (task_id, str(p), file_sha)
@@ -430,7 +422,7 @@ class ControlPlane:
                 p = Path(r["file_path"])
                 if not p.exists():
                     raise VerifierSovereigntyViolation(f"Verifier file missing: {p}")
-                curr_sha = _sha256_file(p)
+                curr_sha = self._crypto.sha256_file(p)
                 if curr_sha != r["expected_sha256"]:
                     raise VerifierSovereigntyViolation(
                         f"Verifier sovereignty violated! {p} has been mutated. Expected {r['expected_sha256']}, got {curr_sha}"
@@ -461,7 +453,7 @@ class ControlPlane:
         """Records a deterministic exit receipt and returns an immutable receipt token."""
         self.init_db()
         raw = f"{task_id}:{gate_name}:{command_executed}:{exit_code}:{time.time()}"
-        h = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
+        h = self._crypto.sha256_hex(raw)[:12]
         token = f"EVO-INTEGRITY-{task_id}-{h}"
 
         conn = self._get_connection()

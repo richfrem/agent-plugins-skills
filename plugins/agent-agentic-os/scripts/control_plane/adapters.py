@@ -6,16 +6,17 @@ Purpose:
     Concrete adapters implementing the port interfaces declared in control_plane/ports.py
     against real infrastructure. Populated incrementally as agent_control.py's ControlPlane
     responsibilities are extracted (docs/plans/issue-524-spec.md, Section 5). Step 3 added
-    FilesystemAdapter. Step 5 adds SqlitePersistenceAdapter, scoped exactly to what the plan
-    specifies for this step — connection management and schema migration — not the full
-    PersistencePort CRUD surface (task/transition/receipt queries remain in ControlPlane for
-    now; a later pass may extract them fully). Crypto/ModelCatalog adapters land in later steps.
+    FilesystemAdapter. Step 5 added SqlitePersistenceAdapter, scoped to connection management
+    and schema migration (task/transition/receipt queries remain in ControlPlane). Step 6 adds
+    CryptoAdapter, scoped to exactly the SHA256/receipt-token logic the plan specifies —
+    verifier-lock/verify-sovereignty SQL queries stay in ControlPlane; only the hashing itself
+    moves. ModelCatalog adapter lands in a later step.
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Adapters (hexagonal boundary)
 
 Key Input Dependencies:
-    - Local filesystem (FilesystemAdapter)
+    - Local filesystem (FilesystemAdapter, CryptoAdapter.sha256_file)
     - SQLite database file (SqlitePersistenceAdapter)
 
 Key Functions:
@@ -26,15 +27,19 @@ Key Functions:
     - SqlitePersistenceAdapter.ensure_schema() — self-healing schema init/migration, verbatim
       behavior extracted from agent_control.py's former init_db()/_schema_needs_rebuild()/
       _rebuild_schema_transactional()/_copy_common_columns()/_merge_orphaned_tasks_old()
+    - CryptoAdapter.sha256_file() — SHA256 hex digest of a file, verbatim from the former
+      module-level _sha256_file()
+    - CryptoAdapter.sha256_hex() — SHA256 hex digest of a string (receipt token generation)
 """
 
+import hashlib
 import sqlite3
 import subprocess
 import time
 from pathlib import Path
 from typing import List, Optional
 
-from control_plane.ports import FilesystemPort
+from control_plane.ports import FilesystemPort, CryptoPort
 
 
 class FilesystemAdapter(FilesystemPort):
@@ -363,3 +368,21 @@ class SqlitePersistenceAdapter:
             raise
         finally:
             conn.execute("PRAGMA foreign_keys = ON;")
+
+
+class CryptoAdapter(CryptoPort):
+    """Real hashlib-backed implementation of CryptoPort, extracted verbatim from
+    agent_control.py's former module-level _sha256_file() and record_verification_receipt()'s
+    inline token-hashing logic (issue-524 Step 6)."""
+
+    def sha256_file(self, path: Path) -> str:
+        """Computes the SHA256 hex digest of the file at `path`, streaming in 64KB chunks."""
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            while chunk := f.read(65536):
+                h.update(chunk)
+        return h.hexdigest()
+
+    def sha256_hex(self, raw: str) -> str:
+        """Computes the SHA256 hex digest of the given string."""
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
