@@ -134,4 +134,14 @@ Used when the same target content (typically a Phase 1 plan draft, per `graph-pl
    temp/context-bundle-[name]/tdd-contract-reviewer/file-manifest.json
    ```
 3. **Run Phase 4 (bundler script execution) once per manifest** — this produces one payload per persona, ready for parallel dispatch (CLI sub-agents, or paste-to-chat/browser for each).
-4. **Convergence cap**: the caller (typically `red-team-review`) tracks round count across all three personas combined and caps at 2-3 rounds total, per `graph-planning-superpowers-policy.md` §2.3 — `context-bundler` only packages each round's bundles, it does not track rounds itself.
+4. **Create a `responses/` subfolder inside each persona's own directory**, so responses
+   collected back from external models land next to the prompt/payload that produced them:
+   ```
+   temp/context-bundle-[name]/architecture-skeptic/responses/round1.md
+   temp/context-bundle-[name]/security-edge-case-auditor/responses/round1.md
+   ```
+   On a later round, regenerate `prompt.md`/`payload.md` in place (same paths) rather than
+   creating round-numbered prompt/payload files — only `responses/` files are round-numbered.
+5. **Convergence cap**: the caller (typically `red-team-review`) tracks round count across all
+   personas combined and caps at 2-3 rounds total, per `graph-planning-superpowers-policy.md`
+   §2.3 — `context-bundler` only packages each round's bundles, it does not track rounds itself.

@@ -10548,6 +10548,12 @@
       "dst": "plugins/agent-agentic-os/skills/repository-improvement/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "repository-improvement skill acceptance criteria"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/multi-round-external-review-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/multi-round-external-review-protocol.md",
+      "strategy": "symlink",
+      "description": "Multi-round external review protocol, shared by interview-spec"
     }
   ]
 }

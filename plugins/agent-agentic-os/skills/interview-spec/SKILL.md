@@ -77,6 +77,8 @@ Invoke `context-bundler` to package:
 - Output location: Saved strictly to a gitignored subfolder: `temp/review_<task-id>/`.
 - Present the prompt and `.md` bundle path to the user to copy-paste into external browser models (ChatGPT, Claude Web, Grok).
 - Ingest external model feedback, iterate on spec/plan, and once aligned, transition to `AWAITING_APPROVAL`.
+- For persona selection, folding prior rounds' findings into a new round's brief, and running
+  more than one review round, see `references/multi-round-external-review-protocol.md`.
 
 #### Path B: User Skips Multi-Agent Review
 Transition directly to `AWAITING_APPROVAL`:
