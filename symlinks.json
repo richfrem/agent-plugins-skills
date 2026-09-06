@@ -10578,6 +10578,12 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/policy.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/state_machine.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

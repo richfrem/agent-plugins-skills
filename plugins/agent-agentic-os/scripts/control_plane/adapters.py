@@ -428,7 +428,11 @@ class SqlitePersistenceAdapter(PersistencePort):
             conn.close()
 
     def read_current_state(self, task_id: str) -> Optional[str]:
-        """Reads a task's current state value directly, for use immediately before a guarded write."""
+        """Reads a task's current state value directly, for use immediately before a guarded
+        write. Calls ensure_schema() first (issue-524, post-round-2-review correction: this
+        method previously could hit "no such table: tasks" against a fresh DB — every public
+        PersistencePort operation now self-heals the schema before querying, closing that gap)."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
@@ -440,6 +444,7 @@ class SqlitePersistenceAdapter(PersistencePort):
         """Atomically updates task state (guarded by expected from_state) and records the
         transition row. Returns False if the guard predicate did not match (concurrent write) —
         the caller (ControlPlane.transition()) raises ConcurrentModificationError in that case."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             with conn:
@@ -462,6 +467,7 @@ class SqlitePersistenceAdapter(PersistencePort):
         """Counts asymmetric_persistence_log rows for task_id, filtered per details_like
         (single LIKE pattern on `details`) or destination_like_any (OR'd LIKE patterns on
         `destination`) — at most one filter kind is expected per call."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             if details_like is not None:
@@ -483,6 +489,7 @@ class SqlitePersistenceAdapter(PersistencePort):
 
     def count_receipts(self, task_id: str, gate_name: str, exit_code: Optional[int] = None) -> int:
         """Counts verification_receipts rows for task_id matching gate_name (and exit_code if given)."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             if exit_code is None:
@@ -499,6 +506,7 @@ class SqlitePersistenceAdapter(PersistencePort):
 
     def count_locked_verifiers(self, task_id: str) -> int:
         """Counts locked_verifier_baselines rows for task_id."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             return conn.execute(
@@ -522,6 +530,7 @@ class SqlitePersistenceAdapter(PersistencePort):
 
     def has_passing_critic_review(self, task_id: str) -> bool:
         """Returns whether any critic_reviews row for task_id has verdict='PASS'."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             return conn.execute(
@@ -533,6 +542,7 @@ class SqlitePersistenceAdapter(PersistencePort):
 
     def has_receipt(self, task_id: str, gate_name: str) -> bool:
         """Returns whether any verification_receipts row exists for task_id with the given gate_name."""
+        self.ensure_schema()
         conn = self.get_connection()
         try:
             return conn.execute(
@@ -651,12 +661,59 @@ class CryptoAdapter(CryptoPort):
 
 
 class ModelCatalogAdapter(ModelCatalogPort):
-    """Real filesystem/JSON-backed implementation of ModelCatalogPort, extracted verbatim
-    from agent_control.py's former resolve_recommended_model()'s inline file-existence-check
-    and json.loads() calls (issue-524 Step 7). Any parse/read error is swallowed and treated
-    as "unavailable" (returns None), matching the original bare `except Exception: pass`
-    behavior exactly — callers (ControlPlane.resolve_recommended_model) already handle a
-    None result by falling back to other sources."""
+    """Real filesystem/JSON-backed implementation of ModelCatalogPort. Step 7 moved only the
+    file-read methods (load_catalog/load_cheapest); after external post-implementation review
+    (round 2) found ControlPlane still owned tool-alias resolution, tier-selection strategy,
+    and fallback logic, this revision moves resolve_recommended_model() and its two former
+    ControlPlane helpers (_resolve_tool_catalog/_pick_tier_model) here in full — verbatim
+    behavior, just relocated. Any parse/read error is swallowed and treated as "unavailable"
+    (returns None from the file-read methods), matching the original bare
+    `except Exception: pass` behavior exactly."""
+
+    def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
+        """Resolves a full model recommendation: tool-alias resolution, catalog file lookup,
+        tier-strategy selection, and fallback. Moved verbatim from ControlPlane."""
+        tier = tier.lower() if tier.lower() in ("low", "medium", "high") else "low"
+        repo_root = Path(__file__).resolve().parent.parent.parent.parent.parent
+        cli_refs = repo_root / "plugins" / "cli-agents" / "references"
+        tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
+
+        cheapest_file = cli_refs / "cheapest_models.json"
+        cheapest_model = self.load_cheapest(cheapest_file, tool_key)
+
+        selected_model = None
+        cat_data = self.load_catalog(catalog_file)
+        if cat_data is not None:
+            selected_model = self._pick_tier_model(cat_data, tier, cheapest_model)
+
+        return {
+            "runtime_tool": runtime_tool,
+            "tier": tier,
+            "model_id": selected_model or cheapest_model or "gpt-5.4-nano"
+        }
+
+    def _resolve_tool_catalog(self, runtime_tool: str, cli_refs: Path):
+        """Resolves tool alias and catalog file path. Moved verbatim from ControlPlane."""
+        tool_key = runtime_tool.lower()
+        if tool_key in ("claude", "claude-code"):
+            return "claude", cli_refs / "claude-models.json"
+        if tool_key in ("copilot", "github-copilot"):
+            return "copilot", cli_refs / "copilot-models.json"
+        if tool_key in ("antigravity", "agy", "gemini"):
+            return "agy", cli_refs / "agy-models.json"
+        if tool_key in ("codex", "openai"):
+            return "codex", cli_refs / "codex-models.json"
+        return "copilot", cli_refs / "copilot-models.json"
+
+    def _pick_tier_model(self, cat_data: Dict[str, Any], tier: str, cheapest_model: Optional[str]) -> Optional[str]:
+        """Picks a model ID from catalog strategy and cost tiers. Moved verbatim from ControlPlane."""
+        strategy = cat_data.get("strategy", {})
+        cost_tiers = cat_data.get("cost_tiers", {})
+        if tier == "low":
+            return cheapest_model or strategy.get("heartbeat") or strategy.get("default")
+        if tier == "medium":
+            return strategy.get("default") or (cost_tiers.get("moderate", [None])[0] if "moderate" in cost_tiers else None)
+        return strategy.get("complex_reasoning") or strategy.get("architecture") or strategy.get("default")
 
     def load_catalog(self, catalog_path: Path) -> Optional[Dict[str, Any]]:
         """Loads and returns a parsed model-catalog JSON file, or None if missing/unparsable."""

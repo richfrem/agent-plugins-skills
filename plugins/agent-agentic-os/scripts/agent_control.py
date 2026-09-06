@@ -89,29 +89,13 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort, ClockPort
+from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort, ClockPort, PersistencePort
 from control_plane.adapters import (
     FilesystemAdapter, SqlitePersistenceAdapter, CryptoAdapter, ModelCatalogAdapter, ClockAdapter,
     CURRENT_SCHEMA_VERSION,
 )
 from control_plane import policy as _policy
-
-CANONICAL_STATES = [
-    "INTAKE",
-    "INTERVIEW",
-    "DRAFT_PLAN",
-    "MULTI_AGENT_REVIEW",
-    "PLAN_REVIEW",
-    "AWAITING_APPROVAL",
-    "APPROVED",
-    "IN_WORKTREE",
-    "WORKTREE_REVIEW",
-    "MULTI_AGENT_CODE_REVIEW",
-    "VERIFY_EXIT",
-    "DONE",
-    "ROLLED_BACK",
-    "ESCALATED"
-]
+from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
 
 WORKTREE_STATES = [
     "written_in_worktree",
@@ -122,32 +106,16 @@ WORKTREE_STATES = [
     "checked_out_on_disk"
 ]
 
-ALLOWED_TRANSITIONS = {
-    "INTAKE": ["INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "ESCALATED"],
-    "INTERVIEW": ["DRAFT_PLAN", "PLAN_REVIEW", "ESCALATED"],
-    "DRAFT_PLAN": ["MULTI_AGENT_REVIEW", "PLAN_REVIEW", "AWAITING_APPROVAL", "INTERVIEW", "ESCALATED"],
-    "MULTI_AGENT_REVIEW": ["DRAFT_PLAN", "PLAN_REVIEW", "AWAITING_APPROVAL", "ESCALATED"],
-    "PLAN_REVIEW": ["MULTI_AGENT_REVIEW", "AWAITING_APPROVAL", "DRAFT_PLAN", "INTERVIEW", "ESCALATED"],
-    "AWAITING_APPROVAL": ["APPROVED", "MULTI_AGENT_REVIEW", "PLAN_REVIEW", "DRAFT_PLAN", "ESCALATED"],
-    "APPROVED": ["IN_WORKTREE", "ESCALATED"],
-    "IN_WORKTREE": ["WORKTREE_REVIEW", "VERIFY_EXIT", "ROLLED_BACK", "ESCALATED"],
-    "WORKTREE_REVIEW": ["MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED"],
-    "MULTI_AGENT_CODE_REVIEW": ["WORKTREE_REVIEW", "VERIFY_EXIT", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED"],
-    "VERIFY_EXIT": ["DONE", "IN_WORKTREE", "WORKTREE_REVIEW", "ROLLED_BACK", "ESCALATED"],
-    "DONE": [],
-    "ROLLED_BACK": ["ESCALATED", "PLAN_REVIEW"],
-    "ESCALATED": ["INTAKE", "PLAN_REVIEW"]
-}
+# CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition, and state-machine validation
+# logic moved to control_plane/state_machine.py's StateMachine (issue-524, post-round-2-review
+# correction) — the domain/state-machine-validation responsibility, previously still embedded
+# directly in ControlPlane.transition(). Re-imported above for backward-compatible
+# `from agent_control import CANONICAL_STATES` (existing test/consumer import surface).
 
 # SCHEMA_SQL, CURRENT_SCHEMA_VERSION, CHILD_TABLES, ALL_REBUILD_TABLES, and SCHEMA_MIGRATIONS
 # moved to control_plane/adapters.py's SqlitePersistenceAdapter (issue-524 Step 5). This module
 # re-imports CURRENT_SCHEMA_VERSION above for backward-compatible `from agent_control import
 # CURRENT_SCHEMA_VERSION` (existing test/consumer import surface, unchanged).
-
-
-class InvalidStateTransition(Exception):
-    """Raised when an invalid state transition is attempted."""
-    pass
 
 
 class VerifierSovereigntyViolation(Exception):
@@ -178,75 +146,47 @@ class ControlPlane:
     def __init__(self, db_path: Optional[Path] = None, fs_adapter: Optional["FilesystemPort"] = None,
                  crypto_adapter: Optional["CryptoPort"] = None,
                  model_catalog_adapter: Optional["ModelCatalogPort"] = None,
-                 clock_adapter: Optional["ClockPort"] = None):
+                 clock_adapter: Optional["ClockPort"] = None,
+                 persistence_adapter: Optional["PersistencePort"] = None):
         """Initializes the ControlPlane instance. All infrastructure is delegated: connection
         management, schema migration, and every task/transition/receipt/review/verifier/log/
-        worktree CRUD operation go through a SqlitePersistenceAdapter; SHA256/receipt-token
-        hashing through a CryptoAdapter; model-catalog JSON reads through a ModelCatalogAdapter;
-        wall-clock time through a ClockAdapter. `self.db_path` is kept as a convenience property
-        mirroring the persistence adapter's resolved path, for any code that introspects it
-        directly. All optional parameters default to real infrastructure adapters; tests/callers
-        can substitute different Port implementations without touching disk/hashing/the clock.
-        Existing calls made with the original `db_path`-only constructor argument remain fully
-        compatible — the newly-added optional parameters extend the signature, they do not
-        replace it (see docs/plans/issue-524-spec.md Section 3)."""
+        worktree CRUD operation go through a PersistencePort (SqlitePersistenceAdapter by
+        default); SHA256/receipt-token hashing through a CryptoAdapter; model-catalog
+        resolution through a ModelCatalogAdapter; wall-clock time through a ClockAdapter;
+        state-machine legality through a StateMachine. `self.db_path` mirrors the persistence
+        adapter's resolved `db_path` attribute where one exists (a fake/test PersistencePort
+        may not have one, hence `getattr(..., None)`), for any code that introspects it
+        directly. All optional parameters default to real infrastructure adapters; tests/
+        callers can substitute any Port implementation — including `persistence_adapter`
+        directly at construction, added after external review correctly required this be a
+        true constructor-injection point rather than requiring private-attribute monkeypatching
+        after construction. Existing calls made with the original `db_path`-only constructor
+        argument remain fully compatible — the newly-added optional parameters extend the
+        signature, they do not replace it (see docs/plans/issue-524-spec.md Section 3)."""
         self._fs = fs_adapter if fs_adapter is not None else FilesystemAdapter()
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
         self._clock = clock_adapter if clock_adapter is not None else ClockAdapter()
         self._model_catalog = model_catalog_adapter if model_catalog_adapter is not None else ModelCatalogAdapter()
-        self._persistence = SqlitePersistenceAdapter(
-            db_path if db_path is None else Path(db_path), self._fs, self._clock
-        )
-        self.db_path = self._persistence.db_path
+        self._state_machine = StateMachine()
+        if persistence_adapter is not None:
+            self._persistence = persistence_adapter
+        else:
+            self._persistence = SqlitePersistenceAdapter(
+                db_path if db_path is None else Path(db_path), self._fs, self._clock
+            )
+        self.db_path = getattr(self._persistence, "db_path", None)
 
     def init_db(self):
         """Initializes SQLite tables and WAL mode. Delegates to the SqlitePersistenceAdapter,
         which self-heals FK-corrupted or legacy schemas."""
         self._persistence.ensure_schema()
 
-    def _resolve_tool_catalog(self, runtime_tool: str, cli_refs: Path) -> tuple:
-        """Resolves tool alias and catalog file path."""
-        tool_key = runtime_tool.lower()
-        if tool_key in ("claude", "claude-code"):
-            return "claude", cli_refs / "claude-models.json"
-        if tool_key in ("copilot", "github-copilot"):
-            return "copilot", cli_refs / "copilot-models.json"
-        if tool_key in ("antigravity", "agy", "gemini"):
-            return "agy", cli_refs / "agy-models.json"
-        if tool_key in ("codex", "openai"):
-            return "codex", cli_refs / "codex-models.json"
-        return "copilot", cli_refs / "copilot-models.json"
-
-    def _pick_tier_model(self, cat_data: Dict[str, Any], tier: str, cheapest_model: Optional[str]) -> Optional[str]:
-        """Picks a model ID from catalog strategy and cost tiers."""
-        strategy = cat_data.get("strategy", {})
-        cost_tiers = cat_data.get("cost_tiers", {})
-        if tier == "low":
-            return cheapest_model or strategy.get("heartbeat") or strategy.get("default")
-        if tier == "medium":
-            return strategy.get("default") or (cost_tiers.get("moderate", [None])[0] if "moderate" in cost_tiers else None)
-        return strategy.get("complex_reasoning") or strategy.get("architecture") or strategy.get("default")
-
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
-        """Resolves model recommendation and model_id from plugins/cli-agents/references/."""
-        tier = tier.lower() if tier.lower() in ("low", "medium", "high") else "low"
-        repo_root = Path(__file__).resolve().parent.parent.parent.parent
-        cli_refs = repo_root / "plugins" / "cli-agents" / "references"
-        tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
-
-        cheapest_file = cli_refs / "cheapest_models.json"
-        cheapest_model = self._model_catalog.load_cheapest(cheapest_file, tool_key)
-
-        selected_model = None
-        cat_data = self._model_catalog.load_catalog(catalog_file)
-        if cat_data is not None:
-            selected_model = self._pick_tier_model(cat_data, tier, cheapest_model)
-
-        return {
-            "runtime_tool": runtime_tool,
-            "tier": tier,
-            "model_id": selected_model or cheapest_model or "gpt-5.4-nano"
-        }
+        """Resolves model recommendation and model_id from plugins/cli-agents/references/.
+        Full resolution (tool-alias, tier strategy, fallback) is delegated to
+        self._model_catalog — this method is a pure delegate (issue-524, post-round-2-review
+        correction: tier-selection/strategy logic previously still lived in ControlPlane)."""
+        return self._model_catalog.resolve_recommended_model(runtime_tool, tier)
 
     def create_task(
         self,
@@ -288,12 +228,13 @@ class ControlPlane:
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):
-        """Validates and applies a state transition according to the canonical DAG. State
-        retrieval, the guarded write, and transition-history persistence all go through
-        self._persistence.apply_transition() — this method owns only domain decisions
-        (adjacency validation, policy evaluation), never SQL."""
-        if to_state not in CANONICAL_STATES:
-            raise InvalidStateTransition(f"Unknown state: {to_state}")
+        """Validates and applies a state transition according to the canonical DAG. Known-state
+        and adjacency legality are delegated to self._state_machine (a pure domain component,
+        issue-524 post-round-2-review correction); state retrieval, the guarded write, and
+        transition-history persistence all go through self._persistence.apply_transition() —
+        this method itself owns only coordination (calling the state machine, then the policy
+        engine, then persistence), never validation logic or SQL."""
+        self._state_machine.validate_known_state(to_state)
 
         task = self.get_task(task_id)
         if not task:
@@ -307,11 +248,7 @@ class ControlPlane:
         if current_state is None:
             raise ValueError(f"Task not found: {task_id}")
 
-        allowed = ALLOWED_TRANSITIONS.get(current_state, [])
-        if to_state not in allowed:
-            raise InvalidStateTransition(
-                f"Cannot transition task '{task_id}' from '{current_state}' to '{to_state}'. Allowed: {allowed}"
-            )
+        self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
         # --- Unified gate policy: lifecycle transition rules + to-state-wide guards ---
         ctx = self._build_transition_policy_ctx(task_id, task)

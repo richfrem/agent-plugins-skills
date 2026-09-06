@@ -164,16 +164,17 @@ class _FakePersistencePort(PersistencePort):
         self.schema_ensured = True
 
 
-def test_fake_persistence_port_proves_full_delegation(tmp_path, monkeypatch):
-    """Injects a fake PersistencePort with zero SQLite and drives task creation, lookup,
-    transition application, receipt recording, critic review, and worktree update through
-    ControlPlane — proving every one of these operations actually delegates to the port
-    rather than ControlPlane reimplementing the SQL itself. If ControlPlane silently
+def test_fake_persistence_port_proves_full_delegation():
+    """Injects a fake PersistencePort with zero SQLite — via true constructor injection
+    (persistence_adapter=..., added after external review round 2 correctly required this
+    over monkeypatching a private attribute after construction) — and drives task creation,
+    lookup, transition application, receipt recording, critic review, and worktree update
+    through ControlPlane — proving every one of these operations actually delegates to the
+    port rather than ControlPlane reimplementing the SQL itself. If ControlPlane silently
     reabsorbed any of this logic, the fake would never be called and this test would fail
     with a missing-call assertion, not just an absent substring."""
     fake = _FakePersistencePort()
-    cp = ControlPlane(db_path=tmp_path / "unused.db")
-    monkeypatch.setattr(cp, "_persistence", fake)
+    cp = ControlPlane(persistence_adapter=fake)
 
     cp.create_task(task_id="t1", title="Fake Persistence Task", runtime_tool="claude")
     assert ("insert_task", "t1", "Fake Persistence Task", "GENERAL", "claude", None, None, None) in fake.calls

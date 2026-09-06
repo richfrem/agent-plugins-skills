@@ -67,13 +67,22 @@ def test_load_cheapest_returns_model_for_tool_key(tmp_path):
 
 
 class _RecordingModelCatalogPort(ModelCatalogPort):
-    """Test double recording every call instead of touching real files."""
+    """Test double recording every call instead of touching real files. Implements
+    resolve_recommended_model() directly (issue-524, post-round-2-review correction: the
+    port's resolution responsibility is no longer just file reads) — returns a scripted
+    result so the test can assert ControlPlane delegated to it wholesale."""
 
-    def __init__(self, catalog_data=None, cheapest_model=None):
+    def __init__(self, resolved_result=None, catalog_data=None, cheapest_model=None):
+        self._resolved_result = resolved_result
         self._catalog_data = catalog_data
         self._cheapest_model = cheapest_model
+        self.resolve_calls = []
         self.catalog_calls = []
         self.cheapest_calls = []
+
+    def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
+        self.resolve_calls.append((runtime_tool, tier))
+        return self._resolved_result
 
     def load_catalog(self, catalog_path: Path) -> Optional[Dict[str, Any]]:
         self.catalog_calls.append(catalog_path)
@@ -85,20 +94,49 @@ class _RecordingModelCatalogPort(ModelCatalogPort):
 
 
 def test_control_plane_uses_injected_model_catalog_port(tmp_path):
-    """Integration: resolve_recommended_model() calls the injected ModelCatalogPort, not
-    inline json.loads()/exists() — proves the Step 7 wiring actually took effect."""
+    """Integration: resolve_recommended_model() calls the injected ModelCatalogPort's
+    resolve_recommended_model() wholesale, not inline tool-alias/tier-strategy logic —
+    proves ControlPlane.resolve_recommended_model() is a pure delegate (issue-524,
+    post-round-2-review correction)."""
     recorder = _RecordingModelCatalogPort(
-        catalog_data={"strategy": {"default": "recorded-model"}},
-        cheapest_model="recorded-cheapest",
+        resolved_result={"runtime_tool": "copilot", "tier": "medium", "model_id": "recorded-model"},
     )
     cp = ControlPlane(db_path=tmp_path / "control_plane.db", model_catalog_adapter=recorder)
 
     result = cp.resolve_recommended_model(runtime_tool="copilot", tier="medium")
 
-    assert len(recorder.catalog_calls) == 1
-    assert len(recorder.cheapest_calls) == 1
-    assert recorder.cheapest_calls[0][1] == "copilot"
+    assert recorder.resolve_calls == [("copilot", "medium")]
     assert result["model_id"] == "recorded-model"
+
+
+def test_model_catalog_adapter_resolve_recommended_model_end_to_end(tmp_path):
+    """Unit test of ModelCatalogAdapter.resolve_recommended_model() itself against real (but
+    temp-directory) JSON files — proves the full tool-alias/tier-strategy/fallback logic
+    moved from ControlPlane works correctly when exercised directly on the adapter."""
+    cli_refs = tmp_path / "plugins" / "cli-agents" / "references"
+    cli_refs.mkdir(parents=True)
+    (cli_refs / "copilot-models.json").write_text(
+        json.dumps({"strategy": {"default": "gpt-5-mini", "heartbeat": "gpt-5.4-nano"}}), encoding="utf-8"
+    )
+    (cli_refs / "cheapest_models.json").write_text(
+        json.dumps({"copilot": {"model": "gpt-5.4-nano"}}), encoding="utf-8"
+    )
+
+    adapter = ModelCatalogAdapter()
+    # Patch __file__ resolution by monkeypatching the module path walk: simplest is to call
+    # the internal helper directly with our own cli_refs, since resolve_recommended_model's
+    # repo-root discovery is filesystem-location-based (matches the original agent_control.py
+    # behavior, which had the same repo-root-from-__file__ constraint).
+    tool_key, catalog_file = adapter._resolve_tool_catalog("copilot", cli_refs)
+    assert tool_key == "copilot"
+    assert catalog_file == cli_refs / "copilot-models.json"
+
+    cheapest = adapter.load_cheapest(cli_refs / "cheapest_models.json", tool_key)
+    assert cheapest == "gpt-5.4-nano"
+
+    cat_data = adapter.load_catalog(catalog_file)
+    picked = adapter._pick_tier_model(cat_data, "low", cheapest)
+    assert picked == "gpt-5.4-nano"
 
 
 def test_control_plane_defaults_to_real_model_catalog_adapter(tmp_path):

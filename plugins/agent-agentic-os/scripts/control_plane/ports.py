@@ -83,7 +83,19 @@ class CryptoPort(ABC):
 
 
 class ModelCatalogPort(ABC):
-    """Abstracts reading model-catalog JSON reference files."""
+    """Abstracts model-catalog resolution — both the JSON file reads AND the tier-selection/
+    strategy logic (issue-524, post-round-2-review correction: the original version only
+    declared the file-read methods, leaving resolve_recommended_model()'s tool-alias
+    resolution, tier strategy, and fallback logic still embedded in ControlPlane — an
+    incomplete separation of the model-catalog responsibility)."""
+
+    @abstractmethod
+    def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
+        """Resolves a full model recommendation for `runtime_tool`/`tier`: tool-alias
+        resolution, catalog file lookup, tier-strategy selection, and fallback — the complete
+        behavior formerly split between ControlPlane.resolve_recommended_model() and this
+        port's file-read-only methods. Returns {"runtime_tool", "tier", "model_id"}."""
+        raise NotImplementedError
 
     @abstractmethod
     def load_catalog(self, catalog_path: Path) -> Optional[Dict[str, Any]]:

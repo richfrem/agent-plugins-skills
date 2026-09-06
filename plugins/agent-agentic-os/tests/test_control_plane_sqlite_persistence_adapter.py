@@ -98,3 +98,24 @@ def test_control_plane_composes_persistence_adapter(tmp_path):
     cp = ControlPlane(db_path=db_path)
     assert isinstance(cp._persistence, SqlitePersistenceAdapter)
     assert cp.db_path == cp._persistence.db_path == db_path
+
+
+def test_update_worktree_on_fresh_db_preserves_auto_initialization(tmp_path):
+    """Regression test (external review round 2): the pre-refactor update_worktree() began
+    with self.init_db(), so calling it against a brand-new db_path self-healed the schema
+    before querying. After the persistence extraction, update_worktree() calls
+    self._persistence.read_current_state() first — which must still self-heal the schema
+    (ensure_schema()) rather than raising sqlite3.OperationalError: no such table: tasks.
+    This must fail with the expected domain error ("Task not found"), never a raw SQLite
+    schema error, proving the auto-initialization behavior was preserved end-to-end."""
+    import pytest
+    from agent_control import ControlPlane
+
+    cp = ControlPlane(db_path=tmp_path / "brand-new.db")
+    with pytest.raises(ValueError, match="Task not found"):
+        cp.update_worktree(
+            task_id="missing-task",
+            worktree_path="/tmp/wt",
+            worktree_branch="branch",
+            worktree_state="pushed_to_origin",
+        )
