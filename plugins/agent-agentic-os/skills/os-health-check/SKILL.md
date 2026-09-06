@@ -76,6 +76,16 @@ test -f .github/workflows/verify-evolution-integrity.yml && echo "OK verify-evol
 # Verify instruction files contain Phase 0 intake rule
 grep -q "interview-spec" CLAUDE.md && echo "OK CLAUDE.md (interview-spec rule)" || echo "MISSING CLAUDE.md interview-spec rule"
 
+# Audit for lingering backup files (.bak) requiring agent review
+BAK_FILES=$(find . -maxdepth 2 -name "*.bak" 2>/dev/null)
+if [ -n "$BAK_FILES" ]; then
+    echo "ATTENTION: Lingering backup files detected (.bak):"
+    echo "$BAK_FILES"
+    echo "ACTION: Consuming agent must review diffs against active files, reconcile any custom rules, and then remove the .bak files."
+else
+    echo "OK: No unreviewed .bak backup files"
+fi
+
 # If local plugins exist, verify each has references/evolution-log.md
 if [ -d "plugins" ]; then
     for p in plugins/*/; do

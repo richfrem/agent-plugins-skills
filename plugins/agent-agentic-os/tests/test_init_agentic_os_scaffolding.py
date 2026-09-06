@@ -107,3 +107,36 @@ def test_retrofit_enriches_claude_md_with_phase0_and_control_plane(target_repo):
     assert "Phase 0 Intake & Socratic Gate" in content, "CLAUDE.md must be enriched with Phase 0 Intake Gate"
     assert "interview-spec" in content, "CLAUDE.md must reference interview-spec"
     assert "Some custom domain context." in content, "Original project context must be preserved"
+
+
+def test_scaffolds_plugin_config_with_contribution_mode(target_repo):
+    """init_agentic_os.py must scaffold context/plugin-config.json with selected mode."""
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit", "--contribution-mode", "local-patch-and-issue"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    config_file = target_repo / "context" / "plugin-config.json"
+    assert config_file.exists(), "context/plugin-config.json must be scaffolded"
+    import json
+    data = json.loads(config_file.read_text(encoding="utf-8"))
+    assert data.get("contribution_mode") == "local-patch-and-issue"
+    assert "https://github.com/richfrem/agent-plugins-skills" in data.get("upstream_repo", "")
+
+
+def test_notifies_consuming_agent_of_backup_files(target_repo):
+    """When backup files (.bak) are created during --force or --retrofit, print_next_steps must warn agent to review before deleting."""
+    # Create an initial CLAUDE.md with standard Overview section
+    (target_repo / "CLAUDE.md").write_text("# Initial CLAUDE.md\n\n## Overview\nTest project overview.\n", encoding="utf-8")
+
+    res = subprocess.run(
+        [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    assert "ATTENTION: Temporary Backup Files Created (.bak)" in res.stdout
+    assert "Consuming Agent Directive for Backup Cleanup" in res.stdout
+    assert "DO NOT blindly delete these .bak files" in res.stdout
+
