@@ -8,6 +8,24 @@ Purpose:
     pre-execution review gating, worktree 6-state tracking, and cryptographic
     receipt generation across multi-tool agent environments.
 
+Architecture (issue-524, hexagonal decomposition):
+    ControlPlane is a backward-compatible facade over 4 composed ports/adapters, so external
+    callers (CLI, init_agentic_os.py, tests) see no change in the public constructor, method
+    names, or CLI behavior — only the internals moved. ControlPlane's own remaining code is
+    task/transition/receipt CRUD orchestration and tier-selection logic; every direct
+    infrastructure concretion (SQLite connection/migration, filesystem writes, SHA256 hashing,
+    model-catalog JSON reads) now lives behind a port, and all gate/policy logic lives in
+    control_plane/policy.py (a pure domain module — see the Gate Policy section below):
+      - self._fs            -> control_plane.adapters.FilesystemAdapter   (FilesystemPort)
+      - self._crypto         -> control_plane.adapters.CryptoAdapter       (CryptoPort)
+      - self._model_catalog -> control_plane.adapters.ModelCatalogAdapter (ModelCatalogPort)
+      - self._persistence   -> control_plane.adapters.SqlitePersistenceAdapter (connection +
+                                 schema migration only; task/transition/receipt CRUD queries
+                                 remain here in ControlPlane, a deliberate, plan-documented
+                                 scope boundary — see docs/plans/issue-524-spec.md Section 5)
+    Every adapter is constructor-injectable for testing (e.g. `ControlPlane(crypto_adapter=...)`)
+    while defaulting to the real infrastructure implementation for all existing callers.
+
 Layer:
     OS Kernel / Execution Control Plane Substrate
 
