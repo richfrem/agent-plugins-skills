@@ -217,11 +217,12 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
     if "Phase 0 Intake & Socratic Gate" not in text and "interview-spec" not in text:
         intake_block = (
             "\n\n## Phase 0 Intake & Socratic Gate (Mandatory)\n"
-            "> Every non-trivial engineering task, feature request, or architectural refactor MUST trigger `interview-spec` first.\n"
+            "> Every engineering task, feature proposal, bugfix, or improvement MUST trigger `interview-spec` first.\n"
             "- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.\n"
             "- Enforce host-native Plan Mode (strictly read-only discovery).\n"
-            "- Present 1–3 Socratic questions with explicit `[Recommended]` defaults to align on scope.\n"
-            "- Compile the immutable 4-Pillar Specification (`TASK_SPEC.md`).\n"
+            "- Socratic Pacing: Interrogate ONE question per turn with structured options and explicit `[Recommended]` default.\n"
+            "- Compile draft 4-Pillar Spec (`TASK_SPEC.md`) and implementation plan in state `DRAFT_PLAN`.\n"
+            "- User Stage Gate: Ask user whether to run Multi-Agent Review (generate bundle in `temp/` via `context-bundler`) or proceed directly.\n"
             "- Obtain explicit human authorization (\"Proceed\", \"Go\", or \"Execute\") before creating a worktree or modifying code.\n"
         )
         text += intake_block
