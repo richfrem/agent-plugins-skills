@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS locked_verifier_baselines (
 CREATE TABLE IF NOT EXISTS critic_reviews (
     review_id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    iteration INTEGER NOT NULL CHECK(iteration BETWEEN 1 AND 3),
+    iteration INTEGER NOT NULL CHECK(iteration >= 1),
     model_used TEXT NOT NULL,
     verdict TEXT NOT NULL CHECK (verdict IN ('PASS', 'REVISE', 'REJECT')),
     critique_findings TEXT,
@@ -198,7 +198,7 @@ CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 """
 
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 
 CHILD_TABLES = [
     "task_transitions",
@@ -376,8 +376,10 @@ class ControlPlane:
                 try:
                     conn.execute(migration)
                     conn.commit()
-                except Exception:
-                    pass  # Column already exists — ignore
+                except sqlite3.OperationalError as e:
+                    if "duplicate column" not in str(e).lower():
+                        raise
+                    # Column already exists — expected on a previously-migrated DB, ignore.
 
             if self._schema_needs_rebuild(conn):
                 self._rebuild_schema_transactional(conn)

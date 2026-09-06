@@ -84,3 +84,33 @@ def test_still_blocks_when_task_state_not_cleared(git_repo_on_branch):
     res = _run_guard(git_repo_on_branch)
     assert res.returncode == 1
     assert "GIT PUSH BLOCKED" in res.stdout
+
+
+def test_sql_injection_via_branch_name_cannot_forge_a_cleared_state(git_repo_on_branch):
+    """A branch name crafted as a SQL injection payload must not be able to talk the guard
+    into believing a decoy VERIFY_EXIT-state row applies to it (PoC from security review:
+    git checkout -b "x'OR(state)IN('VERIFY_EXIT')--")."""
+    db_path = git_repo_on_branch / "context" / "control_plane.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    cp = ControlPlane(db_path=db_path)
+    cp.init_db()
+    # Decoy task with a review-cleared state, on an unrelated branch — the injection payload
+    # tries to make the guard's query match this row regardless of the real branch.
+    cp.create_task(task_id="decoy-cleared-task", title="Decoy", runtime_tool="claude")
+    cp.update_worktree(task_id="decoy-cleared-task", worktree_path=".", worktree_branch="unrelated-branch", worktree_state="written_in_worktree")
+    conn_path = str(db_path)
+    import sqlite3
+    conn = sqlite3.connect(conn_path)
+    conn.execute("UPDATE tasks SET state = 'VERIFY_EXIT' WHERE task_id = 'decoy-cleared-task'")
+    conn.commit()
+    conn.close()
+
+    injection_branch = "x'OR(state)IN('VERIFY_EXIT')--"
+    subprocess.run(["git", "checkout", "-b", injection_branch], cwd=git_repo_on_branch, check=True, capture_output=True)
+
+    res = _run_guard(git_repo_on_branch)
+    # Must NOT silently succeed as if review-cleared (returncode 0 with no warning would mean
+    # the injection worked). No real task is registered for this branch, so the correct
+    # outcome is the ungated warning, not a forged "cleared" pass-through.
+    assert res.returncode == 0
+    assert "WARNING" in res.stderr
