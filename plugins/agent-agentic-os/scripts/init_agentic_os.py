@@ -132,6 +132,10 @@ def make_dir(path: Path, dry_run: bool) -> None:
         announce(f"exists {path} (skipped)", dry_run)
 
 
+# Global tracker for backup files created during the run
+_CREATED_BACKUPS: List[Path] = []
+
+
 # External comment: Write content to file with backup handling
 def write_file(path: Path, content: str, dry_run: bool, force: bool = False) -> None:
     """Writes content to file with optional backup creation if existing."""
@@ -143,6 +147,7 @@ def write_file(path: Path, content: str, dry_run: bool, force: bool = False) -> 
         announce(f"backup {path} -> {backup_path.name}", dry_run)
         if not dry_run:
             path.rename(backup_path)
+            _CREATED_BACKUPS.append(backup_path)
 
     announce(f"write  {path}", dry_run)
     if not dry_run:
@@ -248,6 +253,18 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
             "```\n"
         )
         text += gate_block
+
+    # Check for Plugin Maintenance & Contribution Strategy
+    if "## Plugin & Skill Maintenance Policy" not in text:
+        strategy_block = (
+            "\n\n## Plugin & Skill Maintenance Policy\n"
+            "- Check `context/plugin-config.json` for this repository's configured contribution mode:\n"
+            "  1. `fork-and-pr`: Test fix locally, commit to feature branch in cloned upstream repo, and submit PR to `richfrem/agent-plugins-skills`.\n"
+            "  2. `local-patch-and-issue`: Apply immediate fix directly in `.agents/skills/` and log an issue in `richfrem/agent-plugins-skills` with reproduction details.\n"
+            "  3. `domain-override`: Keep upstream shared skills unmodified; put project customizations in `.agent/rules/local-*` or local `plugins/`.\n"
+            "- Never make silent undocumented edits to shared skills without either opening an upstream PR or logging an issue.\n"
+        )
+        text += strategy_block
 
     return text
 
@@ -574,6 +591,65 @@ def _scaffold_root_files(target: Path, dry_run: bool, force: bool, project_name:
                dry_run, force)
 
 
+# External comment: Configure or prompt for plugin maintenance policy
+def _configure_plugin_contribution_policy(target: Path, mode: Optional[str], dry_run: bool, force: bool) -> str:
+    """Configures context/plugin-config.json interactively or via CLI mode."""
+    config_file = target / "context" / "plugin-config.json"
+    valid_modes = {"fork-and-pr", "local-patch-and-issue", "domain-override"}
+    selected_mode = mode
+
+    if not selected_mode and not config_file.exists():
+        if sys.stdin.isatty():
+            print("\n--- Plugin Maintenance & Contribution Strategy ---")
+            print("When you or AI agents encounter bugs or gaps in shared plugins/skills:")
+            print("  1) [Recommended] Fork & Upstream PR (fork-and-pr)")
+            print("     -> Fix locally, test with pytest in cloned upstream repo, submit PR to richfrem/agent-plugins-skills.")
+            print("  2) Local Patch & Issue Reporting (local-patch-and-issue)")
+            print("     -> Hotfix .agents/skills/ directly for immediate use, and log an issue with reproduction details.")
+            print("  3) Domain Override Only (domain-override)")
+            print("     -> Keep shared upstream plugins pristine; place customizations in .agent/rules/local-* or custom plugins/.")
+            try:
+                choice = input("Select preference [1-3, default: 1]: ").strip()
+                if choice == "2":
+                    selected_mode = "local-patch-and-issue"
+                elif choice == "3":
+                    selected_mode = "domain-override"
+                else:
+                    selected_mode = "fork-and-pr"
+            except (EOFError, KeyboardInterrupt):
+                selected_mode = "fork-and-pr"
+        else:
+            selected_mode = "fork-and-pr"
+
+    if not selected_mode and config_file.exists():
+        try:
+            data = json.loads(config_file.read_text(encoding="utf-8"))
+            selected_mode = data.get("contribution_mode", "fork-and-pr")
+        except Exception:
+            selected_mode = "fork-and-pr"
+
+    if not selected_mode or selected_mode not in valid_modes:
+        selected_mode = "fork-and-pr"
+
+    config_payload = {
+        "contribution_mode": selected_mode,
+        "upstream_repo": "https://github.com/richfrem/agent-plugins-skills",
+        "issue_reporting_url": "https://github.com/richfrem/agent-plugins-skills/issues",
+        "allow_local_patching": True if selected_mode in {"fork-and-pr", "local-patch-and-issue"} else False,
+        "description": {
+            "fork-and-pr": "Fix locally, port to upstream clone, and submit Pull Request.",
+            "local-patch-and-issue": "Hotfix local installed copy and report issue upstream.",
+            "domain-override": "Keep shared skills pristine; isolate customizations in local rules."
+        }.get(selected_mode, "")
+    }
+
+    if not config_file.exists() or force:
+        write_file(config_file, json.dumps(config_payload, indent=2) + "\n", dry_run, force)
+        announce(f"Configured plugin contribution mode: {selected_mode} -> context/plugin-config.json", dry_run)
+
+    return selected_mode
+
+
 # External comment: Scaffold context directory, runtime state, and control plane DB
 def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) -> None:
     """Scaffolds context directory, locks, runtime manifests, and control_plane.db."""
@@ -590,6 +666,7 @@ def _scaffold_context_dir(target: Path, dry_run: bool, force: bool, today: str) 
     write_file(target / "context" / "agents.json", copy_runtime_file("agents.json"), dry_run, force)
     write_file(target / "context" / "events.jsonl",
                load_template("EVENTS_JSONL.jsonl"), dry_run, force)
+    _configure_plugin_contribution_policy(target, None, dry_run, force)
     _init_control_plane_db(target, dry_run)
 
 
@@ -780,6 +857,18 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("   • Slash command / Skill: /os-health-check")
     print("   • Deterministic substrate check:")
     print("     test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard && test -f .github/workflows/verify-evolution-integrity.yml && echo 'OK: All OS substrates active'")
+
+    if _CREATED_BACKUPS:
+        print("\n" + "!" * 60)
+        print("ATTENTION: Temporary Backup Files Created (.bak)")
+        print("!" * 60)
+        for b in _CREATED_BACKUPS:
+            print(f"   • {b.resolve()}")
+        print("\n👉 Consuming Agent Directive for Backup Cleanup:")
+        print("   DO NOT blindly delete these .bak files with automated scripts.")
+        print("   First, review the diff between each .bak file and the newly updated file.")
+        print("   Reconcile any custom project-specific rules, configs, or domain contexts.")
+        print("   Once all edits are verified and preserved, manually remove the .bak files.")
     print()
 
 
@@ -827,6 +916,12 @@ def _parse_args() -> argparse.Namespace:
         help="Preview what would be created without writing anything"
     )
     parser.add_argument(
+        "--contribution-mode",
+        choices=["fork-and-pr", "local-patch-and-issue", "domain-override"],
+        default=None,
+        help="Strategy for managing and contributing plugin/skill bug fixes (default: interactive prompt or fork-and-pr)"
+    )
+    parser.add_argument(
         "--force",
         action="store_true",
         help="Overwrite existing files with .bak backups"
@@ -840,6 +935,7 @@ def _execute_action(target: Path, args: argparse.Namespace) -> None:
     if args.retrofit:
         print(f"\n--- Retrofitting Existing Repository: {target.resolve()} ---\n")
         _scaffold_3layer_memory(target, args.dry_run, args.force)
+        _configure_plugin_contribution_policy(target, args.contribution_mode, args.dry_run, args.force)
         _init_control_plane_db(target, args.dry_run)
         _scaffold_claude_dir(target, args.dry_run, args.force)
         _validate_and_finalize(target, args.dry_run)
