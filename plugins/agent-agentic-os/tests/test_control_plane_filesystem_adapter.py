@@ -78,23 +78,26 @@ class _RecordingFilesystemPort(FilesystemPort):
 
 
 def test_control_plane_uses_injected_filesystem_port_for_orphan_merge_log(tmp_path):
-    """Integration: ControlPlane._log_orphan_merge_conflicts() must call the injected
-    FilesystemPort, not a raw open()/write() — proves the Step 3 wiring actually took effect."""
+    """Integration: the SqlitePersistenceAdapter's _log_orphan_merge_conflicts() (moved there
+    from ControlPlane in issue-524 Step 5, since it's part of the migration/persistence
+    responsibility) must call the injected FilesystemPort, not a raw open()/write() — proves
+    the Step 3 filesystem-seam wiring survived the Step 5 persistence extraction unchanged.
+    ControlPlane composes the SqlitePersistenceAdapter via self._persistence."""
     db_path = tmp_path / "control_plane.db"
     recorder = _RecordingFilesystemPort()
 
     cp = ControlPlane(db_path=db_path, fs_adapter=recorder)
 
-    # _log_orphan_merge_conflicts() derives its target path from agent_control.py's own
-    # __file__ (repo_root / references / map-debt.md) rather than accepting one as a
+    # _log_orphan_merge_conflicts() derives its target path from control_plane/adapters.py's
+    # own __file__ (repo_root / references / map-debt.md) rather than accepting one as a
     # parameter, so we register that real resolved path as "existing" in the recording
     # double instead of touching the real file.
-    import agent_control as ac
-    assert ac.__file__ is not None
-    real_map_debt_path = Path(ac.__file__).resolve().parent.parent.parent.parent / "references" / "map-debt.md"
+    from control_plane import adapters as cp_adapters
+    assert cp_adapters.__file__ is not None
+    real_map_debt_path = Path(cp_adapters.__file__).resolve().parent.parent.parent.parent.parent / "references" / "map-debt.md"
     recorder.existing_paths.add(real_map_debt_path)
 
-    cp._log_orphan_merge_conflicts(["task-a", "task-b"])
+    cp._persistence._log_orphan_merge_conflicts(["task-a", "task-b"])
 
     assert len(recorder.appended) == 1
     appended_path, appended_content = recorder.appended[0]
