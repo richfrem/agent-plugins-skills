@@ -105,6 +105,41 @@ The flagship operational framework. Eval-gated improvement loops, memory managem
 
 **Agents (4):** [`os-architect-agent`](plugins/agent-agentic-os/agents/os-architect-agent.md) · [`os-architect-tester-agent`](plugins/agent-agentic-os/agents/os-architect-tester-agent.md) · [`improvement-intake-agent`](plugins/agent-agentic-os/agents/improvement-intake-agent.md) · [`agentic-os-setup`](plugins/agent-agentic-os/agents/agentic-os-setup.md)
 
+##### The SQLite Control Plane
+
+`agent_control.py` is the ACID state machine that governs the task lifecycle for agent-driven
+engineering work in this repo — intake, Socratic intake/Plan Mode, draft plan, optional
+multi-agent review, human approval, isolated worktree, TDD implementation, post-implementation
+review, and verified exit. It exists because agents previously jumped straight from code changes
+to `git push`/`gh pr create` without stopping for human review — the pipeline below is what
+closes that gap, with a `pre-push-review-guard` git hook enforcing the review states before any
+push is allowed.
+
+```mermaid
+stateDiagram-v2
+    [*] --> INTAKE
+    INTAKE --> INTERVIEW
+    INTERVIEW --> DRAFT_PLAN : Socratic/PlanMode complete\n(or explicit skip, recorded)
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : user opts in
+    DRAFT_PLAN --> AWAITING_APPROVAL : user opts out\n(explicit recorded skip)
+    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL
+    AWAITING_APPROVAL --> APPROVED : human "Proceed/Go/Execute"\n(never skippable)
+    APPROVED --> IN_WORKTREE
+    IN_WORKTREE --> WORKTREE_REVIEW : TDD implementation + tests
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : user opts in
+    WORKTREE_REVIEW --> VERIFY_EXIT : user opts out\n(explicit recorded skip)
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
+    VERIFY_EXIT --> DONE : verification receipt recorded
+    IN_WORKTREE --> ROLLED_BACK
+    WORKTREE_REVIEW --> ROLLED_BACK
+    VERIFY_EXIT --> ROLLED_BACK
+    ROLLED_BACK --> ESCALATED
+    ROLLED_BACK --> PLAN_REVIEW
+    DONE --> [*]
+```
+
+Source diagram: [`docs/diagrams/control-plane-pipeline.mermaid`](docs/diagrams/control-plane-pipeline.mermaid).
+
 ---
 
 ### Group 2: Engineering Workflows
@@ -269,10 +304,10 @@ After extensive MAF research and 12 hands-on C# experiments (including full load
 - Kept the hardened Python control plane as the authoritative kernel
 - Adopted AGT (Agent Governance Toolkit) for deterministic policy enforcement
 - Ported 4 high-value patterns from MAF: alias resolution, standardized handoff envelopes, per-agent skill scoping, per-phase premium call budgets
-- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](ADRs/007_maf_adapter_runtime_decision.md))
+- MAF is now a **certified optional runtime adapter** alongside Claude Code, Copilot CLI, and Gemini CLI ([ADR-007](docs/ADRs/007_maf_adapter_runtime_decision.md))
 - All `.md` agent manifests and `SKILL.md` files remain fully portable
 
-**References:** [ADR-001](ADRs/) · [ADR-002](ADRs/) · [ADR-007](ADRs/007_maf_adapter_runtime_decision.md)
+**References:** [ADR-001](docs/ADRs/) · [ADR-002](docs/ADRs/) · [ADR-007](docs/ADRs/007_maf_adapter_runtime_decision.md)
 
 ### v1.5 — CLI Agents Major Update (June 2026)
 

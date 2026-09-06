@@ -1,7 +1,7 @@
 # MAF Research — Decision Record
 
 **Closed:** 2026-05-31  
-**Authoritative decision:** ADR-007 (`ADRs/007_maf_adapter_runtime_decision.md`)
+**Authoritative decision:** ADR-007 (`docs/ADRs/007_maf_adapter_runtime_decision.md`)
 
 This file is the narrative bridge across all MAF research artifacts in this directory.
 

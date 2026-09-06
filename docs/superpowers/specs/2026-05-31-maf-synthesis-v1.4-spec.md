@@ -2,7 +2,7 @@
 
 **Revised:** 2026-05-31 (post document review — API corrections applied)  
 **Predecessor:** v1.3 spec (`docs/superpowers/specs/2026-05-30-hardened-control-plane-design.md`)  
-**Decision authority:** ADR-007 (`ADRs/007_maf_adapter_runtime_decision.md`)
+**Decision authority:** ADR-007 (`docs/ADRs/007_maf_adapter_runtime_decision.md`)
 
 ---
 

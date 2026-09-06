@@ -1,4 +1,4 @@
-# ADR-002: Dual-Runtime Compatibility — Portable Plugins, Optional Orchestration
+# ADR-009: Dual-Runtime Compatibility — Portable Plugins, Optional Orchestration
 
 **Status:** Accepted  
 **Date:** 2026-05-30

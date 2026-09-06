@@ -28,6 +28,10 @@ Key Functions:
     - ControlPlane.get_verification_receipts() — Retrieves verification receipts
     - ControlPlane.update_worktree() — Updates worktree path, branch, and 6-state status
     - ControlPlane.log_asymmetric_persistence() — Logs Layer 2 wiki/map-debt persistence
+    - ControlPlane.record_plan_mode_entry() — Records proof Plan Mode was entered (DRAFT_PLAN gate)
+    - ControlPlane.record_socratic_intake_complete() — Records proof Socratic intake completed (DRAFT_PLAN gate)
+    - ControlPlane.record_human_approval() — Records the human approval receipt (APPROVED->IN_WORKTREE gate, never skippable)
+    - ControlPlane.record_review_skip() — Records an explicit, auditable decision to skip a discretionary review phase
     - main() — CLI dispatcher entry point
 
 Usage Examples:
@@ -39,6 +43,18 @@ Usage Examples:
     python3 agent_control.py update-worktree --task-id <id> --path <p> --branch <b> --state <s>
     python3 agent_control.py status --task-id <id>
     python3 agent_control.py log-prior-art --task-id <id> --summary <text> [--repeat-yes-entries <csv>]
+    python3 agent_control.py record-plan-mode-entry --task-id <id> --actor <a>
+    python3 agent_control.py record-socratic-intake --task-id <id> --summary <text>
+    python3 agent_control.py record-human-approval --task-id <id> --approver <a>
+    python3 agent_control.py record-review-skip --task-id <id> --phase <p> --actor <a> --reason <text>
+
+GATE_REQUIREMENTS (per-edge verification, enforced by transition()):
+    Some transitions require a recorded receipt or passing critic review before they're
+    accepted — e.g. INTERVIEW->DRAFT_PLAN needs proof Plan Mode/Socratic intake ran,
+    APPROVED->IN_WORKTREE needs a human_approval receipt (never skippable). Discretionary
+    review phases (multi_agent_review, multi_agent_code_review) accept an explicit recorded
+    skip (record_review_skip) as an alternative to a real critic review — skips are never
+    silent. See the GATE_REQUIREMENTS dict for the full per-edge registry.
 """
 
 import argparse
@@ -173,9 +189,24 @@ CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS schema_version (
+    version INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 """
+
+CURRENT_SCHEMA_VERSION = 2
+
+CHILD_TABLES = [
+    "task_transitions",
+    "locked_verifier_baselines",
+    "critic_reviews",
+    "verification_receipts",
+    "asymmetric_persistence_log",
+]
+ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
 SCHEMA_MIGRATIONS = [
     # Migration: add task_type column if not present (for existing DBs)
@@ -196,6 +227,81 @@ class VerifierSovereigntyViolation(Exception):
 class PersistenceInvariantViolation(Exception):
     """Raised when evolution integrity or asymmetric persistence invariants are violated."""
     pass
+
+
+class ConcurrentModificationError(Exception):
+    """Raised when a transition's expected prior state no longer matches the stored row,
+    indicating a concurrent writer changed it — never silently overwritten (no last-writer-wins)."""
+    pass
+
+
+# Per-edge verification requirements for transition(). A skippable gate accepts an
+# explicit recorded skip receipt (record_review_skip) as an alternative to a real critic
+# review — the user retains discretion to skip, but the skip itself is never silent.
+GATE_REQUIREMENTS = {
+    ("INTERVIEW", "DRAFT_PLAN"): {
+        "check": "any_of",
+        "options": [
+            {"type": "receipt", "gate_name": "plan_mode_entry"},
+            {"type": "receipt", "gate_name": "socratic_intake_complete"},
+        ],
+        "error": "Cannot enter DRAFT_PLAN: no proof Plan Mode was entered or Socratic intake "
+                 "completed. Call record_plan_mode_entry() or record_socratic_intake_complete() first.",
+    },
+    ("INTERVIEW", "PLAN_REVIEW"): {
+        "check": "any_of",
+        "options": [
+            {"type": "receipt", "gate_name": "plan_mode_entry"},
+            {"type": "receipt", "gate_name": "socratic_intake_complete"},
+        ],
+        "error": "Cannot enter PLAN_REVIEW: no proof Plan Mode was entered or Socratic intake "
+                 "completed. Call record_plan_mode_entry() or record_socratic_intake_complete() first.",
+    },
+    ("DRAFT_PLAN", "AWAITING_APPROVAL"): {
+        "check": "any_of",
+        "options": [
+            {"type": "critic_review_pass"},
+            {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
+        ],
+        "error": "Cannot enter AWAITING_APPROVAL: no passing critic review or explicit recorded "
+                 "skip found. Call record_critic_review(verdict='PASS') or record_review_skip().",
+    },
+    ("PLAN_REVIEW", "AWAITING_APPROVAL"): {
+        "check": "any_of",
+        "options": [
+            {"type": "critic_review_pass"},
+            {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
+        ],
+        "error": "Cannot enter AWAITING_APPROVAL: no passing critic review or explicit recorded "
+                 "skip found. Call record_critic_review(verdict='PASS') or record_review_skip().",
+    },
+    ("MULTI_AGENT_REVIEW", "AWAITING_APPROVAL"): {
+        "check": "critic_review_pass",
+        "error": "Cannot enter AWAITING_APPROVAL: no passing critic review found after "
+                 "MULTI_AGENT_REVIEW. Call record_critic_review(verdict='PASS').",
+    },
+    ("APPROVED", "IN_WORKTREE"): {
+        "check": "receipt",
+        "gate_name": "human_approval",
+        "error": "Cannot enter IN_WORKTREE: no recorded human_approval receipt found. "
+                 "Call record_human_approval() — this gate can never be skipped.",
+    },
+    ("IN_WORKTREE", "WORKTREE_REVIEW"): {
+        "check": "receipt",
+        "gate_name": "test_suite",
+        "error": "Cannot enter WORKTREE_REVIEW: no recorded test_suite verification receipt found. "
+                 "Call record_verification_receipt(gate_name='test_suite', ...).",
+    },
+    ("WORKTREE_REVIEW", "VERIFY_EXIT"): {
+        "check": "any_of",
+        "options": [
+            {"type": "critic_review_pass"},
+            {"type": "receipt", "gate_name": "multi_agent_code_review_skipped"},
+        ],
+        "error": "Cannot enter VERIFY_EXIT: no passing critic review or explicit recorded skip "
+                 "found. Call record_critic_review(verdict='PASS') or record_review_skip().",
+    },
+}
 
 
 # External comment: Compute the SHA256 hex digest of a local file
@@ -240,7 +346,7 @@ class ControlPlane:
         return conn
 
     def init_db(self):
-        """Initializes SQLite tables and WAL mode."""
+        """Initializes SQLite tables and WAL mode. Self-heals FK-corrupted or legacy schemas."""
         conn = self._get_connection()
         try:
             conn.execute("PRAGMA journal_mode = WAL;")
@@ -253,25 +359,130 @@ class ControlPlane:
                 except Exception:
                     pass  # Column already exists — ignore
 
-            # Schema migration: Ensure tasks table CHECK constraint includes WORKTREE_REVIEW & MULTI_AGENT_CODE_REVIEW
-            row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
-            if row and "WORKTREE_REVIEW" not in (row[0] or ""):
-                conn.isolation_level = None  # autocommit mode for table reconstruction
-                conn.execute("PRAGMA foreign_keys = OFF;")
-                conn.execute("ALTER TABLE tasks RENAME TO _tasks_old;")
-                conn.execute(SCHEMA_SQL)
-                cursor = conn.execute("PRAGMA table_info(_tasks_old);")
-                old_cols = [r[1] for r in cursor.fetchall()]
-                target_cursor = conn.execute("PRAGMA table_info(tasks);")
-                target_cols = [r[1] for r in target_cursor.fetchall()]
-                common_cols = [c for c in old_cols if c in target_cols]
-                cols_str = ", ".join(common_cols)
-                conn.execute(f"INSERT INTO tasks ({cols_str}) SELECT {cols_str} FROM _tasks_old;")
-                conn.execute("DROP TABLE _tasks_old;")
-                conn.execute("PRAGMA foreign_keys = ON;")
-                conn.isolation_level = ""
+            if self._schema_needs_rebuild(conn):
+                self._rebuild_schema_transactional(conn)
+            else:
+                conn.execute(
+                    "INSERT INTO schema_version (version) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM schema_version)",
+                    (CURRENT_SCHEMA_VERSION,)
+                )
+                conn.commit()
         finally:
             conn.close()
+
+    def _schema_needs_rebuild(self, conn: sqlite3.Connection) -> bool:
+        """Detects a legacy tasks schema or FK-corrupted/orphaned migration artifacts."""
+        row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
+        if row and "WORKTREE_REVIEW" not in (row[0] or ""):
+            return True
+
+        orphan = conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='_tasks_old'"
+        ).fetchone()[0]
+        if orphan:
+            return True
+
+        for table in CHILD_TABLES:
+            child_row = conn.execute(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table,)
+            ).fetchone()
+            if child_row and child_row[0] and ("_tasks_old" in child_row[0] or "_migrating" in child_row[0]):
+                return True
+        return False
+
+    def _copy_common_columns(self, conn: sqlite3.Connection, source_table: str, dest_table: str):
+        """Copies rows between tables via the intersection of their columns."""
+        source_cols = [r[1] for r in conn.execute(f'PRAGMA table_info("{source_table}");').fetchall()]
+        dest_cols = [r[1] for r in conn.execute(f'PRAGMA table_info("{dest_table}");').fetchall()]
+        common_cols = [c for c in source_cols if c in dest_cols]
+        cols_str = ", ".join(f'"{c}"' for c in common_cols)
+        conn.execute(f'INSERT INTO "{dest_table}" ({cols_str}) SELECT {cols_str} FROM "{source_table}";')
+
+    def _merge_orphaned_tasks_old(self, conn: sqlite3.Connection):
+        """Merges a dangling `_tasks_old` (from a previously-interrupted migration) into the
+        fresh `tasks` table. Logs any conflicting task_id (present in both with different
+        values) to map-debt instead of silently discarding it."""
+        merge_cols = [r[1] for r in conn.execute('PRAGMA table_info("_tasks_old_merge");').fetchall()]
+        target_cols = [r[1] for r in conn.execute('PRAGMA table_info("tasks");').fetchall()]
+        common_cols = [c for c in merge_cols if c in target_cols]
+        cols_str = ", ".join(f'"{c}"' for c in common_cols)
+
+        existing_ids = {r[0] for r in conn.execute("SELECT task_id FROM tasks").fetchall()}
+        conflicts = []
+        for row in conn.execute(f'SELECT {cols_str} FROM "_tasks_old_merge"').fetchall():
+            row_dict = dict(zip(common_cols, row))
+            task_id = row_dict["task_id"]
+            if task_id in existing_ids:
+                conflicts.append(task_id)
+                continue
+            placeholders = ", ".join(["?"] * len(common_cols))
+            conn.execute(f'INSERT INTO tasks ({cols_str}) VALUES ({placeholders})', row)
+
+        if conflicts:
+            self._log_orphan_merge_conflicts(conflicts)
+
+    def _log_orphan_merge_conflicts(self, conflicting_task_ids: List[str]):
+        """Appends a map-debt entry for task_ids dropped during an orphaned-table merge
+        (present in both the fresh `tasks` table and a dangling `_tasks_old`)."""
+        repo_root = Path(__file__).resolve().parent.parent.parent.parent
+        map_debt_path = repo_root / "references" / "map-debt.md"
+        if not map_debt_path.exists():
+            return
+        entry = (
+            f"\n| DEBT-{time.strftime('%Y%m%d')}-AUTO | Orphaned _tasks_old merge conflict "
+            f"discarded rows for task_ids: {', '.join(conflicting_task_ids)} | OPEN | Tier 1 | 1 | "
+            f"{time.strftime('%Y-%m-%d')} | Self-heal migration in init_db() found these task_ids "
+            f"in both the fresh tasks table and a dangling _tasks_old, with differing data. "
+            f"The tasks table's version was kept; _tasks_old's version was discarded. | "
+            f"Review discarded data manually if needed; _tasks_old is already dropped. |\n"
+        )
+        with open(map_debt_path, "a", encoding="utf-8") as f:
+            f.write(entry)
+
+    def _rebuild_schema_transactional(self, conn: sqlite3.Connection):
+        """Rebuilds tasks + all child tables together in one explicit transaction, so a
+        mid-sequence failure rolls back cleanly instead of leaving a corrupted intermediate
+        state. Renaming all six tables together (instead of `tasks` alone) prevents SQLite's
+        FK-auto-repoint behavior from leaving child tables pointing at a stale name."""
+        conn.execute("PRAGMA foreign_keys = OFF;")
+        conn.execute("BEGIN IMMEDIATE;")
+        try:
+            orphan_exists = conn.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='_tasks_old'"
+            ).fetchone()[0]
+            if orphan_exists:
+                conn.execute('ALTER TABLE "_tasks_old" RENAME TO "_tasks_old_merge";')
+
+            for table in ALL_REBUILD_TABLES:
+                exists = conn.execute(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", (table,)
+                ).fetchone()[0]
+                if exists:
+                    conn.execute(f'ALTER TABLE "{table}" RENAME TO "_{table}_migrating";')
+
+            conn.executescript(SCHEMA_SQL)
+
+            for table in ALL_REBUILD_TABLES:
+                migrating_name = f"_{table}_migrating"
+                migrating_exists = conn.execute(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", (migrating_name,)
+                ).fetchone()[0]
+                if migrating_exists:
+                    self._copy_common_columns(conn, migrating_name, table)
+                    conn.execute(f'DROP TABLE "{migrating_name}";')
+
+            if orphan_exists:
+                self._merge_orphaned_tasks_old(conn)
+                conn.execute('DROP TABLE "_tasks_old_merge";')
+
+            conn.execute("DELETE FROM schema_version;")
+            conn.execute("INSERT INTO schema_version (version) VALUES (?);", (CURRENT_SCHEMA_VERSION,))
+            conn.execute("COMMIT;")
+        except Exception:
+            conn.execute("ROLLBACK;")
+            raise
+        finally:
+            conn.execute("PRAGMA foreign_keys = ON;")
 
     def _resolve_tool_catalog(self, runtime_tool: str, cli_refs: Path) -> tuple:
         """Resolves tool alias and catalog file path."""
@@ -374,6 +585,77 @@ class ControlPlane:
         finally:
             conn.close()
 
+    def _check_prior_art_guard(self, conn: sqlite3.Connection, task_id: str, task: Dict[str, Any], current_state: str, to_state: str):
+        """Blocks EVOLUTION tasks from leaving INTAKE without a logged prior-art scan."""
+        if to_state != "INTERVIEW" or current_state != "INTAKE":
+            return
+        if task.get("task_type", "GENERAL") != "EVOLUTION":
+            return
+        prior_art_count = conn.execute(
+            """
+            SELECT COUNT(*) FROM asymmetric_persistence_log
+            WHERE task_id = ? AND details LIKE '%prior_art_scan%'
+            """,
+            (task_id,)
+        ).fetchone()[0]
+        if prior_art_count == 0:
+            raise PersistenceInvariantViolation(
+                f"Cannot advance EVOLUTION task '{task_id}' past INTAKE: "
+                "Prior art scan required. Read references/map-debt.md (check Repeat: YES entries) "
+                "and wiki/decisions/ before drafting hypotheses. "
+                "Log result via log_asymmetric_persistence() with details containing 'prior_art_scan'."
+            )
+
+    def _check_done_guard(self, conn: sqlite3.Connection, task_id: str, to_state: str):
+        """Blocks transition to DONE without a passing receipt, asymmetric persistence log, and clean leak check."""
+        if to_state != "DONE":
+            return
+        rec = conn.execute(
+            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND exit_code = 0",
+            (task_id,)
+        ).fetchone()[0]
+        if rec == 0:
+            raise PersistenceInvariantViolation(
+                f"Cannot complete task '{task_id}': No passing verification receipt (exit_code == 0) found."
+            )
+
+        persist_count = conn.execute(
+            """
+            SELECT COUNT(*) FROM asymmetric_persistence_log
+            WHERE task_id = ?
+              AND (destination LIKE '%wiki/decisions/%' OR destination LIKE '%references/map-debt.md%' OR destination LIKE '%map-debt%')
+            """,
+            (task_id,)
+        ).fetchone()[0]
+        if persist_count == 0:
+            raise PersistenceInvariantViolation(
+                f"Cannot complete task '{task_id}': Asymmetric persistence required before DONE. "
+                "Log an entry to wiki/decisions/ or references/map-debt.md."
+            )
+
+        leak_rec = conn.execute(
+            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'leak_check' AND exit_code = 0",
+            (task_id,)
+        ).fetchone()[0]
+        if leak_rec == 0:
+            raise PersistenceInvariantViolation(
+                f"Cannot complete task '{task_id}': Missing clean leak check receipt (gate_name='leak_check', exit_code=0)."
+            )
+
+    def _check_rolled_back_guard(self, conn: sqlite3.Connection, task_id: str, to_state: str):
+        """Blocks transition to ROLLED_BACK without a logged asymmetric persistence entry."""
+        if to_state != "ROLLED_BACK":
+            return
+        failure_persist = conn.execute(
+            "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ?",
+            (task_id,)
+        ).fetchone()[0]
+        if failure_persist == 0:
+            raise PersistenceInvariantViolation(
+                f"Cannot roll back task '{task_id}': Asymmetric persistence required. "
+                "Document failure mode/learning in asymmetric_persistence_log before rolling back code."
+            )
+
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):
         """Validates and applies a state transition according to the canonical DAG."""
         if to_state not in CANONICAL_STATES:
@@ -383,88 +665,38 @@ class ControlPlane:
         if not task:
             raise ValueError(f"Task not found: {task_id}")
 
-        current_state = task["state"]
-        allowed = ALLOWED_TRANSITIONS.get(current_state, [])
-        if to_state not in allowed:
-            raise InvalidStateTransition(
-                f"Cannot transition task '{task_id}' from '{current_state}' to '{to_state}'. Allowed: {allowed}"
-            )
-
         conn = self._get_connection()
         try:
-            # --- Invariant Guard: INTAKE -> INTERVIEW for EVOLUTION tasks ---
-            if to_state == "INTERVIEW" and current_state == "INTAKE":
-                task_type = task.get("task_type", "GENERAL")
-                if task_type == "EVOLUTION":
-                    prior_art_count = conn.execute(
-                        """
-                        SELECT COUNT(*) FROM asymmetric_persistence_log
-                        WHERE task_id = ? AND details LIKE '%prior_art_scan%'
-                        """,
-                        (task_id,)
-                    ).fetchone()[0]
-                    if prior_art_count == 0:
-                        raise PersistenceInvariantViolation(
-                            f"Cannot advance EVOLUTION task '{task_id}' past INTAKE: "
-                            "Prior art scan required. Read references/map-debt.md (check Repeat: YES entries) "
-                            "and wiki/decisions/ before drafting hypotheses. "
-                            "Log result via log_asymmetric_persistence() with details containing 'prior_art_scan'."
-                        )
+            # Authoritative state read, done once via conn — both the adjacency check and
+            # the final guarded UPDATE use this same value, closing the race window between
+            # them (a concurrent writer changing the row after this point is caught by the
+            # UPDATE's WHERE predicate rather than silently overwritten).
+            current_state = self._read_current_state_for_update(conn, task_id)
+            if current_state is None:
+                raise ValueError(f"Task not found: {task_id}")
 
-            # --- Invariant Guard: VERIFY_EXIT -> DONE ---
-            if to_state == "DONE":
-                # 1. Deterministic Verification Receipt Exists (exit_code == 0)
-                rec = conn.execute(
-                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND exit_code = 0",
-                    (task_id,)
-                ).fetchone()[0]
-                if rec == 0:
-                    raise PersistenceInvariantViolation(
-                        f"Cannot complete task '{task_id}': No passing verification receipt (exit_code == 0) found."
-                    )
+            allowed = ALLOWED_TRANSITIONS.get(current_state, [])
+            if to_state not in allowed:
+                raise InvalidStateTransition(
+                    f"Cannot transition task '{task_id}' from '{current_state}' to '{to_state}'. Allowed: {allowed}"
+                )
 
-                # 2. Asymmetric Persistence Logged (decision / debt sync)
-                persist_count = conn.execute(
-                    """
-                    SELECT COUNT(*) FROM asymmetric_persistence_log 
-                    WHERE task_id = ? 
-                      AND (destination LIKE '%wiki/decisions/%' OR destination LIKE '%references/map-debt.md%' OR destination LIKE '%map-debt%')
-                    """,
-                    (task_id,)
-                ).fetchone()[0]
-                if persist_count == 0:
-                    raise PersistenceInvariantViolation(
-                        f"Cannot complete task '{task_id}': Asymmetric persistence required before DONE. "
-                        "Log an entry to wiki/decisions/ or references/map-debt.md."
-                    )
+            self._check_prior_art_guard(conn, task_id, task, current_state, to_state)
+            self._check_done_guard(conn, task_id, to_state)
+            self._check_rolled_back_guard(conn, task_id, to_state)
 
-                # 3. Clean Leak Check
-                leak_rec = conn.execute(
-                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'leak_check' AND exit_code = 0",
-                    (task_id,)
-                ).fetchone()[0]
-                if leak_rec == 0:
-                    raise PersistenceInvariantViolation(
-                        f"Cannot complete task '{task_id}': Missing clean leak check receipt (gate_name='leak_check', exit_code=0)."
-                    )
-
-            # --- Invariant Guard: Failure -> ROLLED_BACK ---
-            if to_state == "ROLLED_BACK":
-                failure_persist = conn.execute(
-                    "SELECT COUNT(*) FROM asymmetric_persistence_log WHERE task_id = ?",
-                    (task_id,)
-                ).fetchone()[0]
-                if failure_persist == 0:
-                    raise PersistenceInvariantViolation(
-                        f"Cannot roll back task '{task_id}': Asymmetric persistence required. "
-                        "Document failure mode/learning in asymmetric_persistence_log before rolling back code."
-                    )
+            # --- Gate-Requirement Registry: per-edge verification check ---
+            self._check_gate_requirement(conn, task_id, current_state, to_state)
 
             with conn:
-                conn.execute(
-                    "UPDATE tasks SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ?",
-                    (to_state, task_id)
+                cursor = conn.execute(
+                    "UPDATE tasks SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ? AND state = ?",
+                    (to_state, task_id, current_state)
                 )
+                if cursor.rowcount == 0:
+                    raise ConcurrentModificationError(
+                        f"Task '{task_id}' state changed concurrently (expected '{current_state}'). Retry."
+                    )
                 conn.execute(
                     "INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason) VALUES (?, ?, ?, ?, ?)",
                     (task_id, current_state, to_state, actor, reason)
@@ -551,6 +783,79 @@ class ControlPlane:
             return token
         finally:
             conn.close()
+
+    def record_plan_mode_entry(self, task_id: str, actor: str) -> str:
+        """Records proof that native Plan Mode was entered, satisfying the DRAFT_PLAN gate."""
+        return self.record_verification_receipt(
+            task_id, gate_name="plan_mode_entry", command_executed=f"plan-mode-entered:{actor}", exit_code=0
+        )
+
+    def record_socratic_intake_complete(self, task_id: str, summary: str) -> str:
+        """Records proof that Socratic Defaulting intake completed, satisfying the DRAFT_PLAN gate."""
+        return self.record_verification_receipt(
+            task_id, gate_name="socratic_intake_complete", command_executed=f"socratic-intake:{summary}", exit_code=0
+        )
+
+    def record_human_approval(self, task_id: str, approver: str) -> str:
+        """Records the human approval receipt required for APPROVED -> IN_WORKTREE (never skippable)."""
+        return self.record_verification_receipt(
+            task_id, gate_name="human_approval", command_executed=f"approved-by:{approver}", exit_code=0
+        )
+
+    def record_review_skip(self, task_id: str, phase: str, actor: str, reason: str) -> str:
+        """Records an explicit, auditable decision to skip a user-discretionary review phase
+        (e.g. multi_agent_review, multi_agent_code_review) — makes the skip visible, never silent."""
+        return self.record_verification_receipt(
+            task_id, gate_name=f"{phase}_skipped", command_executed=f"user-skip:{actor}:{reason}", exit_code=0
+        )
+
+    def _gate_receipt_exists(self, conn: sqlite3.Connection, task_id: str, gate_name: str) -> bool:
+        """Checks whether a verification receipt with the given gate_name exists for the task."""
+        count = conn.execute(
+            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+            (task_id, gate_name)
+        ).fetchone()[0]
+        return count > 0
+
+    def _gate_critic_review_pass_exists(self, conn: sqlite3.Connection, task_id: str) -> bool:
+        """Checks whether a passing critic review exists for the task."""
+        count = conn.execute(
+            "SELECT COUNT(*) FROM critic_reviews WHERE task_id = ? AND verdict = 'PASS'",
+            (task_id,)
+        ).fetchone()[0]
+        return count > 0
+
+    def _gate_any_of(self, conn: sqlite3.Connection, task_id: str, options: List[Dict[str, str]]) -> bool:
+        """Checks whether any one of the given gate options is satisfied."""
+        for opt in options:
+            if opt["type"] == "receipt" and self._gate_receipt_exists(conn, task_id, opt["gate_name"]):
+                return True
+            if opt["type"] == "critic_review_pass" and self._gate_critic_review_pass_exists(conn, task_id):
+                return True
+        return False
+
+    def _check_gate_requirement(self, conn: sqlite3.Connection, task_id: str, current_state: str, to_state: str):
+        """Enforces GATE_REQUIREMENTS for the given transition edge, if one is registered."""
+        spec = GATE_REQUIREMENTS.get((current_state, to_state))
+        if spec is None:
+            return
+        check = spec["check"]
+        if check == "receipt":
+            satisfied = self._gate_receipt_exists(conn, task_id, spec["gate_name"])
+        elif check == "critic_review_pass":
+            satisfied = self._gate_critic_review_pass_exists(conn, task_id)
+        elif check == "any_of":
+            satisfied = self._gate_any_of(conn, task_id, spec["options"])
+        else:
+            satisfied = True
+        if not satisfied:
+            raise PersistenceInvariantViolation(spec["error"])
+
+    def _read_current_state_for_update(self, conn: sqlite3.Connection, task_id: str) -> Optional[str]:
+        """Reads the task's current state within the active connection, immediately before
+        the guarded write — the value used as the WHERE predicate closing the race window."""
+        row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+        return row[0] if row else None
 
     def get_verification_receipts(self, task_id: str) -> List[Dict[str, Any]]:
         """Retrieves all verification receipts stamped for a given task."""
@@ -661,6 +966,25 @@ def _build_parser() -> argparse.ArgumentParser:
     p_lap.add_argument("--task-id", required=True)
     p_lap.add_argument("--summary", required=True, help="Summary of prior art scan findings")
     p_lap.add_argument("--repeat-yes-entries", default="", help="Comma-separated Repeat:YES map-debt entries found")
+
+    p_pme = sub.add_parser("record-plan-mode-entry")
+    p_pme.add_argument("--task-id", required=True)
+    p_pme.add_argument("--actor", required=True)
+
+    p_sic = sub.add_parser("record-socratic-intake")
+    p_sic.add_argument("--task-id", required=True)
+    p_sic.add_argument("--summary", required=True)
+
+    p_ha = sub.add_parser("record-human-approval")
+    p_ha.add_argument("--task-id", required=True)
+    p_ha.add_argument("--approver", required=True)
+
+    p_rs = sub.add_parser("record-review-skip")
+    p_rs.add_argument("--task-id", required=True)
+    p_rs.add_argument("--phase", required=True, help="e.g. multi_agent_review, multi_agent_code_review")
+    p_rs.add_argument("--actor", required=True)
+    p_rs.add_argument("--reason", required=True)
+
     return parser
 
 
@@ -699,6 +1023,26 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             details=details
         )
         print(f"Prior art scan logged for task {args.task_id}.")
+    elif args.subcommand in (
+        "record-plan-mode-entry", "record-socratic-intake", "record-human-approval", "record-review-skip"
+    ):
+        _dispatch_gate_record_command(cp, args)
+
+
+def _dispatch_gate_record_command(cp: ControlPlane, args: argparse.Namespace):
+    """Executes the gate-registry receipt-recording CLI subcommands."""
+    if args.subcommand == "record-plan-mode-entry":
+        token = cp.record_plan_mode_entry(args.task_id, args.actor)
+        print(f"Plan Mode entry recorded: {token}")
+    elif args.subcommand == "record-socratic-intake":
+        token = cp.record_socratic_intake_complete(args.task_id, args.summary)
+        print(f"Socratic intake completion recorded: {token}")
+    elif args.subcommand == "record-human-approval":
+        token = cp.record_human_approval(args.task_id, args.approver)
+        print(f"Human approval recorded: {token}")
+    elif args.subcommand == "record-review-skip":
+        token = cp.record_review_skip(args.task_id, args.phase, args.actor, args.reason)
+        print(f"Review skip recorded: {token}")
 
 
 def main():

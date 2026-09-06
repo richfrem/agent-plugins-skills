@@ -1,0 +1,20 @@
+stateDiagram-v2
+    [*] --> INTAKE
+    INTAKE --> INTERVIEW
+    INTERVIEW --> DRAFT_PLAN : Socratic/PlanMode complete\n(or explicit skip, recorded)
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : user opts in
+    DRAFT_PLAN --> AWAITING_APPROVAL : user opts out\n(explicit recorded skip)
+    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL
+    AWAITING_APPROVAL --> APPROVED : human "Proceed/Go/Execute"\n(never skippable)
+    APPROVED --> IN_WORKTREE
+    IN_WORKTREE --> WORKTREE_REVIEW : TDD implementation + tests
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : user opts in
+    WORKTREE_REVIEW --> VERIFY_EXIT : user opts out\n(explicit recorded skip)
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
+    VERIFY_EXIT --> DONE : verification receipt recorded
+    IN_WORKTREE --> ROLLED_BACK
+    WORKTREE_REVIEW --> ROLLED_BACK
+    VERIFY_EXIT --> ROLLED_BACK
+    ROLLED_BACK --> ESCALATED
+    ROLLED_BACK --> PLAN_REVIEW
+    DONE --> [*]
