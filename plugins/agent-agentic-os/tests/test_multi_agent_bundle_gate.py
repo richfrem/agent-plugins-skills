@@ -26,13 +26,15 @@ def test_full_intake_to_approval_lifecycle(tmp_path):
     assert cp.get_task(task_id)["state"] == "INTERVIEW"
     
     # INTERVIEW -> DRAFT_PLAN
+    cp.record_plan_mode_entry(task_id=task_id, actor="agent")
     cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Compiled draft spec and plan")
     assert cp.get_task(task_id)["state"] == "DRAFT_PLAN"
-    
+
     # Path A: DRAFT_PLAN -> MULTI_AGENT_REVIEW -> AWAITING_APPROVAL
     cp.transition(task_id=task_id, to_state="MULTI_AGENT_REVIEW", actor="user", reason="User opted for external review bundle")
     assert cp.get_task(task_id)["state"] == "MULTI_AGENT_REVIEW"
-    
+
+    cp.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="External review passed")
     cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="user", reason="External review iterations complete")
     assert cp.get_task(task_id)["state"] == "AWAITING_APPROVAL"
 
@@ -45,8 +47,10 @@ def test_skip_multi_agent_review_gate(tmp_path):
     cp.create_task(task_id=task_id, title="Test Skip Gate", runtime_tool="claude")
     
     cp.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Interviewing")
+    cp.record_plan_mode_entry(task_id=task_id, actor="agent")
     cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Draft compiled")
-    
+
     # Path B: User skips directly to AWAITING_APPROVAL
+    cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="User opted to skip multi-agent review")
     cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="user", reason="User opted to skip multi-agent review")
     assert cp.get_task(task_id)["state"] == "AWAITING_APPROVAL"

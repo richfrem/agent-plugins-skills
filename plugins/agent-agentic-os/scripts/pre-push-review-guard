@@ -14,8 +14,10 @@ set -e
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 DB_PATH="$REPO_ROOT/context/control_plane.db"
 
-# If control plane database does not exist, pass through
+# If control plane database does not exist, pass through — but warn visibly rather
+# than silently, so an ungated push isn't indistinguishable from a properly-gated one.
 if [ ! -f "$DB_PATH" ]; then
+    echo "⚠️  WARNING: pre-push-review-guard found no control_plane.db — push is ungated (no task registered for this repo)." >&2
     exit 0
 fi
 
@@ -31,8 +33,10 @@ fi
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
 
-# If no task associated with this branch, permit push
+# If no task associated with this branch, permit push — but warn visibly rather than
+# silently, so an ungated push isn't indistinguishable from a properly-gated one.
 if [ -z "$TASK_ROW" ]; then
+    echo "⚠️  WARNING: pre-push-review-guard found no task registered for branch '$CURRENT_BRANCH' — push is ungated." >&2
     exit 0
 fi
 

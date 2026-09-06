@@ -56,7 +56,6 @@ import json
 import os
 import re
 import shutil
-import sqlite3
 import subprocess
 import sys
 from datetime import date
@@ -473,91 +472,12 @@ def _scaffold_plugin_evolution_substrates(target: Path, dry_run: bool, force: bo
 
 
 
-CONTROL_PLANE_SCHEMA_SQL = """PRAGMA foreign_keys = ON;
-PRAGMA journal_mode = WAL;
-PRAGMA busy_timeout = 5000;
-
-CREATE TABLE IF NOT EXISTS tasks (
-    task_id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    state TEXT NOT NULL CHECK (
-        state IN (
-            'INTAKE', 'INTERVIEW', 'DRAFT_PLAN', 'MULTI_AGENT_REVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
-            'APPROVED', 'IN_WORKTREE', 'WORKTREE_REVIEW', 'MULTI_AGENT_CODE_REVIEW', 'VERIFY_EXIT', 'DONE',
-            'ROLLED_BACK', 'ESCALATED'
-        )
-    ),
-    runtime_tool TEXT NOT NULL,
-    worktree_path TEXT,
-    worktree_branch TEXT,
-    worktree_state TEXT CHECK (
-        worktree_state IS NULL OR worktree_state IN (
-            'written_in_worktree', 'committed_in_worktree', 'pushed_to_origin',
-            'merged_into_origin_main', 'local_branch_ref_updated', 'checked_out_on_disk'
-        )
-    ),
-    spec_path TEXT,
-    model_tier TEXT CHECK (model_tier IS NULL OR model_tier IN ('low', 'medium', 'high')),
-    model_id TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS task_transitions (
-    transition_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    from_state TEXT NOT NULL,
-    to_state TEXT NOT NULL,
-    actor TEXT NOT NULL,
-    reason TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS locked_verifier_baselines (
-    baseline_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    file_path TEXT NOT NULL,
-    expected_sha256 TEXT NOT NULL,
-    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS critic_reviews (
-    review_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    iteration INTEGER NOT NULL CHECK(iteration BETWEEN 1 AND 3),
-    model_used TEXT NOT NULL,
-    verdict TEXT NOT NULL CHECK (verdict IN ('PASS', 'REVISE', 'REJECT')),
-    critique_findings TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS verification_receipts (
-    receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    gate_name TEXT NOT NULL,
-    command_executed TEXT NOT NULL,
-    exit_code INTEGER NOT NULL,
-    receipt_token TEXT NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
-    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    destination TEXT NOT NULL,
-    status TEXT NOT NULL CHECK(status IN ('OBSERVED', 'HYPOTHESIS', 'CONFIRMED', 'RESOLVED')),
-    details TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
-CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
-"""
-
-
 # External comment: Initialize SQLite control plane database
 def _init_control_plane_db(target: Path, dry_run: bool) -> None:
-    """Initializes SQLite control plane database with WAL mode and schema."""
+    """Initializes SQLite control plane database via agent_control.py's own ControlPlane
+    class — reuses the canonical schema directly instead of a hand-copied duplicate, so
+    consumer repos always get the current, self-healing schema (task_type column,
+    schema_version table) rather than drifting out of sync with agent_control.py."""
     db_path = target / "context" / "control_plane.db"
     if db_path.exists():
         announce(f"exists {db_path} (skipped)", dry_run)
@@ -566,12 +486,11 @@ def _init_control_plane_db(target: Path, dry_run: bool) -> None:
     announce(f"init   {db_path}", dry_run)
     if not dry_run:
         db_path.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(str(db_path), timeout=10.0)
-        try:
-            conn.executescript(CONTROL_PLANE_SCHEMA_SQL)
-            conn.commit()
-        finally:
-            conn.close()
+        scripts_dir = str(Path(__file__).resolve().parent)
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        from agent_control import ControlPlane
+        ControlPlane(db_path=db_path).init_db()
 
 
 # ---------------------------------------------------------------------------
