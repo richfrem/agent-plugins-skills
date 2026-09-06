@@ -60,6 +60,8 @@ CANONICAL_STATES = [
     "AWAITING_APPROVAL",
     "APPROVED",
     "IN_WORKTREE",
+    "WORKTREE_REVIEW",
+    "MULTI_AGENT_CODE_REVIEW",
     "VERIFY_EXIT",
     "DONE",
     "ROLLED_BACK",
@@ -83,8 +85,10 @@ ALLOWED_TRANSITIONS = {
     "PLAN_REVIEW": ["MULTI_AGENT_REVIEW", "AWAITING_APPROVAL", "DRAFT_PLAN", "INTERVIEW", "ESCALATED"],
     "AWAITING_APPROVAL": ["APPROVED", "MULTI_AGENT_REVIEW", "PLAN_REVIEW", "DRAFT_PLAN", "ESCALATED"],
     "APPROVED": ["IN_WORKTREE", "ESCALATED"],
-    "IN_WORKTREE": ["VERIFY_EXIT", "ROLLED_BACK", "ESCALATED"],
-    "VERIFY_EXIT": ["DONE", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED"],
+    "IN_WORKTREE": ["WORKTREE_REVIEW", "VERIFY_EXIT", "ROLLED_BACK", "ESCALATED"],
+    "WORKTREE_REVIEW": ["MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED"],
+    "MULTI_AGENT_CODE_REVIEW": ["WORKTREE_REVIEW", "VERIFY_EXIT", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED"],
+    "VERIFY_EXIT": ["DONE", "IN_WORKTREE", "WORKTREE_REVIEW", "ROLLED_BACK", "ESCALATED"],
     "DONE": [],
     "ROLLED_BACK": ["ESCALATED", "PLAN_REVIEW"],
     "ESCALATED": ["INTAKE", "PLAN_REVIEW"]
@@ -101,7 +105,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     state TEXT NOT NULL CHECK (
         state IN (
             'INTAKE', 'INTERVIEW', 'DRAFT_PLAN', 'MULTI_AGENT_REVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
-            'APPROVED', 'IN_WORKTREE', 'VERIFY_EXIT', 'DONE',
+            'APPROVED', 'IN_WORKTREE', 'WORKTREE_REVIEW', 'MULTI_AGENT_CODE_REVIEW', 'VERIFY_EXIT', 'DONE',
             'ROLLED_BACK', 'ESCALATED'
         )
     ),
@@ -210,7 +214,18 @@ class ControlPlane:
     def __init__(self, db_path: Optional[Path] = None):
         """Initializes the ControlPlane instance with database path."""
         if db_path is None:
-            repo_root = Path(__file__).resolve().parent.parent.parent.parent
+            # Dynamically discover workspace root by walking up from current location
+            curr = Path(__file__).resolve().parent
+            repo_root = None
+            for p in [curr] + list(curr.parents):
+                if p.name == ".agents":
+                    repo_root = p.parent
+                    break
+                if (p / ".git").exists() or ((p / "context").exists() and not (p / "skills").exists()):
+                    repo_root = p
+                    break
+            if repo_root is None:
+                repo_root = Path.cwd()
             self.db_path = repo_root / "context" / "control_plane.db"
         else:
             self.db_path = Path(db_path)
@@ -237,6 +252,24 @@ class ControlPlane:
                     conn.commit()
                 except Exception:
                     pass  # Column already exists — ignore
+
+            # Schema migration: Ensure tasks table CHECK constraint includes WORKTREE_REVIEW & MULTI_AGENT_CODE_REVIEW
+            row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
+            if row and "WORKTREE_REVIEW" not in (row[0] or ""):
+                conn.isolation_level = None  # autocommit mode for table reconstruction
+                conn.execute("PRAGMA foreign_keys = OFF;")
+                conn.execute("ALTER TABLE tasks RENAME TO _tasks_old;")
+                conn.execute(SCHEMA_SQL)
+                cursor = conn.execute("PRAGMA table_info(_tasks_old);")
+                old_cols = [r[1] for r in cursor.fetchall()]
+                target_cursor = conn.execute("PRAGMA table_info(tasks);")
+                target_cols = [r[1] for r in target_cursor.fetchall()]
+                common_cols = [c for c in old_cols if c in target_cols]
+                cols_str = ", ".join(common_cols)
+                conn.execute(f"INSERT INTO tasks ({cols_str}) SELECT {cols_str} FROM _tasks_old;")
+                conn.execute("DROP TABLE _tasks_old;")
+                conn.execute("PRAGMA foreign_keys = ON;")
+                conn.isolation_level = ""
         finally:
             conn.close()
 
@@ -536,6 +569,19 @@ class ControlPlane:
         self.init_db()
         conn = self._get_connection()
         try:
+            # Enforce review gate before allowing worktree_state='pushed_to_origin'
+            if worktree_state == "pushed_to_origin":
+                row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+                if not row:
+                    raise ValueError(f"Task not found: {task_id}")
+                task_state = row[0]
+                valid_states_for_push = ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")
+                if task_state not in valid_states_for_push:
+                    raise PersistenceInvariantViolation(
+                        f"Cannot mark worktree '{worktree_state}' for task '{task_id}': Task state is '{task_state}'. "
+                        f"Post-implementation review stage gate required. Task must be in {valid_states_for_push} before pushing to origin."
+                    )
+
             with conn:
                 conn.execute(
                     """

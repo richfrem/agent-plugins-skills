@@ -482,8 +482,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     title TEXT NOT NULL,
     state TEXT NOT NULL CHECK (
         state IN (
-            'INTAKE', 'INTERVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
-            'APPROVED', 'IN_WORKTREE', 'VERIFY_EXIT', 'DONE',
+            'INTAKE', 'INTERVIEW', 'DRAFT_PLAN', 'MULTI_AGENT_REVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
+            'APPROVED', 'IN_WORKTREE', 'WORKTREE_REVIEW', 'MULTI_AGENT_CODE_REVIEW', 'VERIFY_EXIT', 'DONE',
             'ROLLED_BACK', 'ESCALATED'
         )
     ),
@@ -733,6 +733,45 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                     if not dry_run:
                         pre_commit.chmod(0o755)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
+
+            # Install pre-push review guard
+            push_guard_source = plugin_root / "scripts" / "pre-push-review-guard"
+            if push_guard_source.exists():
+                push_guard_target = git_hooks_dir / "pre-push-review-guard"
+                push_guard_content = push_guard_source.read_text(encoding="utf-8")
+                write_file(push_guard_target, push_guard_content, dry_run, force=True)
+                if not dry_run:
+                    push_guard_target.chmod(0o755)
+
+                # Wire the guard into the pre-push hook
+                pre_push = git_hooks_dir / "pre-push"
+                if pre_push.exists():
+                    pp_content = pre_push.read_text(encoding="utf-8")
+                    if "pre-push-review-guard" not in pp_content:
+                        pp_block = "\n# Run review guard if it exists\nif [ -x \"$HOOKS_DIR/pre-push-review-guard\" ]; then\n    \"$HOOKS_DIR/pre-push-review-guard\" || exit 1\nfi\n"
+                        if "\nexit 0" in pp_content:
+                            idx = pp_content.rfind("\nexit 0")
+                            pp_content = pp_content[:idx] + pp_block + "\nexit 0" + pp_content[idx+7:]
+                        else:
+                            pp_content += pp_block + "\nexit 0\n"
+                        write_file(pre_push, pp_content, dry_run, force=True)
+                else:
+                    minimal_push_hook = (
+                        "#!/usr/bin/env bash\n"
+                        "# pre-push hook — installed by init_agentic_os.py\n"
+                        "HOOKS_DIR=\"$(dirname \"$0\")\"\n"
+                        "\n"
+                        "# Run review guard\n"
+                        "if [ -x \"$HOOKS_DIR/pre-push-review-guard\" ]; then\n"
+                        "    \"$HOOKS_DIR/pre-push-review-guard\" || exit 1\n"
+                        "fi\n"
+                        "\n"
+                        "exit 0\n"
+                    )
+                    write_file(pre_push, minimal_push_hook, dry_run, force=False)
+                    if not dry_run:
+                        pre_push.chmod(0o755)
+                announce("Installed pre-push-review-guard into .git/hooks/", dry_run)
 
         # Install GitHub Actions evolution integrity workflow
         github_workflows_dir = target / ".github" / "workflows"
