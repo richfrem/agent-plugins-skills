@@ -240,6 +240,16 @@ stateDiagram-v2
 
 Source: [`docs/diagrams/control-plane-pipeline.mermaid`](docs/diagrams/control-plane-pipeline.mermaid).
 
+For the internal module architecture of `agent_control.py` itself (the hexagonal ports/adapters
+decomposition — facade, policy engine, ports, adapters, and the SQLite/filesystem/crypto/
+model-catalog/clock boundaries behind them), see
+[`docs/diagrams/control-plane-architecture.mermaid`](docs/diagrams/control-plane-architecture.mermaid).
+This is a durable architectural contract, not decorative documentation — it is kept in sync
+with the real code by a permanent test
+(`plugins/agent-agentic-os/tests/test_control_plane_architecture_diagram_contract.py`) that
+fails if a new port/adapter is added without updating the diagram, or if SQL creeps back into
+the facade.
+
 ---
 
 ### Group 2: Engineering Workflows
