@@ -145,7 +145,8 @@ stateDiagram-v2
     WORKTREE_REVIEW --> VERIFY_EXIT : you say no — skip straight ahead
     MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed
     VERIFY_EXIT --> DONE : all checks passed
-    DONE --> [*]```
+    DONE --> [*]
+```
 
 Source: [`docs/diagrams/control-plane-pipeline-happy-path.mermaid`](docs/diagrams/control-plane-pipeline-happy-path.mermaid).
 
