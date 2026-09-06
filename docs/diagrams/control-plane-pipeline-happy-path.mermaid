@@ -17,7 +17,7 @@ stateDiagram-v2
     DRAFT_PLAN --> MULTI_AGENT_REVIEW : you say yes to AI plan review
     DRAFT_PLAN --> AWAITING_APPROVAL : you say no — skip straight ahead
     MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
-    AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br>(mandatory gate)
+    AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(mandatory gate)
     APPROVED --> IN_WORKTREE
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes to AI code review
