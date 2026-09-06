@@ -11,7 +11,7 @@
 set -e
 
 # 1. Check if staged files include core logic/source directories
-STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(plugins/|investment_screener/backend/py_services/|src/|investment_screener/backend/src/|py_services/)' || true)
+STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(plugins/|src/|py_services/)' || true)
 
 if [ -z "$STAGED_SRC" ]; then
     exit 0

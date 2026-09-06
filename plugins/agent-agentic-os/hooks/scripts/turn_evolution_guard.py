@@ -34,9 +34,7 @@ def main():
     # 2. Check if source logic changed
     src_prefixes = (
         "plugins/",
-        "investment_screener/backend/py_services/",
         "src/",
-        "investment_screener/backend/src/",
         "py_services/",
     )
     modified_src = [f for f in changed_files if any(f.startswith(p) for p in src_prefixes)]

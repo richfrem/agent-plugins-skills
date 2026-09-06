@@ -391,7 +391,14 @@ class ControlPlane:
             conn.close()
 
     def _schema_needs_rebuild(self, conn: sqlite3.Connection) -> bool:
-        """Detects a legacy tasks schema or FK-corrupted/orphaned migration artifacts."""
+        """Detects a stale schema_version, a legacy tasks schema, or FK-corrupted/orphaned
+        migration artifacts. schema_version is the primary migration trigger; the DDL-sniff
+        and corruption checks below are defensive fallbacks for pre-schema_version databases
+        and self-healing already-corrupted ones, not the source of truth for version bumps."""
+        version_row = conn.execute("SELECT version FROM schema_version").fetchone()
+        if version_row and version_row[0] < CURRENT_SCHEMA_VERSION:
+            return True
+
         row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
         if row and "WORKTREE_REVIEW" not in (row[0] or ""):
             return True
@@ -627,17 +634,26 @@ class ControlPlane:
             )
 
     def _check_done_guard(self, conn: sqlite3.Connection, task_id: str, to_state: str):
-        """Blocks transition to DONE without a passing receipt, asymmetric persistence log, and clean leak check."""
+        """Blocks transition to DONE without a passing test_suite receipt, asymmetric
+        persistence log, clean leak check, and (if any verifiers were locked) intact
+        verifier sovereignty."""
         if to_state != "DONE":
             return
         rec = conn.execute(
-            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND exit_code = 0",
+            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'test_suite' AND exit_code = 0",
             (task_id,)
         ).fetchone()[0]
         if rec == 0:
             raise PersistenceInvariantViolation(
-                f"Cannot complete task '{task_id}': No passing verification receipt (exit_code == 0) found."
+                f"Cannot complete task '{task_id}': No passing test_suite verification receipt "
+                "(gate_name='test_suite', exit_code == 0) found."
             )
+
+        locked_count = conn.execute(
+            "SELECT COUNT(*) FROM locked_verifier_baselines WHERE task_id = ?", (task_id,)
+        ).fetchone()[0]
+        if locked_count > 0:
+            self.verify_sovereignty(task_id)
 
         persist_count = conn.execute(
             """
@@ -1076,12 +1092,20 @@ def main():
     cp = ControlPlane()
     try:
         _dispatch_command(cp, args)
-    except (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation) as e:
-        print(f"CONTROL PLANE ERROR: {e}", file=sys.stderr)
-        sys.exit(2)
     except Exception as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
+        print(f"{'CONTROL PLANE ERROR' if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation, ConcurrentModificationError)) else 'ERROR'}: {e}", file=sys.stderr)
+        sys.exit(_map_exception_to_exit_code(e))
+
+
+def _map_exception_to_exit_code(e: Exception) -> int:
+    """Maps a caught exception to its CLI exit code. ConcurrentModificationError gets its own
+    code (3) since it's the one error that's explicitly retryable — indistinguishable from a
+    generic crash (exit 1) would prevent callers from retrying only on contention."""
+    if isinstance(e, ConcurrentModificationError):
+        return 3
+    if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation)):
+        return 2
+    return 1
 
 
 if __name__ == "__main__":
