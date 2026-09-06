@@ -44,6 +44,7 @@ from agent_control import (
     VerifierSovereigntyViolation,
     InvalidStateTransition,
     PersistenceInvariantViolation,
+    ConcurrentModificationError,
 )
 from interview_spec_engine import (
     detect_intake_mode,
@@ -98,20 +99,21 @@ def test_task_lifecycle_transitions(control_plane):
     # 2. Transition to INTERVIEW
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting Socratic interview")
     assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
-    
+
     # 3. Transition to PLAN_REVIEW
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="interview-spec")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="interview-spec", reason="4-Pillar Spec compiled")
     assert control_plane.get_task(task_id)["state"] == "PLAN_REVIEW"
-    
+
     # 4. Critic review passes, move to AWAITING_APPROVAL
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="Spec is solid")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Clean context review passed")
     assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
-    
+
     # 5. Human gate endorsement moves to APPROVED
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="User approved with Proceed")
     assert control_plane.get_task(task_id)["state"] == "APPROVED"
-    
+
     # 6. Setup worktree and move to IN_WORKTREE
     control_plane.update_worktree(
         task_id=task_id,
@@ -119,6 +121,7 @@ def test_task_lifecycle_transitions(control_plane):
         worktree_branch="task-test-001",
         worktree_state="written_in_worktree"
     )
+    control_plane.record_human_approval(task_id=task_id, approver="human")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
     t = control_plane.get_task(task_id)
     assert t["state"] == "IN_WORKTREE"
@@ -264,20 +267,20 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
     control_plane.create_task(task_id=task_id, title="Done Guard Task", runtime_tool="antigravity")
     
     # Progress through valid steps to VERIFY_EXIT
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="system")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
     control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-done-001", worktree_branch="b1", worktree_state="written_in_worktree")
+    control_plane.record_human_approval(task_id=task_id, approver="human")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
     
-    # Attempt transition to DONE with no receipts or persistence log
-    with pytest.raises(PersistenceInvariantViolation, match="No passing verification receipt"):
-        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
-
-    # Add general test receipt (exit_code=0)
-    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    # Note: record_human_approval() above already wrote an exit_code=0 verification receipt
+    # (required for the APPROVED->IN_WORKTREE gate), so the DONE guard's generic "any passing
+    # receipt exists" check is already satisfied at this point — asymmetric persistence is now
+    # the first guard this test actually exercises.
 
     # Still blocked: missing asymmetric persistence log
     with pytest.raises(PersistenceInvariantViolation, match="Asymmetric persistence required"):
@@ -301,11 +304,13 @@ def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_pl
     task_id = "task-done-success-001"
     control_plane.create_task(task_id=task_id, title="Successful Done Task", runtime_tool="antigravity")
     
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="system")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
     control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-done-success", worktree_branch="b2", worktree_state="written_in_worktree")
+    control_plane.record_human_approval(task_id=task_id, approver="human")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
     
@@ -329,11 +334,13 @@ def test_transition_to_rolled_back_requires_asymmetric_persistence(control_plane
     task_id = "task-rollback-guard-001"
     control_plane.create_task(task_id=task_id, title="Rollback Task", runtime_tool="antigravity")
     
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="system")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
     control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-rb", worktree_branch="b3", worktree_state="written_in_worktree")
+    control_plane.record_human_approval(task_id=task_id, approver="human")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
 
     # Attempt rollback without asymmetric persistence log
@@ -400,12 +407,16 @@ def test_worktree_post_implementation_review_stage_gate(control_plane):
     control_plane.create_task(task_id=task_id, title="Review Gate Task", runtime_tool="antigravity")
 
     # Move to APPROVED -> IN_WORKTREE
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="Not needed for this test")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
+    control_plane.record_human_approval(task_id=task_id, approver="user")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
     # 1. Implementation done -> transition to WORKTREE_REVIEW
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     control_plane.transition(
         task_id=task_id,
         to_state="WORKTREE_REVIEW",
@@ -432,6 +443,7 @@ def test_worktree_post_implementation_review_stage_gate(control_plane):
     )
     assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
 
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="Not needed for this test")
     control_plane.transition(
         task_id=task_id,
         to_state="VERIFY_EXIT",
@@ -446,9 +458,12 @@ def test_worktree_push_barrier_enforcement(control_plane):
     task_id = "task-push-barrier-001"
     control_plane.create_task(task_id=task_id, title="Push Barrier Task", runtime_tool="antigravity")
 
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="Not needed for this test")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
+    control_plane.record_human_approval(task_id=task_id, approver="user")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
     # Attempting to set pushed_to_origin while in IN_WORKTREE must fail
@@ -461,6 +476,7 @@ def test_worktree_push_barrier_enforcement(control_plane):
         )
 
     # Transition to WORKTREE_REVIEW clears the push barrier
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     control_plane.transition(
         task_id=task_id,
         to_state="WORKTREE_REVIEW",
@@ -641,3 +657,105 @@ def test_schema_version_table_present_and_seeded(control_plane, temp_db_path):
     version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
     assert version == 2
     conn.close()
+
+
+def test_gate_blocks_draft_plan_entry_without_plan_mode_or_socratic_proof(control_plane):
+    """Test INTERVIEW->DRAFT_PLAN is blocked without a plan_mode_entry or socratic receipt."""
+    task_id = "task-gate-draftplan-001"
+    control_plane.create_task(task_id=task_id, title="Gate Draft Plan Task", runtime_tool="claude")
+    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
+
+    with pytest.raises(PersistenceInvariantViolation, match="Plan Mode|Socratic"):
+        control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
+
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="claude")
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
+    assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
+
+
+def test_gate_any_of_accepts_socratic_receipt_alone(control_plane):
+    """Test the socratic_intake_complete receipt independently satisfies the DRAFT_PLAN gate."""
+    task_id = "task-gate-socratic-001"
+    control_plane.create_task(task_id=task_id, title="Socratic Gate Task", runtime_tool="copilot")
+    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
+    control_plane.record_socratic_intake_complete(task_id=task_id, summary="3 questions answered")
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="copilot", reason="Compiled spec")
+    assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
+
+
+def test_gate_blocks_awaiting_approval_without_critic_review_or_skip(control_plane):
+    """Test DRAFT_PLAN->AWAITING_APPROVAL requires either a critic PASS or an explicit recorded skip."""
+    task_id = "task-gate-approval-001"
+    control_plane.create_task(task_id=task_id, title="Gate Approval Task", runtime_tool="claude")
+    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="claude")
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
+
+    with pytest.raises(PersistenceInvariantViolation, match="critic review|skip"):
+        control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="claude", reason="Ready")
+
+    # An explicit recorded skip (not a critic review) satisfies the gate
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="Not needed this time")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="claude", reason="Ready")
+    assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
+
+
+def test_gate_blocks_in_worktree_entry_without_human_approval_receipt(control_plane):
+    """Test APPROVED->IN_WORKTREE requires a recorded human_approval receipt (never skippable)."""
+    task_id = "task-gate-humanapproval-001"
+    control_plane.create_task(task_id=task_id, title="Gate Human Approval Task", runtime_tool="claude")
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Reviewed")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Proceed")
+
+    with pytest.raises(PersistenceInvariantViolation, match="human_approval|human approval"):
+        control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+
+    control_plane.record_human_approval(task_id=task_id, approver="user")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+    assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
+
+
+def test_gate_blocks_worktree_review_entry_without_test_suite_receipt(control_plane):
+    """Test IN_WORKTREE->WORKTREE_REVIEW requires a recorded test_suite verification receipt."""
+    task_id = "task-gate-testsuite-001"
+    control_plane.create_task(task_id=task_id, title="Gate Test Suite Task", runtime_tool="claude")
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Reviewed")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Proceed")
+    control_plane.record_human_approval(task_id=task_id, approver="user")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+
+    with pytest.raises(PersistenceInvariantViolation, match="test_suite|test suite"):
+        control_plane.transition(task_id=task_id, to_state="WORKTREE_REVIEW", actor="controller", reason="Implementation done")
+
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    control_plane.transition(task_id=task_id, to_state="WORKTREE_REVIEW", actor="controller", reason="Implementation done")
+    assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
+
+
+def test_transition_race_condition_guarded_by_state_predicate(control_plane, temp_db_path, monkeypatch):
+    """Test that a stale internal state read (simulating a concurrent writer changing the
+    row between read and write) raises ConcurrentModificationError instead of silently
+    clobbering the real state (last-writer-wins)."""
+    task_id = "task-race-001"
+    control_plane.create_task(task_id=task_id, title="Race Task", runtime_tool="claude")
+
+    # Simulate a concurrent writer having already changed state out from under this
+    # transition, by mutating the row directly, then forcing transition()'s internal
+    # state-read to return the now-stale value it would have read a moment earlier.
+    conn = sqlite3.connect(str(temp_db_path))
+    conn.execute("UPDATE tasks SET state = 'ESCALATED' WHERE task_id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+
+    monkeypatch.setattr(ControlPlane, "_read_current_state_for_update", lambda self, conn, tid: "INTAKE")
+
+    with pytest.raises(ConcurrentModificationError):
+        control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Stale write attempt")
+
+    # Real state (ESCALATED) was preserved, not clobbered
+    monkeypatch.undo()
+    assert control_plane.get_task(task_id)["state"] == "ESCALATED"
