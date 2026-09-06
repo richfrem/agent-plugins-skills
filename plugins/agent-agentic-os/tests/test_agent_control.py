@@ -392,3 +392,85 @@ def test_general_task_advances_without_prior_art_scan(control_plane):
     # GENERAL tasks do not require prior art scan
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Starting interview")
     assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
+
+
+def test_worktree_post_implementation_review_stage_gate(control_plane):
+    """Test transitions through WORKTREE_REVIEW and MULTI_AGENT_CODE_REVIEW before VERIFY_EXIT."""
+    task_id = "task-review-gate-001"
+    control_plane.create_task(task_id=task_id, title="Review Gate Task", runtime_tool="antigravity")
+
+    # Move to APPROVED -> IN_WORKTREE
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+
+    # 1. Implementation done -> transition to WORKTREE_REVIEW
+    control_plane.transition(
+        task_id=task_id,
+        to_state="WORKTREE_REVIEW",
+        actor="controller",
+        reason="Implementation complete; presenting diff to user"
+    )
+    assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
+
+    # 2. User chooses multi-agent code review -> MULTI_AGENT_CODE_REVIEW
+    control_plane.transition(
+        task_id=task_id,
+        to_state="MULTI_AGENT_CODE_REVIEW",
+        actor="controller",
+        reason="Running multi-agent adversarial code review"
+    )
+    assert control_plane.get_task(task_id)["state"] == "MULTI_AGENT_CODE_REVIEW"
+
+    # 3. Review completed -> can return to WORKTREE_REVIEW or advance to VERIFY_EXIT
+    control_plane.transition(
+        task_id=task_id,
+        to_state="WORKTREE_REVIEW",
+        actor="controller",
+        reason="Review complete; user authorized merge"
+    )
+    assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
+
+    control_plane.transition(
+        task_id=task_id,
+        to_state="VERIFY_EXIT",
+        actor="controller",
+        reason="Ready to verify exit receipts"
+    )
+    assert control_plane.get_task(task_id)["state"] == "VERIFY_EXIT"
+
+
+def test_worktree_push_barrier_enforcement(control_plane):
+    """Test update_worktree rejects pushed_to_origin if task is still in IN_WORKTREE."""
+    task_id = "task-push-barrier-001"
+    control_plane.create_task(task_id=task_id, title="Push Barrier Task", runtime_tool="antigravity")
+
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
+    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
+    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+
+    # Attempting to set pushed_to_origin while in IN_WORKTREE must fail
+    with pytest.raises(PersistenceInvariantViolation, match="Post-implementation review stage gate required"):
+        control_plane.update_worktree(
+            task_id=task_id,
+            worktree_path="/tmp/worktree",
+            worktree_branch="feat/test",
+            worktree_state="pushed_to_origin"
+        )
+
+    # Transition to WORKTREE_REVIEW clears the push barrier
+    control_plane.transition(
+        task_id=task_id,
+        to_state="WORKTREE_REVIEW",
+        actor="controller",
+        reason="Entering post-implementation review"
+    )
+    control_plane.update_worktree(
+        task_id=task_id,
+        worktree_path="/tmp/worktree",
+        worktree_branch="feat/test",
+        worktree_state="pushed_to_origin"
+    )
+    assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"

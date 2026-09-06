@@ -69,6 +69,16 @@ Worktree-related changes frequently suffer from ambiguity when multiple git stat
 7. **When multiple worktrees exist, or worktree work spans several turns, restate the
    current state of every open worktree at the start of any status report** -- don't make
    the user re-derive it from scattered messages.
+8. **Mandatory Post-Implementation Review Stage Gate (`WORKTREE_REVIEW`)**: Once code development
+   and automated tests pass inside a worktree, AI agents MUST NEVER autonomously push to origin
+   or open a PR. The agent MUST transition the task in `context/control_plane.db` to `WORKTREE_REVIEW`,
+   present the diff and summary to the human user, and provide the user the explicit choice between:
+   - (A) Running multi-agent adversarial code review (`MULTI_AGENT_CODE_REVIEW`) across independent model perspectives, or
+   - (B) Authorizing direct `git push` and PR creation for human review.
+9. **Zero Autonomous Push Invariant**: Pushing code to origin without passing through the post-implementation
+   review gate and receiving user authorization is an operational violation. Pre-push hooks and
+   `agent_control.py update-worktree` will reject any attempt to mark a worktree as `pushed_to_origin`
+   unless the task has transitioned through `WORKTREE_REVIEW`.
 
 ## Where This Applies
 

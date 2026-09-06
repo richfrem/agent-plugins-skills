@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# pre-push-review-guard — Deterministic Post-Implementation Review Stage Gate
+# ==============================================================================
+# Purpose:
+#   Enforces that no git push may proceed from an active task branch unless
+#   the task has completed the post-implementation review stage gate in SQLite
+#   control plane (state in WORKTREE_REVIEW, MULTI_AGENT_CODE_REVIEW, or VERIFY_EXIT).
+# ==============================================================================
+
+set -e
+
+# Find repo root
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+DB_PATH="$REPO_ROOT/context/control_plane.db"
+
+# If control plane database does not exist, pass through
+if [ ! -f "$DB_PATH" ]; then
+    exit 0
+fi
+
+# Determine current branch
+CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
+
+# Allow push for main/master branches directly (unless tied to a task)
+if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ] || [ -z "$CURRENT_BRANCH" ]; then
+    exit 0
+fi
+
+# Query SQLite control plane for task on this branch
+QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
+TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
+
+# If no task associated with this branch, permit push
+if [ -z "$TASK_ROW" ]; then
+    exit 0
+fi
+
+TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
+TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
+
+# Valid states permitted to push
+case "$TASK_STATE" in
+    WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT)
+        exit 0
+        ;;
+    *)
+        echo ""
+        echo "❌ GIT PUSH BLOCKED: Post-Implementation Review Stage Gate Not Cleared!"
+        echo ""
+        echo "   Branch:      $CURRENT_BRANCH"
+        echo "   Task ID:     $TASK_ID"
+        echo "   Task State:  $TASK_STATE"
+        echo ""
+        echo "   AI agents are strictly forbidden from pushing to origin without passing through"
+        echo "   the post-implementation review stage gate."
+        echo ""
+        echo "   To clear this gate:"
+        echo "   1. Transition task to WORKTREE_REVIEW:"
+        echo "      python3 plugins/agent-agentic-os/scripts/agent_control.py transition --task-id $TASK_ID --to WORKTREE_REVIEW --reason \"Implementation complete; awaiting review\""
+        echo "   2. Present diff to user and ask whether to run multi-agent adversarial code review or proceed directly."
+        echo ""
+        exit 1
+        ;;
+esac
