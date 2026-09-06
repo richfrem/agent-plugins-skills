@@ -14,20 +14,28 @@ Architecture (issue-524, hexagonal decomposition):
     method names/CLI behavior remain fully compatible; the constructor gained new *optional*
     adapter-injection parameters (for testing) that did not exist before, so "compatible" is
     the accurate claim here, not "unchanged" — a distinction an external review (round 2)
-    correctly required be stated precisely. ControlPlane's own remaining code is domain
-    orchestration only (state-machine adjacency checks, tier-selection strategy) — every
-    infrastructure concretion and every CRUD SQL statement now lives behind a port, and all
-    gate/policy logic lives in control_plane/policy.py (a pure domain module — see the Gate
-    Policy section below):
+    correctly required be stated precisely. ControlPlane's remaining code is APPLICATION
+    ORCHESTRATION ONLY: it coordinates state-machine validation, policy evaluation,
+    persistence, cryptographic integrity, filesystem operations, model recommendation, and
+    clock access through the composed components below — it does not itself implement
+    state-machine adjacency logic or model tier-selection strategy (both were still embedded
+    here as of an earlier revision; external review round 3 correctly required both be fully
+    relocated, and this docstring corrected to stop describing that stale state):
+      - self._state_machine -> control_plane.state_machine.StateMachine (pure domain class —
+                                 no port/adapter pair; it has no infrastructure to abstract)
+      - Gate/policy logic   -> control_plane/policy.py (a pure domain module — see the Gate
+                                 Policy section below)
       - self._fs            -> control_plane.adapters.FilesystemAdapter        (FilesystemPort)
       - self._crypto        -> control_plane.adapters.CryptoAdapter            (CryptoPort)
       - self._clock         -> control_plane.adapters.ClockAdapter             (ClockPort)
-      - self._model_catalog -> control_plane.adapters.ModelCatalogAdapter      (ModelCatalogPort)
+      - self._model_catalog -> control_plane.adapters.ModelCatalogAdapter      (ModelCatalogPort —
+                                 full resolve_recommended_model() resolution: tool-alias, tier
+                                 strategy, and fallback, not just JSON file reads)
       - self._persistence   -> control_plane.adapters.SqlitePersistenceAdapter (PersistencePort —
                                  connection management, schema migration, AND every task/
                                  transition/receipt/review/verifier/log/worktree CRUD operation;
                                  ControlPlane composes this port, it does not issue SQL itself)
-    Every adapter is constructor-injectable for testing (e.g. `ControlPlane(crypto_adapter=...)`)
+    Every port is constructor-injectable for testing (e.g. `ControlPlane(persistence_adapter=...)`)
     while defaulting to the real infrastructure implementation for all existing callers.
 
 Layer:

@@ -4,11 +4,13 @@ test_control_plane_model_catalog_adapter.py — Model-Catalog Extraction (issue-
 
 Purpose:
     Unit tests for control_plane/adapters.py's ModelCatalogAdapter in isolation, plus an
-    integration test proving ControlPlane.resolve_recommended_model() routes JSON file reads
-    through the injected ModelCatalogPort instead of inline json.loads()/exists() calls.
+    integration test proving ControlPlane.resolve_recommended_model() delegates the full
+    resolution to the injected ModelCatalogPort (issue-524, post-round-3-review correction:
+    the port now covers tool-alias/tier-strategy/fallback logic, not just JSON file reads).
 
 Key Input Dependencies:
     - Temporary JSON files via pytest's tmp_path fixture
+    - Real plugins/cli-agents/references/ files (for the genuine end-to-end test)
 
 Key Functions:
     - test_load_catalog_returns_none_when_missing()
@@ -17,6 +19,8 @@ Key Functions:
     - test_load_cheapest_returns_none_when_missing()
     - test_load_cheapest_returns_model_for_tool_key()
     - test_control_plane_uses_injected_model_catalog_port()
+    - test_model_catalog_adapter_helper_components_against_temp_files()
+    - test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files()
 """
 
 import json
@@ -109,10 +113,18 @@ def test_control_plane_uses_injected_model_catalog_port(tmp_path):
     assert result["model_id"] == "recorded-model"
 
 
-def test_model_catalog_adapter_resolve_recommended_model_end_to_end(tmp_path):
-    """Unit test of ModelCatalogAdapter.resolve_recommended_model() itself against real (but
-    temp-directory) JSON files — proves the full tool-alias/tier-strategy/fallback logic
-    moved from ControlPlane works correctly when exercised directly on the adapter."""
+def test_model_catalog_adapter_helper_components_against_temp_files(tmp_path):
+    """Unit test of ModelCatalogAdapter's relocated HELPER components (_resolve_tool_catalog,
+    load_cheapest, load_catalog, _pick_tier_model) against temp-directory JSON files —
+    exercises each piece of the tool-alias/tier-strategy/fallback logic individually. This
+    does NOT call the public resolve_recommended_model() method itself (that method's
+    repo-root discovery is derived from this adapter module's own __file__ location, so it
+    cannot be pointed at an arbitrary tmp_path without either monkeypatching __file__ or
+    adding a repo-root override parameter to the adapter — neither of which this test does).
+    See test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files below
+    for a genuine end-to-end call of the public method. Renamed after external review round 3
+    correctly flagged the original name/docstring ("end_to_end") as overstating what this
+    test actually proves."""
     cli_refs = tmp_path / "plugins" / "cli-agents" / "references"
     cli_refs.mkdir(parents=True)
     (cli_refs / "copilot-models.json").write_text(
@@ -123,10 +135,6 @@ def test_model_catalog_adapter_resolve_recommended_model_end_to_end(tmp_path):
     )
 
     adapter = ModelCatalogAdapter()
-    # Patch __file__ resolution by monkeypatching the module path walk: simplest is to call
-    # the internal helper directly with our own cli_refs, since resolve_recommended_model's
-    # repo-root discovery is filesystem-location-based (matches the original agent_control.py
-    # behavior, which had the same repo-root-from-__file__ constraint).
     tool_key, catalog_file = adapter._resolve_tool_catalog("copilot", cli_refs)
     assert tool_key == "copilot"
     assert catalog_file == cli_refs / "copilot-models.json"
@@ -137,6 +145,18 @@ def test_model_catalog_adapter_resolve_recommended_model_end_to_end(tmp_path):
     cat_data = adapter.load_catalog(catalog_file)
     picked = adapter._pick_tier_model(cat_data, "low", cheapest)
     assert picked == "gpt-5.4-nano"
+
+
+def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files():
+    """Genuine end-to-end call of the PUBLIC resolve_recommended_model() method, against the
+    real plugins/cli-agents/references/ files in this repo (the same files
+    ControlPlane.resolve_recommended_model() resolves against in production) — proves the
+    complete, real code path works, not just its individual helper pieces."""
+    adapter = ModelCatalogAdapter()
+    result = adapter.resolve_recommended_model(runtime_tool="copilot", tier="low")
+    assert result["runtime_tool"] == "copilot"
+    assert result["tier"] == "low"
+    assert result["model_id"]  # some non-empty model id was resolved (real catalog or fallback)
 
 
 def test_control_plane_defaults_to_real_model_catalog_adapter(tmp_path):
