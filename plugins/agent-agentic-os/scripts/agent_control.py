@@ -69,8 +69,11 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-from control_plane.ports import FilesystemPort, CryptoPort
-from control_plane.adapters import FilesystemAdapter, SqlitePersistenceAdapter, CryptoAdapter, CURRENT_SCHEMA_VERSION
+from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort
+from control_plane.adapters import (
+    FilesystemAdapter, SqlitePersistenceAdapter, CryptoAdapter, ModelCatalogAdapter,
+    CURRENT_SCHEMA_VERSION,
+)
 from control_plane import policy as _policy
 
 CANONICAL_STATES = [
@@ -153,18 +156,21 @@ class ControlPlane:
     """Controller and state machine manager for task lifecycles."""
 
     def __init__(self, db_path: Optional[Path] = None, fs_adapter: Optional["FilesystemPort"] = None,
-                 crypto_adapter: Optional["CryptoPort"] = None):
+                 crypto_adapter: Optional["CryptoPort"] = None,
+                 model_catalog_adapter: Optional["ModelCatalogPort"] = None):
         """Initializes the ControlPlane instance. Connection management and schema migration
         are delegated to a SqlitePersistenceAdapter (issue-524 Step 5); SHA256/receipt-token
-        hashing is delegated to a CryptoAdapter (issue-524 Step 6). `self.db_path` is kept as a
-        convenience property mirroring the persistence adapter's resolved path, for any code
-        that introspects it directly. All three optional parameters default to real
+        hashing is delegated to a CryptoAdapter (issue-524 Step 6); model-catalog JSON file
+        reads are delegated to a ModelCatalogAdapter (issue-524 Step 7). `self.db_path` is kept
+        as a convenience property mirroring the persistence adapter's resolved path, for any
+        code that introspects it directly. All optional parameters default to real
         infrastructure adapters; tests/callers can substitute different Port implementations
         without touching disk/hashing — public callers relying on the default constructor
         signature are unaffected (backward-compatible facade, per
         docs/plans/issue-524-spec.md Section 3)."""
         self._fs = fs_adapter if fs_adapter is not None else FilesystemAdapter()
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
+        self._model_catalog = model_catalog_adapter if model_catalog_adapter is not None else ModelCatalogAdapter()
         self._persistence = SqlitePersistenceAdapter(
             db_path if db_path is None else Path(db_path), self._fs
         )
@@ -210,21 +216,12 @@ class ControlPlane:
         tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
 
         cheapest_file = cli_refs / "cheapest_models.json"
-        cheapest_model = None
-        if cheapest_file.exists():
-            try:
-                c_data = json.loads(cheapest_file.read_text(encoding="utf-8"))
-                cheapest_model = c_data.get(tool_key, {}).get("model")
-            except Exception:
-                pass
+        cheapest_model = self._model_catalog.load_cheapest(cheapest_file, tool_key)
 
         selected_model = None
-        if catalog_file.exists():
-            try:
-                cat_data = json.loads(catalog_file.read_text(encoding="utf-8"))
-                selected_model = self._pick_tier_model(cat_data, tier, cheapest_model)
-            except Exception:
-                pass
+        cat_data = self._model_catalog.load_catalog(catalog_file)
+        if cat_data is not None:
+            selected_model = self._pick_tier_model(cat_data, tier, cheapest_model)
 
         return {
             "runtime_tool": runtime_tool,

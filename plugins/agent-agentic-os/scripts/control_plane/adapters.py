@@ -7,16 +7,17 @@ Purpose:
     against real infrastructure. Populated incrementally as agent_control.py's ControlPlane
     responsibilities are extracted (docs/plans/issue-524-spec.md, Section 5). Step 3 added
     FilesystemAdapter. Step 5 added SqlitePersistenceAdapter, scoped to connection management
-    and schema migration (task/transition/receipt queries remain in ControlPlane). Step 6 adds
-    CryptoAdapter, scoped to exactly the SHA256/receipt-token logic the plan specifies —
-    verifier-lock/verify-sovereignty SQL queries stay in ControlPlane; only the hashing itself
-    moves. ModelCatalog adapter lands in a later step.
+    and schema migration (task/transition/receipt queries remain in ControlPlane). Step 6 added
+    CryptoAdapter, scoped to exactly the SHA256/receipt-token logic. Step 7 adds
+    ModelCatalogAdapter, scoped to exactly the JSON-file-loading logic the plan specifies —
+    resolve_recommended_model()'s tier-selection/strategy logic (_pick_tier_model,
+    _resolve_tool_catalog) stays in ControlPlane as orchestration; only the file reads move.
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Adapters (hexagonal boundary)
 
 Key Input Dependencies:
-    - Local filesystem (FilesystemAdapter, CryptoAdapter.sha256_file)
+    - Local filesystem (FilesystemAdapter, CryptoAdapter.sha256_file, ModelCatalogAdapter)
     - SQLite database file (SqlitePersistenceAdapter)
 
 Key Functions:
@@ -30,16 +31,19 @@ Key Functions:
     - CryptoAdapter.sha256_file() — SHA256 hex digest of a file, verbatim from the former
       module-level _sha256_file()
     - CryptoAdapter.sha256_hex() — SHA256 hex digest of a string (receipt token generation)
+    - ModelCatalogAdapter.load_catalog() — reads/parses a model-catalog JSON file, or None
+    - ModelCatalogAdapter.load_cheapest() — reads cheapest_models.json for a tool_key, or None
 """
 
 import hashlib
+import json
 import sqlite3
 import subprocess
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from control_plane.ports import FilesystemPort, CryptoPort
+from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort
 
 
 class FilesystemAdapter(FilesystemPort):
@@ -386,3 +390,31 @@ class CryptoAdapter(CryptoPort):
     def sha256_hex(self, raw: str) -> str:
         """Computes the SHA256 hex digest of the given string."""
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+class ModelCatalogAdapter(ModelCatalogPort):
+    """Real filesystem/JSON-backed implementation of ModelCatalogPort, extracted verbatim
+    from agent_control.py's former resolve_recommended_model()'s inline file-existence-check
+    and json.loads() calls (issue-524 Step 7). Any parse/read error is swallowed and treated
+    as "unavailable" (returns None), matching the original bare `except Exception: pass`
+    behavior exactly — callers (ControlPlane.resolve_recommended_model) already handle a
+    None result by falling back to other sources."""
+
+    def load_catalog(self, catalog_path: Path) -> Optional[Dict[str, Any]]:
+        """Loads and returns a parsed model-catalog JSON file, or None if missing/unparsable."""
+        if not catalog_path.exists():
+            return None
+        try:
+            return json.loads(catalog_path.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    def load_cheapest(self, cheapest_path: Path, tool_key: str) -> Optional[str]:
+        """Loads cheapest_models.json and returns the cheapest model id for `tool_key`, or None."""
+        if not cheapest_path.exists():
+            return None
+        try:
+            c_data = json.loads(cheapest_path.read_text(encoding="utf-8"))
+            return c_data.get(tool_key, {}).get("model")
+        except Exception:
+            return None
