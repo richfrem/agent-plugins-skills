@@ -1,4 +1,4 @@
-# ADR-001: SQLite Path Strategy — Hardened Fixed Path & Fail-Closed
+# ADR-008: SQLite Path Strategy — Hardened Fixed Path & Fail-Closed
 
 **Status:** Accepted  
 **Date:** 2026-05-30

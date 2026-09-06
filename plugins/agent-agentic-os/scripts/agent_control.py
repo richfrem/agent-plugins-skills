@@ -173,9 +173,24 @@ CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS schema_version (
+    version INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 """
+
+CURRENT_SCHEMA_VERSION = 2
+
+CHILD_TABLES = [
+    "task_transitions",
+    "locked_verifier_baselines",
+    "critic_reviews",
+    "verification_receipts",
+    "asymmetric_persistence_log",
+]
+ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
 SCHEMA_MIGRATIONS = [
     # Migration: add task_type column if not present (for existing DBs)
@@ -240,7 +255,7 @@ class ControlPlane:
         return conn
 
     def init_db(self):
-        """Initializes SQLite tables and WAL mode."""
+        """Initializes SQLite tables and WAL mode. Self-heals FK-corrupted or legacy schemas."""
         conn = self._get_connection()
         try:
             conn.execute("PRAGMA journal_mode = WAL;")
@@ -253,25 +268,130 @@ class ControlPlane:
                 except Exception:
                     pass  # Column already exists — ignore
 
-            # Schema migration: Ensure tasks table CHECK constraint includes WORKTREE_REVIEW & MULTI_AGENT_CODE_REVIEW
-            row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
-            if row and "WORKTREE_REVIEW" not in (row[0] or ""):
-                conn.isolation_level = None  # autocommit mode for table reconstruction
-                conn.execute("PRAGMA foreign_keys = OFF;")
-                conn.execute("ALTER TABLE tasks RENAME TO _tasks_old;")
-                conn.execute(SCHEMA_SQL)
-                cursor = conn.execute("PRAGMA table_info(_tasks_old);")
-                old_cols = [r[1] for r in cursor.fetchall()]
-                target_cursor = conn.execute("PRAGMA table_info(tasks);")
-                target_cols = [r[1] for r in target_cursor.fetchall()]
-                common_cols = [c for c in old_cols if c in target_cols]
-                cols_str = ", ".join(common_cols)
-                conn.execute(f"INSERT INTO tasks ({cols_str}) SELECT {cols_str} FROM _tasks_old;")
-                conn.execute("DROP TABLE _tasks_old;")
-                conn.execute("PRAGMA foreign_keys = ON;")
-                conn.isolation_level = ""
+            if self._schema_needs_rebuild(conn):
+                self._rebuild_schema_transactional(conn)
+            else:
+                conn.execute(
+                    "INSERT INTO schema_version (version) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM schema_version)",
+                    (CURRENT_SCHEMA_VERSION,)
+                )
+                conn.commit()
         finally:
             conn.close()
+
+    def _schema_needs_rebuild(self, conn: sqlite3.Connection) -> bool:
+        """Detects a legacy tasks schema or FK-corrupted/orphaned migration artifacts."""
+        row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
+        if row and "WORKTREE_REVIEW" not in (row[0] or ""):
+            return True
+
+        orphan = conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='_tasks_old'"
+        ).fetchone()[0]
+        if orphan:
+            return True
+
+        for table in CHILD_TABLES:
+            child_row = conn.execute(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table,)
+            ).fetchone()
+            if child_row and child_row[0] and ("_tasks_old" in child_row[0] or "_migrating" in child_row[0]):
+                return True
+        return False
+
+    def _copy_common_columns(self, conn: sqlite3.Connection, source_table: str, dest_table: str):
+        """Copies rows between tables via the intersection of their columns."""
+        source_cols = [r[1] for r in conn.execute(f'PRAGMA table_info("{source_table}");').fetchall()]
+        dest_cols = [r[1] for r in conn.execute(f'PRAGMA table_info("{dest_table}");').fetchall()]
+        common_cols = [c for c in source_cols if c in dest_cols]
+        cols_str = ", ".join(f'"{c}"' for c in common_cols)
+        conn.execute(f'INSERT INTO "{dest_table}" ({cols_str}) SELECT {cols_str} FROM "{source_table}";')
+
+    def _merge_orphaned_tasks_old(self, conn: sqlite3.Connection):
+        """Merges a dangling `_tasks_old` (from a previously-interrupted migration) into the
+        fresh `tasks` table. Logs any conflicting task_id (present in both with different
+        values) to map-debt instead of silently discarding it."""
+        merge_cols = [r[1] for r in conn.execute('PRAGMA table_info("_tasks_old_merge");').fetchall()]
+        target_cols = [r[1] for r in conn.execute('PRAGMA table_info("tasks");').fetchall()]
+        common_cols = [c for c in merge_cols if c in target_cols]
+        cols_str = ", ".join(f'"{c}"' for c in common_cols)
+
+        existing_ids = {r[0] for r in conn.execute("SELECT task_id FROM tasks").fetchall()}
+        conflicts = []
+        for row in conn.execute(f'SELECT {cols_str} FROM "_tasks_old_merge"').fetchall():
+            row_dict = dict(zip(common_cols, row))
+            task_id = row_dict["task_id"]
+            if task_id in existing_ids:
+                conflicts.append(task_id)
+                continue
+            placeholders = ", ".join(["?"] * len(common_cols))
+            conn.execute(f'INSERT INTO tasks ({cols_str}) VALUES ({placeholders})', row)
+
+        if conflicts:
+            self._log_orphan_merge_conflicts(conflicts)
+
+    def _log_orphan_merge_conflicts(self, conflicting_task_ids: List[str]):
+        """Appends a map-debt entry for task_ids dropped during an orphaned-table merge
+        (present in both the fresh `tasks` table and a dangling `_tasks_old`)."""
+        repo_root = Path(__file__).resolve().parent.parent.parent.parent
+        map_debt_path = repo_root / "references" / "map-debt.md"
+        if not map_debt_path.exists():
+            return
+        entry = (
+            f"\n| DEBT-{time.strftime('%Y%m%d')}-AUTO | Orphaned _tasks_old merge conflict "
+            f"discarded rows for task_ids: {', '.join(conflicting_task_ids)} | OPEN | Tier 1 | 1 | "
+            f"{time.strftime('%Y-%m-%d')} | Self-heal migration in init_db() found these task_ids "
+            f"in both the fresh tasks table and a dangling _tasks_old, with differing data. "
+            f"The tasks table's version was kept; _tasks_old's version was discarded. | "
+            f"Review discarded data manually if needed; _tasks_old is already dropped. |\n"
+        )
+        with open(map_debt_path, "a", encoding="utf-8") as f:
+            f.write(entry)
+
+    def _rebuild_schema_transactional(self, conn: sqlite3.Connection):
+        """Rebuilds tasks + all child tables together in one explicit transaction, so a
+        mid-sequence failure rolls back cleanly instead of leaving a corrupted intermediate
+        state. Renaming all six tables together (instead of `tasks` alone) prevents SQLite's
+        FK-auto-repoint behavior from leaving child tables pointing at a stale name."""
+        conn.execute("PRAGMA foreign_keys = OFF;")
+        conn.execute("BEGIN IMMEDIATE;")
+        try:
+            orphan_exists = conn.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='_tasks_old'"
+            ).fetchone()[0]
+            if orphan_exists:
+                conn.execute('ALTER TABLE "_tasks_old" RENAME TO "_tasks_old_merge";')
+
+            for table in ALL_REBUILD_TABLES:
+                exists = conn.execute(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", (table,)
+                ).fetchone()[0]
+                if exists:
+                    conn.execute(f'ALTER TABLE "{table}" RENAME TO "_{table}_migrating";')
+
+            conn.executescript(SCHEMA_SQL)
+
+            for table in ALL_REBUILD_TABLES:
+                migrating_name = f"_{table}_migrating"
+                migrating_exists = conn.execute(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", (migrating_name,)
+                ).fetchone()[0]
+                if migrating_exists:
+                    self._copy_common_columns(conn, migrating_name, table)
+                    conn.execute(f'DROP TABLE "{migrating_name}";')
+
+            if orphan_exists:
+                self._merge_orphaned_tasks_old(conn)
+                conn.execute('DROP TABLE "_tasks_old_merge";')
+
+            conn.execute("DELETE FROM schema_version;")
+            conn.execute("INSERT INTO schema_version (version) VALUES (?);", (CURRENT_SCHEMA_VERSION,))
+            conn.execute("COMMIT;")
+        except Exception:
+            conn.execute("ROLLBACK;")
+            raise
+        finally:
+            conn.execute("PRAGMA foreign_keys = ON;")
 
     def _resolve_tool_catalog(self, runtime_tool: str, cli_refs: Path) -> tuple:
         """Resolves tool alias and catalog file path."""

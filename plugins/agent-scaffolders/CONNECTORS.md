@@ -23,7 +23,7 @@ discovered via the plugin registry.
 
 ## Notes
 
-- This CONNECTORS.md follows [ADR-004](../../../ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md):
+- This CONNECTORS.md follows [ADR-004](../../../docs/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md):
   `~~category` abstraction only — no cross-plugin script paths.
 - Alternative providers: any plugin declaring `"capabilities": ["eval-gate"]` in its
   `plugin.json` can serve as a drop-in replacement. The capability index resolves the

@@ -30,8 +30,8 @@
 - `plugins/exploration-cycle-plugin/tests/test_state_engine.py`
 - `plugins/exploration-cycle-plugin/tests/test_sandbox_runner.py`
 - `plugins/exploration-cycle-plugin/tests/test_integration.py`
-- `docs/adr/ADR-001-sqlite-path-strategy.md`
-- `docs/adr/ADR-002-dual-runtime-compatibility.md`
+- `docs/ADRs/008_sqlite_path_strategy.md`
+- `docs/ADRs/009_dual_runtime_compatibility.md`
 
 ---
 
@@ -2194,7 +2194,7 @@ git commit -m "feat(exploration-cycle-plugin): full dispatch authorization with 
 **Files:**
 - Create: `plugins/exploration-cycle-plugin/tests/test_integration.py`
 - Modify: `.gitignore` (project root)
-- Create: `docs/adr/ADR-001-sqlite-path-strategy.md`
+- Create: `docs/ADRs/008_sqlite_path_strategy.md`
 
 - [ ] **Step 11.1: Write integration tests**
 
@@ -2312,7 +2312,7 @@ context/exploration/.secrets/
 
 - [ ] **Step 11.4: Write ADR**
 
-Create `docs/adr/ADR-001-sqlite-path-strategy.md`:
+Create `docs/ADRs/008_sqlite_path_strategy.md`:
 
 ```markdown
 # ADR-001: SQLite Path Strategy — Hardened Fixed Path & Fail-Closed
@@ -2342,7 +2342,7 @@ Create `docs/adr/ADR-001-sqlite-path-strategy.md`:
 
 - [ ] **Step 11.4b: Write ADR-002**
 
-Create `docs/adr/ADR-002-dual-runtime-compatibility.md`:
+Create `docs/ADRs/009_dual_runtime_compatibility.md`:
 
 ```markdown
 # ADR-002: Dual-Runtime Compatibility — Portable Plugins, Optional Orchestration
@@ -2414,8 +2414,8 @@ Expected: All `OK`, no `BROKEN`, no violations.
 ```bash
 git add plugins/exploration-cycle-plugin/tests/test_integration.py \
         .gitignore \
-        docs/adr/ADR-001-sqlite-path-strategy.md \
-        docs/adr/ADR-002-dual-runtime-compatibility.md
+        docs/ADRs/008_sqlite_path_strategy.md \
+        docs/ADRs/009_dual_runtime_compatibility.md
 git commit -m "test: WAL concurrency, sandbox escape, approval expiry integration tests + .gitignore + ADR-001 + ADR-002"
 ```
 

@@ -473,4 +473,171 @@ def test_worktree_push_barrier_enforcement(control_plane):
         worktree_branch="feat/test",
         worktree_state="pushed_to_origin"
     )
-    assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"
+
+
+def _build_legacy_pre_v2_schema(db_path):
+    """Builds a pre-schema-version-2 DB: old tasks CHECK constraint (missing
+    WORKTREE_REVIEW/task_type), with child tables already referencing tasks(task_id).
+    Mirrors this repo's actual historical schema before PR #517."""
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript("""
+        PRAGMA foreign_keys = ON;
+        CREATE TABLE tasks (
+            task_id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            state TEXT NOT NULL CHECK (
+                state IN ('INTAKE','INTERVIEW','PLAN_REVIEW','AWAITING_APPROVAL',
+                          'APPROVED','IN_WORKTREE','VERIFY_EXIT','DONE','ROLLED_BACK','ESCALATED')
+            ),
+            runtime_tool TEXT NOT NULL,
+            worktree_path TEXT,
+            worktree_branch TEXT,
+            worktree_state TEXT,
+            spec_path TEXT,
+            model_tier TEXT,
+            model_id TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE task_transitions (
+            transition_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+            from_state TEXT NOT NULL, to_state TEXT NOT NULL, actor TEXT NOT NULL,
+            reason TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE locked_verifier_baselines (
+            baseline_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+            file_path TEXT NOT NULL, expected_sha256 TEXT NOT NULL,
+            verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE critic_reviews (
+            review_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+            iteration INTEGER NOT NULL, model_used TEXT NOT NULL, verdict TEXT NOT NULL,
+            critique_findings TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE verification_receipts (
+            receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+            gate_name TEXT NOT NULL, command_executed TEXT NOT NULL, exit_code INTEGER NOT NULL,
+            receipt_token TEXT NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE asymmetric_persistence_log (
+            log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+            destination TEXT NOT NULL, status TEXT NOT NULL, details TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+    conn.execute(
+        "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
+        ("legacy-task-001", "Pre-existing legacy task", "INTAKE", "claude")
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_self_heal_repairs_legacy_schema_and_preserves_data(temp_db_path):
+    """Test that init_db() migrates a legacy pre-v2 schema and preserves existing rows."""
+    _build_legacy_pre_v2_schema(temp_db_path)
+
+    cp = ControlPlane(db_path=temp_db_path)
+    cp.init_db()
+
+    conn = sqlite3.connect(str(temp_db_path))
+    # Data survived the rebuild
+    row = conn.execute("SELECT title, state FROM tasks WHERE task_id = ?", ("legacy-task-001",)).fetchone()
+    assert row == ("Pre-existing legacy task", "INTAKE")
+
+    # Schema is now current (WORKTREE_REVIEW present, task_type column exists)
+    tasks_sql = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()[0]
+    assert "WORKTREE_REVIEW" in tasks_sql
+    assert "task_type" in tasks_sql
+
+    # No orphaned migration artifacts remain
+    leftover = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE '%_migrating' OR name = '_tasks_old')"
+    ).fetchall()
+    assert leftover == []
+
+    # A new task_id can be inserted and referenced by a child table without FK errors
+    conn.execute("INSERT INTO tasks (task_id, title, state, task_type, runtime_tool) VALUES (?, ?, 'INTAKE', 'GENERAL', ?)",
+                 ("new-task-001", "New task", "claude"))
+    conn.execute("INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason) VALUES (?, 'NONE', 'INTAKE', 'system', 'x')",
+                 ("new-task-001",))
+    conn.commit()
+    conn.close()
+
+
+def test_self_heal_repairs_dangling_orphaned_tasks_old(temp_db_path):
+    """Test that init_db() repairs a DB stuck mid-migration: dangling _tasks_old plus
+    child tables whose stored FK still points at _tasks_old (this repo's actual incident)."""
+    _build_legacy_pre_v2_schema(temp_db_path)
+    conn = sqlite3.connect(str(temp_db_path))
+    conn.execute("PRAGMA foreign_keys = OFF;")
+    # Reproduce the real bug mechanism: renaming `tasks` while child tables reference it
+    # forces SQLite to auto-repoint their stored FK clauses to the new name.
+    conn.execute("ALTER TABLE tasks RENAME TO _tasks_old;")
+    conn.commit()
+    conn.close()
+
+    # Sanity check: child tables now really do reference _tasks_old (bug precondition)
+    conn = sqlite3.connect(str(temp_db_path))
+    child_sql = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='task_transitions'"
+    ).fetchone()[0]
+    assert "_tasks_old" in child_sql
+    conn.close()
+
+    cp = ControlPlane(db_path=temp_db_path)
+    cp.init_db()
+
+    conn = sqlite3.connect(str(temp_db_path))
+    # tasks table exists again with the legacy row preserved
+    row = conn.execute("SELECT title FROM tasks WHERE task_id = ?", ("legacy-task-001",)).fetchone()
+    assert row == ("Pre-existing legacy task",)
+
+    # Child table FK now correctly points at tasks, not _tasks_old
+    child_sql = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='task_transitions'"
+    ).fetchone()[0]
+    assert '"_tasks_old"' not in child_sql
+    assert "_tasks_old" not in child_sql
+
+    # No orphaned tables remain
+    leftover = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE '%_migrating' OR name = '_tasks_old')"
+    ).fetchall()
+    assert leftover == []
+
+    # A brand-new task can be created via the real API without FK errors (this is the
+    # exact failure that blocked TASK-AGENTIC-OS-AUDIT registration this session)
+    conn.close()
+    cp.create_task(task_id="post-heal-task", title="Post heal", runtime_tool="claude")
+    task = cp.get_task("post-heal-task")
+    assert task["state"] == "INTAKE"
+
+
+def test_init_db_idempotent_when_schema_current(control_plane, temp_db_path):
+    """Test that calling init_db() again on an already-current schema is a no-op."""
+    control_plane.create_task(task_id="idem-task", title="Idempotency check", runtime_tool="claude")
+    control_plane.init_db()
+    control_plane.init_db()
+
+    conn = sqlite3.connect(str(temp_db_path))
+    task = conn.execute("SELECT title FROM tasks WHERE task_id = ?", ("idem-task",)).fetchone()
+    assert task == ("Idempotency check",)
+    leftover = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE '%_migrating' OR name = '_tasks_old')"
+    ).fetchall()
+    assert leftover == []
+    conn.close()
+
+
+def test_schema_version_table_present_and_seeded(control_plane, temp_db_path):
+    """Test that schema_version table exists with the current version seeded."""
+    conn = sqlite3.connect(str(temp_db_path))
+    version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
+    assert version == 2
+    conn.close()

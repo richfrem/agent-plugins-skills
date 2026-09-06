@@ -145,7 +145,7 @@ Ensure you coordinate the following 7 steps in precise order. Do not bypass any 
 ### STEP 5: Architectural Scaffolding (`vibe-spec-packager`)
 1. Scaffold target folder sandbox.
 2. Run **Early Session-Memory Bootstrap**: before generating target codebase elements, initialize `/session-memory/` and populate `domain-invariants.md`, `decision-ledger.md`, and `rolling-summary.md` to preserve early session captures and SME validation logic.
-3. Initialize Architectural Decision Records (`/docs/adr/`) and session memory tracks using workspace templates.
+3. Initialize Architectural Decision Records (`/docs/ADRs/`) and session memory tracks using workspace templates.
 
 ### STEP 6: Progressive Vertical Slice Migration (`vibe-slice-migrator`)
 1. Select vertical slices, analyze Migration Risk, and apply selected Reengineering Mode.

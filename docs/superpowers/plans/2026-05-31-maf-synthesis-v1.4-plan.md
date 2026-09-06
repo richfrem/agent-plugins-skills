@@ -5,7 +5,7 @@
 **Goal:** Patch six security defects in the v1.3 control plane, port two MAF-validated patterns to the Python dispatch layer.
 
 **Spec:** `docs/superpowers/specs/2026-05-31-maf-synthesis-v1.4-spec.md`  
-**ADR:** `ADRs/007_maf_adapter_runtime_decision.md`  
+**ADR:** `docs/ADRs/007_maf_adapter_runtime_decision.md`  
 **v1.5 scope (deferred):** OpenTelemetry, AGT adoption, per-agent skill scoping, HarnessAgent evaluation
 
 ---

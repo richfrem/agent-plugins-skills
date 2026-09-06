@@ -197,7 +197,7 @@ Enforce budget controls directly inside `state_engine.py` during leasing queries
 
 ## 5. Approaches & Trade-Off Analysis
 
-A formal Architecture Decision Record (ADR) will be compiled under `docs/adr/ADR-001-sqlite-path-strategy.md` to analyze path allocation and error recovery options.
+A formal Architecture Decision Record (ADR) will be compiled under `docs/ADRs/008_sqlite_path_strategy.md` to analyze path allocation and error recovery options.
 
 | Dimension | Approach A: Dynamic Path | Approach B: Fixed Path + Fallback | Approach C: Hardened Fixed Path & Fail-Closed (Selected) |
 | :--- | :--- | :--- | :--- |

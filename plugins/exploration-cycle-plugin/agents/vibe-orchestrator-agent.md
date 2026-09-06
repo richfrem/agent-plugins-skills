@@ -177,7 +177,7 @@ Isolate high-value business logic from side effects.
 Prepare the target layout.
 1. Delegate to the `vibe-spec-packager` skill to compile the specifications into a unified spec-kit and bootstrap the clean codebase repository sandbox structure.
 2. Partition the `/session-memory/` directory into 7 dedicated ledgers using standard templates: `rolling-summary.md`, `domain-invariants.md`, `decision-ledger.md`, `ambiguity-ledger.md`, `certification-ledger.md`, `artifact-ledger.md`, and `context-budget-tracker.md`. Populate the current state, invariants, and initial token/cost metrics immediately.
-3. Initialize Architectural Decision Records under `/docs/adr/` utilizing the workspace templates.
+3. Initialize Architectural Decision Records under `/docs/ADRs/` utilizing the workspace templates.
 4. Expose standard Port interfaces for database and network connections.
 
 ### PHASE 7: Vertical Slice Migration & Safety Verification (`vibe-slice-migrator`)

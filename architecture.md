@@ -130,7 +130,7 @@ Business discovery workflow (Path 1: pre-build discovery; Path 2: vibe-coded-pro
 migration). Backed by a hardened Python control plane in `scripts/`: `dispatch.py`,
 `state_engine.py` (SQLite, transactional, WAL), `sandbox_runner.py` (process sandboxing, HMAC-signed
 envelopes, approval gating). v1.3 hardened this to stdlib-only; v1.4 work is in progress. Any change
-to these three files requires reading `ADRs/007_maf_adapter_runtime_decision.md` and the v1.4 spec
+to these three files requires reading `docs/ADRs/007_maf_adapter_runtime_decision.md` and the v1.4 spec
 first — no casual convenience bypasses to the authorization gate or path enforcement.
 
 ### 4.8. Plugin: obsidian-wiki-engine (10 skills)
