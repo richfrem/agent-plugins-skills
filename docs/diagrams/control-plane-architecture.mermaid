@@ -1,0 +1,47 @@
+flowchart TB
+    Callers["CLI, agents, and Python consumers"]
+    Facade["ControlPlane compatibility facade"]
+
+    State["State-machine validation (adjacency)"]
+    Policy["Unified policy engine (control_plane/policy.py)"]
+
+    PersistencePort["PersistencePort"]
+    CryptoPort["CryptoPort"]
+    FilesystemPort["FilesystemPort"]
+    ModelPort["ModelCatalogPort"]
+    ClockPort["ClockPort"]
+
+    SQLiteAdapter["SqlitePersistenceAdapter"]
+    CryptoAdapter["CryptoAdapter"]
+    FilesystemAdapter["FilesystemAdapter"]
+    ModelAdapter["ModelCatalogAdapter"]
+    ClockAdapter["ClockAdapter"]
+
+    DB[(control_plane.db)]
+    RepoFiles["Repository and verifier files"]
+    CatalogFiles["Model catalog JSON files"]
+    Clock["Wall clock"]
+
+    Callers --> Facade
+
+    Facade --> State
+    Facade --> Policy
+    Facade --> PersistencePort
+    Facade --> CryptoPort
+    Facade --> FilesystemPort
+    Facade --> ModelPort
+    Facade --> ClockPort
+
+    Policy -.->|"requests policy facts via ctx callables"| PersistencePort
+
+    PersistencePort --> SQLiteAdapter
+    CryptoPort --> CryptoAdapter
+    FilesystemPort --> FilesystemAdapter
+    ModelPort --> ModelAdapter
+    ClockPort --> ClockAdapter
+
+    SQLiteAdapter --> DB
+    CryptoAdapter --> RepoFiles
+    FilesystemAdapter --> RepoFiles
+    ModelAdapter --> CatalogFiles
+    ClockAdapter --> Clock
