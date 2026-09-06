@@ -16,9 +16,10 @@ allowed-tools: Bash, Read, Write
 ## Purpose
 Acts as the universal front-door intake for non-trivial engineering tasks across all supported AI agent runtimes. Enforces Proposal Mode (strictly read-only) before code implementation:
 
-1. **Native-First Deferral:** Detects active host runtime capabilities and defers to native environments (e.g. Claude Code native interactive intake or Antigravity planning mode).
-2. **Socratic Defaulting Fallback:** Interrogates the developer 1–3 questions at a time, providing structured options with explicit recommended defaults.
-3. **4-Pillar Specification Compilation:** Compiles the agreed requirements into a standardized `TASK_SPEC.md` contract and initializes the task in the SQLite control plane.
+1. **Native-First Deferral:** Detects active host runtime capabilities and defers to native environments while strictly enforcing conversational cadence.
+2. **Socratic Pacing (ONE Question at a Time):** When interrogating requirements, the agent MUST ask only ONE question per turn with structured options and an explicit `[Recommended]` default. Never dump multiple questions simultaneously or answer on behalf of the user.
+3. **Draft Spec & Implementation Plan Compilation:** Compiles the agreed requirements into a draft `TASK_SPEC.md` and `implementation_plan.md` in state `DRAFT_PLAN`.
+4. **Multi-Agent Review Stage Gate (User-Controlled):** After draft spec compilation, explicitly asks the user whether they want to generate an external review bundle (via `context-bundler`) for multi-model critique in browser, or skip directly to approval.
 
 ---
 
@@ -53,9 +54,29 @@ python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --
 python3 scripts/agent_control.py transition --task-id "<task-id>" --to "INTERVIEW" --reason "Beginning Socratic intake"
 ```
 
-### 3. Transition to Peer Review Gate
-Once `TASK_SPEC.md` is compiled:
+### 3. Transition to Draft Plan & Multi-Agent Review Gate
+Once the 1-question-at-a-time interview concludes, compile the draft spec and plan, then transition:
 ```bash
-python3 scripts/agent_control.py transition --task-id "<task-id>" --to "PLAN_REVIEW" --reason "4-Pillar Spec compiled"
+python3 scripts/agent_control.py transition --task-id "<task-id>" --to "DRAFT_PLAN" --reason "Draft spec and plan compiled from interview"
 ```
-Proceed to clean-context review via `critical-auditor` before requesting human approval.
+
+Next, present the **User Stage Gate**:
+> *"Would you like to run the Multi-Agent Review Phase (generate an external review bundle for browser models), or skip review and proceed directly to implementation approval?"*
+
+#### Path A: User Chooses Multi-Agent Review
+Transition to `MULTI_AGENT_REVIEW`:
+```bash
+python3 scripts/agent_control.py transition --task-id "<task-id>" --to "MULTI_AGENT_REVIEW" --reason "User requested multi-agent review bundle"
+```
+Invoke `context-bundler` to package:
+- Target files: `docs/plans/<task-id>-spec.md`, `implementation_plan.md`, plus relevant architectural references.
+- Persona template: `assets/templates/plan-critique-reviewer.md` or Multi-Persona Fan-Out.
+- Output location: Saved strictly to a gitignored subfolder: `temp/review_<task-id>/`.
+- Present the prompt and `.md` bundle path to the user to copy-paste into external browser models (ChatGPT, Claude Web, Grok).
+- Ingest external model feedback, iterate on spec/plan, and once aligned, transition to `AWAITING_APPROVAL`.
+
+#### Path B: User Skips Multi-Agent Review
+Transition directly to `AWAITING_APPROVAL`:
+```bash
+python3 scripts/agent_control.py transition --task-id "<task-id>" --to "AWAITING_APPROVAL" --reason "User opted to skip multi-agent review gate"
+```
