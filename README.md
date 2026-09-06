@@ -10,6 +10,7 @@ A strictly cross-platform (Windows, Mac, Ubuntu) library — the universal upstr
 > ```bash
 > uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 > ```
+> **Cloned this repo directly (contributing/developing)?** After installing, run [START_HERE.md](./START_HERE.md) — it covers one-time Agentic OS substrate setup (control plane, git hooks, memory) on first use, then bootstraps session context every time after.
 
 ---
 
