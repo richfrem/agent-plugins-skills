@@ -196,12 +196,67 @@ CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS valid_transitions (
+    from_state TEXT,
+    to_state TEXT NOT NULL,
+    PRIMARY KEY (from_state, to_state)
+);
+
+CREATE TABLE IF NOT EXISTS transition_violations (
+    violation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL,
+    attempted_from_state TEXT,
+    attempted_to_state TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);
+
+-- issue-523: DB-level backstop enforcing legal state transitions on raw SQL writes that
+-- bypass ControlPlane/PersistencePort entirely. Adjacency-legality only (see
+-- docs/plans/issue-523-trigger-enforcement-spec.md guardrail table) — not a reimplementation
+-- of policy.py's dynamic gate checks. Reverts silently (no SQL error), logs to
+-- transition_violations. Both state and updated_at are restored (finding #7).
+CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
+AFTER UPDATE ON tasks
+WHEN NEW.state != OLD.state
+ AND NOT EXISTS (
+    SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
+ )
+BEGIN
+    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+    VALUES (OLD.task_id, OLD.state, NEW.state);
+    UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
+END;
+
+-- issue-523: closes the cheaper INSERT/DELETE+INSERT bypass identified by external security
+-- review (finding #5) — deletes an illegally-seeded initial-state row. Revised from an
+-- original coerce-to-INTAKE design: coercing via a corrective UPDATE fired
+-- enforce_valid_transition (e.g. DONE -> INTAKE isn't a legal edge), which reverted the
+-- coercion right back, silently defeating the fix. Delete avoids the UPDATE trigger
+-- entirely. This does NOT reverse the UPDATE trigger's own coerce-not-delete decision — a
+-- freshly-inserted illegal row has no accumulated transitions/receipts/decisions to protect,
+-- unlike an existing task record (see spec guardrail table).
+CREATE TRIGGER IF NOT EXISTS enforce_valid_initial_state
+AFTER INSERT ON tasks
+WHEN NOT EXISTS (
+    SELECT 1 FROM valid_transitions WHERE from_state IS NULL AND to_state = NEW.state
+)
+BEGIN
+    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+    VALUES (NEW.task_id, NULL, NEW.state);
+    DELETE FROM tasks WHERE task_id = NEW.task_id;
+END;
 """
 
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
+
+# issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
+# from TransitionRegistry (which only declares state-to-state edges among existing states, not
+# initial states) — this is the closest available source of truth for the INSERT-side trigger.
+LEGAL_INITIAL_STATES = ["INTAKE"]
 
 CHILD_TABLES = [
     "task_transitions",
@@ -232,6 +287,40 @@ SCHEMA_MIGRATIONS = [
         bound_transition_id INTEGER REFERENCES task_transitions(transition_id)
     );""",
     "CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);",
+    # Migration: add valid_transitions/transition_violations tables + enforcement triggers (v5)
+    """CREATE TABLE IF NOT EXISTS valid_transitions (
+        from_state TEXT,
+        to_state TEXT NOT NULL,
+        PRIMARY KEY (from_state, to_state)
+    );""",
+    """CREATE TABLE IF NOT EXISTS transition_violations (
+        violation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id TEXT NOT NULL,
+        attempted_from_state TEXT,
+        attempted_to_state TEXT NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );""",
+    """CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
+    AFTER UPDATE ON tasks
+    WHEN NEW.state != OLD.state
+     AND NOT EXISTS (
+        SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
+     )
+    BEGIN
+        INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+        VALUES (OLD.task_id, OLD.state, NEW.state);
+        UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
+    END;""",
+    """CREATE TRIGGER IF NOT EXISTS enforce_valid_initial_state
+    AFTER INSERT ON tasks
+    WHEN NOT EXISTS (
+        SELECT 1 FROM valid_transitions WHERE from_state IS NULL AND to_state = NEW.state
+    )
+    BEGIN
+        INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+        VALUES (NEW.task_id, NULL, NEW.state);
+        DELETE FROM tasks WHERE task_id = NEW.task_id;
+    END;""",
 ]
 
 
@@ -314,8 +403,31 @@ class SqlitePersistenceAdapter(PersistencePort):
                     (CURRENT_SCHEMA_VERSION,)
                 )
                 conn.commit()
+
+            self._sync_valid_transitions(conn)
         finally:
             conn.close()
+
+    def _sync_valid_transitions(self, conn: sqlite3.Connection) -> None:
+        """issue-523: resyncs valid_transitions from TransitionRegistry.get_all_edges() plus
+        LEGAL_INITIAL_STATES (as from_state IS NULL rows) on every ensure_schema() call —
+        self-maintaining, zero manual migration step per DAG change (spec guardrail table).
+        Uses parameterized INSERTs, not string-formatted SQL (finding #1)."""
+        from control_plane.registry import TransitionRegistry
+        registry = TransitionRegistry.load_default()
+        edges = registry.get_all_edges()
+
+        conn.execute("BEGIN IMMEDIATE;")
+        try:
+            conn.execute("DELETE FROM valid_transitions;")
+            conn.executemany(
+                "INSERT INTO valid_transitions (from_state, to_state) VALUES (?, ?)",
+                list(edges) + [(None, s) for s in LEGAL_INITIAL_STATES]
+            )
+            conn.execute("COMMIT;")
+        except Exception:
+            conn.execute("ROLLBACK;")
+            raise
 
     def _schema_needs_rebuild(self, conn: sqlite3.Connection) -> bool:
         """Detects a stale schema_version, a legacy tasks schema, or FK-corrupted/orphaned
@@ -415,6 +527,20 @@ class SqlitePersistenceAdapter(PersistencePort):
 
             conn.executescript(SCHEMA_SQL)
 
+            # issue-523: ALTER TABLE RENAME re-points existing triggers on `tasks` to follow
+            # the rename (to `_tasks_migrating`) rather than dropping them — so both
+            # enforcement triggers are now silently bound to the migrating table, not the
+            # fresh `tasks` just created by SCHEMA_SQL above. Left alone, this causes two
+            # distinct failures found empirically: (a) enforce_valid_initial_state would fire
+            # on every bulk row-copy INSERT below, wrongly DELETING every already-progressed
+            # task; (b) enforce_valid_transition silently vanishes entirely once
+            # `_tasks_migrating` is dropped at the end of the copy loop, since SQLite drops a
+            # table's triggers along with it — leaving UPDATE-side enforcement permanently
+            # disabled after every rebuild. Drop both explicitly here, recreate both together
+            # once real rows are back in place under the correct table.
+            conn.execute("DROP TRIGGER IF EXISTS enforce_valid_initial_state;")
+            conn.execute("DROP TRIGGER IF EXISTS enforce_valid_transition;")
+
             for table in ALL_REBUILD_TABLES:
                 migrating_name = f"_{table}_migrating"
                 migrating_exists = conn.execute(
@@ -427,6 +553,32 @@ class SqlitePersistenceAdapter(PersistencePort):
             if orphan_exists:
                 self._merge_orphaned_tasks_old(conn)
                 conn.execute('DROP TABLE "_tasks_old_merge";')
+
+            conn.execute("""
+                CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
+                AFTER UPDATE ON tasks
+                WHEN NEW.state != OLD.state
+                 AND NOT EXISTS (
+                    SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
+                 )
+                BEGIN
+                    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+                    VALUES (OLD.task_id, OLD.state, NEW.state);
+                    UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
+                END;
+            """)
+            conn.execute("""
+                CREATE TRIGGER IF NOT EXISTS enforce_valid_initial_state
+                AFTER INSERT ON tasks
+                WHEN NOT EXISTS (
+                    SELECT 1 FROM valid_transitions WHERE from_state IS NULL AND to_state = NEW.state
+                )
+                BEGIN
+                    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+                    VALUES (NEW.task_id, NULL, NEW.state);
+                    DELETE FROM tasks WHERE task_id = NEW.task_id;
+                END;
+            """)
 
             conn.execute("DELETE FROM schema_version;")
             conn.execute("INSERT INTO schema_version (version) VALUES (?);", (CURRENT_SCHEMA_VERSION,))
