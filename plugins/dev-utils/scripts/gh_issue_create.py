@@ -90,6 +90,13 @@ def create_issue(
     Returns:
         Dict containing payload status, validation results, and execution output.
     """
+    # 0. Default status label — every issue gets a status:* label so open issues
+    # can be sequenced (status:ready/blocked/needs-spec/...), not just categorized
+    # by tier/risk. Callers who already know the status pass it in `labels`; this
+    # only fills the gap when none was given.
+    if not any(l.startswith("status:") for l in labels):
+        labels = labels + ["status:needs-triage"]
+
     # 1. Secret Scanning
     clean_title, title_secrets = scan_for_secrets(title)
     clean_body, body_secrets = scan_for_secrets(body)
