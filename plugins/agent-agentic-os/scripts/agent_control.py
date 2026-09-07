@@ -422,6 +422,106 @@ class ControlPlane:
 
         self._persistence.update_worktree_fields(task_id, worktree_path, worktree_branch, worktree_state)
 
+    def verify_commit(self, branch: str, staged_files: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Verifies whether git commit is authorized on `branch` given `staged_files`.
+        
+        Returns:
+            Dict containing {"status": "ALLOWED"|"BLOCKED", "task_id": ..., "state": ..., "message": ...}
+        Raises:
+            PersistenceInvariantViolation if blocked and callers don't catch.
+        """
+        # If main/master or untracked branch, allow
+        if branch in ("main", "master", ""):
+            return {"status": "ALLOWED", "branch": branch, "message": "Non-task branch bypass"}
+
+        task = self._persistence.get_task_by_worktree_branch(branch) if hasattr(self._persistence, "get_task_by_worktree_branch") else None
+        if task is None:
+            # Fallback direct lookup via connection if adapter doesn't have specialized method
+            conn = self._persistence.get_connection()
+            try:
+                row = conn.execute(
+                    "SELECT task_id, state FROM tasks WHERE worktree_branch = ? ORDER BY created_at DESC LIMIT 1",
+                    (branch,)
+                ).fetchone()
+                if row:
+                    task = {"task_id": row["task_id"], "state": row["state"]}
+            finally:
+                conn.close()
+
+        if task is None:
+            return {"status": "ALLOWED", "branch": branch, "task_id": None, "message": "Untracked branch (ungated)"}
+
+        task_id = task["task_id"]
+        task_state = task["state"]
+
+        def _validate_history() -> Optional[str]:
+            conn = self._persistence.get_connection()
+            try:
+                # 1. Check transition_violations
+                viol = conn.execute(
+                    "SELECT violation_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id = ?",
+                    (task_id,)
+                ).fetchone()
+                if viol:
+                    return f"Illegal transition violation recorded in control plane ({viol['attempted_from_state']} -> {viol['attempted_to_state']})"
+
+                # 2. Check task_transitions against valid_transitions
+                transitions = conn.execute(
+                    "SELECT from_state, to_state FROM task_transitions WHERE task_id = ? ORDER BY transition_id ASC",
+                    (task_id,)
+                ).fetchall()
+                if not transitions:
+                    return f"No transition history recorded for task '{task_id}'"
+
+                for t in transitions:
+                    f_st, t_st = t["from_state"], t["to_state"]
+                    if f_st == "NONE" and t_st == "INTAKE":
+                        continue
+                    match = conn.execute(
+                        "SELECT 1 FROM valid_transitions WHERE from_state = ? AND to_state = ?",
+                        (f_st, t_st)
+                    ).fetchone()
+                    if not match:
+                        return f"Transition '{f_st}' -> '{t_st}' is not in valid_transitions table"
+
+                # 3. Check transition chain continuity
+                first_f, first_t = transitions[0]["from_state"], transitions[0]["to_state"]
+                if not ((first_f == "NONE" and first_t == "INTAKE") or (first_f == "INTAKE")):
+                    return f"Transition history does not begin at INTAKE (started at {first_f} -> {first_t})"
+
+                curr_chain_state = first_t
+                for t in transitions[1:]:
+                    if t["from_state"] != curr_chain_state:
+                        return f"Broken transition chain: expected from_state '{curr_chain_state}', found '{t['from_state']}'"
+                    curr_chain_state = t["to_state"]
+
+                if curr_chain_state != task_state:
+                    return f"Current task state '{task_state}' does not match final transition state '{curr_chain_state}'"
+
+                return None
+            finally:
+                conn.close()
+
+        op_ctx = {
+            "task_id": task_id,
+            "task_state": task_state,
+            "staged_files": staged_files or [],
+            "validate_transition_history": _validate_history,
+        }
+
+        try:
+            _policy.evaluate_operation(op_ctx, "commit")
+        except _policy.PolicyViolation as e:
+            raise PersistenceInvariantViolation(str(e)) from e
+
+        return {
+            "status": "ALLOWED",
+            "task_id": task_id,
+            "state": task_state,
+            "branch": branch,
+            "message": "Commit authorized"
+        }
+
     def log_asymmetric_persistence(self, task_id: str, destination: str, status: str, details: str):
         """Logs asymmetric Layer 2 persistence entries into the SQLite audit table."""
         self._persistence.insert_asymmetric_persistence(task_id, destination, status, details)
@@ -622,6 +722,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
 
+    p_vc = sub.add_parser("verify-commit")
+    p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
+    p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
+
     return parser
 
 
@@ -642,7 +746,13 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             interactive=getattr(args, "interactive", False),
             provided_answers=answers_dict,
             approval_decision=getattr(args, "approval", None),
+            skip_review=getattr(args, "skip_review", False),
+            skip_reason=getattr(args, "skip_reason", None),
         )
+        print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
+    elif args.subcommand == "record-critic-review":
+        cp.record_critic_review(args.task_id, args.iteration, args.model, args.verdict, args.findings)
+        print(f"Critic review recorded for task {args.task_id} (verdict={args.verdict}).")
     elif args.subcommand == "lock-verifiers":
         paths = [Path(p.strip()) for p in args.paths.split(",")]
         cp.lock_verifiers(args.task_id, paths)
@@ -692,6 +802,9 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             reason=args.reason,
         )
         print(f"Recovery approval recorded: {token}")
+    elif args.subcommand == "verify-commit":
+        res = cp.verify_commit(args.branch, args.staged_files)
+        print(f"Commit check: {res['status']} ({res['message']})")
 
 
 def _dispatch_gate_record_command(cp: ControlPlane, args: argparse.Namespace):

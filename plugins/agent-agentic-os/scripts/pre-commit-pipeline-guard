@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# pre-commit-pipeline-guard — Deterministic Pipeline Execution & Stage Gate
+# ==============================================================================
+# Purpose:
+#   Enforces that no git commit may proceed from an active task branch unless:
+#   1. The task has reached an authorized implementation stage in SQLite control plane:
+#      IN_WORKTREE, WORKTREE_REVIEW, MULTI_AGENT_CODE_REVIEW, VERIFY_EXIT, or DONE;
+#      OR the commit contains exclusively planning documents under docs/plans/ or docs/superpowers/.
+#   2. If a session began in the control plane, all recorded state transitions in
+#      task_transitions match valid_transitions, transition continuity from INTAKE
+#      is intact, and no entries exist in transition_violations.
+# ==============================================================================
+
+set -e
+
+# Find repo root / git common dir (handles worktrees correctly)
+COMMON_GIT_DIR="$(git rev-parse --git-common-dir 2>/dev/null || true)"
+if [ -n "$COMMON_GIT_DIR" ]; then
+    REPO_ROOT="$(cd "$COMMON_GIT_DIR/.." 2>/dev/null && pwd)"
+else
+    REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+fi
+
+DB_PATH="$REPO_ROOT/context/control_plane.db"
+
+# If control plane database does not exist, pass through with warning
+if [ ! -f "$DB_PATH" ]; then
+    echo "⚠️  WARNING: pre-commit-pipeline-guard found no control_plane.db — commit is ungated (no task registered for this repo)." >&2
+    exit 0
+fi
+
+# Determine current branch
+CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
+
+# Allow commit for main/master or detached HEAD directly
+if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ] || [ -z "$CURRENT_BRANCH" ]; then
+    exit 0
+fi
+
+# Reject branch names outside allowlist to prevent SQL injection
+if ! echo "$CURRENT_BRANCH" | grep -qE '^[A-Za-z0-9._/-]+$'; then
+    echo "⚠️  WARNING: pre-commit-pipeline-guard found a branch name with disallowed characters ('$CURRENT_BRANCH') — commit is ungated (cannot safely query the control plane)." >&2
+    exit 0
+fi
+
+# Query SQLite control plane for task on this branch
+QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
+TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
+
+# If no task associated with this branch, permit commit with warning
+if [ -z "$TASK_ROW" ]; then
+    echo "⚠️  WARNING: pre-commit-pipeline-guard found no task registered for branch '$CURRENT_BRANCH' — commit is ungated." >&2
+    exit 0
+fi
+
+TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
+TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
+
+# Check staged files
+STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACM || true)"
+
+# Handle planning / proposal states
+case "$TASK_STATE" in
+    INTAKE|INTERVIEW|DRAFT_PLAN|PLAN_REVIEW|MULTI_AGENT_REVIEW|AWAITING_APPROVAL)
+        # If staged files exist, check if all of them are planning docs
+        if [ -n "$STAGED_FILES" ]; then
+            NON_PLAN_FILES=$(echo "$STAGED_FILES" | grep -vE '^(docs/plans/|docs/superpowers/)' || true)
+            if [ -n "$NON_PLAN_FILES" ]; then
+                echo ""
+                echo "❌ GIT COMMIT BLOCKED: Proposal Mode Violation!"
+                echo ""
+                echo "   Branch:      $CURRENT_BRANCH"
+                echo "   Task ID:     $TASK_ID"
+                echo "   Task State:  $TASK_STATE"
+                echo ""
+                echo "   Production code modifications are strictly prohibited while in proposal/planning mode."
+                echo "   Non-planning files staged for commit:"
+                echo "$NON_PLAN_FILES" | sed 's/^/   • /'
+                echo ""
+                echo "   To advance through the pipeline:"
+                echo "   1. Complete Socratic interview and draft spec/plan in docs/plans/"
+                echo "   2. Obtain human approval: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id $TASK_ID --to APPROVED --approval APPROVAL --actor human"
+                echo "   3. Create worktree: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id $TASK_ID --to IN_WORKTREE --actor controller"
+                echo ""
+                exit 1
+            fi
+        fi
+        # If only planning files are staged, permit commit
+        exit 0
+        ;;
+    IN_WORKTREE|WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT|DONE)
+        # Verify complete pipeline execution if session began in control plane:
+        # Check transition_violations
+        VIOLATIONS_COUNT="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_violations WHERE task_id = '$TASK_ID';" 2>/dev/null || echo "0")"
+        if [ "$VIOLATIONS_COUNT" -gt 0 ]; then
+            echo ""
+            echo "❌ GIT COMMIT BLOCKED: Control Plane Transition Violations Detected!"
+            echo ""
+            echo "   Task ID:     $TASK_ID"
+            echo "   Violations:  $VIOLATIONS_COUNT illegal transition attempt(s) logged in transition_violations table."
+            echo "   Tampering with SQLite state or skipping pipeline stages is strictly prohibited."
+            echo ""
+            exit 1
+        fi
+
+        # Check all transitions against valid_transitions
+        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+        if [ -z "$TRANSITIONS_ROWS" ]; then
+            echo ""
+            echo "❌ GIT COMMIT BLOCKED: No Transition History Found!"
+            echo ""
+            echo "   Task ID:     $TASK_ID"
+            echo "   No lifecycle transitions recorded in task_transitions table."
+            echo ""
+            exit 1
+        fi
+
+        LAST_TO=""
+        while IFS='|' read -r from_st to_st; do
+            [ -z "$from_st" ] && continue
+            if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
+                LAST_TO="INTAKE"
+                continue
+            fi
+
+            # Check validity in valid_transitions
+            IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
+            if [ "$IS_VALID" -eq 0 ]; then
+                echo ""
+                echo "❌ GIT COMMIT BLOCKED: Invalid State Transition Detected!"
+                echo ""
+                echo "   Task ID:     $TASK_ID"
+                echo "   Edge:        $from_st -> $to_st"
+                echo "   This transition is not present in the valid_transitions table."
+                echo ""
+                exit 1
+            fi
+
+            # Check continuity
+            if [ -n "$LAST_TO" ] && [ "$from_st" != "$LAST_TO" ]; then
+                echo ""
+                echo "❌ GIT COMMIT BLOCKED: Broken Pipeline State Chain!"
+                echo ""
+                echo "   Task ID:     $TASK_ID"
+                echo "   Broken chain: Expected transition from '$LAST_TO', but found transition from '$from_st' to '$to_st'."
+                echo ""
+                exit 1
+            fi
+            LAST_TO="$to_st"
+        done <<< "$TRANSITIONS_ROWS"
+
+        # Check final transition matches current state
+        if [ -n "$LAST_TO" ] && [ "$LAST_TO" != "$TASK_STATE" ]; then
+            echo ""
+            echo "❌ GIT COMMIT BLOCKED: Current State Desynchronized From Transition Log!"
+            echo ""
+            echo "   Task ID:      $TASK_ID"
+            echo "   Table State:  $TASK_STATE"
+            echo "   Log State:    $LAST_TO"
+            echo ""
+            exit 1
+        fi
+
+        exit 0
+        ;;
+    *)
+        echo ""
+        echo "❌ GIT COMMIT BLOCKED: Unauthorized Task State!"
+        echo ""
+        echo "   Branch:      $CURRENT_BRANCH"
+        echo "   Task ID:     $TASK_ID"
+        echo "   Task State:  $TASK_STATE"
+        echo ""
+        echo "   Commits are forbidden in state '$TASK_STATE'."
+        echo ""
+        exit 1
+        ;;
+esac
