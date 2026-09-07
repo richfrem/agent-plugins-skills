@@ -468,6 +468,10 @@ class ControlPlane:
         # Step 4: resolve its exact (from_state, to_state) template
         template = self._transition_registry.get_template(occupancy_trans.from_state, occupancy_trans.to_state)
         if not template:
+            if occupancy_trans.from_state == "NONE":
+                raise PhaseCapabilityDenied(
+                    "Task has not entered any registered phase yet — no capabilities available."
+                )
             raise PhaseCapabilityDenied(
                 f"No registry template found for inbound edge "
                 f"({occupancy_trans.from_state} -> {occupancy_trans.to_state})."

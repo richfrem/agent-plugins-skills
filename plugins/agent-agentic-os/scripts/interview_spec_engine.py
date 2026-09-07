@@ -142,3 +142,7 @@ def render_4pillar_spec(
 ## 4. Objective Definition of Done (DoD)
 {dod_md}
 """
+
+
+if __name__ == "__main__":
+    print(detect_intake_mode())

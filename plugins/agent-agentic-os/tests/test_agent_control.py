@@ -2558,3 +2558,41 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     # 3. Path traversal / outside authorized roots rejected
     assert coord._resolve_artifact_path("docs/plans/../../outside.md", task={"task_id": "t1"}) is None
 
+
+def test_no_prior_transition_history_has_clear_error_message(control_plane):
+    """A task with no capability released yet (occupancy edge NONE -> INTAKE has
+    no registered template) must fail closed with a plain-language message,
+    not the internal 'No registry template found for inbound edge' phrasing."""
+    from agent_control import PhaseCapabilityDenied
+
+    task_id = "task-no-history-001"
+    control_plane.create_task(task_id=task_id, title="No History Task", runtime_tool="claude")
+
+    with pytest.raises(PhaseCapabilityDenied) as exc_info:
+        control_plane.verify_phase_capability(task_id, "plan_write")
+
+    message = str(exc_info.value)
+    assert "no capabilities available" in message.lower()
+    assert "no registry template found" not in message.lower()
+
+
+def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
+    """interview_spec_engine.py must be runnable directly (not just importable)
+    and print the detect_intake_mode() result to stdout."""
+    import subprocess
+
+    script_path = SCRIPTS_DIR / "interview_spec_engine.py"
+    env = {k: v for k, v in os.environ.items() if k not in (
+        "GITHUB_COPILOT_CLI", "COPILOT_CLI",
+        "CLAUDE_CODE_ENTRY", "CLAUDE_PROJECT_DIR",
+        "ANTIGRAVITY_IDE", "ANTIGRAVITY_AGENT",
+    )}
+
+    result = subprocess.run(
+        [sys.executable, str(script_path)],
+        capture_output=True, text=True, env=env,
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == "EXECUTE_SOCRATIC_FALLBACK"
+
