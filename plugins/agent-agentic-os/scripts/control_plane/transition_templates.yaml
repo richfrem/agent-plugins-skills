@@ -814,9 +814,13 @@ templates:
   - question_id: confirm_review_in_worktree_to_worktree_review
     question: Submit artifacts for review in WORKTREE_REVIEW?
     options:
-    - Proceed with review [Recommended]
-    - Continue revising prior stage
-    default: Proceed with review [Recommended]
+    - No, continue revising prior stage
+    - Yes, proceed to WORKTREE_REVIEW — skip review entirely
+    - Yes, single-agent review — sub-agent (internal)
+    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1418,3 +1422,32 @@ templates:
   authority:
     type: human_decision
     explanation: Advancing to PLAN_REVIEW requires explicit human review and authorization gate decision.
+- transition_id: reset_to_intake
+  from_state: "*"
+  to_state: INTAKE
+  purpose: Recover a task whose control-plane record has drifted or desynced from reality (e.g. a raw write bypassing the normal transition path) by resetting it to INTAKE for a full re-run through every gate.
+  checklist:
+  - Current task state is not INTAKE
+  - Human has provided a genuine, interactive justification for the reset
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: reset_justification
+    question: 'Justify this RESET to INTAKE (e.g. "control-plane record drifted from actual progress after a raw write bypassed the normal transition path; resetting to re-run the full pipeline").'
+    options: []
+    default: ''
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition to INTAKE (reset) denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: A human must provide a genuine, interactive justification before a drifted task record can be reset to INTAKE.

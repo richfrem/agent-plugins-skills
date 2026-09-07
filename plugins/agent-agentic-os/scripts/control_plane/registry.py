@@ -5,7 +5,8 @@ control_plane/registry.py — TransitionRegistry Domain Component (issue-529 Sli
 Purpose:
     Loads, schema-validates, and serves the single authoritative transition registry
     (), enforcing 1:1 bidirectional parity with
-    state_machine.ALLOWED_TRANSITIONS (52 total edges).
+    state_machine.ALLOWED_TRANSITIONS (edge count derived from that table at
+    runtime, not a fixed literal — see test_registry_covers_every_allowed_edge).
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Registry (domain layer)
@@ -16,7 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 import yaml
 
-from control_plane.state_machine import ALLOWED_TRANSITIONS
+from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
 
 
 class TransitionRegistryError(Exception):
@@ -142,52 +143,74 @@ class TransitionRegistry:
             raise TransitionRegistryError(f"'templates' in {path} must be a list")
 
         parsed: List[TransitionTemplate] = []
-        for idx, item in enumerate(raw_templates):
-            if not isinstance(item, dict):
+        for idx, raw_item in enumerate(raw_templates):
+            if not isinstance(raw_item, dict):
                 raise TransitionRegistryError(f"Template at index {idx} must be a mapping")
 
-            for field in REQUIRED_TEMPLATE_FIELDS:
-                if field not in item:
-                    raise TransitionRegistryError(f"Missing required field '{field}' in template index {idx}")
+            # Wildcard expansion: from_state: "*" fans out into one literal template
+            # per non-INTAKE canonical state (issue: reset_to_intake recovery edge).
+            # INTAKE is excluded — INTAKE -> INTAKE is a no-op self-loop with no
+            # recovery value.
+            if raw_item.get("from_state") == "*":
+                base_transition_id = raw_item.get("transition_id", f"wildcard_{idx}")
+                wildcard_to_state = raw_item.get("to_state")
+                existing_edges = {(t.from_state, t.to_state) for t in parsed}
+                expanded_items = []
+                for state in CANONICAL_STATES:
+                    if state == "INTAKE":
+                        continue
+                    if (state, wildcard_to_state) in existing_edges:
+                        continue
+                    expanded = dict(raw_item)
+                    expanded["from_state"] = state
+                    expanded["transition_id"] = f"{base_transition_id}__from_{state}"
+                    expanded_items.append(expanded)
+            else:
+                expanded_items = [raw_item]
 
-            if not isinstance(item["checklist"], list) or len(item["checklist"]) == 0:
-                raise TransitionRegistryError(f"Field 'checklist' must be a non-empty list in template '{item.get('transition_id')}'")
-            if not isinstance(item["required_artifacts"], list):
-                raise TransitionRegistryError(f"Field 'required_artifacts' must be a list in template '{item.get('transition_id')}'")
-            if not isinstance(item["deterministic_checks"], list):
-                raise TransitionRegistryError(f"Field 'deterministic_checks' must be a list in template '{item.get('transition_id')}'")
-            if not isinstance(item["human_questions"], list):
-                raise TransitionRegistryError(f"Field 'human_questions' must be a list in template '{item.get('transition_id')}'")
-            if not isinstance(item["approval"], dict):
-                raise TransitionRegistryError(f"Field 'approval' must be a dict in template '{item.get('transition_id')}'")
-            if not isinstance(item["skip"], dict):
-                raise TransitionRegistryError(f"Field 'skip' must be a dict in template '{item.get('transition_id')}'")
-            if not isinstance(item.get("authority"), dict):
-                raise TransitionRegistryError(f"Field 'authority' must be a dict in template '{item.get('transition_id')}'")
-            if not isinstance(item["capabilities_released"], list):
-                raise TransitionRegistryError(f"Field 'capabilities_released' must be a list in template '{item.get('transition_id')}'")
-            if not isinstance(item["capabilities_prohibited"], list):
-                raise TransitionRegistryError(f"Field 'capabilities_prohibited' must be a list in template '{item.get('transition_id')}'")
-            if not isinstance(item["denial_message"], str) or len(item["denial_message"]) == 0:
-                raise TransitionRegistryError(f"Field 'denial_message' must be a non-empty string in template '{item.get('transition_id')}'")
+            for item in expanded_items:
+                for field in REQUIRED_TEMPLATE_FIELDS:
+                    if field not in item:
+                        raise TransitionRegistryError(f"Missing required field '{field}' in template index {idx}")
 
-            t = TransitionTemplate(
-                transition_id=item["transition_id"],
-                from_state=item["from_state"],
-                to_state=item["to_state"],
-                purpose=item["purpose"],
-                checklist=item["checklist"],
-                required_artifacts=item["required_artifacts"],
-                deterministic_checks=item["deterministic_checks"],
-                human_questions=item["human_questions"],
-                approval=item["approval"],
-                skip=item["skip"],
-                authority=item["authority"],
-                capabilities_released=item["capabilities_released"],
-                capabilities_prohibited=item["capabilities_prohibited"],
-                denial_message=item["denial_message"],
-            )
-            parsed.append(t)
+                if not isinstance(item["checklist"], list) or len(item["checklist"]) == 0:
+                    raise TransitionRegistryError(f"Field 'checklist' must be a non-empty list in template '{item.get('transition_id')}'")
+                if not isinstance(item["required_artifacts"], list):
+                    raise TransitionRegistryError(f"Field 'required_artifacts' must be a list in template '{item.get('transition_id')}'")
+                if not isinstance(item["deterministic_checks"], list):
+                    raise TransitionRegistryError(f"Field 'deterministic_checks' must be a list in template '{item.get('transition_id')}'")
+                if not isinstance(item["human_questions"], list):
+                    raise TransitionRegistryError(f"Field 'human_questions' must be a list in template '{item.get('transition_id')}'")
+                if not isinstance(item["approval"], dict):
+                    raise TransitionRegistryError(f"Field 'approval' must be a dict in template '{item.get('transition_id')}'")
+                if not isinstance(item["skip"], dict):
+                    raise TransitionRegistryError(f"Field 'skip' must be a dict in template '{item.get('transition_id')}'")
+                if not isinstance(item.get("authority"), dict):
+                    raise TransitionRegistryError(f"Field 'authority' must be a dict in template '{item.get('transition_id')}'")
+                if not isinstance(item["capabilities_released"], list):
+                    raise TransitionRegistryError(f"Field 'capabilities_released' must be a list in template '{item.get('transition_id')}'")
+                if not isinstance(item["capabilities_prohibited"], list):
+                    raise TransitionRegistryError(f"Field 'capabilities_prohibited' must be a list in template '{item.get('transition_id')}'")
+                if not isinstance(item["denial_message"], str) or len(item["denial_message"]) == 0:
+                    raise TransitionRegistryError(f"Field 'denial_message' must be a non-empty string in template '{item.get('transition_id')}'")
+
+                t = TransitionTemplate(
+                    transition_id=item["transition_id"],
+                    from_state=item["from_state"],
+                    to_state=item["to_state"],
+                    purpose=item["purpose"],
+                    checklist=item["checklist"],
+                    required_artifacts=item["required_artifacts"],
+                    deterministic_checks=item["deterministic_checks"],
+                    human_questions=item["human_questions"],
+                    approval=item["approval"],
+                    skip=item["skip"],
+                    authority=item["authority"],
+                    capabilities_released=item["capabilities_released"],
+                    capabilities_prohibited=item["capabilities_prohibited"],
+                    denial_message=item["denial_message"],
+                )
+                parsed.append(t)
 
         return cls(parsed)
 

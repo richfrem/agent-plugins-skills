@@ -889,7 +889,9 @@ def test_critic_review_iteration_not_capped_at_three(control_plane):
 
 def test_registry_covers_every_allowed_edge():
     """Test 1: TransitionRegistry loads transition_templates.yaml and covers every
-    edge in state_machine.ALLOWED_TRANSITIONS (52 edges total)."""
+    edge in state_machine.ALLOWED_TRANSITIONS, dynamically — count derived from
+    the table itself, not a hardcoded literal (edge count changes whenever
+    ALLOWED_TRANSITIONS does, e.g. reset_to_intake's wildcard expansion)."""
     from control_plane.registry import TransitionRegistry
     from control_plane.state_machine import ALLOWED_TRANSITIONS
 
@@ -898,13 +900,11 @@ def test_registry_covers_every_allowed_edge():
         for to_state in to_states:
             expected_edges.add((from_state, to_state))
 
-    assert len(expected_edges) == 52
-
     registry = TransitionRegistry.load_default()
     registered_edges = registry.get_all_edges()
 
     assert expected_edges == registered_edges
-    assert len(registry) == 52
+    assert len(registry) == len(expected_edges)
 
 
 def test_registry_has_no_orphan_entries():
@@ -2431,11 +2431,16 @@ def test_run_exit_verification_verifier_allowlist_and_worktree_cwd_binding(contr
 
 
 def test_transition_templates_semantic_quality_no_boilerplate():
-    """Architecture Review Finding 4: All 52 templates must pass the semantic-quality contract without generic boilerplate."""
+    """Architecture Review Finding 4: All templates must pass the semantic-quality
+    contract without generic boilerplate. Sanity count derived dynamically from
+    ALLOWED_TRANSITIONS (not hardcoded), since edge count changes whenever that
+    table does, e.g. reset_to_intake's wildcard expansion."""
     from control_plane.registry import TransitionRegistry
+    from control_plane.state_machine import ALLOWED_TRANSITIONS
 
+    expected_edge_count = sum(len(to_states) for to_states in ALLOWED_TRANSITIONS.values())
     registry = TransitionRegistry.load_default()
-    assert len(registry) == 52
+    assert len(registry) == expected_edge_count
 
     forbidden_patterns = [
         "Transition task ",
@@ -2523,7 +2528,7 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
         to_state="MULTI_AGENT_CODE_REVIEW",
         actor="tester",
         reason="Proceed with code review",
-        provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Proceed with review [Recommended]"},
+        provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Yes, multi-agent review — sub-agent (internal) [Recommended]"},
     )
     assert rec.to_state == "MULTI_AGENT_CODE_REVIEW"
 
@@ -2553,7 +2558,7 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
             to_state="MULTI_AGENT_CODE_REVIEW",
             actor="tester",
             reason="Attempt with missing spec/plan",
-            provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Proceed with review [Recommended]"},
+            provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Yes, multi-agent review — sub-agent (internal) [Recommended]"},
         )
 
     # 3. Path traversal / outside authorized roots rejected
