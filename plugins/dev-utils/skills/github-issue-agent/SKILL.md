@@ -31,7 +31,7 @@ The `github-issue-agent` skill provides a safe, standardized interface for query
 
 Before any GitHub issue is created or updated, the request passes through three mandatory security and quality gates:
 1. **Secret Redaction Gate** (`redaction_gate.py`): Scans titles and bodies for tokens, API keys, private keys, or credentials. Blocks execution if detected.
-2. **Taxonomy Validation Gate** (`gh_issue_taxonomy_validate.py`): Enforces `issue-taxonomy.json` constraints. Requires `type:*`, `tier:*`, `source:*`, `risk:*`, AND location (`area:*` OR `plugin:*`).
+2. **Taxonomy Validation Gate** (`gh_issue_taxonomy_validate.py`): Enforces `issue-taxonomy.json` constraints. Requires `type:*`, `tier:*`, `source:*`, `risk:*`, AND location (`area:*` OR `plugin:*`). `gh_issue_create.py` auto-appends `status:needs-triage` if the caller didn't already include a `status:*` label — every created issue gets a sequencing signal (`status:needs-triage`/`ready`/`blocked`/`needs-spec`/`accepted-debt`/`duplicate`), not just tier/risk categorization, so open issues can be sequenced without manually re-deriving priority later.
 3. **Evidence Quality Body Validation Gate** (`body_validator.py`): Requires standard structured markdown sections (`## Summary`, `## Observed Behavior`, `## Expected Behavior`, `## Evidence`, `## Impact`).
 
 ---

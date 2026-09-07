@@ -42,7 +42,7 @@ def test_create_issue_dry_run_default():
         assert res["would_execute"] is False
         assert res["action"] == "create_issue"
         assert res["title"] == "Test Issue"
-        assert res["labels"] == labels
+        assert res["labels"] == labels + ["status:needs-triage"]
         assert res["body"] == body
         assert res["redaction_check"] == "passed"
         assert res["body_validation"] == "passed"
@@ -65,10 +65,11 @@ def test_create_issue_live_mode_calls_gh():
             MagicMock(returncode=0, stdout='[{"name": "type:friction"}, {"name": "tier:1-friction"}, '
                                             '{"name": "area:scripts"}, {"name": "source:agent"}, '
                                             '{"name": "risk:low"}]', stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: status:needs-triage (auto-defaulted)
             MagicMock(returncode=0, stdout="https://github.com/owner/repo/issues/101\n", stderr=""),
         ]
         res = create_issue(title="Test Issue", body=body, labels=labels, execute=True)
-        assert mock_run.call_count == 2
+        assert mock_run.call_count == 3
         assert res["would_execute"] is True
         assert res["action"] == "create_issue"
         assert res["output"] == "https://github.com/owner/repo/issues/101"
@@ -93,10 +94,11 @@ def test_create_issue_live_mode_auto_creates_missing_labels():
             MagicMock(returncode=0, stdout="", stderr=""),  # label create: area:scripts
             MagicMock(returncode=0, stdout="", stderr=""),  # label create: source:agent
             MagicMock(returncode=0, stdout="", stderr=""),  # label create: risk:low
+            MagicMock(returncode=0, stdout="", stderr=""),  # label create: status:needs-triage (auto-defaulted)
             MagicMock(returncode=0, stdout="https://github.com/owner/repo/issues/102\n", stderr=""),
         ]
         res = create_issue(title="Test Issue", body=body, labels=labels, execute=True)
-        assert mock_run.call_count == 7
+        assert mock_run.call_count == 8
         assert mock_run.call_args_list[1].args[0][:3] == ["gh", "label", "create"]
         assert res["output"] == "https://github.com/owner/repo/issues/102"
 
