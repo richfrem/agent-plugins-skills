@@ -79,7 +79,7 @@ the manifest:
 
 **No cross-plugin dependencies.** There is no `dependencies` field in the official spec.
 Plugins must be self-contained -- any script a plugin needs must be copied into its own
-`scripts/` directory. See ADR-004.
+`scripts/` directory. 
 ```
 
 **Schema rules:**

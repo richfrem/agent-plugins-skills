@@ -11,7 +11,7 @@ Layer: Investigate / Codify / Audit
 
 Usage Examples:
     pythonheck_plugin_boundaries.py temp/inventory.json --batch all
-    pythonheck_plugin_boundaries.py temp/inventory.json --plugin plugins/adr-manager
+    pythonheck_plugin_boundaries.py temp/inventory.json --plugin plugins/<plugin-name>
 
 Supported Object Types:
     Plugin root file references.
@@ -88,13 +88,13 @@ def get_plugin_root(source_file_path: str) -> Path | None:
     Only returns a root if the file is at PLUGIN LEVEL (not skill level).
 
     Examples (PLUGIN LEVEL - check these):
-      plugins/adr-manager/commands/adr-management.md  plugins/adr-manager/
-      plugins/plugin-installer/hooks/hooks.json  plugins/plugin-installer/
-      plugins/adr-manager/.claude-plugin/plugin.json  plugins/adr-manager/
+      plugins/<plugin-name>/commands/some-command.md  plugins/<plugin-name>/
+      plugins/<plugin-name>/hooks/hooks.json  plugins/<plugin-name>/
+      plugins/<plugin-name>/.claude-plugin/plugin.json  plugins/<plugin-name>/
 
     Examples (SKILL LEVEL - ignore these):
-      plugins/adr-manager/skills/adr-management/SKILL.md  None (skip)
-      .agents/skills/plugin-installer/SKILL.md  None (skip)
+      plugins/<plugin-name>/skills/<skill-name>/SKILL.md  None (skip)
+      .agents/skills/<skill-name>/SKILL.md  None (skip)
     """
     parts = Path(source_file_path).parts
 
@@ -108,7 +108,7 @@ def get_plugin_root(source_file_path: str) -> Path | None:
     if "plugins" in parts:
         idx = list(parts).index("plugins")
         if idx + 1 < len(parts):
-            return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/
+            return Path(*parts[:idx+2])  # e.g., plugins/<plugin-name>/
 
     return None
 

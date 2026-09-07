@@ -252,7 +252,7 @@ If eval returns DISCARD or review reveals gaps:
 
 ---
 
-## Directory Structure (ADR-003 compliance)
+## Directory Structure (Single-Source Policy)
 
 ```
 plugins/<your-plugin>/skills/<skill-slug>/
@@ -267,7 +267,7 @@ plugins/<your-plugin>/skills/<skill-slug>/
 If a reference doc or script is shared with another skill in the same plugin:
 - Canonical file lives at the plugin root `references/` or `scripts/`
 - File-level symlink from the skill's subdirectory points to the canonical source
-- Never duplicate a file -- ADR-003 requires one canonical source per file
+- Never duplicate a file — maintain one authoritative source per asset. Use file-level symlinks only (not directory symlinks) to avoid cross-platform failures during installation.
 
 ---
 

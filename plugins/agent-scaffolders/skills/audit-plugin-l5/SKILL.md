@@ -53,4 +53,12 @@ Always conclude execution with a Source Transparency Declaration explicitly list
 
 ## References
 
-- **Architectural Decision Records (ADRs)** located at `references/*.md`. The L5 Red Team Auditor MUST use these ADRs (especially ADR 001-006) as primary evidence when evaluating architectural maturity and loose coupling. Any deviation from these standards must be flagged as an L4/L5 maturity gap.
+The L5 Red Team Auditor validates plugins against these core architectural principles:
+
+- **Self-Contained Isolation**: Plugins are fully portable and independent. Skills must not depend on sibling plugins, the source repository structure, or external configuration files that won't exist in target installations.
+- **Hub-and-Spoke Script Architecture**: Shared scripts live at the plugin root and are symlinked into skill folders. Zero real files (imposters) are duplicated across skills.
+- **File-Level Symlinks Only**: No directory-level symlinks or hard copies of scripts. The installer will resolve these to physical copies during deployment.
+- **Loose Coupling via Agent Delegation**: Cross-plugin coordination happens through natural language agent skill calls, never through hardcoded Python imports or direct script execution.
+- **Frontmatter & Routing Standards**: Skill names match directories, descriptions are third-person active voice, and routing evals use `should_trigger: true/false` (not legacy boolean schemas).
+
+Any deviation from these principles must be flagged as an L4/L5 maturity gap.

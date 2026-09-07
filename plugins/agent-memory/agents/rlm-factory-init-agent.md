@@ -178,7 +178,7 @@ Write to: `.agent/learning/rlm_profiles.json`
 Write `.agent/learning/rlm_manifest.json`:
 ```json
 {
-  "include": ["README.md", "docs/**/*.md", "architecture/**/*.md", "ADRs/**/*.md"],
+  "include": ["README.md", "docs/**/*.md", "architecture/**/*.md", "docs/ADRs/**/*.md"],
   "exclude": ["node_modules", "__pycache__", ".git"],
   "recursive": true
 }

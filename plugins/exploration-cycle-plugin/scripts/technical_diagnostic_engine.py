@@ -14,7 +14,7 @@ Key Input Dependencies:
 
 Standards:
     - Strictly read-only: Cannot write, stage, or mutate repository files outside temporary diagnostic caches.
-    - Zero cross-plugin imports (ADR-001/004): Interacts with control_plane.db via standard sqlite3.
+    - Self-contained execution: Interacts with control_plane.db via standard sqlite3 only; no cross-plugin Python imports or filesystem coupling.
     - Emits DIAGNOSTIC_BRIEF.md adhering to the upstream interview-spec contract.
 """
 

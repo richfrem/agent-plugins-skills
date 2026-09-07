@@ -83,25 +83,25 @@ Flag references that point OUTSIDE a skill directory.
 python ./check_skill_boundaries.py inventory.json --batch all
 
 # Single skill (by name)
-python ./check_skill_boundaries.py inventory.json --skill adr-management
+python ./check_skill_boundaries.py inventory.json --skill <skill-name>
 
 # Single skill (by path)
-python ./check_skill_boundaries.py inventory.json --skill plugins/adr-manager/skills/adr-management
+python ./check_skill_boundaries.py inventory.json --skill plugins/<plugin-name>/skills/<skill-name>
 ```
 
 **Example violation:**
 ```
-FILE: .agents/skills/adr-management/SKILL.md:45
-  REF: ../../templates/adr-template.md
-  SKILL ROOT: .agents/skills/adr-management/
-  RESOLVES TO: plugins/adr-manager/templates/adr-template.md  ❌ OUTSIDE!
+FILE: .agents/skills/<skill-name>/SKILL.md:45
+  REF: ../../templates/some-template.md
+  SKILL ROOT: .agents/skills/<skill-name>/
+  RESOLVES TO: plugins/<plugin-name>/templates/some-template.md  ❌ OUTSIDE!
 ```
 
 **Fix:** Create a symlink inside the skill:
 ```bash
-cd plugins/adr-manager/skills/adr-management
+cd plugins/<plugin-name>/skills/<skill-name>
 mkdir -p templates
-ln -s ../../templates/adr-template.md templates/adr-template.md
+ln -s ../../templates/some-template.md templates/some-template.md
 ```
 
 ## Plugin Boundary Check
@@ -113,23 +113,23 @@ Flag references in plugin root that point OUTSIDE the plugin.
 python ./check_plugin_boundaries.py inventory.json --batch all
 
 # Single plugin (by name)
-python ./check_plugin_boundaries.py inventory.json --plugin plugin-installer
+python ./check_plugin_boundaries.py inventory.json --plugin plugin-manager
 
 # Single plugin (by path)
-python ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-installer
+python ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-manager
 ```
 
 **Example violation:**
 ```
-FILE: plugins/adr-manager/commands/adr-management.md:8
+FILE: plugins/<plugin-name>/commands/some-command.md:8
   REF: .././architecture.md
-  PLUGIN ROOT: plugins/adr-manager/
+  PLUGIN ROOT: plugins/<plugin-name>/
   RESOLVES TO: docs/architecture.md  ❌ OUTSIDE!
 ```
 
 **Fix:** Copy or symlink into plugin:
 ```bash
-cd plugins/adr-manager
+cd plugins/<plugin-name>
 cp ../../docs/architecture.md ./docs/
 # or symlink
 ln -s ../../docs ./docs

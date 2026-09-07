@@ -20,7 +20,6 @@ CLI Arguments:
     --dir: Ad-hoc directory to scan for 4-digit numbers.
 
 Input Files:
-    - kitty-specs/
     - tasks/
     - ADRs/
 

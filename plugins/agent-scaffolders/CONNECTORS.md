@@ -23,8 +23,8 @@ discovered via the plugin registry.
 
 ## Notes
 
-- This CONNECTORS.md follows [ADR-004](../../../docs/ADRs/004_self_contained_plugins_no_cross_plugin_dependencies.md):
-  `~~category` abstraction only — no cross-plugin script paths.
+- This CONNECTORS.md follows the self-contained plugins principle:
+  `~~category` abstraction only — no cross-plugin script paths. Plugins are fully independent with zero runtime dependencies on other plugins or the source repository structure.
 - Alternative providers: any plugin declaring `"capabilities": ["eval-gate"]` in its
   `plugin.json` can serve as a drop-in replacement. The capability index resolves the
   first available provider at runtime.

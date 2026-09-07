@@ -36,10 +36,11 @@ you do not implement, commit, or submit anything yourself.
 ### Phase 1: Consume Hotspot Reports
 
 Invoke `friction_cluster_agent` (in the `dev-utils` plugin's `github-issue-agent` skill —
-delegate via natural-language skill invocation per ADR-001, never a direct cross-plugin
+delegate via natural-language skill invocation in the prompt, never a direct cross-plugin
 script import) to obtain its structured JSON output and markdown analysis identifying
 recurring friction hotspots, high-density component failures, and Tier 3 architectural
-debt across the monorepo.
+debt across the monorepo. This maintains loose coupling between plugins by avoiding hardcoded
+cross-plugin script execution paths.
 
 ### Phase 2: Synthesize a Refactoring Proposal
 

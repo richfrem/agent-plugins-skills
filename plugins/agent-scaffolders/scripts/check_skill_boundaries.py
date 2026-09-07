@@ -11,7 +11,7 @@ Layer: Investigate / Codify / Audit
 
 Usage Examples:
     pythonheck_skill_boundaries.py temp/inventory.json --batch all
-    pythonheck_skill_boundaries.py temp/inventory.json --skill plugins/adr-manager/skills/adr-management
+    pythonheck_skill_boundaries.py temp/inventory.json --skill plugins/<plugin-name>/skills/<skill-name>
 
 Supported Object Types:
     Skill file references.
@@ -95,11 +95,11 @@ def get_skill_root(source_file_path: str) -> Path | None:
     Extract the skill root directory from a source file path.
 
     Examples:
-      plugins/adr-manager/skills/adr-management/SKILL.md
-       plugins/adr-manager/skills/adr-management/
+      plugins/<plugin-name>/skills/<skill-name>/SKILL.md
+       plugins/<plugin-name>/skills/<skill-name>/
 
-      .agents/skills/plugin-installer/SKILL.md
-       .agents/skills/plugin-installer/
+      .agents/skills/<skill-name>/SKILL.md
+       .agents/skills/<skill-name>/
     """
     parts = Path(source_file_path).parts
 
@@ -108,7 +108,7 @@ def get_skill_root(source_file_path: str) -> Path | None:
         idx = list(parts).index("skills")
         # The skill root is skills/<skill-name>/
         if idx + 1 < len(parts):
-            return Path(*parts[:idx+2])  # e.g., plugins/adr-manager/skills/adr-management
+            return Path(*parts[:idx+2])  # e.g., plugins/<plugin-name>/skills/<skill-name>
 
     return None
 

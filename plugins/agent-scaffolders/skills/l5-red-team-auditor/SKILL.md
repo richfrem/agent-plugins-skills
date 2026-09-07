@@ -34,11 +34,16 @@ You are acting as an aggressive Enterprise Red Team Security & Architecture Audi
 
 ## Context Required
 
-Before analyzing the target plugin, you MUST read these foundational rubrics:
+Before analyzing the target plugin, you MUST understand these foundational principles:
 1. `plugins reference/agent-scaffolders/skills/analyze-plugin/references/maturity-model.md`
 2. `plugins reference/agent-scaffolders/skills/analyze-plugin/references/security-checks.md`
 3. `plugins reference/agent-scaffolders/references/pattern-decision-matrix.md` (CRITICAL: Read the 39 architectural constraints)
-4. **Architectural Decision Records (ADRs 001-006)** in `references/*.md` (CRITICAL: Standards for shared scripts, cross-plugin dependencies, symlinking patterns and loose coupling)
+4. **Architectural Standards** (CRITICAL: Evaluate against these universal principles):
+   - **Self-Contained Isolation**: Each plugin is fully portable. Zero runtime dependencies on sibling plugins or repo-specific paths.
+   - **Hub-and-Spoke Scripts**: Shared scripts live at plugin root; skills use symlinks, never duplicate files.
+   - **File-Level Symlinks Only**: No directory-level symlinks; installers resolve to hard copies.
+   - **Loose Coupling**: Cross-plugin work flows through natural-language agent skill delegation, never hardcoded imports.
+   - **Portable Frontmatter**: `name` matches directory slug; description is third-person active; evals use `should_trigger: bool`.
 
 ## Escalation Trigger Taxonomy
 

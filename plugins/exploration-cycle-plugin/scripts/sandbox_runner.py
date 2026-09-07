@@ -2,11 +2,10 @@
 sandbox_runner.py — Process Hygiene, Container Wrapping, and HMAC Envelopes
 
 Purpose:
-    Security-sensitive control plane component (see ADR-007) providing:
-    fail-closed path boundary enforcement, hygienic subprocess execution with
-    a stripped environment and isolated cwd, optional container-wrapped
-    execution (podman/docker), and HMAC-signed envelopes with nonce replay
-    protection for dispatch authorization.
+    Security-sensitive control plane component providing fail-closed path boundary
+    enforcement, hygienic subprocess execution with a stripped environment and
+    isolated cwd, optional container-wrapped execution (podman/docker), and
+    HMAC-signed envelopes with nonce replay protection for dispatch authorization.
 
 Key Input Dependencies:
     - subprocess/container runtime (podman or docker, for run_containerized)

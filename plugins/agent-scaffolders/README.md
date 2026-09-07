@@ -102,12 +102,12 @@ The benchmarking stack (located in `scripts/benchmarking/`) supports the `agent-
 
 ## Architecture & Constraints
 
-This plugin strictly adheres to the ecosystem ADRs (Architecture Decision Records):
+This plugin follows universal plugin architecture principles for portability:
 
-- **ADR-001**: No cross-plugin script execution at runtime — use Agent Skill Delegation instead.
-- **ADR-002**: Scripts shared across multiple skills live at `./scripts/`; skill directories contain file-level symlinks pointing up to the plugin root.
-- **ADR-003**: File-level symlinks only — directory-level symlinks are silently dropped by installers.
-- **ADR-004**: Plugin is fully self-contained — no runtime dependencies on other plugins.
+- **No Cross-Plugin Script Execution**: Cross-plugin coordination happens via natural-language agent skill delegation, never via hardcoded Python imports or subprocess calls to sibling plugins.
+- **Hub-and-Spoke Shared Scripts**: Scripts shared across multiple skills live at the plugin root (`./scripts/`); individual skill directories contain only file-level symlinks pointing up to the plugin root.
+- **File-Level Symlinks Only**: Only file-level symlinks are used (never directory-level). Plugin installers resolve symlinks into hard copies during deployment.
+- **Full Self-Containment**: The plugin is fully portable and self-contained. Zero runtime dependencies on other plugins, external repository paths, or configuration files that won't exist in target installations.
 
 ---
 
