@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Bash
 
 # Self-Evolution (Graph-Planned Procedural Dispatcher)
 
-Deterministic self-healing engine based on Stanford graph-planning principles. Mediated exclusively by `scripts/evolution_state.py`. Detailed operational node specs live in `references/evolution-graph-nodes.md`.
+Deterministic self-healing engine based on Stanford graph-planning principles. Mediated exclusively by `scripts/evolution_state.py`. Detailed operational node specs live in `references/evolution-graph-nodes.md`. Exact commands for every stage below are in `references/detailed-reference.md`.
 
 ## The 4-Box Qualification Gate
 Before initiating an evolution cycle, verify:
@@ -32,89 +32,38 @@ Before initiating an evolution cycle, verify:
 
 ### Phase 0: Prior Art & Debt Scan (Mandatory — EVOLUTION tasks only)
 
-Before drafting any hypothesis or entering TRIAGE, the agent **must** read existing knowledge:
-
-1. **Read `references/map-debt.md`**: Identify all entries with `Repeat: YES`. These are hard blockers — a repeated failure must be escalated, not re-attempted blindly.
-2. **Read `wiki/decisions/`**: Check for any established architectural decisions or negative constraints that would rule out candidate hypotheses before they are written.
-3. **Read `wiki/playbook-*.md`** (if any exist for the domain): Check for confirmed patterns or previously rejected approaches.
-4. **Log the scan result** into the control plane before advancing:
-   ```bash
-   python3 scripts/agent_control.py log-prior-art \
-     --task-id "<cid>" \
-     --summary "Reviewed map-debt.md and wiki/decisions/. Repeat:YES entries: <list or none>." \
-     --repeat-yes-entries "<csv of repeat entries, or empty>"
-   ```
-5. **If `Repeat: YES` entries exist that match the current friction** — escalate immediately. Do not re-enter the same hypothesis loop.
-
-> This step is enforced by `agent_control.py`: EVOLUTION tasks cannot advance from `INTAKE` to `INTERVIEW` without a `prior_art_scan` entry in `asymmetric_persistence_log`.
+Before drafting any hypothesis or entering TRIAGE: read `references/map-debt.md` for
+`Repeat: YES` entries (hard blockers — escalate, don't re-attempt), read `wiki/decisions/` for
+architectural constraints that rule out candidate hypotheses, and check `wiki/playbook-*.md`
+for confirmed patterns or previously rejected approaches. Log the scan result via
+`agent_control.py log-prior-art` before advancing (command in `references/detailed-reference.md`).
+If a matching `Repeat: YES` entry exists, escalate immediately rather than re-entering the loop.
 
 ### Stage 1: Proposal Mode (Read-Only Planning)
-1. **Initialize Cycle & Acquire Lock:**
-   ```bash
-   python3 scripts/evolution_state.py init --cycle-id "<cid>" --tier "<tier>"
-   python3 scripts/record_trace.py append --cycle-id "<cid>" --node TRIAGE --event-type cycle.initialized --exit-code 0
-   ```
-2. **Draft Transaction Manifest & Plan:**
-   - Record candidate files, objective verifier `argv`, and lock baseline verifier SHA256 hashes.
-   - Zero repo/git mutations permitted in proposal mode.
-   ```bash
-   python3 scripts/evolution_state.py plan --manifest <path/to/manifest.json>
-   python3 scripts/evolution_state.py transition --to AWAITING_APPROVAL
-   ```
-3. **Hard Halt:** Present proposal to user and await explicit approval ("Proceed").
+
+Initialize the cycle and acquire a lock, draft the transaction manifest (candidate files,
+verifier `argv`, baseline verifier SHA256 hashes — zero repo/git mutations permitted), transition
+to `AWAITING_APPROVAL`, then hard-halt and await explicit user approval ("Proceed").
 
 ### Stage 2: Authorized Execution & Verification
-1. **Authorize & Create Worktree Sandbox:**
-   ```bash
-   python3 scripts/evolution_state.py authorize --cycle-id "<cid>" --operations create_worktree,mutate,verify,write_layer2,commit
-   git worktree add -b evolution/<cid> ../worktree-evolution-<cid> HEAD
-   python3 scripts/evolution_state.py transition --to CREATE_WORKTREE --worktree-path ../worktree-evolution-<cid>
-   python3 scripts/evolution_state.py transition --to EXECUTE
-   ```
-2. **Apply Surgical Mutation & Verify:**
-   - Apply edits inside worktree. Then execute verifier via controller:
-   ```bash
-   # Controller executes the declared verifier itself (from transaction_manifest.verifier_argv).
-   # Exits non-zero if the verifier fails; provenance is stamped only on success.
-   python3 scripts/evolution_state.py verify
-   python3 scripts/record_trace.py append --cycle-id "<cid>" --node VERIFY_GATE \
-     --event-type verification.completed --exit-code $?
-   python3 scripts/evolution_state.py transition --to VERIFY_GATE
-   ```
+
+Authorize, create the worktree sandbox (`git worktree add -b evolution/<cid> ...`), transition
+through `CREATE_WORKTREE` → `EXECUTE`, apply the surgical mutation inside the worktree, then run
+the controller's verifier (`evolution_state.py verify` — exits non-zero on failure; provenance is
+stamped only on success) and transition to `VERIFY_GATE`.
 
 ### Stage 3: Asymmetric Persistence Gate
-- **If Pass (`exit 0`):**
-  1. Persist Layer 2 knowledge: tag playbooks in `wiki/` as `CONFIRMED`; log `Status: RESOLVED` in `references/map-debt.md`.
-  2. Stage and commit inside the worktree (design intent: the fix and the tree the receipt binds
-     must be the same tree -- `git write-tree`/`git commit` must run against the worktree's own
-     index, not the main checkout's), then land it on the calling branch:
-     ```bash
-     python3 scripts/evolution_state.py transition --to PRE_COMMIT_RECEIPT
-     git -C ../worktree-evolution-<cid> add -A
-     TREE_SHA=$(git -C ../worktree-evolution-<cid> write-tree)
-     python3 scripts/verify_evolution_receipt.py --stage pre-commit --cycle-id "<cid>" --tree-sha "$TREE_SHA"
-     python3 scripts/evolution_state.py transition --to COMMIT
-     git -C ../worktree-evolution-<cid> commit -m "feat(evolution): verified repair for <cid>"
-     python3 scripts/evolution_state.py transition --to FINAL_RECEIPT
-     git merge --no-ff evolution/<cid> -m "merge(evolution): land verified repair for <cid>"
-     git worktree remove --force ../worktree-evolution-<cid> && git branch -D evolution/<cid>
-     ```
-- **If Fail on 3rd Attempt (R1 Invariant):**
-  1. Save failure insights and negative constraints in `wiki/` (`REJECTED`) and `references/map-debt.md` (`OPEN, Repeat: YES`).
-  2. Export Layer 2 knowledge from worktree into dedicated knowledge branch before worktree teardown:
-     ```bash
-     python3 scripts/evolution_state.py export-layer2 --cycle-id "<cid>" --commit-knowledge \
-       --from-worktree ../worktree-evolution-<cid> --to-main <main-repo-path>
-     git worktree remove --force ../worktree-evolution-<cid> && git branch -D evolution/<cid>
-     python3 scripts/evolution_state.py transition --to ROLLBACK
-     python3 scripts/evolution_state.py transition --to FINAL_RECEIPT
-     ```
+
+- **If Pass**: persist Layer 2 knowledge (tag playbooks `CONFIRMED`, log `Status: RESOLVED` in
+  map-debt), then stage/commit inside the worktree (the fix and the tree the receipt binds must
+  be the same tree) and land it on the calling branch via `git merge --no-ff`, then remove the
+  worktree.
+- **If Fail on 3rd Attempt (R1 Invariant)**: save failure insights and negative constraints to
+  `wiki/` (`REJECTED`) and map-debt (`OPEN, Repeat: YES`), export Layer 2 knowledge from the
+  worktree into a dedicated knowledge branch before teardown, then transition to `ROLLBACK`.
 
 ### Stage 4: Final Receipt & Completion
-1. Generate final receipt and complete cycle:
-   ```bash
-   python3 scripts/verify_evolution_receipt.py --stage final --cycle-id "<cid>"
-   python3 scripts/evolution_state.py transition --to COMPLETED  # or ESCALATED
-   ```
-2. Output final `PRE-COMPLETION GATE` block including the `EVO-INTEGRITY-...` token.
-3. Optional dry-run upstream export: `python3 scripts/export_upstream_pr.py --dry-run`.
+
+Generate the final receipt, transition to `COMPLETED` or `ESCALATED`, output the final
+`PRE-COMPLETION GATE` block including the `EVO-INTEGRITY-...` token, and optionally dry-run
+`export_upstream_pr.py`.
