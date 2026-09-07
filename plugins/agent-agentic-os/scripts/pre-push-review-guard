@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# pre-push-review-guard — Deterministic Post-Implementation Review Stage Gate
+# pre-push-review-guard — Deterministic Pipeline Completion Push Gate
 # ==============================================================================
 # Purpose:
 #   Enforces that no git push may proceed from an active task branch unless
-#   the task has completed the post-implementation review stage gate in SQLite
-#   control plane (state in WORKTREE_REVIEW, MULTI_AGENT_CODE_REVIEW, or VERIFY_EXIT).
+#   the task has cleared all verification stages and reached final state DONE in SQLite
+#   control plane, and all pipeline transitions are unbroken without violations.
 # ==============================================================================
 
 set -e
 
-# Find repo root
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# Find repo root / git common dir (handles worktrees correctly)
+COMMON_GIT_DIR="$(git rev-parse --git-common-dir 2>/dev/null || true)"
+if [ -n "$COMMON_GIT_DIR" ]; then
+    REPO_ROOT="$(cd "$COMMON_GIT_DIR/.." 2>/dev/null && pwd)"
+else
+    REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+fi
+
 DB_PATH="$REPO_ROOT/context/control_plane.db"
 
-# If control plane database does not exist, pass through — but warn visibly rather
-# than silently, so an ungated push isn't indistinguishable from a properly-gated one.
+# If control plane database does not exist, pass through — but warn visibly
 if [ ! -f "$DB_PATH" ]; then
     echo "⚠️  WARNING: pre-push-review-guard found no control_plane.db — push is ungated (no task registered for this repo)." >&2
     exit 0
@@ -29,10 +34,7 @@ if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ] || [ -z "$
     exit 0
 fi
 
-# Reject branch names outside a strict allowlist before using them in a SQL query — git
-# permits characters (quotes, etc.) that would otherwise allow SQL injection via the
-# branch name into the query below. Fail closed (ungated warning) rather than query with
-# an unsanitized value.
+# Reject branch names outside allowlist before using in SQL
 if ! echo "$CURRENT_BRANCH" | grep -qE '^[A-Za-z0-9._/-]+$'; then
     echo "⚠️  WARNING: pre-push-review-guard found a branch name with disallowed characters ('$CURRENT_BRANCH') — push is ungated (cannot safely query the control plane)." >&2
     exit 0
@@ -42,8 +44,7 @@ fi
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
 
-# If no task associated with this branch, permit push — but warn visibly rather than
-# silently, so an ungated push isn't indistinguishable from a properly-gated one.
+# If no task associated with this branch, permit push with warning
 if [ -z "$TASK_ROW" ]; then
     echo "⚠️  WARNING: pre-push-review-guard found no task registered for branch '$CURRENT_BRANCH' — push is ungated." >&2
     exit 0
@@ -52,28 +53,90 @@ fi
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
 TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
 
-# Valid states permitted to push
-case "$TASK_STATE" in
-    WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT)
-        exit 0
-        ;;
-    *)
+# Only state DONE is permitted to push to origin
+if [ "$TASK_STATE" != "DONE" ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: Pipeline Not Complete (Final State 'DONE' Required)!"
+    echo ""
+    echo "   Branch:      $CURRENT_BRANCH"
+    echo "   Task ID:     $TASK_ID"
+    echo "   Task State:  $TASK_STATE"
+    echo ""
+    echo "   Pushing to origin on task branches is strictly prohibited until the task has"
+    echo "   cleared all reviews, test verifications, leak checks, and reached final state 'DONE'."
+    echo ""
+    echo "   Current task state is '$TASK_STATE'. Complete the pipeline to DONE before pushing."
+    echo ""
+    exit 1
+fi
+
+# If in DONE, also verify integrity of transitions:
+# 1. Check transition_violations
+VIOLATIONS_COUNT="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_violations WHERE task_id = '$TASK_ID';" 2>/dev/null || echo "0")"
+if [ "$VIOLATIONS_COUNT" -gt 0 ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: Control Plane Transition Violations Detected!"
+    echo ""
+    echo "   Task ID:     $TASK_ID"
+    echo "   Violations:  $VIOLATIONS_COUNT illegal transition attempt(s) logged in transition_violations table."
+    echo ""
+    exit 1
+fi
+
+# 2. Check all transitions against valid_transitions
+TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+if [ -z "$TRANSITIONS_ROWS" ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: No Transition History Found!"
+    echo ""
+    echo "   Task ID:     $TASK_ID"
+    echo "   No lifecycle transitions recorded in task_transitions table."
+    echo ""
+    exit 1
+fi
+
+LAST_TO=""
+while IFS='|' read -r from_st to_st; do
+    [ -z "$from_st" ] && continue
+    if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
+        LAST_TO="INTAKE"
+        continue
+    fi
+
+    # Check validity in valid_transitions
+    IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
+    if [ "$IS_VALID" -eq 0 ]; then
         echo ""
-        echo "❌ GIT PUSH BLOCKED: Post-Implementation Review Stage Gate Not Cleared!"
+        echo "❌ GIT PUSH BLOCKED: Invalid State Transition Detected!"
         echo ""
-        echo "   Branch:      $CURRENT_BRANCH"
         echo "   Task ID:     $TASK_ID"
-        echo "   Task State:  $TASK_STATE"
-        echo ""
-        echo "   AI agents are strictly forbidden from pushing to origin without passing through"
-        echo "   the post-implementation review stage gate."
-        echo ""
-        echo "   To clear this gate:"
-        echo "   1. Transition task to WORKTREE_REVIEW:"
-        echo "      python3 plugins/agent-agentic-os/scripts/agent_control.py transition --task-id $TASK_ID --to WORKTREE_REVIEW --reason \"Implementation complete; awaiting review\""
-        echo "   2. Present the diff (Step 8) and ask: \"Do you want a second AI review of this"
-        echo "      code (Step 8a), or proceed straight to verification (Step 9)?\""
+        echo "   Edge:        $from_st -> $to_st"
         echo ""
         exit 1
-        ;;
-esac
+    fi
+
+    # Check continuity
+    if [ -n "$LAST_TO" ] && [ "$from_st" != "$LAST_TO" ]; then
+        echo ""
+        echo "❌ GIT PUSH BLOCKED: Broken Pipeline State Chain!"
+        echo ""
+        echo "   Task ID:     $TASK_ID"
+        echo "   Broken chain: Expected transition from '$LAST_TO', but found transition from '$from_st' to '$to_st'."
+        echo ""
+        exit 1
+    fi
+    LAST_TO="$to_st"
+done <<< "$TRANSITIONS_ROWS"
+
+if [ -n "$LAST_TO" ] && [ "$LAST_TO" != "$TASK_STATE" ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: Current State Desynchronized From Transition Log!"
+    echo ""
+    echo "   Task ID:      $TASK_ID"
+    echo "   Table State:  $TASK_STATE"
+    echo "   Log State:    $LAST_TO"
+    echo ""
+    exit 1
+fi
+
+exit 0

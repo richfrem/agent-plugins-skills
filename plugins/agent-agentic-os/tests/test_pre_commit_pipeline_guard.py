@@ -256,3 +256,43 @@ def test_control_plane_verify_commit_api(tmp_path):
 
     res2 = cp.verify_commit(branch=branch, staged_files=["src/code.py"])
     assert res2["status"] == "ALLOWED"
+
+
+PUSH_HOOK_PATH = SCRIPTS_DIR / "pre-push-review-guard"
+
+
+def test_push_hook_blocks_when_not_done(tmp_path):
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-push-not-done-008"
+    branch = "feat/push-not-done"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+
+    # In IN_WORKTREE, push is blocked
+    res = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    assert res.returncode == 1
+    assert "GIT PUSH BLOCKED: Pipeline Not Complete (Final State 'DONE' Required)!" in res.stdout
+
+
+def test_push_hook_allows_when_done_with_valid_history(tmp_path):
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-push-done-009"
+    branch = "feat/push-done"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+    
+    # Advance task to DONE (record test_suite before entering WORKTREE_REVIEW)
+    cp.record_verification_receipt(task_id, "test_suite", "pytest", 0)
+    cp.transition(task_id, "WORKTREE_REVIEW", "tester", "review")
+    cp.record_review_skip(task_id, "multi_agent_code_review", "tester", "skip")
+    cp.transition(task_id, "VERIFY_EXIT", "tester", "verify")
+    cp.record_verification_receipt(task_id, "leak_check", "git status", 0)
+    cp.log_asymmetric_persistence(task_id, "references/map-debt.md", "RESOLVED", "test")
+    cp.transition(task_id, "DONE", "tester", "done")
+
+    res = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    assert res.returncode == 0

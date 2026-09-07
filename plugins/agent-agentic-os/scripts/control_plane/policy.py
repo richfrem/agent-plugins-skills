@@ -139,16 +139,15 @@ def _rolled_back_check(ctx: Dict[str, Any]) -> Optional[str]:
 
 
 def _worktree_push_check(ctx: Dict[str, Any]) -> Optional[str]:
-    """Predicate rule folding in the original update_worktree() pushed_to_origin barrier:
-    the task must currently be in one of WORKTREE_REVIEW/MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT."""
+    """Predicate rule enforcing push gate: pushing to origin is strictly forbidden unless
+    the task has cleared all verification gates and is in final state DONE."""
     task_state = ctx["task_state"]
     task_id = ctx["task_id"]
-    valid_states_for_push = ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")
-    if task_state in valid_states_for_push:
+    if task_state == "DONE":
         return None
     return (
         f"Cannot mark worktree 'pushed_to_origin' for task '{task_id}': Task state is '{task_state}'. "
-        f"Post-implementation review stage gate required. Task must be in {valid_states_for_push} before pushing to origin."
+        "Pushing to origin requires full pipeline completion. Task must be in final state 'DONE' before pushing."
     )
 
 
