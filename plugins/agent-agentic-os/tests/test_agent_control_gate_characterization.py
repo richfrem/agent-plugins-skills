@@ -55,55 +55,47 @@ def control_plane(temp_db_path):
     return cp
 
 
+def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor="human", reason="test"):
+    """Coordinates any transition (including human-gated ones) using TransitionCoordinator."""
+    from control_plane.coordinator import TransitionCoordinator
+    from control_plane.registry import TransitionRegistry
+    reg = TransitionRegistry.load_default()
+    inputs = iter(["1", "1", "1", "y"])
+    coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
+    return coord.coordinate_transition(
+        task_id=task_id,
+        to_state=to_state,
+        actor=actor,
+        reason=reason,
+        interactive=True
+    )
+
+
 def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str):
     """Shared setup: drives a fresh task through the canonical DAG to IN_WORKTREE."""
     cp.create_task(task_id=task_id, title=title, runtime_tool="claude")
     cp.record_plan_mode_entry(task_id=task_id, actor="controller")
-    cp.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    _coordinate_transition(cp, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
     cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
     cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
-    cp.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
+    _coordinate_transition(cp, task_id, "APPROVED", actor="user", reason="Approved")
     cp.record_human_approval(task_id=task_id, approver="user")
     cp.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
 
-# --- update_worktree() push-barrier: each permitted state proven individually ---
+# --- update_worktree() push-barrier: strict DONE state gate (5a5efc2a) ---
 
-def test_push_barrier_permits_worktree_review(control_plane):
-    """Characterizes: worktree_state='pushed_to_origin' succeeds when task state is WORKTREE_REVIEW."""
-    task_id = "char-push-wr-001"
-    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: WORKTREE_REVIEW")
+def test_push_barrier_permits_done(control_plane):
+    """Characterizes: worktree_state='pushed_to_origin' succeeds when task state is final state DONE."""
+    task_id = "char-push-done-001"
+    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: DONE")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
-    control_plane.transition(task_id=task_id, to_state="WORKTREE_REVIEW", actor="controller", reason="Implementation done")
-
-    control_plane.update_worktree(
-        task_id=task_id, worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin"
-    )
-    assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"
-
-
-def test_push_barrier_permits_multi_agent_code_review(control_plane):
-    """Characterizes: worktree_state='pushed_to_origin' succeeds when task state is MULTI_AGENT_CODE_REVIEW."""
-    task_id = "char-push-macr-001"
-    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: MULTI_AGENT_CODE_REVIEW")
-    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
-    control_plane.transition(task_id=task_id, to_state="WORKTREE_REVIEW", actor="controller", reason="Implementation done")
-    control_plane.transition(task_id=task_id, to_state="MULTI_AGENT_CODE_REVIEW", actor="controller", reason="Adversarial code review")
-
-    control_plane.update_worktree(
-        task_id=task_id, worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin"
-    )
-    assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"
-
-
-def test_push_barrier_permits_verify_exit(control_plane):
-    """Characterizes: worktree_state='pushed_to_origin' succeeds when task state is VERIFY_EXIT."""
-    task_id = "char-push-vx-001"
-    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: VERIFY_EXIT")
-    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
-    control_plane.transition(task_id=task_id, to_state="WORKTREE_REVIEW", actor="controller", reason="Implementation done")
+    _coordinate_transition(control_plane, task_id, "WORKTREE_REVIEW", actor="controller", reason="Implementation done")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Ready to verify exit")
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status", exit_code=0)
+    control_plane.log_asymmetric_persistence(task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved")
+    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Complete")
 
     control_plane.update_worktree(
         task_id=task_id, worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin"
@@ -111,16 +103,27 @@ def test_push_barrier_permits_verify_exit(control_plane):
     assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"
 
 
-def test_push_barrier_blocks_in_worktree(control_plane):
-    """Characterizes: worktree_state='pushed_to_origin' is rejected when task state is IN_WORKTREE
-    (the blocked case — any state outside {WORKTREE_REVIEW, MULTI_AGENT_CODE_REVIEW, VERIFY_EXIT})."""
-    task_id = "char-push-blocked-001"
-    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: blocked")
+@pytest.mark.parametrize("intermediate_state", ["IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"])
+def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_state):
+    """Characterizes: worktree_state='pushed_to_origin' is rejected when task state is not DONE."""
+    task_id = f"char-push-blocked-{intermediate_state.lower()}"
+    _advance_to_in_worktree(control_plane, task_id, f"Push Barrier: {intermediate_state}")
+    
+    if intermediate_state in ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"):
+        control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+        _coordinate_transition(control_plane, task_id, "WORKTREE_REVIEW", actor="controller", reason="Implementation done")
+    if intermediate_state in ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"):
+        if intermediate_state == "MULTI_AGENT_CODE_REVIEW":
+            _coordinate_transition(control_plane, task_id, "MULTI_AGENT_CODE_REVIEW", actor="controller", reason="Adversarial code review")
+        else:
+            control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
+            control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Ready to verify exit")
 
-    with pytest.raises(PersistenceInvariantViolation, match="Post-implementation review stage gate required"):
+    with pytest.raises(PersistenceInvariantViolation, match="Pushing to origin requires full pipeline completion"):
         control_plane.update_worktree(
             task_id=task_id, worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin"
         )
+
 
 
 # --- _check_prior_art_guard: branches not exercised elsewhere ---
@@ -173,10 +176,10 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     control_plane.lock_verifiers(task_id=task_id, file_paths=[verifier_file])
 
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
-    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
+    _coordinate_transition(control_plane, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
-    control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
+    _coordinate_transition(control_plane, task_id, "APPROVED", actor="user", reason="Approved")
     control_plane.record_human_approval(task_id=task_id, approver="user")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")

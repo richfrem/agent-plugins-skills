@@ -64,6 +64,20 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
     cp.record_human_approval(task_id, "tester")
+    conn = sqlite3.connect(cp.db_path)
+    last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
+    conn.execute(
+        """
+        INSERT INTO transition_decisions (
+            task_id, source_occupancy_transition_id, from_state, to_state,
+            question_id, answer, decision_type, actor, recorded_at
+        ) VALUES (?, ?, 'AWAITING_APPROVAL', 'APPROVED', 'human_implementation_approval', 'Yes, approve implementation [Recommended]', 'ANSWER', 'human', 12345.0),
+                 (?, ?, 'AWAITING_APPROVAL', 'APPROVED', 'approval_awaiting_approval_to_approved', 'APPROVAL', 'APPROVAL', 'human', 12345.0)
+        """,
+        (task_id, last_trans, task_id, last_trans)
+    )
+    conn.commit()
+    conn.close()
     cp.transition(task_id, "APPROVED", "tester", "approved")
     cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
@@ -251,6 +265,20 @@ def test_control_plane_verify_commit_api(tmp_path):
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
     cp.record_human_approval(task_id, "tester")
+    conn = sqlite3.connect(cp.db_path)
+    last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
+    conn.execute(
+        """
+        INSERT INTO transition_decisions (
+            task_id, source_occupancy_transition_id, from_state, to_state,
+            question_id, answer, decision_type, actor, recorded_at
+        ) VALUES (?, ?, 'AWAITING_APPROVAL', 'APPROVED', 'human_implementation_approval', 'Yes, approve implementation [Recommended]', 'ANSWER', 'human', 12345.0),
+                 (?, ?, 'AWAITING_APPROVAL', 'APPROVED', 'approval_awaiting_approval_to_approved', 'APPROVAL', 'APPROVAL', 'human', 12345.0)
+        """,
+        (task_id, last_trans, task_id, last_trans)
+    )
+    conn.commit()
+    conn.close()
     cp.transition(task_id, "APPROVED", "tester", "approved")
     cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
 
@@ -287,6 +315,19 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     
     # Advance task to DONE (record test_suite before entering WORKTREE_REVIEW)
     cp.record_verification_receipt(task_id, "test_suite", "pytest", 0)
+    conn = sqlite3.connect(cp.db_path)
+    last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
+    conn.execute(
+        """
+        INSERT INTO transition_decisions (
+            task_id, source_occupancy_transition_id, from_state, to_state,
+            question_id, answer, decision_type, actor, recorded_at
+        ) VALUES (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_review_in_worktree_to_worktree_review', 'Proceed with review [Recommended]', 'ANSWER', 'human', 12345.0)
+        """,
+        (task_id, last_trans)
+    )
+    conn.commit()
+    conn.close()
     cp.transition(task_id, "WORKTREE_REVIEW", "tester", "review")
     cp.record_review_skip(task_id, "multi_agent_code_review", "tester", "skip")
     cp.transition(task_id, "VERIFY_EXIT", "tester", "verify")

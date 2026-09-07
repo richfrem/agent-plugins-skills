@@ -31,7 +31,18 @@ def test_full_intake_to_approval_lifecycle(tmp_path):
     assert cp.get_task(task_id)["state"] == "DRAFT_PLAN"
 
     # Path A: DRAFT_PLAN -> MULTI_AGENT_REVIEW -> AWAITING_APPROVAL
-    cp.transition(task_id=task_id, to_state="MULTI_AGENT_REVIEW", actor="user", reason="User opted for external review bundle")
+    from control_plane.coordinator import TransitionCoordinator
+    from control_plane.registry import TransitionRegistry
+    reg = TransitionRegistry.load_default()
+    inputs = iter(["5"])  # Option 5: external bundle
+    coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="MULTI_AGENT_REVIEW",
+        actor="human",
+        reason="User opted for external review bundle",
+        interactive=True
+    )
     assert cp.get_task(task_id)["state"] == "MULTI_AGENT_REVIEW"
 
     cp.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="External review passed")

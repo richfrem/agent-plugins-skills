@@ -201,9 +201,7 @@ class TransitionCoordinator:
                 self._out.write(f"  {idx}. {opt}\n")
             self._out.write("\n")
 
-            if qid in answers:
-                chosen_ans = answers[qid]
-            elif interactive:
+            if interactive:
                 # Sequential presentation: prompt 1 question at a time
                 prompt_str = f"Select option [Recommended: {default_opt}]: "
                 user_input = self._input_fn(prompt_str).strip()
@@ -217,6 +215,12 @@ class TransitionCoordinator:
                     chosen_ans = options[num - 1] if 1 <= num <= len(options) else user_input
                 except ValueError:
                     chosen_ans = user_input
+                decision_actor = "human"
+            elif qid in answers:
+                chosen_ans = answers[qid]
+                # Non-interactive provided_answers are supplied programmatically by an agent,
+                # not by a human at an interactive prompt.
+                decision_actor = "agent"
             else:
                 # Non-interactive without provided answer -> must fail closed despite default
                 raise TransitionCoordinatorError(
@@ -240,7 +244,7 @@ class TransitionCoordinator:
                     question_id=qid,
                     answer=chosen_ans,
                     decision_type="ANSWER",
-                    actor=actor,
+                    actor=decision_actor,
                     recorded_at=self._cp._clock.current_time(),
                 )
             )
@@ -248,19 +252,19 @@ class TransitionCoordinator:
         # 7. Evaluate approval requirement
         if template.approval.get("required"):
             approver_role = template.approval.get("approver_role", "human")
-            if approval_decision == "APPROVAL" or (not approval_decision and approver_role == "agent_or_human"):
-                dec = "APPROVAL"
-            elif approval_decision == "REJECTION":
-                raise TransitionCoordinatorError(f"Transition {current_state} -> {to_state} rejected by approver.")
-            elif approval_decision == "APPROVAL":
-                dec = "APPROVAL"
-            elif interactive:
+            if interactive:
                 prompt_str = f"Approval required ({approver_role}). Approve transition? (y/n): "
                 ans = self._input_fn(prompt_str).strip().lower()
                 if ans in ("y", "yes"):
                     dec = "APPROVAL"
+                    approval_actor = "human"
                 else:
                     raise TransitionCoordinatorError(f"Transition {current_state} -> {to_state} rejected by user.")
+            elif approval_decision == "APPROVAL" or (not approval_decision and approver_role == "agent_or_human"):
+                dec = "APPROVAL"
+                approval_actor = "agent"
+            elif approval_decision == "REJECTION":
+                raise TransitionCoordinatorError(f"Transition {current_state} -> {to_state} rejected by approver.")
             else:
                 raise TransitionCoordinatorError(
                     f"Transition {current_state} -> {to_state} requires explicit {approver_role} approval."
@@ -275,7 +279,7 @@ class TransitionCoordinator:
                     question_id=f"approval_{template.transition_id}",
                     answer=dec,
                     decision_type="APPROVAL",
-                    actor=actor,
+                    actor=approval_actor,
                     recorded_at=self._cp._clock.current_time(),
                 )
             )

@@ -34,6 +34,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
+class PersistenceInvariantViolation(Exception):
+    """Raised when evolution integrity, database trigger enforcement, or asymmetric persistence invariants are violated."""
+    pass
+
+
 @dataclass(frozen=True)
 class TransitionRecord:
     transition_id: int
@@ -302,4 +307,15 @@ class PersistencePort(ABC):
     def record_decision(self, decision: TransitionDecision) -> int:
         """Records an occupancy-bound TransitionDecision. Rejects duplicates within same occupancy."""
         raise NotImplementedError
+
+    @abstractmethod
+    def get_task_by_worktree_branch(self, branch: str) -> Optional[Dict[str, Any]]:
+        """Returns task dict matching worktree_branch, or None."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def validate_task_pipeline_history(self, task_id: str, task_state: str) -> Optional[str]:
+        """Validates transition history and violations for pipeline commit check. Returns error string or None."""
+        raise NotImplementedError
+
 

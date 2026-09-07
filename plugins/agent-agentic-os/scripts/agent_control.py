@@ -149,9 +149,7 @@ class VerifierSovereigntyViolation(Exception):
     pass
 
 
-class PersistenceInvariantViolation(Exception):
-    """Raised when evolution integrity or asymmetric persistence invariants are violated."""
-    pass
+from control_plane.ports import PersistenceInvariantViolation
 
 
 class ConcurrentModificationError(Exception):
@@ -255,8 +253,15 @@ class ControlPlane:
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):
-        """Validates and applies a state transition according to the canonical DAG. Known-state
-        and adjacency legality are delegated to self._state_machine (a pure domain component,
+        """INTERNAL USE ONLY: Validates and applies a deterministic state transition according to the canonical DAG.
+
+        DEPRECATION NOTICE: This method is strictly internal and functional ONLY for deterministic transitions
+        that do not require human input or approval. For any transition requiring human questions or approval
+        (e.g., AWAITING_APPROVAL -> APPROVED, DRAFT_PLAN -> MULTI_AGENT_REVIEW), callers MUST use
+        TransitionCoordinator.coordinate_transition() to interactively capture and persist signed human decisions.
+        Any attempt to transition a human-gated edge via this method will be rejected with PersistenceInvariantViolation.
+
+        Known-state and adjacency legality are delegated to self._state_machine (a pure domain component,
         issue-524 post-round-2-review correction); state retrieval, the guarded write, and
         transition-history persistence all go through self._persistence.apply_transition() —
         this method itself owns only coordination (calling the state machine, then the policy
@@ -434,79 +439,18 @@ class ControlPlane:
         if branch in ("main", "master", ""):
             return {"status": "ALLOWED", "branch": branch, "message": "Non-task branch bypass"}
 
-        task = self._persistence.get_task_by_worktree_branch(branch) if hasattr(self._persistence, "get_task_by_worktree_branch") else None
-        if task is None:
-            # Fallback direct lookup via connection if adapter doesn't have specialized method
-            conn = self._persistence.get_connection()
-            try:
-                row = conn.execute(
-                    "SELECT task_id, state FROM tasks WHERE worktree_branch = ? ORDER BY created_at DESC LIMIT 1",
-                    (branch,)
-                ).fetchone()
-                if row:
-                    task = {"task_id": row["task_id"], "state": row["state"]}
-            finally:
-                conn.close()
-
+        task = self._persistence.get_task_by_worktree_branch(branch)
         if task is None:
             return {"status": "ALLOWED", "branch": branch, "task_id": None, "message": "Untracked branch (ungated)"}
 
         task_id = task["task_id"]
         task_state = task["state"]
 
-        def _validate_history() -> Optional[str]:
-            conn = self._persistence.get_connection()
-            try:
-                # 1. Check transition_violations
-                viol = conn.execute(
-                    "SELECT violation_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id = ?",
-                    (task_id,)
-                ).fetchone()
-                if viol:
-                    return f"Illegal transition violation recorded in control plane ({viol['attempted_from_state']} -> {viol['attempted_to_state']})"
-
-                # 2. Check task_transitions against valid_transitions
-                transitions = conn.execute(
-                    "SELECT from_state, to_state FROM task_transitions WHERE task_id = ? ORDER BY transition_id ASC",
-                    (task_id,)
-                ).fetchall()
-                if not transitions:
-                    return f"No transition history recorded for task '{task_id}'"
-
-                for t in transitions:
-                    f_st, t_st = t["from_state"], t["to_state"]
-                    if f_st == "NONE" and t_st == "INTAKE":
-                        continue
-                    match = conn.execute(
-                        "SELECT 1 FROM valid_transitions WHERE from_state = ? AND to_state = ?",
-                        (f_st, t_st)
-                    ).fetchone()
-                    if not match:
-                        return f"Transition '{f_st}' -> '{t_st}' is not in valid_transitions table"
-
-                # 3. Check transition chain continuity
-                first_f, first_t = transitions[0]["from_state"], transitions[0]["to_state"]
-                if not ((first_f == "NONE" and first_t == "INTAKE") or (first_f == "INTAKE")):
-                    return f"Transition history does not begin at INTAKE (started at {first_f} -> {first_t})"
-
-                curr_chain_state = first_t
-                for t in transitions[1:]:
-                    if t["from_state"] != curr_chain_state:
-                        return f"Broken transition chain: expected from_state '{curr_chain_state}', found '{t['from_state']}'"
-                    curr_chain_state = t["to_state"]
-
-                if curr_chain_state != task_state:
-                    return f"Current task state '{task_state}' does not match final transition state '{curr_chain_state}'"
-
-                return None
-            finally:
-                conn.close()
-
         op_ctx = {
             "task_id": task_id,
             "task_state": task_state,
             "staged_files": staged_files or [],
-            "validate_transition_history": _validate_history,
+            "validate_transition_history": lambda: self._persistence.validate_task_pipeline_history(task_id, task_state),
         }
 
         try:
