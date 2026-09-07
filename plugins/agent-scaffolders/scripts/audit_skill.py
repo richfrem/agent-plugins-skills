@@ -5,7 +5,7 @@ audit_skill.py
 Audits and aligns an individual agent skill against ecosystem evolution standards:
 1. Lean Layer 1 procedural core (line budget <= 100 lines target)
 2. Boolean evals schema (JSON array with 'should_trigger: bool')
-3. Hub-and-spoke script architecture (ADR-002/ADR-003 - scripts must be symlinks)
+3. Hub-and-spoke script architecture (a script used by 2+ skills lives at the plugin root; the skill's own copy must be a file-level symlink, not a real file)
 4. Frontmatter standards (name matches directory, 3rd-person description <= 1024 chars)
 5. Contract references (acceptance-criteria.md, fallback-tree.md)
 6. Spoke hygiene (no raw logs, wiki notes, or session state in skills)
@@ -244,7 +244,7 @@ def audit_skill(
             res.passed = False
             res.errors.append(f"evals/evals.json is malformed JSON: {e}")
 
-    # 4. Hub-and-Spoke Script Architecture (ADR-002 / ADR-003)
+    # 4. Hub-and-Spoke Script Architecture
     skill_scripts = skill_dir / "scripts"
     if skill_scripts.exists() and skill_scripts.is_dir():
         for script_file in skill_scripts.iterdir():
@@ -253,7 +253,7 @@ def audit_skill(
                 if not script_file.is_symlink():
                     res.passed = False
                     res.errors.append(
-                        f"Violates ADR-002/ADR-003 hub-and-spoke: '{script_file.name}' is a real file, not a symlink. "
+                        f"Violates hub-and-spoke architecture: '{script_file.name}' is a real file, not a symlink. "
                         "Shared scripts must reside in plugin root scripts/ and be symlinked via symlink_manager.py."
                     )
 

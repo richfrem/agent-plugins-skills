@@ -5,7 +5,7 @@ Purpose:
     transactions, parallel-agent budget gates), task lifecycle (lease, commit,
     CAS guard, expired-lease reclaim), review/artifact hash verification,
     dashboard round-trip and migration, and CLI subcommand invocation
-    (dual-runtime invariant, ADR-002).
+    (dual-runtime execution: both library import and CLI tool).
 
 Key Input Dependencies:
     - state_engine.py module (in ../scripts/)
@@ -108,7 +108,7 @@ def test_immediate_transaction_retries_on_busy(tmp_path):
 
 
 def test_state_engine_cli_init(tmp_path):
-    """state_engine.py must be callable as a CLI tool — dual-runtime invariant (ADR-002)."""
+    """state_engine.py must be callable as a CLI tool (dual-runtime: library and CLI)."""
     import subprocess
     db_path = str(tmp_path / "cli.sqlite")
     result = subprocess.run(
@@ -233,7 +233,7 @@ def test_reclaim_expired_leases_returns_tasks_to_pending(mem_conn):
 
 
 def test_state_engine_cli_lease_task(tmp_path):
-    """CLI lease-task command must work end-to-end (dual-runtime invariant, ADR-002)."""
+    """CLI lease-task command must work end-to-end (dual-runtime: library and CLI)."""
     import subprocess
     import json
     db_path = str(tmp_path / "cli.sqlite")

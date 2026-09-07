@@ -145,6 +145,9 @@ Always:
 2. When adding the plugin to a marketplace entry, explicitly set `"strict": true` — never rely on the default
 3. See `manage-marketplace` skill for the correct marketplace entry format
 
-## References
+## Plugin Architecture Conventions
 
-- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.
+- **Hub-and-spoke shared scripts:** a script used by two or more skills within the same plugin belongs at the plugin root (`scripts/script.py`), not duplicated per-skill. A script used by only one skill lives inside that skill's own `scripts/` directory.
+- **No cross-plugin script imports:** a plugin must never import or execute another plugin's Python code directly. Cross-plugin coordination happens via agent delegation (natural-language instructions to invoke another skill), never hardcoded imports.
+- **File-level symlinks only, never directories:** shared resources are mirrored into each consuming skill via a real file-level symlink, never a directory-level symlink or a duplicated copy.
+- **Self-contained installed skills:** an installed skill must function correctly with zero runtime dependency on the source repository, another plugin, or a sibling Python package.

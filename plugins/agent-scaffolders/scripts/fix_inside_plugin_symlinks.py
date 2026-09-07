@@ -72,7 +72,7 @@ class InsidePluginSymlinkFixer:
             return json.load(f)
 
     def get_plugin_root(self, file_path: str) -> tuple[Path | None, str | None]:
-        """Extract plugin root from path like plugins/adr-manager/skills/adr-management/file.md"""
+        """Extract plugin root from path like plugins/<plugin-name>/skills/<skill-name>/file.md"""
         parts = Path(file_path).parts
         if 'plugins' in parts:
             idx = parts.index('plugins')

@@ -99,9 +99,9 @@ You must execute the following 10 steps sequentially, satisfying all required va
 
 ---
 
-## Plugin Boundary and decoupled Execution
+## Plugin Boundary and Decoupled Execution
 
-To maintain complete **loose coupling** (per ADR-005):
-*   This skill does NOT hardcode execution boundaries or force dependencies on runtime Spec Kit or Superpowers CLIs.
+This skill maintains complete **loose coupling**:
+*   Does NOT hardcode execution boundaries or force dependencies on runtime Spec Kit or Superpowers CLIs.
 *   All artifacts are generated as standard, decoupled static formats (.md, .json, .yaml) ensuring they are fully portable and can run in completely isolated environments.
 *   Inter-plugin communication is achieved through **Agent Delegation Instructions** (natural language guidelines inside the handoff files) rather than Python bindings or filesystem hacks.

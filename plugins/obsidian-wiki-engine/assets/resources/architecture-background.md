@@ -2,8 +2,9 @@
 
 ## Why Direct Filesystem (Zero-RPC)?
 
-After evaluating three integration strategies (see ADR 099), the direct filesystem
-read/write approach was chosen over Obsidian's Local REST API and custom TypeScript plugins.
+After evaluating three integration strategies, the direct filesystem read/write approach
+was chosen over Obsidian's Local REST API and custom TypeScript plugins because it minimizes
+external dependencies and works completely offline.
 
 ### Strategies Evaluated
 

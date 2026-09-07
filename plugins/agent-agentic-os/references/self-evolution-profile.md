@@ -11,7 +11,6 @@
 - plugin.json
 - CLAUDE.md
 - .agent/rules/
-- ADRs/
 - docs/
 
 ## Error Pattern → Tier Classification

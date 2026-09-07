@@ -5,8 +5,10 @@ analyze_scripts.py
 
 Purpose:
     Analyzer script for the plugin ecosystem. Evaluates Python script usage,
-    symlink structures, and verifies alignment with ADR-001 (Cross-Plugin)
-    and ADR-002 (Multi-Skill Script Centralization) architectural conventions.
+    symlink structures, and verifies alignment with two architectural conventions:
+    no cross-plugin script execution (a plugin never imports/runs another
+    plugin's Python code directly), and hub-and-spoke script centralization
+    (a script used by 2+ skills lives at the plugin root, not duplicated).
 
 Key Input Dependencies:
     - Plugin directory structure (plugins/*/scripts/)
@@ -18,8 +20,15 @@ Layer: Investigate / Audit
 Usage:
     python ./scripts/analyze_scripts.py
 
-Related:
-    - analysis_results.txt
+Key Functions:
+    - _load_whitelist() — loads whitelist.json to ignore known false-positive script names
+    - _find_python_files() — walks a plugin tree for real files vs. symlinks
+    - _find_script_usages() — finds which skills reference a given script
+    - _print_adr001_violations() — reports cross-plugin symlink violations
+    - _print_single_use_analysis() / _print_multi_use_analysis() — reports centralization findings
+    - _print_script_analysis() — combines single/multi-use analysis output
+    - _analyze_single_plugin() — runs the full analysis for one plugin
+    - analyze_plugins() — CLI entry point, runs analysis across all plugins
 """
 
 import os

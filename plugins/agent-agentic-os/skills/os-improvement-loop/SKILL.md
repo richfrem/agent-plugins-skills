@@ -63,7 +63,7 @@ The execution details are split across modular references:
 
 - **Conflation of Loops**: Conflating the inner target skill loop with the outer OS-improvement loop. Outer loop changes the OS workflows; inner loop changes target skills.
 - **Orphaned Sessions**: Completing inner loop tasks but failing to run memory promotion and survey curation. Ephemeral findings are lost.
-- **Directory Symlinks**: Creating directory-level symlinks from skills to shared roots. This violates ADR-003. Use file-level symlinks.
+- **Directory Symlinks**: Creating directory-level symlinks from skills to shared roots. Use file-level symlinks only — directory symlinks fail on cross-platform checkouts. Shared resources must be hard copies or individual file symlinks, never directory-level links.
 
 ---
 

@@ -71,9 +71,18 @@ def _find_project_root() -> Path:
         p = p.parent
     return Path.cwd()
 
+def _find_adr_dir(project_root: Path) -> Path:
+    """Auto-detects the project's ADR directory convention: prefers docs/ADRs/
+    if it already exists (matches next_number.py's ARTIFACT_TYPES["adr"]["directory"]),
+    otherwise falls back to a bare ADRs/ at the project root — so this tool works
+    correctly whichever convention the target project already uses."""
+    docs_adrs = project_root / "docs" / "ADRs"
+    if docs_adrs.exists():
+        return docs_adrs
+    return project_root / "ADRs"
+
 PROJECT_ROOT = _find_project_root()
-# Matches next_number.py ARTIFACT_TYPES["adr"]["directory"]
-ADR_DIR = PROJECT_ROOT / "ADRs"
+ADR_DIR = _find_adr_dir(PROJECT_ROOT)
 TEMPLATE_PATH = PLUGIN_ROOT / "assets" / "templates" / "adr-template.md"
 
 

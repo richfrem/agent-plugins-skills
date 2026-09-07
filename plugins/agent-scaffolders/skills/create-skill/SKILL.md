@@ -183,6 +183,6 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 
 - [`acceptance-criteria.md`](references/acceptance-criteria.md) — structural pass/fail criteria
 - [`fallback-tree.md`](fallback-tree.md) — error handling procedures
-- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.
+- **Plugin architecture conventions:** hub-and-spoke shared scripts (a script used by 2+ skills lives at the plugin root, not duplicated per-skill), no cross-plugin script imports (coordination via agent delegation only), file-level symlinks only (never directory symlinks or duplicated copies), and self-contained installed skills (zero runtime dependency on the source repo or another plugin).
 - **`os-improvement-loop`**: TDD methodology, RED scenario protocol, eval gate.
 - **`os-eval-runner`**: autoresearch eval loop for skill optimization.

@@ -165,7 +165,7 @@ find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l
    Correct the relative path before creating the symlink. Check what actually exists at the plugin
    `references/` root and recalculate the depth.
 
-**Correct symlink pattern (must match ADR manager / all standard skills):**
+**Correct symlink pattern (must match all standard skills):**
 ```
 skills/<skill>/scripts/execute.py  →  ../../../scripts/<canonical_name>.py
 skills/<skill>/references/architecture.md  →  ../../../references/architecture.md
@@ -250,11 +250,11 @@ wc -l plugins/<plugin>/skills/*/SKILL.md | sort -rn | head -10
 grep -rn "os-skill-improvement" plugins/<plugin>/skills/*/SKILL.md
 ```
 
-**ADR-003 symlink check (flag CRITICAL if violated):**
+**File-level-symlinks-only check (flag CRITICAL if violated):**
 ```bash
 # Only file-level symlinks permitted — no directory symlinks
 find plugins/<plugin> -type l | while read l; do
-  if [ -d "$l" ]; then echo "DIRECTORY SYMLINK (ADR-003 violation): $l"; fi
+  if [ -d "$l" ]; then echo "DIRECTORY SYMLINK (violates file-level-symlinks-only rule): $l"; fi
 done
 ```
 
@@ -352,7 +352,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py .
 
 ## Standards & References
 
-- **Architectural Decision Records (ADRs)** located at `references/*.md`. Always consult them (especially ADR 001-006) to verify if the plugin follows our standards for shared scripts, cross-plugin dependencies, symlinking patterns, and loose coupling. A plugin that violates these ADRs (e.g. duplicates shared scripts instead of symlinking) is considered structurally non-compliant.
+- **Compliance rules to check directly:** no cross-plugin script execution (a plugin never imports or runs another plugin's Python code); hub-and-spoke shared scripts (a script used by 2+ skills in the same plugin lives at the plugin root, not duplicated per-skill); file-level symlinks only (never directory symlinks, never duplicated copies); full self-containment (an installed skill has zero runtime dependency on the source repo or another plugin). A plugin that duplicates a shared script instead of symlinking it, or depends on another plugin's code, is structurally non-compliant.
 
 ## Standards Reference
 

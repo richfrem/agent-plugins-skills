@@ -95,7 +95,7 @@ ENGINE_PRIORITY = [
 ## RLM Cache Storage
 
 `distill_wiki.py` writes summaries directly into its own RLM cache directory.
-No cross-plugin script calls are made (ADR-001 compliant).
+No cross-plugin script execution — instead, inter-plugin coordination routes through agent skill delegation.
 
 Default cache: `{wiki-root}/rlm/{concept}/`
 

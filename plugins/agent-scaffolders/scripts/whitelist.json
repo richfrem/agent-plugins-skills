@@ -6,8 +6,7 @@
         "tool_script.py": "Dummy script name used frequently in CLI help blocks."
     },
     "plugin_ignores": {
-        "adr-manager": {},
-        "agent-orchestration/": {
+        "agent-orchestration": {
             "bundle.py": "Conceptual name in orchestrator DOES NOT list - now replaced with skill reference.",
             "check_cache.py": "Example placeholder in agent-swarm YAML job template.",
             "inject_summary.py": "Example placeholder in agent-swarm YAML job template.",
@@ -18,52 +17,36 @@
             "audit.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders.",
             "qc_analysis.py": "Hypothetical docs example.",
             "qc_core.py": "Hypothetical docs example.",
-            "scaffold.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders."
-        },
-        "agent-scaffolders": {
+            "scaffold.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders.",
             "azure_agent.py": "Generated output artifact written by scaffold_azure_agent.py into the target project.",
             "check_environment.py": "Generated output artifact scaffolded by create-docker-skill into the target project.",
-            "execute.py": "Generated output artifact rendered from execute.py.jinja template into the target project."
-        },
-        "agent-scaffolders": {
+            "execute.py": "Generated output artifact rendered from execute.py.jinja template into the target project.",
             "extract.py": "example provided",
             "script.py": "example provided",
             "shared.py": "example provided",
             "shared_util.py": "example provided",
             "plugin_installer.py": "example provided"
         },
-        "claude-cli": {},
-        "coding-conventions": {
-            "constants.py": "Module organization diagram example in SKILL.md.",
-            "models.py": "Module organization diagram example in SKILL.md.",
-            "repositories.py": "Module organization diagram example in SKILL.md.",
-            "services.py": "Module organization diagram example in SKILL.md.",
-            "utils.py": "Module organization diagram example in SKILL.md.",
-            "dependency1.py": "Module organization diagram example in SKILL.md.",
-            "dependency2.py": "Module organization diagram example in SKILL.md.",
-            "foo.py": "Module organization diagram example in SKILL.md.",
-            "parent_script.py": "Module organization diagram example in SKILL.md.",
-            "script.py": "Module organization diagram example in SKILL.md."
-        },
-        "context-bundler": {
-            "file.py": "Dummy placeholder string in SKILL.md for missing file handling examples.",
-            "main.py": "Dummy script reference in examples."
-        },
-        "copilot-cli": {},
+        "cli-agents": {},
         "dependency-management": {},
-        "gemini-cli": {},
-        "huggingface-utils": {},
-        "link-checker": {},
-        "memory-management": {},
-        "mermaid-to-png": {},
-        "obsidian-integration": {},
-        "plugin-manager": {},
-        "rlm-factory": {
-            "auth.py": "Eval prompt example in rlm-curator/evals/evals.json.",
-            "file.py": "Docstring usage example in distiller.py header comment."
+        "dev-utils": {
+            "constants.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "models.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "repositories.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "services.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "utils.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "dependency1.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "dependency2.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "foo.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "parent_script.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
+            "file.py": "Dummy placeholder string in context-bundler/SKILL.md for missing file handling examples.",
+            "main.py": "Dummy script reference in context-bundler examples."
         },
-        "rsvp-speed-reader": {},
-        "task-manager": {},
-        "vector-db": {}
+        "agent-memory": {
+            "auth.py": "Eval prompt example in rlm-curator/evals/evals.json.",
+            "file.py": "Docstring usage example in rlm-curator distiller.py header comment."
+        },
+        "obsidian-wiki-engine": {},
+        "plugin-manager": {}
     }
 }
