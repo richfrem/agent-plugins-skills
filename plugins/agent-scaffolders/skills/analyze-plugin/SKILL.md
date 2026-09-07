@@ -216,4 +216,4 @@ Always end with **Virtuous Cycle Recommendations**: specific, actionable improve
 
 ## References
 
-- **Architectural Decision Records (ADRs)** located at `references/*.md`. Always consult them (especially ADR 001-006) to evaluate if the analyzed plugin follows our standards for shared scripts, cross-plugin dependencies, symlinking patterns, and loose coupling. Use these as the source of truth for "Quality" and "Structural Analysis" assessments to avoid repeating yourself or missing standard patterns.
+- **Compliance rules to evaluate the analyzed plugin against:** no cross-plugin script execution (a plugin never imports or runs another plugin's Python code); hub-and-spoke shared scripts (a script used by 2+ skills in the same plugin lives at the plugin root, not duplicated per-skill); file-level symlinks only (never directory symlinks, never duplicated copies); full self-containment (an installed skill has zero runtime dependency on the source repo or another plugin). Use these as the source of truth for "Quality" and "Structural Analysis" assessments.
