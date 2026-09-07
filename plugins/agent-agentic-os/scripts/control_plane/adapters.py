@@ -14,7 +14,12 @@ Purpose:
     implements PersistencePort: every CRUD operation ControlPlane needs has a concrete method
     here, and ControlPlane composes this port instead of ever calling sqlite3 itself. This
     revision also adds ClockAdapter (ClockPort was declared in Step 2 but never wired to
-    anything — flagged by the same review as dead architecture).
+    anything — flagged by the same review as dead architecture). issue-552 fixed
+    _rebuild_schema_transactional()'s broken atomicity guarantee (conn.executescript()
+    silently commits any open transaction) by adding _split_schema_sql_statements() and
+    executing SCHEMA_SQL as individual statements inside the real transaction; also deferred
+    _log_orphan_merge_conflicts()'s filesystem write until after COMMIT, and added
+    _check_no_orphaned_migration_tables() as ensure_schema()'s first operation.
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Adapters (hexagonal boundary)
@@ -29,11 +34,15 @@ Key Functions:
     - FilesystemAdapter.read_text() — reads a file's full text content
     - FilesystemAdapter.exists() — checks file existence
     - ClockAdapter.current_time() / strftime() — real wall-clock time, real strftime formatting
+    - _split_schema_sql_statements() — issue-552: splits SCHEMA_SQL into individual statements
+      (preserving CREATE TRIGGER...BEGIN...END; bodies, filtering leading PRAGMAs) for atomic
+      statement-by-statement execution inside _rebuild_schema_transactional()'s transaction
     - SqlitePersistenceAdapter — full PersistencePort implementation: connection management,
       schema migration (self-healing, verbatim from the original init_db()/_schema_needs_rebuild()/
       _rebuild_schema_transactional()/_copy_common_columns()/_merge_orphaned_tasks_old()), plus
       every task/transition/receipt/review/verifier/log/worktree CRUD operation formerly issued
-      directly by ControlPlane
+      directly by ControlPlane. _check_no_orphaned_migration_tables() (issue-552) is
+      ensure_schema()'s first operation, failing loudly on a DB stuck mid-rebuild.
     - CryptoAdapter.sha256_file() — SHA256 hex digest of a file, verbatim from the former
       module-level _sha256_file()
     - CryptoAdapter.sha256_hex() — SHA256 hex digest of a string (receipt token generation)
@@ -44,6 +53,7 @@ Key Functions:
 import hashlib
 import json
 import sqlite3
+import warnings
 import subprocess
 import time
 from pathlib import Path
@@ -324,6 +334,30 @@ SCHEMA_MIGRATIONS = [
 ]
 
 
+def _split_schema_sql_statements(sql: str) -> List[str]:
+    """issue-552: splits SCHEMA_SQL into individual statements via sqlite3.complete_statement(),
+    which correctly keeps the two CREATE TRIGGER ... BEGIN ... END; blocks intact despite their
+    embedded semicolons. Filters out all PRAGMA statements wherever they occur (in practice, the
+    3 leading ones — foreign_keys, journal_mode, busy_timeout) — these must not run as individual
+    conn.execute() calls inside
+    _rebuild_schema_transactional()'s transaction: journal_mode is a documented no-op once a
+    transaction is open, and foreign_keys must stay OFF for the transaction's full duration
+    (both are already set correctly on the connection before that method runs)."""
+    statements: List[str] = []
+    buffer = ""
+    for line in sql.splitlines(keepends=True):
+        buffer += line
+        if sqlite3.complete_statement(buffer):
+            stmt = buffer.strip()
+            if stmt and not stmt.upper().startswith("PRAGMA"):
+                statements.append(stmt)
+            buffer = ""
+    leftover = buffer.strip()
+    if leftover and not leftover.upper().startswith("PRAGMA"):
+        statements.append(leftover)
+    return statements
+
+
 class SqlitePersistenceAdapter(PersistencePort):
     """SQLite-backed implementation of PersistencePort — connection management, schema
     migration, and every task/transition/receipt/review/verifier/log/worktree CRUD
@@ -379,10 +413,34 @@ class SqlitePersistenceAdapter(PersistencePort):
         conn.execute("PRAGMA busy_timeout = 5000;")
         return conn
 
+    def _check_no_orphaned_migration_tables(self, conn: sqlite3.Connection) -> None:
+        """issue-552: raises RuntimeError if any `_<table>_migrating` orphan table exists —
+        evidence of a previously-interrupted `_rebuild_schema_transactional()` run (from before
+        this issue's atomicity fix, or from a process killed/crashed mid-rebuild). Called as the
+        literal first operation in ensure_schema(), before any DDL touches the connection, so a
+        corrupted DB fails loudly and immediately with an actionable message instead of the
+        cryptic `FOREIGN KEY constraint failed` a retried rebuild attempt previously surfaced."""
+        orphans = [
+            table for table in ALL_REBUILD_TABLES
+            if conn.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?",
+                (f"_{table}_migrating",),
+            ).fetchone()[0]
+        ]
+        if orphans:
+            orphan_names = ", ".join(f"_{t}_migrating" for t in orphans)
+            raise RuntimeError(
+                f"control_plane.db has orphaned migration tables from an interrupted schema "
+                f"rebuild: {orphan_names}. Do not call ensure_schema() again until this is "
+                f"resolved manually — see plugins/agent-agentic-os/references/"
+                f"control-plane-rebuild-recovery.md for the recovery procedure."
+            )
+
     def ensure_schema(self) -> None:
         """Initializes SQLite tables and WAL mode. Self-heals FK-corrupted or legacy schemas."""
         conn = self.get_connection()
         try:
+            self._check_no_orphaned_migration_tables(conn)
             conn.execute("PRAGMA journal_mode = WAL;")
             conn.executescript(SCHEMA_SQL)
             # Apply idempotent migrations for existing databases
@@ -464,10 +522,12 @@ class SqlitePersistenceAdapter(PersistencePort):
         cols_str = ", ".join(f'"{c}"' for c in common_cols)
         conn.execute(f'INSERT INTO "{dest_table}" ({cols_str}) SELECT {cols_str} FROM "{source_table}";')
 
-    def _merge_orphaned_tasks_old(self, conn: sqlite3.Connection):
+    def _merge_orphaned_tasks_old(self, conn: sqlite3.Connection) -> List[str]:
         """Merges a dangling `_tasks_old` (from a previously-interrupted migration) into the
-        fresh `tasks` table. Logs any conflicting task_id (present in both with different
-        values) to map-debt instead of silently discarding it."""
+        fresh `tasks` table. Returns any conflicting task_id (present in both with different
+        values) instead of logging them directly — issue-552 finding #1: the caller must defer
+        the actual map-debt.md write until after the enclosing transaction's COMMIT succeeds,
+        since a filesystem append has no rollback and must not survive a rolled-back rebuild."""
         merge_cols = [r[1] for r in conn.execute('PRAGMA table_info("_tasks_old_merge");').fetchall()]
         target_cols = [r[1] for r in conn.execute('PRAGMA table_info("tasks");').fetchall()]
         common_cols = [c for c in merge_cols if c in target_cols]
@@ -484,8 +544,7 @@ class SqlitePersistenceAdapter(PersistencePort):
             placeholders = ", ".join(["?"] * len(common_cols))
             conn.execute(f'INSERT INTO tasks ({cols_str}) VALUES ({placeholders})', row)
 
-        if conflicts:
-            self._log_orphan_merge_conflicts(conflicts)
+        return conflicts
 
     def _log_orphan_merge_conflicts(self, conflicting_task_ids: List[str]):
         """Appends a map-debt entry for task_ids dropped during an orphaned-table merge
@@ -508,9 +567,22 @@ class SqlitePersistenceAdapter(PersistencePort):
         """Rebuilds tasks + all child tables together in one explicit transaction, so a
         mid-sequence failure rolls back cleanly instead of leaving a corrupted intermediate
         state. Renaming all six tables together (instead of `tasks` alone) prevents SQLite's
-        FK-auto-repoint behavior from leaving child tables pointing at a stale name."""
+        FK-auto-repoint behavior from leaving child tables pointing at a stale name.
+
+        issue-552: this guarantee was previously false. `conn.executescript(SCHEMA_SQL)`
+        silently commits any open transaction before running (documented CPython sqlite3
+        behavior) — everything after that call ran unprotected, and its embedded
+        `PRAGMA foreign_keys = ON;` re-enabled FK enforcement mid-method, which could then
+        cascade-delete not-yet-copied child rows when a `_<table>_migrating` table was dropped
+        later in the same copy loop (found empirically: DROP TABLE on a renamed parent table,
+        with FK back on, cascades to a child table whose FK definition auto-repointed to follow
+        the same rename). Fixed by executing SCHEMA_SQL as individual statements
+        (_split_schema_sql_statements) inside the one real BEGIN IMMEDIATE/COMMIT transaction,
+        with all 3 leading PRAGMAs filtered out so `foreign_keys` stays OFF for the method's
+        entire duration."""
         conn.execute("PRAGMA foreign_keys = OFF;")
         conn.execute("BEGIN IMMEDIATE;")
+        orphan_merge_conflicts: List[str] = []
         try:
             orphan_exists = conn.execute(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='_tasks_old'"
@@ -525,7 +597,8 @@ class SqlitePersistenceAdapter(PersistencePort):
                 if exists:
                     conn.execute(f'ALTER TABLE "{table}" RENAME TO "_{table}_migrating";')
 
-            conn.executescript(SCHEMA_SQL)
+            for statement in _split_schema_sql_statements(SCHEMA_SQL):
+                conn.execute(statement)
 
             # issue-523: ALTER TABLE RENAME re-points existing triggers on `tasks` to follow
             # the rename (to `_tasks_migrating`) rather than dropping them — so both
@@ -551,7 +624,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                     conn.execute(f'DROP TABLE "{migrating_name}";')
 
             if orphan_exists:
-                self._merge_orphaned_tasks_old(conn)
+                orphan_merge_conflicts = self._merge_orphaned_tasks_old(conn)
                 conn.execute('DROP TABLE "_tasks_old_merge";')
 
             conn.execute("""
@@ -588,6 +661,21 @@ class SqlitePersistenceAdapter(PersistencePort):
             raise
         finally:
             conn.execute("PRAGMA foreign_keys = ON;")
+
+        # issue-552 finding #1: only log map-debt conflicts after COMMIT has actually
+        # succeeded (control only reaches here on the non-exception path above) — this write
+        # is a plain filesystem append, invisible to SQL rollback, so logging it before COMMIT
+        # let a rolled-back rebuild leave a permanent, misleading map-debt entry for a
+        # migration that never actually completed.
+        if orphan_merge_conflicts:
+            try:
+                self._log_orphan_merge_conflicts(orphan_merge_conflicts)
+            except Exception as e:
+                # issue-552 implementation-review finding: the schema rebuild itself already
+                # committed successfully at this point — a failure to append the map-debt
+                # entry (disk full, permissions) must not be reported as a rebuild failure to
+                # every ensure_schema() caller.
+                warnings.warn(f"schema rebuild succeeded but map-debt logging failed: {e}")
 
     # --- PersistencePort CRUD implementation (moved verbatim from ControlPlane) ---
 
