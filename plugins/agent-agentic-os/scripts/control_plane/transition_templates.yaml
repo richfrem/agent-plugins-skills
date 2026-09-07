@@ -1,0 +1,1384 @@
+templates:
+- transition_id: intake_to_interview
+  from_state: INTAKE
+  to_state: INTERVIEW
+  purpose: Begin interactive requirements capture and Socratic defaulting with human user.
+  checklist:
+  - Current task state is persisted as INTAKE
+  - 'Deterministic check satisfied: prior_art_scan'
+  required_artifacts: []
+  deterministic_checks:
+  - prior_art_scan
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - interview_question
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition INTAKE -> INTERVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from INTAKE to INTERVIEW is deterministically governed by automated checks and artifacts.
+- transition_id: intake_to_draft_plan
+  from_state: INTAKE
+  to_state: DRAFT_PLAN
+  purpose: Advance lifecycle state from INTAKE to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as INTAKE
+  - Structural DAG transition from INTAKE to DRAFT_PLAN is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition INTAKE -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from INTAKE to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+- transition_id: intake_to_plan_review
+  from_state: INTAKE
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from INTAKE to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as INTAKE
+  - Structural DAG transition from INTAKE to PLAN_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions:
+  - question_id: confirm_review_intake_to_plan_review
+    question: Submit artifacts for review in PLAN_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition INTAKE -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: intake_to_escalated
+  from_state: INTAKE
+  to_state: ESCALATED
+  purpose: Escalate task from INTAKE due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as INTAKE
+  - Structural DAG transition from INTAKE to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition INTAKE -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from INTAKE to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: interview_to_draft_plan
+  from_state: INTERVIEW
+  to_state: DRAFT_PLAN
+  purpose: Synthesize interview requirements into architectural specification and task implementation plan.
+  checklist:
+  - Current task state is persisted as INTERVIEW
+  - 'Deterministic check satisfied: plan_mode_or_socratic'
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks:
+  - plan_mode_or_socratic
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - plan_write
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition INTERVIEW -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from INTERVIEW to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+- transition_id: interview_to_plan_review
+  from_state: INTERVIEW
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from INTERVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as INTERVIEW
+  - 'Deterministic check satisfied: plan_mode_or_socratic'
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks:
+  - plan_mode_or_socratic
+  human_questions:
+  - question_id: confirm_review_interview_to_plan_review
+    question: Submit artifacts for review in PLAN_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition INTERVIEW -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: interview_to_escalated
+  from_state: INTERVIEW
+  to_state: ESCALATED
+  purpose: Escalate task from INTERVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as INTERVIEW
+  - Structural DAG transition from INTERVIEW to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition INTERVIEW -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from INTERVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: draft_plan_to_multi_agent_review
+  from_state: DRAFT_PLAN
+  to_state: MULTI_AGENT_REVIEW
+  purpose: Submit draft specification and implementation plan for independent multi-agent review.
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - Structural DAG transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: submit_for_multi_agent_review
+    question: Submit plan for independent multi-agent review?
+    options:
+    - Yes, generate review bundles [Recommended]
+    - No, skip optional review
+    default: Yes, generate review bundles [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition DRAFT_PLAN -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is deterministically governed by automated checks and artifacts.
+- transition_id: draft_plan_to_plan_review
+  from_state: DRAFT_PLAN
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from DRAFT_PLAN to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: plan_review_submission
+    question: Submit draft implementation plan for plan review?
+    options:
+    - Proceed with plan review [Recommended]
+    - Revise draft plan
+    default: Proceed with plan review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition DRAFT_PLAN -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: draft_plan_to_awaiting_approval
+  from_state: DRAFT_PLAN
+  to_state: AWAITING_APPROVAL
+  purpose: Advance lifecycle state from DRAFT_PLAN to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - 'Deterministic check satisfied: critic_review_or_skip'
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks:
+  - critic_review_or_skip
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: true
+    requires_justification: true
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition DRAFT_PLAN -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from DRAFT_PLAN to AWAITING_APPROVAL is deterministically governed by automated checks and artifacts.
+- transition_id: draft_plan_to_interview
+  from_state: DRAFT_PLAN
+  to_state: INTERVIEW
+  purpose: Advance lifecycle state from DRAFT_PLAN to INTERVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - Structural DAG transition from DRAFT_PLAN to INTERVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition DRAFT_PLAN -> INTERVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from DRAFT_PLAN to INTERVIEW is deterministically governed by automated checks and artifacts.
+- transition_id: draft_plan_to_escalated
+  from_state: DRAFT_PLAN
+  to_state: ESCALATED
+  purpose: Escalate task from DRAFT_PLAN due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - Structural DAG transition from DRAFT_PLAN to ESCALATED is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition DRAFT_PLAN -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from DRAFT_PLAN to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: multi_agent_review_to_draft_plan
+  from_state: MULTI_AGENT_REVIEW
+  to_state: DRAFT_PLAN
+  purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_REVIEW
+  - Structural DAG transition from MULTI_AGENT_REVIEW to DRAFT_PLAN is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - plan_write
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_REVIEW to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+- transition_id: multi_agent_review_to_plan_review
+  from_state: MULTI_AGENT_REVIEW
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_REVIEW
+  - Structural DAG transition from MULTI_AGENT_REVIEW to PLAN_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions:
+  - question_id: confirm_review_multi_agent_review_to_plan_review
+    question: Submit artifacts for review in PLAN_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: multi_agent_review_to_awaiting_approval
+  from_state: MULTI_AGENT_REVIEW
+  to_state: AWAITING_APPROVAL
+  purpose: Advance approved plan to awaiting human approval stage gate.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_REVIEW
+  - 'Deterministic check satisfied: critic_review_pass'
+  required_artifacts: []
+  deterministic_checks:
+  - critic_review_pass
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_REVIEW to AWAITING_APPROVAL is deterministically governed by automated checks
+      and artifacts.
+- transition_id: multi_agent_review_to_escalated
+  from_state: MULTI_AGENT_REVIEW
+  to_state: ESCALATED
+  purpose: Escalate task from MULTI_AGENT_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_REVIEW
+  - Structural DAG transition from MULTI_AGENT_REVIEW to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_REVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: plan_review_to_multi_agent_review
+  from_state: PLAN_REVIEW
+  to_state: MULTI_AGENT_REVIEW
+  purpose: Advance lifecycle state from PLAN_REVIEW to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - Structural DAG transition from PLAN_REVIEW to MULTI_AGENT_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition PLAN_REVIEW -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from PLAN_REVIEW to MULTI_AGENT_REVIEW is deterministically governed by automated checks and artifacts.
+- transition_id: plan_review_to_awaiting_approval
+  from_state: PLAN_REVIEW
+  to_state: AWAITING_APPROVAL
+  purpose: Advance lifecycle state from PLAN_REVIEW to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - 'Deterministic check satisfied: critic_review_or_skip'
+  required_artifacts: []
+  deterministic_checks:
+  - critic_review_or_skip
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: true
+    requires_justification: true
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition PLAN_REVIEW -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from PLAN_REVIEW to AWAITING_APPROVAL is deterministically governed by automated checks and artifacts.
+- transition_id: plan_review_to_draft_plan
+  from_state: PLAN_REVIEW
+  to_state: DRAFT_PLAN
+  purpose: Advance lifecycle state from PLAN_REVIEW to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - Structural DAG transition from PLAN_REVIEW to DRAFT_PLAN is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - plan_write
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition PLAN_REVIEW -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from PLAN_REVIEW to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+- transition_id: plan_review_to_interview
+  from_state: PLAN_REVIEW
+  to_state: INTERVIEW
+  purpose: Advance lifecycle state from PLAN_REVIEW to INTERVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - Structural DAG transition from PLAN_REVIEW to INTERVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition PLAN_REVIEW -> INTERVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from PLAN_REVIEW to INTERVIEW is deterministically governed by automated checks and artifacts.
+- transition_id: plan_review_to_escalated
+  from_state: PLAN_REVIEW
+  to_state: ESCALATED
+  purpose: Escalate task from PLAN_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - Structural DAG transition from PLAN_REVIEW to ESCALATED is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition PLAN_REVIEW -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from PLAN_REVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: awaiting_approval_to_approved
+  from_state: AWAITING_APPROVAL
+  to_state: APPROVED
+  purpose: Obtain explicit human approval to proceed with task implementation and worktree creation.
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Structural DAG transition from AWAITING_APPROVAL to APPROVED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: human_implementation_approval
+    question: Approve task implementation and worktree creation?
+    options:
+    - Yes, approve implementation [Recommended]
+    - No, hold in AWAITING_APPROVAL
+    default: Yes, approve implementation [Recommended]
+  approval:
+    required: true
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - push branch to origin
+  denial_message: 'Transition AWAITING_APPROVAL -> APPROVED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: Advancing to APPROVED requires explicit human review and authorization gate decision.
+- transition_id: awaiting_approval_to_multi_agent_review
+  from_state: AWAITING_APPROVAL
+  to_state: MULTI_AGENT_REVIEW
+  purpose: Advance lifecycle state from AWAITING_APPROVAL to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Structural DAG transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition AWAITING_APPROVAL -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is deterministically governed by automated checks
+      and artifacts.
+- transition_id: awaiting_approval_to_plan_review
+  from_state: AWAITING_APPROVAL
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from AWAITING_APPROVAL to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Structural DAG transition from AWAITING_APPROVAL to PLAN_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions:
+  - question_id: confirm_review_awaiting_approval_to_plan_review
+    question: Submit artifacts for review in PLAN_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition AWAITING_APPROVAL -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: awaiting_approval_to_draft_plan
+  from_state: AWAITING_APPROVAL
+  to_state: DRAFT_PLAN
+  purpose: Advance lifecycle state from AWAITING_APPROVAL to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Structural DAG transition from AWAITING_APPROVAL to DRAFT_PLAN is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - plan_write
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition AWAITING_APPROVAL -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from AWAITING_APPROVAL to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+- transition_id: awaiting_approval_to_escalated
+  from_state: AWAITING_APPROVAL
+  to_state: ESCALATED
+  purpose: Escalate task from AWAITING_APPROVAL due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Structural DAG transition from AWAITING_APPROVAL to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition AWAITING_APPROVAL -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from AWAITING_APPROVAL to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: approved_to_in_worktree
+  from_state: APPROVED
+  to_state: IN_WORKTREE
+  purpose: Create isolated git worktree and begin test-first implementation.
+  checklist:
+  - Current task state is persisted as APPROVED
+  - 'Deterministic check satisfied: human_approval'
+  required_artifacts: []
+  deterministic_checks:
+  - human_approval
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition APPROVED -> IN_WORKTREE denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from APPROVED to IN_WORKTREE is deterministically governed by automated checks and artifacts.
+- transition_id: approved_to_escalated
+  from_state: APPROVED
+  to_state: ESCALATED
+  purpose: Escalate task from APPROVED due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as APPROVED
+  - Structural DAG transition from APPROVED to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition APPROVED -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from APPROVED to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: in_worktree_to_worktree_review
+  from_state: IN_WORKTREE
+  to_state: WORKTREE_REVIEW
+  purpose: Verify implementation tests pass and enter worktree review.
+  checklist:
+  - Current task state is persisted as IN_WORKTREE
+  - 'Deterministic check satisfied: test_suite'
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  - .worktrees/<task-id>
+  deterministic_checks:
+  - test_suite
+  human_questions:
+  - question_id: confirm_review_in_worktree_to_worktree_review
+    question: Submit artifacts for review in WORKTREE_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition IN_WORKTREE -> WORKTREE_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into WORKTREE_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: in_worktree_to_verify_exit
+  from_state: IN_WORKTREE
+  to_state: VERIFY_EXIT
+  purpose: Advance lifecycle state from IN_WORKTREE to VERIFY_EXIT upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as IN_WORKTREE
+  - Structural DAG transition from IN_WORKTREE to VERIFY_EXIT is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - exit_verification
+  capabilities_prohibited: []
+  denial_message: 'Transition IN_WORKTREE -> VERIFY_EXIT denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from IN_WORKTREE to VERIFY_EXIT is deterministically governed by automated checks and artifacts.
+- transition_id: in_worktree_to_rolled_back
+  from_state: IN_WORKTREE
+  to_state: ROLLED_BACK
+  purpose: Roll back worktree changes from IN_WORKTREE to clean baseline.
+  checklist:
+  - Current task state is persisted as IN_WORKTREE
+  - 'Deterministic check satisfied: rolled_back_guard'
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks:
+  - rolled_back_guard
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition IN_WORKTREE -> ROLLED_BACK denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from IN_WORKTREE to ROLLED_BACK is deterministically governed by automated checks and artifacts.
+- transition_id: in_worktree_to_escalated
+  from_state: IN_WORKTREE
+  to_state: ESCALATED
+  purpose: Escalate task from IN_WORKTREE due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as IN_WORKTREE
+  - Structural DAG transition from IN_WORKTREE to ESCALATED is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition IN_WORKTREE -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from IN_WORKTREE to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: worktree_review_to_multi_agent_code_review
+  from_state: WORKTREE_REVIEW
+  to_state: MULTI_AGENT_CODE_REVIEW
+  purpose: Submit worktree code diff for independent multi-agent adversarial code review.
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - Structural DAG transition from WORKTREE_REVIEW to MULTI_AGENT_CODE_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions:
+  - question_id: confirm_review_worktree_review_to_multi_agent_code_review
+    question: Submit artifacts for review in MULTI_AGENT_CODE_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into MULTI_AGENT_CODE_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: worktree_review_to_verify_exit
+  from_state: WORKTREE_REVIEW
+  to_state: VERIFY_EXIT
+  purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - 'Deterministic check satisfied: code_review_or_skip'
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks:
+  - code_review_or_skip
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: true
+    requires_justification: true
+  capabilities_released:
+  - exit_verification
+  capabilities_prohibited: []
+  denial_message: 'Transition WORKTREE_REVIEW -> VERIFY_EXIT denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from WORKTREE_REVIEW to VERIFY_EXIT is deterministically governed by automated checks and artifacts.
+- transition_id: worktree_review_to_in_worktree
+  from_state: WORKTREE_REVIEW
+  to_state: IN_WORKTREE
+  purpose: Advance lifecycle state from WORKTREE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - Structural DAG transition from WORKTREE_REVIEW to IN_WORKTREE is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition WORKTREE_REVIEW -> IN_WORKTREE denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from WORKTREE_REVIEW to IN_WORKTREE is deterministically governed by automated checks and artifacts.
+- transition_id: worktree_review_to_rolled_back
+  from_state: WORKTREE_REVIEW
+  to_state: ROLLED_BACK
+  purpose: Roll back worktree changes from WORKTREE_REVIEW to clean baseline.
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - 'Deterministic check satisfied: rolled_back_guard'
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks:
+  - rolled_back_guard
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition WORKTREE_REVIEW -> ROLLED_BACK denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from WORKTREE_REVIEW to ROLLED_BACK is deterministically governed by automated checks and artifacts.
+- transition_id: worktree_review_to_escalated
+  from_state: WORKTREE_REVIEW
+  to_state: ESCALATED
+  purpose: Escalate task from WORKTREE_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - Structural DAG transition from WORKTREE_REVIEW to ESCALATED is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition WORKTREE_REVIEW -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from WORKTREE_REVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: multi_agent_code_review_to_worktree_review
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: WORKTREE_REVIEW
+  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW upon satisfying phase requirements and
+    verifications.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions:
+  - question_id: confirm_review_multi_agent_code_review_to_worktree_review
+    question: Submit artifacts for review in WORKTREE_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> WORKTREE_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into WORKTREE_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: multi_agent_code_review_to_verify_exit
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: VERIFY_EXIT
+  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - exit_verification
+  capabilities_prohibited: []
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is deterministically governed by automated checks
+      and artifacts.
+- transition_id: multi_agent_code_review_to_in_worktree
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: IN_WORKTREE
+  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> IN_WORKTREE denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is deterministically governed by automated checks
+      and artifacts.
+- transition_id: multi_agent_code_review_to_rolled_back
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: ROLLED_BACK
+  purpose: Roll back worktree changes from MULTI_AGENT_CODE_REVIEW to clean baseline.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - 'Deterministic check satisfied: rolled_back_guard'
+  required_artifacts: []
+  deterministic_checks:
+  - rolled_back_guard
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> ROLLED_BACK denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_CODE_REVIEW to ROLLED_BACK is deterministically governed by automated checks
+      and artifacts.
+- transition_id: multi_agent_code_review_to_escalated
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: ESCALATED
+  purpose: Escalate task from MULTI_AGENT_CODE_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from MULTI_AGENT_CODE_REVIEW to ESCALATED is deterministically governed by automated checks and
+      artifacts.
+- transition_id: verify_exit_to_done
+  from_state: VERIFY_EXIT
+  to_state: DONE
+  purpose: Verify clean leak checks, asymmetric persistence, and complete task.
+  checklist:
+  - Current task state is persisted as VERIFY_EXIT
+  - 'Deterministic check satisfied: done_guard'
+  required_artifacts: []
+  deterministic_checks:
+  - done_guard
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition VERIFY_EXIT -> DONE denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from VERIFY_EXIT to DONE is deterministically governed by automated checks and artifacts.
+- transition_id: verify_exit_to_in_worktree
+  from_state: VERIFY_EXIT
+  to_state: IN_WORKTREE
+  purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as VERIFY_EXIT
+  - Structural DAG transition from VERIFY_EXIT to IN_WORKTREE is legal
+  required_artifacts:
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition VERIFY_EXIT -> IN_WORKTREE denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from VERIFY_EXIT to IN_WORKTREE is deterministically governed by automated checks and artifacts.
+- transition_id: verify_exit_to_worktree_review
+  from_state: VERIFY_EXIT
+  to_state: WORKTREE_REVIEW
+  purpose: Advance lifecycle state from VERIFY_EXIT to WORKTREE_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as VERIFY_EXIT
+  - Structural DAG transition from VERIFY_EXIT to WORKTREE_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  - .worktrees/<task-id>
+  deterministic_checks: []
+  human_questions:
+  - question_id: confirm_review_verify_exit_to_worktree_review
+    question: Submit artifacts for review in WORKTREE_REVIEW?
+    options:
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    default: Proceed with review [Recommended]
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - push branch to origin without review pass
+  - merge into origin/main directly
+  denial_message: 'Transition VERIFY_EXIT -> WORKTREE_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_review
+    explanation: Entry into WORKTREE_REVIEW requires human confirmation of review scope and artifacts.
+- transition_id: verify_exit_to_rolled_back
+  from_state: VERIFY_EXIT
+  to_state: ROLLED_BACK
+  purpose: Roll back worktree changes from VERIFY_EXIT to clean baseline.
+  checklist:
+  - Current task state is persisted as VERIFY_EXIT
+  - 'Deterministic check satisfied: rolled_back_guard'
+  required_artifacts: []
+  deterministic_checks:
+  - rolled_back_guard
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition VERIFY_EXIT -> ROLLED_BACK denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from VERIFY_EXIT to ROLLED_BACK is deterministically governed by automated checks and artifacts.
+- transition_id: verify_exit_to_escalated
+  from_state: VERIFY_EXIT
+  to_state: ESCALATED
+  purpose: Escalate task from VERIFY_EXIT due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as VERIFY_EXIT
+  - Structural DAG transition from VERIFY_EXIT to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition VERIFY_EXIT -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: deterministic
+    explanation: Transition from VERIFY_EXIT to ESCALATED is deterministically governed by automated checks and artifacts.
+- transition_id: rolled_back_to_escalated
+  from_state: ROLLED_BACK
+  to_state: ESCALATED
+  purpose: Escalate task from ROLLED_BACK due to blocking failure, unresolvable ambiguity, or user intervention.
+  checklist:
+  - Current task state is persisted as ROLLED_BACK
+  - Structural DAG transition from ROLLED_BACK to ESCALATED is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: recovery_approval_rolled_back_to_escalated
+    question: Authorize recovery transition from ROLLED_BACK to ESCALATED?
+    options:
+    - Yes, authorize recovery [Recommended]
+    - No, remain in current state
+    default: Yes, authorize recovery [Recommended]
+  approval:
+    required: true
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Transition ROLLED_BACK -> ESCALATED denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: Advancing to ESCALATED requires explicit human review and authorization gate decision.
+- transition_id: rolled_back_to_plan_review
+  from_state: ROLLED_BACK
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from ROLLED_BACK to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as ROLLED_BACK
+  - Structural DAG transition from ROLLED_BACK to PLAN_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions:
+  - question_id: recovery_approval_rolled_back_to_plan_review
+    question: Authorize recovery transition from ROLLED_BACK to PLAN_REVIEW?
+    options:
+    - Yes, authorize recovery [Recommended]
+    - No, remain in current state
+    default: Yes, authorize recovery [Recommended]
+  approval:
+    required: true
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition ROLLED_BACK -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: Advancing to PLAN_REVIEW requires explicit human review and authorization gate decision.
+- transition_id: escalated_to_intake
+  from_state: ESCALATED
+  to_state: INTAKE
+  purpose: Advance lifecycle state from ESCALATED to INTAKE upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as ESCALATED
+  - Structural DAG transition from ESCALATED to INTAKE is legal
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: recovery_approval_escalated_to_intake
+    question: Authorize recovery transition from ESCALATED to INTAKE?
+    options:
+    - Yes, authorize recovery [Recommended]
+    - No, remain in current state
+    default: Yes, authorize recovery [Recommended]
+  approval:
+    required: true
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition ESCALATED -> INTAKE denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: Advancing to INTAKE requires explicit human review and authorization gate decision.
+- transition_id: escalated_to_plan_review
+  from_state: ESCALATED
+  to_state: PLAN_REVIEW
+  purpose: Advance lifecycle state from ESCALATED to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  checklist:
+  - Current task state is persisted as ESCALATED
+  - Structural DAG transition from ESCALATED to PLAN_REVIEW is legal
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks: []
+  human_questions:
+  - question_id: recovery_approval_escalated_to_plan_review
+    question: Authorize recovery transition from ESCALATED to PLAN_REVIEW?
+    options:
+    - Yes, authorize recovery [Recommended]
+    - No, remain in current state
+    default: Yes, authorize recovery [Recommended]
+  approval:
+    required: true
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition ESCALATED -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: Advancing to PLAN_REVIEW requires explicit human review and authorization gate decision.

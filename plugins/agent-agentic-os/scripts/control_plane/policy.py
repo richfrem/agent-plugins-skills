@@ -25,14 +25,14 @@ Layer:
 Key Input Dependencies:
     None directly — all data arrives via the `ctx` dict passed to `evaluate()`.
 
-Key Functions:
+    Key Functions:
     - PolicyViolation — exception raised when a rule's check fails (caller-facing validation
       failure, e.g. missing receipt)
     - PolicyConfigurationError — exception raised when a rule itself is malformed (an unknown
       `check` type) — a bug in the policy registry, never silently treated as a pass
-    - TRANSITION_RULES — declarative registry keyed by (from_state, to_state)
+    - CHECK_REGISTRY — closed registry of deterministic check callables keyed by check_id
     - OPERATION_RULES — declarative registry keyed by operation name
-    - evaluate_transition() — evaluates all rules registered for a given transition edge
+    - evaluate_check() — evaluates a deterministic check by check_id
     - evaluate_operation() — evaluates all rules registered for a given operation name
 """
 
@@ -152,145 +152,87 @@ def _worktree_push_check(ctx: Dict[str, Any]) -> Optional[str]:
     )
 
 
-# --- Lifecycle transition rules, keyed by (from_state, to_state) ---
-# Each entry is a list of rules; ALL rules in the list must pass. A rule is either:
-#   {"check": "any_of", "options": [...]} / {"check": "receipt", "gate_name": ...} /
-#   {"check": "critic_review_pass"}  — declarative registry checks (formerly GATE_REQUIREMENTS)
-#   {"check": "predicate", "fn": <callable>, "applies_to": <optional edge filter>} — folded-in guards
-TRANSITION_RULES: Dict[Tuple[str, str], List[Dict[str, Any]]] = {
-    ("INTAKE", "INTERVIEW"): [
-        {"check": "predicate", "fn": _prior_art_check},
-    ],
-    ("INTERVIEW", "DRAFT_PLAN"): [
-        {
-            "check": "any_of",
-            "options": [
-                {"type": "receipt", "gate_name": "plan_mode_entry"},
-                {"type": "receipt", "gate_name": "socratic_intake_complete"},
-            ],
-            "error": "Cannot enter DRAFT_PLAN: no proof Plan Mode was entered or Socratic intake "
-                     "completed. Call record_plan_mode_entry() or record_socratic_intake_complete() first.",
-        },
-    ],
-    ("INTERVIEW", "PLAN_REVIEW"): [
-        {
-            "check": "any_of",
-            "options": [
-                {"type": "receipt", "gate_name": "plan_mode_entry"},
-                {"type": "receipt", "gate_name": "socratic_intake_complete"},
-            ],
-            "error": "Cannot enter PLAN_REVIEW: no proof Plan Mode was entered or Socratic intake "
-                     "completed. Call record_plan_mode_entry() or record_socratic_intake_complete() first.",
-        },
-    ],
-    ("DRAFT_PLAN", "AWAITING_APPROVAL"): [
-        {
-            "check": "any_of",
-            "options": [
-                {"type": "critic_review_pass"},
-                {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
-            ],
-            "error": "Cannot enter AWAITING_APPROVAL: no passing critic review or explicit recorded "
-                     "skip found. Call record_critic_review(verdict='PASS') or record_review_skip().",
-        },
-    ],
-    ("PLAN_REVIEW", "AWAITING_APPROVAL"): [
-        {
-            "check": "any_of",
-            "options": [
-                {"type": "critic_review_pass"},
-                {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
-            ],
-            "error": "Cannot enter AWAITING_APPROVAL: no passing critic review or explicit recorded "
-                     "skip found. Call record_critic_review(verdict='PASS') or record_review_skip().",
-        },
-    ],
-    ("MULTI_AGENT_REVIEW", "AWAITING_APPROVAL"): [
-        {
-            "check": "critic_review_pass",
-            "error": "Cannot enter AWAITING_APPROVAL: no passing critic review found after "
-                     "MULTI_AGENT_REVIEW. Call record_critic_review(verdict='PASS').",
-        },
-    ],
-    ("APPROVED", "IN_WORKTREE"): [
-        {
-            "check": "receipt",
-            "gate_name": "human_approval",
-            "error": "Cannot enter IN_WORKTREE: no recorded human_approval receipt found. "
-                     "Call record_human_approval() — this gate can never be skipped.",
-        },
-    ],
-    ("IN_WORKTREE", "WORKTREE_REVIEW"): [
-        {
-            "check": "receipt",
-            "gate_name": "test_suite",
-            "error": "Cannot enter WORKTREE_REVIEW: no recorded test_suite verification receipt found. "
-                     "Call record_verification_receipt(gate_name='test_suite', ...).",
-        },
-    ],
-    ("WORKTREE_REVIEW", "VERIFY_EXIT"): [
-        {
-            "check": "any_of",
-            "options": [
-                {"type": "critic_review_pass"},
-                {"type": "receipt", "gate_name": "multi_agent_code_review_skipped"},
-            ],
-            "error": "Cannot enter VERIFY_EXIT: no passing critic review or explicit recorded skip "
-                     "found. Call record_critic_review(verdict='PASS') or record_review_skip().",
-        },
-    ],
-}
-
-# _done_check and _rolled_back_check apply to ANY edge landing on DONE / ROLLED_BACK
-# respectively, not one specific (from_state, to_state) pair — registered separately since
-# the original guards fired on `to_state` alone, independent of `from_state`.
-TO_STATE_RULES: Dict[str, List[Dict[str, Any]]] = {
-    "DONE": [{"check": "predicate", "fn": _done_check}],
-    "ROLLED_BACK": [{"check": "predicate", "fn": _rolled_back_check}],
-}
-
 # --- Controlled-operation rules, keyed by operation name (not a lifecycle transition) ---
 OPERATION_RULES: Dict[str, List[Dict[str, Any]]] = {
     "worktree_push": [{"check": "predicate", "fn": _worktree_push_check}],
 }
 
 
-def _run_rule(ctx: Dict[str, Any], rule: Dict[str, Any]) -> None:
-    """Evaluates a single rule against ctx; raises PolicyViolation with the rule's configured
-    error message (or the predicate's returned message) if the rule fails. An unrecognized
-    `check` type fails CLOSED — raises PolicyConfigurationError — rather than silently passing;
-    this is the single authoritative policy engine, so a misconfigured/misspelled rule type
-    must never be mistaken for "no rule to enforce"."""
-    check = rule["check"]
-    if check == "receipt":
-        satisfied = _gate_receipt_exists(ctx, rule["gate_name"])
-    elif check == "critic_review_pass":
-        satisfied = _gate_critic_review_pass(ctx)
-    elif check == "any_of":
-        satisfied = _gate_any_of(ctx, rule["options"])
-    elif check == "predicate":
-        error = rule["fn"](ctx)
-        if error is not None:
-            raise PolicyViolation(error)
-        return
-    else:
-        raise PolicyConfigurationError(f"Unknown policy check type: {check!r} in rule {rule!r}")
-    if not satisfied:
-        raise PolicyViolation(rule["error"])
+# --- Closed Check Registry: check_id -> callable predicate ---
+CHECK_REGISTRY: Dict[str, Any] = {
+    "prior_art_scan": _prior_art_check,
+    "plan_mode_or_socratic": lambda ctx: (
+        None if _gate_any_of(ctx, [
+            {"type": "receipt", "gate_name": "plan_mode_entry"},
+            {"type": "receipt", "gate_name": "socratic_intake_complete"},
+        ]) else (
+            "Cannot advance: no proof Plan Mode was entered or Socratic intake completed. "
+            "Call record_plan_mode_entry() or record_socratic_intake_complete() first."
+        )
+    ),
+    "critic_review_or_skip": lambda ctx: (
+        None if _gate_any_of(ctx, [
+            {"type": "critic_review_pass"},
+            {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
+        ]) else (
+            "Cannot advance: no passing critic review or explicit recorded skip found. "
+            "Call record_critic_review(verdict='PASS') or record_review_skip()."
+        )
+    ),
+    "critic_review_pass": lambda ctx: (
+        None if _gate_critic_review_pass(ctx) else (
+            "Cannot advance: no passing critic review found. Call record_critic_review(verdict='PASS')."
+        )
+    ),
+    "human_approval": lambda ctx: (
+        None if _gate_receipt_exists(ctx, "human_approval") else (
+            "Cannot advance: no recorded human_approval receipt found. "
+            "Call record_human_approval() — this gate can never be skipped."
+        )
+    ),
+    "test_suite": lambda ctx: (
+        None if _gate_receipt_exists(ctx, "test_suite") else (
+            "Cannot advance: no recorded test_suite verification receipt found. "
+            "Call record_verification_receipt(gate_name='test_suite', ...)."
+        )
+    ),
+    "code_review_or_skip": lambda ctx: (
+        None if _gate_any_of(ctx, [
+            {"type": "critic_review_pass"},
+            {"type": "receipt", "gate_name": "multi_agent_code_review_skipped"},
+        ]) else (
+            "Cannot advance: no passing critic review or explicit recorded skip found. "
+            "Call record_critic_review(verdict='PASS') or record_review_skip()."
+        )
+    ),
+    "done_guard": _done_check,
+    "rolled_back_guard": _rolled_back_check,
+}
 
 
-def evaluate_transition(ctx: Dict[str, Any], from_state: str, to_state: str) -> None:
-    """Evaluates every rule registered for the (from_state, to_state) edge, plus any
-    to_state-wide rule (DONE/ROLLED_BACK guards). Raises PolicyViolation on the first
-    failing rule; does nothing if all applicable rules pass or none are registered."""
-    for rule in TRANSITION_RULES.get((from_state, to_state), []):
-        _run_rule(ctx, rule)
-    for rule in TO_STATE_RULES.get(to_state, []):
-        _run_rule(ctx, rule)
+def get_registered_check_ids() -> List[str]:
+    """Returns a list of all registered deterministic check IDs."""
+    return list(CHECK_REGISTRY.keys())
+
+
+def evaluate_check(check_id: str, ctx: Dict[str, Any]) -> None:
+    """Evaluates a single check by its check_id. Raises PolicyViolation if check fails,
+    or PolicyConfigurationError if check_id is unrecognized."""
+    if check_id not in CHECK_REGISTRY:
+        raise PolicyConfigurationError(f"Unknown check_id: '{check_id}'")
+    fn = CHECK_REGISTRY[check_id]
+    error = fn(ctx)
+    if error is not None:
+        raise PolicyViolation(error)
 
 
 def evaluate_operation(ctx: Dict[str, Any], operation_name: str) -> None:
     """Evaluates every rule registered for the given controlled operation (e.g.
     'worktree_push'). Raises PolicyViolation on the first failing rule."""
+    if operation_name not in OPERATION_RULES:
+        raise PolicyConfigurationError(f"Unknown operation: '{operation_name}'")
     for rule in OPERATION_RULES.get(operation_name, []):
-        _run_rule(ctx, rule)
+        error = rule["fn"](ctx)
+        if error is not None:
+            raise PolicyViolation(error)
+
