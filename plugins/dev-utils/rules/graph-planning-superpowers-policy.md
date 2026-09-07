@@ -17,10 +17,20 @@ globs: ["**/*"]
 
 ## 1. Overview & 4-Phase Lifecycle
 
-All non-trivial engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
+All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
 Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+   │
+   ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
+   │    fast-track directly to INTAKE -> DONE, skipping Phases 1-3 entirely.
+   │    No spec/plan compilation, no worktree isolation, no multi-agent review —
+   │    the triage answer itself is the sole recorded audit artifact. Work still
+   │    happens on a feature branch followed by a normal PR; only ceremony is
+   │    skipped, never branch discipline or the push-to-origin gate.
+   │    See interview-spec/SKILL.md and GitHub Issue #534 for the full design.
+   │
+   └─ STANDARD classification: continue below.
    │
 Phase 1: Native Plan Mode & Adversarial Review (critical-auditor + Human Gate)
    │
@@ -29,11 +39,22 @@ Phase 2: Worktree Isolation & Superpowers TDD (.worktrees/task-<id> + Red-Green-
 Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary + Wiki)
 ```
 
+**Scope note:** this policy governs tasks tracked in `agent_control.py`'s SQLite control
+plane. The `self-evolution` skill runs a separate, independent lifecycle
+(`evolution_state.py`, TRIAGE→...→COMPLETED/ROLLBACK/ESCALATED) with its own worktree
+convention and approval flow — see `self-evolution-policy.md` and Section 4's note below.
+Whether these two systems should eventually be reconciled into one is an open architectural
+question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugins-skills/issues/537); until that's decided, treat them as two separately-governed systems, not one universal mechanism.
+
 ---
 
 ## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
 
-Before Plan Mode can ever be entered, the task must be bounded:
+Before Plan Mode can ever be entered, the task must be bounded. Immediately after task
+registration and before any Socratic question, `interview-spec` asks one direct triage
+question — TRIVIAL or STANDARD — with a heuristic-derived recommended default (see the
+TRIVIAL fast-track branch in Section 1). Only STANDARD-classified tasks proceed through the
+rest of this phase and into Phase 1:
 
 1. **Read-Only Exploration Cycle:**
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
@@ -69,6 +90,12 @@ Before Plan Mode can ever be entered, the task must be bounded:
 1. **Standard Worktree Topology:**
    - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
    - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
+   - **This convention applies to `agent_control.py`-tracked tasks only.** `self-evolution`
+     cycles use their own separate, documented convention — sibling directories under
+     `../worktree-evolution-<cycle_id>/` — per `self-evolution/SKILL.md` and
+     `self-evolution-policy.md`. This is not a violation of the rule above; it's a
+     different, independently-governed system (see Section 1's scope note and
+     [#537](https://github.com/richfrem/agent-plugins-skills/issues/537)).
 2. **Superpowers TDD Deferral Rule:**
    - Invoke Superpowers execution loops only where native execution lacks automated TDD or DAG management.
    - Enforce strict Red-Green-Refactor:
