@@ -236,9 +236,12 @@ templates:
   - question_id: submit_for_multi_agent_review
     question: Submit plan for independent multi-agent review?
     options:
-    - Yes, generate review bundles [Recommended]
-    - No, skip optional review
-    default: Yes, generate review bundles [Recommended]
+    - No, skip review entirely
+    - Yes, single-agent review — sub-agent (internal)
+    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -913,11 +916,14 @@ templates:
   deterministic_checks: []
   human_questions:
   - question_id: confirm_review_worktree_review_to_multi_agent_code_review
-    question: Submit artifacts for review in MULTI_AGENT_CODE_REVIEW?
+    question: Submit implementation for independent code review?
     options:
-    - Proceed with review [Recommended]
-    - Continue revising prior stage
-    default: Proceed with review [Recommended]
+    - No, skip review entirely
+    - Yes, single-agent review — sub-agent (internal)
+    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
