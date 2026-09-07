@@ -1,7 +1,7 @@
 ---
 name: interview-spec
 plugin: agent-agentic-os
-version: 1.1.0
+version: 1.2.0
 description: >
   CRITICAL INTAKE GATEWAY: Use at the very start of ANY non-trivial engineering task,
   feature request, architectural refactor, or multi-file bugfix before entering plan mode
@@ -48,13 +48,43 @@ Route on the returned mode — do not proceed to Socratic questions if a native 
 | `DEFER_ANTIGRAVITY` | Invoke Antigravity's native planning mode. Do not run Socratic Defaulting. |
 | `EXECUTE_SOCRATIC_FALLBACK` | Proceed to Socratic Defaulting (1-3 questions at a time, structured options with an explicit recommended default) and compile `TASK_SPEC.md` directly. |
 
-### 2. Register Task in SQLite Control Plane
+### 2. Register Task, Then Triage: TRIVIAL vs STANDARD
+Register the task first — every task gets a row and an audit trail regardless of size:
 ```bash
 python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/<task-id>-spec.md"
-python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "INTERVIEW" --reason "Beginning Socratic intake"
 ```
 
-During the interview, use the fixed-identity wrapper `record_interview_question.py` to record each Q&A turn.
+**Before asking any Socratic question**, ask the human exactly one triage question. Compute a
+recommended default from a cheap heuristic (single file touched, description contains
+words like "typo", "fix wording", "one-line" → default TRIVIAL; anything else → default
+STANDARD) — never assume the answer silently in either direction:
+
+> *"Is this a trivial fix (single-file/few-line, no architectural impact) or a standard task
+> requiring the full spec/review pipeline? [Recommended: <heuristic default>]"*
+
+- **If STANDARD** (or the default): proceed to the normal pipeline below.
+  ```bash
+  python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "INTERVIEW" --reason "Beginning Socratic intake"
+  ```
+  During the interview, use the fixed-identity wrapper `record_interview_question.py` to record each Q&A turn.
+
+- **If TRIVIAL**: skip the interview, spec/plan compilation, multi-agent review, and worktree
+  isolation entirely. Fast-track straight to `DONE` via the `intake_to_done_trivial` edge — the
+  triage answer itself (a one-line reason plus a diff reference) is the sole recorded audit
+  artifact, no file is written:
+  ```bash
+  python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "DONE" \
+    --reason "TRIVIAL fast-track" --interactive \
+    --answers '{"triage_classification": "TRIVIAL: <one-line reason>, files=<n>, diff=<short sha or `git diff --stat` one-liner>"}'
+  ```
+  Work still happens on a feature branch followed by a normal PR — TRIVIAL skips worktree
+  *isolation* and pipeline ceremony, never branch discipline or the push-to-origin gate.
+  If the diff turns out not to be trivial once underway, use the existing escape hatch instead
+  of committing:
+  ```bash
+  python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "ESCALATED" --reason "Mis-triaged as TRIVIAL"
+  ```
+  (See Issue #534 for the full design rationale.)
 
 ### 3. Transition to Draft Plan & Multi-Agent Review Gate
 Once the 1-question-at-a-time interview concludes, compile the draft spec and plan using `write_plan_document.py`, then coordinate transition:
