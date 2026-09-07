@@ -48,8 +48,19 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from control_plane.ports import (
+    FilesystemPort,
+    CryptoPort,
+    ModelCatalogPort,
+    PersistencePort,
+    ClockPort,
+    TransitionRecord,
+    TransitionDecision,
+    TransitionCommitRequest,
+    PhaseCapability,
+)
+from control_plane.state_machine import ALLOWED_TRANSITIONS
 
-from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort, PersistencePort, ClockPort
 
 
 class FilesystemAdapter(FilesystemPort):
@@ -166,15 +177,31 @@ CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS transition_decisions (
+    decision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    source_occupancy_transition_id INTEGER NOT NULL,
+    from_state TEXT NOT NULL,
+    to_state TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION')),
+    actor TEXT NOT NULL,
+    recorded_at REAL NOT NULL,
+    consumed_at REAL,
+    bound_transition_id INTEGER REFERENCES task_transitions(transition_id)
+);
+
 CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
+CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);
 """
 
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 
 CHILD_TABLES = [
     "task_transitions",
@@ -182,12 +209,29 @@ CHILD_TABLES = [
     "critic_reviews",
     "verification_receipts",
     "asymmetric_persistence_log",
+    "transition_decisions",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
 SCHEMA_MIGRATIONS = [
     # Migration: add task_type column if not present (for existing DBs)
     "ALTER TABLE tasks ADD COLUMN task_type TEXT NOT NULL DEFAULT 'GENERAL' CHECK (task_type IN ('GENERAL', 'EVOLUTION'));",
+    # Migration: add transition_decisions table if not present (v4)
+    """CREATE TABLE IF NOT EXISTS transition_decisions (
+        decision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+        source_occupancy_transition_id INTEGER NOT NULL,
+        from_state TEXT NOT NULL,
+        to_state TEXT NOT NULL,
+        question_id TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION')),
+        actor TEXT NOT NULL,
+        recorded_at REAL NOT NULL,
+        consumed_at REAL,
+        bound_transition_id INTEGER REFERENCES task_transitions(transition_id)
+    );""",
+    "CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);",
 ]
 
 
@@ -199,11 +243,13 @@ class SqlitePersistenceAdapter(PersistencePort):
     ControlPlane — this version closes that gap: ControlPlane never calls sqlite3 directly."""
 
     def __init__(self, db_path: Optional[Path], fs_adapter: FilesystemPort,
-                 clock_adapter: Optional[ClockPort] = None):
+                 clock_adapter: Optional[ClockPort] = None,
+                 crypto_adapter: Optional[CryptoPort] = None):
         self.db_path = db_path if db_path is not None else self._discover_shared_db_path()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._fs = fs_adapter
         self._clock = clock_adapter if clock_adapter is not None else ClockAdapter()
+        self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
 
     def _discover_shared_db_path(self) -> Path:
         """Resolves context/control_plane.db anchored at the repo root shared across
@@ -458,6 +504,11 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason) VALUES (?, ?, ?, ?, ?)",
                     (task_id, from_state, to_state, actor, reason)
                 )
+                # Invalidate stale discretionary skip receipts on leaving occupancy
+                conn.execute(
+                    "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN ('multi_agent_review_skipped', 'multi_agent_code_review_skipped')",
+                    (task_id,)
+                )
                 return True
         finally:
             conn.close()
@@ -641,8 +692,387 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
+    def get_last_transition(
+
+        self,
+        task_id: str,
+        from_state: Optional[str] = None,
+        to_state: Optional[str] = None,
+    ) -> Optional[TransitionRecord]:
+        """Returns the latest TransitionRecord for task_id matching optional from_state/to_state filters."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            query = "SELECT transition_id, task_id, from_state, to_state, actor, reason, timestamp FROM task_transitions WHERE task_id = ?"
+            params: List[Any] = [task_id]
+            if from_state is not None:
+                query += " AND from_state = ?"
+                params.append(from_state)
+            if to_state is not None:
+                query += " AND to_state = ?"
+                params.append(to_state)
+            query += " ORDER BY transition_id DESC LIMIT 1"
+
+            row = conn.execute(query, params).fetchone()
+            if not row:
+                return None
+            return TransitionRecord(
+                transition_id=row["transition_id"],
+                task_id=row["task_id"],
+                from_state=row["from_state"],
+                to_state=row["to_state"],
+                actor=row["actor"],
+                reason=row["reason"],
+                timestamp=str(row["timestamp"]),
+            )
+        finally:
+            conn.close()
+
+    def apply_transition_with_receipts(
+        self,
+        request: TransitionCommitRequest,
+    ) -> TransitionRecord:
+        """Atomically revalidates authoritative persistable facts in SQLite and applies transition.
+        Enforces transactional invariants and structural consistency only:
+        1. Task exists and current state == request.expected_from_state.
+        2. Latest transition_id == request.source_occupancy_transition_id.
+        3. Edge (expected_from_state -> to_state) is legal per ALLOWED_TRANSITIONS.
+        4. Staged decisions structurally match (task_id, source_occupancy_transition_id, expected_from_state, to_state).
+        5. No duplicate question_ids exist across staged decisions.
+        6. Valid decision_type in ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION').
+        7. Atomically updates task state, inserts task_transitions row, inserts transition_decisions
+           bound to the new transition_id, and inserts verification_receipts.
+        """
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            conn.execute("BEGIN IMMEDIATE;")
+            # 1. Task exists and state check
+            task_row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (request.task_id,)).fetchone()
+            if not task_row:
+                raise ValueError(f"Task '{request.task_id}' not found in tasks table.")
+            current_state = task_row["state"]
+            if current_state != request.expected_from_state:
+                raise ValueError(
+                    f"Structural state mismatch: task state is '{current_state}', "
+                    f"expected '{request.expected_from_state}'."
+                )
+
+            # 2. Source occupancy transition check
+            last_trans_row = conn.execute(
+                "SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1",
+                (request.task_id,)
+            ).fetchone()
+            latest_trans_id = last_trans_row["transition_id"] if last_trans_row else None
+            if latest_trans_id != request.source_occupancy_transition_id:
+                raise ValueError(
+                    f"Stale occupancy transition ID: latest is {latest_trans_id}, "
+                    f"request provided {request.source_occupancy_transition_id}."
+                )
+
+            # 3. Legal DAG edge check
+            allowed_next = ALLOWED_TRANSITIONS.get(request.expected_from_state, [])
+            if request.to_state not in allowed_next:
+                raise ValueError(
+                    f"Illegal transition edge: '{request.expected_from_state}' -> '{request.to_state}'. "
+                    f"Allowed: {allowed_next}."
+                )
+
+            # 4. Structural validation of staged decisions
+            valid_types = {'ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION'}
+            seen_questions = set()
+            for d in request.staged_decisions:
+                if d.task_id != request.task_id:
+                    raise ValueError(f"Structural mismatch: decision task_id '{d.task_id}' != '{request.task_id}'.")
+                if d.source_occupancy_transition_id != request.source_occupancy_transition_id:
+                    raise ValueError(f"Structural mismatch: decision occupancy ID '{d.source_occupancy_transition_id}' != '{request.source_occupancy_transition_id}'.")
+                if d.from_state != request.expected_from_state or d.to_state != request.to_state:
+                    raise ValueError(f"Structural mismatch: decision edge ({d.from_state} -> {d.to_state}) != ({request.expected_from_state} -> {request.to_state}).")
+                if d.decision_type not in valid_types:
+                    raise ValueError(f"Invalid decision_type '{d.decision_type}'. Must be one of {valid_types}.")
+                if d.question_id in seen_questions:
+                    raise ValueError(f"Duplicate question_id '{d.question_id}' in staged decisions.")
+                seen_questions.add(d.question_id)
+
+            # 5. Apply state change
+            conn.execute(
+                "UPDATE tasks SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ?",
+                (request.to_state, request.task_id)
+            )
+
+            # 6. Insert task_transitions row
+            cursor = conn.execute(
+                "INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason) VALUES (?, ?, ?, ?, ?)",
+                (request.task_id, request.expected_from_state, request.to_state, request.actor, request.reason)
+            )
+            new_trans_id = cursor.lastrowid
+
+            # 7. Insert staged decisions bound to new_trans_id
+            for d in request.staged_decisions:
+                conn.execute(
+                    """
+                    INSERT INTO transition_decisions (
+                        task_id, source_occupancy_transition_id, from_state, to_state,
+                        question_id, answer, decision_type, actor, recorded_at, bound_transition_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        d.task_id, d.source_occupancy_transition_id, d.from_state, d.to_state,
+                        d.question_id, d.answer, d.decision_type, d.actor, d.recorded_at, new_trans_id
+                    )
+                )
+
+            # Clear prior discretionary review skip receipts so stale skips don't persist.
+            # NOTE (Ordering Dependency): Gate policy evaluation runs upstream before commit,
+            # so any skip receipt relevant to the immediate transition being committed has already
+            # been evaluated. Staged receipts inserted in Step 8 immediately restore valid skips
+            # for the new transition if applicable.
+            conn.execute(
+                "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN ('multi_agent_review_skipped', 'multi_agent_code_review_skipped')",
+                (request.task_id,)
+            )
+
+            # 8. Insert staged receipts
+            for r in request.staged_receipts:
+                conn.execute(
+                    """
+                    INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (request.task_id, r["gate_name"], r["command_executed"], r["exit_code"], r["receipt_token"])
+                )
+
+            row = conn.execute(
+                "SELECT transition_id, task_id, from_state, to_state, actor, reason, timestamp FROM task_transitions WHERE transition_id = ?",
+                (new_trans_id,)
+            ).fetchone()
+            conn.commit()
+
+            return TransitionRecord(
+                transition_id=row["transition_id"],
+                task_id=row["task_id"],
+                from_state=row["from_state"],
+                to_state=row["to_state"],
+                actor=row["actor"],
+                reason=row["reason"],
+                timestamp=str(row["timestamp"]),
+            )
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def record_recovery_approval(
+        self,
+        task_id: str,
+        expected_source_state: str,
+        destination_state: str,
+        source_occupancy_transition_id: int,
+        approver: str,
+        decision: str,
+        reason: str,
+    ) -> str:
+        """Issues and persists an unconsumed recovery approval decision record bound to the current source occupancy ID."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                task_row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+                if not task_row or task_row["state"] != expected_source_state:
+                    raise ValueError(f"Task state is '{task_row['state'] if task_row else None}', expected '{expected_source_state}'.")
+
+                last_trans_row = conn.execute(
+                    "SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1",
+                    (task_id,)
+                ).fetchone()
+                if not last_trans_row or last_trans_row["transition_id"] != source_occupancy_transition_id:
+                    raise ValueError(f"Stale occupancy ID {source_occupancy_transition_id}.")
+
+                recorded_at = self._clock.current_time()
+                existing_count = conn.execute(
+                    "SELECT COUNT(*) FROM transition_decisions WHERE task_id = ? AND source_occupancy_transition_id = ?",
+                    (task_id, source_occupancy_transition_id)
+                ).fetchone()[0]
+                token_material = f"RECOVERY-{task_id}-{source_occupancy_transition_id}-{destination_state}-{recorded_at}-{existing_count + 1}"
+                token = self._crypto.sha256_hex(token_material)
+
+                conn.execute(
+                    """
+                    INSERT INTO transition_decisions (
+                        task_id, source_occupancy_transition_id, from_state, to_state,
+                        question_id, answer, decision_type, actor, recorded_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        task_id, source_occupancy_transition_id, expected_source_state, destination_state,
+                        f"recovery_approval_{token[:16]}", token, decision, approver, recorded_at
+                    )
+                )
+                return token
+        finally:
+            conn.close()
+
+    def apply_recovery_transition(
+        self,
+        task_id: str,
+        expected_source_state: str,
+        destination_state: str,
+        source_occupancy_transition_id: int,
+        approval_receipt_token: str,
+        actor: str,
+        reason: str,
+    ) -> TransitionRecord:
+        """Atomically executes recovery transition using a verified, unconsumed approval record."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            conn.execute("BEGIN IMMEDIATE;")
+            # 1. State check
+            task_row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+            if not task_row or task_row["state"] != expected_source_state:
+                raise ValueError(f"State mismatch: task is '{task_row['state'] if task_row else None}', expected '{expected_source_state}'.")
+
+            # 2. Occupancy check
+            last_trans_row = conn.execute(
+                "SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1",
+                (task_id,)
+            ).fetchone()
+            if not last_trans_row or last_trans_row["transition_id"] != source_occupancy_transition_id:
+                raise ValueError(f"Stale occupancy ID: latest is {last_trans_row['transition_id'] if last_trans_row else None}, expected {source_occupancy_transition_id}.")
+
+            # 3. Verify unconsumed approval record matching token & current occupancy directly at SQL level
+            decision_row = conn.execute(
+                """
+                SELECT decision_id FROM transition_decisions
+                WHERE task_id = ? AND source_occupancy_transition_id = ?
+                  AND from_state = ? AND to_state = ?
+                  AND answer = ? AND decision_type = 'APPROVAL'
+                  AND consumed_at IS NULL
+                """,
+                (task_id, source_occupancy_transition_id, expected_source_state, destination_state, approval_receipt_token)
+            ).fetchone()
+
+            if not decision_row:
+                # Check if it was already consumed to provide a distinct, clear error
+                consumed_row = conn.execute(
+                    """
+                    SELECT decision_id FROM transition_decisions
+                    WHERE task_id = ? AND source_occupancy_transition_id = ?
+                      AND from_state = ? AND to_state = ?
+                      AND answer = ? AND decision_type = 'APPROVAL'
+                      AND consumed_at IS NOT NULL
+                    """,
+                    (task_id, source_occupancy_transition_id, expected_source_state, destination_state, approval_receipt_token)
+                ).fetchone()
+                if consumed_row:
+                    raise ValueError(f"Recovery approval token {approval_receipt_token} has already been consumed.")
+                raise ValueError(f"No matching recovery approval record found for token {approval_receipt_token} in current occupancy.")
+
+            # 4. Mark approval consumed
+            now = self._clock.current_time()
+            conn.execute(
+                "UPDATE transition_decisions SET consumed_at = ? WHERE decision_id = ?",
+                (now, decision_row["decision_id"])
+            )
+
+            # 5. Apply state change & record transition
+            conn.execute(
+                "UPDATE tasks SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ?",
+                (destination_state, task_id)
+            )
+            cursor = conn.execute(
+                "INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason) VALUES (?, ?, ?, ?, ?)",
+                (task_id, expected_source_state, destination_state, actor, reason)
+            )
+            new_trans_id = cursor.lastrowid
+
+            # Bind decision to new transition
+            conn.execute(
+                "UPDATE transition_decisions SET bound_transition_id = ? WHERE decision_id = ?",
+                (new_trans_id, decision_row["decision_id"])
+            )
+
+            # Record verification receipt
+            conn.execute(
+                """
+                INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token)
+                VALUES (?, 'recovery_approval', ?, 0, ?)
+                """,
+                (task_id, f"apply_recovery_transition({expected_source_state}->{destination_state})", approval_receipt_token)
+            )
+
+            row = conn.execute(
+                "SELECT transition_id, task_id, from_state, to_state, actor, reason, timestamp FROM task_transitions WHERE transition_id = ?",
+                (new_trans_id,)
+            ).fetchone()
+            conn.commit()
+
+            return TransitionRecord(
+                transition_id=row["transition_id"],
+                task_id=row["task_id"],
+                from_state=row["from_state"],
+                to_state=row["to_state"],
+                actor=row["actor"],
+                reason=row["reason"],
+                timestamp=str(row["timestamp"]),
+            )
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def record_decision(self, decision: TransitionDecision) -> int:
+        """Records an occupancy-bound TransitionDecision. Rejects duplicates within same occupancy."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            conn.execute("BEGIN IMMEDIATE;")
+            existing = conn.execute(
+                """
+                SELECT COUNT(*) FROM transition_decisions
+                WHERE task_id = ? AND source_occupancy_transition_id = ? AND question_id = ?
+                """,
+                (decision.task_id, decision.source_occupancy_transition_id, decision.question_id),
+            ).fetchone()[0]
+            if existing > 0:
+                raise ValueError(
+                    f"Duplicate decision for question '{decision.question_id}' already recorded "
+                    f"in occupancy {decision.source_occupancy_transition_id} for task '{decision.task_id}'."
+                )
+
+            cursor = conn.execute(
+                """
+                INSERT INTO transition_decisions (
+                    task_id, source_occupancy_transition_id, from_state, to_state,
+                    question_id, answer, decision_type, actor, recorded_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    decision.task_id,
+                    decision.source_occupancy_transition_id,
+                    decision.from_state,
+                    decision.to_state,
+                    decision.question_id,
+                    decision.answer,
+                    decision.decision_type,
+                    decision.actor,
+                    decision.recorded_at,
+                ),
+            )
+            decision_id = cursor.lastrowid
+            conn.commit()
+            return decision_id
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
 
 class CryptoAdapter(CryptoPort):
+
     """Real hashlib-backed implementation of CryptoPort, extracted verbatim from
     agent_control.py's former module-level _sha256_file() and record_verification_receipt()'s
     inline token-hashing logic (issue-524 Step 6)."""

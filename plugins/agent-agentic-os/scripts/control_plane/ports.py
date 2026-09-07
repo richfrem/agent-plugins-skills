@@ -29,11 +29,59 @@ Key Functions:
 """
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+
+@dataclass(frozen=True)
+class TransitionRecord:
+    transition_id: int
+    task_id: str
+    from_state: str
+    to_state: str
+    actor: str
+    reason: Optional[str]
+    timestamp: str
+
+
+@dataclass(frozen=True)
+class TransitionDecision:
+    task_id: str
+    source_occupancy_transition_id: int
+    from_state: str
+    to_state: str
+    question_id: str
+    answer: str
+    decision_type: str
+    actor: str
+    recorded_at: float
+
+
+@dataclass(frozen=True)
+class TransitionCommitRequest:
+    task_id: str
+    expected_from_state: str
+    to_state: str
+    source_occupancy_transition_id: int
+    template_id: str
+    actor: str
+    reason: str
+    staged_decisions: List[TransitionDecision]
+    staged_receipts: List[Dict[str, Any]]
+
+
+@dataclass(frozen=True)
+class PhaseCapability:
+    task_id: str
+    action_identity: str
+    current_state: str
+    releasing_edge: Tuple[str, str]
+    transition_id: int
 
 
 class ClockPort(ABC):
+
     """Abstracts wall-clock time so domain/policy code never imports `time` directly."""
 
     @abstractmethod
@@ -203,3 +251,55 @@ class PersistencePort(ABC):
     def ensure_schema(self) -> None:
         """Ensures the underlying storage schema exists and is at the current version, self-healing if needed."""
         raise NotImplementedError
+
+    @abstractmethod
+    def get_last_transition(
+        self,
+        task_id: str,
+        from_state: Optional[str] = None,
+        to_state: Optional[str] = None,
+    ) -> Optional[TransitionRecord]:
+        """Returns the latest TransitionRecord for task_id matching optional from_state/to_state filters."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def apply_transition_with_receipts(
+        self,
+        request: TransitionCommitRequest,
+    ) -> TransitionRecord:
+        """Atomically revalidates authoritative persistable facts in SQLite and applies transition."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def record_recovery_approval(
+        self,
+        task_id: str,
+        expected_source_state: str,
+        destination_state: str,
+        source_occupancy_transition_id: int,
+        approver: str,
+        decision: str,
+        reason: str,
+    ) -> str:
+        """Issues and persists an unconsumed recovery approval decision record bound to the current source occupancy ID."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def apply_recovery_transition(
+        self,
+        task_id: str,
+        expected_source_state: str,
+        destination_state: str,
+        source_occupancy_transition_id: int,
+        approval_receipt_token: str,
+        actor: str,
+        reason: str,
+    ) -> TransitionRecord:
+        """Atomically executes recovery transition using a verified, unconsumed approval record."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def record_decision(self, decision: TransitionDecision) -> int:
+        """Records an occupancy-bound TransitionDecision. Rejects duplicates within same occupancy."""
+        raise NotImplementedError
+

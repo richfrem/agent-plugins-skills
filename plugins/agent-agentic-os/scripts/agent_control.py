@@ -95,15 +95,28 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 
-from control_plane.ports import FilesystemPort, CryptoPort, ModelCatalogPort, ClockPort, PersistencePort
+from control_plane.ports import (
+    FilesystemPort,
+    CryptoPort,
+    ModelCatalogPort,
+    ClockPort,
+    PersistencePort,
+    PhaseCapability,
+    TransitionRecord,
+    TransitionDecision,
+    TransitionCommitRequest,
+)
 from control_plane.adapters import (
     FilesystemAdapter, SqlitePersistenceAdapter, CryptoAdapter, ModelCatalogAdapter, ClockAdapter,
     CURRENT_SCHEMA_VERSION,
 )
 from control_plane import policy as _policy
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
+from control_plane.registry import TransitionRegistry
+from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+
 
 WORKTREE_STATES = [
     "written_in_worktree",
@@ -126,6 +139,11 @@ WORKTREE_STATES = [
 # CURRENT_SCHEMA_VERSION` (existing test/consumer import surface, unchanged).
 
 
+class PhaseCapabilityDenied(Exception):
+    """Raised when an action capability is denied for the current phase/occupancy."""
+    pass
+
+
 class VerifierSovereigntyViolation(Exception):
     """Raised when a protected verifier file has been tampered with."""
     pass
@@ -140,6 +158,7 @@ class ConcurrentModificationError(Exception):
     """Raised when a transition's expected prior state no longer matches the stored row,
     indicating a concurrent writer changed it — never silently overwritten (no last-writer-wins)."""
     pass
+
 
 
 # Gate/policy enforcement (per-edge transition requirements, prior-art/done/rolled-back
@@ -180,7 +199,7 @@ class ControlPlane:
             self._persistence = persistence_adapter
         else:
             self._persistence = SqlitePersistenceAdapter(
-                db_path if db_path is None else Path(db_path), self._fs, self._clock
+                db_path if db_path is None else Path(db_path), self._fs, self._clock, self._crypto
             )
         self.db_path = getattr(self._persistence, "db_path", None)
 
@@ -258,18 +277,54 @@ class ControlPlane:
 
         self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
-        # --- Unified gate policy: lifecycle transition rules + to-state-wide guards ---
-        ctx = self._build_transition_policy_ctx(task_id, task)
-        try:
-            _policy.evaluate_transition(ctx, current_state, to_state)
-        except _policy.PolicyViolation as e:
-            raise PersistenceInvariantViolation(str(e)) from e
+        # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
+        if not hasattr(self, "_transition_registry"):
+            self._transition_registry = TransitionRegistry.load_default()
+        template = self._transition_registry.get_template(current_state, to_state)
+        if template:
+            ctx = self._build_transition_policy_ctx(task_id, task)
+            for check_id in template.deterministic_checks:
+                try:
+                    _policy.evaluate_check(check_id, ctx)
+                except _policy.PolicyViolation as e:
+                    raise PersistenceInvariantViolation(str(e)) from e
 
         applied = self._persistence.apply_transition(task_id, current_state, to_state, actor, reason)
         if not applied:
             raise ConcurrentModificationError(
                 f"Task '{task_id}' state changed concurrently (expected '{current_state}'). Retry."
             )
+
+    def coordinate_transition(
+        self,
+        task_id: str,
+        to_state: str,
+        actor: str,
+        reason: str,
+        interactive: bool = False,
+        provided_answers: Optional[Dict[str, str]] = None,
+        approval_decision: Optional[str] = None,
+        skip_decision: Optional[Tuple[str, str]] = None,
+    ) -> TransitionRecord:
+        """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
+        if not hasattr(self, "_transition_registry"):
+            self._transition_registry = TransitionRegistry.load_default()
+        coord = TransitionCoordinator(control_plane=self, registry=self._transition_registry)
+        return coord.coordinate_transition(
+            task_id=task_id,
+            to_state=to_state,
+            actor=actor,
+            reason=reason,
+            interactive=interactive,
+            provided_answers=provided_answers,
+            approval_decision=approval_decision,
+            skip_decision=skip_decision,
+        )
+
+    def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
+        """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
+        PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
+        return self._persistence.apply_transition_with_receipts(commit_request)
 
     def lock_verifiers(self, task_id: str, file_paths: List[Path]):
         """Calculates and locks baseline SHA256 hashes of verifier files. File-existence
@@ -371,8 +426,97 @@ class ControlPlane:
         """Logs asymmetric Layer 2 persistence entries into the SQLite audit table."""
         self._persistence.insert_asymmetric_persistence(task_id, destination, status, details)
 
+    def verify_phase_capability(self, task_id: str, action_identity: str) -> PhaseCapability:
+        """Verifies that an action capability is authorized for the task's current phase occupancy.
+
+        Algorithm:
+        1. read task current state;
+        2. read the latest transition whose to_state equals that current state;
+        3. verify that transition is the current source-occupancy row (most recent transition for task);
+        4. resolve its exact (from_state, to_state) template;
+        5. authorize only capabilities_released by that exact template;
+        6. fail closed if task state, transition history, or registry entry disagree.
+        """
+        if not hasattr(self, "_transition_registry"):
+            self._transition_registry = TransitionRegistry.load_default()
+
+        # Fail-closed check: action identity must be known/registered in registry
+        releasing_edges = self._transition_registry.get_edges_releasing_capability(action_identity)
+        if not releasing_edges:
+            raise PhaseCapabilityDenied(f"Unregistered action identity: '{action_identity}'")
+
+        # Step 1: read task current state
+        current_state = self._persistence.read_current_state(task_id)
+        if current_state is None:
+            raise PhaseCapabilityDenied(f"Task '{task_id}' not found in control plane.")
+
+        # Step 2: read the latest transition whose to_state equals that current state
+        occupancy_trans = self._persistence.get_last_transition(task_id, to_state=current_state)
+        if not occupancy_trans:
+            raise PhaseCapabilityDenied(
+                f"No transition found leading into current state '{current_state}' for task '{task_id}'."
+            )
+
+        # Step 3: verify that transition is the current source-occupancy row (latest overall transition)
+        latest_trans = self._persistence.get_last_transition(task_id)
+        if not latest_trans or latest_trans.transition_id != occupancy_trans.transition_id:
+            raise PhaseCapabilityDenied(
+                f"State tamper detected: latest transition id '{getattr(latest_trans, 'transition_id', None)}' "
+                f"does not match current occupancy transition id '{occupancy_trans.transition_id}'."
+            )
+
+        # Step 4: resolve its exact (from_state, to_state) template
+        template = self._transition_registry.get_template(occupancy_trans.from_state, occupancy_trans.to_state)
+        if not template:
+            raise PhaseCapabilityDenied(
+                f"No registry template found for inbound edge "
+                f"({occupancy_trans.from_state} -> {occupancy_trans.to_state})."
+            )
+
+        # Step 5: authorize only capabilities_released by that exact template
+        if action_identity not in template.capabilities_released:
+            raise PhaseCapabilityDenied(
+                f"Action '{action_identity}' not authorized in state '{current_state}' "
+                f"(entered via {occupancy_trans.from_state} -> {occupancy_trans.to_state}). "
+                f"Released capabilities: {template.capabilities_released}."
+            )
+
+        return PhaseCapability(
+            task_id=task_id,
+            action_identity=action_identity,
+            current_state=current_state,
+            releasing_edge=(occupancy_trans.from_state, occupancy_trans.to_state),
+            transition_id=occupancy_trans.transition_id,
+        )
+
+    def record_decision(
+        self,
+        task_id: str,
+        source_occupancy_transition_id: int,
+        from_state: str,
+        to_state: str,
+        question_id: str,
+        answer: str,
+        decision_type: str = "ANSWER",
+        actor: str = "interviewer",
+    ) -> int:
+        """Records an occupancy-bound decision via PersistencePort."""
+        decision = TransitionDecision(
+            task_id=task_id,
+            source_occupancy_transition_id=source_occupancy_transition_id,
+            from_state=from_state,
+            to_state=to_state,
+            question_id=question_id,
+            answer=answer,
+            decision_type=decision_type,
+            actor=actor,
+            recorded_at=self._clock.current_time(),
+        )
+        return self._persistence.record_decision(decision)
+
 
 def _build_parser() -> argparse.ArgumentParser:
+
     """Constructs and returns CLI argument parser."""
     parser = argparse.ArgumentParser(description="SQLite Control Plane CLI for Agent Lifecycle")
     sub = parser.add_subparsers(dest="subcommand")
@@ -390,11 +534,25 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rec.add_argument("--runtime", required=True)
     p_rec.add_argument("--tier", choices=["low", "medium", "high"], default="low")
 
+    # Primary transition command: coordinate-transition
+    p_ct = sub.add_parser("coordinate-transition")
+    p_ct.add_argument("--task-id", required=True)
+    p_ct.add_argument("--to", required=True)
+    p_ct.add_argument("--actor", default="controller")
+    p_ct.add_argument("--reason", default="State transition")
+    p_ct.add_argument("--interactive", action="store_true", default=False)
+    p_ct.add_argument("--answers", default=None, help="JSON dict of question answers")
+    p_ct.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
+
+    # Compatibility alias: transition routes directly through TransitionCoordinator
     p_tr = sub.add_parser("transition")
     p_tr.add_argument("--task-id", required=True)
     p_tr.add_argument("--to", required=True)
     p_tr.add_argument("--actor", default="controller")
     p_tr.add_argument("--reason", default="State transition")
+    p_tr.add_argument("--interactive", action="store_true", default=False)
+    p_tr.add_argument("--answers", default=None, help="JSON dict of question answers")
+    p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
 
     p_lock = sub.add_parser("lock-verifiers")
     p_lock.add_argument("--task-id", required=True)
@@ -441,6 +599,25 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rs.add_argument("--actor", required=True)
     p_rs.add_argument("--reason", required=True)
 
+    # Slice 4: Action wrapper verification & recovery subcommands
+    p_viq = sub.add_parser("verify-interview-question")
+    p_viq.add_argument("--task-id", required=True)
+
+    p_vpw = sub.add_parser("verify-plan-write")
+    p_vpw.add_argument("--task-id", required=True)
+
+    p_vex = sub.add_parser("verify-exit-verification")
+    p_vex.add_argument("--task-id", required=True)
+
+    p_rra = sub.add_parser("record-recovery-approval")
+    p_rra.add_argument("--task-id", required=True)
+    p_rra.add_argument("--from-state", required=True)
+    p_rra.add_argument("--to-state", required=True)
+    p_rra.add_argument("--source-occupancy-id", type=int, required=True)
+    p_rra.add_argument("--approver", required=True)
+    p_rra.add_argument("--decision", default="APPROVAL")
+    p_rra.add_argument("--reason", required=True)
+
     return parser
 
 
@@ -451,9 +628,17 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Task {args.task_id} initialized in INTAKE (type={args.task_type}).")
     elif args.subcommand == "recommend-model":
         print(json.dumps(cp.resolve_recommended_model(args.runtime, args.tier), indent=2))
-    elif args.subcommand == "transition":
-        cp.transition(args.task_id, args.to, args.actor, args.reason)
-        print(f"Task {args.task_id} transitioned to {args.to}.")
+    elif args.subcommand in ("coordinate-transition", "transition"):
+        answers_dict = json.loads(args.answers) if getattr(args, "answers", None) else None
+        rec = cp.coordinate_transition(
+            task_id=args.task_id,
+            to_state=args.to,
+            actor=args.actor,
+            reason=args.reason,
+            interactive=getattr(args, "interactive", False),
+            provided_answers=answers_dict,
+            approval_decision=getattr(args, "approval", None),
+        )
     elif args.subcommand == "lock-verifiers":
         paths = [Path(p.strip()) for p in args.paths.split(",")]
         cp.lock_verifiers(args.task_id, paths)
@@ -483,6 +668,26 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         "record-plan-mode-entry", "record-socratic-intake", "record-human-approval", "record-review-skip"
     ):
         _dispatch_gate_record_command(cp, args)
+    elif args.subcommand == "verify-interview-question":
+        cap = cp.verify_phase_capability(args.task_id, "interview_question")
+        print(f"Verified interview_question capability for {args.task_id} in {cap.current_state} (transition {cap.transition_id}).")
+    elif args.subcommand == "verify-plan-write":
+        cap = cp.verify_phase_capability(args.task_id, "plan_write")
+        print(f"Verified plan_write capability for {args.task_id} in {cap.current_state} (transition {cap.transition_id}).")
+    elif args.subcommand == "verify-exit-verification":
+        cap = cp.verify_phase_capability(args.task_id, "exit_verification")
+        print(f"Verified exit_verification capability for {args.task_id} in {cap.current_state} (transition {cap.transition_id}).")
+    elif args.subcommand == "record-recovery-approval":
+        token = cp._persistence.record_recovery_approval(
+            task_id=args.task_id,
+            expected_source_state=args.from_state,
+            destination_state=args.to_state,
+            source_occupancy_transition_id=args.source_occupancy_id,
+            approver=args.approver,
+            decision=args.decision,
+            reason=args.reason,
+        )
+        print(f"Recovery approval recorded: {token}")
 
 
 def _dispatch_gate_record_command(cp: ControlPlane, args: argparse.Namespace):
@@ -523,7 +728,7 @@ def _map_exception_to_exit_code(e: Exception) -> int:
     generic crash (exit 1) would prevent callers from retrying only on contention."""
     if isinstance(e, ConcurrentModificationError):
         return 3
-    if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation)):
+    if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation, PhaseCapabilityDenied, TransitionCoordinatorError)):
         return 2
     return 1
 
