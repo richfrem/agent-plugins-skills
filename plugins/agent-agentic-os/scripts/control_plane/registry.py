@@ -5,7 +5,7 @@ control_plane/registry.py — TransitionRegistry Domain Component (issue-529 Sli
 Purpose:
     Loads, schema-validates, and serves the single authoritative transition registry
     (), enforcing 1:1 bidirectional parity with
-    state_machine.ALLOWED_TRANSITIONS (51 total edges).
+    state_machine.ALLOWED_TRANSITIONS (52 total edges).
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Registry (domain layer)

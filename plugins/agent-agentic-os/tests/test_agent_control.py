@@ -889,7 +889,7 @@ def test_critic_review_iteration_not_capped_at_three(control_plane):
 
 def test_registry_covers_every_allowed_edge():
     """Test 1: TransitionRegistry loads transition_templates.yaml and covers every
-    edge in state_machine.ALLOWED_TRANSITIONS (51 edges total)."""
+    edge in state_machine.ALLOWED_TRANSITIONS (52 edges total)."""
     from control_plane.registry import TransitionRegistry
     from control_plane.state_machine import ALLOWED_TRANSITIONS
 
@@ -898,13 +898,13 @@ def test_registry_covers_every_allowed_edge():
         for to_state in to_states:
             expected_edges.add((from_state, to_state))
 
-    assert len(expected_edges) == 51
+    assert len(expected_edges) == 52
 
     registry = TransitionRegistry.load_default()
     registered_edges = registry.get_all_edges()
 
     assert expected_edges == registered_edges
-    assert len(registry) == 51
+    assert len(registry) == 52
 
 
 def test_registry_has_no_orphan_entries():
@@ -986,7 +986,7 @@ templates:
 
 
 def test_closed_check_id_validation():
-    """Test 6: All deterministic_checks check IDs declared across all 51 templates
+    """Test 6: All deterministic_checks check IDs declared across all 52 templates
     in transition_templates.yaml must exist in control_plane.policy's check registry."""
     from control_plane.registry import TransitionRegistry
     from control_plane import policy
@@ -1228,13 +1228,14 @@ def test_persistence_structural_inconsistency_rejection(control_plane):
         control_plane._persistence.apply_transition_with_receipts(req_stale_occ)
     assert "occupancy" in str(exc_info.value).lower() or "stale" in str(exc_info.value).lower()
 
-    # 3. Illegal DAG edge: INTAKE -> DONE
+    # 3. Illegal DAG edge: INTAKE -> VERIFY_EXIT (INTAKE's only legal edges are
+    # INTERVIEW, DRAFT_PLAN, PLAN_REVIEW, DONE (trivial fast-track), ESCALATED)
     req_illegal_edge = TransitionCommitRequest(
         task_id=task_id,
         expected_from_state="INTAKE",
-        to_state="DONE",
+        to_state="VERIFY_EXIT",
         source_occupancy_transition_id=occ_id,
-        template_id="intake_to_done",
+        template_id="intake_to_verify_exit",
         actor="tester",
         reason="test",
         staged_decisions=[],
@@ -2430,11 +2431,11 @@ def test_run_exit_verification_verifier_allowlist_and_worktree_cwd_binding(contr
 
 
 def test_transition_templates_semantic_quality_no_boilerplate():
-    """Architecture Review Finding 4: All 51 templates must pass the semantic-quality contract without generic boilerplate."""
+    """Architecture Review Finding 4: All 52 templates must pass the semantic-quality contract without generic boilerplate."""
     from control_plane.registry import TransitionRegistry
 
     registry = TransitionRegistry.load_default()
-    assert len(registry) == 51
+    assert len(registry) == 52
 
     forbidden_patterns = [
         "Transition task ",
@@ -2595,4 +2596,131 @@ def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
 
     assert result.returncode == 0
     assert result.stdout.strip() == "EXECUTE_SOCRATIC_FALLBACK"
+
+
+# ==============================================================================
+# issue-534: TRIVIAL Triage Fast-Track (INTAKE -> DONE)
+# ==============================================================================
+
+def test_trivial_fast_track_intake_to_done_records_decision_and_completes(control_plane):
+    """A TRIVIAL-classified task can go straight from INTAKE to DONE via the
+    intake_to_done_trivial template: no interview, no spec/plan artifacts, no
+    worktree — the triage answer itself is the sole recorded audit artifact."""
+    from control_plane.coordinator import TransitionCoordinator
+
+    task_id = "task-trivial-001"
+    control_plane.create_task(task_id=task_id, title="Fix typo in error message", runtime_tool="claude")
+
+    coord = TransitionCoordinator(control_plane=control_plane)
+    record = coord.coordinate_transition(
+        task_id=task_id,
+        to_state="DONE",
+        actor="tester",
+        reason="TRIVIAL fast-track: one-line typo fix",
+        interactive=False,
+        provided_answers={
+            "triage_classification": "TRIVIAL: fix typo in error message, files=1, diff=abc1234"
+        },
+    )
+
+    assert record.from_state == "INTAKE"
+    assert record.to_state == "DONE"
+
+    # No spec/plan artifacts were required or created for this path.
+    assert not Path(f"docs/plans/{task_id}-spec.md").exists()
+    assert not Path(f"docs/plans/{task_id}-implementation-plan.md").exists()
+
+    # The triage answer is durably recorded as the sole audit artifact.
+    decisions = control_plane._persistence  # PersistencePort; query via raw connection for the assertion
+    conn = decisions.get_connection()
+    try:
+        row = conn.execute(
+            "SELECT question_id, answer FROM transition_decisions WHERE task_id = ? AND to_state = 'DONE'",
+            (task_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+    assert row is not None
+    assert row[0] == "triage_classification"
+    assert "TRIVIAL" in row[1]
+    assert "diff=abc1234" in row[1]
+
+
+def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
+    """The triage question is the one mandatory, non-skippable step: an empty
+    interactive answer or a missing non-interactive answer must fail closed,
+    exactly like every other human_questions gate in the coordinator."""
+    from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+
+    task_id = "task-trivial-002"
+    control_plane.create_task(task_id=task_id, title="Fix typo", runtime_tool="claude")
+
+    # Non-interactive with no provided answer must fail closed.
+    coord = TransitionCoordinator(control_plane=control_plane)
+    with pytest.raises(TransitionCoordinatorError, match="Missing required response"):
+        coord.coordinate_transition(
+            task_id=task_id,
+            to_state="DONE",
+            actor="tester",
+            reason="attempt without triage answer",
+            interactive=False,
+        )
+
+    # Interactive with empty input must not silently proceed.
+    coord_empty = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "")
+    with pytest.raises(TransitionCoordinatorError, match="Missing required response"):
+        coord_empty.coordinate_transition(
+            task_id=task_id,
+            to_state="DONE",
+            actor="tester",
+            reason="attempt with empty triage answer",
+            interactive=True,
+        )
+
+
+def test_trivial_misstriage_escape_hatch_to_escalated(control_plane):
+    """If a task is provisionally triaged TRIVIAL but turns out not to be once the
+    diff is underway, the existing INTAKE -> ESCALATED edge remains the escape
+    hatch — no new edge or mechanism needed for re-triage before committing."""
+    from control_plane.coordinator import TransitionCoordinator
+
+    task_id = "task-trivial-escape-001"
+    control_plane.create_task(task_id=task_id, title="Looked trivial, wasn't", runtime_tool="claude")
+
+    # Task is still sitting in INTAKE (no trivial-path commitment made yet).
+    assert control_plane.get_task(task_id)["state"] == "INTAKE"
+
+    coord = TransitionCoordinator(control_plane=control_plane)
+    record = coord.coordinate_transition(
+        task_id=task_id,
+        to_state="ESCALATED",
+        actor="tester",
+        reason="Mis-triaged as TRIVIAL; touches shared module, needs full pipeline",
+    )
+
+    assert record.from_state == "INTAKE"
+    assert record.to_state == "ESCALATED"
+
+    # ESCALATED can still route back into INTAKE for a proper full-pipeline restart.
+    control_plane.transition(task_id, "INTAKE", "tester", "Restarting via full pipeline")
+    assert control_plane.get_task(task_id)["state"] == "INTAKE"
+
+
+def test_intake_to_done_edge_registered_and_capabilities_scoped(control_plane):
+    """The intake_to_done_trivial template releases modify/commit capabilities but
+    never worktree creation or push-to-origin — those stay separately gated exactly
+    as for every other task type."""
+    from control_plane.registry import TransitionRegistry
+
+    registry = TransitionRegistry.load_default()
+    template = registry.get_template("INTAKE", "DONE")
+
+    assert template is not None
+    assert template.transition_id == "intake_to_done_trivial"
+    assert template.required_artifacts == []
+    assert "modify production code" in template.capabilities_released
+    assert "create implementation worktree" not in template.capabilities_released
+    assert "push branch to origin" not in template.capabilities_released
+    assert "create implementation worktree" in template.capabilities_prohibited
+    assert "push branch to origin" in template.capabilities_prohibited
 

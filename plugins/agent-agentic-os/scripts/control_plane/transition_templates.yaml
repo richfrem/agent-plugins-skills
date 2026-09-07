@@ -26,6 +26,36 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to INTERVIEW is deterministically governed by automated checks and artifacts.
+- transition_id: intake_to_done_trivial
+  from_state: INTAKE
+  to_state: DONE
+  purpose: Fast-track a TRIVIAL-classified task (single-file/few-line, no architectural impact) directly to completion, skipping interview, spec/plan compilation, multi-agent review, and worktree isolation.
+  checklist:
+  - Current task state is persisted as INTAKE
+  - Human has confirmed TRIVIAL classification with a stated reason and diff reference
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: triage_classification
+    question: 'Confirm TRIVIAL classification: state the reason and a diff reference (e.g. "fix typo in error message, files=1, diff=<short sha or `git diff --stat` one-liner>").'
+    options: []
+    default: ''
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - modify production code
+  - commit_to_branch
+  capabilities_prohibited:
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Transition INTAKE -> DONE (trivial) denied: preconditions or required decisions not satisfied.'
+  authority:
+    type: human_decision
+    explanation: A human must confirm the TRIVIAL classification and state a reason before the task can skip the full interview/spec/review/worktree pipeline.
 - transition_id: intake_to_draft_plan
   from_state: INTAKE
   to_state: DRAFT_PLAN
