@@ -163,6 +163,34 @@ class _FakePersistencePort(PersistencePort):
     def ensure_schema(self) -> None:
         self.schema_ensured = True
 
+    def get_last_transition(self, task_id, from_state=None, to_state=None):
+        self.calls.append(("get_last_transition", task_id, from_state, to_state))
+        return None
+
+    def apply_transition_with_receipts(self, request):
+        self.calls.append(("apply_transition_with_receipts", request))
+        raise NotImplementedError("Fake does not implement occupancy-bound transition commits")
+
+    def record_recovery_approval(self, task_id, expected_source_state, destination_state,
+                                  source_occupancy_transition_id, approver, decision, reason) -> str:
+        self.calls.append((
+            "record_recovery_approval", task_id, expected_source_state, destination_state,
+            source_occupancy_transition_id, approver, decision, reason,
+        ))
+        return "fake-recovery-token"
+
+    def apply_recovery_transition(self, task_id, expected_source_state, destination_state,
+                                   source_occupancy_transition_id, approval_receipt_token, actor, reason):
+        self.calls.append((
+            "apply_recovery_transition", task_id, expected_source_state, destination_state,
+            source_occupancy_transition_id, approval_receipt_token, actor, reason,
+        ))
+        raise NotImplementedError("Fake does not implement recovery transitions")
+
+    def record_decision(self, decision) -> int:
+        self.calls.append(("record_decision", decision))
+        return 0
+
 
 def test_fake_persistence_port_proves_full_delegation():
     """Injects a fake PersistencePort with zero SQLite — via true constructor injection
