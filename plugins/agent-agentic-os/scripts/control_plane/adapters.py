@@ -417,12 +417,17 @@ class SqlitePersistenceAdapter(PersistencePort):
         registry = TransitionRegistry.load_default()
         edges = registry.get_all_edges()
 
-        conn.execute("DELETE FROM valid_transitions;")
-        conn.executemany(
-            "INSERT INTO valid_transitions (from_state, to_state) VALUES (?, ?)",
-            list(edges) + [(None, s) for s in LEGAL_INITIAL_STATES]
-        )
-        conn.commit()
+        conn.execute("BEGIN IMMEDIATE;")
+        try:
+            conn.execute("DELETE FROM valid_transitions;")
+            conn.executemany(
+                "INSERT INTO valid_transitions (from_state, to_state) VALUES (?, ?)",
+                list(edges) + [(None, s) for s in LEGAL_INITIAL_STATES]
+            )
+            conn.execute("COMMIT;")
+        except Exception:
+            conn.execute("ROLLBACK;")
+            raise
 
     def _schema_needs_rebuild(self, conn: sqlite3.Connection) -> bool:
         """Detects a stale schema_version, a legacy tasks schema, or FK-corrupted/orphaned

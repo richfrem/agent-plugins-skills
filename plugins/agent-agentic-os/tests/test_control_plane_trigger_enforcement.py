@@ -260,3 +260,37 @@ def test_recursive_triggers_on_hits_recursion_limit_but_no_illegal_write_persist
         assert count == 0
     finally:
         conn.close()
+
+
+def test_sync_valid_transitions_is_atomic_not_left_empty_on_failure(tmp_path):
+    """Regression test for a code-review finding: the original _sync_valid_transitions()
+    issued a bare DELETE followed by a bare executemany(INSERT) with no transaction wrapper,
+    so a failure between the two (or a concurrent reader on the shared multi-worktree DB)
+    could observe valid_transitions as empty or partially-populated — during which every
+    legitimate transition would be misclassified as illegal and reverted/deleted. Proves
+    atomicity by forcing a real constraint violation partway through the INSERT batch (a
+    NOT NULL violation on to_state, injected via a patched registry) and asserting the table
+    retains its prior full set afterward, never empty or partial."""
+    import unittest.mock
+
+    adapter, db_path = _make_adapter(tmp_path)
+    conn = sqlite3.connect(str(db_path))
+    try:
+        before_count = conn.execute("SELECT COUNT(*) FROM valid_transitions").fetchone()[0]
+        assert before_count > 0
+
+        from control_plane.registry import TransitionRegistry
+        real_edges = TransitionRegistry.load_default().get_all_edges()
+        fake_registry = unittest.mock.MagicMock()
+        # Good rows first, then one NOT NULL-violating row (to_state=None) to force a
+        # mid-batch failure rather than an immediate one.
+        fake_registry.get_all_edges.return_value = real_edges | {("INTAKE", None)}
+
+        with unittest.mock.patch.object(TransitionRegistry, "load_default", return_value=fake_registry):
+            with pytest.raises(sqlite3.IntegrityError):
+                adapter._sync_valid_transitions(conn)
+
+        after_count = conn.execute("SELECT COUNT(*) FROM valid_transitions").fetchone()[0]
+        assert after_count == before_count
+    finally:
+        conn.close()
