@@ -10362,6 +10362,120 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/state_machine.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/registry.py",
+      "strategy": "symlink",
+      "description": "TransitionRegistry, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/coordinator.py",
+      "strategy": "symlink",
+      "description": "TransitionCoordinator, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/transition_templates.yaml",
+      "strategy": "symlink",
+      "description": "Loaded at runtime by registry.py relative to its own __file__ \u2014 must ship alongside registry.py (issue-551 work package)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/agent_control.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/agent_control.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/operations.py",
+      "dst": "plugins/agent-memory/skills/vector-db-cleanup/scripts/operations.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-ingest/scripts/rlm_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/vector_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-init/scripts/vector_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/operations.py",
+      "dst": "plugins/agent-memory/skills/vector-db-init/scripts/operations.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/vector_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-launch/scripts/vector_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-search/scripts/rlm_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/ingest_code_shim.py",
+      "dst": "plugins/agent-memory/skills/vector-db-search/scripts/ingest_code_shim.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_skill.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/cli-agents/scripts/kv_cache_orchestrator.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/kv_cache_orchestrator.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_create.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_create.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/hf_upload.py",
+      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_upload.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/sandbox_runner.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/scripts/state_engine.py",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/state_engine.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/scripts/raw_manifest.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/scripts/raw_manifest.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     }
   ]
 }
