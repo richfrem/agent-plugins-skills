@@ -49,71 +49,22 @@ Route on the returned mode — do not proceed to Socratic questions if a native 
 | `EXECUTE_SOCRATIC_FALLBACK` | Proceed to Socratic Defaulting (1-3 questions at a time, structured options with an explicit recommended default) and compile `TASK_SPEC.md` directly. |
 
 ### 2. Register Task, Then Triage: TRIVIAL vs STANDARD
-Register the task first — every task gets a row and an audit trail regardless of size:
-```bash
-python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/<task-id>-spec.md"
-```
+Register the task first (`agent_control.py init`). Before asking Socratic questions, ask the
+single human triage question ("Is this a trivial fix or a standard task? [Recommended: <heuristic>]").
 
-**Before asking any Socratic question**, ask the human exactly one triage question. Compute a
-recommended default from a cheap heuristic (single file touched, description contains
-words like "typo", "fix wording", "one-line" → default TRIVIAL; anything else → default
-STANDARD) — never assume the answer silently in either direction:
-
-> *"Is this a trivial fix (single-file/few-line, no architectural impact) or a standard task
-> requiring the full spec/review pipeline? [Recommended: <heuristic default>]"*
-
-- **If STANDARD** (or the default): proceed to the normal pipeline below.
-  ```bash
-  python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "INTERVIEW" --reason "Beginning Socratic intake"
-  ```
-  During the interview, use the fixed-identity wrapper `record_interview_question.py` to record each Q&A turn.
-
-- **If TRIVIAL**: skip the interview, spec/plan compilation, multi-agent review, and worktree
-  isolation entirely. Fast-track straight to `DONE` via the `intake_to_done_trivial` edge — the
-  triage answer itself (a one-line reason plus a diff reference) is the sole recorded audit
-  artifact, no file is written:
-  ```bash
-  python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "DONE" \
-    --reason "TRIVIAL fast-track" --interactive \
-    --answers '{"triage_classification": "TRIVIAL: <one-line reason>, files=<n>, diff=<short sha or `git diff --stat` one-liner>"}'
-  ```
-  Work still happens on a feature branch followed by a normal PR — TRIVIAL skips worktree
-  *isolation* and pipeline ceremony, never branch discipline or the push-to-origin gate.
-  If the diff turns out not to be trivial once underway, use the existing escape hatch instead
-  of committing:
-  ```bash
-  python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "ESCALATED" --reason "Mis-triaged as TRIVIAL"
-  ```
-  (See Issue #534 for the full design rationale.)
+- **If STANDARD** (or default): coordinate transition to `INTERVIEW`, record Q&A turns with
+  `record_interview_question.py`, and proceed with Socratic questions.
+- **If TRIVIAL**: fast-track straight to `DONE` via `intake_to_done_trivial` (diff recorded in
+  answers, no spec file written). If mis-triaged, use the `ESCALATED` escape hatch.
+  Detailed commands in `references/detailed-reference.md`.
 
 ### 3. Transition to Draft Plan & Multi-Agent Review Gate
-Once the 1-question-at-a-time interview concludes, compile the draft spec and plan using `write_plan_document.py`, then coordinate transition:
-```bash
-python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "DRAFT_PLAN" --reason "Draft spec and plan compiled from interview"
-```
+Compile the draft spec and plan using `write_plan_document.py`, then coordinate transition to
+`DRAFT_PLAN`. Next, present the User Stage Gate:
+> *"Step 3 (draft plan) is done. Do you want to trigger a multi-agent review of this plan (Step 4a — an external AI reviews it before you decide), or proceed straight to Step 5 (asking for your approval)?"*
 
-Next, present the **User Stage Gate** in plain language, referencing the step numbers from
-`docs/diagrams/control-plane-pipeline.mermaid`:
-> *"Step 3 (draft plan) is done. Do you want to trigger a multi-agent review of this plan
-> (Step 4a — an external AI reviews it before you decide), or proceed straight to Step 5
-> (asking for your approval)?"*
-
-#### Path A: User Chooses Multi-Agent Review
-Transition to `MULTI_AGENT_REVIEW`:
-```bash
-python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "MULTI_AGENT_REVIEW" --reason "User requested multi-agent review bundle"
-```
-Invoke `context-bundler` to package:
-- Target files: `docs/plans/<task-id>-spec.md`, `implementation_plan.md`, plus relevant architectural references.
-- Persona template: `assets/templates/plan-critique-reviewer.md` or Multi-Persona Fan-Out.
-- Output location: Saved strictly to a gitignored subfolder: `temp/review_<task-id>/`.
-- Present the prompt and `.md` bundle path to the user to copy-paste into external browser models (ChatGPT, Claude Web, Grok).
-- Ingest external model feedback, iterate on spec/plan, and once aligned, transition to `AWAITING_APPROVAL`.
-- For persona selection, folding prior rounds' findings into a new round's brief, and running
-  more than one review round, see `references/multi-round-external-review-protocol.md`.
-
-#### Path B: User Skips Multi-Agent Review
-Transition directly to `AWAITING_APPROVAL`:
-```bash
-python3 scripts/agent_control.py transition --task-id "<task-id>" --to "AWAITING_APPROVAL" --reason "User opted to skip multi-agent review gate"
-```
+- **Path A (Review)**: coordinate transition to `MULTI_AGENT_REVIEW`, package bundle via
+  `context-bundler`, ingest external feedback, and align before `AWAITING_APPROVAL`.
+  See `references/multi-round-external-review-protocol.md`.
+- **Path B (Skip)**: transition directly to `AWAITING_APPROVAL`.
+Commands and bundle specifications in `references/detailed-reference.md`.

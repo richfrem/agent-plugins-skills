@@ -1,0 +1,1 @@
+../../../scripts/hf_upload.py

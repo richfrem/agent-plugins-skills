@@ -1,0 +1,1 @@
+../../../scripts/gh_issue_create.py
