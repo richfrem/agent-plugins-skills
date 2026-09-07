@@ -109,3 +109,9 @@ context/memory.md
 context/os-state.json
 context/status.md
 
+# Local planning/spec working docs (interview-spec, brainstorming, writing-plans output) —
+# not durable repo documentation; already-tracked files here predate this ignore rule and
+# stay tracked (gitignore doesn't retroactively untrack committed files).
+docs/plans/
+docs/superpowers/
+
