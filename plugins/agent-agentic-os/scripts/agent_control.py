@@ -310,6 +310,8 @@ class ControlPlane:
         provided_answers: Optional[Dict[str, str]] = None,
         approval_decision: Optional[str] = None,
         skip_decision: Optional[Tuple[str, str]] = None,
+        skip_review: bool = False,
+        skip_reason: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -324,6 +326,8 @@ class ControlPlane:
             provided_answers=provided_answers,
             approval_decision=approval_decision,
             skip_decision=skip_decision,
+            skip_review=skip_review,
+            skip_reason=skip_reason,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
