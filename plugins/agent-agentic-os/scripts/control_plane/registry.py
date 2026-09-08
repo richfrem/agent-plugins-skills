@@ -59,6 +59,7 @@ class TransitionTemplate:
     capabilities_released: List[str]
     capabilities_prohibited: List[str]
     denial_message: str
+    next_steps_hint: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -76,6 +77,7 @@ class TransitionTemplate:
             "capabilities_released": list(self.capabilities_released),
             "capabilities_prohibited": list(self.capabilities_prohibited),
             "denial_message": self.denial_message,
+            "next_steps_hint": self.next_steps_hint,
         }
 
 
@@ -209,6 +211,7 @@ class TransitionRegistry:
                     capabilities_released=item["capabilities_released"],
                     capabilities_prohibited=item["capabilities_prohibited"],
                     denial_message=item["denial_message"],
+                    next_steps_hint=item.get("next_steps_hint", ""),
                 )
                 parsed.append(t)
 
