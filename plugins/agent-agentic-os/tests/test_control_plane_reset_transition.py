@@ -114,6 +114,16 @@ def test_reset_edge_not_offered_from_intake_itself():
     assert "INTAKE" not in ALLOWED_TRANSITIONS.get("INTAKE", [])
 
 
+def test_reset_edges_require_human_approval():
+    registry = TransitionRegistry.load_default()
+
+    for source_state in RESET_EDGE_STATES:
+        template = registry.get_template(source_state, "INTAKE")
+        assert template is not None
+        assert template.approval["required"] is True
+        assert template.approval["approver_role"] == "human"
+
+
 @pytest.mark.parametrize("source_state", RESET_EDGE_STATES)
 def test_reset_from_every_non_intake_state_interactive_succeeds(control_plane, source_state):
     """Data-driven over every state that actually has a reset_to_intake edge
@@ -129,10 +139,11 @@ def test_reset_from_every_non_intake_state_interactive_succeeds(control_plane, s
     finally:
         conn.close()
 
-    coord = TransitionCoordinator(
-        control_plane=control_plane,
-        input_fn=lambda prompt: "Recovering drifted record after raw-write bypass evidence",
-    )
+    answers = iter([
+        "Recovering drifted record after raw-write bypass evidence",
+        "y",
+    ])
+    coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(answers))
     record = coord.coordinate_transition(
         task_id=task_id,
         to_state="INTAKE",
@@ -157,12 +168,7 @@ def test_reset_from_every_non_intake_state_interactive_succeeds(control_plane, s
 
 
 def test_reset_via_provided_answers_rejected(control_plane):
-    """Now that this branch is rebased onto PR #562's decision_actor fix:
-    a programmatic provided_answers reset attempt correctly produces
-    actor='agent', which the DB trigger rejects for this human_decision-
-    authority edge — matching test_reset_from_representative_states_
-    interactive_succeeds's actor='human' guarantee. Only a genuine
-    interactive=True answer may satisfy a RESET."""
+    """A programmatic reset cannot satisfy the now-required human approval."""
     task_id = "task-reset-actor-gap"
     control_plane.create_task(task_id=task_id, title="Reset actor gap test", runtime_tool="claude")
     conn = control_plane._persistence.get_connection()
@@ -172,8 +178,7 @@ def test_reset_via_provided_answers_rejected(control_plane):
         conn.close()
 
     coord = TransitionCoordinator(control_plane=control_plane)
-    from agent_control import PersistenceInvariantViolation
-    with pytest.raises(PersistenceInvariantViolation):
+    with pytest.raises(TransitionCoordinatorError, match="requires explicit human approval"):
         coord.coordinate_transition(
             task_id=task_id,
             to_state="INTAKE",
@@ -204,9 +209,8 @@ def test_reset_interactive_empty_answer_fails_closed(control_plane):
         )
 
 
-def test_reset_preserves_prior_history(control_plane):
-    """RESET must only append a new transition + decision row — never delete
-    or rewrite prior task_transitions/transition_decisions rows."""
+def test_reset_starts_a_fresh_transition_ledger(control_plane):
+    """RESET removes prior transition attempts before recording the new root."""
     task_id = "task-reset-preserve-history"
     control_plane.create_task(task_id=task_id, title="Reset preserve test", runtime_tool="claude")
     conn = control_plane._persistence.get_connection()
@@ -218,10 +222,11 @@ def test_reset_preserves_prior_history(control_plane):
     finally:
         conn.close()
 
-    coord = TransitionCoordinator(
-        control_plane=control_plane,
-        input_fn=lambda prompt: "Recovering from drift, preserving history as evidence",
-    )
+    answers = iter([
+        "Recovering from drift, preserving history as evidence",
+        "y",
+    ])
+    coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(answers))
     coord.coordinate_transition(
         task_id=task_id, to_state="INTAKE", actor="human", reason="Reset", interactive=True,
     )
@@ -231,9 +236,15 @@ def test_reset_preserves_prior_history(control_plane):
         after_count = conn.execute(
             "SELECT COUNT(*) FROM task_transitions WHERE task_id = ?", (task_id,)
         ).fetchone()[0]
+        remaining = conn.execute(
+            "SELECT from_state, to_state FROM task_transitions WHERE task_id = ? ORDER BY transition_id",
+            (task_id,),
+        ).fetchall()
     finally:
         conn.close()
-    assert after_count == before_count + 1
+    assert before_count > 1
+    assert after_count == 1
+    assert remaining == [('APPROVED', 'INTAKE')]
 
 
 def test_reset_then_walk_forward_unblocks_hooks(control_plane):
@@ -254,21 +265,34 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
     assert control_plane.get_task(task_id)["state"] == "DONE"
 
     # RESET back to INTAKE via the real gate.
-    coord = TransitionCoordinator(
-        control_plane=control_plane,
-        input_fn=lambda prompt: "Simulated drift from raw write; resetting to re-run full pipeline",
-    )
+    reset_answers = iter([
+        "Simulated drift from raw write; resetting to re-run full pipeline",
+        "y",
+    ])
+    coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(reset_answers))
     coord.coordinate_transition(
         task_id=task_id, to_state="INTAKE", actor="human", reason="Reset drifted DONE record", interactive=True,
     )
     assert control_plane.get_task(task_id)["state"] == "INTAKE"
 
-    # Walk forward legitimately: INTAKE -> RETROSPECTIVE -> DONE via the trivial fast-track,
-    # which is itself fully human-gated (matches this session's precedent).
+    # Walk forward legitimately: INTAKE -> INTERVIEW -> RETROSPECTIVE -> DONE via
+    # the trivial fast-track, with the interview contract fully answered.
     coord2 = TransitionCoordinator(
         control_plane=control_plane,
-        input_fn=lambda prompt: "TRIVIAL: re-verified after reset, files=1, diff=abc1234",
+        input_fn=lambda prompt: "unused",
     )
+    coord2.coordinate_transition(
+        task_id=task_id, to_state="INTERVIEW", actor="human", reason="Begin interview after reset",
+    )
+    interview_answers = iter([
+        "TRIVIAL",
+        "Re-verify the nested skill reference fix.",
+        "The skill reference path and its loader behavior.",
+        "The installed skill loader finds no nested SKILL.md.",
+        "files=1, diff=abc1234",
+        "Yes [Recommended]",
+    ])
+    coord2 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(interview_answers))
     coord2.coordinate_transition(
         task_id=task_id, to_state="RETROSPECTIVE", actor="human", reason="Trivial fast-track after reset", interactive=True,
     )

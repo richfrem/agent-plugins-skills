@@ -37,6 +37,8 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
+from interview_helpers import stage_interview_answers
+
 # Target modules to import once implemented
 from agent_control import (
     ControlPlane,
@@ -154,6 +156,7 @@ def test_task_lifecycle_transitions(control_plane):
 
     # 3. Transition to DRAFT_PLAN
     control_plane.record_plan_mode_entry(task_id=task_id, actor="interview-spec")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="interview-spec", reason="4-Pillar Spec compiled")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 
@@ -519,6 +522,7 @@ def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(contr
     task_id = "task-facade-skip-review-001"
     control_plane.create_task(task_id=task_id, title="Facade skip_review test", runtime_tool="claude")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="human")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="human", reason="test")
 
     spec_path = Path(f"docs/plans/{task_id}-spec.md")
@@ -855,6 +859,7 @@ def test_gate_blocks_draft_plan_entry_without_plan_mode_or_socratic_proof(contro
         control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
 
     control_plane.record_plan_mode_entry(task_id=task_id, actor="claude")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 
@@ -865,6 +870,7 @@ def test_gate_any_of_accepts_socratic_receipt_alone(control_plane):
     control_plane.create_task(task_id=task_id, title="Socratic Gate Task", runtime_tool="copilot")
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
     control_plane.record_socratic_intake_complete(task_id=task_id, summary="3 questions answered")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="copilot", reason="Compiled spec")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 
@@ -875,6 +881,7 @@ def test_gate_blocks_awaiting_approval_without_critic_review_or_skip(control_pla
     control_plane.create_task(task_id=task_id, title="Gate Approval Task", runtime_tool="claude")
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="claude")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
 
     with pytest.raises(PersistenceInvariantViolation, match="critic review|skip"):
@@ -1135,6 +1142,44 @@ templates:
         TransitionRegistry.load_from_file(bad_yaml)
 
 
+def test_registry_loads_stage_entry_question_contracts():
+    """Stage entry questions are distinct from edge transition questions."""
+    from control_plane.registry import TransitionRegistry
+
+    registry = TransitionRegistry.load_default()
+
+    interview = registry.get_stage_contract("INTERVIEW")
+    assert interview is not None
+    assert [q["question_id"] for q in interview["entry_questions"]] == [
+        "interview_classification",
+        "interview_summary",
+        "interview_scope",
+        "interview_verification",
+    ]
+    assert interview["adaptive_follow_up_rules"]
+    assert interview["exit_requirements"]
+    trivial_edge = registry.get_template("INTERVIEW", "RETROSPECTIVE")
+    assert [q["question_id"] for q in trivial_edge.human_questions] == [
+        "confirm_interview_complete"
+    ]
+    assert trivial_edge.stage_question_ids == [
+        "interview_classification",
+        "interview_summary",
+        "interview_scope",
+        "interview_verification",
+        "interview_trivial_evidence",
+    ]
+    assert trivial_edge.stage_route == {
+        "question_id": "interview_classification",
+        "equals": "TRIVIAL",
+    }
+
+    retrospective = registry.get_stage_contract("RETROSPECTIVE")
+    assert retrospective is not None
+    assert retrospective["entry_questions"]
+    assert retrospective["question_policy"] == "one_at_a_time"
+
+
 def test_closed_check_id_validation():
     """Test 6: All deterministic_checks check IDs declared across all 52 templates
     in transition_templates.yaml must exist in control_plane.policy's check registry."""
@@ -1232,6 +1277,7 @@ def test_multi_edge_action_resolution(control_plane):
 
     # Satisfy DRAFT_PLAN gate and transition to DRAFT_PLAN
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Enter draft plan")
 
     # In DRAFT_PLAN via INTERVIEW -> DRAFT_PLAN: plan_write must succeed
@@ -1312,6 +1358,7 @@ def test_future_capability_denied_until_persisted_transition(control_plane):
 
     # Now satisfy gate precondition and persist real transition to DRAFT_PLAN
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Enter draft plan")
     assert control_plane._persistence.read_current_state(task_id) == "DRAFT_PLAN"
 
@@ -1792,6 +1839,7 @@ def test_wrapper_success_path(control_plane, tmp_path):
 
     # Move to DRAFT_PLAN (releases plan_write)
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Interview complete")
 
     plan_file = tmp_path / "docs" / "plans" / f"{task_id}-spec.md"
@@ -1837,6 +1885,7 @@ def test_plan_write_shadow_file_atomic_replacement(control_plane, tmp_path):
     control_plane.create_task(task_id=task_id, title="Shadow Replace Task", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "Interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Drafting plan")
 
     plan_file = tmp_path / "docs" / "plans" / f"{task_id}-spec.md"
@@ -1952,6 +2001,7 @@ def test_plan_write_authorized_bound_spec_and_plan(control_plane, tmp_path):
     )
     control_plane.transition(task_id, "INTERVIEW", "tester", "Interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Drafting plan")
 
     # 1. Writing registered spec succeeds
@@ -1985,6 +2035,7 @@ def test_plan_write_denies_another_tasks_plan(control_plane, tmp_path):
     control_plane.create_task(task_id=task_a, title="Task A", runtime_tool="claude")
     control_plane.transition(task_a, "INTERVIEW", "tester", "Interview")
     control_plane.record_plan_mode_entry(task_a, "tester")
+    stage_interview_answers(control_plane, task_a)
     control_plane.transition(task_a, "DRAFT_PLAN", "tester", "Drafting plan")
 
     foreign_plan = tmp_path / "docs" / "plans" / "issue-530-plan.md"
@@ -2010,6 +2061,7 @@ def test_plan_write_denies_traversal_and_external_paths(control_plane, tmp_path)
     control_plane.create_task(task_id=task_id, title="Task", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "Interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Drafting plan")
 
     # 1. Traversal denial
@@ -2098,6 +2150,7 @@ def test_sequential_question_pacing(control_plane):
     control_plane.create_task(task_id=task_id, title="Pacing Task", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
 
     out = io.StringIO()
@@ -2225,6 +2278,7 @@ def test_coordinator_refuses_incomplete_request(control_plane):
     control_plane.create_task(task_id=task_id, title="Incomplete Task", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
@@ -2325,6 +2379,7 @@ def test_coordinator_non_interactive_missing_answer_fails_closed_despite_default
     control_plane.create_task(task_id=task_id, title="Default Answer Test", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
 
     coord = TransitionCoordinator(control_plane=control_plane)
@@ -2350,6 +2405,7 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
     control_plane.create_task(task_id=task_id, title="Interactive Answer Test", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
 
     # 1. Empty input must not silently pick the recommendation
@@ -2384,6 +2440,7 @@ def test_coordinator_skip_review_policy_enforcement_and_justification(control_pl
     control_plane.create_task(task_id=task_id, title="Skip Test", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW")
     control_plane.transition(task_id, "PLAN_REVIEW", "tester", "plan review")
@@ -2426,6 +2483,7 @@ def test_coordinator_stale_skip_invalidated_after_leave_and_reenter(control_plan
     control_plane.create_task(task_id=task_id, title="Skip Re-entry Test", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW")
     control_plane.transition(task_id, "PLAN_REVIEW", "tester", "plan review")
@@ -2501,6 +2559,7 @@ def test_plan_writer_strictly_authorizes_registered_artifact_paths_only(control_
     )
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
 
     control_plane.repo_root = tmp_path
@@ -2543,6 +2602,7 @@ def test_run_exit_verification_verifier_allowlist_and_worktree_cwd_binding(contr
     control_plane.create_task(task_id=task_id, title="Verifier Allowlist Task", runtime_tool="claude")
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
@@ -2670,6 +2730,7 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     # Move task to WORKTREE_REVIEW
     control_plane.transition(task_id, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
@@ -2711,6 +2772,7 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     )
     control_plane.transition(task_id_missing, "INTERVIEW", "tester", "interview")
     control_plane.record_plan_mode_entry(task_id_missing, "tester")
+    stage_interview_answers(control_plane, task_id_missing)
     control_plane.transition(task_id_missing, "DRAFT_PLAN", "tester", "draft")
     control_plane.record_review_skip(task_id_missing, "multi_agent_review", "tester", "skip")
     control_plane.transition(task_id_missing, "AWAITING_APPROVAL", "tester", "awaiting")
@@ -2774,7 +2836,7 @@ def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
 
 
 # ==============================================================================
-# issue-534/#547: TRIVIAL Triage Fast-Track (INTAKE -> RETROSPECTIVE -> DONE)
+# issue-534/#547: TRIVIAL Triage Fast-Track (INTAKE -> INTERVIEW -> RETROSPECTIVE -> DONE)
 # ==============================================================================
 
 def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
@@ -2784,12 +2846,23 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
     task_id = "task-trivial-001"
     control_plane.create_task(task_id=task_id, title="Fix typo in error message", runtime_tool="claude")
 
-    # The trivial transition has authority.type: human_decision — the DB trigger requires
+    control_plane.transition(task_id, "INTERVIEW", "tester", "Begin the interview")
+    stage_interview_answers(control_plane, task_id, to_state="RETROSPECTIVE", classification="TRIVIAL")
+
+    # The retrospective transition has authority.type: human_decision — the DB trigger requires
     # a genuine interactive answer (actor='human'), not a programmatically provided_answers
     # dict (actor='agent') — see coordinator.py.
+    interview_inputs = iter([
+        "TRIVIAL",
+        "Fix the typo in the error message.",
+        "The error message text only.",
+        "The corrected message is loaded by the skill.",
+        "One-line diff with the focused test passing.",
+        "Yes [Recommended]",
+    ])
     coord = TransitionCoordinator(
         control_plane=control_plane,
-        input_fn=lambda prompt: "TRIVIAL: fix typo in error message, files=1, diff=abc1234",
+        input_fn=lambda prompt: next(interview_inputs),
     )
     record = coord.coordinate_transition(
         task_id=task_id,
@@ -2799,7 +2872,7 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
         interactive=True,
     )
 
-    assert record.from_state == "INTAKE"
+    assert record.from_state == "INTERVIEW"
     assert record.to_state == "RETROSPECTIVE"
 
     control_plane.save_retrospective(
@@ -2821,20 +2894,21 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
     assert not Path(f"docs/plans/{task_id}-spec.md").exists()
     assert not Path(f"docs/plans/{task_id}-implementation-plan.md").exists()
 
-    # The triage answer is durably recorded as the sole audit artifact.
+    # The transition decision is durably recorded for the edge.
     decisions = control_plane._persistence  # PersistencePort; query via raw connection for the assertion
     conn = decisions.get_connection()
     try:
         row = conn.execute(
-            "SELECT question_id, answer FROM transition_decisions WHERE task_id = ? AND to_state = 'RETROSPECTIVE'",
+            "SELECT question_id, answer FROM transition_decisions "
+            "WHERE task_id = ? AND to_state = 'RETROSPECTIVE' "
+            "AND question_id = 'confirm_interview_complete'",
             (task_id,),
         ).fetchone()
     finally:
         conn.close()
     assert row is not None
-    assert row[0] == "triage_classification"
-    assert "TRIVIAL" in row[1]
-    assert "diff=abc1234" in row[1]
+    assert row[0] == "confirm_interview_complete"
+    assert row[1] == "Yes [Recommended]"
 
 
 def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
@@ -2845,6 +2919,7 @@ def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
 
     task_id = "task-trivial-002"
     control_plane.create_task(task_id=task_id, title="Fix typo", runtime_tool="claude")
+    control_plane.transition(task_id, "INTERVIEW", "tester", "Begin the interview")
 
     # Non-interactive with no provided answer must fail closed.
     coord = TransitionCoordinator(control_plane=control_plane)
@@ -2853,7 +2928,7 @@ def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
             task_id=task_id,
             to_state="RETROSPECTIVE",
             actor="tester",
-            reason="attempt without triage answer",
+            reason="attempt without interview completion answer",
             interactive=False,
         )
 
@@ -2864,7 +2939,7 @@ def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
             task_id=task_id,
             to_state="RETROSPECTIVE",
             actor="tester",
-            reason="attempt with empty triage answer",
+            reason="attempt with empty interview completion answer",
             interactive=True,
         )
 
@@ -2898,15 +2973,15 @@ def test_trivial_misstriage_escape_hatch_to_escalated(control_plane):
     assert control_plane.get_task(task_id)["state"] == "INTAKE"
 
 
-def test_intake_to_retrospective_edge_registered_and_capabilities_scoped(control_plane):
-    """The trivial intake edge releases retrospective capture but never push access."""
+def test_interview_to_retrospective_edge_registered_and_capabilities_scoped(control_plane):
+    """The trivial interview edge releases retrospective capture but never push access."""
     from control_plane.registry import TransitionRegistry
 
     registry = TransitionRegistry.load_default()
-    template = registry.get_template("INTAKE", "RETROSPECTIVE")
+    template = registry.get_template("INTERVIEW", "RETROSPECTIVE")
 
     assert template is not None
-    assert template.transition_id == "intake_to_retrospective_trivial"
+    assert template.transition_id == "interview_to_retrospective_trivial"
     assert template.required_artifacts == []
     assert "retrospective_capture" in template.capabilities_released
     assert "push branch to origin" not in template.capabilities_released

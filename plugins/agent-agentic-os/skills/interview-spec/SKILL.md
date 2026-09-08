@@ -21,6 +21,26 @@ Acts as the universal front-door intake for non-trivial engineering tasks across
 3. **Draft Spec & Implementation Plan Compilation:** Compiles the agreed requirements into a draft `TASK_SPEC.md` and `implementation_plan.md` in state `DRAFT_PLAN`.
 4. **Multi-Agent Review Stage Gate (User-Controlled):** After draft spec compilation, explicitly asks the user whether they want to generate an external review bundle (via `context-bundler`) for multi-model critique in browser, or skip directly to approval.
 
+## Stage-entry question contract
+
+The authoritative stage-entry contracts are in `scripts/control_plane/transition_templates.yaml`
+under `stages`. A transition template's `human_questions` are edge-approval questions; they
+do not replace the questions for the state being entered.
+
+When entering a state:
+
+1. Load that state's `stages.<STATE>` contract before asking anything.
+2. Ask every `entry_questions` item in order, exactly one per turn.
+3. After each answer, evaluate matching `adaptive_follow_up_rules` and ask generated follow-ups
+   one at a time. Never invent an answer or silently skip a required question.
+4. Do not request the next transition until the state's `exit_requirements` are satisfied.
+5. Only then load the destination transition template and ask its `human_questions`.
+
+`TRIVIAL` selects a shorter transition path; it never skips the `INTERVIEW` entry questions or
+the complete `RETROSPECTIVE` survey. Record all answers, including adaptive follow-ups. The
+final `RETROSPECTIVE -> DONE` question is only a completion/skip decision after the survey has
+been captured.
+
 ---
 
 ## The 4 Pillars of `TASK_SPEC.md`
@@ -48,15 +68,19 @@ Route on the returned mode — do not proceed to Socratic questions if a native 
 | `DEFER_ANTIGRAVITY` | Invoke Antigravity's native planning mode. Do not run Socratic Defaulting. |
 | `EXECUTE_SOCRATIC_FALLBACK` | Proceed to Socratic Defaulting (1-3 questions at a time, structured options with an explicit recommended default) and compile `TASK_SPEC.md` directly. |
 
-### 2. Register Task, Then Triage: TRIVIAL vs STANDARD
-Register the task first (`agent_control.py init`). Before asking Socratic questions, ask the
-single human triage question ("Is this a trivial fix or a standard task? [Recommended: <heuristic>]").
+### 2. Register Task, Then Interview: TRIVIAL vs STANDARD
+Register the task first (`agent_control.py init`), then transition from `INTAKE` to `INTERVIEW`.
+On entering `INTERVIEW`, follow the stage-entry question contract. The first question classifies
+the task as `TRIVIAL` or `STANDARD`; the remaining baseline and context-driven questions still
+apply to both paths.
 
-- **If STANDARD** (or default): coordinate transition to `INTERVIEW`, record Q&A turns with
-  `record_interview_question.py`, and proceed with Socratic questions.
-- **If TRIVIAL**: fast-track straight to `DONE` via `intake_to_done_trivial` (diff recorded in
-  answers, no spec file written). If mis-triaged, use the `ESCALATED` escape hatch.
-  Detailed commands in `references/detailed-reference.md`.
+- **If STANDARD**: complete the adaptive interview, compile the spec and plan, and continue
+  through the standard review gates.
+- **If TRIVIAL**: complete the baseline interview and applicable evidence follow-up, then use
+  the `INTERVIEW -> RETROSPECTIVE` transition. Do not fast-track directly from `INTAKE` to
+  `DONE`; the retrospective remains mandatory.
+- If classification changes or the interview cannot be completed, use the `ESCALATED` escape
+  hatch. Detailed commands are in `references/detailed-reference.md`.
 
 ### 3. Transition to Draft Plan & Multi-Agent Review Gate
 Compile the draft spec and plan using `write_plan_document.py`, then coordinate transition to

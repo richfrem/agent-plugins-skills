@@ -58,18 +58,33 @@ def _seed_realistic_data(conn):
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
         ("task-b", "Task B", "INTAKE", "claude"),
     )
+    conn.execute("UPDATE tasks SET state = 'INTERVIEW' WHERE task_id = 'task-b';")
     conn.execute(
-        """
-        INSERT INTO transition_decisions (
-            task_id, source_occupancy_transition_id, from_state, to_state,
-            question_id, answer, decision_type, actor, recorded_at
-        ) VALUES ('task-b', 1, 'INTAKE', 'RETROSPECTIVE', 'triage_classification', 'trivial fix', 'ANSWER', 'human', 12345.0)
-        """
+        "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
+        ("task-b", "INTAKE", "INTERVIEW", "test"),
     )
+    interview_answers = {
+        "interview_classification": "TRIVIAL",
+        "interview_summary": "A small verified pipeline change.",
+        "interview_scope": "The control-plane test fixture.",
+        "interview_verification": "The schema rebuild test passes.",
+        "interview_trivial_evidence": "The focused diff and test prove the change.",
+        "confirm_interview_complete": "Yes [Recommended]",
+    }
+    for question_id, answer in interview_answers.items():
+        conn.execute(
+            """
+            INSERT INTO transition_decisions (
+                task_id, source_occupancy_transition_id, from_state, to_state,
+                question_id, answer, decision_type, actor, recorded_at
+            ) VALUES ('task-b', 1, 'INTERVIEW', 'RETROSPECTIVE', ?, ?, 'ANSWER', 'human', 12345.0)
+            """,
+            (question_id, answer),
+        )
     conn.execute("UPDATE tasks SET state = 'RETROSPECTIVE' WHERE task_id = 'task-b';")
     conn.execute(
         "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
-        ("task-b", "INTAKE", "RETROSPECTIVE", "test"),
+        ("task-b", "INTERVIEW", "RETROSPECTIVE", "test"),
     )
     conn.execute(
         "INSERT INTO critic_reviews (task_id, iteration, model_used, verdict, critique_findings) VALUES (?, ?, ?, ?, ?)",
@@ -144,7 +159,7 @@ def test_rebuild_with_nonempty_data_survives_intact(tmp_path):
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
         assert tasks == {"task-a": "INTAKE", "task-b": "RETROSPECTIVE"}
         transitions = conn.execute("SELECT COUNT(*) FROM task_transitions").fetchone()[0]
-        assert transitions == 1
+        assert transitions == 2
         orphans = conn.execute(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name LIKE '\\_%\\_migrating' ESCAPE '\\'"
         ).fetchone()[0]

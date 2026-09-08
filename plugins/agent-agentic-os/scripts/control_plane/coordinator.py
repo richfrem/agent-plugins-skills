@@ -148,6 +148,7 @@ class TransitionCoordinator:
         checklist_status = []
         all_passed = True
         failed_reasons = []
+        deferred_checks = []
 
         # Check required artifacts
         for art_pat in template.required_artifacts:
@@ -164,6 +165,9 @@ class TransitionCoordinator:
             checklist_status.append((True, chk_item))
 
         for check_id in template.deterministic_checks:
+            if check_id in ("interview_trivial_complete", "interview_standard_complete"):
+                deferred_checks.append(check_id)
+                continue
             # If skipping review and this is critic_review_or_skip / code_review_or_skip, it passes via staged receipt
             if skip_review and check_id in ("critic_review_or_skip", "code_review_or_skip"):
                 checklist_status.append((True, f"Check skipped: {check_id}"))
@@ -189,8 +193,18 @@ class TransitionCoordinator:
 
         # 6. Collect human questions sequentially
         answers = dict(provided_answers or {})
+        stage_answers = {}
+        questions_to_ask = []
+        for question_id in template.stage_question_ids or []:
+            question = self._registry.get_stage_question(current_state, question_id)
+            if question is None:
+                raise TransitionCoordinatorError(
+                    f"Stage question '{question_id}' is not defined for state '{current_state}'."
+                )
+            questions_to_ask.append(question)
+        questions_to_ask.extend(template.human_questions)
 
-        for q in template.human_questions:
+        for q in questions_to_ask:
             qid = q.get("question_id")
             q_text = q.get("question", "")
             options = q.get("options", [])
@@ -248,6 +262,27 @@ class TransitionCoordinator:
                     recorded_at=self._cp._clock.current_time(),
                 )
             )
+            if qid in (template.stage_question_ids or []):
+                stage_answers[qid] = chosen_ans
+
+        if template.stage_route:
+            route_question = template.stage_route.get("question_id")
+            expected_answer = template.stage_route.get("equals")
+            if stage_answers.get(route_question, "").strip() != expected_answer:
+                raise TransitionCoordinatorError(
+                    f"Interview route requires {route_question}={expected_answer}; "
+                    f"received '{stage_answers.get(route_question, '')}'."
+                )
+
+        deferred_ctx = dict(ctx)
+        deferred_ctx["stage_answers"] = stage_answers
+        for check_id in deferred_checks:
+            try:
+                evaluate_check(check_id, deferred_ctx)
+            except (PolicyViolation, PolicyConfigurationError) as e:
+                raise TransitionCoordinatorError(
+                    f"{template.denial_message} Reason: {e}"
+                ) from e
 
         # 7. Evaluate approval requirement
         if template.approval.get("required"):
@@ -438,4 +473,3 @@ class TransitionCoordinator:
             except Exception:
                 pass
             return None
-

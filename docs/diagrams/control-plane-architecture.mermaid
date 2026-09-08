@@ -1,6 +1,9 @@
 flowchart TB
     Callers["CLI, agents, and Python consumers"]
     Facade["ControlPlane compatibility facade"]
+    Coordinator["TransitionCoordinator"]
+    Registry["TransitionRegistry"]
+    Templates["transition_templates.yaml: edge and stage contracts"]
 
     State["StateMachine (control_plane/state_machine.py)"]
     Policy["Unified policy engine (control_plane/policy.py)"]
@@ -26,6 +29,8 @@ flowchart TB
 
     Facade --> State
     Facade --> Policy
+    Facade --> Coordinator
+    Coordinator --> Registry
     Facade --> PersistencePort
     Facade --> CryptoPort
     Facade --> FilesystemPort
@@ -33,6 +38,7 @@ flowchart TB
     Facade --> ClockPort
 
     Policy -.->|"requests policy facts via ctx callables"| PersistencePort
+    Registry --> Templates
 
     PersistencePort --> SQLiteAdapter
     CryptoPort --> CryptoAdapter
@@ -41,6 +47,7 @@ flowchart TB
     ClockPort --> ClockAdapter
 
     SQLiteAdapter --> DB
+    DB -.->|"trigger-enforced required questions: stage, edge, approval"| Coordinator
     CryptoAdapter --> RepoFiles
     FilesystemAdapter --> RepoFiles
     ModelAdapter --> CatalogFiles

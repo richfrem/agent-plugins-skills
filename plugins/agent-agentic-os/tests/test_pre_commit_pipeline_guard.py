@@ -31,6 +31,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter
 from control_plane.policy import evaluate_operation, PolicyViolation
 from agent_control import ControlPlane, PersistenceInvariantViolation
+from interview_helpers import stage_interview_answers
 
 HOOK_PATH = SCRIPTS_DIR / "pre-commit-pipeline-guard"
 
@@ -60,6 +61,7 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     cp.create_task(task_id, f"Task {task_id}", "claude")
     cp.transition(task_id, "INTERVIEW", "tester", "interview")
     cp.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(cp, task_id)
     cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
@@ -129,6 +131,7 @@ def test_hook_allows_plan_doc_commit_during_planning_states(tmp_path):
     cp.create_task(task_id, "Plan Docs Task", "claude")
     cp.transition(task_id, "INTERVIEW", "tester", "interview")
     cp.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(cp, task_id)
     cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
 
@@ -261,6 +264,7 @@ def test_control_plane_verify_commit_api(tmp_path):
     # Once advanced to IN_WORKTREE -> allowed for code
     cp.transition(task_id, "INTERVIEW", "tester", "interview")
     cp.record_plan_mode_entry(task_id, "tester")
+    stage_interview_answers(cp, task_id)
     cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
     cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")

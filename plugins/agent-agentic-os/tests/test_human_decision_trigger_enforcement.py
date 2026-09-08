@@ -87,6 +87,10 @@ def test_valid_transitions_table_matches_registry(test_env):
         for edge, tmpl in reg._templates_by_edge.items()
         for q in tmpl.human_questions
     } | {
+        (edge[0], edge[1], question_id)
+        for edge, tmpl in reg._templates_by_edge.items()
+        for question_id in (tmpl.stage_question_ids or [])
+    } | {
         (edge[0], edge[1], f"approval_{tmpl.transition_id}")
         for edge, tmpl in reg._templates_by_edge.items()
         if tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human"
@@ -748,5 +752,4 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
             actor="admin",
             reason="Attempt reusing consumed token from old occupancy"
         )
-
 

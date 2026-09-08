@@ -550,6 +550,8 @@ class SqlitePersistenceAdapter(PersistencePort):
             conn.execute("DELETE FROM required_transition_questions;")
             req_q = []
             for (from_s, to_s), tmpl in registry._templates_by_edge.items():
+                for question_id in (tmpl.stage_question_ids or []):
+                    req_q.append((from_s, to_s, question_id))
                 for q in tmpl.human_questions:
                     req_q.append((from_s, to_s, q["question_id"]))
                 if tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human":
@@ -1171,6 +1173,28 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
+    def get_unconsumed_transition_answers(
+        self, task_id: str, from_state: str, to_state: str
+    ) -> Dict[str, str]:
+        """Returns recorded answers available to a deterministic transition policy check."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            rows = conn.execute(
+                """
+                SELECT question_id, answer
+                FROM transition_decisions
+                WHERE task_id = ? AND from_state = ? AND to_state = ?
+                  AND answer IS NOT NULL AND trim(answer) != ''
+                  AND consumed_at IS NULL
+                ORDER BY decision_id
+                """,
+                (task_id, from_state, to_state),
+            ).fetchall()
+            return {row["question_id"]: row["answer"] for row in rows}
+        finally:
+            conn.close()
+
     def apply_transition_with_receipts(
         self,
         request: TransitionCommitRequest,
@@ -1212,6 +1236,27 @@ class SqlitePersistenceAdapter(PersistencePort):
                     f"Stale occupancy transition ID: latest is {latest_trans_id}, "
                     f"request provided {request.source_occupancy_transition_id}."
                 )
+
+            # A reset is the audited recovery boundary for state drift. Start a fresh
+            # transition ledger so failed attempts from the prior run cannot poison
+            # commit/push hooks that validate the complete task history. The reset
+            # transition itself is inserted below as the new ledger root.
+            if request.to_state == "INTAKE":
+                prior_transition_ids = [
+                    row["transition_id"] for row in conn.execute(
+                        "SELECT transition_id FROM task_transitions WHERE task_id = ?",
+                        (request.task_id,),
+                    ).fetchall()
+                ]
+                if prior_transition_ids:
+                    placeholders = ",".join("?" for _ in prior_transition_ids)
+                    conn.execute(
+                        f"DELETE FROM transition_decisions WHERE bound_transition_id IN ({placeholders})",
+                        prior_transition_ids,
+                    )
+                conn.execute("DELETE FROM task_transitions WHERE task_id = ?", (request.task_id,))
+                conn.execute("DELETE FROM verification_receipts WHERE task_id = ?", (request.task_id,))
+                conn.execute("DELETE FROM critic_reviews WHERE task_id = ?", (request.task_id,))
 
             # 3. Legal DAG edge check
             allowed_next = ALLOWED_TRANSITIONS.get(request.expected_from_state, [])
@@ -1615,7 +1660,11 @@ class SqlitePersistenceAdapter(PersistencePort):
 
             # 3. Check transition chain continuity
             first_f, first_t = transitions[0]["from_state"], transitions[0]["to_state"]
-            if not ((first_f == "NONE" and first_t == "INTAKE") or (first_f == "INTAKE")):
+            if not (
+                (first_f == "NONE" and first_t == "INTAKE")
+                or first_f == "INTAKE"
+                or (first_t == "INTAKE" and first_f in ALLOWED_TRANSITIONS)
+            ):
                 return f"Transition history does not begin at INTAKE (started at {first_f} -> {first_t})"
 
             curr_chain_state = first_t

@@ -236,10 +236,20 @@ class ControlPlane:
         """Retrieves a task dictionary by task_id."""
         return self._persistence.get_task(task_id)
 
-    def _build_transition_policy_ctx(self, task_id: str, task: Dict[str, Any]) -> Dict[str, Any]:
+    def _build_transition_policy_ctx(
+        self,
+        task_id: str,
+        task: Dict[str, Any],
+        from_state: Optional[str] = None,
+        to_state: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Builds the ctx dict consumed by control_plane.policy's transition/to-state rules.
         Every fact the policy engine needs comes from self._persistence (PersistencePort) —
         this method translates policy needs into port calls, never SQL directly."""
+        stage_answers = {}
+        get_answers = getattr(self._persistence, "get_unconsumed_transition_answers", None)
+        if get_answers and from_state and to_state:
+            stage_answers = get_answers(task_id, from_state, to_state)
         return {
             "task_id": task_id,
             "task": task,
@@ -251,6 +261,7 @@ class ControlPlane:
                 self._persistence.count_asymmetric_persistence(task_id, details_like, destination_like_any),
             "has_complete_retrospective": lambda: self._persistence.has_complete_retrospective(task_id),
             "verify_sovereignty": lambda: self.verify_sovereignty(task_id),
+            "stage_answers": stage_answers,
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):
@@ -288,7 +299,7 @@ class ControlPlane:
             self._transition_registry = TransitionRegistry.load_default()
         template = self._transition_registry.get_template(current_state, to_state)
         if template:
-            ctx = self._build_transition_policy_ctx(task_id, task)
+            ctx = self._build_transition_policy_ctx(task_id, task, current_state, to_state)
             for check_id in template.deterministic_checks:
                 try:
                     _policy.evaluate_check(check_id, ctx)

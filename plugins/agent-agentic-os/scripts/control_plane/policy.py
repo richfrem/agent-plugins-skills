@@ -96,6 +96,35 @@ def _prior_art_check(ctx: Dict[str, Any]) -> Optional[str]:
     )
 
 
+def _interview_route_check(ctx: Dict[str, Any], expected_classification: str, adaptive_question_id: str) -> Optional[str]:
+    """Require the short-form interview baseline and its classification-driven follow-up."""
+    answers = ctx.get("stage_answers", {})
+    if answers.get("interview_classification", "").strip() != expected_classification:
+        return (
+            f"Interview classification must be {expected_classification} before this route; "
+            f"received '{answers.get('interview_classification', '')}'."
+        )
+    required_ids = (
+        "interview_classification",
+        "interview_summary",
+        "interview_scope",
+        "interview_verification",
+        adaptive_question_id,
+    )
+    missing = [qid for qid in required_ids if not str(answers.get(qid, "")).strip()]
+    if missing:
+        return "Interview answers missing: " + ", ".join(missing)
+    return None
+
+
+def _interview_trivial_check(ctx: Dict[str, Any]) -> Optional[str]:
+    return _interview_route_check(ctx, "TRIVIAL", "interview_trivial_evidence")
+
+
+def _interview_standard_check(ctx: Dict[str, Any]) -> Optional[str]:
+    return _interview_route_check(ctx, "STANDARD", "interview_acceptance_criteria")
+
+
 def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_done_guard: requires a passing test_suite
     receipt, an asymmetric persistence log entry, a clean leak check, and (if any verifiers
@@ -227,6 +256,8 @@ OPERATION_RULES: Dict[str, List[Dict[str, Any]]] = {
 # --- Closed Check Registry: check_id -> callable predicate ---
 CHECK_REGISTRY: Dict[str, Any] = {
     "prior_art_scan": _prior_art_check,
+    "interview_trivial_complete": _interview_trivial_check,
+    "interview_standard_complete": _interview_standard_check,
     "plan_mode_or_socratic": lambda ctx: (
         None if _gate_any_of(ctx, [
             {"type": "receipt", "gate_name": "plan_mode_entry"},
