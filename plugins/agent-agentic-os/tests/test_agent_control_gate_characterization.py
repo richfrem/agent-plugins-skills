@@ -39,6 +39,7 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from agent_control import ControlPlane, PersistenceInvariantViolation
+from interview_helpers import stage_interview_answers
 
 
 @pytest.fixture
@@ -179,6 +180,7 @@ def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(c
     )
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Prior art scanned")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
+    stage_interview_answers(control_plane, task_id)
 
     # No further prior-art logging done here — guard must not re-fire on this later edge.
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="controller", reason="Compiled spec")

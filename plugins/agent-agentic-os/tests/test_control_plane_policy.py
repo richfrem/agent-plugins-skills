@@ -128,6 +128,46 @@ def test_prior_art_rule_passes_for_evolution_task_with_scan_logged():
     policy.evaluate_check("prior_art_scan", ctx)  # must not raise
 
 
+def test_trivial_interview_exit_requires_adaptive_follow_up_answer():
+    from control_plane import policy
+
+    incomplete = _base_ctx(
+        stage_answers={"interview_classification": "TRIVIAL"},
+    )
+    with pytest.raises(policy.PolicyViolation, match="interview_trivial_evidence"):
+        policy.evaluate_check("interview_trivial_complete", incomplete)
+
+    complete = _base_ctx(
+        stage_answers={
+            "interview_classification": "TRIVIAL",
+            "interview_summary": "Remove the misplaced nested skill reference.",
+            "interview_scope": "The nested references link and its structure guard.",
+            "interview_verification": "The installed skill loader finds no nested SKILL.md.",
+            "interview_trivial_evidence": "diff=40f65545",
+        },
+    )
+    policy.evaluate_check("interview_trivial_complete", complete)
+
+    standard_incomplete = _base_ctx(
+        stage_answers={"interview_classification": "STANDARD"},
+    )
+    with pytest.raises(policy.PolicyViolation, match="interview_acceptance_criteria"):
+        policy.evaluate_check("interview_standard_complete", standard_incomplete)
+
+    policy.evaluate_check(
+        "interview_standard_complete",
+        _base_ctx(
+            stage_answers={
+                "interview_classification": "STANDARD",
+                "interview_summary": "Implement the requested feature.",
+                "interview_scope": "The control-plane transition path.",
+                "interview_verification": "The focused and full test suites pass.",
+                "interview_acceptance_criteria": "Preserve existing gates and add coverage.",
+            },
+        ),
+    )
+
+
 def test_done_rule_blocks_and_passes_across_all_branches():
     from control_plane import policy
 
@@ -168,6 +208,32 @@ def test_done_rule_blocks_and_passes_across_all_branches():
     )
     policy.evaluate_check("done_guard", ctx)
     assert sovereignty_calls == [1]
+
+
+def test_retrospective_done_guard_is_registered_and_enforced():
+    from control_plane import policy
+
+    assert "retrospective_done_guard" in policy.get_registered_check_ids()
+    ctx = _base_ctx(has_complete_retrospective=lambda: False)
+    with pytest.raises(policy.PolicyViolation, match="retrospective is incomplete"):
+        policy.evaluate_check("retrospective_done_guard", ctx)
+
+    policy.evaluate_check(
+        "retrospective_done_guard",
+        _base_ctx(has_complete_retrospective=lambda: True),
+    )
+
+
+def test_legacy_transition_rules_route_through_registered_policy_functions():
+    from control_plane import policy
+
+    assert "prior_art_scan" in policy.get_registered_check_ids()
+    with pytest.raises(policy.PolicyViolation, match="Prior art scan required"):
+        policy.evaluate_transition(
+            _base_ctx(task={"task_type": "EVOLUTION"}),
+            "INTAKE",
+            "INTERVIEW",
+        )
 
 
 def test_rolled_back_rule_blocks_and_passes():

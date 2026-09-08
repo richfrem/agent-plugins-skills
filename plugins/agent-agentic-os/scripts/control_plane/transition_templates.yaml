@@ -1,3 +1,140 @@
+stages:
+  INTERVIEW:
+    purpose: Capture the minimum understanding needed before selecting the next lifecycle path.
+    question_policy: one_at_a_time
+    entry_questions:
+    - question_id: interview_classification
+      question: Is this a trivial fix or a standard task?
+      options:
+      - TRIVIAL
+      - STANDARD
+      default: STANDARD
+    - question_id: interview_summary
+      question: What problem are we solving, in your own words?
+      options: []
+      default: ''
+    - question_id: interview_scope
+      question: What files, skills, or behavior are in scope, and what is explicitly out of scope?
+      options: []
+      default: ''
+    - question_id: interview_verification
+      question: What observable result will prove the work is correct?
+      options: []
+      default: ''
+    adaptive_follow_up_rules:
+    - rule_id: trivial_change_evidence
+      when:
+        question_id: interview_classification
+        equals: TRIVIAL
+      questions:
+      - question_id: interview_trivial_evidence
+        question: What is the smallest change, and what diff or test reference proves it?
+        options: []
+        default: ''
+    - rule_id: standard_acceptance_detail
+      when:
+        question_id: interview_classification
+        equals: STANDARD
+      questions:
+      - question_id: interview_acceptance_criteria
+        question: What acceptance criteria and constraints must the implementation satisfy?
+        options: []
+        default: ''
+    exit_requirements:
+    - Every entry question has an answer.
+    - Every adaptive rule matching the recorded answers has been evaluated.
+    - All generated follow-up questions have an answer or an explicit human refusal.
+    - The agent has not inferred an answer on the user's behalf.
+  RETROSPECTIVE:
+    purpose: Capture the complete pipeline-close survey before allowing DONE.
+    question_policy: one_at_a_time
+    entry_questions:
+    - question_id: retrospective_workflow_complete
+      question: Did the run complete the full intended workflow end to end?
+      options:
+      - Yes
+      - No
+      default: No
+    - question_id: retrospective_human_rescue
+      question: Did the run require major human rescue?
+      options:
+      - Yes
+      - No
+      default: No
+    - question_id: retrospective_uncertainty_count
+      question: How many times did the agent not know what to do next?
+      options: []
+      default: '0'
+    - question_id: retrospective_skipped_step_count
+      question: How many times did the agent miss or skip a required step?
+      options: []
+      default: '0'
+    - question_id: retrospective_cli_error_count
+      question: How many times did the agent use the wrong CLI syntax?
+      options: []
+      default: '0'
+    - question_id: retrospective_redirect_count
+      question: How many times was the agent redirected by a human?
+      options: []
+      default: '0'
+    - question_id: retrospective_uncertainty_point
+      question: At what point was the agent most uncertain about what to do next?
+      options: []
+      default: ''
+    - question_id: retrospective_ambiguity
+      question: Which instruction, rule, or workflow step felt ambiguous or underspecified?
+      options: []
+      default: ''
+    - question_id: retrospective_confusing_tool
+      question: Which command, tool, or template was most confusing in practice?
+      options: []
+      default: ''
+    - question_id: retrospective_biggest_friction
+      question: What was the single biggest source of friction in this run?
+      options: []
+      default: ''
+    - question_id: retrospective_avoidable_failure
+      question: Which failure felt avoidable with a better prompt, skill, or rule?
+      options: []
+      default: ''
+    - question_id: retrospective_smallest_improvement
+      question: What smallest workflow change would have improved this run most?
+      options: []
+      default: ''
+    - question_id: retrospective_next_change
+      question: What one change should be tested before the next run?
+      options: []
+      default: ''
+    - question_id: retrospective_evidence
+      question: What evidence from this run supports that change?
+      options: []
+      default: ''
+    - question_id: retrospective_target
+      question: Is the target of that change a skill, prompt, script, or rule?
+      options:
+      - Skill
+      - Prompt
+      - Script
+      - Rule
+      default: Skill
+    adaptive_follow_up_rules:
+    - rule_id: confirmed_follow_up_issue
+      when:
+        question_id: retrospective_next_change
+        not_empty: true
+      questions:
+      - question_id: retrospective_issue_worthy
+        question: Is this follow-up worthy of a tracked issue?
+        options:
+        - Yes
+        - No
+        default: No
+    exit_requirements:
+    - Every entry question has an answer.
+    - Every adaptive rule matching the recorded answers has been evaluated.
+    - Issue-worthy follow-ups are confirmed and tracked before DONE.
+    - The final complete-or-skip decision is asked only after this survey is complete.
+
 templates:
 - transition_id: intake_to_interview
   from_state: INTAKE
@@ -26,20 +163,32 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to INTERVIEW is deterministically governed by automated checks and artifacts.
-- transition_id: intake_to_retrospective_trivial
-  from_state: INTAKE
+- transition_id: interview_to_retrospective_trivial
+  from_state: INTERVIEW
   to_state: RETROSPECTIVE
-  purpose: Fast-track a TRIVIAL-classified task to the mandatory pipeline-close retrospective gate.
+  purpose: Fast-track a TRIVIAL-classified task from the interview gate to the mandatory pipeline-close retrospective gate.
   checklist:
-  - Current task state is persisted as INTAKE
-  - Human has confirmed TRIVIAL classification with a stated reason and diff reference
+  - Current task state is persisted as INTERVIEW
+  - Human has completed the INTERVIEW stage-entry questions and applicable follow-ups
   required_artifacts: []
-  deterministic_checks: []
+  deterministic_checks:
+  - interview_trivial_complete
+  stage_question_ids:
+  - interview_classification
+  - interview_summary
+  - interview_scope
+  - interview_verification
+  - interview_trivial_evidence
+  stage_route:
+    question_id: interview_classification
+    equals: TRIVIAL
   human_questions:
-  - question_id: triage_classification
-    question: 'Confirm TRIVIAL classification: state the reason and a diff reference (e.g. "fix typo in error message, files=1, diff=<short sha or `git diff --stat` one-liner>").'
-    options: []
-    default: ''
+  - question_id: confirm_interview_complete
+    question: Confirm the INTERVIEW baseline questions and applicable follow-ups are complete?
+    options:
+    - Yes [Recommended]
+    - No, continue the interview
+    default: Yes [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -50,10 +199,10 @@ templates:
   - retrospective_capture
   capabilities_prohibited:
   - push branch to origin
-  denial_message: 'Transition INTAKE -> RETROSPECTIVE (trivial) denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition INTERVIEW -> RETROSPECTIVE (trivial) denied: preconditions or required decisions not satisfied.'
   authority:
     type: human_decision
-    explanation: A human must confirm the TRIVIAL classification and state a reason before the task enters the mandatory retrospective gate.
+    explanation: A human must confirm that the stage-entry interview is complete before the task enters the mandatory retrospective gate.
 - transition_id: intake_to_draft_plan
   from_state: INTAKE
   to_state: DRAFT_PLAN
@@ -81,6 +230,10 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+# Plan-review entry edges intentionally use a binary submit/revise question:
+# they decide whether the current artifacts are ready for that review state.
+# The 5-way review-method questions belong only to edges that select a review
+# method or permit an explicit review skip, not to plan-review entry.
 - transition_id: intake_to_plan_review
   from_state: INTAKE
   to_state: PLAN_REVIEW
@@ -148,6 +301,16 @@ templates:
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks:
   - plan_mode_or_socratic
+  - interview_standard_complete
+  stage_question_ids:
+  - interview_classification
+  - interview_summary
+  - interview_scope
+  - interview_verification
+  - interview_acceptance_criteria
+  stage_route:
+    question_id: interview_classification
+    equals: STANDARD
   human_questions: []
   approval:
     required: false
@@ -177,6 +340,16 @@ templates:
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks:
   - plan_mode_or_socratic
+  - interview_standard_complete
+  stage_question_ids:
+  - interview_classification
+  - interview_summary
+  - interview_scope
+  - interview_verification
+  - interview_acceptance_criteria
+  stage_route:
+    question_id: interview_classification
+    equals: STANDARD
   human_questions:
   - question_id: confirm_review_interview_to_plan_review
     question: Submit artifacts for review in PLAN_REVIEW?
@@ -1037,6 +1210,9 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from WORKTREE_REVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
+# Return-to-review edges also intentionally use the binary submit/revise
+# question. The 5-way structure is reserved for choosing a review method or
+# explicitly skipping a discretionary review, not for resubmitting artifacts.
 - transition_id: multi_agent_code_review_to_worktree_review
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: WORKTREE_REVIEW
@@ -1487,8 +1663,8 @@ templates:
     options: []
     default: ''
   approval:
-    required: false
-    approver_role: agent_or_human
+    required: true
+    approver_role: human
   skip:
     allowed: false
     requires_justification: false

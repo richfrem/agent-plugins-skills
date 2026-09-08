@@ -94,6 +94,20 @@ def _scan_dir(
     for entry in sorted(directory.iterdir()):
         if entry.name.startswith(".") or entry.name in SKIP_DIRS:
             continue
+        if entry.name == "SKILL.md":
+            findings.append({
+                "type": "nested_skill_file",
+                "skill": str(skill.relative_to(plugin_root)),
+                "resource_type": resource_type,
+                "file": str(entry.relative_to(plugin_root)),
+                "size": entry.stat().st_size if entry.exists() else 0,
+                "severity": "error",
+                "message": (
+                    "SKILL.md must be the root file of a skill directory, "
+                    "not a nested reference, script, or asset."
+                ),
+            })
+            continue
         if entry.is_symlink():
             target = entry.resolve()
             # Check if symlink points inside plugin root (good) or elsewhere (warn)

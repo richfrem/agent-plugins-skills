@@ -8,6 +8,7 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from agent_control import ControlPlane, CANONICAL_STATES, InvalidStateTransition
+from interview_helpers import stage_interview_answers
 
 def test_draft_plan_and_multi_agent_review_states_exist():
     assert "DRAFT_PLAN" in CANONICAL_STATES
@@ -27,6 +28,7 @@ def test_full_intake_to_approval_lifecycle(tmp_path):
     
     # INTERVIEW -> DRAFT_PLAN
     cp.record_plan_mode_entry(task_id=task_id, actor="agent")
+    stage_interview_answers(cp, task_id)
     cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Compiled draft spec and plan")
     assert cp.get_task(task_id)["state"] == "DRAFT_PLAN"
 
@@ -59,6 +61,7 @@ def test_skip_multi_agent_review_gate(tmp_path):
     
     cp.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Interviewing")
     cp.record_plan_mode_entry(task_id=task_id, actor="agent")
+    stage_interview_answers(cp, task_id)
     cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Draft compiled")
 
     # Path B: User skips directly to AWAITING_APPROVAL

@@ -22,11 +22,11 @@ def test_retrospective_is_a_first_class_completion_state():
 
     assert "RETROSPECTIVE" in CANONICAL_STATES
     assert "RETROSPECTIVE" in ALLOWED_TRANSITIONS["VERIFY_EXIT"]
-    assert "RETROSPECTIVE" in ALLOWED_TRANSITIONS["INTAKE"]
+    assert "INTERVIEW" in ALLOWED_TRANSITIONS["INTAKE"]
     assert "DONE" not in ALLOWED_TRANSITIONS["VERIFY_EXIT"]
     assert "DONE" not in ALLOWED_TRANSITIONS["INTAKE"]
     assert registry.get_template("VERIFY_EXIT", "RETROSPECTIVE") is not None
-    assert registry.get_template("INTAKE", "RETROSPECTIVE") is not None
+    assert registry.get_template("INTERVIEW", "RETROSPECTIVE") is not None
     assert registry.get_template("RETROSPECTIVE", "DONE") is not None
 
 
@@ -83,11 +83,20 @@ def test_retrospective_entry_is_unique_per_task(tmp_path):
 def test_retrospective_capture_wrapper_records_agent_completion(tmp_path):
     cp = ControlPlane(db_path=tmp_path / "control_plane.db")
     cp.create_task("task-547-wrapper", "Reflection", "codex")
+    cp.transition("task-547-wrapper", "INTERVIEW", "human", "Begin the interview")
     from control_plane.coordinator import TransitionCoordinator
 
+    interview_answers = iter([
+        "TRIVIAL",
+        "Capture the retrospective wrapper behavior.",
+        "The retrospective state and wrapper persistence.",
+        "The wrapper records a complete retrospective.",
+        "The change is limited to the retrospective test path.",
+        "Yes [Recommended]",
+    ])
     TransitionCoordinator(
         control_plane=cp,
-        input_fn=lambda prompt: "TRIVIAL: wrapper contract, files=1, diff=test",
+        input_fn=lambda prompt: next(interview_answers),
     ).coordinate_transition(
         task_id="task-547-wrapper",
         to_state="RETROSPECTIVE",

@@ -60,6 +60,8 @@ class TransitionTemplate:
     capabilities_prohibited: List[str]
     denial_message: str
     next_steps_hint: str = ""
+    stage_question_ids: List[str] = None
+    stage_route: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -78,16 +80,23 @@ class TransitionTemplate:
             "capabilities_prohibited": list(self.capabilities_prohibited),
             "denial_message": self.denial_message,
             "next_steps_hint": self.next_steps_hint,
+            "stage_question_ids": list(self.stage_question_ids or []),
+            "stage_route": dict(self.stage_route or {}),
         }
 
 
 class TransitionRegistry:
     """Authoritative registry for all transition templates loaded from YAML."""
 
-    def __init__(self, templates: List[TransitionTemplate]):
+    def __init__(
+        self,
+        templates: List[TransitionTemplate],
+        stage_contracts: Optional[Dict[str, Dict[str, Any]]] = None,
+    ):
         self._templates_by_edge: Dict[Tuple[str, str], TransitionTemplate] = {}
         self._templates_by_id: Dict[str, TransitionTemplate] = {}
         self._capability_to_edges: Dict[str, List[Tuple[str, str]]] = {}
+        self._stage_contracts = dict(stage_contracts or {})
 
         for t in templates:
             edge = (t.from_state, t.to_state)
@@ -127,6 +136,20 @@ class TransitionRegistry:
     def get_edges_releasing_capability(self, capability: str) -> List[Tuple[str, str]]:
         return list(self._capability_to_edges.get(capability, []))
 
+    def get_stage_contract(self, state: str) -> Optional[Dict[str, Any]]:
+        """Return the entry-question contract for a lifecycle state."""
+        return self._stage_contracts.get(state)
+
+    def get_stage_question(self, state: str, question_id: str) -> Optional[Dict[str, Any]]:
+        """Return a baseline or adaptive question by ID from a stage contract."""
+        contract = self.get_stage_contract(state)
+        if not contract:
+            return None
+        questions = list(contract.get("entry_questions", []))
+        for rule in contract.get("adaptive_follow_up_rules", []):
+            questions.extend(rule.get("questions", []))
+        return next((q for q in questions if q.get("question_id") == question_id), None)
+
     @classmethod
     def load_from_file(cls, path: Path) -> "TransitionRegistry":
         if not path.exists():
@@ -143,6 +166,28 @@ class TransitionRegistry:
         raw_templates = data["templates"]
         if not isinstance(raw_templates, list):
             raise TransitionRegistryError(f"'templates' in {path} must be a list")
+
+        raw_stages = data.get("stages", {})
+        if not isinstance(raw_stages, dict):
+            raise TransitionRegistryError("'stages' in YAML must be a mapping")
+
+        stage_contracts: Dict[str, Dict[str, Any]] = {}
+        for state, contract in raw_stages.items():
+            if state not in CANONICAL_STATES:
+                raise TransitionRegistryError(f"Unknown stage contract state: {state}")
+            if not isinstance(contract, dict):
+                raise TransitionRegistryError(f"Stage contract for '{state}' must be a mapping")
+            for field in ("purpose", "question_policy", "entry_questions", "adaptive_follow_up_rules", "exit_requirements"):
+                if field not in contract:
+                    raise TransitionRegistryError(f"Stage '{state}' missing required field '{field}'")
+            if contract["question_policy"] != "one_at_a_time":
+                raise TransitionRegistryError(
+                    f"Stage '{state}' must use question_policy 'one_at_a_time'"
+                )
+            for field in ("entry_questions", "adaptive_follow_up_rules", "exit_requirements"):
+                if not isinstance(contract[field], list):
+                    raise TransitionRegistryError(f"Stage '{state}' field '{field}' must be a list")
+            stage_contracts[state] = contract
 
         parsed: List[TransitionTemplate] = []
         for idx, raw_item in enumerate(raw_templates):
@@ -195,6 +240,10 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Field 'capabilities_prohibited' must be a list in template '{item.get('transition_id')}'")
                 if not isinstance(item["denial_message"], str) or len(item["denial_message"]) == 0:
                     raise TransitionRegistryError(f"Field 'denial_message' must be a non-empty string in template '{item.get('transition_id')}'")
+                if not isinstance(item.get("stage_question_ids", []), list):
+                    raise TransitionRegistryError(f"Field 'stage_question_ids' must be a list in template '{item.get('transition_id')}'")
+                if item.get("stage_route") is not None and not isinstance(item["stage_route"], dict):
+                    raise TransitionRegistryError(f"Field 'stage_route' must be a mapping in template '{item.get('transition_id')}'")
 
                 t = TransitionTemplate(
                     transition_id=item["transition_id"],
@@ -212,10 +261,12 @@ class TransitionRegistry:
                     capabilities_prohibited=item["capabilities_prohibited"],
                     denial_message=item["denial_message"],
                     next_steps_hint=item.get("next_steps_hint", ""),
+                    stage_question_ids=item.get("stage_question_ids", []),
+                    stage_route=item.get("stage_route"),
                 )
                 parsed.append(t)
 
-        return cls(parsed)
+        return cls(parsed, stage_contracts)
 
     @classmethod
     def load_default(cls) -> "TransitionRegistry":
