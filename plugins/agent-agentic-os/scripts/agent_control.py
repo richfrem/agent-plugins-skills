@@ -310,6 +310,8 @@ class ControlPlane:
         provided_answers: Optional[Dict[str, str]] = None,
         approval_decision: Optional[str] = None,
         skip_decision: Optional[Tuple[str, str]] = None,
+        skip_review: bool = False,
+        skip_reason: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -324,6 +326,8 @@ class ControlPlane:
             provided_answers=provided_answers,
             approval_decision=approval_decision,
             skip_decision=skip_decision,
+            skip_review=skip_review,
+            skip_reason=skip_reason,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
@@ -591,6 +595,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--interactive", action="store_true", default=False)
     p_ct.add_argument("--answers", default=None, help="JSON dict of question answers")
     p_ct.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
+    p_ct.add_argument("--skip-review", action="store_true", default=False)
+    p_ct.add_argument("--skip-reason", default=None)
 
     # Compatibility alias: transition routes directly through TransitionCoordinator
     p_tr = sub.add_parser("transition")
@@ -601,6 +607,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tr.add_argument("--interactive", action="store_true", default=False)
     p_tr.add_argument("--answers", default=None, help="JSON dict of question answers")
     p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
+    p_tr.add_argument("--skip-review", action="store_true", default=False)
+    p_tr.add_argument("--skip-reason", default=None)
 
     p_lock = sub.add_parser("lock-verifiers")
     p_lock.add_argument("--task-id", required=True)

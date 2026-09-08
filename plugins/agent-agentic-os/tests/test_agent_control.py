@@ -481,6 +481,55 @@ def test_general_task_advances_without_prior_art_scan(control_plane):
     assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
 
 
+def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(control_plane):
+    """Regression test: ControlPlane.coordinate_transition() (the public facade, distinct
+    from TransitionCoordinator.coordinate_transition()) must accept and forward
+    skip_review/skip_reason to the underlying TransitionCoordinator — the CLI's
+    _dispatch_command() always passes these two kwargs (defaulting skip_review=False)
+    for both the 'transition' and 'coordinate-transition' subcommands, so a missing
+    parameter here breaks every CLI transition call, not just skip-review ones."""
+    task_id = "task-facade-skip-review-001"
+    control_plane.create_task(task_id=task_id, title="Facade skip_review test", runtime_tool="claude")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="human")
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="human", reason="test")
+
+    spec_path = Path(f"docs/plans/{task_id}-spec.md")
+    plan_path = Path(f"docs/plans/{task_id}-implementation-plan.md")
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text("spec")
+    plan_path.write_text("plan")
+    try:
+        # This is exactly the CLI's own call shape (agent_control.py's _dispatch_command()):
+        # skip_review/skip_reason are always forwarded, and skip_review=True is the path
+        # that previously raised TypeError before the facade accepted these kwargs.
+        control_plane.coordinate_transition(
+            task_id=task_id, to_state="AWAITING_APPROVAL", actor="human", reason="test",
+            skip_review=True, skip_reason="test skip",
+        )
+        assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
+    finally:
+        spec_path.unlink(missing_ok=True)
+        plan_path.unlink(missing_ok=True)
+
+
+def test_cli_transition_parsers_accept_skip_review_flags():
+    """Regression test: the 'transition' and 'coordinate-transition' argparse subparsers
+    must expose --skip-review/--skip-reason — _dispatch_command() reads them via
+    getattr(args, "skip_review", False) with a silent False/None fallback, which means
+    an unregistered flag doesn't fail loudly; it silently no-ops. A user passing
+    --skip-review on the actual CLI got 'unrecognized arguments' before this fix,
+    since neither subparser declared the flag at all."""
+    from agent_control import _build_parser
+
+    parser = _build_parser()
+    for subcommand in ("transition", "coordinate-transition"):
+        args = parser.parse_args([
+            subcommand, "--task-id", "t1", "--to", "AWAITING_APPROVAL",
+            "--skip-review", "--skip-reason", "user requested skip",
+        ])
+        assert args.skip_review is True
+        assert args.skip_reason == "user requested skip"
+
 def test_worktree_post_implementation_review_stage_gate(control_plane):
     """Test transitions through WORKTREE_REVIEW and MULTI_AGENT_CODE_REVIEW before VERIFY_EXIT."""
     task_id = "task-review-gate-001"
