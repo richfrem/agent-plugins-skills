@@ -10752,6 +10752,12 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-pipeline.mermaid",
       "strategy": "symlink",
       "description": "Control-plane diagram referenced by interview-spec pipeline docs"
+    },
+    {
+      "src": "plugins/agent-scaffolders/skills/create-stateful-skill/SKILL.md",
+      "dst": "plugins/agent-scaffolders/references/examples/SKILL.md",
+      "strategy": "symlink",
+      "description": "Example skill document used by create-command documentation"
     }
   ]
 }
