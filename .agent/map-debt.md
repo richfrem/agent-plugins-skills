@@ -53,6 +53,25 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 
 ---
 
+## 2026-09-07 — create-command Example Frontmatter
+
+- **Cycle/Session ID:** `20260907-create-command-frontmatter`
+- **Artifact:** `plugins/agent-scaffolders/references/examples/SKILL.md`
+  **Friction:** The example was a plain-text broken symlink target (`../../../create-stateful-skill/SKILL.md`) rather than a resolvable link, so the installer copied that text into `.agents/` and the skill loader reported missing YAML frontmatter.
+  **Why not deferred:** Small, in-bounds symlink repair.
+  **Recommended fix:** Keep reference examples that reuse skill documents registered through `symlink_manager.py` and validate installed `SKILL.md` frontmatter.
+  **Fix:** Registered the example source with `symlink_manager.py` to point at the canonical `create-stateful-skill/SKILL.md`, restored the manifest links, and reinstalled the plugin.
+  **Evidence:** Pre-fix frontmatter contract failed on the literal path text; post-fix source and installed files begin with `---`.
+  **Severity:** S | **Repeat:** NO | **Status:** RESOLVED
+
+- **Artifact:** `plugins/plugin-manager/scripts/plugin_add.py` runtime reinstall
+  **Friction:** Initial reinstall was blocked by sandbox permissions while rewriting `.agents/` ownership and installed symlink artifacts.
+  **Why not deferred:** Required runtime synchronization could not be verified until rerun with filesystem approval.
+  **Recommended fix:** Rerun the required installer with filesystem access when the sandbox blocks `.agents/` writes.
+  **Fix:** Reran the same reinstall with approved filesystem access.
+  **Evidence:** Initial run exited 1 with `Operation not permitted`; approved rerun completed successfully.
+  **Severity:** S | **Repeat:** NO | **Status:** RESOLVED
+
 ## 2026-08-24 — Marketplace Manifest Schema & Scaffolding/Auditing Hardening
 
 - **Artifact:** `plugins/agent-scaffolders/skills/create-plugin/SKILL.md`, `scaffold.py`, `manage-marketplace/SKILL.md`, `audit.py`, `audit-plugin/SKILL.md`, `audit-plugin-l5/SKILL.md`, `l5-red-team-auditor/SKILL.md`, `plugins/plugin-manager/scripts/plugin_add.py`

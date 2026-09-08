@@ -35,3 +35,4 @@
 | 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of exploration-cycle-plugin | None | None | FAILED |
 | 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of obsidian-wiki-engine | None | None | FAILED |
 | 2026-08-23 | Tier 1 | Failure: Duplicate top-level key 'name' in plugin.json of plugin-manager | None | None | FAILED |
+| 2026-09-07 | Tier 2 | Failure: Installation crash for agent-scaffolders: [Errno 1] Operation not permitted: '/Users/richardfremmerlid/Projects/agent-plugins-skills/.agents/ownership/agent-scaffolders.json': PermissionError: [Errno 1] Operation not permitted: '/Users/richardfremmerlid/Projects/agent-plugins-skills/.agents/ownership/agent-scaffolders.json' | None | None | FAILED |
