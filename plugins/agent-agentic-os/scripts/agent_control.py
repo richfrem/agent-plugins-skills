@@ -149,9 +149,7 @@ class VerifierSovereigntyViolation(Exception):
     pass
 
 
-class PersistenceInvariantViolation(Exception):
-    """Raised when evolution integrity or asymmetric persistence invariants are violated."""
-    pass
+from control_plane.ports import PersistenceInvariantViolation
 
 
 class ConcurrentModificationError(Exception):
@@ -255,8 +253,15 @@ class ControlPlane:
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):
-        """Validates and applies a state transition according to the canonical DAG. Known-state
-        and adjacency legality are delegated to self._state_machine (a pure domain component,
+        """INTERNAL USE ONLY: Validates and applies a deterministic state transition according to the canonical DAG.
+
+        DEPRECATION NOTICE: This method is strictly internal and functional ONLY for deterministic transitions
+        that do not require human input or approval. For any transition requiring human questions or approval
+        (e.g., AWAITING_APPROVAL -> APPROVED, DRAFT_PLAN -> MULTI_AGENT_REVIEW), callers MUST use
+        TransitionCoordinator.coordinate_transition() to interactively capture and persist signed human decisions.
+        Any attempt to transition a human-gated edge via this method will be rejected with PersistenceInvariantViolation.
+
+        Known-state and adjacency legality are delegated to self._state_machine (a pure domain component,
         issue-524 post-round-2-review correction); state retrieval, the guarded write, and
         transition-history persistence all go through self._persistence.apply_transition() —
         this method itself owns only coordination (calling the state machine, then the policy
@@ -421,6 +426,45 @@ class ControlPlane:
                 raise PersistenceInvariantViolation(str(e)) from e
 
         self._persistence.update_worktree_fields(task_id, worktree_path, worktree_branch, worktree_state)
+
+    def verify_commit(self, branch: str, staged_files: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Verifies whether git commit is authorized on `branch` given `staged_files`.
+        
+        Returns:
+            Dict containing {"status": "ALLOWED"|"BLOCKED", "task_id": ..., "state": ..., "message": ...}
+        Raises:
+            PersistenceInvariantViolation if blocked and callers don't catch.
+        """
+        # If main/master or untracked branch, allow
+        if branch in ("main", "master", ""):
+            return {"status": "ALLOWED", "branch": branch, "message": "Non-task branch bypass"}
+
+        task = self._persistence.get_task_by_worktree_branch(branch)
+        if task is None:
+            return {"status": "ALLOWED", "branch": branch, "task_id": None, "message": "Untracked branch (ungated)"}
+
+        task_id = task["task_id"]
+        task_state = task["state"]
+
+        op_ctx = {
+            "task_id": task_id,
+            "task_state": task_state,
+            "staged_files": staged_files or [],
+            "validate_transition_history": lambda: self._persistence.validate_task_pipeline_history(task_id, task_state),
+        }
+
+        try:
+            _policy.evaluate_operation(op_ctx, "commit")
+        except _policy.PolicyViolation as e:
+            raise PersistenceInvariantViolation(str(e)) from e
+
+        return {
+            "status": "ALLOWED",
+            "task_id": task_id,
+            "state": task_state,
+            "branch": branch,
+            "message": "Commit authorized"
+        }
 
     def log_asymmetric_persistence(self, task_id: str, destination: str, status: str, details: str):
         """Logs asymmetric Layer 2 persistence entries into the SQLite audit table."""
@@ -622,6 +666,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
 
+    p_vc = sub.add_parser("verify-commit")
+    p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
+    p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
+
     return parser
 
 
@@ -642,7 +690,13 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             interactive=getattr(args, "interactive", False),
             provided_answers=answers_dict,
             approval_decision=getattr(args, "approval", None),
+            skip_review=getattr(args, "skip_review", False),
+            skip_reason=getattr(args, "skip_reason", None),
         )
+        print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
+    elif args.subcommand == "record-critic-review":
+        cp.record_critic_review(args.task_id, args.iteration, args.model, args.verdict, args.findings)
+        print(f"Critic review recorded for task {args.task_id} (verdict={args.verdict}).")
     elif args.subcommand == "lock-verifiers":
         paths = [Path(p.strip()) for p in args.paths.split(",")]
         cp.lock_verifiers(args.task_id, paths)
@@ -692,6 +746,9 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             reason=args.reason,
         )
         print(f"Recovery approval recorded: {token}")
+    elif args.subcommand == "verify-commit":
+        res = cp.verify_commit(args.branch, args.staged_files)
+        print(f"Commit check: {res['status']} ({res['message']})")
 
 
 def _dispatch_gate_record_command(cp: ControlPlane, args: argparse.Namespace):

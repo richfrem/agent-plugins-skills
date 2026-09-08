@@ -191,6 +191,17 @@ class _FakePersistencePort(PersistencePort):
         self.calls.append(("record_decision", decision))
         return 0
 
+    def get_task_by_worktree_branch(self, branch: str):
+        self.calls.append(("get_task_by_worktree_branch", branch))
+        for t in self._tasks.values():
+            if t.get("worktree_branch") == branch:
+                return t
+        return None
+
+    def validate_task_pipeline_history(self, task_id: str, task_state: str):
+        self.calls.append(("validate_task_pipeline_history", task_id, task_state))
+        return None
+
 
 def test_fake_persistence_port_proves_full_delegation():
     """Injects a fake PersistencePort with zero SQLite — via true constructor injection
@@ -222,6 +233,6 @@ def test_fake_persistence_port_proves_full_delegation():
     cp.log_asymmetric_persistence(task_id="t1", destination="wiki/decisions/x.md", status="OBSERVED", details="d")
     assert ("insert_asymmetric_persistence", "t1", "wiki/decisions/x.md", "OBSERVED", "d") in fake.calls
 
-    fake._tasks["t1"]["state"] = "WORKTREE_REVIEW"  # satisfy the push-barrier policy check
+    fake._tasks["t1"]["state"] = "DONE"  # satisfy the push-barrier policy check (must be DONE)
     cp.update_worktree(task_id="t1", worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin")
     assert ("update_worktree_fields", "t1", "/tmp/wt", "b", "pushed_to_origin") in fake.calls

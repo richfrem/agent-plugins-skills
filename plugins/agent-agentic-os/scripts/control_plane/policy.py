@@ -139,22 +139,77 @@ def _rolled_back_check(ctx: Dict[str, Any]) -> Optional[str]:
 
 
 def _worktree_push_check(ctx: Dict[str, Any]) -> Optional[str]:
-    """Predicate rule folding in the original update_worktree() pushed_to_origin barrier:
-    the task must currently be in one of WORKTREE_REVIEW/MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT."""
+    """Predicate rule enforcing push gate: pushing to origin is strictly forbidden unless
+    the task has cleared all verification gates and is in final state DONE."""
     task_state = ctx["task_state"]
     task_id = ctx["task_id"]
-    valid_states_for_push = ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")
-    if task_state in valid_states_for_push:
+    if task_state == "DONE":
         return None
     return (
         f"Cannot mark worktree 'pushed_to_origin' for task '{task_id}': Task state is '{task_state}'. "
-        f"Post-implementation review stage gate required. Task must be in {valid_states_for_push} before pushing to origin."
+        "Pushing to origin requires full pipeline completion. Task must be in final state 'DONE' before pushing."
     )
+
+
+def _task_commit_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Predicate rule enforcing pipeline execution and stage validity on git commits.
+    
+    Permits commit if:
+    1. The task is in an authorized implementation state (IN_WORKTREE, WORKTREE_REVIEW,
+       MULTI_AGENT_CODE_REVIEW, VERIFY_EXIT, DONE); OR
+    2. The task is in a planning/proposal state (INTAKE, INTERVIEW, DRAFT_PLAN, PLAN_REVIEW,
+       MULTI_AGENT_REVIEW, AWAITING_APPROVAL) AND all staged files are documentation under
+       docs/plans/ or docs/superpowers/.
+       
+    Furthermore, if a session was initiated in the control plane:
+    - Verifies all transitions recorded in task_transitions match valid_transitions.
+    - Verifies no transition violations are recorded for the task.
+    - Verifies transition chain continuity from INTAKE to current state.
+    """
+    task_state = ctx.get("task_state")
+    task_id = ctx.get("task_id", "unknown")
+    staged_files: List[str] = ctx.get("staged_files", [])
+
+    implementation_states = ("IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "DONE")
+    planning_states = ("INTAKE", "INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "MULTI_AGENT_REVIEW", "AWAITING_APPROVAL")
+
+    # If in planning states, permit only if ALL staged files are docs/plans/ or docs/superpowers/
+    if task_state in planning_states:
+        if staged_files:
+            non_doc_files = [
+                f for f in staged_files
+                if not (f.startswith("docs/plans/") or f.startswith("docs/superpowers/"))
+            ]
+            if non_doc_files:
+                return (
+                    f"Cannot commit code for task '{task_id}': Task state is '{task_state}' (Proposal Mode). "
+                    f"Production code modifications are prohibited during planning. Non-planning staged files: {non_doc_files}. "
+                    f"Complete Socratic interview, spec generation, and human approval before implementing in worktree."
+                )
+        # If all staged files are planning docs (or no staged files provided), allow commit
+        return None
+
+    if task_state not in implementation_states:
+        return (
+            f"Cannot commit for task '{task_id}': Task state is '{task_state}'. "
+            f"Commits are only permitted in implementation states {implementation_states} "
+            f"or during planning with documentation files only."
+        )
+
+    # If the caller provided transition history and validation functions, verify execution integrity
+    validate_history_fn = ctx.get("validate_transition_history")
+    if validate_history_fn is not None:
+        history_error = validate_history_fn()
+        if history_error:
+            return f"Cannot commit for task '{task_id}': Pipeline integrity check failed: {history_error}"
+
+    return None
 
 
 # --- Controlled-operation rules, keyed by operation name (not a lifecycle transition) ---
 OPERATION_RULES: Dict[str, List[Dict[str, Any]]] = {
     "worktree_push": [{"check": "predicate", "fn": _worktree_push_check}],
+    "commit": [{"check": "predicate", "fn": _task_commit_check}],
 }
 
 

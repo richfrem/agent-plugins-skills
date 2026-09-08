@@ -653,6 +653,44 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                         pre_commit.chmod(0o755)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
 
+            # Install pre-commit pipeline bypass enforcement guard
+            pipeline_guard_source = plugin_root / "scripts" / "pre-commit-pipeline-guard"
+            if pipeline_guard_source.exists():
+                pipeline_guard_target = git_hooks_dir / "pre-commit-pipeline-guard"
+                pipeline_guard_content = pipeline_guard_source.read_text(encoding="utf-8")
+                write_file(pipeline_guard_target, pipeline_guard_content, dry_run, force=True)
+                if not dry_run:
+                    pipeline_guard_target.chmod(0o755)
+
+                pre_commit = git_hooks_dir / "pre-commit"
+                if pre_commit.exists():
+                    pc_content = pre_commit.read_text(encoding="utf-8")
+                    if "pre-commit-pipeline-guard" not in pc_content:
+                        pipe_block = "\n# Run pipeline execution guard if it exists\nif [ -x \"$HOOKS_DIR/pre-commit-pipeline-guard\" ]; then\n    \"$HOOKS_DIR/pre-commit-pipeline-guard\" || exit 1\nfi\n"
+                        if "\nexit 0" in pc_content:
+                            idx = pc_content.rfind("\nexit 0")
+                            pc_content = pc_content[:idx] + pipe_block + "\nexit 0" + pc_content[idx+7:]
+                        else:
+                            pc_content += pipe_block + "\nexit 0\n"
+                        write_file(pre_commit, pc_content, dry_run, force=True)
+                else:
+                    minimal_hook = (
+                        "#!/usr/bin/env bash\n"
+                        "# pre-commit hook — installed by init_agentic_os.py\n"
+                        "HOOKS_DIR=\"$(dirname \"$0\")\"\n"
+                        "\n"
+                        "# Run pipeline guard\n"
+                        "if [ -x \"$HOOKS_DIR/pre-commit-pipeline-guard\" ]; then\n"
+                        "    \"$HOOKS_DIR/pre-commit-pipeline-guard\" || exit 1\n"
+                        "fi\n"
+                        "\n"
+                        "exit 0\n"
+                    )
+                    write_file(pre_commit, minimal_hook, dry_run, force=False)
+                    if not dry_run:
+                        pre_commit.chmod(0o755)
+                announce("Installed pre-commit-pipeline-guard into .git/hooks/", dry_run)
+
             # Install pre-push review guard
             push_guard_source = plugin_root / "scripts" / "pre-push-review-guard"
             if push_guard_source.exists():

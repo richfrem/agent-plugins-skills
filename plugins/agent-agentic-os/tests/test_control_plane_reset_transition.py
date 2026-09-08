@@ -156,15 +156,13 @@ def test_reset_from_every_non_intake_state_interactive_succeeds(control_plane, s
     assert row[1] == "human"
 
 
-def test_reset_actor_reflects_caller_pending_pr562_rebase(control_plane):
-    """Documents a known gap in THIS branch (predates PR #562's decision_actor
-    fix, not yet rebased in): decision_type='RESET' is correctly recorded
-    regardless of interactive/provided_answers, but actor here is simply
-    whatever the caller passes to coordinate_transition(), not yet derived
-    from a genuine interactive-only check. Once this branch rebases onto
-    main post-#562-merge, provided_answers should be re-verified to actually
-    raise (matching test_reset_from_representative_states_interactive_succeeds's
-    actor='human' guarantee) rather than merely record actor='agent'."""
+def test_reset_via_provided_answers_rejected(control_plane):
+    """Now that this branch is rebased onto PR #562's decision_actor fix:
+    a programmatic provided_answers reset attempt correctly produces
+    actor='agent', which the DB trigger rejects for this human_decision-
+    authority edge — matching test_reset_from_representative_states_
+    interactive_succeeds's actor='human' guarantee. Only a genuine
+    interactive=True answer may satisfy a RESET."""
     task_id = "task-reset-actor-gap"
     control_plane.create_task(task_id=task_id, title="Reset actor gap test", runtime_tool="claude")
     conn = control_plane._persistence.get_connection()
@@ -174,25 +172,16 @@ def test_reset_actor_reflects_caller_pending_pr562_rebase(control_plane):
         conn.close()
 
     coord = TransitionCoordinator(control_plane=control_plane)
-    coord.coordinate_transition(
-        task_id=task_id,
-        to_state="INTAKE",
-        actor="agent",
-        reason="Attempted programmatic reset (pre-#562-rebase gap)",
-        interactive=False,
-        provided_answers={"reset_justification": "programmatic answer, no real human involved"},
-    )
-
-    conn = control_plane._persistence.get_connection()
-    try:
-        row = conn.execute(
-            "SELECT decision_type, actor FROM transition_decisions WHERE task_id = ? AND to_state = 'INTAKE'",
-            (task_id,),
-        ).fetchone()
-    finally:
-        conn.close()
-    assert row[0] == "RESET"
-    assert row[1] == "agent"
+    from agent_control import PersistenceInvariantViolation
+    with pytest.raises(PersistenceInvariantViolation):
+        coord.coordinate_transition(
+            task_id=task_id,
+            to_state="INTAKE",
+            actor="agent",
+            reason="Attempted programmatic reset",
+            interactive=False,
+            provided_answers={"reset_justification": "programmatic answer, no real human involved"},
+        )
 
 
 def test_reset_interactive_empty_answer_fails_closed(control_plane):

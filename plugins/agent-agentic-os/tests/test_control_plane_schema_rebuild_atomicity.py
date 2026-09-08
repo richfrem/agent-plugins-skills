@@ -49,7 +49,7 @@ def _seed_realistic_data(conn):
     """Seeds tasks + child rows across multiple states, mirroring real control-plane usage.
     enforce_valid_initial_state only permits NULL->INTAKE inserts (LEGAL_INITIAL_STATES), so
     task-b is inserted at INTAKE and legally transitioned to DONE via UPDATE (INTAKE->DONE is
-    a valid registry edge) rather than inserted directly at DONE."""
+    a valid registry edge requiring triage_classification decision) rather than inserted directly at DONE."""
     conn.execute(
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
         ("task-a", "Task A", "INTAKE", "claude"),
@@ -58,17 +58,33 @@ def _seed_realistic_data(conn):
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
         ("task-b", "Task B", "INTAKE", "claude"),
     )
+    conn.execute(
+        """
+        INSERT INTO transition_decisions (
+            task_id, source_occupancy_transition_id, from_state, to_state,
+            question_id, answer, decision_type, actor, recorded_at
+        ) VALUES ('task-b', 1, 'INTAKE', 'DONE', 'triage_classification', 'trivial fix', 'ANSWER', 'human', 12345.0)
+        """
+    )
     conn.execute("UPDATE tasks SET state = 'DONE' WHERE task_id = 'task-b';")
     conn.execute(
         "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
         ("task-b", "INTAKE", "DONE", "test"),
+    )
+    conn.execute(
+        "INSERT INTO critic_reviews (task_id, iteration, model_used, verdict, critique_findings) VALUES (?, ?, ?, ?, ?)",
+        ("task-b", 1, "test-model", "PASS", "all good"),
+    )
+    conn.execute(
+        "INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) VALUES (?, ?, ?, ?, ?)",
+        ("task-b", "test-gate", "echo test", 0, "token-123"),
     )
     conn.commit()
 
 
 def test_splitter_produces_expected_statement_breakdown():
     """Splitter must filter out all 3 leading PRAGMAs and produce exactly the DDL statements
-    SCHEMA_SQL actually contains: 10 CREATE TABLE, 3 CREATE INDEX, 2 CREATE TRIGGER."""
+    SCHEMA_SQL actually contains: 11 CREATE TABLE, 3 CREATE INDEX, 2 CREATE TRIGGER."""
     from control_plane.adapters import _split_schema_sql_statements
 
     statements = _split_schema_sql_statements(SCHEMA_SQL)
@@ -83,7 +99,7 @@ def test_splitter_produces_expected_statement_breakdown():
     create_index = [s for s in upper_starts if s.startswith("CREATE INDEX")]
     create_trigger = [s for s in upper_starts if s.startswith("CREATE TRIGGER") or "CREATE TRIGGER" in s]
 
-    assert len(create_table) == 10, f"expected 10 CREATE TABLE statements, got {len(create_table)}"
+    assert len(create_table) == 11, f"expected 11 CREATE TABLE statements, got {len(create_table)}"
     assert len(create_index) == 3, f"expected 3 CREATE INDEX statements, got {len(create_index)}"
     assert len(create_trigger) == 2, f"expected 2 CREATE TRIGGER statements, got {len(create_trigger)}"
 
