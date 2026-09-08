@@ -75,6 +75,16 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
     )
 
 
+def _complete_retrospective(cp: ControlPlane, task_id: str):
+    cp.transition(task_id, "RETROSPECTIVE", "controller", "Enter retrospective")
+    cp.save_retrospective(
+        task_id,
+        {"decision": "opt_in", "completion_mode": "completed", "actor": "human"},
+        [],
+    )
+    _coordinate_transition(cp, task_id, "DONE", actor="human", reason="Complete retrospective")
+
+
 def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path):
     """Shared setup: drives a fresh task through the canonical DAG to IN_WORKTREE.
     PLAN_REVIEW's required_artifacts (spec/implementation-plan) are created under
@@ -109,7 +119,7 @@ def test_push_barrier_permits_done(control_plane, tmp_path):
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Ready to verify exit")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status", exit_code=0)
     control_plane.log_asymmetric_persistence(task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved")
-    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Complete")
+    _complete_retrospective(control_plane, task_id)
 
     control_plane.update_worktree(
         task_id=task_id, worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin"
@@ -211,5 +221,5 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
 
     # Verifier file untouched since locking — sovereignty branch must pass silently.
-    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="All exit gates passed")
+    _complete_retrospective(control_plane, task_id)
     assert control_plane.get_task(task_id)["state"] == "DONE"

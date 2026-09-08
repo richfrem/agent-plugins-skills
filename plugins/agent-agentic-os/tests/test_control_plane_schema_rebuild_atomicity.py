@@ -48,8 +48,8 @@ def _make_adapter(tmp_path):
 def _seed_realistic_data(conn):
     """Seeds tasks + child rows across multiple states, mirroring real control-plane usage.
     enforce_valid_initial_state only permits NULL->INTAKE inserts (LEGAL_INITIAL_STATES), so
-    task-b is inserted at INTAKE and legally transitioned to DONE via UPDATE (INTAKE->DONE is
-    a valid registry edge requiring triage_classification decision) rather than inserted directly at DONE."""
+    task-b is inserted at INTAKE and legally transitioned to RETROSPECTIVE via UPDATE because
+    the trivial completion path now requires the retrospective gate."""
     conn.execute(
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
         ("task-a", "Task A", "INTAKE", "claude"),
@@ -63,13 +63,13 @@ def _seed_realistic_data(conn):
         INSERT INTO transition_decisions (
             task_id, source_occupancy_transition_id, from_state, to_state,
             question_id, answer, decision_type, actor, recorded_at
-        ) VALUES ('task-b', 1, 'INTAKE', 'DONE', 'triage_classification', 'trivial fix', 'ANSWER', 'human', 12345.0)
+        ) VALUES ('task-b', 1, 'INTAKE', 'RETROSPECTIVE', 'triage_classification', 'trivial fix', 'ANSWER', 'human', 12345.0)
         """
     )
-    conn.execute("UPDATE tasks SET state = 'DONE' WHERE task_id = 'task-b';")
+    conn.execute("UPDATE tasks SET state = 'RETROSPECTIVE' WHERE task_id = 'task-b';")
     conn.execute(
         "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
-        ("task-b", "INTAKE", "DONE", "test"),
+        ("task-b", "INTAKE", "RETROSPECTIVE", "test"),
     )
     conn.execute(
         "INSERT INTO critic_reviews (task_id, iteration, model_used, verdict, critique_findings) VALUES (?, ?, ?, ?, ?)",
@@ -84,7 +84,7 @@ def _seed_realistic_data(conn):
 
 def test_splitter_produces_expected_statement_breakdown():
     """Splitter must filter out all 3 leading PRAGMAs and produce exactly the DDL statements
-    SCHEMA_SQL actually contains: 11 CREATE TABLE, 3 CREATE INDEX, 2 CREATE TRIGGER."""
+    SCHEMA_SQL actually contains: 13 CREATE TABLE, 4 CREATE INDEX, 2 CREATE TRIGGER."""
     from control_plane.adapters import _split_schema_sql_statements
 
     statements = _split_schema_sql_statements(SCHEMA_SQL)
@@ -99,8 +99,8 @@ def test_splitter_produces_expected_statement_breakdown():
     create_index = [s for s in upper_starts if s.startswith("CREATE INDEX")]
     create_trigger = [s for s in upper_starts if s.startswith("CREATE TRIGGER") or "CREATE TRIGGER" in s]
 
-    assert len(create_table) == 11, f"expected 11 CREATE TABLE statements, got {len(create_table)}"
-    assert len(create_index) == 3, f"expected 3 CREATE INDEX statements, got {len(create_index)}"
+    assert len(create_table) == 13, f"expected 13 CREATE TABLE statements, got {len(create_table)}"
+    assert len(create_index) == 4, f"expected 4 CREATE INDEX statements, got {len(create_index)}"
     assert len(create_trigger) == 2, f"expected 2 CREATE TRIGGER statements, got {len(create_trigger)}"
 
 
@@ -142,7 +142,7 @@ def test_rebuild_with_nonempty_data_survives_intact(tmp_path):
     conn = sqlite3.connect(str(db_path))
     try:
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
-        assert tasks == {"task-a": "INTAKE", "task-b": "DONE"}
+        assert tasks == {"task-a": "INTAKE", "task-b": "RETROSPECTIVE"}
         transitions = conn.execute("SELECT COUNT(*) FROM task_transitions").fetchone()[0]
         assert transitions == 1
         orphans = conn.execute(
@@ -193,7 +193,7 @@ def test_rebuild_failure_mid_copy_loop_rolls_back_completely(tmp_path, monkeypat
         assert orphans == 0, "orphan _*_migrating tables must not survive a rolled-back rebuild"
 
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
-        assert tasks == {"task-a": "INTAKE", "task-b": "DONE"}, "data must be unchanged after rollback"
+        assert tasks == {"task-a": "INTAKE", "task-b": "RETROSPECTIVE"}, "data must be unchanged after rollback"
 
         post_version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
         assert post_version == pre_version, "schema_version must be unchanged after rollback"

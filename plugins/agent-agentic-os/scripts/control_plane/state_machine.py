@@ -20,7 +20,7 @@ Key Input Dependencies:
     None — pure logic over the module-level CANONICAL_STATES/ALLOWED_TRANSITIONS constants.
 
 Key Functions:
-    - CANONICAL_STATES — the 14 canonical task lifecycle states
+    - CANONICAL_STATES — the 15 canonical task lifecycle states
     - ALLOWED_TRANSITIONS — the adjacency DAG (from_state -> list of legal to_states)
     - InvalidStateTransition — exception raised on an unknown state or illegal edge
     - StateMachine.validate_known_state() — raises if to_state isn't a recognized state at all
@@ -39,13 +39,14 @@ CANONICAL_STATES = [
     "WORKTREE_REVIEW",
     "MULTI_AGENT_CODE_REVIEW",
     "VERIFY_EXIT",
+    "RETROSPECTIVE",
     "DONE",
     "ROLLED_BACK",
     "ESCALATED"
 ]
 
 ALLOWED_TRANSITIONS = {
-    "INTAKE": ["INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "DONE", "ESCALATED"],
+    "INTAKE": ["INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "RETROSPECTIVE", "ESCALATED"],
     "INTERVIEW": ["DRAFT_PLAN", "PLAN_REVIEW", "ESCALATED", "INTAKE"],
     "DRAFT_PLAN": ["MULTI_AGENT_REVIEW", "PLAN_REVIEW", "AWAITING_APPROVAL", "INTERVIEW", "ESCALATED", "INTAKE"],
     "MULTI_AGENT_REVIEW": ["DRAFT_PLAN", "PLAN_REVIEW", "AWAITING_APPROVAL", "ESCALATED", "INTAKE"],
@@ -55,7 +56,8 @@ ALLOWED_TRANSITIONS = {
     "IN_WORKTREE": ["WORKTREE_REVIEW", "VERIFY_EXIT", "ROLLED_BACK", "ESCALATED", "INTAKE"],
     "WORKTREE_REVIEW": ["MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED", "INTAKE"],
     "MULTI_AGENT_CODE_REVIEW": ["WORKTREE_REVIEW", "VERIFY_EXIT", "IN_WORKTREE", "ROLLED_BACK", "ESCALATED", "INTAKE"],
-    "VERIFY_EXIT": ["DONE", "IN_WORKTREE", "WORKTREE_REVIEW", "ROLLED_BACK", "ESCALATED", "INTAKE"],
+    "VERIFY_EXIT": ["RETROSPECTIVE", "IN_WORKTREE", "WORKTREE_REVIEW", "ROLLED_BACK", "ESCALATED", "INTAKE"],
+    "RETROSPECTIVE": ["DONE", "ESCALATED", "INTAKE"],
     "DONE": ["INTAKE"],
     "ROLLED_BACK": ["ESCALATED", "PLAN_REVIEW", "INTAKE"],
     "ESCALATED": ["INTAKE", "PLAN_REVIEW"]

@@ -96,6 +96,28 @@ def stage_human_decisions(cp, task_id, from_state, to_state, actor="human", answ
     conn.close()
 
 
+def complete_retrospective(cp, task_id, actor="human"):
+    """Move from VERIFY_EXIT through the new retrospective gate to DONE."""
+    cp.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Enter retrospective")
+    cp.save_retrospective(
+        task_id,
+        {
+            "decision": "opt_in",
+            "completion_mode": "completed",
+            "actor": actor,
+            "outcome": "completed",
+            "strengths": "tests passed",
+            "friction": "none",
+            "learning": "none",
+            "improvement": "none",
+            "follow_up": "none",
+        },
+        [],
+    )
+    stage_human_decisions(cp, task_id, "RETROSPECTIVE", "DONE", actor="human", answer="complete")
+    cp.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Retrospective complete")
+
+
 def test_schema_initialization_and_pragmas(control_plane, temp_db_path):
     """Test that SQLite DB initializes with WAL mode, foreign keys, and tables."""
     conn = sqlite3.connect(temp_db_path)
@@ -310,19 +332,19 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
     
-    # Attempt transition to DONE with no receipts or persistence log. The DONE guard requires
+    # Attempt transition to RETROSPECTIVE with no receipts or persistence log. The exit guard requires
     # a receipt specifically for gate_name='test_suite' — the human_approval receipt recorded
     # above (needed for the APPROVED->IN_WORKTREE gate) does NOT satisfy this, closing the gap
     # where any unrelated exit_code=0 receipt used to count.
     with pytest.raises(PersistenceInvariantViolation, match="No passing test_suite verification receipt"):
-        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+        control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Attempt complete")
 
     # Add general test receipt (exit_code=0)
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
 
     # Still blocked: missing asymmetric persistence log
     with pytest.raises(PersistenceInvariantViolation, match="Asymmetric persistence required"):
-        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+        control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Attempt complete")
 
     # Add asymmetric persistence log
     control_plane.log_asymmetric_persistence(
@@ -334,7 +356,13 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
 
     # Still blocked: missing leak check receipt
     with pytest.raises(PersistenceInvariantViolation, match="Missing clean leak check receipt"):
-        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+        control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Attempt complete")
+
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
+    control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Exit gates passed")
+    stage_human_decisions(control_plane, task_id, "RETROSPECTIVE", "DONE", actor="human", answer="skip")
+    with pytest.raises(PersistenceInvariantViolation, match="retrospective is incomplete"):
+        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt without retrospective")
 
 
 def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_plane):
@@ -364,8 +392,8 @@ def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_pl
     )
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
 
-    # Transition to DONE succeeds
-    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="All exit gates passed")
+    # Transition through the retrospective gate to DONE succeeds
+    complete_retrospective(control_plane, task_id)
     assert control_plane.get_task(task_id)["state"] == "DONE"
 
 
@@ -399,11 +427,11 @@ def test_transition_to_done_blocked_when_locked_verifier_mutated(control_plane, 
     verifier_file.write_text("def evaluate(): return False  # tampered\n", encoding="utf-8")
 
     with pytest.raises(VerifierSovereigntyViolation, match="mutated"):
-        control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Attempt complete")
+        control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Attempt complete")
 
     # Restore the verifier and confirm DONE now succeeds
     verifier_file.write_text("def evaluate(): return True\n", encoding="utf-8")
-    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="Verifier restored")
+    complete_retrospective(control_plane, task_id)
     assert control_plane.get_task(task_id)["state"] == "DONE"
 
 
@@ -639,7 +667,7 @@ def test_worktree_push_barrier_enforcement(control_plane):
         details="Resolved debt item"
     )
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
-    control_plane.transition(task_id=task_id, to_state="DONE", actor="controller", reason="All exit gates passed")
+    complete_retrospective(control_plane, task_id)
 
     control_plane.update_worktree(
         task_id=task_id,
@@ -1141,7 +1169,8 @@ def test_legacy_policy_migration_parity():
         ("APPROVED", "IN_WORKTREE"): "human_approval",
         ("IN_WORKTREE", "WORKTREE_REVIEW"): "test_suite",
         ("WORKTREE_REVIEW", "VERIFY_EXIT"): "code_review_or_skip",
-        ("VERIFY_EXIT", "DONE"): "done_guard",
+        ("VERIFY_EXIT", "RETROSPECTIVE"): "done_guard",
+        ("RETROSPECTIVE", "DONE"): "retrospective_done_guard",
         ("VERIFY_EXIT", "ROLLED_BACK"): "rolled_back_guard",
         ("IN_WORKTREE", "ROLLED_BACK"): "rolled_back_guard",
         ("WORKTREE_REVIEW", "ROLLED_BACK"): "rolled_back_guard",
@@ -2745,19 +2774,17 @@ def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
 
 
 # ==============================================================================
-# issue-534: TRIVIAL Triage Fast-Track (INTAKE -> DONE)
+# issue-534/#547: TRIVIAL Triage Fast-Track (INTAKE -> RETROSPECTIVE -> DONE)
 # ==============================================================================
 
-def test_trivial_fast_track_intake_to_done_records_decision_and_completes(control_plane):
-    """A TRIVIAL-classified task can go straight from INTAKE to DONE via the
-    intake_to_done_trivial template: no interview, no spec/plan artifacts, no
-    worktree — the triage answer itself is the sole recorded audit artifact."""
+def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
+    """A TRIVIAL task skips planning but still enters the mandatory retrospective gate."""
     from control_plane.coordinator import TransitionCoordinator
 
     task_id = "task-trivial-001"
     control_plane.create_task(task_id=task_id, title="Fix typo in error message", runtime_tool="claude")
 
-    # intake_to_done_trivial has authority.type: human_decision — the DB trigger requires
+    # The trivial transition has authority.type: human_decision — the DB trigger requires
     # a genuine interactive answer (actor='human'), not a programmatically provided_answers
     # dict (actor='agent') — see coordinator.py.
     coord = TransitionCoordinator(
@@ -2766,14 +2793,29 @@ def test_trivial_fast_track_intake_to_done_records_decision_and_completes(contro
     )
     record = coord.coordinate_transition(
         task_id=task_id,
-        to_state="DONE",
+        to_state="RETROSPECTIVE",
         actor="tester",
         reason="TRIVIAL fast-track: one-line typo fix",
         interactive=True,
     )
 
     assert record.from_state == "INTAKE"
-    assert record.to_state == "DONE"
+    assert record.to_state == "RETROSPECTIVE"
+
+    control_plane.save_retrospective(
+        task_id,
+        {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "one-line typo"},
+        [],
+    )
+    done_coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
+    done_record = done_coord.coordinate_transition(
+        task_id=task_id,
+        to_state="DONE",
+        actor="tester",
+        reason="Retrospective skipped with reason",
+        interactive=True,
+    )
+    assert done_record.to_state == "DONE"
 
     # No spec/plan artifacts were required or created for this path.
     assert not Path(f"docs/plans/{task_id}-spec.md").exists()
@@ -2784,7 +2826,7 @@ def test_trivial_fast_track_intake_to_done_records_decision_and_completes(contro
     conn = decisions.get_connection()
     try:
         row = conn.execute(
-            "SELECT question_id, answer FROM transition_decisions WHERE task_id = ? AND to_state = 'DONE'",
+            "SELECT question_id, answer FROM transition_decisions WHERE task_id = ? AND to_state = 'RETROSPECTIVE'",
             (task_id,),
         ).fetchone()
     finally:
@@ -2809,7 +2851,7 @@ def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
     with pytest.raises(TransitionCoordinatorError, match="Missing required response"):
         coord.coordinate_transition(
             task_id=task_id,
-            to_state="DONE",
+            to_state="RETROSPECTIVE",
             actor="tester",
             reason="attempt without triage answer",
             interactive=False,
@@ -2820,7 +2862,7 @@ def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
     with pytest.raises(TransitionCoordinatorError, match="Missing required response"):
         coord_empty.coordinate_transition(
             task_id=task_id,
-            to_state="DONE",
+            to_state="RETROSPECTIVE",
             actor="tester",
             reason="attempt with empty triage answer",
             interactive=True,
@@ -2856,21 +2898,16 @@ def test_trivial_misstriage_escape_hatch_to_escalated(control_plane):
     assert control_plane.get_task(task_id)["state"] == "INTAKE"
 
 
-def test_intake_to_done_edge_registered_and_capabilities_scoped(control_plane):
-    """The intake_to_done_trivial template releases modify/commit capabilities but
-    never worktree creation or push-to-origin — those stay separately gated exactly
-    as for every other task type."""
+def test_intake_to_retrospective_edge_registered_and_capabilities_scoped(control_plane):
+    """The trivial intake edge releases retrospective capture but never push access."""
     from control_plane.registry import TransitionRegistry
 
     registry = TransitionRegistry.load_default()
-    template = registry.get_template("INTAKE", "DONE")
+    template = registry.get_template("INTAKE", "RETROSPECTIVE")
 
     assert template is not None
-    assert template.transition_id == "intake_to_done_trivial"
+    assert template.transition_id == "intake_to_retrospective_trivial"
     assert template.required_artifacts == []
-    assert "modify production code" in template.capabilities_released
-    assert "create implementation worktree" not in template.capabilities_released
+    assert "retrospective_capture" in template.capabilities_released
     assert "push branch to origin" not in template.capabilities_released
-    assert "create implementation worktree" in template.capabilities_prohibited
     assert "push branch to origin" in template.capabilities_prohibited
-

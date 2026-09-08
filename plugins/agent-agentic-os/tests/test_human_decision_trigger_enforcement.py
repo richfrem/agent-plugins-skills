@@ -184,7 +184,8 @@ def test_all_question_edges_from_valid_transitions_table(test_env):
         assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t1,)).fetchone()[0] == from_s
         assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", (t1,)).fetchone()[0] >= 1
 
-        # Permutation 2: actor='agent' (synthetic agent bypass) -> REJECTED
+        # Permutation 2: actor='agent' (synthetic agent bypass) -> REJECTED, except for
+        # the retrospective decision gate, which explicitly permits either actor.
         t2 = f"t2-{from_s}-{to_s}"
         _seed_task_at_state(conn, t2, from_s)
         for qid in required_qids:
@@ -200,8 +201,11 @@ def test_all_question_edges_from_valid_transitions_table(test_env):
         conn.commit()
         conn.execute("UPDATE tasks SET state = ? WHERE task_id = ?", (to_s, t2))
         conn.commit()
-        assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == from_s
-        assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", (t2,)).fetchone()[0] >= 1
+        if (from_s, to_s) == ("RETROSPECTIVE", "DONE") and "retrospective_decision" in required_qids:
+            assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == to_s
+        else:
+            assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == from_s
+            assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", (t2,)).fetchone()[0] >= 1
 
         # Permutation 3: Wrong question_id -> REJECTED
         t3 = f"t3-{from_s}-{to_s}"
@@ -744,6 +748,5 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
             actor="admin",
             reason="Attempt reusing consumed token from old occupancy"
         )
-
 
 
