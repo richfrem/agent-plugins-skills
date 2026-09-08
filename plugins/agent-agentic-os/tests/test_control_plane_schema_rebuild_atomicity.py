@@ -26,6 +26,7 @@ Key Functions:
 """
 
 import sqlite3
+import re
 import sys
 from pathlib import Path
 
@@ -114,9 +115,12 @@ def test_splitter_produces_expected_statement_breakdown():
     create_index = [s for s in upper_starts if s.startswith("CREATE INDEX")]
     create_trigger = [s for s in upper_starts if s.startswith("CREATE TRIGGER") or "CREATE TRIGGER" in s]
 
-    assert len(create_table) == 13, f"expected 13 CREATE TABLE statements, got {len(create_table)}"
-    assert len(create_index) == 4, f"expected 4 CREATE INDEX statements, got {len(create_index)}"
-    assert len(create_trigger) == 2, f"expected 2 CREATE TRIGGER statements, got {len(create_trigger)}"
+    expected_table = len(re.findall(r"CREATE TABLE IF NOT EXISTS", SCHEMA_SQL, flags=re.IGNORECASE))
+    expected_index = len(re.findall(r"CREATE INDEX IF NOT EXISTS", SCHEMA_SQL, flags=re.IGNORECASE))
+    expected_trigger = len(re.findall(r"CREATE TRIGGER IF NOT EXISTS", SCHEMA_SQL, flags=re.IGNORECASE))
+    assert len(create_table) == expected_table, f"expected {expected_table} CREATE TABLE statements, got {len(create_table)}"
+    assert len(create_index) == expected_index, f"expected {expected_index} CREATE INDEX statements, got {len(create_index)}"
+    assert len(create_trigger) == expected_trigger, f"expected {expected_trigger} CREATE TRIGGER statements, got {len(create_trigger)}"
 
 
 def test_splitter_preserves_trigger_bodies_intact():

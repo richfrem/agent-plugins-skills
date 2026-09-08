@@ -11,14 +11,15 @@
     "notes": [
       "THIS FILE IS COPILOT-SPECIFIC. The direct claude CLI (Anthropic API) supports more Claude models than Copilot does. See claude-models.json for the full direct-API catalog.",
       "Copilot Claude model IDs use DOT notation (claude-sonnet-4.6). Direct Anthropic API uses DASH notation (claude-sonnet-4-6). Do not mix them.",
-      "Code completions and Next Edit Suggestions are NOT billed in AI credits — unlimited for paid plans.",
+      "Code completions and Next Edit Suggestions are NOT billed in AI credits \u2014 unlimited for paid plans.",
       "Copilot code review consumes AI credits AND GitHub Actions minutes (model not disclosed).",
-      "'Auto' mode lets Copilot pick the model — cost varies and is not predictable.",
+      "'Auto' mode lets Copilot pick the model \u2014 cost varies and is not predictable.",
       "Anthropic models incur a cache_write cost that OpenAI/Google/Microsoft models do not.",
-      "Long context tiers apply automatically when input exceeds the threshold — no flag needed.",
+      "Long context tiers apply automatically when input exceeds the threshold \u2014 no flag needed.",
       "All models consume AI credits. Monthly plan allotments: Pro=$10, Pro+=$39, Business=$19/user, Enterprise=$39/user.",
       "Cache write cost (Anthropic only) is charged per token written to the prompt cache."
-    ]
+    ],
+    "schema_version": 2
   },
   "models": [
     {
@@ -32,7 +33,7 @@
         "input": 0.25,
         "cached_input": 0.025,
         "cache_write": null,
-        "output": 2.00
+        "output": 2.0
       },
       "credits_per_1m": {
         "input": 25,
@@ -41,7 +42,12 @@
         "output": 200
       },
       "recommendation": "best-default",
-      "notes": "Cheapest OpenAI model. Ideal for heartbeats, bounded tasks, high-frequency loops. Default for run_agent.py when no model specified."
+      "notes": "Cheapest OpenAI model. Ideal for heartbeats, bounded tasks, high-frequency loops. Default for run_agent.py when no model specified.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.4 nano",
@@ -51,7 +57,7 @@
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 0.20,
+        "input": 0.2,
         "cached_input": 0.02,
         "cache_write": null,
         "output": 1.25
@@ -63,7 +69,12 @@
         "output": 125
       },
       "recommendation": "cheapest-overall",
-      "notes": "Cheapest model in the entire catalog. Even cheaper than gpt-5-mini. Good for very high-frequency loops where quality requirements are minimal."
+      "notes": "Cheapest model in the entire catalog. Even cheaper than gpt-5-mini. Good for very high-frequency loops where quality requirements are minimal.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.4 mini",
@@ -76,7 +87,7 @@
         "input": 0.75,
         "cached_input": 0.075,
         "cache_write": null,
-        "output": 4.50
+        "output": 4.5
       },
       "credits_per_1m": {
         "input": 75,
@@ -85,7 +96,12 @@
         "output": 450
       },
       "recommendation": "good-value",
-      "notes": "Step up from gpt-5-mini. Better quality for structured tasks. Same price tier as MAI-Code-1-Flash."
+      "notes": "Step up from gpt-5-mini. Better quality for structured tasks. Same price tier as MAI-Code-1-Flash.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Raptor mini",
@@ -98,7 +114,7 @@
         "input": 0.25,
         "cached_input": 0.025,
         "cache_write": null,
-        "output": 2.00
+        "output": 2.0
       },
       "credits_per_1m": {
         "input": 25,
@@ -107,7 +123,12 @@
         "output": 200
       },
       "recommendation": "good-value",
-      "notes": "GitHub fine-tuned model at the same price as gpt-5-mini. Potentially better for code tasks within GitHub context. Worth testing against gpt-5-mini."
+      "notes": "GitHub fine-tuned model at the same price as gpt-5-mini. Potentially better for code tasks within GitHub context. Worth testing against gpt-5-mini.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "MAI-Code-1-Flash",
@@ -119,8 +140,8 @@
       "pricing_usd_per_1m": {
         "input": 0.75,
         "cached_input": 0.075,
-        "cache_write": 0.00,
-        "output": 4.50
+        "cache_write": 0.0,
+        "output": 4.5
       },
       "credits_per_1m": {
         "input": 75,
@@ -129,7 +150,12 @@
         "output": 450
       },
       "recommendation": "good-value-code",
-      "notes": "Microsoft's new code-focused flash model (v1.0.66+). 256K context. No cache write cost. Same price tier as gpt-5.4-mini but Microsoft/code-optimized. New as of June 2026."
+      "notes": "Microsoft's new code-focused flash model (v1.0.66+). 256K context. No cache write cost. Same price tier as gpt-5.4-mini but Microsoft/code-optimized. New as of June 2026.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Gemini 3 Flash",
@@ -139,10 +165,10 @@
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 0.50,
+        "input": 0.5,
         "cached_input": 0.05,
         "cache_write": null,
-        "output": 3.00
+        "output": 3.0
       },
       "credits_per_1m": {
         "input": 50,
@@ -151,7 +177,12 @@
         "output": 300
       },
       "recommendation": "good-value",
-      "notes": "Public preview. Cheapest Google model. Good for large context tasks where cost matters."
+      "notes": "Public preview. Cheapest Google model. Good for large context tasks where cost matters.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.3-Codex",
@@ -164,7 +195,7 @@
         "input": 1.75,
         "cached_input": 0.175,
         "cache_write": null,
-        "output": 14.00
+        "output": 14.0
       },
       "credits_per_1m": {
         "input": 175,
@@ -173,7 +204,12 @@
         "output": 1400
       },
       "recommendation": "code-specialist",
-      "notes": "Code-specialized powerful model. High output cost. Best for complex code generation where Codex reasoning matters. Compare against Claude Haiku 4.5 before choosing."
+      "notes": "Code-specialized powerful model. High output cost. Best for complex code generation where Codex reasoning matters. Compare against Claude Haiku 4.5 before choosing.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Haiku 4.5",
@@ -183,10 +219,10 @@
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 1.00,
-        "cached_input": 0.10,
+        "input": 1.0,
+        "cached_input": 0.1,
         "cache_write": 1.25,
-        "output": 5.00
+        "output": 5.0
       },
       "credits_per_1m": {
         "input": 100,
@@ -195,7 +231,12 @@
         "output": 500
       },
       "recommendation": "best-claude-value",
-      "notes": "Cheapest Anthropic model. Best Claude-quality-per-credit. Note: cache write cost applies (Anthropic charges for populating cache). Strong instruction following."
+      "notes": "Cheapest Anthropic model. Best Claude-quality-per-credit. Note: cache write cost applies (Anthropic charges for populating cache). Strong instruction following.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Gemini 2.5 Pro",
@@ -208,7 +249,7 @@
         "input": 1.25,
         "cached_input": 0.125,
         "cache_write": null,
-        "output": 10.00
+        "output": 10.0
       },
       "credits_per_1m": {
         "input": 125,
@@ -217,7 +258,12 @@
         "output": 1000
       },
       "recommendation": "good-value-reasoning",
-      "notes": "Good reasoning quality at a moderate price. Cheaper input than Claude Sonnet 4.6."
+      "notes": "Good reasoning quality at a moderate price. Cheaper input than Claude Sonnet 4.6.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Gemini 3.5 Flash",
@@ -227,10 +273,10 @@
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 1.50,
+        "input": 1.5,
         "cached_input": 0.15,
         "cache_write": null,
-        "output": 9.00
+        "output": 9.0
       },
       "credits_per_1m": {
         "input": 150,
@@ -239,7 +285,12 @@
         "output": 900
       },
       "recommendation": "use-via-agy",
-      "notes": "Better accessed via agy CLI for frontier Gemini tasks. Relatively high output cost for a 'Flash' model."
+      "notes": "Better accessed via agy CLI for frontier Gemini tasks. Relatively high output cost for a 'Flash' model.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Gemini 3.1 Pro",
@@ -250,16 +301,16 @@
       "context_window_k": null,
       "long_context_threshold_k": 200,
       "pricing_usd_per_1m": {
-        "input": 2.00,
-        "cached_input": 0.20,
+        "input": 2.0,
+        "cached_input": 0.2,
         "cache_write": null,
-        "output": 12.00
+        "output": 12.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 4.00,
-        "cached_input": 0.40,
+        "input": 4.0,
+        "cached_input": 0.4,
         "cache_write": null,
-        "output": 18.00
+        "output": 18.0
       },
       "credits_per_1m": {
         "input": 200,
@@ -274,7 +325,12 @@
         "output": 1800
       },
       "recommendation": "preview-only",
-      "notes": "Public preview. Long context tier kicks in automatically above 200K tokens. Cost doubles in long context mode."
+      "notes": "Public preview. Long context tier kicks in automatically above 200K tokens. Cost doubles in long context mode.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Sonnet 4",
@@ -284,10 +340,10 @@
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 3.00,
-        "cached_input": 0.30,
+        "input": 3.0,
+        "cached_input": 0.3,
         "cache_write": 3.75,
-        "output": 15.00
+        "output": 15.0
       },
       "credits_per_1m": {
         "input": 300,
@@ -296,7 +352,12 @@
         "output": 1500
       },
       "recommendation": "prefer-newer",
-      "notes": "Older Sonnet. Prefer claude-sonnet-4.6 (same price, newer). Same pricing as 4.5 and 4.6."
+      "notes": "Older Sonnet. Prefer claude-sonnet-4.6 (same price, newer). Same pricing as 4.5 and 4.6.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Sonnet 4.5",
@@ -306,10 +367,10 @@
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 3.00,
-        "cached_input": 0.30,
+        "input": 3.0,
+        "cached_input": 0.3,
         "cache_write": 3.75,
-        "output": 15.00
+        "output": 15.0
       },
       "credits_per_1m": {
         "input": 300,
@@ -318,7 +379,12 @@
         "output": 1500
       },
       "recommendation": "prefer-newer",
-      "notes": "Prefer claude-sonnet-4.6 (same price, newer version). Same pricing tier."
+      "notes": "Prefer claude-sonnet-4.6 (same price, newer version). Same pricing tier.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Sonnet 4.6",
@@ -328,10 +394,10 @@
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 3.00,
-        "cached_input": 0.30,
+        "input": 3.0,
+        "cached_input": 0.3,
         "cache_write": 3.75,
-        "output": 15.00
+        "output": 15.0
       },
       "credits_per_1m": {
         "input": 300,
@@ -340,7 +406,12 @@
         "output": 1500
       },
       "recommendation": "best-reasoning-value",
-      "notes": "Current Copilot default model. Best balance of reasoning quality and cost for complex multi-file generation. Prefer this over Opus for most tasks."
+      "notes": "Current Copilot default model. Best balance of reasoning quality and cost for complex multi-file generation. Prefer this over Opus for most tasks.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.4",
@@ -351,16 +422,16 @@
       "context_window_k": null,
       "long_context_threshold_k": 272,
       "pricing_usd_per_1m": {
-        "input": 2.50,
+        "input": 2.5,
         "cached_input": 0.25,
         "cache_write": null,
-        "output": 15.00
+        "output": 15.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": null,
-        "output": 22.50
+        "output": 22.5
       },
       "credits_per_1m": {
         "input": 250,
@@ -375,7 +446,12 @@
         "output": 2250
       },
       "recommendation": "versatile-alternative",
-      "notes": "Competitive with Claude Sonnet 4.6 on price. Long context tier doubles input cost above 272K tokens."
+      "notes": "Competitive with Claude Sonnet 4.6 on price. Long context tier doubles input cost above 272K tokens.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Opus 4.5",
@@ -385,10 +461,10 @@
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": 6.25,
-        "output": 25.00
+        "output": 25.0
       },
       "credits_per_1m": {
         "input": 500,
@@ -397,7 +473,12 @@
         "output": 2500
       },
       "recommendation": "high-cost",
-      "notes": "All Opus 4.x models are identically priced. Prefer Opus 4.8 as the newest. Reserve for tasks where Sonnet quality is insufficient."
+      "notes": "All Opus 4.x models are identically priced. Prefer Opus 4.8 as the newest. Reserve for tasks where Sonnet quality is insufficient.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Opus 4.6",
@@ -407,10 +488,10 @@
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": 6.25,
-        "output": 25.00
+        "output": 25.0
       },
       "credits_per_1m": {
         "input": 500,
@@ -419,7 +500,12 @@
         "output": 2500
       },
       "recommendation": "high-cost",
-      "notes": "Same price as all Opus 4.x. Prefer Opus 4.8 as newest."
+      "notes": "Same price as all Opus 4.x. Prefer Opus 4.8 as newest.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Opus 4.7",
@@ -429,10 +515,10 @@
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": 6.25,
-        "output": 25.00
+        "output": 25.0
       },
       "credits_per_1m": {
         "input": 500,
@@ -441,7 +527,12 @@
         "output": 2500
       },
       "recommendation": "high-cost",
-      "notes": "Same price as all Opus 4.x. Prefer Opus 4.8 as newest."
+      "notes": "Same price as all Opus 4.x. Prefer Opus 4.8 as newest.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Opus 4.8",
@@ -451,10 +542,10 @@
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": 6.25,
-        "output": 25.00
+        "output": 25.0
       },
       "credits_per_1m": {
         "input": 500,
@@ -463,7 +554,12 @@
         "output": 2500
       },
       "recommendation": "high-cost-use-for-critical",
-      "notes": "Newest and most capable Opus. Reserve for tasks where Sonnet is clearly insufficient. 5× more expensive than Sonnet. Cache write cost adds up on multi-turn sessions."
+      "notes": "Newest and most capable Opus. Reserve for tasks where Sonnet is clearly insufficient. 5\u00d7 more expensive than Sonnet. Cache write cost adds up on multi-turn sessions.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.5",
@@ -474,16 +570,16 @@
       "context_window_k": null,
       "long_context_threshold_k": 272,
       "pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": null,
-        "output": 30.00
+        "output": 30.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 10.00,
-        "cached_input": 1.00,
+        "input": 10.0,
+        "cached_input": 1.0,
         "cache_write": null,
-        "output": 45.00
+        "output": 45.0
       },
       "credits_per_1m": {
         "input": 500,
@@ -498,7 +594,12 @@
         "output": 4500
       },
       "recommendation": "avoid-unless-justified",
-      "notes": "Very high output cost ($30/1M default, $45/1M long context). Only justified for tasks requiring top-tier OpenAI reasoning where Sonnet falls short. Long context mode extremely expensive."
+      "notes": "Very high output cost ($30/1M default, $45/1M long context). Only justified for tasks requiring top-tier OpenAI reasoning where Sonnet falls short. Long context mode extremely expensive.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Fable 5",
@@ -508,10 +609,10 @@
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 10.00,
-        "cached_input": 1.00,
-        "cache_write": 12.50,
-        "output": 50.00
+        "input": 10.0,
+        "cached_input": 1.0,
+        "cache_write": 12.5,
+        "output": 50.0
       },
       "credits_per_1m": {
         "input": 1000,
@@ -520,8 +621,13 @@
         "output": 5000
       },
       "recommendation": "unavailable",
-      "notes": "CURRENTLY UNAVAILABLE — Anthropic announcement June 2026. Most expensive model in catalog when available. Cache write cost alone can exceed other models' full cost.",
-      "available": false
+      "notes": "CURRENTLY UNAVAILABLE \u2014 Anthropic announcement June 2026. Most expensive model in catalog when available. Cache write cost alone can exceed other models' full cost.",
+      "available": false,
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.6 Luna",
@@ -531,16 +637,16 @@
       "category": "Lightweight",
       "context_window_k": 200,
       "pricing_usd_per_1m": {
-        "input": 1.00,
-        "cached_input": 0.10,
+        "input": 1.0,
+        "cached_input": 0.1,
         "cache_write": null,
-        "output": 6.00
+        "output": 6.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 2.00,
-        "cached_input": 0.20,
+        "input": 2.0,
+        "cached_input": 0.2,
         "cache_write": null,
-        "output": 9.00
+        "output": 9.0
       },
       "credits_per_1m": {
         "input": 100,
@@ -555,7 +661,12 @@
         "output": 900
       },
       "recommendation": "moderate",
-      "notes": "GPT-5.6 lightweight variant. Long context tier kicks in >200K tokens. Default tier cheaper than Terra/Sol."
+      "notes": "GPT-5.6 lightweight variant. Long context tier kicks in >200K tokens. Default tier cheaper than Terra/Sol.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.6 Sol",
@@ -565,16 +676,16 @@
       "category": "Powerful",
       "context_window_k": 272,
       "pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": null,
-        "output": 30.00
+        "output": 30.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 10.00,
-        "cached_input": 1.00,
+        "input": 10.0,
+        "cached_input": 1.0,
         "cache_write": null,
-        "output": 45.00
+        "output": 45.0
       },
       "credits_per_1m": {
         "input": 500,
@@ -589,7 +700,12 @@
         "output": 4500
       },
       "recommendation": "avoid-unless-justified",
-      "notes": "GPT-5.6 powerful variant. Very high output cost ($30/1M default). Only for tasks requiring top-tier OpenAI reasoning."
+      "notes": "GPT-5.6 powerful variant. Very high output cost ($30/1M default). Only for tasks requiring top-tier OpenAI reasoning.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "GPT-5.6 Terra",
@@ -599,16 +715,16 @@
       "category": "Versatile",
       "context_window_k": 272,
       "pricing_usd_per_1m": {
-        "input": 2.50,
+        "input": 2.5,
         "cached_input": 0.25,
         "cache_write": null,
-        "output": 15.00
+        "output": 15.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 5.00,
-        "cached_input": 0.50,
+        "input": 5.0,
+        "cached_input": 0.5,
         "cache_write": null,
-        "output": 22.50
+        "output": 22.5
       },
       "credits_per_1m": {
         "input": 250,
@@ -623,7 +739,12 @@
         "output": 2250
       },
       "recommendation": "high",
-      "notes": "GPT-5.6 versatile mid-tier. Same context threshold as Sol (272K) but cheaper. Long context tier doubles input cost."
+      "notes": "GPT-5.6 versatile mid-tier. Same context threshold as Sol (272K) but cheaper. Long context tier doubles input cost.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Sonnet 5",
@@ -633,10 +754,10 @@
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 2.00,
-        "cached_input": 0.20,
-        "cache_write": 2.50,
-        "output": 10.00
+        "input": 2.0,
+        "cached_input": 0.2,
+        "cache_write": 2.5,
+        "output": 10.0
       },
       "credits_per_1m": {
         "input": 200,
@@ -645,7 +766,12 @@
         "output": 1000
       },
       "recommendation": "complex_reasoning",
-      "notes": "Promotional pricing through August 31 2026 ($2/1M input, $10/1M output). Likely to increase after. Latest Sonnet generation — prefer over 4.x for new work."
+      "notes": "Promotional pricing through August 31 2026 ($2/1M input, $10/1M output). Likely to increase after. Latest Sonnet generation \u2014 prefer over 4.x for new work.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Claude Opus 4.8 (fast mode)",
@@ -655,10 +781,10 @@
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
-        "input": 10.00,
-        "cached_input": 1.00,
-        "cache_write": 12.50,
-        "output": 50.00
+        "input": 10.0,
+        "cached_input": 1.0,
+        "cache_write": 12.5,
+        "output": 50.0
       },
       "credits_per_1m": {
         "input": 1000,
@@ -667,7 +793,12 @@
         "output": 5000
       },
       "recommendation": "avoid-unless-justified",
-      "notes": "Preview. Double the price of standard Opus 4.8 ($10/1M input vs $5/1M). Use only when speed of Opus-tier reasoning is specifically required."
+      "notes": "Preview. Double the price of standard Opus 4.8 ($10/1M input vs $5/1M). Use only when speed of Opus-tier reasoning is specifically required.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     },
     {
       "display_name": "Kimi K2.7 Code",
@@ -680,7 +811,7 @@
         "input": 0.95,
         "cached_input": 0.19,
         "cache_write": null,
-        "output": 4.00
+        "output": 4.0
       },
       "credits_per_1m": {
         "input": 95,
@@ -689,16 +820,53 @@
         "output": 400
       },
       "recommendation": "moderate",
-      "notes": "Moonshot AI code-focused model. Good price/quality ratio for code tasks — cheaper than Claude Haiku at input, pricier at output."
+      "notes": "Moonshot AI code-focused model. Good price/quality ratio for code tasks \u2014 cheaper than Claude Haiku at input, pricier at output.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
     }
   ],
   "cost_tiers": {
-    "cheapest": ["gpt-5.4-nano", "gpt-5-mini", "raptor-mini"],
-    "low": ["mai-code-1-flash", "gpt-5.4-mini", "gemini-3-flash", "kimi-k2.7-code"],
-    "moderate": ["claude-haiku-4.5", "gemini-2.5-pro", "gpt-5.3-codex", "gemini-3.5-flash", "gpt-5.6-luna"],
-    "high": ["claude-sonnet-4.6", "claude-sonnet-4.5", "claude-sonnet-5", "gpt-5.4", "gemini-3.1-pro", "gpt-5.6-terra"],
-    "very_high": ["claude-opus-4.8", "claude-opus-4.7", "claude-opus-4.6", "claude-opus-4.5", "gpt-5.5", "gpt-5.6-sol"],
-    "extreme": ["claude-opus-4.8-fast", "claude-fable-5"]
+    "cheapest": [
+      "gpt-5.4-nano",
+      "gpt-5-mini",
+      "raptor-mini"
+    ],
+    "low": [
+      "mai-code-1-flash",
+      "gpt-5.4-mini",
+      "gemini-3-flash",
+      "kimi-k2.7-code"
+    ],
+    "moderate": [
+      "claude-haiku-4.5",
+      "gemini-2.5-pro",
+      "gpt-5.3-codex",
+      "gemini-3.5-flash",
+      "gpt-5.6-luna"
+    ],
+    "high": [
+      "claude-sonnet-4.6",
+      "claude-sonnet-4.5",
+      "claude-sonnet-5",
+      "gpt-5.4",
+      "gemini-3.1-pro",
+      "gpt-5.6-terra"
+    ],
+    "very_high": [
+      "claude-opus-4.8",
+      "claude-opus-4.7",
+      "claude-opus-4.6",
+      "claude-opus-4.5",
+      "gpt-5.5",
+      "gpt-5.6-sol"
+    ],
+    "extreme": [
+      "claude-opus-4.8-fast",
+      "claude-fable-5"
+    ]
   },
   "strategy": {
     "heartbeat": "gpt-5.4-nano",
@@ -708,7 +876,13 @@
     "multi_file_generation": "claude-sonnet-5",
     "long_context": "gemini-3.1-pro (up to 200K cheap) or gpt-5.4 (up to 272K cheap)",
     "critical_only": "claude-opus-4.8",
-    "avoid": ["gpt-5.5 (long context)", "gpt-5.6-sol (long context)", "claude-opus-4.8-fast", "claude-fable-5", "claude-opus-* (unless sonnet fails)"]
+    "avoid": [
+      "gpt-5.5 (long context)",
+      "gpt-5.6-sol (long context)",
+      "claude-opus-4.8-fast",
+      "claude-fable-5",
+      "claude-opus-* (unless sonnet fails)"
+    ]
   },
   "billing_model_change": {
     "effective": "2026-06-01",
@@ -730,12 +904,131 @@
   },
   "interactive_commands": {
     "source": "copilot help commands (v1.0.66-1)",
-    "billing_related": ["/model", "/usage", "/budget", "/context", "/statusline"],
-    "session": ["/resume", "/rename", "/context", "/usage", "/compact", "/share", "/remote", "/rewind", "/undo"],
-    "agent": ["/agent", "/skills", "/mcp", "/plugin", "/model", "/delegate", "/fleet", "/autopilot", "/tasks"],
-    "code": ["/ide", "/diff", "/pr", "/review", "/security-review", "/lsp"],
-    "permissions": ["/allow-all", "/add-dir", "/list-dirs", "/cwd", "/reset-allowed-tools"],
-    "help": ["/help", "/changelog", "/feedback", "/diagnose", "/theme", "/statusline", "/footer", "/update", "/version", "/experimental", "/memory", "/clear", "/instructions"],
-    "other": ["/ask", "/budget", "/chronicle", "/env", "/exit", "/keep-alive", "/login", "/new", "/plan", "/research", "/restart", "/search", "/settings", "/sidekicks", "/subagents", "/voice"]
+    "billing_related": [
+      "/model",
+      "/usage",
+      "/budget",
+      "/context",
+      "/statusline"
+    ],
+    "session": [
+      "/resume",
+      "/rename",
+      "/context",
+      "/usage",
+      "/compact",
+      "/share",
+      "/remote",
+      "/rewind",
+      "/undo"
+    ],
+    "agent": [
+      "/agent",
+      "/skills",
+      "/mcp",
+      "/plugin",
+      "/model",
+      "/delegate",
+      "/fleet",
+      "/autopilot",
+      "/tasks"
+    ],
+    "code": [
+      "/ide",
+      "/diff",
+      "/pr",
+      "/review",
+      "/security-review",
+      "/lsp"
+    ],
+    "permissions": [
+      "/allow-all",
+      "/add-dir",
+      "/list-dirs",
+      "/cwd",
+      "/reset-allowed-tools"
+    ],
+    "help": [
+      "/help",
+      "/changelog",
+      "/feedback",
+      "/diagnose",
+      "/theme",
+      "/statusline",
+      "/footer",
+      "/update",
+      "/version",
+      "/experimental",
+      "/memory",
+      "/clear",
+      "/instructions"
+    ],
+    "other": [
+      "/ask",
+      "/budget",
+      "/chronicle",
+      "/env",
+      "/exit",
+      "/keep-alive",
+      "/login",
+      "/new",
+      "/plan",
+      "/research",
+      "/restart",
+      "/search",
+      "/settings",
+      "/sidekicks",
+      "/subagents",
+      "/voice"
+    ]
+  },
+  "runtime": {
+    "runtime_id": "copilot",
+    "provider": "GitHub",
+    "availability": "available",
+    "native_capabilities": {
+      "planning": "unknown",
+      "worktree": "portable",
+      "subagents": "unknown"
+    },
+    "effort_modes": [
+      "low",
+      "medium",
+      "high"
+    ]
+  },
+  "capability_tiers": {
+    "low": [
+      "gpt-5.4-nano",
+      "gpt-5-mini",
+      "raptor-mini",
+      "mai-code-1-flash",
+      "gpt-5.4-mini",
+      "gemini-3-flash",
+      "kimi-k2.7-code"
+    ],
+    "medium": [
+      "claude-haiku-4.5",
+      "gemini-2.5-pro",
+      "gpt-5.3-codex",
+      "gemini-3.5-flash",
+      "gpt-5.6-luna"
+    ],
+    "high": [
+      "claude-sonnet-4.6",
+      "claude-sonnet-4.5",
+      "claude-sonnet-5",
+      "gpt-5.4",
+      "gemini-3.1-pro",
+      "gpt-5.6-terra",
+      "claude-opus-4.8",
+      "claude-opus-4.7",
+      "claude-opus-4.6",
+      "claude-opus-4.5",
+      "gpt-5.5",
+      "gpt-5.6-sol",
+      "claude-opus-4.8-fast",
+      "claude-fable-5"
+    ]
   }
 }

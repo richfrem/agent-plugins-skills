@@ -232,9 +232,106 @@ class ControlPlane:
 
         self._persistence.insert_task(task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
 
+    def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
+        """Create a persisted delegation boundary; native execution strategy remains model-owned."""
+        if not self.get_task(task_id):
+            raise _policy.DelegationContractError(f"Task not found: {task_id}")
+        _policy.validate_delegation_contract(contract)
+        contract = dict(contract)
+        contract["status"] = "PENDING_APPROVAL" if _policy.delegation_requires_approval(contract) else "APPROVED"
+        return self._persistence.create_delegation_plan(task_id, contract)
+
+    def get_delegation_plan(self, contract_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve one persisted delegation contract."""
+        return self._persistence.get_delegation_plan(contract_id)
+
+    def approve_delegation_plan(self, contract_id: int, actor: str) -> None:
+        """Approve a high-cost or write-capable delegation through the human gate."""
+        if actor != "human":
+            raise _policy.DelegationContractError("Delegation approval requires actor='human'")
+        self._persistence.approve_delegation_plan(contract_id, actor)
+
+    def record_delegation_receipt(
+        self,
+        contract_id: int,
+        backend: str,
+        model_id: str,
+        cost_tier: str,
+        capability_class: str,
+        backend_available: bool = True,
+        write_capable: bool = False,
+        written_paths: Optional[List[str]] = None,
+    ) -> int:
+        """Record one bounded execution attempt after contract and approval checks."""
+        contract = self.get_delegation_plan(contract_id)
+        if not contract:
+            raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
+        if contract["status"] not in {"APPROVED", "EXECUTING"}:
+            raise _policy.DelegationContractError("Delegation requires human approval before execution")
+        receipt = {
+            "task_id": contract["task_id"], "backend": backend, "model_id": model_id,
+            "cost_tier": cost_tier, "capability_class": capability_class,
+            "backend_available": backend_available, "write_capable": write_capable,
+            "written_paths": written_paths or [],
+        }
+        try:
+            _policy.validate_delegation_receipt(
+                contract, receipt, self._persistence.count_delegation_receipts(contract_id)
+            )
+        except _policy.DelegationContractError as exc:
+            if "renewed approval" in str(exc):
+                self._persistence.insert_delegation_receipt(contract_id, receipt)
+                self._persistence.mark_delegation_status(contract_id, "PENDING_APPROVAL")
+            raise
+        self._persistence.mark_delegation_status(contract_id, "EXECUTING")
+        return self._persistence.insert_delegation_receipt(contract_id, receipt)
+
+    def record_delegation_verifier_receipt(self, contract_id: int, command: str, exit_code: int) -> None:
+        """Record the declared verifier result for a delegation."""
+        contract = self.get_delegation_plan(contract_id)
+        if not contract:
+            raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
+        if command != contract["verifier"].get("command"):
+            raise _policy.DelegationContractError("Verifier command does not match the approved contract")
+        self._persistence.insert_delegation_verifier_receipt(contract_id, command, exit_code)
+
+    def accept_delegation_result(self, contract_id: int) -> Dict[str, Any]:
+        """Accept a result only after an execution receipt and passing verifier receipt exist."""
+        contract = self.get_delegation_plan(contract_id)
+        if not contract:
+            raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
+        if self._persistence.count_delegation_receipts(contract_id) == 0:
+            raise _policy.DelegationContractError("Delegation result requires an execution receipt")
+        if not self._persistence.has_delegation_verifier_receipt(contract_id):
+            raise _policy.DelegationContractError("Delegation result requires a passing verifier receipt")
+        self._persistence.mark_delegation_status(contract_id, "ACCEPTED")
+        contract["status"] = "ACCEPTED"
+        return contract
+
     def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Retrieves a task dictionary by task_id."""
         return self._persistence.get_task(task_id)
+
+    def get_transition_guidance(
+        self, task_id: str, requested_to_state: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Return advisory guidance derived from the task's persisted state.
+
+        This is intentionally read-only. The returned command is never an
+        authorization token and cannot bypass policy, human decisions, or SQLite
+        transition triggers.
+        """
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        current_state = self._read_current_state_for_update(task_id)
+        if current_state is None:
+            raise ValueError(f"Task not found: {task_id}")
+        if not hasattr(self, "_transition_registry"):
+            self._transition_registry = TransitionRegistry.load_default()
+        return self._transition_registry.get_transition_guidance(
+            current_state, requested_to_state
+        )
 
     def _build_transition_policy_ctx(
         self,
@@ -375,6 +472,8 @@ class ControlPlane:
 
     def record_critic_review(self, task_id: str, iteration: int, model: str, verdict: str, findings: str):
         """Records a clean-context peer critic review iteration and verdict."""
+        if verdict == "REQUEST_CHANGES":
+            verdict = "REVISE"
         if verdict not in ("PASS", "REVISE", "REJECT"):
             raise ValueError(f"Invalid verdict: {verdict}")
         self._persistence.insert_critic_review(task_id, iteration, model, verdict, findings)
@@ -654,6 +753,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)
 
+    p_tg = sub.add_parser("transition-guidance")
+    p_tg.add_argument("--task-id", required=True)
+    p_tg.add_argument("--to", default=None, help="Optional requested destination state")
+
     p_lap = sub.add_parser("log-prior-art")
     p_lap.add_argument("--task-id", required=True)
     p_lap.add_argument("--summary", required=True, help="Summary of prior art scan findings")
@@ -676,6 +779,13 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rs.add_argument("--phase", required=True, help="e.g. multi_agent_review, multi_agent_code_review")
     p_rs.add_argument("--actor", required=True)
     p_rs.add_argument("--reason", required=True)
+
+    p_cr = sub.add_parser("record-critic-review")
+    p_cr.add_argument("--task-id", required=True)
+    p_cr.add_argument("--iteration", type=int, required=True)
+    p_cr.add_argument("--model", required=True)
+    p_cr.add_argument("--verdict", choices=["PASS", "REVISE", "REJECT", "REQUEST_CHANGES"], required=True)
+    p_cr.add_argument("--findings", required=True)
 
     # Slice 4: Action wrapper verification & recovery subcommands
     p_viq = sub.add_parser("verify-interview-question")
@@ -726,7 +836,8 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
     elif args.subcommand == "record-critic-review":
         cp.record_critic_review(args.task_id, args.iteration, args.model, args.verdict, args.findings)
-        print(f"Critic review recorded for task {args.task_id} (verdict={args.verdict}).")
+        canonical_verdict = "REVISE" if args.verdict == "REQUEST_CHANGES" else args.verdict
+        print(f"Critic review recorded for task {args.task_id} (verdict={canonical_verdict}).")
     elif args.subcommand == "lock-verifiers":
         paths = [Path(p.strip()) for p in args.paths.split(",")]
         cp.lock_verifiers(args.task_id, paths)
@@ -742,6 +853,8 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Task {args.task_id} worktree state set to {args.state}.")
     elif args.subcommand == "status":
         print(json.dumps(cp.get_task(args.task_id), indent=2, default=str))
+    elif args.subcommand == "transition-guidance":
+        print(json.dumps(cp.get_transition_guidance(args.task_id, args.to), indent=2))
     elif args.subcommand == "log-prior-art":
         repeat_entries = args.repeat_yes_entries or "none"
         details = f"prior_art_scan: summary={args.summary}; repeat_yes_entries={repeat_entries}"

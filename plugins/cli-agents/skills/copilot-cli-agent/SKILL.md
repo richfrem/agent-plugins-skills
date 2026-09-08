@@ -86,6 +86,13 @@ python plugins/cli-agents/scripts/run_agent.py \
 
 Passing `/dev/null` for persona or input skips that block cleanly.
 
+For review dispatches, add `--require-input` when the source is mandatory. Missing or empty
+source files fail before the backend command is built. Supplied source is always enclosed in
+`---SOURCE---` / `---END SOURCE---`, including persona-free dispatches. Record critic results
+through the control-plane `record-critic-review` command using canonical `PASS`, `REVISE`, or
+`REJECT`; external `REQUEST_CHANGES` is normalized to `REVISE`, and only `PASS` satisfies the
+approval gate.
+
 ---
 
 ## 🔀 Model Selection Guide

@@ -10752,6 +10752,60 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/wrappers/record_retrospective.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/gemini-cli-agent/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/interview-spec/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/interview-spec/fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

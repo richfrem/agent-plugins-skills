@@ -244,7 +244,7 @@ def test_reset_starts_a_fresh_transition_ledger(control_plane):
         conn.close()
     assert before_count > 1
     assert after_count == 1
-    assert remaining == [('APPROVED', 'INTAKE')]
+    assert [tuple(row) for row in remaining] == [('APPROVED', 'INTAKE')]
 
 
 def test_reset_then_walk_forward_unblocks_hooks(control_plane):

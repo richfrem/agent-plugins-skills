@@ -34,7 +34,9 @@ from run_agent import (
     _build_cmd_gemini,
     _call_llama_direct,
     _load_default_models,
+    _resolve_cli_and_model,
     build_prompt,
+    run_agent,
 )
 
 
@@ -49,12 +51,55 @@ class TestBuildPrompt(unittest.TestCase):
         self.assertNotIn("---SOURCE---", result)
         self.assertNotIn("---INSTRUCTION---", result)
 
-    def test_source_plus_instruction(self):
-        """Verify source + instruction includes an INSTRUCTION marker but no SOURCE marker."""
+    def test_source_plus_instruction_is_always_delimited(self):
+        """A source is visibly delimited even without a persona."""
         result = build_prompt("", "Source content", "Do this.", False)
         self.assertIn("Source content", result)
+        self.assertIn("---SOURCE---", result)
+        self.assertIn("---END SOURCE---", result)
         self.assertIn("---INSTRUCTION---", result)
-        self.assertNotIn("---SOURCE---", result)
+
+    def test_require_input_rejects_missing_source_before_dispatch(self):
+        """Required review input fails closed instead of sending an empty prompt."""
+        missing = os.path.join(tempfile.gettempdir(), "run-agent-missing-review-input.md")
+        with patch("run_agent._execute_cli_command") as execute:
+            with self.assertRaisesRegex(ValueError, "Required input"):
+                run_agent(
+                    "/dev/null", missing, os.path.join(tempfile.gettempdir(), "unused-review.md"),
+                    "Review the supplied source.", cli="claude", require_input=True,
+                )
+            execute.assert_not_called()
+
+    def test_require_input_rejects_existing_empty_source_before_dispatch(self):
+        """Required review input rejects an existing zero-byte source before dispatch."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as source_file:
+            source_path = source_file.name
+        try:
+            with patch("run_agent._execute_cli_command") as execute:
+                with self.assertRaisesRegex(ValueError, "Required input"):
+                    run_agent(
+                        "/dev/null", source_path, os.path.join(tempfile.gettempdir(), "unused-review.md"),
+                        "Review the supplied source.", cli="claude", model="haiku-4.5", require_input=True,
+                    )
+                execute.assert_not_called()
+        finally:
+            os.unlink(source_path)
+
+    def test_optional_dev_null_input_remains_supported(self):
+        """Non-review dispatches may intentionally omit source with /dev/null."""
+        output_path = os.path.join(tempfile.gettempdir(), "run-agent-optional-input.md")
+        with patch("run_agent._execute_cli_command") as execute:
+            run_agent(
+                "/dev/null", "/dev/null", output_path, "Do this.",
+                cli="claude", model="haiku-4.5", require_input=False,
+            )
+        execute.assert_called_once()
+
+    def test_source_is_delimited_without_persona(self):
+        """Every supplied source is bounded even when the persona is omitted."""
+        result = build_prompt("", "Review source", "Review it.", False)
+        self.assertLess(result.index("---SOURCE---"), result.index("Review source"))
+        self.assertLess(result.index("Review source"), result.index("---END SOURCE---"))
 
     def test_persona_plus_instruction(self):
         """Verify persona + instruction includes the persona text and INSTRUCTION marker."""
@@ -362,6 +407,17 @@ class TestLoadDefaultModels(unittest.TestCase):
             result = _load_default_models()
         self.assertEqual(result["llama"], "gemma-4-12b")
         self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "llama"})
+
+
+class TestCapabilityTierResolution(unittest.TestCase):
+
+    def test_catalog_selects_model_for_requested_tier(self):
+        cli, model = _resolve_cli_and_model("copilot", None, "medium")
+        self.assertEqual(cli, "copilot")
+        self.assertTrue(model)
+
+    def test_explicit_model_remains_an_override(self):
+        self.assertEqual(_resolve_cli_and_model("copilot", "caller-model", "high"), ("copilot", "caller-model"))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "worktree-manager-native-positive",
+    "type": "positive",
+    "prompt": "Use the confirmed native worktree capability and report activation guidance.",
+    "should_trigger": true
+  },
+  {
+    "id": "worktree-manager-unrelated-negative",
+    "type": "negative",
+    "prompt": "Explain a Python list comprehension.",
+    "should_trigger": false
+  }
+]

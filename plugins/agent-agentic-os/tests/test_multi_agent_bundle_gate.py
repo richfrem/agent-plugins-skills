@@ -14,7 +14,7 @@ def test_draft_plan_and_multi_agent_review_states_exist():
     assert "DRAFT_PLAN" in CANONICAL_STATES
     assert "MULTI_AGENT_REVIEW" in CANONICAL_STATES
 
-def test_full_intake_to_approval_lifecycle(tmp_path):
+def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     db_file = tmp_path / "control_plane.db"
     cp = ControlPlane(db_path=db_file)
     cp.init_db()
@@ -32,12 +32,20 @@ def test_full_intake_to_approval_lifecycle(tmp_path):
     cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Compiled draft spec and plan")
     assert cp.get_task(task_id)["state"] == "DRAFT_PLAN"
 
+    # Task 1's artifact gate is intentional: provide real test-local artifacts
+    # instead of weakening the DRAFT_PLAN review contract.
+    plan_dir = tmp_path / "docs" / "plans"
+    plan_dir.mkdir(parents=True)
+    (plan_dir / f"{task_id}-spec.md").write_text("# Test specification\n", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Test implementation plan\n", encoding="utf-8")
+
     # Path A: DRAFT_PLAN -> MULTI_AGENT_REVIEW -> AWAITING_APPROVAL
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
     inputs = iter(["5"])  # Option 5: external bundle
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
+    monkeypatch.setattr(coord, "_resolve_repo_root", lambda: tmp_path)
     coord.coordinate_transition(
         task_id=task_id,
         to_state="MULTI_AGENT_REVIEW",

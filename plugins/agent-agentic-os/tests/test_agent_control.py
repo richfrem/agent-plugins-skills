@@ -140,6 +140,36 @@ def test_schema_initialization_and_pragmas(control_plane, temp_db_path):
     conn.close()
 
 
+def test_critic_review_normalizes_request_changes_to_revise(control_plane):
+    """External review wording is stored using the canonical REVISE verdict."""
+    task_id = "task-critic-vocabulary-001"
+    control_plane.create_task(task_id=task_id, title="Critic Vocabulary", runtime_tool="claude")
+
+    control_plane.record_critic_review(
+        task_id=task_id,
+        iteration=1,
+        model="claude-sonnet-5",
+        verdict="REQUEST_CHANGES",
+        findings="Revise the plan boundary.",
+    )
+
+    conn = sqlite3.connect(control_plane.db_path)
+    try:
+        verdict = conn.execute(
+            "SELECT verdict FROM critic_reviews WHERE task_id = ?", (task_id,)
+        ).fetchone()[0]
+    finally:
+        conn.close()
+    assert verdict == "REVISE"
+
+
+def test_control_cli_exposes_critic_review_recording():
+    """The documented critic-review branch is reachable through the CLI parser."""
+    from agent_control import _build_parser
+
+    assert "record-critic-review" in _build_parser().format_help()
+
+
 def test_task_lifecycle_transitions(control_plane):
     """Test valid state transitions through the canonical pipeline DAG."""
     task_id = "task-test-001"
@@ -849,16 +879,12 @@ def test_schema_version_table_present_and_seeded(control_plane, temp_db_path):
     conn.close()
 
 
-def test_gate_blocks_draft_plan_entry_without_plan_mode_or_socratic_proof(control_plane):
-    """Test INTERVIEW->DRAFT_PLAN is blocked without a plan_mode_entry or socratic receipt."""
+def test_gate_allows_draft_plan_entry_after_complete_interview_without_separate_receipt(control_plane):
+    """A complete INTERVIEW is sufficient evidence to enter the planning state."""
     task_id = "task-gate-draftplan-001"
     control_plane.create_task(task_id=task_id, title="Gate Draft Plan Task", runtime_tool="claude")
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
 
-    with pytest.raises(PersistenceInvariantViolation, match="Plan Mode|Socratic"):
-        control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
-
-    control_plane.record_plan_mode_entry(task_id=task_id, actor="claude")
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
@@ -1102,7 +1128,7 @@ def test_registry_no_duplicate_transition_ids_or_edges():
 
 
 def test_registry_schema_validation_per_entry():
-    """Test 4: Every template in TransitionRegistry conforms to the complete 14-field
+    """Test 4: Every template in TransitionRegistry conforms to the complete 15-field
     schema (including authority) with valid types and non-empty strings where required."""
     from control_plane.registry import TransitionRegistry, REQUIRED_TEMPLATE_FIELDS
 
@@ -1121,6 +1147,24 @@ def test_registry_schema_validation_per_entry():
         assert isinstance(d["capabilities_released"], list)
         assert isinstance(d["capabilities_prohibited"], list)
         assert isinstance(d["denial_message"], str) and len(d["denial_message"]) > 0
+        assert isinstance(d["next_steps_hint"], str) and len(d["next_steps_hint"].strip()) > 0
+
+
+def test_every_transition_exposes_actionable_yaml_guidance():
+    """Every legal edge must explain how to satisfy and invoke its transition."""
+    from control_plane.registry import TransitionRegistry
+
+    templates = TransitionRegistry.load_default().get_all_templates()
+
+    assert templates
+    for template in templates:
+        assert template.next_steps_hint, template.transition_id
+        assert "coordinate-transition" in template.next_steps_hint, template.transition_id
+
+    approval = TransitionRegistry.load_default().get_template("APPROVED", "IN_WORKTREE")
+    assert "record-human-approval" in approval.next_steps_hint
+    assert "--task-id" in approval.next_steps_hint
+    assert "--approver" in approval.next_steps_hint
 
 
 def test_registry_malformed_field_fails_closed(tmp_path):
@@ -1206,7 +1250,6 @@ def test_legacy_policy_migration_parity():
 
     REQUIRED_EDGE_CHECKS = {
         ("INTAKE", "INTERVIEW"): "prior_art_scan",
-        ("INTERVIEW", "DRAFT_PLAN"): "plan_mode_or_socratic",
         ("INTERVIEW", "PLAN_REVIEW"): "plan_mode_or_socratic",
         ("DRAFT_PLAN", "AWAITING_APPROVAL"): "critic_review_or_skip",
         ("PLAN_REVIEW", "AWAITING_APPROVAL"): "critic_review_or_skip",
@@ -2141,7 +2184,7 @@ def test_visible_transition_output_contract(control_plane):
     assert "Still prohibited:" in text
 
 
-def test_sequential_question_pacing(control_plane):
+def test_sequential_question_pacing(control_plane, tmp_path):
     """Test 13: Questions are presented one at a time sequentially rather than batched."""
     import io
     from control_plane.coordinator import TransitionCoordinator
@@ -2152,6 +2195,11 @@ def test_sequential_question_pacing(control_plane):
     control_plane.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
+    plan_dir = tmp_path / "docs" / "plans"
+    plan_dir.mkdir(parents=True)
+    (plan_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    control_plane.repo_root = tmp_path
 
     out = io.StringIO()
     inputs = ["1"]  # answer to question
@@ -2314,30 +2362,127 @@ def test_production_transition_caller_migration_completeness():
         assert "apply_transition(" not in content, f"Raw apply_transition found in {p}"
 
 
-def test_coordinator_missing_required_artifact_fails_visibly_and_denies_transition(control_plane, tmp_path):
-    """Architecture Review Finding 1: Missing required artifact produces a visible FAIL and denies transition."""
+def test_coordinator_allows_interview_to_draft_plan_without_artifacts(control_plane, tmp_path):
+    """Plan artifacts are created in DRAFT_PLAN, not required to enter it."""
     import io
-    from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+    from control_plane.coordinator import TransitionCoordinator
 
     task_id = "task-review-artifact-001"
     control_plane.create_task(task_id=task_id, title="Artifact Test", runtime_tool="claude")
+    control_plane.transition(task_id, "INTERVIEW", "tester", "Start interview")
+    stage_interview_answers(control_plane, task_id)
     out = io.StringIO()
     coord = TransitionCoordinator(control_plane=control_plane, output_stream=out)
 
-    # INTAKE -> DRAFT_PLAN requires docs/plans/<task-id>-spec.md and docs/plans/<task-id>-implementation-plan.md
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="DRAFT_PLAN",
+        actor="tester",
+        reason="Enter the plan-authoring state before plan artifacts exist",
+    )
+    assert control_plane._persistence.read_current_state(task_id) == "DRAFT_PLAN"
+
+
+def test_coordinator_denies_plan_review_without_draft_artifacts(control_plane, tmp_path):
+    """A DRAFT_PLAN cannot be submitted for review until both plan artifacts exist."""
+    import io
+    from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+
+    task_id = "task-draft-submission-artifact-001"
+    control_plane.create_task(task_id=task_id, title="Draft Submission Artifact Test", runtime_tool="claude")
+    control_plane.transition(task_id, "INTERVIEW", "tester", "Start interview")
+    stage_interview_answers(control_plane, task_id)
+    control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Enter draft plan")
+    control_plane.repo_root = tmp_path
+
+    out = io.StringIO()
+    coord = TransitionCoordinator(control_plane=control_plane, output_stream=out)
     with pytest.raises(TransitionCoordinatorError, match="[Aa]rtifact|denied"):
         coord.coordinate_transition(
             task_id=task_id,
-            to_state="DRAFT_PLAN",
+            to_state="PLAN_REVIEW",
             actor="tester",
-            reason="Transitioning without creating required artifacts",
+            reason="Submit a draft without its required artifacts",
+            interactive=False,
+            provided_answers={},
         )
-    output = out.getvalue()
-    # Checklist must report FAIL for missing artifact and NEVER display [✓] for it
-    assert "FAIL" in output or "[✗]" in output or "Missing required artifact" in output
-    assert not ("[✓] docs/plans/task-review-artifact-001-spec.md" in output and "FAIL" not in output)
-    # State must remain INTAKE
-    assert control_plane._persistence.read_current_state(task_id) == "INTAKE"
+
+    assert "Missing required artifact" in out.getvalue()
+    assert control_plane._persistence.read_current_state(task_id) == "DRAFT_PLAN"
+
+
+def test_rejected_plan_requires_artifact_revision_before_resubmission(control_plane, tmp_path):
+    """A rejected plan cannot be resubmitted with unchanged artifact identities."""
+    import io
+    from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+
+    task_id = "task-plan-revision-001"
+    control_plane.create_task(task_id=task_id, title="Plan Revision Test", runtime_tool="claude")
+    control_plane.transition(task_id, "INTERVIEW", "tester", "Start interview")
+    stage_interview_answers(control_plane, task_id)
+    control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Enter draft plan")
+
+    plan_dir = tmp_path / "docs" / "plans"
+    plan_dir.mkdir(parents=True)
+    spec_path = plan_dir / f"{task_id}-spec.md"
+    plan_path = plan_dir / f"{task_id}-implementation-plan.md"
+    spec_path.write_text("# Spec v1", encoding="utf-8")
+    plan_path.write_text("# Plan v1", encoding="utf-8")
+    control_plane.repo_root = tmp_path
+    coord = TransitionCoordinator(control_plane=control_plane, output_stream=io.StringIO())
+    answers = {"plan_review_submission": "Proceed with plan review [Recommended]"}
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="tester",
+        reason="Submit v1",
+        provided_answers=answers,
+    )
+    control_plane.transition(task_id, "DRAFT_PLAN", "reviewer", "Changes requested")
+
+    with pytest.raises(TransitionCoordinatorError, match="unchanged|revision"):
+        stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+        coord.coordinate_transition(
+            task_id=task_id,
+            to_state="PLAN_REVIEW",
+            actor="tester",
+            reason="Resubmit unchanged v1",
+            provided_answers=answers,
+        )
+
+    submission = [
+        receipt for receipt in control_plane.get_verification_receipts(task_id)
+        if receipt["gate_name"] == "plan_artifact_submission"
+    ][-1]
+    control_plane.record_verification_receipt(
+        task_id,
+        gate_name="plan_artifact_revision",
+        command_executed=submission["command_executed"],
+        exit_code=0,
+    )
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+    same_identity_record = coord.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="tester",
+        reason="Resubmit v1 with explicit revision receipt",
+        provided_answers=answers,
+    )
+    assert same_identity_record.to_state == "PLAN_REVIEW"
+
+    control_plane.transition(task_id, "DRAFT_PLAN", "reviewer", "Changes requested again")
+    plan_path.write_text("# Plan v2", encoding="utf-8")
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+    record = coord.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="tester",
+        reason="Submit revised v2",
+        provided_answers=answers,
+    )
+    assert record.to_state == "PLAN_REVIEW"
 
 
 def test_coordinator_checklist_evaluator_truthfulness(control_plane, tmp_path):
@@ -2371,7 +2516,7 @@ def test_coordinator_checklist_evaluator_truthfulness(control_plane, tmp_path):
     assert control_plane._persistence.read_current_state(task_id) == "DRAFT_PLAN"
 
 
-def test_coordinator_non_interactive_missing_answer_fails_closed_despite_default(control_plane):
+def test_coordinator_non_interactive_missing_answer_fails_closed_despite_default(control_plane, tmp_path):
     """Architecture Review Finding 2: Missing non-interactive answer fails despite a configured recommended default."""
     from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 
@@ -2381,6 +2526,11 @@ def test_coordinator_non_interactive_missing_answer_fails_closed_despite_default
     control_plane.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
+    plan_dir = tmp_path / "docs" / "plans"
+    plan_dir.mkdir(parents=True)
+    (plan_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    control_plane.repo_root = tmp_path
 
     coord = TransitionCoordinator(control_plane=control_plane)
 
@@ -2397,7 +2547,7 @@ def test_coordinator_non_interactive_missing_answer_fails_closed_despite_default
         )
 
 
-def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_rejected(control_plane):
+def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_rejected(control_plane, tmp_path):
     """Architecture Review Finding 2: Empty interactive input does not authorize default, and undeclared options fail."""
     from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 
@@ -2407,6 +2557,11 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
     control_plane.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
+    plan_dir = tmp_path / "docs" / "plans"
+    plan_dir.mkdir(parents=True)
+    (plan_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    control_plane.repo_root = tmp_path
 
     # 1. Empty input must not silently pick the recommendation
     coord_empty = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "")
@@ -2852,14 +3007,7 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
     # The retrospective transition has authority.type: human_decision — the DB trigger requires
     # a genuine interactive answer (actor='human'), not a programmatically provided_answers
     # dict (actor='agent') — see coordinator.py.
-    interview_inputs = iter([
-        "TRIVIAL",
-        "Fix the typo in the error message.",
-        "The error message text only.",
-        "The corrected message is loaded by the skill.",
-        "One-line diff with the focused test passing.",
-        "Yes [Recommended]",
-    ])
+    interview_inputs = iter(["Yes [Recommended]"])
     coord = TransitionCoordinator(
         control_plane=control_plane,
         input_fn=lambda prompt: next(interview_inputs),

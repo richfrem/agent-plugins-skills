@@ -1,8 +1,8 @@
 stateDiagram-v2
     state "Step 1: Intake — task registered" as INTAKE
     state "Step 2: Interview — understanding what you want" as INTERVIEW
-    state "Step 3: Draft plan written" as DRAFT_PLAN
-    state "Step 3: Draft plan written (legacy path)" as PLAN_REVIEW
+    state "Step 3: Draft plan authored" as DRAFT_PLAN
+    state "Step 4: Plan submission/review gate" as PLAN_REVIEW
     state "Step 4a: Multi-agent review of the plan — 1 or N rounds (your choice)" as MULTI_AGENT_REVIEW
     state "Step 5: Awaiting your approval" as AWAITING_APPROVAL
     state "Step 6: Approved — you said go" as APPROVED
@@ -21,20 +21,20 @@ stateDiagram-v2
     INTAKE --> PLAN_REVIEW : skip straight to planning
     INTAKE --> ESCALATED
 
-    INTERVIEW --> DRAFT_PLAN : plan/questions complete<br/>(or explicit skip, recorded)
-    INTERVIEW --> PLAN_REVIEW : plan/questions complete<br/>(or explicit skip, recorded)
+    INTERVIEW --> DRAFT_PLAN : interview complete<br/>no plan artifacts required yet
+    INTERVIEW --> PLAN_REVIEW : legacy/direct plan submission path<br/>(artifacts required)
     INTERVIEW --> RETROSPECTIVE : trivial path — interview baseline<br/>and adaptive follow-ups complete
     INTERVIEW --> ESCALATED
     INTERVIEW --> INTAKE : human-approved recovery reset
 
-    DRAFT_PLAN --> PLAN_REVIEW : same step, either path
-    PLAN_REVIEW --> DRAFT_PLAN : same step, either path
+    DRAFT_PLAN --> PLAN_REVIEW : submit both plan artifacts<br/>identity recorded atomically
+    PLAN_REVIEW --> DRAFT_PLAN : changes requested; revise artifact identity
     DRAFT_PLAN --> INTERVIEW : needs more questions
     PLAN_REVIEW --> INTERVIEW : needs more questions
 
-    DRAFT_PLAN --> MULTI_AGENT_REVIEW : Want a second AI opinion<br/>on this plan first? Yes
+    DRAFT_PLAN --> MULTI_AGENT_REVIEW : direct review submission<br/>both artifacts and identity required
     PLAN_REVIEW --> MULTI_AGENT_REVIEW : Want a second AI opinion<br/>on this plan first? Yes
-    DRAFT_PLAN --> AWAITING_APPROVAL : Proceed straight<br/>to your approval? Yes<br/>(skip recorded, never silent)
+    DRAFT_PLAN --> AWAITING_APPROVAL : submit artifacts and proceed<br/>(skip recorded, never silent)
     PLAN_REVIEW --> AWAITING_APPROVAL : Proceed straight<br/>to your approval? Yes<br/>(skip recorded, never silent)
     DRAFT_PLAN --> ESCALATED
     DRAFT_PLAN --> INTAKE : human-approved recovery reset
@@ -42,8 +42,8 @@ stateDiagram-v2
     PLAN_REVIEW --> INTAKE : human-approved recovery reset
 
     MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
-    MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes
-    MULTI_AGENT_REVIEW --> PLAN_REVIEW : reviewer requested changes
+    MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes<br/>new identity required before resubmission
+    MULTI_AGENT_REVIEW --> PLAN_REVIEW : reviewer requested changes<br/>legacy review path
     MULTI_AGENT_REVIEW --> ESCALATED
     MULTI_AGENT_REVIEW --> INTAKE : human-approved recovery reset
 

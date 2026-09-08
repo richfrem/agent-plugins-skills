@@ -78,3 +78,9 @@ Always add these instructions to your dispatch prompt to prevent the sub-agent f
 ```bash
 python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```
+
+For mandatory review source, pass `--require-input` to `run_agent.py`; missing or empty files
+are rejected before backend dispatch. Supplied source is delimited with `---SOURCE---` and
+`---END SOURCE---`. Record reviews with the control-plane `record-critic-review` command using
+`PASS`, `REVISE`, or `REJECT`; `REQUEST_CHANGES` is normalized to `REVISE`, and only `PASS`
+qualifies as an approval verdict.
