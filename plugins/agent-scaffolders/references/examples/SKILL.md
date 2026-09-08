@@ -1,1 +1,0 @@
-../../skills/create-stateful-skill/SKILL.md

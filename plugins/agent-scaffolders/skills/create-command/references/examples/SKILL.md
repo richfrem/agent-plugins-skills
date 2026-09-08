@@ -1,1 +1,0 @@
-../../../../references/examples/SKILL.md
