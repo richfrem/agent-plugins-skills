@@ -512,6 +512,24 @@ def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(contr
         plan_path.unlink(missing_ok=True)
 
 
+def test_cli_transition_parsers_accept_skip_review_flags():
+    """Regression test: the 'transition' and 'coordinate-transition' argparse subparsers
+    must expose --skip-review/--skip-reason — _dispatch_command() reads them via
+    getattr(args, "skip_review", False) with a silent False/None fallback, which means
+    an unregistered flag doesn't fail loudly; it silently no-ops. A user passing
+    --skip-review on the actual CLI got 'unrecognized arguments' before this fix,
+    since neither subparser declared the flag at all."""
+    from agent_control import _build_parser
+
+    parser = _build_parser()
+    for subcommand in ("transition", "coordinate-transition"):
+        args = parser.parse_args([
+            subcommand, "--task-id", "t1", "--to", "AWAITING_APPROVAL",
+            "--skip-review", "--skip-reason", "user requested skip",
+        ])
+        assert args.skip_review is True
+        assert args.skip_reason == "user requested skip"
+
 def test_worktree_post_implementation_review_stage_gate(control_plane):
     """Test transitions through WORKTREE_REVIEW and MULTI_AGENT_CODE_REVIEW before VERIFY_EXIT."""
     task_id = "task-review-gate-001"

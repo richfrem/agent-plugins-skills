@@ -595,6 +595,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--interactive", action="store_true", default=False)
     p_ct.add_argument("--answers", default=None, help="JSON dict of question answers")
     p_ct.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
+    p_ct.add_argument("--skip-review", action="store_true", default=False)
+    p_ct.add_argument("--skip-reason", default=None)
 
     # Compatibility alias: transition routes directly through TransitionCoordinator
     p_tr = sub.add_parser("transition")
@@ -605,6 +607,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tr.add_argument("--interactive", action="store_true", default=False)
     p_tr.add_argument("--answers", default=None, help="JSON dict of question answers")
     p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
+    p_tr.add_argument("--skip-review", action="store_true", default=False)
+    p_tr.add_argument("--skip-reason", default=None)
 
     p_lock = sub.add_parser("lock-verifiers")
     p_lock.add_argument("--task-id", required=True)
