@@ -10734,6 +10734,24 @@
       "dst": "plugins/agent-agentic-os/skills/todo-check/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "todo-check fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "docs/diagrams/control-plane-architecture.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-architecture.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane diagram referenced by interview-spec pipeline docs"
+    },
+    {
+      "src": "docs/diagrams/control-plane-pipeline-happy-path.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-pipeline-happy-path.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane diagram referenced by interview-spec pipeline docs"
+    },
+    {
+      "src": "docs/diagrams/control-plane-pipeline.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-pipeline.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane diagram referenced by interview-spec pipeline docs"
     }
   ]
 }
