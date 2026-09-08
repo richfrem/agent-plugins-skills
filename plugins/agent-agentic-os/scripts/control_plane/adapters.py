@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS transition_decisions (
     to_state TEXT NOT NULL,
     question_id TEXT NOT NULL,
     answer TEXT NOT NULL,
-    decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION')),
+    decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION', 'RESET')),
     actor TEXT NOT NULL,
     recorded_at REAL NOT NULL,
     consumed_at REAL,
@@ -285,7 +285,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 5
+CURRENT_SCHEMA_VERSION = 6
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -314,7 +314,7 @@ SCHEMA_MIGRATIONS = [
         to_state TEXT NOT NULL,
         question_id TEXT NOT NULL,
         answer TEXT NOT NULL,
-        decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION')),
+        decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION', 'RESET')),
         actor TEXT NOT NULL,
         recorded_at REAL NOT NULL,
         consumed_at REAL,
@@ -1088,7 +1088,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                 )
 
             # 4. Structural validation of staged decisions
-            valid_types = {'ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION'}
+            valid_types = {'ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION', 'RESET'}
             seen_questions = set()
             for d in request.staged_decisions:
                 if d.task_id != request.task_id:

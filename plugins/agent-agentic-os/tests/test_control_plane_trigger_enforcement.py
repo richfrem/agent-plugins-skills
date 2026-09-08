@@ -43,7 +43,7 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter
+from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter, SCHEMA_SQL, _split_schema_sql_statements
 from control_plane.registry import TransitionRegistry
 
 # INTAKE -> IN_WORKTREE is not a legal edge in ALLOWED_TRANSITIONS (unlike INTAKE -> DONE,
@@ -240,19 +240,34 @@ def test_recursive_triggers_on_hits_recursion_limit_but_no_illegal_write_persist
     illegal write never persists — this asserts state is unaffected — but the violation goes
     unlogged in this non-default pragma mode, and the caller gets an unhandled
     sqlite3.OperationalError instead of a clean revert. recursive_triggers is OFF by default in
-    SQLite; this only matters if something else touching this DB explicitly turns it on."""
+    SQLite; this only matters if something else touching this DB explicitly turns it on.
+
+    Uses WORKTREE_REVIEW -> DRAFT_PLAN (not INTAKE-sourced) as the illegal pair: the
+    control-plane-reset-transition feature added a reset_to_intake edge from every
+    non-INTAKE state back to INTAKE, so a corrective revert-to-INTAKE is now always
+    legal and would no longer recurse — WORKTREE_REVIEW/DRAFT_PLAN remain illegal in
+    both directions, preserving this test's original premise."""
     adapter, db_path = _make_adapter(tmp_path)
     conn = sqlite3.connect(str(db_path))
     try:
         conn.execute("PRAGMA recursive_triggers = ON;")
         _insert_legal_task(conn, "task-6", "INTAKE")
+        # Seed at WORKTREE_REVIEW via a trigger-safe raw set (not a legal initial
+        # state for _insert_legal_task's INSERT path).
+        conn.execute("DROP TRIGGER IF EXISTS enforce_valid_transition;")
+        conn.execute("UPDATE tasks SET state = 'WORKTREE_REVIEW' WHERE task_id = 'task-6'")
+        conn.commit()
+        for stmt in _split_schema_sql_statements(SCHEMA_SQL):
+            if "CREATE TRIGGER" in stmt.upper():
+                conn.execute(stmt)
+        conn.commit()
 
         with pytest.raises(sqlite3.OperationalError, match="too many levels of trigger recursion"):
-            conn.execute(f"UPDATE tasks SET state='{ILLEGAL_UPDATE_TARGET}' WHERE task_id='task-6'")
+            conn.execute("UPDATE tasks SET state='DRAFT_PLAN' WHERE task_id='task-6'")
             conn.commit()
 
         after = conn.execute("SELECT state FROM tasks WHERE task_id='task-6'").fetchone()
-        assert after[0] == "INTAKE"
+        assert after[0] == "WORKTREE_REVIEW"
 
         count = conn.execute(
             "SELECT COUNT(*) FROM transition_violations WHERE task_id='task-6'"

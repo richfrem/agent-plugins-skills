@@ -10362,6 +10362,378 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/state_machine.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/registry.py",
+      "strategy": "symlink",
+      "description": "TransitionRegistry, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/coordinator.py",
+      "strategy": "symlink",
+      "description": "TransitionCoordinator, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/transition_templates.yaml",
+      "strategy": "symlink",
+      "description": "Loaded at runtime by registry.py relative to its own __file__ \u2014 must ship alongside registry.py (issue-551 work package)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/agent_control.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/agent_control.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/operations.py",
+      "dst": "plugins/agent-memory/skills/vector-db-cleanup/scripts/operations.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-ingest/scripts/rlm_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/vector_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-init/scripts/vector_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/operations.py",
+      "dst": "plugins/agent-memory/skills/vector-db-init/scripts/operations.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/vector_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-launch/scripts/vector_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/rlm_config.py",
+      "dst": "plugins/agent-memory/skills/vector-db-search/scripts/rlm_config.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-memory/scripts/ingest_code_shim.py",
+      "dst": "plugins/agent-memory/skills/vector-db-search/scripts/ingest_code_shim.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_skill.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/cli-agents/scripts/kv_cache_orchestrator.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/kv_cache_orchestrator.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_create.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_create.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/hf_upload.py",
+      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_upload.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/sandbox_runner.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/scripts/state_engine.py",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/state_engine.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/scripts/raw_manifest.py",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/scripts/raw_manifest.py",
+      "strategy": "symlink",
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/critical-auditor-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/critical-auditor/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "critical-auditor acceptance-criteria.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/critical-auditor-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/critical-auditor/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "critical-auditor fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evo-smoketest-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/evo-smoketest/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "evo-smoketest acceptance-criteria.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evo-smoketest-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/evo-smoketest/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "evo-smoketest fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/interview-spec-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "interview-spec detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/issue-resolution-reviewer-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/issue-resolution-reviewer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "issue-resolution-reviewer fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/optimize-agent-instructions-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "optimize-agent-instructions detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/optimize-agent-instructions-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "optimize-agent-instructions fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-architect-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-architect/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-architect acceptance-criteria.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-architect-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-architect/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-architect fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-clean-locks-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-clean-locks/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-clean-locks fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-environment-probe-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-environment-probe detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-environment-probe-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-environment-probe fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-eval-backport-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-eval-backport detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-eval-backport-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-eval-backport fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-eval-lab-setup-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-eval-lab-setup detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-eval-lab-setup-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-eval-lab-setup fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-eval-runner-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-eval-runner fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-evolution-planner-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-evolution-planner detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-evolution-planner-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-evolution-planner fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-evolution-verifier-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-evolution-verifier detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-evolution-verifier-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-evolution-verifier fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-experiment-log-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-experiment-log/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-experiment-log acceptance-criteria.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-experiment-log-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-experiment-log/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-experiment-log detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-experiment-log-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-experiment-log/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-experiment-log fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-guide-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-guide/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-guide detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-guide-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-guide/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-guide fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-health-check-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-health-check detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-health-check-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-health-check fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-improvement-loop-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-improvement-loop fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-improvement-report-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-improvement-report detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-improvement-report-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-improvement-report fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-init-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-init detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-init-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-init fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-memory-manager-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-memory-manager/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-memory-manager detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-memory-manager-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-memory-manager/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-memory-manager fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-skill-improvement-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-skill-improvement detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-skill-improvement-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-skill-improvement fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/repository-improvement-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/repository-improvement/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "repository-improvement fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/self-evolution-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/detailed-reference.md",
+      "strategy": "symlink",
+      "description": "self-evolution detailed-reference.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/self-evolution-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "self-evolution fallback-tree.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/todo-check-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/todo-check/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "todo-check acceptance-criteria.md (issue-551 hub-and-spoke fix)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/todo-check-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/todo-check/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "todo-check fallback-tree.md (issue-551 hub-and-spoke fix)"
     }
   ]
 }

@@ -56,12 +56,16 @@ def control_plane(temp_db_path):
 
 
 def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor="human", reason="test"):
-    """Coordinates any transition (including human-gated ones) using TransitionCoordinator."""
+    """Coordinates any transition (including human-gated ones) using TransitionCoordinator.
+    Each call gets a fresh TransitionCoordinator/input_fn, so a fixed-length answer sequence
+    doesn't generalize across calls with differing question/approval counts — instead answer
+    based on the prompt's own content: the y/n approval prompt always contains '(y/n)'."""
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
-    inputs = iter(["1", "1", "1", "y"])
-    coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
+    def _answer(prompt):
+        return "y" if "(y/n)" in prompt else "1"
+    coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=_answer)
     return coord.coordinate_transition(
         task_id=task_id,
         to_state=to_state,
@@ -71,8 +75,18 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
     )
 
 
-def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str):
-    """Shared setup: drives a fresh task through the canonical DAG to IN_WORKTREE."""
+def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path):
+    """Shared setup: drives a fresh task through the canonical DAG to IN_WORKTREE.
+    PLAN_REVIEW's required_artifacts (spec/implementation-plan) are created under
+    tmp_path, with cp.repo_root pointed there, matching the pattern used elsewhere
+    (test_agent_control.py)."""
+    cp.repo_root = tmp_path
+    plans_dir = tmp_path / "docs" / "plans"
+    plans_dir.mkdir(parents=True, exist_ok=True)
+    (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    (tmp_path / ".worktrees" / task_id).mkdir(parents=True, exist_ok=True)
+
     cp.create_task(task_id=task_id, title=title, runtime_tool="claude")
     cp.record_plan_mode_entry(task_id=task_id, actor="controller")
     _coordinate_transition(cp, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
@@ -85,10 +99,10 @@ def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str):
 
 # --- update_worktree() push-barrier: strict DONE state gate (5a5efc2a) ---
 
-def test_push_barrier_permits_done(control_plane):
+def test_push_barrier_permits_done(control_plane, tmp_path):
     """Characterizes: worktree_state='pushed_to_origin' succeeds when task state is final state DONE."""
     task_id = "char-push-done-001"
-    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: DONE")
+    _advance_to_in_worktree(control_plane, task_id, "Push Barrier: DONE", tmp_path)
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     _coordinate_transition(control_plane, task_id, "WORKTREE_REVIEW", actor="controller", reason="Implementation done")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
@@ -104,10 +118,10 @@ def test_push_barrier_permits_done(control_plane):
 
 
 @pytest.mark.parametrize("intermediate_state", ["IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"])
-def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_state):
+def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_state, tmp_path):
     """Characterizes: worktree_state='pushed_to_origin' is rejected when task state is not DONE."""
     task_id = f"char-push-blocked-{intermediate_state.lower()}"
-    _advance_to_in_worktree(control_plane, task_id, f"Push Barrier: {intermediate_state}")
+    _advance_to_in_worktree(control_plane, task_id, f"Push Barrier: {intermediate_state}", tmp_path)
     
     if intermediate_state in ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"):
         control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
@@ -169,6 +183,12 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     succeeds — the positive path through `if locked_count > 0: self.verify_sovereignty(task_id)`
     that test_agent_control.py only exercises via the mutated/failing branch."""
     task_id = "char-done-sovereignty-intact-001"
+    control_plane.repo_root = tmp_path
+    plans_dir = tmp_path / "docs" / "plans"
+    plans_dir.mkdir(parents=True, exist_ok=True)
+    (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+
     control_plane.create_task(task_id=task_id, title="Done sovereignty intact", runtime_tool="claude")
 
     verifier_file = tmp_path / "verifier.py"

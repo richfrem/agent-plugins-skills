@@ -47,9 +47,13 @@ def test_validate_known_state_accepts_every_canonical_state():
 
 
 def test_validate_adjacency_rejects_illegal_edge():
+    # DONE -> INTAKE is now the deliberate reset_to_intake recovery edge (added
+    # for control-plane-reset-transition) — no longer illegal, so it can't be
+    # used as the illegal-edge example here. DONE -> WORKTREE_REVIEW remains
+    # illegal (DONE is still terminal except for the one explicit reset edge).
     sm = StateMachine()
-    with pytest.raises(InvalidStateTransition, match="Cannot transition task 't1' from 'DONE' to 'INTAKE'"):
-        sm.validate_adjacency("t1", "DONE", "INTAKE")
+    with pytest.raises(InvalidStateTransition, match="Cannot transition task 't1' from 'DONE' to 'WORKTREE_REVIEW'"):
+        sm.validate_adjacency("t1", "DONE", "WORKTREE_REVIEW")
 
 
 def test_validate_adjacency_accepts_every_legal_edge():

@@ -243,7 +243,7 @@ class TransitionCoordinator:
                     to_state=to_state,
                     question_id=qid,
                     answer=chosen_ans,
-                    decision_type="ANSWER",
+                    decision_type="RESET" if template.transition_id.startswith("reset_to_intake") else "ANSWER",
                     actor=decision_actor,
                     recorded_at=self._cp._clock.current_time(),
                 )

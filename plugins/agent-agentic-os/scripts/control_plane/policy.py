@@ -291,3 +291,37 @@ def evaluate_operation(ctx: Dict[str, Any], operation_name: str) -> None:
         if error is not None:
             raise PolicyViolation(error)
 
+
+def _run_rule(ctx: Dict[str, Any], rule: Dict[str, Any]) -> None:
+    """Dispatches a single rule spec by its `check` type. Raises PolicyViolation if the
+    rule's predicate fails, or PolicyConfigurationError if `check` is unrecognized — fails
+    closed on a misconfigured rule rather than silently passing (see PolicyConfigurationError
+    docstring)."""
+    check_type = rule.get("check")
+    if check_type == "predicate":
+        error = rule["fn"](ctx)
+        if error is not None:
+            raise PolicyViolation(error)
+        return
+    raise PolicyConfigurationError(f"Unknown policy check type: '{check_type}'")
+
+
+def evaluate_transition(ctx: Dict[str, Any], from_state: str, to_state: str) -> None:
+    """Evaluates the small set of legacy lifecycle-edge rules that predate the
+    template-driven deterministic_checks/CHECK_REGISTRY path in coordinator.py (prior art,
+    done, rolled back guards). A no-op for any other edge — everything else is governed
+    entirely by CHECK_REGISTRY via evaluate_check(), driven from transition_templates.yaml.
+
+    Deliberately no module-level TRANSITION_RULES/TO_STATE_RULES table here (Architecture
+    Review Finding 6, see test_policy_py_contains_no_transition_rules_or_to_state_rules) —
+    this local mapping exists only inside this function, routing through the same
+    CHECK_REGISTRY functions _prior_art_check/_done_check/_rolled_back_check already use."""
+    edge_to_check_fn = {
+        ("INTAKE", "INTERVIEW"): _prior_art_check,
+        ("VERIFY_EXIT", "DONE"): _done_check,
+        ("IN_WORKTREE", "ROLLED_BACK"): _rolled_back_check,
+    }
+    fn = edge_to_check_fn.get((from_state, to_state))
+    if fn is not None:
+        _run_rule(ctx, {"check": "predicate", "fn": fn})
+
