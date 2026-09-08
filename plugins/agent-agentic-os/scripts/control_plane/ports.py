@@ -248,6 +248,16 @@ class PersistencePort(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def save_retrospective(self, task_id: str, entry: Dict[str, Any], follow_ups: List[Dict[str, Any]]) -> None:
+        """Creates or replaces the single task retrospective and its follow-up rows."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_complete_retrospective(self, task_id: str) -> bool:
+        """Returns whether the task has a complete or explicitly skipped retrospective."""
+        raise NotImplementedError
+
+    @abstractmethod
     def update_worktree_fields(self, task_id: str, worktree_path: str, worktree_branch: str, worktree_state: str) -> None:
         """Updates a task's worktree_path/worktree_branch/worktree_state columns."""
         raise NotImplementedError
@@ -317,5 +327,4 @@ class PersistencePort(ABC):
     def validate_task_pipeline_history(self, task_id: str, task_state: str) -> Optional[str]:
         """Validates transition history and violations for pipeline commit check. Returns error string or None."""
         raise NotImplementedError
-
 

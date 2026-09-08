@@ -333,7 +333,16 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     cp.transition(task_id, "VERIFY_EXIT", "tester", "verify")
     cp.record_verification_receipt(task_id, "leak_check", "git status", 0)
     cp.log_asymmetric_persistence(task_id, "references/map-debt.md", "RESOLVED", "test")
-    cp.transition(task_id, "DONE", "tester", "done")
+    cp.transition(task_id, "RETROSPECTIVE", "tester", "enter retrospective")
+    cp.save_retrospective(
+        task_id,
+        {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "hook fixture"},
+        [],
+    )
+    from control_plane.coordinator import TransitionCoordinator
+    TransitionCoordinator(control_plane=cp, input_fn=lambda prompt: "skip").coordinate_transition(
+        task_id, "DONE", "tester", "done", interactive=True,
+    )
 
     res = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
     assert res.returncode == 0

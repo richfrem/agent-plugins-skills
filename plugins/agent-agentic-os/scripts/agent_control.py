@@ -249,6 +249,7 @@ class ControlPlane:
             "count_locked_verifiers": lambda: self._persistence.count_locked_verifiers(task_id),
             "count_asymmetric_persistence": lambda details_like=None, destination_like_any=None:
                 self._persistence.count_asymmetric_persistence(task_id, details_like, destination_like_any),
+            "has_complete_retrospective": lambda: self._persistence.has_complete_retrospective(task_id),
             "verify_sovereignty": lambda: self.verify_sovereignty(task_id),
         }
 
@@ -374,6 +375,16 @@ class ControlPlane:
         token = f"EVO-INTEGRITY-{task_id}-{h}"
         self._persistence.insert_verification_receipt(task_id, gate_name, command_executed, exit_code, token)
         return token
+
+    def save_retrospective(self, task_id: str, entry: Dict[str, Any], follow_ups: List[Dict[str, Any]]) -> None:
+        """Creates or replaces the task's single retrospective record."""
+        if entry.get("decision") not in ("opt_in", "skip"):
+            raise ValueError("Retrospective decision must be 'opt_in' or 'skip'.")
+        if entry.get("completion_mode") not in ("draft", "completed", "skipped"):
+            raise ValueError("Retrospective completion_mode must be draft, completed, or skipped.")
+        if entry.get("actor") not in ("agent", "human"):
+            raise ValueError("Retrospective actor must be agent or human.")
+        self._persistence.save_retrospective(task_id, entry, follow_ups)
 
     def record_plan_mode_entry(self, task_id: str, actor: str) -> str:
         """Records proof that native Plan Mode was entered, satisfying the DRAFT_PLAN gate."""

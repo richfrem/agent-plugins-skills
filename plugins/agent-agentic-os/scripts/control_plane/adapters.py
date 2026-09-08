@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     state TEXT NOT NULL CHECK (
         state IN (
             'INTAKE', 'INTERVIEW', 'DRAFT_PLAN', 'MULTI_AGENT_REVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
-            'APPROVED', 'IN_WORKTREE', 'WORKTREE_REVIEW', 'MULTI_AGENT_CODE_REVIEW', 'VERIFY_EXIT', 'DONE',
+            'APPROVED', 'IN_WORKTREE', 'WORKTREE_REVIEW', 'MULTI_AGENT_CODE_REVIEW', 'VERIFY_EXIT', 'RETROSPECTIVE', 'DONE',
             'ROLLED_BACK', 'ESCALATED'
         )
     ),
@@ -203,6 +203,36 @@ CREATE TABLE IF NOT EXISTS transition_decisions (
     bound_transition_id INTEGER REFERENCES task_transitions(transition_id)
 );
 
+CREATE TABLE IF NOT EXISTS retrospective_entries (
+    retrospective_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL UNIQUE REFERENCES tasks(task_id) ON DELETE CASCADE,
+    decision TEXT NOT NULL CHECK(decision IN ('opt_in', 'skip')),
+    completion_mode TEXT NOT NULL CHECK(completion_mode IN ('draft', 'completed', 'skipped')),
+    actor TEXT NOT NULL CHECK(actor IN ('agent', 'human')),
+    outcome TEXT NOT NULL DEFAULT '',
+    strengths TEXT NOT NULL DEFAULT '',
+    friction TEXT NOT NULL DEFAULT '',
+    learning TEXT NOT NULL DEFAULT '',
+    improvement TEXT NOT NULL DEFAULT '',
+    follow_up TEXT NOT NULL DEFAULT '',
+    skip_reason TEXT NOT NULL DEFAULT '',
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS retrospective_follow_ups (
+    follow_up_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    retrospective_id INTEGER NOT NULL REFERENCES retrospective_entries(retrospective_id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK(kind IN ('direct', 'issue')),
+    description TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('proposed', 'confirmed', 'rejected', 'created')),
+    duplicate_checked INTEGER NOT NULL DEFAULT 0 CHECK(duplicate_checked IN (0, 1)),
+    issue_url TEXT,
+    issue_number TEXT,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER NOT NULL
 );
@@ -231,6 +261,7 @@ CREATE TABLE IF NOT EXISTS transition_violations (
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);
+CREATE INDEX IF NOT EXISTS idx_retrospective_follow_ups_entry ON retrospective_follow_ups(retrospective_id);
 
 -- issue-523 & pipeline-guard: DB-level backstop enforcing legal state transitions and
 -- required human decisions on state transitions. Checks both adjacency-legality (valid_transitions)
@@ -254,7 +285,7 @@ WHEN NEW.state != OLD.state
                 AND td.question_id = rq.question_id
                 AND td.answer IS NOT NULL
                 AND trim(td.answer) != ''
-                AND td.actor = 'human'
+                AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
                 AND td.consumed_at IS NULL
           )
     )
@@ -285,7 +316,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 6
+CURRENT_SCHEMA_VERSION = 7
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -299,6 +330,8 @@ CHILD_TABLES = [
     "verification_receipts",
     "asymmetric_persistence_log",
     "transition_decisions",
+    "retrospective_entries",
+    "retrospective_follow_ups",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
@@ -690,7 +723,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                                 AND td.question_id = rq.question_id
                                 AND td.answer IS NOT NULL
                                 AND trim(td.answer) != ''
-                                AND td.actor = 'human'
+                              AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
                                 AND td.consumed_at IS NULL
                           )
                     )
@@ -981,6 +1014,107 @@ class SqlitePersistenceAdapter(PersistencePort):
         try:
             rows = conn.execute("SELECT * FROM verification_receipts WHERE task_id = ?", (task_id,)).fetchall()
             return [dict(r) for r in rows]
+        finally:
+            conn.close()
+
+    def save_retrospective(self, task_id: str, entry: Dict[str, Any], follow_ups: List[Dict[str, Any]]) -> None:
+        """Upserts one retrospective draft/completion and replaces its follow-up rows."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                now = float(entry.get("updated_at", time.time()))
+                existing = conn.execute(
+                    "SELECT retrospective_id, created_at FROM retrospective_entries WHERE task_id = ?",
+                    (task_id,),
+                ).fetchone()
+                created_at = existing["created_at"] if existing else float(entry.get("created_at", now))
+                if existing:
+                    retrospective_id = existing["retrospective_id"]
+                    conn.execute(
+                        """
+                        UPDATE retrospective_entries
+                        SET decision = ?, completion_mode = ?, actor = ?, outcome = ?, strengths = ?,
+                            friction = ?, learning = ?, improvement = ?, follow_up = ?, skip_reason = ?,
+                            updated_at = ?
+                        WHERE retrospective_id = ?
+                        """,
+                        (
+                            entry["decision"], entry["completion_mode"], entry["actor"],
+                            entry.get("outcome", ""), entry.get("strengths", ""), entry.get("friction", ""),
+                            entry.get("learning", ""), entry.get("improvement", ""), entry.get("follow_up", ""),
+                            entry.get("skip_reason", ""), now, retrospective_id,
+                        ),
+                    )
+                    conn.execute(
+                        "DELETE FROM retrospective_follow_ups WHERE retrospective_id = ?",
+                        (retrospective_id,),
+                    )
+                else:
+                    cursor = conn.execute(
+                        """
+                        INSERT INTO retrospective_entries
+                            (task_id, decision, completion_mode, actor, outcome, strengths, friction,
+                             learning, improvement, follow_up, skip_reason, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            task_id, entry["decision"], entry["completion_mode"], entry["actor"],
+                            entry.get("outcome", ""), entry.get("strengths", ""), entry.get("friction", ""),
+                            entry.get("learning", ""), entry.get("improvement", ""), entry.get("follow_up", ""),
+                            entry.get("skip_reason", ""), created_at, now,
+                        ),
+                    )
+                    retrospective_id = cursor.lastrowid
+
+                for follow_up in follow_ups:
+                    conn.execute(
+                        """
+                        INSERT INTO retrospective_follow_ups
+                            (retrospective_id, kind, description, status, duplicate_checked, issue_url,
+                             issue_number, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            retrospective_id, follow_up["kind"], follow_up["description"],
+                            follow_up.get("status", "proposed"), int(bool(follow_up.get("duplicate_checked", False))),
+                            follow_up.get("issue_url"), follow_up.get("issue_number"), now, now,
+                        ),
+                    )
+        finally:
+            conn.close()
+
+    def has_complete_retrospective(self, task_id: str) -> bool:
+        """Returns true for a completed survey or a reasoned skip with no open issue candidates."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            row = conn.execute(
+                "SELECT retrospective_id, decision, completion_mode, skip_reason FROM retrospective_entries WHERE task_id = ?",
+                (task_id,),
+            ).fetchone()
+            if not row:
+                return False
+            if row["decision"] == "skip":
+                complete = row["completion_mode"] == "skipped" and bool(row["skip_reason"].strip())
+            else:
+                complete = row["decision"] == "opt_in" and row["completion_mode"] == "completed"
+            if not complete:
+                return False
+            open_issue = conn.execute(
+                """
+                SELECT 1 FROM retrospective_follow_ups
+                WHERE retrospective_id = ?
+                  AND kind = 'issue'
+                  AND (
+                      status IN ('proposed', 'confirmed')
+                      OR (status = 'created' AND (duplicate_checked = 0 OR issue_url IS NULL OR trim(issue_url) = ''))
+                  )
+                LIMIT 1
+                """,
+                (row["retrospective_id"],),
+            ).fetchone()
+            return open_issue is None
         finally:
             conn.close()
 

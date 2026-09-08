@@ -10758,6 +10758,12 @@
       "dst": "plugins/agent-scaffolders/references/examples/SKILL.md",
       "strategy": "symlink",
       "description": "Example skill document used by create-command documentation"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_retrospective.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/wrappers/record_retrospective.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

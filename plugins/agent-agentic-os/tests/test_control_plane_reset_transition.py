@@ -263,14 +263,23 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
     )
     assert control_plane.get_task(task_id)["state"] == "INTAKE"
 
-    # Walk forward legitimately: INTAKE -> DONE via the trivial fast-track,
+    # Walk forward legitimately: INTAKE -> RETROSPECTIVE -> DONE via the trivial fast-track,
     # which is itself fully human-gated (matches this session's precedent).
     coord2 = TransitionCoordinator(
         control_plane=control_plane,
         input_fn=lambda prompt: "TRIVIAL: re-verified after reset, files=1, diff=abc1234",
     )
     coord2.coordinate_transition(
-        task_id=task_id, to_state="DONE", actor="human", reason="Trivial fast-track after reset", interactive=True,
+        task_id=task_id, to_state="RETROSPECTIVE", actor="human", reason="Trivial fast-track after reset", interactive=True,
+    )
+    control_plane.save_retrospective(
+        task_id,
+        {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "re-verified typo"},
+        [],
+    )
+    coord3 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
+    coord3.coordinate_transition(
+        task_id=task_id, to_state="DONE", actor="human", reason="Retrospective skipped", interactive=True,
     )
     assert control_plane.get_task(task_id)["state"] == "DONE"
 

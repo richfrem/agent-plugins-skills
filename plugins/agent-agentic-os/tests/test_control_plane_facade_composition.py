@@ -156,6 +156,13 @@ class _FakePersistencePort(PersistencePort):
         self.calls.append(("get_verification_receipts", task_id))
         return [r for r in self._receipts if r["task_id"] == task_id]
 
+    def save_retrospective(self, task_id, entry, follow_ups) -> None:
+        self.calls.append(("save_retrospective", task_id, entry, follow_ups))
+
+    def has_complete_retrospective(self, task_id) -> bool:
+        self.calls.append(("has_complete_retrospective", task_id))
+        return True
+
     def update_worktree_fields(self, task_id, worktree_path, worktree_branch, worktree_state) -> None:
         self.calls.append(("update_worktree_fields", task_id, worktree_path, worktree_branch, worktree_state))
         self._tasks[task_id]["worktree_state"] = worktree_state

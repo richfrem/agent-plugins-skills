@@ -126,6 +126,17 @@ def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _retrospective_done_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Requires the optional survey to be completed or explicitly skipped before DONE."""
+    if not ctx["has_complete_retrospective"]():
+        return (
+            f"Cannot complete task '{ctx['task_id']}': retrospective is incomplete. "
+            "Complete the survey or explicitly skip it with a reason; confirmed issue follow-ups "
+            "must be created or rejected first."
+        )
+    return None
+
+
 def _rolled_back_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_rolled_back_guard: requires at least one
     asymmetric_persistence_log entry documenting the failure before rollback."""
@@ -261,6 +272,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
         )
     ),
     "done_guard": _done_check,
+    "retrospective_done_guard": _retrospective_done_check,
     "rolled_back_guard": _rolled_back_check,
 }
 
@@ -324,4 +336,3 @@ def evaluate_transition(ctx: Dict[str, Any], from_state: str, to_state: str) -> 
     fn = edge_to_check_fn.get((from_state, to_state))
     if fn is not None:
         _run_rule(ctx, {"check": "predicate", "fn": fn})
-
