@@ -139,7 +139,16 @@ class PipelineSimulator:
             interactive=True,
         )
         self.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "simulated review passed")
-        self.control_plane.transition(task_id, "AWAITING_APPROVAL", "simulator", "review passed")
+        TransitionCoordinator(
+            self.control_plane,
+            registry=self.registry,
+            output_stream=io.StringIO(),
+        ).coordinate_transition(
+            task_id=task_id,
+            to_state="AWAITING_APPROVAL",
+            actor="simulator",
+            reason="simulator review passed",
+        )
 
         approval_inputs = iter(["1", "y"])
         TransitionCoordinator(
@@ -159,7 +168,16 @@ class PipelineSimulator:
         worktree = repo_root / ".worktrees" / task_id
         worktree.mkdir(parents=True, exist_ok=True)
         self.control_plane.update_worktree(task_id, str(worktree), f"sim/{task_id}", "written_in_worktree")
-        self.control_plane.transition(task_id, "IN_WORKTREE", "simulator", "worktree ready")
+        TransitionCoordinator(
+            self.control_plane,
+            registry=self.registry,
+            output_stream=io.StringIO(),
+        ).coordinate_transition(
+            task_id=task_id,
+            to_state="IN_WORKTREE",
+            actor="simulator",
+            reason="simulator worktree ready",
+        )
         self.control_plane.record_verification_receipt(task_id, "test_suite", "pytest -q", 0)
         TransitionCoordinator(
             self.control_plane,
@@ -205,7 +223,16 @@ class PipelineSimulator:
             "CONFIRMED",
             "standard simulator path evidence",
         )
-        self.control_plane.transition(task_id, "RETROSPECTIVE", "simulator", "verification passed")
+        TransitionCoordinator(
+            self.control_plane,
+            registry=self.registry,
+            output_stream=io.StringIO(),
+        ).coordinate_transition(
+            task_id=task_id,
+            to_state="RETROSPECTIVE",
+            actor="simulator",
+            reason="simulator verification passed",
+        )
         record_retrospective(
             task_id,
             {

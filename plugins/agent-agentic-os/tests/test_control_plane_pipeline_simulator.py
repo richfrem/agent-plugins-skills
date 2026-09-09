@@ -123,3 +123,17 @@ def test_simulator_replays_standard_happy_path_to_done(tmp_path):
     assert report["states"][0] == "INTAKE"
     assert report["states"][-1] == "DONE"
     assert simulator.control_plane._persistence.read_current_state(task_id) == "DONE"
+
+
+def test_standard_happy_path_routes_lifecycle_edges_through_coordinator(tmp_path, monkeypatch):
+    simulator = PipelineSimulator(tmp_path / "coordinator-boundary.db")
+    task_id = simulator.create_task("coordinator-boundary-001", "Coordinator boundary")
+
+    def forbidden_raw_transition(*_args, **_kwargs):
+        raise AssertionError("standard simulator must use TransitionCoordinator for lifecycle edges")
+
+    monkeypatch.setattr(simulator.control_plane, "transition", forbidden_raw_transition)
+
+    report = simulator.run_standard_happy_path(task_id)
+
+    assert report["states"][-1] == "DONE"
