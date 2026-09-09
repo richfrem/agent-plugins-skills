@@ -1214,15 +1214,29 @@ def test_registry_malformed_field_fails_closed(tmp_path):
     loading malformed YAML or missing required schema fields."""
     from control_plane.registry import TransitionRegistry, TransitionRegistryError
 
+    import yaml
+
     bad_yaml = tmp_path / "bad_templates.yaml"
-    bad_yaml.write_text("""
-templates:
-  - transition_id: "intake_to_interview"
-    from_state: "INTAKE"
-    to_state: "INTERVIEW"
-    purpose: "Begin interview"
-    # Missing required fields
-""", encoding="utf-8")
+    source = yaml.safe_load(
+        (SCRIPTS_DIR / "control_plane" / "transition_templates.yaml").read_text(encoding="utf-8")
+    )
+    bad_yaml.write_text(
+        yaml.safe_dump(
+            {
+                "execution_guidance": source["execution_guidance"],
+                "templates": [
+                    {
+                        "transition_id": "intake_to_interview",
+                        "from_state": "INTAKE",
+                        "to_state": "INTERVIEW",
+                        "purpose": "Begin interview",
+                        # Missing required template fields.
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     with pytest.raises(TransitionRegistryError, match="Missing required field"):
         TransitionRegistry.load_from_file(bad_yaml)
