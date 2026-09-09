@@ -90,6 +90,21 @@ class TransitionCoordinator:
                 f"No template registered for transition ({current_state} -> {to_state})."
             )
 
+        # Programmatic answers must never be presented as interactive human
+        # provenance.  The SQLite trigger remains the final authority, but
+        # rejecting this combination here gives callers an explicit, actionable
+        # error instead of leaking a low-level persistence failure.
+        human_gated = bool(template.human_questions or template.stage_question_ids)
+        human_gated = human_gated or (
+            template.approval.get("required")
+            and template.approval.get("approver_role", "human") == "human"
+        )
+        if actor == "human" and not interactive and provided_answers and human_gated:
+            raise TransitionCoordinatorError(
+                "Non-interactive answers cannot claim interactive human provenance; "
+                "use --interactive for a genuine human decision."
+            )
+
         # 3. Read current occupancy ID
         last_trans = self._cp._persistence.get_last_transition(task_id)
         source_occupancy_id = last_trans.transition_id if last_trans else None
