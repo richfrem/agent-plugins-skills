@@ -15,6 +15,26 @@ from control_plane.state_machine import ALLOWED_TRANSITIONS
 from agent_control import ControlPlane
 
 
+EXECUTION_GUIDANCE_UNITS = {
+    "work_package",
+    "task",
+    "slice",
+    "transition",
+    "execution_step",
+}
+EXECUTION_GUIDANCE_FIELDS = {
+    "objective",
+    "scope_boundary",
+    "prerequisites",
+    "authority",
+    "expected_artifacts",
+    "validation_command",
+    "completion_evidence",
+    "handoff_condition",
+    "failure_recovery",
+}
+
+
 @pytest.fixture
 def control_plane(tmp_path):
     control_plane = ControlPlane(db_path=tmp_path / "control_plane.db")
@@ -79,3 +99,42 @@ def test_coordinator_surfaces_advisory_guidance_before_and_after_transition(cont
     assert "INTAKE -> INTERVIEW" in rendered
     assert "advisory only" in rendered.lower()
     assert "Next possible transitions from INTAKE" in rendered
+
+
+def test_coordinator_renders_execution_unit_guidance(control_plane):
+    """The model-facing transition report includes task execution guidance."""
+    output = io.StringIO()
+    coordinator = TransitionCoordinator(control_plane, output_stream=output)
+
+    coordinator._write_transition_guidance("INTAKE", "INTERVIEW", phase="before")
+
+    rendered = output.getvalue()
+    assert "Execution-unit guidance (advisory)" in rendered
+    assert "work_package" in rendered
+    assert "task" in rendered
+    assert "slice" in rendered
+    assert "execution_step" in rendered
+
+
+def test_guidance_exposes_advisory_execution_unit_contract(control_plane):
+    """Every transition snapshot explains how to execute the work around it."""
+    task_id = "guidance-execution-units-001"
+    control_plane.create_task(task_id=task_id, title="Execution guidance", runtime_tool="codex")
+
+    guidance = control_plane.get_transition_guidance(task_id)
+    execution = guidance["execution_guidance"]
+
+    assert set(execution) == EXECUTION_GUIDANCE_UNITS
+    for unit_name, unit in execution.items():
+        assert unit["advisory"] is True, unit_name
+        assert set(unit["required_fields"]) == EXECUTION_GUIDANCE_FIELDS, unit_name
+        assert unit["instruction"], unit_name
+
+
+def test_each_edge_guidance_carries_execution_unit_contract():
+    """Edge guidance and execution guidance must be rendered from one snapshot."""
+    registry = TransitionRegistry.load_default()
+
+    for template in registry.get_all_templates():
+        snapshot = registry.get_transition_guidance(template.from_state, template.to_state)
+        assert set(snapshot["execution_guidance"]) == EXECUTION_GUIDANCE_UNITS

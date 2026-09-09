@@ -135,6 +135,37 @@ stages:
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
 
+execution_guidance:
+  work_package:
+    advisory: true
+    required_fields: &execution_guidance_fields
+    - objective
+    - scope_boundary
+    - prerequisites
+    - authority
+    - expected_artifacts
+    - validation_command
+    - completion_evidence
+    - handoff_condition
+    - failure_recovery
+    instruction: Define the approved work-package outcome, boundaries, delegated authority, artifacts, validation, handoff, and recovery before executing its tasks.
+  task:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Execute one bounded task from the work package; preserve its scope, use the approved authority, produce its named artifacts, run its validation, and report completion or recovery evidence.
+  slice:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Treat each slice as a small independently verifiable increment; state its prerequisites, implement only its boundary, validate it, and hand off only with the required evidence.
+  transition:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority.
+  execution_step:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Perform the next concrete command or edit only after confirming its prerequisite; record the expected artifact or test evidence and stop for a gate, failure, or scope change.
+
 templates:
 - transition_id: intake_to_interview
   from_state: INTAKE

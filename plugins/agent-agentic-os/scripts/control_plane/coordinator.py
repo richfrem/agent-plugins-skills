@@ -410,6 +410,11 @@ class TransitionCoordinator:
         self._out.write(f"- Success: {guidance['success_guidance']}\n")
         for helper in guidance.get("helper_commands", []):
             self._out.write(f"- Helper: {helper}\n")
+        self._out.write("Execution-unit guidance (advisory):\n")
+        for unit, contract in guidance.get("execution_guidance", {}).items():
+            fields = ", ".join(contract.get("required_fields", []))
+            self._out.write(f"- {unit}: {contract.get('instruction', '')}\n")
+            self._out.write(f"  Required evidence fields: {fields}\n")
         self._out.write("- Guidance is advisory only; policy, human gates, and SQLite remain authoritative.\n\n")
 
     def _stage_plan_artifact_submission(
